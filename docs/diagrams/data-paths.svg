@@ -1,0 +1,203 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="790" viewBox="0 0 960 790" role="img" aria-labelledby="title desc">
+  <title id="title">Data paths and threads</title>
+  <desc id="desc">A real-time producer publishes into a bounded, lossy series that a UI-thread SeriesSource drains while visible. Workers send owned values through a UiSender to a Mailbox whose handler runs in a flush. Tooling sends requests through an InspectionClient and receives owned snapshots. On the UI thread, components read Signals, which writes invalidate, and edit Parameters through gestures that the application-owned ParameterHost accepts or rejects.</desc>
+  <style>
+    .bg { fill: #f8fafc; }
+    .text { fill: #0f172a; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    .muted { fill: #475569; }
+    .mono { font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace; }
+    .h1 { font-size: 22px; font-weight: 700; }
+    .sub { font-size: 13px; }
+    .region-label { font-size: 12px; font-weight: 700; letter-spacing: 0.04em; }
+    .label { font-size: 13px; font-weight: 600; }
+    .body { font-size: 12px; }
+    .small { font-size: 11px; }
+    .card { fill: #ffffff; stroke: #e2e8f0; }
+    .note { fill: none; stroke: #94a3b8; stroke-dasharray: 4 3; }
+    .threads { fill: #f1f5f9; stroke: #94a3b8; stroke-dasharray: 6 4; }
+    .ui { fill: #f0fdfa; stroke: #5eead4; }
+    .host { fill: #ffffff; stroke: #94a3b8; }
+    .accent-threads { fill: #334155; }
+    .accent-ui { fill: #0f766e; }
+    .pill { fill: #f8fafc; stroke: #cbd5e1; }
+    .edge { stroke: #64748b; stroke-width: 1.6; fill: none; }
+    .e-state { stroke: #0d9488; stroke-width: 2; fill: none; }
+    .e-edit { stroke: #4f46e5; stroke-width: 2; fill: none; }
+    .e-live { stroke: #d97706; stroke-width: 2; fill: none; }
+    .h-gray { fill: #64748b; }
+    .h-state { fill: #0d9488; }
+    .h-edit { fill: #4f46e5; }
+    .h-live { fill: #d97706; }
+    .t-state { fill: #0f766e; }
+    .t-edit { fill: #4338ca; }
+    .t-live { fill: #b45309; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #0b1120; }
+      .text { fill: #e2e8f0; }
+      .muted { fill: #94a3b8; }
+      .card { fill: #111827; stroke: #334155; }
+      .note { stroke: #64748b; }
+      .threads { fill: #111827; stroke: #64748b; }
+      .ui { fill: #042f2e; stroke: #0f766e; }
+      .host { fill: #111827; stroke: #64748b; }
+      .accent-threads { fill: #cbd5e1; }
+      .accent-ui { fill: #5eead4; }
+      .pill { fill: #0b1120; stroke: #475569; }
+      .edge { stroke: #94a3b8; }
+      .e-state { stroke: #2dd4bf; }
+      .e-edit { stroke: #818cf8; }
+      .e-live { stroke: #fbbf24; }
+      .h-gray { fill: #94a3b8; }
+      .h-state { fill: #2dd4bf; }
+      .h-edit { fill: #818cf8; }
+      .h-live { fill: #fbbf24; }
+      .t-state { fill: #5eead4; }
+      .t-edit { fill: #a5b4fc; }
+      .t-live { fill: #fcd34d; }
+    }
+  </style>
+  <defs>
+    <marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path class="h-gray" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+    <marker id="a-state" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="h-state" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+    <marker id="a-edit" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="h-edit" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+    <marker id="a-live" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="h-live" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="960" height="790" rx="16"/>
+
+  <text class="text h1" x="40" y="46">Data paths and threads</text>
+  <text class="text muted sub" x="40" y="70">UI-local state, authoritative edits and live telemetry are separate contracts. Only Send handles cross threads;</text>
+  <text class="text muted sub" x="40" y="88">components, signals, parameters and their hosts stay on the UI thread.</text>
+
+  <!-- Regions -->
+  <rect class="threads" x="40" y="108" width="226" height="536" rx="12"/>
+  <text class="text region-label accent-threads" x="56" y="132">OTHER THREADS</text>
+  <rect class="ui" x="306" y="108" width="614" height="536" rx="12"/>
+  <text class="text region-label accent-ui" x="330" y="132">UI THREAD · pert-ui-runtime</text>
+
+  <!-- Other threads -->
+  <rect class="card" x="56" y="148" width="194" height="120" rx="8"/>
+  <text class="text label" x="70" y="172">Real-time producer</text>
+  <text class="text muted body" x="70" y="190">audio or other callback</text>
+  <text class="text small mono t-live" x="70" y="212">SeriesEndpoint::publish</text>
+  <text class="text muted body" x="70" y="234">No lock, allocation, I/O</text>
+  <text class="text muted body" x="70" y="251">or event-loop wake</text>
+
+  <rect class="card" x="56" y="300" width="194" height="120" rx="8"/>
+  <text class="text label" x="70" y="324">Worker or I/O thread</text>
+  <text class="text small mono" x="70" y="346">UiSender::send</text>
+  <text class="text small mono t-live" x="70" y="364">LiveWaker::notify</text>
+  <text class="text muted body" x="70" y="386">Short lock, then wakes</text>
+  <text class="text muted body" x="70" y="403">the event loop</text>
+
+  <rect class="card" x="56" y="452" width="194" height="110" rx="8"/>
+  <text class="text label" x="70" y="476">Tooling adapter</text>
+  <text class="text small mono" x="70" y="498">InspectionClient</text>
+  <text class="text muted body" x="70" y="520">Your transport: a test</text>
+  <text class="text muted body" x="70" y="537">driver, an MCP server, …</text>
+
+  <!-- Bridges on the UI thread -->
+  <rect class="card" x="330" y="148" width="190" height="120" rx="8"/>
+  <text class="text label mono t-live" x="344" y="172">SeriesSource</text>
+  <text class="text muted body" x="344" y="194">Drained on the presentation</text>
+  <text class="text muted body" x="344" y="211">schedule while visible, or</text>
+  <text class="text muted body" x="344" y="228">after a LiveWaker wake.</text>
+  <text class="text muted body" x="344" y="250">Freshness and gaps visible</text>
+
+  <rect class="card" x="330" y="300" width="190" height="120" rx="8"/>
+  <text class="text label mono" x="344" y="324">Mailbox</text>
+  <text class="text muted body" x="344" y="346">Bounded queue of owned</text>
+  <text class="text muted body" x="344" y="363">values. Its handler runs in</text>
+  <text class="text muted body" x="344" y="380">a flush and typically writes</text>
+  <text class="text muted body" x="344" y="397">a Signal.</text>
+
+  <rect class="card" x="330" y="452" width="190" height="110" rx="8"/>
+  <text class="text label mono" x="344" y="476">InspectionService</text>
+  <text class="text muted body" x="344" y="498">Answers after the next</text>
+  <text class="text muted body" x="344" y="515">flush with owned snapshots;</text>
+  <text class="text muted body" x="344" y="532">no live UI handles leave.</text>
+
+  <!-- Components and state -->
+  <rect class="card" x="560" y="148" width="340" height="120" rx="8"/>
+  <text class="text label" x="574" y="172">Components</text>
+  <text class="text muted body" x="574" y="194">Retained widgets read state in update and paint;</text>
+  <text class="text muted body" x="574" y="211">each read registers a dependency. Live sources are</text>
+  <text class="text muted body" x="574" y="228">read as Telemetry: latest value, revision and</text>
+  <text class="text muted body" x="574" y="245">freshness, never as an edit authority.</text>
+
+  <rect class="card" x="560" y="300" width="160" height="120" rx="8"/>
+  <text class="text label mono t-state" x="574" y="324">Signal&lt;T&gt;</text>
+  <text class="text muted body" x="574" y="346">UI-local state.</text>
+  <text class="text muted body" x="574" y="363">A write invalidates</text>
+  <text class="text muted body" x="574" y="380">only its readers.</text>
+
+  <rect class="card" x="740" y="300" width="160" height="120" rx="8"/>
+  <text class="text label mono t-edit" x="754" y="324">Parameter&lt;T&gt;</text>
+  <text class="text muted body" x="754" y="346">Validated spec.</text>
+  <text class="text muted body" x="754" y="363">A gesture begins,</text>
+  <text class="text muted body" x="754" y="380">previews, then</text>
+  <text class="text muted body" x="754" y="397">commits or cancels.</text>
+
+  <rect class="note" x="560" y="452" width="160" height="110" rx="8"/>
+  <text class="text label" x="574" y="476">Remote authority</text>
+  <text class="text muted body" x="574" y="498">on_submit hands a</text>
+  <text class="text muted body" x="574" y="515">proposal to your</text>
+  <text class="text muted body" x="574" y="532">transport; the reply</text>
+  <text class="text muted body" x="574" y="549">returns via respond.</text>
+
+  <rect class="card" x="740" y="452" width="160" height="110" rx="8"/>
+  <text class="text label mono t-edit" x="754" y="476">ParameterHost</text>
+  <text class="text muted body" x="754" y="498">Owned by your app:</text>
+  <text class="text muted body" x="754" y="515">accepts or rejects</text>
+  <text class="text muted body" x="754" y="532">edits and writes the</text>
+  <text class="text muted body" x="754" y="549">base value.</text>
+
+  <!-- Application -->
+  <rect class="host" x="40" y="668" width="880" height="64" rx="12"/>
+  <text class="text label" x="58" y="694">Your application</text>
+  <text class="text muted body" x="58" y="716">Owns the project, audio engine, automation and undo history, and decides which edits become authoritative.</text>
+
+  <!-- Cross-thread edges -->
+  <path class="e-live" d="M250 208 H328" marker-end="url(#a-live)"/>
+  <rect class="pill" x="258" y="198" width="64" height="20" rx="10"/>
+  <text class="text small t-live" x="290" y="212" text-anchor="middle">lossy ring</text>
+
+  <path class="edge" d="M250 346 H328" marker-end="url(#a-gray)"/>
+  <rect class="pill" x="268" y="336" width="44" height="20" rx="10"/>
+  <text class="text small muted" x="290" y="350" text-anchor="middle">Send</text>
+  <path class="e-live" d="M250 370 H259 V248 H328" stroke-dasharray="5 4" marker-end="url(#a-live)"/>
+
+  <path class="edge" d="M250 507 H328" marker-start="url(#a-gray)" marker-end="url(#a-gray)"/>
+  <rect class="pill" x="260" y="497" width="60" height="20" rx="10"/>
+  <text class="text small muted" x="290" y="511" text-anchor="middle">request</text>
+
+  <!-- UI-thread edges -->
+  <path class="e-live" d="M520 208 H558" marker-end="url(#a-live)"/>
+  <path class="edge" d="M520 360 H558" marker-end="url(#a-gray)"/>
+  <path class="e-state" d="M640 270 V298" marker-start="url(#a-state)" marker-end="url(#a-state)"/>
+  <path class="e-edit" d="M820 268 V298" marker-end="url(#a-edit)"/>
+  <path class="e-edit" d="M805 420 V450" marker-end="url(#a-edit)"/>
+  <path class="e-edit" d="M835 450 V422" marker-end="url(#a-edit)"/>
+  <path class="e-edit" d="M720 507 H740" stroke-dasharray="4 3"/>
+  <path class="e-edit" d="M820 562 V666" marker-start="url(#a-edit)" marker-end="url(#a-edit)"/>
+  <text class="text small t-edit" x="830" y="610">undo, automation,</text>
+  <text class="text small t-edit" x="830" y="624">project load</text>
+
+  <!-- Legend -->
+  <path class="e-state" d="M40 762 H70"/>
+  <text class="text small muted" x="78" y="766">UI-local state</text>
+  <path class="e-edit" d="M200 762 H230"/>
+  <text class="text small muted" x="238" y="766">Authoritative edits</text>
+  <path class="e-live" d="M380 762 H410"/>
+  <text class="text small muted" x="418" y="766">Live telemetry (dashed: notified wake)</text>
+  <path class="edge" d="M640 762 H670"/>
+  <text class="text small muted" x="678" y="766">Delivery and tooling</text>
+</svg>

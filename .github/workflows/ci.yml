@@ -1,0 +1,72 @@
+name: Rust
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  headless:
+    name: Headless / ${{ matrix.os }} / Rust ${{ matrix.toolchain }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        toolchain: [stable]
+        include:
+          - os: ubuntu-latest
+            toolchain: 1.99.0
+    runs-on: ${{ matrix.os }}
+    env:
+      RUSTUP_TOOLCHAIN: ${{ matrix.toolchain }}
+      RUSTDOCFLAGS: -D warnings
+      CARGO_TERM_COLOR: always
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install Rust
+        run: rustup toolchain install ${{ matrix.toolchain }} --profile minimal --component rustfmt --component clippy
+      - run: cargo fmt --all --check
+      - run: cargo clippy --locked --workspace --all-targets -- -D warnings
+      - run: cargo test --locked --workspace
+      - run: cargo test --locked --workspace --doc
+      - run: cargo test --locked --release --workspace
+      - name: Model-check the live-data protocols with loom
+        if: runner.os == 'Linux'
+        run: cargo test --locked -p pert-ui-core --test loom --release
+        env:
+          RUSTFLAGS: --cfg loom
+      - run: cargo doc --locked --workspace --no-deps
+      - run: cargo clippy --locked -p pert-ui --no-default-features --all-targets -- -D warnings
+      - run: cargo test --locked -p pert-ui --no-default-features
+      - run: cargo doc --locked -p pert-ui --no-default-features --no-deps
+      - run: cargo clippy --locked -p pert-ui --features image-formats --all-targets -- -D warnings
+      - run: cargo test --locked -p pert-ui --features image-formats
+      - run: cargo doc --locked -p pert-ui --features image-formats --no-deps
+      - run: cargo clippy --locked -p pert-ui --no-default-features --features png --all-targets -- -D warnings
+      - run: cargo test --locked -p pert-ui --no-default-features --features png
+      - run: cargo clippy --locked -p pert-ui --features images --all-targets -- -D warnings
+      - run: cargo test --locked -p pert-ui --features images
+      - run: cargo clippy --locked -p pert-ui --features svg --all-targets -- -D warnings
+      - run: cargo test --locked -p pert-ui --features svg
+      - run: cargo doc --locked -p pert-ui --features svg --no-deps
+      - run: cargo clippy --locked -p pert-ui --no-default-features --features svg --all-targets -- -D warnings
+      - run: cargo test --locked -p pert-ui --no-default-features --features svg
+      - run: cargo clippy --locked -p pert-ui --features serde --all-targets -- -D warnings
+      - run: cargo test --locked -p pert-ui --features serde
+      - run: cargo doc --locked -p pert-ui --features serde --no-deps
+      - run: cargo clippy --locked -p pert-ui --no-default-features --features serde --all-targets -- -D warnings
+      - run: cargo test --locked -p pert-ui --no-default-features --features serde
+      - run: cargo clippy --locked -p pert-ui-core --features serde --all-targets -- -D warnings
+      - run: cargo test --locked -p pert-ui-core --features serde
+      - run: cargo clippy --locked -p pert-ui --features cpu --all-targets -- -D warnings
+      - run: cargo test --locked -p pert-ui --features cpu
+      - run: cargo doc --locked -p pert-ui --features cpu --no-deps
+      - run: cargo run --locked -p pert-ui-gallery -- --headless
+      - name: Inspect library contents
+        run: cargo package --locked --workspace --exclude pert-ui-gallery --exclude pert-ui-native-checks --list
+      - name: Verify library packages
+        run: cargo package --locked --workspace --exclude pert-ui-gallery --exclude pert-ui-native-checks

@@ -1,0 +1,20 @@
+[package]
+name = "pert-ui-cpu"
+description = "CPU interpretation of pert-ui retained drawing commands, without a window or GPU"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+documentation = "https://docs.rs/pert-ui-cpu"
+readme = "README.md"
+keywords = ["gui", "rendering", "software", "screenshot"]
+categories = ["gui", "rendering"]
+include = ["/src/**", "/examples/**", "/tests/**", "/README.md", "/LICENSE-MIT", "/LICENSE-APACHE"]
+
+[dependencies]
+pert-ui-runtime.workspace = true
+thiserror.workspace = true
+
+[lints]
+workspace = true

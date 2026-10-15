@@ -1,0 +1,33 @@
+[package]
+name = "pert-ui-core"
+description = "Backend-independent numeric parameters and identities for the pert-ui GUI framework"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+documentation = "https://docs.rs/pert-ui-core"
+readme = "README.md"
+keywords = ["gui", "parameters", "state"]
+categories = ["gui"]
+include = ["/src/**", "/tests/**", "/README.md", "/LICENSE-MIT", "/LICENSE-APACHE"]
+
+[features]
+# `Serialize`/`Deserialize` for the owned parameter and identity types that
+# inspection snapshots carry. Deserialization goes through the same validating
+# constructors as the ordinary API.
+serde = ["dep:serde"]
+
+[dependencies]
+thiserror.workspace = true
+serde = { workspace = true, optional = true }
+
+[dev-dependencies]
+serde_json.workspace = true
+
+# Only a `--cfg loom` build compiles this; see tests/loom.rs.
+[target.'cfg(loom)'.dependencies]
+loom.workspace = true
+
+[lints]
+workspace = true

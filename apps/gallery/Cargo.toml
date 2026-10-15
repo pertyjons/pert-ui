@@ -1,0 +1,17 @@
+[package]
+name = "pert-ui-gallery"
+description = "Headless and native gallery that exercises the pert-ui public facade"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+# `png` decodes the gallery's own raster image and `svg` draws its SVG icons;
+# other image formats stay disabled. `cpu` renders headless screenshots.
+pert-ui = { workspace = true, features = ["png", "svg", "cpu"] }
+
+[lints]
+workspace = true

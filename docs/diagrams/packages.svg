@@ -1,0 +1,192 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="980" viewBox="0 0 960 980" role="img" aria-labelledby="title desc">
+  <title id="title">pert-ui packages and their dependencies</title>
+  <desc id="desc">Applications depend on the pert-ui facade. The facade depends on pert-ui-runtime and, through optional features, on the pert-ui-wgpu and pert-ui-cpu renderers, which consume the runtime's DisplayList. The runtime depends on pert-ui-core.</desc>
+  <style>
+    .bg { fill: #f8fafc; }
+    .text { fill: #0f172a; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    .muted { fill: #475569; }
+    .mono { font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace; }
+    .h1 { font-size: 22px; font-weight: 700; }
+    .sub { font-size: 13px; }
+    .name { font-size: 15px; font-weight: 700; }
+    .label { font-size: 13px; font-weight: 600; }
+    .body { font-size: 12px; }
+    .small { font-size: 11px; }
+    .card { fill: #ffffff; stroke: #e2e8f0; }
+    .app { fill: #ffffff; stroke: #94a3b8; }
+    .facade { fill: #eef2ff; stroke: #6366f1; }
+    .runtime { fill: #f0fdfa; stroke: #14b8a6; }
+    .core { fill: #fffbeb; stroke: #f59e0b; }
+    .renderer { fill: #f5f3ff; stroke: #8b5cf6; }
+    .accent-facade { fill: #4338ca; }
+    .accent-runtime { fill: #0f766e; }
+    .accent-core { fill: #b45309; }
+    .accent-renderer { fill: #6d28d9; }
+    .chip { fill: #ffffff; stroke: #c7d2fe; }
+    .chip-text { fill: #3730a3; }
+    .edge { stroke: #64748b; stroke-width: 1.6; fill: none; }
+    .optional { stroke-dasharray: 6 4; }
+    .head { fill: #64748b; }
+    .pill { fill: #f8fafc; stroke: #cbd5e1; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #0b1120; }
+      .text { fill: #e2e8f0; }
+      .muted { fill: #94a3b8; }
+      .card { fill: #111827; stroke: #334155; }
+      .app { fill: #111827; stroke: #64748b; }
+      .facade { fill: #1e1b4b; stroke: #818cf8; }
+      .runtime { fill: #042f2e; stroke: #2dd4bf; }
+      .core { fill: #2a1a05; stroke: #fbbf24; }
+      .renderer { fill: #2e1065; stroke: #a78bfa; }
+      .accent-facade { fill: #a5b4fc; }
+      .accent-runtime { fill: #5eead4; }
+      .accent-core { fill: #fcd34d; }
+      .accent-renderer { fill: #c4b5fd; }
+      .chip { fill: #111827; stroke: #4f46e5; }
+      .chip-text { fill: #c7d2fe; }
+      .edge { stroke: #94a3b8; }
+      .head { fill: #94a3b8; }
+      .pill { fill: #0b1120; stroke: #475569; }
+    }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path class="head" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="960" height="980" rx="16"/>
+
+  <text class="text h1" x="40" y="46">pert-ui packages</text>
+  <text class="text muted sub" x="40" y="70">Arrows point from a package to its dependency. Dependencies point toward the core; dashed arrows are optional Cargo features.</text>
+
+  <!-- Applications -->
+  <rect class="app" x="40" y="96" width="400" height="80" rx="10"/>
+  <text class="text name" x="58" y="124">Your application</text>
+  <text class="text muted body" x="58" y="146">Content, stable keys, bindings and actions.</text>
+  <text class="text muted body" x="58" y="163">Owns its project, audio engine, automation and undo.</text>
+
+  <rect class="app" x="460" y="96" width="220" height="80" rx="10"/>
+  <text class="text name mono" x="478" y="124">apps/gallery</text>
+  <text class="text muted body" x="478" y="146">Gallery and screenshots,</text>
+  <text class="text muted body" x="478" y="163">features png, svg and cpu</text>
+
+  <rect class="app" x="700" y="96" width="220" height="80" rx="10"/>
+  <text class="text name mono" x="718" y="124">apps/native-checks</text>
+  <text class="text muted body" x="718" y="146">Opt-in native checks; also</text>
+  <text class="text muted body" x="718" y="163">uses the wgpu interop API</text>
+
+  <path class="edge" d="M240 176 V214" marker-end="url(#arrow)"/>
+  <path class="edge" d="M570 176 V214" marker-end="url(#arrow)"/>
+  <path class="edge" d="M810 176 V214" marker-end="url(#arrow)"/>
+
+  <!-- Facade -->
+  <rect class="facade" x="40" y="216" width="880" height="166" rx="12"/>
+  <text class="text" x="60" y="244"><tspan class="name mono accent-facade">pert-ui</tspan><tspan class="muted body" dx="12">public facade: the only package an ordinary application imports</tspan></text>
+
+  <rect class="card" x="60" y="258" width="201" height="62" rx="8"/>
+  <text class="text label" x="74" y="280">App</text>
+  <text class="text muted body" x="74" y="298">Native startup, windows,</text>
+  <text class="text muted body" x="74" y="313">theme and bundled fonts</text>
+
+  <rect class="card" x="273" y="258" width="201" height="62" rx="8"/>
+  <text class="text label" x="287" y="280">Platform translation</text>
+  <text class="text muted body" x="287" y="298">winit events, keyboard,</text>
+  <text class="text muted body" x="287" y="313">IME and clipboard</text>
+
+  <rect class="card" x="486" y="258" width="201" height="62" rx="8"/>
+  <text class="text label" x="500" y="280">Presenter</text>
+  <text class="text muted body" x="500" y="298">GPU surface, or software</text>
+  <text class="text muted body" x="500" y="313">frames through softbuffer</text>
+
+  <rect class="card" x="699" y="258" width="201" height="62" rx="8"/>
+  <text class="text label" x="713" y="280">Loaders</text>
+  <text class="text muted body" x="713" y="298">Optional image and SVG</text>
+  <text class="text muted body" x="713" y="313">decoding into resources</text>
+
+  <rect class="chip" x="60" y="336" width="304" height="26" rx="13"/>
+  <text class="text small chip-text" x="74" y="353">desktop (default): winit, pert-ui-wgpu, arboard</text>
+  <rect class="chip" x="372" y="336" width="186" height="26" rx="13"/>
+  <text class="text small chip-text" x="386" y="353">cpu: pert-ui-cpu, softbuffer</text>
+  <rect class="chip" x="566" y="336" width="150" height="26" rx="13"/>
+  <text class="text small chip-text" x="580" y="353">images, png, …: image</text>
+  <rect class="chip" x="724" y="336" width="84" height="26" rx="13"/>
+  <text class="text small chip-text" x="738" y="353">svg: resvg</text>
+  <rect class="chip" x="816" y="336" width="84" height="26" rx="13"/>
+  <text class="text small chip-text" x="858" y="353" text-anchor="middle">serde</text>
+
+  <!-- Facade to renderers and runtime -->
+  <path class="edge optional" d="M210 382 V434" marker-end="url(#arrow)"/>
+  <text class="text muted small" x="220" y="412">desktop</text>
+  <path class="edge optional" d="M750 382 V434" marker-end="url(#arrow)"/>
+  <text class="text muted small" x="760" y="412">cpu</text>
+  <path class="edge" d="M480 382 V594" marker-end="url(#arrow)"/>
+  <rect class="pill" x="420" y="474" width="120" height="44" rx="10"/>
+  <text class="text muted small" x="480" y="492" text-anchor="middle">re-exports the</text>
+  <text class="text muted small" x="480" y="507" text-anchor="middle">runtime API</text>
+
+  <!-- Renderers -->
+  <rect class="renderer" x="40" y="436" width="340" height="104" rx="12"/>
+  <text class="text name mono accent-renderer" x="60" y="464">pert-ui-wgpu</text>
+  <text class="text muted body" x="60" y="486">Draws the DisplayList on the GPU with WGSL</text>
+  <text class="text muted body" x="60" y="502">pipelines; explicit backend interop boundary.</text>
+  <text class="text muted small mono" x="60" y="526">wgpu (Vulkan, DX12, Metal) · pollster</text>
+
+  <rect class="renderer" x="580" y="436" width="340" height="104" rx="12"/>
+  <text class="text name mono accent-renderer" x="600" y="464">pert-ui-cpu</text>
+  <text class="text muted body" x="600" y="486">Reference interpreter of the DisplayList into</text>
+  <text class="text muted body" x="600" y="502">FrameImage pixels, without a window or GPU.</text>
+  <text class="text muted small" x="600" y="526">No rasterizer dependency</text>
+
+  <path class="edge" d="M210 540 V594" marker-end="url(#arrow)"/>
+  <text class="text muted small" x="220" y="571">consumes the DisplayList</text>
+  <path class="edge" d="M750 540 V594" marker-end="url(#arrow)"/>
+  <text class="text muted small" x="760" y="571">consumes the DisplayList</text>
+
+  <!-- Runtime -->
+  <rect class="runtime" x="40" y="596" width="880" height="196" rx="12"/>
+  <text class="text" x="60" y="624"><tspan class="name mono accent-runtime">pert-ui-runtime</tspan><tspan class="muted body" dx="12">retained UI on one thread; no window or GPU dependency</tspan></text>
+
+  <rect class="card" x="60" y="640" width="201" height="52" rx="8"/>
+  <text class="text label" x="74" y="661">Components</text>
+  <text class="text muted body" x="74" y="680">Element, keys, widgets</text>
+  <rect class="card" x="273" y="640" width="201" height="52" rx="8"/>
+  <text class="text label" x="287" y="661">Layout</text>
+  <text class="text muted body" x="287" y="680">measure and arrange</text>
+  <rect class="card" x="486" y="640" width="201" height="52" rx="8"/>
+  <text class="text label" x="500" y="661">Input</text>
+  <text class="text muted body" x="500" y="680">pointer, keys, focus, IME</text>
+  <rect class="card" x="699" y="640" width="201" height="52" rx="8"/>
+  <text class="text label" x="713" y="661">State</text>
+  <text class="text muted body" x="713" y="680">Signal, Parameter, live data</text>
+
+  <rect class="card" x="60" y="702" width="201" height="52" rx="8"/>
+  <text class="text label" x="74" y="723">Scheduling</text>
+  <text class="text muted body" x="74" y="742">invalidation, flush, deadlines</text>
+  <rect class="card" x="273" y="702" width="201" height="52" rx="8"/>
+  <text class="text label" x="287" y="723">Text</text>
+  <text class="text muted body" x="287" y="742">shaping and bundled fonts</text>
+  <rect class="card" x="486" y="702" width="201" height="52" rx="8"/>
+  <text class="text label" x="500" y="723">Drawing</text>
+  <text class="text muted body" x="500" y="742">Painter → DisplayList</text>
+  <rect class="card" x="699" y="702" width="201" height="52" rx="8"/>
+  <text class="text label" x="713" y="723">Tooling contracts</text>
+  <text class="text muted body" x="713" y="742">inspection, capture, workspace</text>
+
+  <text class="text muted small mono" x="60" y="776">parley · swash · unicode-segmentation · serde (optional)</text>
+
+  <path class="edge" d="M480 792 V842" marker-end="url(#arrow)"/>
+
+  <!-- Core -->
+  <rect class="core" x="40" y="844" width="880" height="96" rx="12"/>
+  <text class="text" x="60" y="872"><tspan class="name mono accent-core">pert-ui-core</tspan><tspan class="muted body" dx="12">testable without a window, GPU, audio device or operating-system services</tspan></text>
+  <text class="text muted body" x="60" y="896">Normalized values and identities, ParameterSpec and edit transitions, choice options,</text>
+  <text class="text muted body" x="60" y="913">and the bounded live-data protocols (series bridge and wake flag) checked with loom models.</text>
+  <text class="text muted small mono" x="60" y="932">serde (optional)</text>
+
+  <!-- Legend -->
+  <path class="edge" d="M600 962 H640" marker-end="url(#arrow)"/>
+  <text class="text muted small" x="648" y="966">depends on</text>
+  <path class="edge optional" d="M730 962 H770" marker-end="url(#arrow)"/>
+  <text class="text muted small" x="778" y="966">optional feature</text>
+</svg>

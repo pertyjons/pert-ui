@@ -1,0 +1,38 @@
+[package]
+name = "pert-ui-wgpu"
+description = "Hardware wgpu adapter for pert-ui retained drawing commands"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+documentation = "https://docs.rs/pert-ui-wgpu"
+readme = "README.md"
+keywords = ["gui", "rendering", "wgpu"]
+categories = ["gui", "rendering"]
+include = ["/src/**", "/README.md", "/LICENSE-MIT", "/LICENSE-APACHE"]
+
+[dependencies]
+pert-ui-runtime.workspace = true
+thiserror.workspace = true
+pollster.workspace = true
+wgpu = { workspace = true, features = ["std", "wgsl"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+wgpu = { workspace = true, features = ["vulkan"] }
+[target.'cfg(target_os = "windows")'.dependencies]
+wgpu = { workspace = true, features = ["dx12"] }
+[target.'cfg(target_os = "macos")'.dependencies]
+wgpu = { workspace = true, features = ["metal"] }
+
+[dev-dependencies]
+# The CPU renderer, for the CPU/GPU parity check.
+pert-ui-cpu.workspace = true
+
+[target.'cfg(target_os = "linux")'.dev-dependencies]
+winit = { workspace = true, features = ["rwh_06", "wayland", "wayland-dlopen", "wayland-csd-adwaita"] }
+[target.'cfg(any(target_os = "windows", target_os = "macos"))'.dev-dependencies]
+winit = { workspace = true, features = ["rwh_06"] }
+
+[lints]
+workspace = true

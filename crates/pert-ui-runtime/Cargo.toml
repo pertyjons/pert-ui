@@ -1,0 +1,30 @@
+[package]
+name = "pert-ui-runtime"
+description = "Backend-independent retained UI runtime, drawing commands, state and inspection"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+documentation = "https://docs.rs/pert-ui-runtime"
+readme = "README.md"
+keywords = ["gui", "widgets", "layout"]
+categories = ["gui"]
+include = ["/src/**", "/assets/**", "/tests/**", "/README.md", "/LICENSE-MIT", "/LICENSE-APACHE"]
+
+[features]
+# `Serialize`/`Deserialize` for `InspectionSnapshot`, `ProfileSnapshot`,
+# `Workspace` and everything they carry; see docs/contracts.md. Off by
+# default: without it no serde code is compiled.
+serde = ["dep:serde", "pert-ui-core/serde"]
+
+[dependencies]
+pert-ui-core.workspace = true
+thiserror.workspace = true
+serde = { workspace = true, optional = true }
+parley.workspace = true
+swash.workspace = true
+unicode-segmentation.workspace = true
+
+[lints]
+workspace = true

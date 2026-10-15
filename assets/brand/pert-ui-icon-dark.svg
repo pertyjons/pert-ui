@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-labelledby="pert-ui-icon-dark-title">
+  <title id="pert-ui-icon-dark-title">pert-ui</title>
+  <path fill="none" stroke="#F2F5F8" stroke-width="4" stroke-linecap="square" stroke-linejoin="round" d="M11 6H7v20h4M21 6h4v20h-4"/>
+  <rect width="8" height="8" x="12" y="12" rx="1" fill="#55A9F2"/>
+</svg>

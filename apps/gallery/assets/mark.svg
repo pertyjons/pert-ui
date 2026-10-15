@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <title>A waveform mark</title>
+  <path d="M2 12 L6 12 L8 4 L12 20 L16 8 L18 12 L22 12"
+        fill="none" stroke="#101010" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

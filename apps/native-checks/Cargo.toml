@@ -1,0 +1,25 @@
+[package]
+name = "pert-ui-native-checks"
+description = "Runs pert-ui's opt-in native checks, one process per check, and holds the experimental native input probe"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+# `cargo run -p pert-ui-native-checks` runs the checks; the probe is a second binary.
+default-run = "pert-ui-native-checks"
+
+[dependencies]
+# The runner reads Cargo's JSON build messages to find the test binaries it runs.
+serde_json.workspace = true
+# The rest serves `pert-ui-focus-probe`, which opens native windows itself.
+pert-ui.workspace = true
+pert-ui-wgpu.workspace = true
+winit = { workspace = true, features = ["rwh_06"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+winit = { workspace = true, features = ["wayland", "wayland-dlopen", "wayland-csd-adwaita"] }
+
+[lints]
+workspace = true

@@ -1,0 +1,79 @@
+[package]
+name = "pert-ui"
+description = "Public facade for a general Rust GUI framework designed for demanding desktop applications"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+documentation = "https://docs.rs/pert-ui"
+readme = "README.md"
+keywords = ["gui", "widgets", "desktop"]
+categories = ["gui"]
+include = ["/src/**", "/tests/**", "/examples/**", "/README.md", "/LICENSE-MIT", "/LICENSE-APACHE"]
+
+[features]
+default = ["desktop"]
+desktop = ["dep:winit", "dep:pert-ui-wgpu", "dep:arboard"]
+# Image decoding into `RasterImage`. Each format feature implies `images`, which
+# provides the `images` module; drawing images needs none of these.
+images = ["dep:image"]
+png = ["images", "image/png"]
+jpeg = ["images", "image/jpeg"]
+gif = ["images", "image/gif"]
+webp = ["images", "image/webp"]
+bmp = ["images", "image/bmp"]
+ico = ["images", "image/ico"]
+tiff = ["images", "image/tiff"]
+pnm = ["images", "image/pnm"]
+qoi = ["images", "image/qoi"]
+image-formats = ["png", "jpeg", "gif", "webp", "bmp", "ico", "tiff", "pnm", "qoi"]
+# SVG icons and similar graphics, rasterized with resvg. Independent of the
+# raster decoders above: it adds no font registry, and SVG text is unsupported.
+svg = ["dep:resvg"]
+# `Serialize`/`Deserialize` for inspection snapshots, profiles and workspace
+# documents, for an application that encodes them for its own tooling or
+# embeds a workspace in its own structured file.
+serde = ["pert-ui-runtime/serde"]
+# The `cpu` module: rendering scenes and serving capture requests on the CPU,
+# without a window or GPU, for tests, tools and headless screenshots. With
+# `desktop` it also enables `App::software_rendering`, which presents those
+# frames in native windows through softbuffer instead of creating a GPU device.
+cpu = ["dep:pert-ui-cpu", "dep:softbuffer"]
+
+[dependencies]
+pert-ui-runtime.workspace = true
+thiserror.workspace = true
+pert-ui-wgpu = { workspace = true, optional = true }
+pert-ui-cpu = { workspace = true, optional = true }
+image = { workspace = true, optional = true }
+resvg = { workspace = true, optional = true }
+winit = { workspace = true, features = ["rwh_06"], optional = true }
+softbuffer = { workspace = true, optional = true }
+
+[target.'cfg(any(target_os = "windows", target_os = "macos"))'.dependencies]
+arboard = { workspace = true, optional = true }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+# `wayland-data-control` makes arboard try the Wayland clipboard protocol first
+# and fall back to X11, which is what reaches GNOME's clipboard through XWayland.
+arboard = { workspace = true, features = ["wayland-data-control"], optional = true }
+winit = { workspace = true, features = ["wayland", "wayland-dlopen", "wayland-csd-adwaita"], optional = true }
+# Wayland only, as for winit: no X11 presentation.
+softbuffer = { workspace = true, features = ["wayland", "wayland-dlopen"], optional = true }
+
+[dev-dependencies]
+serde.workspace = true
+serde_json.workspace = true
+
+[lints]
+workspace = true
+
+# docs.rs documents every supported optional module and the serde impls, on top
+# of the default `desktop` feature.
+[package.metadata.docs.rs]
+features = ["image-formats", "svg", "serde", "cpu"]
+
+[[example]]
+name = "getting_started"
+required-features = ["desktop"]
