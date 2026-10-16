@@ -43,6 +43,8 @@ jobs:
       - run: cargo clippy --locked -p pert-ui --no-default-features --all-targets -- -D warnings
       - run: cargo test --locked -p pert-ui --no-default-features
       - run: cargo doc --locked -p pert-ui --no-default-features --no-deps
+      - name: Reclaim build artifacts before image and SVG checks
+        run: cargo clean
       - run: cargo clippy --locked -p pert-ui --features image-formats --all-targets -- -D warnings
       - run: cargo test --locked -p pert-ui --features image-formats
       - run: cargo doc --locked -p pert-ui --features image-formats --no-deps
@@ -55,6 +57,8 @@ jobs:
       - run: cargo doc --locked -p pert-ui --features svg --no-deps
       - run: cargo clippy --locked -p pert-ui --no-default-features --features svg --all-targets -- -D warnings
       - run: cargo test --locked -p pert-ui --no-default-features --features svg
+      - name: Reclaim build artifacts before serde and CPU checks
+        run: cargo clean
       - run: cargo clippy --locked -p pert-ui --features serde --all-targets -- -D warnings
       - run: cargo test --locked -p pert-ui --features serde
       - run: cargo doc --locked -p pert-ui --features serde --no-deps
@@ -66,6 +70,8 @@ jobs:
       - run: cargo test --locked -p pert-ui --features cpu
       - run: cargo doc --locked -p pert-ui --features cpu --no-deps
       - run: cargo run --locked -p pert-ui-gallery -- --headless
+      - name: Reclaim build artifacts before packaging
+        run: cargo clean
       - name: Inspect library contents
         run: cargo package --locked --workspace --exclude pert-ui-gallery --exclude pert-ui-native-checks --list
       - name: Verify library packages

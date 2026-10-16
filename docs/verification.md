@@ -114,6 +114,8 @@ changes also need the feature configurations, release tests, MSRV, headless
 gallery, package and isolated-consumer checks listed there. A passing headless
 gate is evidence for contracts that do not require a native session; it is not
 evidence for GPU output, focus routing or platform integration.
+CI runs `cargo clean` between the base, image/SVG, serde/CPU and packaging
+groups to reclaim disk space before the next group; it retains every check.
 
 ### Parley 0.12 review
 

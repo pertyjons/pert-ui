@@ -285,6 +285,10 @@ not establish it. `cargo run --locked -p pert-ui-native-checks` runs the opt-in
 native checks one process each on an unlocked desktop session with a hardware
 GPU; record the platform it ran on with its result.
 
+CI runs `cargo clean` between the base, image/SVG, serde/CPU and packaging
+groups to reclaim build artifacts on hosted runners. These cleanup steps do not
+replace any check or belong to the local verification commands above.
+
 For high-risk changes, obtain an independent human or fresh-context review before
 merge/release. Prefer a different model family when an AI reviewer is used. Reviewers
 inspect the declared scope without authoring fixes or delegating the review.
