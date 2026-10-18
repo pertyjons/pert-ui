@@ -23,6 +23,11 @@ jobs:
       RUSTUP_TOOLCHAIN: ${{ matrix.toolchain }}
       RUSTDOCFLAGS: -D warnings
       CARGO_TERM_COLOR: always
+      # Each integration test links a separate binary; full debuginfo makes
+      # them large enough to fill the Linux runner disk and exceed the
+      # Windows PDB limit. Incremental caches are never reused in CI.
+      CARGO_PROFILE_DEV_DEBUG: 0
+      CARGO_INCREMENTAL: 0
     steps:
       - uses: actions/checkout@v7
         with:

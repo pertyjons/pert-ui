@@ -286,8 +286,18 @@ native checks one process each on an unlocked desktop session with a hardware
 GPU; record the platform it ran on with its result.
 
 CI runs `cargo clean` between the base, image/SVG, serde/CPU and packaging
-groups to reclaim build artifacts on hosted runners. These cleanup steps do not
-replace any check or belong to the local verification commands above.
+groups to reclaim build artifacts on hosted runners, and builds the dev and test
+profiles without debuginfo or incremental caches (`CARGO_PROFILE_DEV_DEBUG=0`,
+`CARGO_INCREMENTAL=0`) so the test binaries fit the runner disk and the
+Windows PDB limit. These settings do not replace any check or belong to the
+local verification commands above.
+
+Every top-level file or `main.rs` directory in a package's `tests/` is a separate
+test binary that links the package's whole dependency graph once per feature
+configuration. The facade's integration tests are therefore grouped by area
+into a few binaries (`crates/pert-ui/tests/<area>/main.rs`, sharing
+`tests/support`); add a new facade test file as a module of the area it covers,
+and introduce a new area binary only for a distinct area.
 
 For high-risk changes, obtain an independent human or fresh-context review before
 merge/release. Prefer a different model family when an AI reviewer is used. Reviewers

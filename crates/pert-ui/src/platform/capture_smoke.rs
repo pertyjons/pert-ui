@@ -153,7 +153,7 @@ impl Driver {
         }
         // The PNG is well formed here; that it decodes to the same pixels is
         // checked with a real decoder when the `png` feature provides one
-        // (and headlessly in tests/capture.rs).
+        // (and headlessly in tests/foundation/capture.rs).
         let png = square.image.encode_png();
         assert_eq!(&png[..8], b"\x89PNG\r\n\x1a\n");
         assert!(

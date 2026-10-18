@@ -1,5 +1,5 @@
 // The crate page is rustdoc-specific (intra-doc links, hidden doctest lines);
-// README.md is the registry page. Both carry status.md, which tests/readme.rs
+// README.md is the registry page. Both carry status.md, which tests/foundation/readme.rs
 // keeps identical.
 #![doc = include_str!("root.md")]
 #![doc = include_str!("status.md")]

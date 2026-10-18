@@ -1,8 +1,9 @@
 //! Helpers shared by the facade's integration tests, using the public API only.
 //!
-//! A test binary opts in with `mod support;`. Each binary compiles its own copy
-//! and uses only some helpers, so unused ones are allowed rather than warned
-//! about per binary.
+//! A test binary's `main.rs` declares it with `#[path = "../support/mod.rs"]
+//! mod support;` and its modules opt in with `use crate::support;`. Each binary
+//! compiles its own copy and uses only some helpers, so unused ones are allowed
+//! rather than warned about per binary.
 //!
 //! The helpers panic instead of returning errors: they drive a runtime the test
 //! itself built, so a failure here is a failed test, and `#[track_caller]`

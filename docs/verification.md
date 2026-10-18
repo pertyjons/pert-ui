@@ -115,7 +115,11 @@ gallery, package and isolated-consumer checks listed there. A passing headless
 gate is evidence for contracts that do not require a native session; it is not
 evidence for GPU output, focus routing or platform integration.
 CI runs `cargo clean` between the base, image/SVG, serde/CPU and packaging
-groups to reclaim disk space before the next group; it retains every check.
+groups to reclaim disk space before the next group, and builds the dev and test
+profiles without debuginfo or incremental caches; it retains every check. The
+facade's integration tests are grouped into a few area binaries under
+`crates/pert-ui/tests/<area>/main.rs`, so each feature configuration links a
+few test binaries instead of one per test file.
 
 ### Parley 0.12 review
 
