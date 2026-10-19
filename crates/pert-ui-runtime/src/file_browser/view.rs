@@ -1,7 +1,6 @@
 //! The browser's components: the composed browser, its path bar and its rows.
 use super::controller::Hooks;
 use super::{DirectoryEntry, EntryKind, FileBrowserController, LinkTarget, ListingError};
-use crate::numeric_controls::DOUBLE_CLICK;
 use crate::{
     ArrangeContext, Breadcrumb, BreadcrumbSegment, ColorRole, Column, Component, ComponentDetails,
     Constraints, Element, EventContext, Icon, InputOutcome, InspectValue, Invalidation, KeyCode,
@@ -11,7 +10,6 @@ use crate::{
 };
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
-use std::time::Duration;
 
 /// Directory navigation and selection over a host-supplied directory source:
 /// a path bar, a filter, a folder tree and the current folder's entries.
@@ -30,7 +28,10 @@ use std::time::Duration;
 ///   whose listing failed an error row. Clicking a folder, or Enter on the
 ///   active one, opens it in the entry list.
 /// - `entries`: a [`VirtualList`] of the current folder's entries, directories
-///   first, filtered by the field. Enter or a double click on an entry opens a
+///   first, filtered by the field. Enter or a double click on an entry (two
+///   primary presses within 500 ms and four logical pixels, as
+///   [`ClickCounter`](crate::ClickCounter) counts them; four quick presses
+///   are two double clicks) opens a
 ///   directory or a link to one in the browser and hands anything else to
 ///   [`FileBrowserController::on_open`]. Selection follows the controller's
 ///   [`ListSelection`](crate::ListSelection). While the folder loads, is
@@ -429,8 +430,8 @@ pub(super) struct EntryRow {
     entry: DirectoryEntry,
     hooks: Rc<Hooks>,
     children: Vec<Element>,
-    /// When the last primary press that did not complete a double click came.
-    pressed: Option<Duration>,
+    /// The primary presses since the last double click.
+    clicks: crate::ClickCounter,
     /// The failure text shown for an unreadable entry.
     failed: Option<String>,
 }
@@ -462,7 +463,7 @@ impl EntryRow {
             entry: entry.clone(),
             hooks,
             children: vec![Element::new("name", label)],
-            pressed: None,
+            clicks: crate::ClickCounter::new(),
             failed,
         }
     }
@@ -480,7 +481,7 @@ impl Component for EntryRow {
         // with the new entry's text and icons. A press armed on the entry a
         // refresh replaced must not complete a double click on the new one.
         if self.entry != next.entry {
-            self.pressed = None;
+            self.clicks.reset();
         }
         self.key = next.key;
         self.path = next.path;
@@ -522,21 +523,17 @@ impl Component for EntryRow {
         if event.kind() != PointerKind::Press(PointerButton::Primary) || event.is_outside() {
             return Ok(InputOutcome::Ignored);
         }
-        let now = cx.now();
-        if self
-            .pressed
-            .is_some_and(|last| now.saturating_sub(last) <= DOUBLE_CLICK)
-        {
-            self.pressed = None;
+        if self.clicks.press_event(cx, event) > Some(1) {
+            // Acted on: four quick presses open twice.
+            self.clicks.reset();
             self.hooks.activate(cx, &self.key)?;
             return Ok(InputOutcome::Handled);
         }
-        self.pressed = Some(now);
         // The list still selects the row and takes focus.
         Ok(InputOutcome::Ignored)
     }
     fn input_reset(&mut self) {
-        self.pressed = None;
+        self.clicks.reset();
     }
     fn inspect(&self) -> ComponentDetails {
         let mut details = ComponentDetails::default();

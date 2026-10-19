@@ -5,7 +5,6 @@ use crate::layout::rect;
 use crate::text_fields::InlineField;
 use crate::*;
 use std::cell::Cell;
-use std::time::Duration;
 
 /// Angle of a knob's minimum, in degrees clockwise from the rightward radius:
 /// the lower left, so the arc opens at the bottom.
@@ -15,9 +14,6 @@ const KNOB_START_DEGREES: f32 = 135.0;
 const KNOB_SWEEP_DEGREES: f32 = 270.0;
 /// Fraction of the dial's radius where the pointer line starts.
 const KNOB_POINTER_INNER: f32 = 0.35;
-/// Longest interval between two presses that a knob treats as a double-click,
-/// the same interval `InlineText` uses.
-pub(crate) const DOUBLE_CLICK: Duration = Duration::from_millis(500);
 
 /// Direction of a linear slider. Positions increase rightward or upward.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
@@ -77,8 +73,8 @@ struct NumericControl {
     orientation: Orientation,
     shape: Shape,
     arc_origin: ArcOrigin,
-    /// Time of a knob's last primary press, for double-click reset.
-    last_press: Option<Duration>,
+    /// A knob's primary presses, for double-click reset.
+    clicks: crate::ClickCounter,
     show_value: bool,
     decimal_places: u8,
     unit: String,
@@ -111,7 +107,7 @@ impl NumericControl {
             orientation: Orientation::Horizontal,
             shape,
             arc_origin: ArcOrigin::Minimum,
-            last_press: None,
+            clicks: crate::ClickCounter::new(),
             show_value: false,
             decimal_places: 2,
             unit: String::new(),
@@ -390,7 +386,7 @@ impl NumericControl {
             return Ok(());
         }
         // A press that moved the value was a drag, not half a double-click.
-        self.last_press = None;
+        self.clicks.reset();
         let normalized = drag.normalized + distance / self.extent.get().max(1.0) * fine;
         // Incremental baseline avoids jumps when Shift changes during a drag.
         self.preview(cx, normalized)?;
@@ -545,7 +541,7 @@ impl Component for NumericControl {
             unit,
             arc_origin,
             shape: _,
-            last_press: _,
+            clicks: _,
             spec: _,
             value: _,
             normalized: _,
@@ -572,7 +568,7 @@ impl Component for NumericControl {
             self.abandon();
             // A click on the old parameter is not half of a double-click on
             // the new one.
-            self.last_press = None;
+            self.clicks.reset();
             self.error = None;
             self.outcome = None;
             self.parameter = parameter;
@@ -884,13 +880,13 @@ impl Component for NumericControl {
                 if !self.hit_control(cx, e.position()) {
                     return Ok(InputOutcome::Ignored);
                 }
-                let now = cx.now();
                 if self.shape == Shape::Rotary {
                     let double = self
-                        .last_press
-                        .is_some_and(|last| now.saturating_sub(last) <= DOUBLE_CLICK);
-                    self.last_press = None;
+                        .clicks
+                        .press(cx.now(), e.position(), PointerButton::Primary)
+                        > 1;
                     if double {
+                        self.clicks.reset();
                         // A double-click is one complete edit to the default.
                         if self.begin(cx)? {
                             let default = self.default_position()?;
@@ -901,11 +897,9 @@ impl Component for NumericControl {
                     }
                 }
                 if !self.begin(cx)? {
-                    return Ok(InputOutcome::Handled);
-                }
-                if self.shape == Shape::Rotary {
                     // Only a press that began an edit can start a double-click.
-                    self.last_press = Some(now);
+                    self.clicks.reset();
+                    return Ok(InputOutcome::Handled);
                 }
                 cx.capture_pointer()?;
                 // A knob moves relative to the press; only a slider jumps to it.
@@ -1101,7 +1095,7 @@ impl Component for NumericControl {
         self.key = None;
         self.focused = false;
         self.hovered = false;
-        self.last_press = None;
+        self.clicks.reset();
     }
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
         let Some(size) = p.size() else {
@@ -1605,7 +1599,7 @@ numeric_widget!(
     Knob,
     false,
     Shape::Rotary,
-    "A rotary parameter control: the slider's edit protocol, keyboard and wheel behavior in a round dial.\n\nThe dial is [`MetricRole::KnobDiameter`] across by default, with a 270-degree track arc open at the bottom, a value arc in `ColorRole::Primary` from its [`ArcOrigin`] to the value, and a pointer line, all [`MetricRole::KnobStroke`] wide. A larger allocation centers the largest square that fits; the optional readout (`show_value`) sits centered below. A primary press on the dial begins one edit without changing the value; vertical dragging moves it, upward increasing, by the full range over [`MetricRole::KnobTravel`] logical pixels, and Shift divides the sensitivity by ten at any point in the drag. The matched release commits a drag that moved the value; a release without movement cancels the edit, so a click alone records no edit for the host. A second primary press within 500 ms of a press that began an edit and did not move the value is a double-click: it begins, previews and commits one edit to the parameter's default, as Backspace does. Hover shows `SurfaceHover` inside the arc, and the focus ring surrounds the dial.\n\n```\nuse pert_ui_runtime::{ArcOrigin, Element, KeyAction, KeyCode, Knob, ParameterId, ParameterSpec, Runtime, Viewport};\nlet mut ui = Runtime::new();\nui.set_viewport(Viewport::new(120.0, 120.0, 1.0)?)?;\nlet (balance, _host) = ui.parameter(\n    ParameterId::new(1, 1, \"balance\")?,\n    ParameterSpec::new(\"Balance\", -1.0, 1.0, 0.0)?,\n)?;\nlet knob = ui.mount_tree(Element::new(\"balance\", Knob::new(balance.clone()).arc_origin(ArcOrigin::Default).show_value(true)))?;\nui.flush(std::time::Duration::ZERO)?;\nassert!(ui.bounds(&knob)?.is_some_and(|dial| dial.width() > 0.0));\nui.focus(&knob)?;\nui.key_input(KeyCode::End, KeyAction::Press)?;\nui.key_input(KeyCode::End, KeyAction::Release)?;\nassert_eq!(balance.snapshot().get()?.base, 1.0);\nui.key_input(KeyCode::Backspace, KeyAction::Press)?;\nui.key_input(KeyCode::Backspace, KeyAction::Release)?;\nassert_eq!(balance.snapshot().get()?.base, 0.0);\n# Ok::<(), Box<dyn std::error::Error>>(())\n```"
+    "A rotary parameter control: the slider's edit protocol, keyboard and wheel behavior in a round dial.\n\nThe dial is [`MetricRole::KnobDiameter`] across by default, with a 270-degree track arc open at the bottom, a value arc in `ColorRole::Primary` from its [`ArcOrigin`] to the value, and a pointer line, all [`MetricRole::KnobStroke`] wide. A larger allocation centers the largest square that fits; the optional readout (`show_value`) sits centered below. A primary press on the dial begins one edit without changing the value; vertical dragging moves it, upward increasing, by the full range over [`MetricRole::KnobTravel`] logical pixels, and Shift divides the sensitivity by ten at any point in the drag. The matched release commits a drag that moved the value; a release without movement cancels the edit, so a click alone records no edit for the host. A second primary press within 500 ms and four logical pixels of a press that began an edit and did not move the value is a double-click (counted by [`ClickCounter`]): it begins, previews and commits one edit to the parameter's default, as Backspace does. Hover shows `SurfaceHover` inside the arc, and the focus ring surrounds the dial.\n\n```\nuse pert_ui_runtime::{ArcOrigin, Element, KeyAction, KeyCode, Knob, ParameterId, ParameterSpec, Runtime, Viewport};\nlet mut ui = Runtime::new();\nui.set_viewport(Viewport::new(120.0, 120.0, 1.0)?)?;\nlet (balance, _host) = ui.parameter(\n    ParameterId::new(1, 1, \"balance\")?,\n    ParameterSpec::new(\"Balance\", -1.0, 1.0, 0.0)?,\n)?;\nlet knob = ui.mount_tree(Element::new(\"balance\", Knob::new(balance.clone()).arc_origin(ArcOrigin::Default).show_value(true)))?;\nui.flush(std::time::Duration::ZERO)?;\nassert!(ui.bounds(&knob)?.is_some_and(|dial| dial.width() > 0.0));\nui.focus(&knob)?;\nui.key_input(KeyCode::End, KeyAction::Press)?;\nui.key_input(KeyCode::End, KeyAction::Release)?;\nassert_eq!(balance.snapshot().get()?.base, 1.0);\nui.key_input(KeyCode::Backspace, KeyAction::Press)?;\nui.key_input(KeyCode::Backspace, KeyAction::Release)?;\nassert_eq!(balance.snapshot().get()?.base, 0.0);\n# Ok::<(), Box<dyn std::error::Error>>(())\n```"
 );
 readout_api!(Slider);
 readout_api!(Knob);

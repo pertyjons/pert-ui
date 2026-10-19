@@ -30,6 +30,10 @@ impl Length {
     pub const fn get(self) -> f32 {
         self.0
     }
+    /// A constant the crate knows to be finite and nonnegative.
+    pub(crate) const fn trusted(value: f32) -> Self {
+        Self(value)
+    }
 }
 impl TryFrom<f32> for Length {
     type Error = crate::GeometryError;

@@ -1,5 +1,140 @@
 # Changelog
 
+## 0.3.23 (2026-10-19)
+
+Review fixes for the `diagram_editor` example of 0.3.22:
+
+- The inspector is described under the selected node's identity and each
+  save names the node it edits, so a draft can no longer be saved to
+  another node when the selection changes, for example by duplicating.
+- Close admission clears focus first, which saves an open inspector draft
+  or in-place rename, so it asks before discarding them.
+- Only the latest open applies, and only to an unchanged document; a save
+  that finishes after another document was opened records nothing for it,
+  and saves run one at a time.
+- A rename ends when its document is replaced or the canvas is hidden,
+  refuses a label longer than the file format stores, and its editor has an
+  accessible name.
+- Labels escape backslashes and line breaks in one pass, so they round-trip;
+  the file's identity counter is bounded and allocation cannot wrap.
+- A directory listing that finds the mailbox full is retried instead of
+  dropped.
+- The inspector checks a label's length in characters, as the file format
+  does, instead of graphemes; the document's incarnation is a signal, so a
+  rename also ends when the replacement equals the old document; a second
+  close attempt after a cancelled one takes the earlier dialog outcome
+  instead of failing.
+- The headless session also covers the outline selecting on the canvas, a
+  draft across a selection change, close with a draft and during a rename,
+  an overtaken open, rename refusal, hiding and document replacement, label
+  length and escaping, and runtime cleanup errors. The
+  custom widgets chapter describes the identity-keyed inspector and checking
+  background results against current state.
+
+## 0.3.22 (2026-10-19)
+
+A custom canvas example and a chapter for widget authors (diagram-probe plan
+slice 4):
+
+- The `diagram_editor` example: a canvas container with one child per node,
+  pan and zoom through `child_transform`, stacked children in document
+  order, selection, dragging that converges on the repeated pointer move,
+  rubber-band selection, connecting nodes, a pan owned by its button, Space
+  held for panning through `register_held_input` while the canvas has focus,
+  double clicks counted by `ClickCounter`, renaming in place with a retained
+  `DraftEditor`, and typed semantics. Around it: an application-owned
+  document and undo history, one `ListSelection` shared by the canvas and an
+  outline, an inspector bound to a view model synchronized in event phases,
+  `ColorPicker::on_change` recording picked fills, commands in a menu bar, a
+  context menu, a toolbar and a command palette, files opened through a
+  `FileBrowser` dialog and saved on background threads, `defer_detached` for
+  work a closing dialog starts, a saved layout, close admission and, with the
+  `cpu` feature, PNG export in the light theme. Without arguments it runs a
+  deterministic headless session; `--window` opens it with the `native`
+  feature.
+- The guide's new custom widgets chapter: who may write and when (with a
+  `Notifier` example), pointer gestures that converge, clicks, held keys,
+  described and focused children, overlap, inspection, an inspector over an
+  application document (with an example) and building an application. The
+  getting-started chapter and the manual point to it and to the example.
+
+## 0.3.21 (2026-10-19)
+
+Click recognition for custom widgets (diagram-probe plan slice 3):
+
+- `ClickCounter` counts a component's presses as single, double, triple and
+  longer clicks: a press of the same button within 500 ms and four logical
+  pixels (per axis, in window coordinates) of the previous press continues
+  the series. `press_event` feeds pointer events on the runtime's clock,
+  `press` takes an explicit time and position, and the interval and
+  distance can be replaced. The component resets it itself, on cancellation
+  and after acting on a double click.
+- `Knob`, the file browser's entry rows, `InlineText` and the text editors
+  use it. The knob's double click, a file row's activation and
+  `InlineText`'s editing now also require the second press within four
+  logical pixels of the first, as the text editors already did; four quick
+  presses on a knob or a row are two double clicks.
+
+## 0.3.20 (2026-10-19)
+
+A user-write callback for the color picker (diagram-probe plan slice 2):
+
+- `ColorPicker::on_change` reports each committed user write that changed
+  the bound color, with the color written, after the binding and the text
+  fields hold it: a drag's release, a key press or repeat, a saved hex or
+  channel field. Application writes, cancelled or revoked gestures, refused
+  text and edits that leave the color unchanged report nothing; an error
+  propagates from the input that committed, keeps the write and is not
+  replayed. The handler follows same-key redescription, also through the
+  retained composition of `ColorPicker::into_popover`.
+- Fix: an edit whose new picker state still describes the bound color, such
+  as a hue step on a grey or moving the hue between 0° and 360°, no longer
+  rewrites the binding with a value rounded through HSV, and a saved hex or
+  channel field writes the color it parsed exactly.
+- The gallery's color picker reports its committed edits.
+- Text editors keep their save model: the identity normalizer documented in
+  0.3.18, `.normalize(Ok)`, is the way to save finished edits without other
+  validation.
+
+## 0.3.19 (2026-10-19)
+
+The pointer refresh after layout made visible (diagram-probe plan slice 1):
+
+- `PointerEvent::is_refresh` tells the move the runtime repeats at the last
+  position after a layout or stacking change from host motion. Routing is
+  unchanged: the capture owner, or else the component under the pointer,
+  receives it, and a drag session receives none.
+- `PointerKind::Move`, `Component::pointer_input` (with a runnable drag that
+  converges), `EventContext::invalidate`, the input contract, the layout
+  guide and the manual state that a handler must invalidate only when what
+  it derives from the event changed, since an unconditional layout invalidation
+  makes every layout produce the next move.
+- In debug builds, an `UpdateLimit` validation report names a component
+  whose handling of the refresh left new work scheduled more than once in
+  the failing flush, as evidence of such a loop.
+
+## 0.3.18 (2026-10-19)
+
+Documentation repairs found by a diagram-editor probe (diagram-probe plan
+slice 0):
+
+- The manual no longer says that `on_save` reports whether Enter, focus loss
+  or a step button saved a value; the callback receives the value only.
+  `TextField::on_save`, `TextArea::on_save` and the manual name the identity
+  normalizer, `.normalize(Ok)`, for a field that saves finished edits
+  without adjusting them (a `TextField` on Enter or focus loss, a
+  `TextArea` on focus loss).
+- `Painter::stroke_shape` states that its stroke lies inside the rectangle,
+  unlike the centered path strokes, and how to draw the same outline both
+  ways.
+- `EventContext::now` states that only `flush` and `service_intervals`
+  advance the runtime's time, so input between them shares one instant,
+  with a runnable double-click example for headless hosts.
+- The `UnexpectedOverlap` and `EscapesParent` development messages, the
+  `ValidationCode::UnexpectedOverlap` documentation and the layout guide
+  name the ways to permit an intentional overlap: `OverlapPolicy::Allow` in
+  `ComponentDetails::validation`, or a stacking parent.
+
 ## 0.3.17 (2026-10-19)
 
 Recheck fixes for the `live_mixer` example:

@@ -987,3 +987,46 @@ fn disabled_text_editors_do_not_save_on_immediate_focus_loss() {
         }
     }
 }
+
+#[test]
+fn the_identity_normalizer_saves_finished_edits_without_changing_them() {
+    for multiline in [false, true] {
+        let mut ui = Runtime::new();
+        let value = ui.signal("Name".to_owned());
+        let saves = Rc::new(RefCell::new(Vec::new()));
+        let saved = saves.clone();
+        let record = move |_: &mut EventContext, text: &str| {
+            saved.borrow_mut().push(text.to_owned());
+            Ok(())
+        };
+        let (field, other) = if multiline {
+            mount(&mut ui, TextArea::new(&value).normalize(Ok).on_save(record))
+        } else {
+            mount(
+                &mut ui,
+                TextField::new(&value).normalize(Ok).on_save(record),
+            )
+        };
+        ui.focus(&field).unwrap();
+        replace(&mut ui, " Edited ");
+        // A draft: nothing is written while typing.
+        assert_eq!(value.get().unwrap(), "Name");
+        assert!(saves.borrow().is_empty());
+        // Enter saves a single-line field and inserts a line break in a
+        // multiline one, which saves on focus loss.
+        key(&mut ui, KeyCode::Enter);
+        if multiline {
+            assert_eq!(value.get().unwrap(), "Name");
+            ui.focus(&other).unwrap();
+            frame(&mut ui);
+            assert_eq!(value.get().unwrap(), " Edited \n", "saved unchanged");
+            assert_eq!(*saves.borrow(), [" Edited \n"]);
+        } else {
+            assert_eq!(value.get().unwrap(), " Edited ", "saved unchanged");
+            assert_eq!(*saves.borrow(), [" Edited "]);
+            ui.focus(&other).unwrap();
+            frame(&mut ui);
+            assert_eq!(saves.borrow().len(), 1, "an unchanged draft saves nothing");
+        }
+    }
+}

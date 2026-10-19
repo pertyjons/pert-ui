@@ -197,6 +197,33 @@ fn triple_click_selects_all_lines_and_click_sequence_expires() {
     );
 }
 #[test]
+fn a_drifting_series_counts_from_the_previous_click_and_a_fourth_starts_over() {
+    for multi in [false, true] {
+        let (mut ui, _, value) = setup("hello world", multi);
+        // Each click is three pixels from the previous one: still a series.
+        click(&mut ui, 22.0, 15.0, 10);
+        click(&mut ui, 25.0, 15.0, 100);
+        click(&mut ui, 28.0, 15.0, 200);
+        assert_eq!(
+            property(&ui, "selection"),
+            InspectValue::Text(format!("0..{}", value.get().unwrap().len()))
+        );
+        // A fourth click is a single click again: the selection is what an
+        // isolated click at the same place makes.
+        click(&mut ui, 28.0, 15.0, 300);
+        let fourth = property(&ui, "selection");
+        click(&mut ui, 28.0, 15.0, 5000);
+        assert_eq!(property(&ui, "selection"), fourth);
+        // Five pixels away a second click is no double click.
+        click(&mut ui, 25.0, 15.0, 6000);
+        click(&mut ui, 30.0, 15.0, 6100);
+        assert_ne!(
+            property(&ui, "selection"),
+            InspectValue::Text("0..5".into())
+        );
+    }
+}
+#[test]
 fn clipboard_cut_paste_normalization_and_failure_are_atomic() {
     let (mut ui, _, value) = setup("original", false);
     let clipboard = MemoryClipboard::default();

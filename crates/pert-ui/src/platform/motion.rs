@@ -126,6 +126,13 @@ mod tests {
         );
         assert_eq!(captured[2].position().x(), 1099.0);
         assert_eq!(captured[3].position().x(), 1099.0);
+        // Coalesced motion is host motion, never the runtime's refresh.
+        assert!(
+            captured[..=2]
+                .iter()
+                .filter(|event| event.kind() == PointerKind::Move)
+                .all(|event| !event.is_refresh())
+        );
         let count = events.borrow().len();
         motion.flush(&mut ui).unwrap();
         assert_eq!(events.borrow().len(), count);

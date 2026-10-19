@@ -10,7 +10,9 @@ use crate::layout::{centered, rect};
 ///
 /// At rest the control draws its bound text as body typography inside a
 /// ControlHeight row, with an optional muted placeholder when the text is empty.
-/// Double-click, Enter or F2 enters editing with the text selected. Editing
+/// Double-click (two primary presses as [`ClickCounter`](crate::ClickCounter)
+/// counts them: within 500 ms and four logical pixels), Enter or F2 enters
+/// editing with the text selected. Editing
 /// happens in a [`DraftEditor`] the label mounts as its child under the key
 /// `"editor"`, with the validation, 16 KiB limit, selection, clipboard chord,
 /// IME and 32-edit undo rules of [`TextField`]; focus moves into it and returns
@@ -85,7 +87,7 @@ pub struct InlineText {
     hovered: bool,
     prepared: RefCell<Option<TextLayout>>,
     area: Cell<Option<Rect>>,
-    last_click: Option<Duration>,
+    clicks: crate::ClickCounter,
 }
 impl InlineText {
     /// Creates an enabled editable label. The binding is validated and
@@ -117,7 +119,7 @@ impl InlineText {
             hovered: false,
             prepared: RefCell::new(None),
             area: Cell::new(None),
-            last_click: None,
+            clicks: crate::ClickCounter::new(),
         }
     }
     /// Shows muted text while the bound value is empty and editing is not active.
@@ -436,13 +438,8 @@ impl Component for InlineText {
         }
         match e.kind() {
             PointerKind::Press(PointerButton::Primary) => {
-                let now = cx.now();
-                let double = self
-                    .last_click
-                    .is_some_and(|last| now.saturating_sub(last) <= BLINK);
-                self.last_click = Some(now);
-                if double {
-                    self.last_click = None;
+                if self.clicks.press_event(cx, e) > Some(1) {
+                    self.clicks.reset();
                     self.begin(cx)?;
                 }
                 Ok(InputOutcome::Handled)
@@ -531,13 +528,13 @@ impl Component for InlineText {
         if within {
             return Ok(());
         }
-        self.last_click = None;
+        self.clicks.reset();
         let result = self.save(cx).map(|_| ());
         cx.invalidate(Invalidation::Paint);
         result
     }
     fn focus_lost(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
-        self.last_click = None;
+        self.clicks.reset();
         cx.invalidate(Invalidation::Paint);
         // The resting label losing focus is a save with nothing to save.
         self.report.clear(cx)
@@ -549,7 +546,7 @@ impl Component for InlineText {
         }
     }
     fn input_reset(&mut self) {
-        self.last_click = None;
+        self.clicks.reset();
     }
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
         let Some(size) = p.size() else {

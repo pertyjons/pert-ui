@@ -197,6 +197,9 @@ pub struct Popover {
     /// A convenience controller owns its initial anchor/content and open state.
     /// This policy remains fixed for the mounted incarnation.
     retain_parts: bool,
+    /// The change handler of a [`ColorPicker`](crate::ColorPicker) this
+    /// owned surface retains: a new description's handler reaches it here.
+    picker_changed: Option<crate::color_picker::ChangeSlot>,
     on_dismiss: Option<DismissHandler>,
 }
 impl Popover {
@@ -206,6 +209,7 @@ impl Popover {
             open,
             shown: false,
             retain_parts: false,
+            picker_changed: None,
             on_dismiss: None,
         }
     }
@@ -233,6 +237,7 @@ impl Popover {
             open,
             shown: false,
             retain_parts: false,
+            picker_changed: None,
             on_dismiss: None,
         }
     }
@@ -293,6 +298,11 @@ impl Popover {
             ..Self::new(open, anchor, content)
         }
     }
+    /// Carries a retained picker's change handler through redescription.
+    pub(crate) fn carrying(mut self, changed: crate::color_picker::ChangeSlot) -> Self {
+        self.picker_changed = Some(changed);
+        self
+    }
 }
 impl Component for Popover {
     fn retain_initial_children(&self) -> bool {
@@ -302,6 +312,11 @@ impl Component for Popover {
         // The handler replaces unconditionally, like any callback, before the
         // ownership rules below decide what else the description changes.
         self.on_dismiss = next.on_dismiss;
+        // The retained picker keeps everything but its handler, which follows
+        // the description like any callback.
+        if let (Some(mine), Some(next)) = (&self.picker_changed, &next.picker_changed) {
+            mine.replace_from(next);
+        }
         if self.retain_parts || self.open.read_only().same_source(&next.open.read_only()) {
             return None;
         }

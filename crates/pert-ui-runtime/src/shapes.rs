@@ -345,7 +345,16 @@ impl Painter {
         )
     }
     /// Strokes a silhouette inward, without changing layout or painting its center.
-    /// Width is a validated logical length. A positive width below one physical
+    /// Width is a validated logical length.
+    ///
+    /// The whole stroke lies inside `rect`. Path strokes, such as
+    /// [`Self::stroke_path`], [`Self::stroke_polyline`] and
+    /// [`Self::stroke_ellipse`], are centered on their outline instead, so half
+    /// their width lies outside it; they take a
+    /// [`StrokeStyle`](crate::StrokeStyle) for caps and joins and keep a width
+    /// below one physical pixel as faint coverage rather than widening it. To
+    /// keep a path stroke inside the same rectangle, stroke a path inset by
+    /// half its width; the two agree in placement, not pixel for pixel. A positive width below one physical
     /// pixel is drawn one physical pixel wide so its straight sides remain visible
     /// at fractional scales; zero width/area draws nothing. Thick strokes fill the
     /// shape when there is no interior. Clipping preserves shape coordinates. Uses

@@ -144,13 +144,31 @@ impl Validator {
         self.dirty = true;
     }
 
-    pub(crate) fn update_limit(&mut self, pending: Vec<(u64, String)>) {
+    /// `refreshed` lists the targets whose refresh moves after layout left
+    /// new work scheduled at least twice in the failing flush.
+    pub(crate) fn update_limit(
+        &mut self,
+        pending: Vec<(u64, String)>,
+        refreshed: Vec<(u64, String, usize)>,
+    ) {
+        let mut message = format!(
+            "Updates did not settle; pending components (not necessarily the cause): {pending:?}. Repair scheduling/focus feedback before retrying."
+        );
+        for (id, key, count) in &refreshed {
+            message.push_str(&format!(
+                " The pointer move the runtime repeats after each layout reached {key:?} (#{id}) and left new work scheduled {count} times in this flush: a pointer handler that invalidates layout, or writes state that leads to another layout, although nothing it derives from the event changed makes every layout produce the next move (see PointerEvent::is_refresh)."
+            ));
+        }
+        let mut components: Vec<u64> = pending.iter().map(|(id, _)| *id).collect();
+        for (id, _, _) in &refreshed {
+            if !components.contains(id) {
+                components.push(*id);
+            }
+        }
         self.update_limit = Some(ValidationIssue {
             code: ValidationCode::UpdateLimit,
-            components: pending.iter().map(|(id, _)| *id).collect(),
-            message: format!(
-                "Updates did not settle; pending components (not necessarily the cause): {pending:?}. Repair scheduling/focus feedback before retrying."
-            ),
+            components,
+            message,
         });
         self.dirty = true;
     }
@@ -567,7 +585,7 @@ fn check(nodes: &BTreeMap<u64, NodeData>) -> Vec<ValidationIssue> {
             emit(
                 ValidationCode::EscapesParent,
                 &format!(
-                    "visible bounds leave its parent {:?} without a clip; correct the parent's arrangement, clip its children or explicitly allow an intentional overlay.",
+                    "visible bounds leave its parent {:?} without a clip; correct the parent's arrangement, clip its children, or allow an intentional overlay: report OverlapPolicy::Allow in the component's ComponentDetails::validation.",
                     parent.key
                 ),
             );
@@ -595,7 +613,7 @@ fn check(nodes: &BTreeMap<u64, NodeData>) -> Vec<ValidationIssue> {
                 })
             {
                 issues.push(ValidationIssue { code: ValidationCode::UnexpectedOverlap, components: vec![a, b],
-                    message: format!("Components {:?} (#{a}) and {:?} (#{b}) overlap; correct their layout or explicitly allow an intentional overlay.", first.key, second.key) });
+                    message: format!("Components {:?} (#{a}) and {:?} (#{b}) overlap; correct their layout, or allow an intentional overlay: report OverlapPolicy::Allow in ComponentDetails::validation, or let the parent stack its children (Component::stacks_children).", first.key, second.key) });
             }
         }
     }

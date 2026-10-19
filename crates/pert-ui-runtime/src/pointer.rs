@@ -64,6 +64,11 @@ pub enum PointerKind {
     /// the latest position before a frame or a discrete input boundary; consumers
     /// must not depend on receiving every physical sample or crossed hover target.
     /// Direct `Runtime::pointer_input` calls are dispatched individually.
+    ///
+    /// After a layout or stacking change the runtime also delivers a move at
+    /// the last position, marked by [`PointerEvent::is_refresh`], so a handler
+    /// can receive the same position more than once and must not invalidate
+    /// again when nothing it derives from the event changed.
     Move,
     /// The pointer left the receiving component: the platform sends it when
     /// the pointer leaves the window, and the runtime delivers one to the
@@ -136,6 +141,7 @@ pub struct PointerEvent {
     position: Point,
     kind: PointerKind,
     outside: bool,
+    refresh: bool,
 }
 impl PointerEvent {
     /// Creates an event from validated coordinates and displacement.
@@ -145,7 +151,40 @@ impl PointerEvent {
             position,
             kind,
             outside: false,
+            refresh: false,
         }
+    }
+    /// The move the runtime repeats at the last position after a layout or
+    /// stacking change.
+    pub(crate) const fn refreshed(mut self) -> Self {
+        self.refresh = true;
+        self
+    }
+    /// Whether the runtime generated this [`PointerKind::Move`] after a layout
+    /// or stacking change, at the last position the host reported, rather
+    /// than the host reporting motion. Always false for an event made with
+    /// [`Self::new`], which is how every host-supplied event is made.
+    ///
+    /// The runtime repeats the last position so that a component under a
+    /// stationary pointer can follow geometry that changed beneath it: a hover
+    /// subregion that moved, a held scrollbar thumb whose content grew, a
+    /// text selection whose layout changed. It is delivered like any move: to
+    /// the capture owner while one exists, otherwise to the component under
+    /// the pointer, bubbling as usual. It is not delivered during a drag
+    /// session ([`EventContext::start_drag`](crate::EventContext::start_drag)).
+    ///
+    /// A handler must converge on it: when the state it derives from the event
+    /// (a local position, a resolved drag offset, a hit subregion) is
+    /// unchanged, it must not invalidate again, or the layout it requests
+    /// produces the next refresh and the flush ends in
+    /// [`RuntimeError::UpdateLimit`](crate::RuntimeError::UpdateLimit).
+    /// Ignoring refreshes altogether is right only for a component whose
+    /// result depends on the window position alone; see
+    /// [`Component::pointer_input`](crate::Component::pointer_input) for a
+    /// drag that converges.
+    #[must_use]
+    pub const fn is_refresh(self) -> bool {
+        self.refresh
     }
     /// Marks coordinates as last-known while the pointer is outside the window.
     /// Capture still receives transitions, but hit testing and activation stay outside.

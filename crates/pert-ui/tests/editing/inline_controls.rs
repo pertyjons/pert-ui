@@ -691,3 +691,83 @@ fn a_failing_clipboard_leaves_an_inline_editors_secondary_press_alone() {
         .unwrap();
     frame(&mut ui);
 }
+
+#[test]
+fn inline_text_edits_on_a_double_click_near_the_first_press_only() {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(300.0, 100.0, 1.0).unwrap())
+        .unwrap();
+    let name = ui.signal("Track".to_owned());
+    let field = ui
+        .mount_tree(Element::new("field", InlineText::new(name)))
+        .unwrap();
+    ui.flush(std::time::Duration::ZERO).unwrap();
+    let bounds = ui.bounds(&field).unwrap().unwrap();
+    let editing = |ui: &Runtime| {
+        ui.inspect()
+            .components
+            .into_iter()
+            .find(|c| c.key == "field")
+            .and_then(|c| c.details.properties.get("editing").cloned())
+            == Some(InspectValue::Bool(true))
+    };
+    let press = |ui: &mut Runtime, dx: f32| {
+        let at = Point::new(bounds.x() + 20.0 + dx, bounds.y() + bounds.height() / 2.0).unwrap();
+        for kind in [
+            PointerKind::Press(PointerButton::Primary),
+            PointerKind::Release(PointerButton::Primary),
+        ] {
+            ui.pointer_input(PointerEvent::new(at, kind)).unwrap();
+        }
+        ui.flush(ui.now()).unwrap();
+    };
+    press(&mut ui, 0.0);
+    press(&mut ui, 5.0);
+    assert!(
+        !editing(&ui),
+        "a second press five pixels away is no double click"
+    );
+    ui.flush(ui.now() + std::time::Duration::from_secs(1))
+        .unwrap();
+    press(&mut ui, 0.0);
+    press(&mut ui, 2.0);
+    assert!(editing(&ui));
+}
+
+#[test]
+fn inline_text_forgets_a_first_press_when_focus_leaves() {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(300.0, 100.0, 1.0).unwrap())
+        .unwrap();
+    let name = ui.signal("Track".to_owned());
+    let root = ui
+        .mount_tree(Element::new(
+            "row",
+            Row::new([
+                Element::new("field", InlineText::new(name)),
+                Element::new("other", Button::new("Other", |_| Ok(()))),
+            ]),
+        ))
+        .unwrap();
+    ui.flush(Duration::ZERO).unwrap();
+    let field = find(&ui, &root, "field").unwrap();
+    let other = find(&ui, &root, "other").unwrap();
+    let bounds = ui.bounds(&field).unwrap().unwrap();
+    let at = Point::new(bounds.x() + 20.0, bounds.y() + bounds.height() / 2.0).unwrap();
+    let press = |ui: &mut Runtime| {
+        pointer(ui, at, PointerKind::Press(PointerButton::Primary));
+        pointer(ui, at, PointerKind::Release(PointerButton::Primary));
+        ui.flush(ui.now()).unwrap();
+    };
+    press(&mut ui);
+    ui.focus(&other).unwrap();
+    ui.flush(ui.now()).unwrap();
+    press(&mut ui);
+    let editing = ui
+        .inspect()
+        .components
+        .into_iter()
+        .find(|c| c.key == "field")
+        .and_then(|c| c.details.properties.get("editing").cloned());
+    assert_eq!(editing, Some(InspectValue::Bool(false)));
+}

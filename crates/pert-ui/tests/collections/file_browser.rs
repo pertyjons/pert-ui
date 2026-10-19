@@ -448,6 +448,33 @@ fn a_double_click_activates_an_entry_and_a_single_click_only_selects() {
 }
 
 #[test]
+fn four_quick_presses_open_twice_and_a_distant_second_press_does_not() {
+    let mut stage = stage(SelectionMode::Single);
+    stage.answer("/r", vec![file("/r/song.wav")]);
+    let song = stage.row("entries", "/r/song.wav");
+    for _ in 0..4 {
+        stage.click(&song);
+    }
+    assert_eq!(stage.opened.borrow().len(), 2, "two double clicks");
+    // A second press five pixels away is another single click.
+    stage.advance(Duration::from_secs(1));
+    let bounds = stage.ui.bounds(&song).unwrap().unwrap();
+    for x in [40.0, 45.0] {
+        let point = Point::new(bounds.x() + x, bounds.y() + bounds.height() / 2.0).unwrap();
+        for kind in [
+            PointerKind::Press(PointerButton::Primary),
+            PointerKind::Release(PointerButton::Primary),
+        ] {
+            stage
+                .ui
+                .pointer_input(PointerEvent::new(point, kind))
+                .unwrap();
+        }
+    }
+    assert_eq!(stage.opened.borrow().len(), 2);
+}
+
+#[test]
 fn clicking_a_folder_in_the_tree_opens_it() {
     let mut stage = stage(SelectionMode::Single);
     stage.answer("/r", vec![dir("/r/a"), dir("/r/b")]);

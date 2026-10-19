@@ -204,6 +204,8 @@ pub use drag::{
     DRAG_THRESHOLD, DragEvent, DragInspection, DragOutcome, DragPayload, DragPhase, DragPreview,
     DragRole, DropOperation, DropOperations, DropResponse,
 };
+mod click;
+pub use click::ClickCounter;
 mod pointer;
 pub use pointer::{
     CursorIcon, InputOutcome, Magnification, Point, PointerButton, PointerEvent, PointerKind,

@@ -17,6 +17,9 @@
 //!   images and SVG.
 //! - [Diagnostics](diagnostics): keyboard input, inspection, screenshots,
 //!   serialization and profiling.
+//! - [Custom widgets](custom_widgets): phases and writes, pointer gestures
+//!   that converge, clicks, held keys, described children, inspection, an
+//!   inspector over an application document and building an application.
 //!
 //! Every example is a doctest that imports only the public API. Each item's own
 //! reference page holds its complete contract: defaults, limits, errors and
@@ -140,6 +143,23 @@ pub mod diagnostics {
     //! profiling.
     //!
     #![doc = include_str!("guide/diagnostics.md")]
+    #![cfg_attr(feature = "native", doc = include_str!("guide/links/desktop.md"))]
+    #![cfg_attr(not(feature = "native"), doc = include_str!("guide/links/no-desktop.md"))]
+    #![cfg_attr(feature = "images", doc = include_str!("guide/links/images.md"))]
+    #![cfg_attr(not(feature = "images"), doc = include_str!("guide/links/no-images.md"))]
+    #![cfg_attr(feature = "svg", doc = include_str!("guide/links/svg.md"))]
+    #![cfg_attr(not(feature = "svg"), doc = include_str!("guide/links/no-svg.md"))]
+    #![cfg_attr(feature = "cpu", doc = include_str!("guide/links/cpu.md"))]
+    #![cfg_attr(not(feature = "cpu"), doc = include_str!("guide/links/no-cpu.md"))]
+    #[allow(unused_imports)]
+    use crate::*;
+}
+
+pub mod custom_widgets {
+    //! Custom widgets: phases and writes, pointer gestures, clicks, held keys,
+    //! described children, inspection and an application around them.
+    //!
+    #![doc = include_str!("guide/custom-widgets.md")]
     #![cfg_attr(feature = "native", doc = include_str!("guide/links/desktop.md"))]
     #![cfg_attr(not(feature = "native"), doc = include_str!("guide/links/no-desktop.md"))]
     #![cfg_attr(feature = "images", doc = include_str!("guide/links/images.md"))]

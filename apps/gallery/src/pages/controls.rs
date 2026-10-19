@@ -1254,6 +1254,9 @@ pub(crate) fn colors(ui: &Runtime) -> Result<Element, RuntimeError> {
     let activations = ui.signal("Activate the swatch with a click, Enter or Space.".to_owned());
     let apply_color = color.clone();
     let activated = activations.clone();
+    let edits = ui.signal("No committed picker edit yet.".to_owned());
+    let reported = edits.clone();
+    let mut committed = 0;
     let mut count = 0_u32;
     let swatch = |key: &str, bytes: [u8; 4], name: &str| {
         let [r, g, b, a] = bytes;
@@ -1327,12 +1330,22 @@ pub(crate) fn colors(ui: &Runtime) -> Result<Element, RuntimeError> {
             [
                 label(
                     "picker-help",
-                    "Drag the area or a strip: the swatch and readout above change on release, and Escape cancels a drag. Arrow keys step a focused part, Shift steps finer. Drag to black and back: the hue stays.",
+                    "Drag the area or a strip: the swatch and readout above change on release, and Escape cancels a drag. Arrow keys step a focused part, Shift steps finer. Drag to black and back: the hue stays. Each committed edit is reported below, as an application would record it for undo; typing in the hex field above is the application's write and is not.",
                 ),
                 Element::new(
                     "picker-inline",
-                    ColorPicker::new(color).alpha(true).name("Chosen color"),
+                    ColorPicker::new(color)
+                        .alpha(true)
+                        .name("Chosen color")
+                        .on_change(move |_, written| {
+                            committed += 1;
+                            reported.set(format!(
+                                "Committed edit {committed}: {}",
+                                written.to_hex()
+                            ))
+                        }),
                 ),
+                Element::new("picker-edits", Label::new(edits.read_only())),
             ],
         ),
         section(

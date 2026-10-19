@@ -80,7 +80,7 @@ impl Runtime {
         };
         // A stationary pointer may enter another subregion of the same component
         // after layout (split track, tab title, or a custom widget's hit regions).
-        self.pointer_input(PointerEvent::new(point, PointerKind::Move))?;
+        self.pointer_input(PointerEvent::new(point, PointerKind::Move).refreshed())?;
         Ok(())
     }
 
@@ -421,7 +421,30 @@ impl Runtime {
             if let Some(input) = self.shared.notification_input.borrow().as_ref() {
                 input.dispatched.set(true);
             }
-            self.dispatch_pointer(serial, event)
+            #[cfg(debug_assertions)]
+            let settled = event.is_refresh()
+                && self.window.shared.pending.borrow().is_empty()
+                && !self.window.shared.layout_pending.get()
+                && self.shared.computations.borrow().is_empty();
+            #[cfg(debug_assertions)]
+            self.flush_state.refresh_handler.set(None);
+            let outcome = self.dispatch_pointer(serial, event);
+            #[cfg(debug_assertions)]
+            if settled
+                && (!self.window.shared.pending.borrow().is_empty()
+                    || self.window.shared.layout_pending.get()
+                    || !self.shared.computations.borrow().is_empty())
+            {
+                // Name the component that handled it, else the target.
+                let recipient = self.flush_state.refresh_handler.take().unwrap_or(serial);
+                *self
+                    .flush_state
+                    .refresh_work
+                    .borrow_mut()
+                    .entry(recipient)
+                    .or_default() += 1;
+            }
+            outcome
         } else {
             Ok(InputOutcome::Ignored)
         };
@@ -505,6 +528,10 @@ impl Runtime {
             }
             let result = result?;
             if result == InputOutcome::Handled {
+                #[cfg(debug_assertions)]
+                if event.is_refresh() {
+                    self.flush_state.refresh_handler.set(Some(serial));
+                }
                 return Ok(result);
             }
             match entry.node.presentation_parent_serial() {

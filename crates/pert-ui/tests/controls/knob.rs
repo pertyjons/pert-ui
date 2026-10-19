@@ -430,3 +430,78 @@ fn a_press_without_movement_commits_the_exact_starting_value() {
     pointer(&mut ui, point, PointerKind::Release(PointerButton::Primary));
     assert_eq!(base(&parameter), 60.0);
 }
+
+#[test]
+fn a_double_click_needs_the_second_press_near_the_first_and_pairs_are_consumed() {
+    let Setup {
+        mut ui,
+        parameter,
+        host,
+        center,
+        ..
+    } = setup(Knob::new);
+    let click = |ui: &mut Runtime, time: u64, at: Point| {
+        ui.flush(Duration::from_millis(time)).unwrap();
+        pointer(ui, at, PointerKind::Press(PointerButton::Primary));
+        pointer(ui, at, PointerKind::Release(PointerButton::Primary));
+    };
+    host.write_base(60.0).unwrap();
+    // Five pixels away horizontally: two single clicks.
+    let aside = Point::new(center.x() + 5.0, center.y()).unwrap();
+    click(&mut ui, 10, center);
+    click(&mut ui, 100, aside);
+    assert_eq!(base(&parameter), 60.0);
+    // Four quick presses in place are two double clicks: each resets.
+    click(&mut ui, 1000, center);
+    click(&mut ui, 1100, center);
+    assert_eq!(base(&parameter), 0.0);
+    host.write_base(25.0).unwrap();
+    click(&mut ui, 1200, center);
+    assert_eq!(base(&parameter), 25.0, "the third press starts a new pair");
+    click(&mut ui, 1300, center);
+    assert_eq!(base(&parameter), 0.0);
+}
+
+#[test]
+fn a_refused_press_does_not_arm_a_double_click() {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(400.0, 400.0, 1.0).unwrap())
+        .unwrap();
+    let (parameter, host) = ui
+        .parameter(
+            ParameterId::new(1, 1, "value").unwrap(),
+            ParameterSpec::new("Value", -100.0, 100.0, 0.0).unwrap(),
+        )
+        .unwrap();
+    let allowed = ui.signal(false);
+    let knob = ui
+        .mount_tree(Element::new(
+            "knob",
+            Knob::new(parameter.clone()).enabled(&allowed),
+        ))
+        .unwrap();
+    ui.flush(Duration::ZERO).unwrap();
+    let bounds = ui.bounds(&knob).unwrap().unwrap();
+    let center = Point::new(
+        bounds.x() + bounds.width() / 2.0,
+        bounds.y() + bounds.width() / 2.0,
+    )
+    .unwrap();
+    host.write_base(60.0).unwrap();
+    ui.flush(Duration::from_millis(10)).unwrap();
+    pointer(&mut ui, center, PointerKind::Press(PointerButton::Primary));
+    pointer(
+        &mut ui,
+        center,
+        PointerKind::Release(PointerButton::Primary),
+    );
+    allowed.set(true).unwrap();
+    ui.flush(Duration::from_millis(100)).unwrap();
+    pointer(&mut ui, center, PointerKind::Press(PointerButton::Primary));
+    pointer(
+        &mut ui,
+        center,
+        PointerKind::Release(PointerButton::Primary),
+    );
+    assert_eq!(base(&parameter), 60.0);
+}

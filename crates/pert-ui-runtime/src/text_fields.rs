@@ -54,7 +54,9 @@ type RefusalReport =
 /// redo with Shift+Ctrl/Cmd+Z (also Ctrl+Y outside macOS), word navigation/deletion,
 /// pointer drag selection, double-click word selection and triple-click select-all.
 /// Repeated editing keys are accepted; Tab/Shift+Tab traverse focus. Consecutive
-/// clicks must be within 500 ms and four logical pixels. Local undo keeps 32 edits.
+/// clicks must be within 500 ms and four logical pixels of the previous one, as
+/// [`ClickCounter`](crate::ClickCounter) counts them; a fourth click starts over.
+/// Local undo keeps 32 edits.
 ///
 /// Bound strings must be at most [`TextEditError::MAX_TEXT_BYTES`] bytes of UTF-8 and contain no control characters
 /// or line separators; [`Self::check`] tells whether a string qualifies. Typed
@@ -378,7 +380,12 @@ macro_rules! editor_api {
             /// writes nothing), Escape, application writes, hiding or removal.
             /// Without a normalizer or a length limit the editor writes the
             /// binding on every edit and never calls it; observe the binding
-            /// instead.
+            /// instead. To save finished edits without adjusting or limiting
+            /// the text, for example to record each one as one undo step,
+            /// install the identity normalizer: `.normalize(Ok)`. A
+            /// `TextField` then saves on Enter and on focus loss; in a
+            /// `TextArea` Enter inserts a line break, so it saves on focus
+            /// loss.
             ///
             /// The callback may write bindings. Its error propagates from the
             /// input call that saved; the text has been written by then. A
@@ -1022,7 +1029,8 @@ pub(super) struct Editor<M = ()> {
     ime_session: Option<u64>,
     dragging: bool,
     clicks: u8,
-    last_click: Option<(Duration, Point)>,
+    /// The pointer's press series; `clicks` cycles through it.
+    click_series: crate::ClickCounter,
     blink: bool,
     blink_at: Option<Duration>,
     restart_blink: bool,
@@ -1152,7 +1160,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             ime_session: Some(0),
             dragging: false,
             clicks: 0,
-            last_click: None,
+            click_series: crate::ClickCounter::new(),
             blink: true,
             blink_at: None,
             restart_blink: true,
@@ -1739,7 +1747,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
         self.hovered = false;
         self.reveal_hover = false;
         self.clear_hover = false;
-        self.last_click = None;
+        self.click_series.reset();
         self.clicks = 0;
         self.focused = false;
         self.blink_at = None;
@@ -2283,7 +2291,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             return Ok(());
         }
         self.dragging = false;
-        self.last_click = None;
+        self.click_series.reset();
         self.clicks = 0;
         let len = self.text.len();
         self.replace(cx, 0..len, "", true)?;
@@ -2970,7 +2978,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             {
                 // The button toggles without moving the caret or starting a
                 // selection drag; it is part of the field's own Tab stop.
-                self.last_click = None;
+                self.click_series.reset();
                 self.clicks = 0;
                 self.set_revealed(cx, !self.revealed)?;
                 return Ok(InputOutcome::Handled);
@@ -3058,7 +3066,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
                 cx.capture_pointer()?;
                 self.bar_drag = Some(grab);
                 // A scroll gesture must not extend a word/select-all click run.
-                self.last_click = None;
+                self.click_series.reset();
                 self.clicks = 0;
                 self.bar_drag_to(cx, point)?;
                 return Ok(InputOutcome::Handled);
@@ -3082,13 +3090,11 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
         let local = cx.to_local(e.position()).unwrap_or(e.position());
         let point = Point::new(local.x() - origin[0], local.y() - origin[1])?;
         if e.kind() == PointerKind::Press(PointerButton::Primary) {
-            let consecutive = self.last_click.is_some_and(|(time, point)| {
-                cx.now().saturating_sub(time) <= BLINK
-                    && (point.x() - e.position().x()).abs() <= 4.0
-                    && (point.y() - e.position().y()).abs() <= 4.0
-            });
+            let consecutive =
+                self.click_series
+                    .press(cx.now(), e.position(), PointerButton::Primary)
+                    > 1;
             self.clicks = if consecutive { self.clicks % 3 + 1 } else { 1 };
-            self.last_click = Some((cx.now(), e.position()));
             let selected = match self.clicks {
                 // Word boundaries of concealed text are secret, so a double
                 // click selects everything.

@@ -32,6 +32,14 @@ impl Hsva {
     /// The editing state for `color`, keeping `hint`'s hue where the color
     /// does not determine one (no saturation or no value) and its saturation
     /// where the color does not determine that either (no value).
+    /// Whether both states produce the same color: equal saturation, value
+    /// and alpha, and hues that are equal or the two ends of the circle.
+    fn same_color(self, other: Self) -> bool {
+        self.saturation == other.saturation
+            && self.value == other.value
+            && self.alpha == other.alpha
+            && self.hue.rem_euclid(360.0) == other.hue.rem_euclid(360.0)
+    }
     fn from_color(color: Color, hint: Self) -> Self {
         let [red, green, blue, alpha] = color.to_srgb();
         let max = red.max(green).max(blue);
@@ -132,6 +140,45 @@ impl Entry {
     }
 }
 
+/// The application's report of a committed user write.
+pub(crate) type ChangeHandler =
+    Box<dyn FnMut(&mut crate::EventContext, Color) -> Result<(), RuntimeError>>;
+/// The handler a picker reports through, shared with the [`Popover`] of
+/// [`ColorPicker::into_popover`] so that a new description reaches it.
+pub(crate) type ChangeSlot = Rc<HandlerSlot>;
+
+/// `ColorPicker::on_change`, following redescription.
+#[derive(Default)]
+pub(crate) struct HandlerSlot {
+    handler: RefCell<Option<ChangeHandler>>,
+    /// Advances whenever a description replaces the handler, so a handler
+    /// that is running when that happens is not put back afterwards.
+    generation: Cell<u64>,
+}
+impl HandlerSlot {
+    /// Installs the handler of a new description, or none.
+    pub(crate) fn replace_from(&self, next: &Self) {
+        let handler = next.handler.borrow_mut().take();
+        *self.handler.borrow_mut() = handler;
+        self.generation.set(self.generation.get().wrapping_add(1));
+    }
+    /// Calls the handler with a committed color. No borrow is held while it
+    /// runs; a handler a new description installed meanwhile is kept, and
+    /// otherwise this one is put back, also after an error, so the next
+    /// write reports again.
+    fn call(&self, cx: &mut crate::EventContext, color: Color) -> Result<(), RuntimeError> {
+        let Some(mut handler) = self.handler.borrow_mut().take() else {
+            return Ok(());
+        };
+        let generation = self.generation.get();
+        let result = handler(cx, color);
+        if self.generation.get() == generation {
+            *self.handler.borrow_mut() = Some(handler);
+        }
+        result
+    }
+}
+
 /// State shared by a picker and its parts.
 struct Model {
     color: Signal<Color>,
@@ -158,6 +205,8 @@ struct Model {
     /// The string table the parts' names and the fields' messages come from,
     /// as the picker's update last read it.
     strings: RefCell<crate::UiStrings>,
+    /// `ColorPicker::on_change`, following redescription.
+    changed: ChangeSlot,
 }
 impl Model {
     /// The text for `role` in the table the picker last read.
@@ -188,26 +237,47 @@ impl Model {
         self.tick.set(next)
     }
     /// Writes a committed state: the editing state, the bound color and the
-    /// text entry, and ends any preview.
-    fn commit(&self, hsva: Hsva) -> Result<(), RuntimeError> {
-        let color = hsva.color()?;
-        self.preview.borrow_mut().take();
-        self.committed.set(Committed { hsva, color })?;
-        self.color.set(color)?;
-        self.entry.borrow().write(color)?;
-        self.synced.set(Some(color));
-        self.notify()
+    /// text entry, and ends any preview. Returns the color when the bound
+    /// value changed, which the caller reports once its own bookkeeping is
+    /// done.
+    fn commit(&self, hsva: Hsva) -> Result<Option<Color>, RuntimeError> {
+        // A state that still describes the bound color, such as a new hue
+        // for a color without saturation or the other end of the hue
+        // circle, keeps that color exactly instead of rounding it through
+        // HSV, so the binding is not rewritten.
+        let bound = self.color.get()?;
+        let color = if Hsva::from_color(bound, hsva).same_color(hsva) {
+            bound
+        } else {
+            hsva.color()?
+        };
+        self.write(hsva, color)
     }
-    /// Commits a color entered as text, keeping the current hue where the
-    /// color leaves it open.
-    fn commit_color(&self, color: Color) -> Result<(), RuntimeError> {
-        let hsva = Hsva::from_color(color, self.current()?);
+    /// Commits a color entered as text exactly, keeping the current hue
+    /// where the color leaves it open.
+    fn commit_color(&self, color: Color) -> Result<Option<Color>, RuntimeError> {
+        self.write(Hsva::from_color(color, self.current()?), color)
+    }
+    /// Writes the editing state and the color it shows.
+    fn write(&self, hsva: Hsva, color: Color) -> Result<Option<Color>, RuntimeError> {
         self.preview.borrow_mut().take();
         self.committed.set(Committed { hsva, color })?;
-        self.color.set(color)?;
+        let changed = self.color.set_changed(color)?;
         self.entry.borrow().write(color)?;
         self.synced.set(Some(color));
-        self.notify()
+        self.notify()?;
+        Ok(changed.then_some(color))
+    }
+    /// Reports a committed user write that changed the bound value.
+    fn report(
+        &self,
+        cx: &mut crate::EventContext,
+        color: Option<Color>,
+    ) -> Result<(), RuntimeError> {
+        match color {
+            Some(color) => self.changed.call(cx, color),
+            None => Ok(()),
+        }
     }
 }
 
@@ -258,7 +328,9 @@ enum Part {
 ///   including RGB channel saves without rounding alpha to a byte.
 ///
 /// The application can therefore treat every change of the binding as one
-/// committed edit, for example to record undo. Values the application writes
+/// committed edit, for example to record undo; [`ColorPicker::on_change`]
+/// reports each such user write, so the application need not observe the
+/// binding. Values the application writes
 /// are shown as written. Such a write also gives the text entry fresh
 /// bindings, which discards a draft being typed there; the fields and focus
 /// stay where they are.
@@ -344,6 +416,7 @@ impl ColorPicker {
                 enablement: RefCell::new(Permission::allowed()),
                 enabled: Cell::new(true),
                 strings: RefCell::new(strings),
+                changed: Rc::default(),
                 color,
             }),
             name: None,
@@ -417,6 +490,62 @@ impl ColorPicker {
         *self.model.enablement.borrow_mut() = combined;
         self
     }
+    /// Reports each committed user write that changed the bound color, with
+    /// the color written, for example to record it as one undo step or to
+    /// apply it to the application's own document.
+    ///
+    /// It runs on the UI thread in the event phase of the input that
+    /// committed the edit, after the binding and the text fields hold the
+    /// color: a pointer release on the area or a strip, a key press or repeat
+    /// on a part, or a saved hex or channel field. An edit that leaves the
+    /// bound color unchanged, such as moving the hue of a color without
+    /// saturation, does not call it, nor do application writes, gestures
+    /// ended by Escape, focus loss, hiding, removal or a revoked
+    /// [permission](Self::enabled), and refused text. It may write bindings,
+    /// including this picker's own, which then shows the application's color
+    /// without a further call. Its error propagates from the input call that
+    /// committed; the color stays written and the call is not repeated, while
+    /// the next edit calls the handler again.
+    ///
+    /// Unlike the picker's options, the handler follows same-key
+    /// redescription: a new description's handler replaces it, and a
+    /// description without one removes it. This holds for
+    /// [`Self::into_popover`] too, whose retained picker takes the handler
+    /// of the popover's new description. Replaces an earlier handler.
+    ///
+    /// ```
+    /// use pert_ui_runtime::{Color, ColorPicker, Element, KeyAction, KeyCode, Runtime, Viewport};
+    /// use std::{cell::RefCell, rc::Rc, time::Duration};
+    ///
+    /// let mut ui = Runtime::new();
+    /// ui.set_viewport(Viewport::new(400.0, 400.0, 1.0)?)?;
+    /// let color = ui.signal(Color::from_hex("#2090a0")?);
+    /// let undo: Rc<RefCell<Vec<Color>>> = Rc::default();
+    /// let history = undo.clone();
+    /// let picker = ColorPicker::new(color.clone()).on_change(move |_, written| {
+    ///     history.borrow_mut().push(written);
+    ///     Ok(())
+    /// });
+    /// let root = ui.mount_tree(Element::new("picker", picker))?;
+    /// ui.flush(Duration::ZERO)?;
+    /// let hue = ui.find_descendant(&root, "hue")?.expect("the hue strip");
+    /// ui.focus(&hue)?;
+    /// ui.key_input(KeyCode::ArrowRight, KeyAction::Press)?;
+    /// ui.key_input(KeyCode::ArrowRight, KeyAction::Release)?;
+    /// assert_eq!(*undo.borrow(), [color.get()?]);
+    /// // The application's own write is not reported.
+    /// color.set(Color::from_hex("#000000")?)?;
+    /// ui.flush(Duration::ZERO)?;
+    /// assert_eq!(undo.borrow().len(), 1);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn on_change(
+        self,
+        handler: impl FnMut(&mut crate::EventContext, Color) -> Result<(), RuntimeError> + 'static,
+    ) -> Self {
+        *self.model.changed.handler.borrow_mut() = Some(Box::new(handler));
+        self
+    }
     /// Puts the picker in a [`Popover`] opened from a [`ColorSwatch`] of the
     /// bound color.
     ///
@@ -468,11 +597,13 @@ impl ColorPicker {
             .name(name)
             .on_activate(move |_| opener.set(true))
             .enabled(self.model.enablement.borrow().clone());
+        let changed = self.model.changed.clone();
         Popover::owned(
             open,
             Element::new("swatch", swatch),
             Element::new("picker", self),
         )
+        .carrying(changed)
     }
     fn describe(&self) -> Result<Vec<Element>, RuntimeError> {
         let model = &self.model;
@@ -513,7 +644,7 @@ fn entry_row(model: &Rc<Model>) -> Result<Column, RuntimeError> {
             }
             Ok(color.to_hex())
         })
-        .on_save(move |_, text| match Color::from_hex(text) {
+        .on_save(move |cx, text| match Color::from_hex(text) {
             Ok(color) => {
                 let color = if alpha {
                     color
@@ -522,7 +653,8 @@ fn entry_row(model: &Rc<Model>) -> Result<Column, RuntimeError> {
                         .with_alpha(hex_model.color.get()?.alpha())
                         .map_err(|_| GeometryError::NonFinite)?
                 };
-                hex_model.commit_color(color)
+                let changed = hex_model.commit_color(color)?;
+                hex_model.report(cx, changed)
             }
             // The normalizer admitted only canonical hex text.
             Err(_) => Ok(()),
@@ -543,7 +675,7 @@ fn entry_row(model: &Rc<Model>) -> Result<Column, RuntimeError> {
         let channel_model = model.clone();
         let mut input = IntegerInput::new(entry.channels[index].clone())
             .range(0, 255)?
-            .on_save(move |_, saved| {
+            .on_save(move |cx, saved| {
                 let original = channel_model.color.get()?;
                 let mut bytes = original.to_srgb8();
                 bytes[index] = u8::try_from(saved).unwrap_or(u8::MAX);
@@ -556,7 +688,8 @@ fn entry_row(model: &Rc<Model>) -> Result<Column, RuntimeError> {
                         .with_alpha(original.alpha())
                         .map_err(|_| GeometryError::NonFinite)?
                 };
-                channel_model.commit_color(edited)
+                let changed = channel_model.commit_color(edited)?;
+                channel_model.report(cx, changed)
             });
         if !enabled {
             input = input.disabled();
@@ -577,8 +710,9 @@ fn entry_row(model: &Rc<Model>) -> Result<Column, RuntimeError> {
 
 impl Component for ColorPicker {
     fn reconcile(&mut self, next: Self) -> Option<Invalidation> {
-        // The retained picker keeps its binding and options; only the
-        // permission follows the description.
+        // The retained picker keeps its binding and options; the handler and
+        // the permission follow the description.
+        self.model.changed.replace_from(&next.model.changed);
         let next = next.model.enablement.borrow().clone();
         let mut mine = self.model.enablement.borrow_mut();
         if mine.same_as(&next) {
@@ -965,7 +1099,10 @@ impl Component for ColorPart {
                     .unwrap_or(self.hsva);
                 self.gesture = None;
                 cx.release_pointer();
-                self.model.commit(next)?;
+                let changed = self.model.commit(next)?;
+                cx.invalidate(Invalidation::Paint);
+                self.model.report(cx, changed)?;
+                return Ok(InputOutcome::Handled);
             }
             PointerKind::Press(_) | PointerKind::Release(_) | PointerKind::Move
                 if self.gesture.is_some() => {}
@@ -1014,8 +1151,9 @@ impl Component for ColorPart {
             return Ok(InputOutcome::Ignored);
         };
         if next != base {
-            self.model.commit(next)?;
+            let changed = self.model.commit(next)?;
             cx.invalidate(Invalidation::Paint);
+            self.model.report(cx, changed)?;
         }
         Ok(InputOutcome::Handled)
     }

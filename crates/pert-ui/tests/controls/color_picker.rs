@@ -1104,3 +1104,437 @@ fn a_held_part_key_keeps_stepping_when_a_modifier_is_added() {
     ui.key_input(KeyCode::ArrowRight, KeyAction::Release)
         .unwrap();
 }
+
+/// The colors `on_change` reported, each with the bound color the handler
+/// saw when it ran.
+type Calls = std::rc::Rc<std::cell::RefCell<Vec<(Color, Color)>>>;
+
+fn recording(
+    calls: &Calls,
+    color: &Signal<Color>,
+) -> impl FnMut(&mut EventContext, Color) -> Result<(), RuntimeError> + 'static {
+    let (calls, color) = (calls.clone(), color.clone());
+    move |_, written| {
+        calls.borrow_mut().push((written, color.get()?));
+        Ok(())
+    }
+}
+
+fn reported(calls: &Calls) -> Vec<String> {
+    calls
+        .borrow()
+        .iter()
+        .map(|(color, _)| color.to_hex())
+        .collect()
+}
+
+fn replace_hex(ui: &mut Runtime, root: &WidgetId, text: &str) -> WidgetId {
+    let entry = find(ui, &find(ui, root, "hex"), "input");
+    ui.focus(&entry).unwrap();
+    key(ui, KeyCode::End);
+    for _ in 0..12 {
+        key(ui, KeyCode::Backspace);
+    }
+    ui.text_input(text).unwrap();
+    settle(ui);
+    entry
+}
+
+#[test]
+fn on_change_reports_each_committed_user_write_once() {
+    let calls = Calls::default();
+    let Setup {
+        mut ui,
+        color,
+        root,
+    } = setup("#2090a0", |color| {
+        let handler = recording(&calls, &color);
+        ColorPicker::new(color).alpha(true).on_change(handler)
+    });
+    // An area drag reports once, at its release.
+    let area = find(&ui, &root, "area");
+    drag(
+        &mut ui,
+        &area,
+        0.2,
+        0.2,
+        PointerKind::Press(PointerButton::Primary),
+    );
+    drag(&mut ui, &area, 0.4, 0.3, PointerKind::Move);
+    assert!(calls.borrow().is_empty(), "nothing while previewing");
+    drag(
+        &mut ui,
+        &area,
+        0.4,
+        0.3,
+        PointerKind::Release(PointerButton::Primary),
+    );
+    assert_eq!(reported(&calls), [hex(&color)]);
+    // A key step reports on its press, not its release.
+    let hue = find(&ui, &root, "hue");
+    ui.focus(&hue).unwrap();
+    ui.key_input(KeyCode::ArrowRight, KeyAction::Press).unwrap();
+    assert_eq!(calls.borrow().len(), 2);
+    ui.key_input(KeyCode::ArrowRight, KeyAction::Repeat)
+        .unwrap();
+    assert_eq!(calls.borrow().len(), 3, "a repeat is an edit");
+    ui.key_input(KeyCode::ArrowRight, KeyAction::Release)
+        .unwrap();
+    assert_eq!(calls.borrow().len(), 3);
+    // The alpha strip by pointer and by Home.
+    let alpha = find(&ui, &root, "alpha");
+    drag(
+        &mut ui,
+        &alpha,
+        0.5,
+        0.5,
+        PointerKind::Press(PointerButton::Primary),
+    );
+    drag(
+        &mut ui,
+        &alpha,
+        0.5,
+        0.5,
+        PointerKind::Release(PointerButton::Primary),
+    );
+    assert_eq!(calls.borrow().len(), 4);
+    ui.focus(&alpha).unwrap();
+    key(&mut ui, KeyCode::Home);
+    assert_eq!(calls.borrow().len(), 5);
+    assert_eq!(color.get().unwrap().alpha(), 0.0);
+    // A hex save and a channel save report the saved color.
+    replace_hex(&mut ui, &root, "#112233");
+    key(&mut ui, KeyCode::Enter);
+    assert_eq!(reported(&calls).last().unwrap(), "#112233");
+    let red = find(&ui, &find(&ui, &root, "r"), "input");
+    ui.focus(&red).unwrap();
+    key(&mut ui, KeyCode::End);
+    for _ in 0..3 {
+        key(&mut ui, KeyCode::Backspace);
+    }
+    ui.text_input("255").unwrap();
+    let other = find(&ui, &root, "other");
+    ui.focus(&other).unwrap();
+    settle(&mut ui);
+    assert_eq!(reported(&calls).last().unwrap(), "#ff2233");
+    assert_eq!(calls.borrow().len(), 7);
+    // Every call saw the binding already holding exactly its color, and a
+    // hex save writes the parsed color itself.
+    assert!(
+        calls
+            .borrow()
+            .iter()
+            .all(|(written, bound)| written == bound)
+    );
+    assert_eq!(calls.borrow()[5].0, Color::from_hex("#112233").unwrap());
+}
+
+#[test]
+fn on_change_ignores_what_the_user_did_not_commit() {
+    let calls = Calls::default();
+    let allowed = std::cell::RefCell::new(None);
+    let Setup {
+        mut ui,
+        color,
+        root,
+    } = setup("#ff0000", |color| {
+        let handler = recording(&calls, &color);
+        let permission = color.sibling(true);
+        *allowed.borrow_mut() = Some(permission.clone());
+        ColorPicker::new(color)
+            .enabled(permission)
+            .on_change(handler)
+    });
+    let allowed = allowed.into_inner().unwrap();
+    // An application write.
+    color.set(Color::from_hex("#00ff00").unwrap()).unwrap();
+    settle(&mut ui);
+    color.set(Color::from_hex("#ff0000").unwrap()).unwrap();
+    settle(&mut ui);
+    // A drag cancelled by Escape.
+    let area = find(&ui, &root, "area");
+    drag(
+        &mut ui,
+        &area,
+        0.3,
+        0.3,
+        PointerKind::Press(PointerButton::Primary),
+    );
+    drag(&mut ui, &area, 0.5, 0.5, PointerKind::Move);
+    key(&mut ui, KeyCode::Escape);
+    drag(
+        &mut ui,
+        &area,
+        0.5,
+        0.5,
+        PointerKind::Release(PointerButton::Primary),
+    );
+    // Hue End and Home on a red: the retained hue moves between 0° and
+    // 360°, and the bound value stays exactly as it was. This red does not
+    // survive a round trip through HSV unchanged.
+    let red = Color::from_hex("#802020").unwrap();
+    color.set(red).unwrap();
+    settle(&mut ui);
+    let revision = color.revision();
+    let hue = find(&ui, &root, "hue");
+    ui.focus(&hue).unwrap();
+    key(&mut ui, KeyCode::End);
+    key(&mut ui, KeyCode::End);
+    key(&mut ui, KeyCode::Home);
+    assert_eq!(color.get().unwrap(), red);
+    assert_eq!(color.revision(), revision, "the binding was not rewritten");
+    // A hue step on grey keeps the bound value exactly.
+    let grey = Color::from_hex("#808080").unwrap();
+    color.set(grey).unwrap();
+    settle(&mut ui);
+    let revision = color.revision();
+    key(&mut ui, KeyCode::ArrowRight);
+    assert_eq!(color.get().unwrap(), grey);
+    assert_eq!(color.revision(), revision, "the binding was not rewritten");
+    // Refused hex text.
+    replace_hex(&mut ui, &root, "nonsense");
+    key(&mut ui, KeyCode::Enter);
+    key(&mut ui, KeyCode::Escape);
+    // A drag ended by revoking the permission, and its stale release after
+    // the permission returns.
+    drag(
+        &mut ui,
+        &area,
+        0.3,
+        0.3,
+        PointerKind::Press(PointerButton::Primary),
+    );
+    drag(&mut ui, &area, 0.6, 0.6, PointerKind::Move);
+    allowed.set(false).unwrap();
+    settle(&mut ui);
+    allowed.set(true).unwrap();
+    settle(&mut ui);
+    drag(
+        &mut ui,
+        &area,
+        0.6,
+        0.6,
+        PointerKind::Release(PointerButton::Primary),
+    );
+    // Hiding mid-drag, showing and releasing.
+    let picker = find(&ui, &root, "picker");
+    drag(
+        &mut ui,
+        &area,
+        0.3,
+        0.3,
+        PointerKind::Press(PointerButton::Primary),
+    );
+    ui.set_visible(&picker, false).unwrap();
+    settle(&mut ui);
+    ui.set_visible(&picker, true).unwrap();
+    settle(&mut ui);
+    drag(
+        &mut ui,
+        &area,
+        0.3,
+        0.3,
+        PointerKind::Release(PointerButton::Primary),
+    );
+    assert_eq!(hex(&color), "#808080");
+    assert!(calls.borrow().is_empty(), "{:?}", calls.borrow());
+    // Hiding with a typed hex draft saves nothing.
+    replace_hex(&mut ui, &root, "#123456");
+    ui.set_visible(&picker, false).unwrap();
+    settle(&mut ui);
+    ui.set_visible(&picker, true).unwrap();
+    settle(&mut ui);
+    assert_eq!(hex(&color), "#808080");
+    assert!(calls.borrow().is_empty(), "{:?}", calls.borrow());
+}
+
+#[test]
+fn a_failing_handler_keeps_the_write_and_is_called_again() {
+    let calls = Calls::default();
+    let failing = std::rc::Rc::new(std::cell::Cell::new(true));
+    let Setup {
+        mut ui,
+        color,
+        root,
+    } = setup("#2090a0", |color| {
+        let mut record = recording(&calls, &color);
+        let failing = failing.clone();
+        ColorPicker::new(color).on_change(move |cx, written| {
+            record(cx, written)?;
+            if failing.get() {
+                Err(ApplicationError::new(std::io::Error::other("refused")).into())
+            } else {
+                Ok(())
+            }
+        })
+    });
+    let hue = find(&ui, &root, "hue");
+    ui.focus(&hue).unwrap();
+    assert!(ui.key_input(KeyCode::ArrowRight, KeyAction::Press).is_err());
+    ui.key_input(KeyCode::ArrowRight, KeyAction::Release).ok();
+    settle(&mut ui);
+    let after_key = hex(&color);
+    assert_ne!(after_key, "#2090a0", "the color stays written");
+    assert_eq!(reported(&calls), std::slice::from_ref(&after_key));
+    // A failing text save propagates too and keeps its write.
+    replace_hex(&mut ui, &root, "#445566");
+    assert!(ui.key_input(KeyCode::Enter, KeyAction::Press).is_err());
+    ui.key_input(KeyCode::Enter, KeyAction::Release).ok();
+    settle(&mut ui);
+    assert_eq!(hex(&color), "#445566");
+    assert_eq!(calls.borrow().len(), 2);
+    // The next edit calls it again.
+    failing.set(false);
+    ui.focus(&hue).unwrap();
+    key(&mut ui, KeyCode::ArrowRight);
+    assert_eq!(calls.borrow().len(), 3);
+}
+
+#[test]
+fn a_handler_that_writes_and_then_fails_keeps_both_writes() {
+    let calls = Calls::default();
+    let replacement = Color::from_hex("#010203").unwrap();
+    let Setup {
+        mut ui,
+        color,
+        root,
+    } = setup("#2090a0", |color| {
+        let mut record = recording(&calls, &color);
+        let bound = color.clone();
+        ColorPicker::new(color).on_change(move |cx, written| {
+            record(cx, written)?;
+            bound.set(replacement)?;
+            Err(ApplicationError::new(std::io::Error::other("refused")).into())
+        })
+    });
+    let hue = find(&ui, &root, "hue");
+    ui.focus(&hue).unwrap();
+    assert!(ui.key_input(KeyCode::ArrowRight, KeyAction::Press).is_err());
+    ui.key_input(KeyCode::ArrowRight, KeyAction::Release).ok();
+    settle(&mut ui);
+    assert_eq!(color.get().unwrap(), replacement);
+    replace_hex(&mut ui, &root, "#778899");
+    assert!(ui.key_input(KeyCode::Enter, KeyAction::Press).is_err());
+    ui.key_input(KeyCode::Enter, KeyAction::Release).ok();
+    settle(&mut ui);
+    assert_eq!(color.get().unwrap(), replacement);
+    assert_eq!(reported(&calls).len(), 2);
+    assert_eq!(reported(&calls)[1], "#778899");
+}
+
+#[test]
+fn a_handler_that_writes_another_color_wins_without_a_second_call() {
+    let calls = Calls::default();
+    let replacement = Color::from_hex("#010203").unwrap();
+    let Setup {
+        mut ui,
+        color,
+        root,
+    } = setup("#2090a0", |color| {
+        let mut record = recording(&calls, &color);
+        let bound = color.clone();
+        ColorPicker::new(color).on_change(move |cx, written| {
+            record(cx, written)?;
+            bound.set(replacement)
+        })
+    });
+    // A part commit.
+    let hue = find(&ui, &root, "hue");
+    ui.focus(&hue).unwrap();
+    key(&mut ui, KeyCode::ArrowRight);
+    assert_eq!(hex(&color), "#010203");
+    assert_eq!(calls.borrow().len(), 1);
+    assert_ne!(
+        reported(&calls)[0],
+        "#010203",
+        "the user's color was reported"
+    );
+    // A text save: the field then shows the application's color.
+    replace_hex(&mut ui, &root, "#778899");
+    key(&mut ui, KeyCode::Enter);
+    assert_eq!(reported(&calls).last().unwrap(), "#778899");
+    assert_eq!(calls.borrow().len(), 2);
+    assert_eq!(hex(&color), "#010203");
+    let other = find(&ui, &root, "other");
+    ui.focus(&other).unwrap();
+    settle(&mut ui);
+    assert_eq!(
+        first_text_value(&ui),
+        Some(SemanticValue::Text("#010203".into()))
+    );
+    assert_eq!(calls.borrow().len(), 2);
+}
+
+#[test]
+fn the_handler_follows_redescription_in_both_forms() {
+    // The plain picker.
+    let first = Calls::default();
+    let second = Calls::default();
+    let Setup {
+        mut ui,
+        color,
+        root,
+    } = setup("#2090a0", |color| {
+        let handler = recording(&first, &color);
+        ColorPicker::new(color).on_change(handler)
+    });
+    let describe = |handler: Option<&Calls>| {
+        let mut picker = ColorPicker::new(color.clone());
+        if let Some(calls) = handler {
+            picker = picker.on_change(recording(calls, &color));
+        }
+        vec![
+            Element::new("picker", picker),
+            Element::new("other", Button::new("Other", |_| Ok(()))),
+        ]
+    };
+    ui.reconcile_children(&root, describe(Some(&second)))
+        .unwrap();
+    settle(&mut ui);
+    let hue = find(&ui, &root, "hue");
+    ui.focus(&hue).unwrap();
+    key(&mut ui, KeyCode::ArrowRight);
+    assert_eq!((first.borrow().len(), second.borrow().len()), (0, 1));
+    ui.reconcile_children(&root, describe(None)).unwrap();
+    settle(&mut ui);
+    ui.focus(&hue).unwrap();
+    key(&mut ui, KeyCode::ArrowRight);
+    assert_eq!((first.borrow().len(), second.borrow().len()), (0, 1));
+
+    // The popover form keeps its open state, focus and draft.
+    let Setup {
+        mut ui,
+        color,
+        root,
+    } = owned_popover_setup();
+    let calls = Calls::default();
+    let swatch = find(&ui, &root, "swatch");
+    ui.focus(&swatch).unwrap();
+    key(&mut ui, KeyCode::Enter);
+    let entry = replace_hex(&mut ui, &root, "#abcdef");
+    ui.reconcile_children(
+        &root,
+        vec![Element::new(
+            "color",
+            ColorPicker::new(color.clone())
+                .name("Mounted color")
+                .on_change(recording(&calls, &color))
+                .into_popover(),
+        )],
+    )
+    .unwrap();
+    settle(&mut ui);
+    assert!(popover_open(&ui));
+    assert_eq!(ui.focused(), Some(entry));
+    key(&mut ui, KeyCode::Enter);
+    assert_eq!(reported(&calls), ["#abcdef"]);
+    redescribe_owned_popover(&mut ui, &root, &color);
+    let hue = find(&ui, &root, "hue");
+    ui.focus(&hue).unwrap();
+    key(&mut ui, KeyCode::ArrowRight);
+    assert_eq!(
+        calls.borrow().len(),
+        1,
+        "a description without one removes it"
+    );
+}

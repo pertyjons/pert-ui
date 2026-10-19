@@ -304,7 +304,7 @@ Parameter construction has no independent option-list builder.
 | `MenuBar` | `MenuBar::new(&ui, menus)?.content(content)` | A top-level menu strip and its owned content; `leading` and `trailing` add content before the titles and at the row's right edge. |
 | `Toolbar` / `ToolGroup` | `Toolbar::new(&ui, [ToolGroup::new(key, controls), ...])?` | Adaptive action strips and overflow. |
 | `ColorSwatch` | `ColorSwatch::new(color)` or `ColorSwatch::bound(read_signal)`, optionally `.on_activate(callback)` | A color sample, with a checkerboard under translucent colors; activatable like a button, for example to open a color editor. |
-| `ColorPicker` | `ColorPicker::new(color_signal)`, optionally `.alpha(true)`; `.into_popover()` opens it from a swatch | A saturation/value area, hue and optional alpha strips and hex/channel text entry over a linear `Color`. Edits happen in HSV, so the hue survives at zero saturation. The binding is written once per completed edit: at a drag's release, per key step and per saved field; Escape cancels a drag. |
+| `ColorPicker` | `ColorPicker::new(color_signal)`, optionally `.alpha(true)`; `.into_popover()` opens it from a swatch | A saturation/value area, hue and optional alpha strips and hex/channel text entry over a linear `Color`. Edits happen in HSV, so the hue survives at zero saturation. The binding is written once per completed edit: at a drag's release, per key step and per saved field; Escape cancels a drag. `on_change` reports each such user write that changed the color, for example to record undo. |
 
 `Choice<T>` carries a value and display label. Reordering or renaming a choice
 does not change its identity. Boolean and choice controls also offer
@@ -365,11 +365,15 @@ adjustment of an entered value when it is saved, such as rounding to tenths or
 trimming text. The normalizer may refuse the value with an `InputRejection`,
 which keeps the draft for correction; `on_rejection` tells the application,
 which can publish it as the field's `FieldStatus`. `on_save` reports each save
-that wrote the local binding or submitted a remote proposal, its value, and
-whether Enter, focus loss or a step button saved it. Submission does not mean
-external authority acceptance. Values the application writes are never
+that wrote the local binding or submitted a remote proposal, with the saved
+value; Enter, focus loss or a step button saves, and the callback does not say
+which. Submission does not mean external authority acceptance. Values the application writes are never
 normalized. A normalizing `TextField` or `TextArea` holds a draft and writes
-its binding only when the draft is saved, instead of on every edit. Length
+its binding only when the draft is saved, instead of on every edit; the
+identity normalizer `.normalize(Ok)` gives a field that saves, and so calls
+`on_save`, without adjusting anything, for example to record each finished
+edit as one undo step: a `TextField` on Enter or focus loss, a `TextArea`,
+where Enter inserts a line break, on focus loss. Length
 limits (`min_length`, `max_length`) count grapheme clusters and are checked
 when the draft is saved, after normalization; an empty field passes unless it is
 `required`. `SearchField` writes its query as typed (after any debounce), and
@@ -467,9 +471,23 @@ component can record its own rectangles, text, masks, images and paths through
 
 A custom widget implements `Component` and returns measured size, arranges any
 children, handles events and paints. It requests layout only when its size can
-change; ordinary value changes can invalidate paint alone. The complete
+change; ordinary value changes can invalidate paint alone. After every layout
+the runtime repeats the last pointer position as a move
+(`PointerEvent::is_refresh`), so a widget that drags or hovers invalidates only
+when what it derives from the event changed. `ClickCounter` counts double and
+triple clicks by the same rule as the built-in editors, knobs and file rows
+(500 ms and four logical pixels from the previous press); the widget resets it
+when its input is cancelled, and after a double click that does one thing,
+such as opening an item, but not between the steps of a cycle such as word
+and then whole-text selection. The complete
 public-API example in the [getting-started guide](../crates/pert-ui/src/guide/getting-started-continued.md)
-shows a custom widget. The [gallery guide](../apps/gallery/README.md) points to
+shows a custom widget, and the [custom widgets chapter](../crates/pert-ui/src/guide/custom-widgets.md)
+covers dragging, clicks, held keys, described children, inspection and an
+inspector over an application document. The packaged
+[`diagram_editor`](../crates/pert-ui/examples/diagram_editor/main.rs) example
+puts them together in a canvas widget with an application around it; run its
+headless session with
+`cargo run -p pert-ui --example diagram_editor --no-default-features --features cpu`. The [gallery guide](../apps/gallery/README.md) points to
 live examples and the current component pages.
 
 ## Appearance, diagnostics and persistence

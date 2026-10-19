@@ -668,3 +668,32 @@ fn a_pending_status_shows_a_spinner_that_stops_when_hidden() {
         InspectValue::Bool(true)
     );
 }
+
+#[test]
+fn a_press_on_the_reveal_button_breaks_a_click_series() {
+    for reveal in [false, true] {
+        let mut ui = Runtime::new();
+        let secret = ui.signal("two words".to_owned());
+        let field = mount(
+            &mut ui,
+            TextField::new(secret.clone())
+                .concealed(true)
+                .revealable(true),
+        );
+        let [x, y, w, h] = ui.bounds(&field).unwrap().unwrap().values();
+        click(&mut ui, 20.0, 15.0, 1000);
+        if reveal {
+            click(&mut ui, x + w - 20.0, y + h / 2.0, 1100);
+        }
+        click(&mut ui, 20.0, 15.0, 1200);
+        ui.text_input("z").unwrap();
+        frame(&mut ui);
+        if reveal {
+            // The reveal press ended the series: a single click, a caret.
+            assert_ne!(secret.get().unwrap(), "z");
+        } else {
+            // Without it the two presses select all concealed text.
+            assert_eq!(secret.get().unwrap(), "z");
+        }
+    }
+}

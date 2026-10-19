@@ -429,6 +429,14 @@ redescription replaces the handler; an open popup and its draft are kept.
 state after its own write, once the menu has requested closure, with the
 activating list's or title's context; choosing the selected radio row again
 writes and reports nothing. Rows without a write of their own ignore it.
+`ColorPicker::on_change` reports each committed user write that changed the
+bound color, after the binding and its text fields hold it: a pointer
+release, a key press or repeat, or a saved hex or channel field. Edits that
+leave the color unchanged (a new hue for a color without saturation keeps the
+bound value exactly), application writes, cancelled or revoked gestures and
+refused text report nothing. The handler follows same-key redescription,
+also in the popover form, whose retained picker otherwise keeps its binding,
+options and drafts.
 
 Parameter sinks cannot write to the runtime. A sink that must update bindings
 sends to an application-owned `Mailbox`, whose handler runs in a later flush;
@@ -654,6 +662,18 @@ stay unchanged. ToolWindows keeps center/docked content below overlays and
 floating frames, and allows floating frames to raise among their peers. Custom
 parents request layout when stacking or priorities change, even with unchanged
 geometry, so stationary hover and drag targets are refreshed.
+
+That refresh is an ordinary `PointerKind::Move` at the last position, delivered
+after every layout or stacking change to the capture owner, or else to the
+component under the pointer, and marked by `PointerEvent::is_refresh`. It is
+not delivered during a drag session, which retargets through its own service.
+Built-in components rely on it to follow geometry that changed under a
+stationary pointer (subregion hover, a held scrollbar thumb, text selection).
+A pointer handler must converge on it: it invalidates only when the state it
+derives from the event changed, since an unconditional layout invalidation makes
+every layout produce the next move. In debug builds an `UpdateLimit` report
+names a refresh recipient whose refreshes left new work scheduled more than
+once in the failing flush.
 
 `Component::hit_test` describes the body hit region in local logical pixels,
 under a read-only UI-thread query. Returning false permits lower drawing entries

@@ -154,7 +154,8 @@ ui.paint()?;
 Do not write bindings from update, measurement, paint or inspection. Handle
 input through event callbacks, and keep drawing independent of GPU/backend
 types. If a custom widget is interactive, also implement focus, cancellation
-and typed inspection semantics. Only widgets that actually animate need
+and typed inspection semantics; the [custom widgets](crate::guide::custom_widgets)
+chapter covers these for a widget that is dragged, clicked and typed into. Only widgets that actually animate need
 [`UpdateContext::animate`]; ordinary bindings already schedule their own work.
 
 For executable compositions see the gallery. The crate reference documents

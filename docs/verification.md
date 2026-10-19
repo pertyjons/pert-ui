@@ -33,6 +33,23 @@ with `--no-default-features`, and it compiled with
 `--no-default-features --features desktop-cpu`. This is local packaged-consumer
 evidence, not a crates.io dry run; no other platform was exercised.
 
+## Diagram-probe plan
+
+The slices of [the diagram-probe plan](../plans/diagram-probe-improvements.md)
+(0.3.18 to 0.3.23) each passed the workspace gate on Fedora 44 Linux with Rust
+1.99.0, and the pointer-refresh tests also passed in the release profile.
+Slices 1, 2 and 3 had a Codex design checkpoint before implementation, and
+every slice an independent Codex implementation review whose findings were
+fixed with regression tests. The `diagram_editor` example's headless session,
+extended after its review (0.3.23) to the outline selecting on the canvas, a
+draft across a selection change, close with a draft, an overtaken open,
+rename refusal and hiding, and label escaping, passed twenty consecutive runs with `--no-default-features --features cpu`
+and passed without the `cpu` feature; `cargo package --list` includes its
+sources. Its window has not yet been recorded as used on a native platform;
+the probe it was reduced from ran natively on Fedora 44 GNOME/Wayland, where
+the first version's drag failed because of the repeated pointer move that
+slice 1 documents.
+
 ## Thin outlines at fractional zoom
 
 A 75% scale regression renders a one-logical-pixel rounded outline at a

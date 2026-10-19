@@ -1335,6 +1335,69 @@ pub trait Component: std::any::Any {
     /// Handles a pointer event, bubbling ignored events through logical ancestors.
     /// Captured events keep their owner even outside its clipped bounds.
     ///
+    /// A move can arrive more than once at one position: after every layout or
+    /// stacking change the runtime repeats the last position
+    /// ([`PointerEvent::is_refresh`](crate::PointerEvent::is_refresh)), so that
+    /// geometry that changed under a stationary pointer is followed. A handler
+    /// must therefore converge: invalidate only when the state it derives from
+    /// the event changed. Here a board moves its item by the drag's offset and
+    /// requests layout only for a new offset; requesting it on every move would
+    /// make each layout produce the next move until the flush fails with
+    /// [`RuntimeError::UpdateLimit`].
+    ///
+    /// ```
+    /// use pert_ui_runtime::*;
+    /// use std::time::Duration;
+    /// struct Board { item: Vec<Element>, at: (f32, f32), drag: Option<(Point, (f32, f32))> }
+    /// impl Component for Board {
+    ///     fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> { Ok(()) }
+    ///     fn take_children(&mut self) -> Vec<Element> { std::mem::take(&mut self.item) }
+    ///     fn arrange(&self, cx: &mut ArrangeContext<'_>, _: Size) -> Result<(), RuntimeError> {
+    ///         cx.place(0, Rect::new(self.at.0, self.at.1, 40.0, 20.0)?)
+    ///     }
+    ///     fn pointer_input(&mut self, cx: &mut EventContext, event: PointerEvent)
+    ///         -> Result<InputOutcome, RuntimeError> {
+    ///         let Some(local) = cx.to_local(event.position()) else {
+    ///             return Ok(InputOutcome::Ignored);
+    ///         };
+    ///         match event.kind() {
+    ///             PointerKind::Press(PointerButton::Primary) => {
+    ///                 cx.capture_pointer()?;
+    ///                 self.drag = Some((local, self.at));
+    ///             }
+    ///             PointerKind::Move => {
+    ///                 let Some((start, from)) = self.drag else { return Ok(InputOutcome::Ignored) };
+    ///                 let at = (from.0 + local.x() - start.x(), from.1 + local.y() - start.y());
+    ///                 // A repeated position derives the same offset: nothing to do.
+    ///                 if at != self.at {
+    ///                     self.at = at;
+    ///                     cx.invalidate(Invalidation::Layout);
+    ///                 }
+    ///             }
+    ///             PointerKind::Release(PointerButton::Primary) => {
+    ///                 self.drag = None;
+    ///                 cx.release_pointer();
+    ///             }
+    ///             _ => return Ok(InputOutcome::Ignored),
+    ///         }
+    ///         Ok(InputOutcome::Handled)
+    ///     }
+    /// }
+    /// let mut ui = Runtime::new();
+    /// ui.set_viewport(Viewport::new(200.0, 100.0, 1.0)?)?;
+    /// let item = vec![Element::new("item", Label::new("Item"))];
+    /// let board = ui.mount_tree(Element::new("board", Board { item, at: (0.0, 0.0), drag: None }))?;
+    /// ui.flush(Duration::ZERO)?;
+    /// let point = |x, y| Point::new(x, y);
+    /// ui.pointer_input(PointerEvent::new(point(10.0, 10.0)?, PointerKind::Press(PointerButton::Primary)))?;
+    /// ui.pointer_input(PointerEvent::new(point(60.0, 30.0)?, PointerKind::Move))?;
+    /// ui.flush(Duration::ZERO)?; // settles: the repeated move changes nothing
+    /// ui.pointer_input(PointerEvent::new(point(60.0, 30.0)?, PointerKind::Release(PointerButton::Primary)))?;
+    /// let moved = ui.find_descendant(&board, "item")?.expect("the item");
+    /// assert_eq!(ui.bounds(&moved)?.map(|b| (b.x(), b.y())), Some((50.0, 20.0)));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
     /// # Errors
     /// An implementation returns an error when handling the event fails. It propagates from
     /// [`Runtime::pointer_input`]; a component that held the pointer capture or a gesture
@@ -2779,6 +2842,59 @@ impl EventContext {
 
     /// Current runtime elapsed time, for deterministic input timing such as
     /// double-click recognition. Native hosts advance this when dispatching events.
+    ///
+    /// It is the runtime's time, which only [`Runtime::flush`] and
+    /// [`Runtime::service_intervals`] advance: input dispatched without one of
+    /// them in between shares one instant. A headless host or test therefore
+    /// advances time, for example by flushing with a later time, before the
+    /// next input, as here, where two presses half a second apart are not a
+    /// double click and two presses in one instant are.
+    ///
+    /// ```
+    /// use pert_ui_runtime::*;
+    /// use std::{cell::Cell, rc::Rc, time::Duration};
+    /// struct Clicks { last: Option<Duration>, doubles: Rc<Cell<u32>> }
+    /// impl Component for Clicks {
+    ///     fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> { Ok(()) }
+    ///     fn pointer_input(&mut self, cx: &mut EventContext, event: PointerEvent)
+    ///         -> Result<InputOutcome, RuntimeError> {
+    ///         if event.kind() != PointerKind::Press(PointerButton::Primary) {
+    ///             return Ok(InputOutcome::Ignored);
+    ///         }
+    ///         let now = cx.now();
+    ///         if self.last.is_some_and(|last| now - last <= Duration::from_millis(400)) {
+    ///             self.doubles.set(self.doubles.get() + 1);
+    ///             self.last = None;
+    ///         } else {
+    ///             self.last = Some(now);
+    ///         }
+    ///         Ok(InputOutcome::Handled)
+    ///     }
+    /// }
+    /// let doubles = Rc::new(Cell::new(0));
+    /// let mut ui = Runtime::new();
+    /// ui.set_viewport(Viewport::new(100.0, 100.0, 1.0)?)?;
+    /// ui.mount_tree(Element::new("area", Clicks { last: None, doubles: doubles.clone() }))?;
+    /// let press = |ui: &mut Runtime| -> Result<(), RuntimeError> {
+    ///     let at = Point::new(10.0, 10.0)?;
+    ///     ui.pointer_input(PointerEvent::new(at, PointerKind::Press(PointerButton::Primary)))?;
+    ///     ui.pointer_input(PointerEvent::new(at, PointerKind::Release(PointerButton::Primary)))?;
+    ///     Ok(())
+    /// };
+    /// ui.flush(Duration::ZERO)?;
+    /// press(&mut ui)?;
+    /// ui.flush(Duration::from_millis(500))?; // the clock moves here
+    /// press(&mut ui)?;
+    /// assert_eq!(doubles.get(), 0);
+    /// press(&mut ui)?; // same instant as the previous press
+    /// assert_eq!(doubles.get(), 1);
+    /// ui.service_intervals(Duration::from_millis(1500))?; // also moves the clock
+    /// press(&mut ui)?;
+    /// press(&mut ui)?;
+    /// assert_eq!(doubles.get(), 2);
+    /// assert_eq!(ui.now(), Duration::from_millis(1500));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     pub fn now(&self) -> Duration {
         self.node.shared.now.get()
     }
@@ -3131,6 +3247,10 @@ impl EventContext {
     ///
     /// Signal bindings already invalidate automatically. Component authors use
     /// this for private state, requesting `Layout` when measurements can change.
+    /// Invalidate only when that state changed: a layout is followed by a
+    /// repeated pointer move ([`PointerEvent::is_refresh`](crate::PointerEvent::is_refresh)),
+    /// so a move handler that invalidates layout unconditionally, or causes
+    /// another layout through what it writes, never settles.
     pub fn invalidate(&self, kind: Invalidation) {
         self.node.invalidate(kind);
     }
@@ -3384,8 +3504,22 @@ impl Runtime {
                             .map(|entry| (*serial, entry.key.clone()))
                     })
                     .collect();
+                // Refresh recipients that scheduled work more than once are
+                // evidence of a pointer-refresh loop; once may be legitimate.
+                let refreshed = self
+                    .flush_state
+                    .refresh_work
+                    .borrow()
+                    .iter()
+                    .filter(|(_, count)| **count >= 2)
+                    .filter_map(|(serial, count)| {
+                        self.entries
+                            .get(serial)
+                            .map(|entry| (*serial, entry.key.clone(), *count))
+                    })
+                    .collect();
                 // The failing flush validates once it has returned.
-                self.validator.update_limit(pending);
+                self.validator.update_limit(pending, refreshed);
             }
             return Err(RuntimeError::UpdateLimit);
         }
@@ -5744,6 +5878,14 @@ struct FlushState {
     depth: Cell<usize>,
     waves: Cell<usize>,
     exhausted: Cell<bool>,
+    /// Per target, how often a refresh move left new work scheduled during
+    /// the outermost flush: evidence for an `UpdateLimit` report.
+    #[cfg(debug_assertions)]
+    refresh_work: RefCell<BTreeMap<u64, usize>>,
+    /// The component that handled the refresh move being dispatched, which
+    /// may be an ancestor of its target.
+    #[cfg(debug_assertions)]
+    refresh_handler: Cell<Option<u64>>,
 }
 struct FlushGuard {
     state: Rc<FlushState>,
@@ -5755,6 +5897,8 @@ impl FlushGuard {
         if outermost {
             state.waves.set(0);
             state.exhausted.set(false);
+            #[cfg(debug_assertions)]
+            state.refresh_work.borrow_mut().clear();
         }
         state.depth.set(state.depth.get() + 1);
         Self { state, outermost }
@@ -5767,6 +5911,8 @@ impl Drop for FlushGuard {
         if self.outermost {
             self.state.waves.set(0);
             self.state.exhausted.set(false);
+            #[cfg(debug_assertions)]
+            self.state.refresh_work.borrow_mut().clear();
         }
     }
 }

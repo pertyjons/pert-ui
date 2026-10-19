@@ -134,6 +134,11 @@ pub enum ValidationCode {
     /// Fully clipped nonempty components, such as scrolled content, are permitted.
     EmptyHitArea,
     /// Visible, clipped peer rectangles intersect without explicit permission.
+    /// A component permits it by reporting [`OverlapPolicy::Allow`] in
+    /// [`ComponentDetails::validation`](crate::ComponentDetails::validation),
+    /// and the children of a parent whose
+    /// [`Component::stacks_children`](crate::Component::stacks_children) is true
+    /// may overlap each other.
     UnexpectedOverlap,
     /// A visible component's visible bounds leave its parent's bounds although no
     /// clip removes the excess. Content a scrolled or clipping ancestor cuts off is

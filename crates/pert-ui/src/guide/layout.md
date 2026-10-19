@@ -334,8 +334,21 @@ Stacked custom containers use [`Component::stacks_children`],
 [`MeasureContext::position`]. Priorities keep background content below floating
 children; focus raises children within equal priorities. Request layout when
 stacking or priorities change to refresh stationary hover and drag targets.
+That refresh is a repeated pointer move ([`PointerEvent::is_refresh`]): a
+custom container that moves children during a drag invalidates only when the
+drag's derived offset changes, as [`Component::pointer_input`] shows, or its
+own layout keeps producing the next move.
 They share ordinary
-[`Painter`], clipping, input, identity, and lifecycle contracts. Floating windows
+[`Painter`], clipping, input, identity, and lifecycle contracts.
+
+Children that overlap on purpose must say so, or development validation reports
+[`ValidationCode::UnexpectedOverlap`]. A stacking parent permits overlap among
+its children, and a press or focus then raises the child within its priority. For
+content whose order is fixed by the application, such as shapes on a canvas in
+document order, either return that order from
+[`Component::child_stacking_priority`] or leave stacking off and report
+[`OverlapPolicy::Allow`] in each overlapping child's
+[`ComponentDetails::validation`] from [`Component::inspect`]. Floating windows
 introduce no native window, event loop, worker endpoint, or GPU dependency.
 
 # Workspaces
