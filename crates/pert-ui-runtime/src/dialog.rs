@@ -126,7 +126,7 @@ impl DialogController {
         if self.status.get()? != DialogStatus::Open {
             return Ok(false);
         }
-        let changed = self.status.set(DialogStatus::Finished(outcome))?;
+        let changed = self.status.set_changed(DialogStatus::Finished(outcome))?;
         self.closing.set(self.has_owner());
         Ok(changed)
     }

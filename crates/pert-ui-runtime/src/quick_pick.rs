@@ -323,9 +323,10 @@ impl PickPending {
     /// A pending result read from `binding` through `resolve`; see the type
     /// documentation.
     pub fn new<S: Clone + 'static>(
-        binding: ReadSignal<S>,
+        binding: impl Into<ReadSignal<S>>,
         resolve: impl Fn(&S) -> Option<Result<(), String>> + 'static,
     ) -> Self {
+        let binding: ReadSignal<S> = binding.into();
         Self(Rc::new(move |cx| {
             let value = match cx {
                 Some(cx) => cx.read(&binding)?,
@@ -548,8 +549,8 @@ impl QuickPickController {
         &self,
         cx: &mut UpdateContext,
     ) -> Result<(PickStatus, Option<String>), RuntimeError> {
-        let phase = cx.read(&self.phase.read_only())?;
-        let session = cx.read(&self.session.read_only())?;
+        let phase = cx.read(&self.phase)?;
+        let session = cx.read(&self.session)?;
         let result = match &phase {
             Phase::Pending { pending, .. } => pending.read(cx)?,
             _ => None,
@@ -1101,15 +1102,15 @@ impl Component for QuickPick {
             // Another picker presents the controller. Stay subscribed to its
             // session so that this one claims it when the next session opens
             // after the other picker unmounted.
-            cx.read(&self.shared.controller.phase.read_only())?;
-            cx.read(&self.shared.controller.session.read_only())?;
+            cx.read(&self.shared.controller.phase)?;
+            cx.read(&self.shared.controller.session)?;
             self.shown = false;
             self.status = PickStatus::Closed;
             return Ok(());
         }
         let (status, _) = self.shared.controller.read_presented(cx)?;
         let generation = cx
-            .read_paint(&self.shared.controller.session.read_only())?
+            .read_paint(&self.shared.controller.session)?
             .map(|session| session.generation);
         if status == PickStatus::Open && generation != self.session_generation {
             if let Some(config) = self.pending_config.take() {
@@ -1360,12 +1361,7 @@ impl PickContent {
             });
             // A fixed source for this list: the list is replaced with a new
             // key whenever the results change.
-            let items = self
-                .shared
-                .controller
-                .query
-                .read_only()
-                .map(move |_| source.clone())?;
+            let items = self.shared.controller.query.map(move |_| source.clone())?;
             children.push(
                 Element::new(
                     format!("results-{}", self.list_serial),
@@ -1405,8 +1401,8 @@ fn fit(available: Constraints, size: Size) -> Result<Size, RuntimeError> {
 const ROW_ESTIMATE: f32 = 32.0;
 impl Component for PickContent {
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
-        let session = cx.read(&self.shared.controller.session.read_only())?;
-        let query = cx.read(&self.shared.controller.query.read_only())?;
+        let session = cx.read(&self.shared.controller.session)?;
+        let query = cx.read(&self.shared.controller.query)?;
         let (_, message) = self.shared.controller.read_presented(cx)?;
         let generation = session.as_ref().map(|s| s.generation);
         let state = (generation, query.clone(), message.clone());
@@ -1624,7 +1620,7 @@ impl Component for PickRow {
         self.labels()
     }
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
-        let highlight = cx.read_paint(&self.shared.controller.highlight.read_only())?;
+        let highlight = cx.read_paint(&self.shared.controller.highlight)?;
         // The read invalidates this row whenever the highlight moves.
         let highlighted =
             self.shared.view.borrow().effective(highlight.as_ref()) == Some(self.item);

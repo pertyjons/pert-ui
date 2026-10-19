@@ -38,7 +38,7 @@ fn mount(ui: &mut Runtime, control: Element) -> Result<(WidgetId, WidgetId, Rc<C
         KeyCode::ArrowUp,
         KeyCode::ArrowDown,
     ]
-    .map(|code| KeyChord::new(CommandKey::Named(code), Modifiers::default()))
+    .map(KeyChord::named)
     .to_vec();
     let command =
         ui.register_command("Transport", CommandScope::Capture, chords, move |_, _| {

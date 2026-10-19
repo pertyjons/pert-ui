@@ -921,7 +921,8 @@ impl ToolWindowLayout {
     /// `Signal<bool>`: the layout shows what it holds, and
     /// [`ToolWindowController::set_names`] writes it. Bound names are not
     /// persisted by the layout.
-    pub fn names(mut self, names: Signal<bool>) -> Self {
+    pub fn names(mut self, names: impl Into<Signal<bool>>) -> Self {
+        let names: Signal<bool> = names.into();
         self.names_binding = Some(names);
         self
     }
@@ -2140,12 +2141,12 @@ impl ToolWindowLayout {
             return Err(error.into());
         }
         let names = match &self.names_binding {
-            Some(binding) => Some(cx.read(&binding.read_only())?),
+            Some(binding) => Some(cx.read(binding)?),
             None => None,
         };
         let model = self.model();
         let revision = model::revision(&model, cx);
-        cx.read(&revision.read_only())?;
+        cx.read(&revision)?;
         // Every title, for the names the layout itself gives, such as a
         // native window's title when a tool window detaches.
         model::read_titles(&model, cx, |_| true)?;
@@ -2492,7 +2493,7 @@ impl ToolWindowController {
         model::check_writable(&model)?;
         let binding = model.borrow().names_binding.clone();
         if let Some(binding) = binding {
-            return binding.set(names);
+            return binding.set_changed(names);
         }
         let mut model = model.borrow_mut();
         if model.names == names {

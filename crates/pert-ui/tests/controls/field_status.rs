@@ -222,9 +222,12 @@ fn a_form_summarizes_in_registration_order_and_rejects_bad_keys() {
     let summary = form.summary();
     assert_eq!(summary.get().unwrap(), FormSummary::default());
 
-    assert!(second.set(FieldStatus::error("bad")).unwrap());
-    assert!(!second.set(FieldStatus::error("bad")).unwrap(), "unchanged");
-    assert!(first.set(FieldStatus::warning("odd")).unwrap());
+    assert!(second.set_changed(FieldStatus::error("bad")).unwrap());
+    assert!(
+        !second.set_changed(FieldStatus::error("bad")).unwrap(),
+        "unchanged"
+    );
+    assert!(first.set_changed(FieldStatus::warning("odd")).unwrap());
     let now = summary.get().unwrap();
     assert_eq!((now.errors(), now.warnings()), (1, 1));
     assert_eq!(now.first_error(), Some("second"));

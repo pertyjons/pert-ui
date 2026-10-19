@@ -165,7 +165,7 @@ impl EventContext {
     ///             let (result, key) = (writer.clone(), item.key.clone());
     ///             let _receipt = cx.defer_detached(move |_ui| {
     ///                 // Work that flushes, such as revealing a page, goes here.
-    ///                 result.set(Some(key)).map(|_| ())
+    ///                 result.set(Some(key))
     ///             })?;
     ///             let done = writer.read_only();
     ///             Ok(PickChoice::Pending(PickPending::new(done, |value| {

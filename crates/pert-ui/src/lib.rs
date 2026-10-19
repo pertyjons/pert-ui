@@ -3,8 +3,8 @@
 // keeps identical.
 #![doc = include_str!("root.md")]
 #![doc = include_str!("status.md")]
-#![cfg_attr(feature = "desktop", doc = include_str!("guide/links/desktop.md"))]
-#![cfg_attr(not(feature = "desktop"), doc = include_str!("guide/links/no-desktop.md"))]
+#![cfg_attr(feature = "native", doc = include_str!("guide/links/desktop.md"))]
+#![cfg_attr(not(feature = "native"), doc = include_str!("guide/links/no-desktop.md"))]
 #![cfg_attr(feature = "images", doc = include_str!("guide/links/images.md"))]
 #![cfg_attr(not(feature = "images"), doc = include_str!("guide/links/no-images.md"))]
 #![cfg_attr(feature = "svg", doc = include_str!("guide/links/svg.md"))]
@@ -16,29 +16,31 @@ pub mod guide;
 
 // Runs the registry README's example as a doctest; it opens a window, so it
 // needs `desktop`.
-#[cfg(all(doctest, feature = "desktop"))]
+#[cfg(all(doctest, feature = "native"))]
 #[doc = include_str!("../README.md")]
 struct ReadmeDoctests;
 
+#[cfg(all(feature = "native", not(any(feature = "gpu", feature = "cpu"))))]
+compile_error!(
+    "the `native` feature needs a renderer: enable `desktop` (GPU) or `desktop-cpu` (CPU)"
+);
+
 #[doc(inline)]
 pub use pert_ui_runtime::*;
-#[cfg(feature = "desktop")]
+#[cfg(feature = "native")]
 mod app;
 #[cfg(feature = "cpu")]
 pub mod cpu;
 #[cfg(feature = "images")]
 pub mod images;
-#[cfg(feature = "desktop")]
+#[cfg(feature = "native")]
 mod platform;
 #[cfg(feature = "svg")]
 pub mod svg;
 // Placement: every widget, including a feature-gated one, is at the crate root;
 // a feature module holds its loaders, rasterizers and their errors.
-#[cfg(feature = "desktop")]
+#[cfg(feature = "native")]
 pub use app::{App, AppError, AppShutdownError, ErrorAction, NativeCloseAction};
-/// A renderer budget or device limit, carried by [`AppError::Limit`].
-#[cfg(feature = "desktop")]
-pub use pert_ui_wgpu::{LimitError, ResourceKind};
 #[cfg(feature = "svg")]
 pub use svg::component::Svg;
 
@@ -64,7 +66,7 @@ pub mod prelude {
     #[cfg(feature = "svg")]
     #[doc(no_inline)]
     pub use crate::Svg;
-    #[cfg(feature = "desktop")]
+    #[cfg(feature = "native")]
     #[doc(no_inline)]
     pub use crate::{App, AppError, AppShutdownError, ErrorAction, NativeCloseAction};
     #[doc(no_inline)]

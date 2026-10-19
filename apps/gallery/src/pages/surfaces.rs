@@ -24,9 +24,7 @@ pub(crate) fn menu_bar(ui: &mut Runtime) -> Result<Element, AppError> {
             let number = count.get()? + 1;
             count.set(number)?;
             new_dirty.set(true)?;
-            new_status
-                .set(format!("Created sketch {number}; Save is now available."))
-                .map(|_| ())
+            new_status.set(format!("Created sketch {number}; Save is now available."))
         },
     )?;
     let (save_status, save_dirty) = (status.clone(), dirty.clone());
@@ -36,7 +34,7 @@ pub(crate) fn menu_bar(ui: &mut Runtime) -> Result<Element, AppError> {
         vec![KeyChord::primary('s')],
         move |_, _| {
             save_dirty.set(false)?;
-            save_status.set("Saved.".to_owned()).map(|_| ())
+            save_status.set("Saved.".to_owned())
         },
     )?;
     ui.command_enabled_signal(&save, dirty.read_only())?;
@@ -54,7 +52,7 @@ pub(crate) fn menu_bar(ui: &mut Runtime) -> Result<Element, AppError> {
         let status = status.clone();
         let name = name.to_owned();
         MenuItem::new(key, name.clone(), move |_| {
-            status.set(format!("Opened {name}.")).map(|_| ())
+            status.set(format!("Opened {name}."))
         })
     };
     let about_status = status.clone();
@@ -63,9 +61,7 @@ pub(crate) fn menu_bar(ui: &mut Runtime) -> Result<Element, AppError> {
         Element::new(
             "menu-bar-sync",
             Button::icon(Icon::Refresh, "Synchronize", move |_| {
-                sync_status
-                    .set("Synchronized from the bar's trailing slot.".to_owned())
-                    .map(|_| ())
+                sync_status.set("Synchronized from the bar's trailing slot.".to_owned())
             })
             .frameless(),
         ),
@@ -120,13 +116,12 @@ pub(crate) fn menu_bar(ui: &mut Runtime) -> Result<Element, AppError> {
         Element::new(
             "grid-setting",
             Label::new(
-                grid.read_only()
-                    .map(|grid| format!("Grid {}.", if *grid { "shown" } else { "hidden" }))?,
+                grid.map(|grid| format!("Grid {}.", if *grid { "shown" } else { "hidden" }))?,
             ),
         ),
         Element::new(
             "zoom-setting",
-            Label::new(zoom.read_only().map(|zoom| format!("Zoom {zoom}%."))?),
+            Label::new(zoom.map(|zoom| format!("Zoom {zoom}%."))?),
         ),
     ])
     .gap(MetricRole::ItemGap);
@@ -297,7 +292,7 @@ pub(crate) fn transient_surfaces(ui: &Runtime) -> Result<Element, RuntimeError> 
                                     "deeper",
                                     "More options",
                                     vec![MenuItem::new("apply", "Apply", move |_| {
-                                        menu_status.set("Nested action applied.".into()).map(|_| ())
+                                        menu_status.set("Nested action applied.".into())
                                     })],
                                 )],
                             ),
@@ -351,14 +346,14 @@ pub(crate) fn transient_surfaces(ui: &Runtime) -> Result<Element, RuntimeError> 
                         "This banner stays until dismissed.",
                         [Element::new(
                             "dismiss-banner",
-                            Button::new("Dismiss", move |_| banner_close.set(false).map(|_| ())),
+                            Button::new("Dismiss", move |_| banner_close.set(false)),
                         )],
                     )
                     .visible_signal(banner.read_only()),
                 ),
                 Element::new(
                     "show-banner",
-                    Button::new("Restore banner", move |_| banner_show.set(true).map(|_| ())),
+                    Button::new("Restore banner", move |_| banner_show.set(true)),
                 ),
                 Element::new(
                     "post-toast",
@@ -374,14 +369,10 @@ pub(crate) fn transient_surfaces(ui: &Runtime) -> Result<Element, RuntimeError> 
                     Button::new("Show actionable notification", move |_| {
                         let status = toast_status.clone();
                         let _receipt = action_queue.push(
-                            Toast::new("Hover or focus pauses expiry.").action(
-                                "Apply",
-                                move |_| {
-                                    status
-                                        .set("Notification action applied.".into())
-                                        .map(|_| ())
-                                },
-                            ),
+                            Toast::new("Hover or focus pauses expiry.")
+                                .action("Apply", move |_| {
+                                    status.set("Notification action applied.".into())
+                                }),
                         )?;
                         Ok(())
                     }),
@@ -469,7 +460,6 @@ pub(crate) fn floating_windows(ui: &Runtime) -> Result<Element, AppError> {
                 "info",
                 Button::icon(Icon::Info, "Information", move |_| {
                     info.set("The window contains ordinary numeric controls and bindings.".into())
-                        .map(|_| ())
                 })
                 .frameless(),
             ),
@@ -632,7 +622,7 @@ pub(crate) fn floating_windows(ui: &Runtime) -> Result<Element, AppError> {
                                                 state.restore()?;
                                             }
                                         }
-                                        restore_message.set(RESTORED_MESSAGE.into()).map(|_| ())
+                                        restore_message.set(RESTORED_MESSAGE.into())
                                     }),
                                 ),
                             ]),

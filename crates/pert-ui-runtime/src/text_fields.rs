@@ -32,6 +32,14 @@ pub use number_inputs::{
 const BLINK: Duration = Duration::from_millis(500);
 type Submit = Box<dyn FnMut(&mut EventContext, &str) -> Result<(), RuntimeError>>;
 type ModifiedReport = Box<dyn FnMut(&mut EventContext, bool) -> Result<(), RuntimeError>>;
+/// Which application callback a requested delivery reports to.
+#[derive(Clone, Copy)]
+enum Report {
+    Modified,
+    Refusal,
+}
+type RefusalReport =
+    Box<dyn FnMut(&mut EventContext, Option<&TextEditError>) -> Result<(), RuntimeError>>;
 
 /// A single-line editor bound to a UI-local `Signal<String>`.
 ///
@@ -64,7 +72,8 @@ type ModifiedReport = Box<dyn FnMut(&mut EventContext, bool) -> Result<(), Runti
 /// A bound value that does not qualify, written by the application, is refused
 /// by the field rather than failing the runtime: the field keeps showing its
 /// previous text, draws the error outline, reports `binding_error` in
-/// inspection and marks its semantics invalid, and accepts no edits, so it never
+/// inspection and to [`TextField::on_binding_refusal`], marks its semantics
+/// invalid, and accepts no edits, so it never
 /// overwrites the application's value. Selection and copy still work. The next
 /// acceptable binding value ends the refusal. The binding itself is never
 /// rewritten; check or clean text with [`Self::check`] before writing it.
@@ -82,7 +91,7 @@ type ModifiedReport = Box<dyn FnMut(&mut EventContext, bool) -> Result<(), Runti
 /// selection, clipboard or read-only state is shown grayed out rather than hidden.
 /// Availability is decided once when the menu opens, from one clipboard read, so
 /// an open menu polls nothing. A consumer can build the same menu from
-/// [`ContextMenu`](crate::ContextMenu), [`MenuItem::enabled_signal`] and
+/// [`ContextMenu`](crate::ContextMenu), [`MenuItem::enabled`] and
 /// [`EventContext::request_text_command`](crate::EventContext::request_text_command).
 ///
 /// Caret blinking uses one 500 ms deadline while focused and editable; hidden,
@@ -194,7 +203,8 @@ macro_rules! editor_api {
             /// Creates an enabled editor. The binding is subscribed on the first
             /// update; a foreign-runtime binding fails that update, and a value
             /// the editor does not accept is refused as described above.
-            pub fn new(value: Signal<String>) -> Self {
+            pub fn new(value: impl Into<Signal<String>>) -> Self {
+                let value: Signal<String> = value.into();
                 Self(Editor::new(Some(value), $multi))
             }
             /// Checks whether `text` is acceptable as this editor's bound value,
@@ -325,7 +335,7 @@ macro_rules! editor_api {
             ///     })
             ///     .on_rejection(move |_, rejection| {
             ///         let next = rejection.map_or(FieldStatus::Normal, |r| FieldStatus::error(r.message()));
-            ///         status.set(next).map(|_| ())
+            ///         status.set(next)
             ///     });
             /// let root = ui.mount_tree(Element::new("name",
             ///     Field::new(Element::new("input", field)).label("Name").form(&handle)))?;
@@ -504,6 +514,62 @@ macro_rules! editor_api {
                 self.0.modified = Some(Box::new(modified));
                 self
             }
+            /// Reports when the field refuses a value the application wrote
+            /// to its binding, with the reason, and with `None` when an
+            /// acceptable value ends the refusal.
+            ///
+            /// A refused value, such as text longer than
+            /// [`TextEditError::MAX_TEXT_BYTES`] or a control character the
+            /// field does not accept, leaves the field showing its previous
+            /// text, marked as refused and accepting no edits, as the type
+            /// describes; this callback is how the application learns of it,
+            /// for example to show a [`FieldStatus`](crate::FieldStatus) or
+            /// shorten the text. It concerns only the application's own
+            /// writes: refused typing and a normalizer's rejection, reported by
+            /// [`Self::on_rejection`], never call it. A refusal that starts and
+            /// ends within one flush reports nothing, and a later different
+            /// reason reports again.
+            ///
+            /// The callback runs in an event phase after the flush that saw
+            /// the change has settled, as [`Self::on_modified`] does, and may
+            /// write bindings; its error is returned from the flush and does
+            /// not undo the refusal. Its reports keep their order with the
+            /// field's other reports, such as [`Self::on_modified`], and with
+            /// other components' notifications. Describing the field again
+            /// replaces the callback; a description without one stops the
+            /// reports, and installing one on a field that already refuses its
+            /// value reports that refusal.
+            ///
+            /// ```
+            /// use pert_ui_runtime::{IntoElement, Runtime, TextArea, TextEditError, TextField};
+            /// use std::time::Duration;
+            /// let mut ui = Runtime::new();
+            /// let body = ui.signal(String::new());
+            /// let problem = ui.signal(None::<TextEditError>);
+            /// let report = problem.clone();
+            #[doc = concat!(" let editor = ", stringify!($name), "::new(&body)")]
+            ///     .on_binding_refusal(move |_, refusal| report.set(refusal.cloned()));
+            /// ui.mount_tree(editor.key("body"))?;
+            /// ui.flush(Duration::ZERO)?;
+            /// body.set("x".repeat(TextEditError::MAX_TEXT_BYTES + 1))?;
+            /// ui.flush(Duration::ZERO)?;
+            /// assert_eq!(problem.get()?, Some(TextEditError::TooLarge));
+            /// body.set("short".to_owned())?;
+            /// ui.flush(Duration::ZERO)?;
+            /// assert_eq!(problem.get()?, None);
+            /// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+            /// ```
+            pub fn on_binding_refusal(
+                mut self,
+                refusal: impl FnMut(
+                    &mut EventContext,
+                    Option<&TextEditError>,
+                ) -> Result<(), RuntimeError>
+                + 'static,
+            ) -> Self {
+                self.0.refusal = Some(Box::new(refusal));
+                self
+            }
         }
         impl Component for $name {
             /// Applies the new binding, style, permissions, normalizer and
@@ -626,7 +692,7 @@ macro_rules! editor_api {
                 outcome
             }
             fn deliver_notifications(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
-                self.0.deliver_modified(cx)
+                self.0.deliver_report(cx)
             }
             fn focus_lost(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
                 // Release local input first, as the default does, so an
@@ -868,7 +934,7 @@ impl FieldMenu {
                 }
                 Ok(())
             })
-            .enabled_signal(enabled.read_only());
+            .enabled(enabled.read_only());
             items.push(item);
         }
         Ok(Self {
@@ -1006,6 +1072,16 @@ pub(super) struct Editor<M = ()> {
     notifier: Option<crate::Notifier>,
     /// The table's description of an unsaved draft, read in update.
     modified_text: String,
+    /// The application's callback when its bound value is refused or the
+    /// refusal ends, delivered through `notifier`.
+    refusal: Option<RefusalReport>,
+    /// The refusal last delivered to `refusal`.
+    refusal_reported: Option<TextEditError>,
+    /// A refusal delivery is requested and not yet made.
+    refusal_pending: Cell<bool>,
+    /// The report each requested delivery is for, oldest first: one entry per
+    /// notifier request, so each delivery makes its own report in order.
+    reports: RefCell<std::collections::VecDeque<Report>>,
 }
 /// The character a concealed editor shows for each grapheme of its text.
 const CONCEAL_DOT: &str = "\u{2022}";
@@ -1107,6 +1183,10 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             modified_pending: Cell::new(false),
             notifier: None,
             modified_text: String::new(),
+            refusal: None,
+            refusal_reported: None,
+            refusal_pending: Cell::new(false),
+            reports: RefCell::new(std::collections::VecDeque::new()),
         }
     }
     /// Whether the text is shown as dots: concealed and not revealed.
@@ -1231,8 +1311,45 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             && let Some(notifier) = &self.notifier
         {
             self.modified_pending.set(true);
+            self.reports.borrow_mut().push_back(Report::Modified);
             notifier.request();
         }
+    }
+    /// Requests one delivery to the refusal callback when the refusal differs
+    /// from the one last delivered.
+    fn note_refusal(&self) {
+        if self.refusal.is_some()
+            && !self.refusal_pending.get()
+            && self.rejected != self.refusal_reported
+            && let Some(notifier) = &self.notifier
+        {
+            self.refusal_pending.set(true);
+            self.reports.borrow_mut().push_back(Report::Refusal);
+            notifier.request();
+        }
+    }
+    /// Makes the report the oldest requested delivery is for.
+    fn deliver_report(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
+        let report = self.reports.borrow_mut().pop_front();
+        match report {
+            Some(Report::Modified) => self.deliver_modified(cx),
+            Some(Report::Refusal) => self.deliver_refusal(cx),
+            None => Ok(()),
+        }
+    }
+    /// Delivers a changed refusal to the application's callback. Without a
+    /// callback nothing counts as reported, so one installed later still
+    /// learns of the current refusal.
+    fn deliver_refusal(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
+        self.refusal_pending.set(false);
+        let Some(report) = &mut self.refusal else {
+            return Ok(());
+        };
+        if self.rejected == self.refusal_reported {
+            return Ok(());
+        }
+        self.refusal_reported.clone_from(&self.rejected);
+        report(cx, self.refusal_reported.as_ref())
     }
     /// Delivers a changed modified state to the application's callback.
     fn deliver_modified(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
@@ -1340,7 +1457,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
         let layout = self.layout_of(cx, &text)?;
         // A normalized text equal to the bound value writes nothing, so it
         // is no save to report.
-        let wrote = value.set(text.clone())?;
+        let wrote = value.set_changed(text.clone())?;
         self.observed.clone_from(&text);
         if text != self.text {
             self.cancel_composition();
@@ -1437,6 +1554,13 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             widen(Invalidation::Paint);
         }
         self.modified = next.modified;
+        if self.refusal.is_none() && next.refusal.is_some() {
+            // A newly installed callback learns of a refusal already in place,
+            // which takes an update to notice.
+            self.refusal_reported = None;
+            widen(Invalidation::Paint);
+        }
+        self.refusal = next.refusal;
         if self.counter != next.counter || self.revealable != next.revealable {
             self.counter = next.counter;
             self.revealable = next.revealable;
@@ -1844,9 +1968,10 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
     }
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
         self.update_inner(cx)?;
-        if self.modified.is_some() && self.notifier.is_none() {
+        if (self.modified.is_some() || self.refusal.is_some()) && self.notifier.is_none() {
             self.notifier = Some(cx.notifier());
         }
+        self.note_refusal();
         if self.drafting() {
             // Read through the table so another installed table relabels it.
             self.modified_text = cx
@@ -1871,10 +1996,10 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             drop(target);
             // Subscribing here is what makes the surface disappear again once an
             // action, Escape or an outside press closes it.
-            menu.shown = cx.read(&menu.open.read_only())?;
+            menu.shown = cx.read(&menu.open)?;
         }
         if let Some(value) = &self.value {
-            let text = cx.read_paint(&value.read_only())?;
+            let text = cx.read_paint(value)?;
             // Refused text is kept out of the editor rather than failing every
             // flush: the field keeps its previous text, marks the refusal and
             // accepts no edits, so it never overwrites the application's value.

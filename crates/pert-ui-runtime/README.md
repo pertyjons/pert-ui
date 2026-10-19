@@ -469,7 +469,7 @@ let status = ui.signal("Ready".to_owned());
 let action = status.clone();
 ui.mount_tree(Element::new("content", Column::new([
     Element::new("status", Label::new(status.read_only())),
-    Element::new("apply", Button::new("Apply", move |_| action.set("Applied".to_owned()).map(|_| ()))),
+    Element::new("apply", Button::new("Apply", move |_| action.set("Applied".to_owned()))),
 ])))?;
 ui.flush(Duration::ZERO)?;
 ui.focus_next(false)?;
@@ -1101,7 +1101,7 @@ ui.mount_tree(Element::new("context", ContextMenu::new(
     &ui,
     Element::new("target", Button::new("Right-click or Shift+F10", |_| Ok(()))),
     vec![MenuItem::submenu("more", "More", vec![
-        MenuItem::new("apply", "Apply", move |_| write.set(true).map(|_| ())),
+        MenuItem::new("apply", "Apply", move |_| write.set(true)),
         MenuItem::new("unavailable", "Unavailable", |_| Ok(())).disabled(),
     ])],
 )?))?;
@@ -1127,7 +1127,7 @@ ui.set_viewport(Viewport::new(640.0, 480.0, 1.0)?)?;
 let saved = ui.signal(false);
 let write = saved.clone();
 let save = ui.register_command("Save", CommandScope::Application,
-    vec![KeyChord::primary('s')], move |_, _| write.set(true).map(|_| ()))?;
+    vec![KeyChord::primary('s')], move |_, _| write.set(true))?;
 let grid = ui.signal(true);
 let zoom = ui.signal(100u32);
 let bar = MenuBar::new(&ui, vec![
@@ -1188,7 +1188,7 @@ let root = ui.mount_tree(Element::new("notifications", ToastHost::new(
     queue.clone(),
     Element::new("content", Column::new([
         Element::new("banner", Banner::new("Connection restored", [
-            Element::new("dismiss", Button::new("Dismiss", move |_| hide_banner.set(false).map(|_| ()))),
+            Element::new("dismiss", Button::new("Dismiss", move |_| hide_banner.set(false))),
         ]).visible_signal(banner_visible.read_only())),
         Element::new("notify", Button::new("Notify", move |_| {
             let _receipt = post.push(Toast::new("Saved").action("Show details", |_| Ok(())))?;

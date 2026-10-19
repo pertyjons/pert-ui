@@ -134,7 +134,7 @@ impl BreadcrumbSegment {
 ///         BreadcrumbSegment::new("/home", "home"),
 ///         BreadcrumbSegment::new("/home/projects", "projects"),
 ///     ],
-///     move |_, key| target.set(key.to_owned()).map(|_| ()),
+///     move |_, key| target.set(key.to_owned()),
 /// )?;
 /// ui.mount_tree(Element::new("path", path))?;
 /// # Ok::<(), Box<dyn std::error::Error>>(())

@@ -135,7 +135,8 @@ impl SearchField {
     /// `query`. The binding is subscribed on the first update; a
     /// foreign-runtime binding fails that update, and a value the field does
     /// not accept is refused as for [`TextField`].
-    pub fn new(query: Signal<String>) -> Self {
+    pub fn new(query: impl Into<Signal<String>>) -> Self {
+        let query: Signal<String> = query.into();
         Self {
             editor: Editor::new(Some(query.clone()), false),
             value: query,

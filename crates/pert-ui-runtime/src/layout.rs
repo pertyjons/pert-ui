@@ -321,6 +321,9 @@ pub struct Element {
     pub(crate) label_leading: Option<crate::IconSource>,
     pub(crate) detachable: crate::Permission,
     pub(crate) searchable: bool,
+    /// The share of a row's or column's spare main-axis space; see
+    /// [`Self::with_grow`].
+    pub(crate) grow: u16,
     pub(crate) component: Box<dyn Component>,
     pub(crate) reconcile: Reconcile,
     pub(crate) kind: std::any::TypeId,
@@ -328,6 +331,45 @@ pub struct Element {
 }
 pub(crate) type Reconcile =
     fn(&mut dyn Component, Box<dyn Component>) -> Option<crate::Invalidation>;
+
+/// The empty leaf of [`Element::spacer`]: no size of its own, no drawing.
+struct Spacer;
+impl Component for Spacer {
+    fn update(&mut self, _: &mut crate::UpdateContext) -> Result<(), RuntimeError> {
+        Ok(())
+    }
+}
+
+/// Describes a component as a keyed [`Element`] in place, so a tree reads in
+/// the order it is built.
+///
+/// `component.key("status")` is exactly `Element::new("status", component)`:
+/// the key keeps the same sibling-scoped identity role, and validation still
+/// happens when the element is mounted. Every [`Component`] has it through a
+/// blanket implementation; implementing the trait yourself is never needed.
+///
+/// ```
+/// use pert_ui_runtime::{Button, Column, IntoElement, Label, Runtime};
+/// let mut ui = Runtime::new();
+/// let saved = ui.signal(false);
+/// let save = saved.clone();
+/// ui.mount_tree(
+///     Column::new([
+///         Label::new("Settings").key("title"),
+///         Button::new("Save", move |_| save.set(true)).key("save"),
+///     ])
+///     .key("content"),
+/// )?;
+/// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+/// ```
+pub trait IntoElement: Component + Sized + 'static {
+    /// Describes this component under `key`, as [`Element::new`] does.
+    fn key(self, key: impl Into<String>) -> Element {
+        Element::new(key, self)
+    }
+}
+impl<C: Component + 'static> IntoElement for C {}
+
 impl Element {
     /// Describes a component. Key validation occurs atomically before mounting.
     pub fn new<C: Component + 'static>(key: impl Into<String>, mut component: C) -> Self {
@@ -341,6 +383,7 @@ impl Element {
             label_leading: None,
             detachable: crate::Permission::allowed(),
             searchable: true,
+            grow: 0,
             kind: std::any::TypeId::of::<C>(),
             component: Box::new(component),
             reconcile: |current, next| {
@@ -501,6 +544,63 @@ impl Element {
     #[must_use]
     pub fn searchable(&self) -> bool {
         self.searchable
+    }
+    /// Gives this element a share of the spare main-axis space of the
+    /// [`Row`](crate::Row) or [`Column`](crate::Column) it is in: after every
+    /// child has its natural size, the space left over is divided among the
+    /// growing children in proportion to their weights, each up to its own
+    /// maximum size, and what a maximum stops goes to the others. `0`, the
+    /// default, keeps the natural size. The spare space is what the
+    /// container's own allocation leaves: a column in a vertical scroll area
+    /// is given at least the visible height, so a growing child fills the
+    /// visible space the content leaves, and nothing once the content is
+    /// taller. [`Wrap`](crate::Wrap) and other containers ignore the
+    /// weight unless they document otherwise; a custom container reads it
+    /// with [`MeasureContext::grow`]. Reconciliation updates it without
+    /// remounting.
+    ///
+    /// ```
+    /// use pert_ui_runtime::{Column, IntoElement, Label, Runtime, TextArea, Viewport};
+    /// use std::time::Duration;
+    /// let mut ui = Runtime::new();
+    /// ui.set_viewport(Viewport::new(400.0, 300.0, 1.0)?)?;
+    /// let text = ui.signal(String::new());
+    /// let root = ui.mount_tree(
+    ///     Column::new([
+    ///         Label::new("Notes").key("title"),
+    ///         TextArea::new(&text).key("body").with_grow(1),
+    ///     ])
+    ///     .key("editor"),
+    /// )?;
+    /// ui.flush(Duration::ZERO)?;
+    /// let body = ui.find(&root, &["body"])?.ok_or("mounted")?;
+    /// let bounds = ui.bounds(&body)?.ok_or("laid out")?;
+    /// // The text area takes the column's spare height, down to the window edge.
+    /// assert_eq!(bounds.y() + bounds.height(), 300.0);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn with_grow(mut self, weight: u16) -> Self {
+        self.grow = weight;
+        self
+    }
+    /// This description's growth weight; `0`, natural size, by default.
+    #[must_use]
+    pub fn grow(&self) -> u16 {
+        self.grow
+    }
+    /// An empty element that takes a row's or column's spare space with
+    /// weight 1, pushing the elements after it to the far end.
+    ///
+    /// ```
+    /// use pert_ui_runtime::{Element, IntoElement, Label, Row};
+    /// let status = Row::new([
+    ///     Label::new("Saved").key("message"),
+    ///     Element::spacer("gap"),
+    ///     Label::new("12 words").key("count"),
+    /// ]);
+    /// ```
+    pub fn spacer(key: impl Into<String>) -> Self {
+        Self::new(key, Spacer).with_grow(1)
     }
     /// Supplies styled display metadata, consumed by containers such as Tabs.
     /// `label()` returns its text without icons. If that text is blank, an existing
@@ -803,6 +903,17 @@ impl MeasureContext<'_> {
     pub fn fills_row_height(&self, index: usize) -> Result<bool, RuntimeError> {
         let serial = *self.children.get(index).ok_or(LayoutError::InvalidChild)?;
         Ok(self.runtime.child_fills_row_height(serial))
+    }
+    /// A child's growth weight from [`Element::with_grow`]: its share of spare
+    /// main-axis space in a container that distributes it, `0` for none. A
+    /// custom container that grows children reads it here.
+    ///
+    /// # Errors
+    /// Returns [`RuntimeError::Layout`] with [`LayoutError::InvalidChild`] for an
+    /// index outside the visible children.
+    pub fn grow(&self, index: usize) -> Result<u16, RuntimeError> {
+        let serial = *self.children.get(index).ok_or(LayoutError::InvalidChild)?;
+        Ok(self.runtime.child_grow(serial))
     }
     /// Reads a child's hard size limits.
     ///

@@ -33,6 +33,7 @@ struct MetadataChange {
     label_leading: Option<crate::IconSource>,
     detachable: crate::Permission,
     searchable: bool,
+    grow: u16,
 }
 
 /// Whether two optional label sources are the same binding, whose read text
@@ -125,16 +126,15 @@ impl Runtime {
             .collect())
     }
 
-    /// Finds the descendant of `root` reached by a path of stable sibling keys,
-    /// one key per level; an empty path returns `root` itself.
+    /// Finds the descendant of `root` reached by the full internal path of
+    /// sibling keys, one key per level, including the keys built-in composites
+    /// give the parts they create; an empty path returns `root` itself.
     ///
-    /// This is the lookup for a component a description mounted, such as the
-    /// target of [`Self::focus`], [`Self::request_detach`] or a view-scoped
-    /// command, without walking [`Self::children`] and [`Self::key`] by hand.
-    /// The path names every level, including the keys built-in composites give
-    /// the parts they create; to name only the addressable segments, use
-    /// [`Self::find_address`], and to name only one application key,
-    /// [`Self::find_descendant`]. It follows logical children, including hidden ones and those presented
+    /// This is the lookup for code that knows how the built-ins it passes
+    /// through are composed, such as a test of a composite's internal parts.
+    /// Ordinary lookups use [`Self::find`], which names only the addressable
+    /// segments that inspection reports, or [`Self::find_descendant`] for one
+    /// application key. It follows logical children, including hidden ones and those presented
     /// in a detached window, exactly as `children` lists them. Each level scans
     /// that parent's children, so the cost grows with the path length times the
     /// sibling counts; retain the returned `WidgetId` rather than looking it up
@@ -152,13 +152,17 @@ impl Runtime {
     ///     "settings",
     ///     Row::new([Element::new("apply", Label::new("Apply"))]),
     /// )])))?;
-    /// let apply = ui.find(&root, &["settings", "apply"])?.ok_or("not mounted")?;
+    /// let apply = ui.find_path(&root, &["settings", "apply"])?.ok_or("not mounted")?;
     /// assert_eq!(ui.key(&apply)?, "apply");
-    /// assert!(ui.find(&root, &["settings", "missing"])?.is_none());
-    /// assert_eq!(ui.find(&root, &[])?, Some(root.clone()));
+    /// assert!(ui.find_path(&root, &["settings", "missing"])?.is_none());
+    /// assert_eq!(ui.find_path(&root, &[])?, Some(root.clone()));
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
-    pub fn find(&self, root: &WidgetId, path: &[&str]) -> Result<Option<WidgetId>, RuntimeError> {
+    pub fn find_path(
+        &self,
+        root: &WidgetId,
+        path: &[&str],
+    ) -> Result<Option<WidgetId>, RuntimeError> {
         self.check(root)?;
         let mut serial = root.0.serial;
         for key in path {
@@ -178,7 +182,7 @@ impl Runtime {
     /// Finds the unique descendant of `ancestor` whose key is `key`, at any
     /// depth below it.
     ///
-    /// [`Self::find`] needs every key on the way down, including the keys that
+    /// [`Self::find_path`] needs every key on the way down, including the keys that
     /// built-in composites give the parts they create, such as a dialog's
     /// anchor, a scroll area's viewport or a group's content. This lookup names
     /// only the key the application chose, so a host can find its own
@@ -187,7 +191,7 @@ impl Runtime {
     /// several matches: if more than one descendant carries `key`, it fails
     /// with [`RuntimeError::AmbiguousKey`]. Narrow the search by first finding
     /// a uniquely keyed ancestor and searching below it, name the addressable
-    /// path with [`Self::find_address`], or use `find` with a full path.
+    /// path with [`Self::find`], or use [`Self::find_path`] with a full path.
     /// `ancestor` itself is not a candidate.
     ///
     /// It follows logical children, including hidden ones and those presented
@@ -246,6 +250,17 @@ impl Runtime {
     /// the structure built-in composites create; an empty path returns `root`
     /// itself.
     ///
+    /// This is the lookup for a component a description mounted, such as the
+    /// target of [`Self::focus`], [`Self::request_detach`] or a view-scoped
+    /// command, without walking [`Self::children`] and [`Self::key`] by hand,
+    /// and the path it takes is the one inspection reports
+    /// ([`ComponentInspection::path`](crate::ComponentInspection::path)) and
+    /// [`Selector::path`](crate::Selector::path) matches. An inspection path
+    /// starts with the root's own key, so pass the rest of it:
+    /// `find(&root, &path[1..])`. Built-in containers add a segment only where
+    /// they document one, such as [`RegionLayout`](crate::RegionLayout)'s
+    /// region names `top`, `bottom`, `left`, `right` and `center`.
+    ///
     /// The segments follow the rules of
     /// [workspace persistence](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#workspace-persistence)
     /// and inspection's `Selector::path`: an element contributes its key, a
@@ -254,7 +269,7 @@ impl Runtime {
     /// the address relative to `root`: the segments contributed by the
     /// elements strictly below `root` on the way down to the target, so a
     /// titled group's content is `["form"]` below the group's key, not the
-    /// frame and body levels [`Self::find`] would have to name. The match is
+    /// frame and body levels [`Self::find_path`] would have to name. The match is
     /// the element that introduces the last segment; structural wrappers
     /// beneath it share its address but are not matches. A drag preview
     /// never matches.
@@ -291,15 +306,15 @@ impl Runtime {
     ///     Element::new("right", Row::new([Element::new("apply", Label::new("Apply"))])),
     /// ])))?;
     /// // The group's own frame and body levels are not part of the address.
-    /// let apply = ui.find_address(&root, &["left", "form", "apply"])?.ok_or("not mounted")?;
+    /// let apply = ui.find(&root, &["left", "form", "apply"])?.ok_or("not mounted")?;
     /// assert_eq!(ui.key(&apply)?, "apply");
     /// // `find_descendant(&root, "apply")` would be ambiguous; an address is not.
-    /// assert!(ui.find_address(&root, &["right", "apply"])?.is_some());
-    /// assert!(ui.find_address(&root, &["left", "apply"])?.is_none());
-    /// assert_eq!(ui.find_address(&root, &[])?, Some(root.clone()));
+    /// assert!(ui.find(&root, &["right", "apply"])?.is_some());
+    /// assert!(ui.find(&root, &["left", "apply"])?.is_none());
+    /// assert_eq!(ui.find(&root, &[])?, Some(root.clone()));
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
-    pub fn find_address(
+    pub fn find(
         &self,
         root: &WidgetId,
         segments: &[&str],
@@ -450,6 +465,7 @@ impl Runtime {
                 label_leading,
                 detachable,
                 searchable,
+                grow,
             } = change;
             let entry = self
                 .entries
@@ -468,6 +484,7 @@ impl Runtime {
             entry.node.detachable.replace(detachable);
             searchability_changed |= entry.searchable != searchable;
             entry.searchable = searchable;
+            entry.grow = grow;
             if let Some(parent) = entry.node.logical_parent() {
                 parent.invalidate(Invalidation::Layout);
             }
@@ -906,6 +923,7 @@ impl Runtime {
                 if !same_label
                     || !entry.node.detachable.borrow().same_as(&child.detachable)
                     || entry.searchable != child.searchable
+                    || entry.grow != child.grow
                 {
                     changes.push(MetadataChange {
                         serial,
@@ -915,6 +933,7 @@ impl Runtime {
                         label_leading: child.label_leading.clone(),
                         detachable: child.detachable.clone(),
                         searchable: child.searchable,
+                        grow: child.grow,
                     });
                 }
                 self.metadata_changes(serial, &child.children, changes);
@@ -1122,6 +1141,7 @@ impl Runtime {
             label_source: element.label_source,
             label_leading: element.label_leading,
             searchable: element.searchable,
+            grow: element.grow,
             node: node.clone(),
             component: element.component,
             drawing: Vec::new(),
@@ -1552,6 +1572,9 @@ impl Runtime {
     pub(crate) fn child_fills_row_height(&self, serial: u64) -> bool {
         self.entries[&serial].component.fills_row_height()
     }
+    pub(crate) fn child_grow(&self, serial: u64) -> u16 {
+        self.entries[&serial].grow
+    }
     pub(crate) fn child_position(&self, serial: u64) -> crate::Point {
         self.entries[&serial].component.layout_position()
     }
@@ -1570,13 +1593,16 @@ impl Runtime {
         let children = self.visible_children(serial);
         entry.node.metric_layout[0].set(0);
         entry.node.font_layout[0].set(0);
-        let limits = entry.component.measure_limits(&MeasureContext {
-            node: &entry.node,
-            reads: &entry.node.metric_layout[0],
-            font_reads: &entry.node.font_layout[0],
-            runtime: self,
-            children: &children,
-        })?;
+        let limits = entry
+            .component
+            .measure_limits(&MeasureContext {
+                node: &entry.node,
+                reads: &entry.node.metric_layout[0],
+                font_reads: &entry.node.font_layout[0],
+                runtime: self,
+                children: &children,
+            })
+            .inspect_err(|_| self.note_failure(serial, crate::FailurePhase::Measure))?;
         entry.node.limits.set(Some(limits));
         Ok(limits)
     }
@@ -1599,16 +1625,19 @@ impl Runtime {
         let limits = self.child_limits(serial)?;
         entry.node.metric_layout[1].set(0);
         entry.node.font_layout[1].set(0);
-        let size = entry.component.measure(
-            &MeasureContext {
-                node: &entry.node,
-                reads: &entry.node.metric_layout[1],
-                font_reads: &entry.node.font_layout[1],
-                runtime: self,
-                children: &children,
-            },
-            limits.available(available),
-        )?;
+        let size = entry
+            .component
+            .measure(
+                &MeasureContext {
+                    node: &entry.node,
+                    reads: &entry.node.metric_layout[1],
+                    font_reads: &entry.node.font_layout[1],
+                    runtime: self,
+                    children: &children,
+                },
+                limits.available(available),
+            )
+            .inspect_err(|_| self.note_failure(serial, crate::FailurePhase::Measure))?;
         let size = limits.constrain(size);
         entry.node.measured.set(Some((available, size)));
         Ok(size)
@@ -1703,14 +1732,19 @@ impl Runtime {
                     placements: vec![None; children.len()],
                     clips: vec![None; children.len()],
                 };
-                entry.component.arrange(&mut context, size)?;
+                entry
+                    .component
+                    .arrange(&mut context, size)
+                    .inspect_err(|_| self.note_failure(serial, crate::FailurePhase::Arrange))?;
                 context
                     .placements
                     .into_iter()
                     .zip(context.clips)
                     .map(|(placement, clip)| placement.map(|placement| (placement, clip)))
                     .collect::<Option<Vec<_>>>()
-                    .ok_or(LayoutError::InvalidChild)?
+                    .ok_or(LayoutError::InvalidChild)
+                    // A child the container left unplaced is its failure.
+                    .inspect_err(|_| self.note_failure(serial, crate::FailurePhase::Arrange))?
             }
         };
         let arranged = fresh.then(|| (children.clone(), placements.clone()));

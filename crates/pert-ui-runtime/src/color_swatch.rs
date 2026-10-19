@@ -79,7 +79,7 @@ pub(crate) fn paint_checkerboard(painter: &mut Painter, rect: Rect) -> Result<()
 /// let open = opened.clone();
 /// let swatch = ColorSwatch::bound(color.read_only())
 ///     .name("Track color")
-///     .on_activate(move |_| open.set(true).map(|_| ()));
+///     .on_activate(move |_| open.set(true));
 /// let id = ui.mount_tree(Element::new("swatch", swatch))?;
 /// ui.flush(Duration::ZERO)?;
 /// ui.focus(&id)?;
@@ -123,7 +123,8 @@ impl ColorSwatch {
     }
     /// Creates a static swatch that follows a color binding. Changes repaint
     /// the swatch without measuring it again.
-    pub fn bound(color: ReadSignal<Color>) -> Self {
+    pub fn bound(color: impl Into<ReadSignal<Color>>) -> Self {
+        let color: ReadSignal<Color> = color.into();
         Self {
             source: Some(color),
             ..Self::new(Color::WHITE)

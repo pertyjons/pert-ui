@@ -149,7 +149,6 @@ pub(crate) fn file_browser(ui: &Runtime) -> Result<Element, AppError> {
     controller.on_open(move |_, entry| {
         let _keep = &mailbox;
         sink.set(format!("Opened {}", entry.path().display()))
-            .map(|_| ())
     });
     let paths = controller.clone();
     let selected = controller.selection().selected().map(move |keys| {
@@ -164,7 +163,7 @@ pub(crate) fn file_browser(ui: &Runtime) -> Result<Element, AppError> {
             _ => format!("Selected: {}", names.join(", ")),
         }
     })?;
-    let counted = deliveries.read_only().map(|(applied, stale)| {
+    let counted = deliveries.map(|(applied, stale)| {
         format!("Listings applied: {applied}; stale results dropped: {stale}")
     })?;
     let refresh = controller.clone();

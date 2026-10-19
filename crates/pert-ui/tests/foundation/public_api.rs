@@ -29,7 +29,7 @@ fn consumers_can_compose_general_parameter_defaults() -> Result<(), Box<dyn std:
     Ok(())
 }
 
-#[cfg(feature = "desktop")]
+#[cfg(feature = "native")]
 #[test]
 fn invalid_app_configuration_fails_before_native_startup() {
     let invalid = pert_ui::App::new("   ", |_| panic!("invalid title must skip initialization"));

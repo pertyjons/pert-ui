@@ -27,7 +27,8 @@ use std::collections::BTreeSet;
 /// every row. Keys are the row identity: a row that keeps its key across a
 /// change of the binding keeps its retained component, state and focus, a row
 /// whose key disappears is unmounted, and two rows must never share a key.
-/// `build` returns an element whose own key must equal `key(index)`.
+/// The list keys the element `build` returns with `key(index)`, replacing the
+/// element's own key, so a row can be built with any key.
 ///
 /// Implementations are UI-local and read-only during an update; replacing the
 /// bound `Rc` is how content changes, and it invalidates only the rows whose
@@ -44,7 +45,8 @@ pub trait ListItems {
     }
     /// Stable key of the row at `index`, or `None` past the end.
     fn key(&self, index: usize) -> Option<String>;
-    /// The row at `index`, keyed by `key(index)`, or `None` past the end.
+    /// The row at `index`, or `None` past the end. The list keys it with
+    /// `key(index)`; its own key is replaced.
     fn build(&self, index: usize) -> Option<Element>;
     /// Position of the row with `key`, or `None` when no row has it. The default
     /// scans every position.
@@ -98,6 +100,15 @@ impl std::ops::Deref for ListSource {
     fn deref(&self) -> &Self::Target {
         self.0.as_ref()
     }
+}
+
+/// The row at `index` keyed with the source's key for it, as the list mounts
+/// it, or `None` when the source has no such row.
+fn keyed_row(items: &ListSource, index: usize) -> Option<Element> {
+    let key = items.key(index)?;
+    let mut element = items.build(index)?;
+    element.key = key;
+    Some(element)
 }
 
 impl core::fmt::Debug for ListSource {
@@ -414,6 +425,16 @@ pub struct VirtualList {
     controller: Option<ListController>,
     selection: Option<ListSelection>,
     activate: Option<Activate>,
+    on_selection: Option<OnSelection>,
+    /// An owner's switch for observing the selection, for a callback it
+    /// installs before it knows whether its own user asks for changes.
+    observe_gate: Option<Rc<Cell<bool>>>,
+    /// The selection as last reported, or as first seen; `None` before the
+    /// first update with a callback.
+    selection_seen: Option<(Option<String>, Rc<BTreeSet<String>>)>,
+    /// Changes recorded for [`Self::on_selection_change`] and not yet delivered.
+    selection_pending: Vec<crate::ListSelectionChange>,
+    notifier: Option<crate::Notifier>,
     outline: bool,
     snapshot: Option<ListSource>,
     /// Whether row construction completed for the retained source snapshot.
@@ -458,6 +479,8 @@ pub struct VirtualList {
 }
 
 type Activate = Box<dyn FnMut(&mut EventContext, &str) -> Result<(), RuntimeError>>;
+type OnSelection =
+    Box<dyn FnMut(&mut EventContext, &crate::ListSelectionChange) -> Result<(), RuntimeError>>;
 type Reorder = Box<dyn FnMut(&mut EventContext, &ListDrop<'_>) -> Result<bool, RuntimeError>>;
 /// A placement rule: the dragged keys and the pointer in, where a drop goes
 /// out, or `None` where the rule forbids one.
@@ -584,9 +607,10 @@ impl VirtualList {
     /// Returns a [`GeometryError`](crate::GeometryError) for a row height that
     /// is not finite and positive.
     pub fn new(
-        items: ReadSignal<ListSource>,
+        items: impl Into<ReadSignal<ListSource>>,
         row_height: f32,
     ) -> Result<Self, crate::GeometryError> {
+        let items: ReadSignal<ListSource> = items.into();
         Ok(Self::over(items, VirtualAxis::new(row_height)?))
     }
 
@@ -607,9 +631,10 @@ impl VirtualList {
     /// Returns a [`GeometryError`](crate::GeometryError) for an estimate that
     /// is not finite and positive.
     pub fn estimated(
-        items: ReadSignal<ListSource>,
+        items: impl Into<ReadSignal<ListSource>>,
         estimate: f32,
     ) -> Result<Self, crate::GeometryError> {
+        let items: ReadSignal<ListSource> = items.into();
         Ok(Self::over(items, VirtualAxis::estimated(estimate)?))
     }
 
@@ -621,6 +646,11 @@ impl VirtualList {
             overscan: Self::DEFAULT_OVERSCAN,
             controller: None,
             selection: None,
+            on_selection: None,
+            observe_gate: None,
+            selection_seen: None,
+            selection_pending: Vec::new(),
+            notifier: None,
             activate: None,
             outline: true,
             snapshot: None,
@@ -711,6 +741,124 @@ impl VirtualList {
     pub fn active_outline(mut self, outline: bool) -> Self {
         self.outline = outline;
         self
+    }
+
+    /// Reports every change of the list's [`ListSelection`] after it took
+    /// effect, with its [`ChangeOrigin`](crate::ChangeOrigin), so an
+    /// application can follow the user's choice, for example to show the
+    /// chosen item in a detail view.
+    ///
+    /// The list observes its selection when it updates. A change it sees is
+    /// reported with the origin of the latest write: [`ChangeOrigin::User`](crate::ChangeOrigin::User)
+    /// for a click or key on this list or another collection sharing the
+    /// selection, and [`ChangeOrigin::Application`](crate::ChangeOrigin::Application)
+    /// for a write through the [`ListSelection`] methods or a controller,
+    /// including a [`CollectionFilter`](crate::CollectionFilter) moving the
+    /// active item off a row its new query hides. Writes made
+    /// between two updates of the list arrive as one change, carrying the
+    /// origin of the last of them. The selection the list first sees is not a
+    /// change, and a list that is hidden reports a change made meanwhile when
+    /// it is shown and updates again. Without a selection nothing is reported.
+    ///
+    /// Changes are delivered as a [`Tabs::on_select`](crate::Tabs::on_select)
+    /// change is: in an event phase after the update and layout waves of the
+    /// flush have settled, one call per change, oldest first, and an input
+    /// entry point settles its flush before it returns. The callback may write
+    /// bindings; an error does not undo the change, and the first error is
+    /// returned from the flush. Like the other callbacks, it belongs to the
+    /// first description of a mounted list.
+    ///
+    /// ```
+    /// use pert_ui_runtime::*;
+    /// use std::{cell::RefCell, rc::Rc, time::Duration};
+    /// struct Fruit;
+    /// impl ListItems for Fruit {
+    ///     fn len(&self) -> usize { 3 }
+    ///     fn key(&self, index: usize) -> Option<String> {
+    ///         ["apple", "pear", "plum"].get(index).map(|key| (*key).to_owned())
+    ///     }
+    ///     fn build(&self, index: usize) -> Option<Element> {
+    ///         Some(Label::new(self.key(index)?).key("row"))
+    ///     }
+    /// }
+    /// let mut ui = Runtime::new();
+    /// ui.set_viewport(Viewport::new(200.0, 200.0, 1.0)?)?;
+    /// let items = ui.signal(ListSource::new(Fruit));
+    /// let selection = ListSelection::new(&ui, SelectionMode::Single);
+    /// let shown = ui.signal(None::<String>);
+    /// let detail = shown.clone();
+    /// let list = VirtualList::new(&items, 24.0)?
+    ///     .selection(selection.clone())
+    ///     .on_selection_change(move |_, change| detail.set(change.active.clone()));
+    /// let id = ui.mount_tree(list.key("fruit"))?;
+    /// ui.flush(Duration::ZERO)?;
+    /// ui.focus(&id)?;
+    /// ui.key_input(KeyCode::ArrowDown, KeyAction::Press)?;
+    /// ui.key_input(KeyCode::ArrowDown, KeyAction::Release)?;
+    /// assert_eq!(shown.get()?.as_deref(), Some("apple"));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn on_selection_change(
+        mut self,
+        on_change: impl FnMut(
+            &mut EventContext,
+            &crate::ListSelectionChange,
+        ) -> Result<(), RuntimeError>
+        + 'static,
+    ) -> Self {
+        self.on_selection = Some(Box::new(on_change));
+        self
+    }
+
+    /// Like [`Self::on_selection_change`] for an owner that installs the
+    /// callback at construction: changes are observed only while `gate` reads
+    /// true, so an owner without a user callback costs nothing.
+    pub(crate) fn on_selection_change_gated(
+        mut self,
+        gate: Rc<Cell<bool>>,
+        on_change: impl FnMut(
+            &mut EventContext,
+            &crate::ListSelectionChange,
+        ) -> Result<(), RuntimeError>
+        + 'static,
+    ) -> Self {
+        self.observe_gate = Some(gate);
+        self.on_selection_change(on_change)
+    }
+    /// Whether this list observes its selection for a callback.
+    fn observes_selection(&self) -> bool {
+        self.on_selection.is_some() && self.observe_gate.as_ref().is_none_or(|gate| gate.get())
+    }
+
+    /// Records a change of the observed selection for
+    /// [`Self::on_selection_change`]; the first observation is not a change.
+    fn observe_selection(&mut self, active: Option<String>) {
+        if !self.observes_selection() {
+            return;
+        }
+        let Some(selection) = &self.selection else {
+            return;
+        };
+        let selected = self.selected.clone();
+        let Some((previous_active, previous_selected)) = self.selection_seen.take() else {
+            self.selection_seen = Some((active, selected));
+            return;
+        };
+        if previous_active != active
+            || !(Rc::ptr_eq(&previous_selected, &selected) || previous_selected == selected)
+        {
+            self.selection_pending.push(crate::ListSelectionChange {
+                previous_active,
+                active: active.clone(),
+                previous_selected,
+                selected: selected.clone(),
+                origin: selection.last_origin(),
+            });
+            if let Some(notifier) = &self.notifier {
+                notifier.request();
+            }
+        }
+        self.selection_seen = Some((active, selected));
     }
 
     /// Runs when Enter is pressed on the active item of a list with a selection.
@@ -1352,7 +1500,9 @@ impl VirtualList {
         gesture: Gesture,
     ) -> Result<(), RuntimeError> {
         if let (Some(selection), Some(items)) = (&self.selection, &self.snapshot) {
-            selection.apply(&**items, index, gesture)?;
+            selection.with_origin(crate::ChangeOrigin::User, || {
+                selection.apply(&**items, index, gesture)
+            })?;
             self.active_index = Some(index);
             let offset = self.axis().reveal(index, self.offset.get(), self.main());
             self.scroll(cx, offset)?;
@@ -1428,6 +1578,18 @@ impl Drop for Unserved {
 }
 
 impl Component for VirtualList {
+    fn deliver_notifications(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
+        // `observe_selection` requests one delivery per change, so each call
+        // delivers the oldest change, in order with other components' changes.
+        if self.selection_pending.is_empty() {
+            return Ok(());
+        }
+        let change = self.selection_pending.remove(0);
+        match &mut self.on_selection {
+            Some(on_change) => on_change(cx, &change),
+            None => Ok(()),
+        }
+    }
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
         let allowed = self.reorder_permission.read_paint(cx)?;
         if self.reorder_allowed && !allowed {
@@ -1490,9 +1652,13 @@ impl Component for VirtualList {
             };
             self.controller = Some(controller);
         }
-        if let Some(selection) = &self.selection {
+        if let Some(selection) = self.selection.clone() {
             let active = cx.read_paint(&selection.active())?;
             self.selected = cx.read_paint(&selection.selected())?;
+            if self.observes_selection() {
+                self.notifier.get_or_insert_with(|| cx.notifier());
+            }
+            self.observe_selection(active.clone());
             // The position is resolved only when the key or the source changed,
             // since a source may answer `index_of` in linear time.
             if replaced || active != self.active {
@@ -1510,7 +1676,7 @@ impl Component for VirtualList {
             }
         }
         if let Some(controller) = &self.controller
-            && let Some(request) = cx.read(&controller.reveal.read_only())?
+            && let Some(request) = cx.read(&controller.reveal)?
             && request.serial != self.reveal_seen.seen
         {
             self.reveal_seen.seen = request.serial;
@@ -1543,10 +1709,8 @@ impl Component for VirtualList {
         if replaced || wanted != self.mounted {
             let mut elements = Vec::with_capacity(wanted.len());
             for (index, key) in &wanted {
-                let element = items.build(*index).ok_or(LayoutError::InvalidChild)?;
-                if element.key() != key {
-                    return Err(LayoutError::InvalidChild.into());
-                }
+                let mut element = items.build(*index).ok_or(LayoutError::InvalidChild)?;
+                element.key.clone_from(key);
                 elements.push(element);
             }
             cx.request_children(elements);
@@ -1757,8 +1921,7 @@ impl Component for VirtualList {
                     };
                     let keys = self.dragged_keys(index);
                     let preview = match (keys.len(), self.snapshot.as_ref()) {
-                        (1, Some(items)) => items
-                            .build(index)
+                        (1, Some(items)) => keyed_row(items, index)
                             .map_or_else(DragPreview::none, DragPreview::element),
                         (count, _) => DragPreview::element(Element::new(
                             "items",

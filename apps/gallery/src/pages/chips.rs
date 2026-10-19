@@ -5,48 +5,26 @@ use pert_ui::*;
 
 const TAGS: [&str; 5] = ["Draft", "Review", "Urgent", "Shared", "Archived"];
 
-/// The application side of the removable chips: it holds the tags, describes
-/// one chip per tag keyed by the tag, and describes them again when the data
-/// changes. A chip only reports removal; this owner removes the tag.
-struct TagEditor {
-    tags: Signal<Vec<String>>,
-    status: Signal<String>,
-    shown: Option<Vec<String>>,
-}
-impl TagEditor {
-    fn describe(&self, tags: &[String]) -> Vec<Element> {
-        let chips = tags
-            .iter()
-            .map(|tag| {
-                let (data, status, removed) = (self.tags.clone(), self.status.clone(), tag.clone());
-                Element::new(
-                    tag.clone(),
-                    Chip::removable(tag.clone(), move |_| {
-                        let mut list = data.get()?;
-                        list.retain(|tag| *tag != removed);
-                        data.set(list)?;
-                        status.set(format!("Removed tag {removed}")).map(|_| ())
-                    }),
-                )
-            })
-            .collect::<Vec<_>>();
-        let content = if chips.is_empty() {
-            label("no-tags", "No tags. Press Reset tags.")
-        } else {
-            Element::new("chips", Wrap::new(chips))
-        };
-        vec![content]
-    }
-}
-impl Component for TagEditor {
-    fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
-        let tags = cx.read(&self.tags.read_only())?;
-        if self.shown.as_ref() != Some(&tags) {
-            cx.request_children(self.describe(&tags));
-            self.shown = Some(tags);
+/// The application side of the removable chips: one chip per tag keyed by the
+/// tag, described again by a `Dynamic` whenever the data changes. A chip only
+/// reports removal; this owner removes the tag.
+fn tag_editor(tags: &Signal<Vec<String>>, status: &Signal<String>) -> Element {
+    let (data, status) = (tags.clone(), status.clone());
+    Dynamic::new(tags, move |_, tags| {
+        if tags.is_empty() {
+            return label("no-tags", "No tags. Press Reset tags.");
         }
-        Ok(())
-    }
+        let chips = tags.iter().map(|tag| {
+            let (data, status, removed) = (data.clone(), status.clone(), tag.clone());
+            Chip::removable(tag.clone(), move |_| {
+                data.update(|list| list.retain(|tag| *tag != removed))?;
+                status.set(format!("Removed tag {removed}"))
+            })
+            .key(tag.clone())
+        });
+        Wrap::new(chips).key("chips")
+    })
+    .key("tag-editor")
 }
 
 fn all_tags() -> Vec<String> {
@@ -77,17 +55,10 @@ fn chips_section(ui: &Runtime, status: &Signal<String>) -> Element {
                     ),
                 ]),
             ),
-            Element::new(
-                "tag-editor",
-                TagEditor {
-                    tags,
-                    status: status.clone(),
-                    shown: None,
-                },
-            ),
+            tag_editor(&tags, status),
             Element::new(
                 "reset-tags",
-                Button::new("Reset tags", move |_| reset.set(all_tags()).map(|_| ())),
+                Button::new("Reset tags", move |_| reset.set(all_tags())),
             ),
         ],
     )
@@ -103,34 +74,32 @@ const FOLDERS: [(&str, &str); 6] = [
     ("/home/user/projects/album/mixes", "mixes"),
 ];
 
-/// The application side of a breadcrumb: it keeps the current folder and
-/// describes the breadcrumb again from its own update after a navigation.
-struct Location {
-    /// The breadcrumb's key, distinct for each location on the page.
+/// The application side of a breadcrumb: it keeps the current folder, and a
+/// `Dynamic` describes the breadcrumb again after a navigation. `crumbs` is the
+/// breadcrumb's key, distinct for each location on the page.
+fn location(
+    key: &str,
     crumbs: &'static str,
-    path: Signal<String>,
-    status: Signal<String>,
-    shown: Option<String>,
-}
-impl Component for Location {
-    fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
-        let path = cx.read(&self.path.read_only())?;
-        if self.shown.as_ref() == Some(&path) {
-            return Ok(());
-        }
+    path: &Signal<String>,
+    status: &Signal<String>,
+) -> Element {
+    let (target, status) = (path.clone(), status.clone());
+    Dynamic::new(path, move |_, path| {
         let segments = FOLDERS
             .iter()
             .filter(|(key, _)| path.starts_with(key))
             .map(|(key, label)| BreadcrumbSegment::new(*key, *label));
-        let (target, status) = (self.path.clone(), self.status.clone());
+        let (target, status) = (target.clone(), status.clone());
         let breadcrumb = Breadcrumb::new(segments, move |_, key| {
             target.set(key.to_owned())?;
-            status.set(format!("Navigated to {key}")).map(|_| ())
-        })?;
-        cx.request_children(vec![Element::new(self.crumbs, breadcrumb)]);
-        self.shown = Some(path);
-        Ok(())
-    }
+            status.set(format!("Navigated to {key}"))
+        });
+        match breadcrumb {
+            Ok(breadcrumb) => breadcrumb.key(crumbs),
+            Err(error) => label(crumbs, format!("The folder path is invalid: {error}")),
+        }
+    })
+    .key(key)
 }
 
 fn deepest() -> String {
@@ -140,17 +109,7 @@ fn deepest() -> String {
 fn breadcrumb_section(ui: &Runtime, status: &Signal<String>) -> Result<Element, RuntimeError> {
     let path = ui.signal(deepest());
     let reset = path.clone();
-    let location = |key: &str, crumbs| {
-        Element::new(
-            key,
-            Location {
-                crumbs,
-                path: path.clone(),
-                status: status.clone(),
-                shown: None,
-            },
-        )
-    };
+    let location = |key: &str, crumbs| location(key, crumbs, &path, status);
     let narrow = SizeLimits::new(Size::new(0.0, 0.0)?, Constraints::new(Some(260.0), None)?)?;
     Ok(section(
         "breadcrumb-section",
@@ -169,7 +128,7 @@ fn breadcrumb_section(ui: &Runtime, status: &Signal<String>) -> Result<Element, 
             ),
             Element::new(
                 "open-deepest",
-                Button::new("Open mixes", move |_| reset.set(deepest()).map(|_| ())),
+                Button::new("Open mixes", move |_| reset.set(deepest())),
             ),
         ],
     ))
@@ -217,9 +176,7 @@ fn chooser(
     commit: MultiSelectCommit,
 ) -> Result<[Element; 2], RuntimeError> {
     let value = ui.signal(chosen.to_vec());
-    let mirror = value
-        .read_only()
-        .map(|values| format!("Bound value: [{}]", values.join(", ")))?;
+    let mirror = value.map(|values| format!("Bound value: [{}]", values.join(", ")))?;
     let chooser = MultiSelect::new(ui, value, instruments())?
         .commit(commit)
         .placeholder("Choose instruments…");

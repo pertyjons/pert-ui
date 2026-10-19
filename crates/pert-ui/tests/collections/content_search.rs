@@ -698,7 +698,7 @@ fn dirty_derived_list_source_read_errors_are_not_obsolete_widget_hits() {
     ui.set_viewport(Viewport::new(320.0, 200.0, 1.0).unwrap())
         .unwrap();
     let source = ui.signal(ListSource::new(Words(vec!["filler"])));
-    let derived = source.read_only().map(Clone::clone).unwrap();
+    let derived = source.map(Clone::clone).unwrap();
     ui.mount_tree(Element::new(
         "words",
         VirtualList::new(derived, 24.0).unwrap(),
@@ -720,6 +720,7 @@ fn dirty_derived_list_source_read_errors_are_not_obsolete_widget_hits() {
     assert_eq!(search(&ui, "replacement").len(), 1);
 }
 
+/// A row the source counts and keys but cannot build.
 struct InvalidRow;
 impl ListItems for InvalidRow {
     fn len(&self) -> usize {
@@ -729,7 +730,7 @@ impl ListItems for InvalidRow {
         (index == 0).then(|| "filler-0".to_owned())
     }
     fn build(&self, _: usize) -> Option<Element> {
-        Some(Element::new("wrong-key", Label::new("replacement")))
+        None
     }
     fn text(&self, index: usize) -> Option<String> {
         (index == 0).then(|| "replacement".to_owned())

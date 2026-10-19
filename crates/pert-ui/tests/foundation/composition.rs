@@ -1124,10 +1124,10 @@ fn a_child_moved_inside_its_describing_parent_stays_described_by_it() {
         ]))
         .unwrap();
     ui.flush(Duration::ZERO).unwrap();
-    let home = ui.find(&root, &["home"]).unwrap().unwrap();
-    let inner = ui.find(&home, &["inner"]).unwrap().unwrap();
-    let away = ui.find(&root, &["away"]).unwrap().unwrap();
-    let item = ui.find(&home, &["item"]).unwrap().unwrap();
+    let home = ui.find_path(&root, &["home"]).unwrap().unwrap();
+    let inner = ui.find_path(&home, &["inner"]).unwrap().unwrap();
+    let away = ui.find_path(&root, &["away"]).unwrap().unwrap();
+    let item = ui.find_path(&home, &["item"]).unwrap().unwrap();
     let described = || {
         vec![
             leaf("item"),
@@ -1168,10 +1168,10 @@ fn a_child_moved_inside_its_describing_parent_stays_described_by_it() {
 
     // Moved anywhere else, the new owner describes it.
     ui.reconcile_children(&home, described()).unwrap();
-    let item = ui.find(&home, &["item"]).unwrap().unwrap();
+    let item = ui.find_path(&home, &["item"]).unwrap().unwrap();
     ui.reparent(&item, &away, 0).unwrap();
     ui.reconcile_children(&home, described()).unwrap();
-    let fresh = ui.find(&home, &["item"]).unwrap().unwrap();
+    let fresh = ui.find_path(&home, &["item"]).unwrap().unwrap();
     assert_ne!(fresh, item, "the former parent mounts its own again");
     assert_eq!(ui.children(&away).unwrap(), std::slice::from_ref(&item));
     ui.reconcile_children(&away, Vec::new()).unwrap();

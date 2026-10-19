@@ -32,7 +32,8 @@ pub trait TreeItems {
     fn can_expand(&self, key: &str) -> bool {
         !self.children(key).is_empty()
     }
-    /// The row content of `key`, keyed by `key`, or `None` for an unknown node.
+    /// The row content of `key`, or `None` for an unknown node. The tree keys
+    /// the content with `key`; its own key is replaced.
     fn build(&self, key: &str) -> Option<Element>;
     /// Whether a [reorderable](Tree::reorderable) tree offers dropping into
     /// `key`, making the dropped nodes its children. `false` by default, so a
@@ -119,22 +120,21 @@ impl ListItems for Flat {
     }
     fn build(&self, index: usize) -> Option<Element> {
         let row = self.rows.get(index)?;
-        let content = self.source.0.build(&row.key)?;
-        (content.key() == row.key).then(|| {
-            Element::new(
-                row.key.clone(),
-                TreeRow {
-                    content: Some(content),
-                    key: row.key.clone(),
-                    depth: row.depth,
-                    expandable: row.expandable,
-                    expanded: row.expanded,
-                    state: self.state.clone(),
-                    slot: Cell::new(None),
-                    hovered_expander: false,
-                },
-            )
-        })
+        let mut content = self.source.0.build(&row.key)?;
+        content.key.clone_from(&row.key);
+        Some(Element::new(
+            row.key.clone(),
+            TreeRow {
+                content: Some(content),
+                key: row.key.clone(),
+                depth: row.depth,
+                expandable: row.expandable,
+                expanded: row.expanded,
+                state: self.state.clone(),
+                slot: Cell::new(None),
+                hovered_expander: false,
+            },
+        ))
     }
     fn index_of(&self, key: &str) -> Option<usize> {
         self.index.get(key).copied()
@@ -435,7 +435,7 @@ impl TreeController {
             .get()?
             .and_then(|key| crate::collection_filter::nearest(&*before, &*after, &key));
         let revision = self.0.replaced.get()?.0.wrapping_add(1);
-        self.0.replaced.set((revision, nearest)).map(|_| ())
+        self.0.replaced.set((revision, nearest))
     }
     /// Source replacements with the nearest remaining row, for
     /// [`CollectionFilter`](crate::CollectionFilter).
@@ -812,7 +812,10 @@ impl Component for TreeRow {
             && self.slot.get().is_some_and(|slot| slot.contains(point))
             && let Some(state) = self.state.upgrade()
         {
-            TreeController(state).toggle(&self.key)?;
+            // A collapse can move the active node to this one: the user's choice.
+            let controller = TreeController(state);
+            let selection = controller.selection();
+            selection.with_origin(crate::ChangeOrigin::User, || controller.toggle(&self.key))?;
             return Ok(InputOutcome::Handled);
         }
         Ok(InputOutcome::Ignored)
@@ -1033,6 +1036,25 @@ impl Tree {
         self.list = self.list.drag_operations(operations);
         self
     }
+    /// Reports every change of the tree's [`ListSelection`] after it took
+    /// effect, as [`VirtualList::on_selection_change`] does for a list: a click,
+    /// a key or a collapse that moves the active node to its parent is
+    /// [`ChangeOrigin::User`](crate::ChangeOrigin::User), and a write through
+    /// the selection or the [`TreeController`] is
+    /// [`ChangeOrigin::Application`](crate::ChangeOrigin::Application). The
+    /// callback runs on the tree, and like the other callbacks it belongs to
+    /// the first description of a mounted tree.
+    pub fn on_selection_change(
+        mut self,
+        on_change: impl FnMut(
+            &mut EventContext,
+            &crate::ListSelectionChange,
+        ) -> Result<(), RuntimeError>
+        + 'static,
+    ) -> Self {
+        self.list = self.list.on_selection_change(on_change);
+        self
+    }
     /// Runs when Enter is pressed on the active node; receives its key.
     pub fn on_activate(
         mut self,
@@ -1244,6 +1266,9 @@ impl Component for Tree {
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
         self.list.update(cx)
     }
+    fn deliver_notifications(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
+        self.list.deliver_notifications(cx)
+    }
     fn can_reveal(&self) -> bool {
         self.list.can_reveal()
     }
@@ -1310,7 +1335,10 @@ impl Component for Tree {
             if keyboard.chord_modifiers(event) != crate::Modifiers::default() {
                 return Ok(InputOutcome::Ignored);
             }
-            return Ok(if self.cross(right)? {
+            // Moving or collapsing over the active node is the user's choice.
+            let selection = self.state.0.selection.clone();
+            let crossed = selection.with_origin(crate::ChangeOrigin::User, || self.cross(right))?;
+            return Ok(if crossed {
                 InputOutcome::Handled
             } else {
                 InputOutcome::Ignored

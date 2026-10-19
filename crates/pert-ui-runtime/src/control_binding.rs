@@ -64,7 +64,7 @@ fn same_parameter<T: ParameterValue>(parameter: &Parameter<T>, other: &dyn std::
 impl<T: Clone + PartialEq + 'static> ValueBinding<T> for Signal<T> {
     fn read(&self, cx: &mut UpdateContext) -> Result<Reading<T>, RuntimeError> {
         Ok(Reading {
-            value: cx.read_paint(&self.read_only())?,
+            value: cx.read_paint(self)?,
             editable: true,
             revision: Revision::INITIAL,
             name: None,
@@ -75,7 +75,7 @@ impl<T: Clone + PartialEq + 'static> ValueBinding<T> for Signal<T> {
         self.get()
     }
     fn choose(&self, _: &mut EventContext, value: T, _: Revision) -> Result<bool, RuntimeError> {
-        self.set(value)
+        self.set_changed(value)
     }
     fn same_target(&self, other: &dyn ValueBinding<T>) -> bool {
         let other: &dyn std::any::Any = other;

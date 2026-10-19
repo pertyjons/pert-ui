@@ -298,7 +298,7 @@ fn three_surfaces(software: bool) -> Result<(), AppError> {
         )],
         move |_, _| {
             counted.set(counted.get() + 1);
-            state.set(!state.get()?).map(|_| ())
+            state.set(!state.get()?)
         },
     )?;
     let mut elements = Vec::new();

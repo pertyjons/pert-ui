@@ -8,11 +8,16 @@
 #[path = "../support/mod.rs"]
 mod support;
 
+mod application_services;
 mod arc_geometry;
 mod async_source;
+mod callback_conveniences;
 mod capture;
 mod composition;
 mod coordinates;
+mod described;
+mod failure_sites;
+mod flex_layout;
 mod foundation;
 mod host_adapter;
 mod inspection_service;
@@ -29,9 +34,13 @@ mod receipts;
 mod recovery;
 mod redescription;
 mod remote_authority;
+mod row_stretch;
 mod semantic_names;
 mod semantics;
 mod serialization;
+mod signal_writes;
+mod sink_follow_ups;
+mod startup_viewport;
 mod state_owner;
 mod transforms;
 mod vector_geometry;

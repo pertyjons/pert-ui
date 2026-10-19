@@ -530,7 +530,8 @@ impl Collapsible {
     /// signal's value, and the header and reveals write it. The section then
     /// stays out of workspace persistence, since the signal is application
     /// state. [`Self::expanded`] is ignored for a bound section.
-    pub fn bound(mut self, expanded: Signal<bool>) -> Self {
+    pub fn bound(mut self, expanded: impl Into<Signal<bool>>) -> Self {
+        let expanded: Signal<bool> = expanded.into();
         self.binding = Some(expanded);
         self
     }
@@ -560,14 +561,14 @@ impl Collapsible {
         self.headers.restrict(permission);
         self
     }
-    fn key(&self) -> &str {
+    fn header_key(&self) -> &str {
         &self.headers.rows[0].key
     }
     fn is_open(&self) -> bool {
-        self.headers.open.contains(self.key())
+        self.headers.open.contains(self.header_key())
     }
     fn set_open(&mut self, open: bool) -> bool {
-        let key = self.key().to_owned();
+        let key = self.header_key().to_owned();
         if open {
             self.headers.open.insert(key)
         } else {
@@ -640,14 +641,14 @@ impl Component for Collapsible {
         self.content.take().into_iter().collect()
     }
     fn child_visible(&self, key: &str) -> bool {
-        key != self.key() || self.is_open()
+        key != self.header_key() || self.is_open()
     }
     fn reveal_child(
         &mut self,
         cx: &mut EventContext,
         key: &str,
     ) -> Result<ChildReveal, RuntimeError> {
-        if key != self.key() || !self.headers.enabled {
+        if key != self.header_key() || !self.headers.enabled {
             return Ok(ChildReveal::Refused);
         }
         if self.is_open() {
@@ -674,7 +675,7 @@ impl Component for Collapsible {
         }
         self.headers.read_enablement(cx)?;
         if let Some(binding) = &self.binding {
-            let open = cx.read(&binding.read_only())?;
+            let open = cx.read(binding)?;
             if self.set_open(open) {
                 cx.request_layout();
             }
@@ -1039,7 +1040,7 @@ impl Accordion {
     ///     Section::new("a", "First", Element::new("a-body", Label::new("A"))),
     ///     Section::new("b", "Second", Element::new("b-body", Label::new("B"))),
     /// ])
-    /// .on_change(move |_, keys, _origin| seen.set(keys.to_vec()).map(|_| ()));
+    /// .on_change(move |_, keys, _origin| seen.set(keys.to_vec()));
     /// let root = ui.mount_tree(Element::new("accordion", accordion))?;
     /// ui.reveal_child(&root, "b")?;
     /// assert_eq!(open.get()?, ["b"]);

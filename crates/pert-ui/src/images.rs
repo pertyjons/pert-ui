@@ -32,7 +32,7 @@
 //! let target = picture.clone();
 //! // Keep the mailbox as long as results matter; dropping it closes it.
 //! let mailbox = ui.mailbox(Capacity::new(1)?, move |image: RasterImage| {
-//!     target.set(Some(image)).map(|_| ())
+//!     target.set(Some(image))
 //! })?;
 //! ui.mount_tree(Element::new("picture", Image::bound(picture.read_only())))?;
 //! let sender = mailbox.sender();

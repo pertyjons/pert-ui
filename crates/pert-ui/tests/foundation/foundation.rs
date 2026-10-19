@@ -104,7 +104,7 @@ fn derived_bindings_batch_filter_changes_and_keep_chains_current() -> Result {
     assert!(!count.read_only().same_source(&ui.signal(0).read_only()));
     let calls = Rc::new(Cell::new(0));
     let observed = calls.clone();
-    let even = count.read_only().map(move |value| {
+    let even = count.map(move |value| {
         observed.set(observed.get() + 1);
         value % 2 == 0
     })?;
@@ -135,9 +135,7 @@ fn derived_bindings_batch_filter_changes_and_keep_chains_current() -> Result {
     );
     assert_eq!(ui.flush(Duration::ZERO)?.components_updated, 1);
     let other = ui.signal(10);
-    let sum = count
-        .read_only()
-        .combine(&other.read_only(), |a, b| a + b)?;
+    let sum = count.combine(&other.read_only(), |a, b| a + b)?;
     count.set(7)?;
     other.set(20)?;
     assert_eq!(sum.get()?, 27);
@@ -157,7 +155,7 @@ fn button_properties_change_without_losing_identity_and_disable_cancels_press() 
     ui.set_viewport(Viewport::new(300.0, 200.0, 1.0)?)?;
     let count = ui.signal(0);
     let enabled = ui.signal(true);
-    let caption = count.read_only().map(|n| format!("Save {n}"))?;
+    let caption = count.map(|n| format!("Save {n}"))?;
     let calls = Rc::new(Cell::new(0));
     let observed = calls.clone();
     let id = ui.mount_tree(Element::new(
@@ -353,14 +351,14 @@ fn detached_tasks_outlive_their_widget_but_not_shutdown() -> Result {
 fn derived_diamond_is_consistent_and_drop_releases_captured_state() -> Result {
     let mut ui = Runtime::new();
     let input = ui.signal(1);
-    let left = input.read_only().map(|v| v * 2)?;
-    let right = input.read_only().map(|v| v * 3)?;
+    let left = input.map(|v| v * 2)?;
+    let right = input.map(|v| v * 3)?;
     let sum = left.combine(&right, |a, b| a + b)?;
     input.set(4)?;
     assert_eq!(sum.get()?, 20);
     let lifetime = Rc::new(());
     let weak = Rc::downgrade(&lifetime);
-    let derived = input.read_only().map(move |v| {
+    let derived = input.map(move |v| {
         let _ = &lifetime;
         v + 1
     })?;
@@ -369,7 +367,7 @@ fn derived_diamond_is_consistent_and_drop_releases_captured_state() -> Result {
     assert!(weak.upgrade().is_none());
     ui.flush(Duration::ZERO)?;
     let writer = input.clone();
-    let guarded = input.read_only().map(move |_| writer.set(9))?;
+    let guarded = input.map(move |_| writer.set(9))?;
     assert_eq!(guarded.get()?, Err(RuntimeError::WriteDuringUpdate));
     assert_eq!(input.get()?, 5);
     Ok(())
@@ -438,7 +436,7 @@ fn inspection_does_not_evaluate_a_dirty_derived_callback() -> Result {
     let input = ui.signal(1);
     let calls = Rc::new(Cell::new(0));
     let count = calls.clone();
-    let derived = input.read_only().map(move |v| {
+    let derived = input.map(move |v| {
         count.set(count.get() + 1);
         v * 2
     })?;

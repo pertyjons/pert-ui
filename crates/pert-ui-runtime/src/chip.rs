@@ -60,7 +60,7 @@ struct Prepared {
 ///             // The owner's data loses the item; its next description drops the chip.
 ///             let mut list = tags.get()?;
 ///             list.retain(|tag| *tag != removed);
-///             tags.set(list).map(|_| ())
+///             tags.set(list)
 ///         }))
 ///     })
 ///     .collect();

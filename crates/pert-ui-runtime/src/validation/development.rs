@@ -45,6 +45,10 @@ pub(crate) struct Validator {
     update_limit: Option<ValidationIssue>,
     report: ValidationReport,
     logged: BTreeSet<IssueKey>,
+    /// Native windows whose viewport has area. Only their components' geometry
+    /// is validated: a window without area presents nothing, and layout gives
+    /// every box in it an empty extent.
+    measured: BTreeSet<u64>,
     dirty: bool,
     /// Validation passes run, so tests can tell when a pass happened.
     #[cfg(test)]
@@ -91,6 +95,32 @@ impl Validator {
             node.hints.clip = Some(clip);
             self.dirty = true;
         }
+    }
+    /// Replaces the windows whose geometry is validated, before a refresh.
+    pub(crate) fn set_measured(&mut self, measured: BTreeSet<u64>) {
+        if self.measured != measured {
+            self.measured = measured;
+            self.dirty = true;
+        }
+    }
+    /// The nodes as validation sees them: without geometry where their window
+    /// is not measured, so no geometry rule applies there.
+    fn validated_nodes(&self) -> std::borrow::Cow<'_, BTreeMap<u64, NodeData>> {
+        if self
+            .nodes
+            .values()
+            .all(|node| self.measured.contains(&node.window))
+        {
+            return std::borrow::Cow::Borrowed(&self.nodes);
+        }
+        let mut nodes = self.nodes.clone();
+        for node in nodes.values_mut() {
+            if !self.measured.contains(&node.window) {
+                node.box_model.border_box = None;
+                node.hints.clip = None;
+            }
+        }
+        std::borrow::Cow::Owned(nodes)
     }
     pub(crate) fn flags(&mut self, id: u64, visible: bool, focused: bool) {
         if let Some(node) = self.nodes.get_mut(&id)
@@ -171,9 +201,10 @@ impl Validator {
 
     /// Visible boxes of `window`'s measured components, in incarnation order.
     pub(crate) fn boxes(&self, window: u64) -> impl Iterator<Item = OverlayBox> + '_ {
+        let measured = self.measured.contains(&window);
         self.nodes
             .values()
-            .filter(move |node| node.window == window)
+            .filter(move |node| measured && node.window == window)
             .filter_map(|node| {
                 let border = visible_rect(node)?;
                 let content = node
@@ -214,7 +245,8 @@ impl Validator {
             {
                 self.passes += 1;
             }
-            let mut issues = check(&self.nodes);
+            let nodes = self.validated_nodes();
+            let mut issues = check(&nodes);
             issues.extend(self.attempts.values().cloned());
             issues.extend(self.update_limit.iter().cloned());
             issues.sort_by_key(issue_key);
@@ -224,7 +256,7 @@ impl Validator {
                 for &id in &issue.components {
                     let marker = markers.entry(id).or_insert_with(|| ValidationMarker {
                         component: id,
-                        bounds: self.nodes.get(&id).and_then(visible_rect).map(Rect::array),
+                        bounds: nodes.get(&id).and_then(visible_rect).map(Rect::array),
                         color: [1.0, 0.0, 0.0, 1.0],
                         codes: Vec::new(),
                     });
@@ -233,6 +265,7 @@ impl Validator {
                     }
                 }
             }
+            drop(nodes);
             self.report = ValidationReport {
                 enabled: true,
                 pending: false,
@@ -241,7 +274,20 @@ impl Validator {
                 logging_error: None,
             };
             let current: BTreeSet<_> = self.report.issues.iter().map(issue_key).collect();
-            self.logged.retain(|key| current.contains(key));
+            // An issue withheld only because its window is not measured right
+            // now stays logged, so it is not written again once validated.
+            let nodes = &self.nodes;
+            let measured = &self.measured;
+            self.logged.retain(|key| {
+                current.contains(key)
+                    || (geometric(key.0)
+                        && !key.1.is_empty()
+                        && key.1.iter().all(|id| {
+                            nodes
+                                .get(id)
+                                .is_some_and(|node| !measured.contains(&node.window))
+                        }))
+            });
             self.dirty = false;
         }
         for issue in &self.report.issues {
@@ -291,6 +337,21 @@ fn with_log<R>(write: impl FnOnce(&mut dyn Write) -> R) -> R {
 #[cfg(test)]
 pub(crate) fn take_test_log() -> String {
     TEST_LOG.with_borrow_mut(|log| String::from_utf8_lossy_owned(std::mem::take(log)))
+}
+
+/// Whether `code` judges measured geometry, which is withheld in a window
+/// that is not measured.
+fn geometric(code: ValidationCode) -> bool {
+    matches!(
+        code,
+        ValidationCode::InvalidBounds
+            | ValidationCode::InvalidClip
+            | ValidationCode::PaddingExceedsBounds
+            | ValidationCode::EmptyHitArea
+            | ValidationCode::UnexpectedOverlap
+            | ValidationCode::EscapesParent
+            | ValidationCode::CollapsedParent
+    )
 }
 
 fn issue_key(issue: &ValidationIssue) -> IssueKey {
@@ -740,6 +801,69 @@ mod tests {
     }
 
     #[test]
+    fn geometry_is_validated_only_in_a_measured_window() {
+        let mut empty = node();
+        empty.hints.interactive = true;
+        empty.box_model.border_box = Some([0.0, 0.0, 0.0, 20.0]);
+        empty.box_model.padding = Some([f32::NAN; 4]);
+        let codes = |validator: &Validator| -> Vec<_> {
+            validator
+                .report(false)
+                .issues
+                .iter()
+                .map(|issue| issue.code)
+                .collect()
+        };
+        let mut validator = Validator::default();
+        validator.update(1, empty);
+        validator.refresh_to(&mut Vec::new());
+        // Padding values are checked anywhere; the empty box is not.
+        assert_eq!(codes(&validator), [ValidationCode::InvalidPadding]);
+        assert_eq!(validator.boxes(1).count(), 0);
+        validator.set_measured(BTreeSet::from([1]));
+        validator.refresh_to(&mut Vec::new());
+        assert_eq!(
+            codes(&validator),
+            [ValidationCode::InvalidPadding, ValidationCode::EmptyHitArea]
+        );
+        validator.set_measured(BTreeSet::new());
+        validator.refresh_to(&mut Vec::new());
+        assert_eq!(codes(&validator), [ValidationCode::InvalidPadding]);
+    }
+
+    #[test]
+    fn an_issue_withheld_while_its_window_is_unmeasured_is_not_logged_again() {
+        let mut empty = node();
+        empty.hints.interactive = true;
+        empty.box_model.border_box = Some([0.0, 0.0, 0.0, 20.0]);
+        let mut validator = Validator::default();
+        validator.update(1, empty);
+        validator.set_measured(BTreeSet::from([1]));
+        let mut log = Vec::new();
+        validator.refresh_to(&mut log);
+        assert_eq!(validator.logged_lines, 1);
+        validator.set_measured(BTreeSet::new());
+        validator.refresh_to(&mut log);
+        assert!(validator.report(false).issues.is_empty());
+        validator.set_measured(BTreeSet::from([1]));
+        validator.refresh_to(&mut log);
+        assert_eq!(validator.report(false).issues.len(), 1);
+        assert_eq!(
+            validator.logged_lines, 1,
+            "the unchanged issue is not logged twice"
+        );
+        // Once validation confirms it fixed, it is logged again if it returns.
+        validator.update(1, node());
+        validator.refresh_to(&mut log);
+        let mut empty = node();
+        empty.hints.interactive = true;
+        empty.box_model.border_box = Some([0.0, 0.0, 0.0, 20.0]);
+        validator.update(1, empty);
+        validator.refresh_to(&mut log);
+        assert_eq!(validator.logged_lines, 2);
+    }
+
+    #[test]
     fn peers_that_only_touch_are_not_overlapping() {
         // Two rows of a grid at a fractional coordinate: the first row's end and
         // the second row's start are the same edge, but f32 rounds them apart.
@@ -749,6 +873,7 @@ mod tests {
             data
         };
         let mut validator = Validator::default();
+        validator.set_measured(BTreeSet::from([1]));
         validator.update(1, stacked(208.8));
         validator.update(2, stacked(256.8));
         validator.refresh_to(&mut Vec::new());
@@ -760,6 +885,7 @@ mod tests {
 
         // A shared edge that a pixel could show is still an overlap.
         let mut validator = Validator::default();
+        validator.set_measured(BTreeSet::from([1]));
         validator.update(1, stacked(208.8));
         validator.update(2, stacked(256.8 - 0.5));
         validator.refresh_to(&mut Vec::new());

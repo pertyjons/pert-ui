@@ -950,7 +950,7 @@ fn disabled_text_editors_do_not_save_on_immediate_focus_loss() {
                 let saved = saves.clone();
                 let field = if multiline {
                     let mut field = TextArea::new(value.clone())
-                        .on_save(move |_, _| saved.set(saved.get()? + 1).map(|_| ()));
+                        .on_save(move |_, _| saved.set(saved.get()? + 1));
                     field = if normalize {
                         field.normalize(trim_lower)
                     } else {
@@ -959,7 +959,7 @@ fn disabled_text_editors_do_not_save_on_immediate_focus_loss() {
                     Element::new("field", if disabled { field.disabled() } else { field })
                 } else {
                     let mut field = TextField::new(value.clone())
-                        .on_save(move |_, _| saved.set(saved.get()? + 1).map(|_| ()));
+                        .on_save(move |_, _| saved.set(saved.get()? + 1));
                     field = if normalize {
                         field.normalize(trim_lower)
                     } else {

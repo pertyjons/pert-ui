@@ -350,7 +350,6 @@ fn on_close_writes_the_draft_once_on_an_outside_press_or_tab() {
     let counter = writes.clone();
     let observer = s
         .value
-        .read_only()
         .map(move |_| counter.set(counter.get() + 1))
         .unwrap();
     open_from_trigger(&mut s);

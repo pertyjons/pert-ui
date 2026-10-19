@@ -1294,9 +1294,10 @@ impl<T: Clone + Eq + 'static> Select<T> {
     /// Returns [`ChoiceError::DuplicateValue`] when two options have equal values.
     pub fn new(
         ui: &impl crate::StateOwner,
-        value: Signal<T>,
+        value: impl Into<Signal<T>>,
         options: impl IntoIterator<Item = Choice<T>>,
     ) -> Result<Self, ChoiceError> {
+        let value: Signal<T> = value.into();
         let options: Vec<_> = options.into_iter().collect();
         validate(&options)?;
         Ok(Self::with_binding(ui, Rc::new(value), options))
@@ -1375,7 +1376,7 @@ impl<T: Clone + Eq + 'static> Select<T> {
     /// let chosen = ui.signal("a");
     /// let submitted = ui.signal("a");
     /// let control = Select::new(&ui, chosen, [Choice::new("a", "A"), Choice::new("b", "B")])?
-    ///     .on_change(move |_, value| submitted.set(*value).map(|_| ()));
+    ///     .on_change(move |_, value| submitted.set(*value));
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     pub fn on_change(
@@ -1407,9 +1408,11 @@ impl<T: Clone + Eq + 'static> Select<T> {
     /// ```
     pub fn bound(
         ui: &impl crate::StateOwner,
-        value: Signal<T>,
-        options: ReadSignal<Vec<Choice<T>>>,
+        value: impl Into<Signal<T>>,
+        options: impl Into<ReadSignal<Vec<Choice<T>>>>,
     ) -> Self {
+        let value: Signal<T> = value.into();
+        let options: ReadSignal<Vec<Choice<T>>> = options.into();
         let mut select = Self::with_binding(ui, Rc::new(value), Vec::new());
         if let Some(anchor) = &mut select.anchor {
             anchor.source = Some(options.clone());
@@ -1600,9 +1603,10 @@ impl<T: Clone + Eq + 'static> InlineSelect<T> {
     /// Returns [`ChoiceError::DuplicateValue`] when two options have equal values.
     pub fn new(
         ui: &impl crate::StateOwner,
-        value: Signal<T>,
+        value: impl Into<Signal<T>>,
         options: impl IntoIterator<Item = Choice<T>>,
     ) -> Result<Self, ChoiceError> {
+        let value: Signal<T> = value.into();
         let mut select = Select::new(ui, value, options)?;
         if let Some(anchor) = &mut select.anchor {
             anchor.inline = true;
@@ -1634,9 +1638,11 @@ impl<T: Clone + Eq + 'static> InlineSelect<T> {
     /// validation and redescription rules of [`Select::bound`].
     pub fn bound(
         ui: &impl crate::StateOwner,
-        value: Signal<T>,
-        options: ReadSignal<Vec<Choice<T>>>,
+        value: impl Into<Signal<T>>,
+        options: impl Into<ReadSignal<Vec<Choice<T>>>>,
     ) -> Self {
+        let value: Signal<T> = value.into();
+        let options: ReadSignal<Vec<Choice<T>>> = options.into();
         let mut select = Select::bound(ui, value, options);
         if let Some(anchor) = &mut select.anchor {
             anchor.inline = true;

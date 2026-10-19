@@ -15,7 +15,7 @@ fn input_callbacks_layout_and_parameters_are_attributed_and_pause_is_idle() {
             Row::new([
                 Element::new(
                     "action",
-                    Button::new("Action", move |_| write.set("Changed".into()).map(|_| ())),
+                    Button::new("Action", move |_| write.set("Changed".into())),
                 ),
                 Element::new("label", Label::new(value.read_only())),
             ]),

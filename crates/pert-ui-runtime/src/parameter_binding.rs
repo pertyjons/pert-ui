@@ -515,7 +515,11 @@ impl<T: ParameterValue> ParameterHost<T> {
     /// Performs an external authoritative write, invalidating any active preview.
     ///
     /// Even an equal value advances the revision and ends an active edit as
-    /// `Rejected(Conflict)`. Engine acknowledgements of an edit the adapter
+    /// `Rejected(Conflict)`: the new base is published, then that edit's
+    /// [`TerminalEvent`](crate::TerminalEvent), with its `begin_value`, is
+    /// delivered to the terminal sink before this returns. Without an active
+    /// edit no sink is called; an application that writes the base, for undo or
+    /// reset, forwards the value to its engine itself. Engine acknowledgements of an edit the adapter
     /// already accepted are adapter bookkeeping, not a write: echoing them here
     /// would spuriously cancel a newer gesture.
     ///

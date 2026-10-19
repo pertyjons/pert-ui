@@ -603,7 +603,7 @@ impl TableController {
             .get()?
             .and_then(|key| crate::collection_filter::nearest(&*before, &*after, &key));
         let revision = self.0.replaced.get()?.0.wrapping_add(1);
-        self.0.replaced.set((revision, nearest)).map(|_| ())
+        self.0.replaced.set((revision, nearest))
     }
     /// Source replacements with the nearest remaining row, for
     /// [`CollectionFilter`](crate::CollectionFilter).
@@ -691,7 +691,7 @@ impl TableController {
     /// # Errors
     /// Same as [`TableController::set_source`].
     pub fn set_sort(&self, sort: Option<TableSort>) -> Result<(), RuntimeError> {
-        self.0.sort.set(sort).map(|_| ())
+        self.0.sort.set(sort)
     }
     /// The column of the active cell, if any. The active row is the
     /// [`ListSelection::active`] item, so the two together name the cell.
@@ -711,7 +711,7 @@ impl TableController {
         {
             return Err(LayoutError::UnknownKey.into());
         }
-        self.0.shared.active_column.set(column).map(|_| ())
+        self.0.shared.active_column.set(column)
     }
     /// Fixes a column's width from application code, as dragging its edge
     /// does: the column becomes fixed at `width`, never below its
@@ -895,9 +895,9 @@ impl Component for TableRow {
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
         // A column change leaves the row's own allocation alone, so this read is
         // what makes the row arrange its cells again.
-        cx.read(&self.shared.revision.read_only())?;
+        cx.read(&self.shared.revision)?;
         let row = cx.read_paint(&self.shared.selection.active())?;
-        let column = cx.read_paint(&self.shared.active_column.read_only())?;
+        let column = cx.read_paint(&self.shared.active_column)?;
         self.active = (row.as_deref() == Some(self.key.as_str()))
             .then_some(column)
             .flatten()
@@ -981,6 +981,8 @@ impl Component for TableRow {
 type SortHandler = Box<dyn FnMut(&mut EventContext, &TableSort) -> Result<(), RuntimeError>>;
 type CellHandler =
     Box<dyn FnMut(&mut EventContext, &str, Option<&str>) -> Result<(), RuntimeError>>;
+type SelectionHandler =
+    Box<dyn FnMut(&mut EventContext, &crate::ListSelectionChange) -> Result<(), RuntimeError>>;
 
 /// A header gesture in progress.
 enum HeaderGesture {
@@ -1133,6 +1135,10 @@ pub struct Table {
     size: Cell<Size>,
     row_height: f32,
     activate: Rc<RefCell<Option<CellHandler>>>,
+    /// The body list forwards its selection changes here, observing them only
+    /// once a callback is installed.
+    on_selection: Rc<RefCell<Option<SelectionHandler>>>,
+    observe_selection: Rc<Cell<bool>>,
     /// The pointer rests over the scrollbar, presented as draggable.
     bar_hover: bool,
     /// Local pointer position; horizontal scrolling can move another header
@@ -1215,6 +1221,9 @@ impl Table {
     ) -> Result<Self, crate::GeometryError> {
         let activate: Rc<RefCell<Option<CellHandler>>> = Rc::new(RefCell::new(None));
         let (handler, column) = (activate.clone(), controller.active_column());
+        let on_selection: Rc<RefCell<Option<SelectionHandler>>> = Rc::new(RefCell::new(None));
+        let selection_handler = on_selection.clone();
+        let observe_selection = Rc::new(Cell::new(false));
         Ok(Self {
             resize_permission: Permission::allowed(),
             reorder_permission: Permission::allowed(),
@@ -1230,6 +1239,12 @@ impl Table {
                         .controller(controller.0.reveal.clone())
                         // The active cell is outlined by its row instead.
                         .active_outline(false)
+                        .on_selection_change_gated(observe_selection.clone(), move |cx, change| {
+                            match selection_handler.borrow_mut().as_mut() {
+                                Some(handler) => handler(cx, change),
+                                None => Ok(()),
+                            }
+                        })
                         .on_activate(move |cx, row| {
                             let column = column.get()?;
                             match handler.borrow_mut().as_mut() {
@@ -1255,6 +1270,8 @@ impl Table {
             size: Cell::new(Size::ZERO),
             row_height,
             activate,
+            on_selection,
+            observe_selection,
             dragging: None,
             drop_x: None,
             autoscroll: 0.0,
@@ -1280,6 +1297,26 @@ impl Table {
         + 'static,
     ) -> Self {
         *self.activate.borrow_mut() = Some(Box::new(activate));
+        self
+    }
+    /// Reports every change of the table's [`ListSelection`] after it took
+    /// effect, as [`VirtualList::on_selection_change`] does for a list: a click
+    /// or a key on a row is [`ChangeOrigin::User`](crate::ChangeOrigin::User),
+    /// and a write through the selection or the [`TableController`] is
+    /// [`ChangeOrigin::Application`](crate::ChangeOrigin::Application). The
+    /// callback runs on the table's body list, so [`EventContext::id`] names
+    /// the body, and like the other callbacks it belongs to the first
+    /// description of a mounted table.
+    pub fn on_selection_change(
+        self,
+        on_change: impl FnMut(
+            &mut EventContext,
+            &crate::ListSelectionChange,
+        ) -> Result<(), RuntimeError>
+        + 'static,
+    ) -> Self {
+        *self.on_selection.borrow_mut() = Some(Box::new(on_change));
+        self.observe_selection.set(true);
         self
     }
     /// Moves the keyboard focus to the body, where a press on a cell puts it, so
@@ -1363,7 +1400,7 @@ impl Table {
             (Some(column), false) => column.saturating_sub(1),
         };
         let key = shared.columns.borrow()[next].key.clone();
-        let moved = shared.active_column.set(Some(key))?;
+        let moved = shared.active_column.set_changed(Some(key))?;
         if shared.reveal_column(next)? {
             cx.invalidate(Invalidation::Paint);
         }
@@ -1831,15 +1868,14 @@ impl Component for Table {
         self.reorder_allowed = reorder_allowed;
         // A controller width write changes the columns' extents, which only
         // an arrangement applies to the header and the rows.
-        let relayout = cx.read(&self.state.0.shared.relayout.read_only())?;
+        let relayout = cx.read(&self.state.0.shared.relayout)?;
         if relayout != self.relayout {
             self.relayout = relayout;
             cx.request_layout();
         }
         self.body_id = cx.children().first().map(|child| child.id().clone());
         self.sort = cx.read_paint(&self.state.sort())?;
-        self.rows
-            .set(cx.read_paint(&self.state.0.items.read_only())?.len());
+        self.rows.set(cx.read_paint(&self.state.0.items)?.len());
         Ok(())
     }
     fn cursor(&self, point: Point) -> Option<CursorIcon> {

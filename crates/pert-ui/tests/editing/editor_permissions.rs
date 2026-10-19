@@ -59,7 +59,7 @@ fn revoking_a_text_field_mid_composition_keeps_its_draft_unsaved() -> TestResult
             "field",
             TextField::new(value.clone())
                 .normalize(|text| Ok(text.trim().to_owned()))
-                .on_save(move |_, _| saved.set(saved.get()? + 1).map(|_| ()))
+                .on_save(move |_, _| saved.set(saved.get()? + 1))
                 .enabled(enabled.read_only()),
         ),
     )?;
@@ -309,7 +309,7 @@ fn a_read_only_field_does_not_submit_its_unsaved_draft() -> TestResult {
                 .on_submit(move |_, text| {
                     let mut texts = log.get()?;
                     texts.push(text.to_owned());
-                    log.set(texts).map(|_| ())
+                    log.set(texts)
                 }),
         ),
     )?;

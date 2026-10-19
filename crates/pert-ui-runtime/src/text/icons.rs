@@ -59,6 +59,8 @@ pub enum Icon {
     RadioUnchecked,
     /// Start or resume.
     PlayArrow,
+    /// Pause, keeping the position to resume from.
+    Pause,
     /// Stop.
     Stop,
     /// A filled circle, for example an armed or recording state.
@@ -126,6 +128,7 @@ crate::tables::variant_list! {
         RadioChecked,
         RadioUnchecked,
         PlayArrow,
+        Pause,
         Stop,
         Record,
         Repeat,
@@ -189,6 +192,7 @@ impl Icon {
             Self::RadioChecked => '\u{e837}',
             Self::RadioUnchecked => '\u{e836}',
             Self::PlayArrow => '\u{e037}',
+            Self::Pause => '\u{e034}',
             Self::Stop => '\u{e047}',
             Self::Record => '\u{e061}',
             Self::Repeat => '\u{e040}',

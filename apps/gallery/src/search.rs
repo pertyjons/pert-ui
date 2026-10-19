@@ -112,7 +112,7 @@ pub(crate) fn search_picker(
                         Ok(jump) => describe_jump(&jump),
                         Err(error) => Err(error.to_string()),
                     };
-                    writer.set(Some(result)).map(|_| ())
+                    writer.set(Some(result))
                 })?;
                 Ok(PickChoice::Pending(PickPending::new(
                     outcome.read_only(),

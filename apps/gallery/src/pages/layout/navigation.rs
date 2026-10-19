@@ -93,7 +93,7 @@ impl NavigationTargets {
     ];
 
     /// Records the targets once the gallery is mounted, each by its address
-    /// through [`Runtime::find_address`].
+    /// through [`Runtime::find`].
     pub(crate) fn resolve(&self, ui: &Runtime, root: &WidgetId) -> Result<(), AppError> {
         let top = gallery_tabs(ui, root)?;
         let mut targets = self.0.borrow_mut();
@@ -249,7 +249,7 @@ impl Component for Drawer {
         self.child.take().into_iter().collect()
     }
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
-        let open = cx.read(&self.open.read_only())?;
+        let open = cx.read(&self.open)?;
         if open != self.shown {
             self.shown = open;
             cx.request_layout();
@@ -295,7 +295,7 @@ fn custom_container_demo(
                         Link::new("Reveal and focus the drawer's setting", move |cx| {
                             let target = reveal_targets.get(NavigationTargets::DRAWER_SETTING)?;
                             let started = cx.request_reveal(&target, true)?;
-                            reveal_receipt.set(Some(started)).map(|_| ())
+                            reveal_receipt.set(Some(started))
                         }),
                     ),
                 ]),
@@ -398,14 +398,14 @@ pub(crate) fn navigation(
         let (targets, receipt) = (targets.clone(), receipt.clone());
         Link::new(text, move |cx| {
             let started = cx.request_reveal(&targets.get(target)?, focus)?;
-            receipt.set(Some(started)).map(|_| ())
+            receipt.set(Some(started))
         })
     };
     let rich_reveal = |content: RichText, target: &'static str| {
         let (targets, receipt) = (targets.clone(), receipt.clone());
         Link::new(content, move |cx| {
             let started = cx.request_reveal(&targets.get(target)?, true)?;
-            receipt.set(Some(started)).map(|_| ())
+            receipt.set(Some(started))
         })
     };
     let link = |key: &str, text: &str, target: &'static str, focus: bool| {

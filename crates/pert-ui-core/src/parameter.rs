@@ -19,6 +19,84 @@ pub enum ParameterMapping {
     ///
     /// Requires a strictly positive domain; zero and negative bounds are invalid.
     Logarithmic,
+    /// The fraction of the range covered grows as the position raised to the
+    /// exponent: a value is `minimum + (maximum - minimum) * position^exponent`.
+    ///
+    /// An exponent above one gives the lower end of the range more of the
+    /// travel, below one the upper end; one is linear. Any finite domain is
+    /// valid, including one that spans zero. Mathematically the mapping is
+    /// strictly increasing and invertible; in `f32` it is nondecreasing and the
+    /// bounds map exactly, but positions whose share of the range falls below
+    /// the precision of the bound collapse onto it, so near the lower end of a
+    /// high exponent several positions give the same value and round trips
+    /// are approximate. For `-60..12` and exponent 10, every position up to
+    /// about 0.125 gives `-60`.
+    ///
+    /// With the `serde` feature it is `{ "Power": exponent }`, and reading it
+    /// validates the exponent as [`PowerExponent::new`] does.
+    Power(PowerExponent),
+}
+
+/// The validated exponent of [`ParameterMapping::Power`]: finite and within
+/// [`Self::MIN`] to [`Self::MAX`], inclusive.
+///
+/// The range limits how much of a control can collapse onto a bound in
+/// `f32`; within it, a high exponent still gives a plateau at the lower end
+/// whose width depends on the domain (see [`ParameterMapping::Power`]). Two
+/// exponents are equal when their values are.
+///
+/// ```
+/// use pert_ui_core::{ParameterMapping, ParameterSpec, PowerExponent};
+/// let fader = ParameterSpec::new("Gain", -60.0, 12.0, 0.0)?
+///     .with_mapping(ParameterMapping::Power(PowerExponent::new(2.0)?))?;
+/// let halfway = fader.normalize(&-42.0)?;
+/// assert!((halfway.get() - 0.5).abs() < 1e-5);
+/// assert!(PowerExponent::new(0.0).is_err());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
+#[cfg_attr(
+    feature = "serde",
+    derive(serde::Deserialize, serde::Serialize),
+    serde(try_from = "f32", into = "f32")
+)]
+pub struct PowerExponent(f32);
+// A validated exponent is finite, so equality is total.
+impl Eq for PowerExponent {}
+impl PowerExponent {
+    /// The smallest exponent, one tenth.
+    pub const MIN: f32 = 0.1;
+    /// The largest exponent, ten.
+    pub const MAX: f32 = 10.0;
+    /// Validates an exponent.
+    ///
+    /// # Errors
+    /// [`ParameterError::InvalidExponent`] for a non-finite value or one outside
+    /// [`Self::MIN`] to [`Self::MAX`].
+    pub fn new(exponent: f32) -> Result<Self, ParameterError> {
+        if exponent.is_finite() && (Self::MIN..=Self::MAX).contains(&exponent) {
+            Ok(Self(exponent))
+        } else {
+            Err(ParameterError::InvalidExponent)
+        }
+    }
+    /// The exponent.
+    #[must_use]
+    pub const fn get(self) -> f32 {
+        self.0
+    }
+}
+impl TryFrom<f32> for PowerExponent {
+    type Error = ParameterError;
+    /// Validates like [`PowerExponent::new`].
+    fn try_from(exponent: f32) -> Result<Self, Self::Error> {
+        Self::new(exponent)
+    }
+}
+impl From<PowerExponent> for f32 {
+    fn from(exponent: PowerExponent) -> Self {
+        exponent.0
+    }
 }
 
 /// Immutable parameter metadata and domain for canonical values of type `T`.
@@ -477,6 +555,10 @@ pub enum ParameterError {
     /// Logarithmic mapping was requested with a non-positive lower bound.
     #[error("logarithmic parameter domain must be strictly positive")]
     NonPositiveLogDomain,
+    /// A power mapping's exponent is not finite or lies outside
+    /// [`PowerExponent::MIN`] to [`PowerExponent::MAX`].
+    #[error("power mapping exponent must be finite and within 0.1..=10")]
+    InvalidExponent,
     /// A stepped domain's maximum does not lie on the step lattice.
     #[error("parameter step does not divide the range")]
     InvalidStep,

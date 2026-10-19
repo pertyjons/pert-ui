@@ -30,9 +30,7 @@ impl ListItems for Catalog {
                 Element::new(
                     "pick",
                     Button::new("Pick", move |_| {
-                        status
-                            .set(format!("Picked entry {}", index + 1))
-                            .map(|_| ())
+                        status.set(format!("Picked entry {}", index + 1))
                     }),
                 ),
             ]),
@@ -73,7 +71,7 @@ pub(crate) fn virtual_list(ui: &Runtime, status: &Signal<String>) -> Result<Elem
                 // The receipt reports whether the row was found and mounted,
                 // which the readout below shows when the list has served it.
                 let started = controller.reveal(row.clone())?;
-                receipt.set(Some(started)).map(|_| ())
+                receipt.set(Some(started))
             }),
         )
     };
@@ -420,12 +418,10 @@ pub(crate) fn collections(ui: &Runtime) -> Result<Element, RuntimeError> {
                                         }))
                                     })
                                     .on_activate(move |_, row, column| {
-                                        opened
-                                            .set(format!(
-                                                "Activated {row}, column {}.",
-                                                column.unwrap_or("none")
-                                            ))
-                                            .map(|_| ())
+                                        opened.set(format!(
+                                            "Activated {row}, column {}.",
+                                            column.unwrap_or("none")
+                                        ))
                                     }),
                             )
                             .with_label("Measurements"),
@@ -568,7 +564,7 @@ pub(crate) fn images(ui: &Runtime) -> Result<Element, AppError> {
             // is gone; either way this result is not needed.
             let _ = sender.send(images::decode(BADGE));
         });
-        busy.set("Decoding…".to_owned()).map(|_| ())
+        busy.set("Decoding…".to_owned())
     });
     // SVG: one monochrome mark rasterized at three sizes and tinted by the
     // theme, and one drawing that keeps the colors it declares.

@@ -469,7 +469,7 @@ fn read_only_text_mode_claims_typed_keys_like_a_read_only_text_field() {
                 CommandKey::Character('x'),
                 Modifiers::default(),
             )],
-            move |_, _| written.set(written.get()? + 1).map(|_| ()),
+            move |_, _| written.set(written.get()? + 1),
         )
         .unwrap();
     // A resting readout is not an editor: the command runs.

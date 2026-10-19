@@ -390,9 +390,7 @@ impl<T: Clone + Eq + 'static> NavigationHistory<T> {
     /// # Errors
     /// The signal write errors of [`Self::visit`]; the history is unchanged.
     pub fn clear(&self) -> Result<(), RuntimeError> {
-        self.state
-            .set(Rc::new(HistorySnapshot::empty()))
-            .map(|_| ())
+        self.state.set(Rc::new(HistorySnapshot::empty()))
     }
 
     fn move_to(

@@ -23,13 +23,18 @@ inward as one `FocusRing` band at `FocusWidth`. A custom component draws the
 same ring with `Painter::stroke_shape` and the focused element's bounds and shape.
 
 ```rust
-use pert_ui::{Button, Color, ColorRole, Component, DrawError, Element, Painter,
-              Palette, Rect, Row, Runtime, RuntimeError, ThemeMode, UpdateContext};
+use pert_ui::{Button, Color, ColorRole, Component, Constraints, DrawError, Element,
+              MeasureContext, Painter, Palette, Rect, Row, Runtime, RuntimeError, Size,
+              ThemeMode, UpdateContext};
 
 // External components use the same tracked color lookup as built-in controls.
+// A leaf measures its own extent; without `measure` it would be given no space.
 struct Accent;
 impl Component for Accent {
     fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> { Ok(()) }
+    fn measure(&self, _: &MeasureContext<'_>, _: Constraints) -> Result<Size, RuntimeError> {
+        Ok(Size::new(24.0, 24.0)?)
+    }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
         painter.fill_rect(Rect::new(0.0, 0.0, 24.0, 24.0)?,
                           painter.color(ColorRole::Primary));
@@ -44,7 +49,7 @@ let light = Palette::light()
     .with_color(ColorRole::OnPrimary, Color::rgba(1.0, 1.0, 1.0, 1.0)?);
 theme.set_palette(ThemeMode::Light, light)?;
 theme.set_mode(ThemeMode::Light)?;
-ui.mount_tree(Element::new("content", Row::new([
+let content = ui.mount_tree(Element::new("content", Row::new([
     Element::new("accent", Accent),
     Element::new("toggle", Button::new("Toggle theme", move |_| {
         let next = match theme.mode()? {
@@ -57,6 +62,9 @@ ui.mount_tree(Element::new("content", Row::new([
 // Native App performs flush/paint and schedules presentation automatically.
 ui.flush(std::time::Duration::ZERO)?;
 assert_eq!(ui.paint()?.background(), light.color(ColorRole::Background));
+let accent = ui.find(&content, &["accent"])?.ok_or("the accent is mounted")?;
+let bounds = ui.bounds(&accent)?.ok_or("the accent is laid out")?;
+assert_eq!((bounds.width(), bounds.height()), (24.0, 24.0));
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
 
@@ -467,7 +475,7 @@ decode large images before they are needed or on a worker, since `RasterImage` i
 pixel is decoded.
 
 ```no_run
-# #[cfg(all(feature = "desktop", feature = "png"))]
+# #[cfg(all(feature = "native", feature = "png"))]
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     use pert_ui::images;
     use pert_ui::{App, Element, Image, ImageFit};
@@ -485,7 +493,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     .run()?;
     Ok(())
 }
-# #[cfg(not(all(feature = "desktop", feature = "png")))]
+# #[cfg(not(all(feature = "native", feature = "png")))]
 # fn main() {}
 ```
 

@@ -96,7 +96,7 @@ ui.mount_tree(Element::new("context", ContextMenu::new(
     &ui,
     Element::new("target", Button::new("Right-click or Shift+F10", |_| Ok(()))),
     vec![MenuItem::submenu("more", "More", vec![
-        MenuItem::new("apply", "Apply", move |_| write.set(true).map(|_| ())),
+        MenuItem::new("apply", "Apply", move |_| write.set(true)),
         MenuItem::new("unavailable", "Unavailable", |_| Ok(())).disabled(),
     ])],
 )?))?;
@@ -107,7 +107,9 @@ ui.flush(Duration::ZERO)?;
 Menu rows also cover separators, check-mark toggles, radio settings and
 shortcuts. [`MenuItem::command`] presents a registered command with its live
 shortcut and enabled binding, and runs it with the command context captured
-when the menu opened. [`MenuBar`] arranges top-level submenus as a desktop menu
+when the menu opened; [`Button::command`] does the same for a toolbar button,
+capturing the context when it is activated, and [`KeyChord::named`] binds a
+single key such as Space. [`MenuBar`] arranges top-level submenus as a desktop menu
 bar: titles open on press and switch while one is open, F10 focuses the titles,
 arrows move between titles and menus, and leaving returns focus to the content.
 Give the content to [`MenuBar::content`] so F10 reaches the bar from it. There are
@@ -123,7 +125,7 @@ ui.set_viewport(Viewport::new(640.0, 480.0, 1.0)?)?;
 let saved = ui.signal(false);
 let write = saved.clone();
 let save = ui.register_command("Save", CommandScope::Application,
-    vec![KeyChord::primary('s')], move |_, _| write.set(true).map(|_| ()))?;
+    vec![KeyChord::primary('s')], move |_, _| write.set(true))?;
 let grid = ui.signal(true);
 let zoom = ui.signal(100u32);
 let bar = MenuBar::new(&ui, vec![
@@ -155,6 +157,52 @@ assert!(saved.get()?);
 assert_eq!(ui.focused().map(|id| ui.key(&id).map(str::to_owned)).transpose()?.as_deref(),
     Some("document"));
 # let _ = root;
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
+A toggle or radio row reports a user's choice through [`MenuItem::on_change`],
+after its own write, so the application can forward it, for example to a
+producer thread; the application's own writes to the signal report nothing.
+A setting the application applies itself, such as the theme's density through
+a retained [`ThemeManager`], has no signal for the row to write: build the row with
+[`MenuItem::new`] and show its state with [`MenuItem::selected_signal`] or
+[`MenuItem::checked_signal`].
+
+```rust
+use pert_ui::*;
+use std::time::Duration;
+
+let mut ui = Runtime::new();
+ui.set_viewport(Viewport::new(640.0, 480.0, 1.0)?)?;
+let theme = ui.theme();
+let density = theme.density_signal()?;
+let row = |key: &str, label: &str, choice: Density| -> Result<MenuItem, RuntimeError> {
+    let theme = theme.clone();
+    Ok(MenuItem::new(key, label, move |_| theme.set_density(choice).map(|_| ()))
+        .selected_signal(density.map(move |current| *current == choice)?))
+};
+let looped = ui.signal(false);
+let forwarded = ui.signal(None);
+let engine = forwarded.clone();
+let bar = MenuBar::new(&ui, vec![
+    MenuItem::submenu("view", "View", vec![
+        row("compact", "Compact", Density::Compact)?,
+        row("standard", "Standard", Density::Standard)?,
+        MenuItem::separator(),
+        MenuItem::toggle("loop", "Loop playback", looped.clone())
+            .on_change(move |_, on| engine.set(Some(on))),
+    ]),
+])?;
+ui.mount_tree(Element::new("bar", bar))?;
+ui.flush(Duration::ZERO)?;
+// F10 opens View; the first row is Compact.
+for key in [KeyCode::F10, KeyCode::ArrowDown, KeyCode::Enter] {
+    ui.key_input(key, KeyAction::Press)?;
+    ui.key_input(key, KeyAction::Release)?;
+    ui.flush(Duration::ZERO)?;
+}
+assert_eq!(ui.theme().density()?, Density::Compact);
+assert_eq!(forwarded.get()?, None, "nothing chose the loop row yet");
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
 
@@ -258,7 +306,7 @@ let root = ui.mount_tree(Element::new("notifications", ToastHost::new(
     queue.clone(),
     Element::new("content", Column::new([
         Element::new("banner", Banner::new("Connection restored", [
-            Element::new("dismiss", Button::new("Dismiss", move |_| hide_banner.set(false).map(|_| ()))),
+            Element::new("dismiss", Button::new("Dismiss", move |_| hide_banner.set(false))),
         ]).visible_signal(banner_visible.read_only())),
         Element::new("notify", Button::new("Notify", move |_| {
             let _receipt = post.push(Toast::new("Saved").action("Show details", |_| Ok(())))?;

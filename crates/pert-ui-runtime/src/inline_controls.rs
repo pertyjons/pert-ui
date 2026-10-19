@@ -29,8 +29,12 @@ use std::rc::Rc;
 /// The accessible name given at construction, or by [`Self::name`], feeds
 /// inspection and a delayed help surface on hover or keyboard focus, using the
 /// shared 500 ms tooltip timing. The name is never drawn inside the control;
-/// without an icon or glyph the control shows its first character. The standard [`Toggle`]
-/// keeps its switch and label; a momentary action is [`Button::icon`].
+/// without an icon or glyph the control shows its first character, which suits
+/// a dense strip of one-letter toggles (such as mute and solo) but reads as an
+/// unfinished control on its own. In a [`Toolbar`](crate::Toolbar) give it
+/// [`Self::icon`], or [`Self::glyph`] for a short abbreviation, and use the
+/// standard [`Toggle`], which keeps its switch and visible label, where the name
+/// must be read. A momentary action is [`Button::icon`].
 /// Inspection reports the name as the `text` property and shown text content
 /// as `glyph`.
 ///
@@ -85,7 +89,8 @@ impl InlineToggle {
     /// The name is a [`TextSource`]; a binding keeps the name, the help and an
     /// undecorated glyph current, for example for a translated name. Only its
     /// plain text is used.
-    pub fn new(value: Signal<bool>, name: impl Into<TextSource>) -> Self {
+    pub fn new(value: impl Into<Signal<bool>>, name: impl Into<TextSource>) -> Self {
+        let value: Signal<bool> = value.into();
         Self::bound(Rc::new(value), name.into())
     }
     /// Creates a toggle bound to a boolean parameter and named by it.
@@ -596,13 +601,18 @@ impl InlineReadout {
         }
     }
     /// Shows a bound string verbatim.
-    pub fn new(source: ReadSignal<String>) -> Self {
+    pub fn new(source: impl Into<ReadSignal<String>>) -> Self {
+        let source: ReadSignal<String> = source.into();
         Self::with_reader(Box::new(move |cx| Ok((cx.read_paint(&source)?, None))))
     }
     /// Shows a bound value through a [`NumberFormat`]'s display callback and
     /// optional dynamic unit; the format's width example reserves the slot
     /// unless [`Self::width_hint`] overrides it. Parsing is never invoked.
-    pub fn formatted<T: Copy + 'static>(source: ReadSignal<T>, format: NumberFormat<T>) -> Self {
+    pub fn formatted<T: Copy + 'static>(
+        source: impl Into<ReadSignal<T>>,
+        format: NumberFormat<T>,
+    ) -> Self {
+        let source: ReadSignal<T> = source.into();
         let hint = format.hint.clone();
         let mut readout = Self::with_reader(Box::new(move |cx| {
             let value = cx.read_paint(&source)?;

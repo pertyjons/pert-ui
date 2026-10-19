@@ -97,7 +97,8 @@ impl ToolGroup {
     /// focused and hides under the ordinary hiding rules; a separator directly
     /// after it hides with it. Changes take effect on the next flush without
     /// rebuilding or moving the group.
-    pub fn visible_signal(mut self, shown: ReadSignal<bool>) -> Self {
+    pub fn visible_signal(mut self, shown: impl Into<ReadSignal<bool>>) -> Self {
+        let shown: ReadSignal<bool> = shown.into();
         self.shown = Some(shown);
         self
     }
@@ -254,7 +255,7 @@ fn more_button(shared: &Rc<Shared>, configured: Option<TextSource>) -> Element {
         crate::StringRole::ToolbarMore,
     );
     let more = Button::icon(Icon::MoreHorizontal, label.clone(), move |_| {
-        opener.open().set(true).map(|_| ())
+        opener.open().set(true)
     })
     .frameless();
     let button = Element::new("button", more).structural();
@@ -751,7 +752,7 @@ impl Component for Toolbar {
         Ok(InputOutcome::Ignored)
     }
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
-        let open = cx.read(&self.shared.open().read_only())?;
+        let open = cx.read(&self.shared.open())?;
         let present = self.shared.read_shown(cx)?;
         let desired = self.shared.desired.borrow().clone();
         let mut changed = false;

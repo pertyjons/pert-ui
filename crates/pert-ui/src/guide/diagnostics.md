@@ -6,7 +6,41 @@ on these contracts.
 
 # Keyboard input
 
-`key_input` tracks every held physical key and classifies presses, repeats and
+Keys have two entry points. The native host delivers each key through
+[`Runtime::command_key_input`], which routes it in stages: text editing first,
+then explicit capture such as [`Runtime::register_held_input`] registrations,
+then the focused component and its ancestors, and last the view, window and
+application command bindings. A stage that consumes the key ends routing, so a
+focused editor that uses a chord keeps it from an application shortcut; the
+method's documentation gives the complete order. [`Runtime::key_input`]
+delivers to components only and routes neither commands nor held input, so it
+suits driving one component directly. A test of what a user sees from a key,
+such as a shortcut, uses `command_key_input` and reports held modifiers through
+[`Runtime::native_modifiers`], as the native host does:
+
+```rust
+use pert_ui::{CommandKey, CommandKeyInput, CommandScope, KeyAction, KeyChord, KeyCode,
+              Modifiers, Runtime};
+
+let mut ui = Runtime::new();
+let saved = ui.signal(false);
+let mark = saved.clone();
+// Ctrl+S, or Cmd+S on macOS.
+ui.register_command("Save", CommandScope::Application, vec![KeyChord::primary('s')],
+    move |_, _| {
+        mark.set(true)?;
+        Ok(())
+    })?;
+ui.native_modifiers(Modifiers::PRIMARY)?;
+for action in [KeyAction::Press, KeyAction::Release] {
+    ui.command_key_input(CommandKeyInput::new(KeyCode::KeyS, action, CommandKey::Character('s')))?;
+}
+ui.native_modifiers(Modifiers::default())?;
+assert!(saved.get()?);
+# Ok::<(), pert_ui::RuntimeError>(())
+```
+
+Both entry points track every held physical key and classify presses, repeats and
 releases. A repeat for a key that is not held never establishes a press. Focused
 components receive the full pressed set and can implement general
 simultaneous-key actions. A key bubbles from the focused component through its
@@ -28,7 +62,10 @@ including [`BoxModelInspection::border`], which reports a painted outline's widt
 and color only after the paint that drew it.
 [`DebugMode::Inspect`] enables a 256-event history. [`DebugOverlay`] separately draws
 validation markers or component boxes into the scene in builds with debug
-assertions. The library starts no server or network listener and ships no MCP
+assertions. Development validation checks geometry only for windows laid out
+with a viewport that has area, so content flushed before the first viewport,
+as an [`App`] initializer runs, or while a window is minimized to an empty
+extent reports no geometry issue; [`Runtime::validation_report`] has the rule. The library starts no server or network listener and ships no MCP
 support; see the
 [inspection design note](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md)
 for building one in the application.
@@ -78,6 +115,8 @@ visible region as an RGBA [`FrameImage`] at physical scale, which
 window ([`CaptureTarget::Window`]), a rectangle of one
 ([`CaptureTarget::Region`]), a component ([`CaptureTarget::Component`]) or a
 key path ([`CaptureTarget::Path`]). On the UI thread,
+[`CaptureTarget::window`] builds a window target from a [`NativeWindowId`],
+such as the main window, [`Runtime::primary_window`], and
 [`Runtime::request_capture`] asks for the same capture; never wait for its reply
 there, since the frame is rendered between flushes. The [`App`] renders the frame
 offscreen with the same renderer that presents; a headless runtime answers

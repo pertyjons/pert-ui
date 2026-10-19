@@ -46,7 +46,7 @@ pub(crate) fn page_address<'a>(category: &'a str, page: &'a str, path: &[&'a str
 }
 
 /// The component at `address` below `from`, through
-/// [`Runtime::find_address`]. A missing component is an application error
+/// [`Runtime::find`]. A missing component is an application error
 /// naming the address: the gallery's commands and links need these
 /// components, and a composition change that moved one must fail at mount
 /// rather than leave them doing nothing.
@@ -55,7 +55,7 @@ pub(crate) fn find_at(
     from: &WidgetId,
     address: &[&str],
 ) -> Result<WidgetId, AppError> {
-    ui.find_address(from, address)?.ok_or_else(|| {
+    ui.find(from, address)?.ok_or_else(|| {
         ApplicationError::from(format!(
             "the gallery has nothing at `{}`",
             address.join(" › ")
@@ -121,18 +121,14 @@ impl Gallery {
             vec![KeyChord::primary('d')],
             move |ui, _| {
                 let Some(view) = command_view.borrow().clone() else {
-                    return command_status
-                        .set("The view to detach is not mounted yet.".to_owned())
-                        .map(|_| ());
+                    return command_status.set("The view to detach is not mounted yet.".to_owned());
                 };
                 if ui.window_of(&view)? != ui.primary_window() {
-                    return command_status
-                        .set("That view already has its own window.".to_owned())
-                        .map(|_| ());
+                    return command_status.set("That view already has its own window.".to_owned());
                 }
                 let receipt =
                     ui.request_detach(&view, NativeWindowOptions::new("Detached view")?)?;
-                command_receipt.set(Some(receipt)).map(|_| ())
+                command_receipt.set(Some(receipt))
             },
         )?;
         // The same request refuses a view whose description forbids its own window.
@@ -144,17 +140,13 @@ impl Gallery {
             Vec::new(),
             move |ui, _| {
                 let Some(view) = guarded_target.borrow().clone() else {
-                    return guarded_status
-                        .set("The protected view is not mounted yet.".to_owned())
-                        .map(|_| ());
+                    return guarded_status.set("The protected view is not mounted yet.".to_owned());
                 };
                 let result = ui.request_detach(&view, NativeWindowOptions::new("Protected")?);
-                guarded_status
-                    .set(match result {
-                        Ok(_) => "The protected view was detached after all.".to_owned(),
-                        Err(error) => format!("Detach refused: {error}"),
-                    })
-                    .map(|_| ())
+                guarded_status.set(match result {
+                    Ok(_) => "The protected view was detached after all.".to_owned(),
+                    Err(error) => format!("Detach refused: {error}"),
+                })
             },
         )?;
         // Selecting a tab by key needs the runtime, which a command action has.
@@ -168,9 +160,7 @@ impl Gallery {
             move |ui, _| {
                 let strip = select_targets.get(NavigationTargets::STRIP)?;
                 let outcome = ui.reveal_child(&strip, "general")?;
-                select_status
-                    .set(format!("Select General by key: {outcome:?}"))
-                    .map(|_| ())
+                select_status.set(format!("Select General by key: {outcome:?}"))
             },
         )?;
         // The command palette lists every registered command. The gallery binds
@@ -217,7 +207,7 @@ impl Gallery {
                 Vec::new(),
                 move |ui, _| {
                     go_places.go_to(ui, category, page)?;
-                    go_status.set(format!("Opened {title}.")).map(|_| ())
+                    go_status.set(format!("Opened {title}."))
                 },
             )?;
         }
@@ -724,7 +714,7 @@ pub(crate) fn action(key: &str, text: impl Into<String>, status: &Signal<String>
     let status = status.clone();
     Element::new(
         key,
-        Button::new(text, move |_| status.set(response.clone()).map(|_| ())),
+        Button::new(text, move |_| status.set(response.clone())),
     )
 }
 pub(crate) fn toggle(
@@ -738,15 +728,11 @@ pub(crate) fn toggle(
         Row::new([
             Element::new(
                 "toggle",
-                Button::new(title, move |_| writer.set(!writer.get()?).map(|_| ())),
+                Button::new(title, move |_| writer.set(!writer.get()?)),
             ),
             Element::new(
                 "value",
-                Label::new(
-                    value
-                        .read_only()
-                        .map(|value| if *value { "On" } else { "Off" }.to_owned())?,
-                ),
+                Label::new(value.map(|value| if *value { "On" } else { "Off" }.to_owned())?),
             ),
         ]),
     ))
@@ -765,21 +751,19 @@ pub(crate) fn counter_of(value: Signal<u64>, key: &str) -> Result<Element, Runti
                 "increment",
                 Button::new("Increment", move |_| {
                     // A click at the maximum keeps the maximum.
-                    increment
-                        .set(increment.get()?.saturating_add(1))
-                        .map(|_| ())
+                    increment.set(increment.get()?.saturating_add(1))
                 }),
             ),
             Element::new(
                 "reset",
                 Button::new("Reset", {
                     let value = value.clone();
-                    move |_| value.set(0).map(|_| ())
+                    move |_| value.set(0)
                 }),
             ),
             Element::new(
                 "count",
-                Label::new(value.read_only().map(|value| format!("Count: {value}"))?),
+                Label::new(value.map(|value| format!("Count: {value}"))?),
             ),
         ]),
     ))

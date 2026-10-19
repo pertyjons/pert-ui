@@ -9,7 +9,7 @@ struct Inspectable {
 }
 impl Component for Inspectable {
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
-        cx.read(&self.value.read_only())?;
+        cx.read(&self.value)?;
         Ok(())
     }
     fn inspect(&self) -> ComponentDetails {

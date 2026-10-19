@@ -104,6 +104,11 @@ pub struct ValidationHints {
 
 /// Stable diagnostic classification. Codes describe development issues, not errors
 /// that a runtime may safely ignore when enforcing identity or numeric invariants.
+///
+/// Codes about measured geometry (bounds, clips, padding against the box, empty
+/// hit areas, collapsed parents, escaping children and overlaps) are reported
+/// only for windows laid out with a viewport that has area; see
+/// [`Runtime::validation_report`](crate::Runtime::validation_report).
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum ValidationCode {

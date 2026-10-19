@@ -75,7 +75,7 @@ pub(super) fn run() -> Result<(), AppError> {
                 CommandKey::Named(KeyCode::Space),
                 Modifiers::default(),
             )],
-            move |_, _| play_state.set(!play_state.get()?).map(|_| ()),
+            move |_, _| play_state.set(!play_state.get()?),
         )?;
         let target_receipt = receipt.clone();
         let _redock = ui.register_command(
@@ -107,7 +107,7 @@ pub(super) fn run() -> Result<(), AppError> {
                         Button::new("Play / pause (Space)", move |cx| {
                             let invocation = cx
                                 .invoke_command(&play, cx.command_context(CommandSource::Button))?;
-                            command_receipt.set(Some(invocation)).map(|_| ())
+                            command_receipt.set(Some(invocation))
                         }),
                     ),
                     Element::new(
@@ -202,7 +202,7 @@ pub(super) fn run() -> Result<(), AppError> {
         let mut views = Vec::new();
         for index in 0..dialogs.len() {
             let strip = format!("tabs-{index}");
-            let view = ui.find(&root, &[&strip, "panel"])?.ok_or_else(|| {
+            let view = ui.find_path(&root, &[&strip, "panel"])?.ok_or_else(|| {
                 ApplicationError::from(format!("editor view `{strip}/panel` is not mounted"))
             })?;
             views.push(view);
@@ -228,11 +228,7 @@ pub(super) fn run() -> Result<(), AppError> {
                     CommandKey::Named(KeyCode::Delete),
                     Modifiers::default(),
                 )],
-                move |_, _| {
-                    message
-                        .set(format!("Delete ran only in editor {index}"))
-                        .map(|_| ())
-                },
+                move |_, _| message.set(format!("Delete ran only in editor {index}")),
             )?;
             let view = view.clone();
             let target_receipt = receipt.clone();

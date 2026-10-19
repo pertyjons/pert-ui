@@ -149,7 +149,8 @@ pub struct ProgressBar {
 }
 impl ProgressBar {
     /// Follows an application-owned status binding.
-    pub fn new(status: ReadSignal<ProgressStatus>) -> Self {
+    pub fn new(status: impl Into<ReadSignal<ProgressStatus>>) -> Self {
+        let status: ReadSignal<ProgressStatus> = status.into();
         Self {
             source: status,
             status: ProgressStatus::Idle,
@@ -353,7 +354,8 @@ pub struct Spinner {
 }
 impl Spinner {
     /// Follows an application-owned binding: true spins, false rests invisibly.
-    pub fn new(busy: ReadSignal<bool>) -> Self {
+    pub fn new(busy: impl Into<ReadSignal<bool>>) -> Self {
+        let busy: ReadSignal<bool> = busy.into();
         Self {
             source: busy,
             busy: false,

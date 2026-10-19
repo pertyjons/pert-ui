@@ -91,7 +91,8 @@ impl InlineText {
     /// Creates an enabled editable label. The binding is validated and
     /// subscribed on the first update; bound text the editor does not accept
     /// is refused as described on [`InlineText`], without rewriting the source.
-    pub fn new(value: Signal<String>) -> Self {
+    pub fn new(value: impl Into<Signal<String>>) -> Self {
+        let value: Signal<String> = value.into();
         let slot = DraftSlot::new(TextStyle::Body, DraftAlign::Start);
         let edits = Rc::new(Cell::new(0_u64));
         let counter = edits.clone();
@@ -287,7 +288,7 @@ impl InlineText {
         let wrote = saved != self.text;
         let wrote = wrote && {
             self.text = saved.clone();
-            self.value.set(saved.clone())?
+            self.value.set_changed(saved.clone())?
         };
         cx.invalidate(Invalidation::Layout);
         // Both notifications are attempted, so a failing rejection report
@@ -369,7 +370,7 @@ impl Component for InlineText {
         }
         self.slot.update(cx);
         self.focused = cx.focus_within();
-        let text = cx.read_paint(&self.value.read_only())?;
+        let text = cx.read_paint(&self.value)?;
         // Refused text is kept out of the label rather than failing every
         // flush: the label keeps its previous text and marks the refusal, and
         // an open draft ends unsaved so it never overwrites the value.

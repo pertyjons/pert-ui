@@ -34,11 +34,15 @@ mod tree;
 pub use table::{
     SortDirection, Table, TableColumn, TableController, TableItems, TableSort, TableSource,
 };
+mod described;
+mod render_limits;
+pub use render_limits::{LimitError, ResourceKind};
 mod views;
 mod virtual_axis;
 mod virtual_list;
+pub use described::{DescribeContext, Dynamic, Each, Show};
 pub use history_navigator::{HistoryButtons, HistoryNavigator};
-pub use list_selection::{ListSelection, SelectionMode};
+pub use list_selection::{ListSelection, ListSelectionChange, SelectionMode};
 pub use navigation_history::{HistoryEntry, HistoryEntryId, HistorySnapshot, NavigationHistory};
 pub use tree::{Tree, TreeController, TreeItems, TreeSource};
 pub use views::{Divider, Group, ScrollArea, ScrollAxes, View};
@@ -133,13 +137,13 @@ pub use text_input::{
 pub use text_selection::{TextMovement, TextSelection};
 mod form;
 mod layout;
-pub use containers::{Column, Container, Grid, Length, Row, Track, Wrap};
+pub use containers::{Align, Column, Container, Grid, Justify, Length, Row, Track, Wrap};
 pub use form::Form;
 mod property_grid;
 mod tool_windows;
 pub use layout::{
-    ArrangeContext, Constraints, Element, GeometryError, LayoutError, MeasureContext, Size,
-    SizeLimits,
+    ArrangeContext, Constraints, Element, GeometryError, IntoElement, LayoutError, MeasureContext,
+    Size, SizeLimits,
 };
 pub use property_grid::{Property, PropertyGrid};
 pub use tool_windows::{
@@ -210,6 +214,7 @@ pub use parameter_binding::remote::{
     ResponseDisposition, SubmissionDelivery,
 };
 mod runtime;
+pub use runtime::application::{BackgroundTask, IntervalTimer};
 pub use runtime::commands::{
     CommandContext, CommandEntry, CommandId, CommandInfo, CommandKey, CommandKeyInput,
     CommandOutcome, CommandReceipt, CommandScope, CommandSource, CommandStatus, KeyChord,
@@ -261,8 +266,8 @@ pub use runtime::theme::{
     ColorRole, Density, MetricRole, Palette, Spacing, ThemeManager, ThemeMetrics, ThemeMode,
 };
 pub use runtime::{
-    ChildInfo, Component, EventContext, FlushReport, Invalidation, Runtime, RuntimeError,
-    UpdateContext, WidgetId,
+    ChildInfo, Component, EventContext, FailurePhase, FailureSite, FlushReport, Invalidation,
+    Runtime, RuntimeError, UpdateContext, WidgetId,
 };
 pub use signal::{ReadSignal, Signal, StateOwner};
 
@@ -272,7 +277,7 @@ pub use pert_ui_core::{
     EditError, EditOutcome, EditSequence, EditSource, EditToken, HostValue, Incarnation, LiveError,
     LiveItem, NormalizedValue, NormalizedValueError, ParameterError, ParameterFamily, ParameterId,
     ParameterIdError, ParameterMapping, ParameterSnapshot, ParameterSpec, ParameterState,
-    ParameterValue, PreviewOutcome, PublishOutcome, Revision, Sample, SampleWindow,
+    ParameterValue, PowerExponent, PreviewOutcome, PublishOutcome, Revision, Sample, SampleWindow,
     SampleWindowEntry, Sequence, SeriesConfig, SeriesConsumer, SeriesEndpoint, Timestamp, WakeFlag,
     series_bridge,
 };
@@ -319,6 +324,11 @@ pub mod prelude {
     #[doc(no_inline)]
     pub use crate::{AlertDialog, Dialog, DialogController, DialogOutcome, DialogStatus};
     #[doc(no_inline)]
+    pub use crate::{
+        Align, Column, Container, Element, Grid, IntoElement, Justify, Length, Row, Size, Track,
+        Wrap,
+    };
+    #[doc(no_inline)]
     pub use crate::{ArcOrigin, InlineSlider, Knob, Orientation, Slider};
     #[doc(no_inline)]
     pub use crate::{
@@ -354,8 +364,6 @@ pub mod prelude {
         ColorRole, Density, MetricRole, Palette, Spacing, ThemeManager, ThemeMetrics, ThemeMode,
     };
     #[doc(no_inline)]
-    pub use crate::{Column, Container, Element, Grid, Length, Row, Size, Track, Wrap};
-    #[doc(no_inline)]
     pub use crate::{
         CommandKeyInput, TextCommand, TextCommandOutcome, TextInputState, TextKeyOutcome,
         TextPreedit,
@@ -380,6 +388,8 @@ pub mod prelude {
         InlineDecimal, InlineInteger, InputRejection, IntegerInput, SearchField, SearchKey,
         TextArea, TextField,
     };
+    #[doc(no_inline)]
+    pub use crate::{DescribeContext, Dynamic, Each, Group, ScrollArea, ScrollAxes, Show, View};
     #[doc(no_inline)]
     pub use crate::{
         DirectoryEntry, DirectoryRequest, DirectoryResponse, EntryKind, FileBrowser,
@@ -410,8 +420,6 @@ pub mod prelude {
     #[doc(no_inline)]
     pub use crate::{FontData, FontId, FontRole, Icon, IconSource, RichText, TextColor, TextSpan};
     #[doc(no_inline)]
-    pub use crate::{Group, ScrollArea, ScrollAxes, View};
-    #[doc(no_inline)]
     pub use crate::{
         HistoryButtons, HistoryEntry, HistoryEntryId, HistoryNavigator, HistorySnapshot,
         NavigationHistory,
@@ -429,7 +437,7 @@ pub mod prelude {
         ListController, ListItems, ListRevealReceipt, ListRevealStatus, ListSource, VirtualList,
     };
     #[doc(no_inline)]
-    pub use crate::{ListSelection, SelectionMode, VirtualAxis};
+    pub use crate::{ListSelection, ListSelectionChange, SelectionMode, VirtualAxis};
     #[doc(no_inline)]
     pub use crate::{NumberLocale, StringRole, TextSource, UiMessage, UiStrings};
     #[doc(no_inline)]

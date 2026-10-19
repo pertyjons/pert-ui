@@ -144,7 +144,7 @@ pub(crate) fn property_grid(ui: &mut Runtime, level: ParameterId) -> Result<Elem
                     Element::new(
                         "property-reset-width",
                         Button::new("Reset label width", move |_| {
-                            reset_width.set(Length::new(140.0)?).map(|_| ())
+                            reset_width.set(Length::new(140.0)?)
                         }),
                     ),
                 ]),
@@ -152,11 +152,7 @@ pub(crate) fn property_grid(ui: &mut Runtime, level: ParameterId) -> Result<Elem
             Element::new("property-outcome", Label::new(outcome.read_only())),
             Element::new(
                 "property-width",
-                Label::new(
-                    width
-                        .read_only()
-                        .map(|width| format!("Label width: {} px", width.get()))?,
-                ),
+                Label::new(width.map(|width| format!("Label width: {} px", width.get()))?),
             ),
         ],
     )]))

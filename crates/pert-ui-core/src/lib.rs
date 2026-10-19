@@ -22,5 +22,5 @@ pub use live::{
     series_bridge,
 };
 pub use normalized::{NormalizedValue, NormalizedValueError};
-pub use parameter::{ParameterError, ParameterMapping, ParameterSpec};
+pub use parameter::{ParameterError, ParameterMapping, ParameterSpec, PowerExponent};
 pub use parameter_id::{ParameterId, ParameterIdError};

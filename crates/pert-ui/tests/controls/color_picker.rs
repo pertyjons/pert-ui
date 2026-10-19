@@ -390,7 +390,7 @@ fn an_application_write_gives_the_text_entry_fresh_bindings() {
     } = setup("#ff0000", ColorPicker::new);
     let entry = find(&ui, &root, "entry");
     let hex_field = ui
-        .find_address(&entry, &["hex", "input"])
+        .find(&entry, &["hex", "input"])
         .unwrap()
         .expect("the hex field");
     ui.focus(&hex_field).unwrap();
@@ -540,7 +540,7 @@ fn on_save_reports_saved_values_of_fields() {
                         .on_save(move |_, saved| {
                             let mut list = a.get()?;
                             list.push(format!("text {saved}"));
-                            a.set(list).map(|_| ())
+                            a.set(list)
                         }),
                 ),
                 Element::new(
@@ -550,7 +550,7 @@ fn on_save_reports_saved_values_of_fields() {
                         .on_save(move |_, saved| {
                             let mut list = b.get()?;
                             list.push(format!("number {saved}"));
-                            b.set(list).map(|_| ())
+                            b.set(list)
                         }),
                 ),
             ]),
@@ -592,7 +592,7 @@ fn on_save_skips_a_save_that_normalizes_to_the_bound_text() {
                 .normalize(|text| Ok(text.trim().to_owned()))
                 .on_save(move |_, _| {
                     let count = counter.get()?;
-                    counter.set(count + 1).map(|_| ())
+                    counter.set(count + 1)
                 }),
         ))
         .unwrap();
@@ -633,7 +633,7 @@ fn a_failing_rejection_report_does_not_suppress_on_save() {
                 .on_save(move |_, saved| {
                     let mut saved_list = list.get()?;
                     saved_list.push(saved.to_owned());
-                    list.set(saved_list).map(|_| ())
+                    list.set(saved_list)
                 }),
         ))
         .unwrap();
@@ -681,7 +681,7 @@ fn a_failing_rejection_report_does_not_suppress_a_number_save() {
                 .on_save(move |_, saved| {
                     let mut saved_list = list.get()?;
                     saved_list.push(saved);
-                    list.set(saved_list).map(|_| ())
+                    list.set(saved_list)
                 }),
         ))
         .unwrap();

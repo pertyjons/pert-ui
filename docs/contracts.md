@@ -188,6 +188,26 @@ custom controllers the installed table for constructing initial hidden parts,
 without subscribing or scheduling presentation. Retained components track later
 string-table changes through `UpdateContext::strings` on update.
 
+#### Value-driven children
+
+`Dynamic`, `Show` and `Each` describe their children from a binding's value
+through `UpdateContext::request_children`, so they are self-managed: an ancestor
+redescription applies their new source and description callback but never
+gives them children. They describe children again when the binding was
+written with a new value, judged by its write counter rather than by comparing
+values, or whenever they are described again, so a new callback takes effect
+for an unchanged value. Only the source binding is tracked: a signal the
+callback reads with `get` adds no dependency, so a description that depends on
+several values combines them into one binding. Their children reconcile by key like any structural update:
+a kept key keeps its component, state and focus and must keep its component
+type, a new key mounts, and a removed key unmounts with its subscriptions.
+`Show` therefore releases its child while hidden, unlike `View::visible_signal`,
+which retains it. The description callback runs during update, where writes
+are rejected; an invalid description fails the flush and keeps the previous
+children until a later value or description is valid. `Each` keys each item's
+element with the key it gives and places the elements in a container it
+describes, a `Column` unless `within` says otherwise.
+
 #### Controller ownership
 
 A `ZoomController` likewise serves one mounted view at a time, including a
@@ -353,6 +373,23 @@ height. The public measurement context exposes the same preference to custom
 containers. Grid resolves fixed and weighted track widths before wrapped row
 heights in both measurement and arrangement, including unbounded measurement.
 
+Row and Column give every child its natural size first, then divide the space
+their own allocation leaves over among children with an `Element::with_grow`
+weight, in proportion to the weights and up to each child's maximum, sharing
+what a maximum stops among the others. The weight is element metadata that
+reconciliation updates without remounting, and hidden children take no share.
+`Justify` places the space no child takes, and `Align` places children across
+the main axis: a column within its width, a row within its tallest child,
+except that `Align::Stretch` in a row fills the height the row is allocated
+when it is arranged. A row's measured height stays its tallest child's, so the
+stretch fills what a parent gives (for example a column that grows the row)
+without asking for more; children keep their maximum and minimum heights. The
+public `ArrangeContext` receives that allocation, so a custom container can do
+the same.
+Without a weight or a justify choice, a row or column keeps its natural size.
+Custom containers read the weight through `MeasureContext::grow`; Wrap and
+Grid do not grow children.
+
 Containers provide flow, wrapping, grids, scroll areas, adaptive forms,
 resizable splits, tab groups and regions. Nested regions share one runtime.
 Inactive tabs keep local state and suspend presentation deadlines. Focus moves
@@ -388,6 +425,20 @@ OnClose draft written by a committing close. Draft toggles, discarding closes
 conflicting drafts and refusals while denied never call it. A failing handler
 keeps the write and the close, and is not replayed. Only the owner's
 redescription replaces the handler; an open popup and its draft are kept.
+`MenuItem::on_change` on a toggle or radio row reports the row's new checked
+state after its own write, once the menu has requested closure, with the
+activating list's or title's context; choosing the selected radio row again
+writes and reports nothing. Rows without a write of their own ignore it.
+
+Parameter sinks cannot write to the runtime. A sink that must update bindings
+sends to an application-owned `Mailbox`, whose handler runs in a later flush;
+the recommended shape is a capacity-one refresh mailbox whose handler rereads
+application state, sent to as the sink's last step after it recorded the
+outcome, with a full mailbox meaning a refresh is already pending.
+`ParameterHost::write_base` delivers the edit it ends before returning and
+calls no sink otherwise; the writer forwards its own writes. No general signal
+observer exists: these per-source callbacks cover user writes, outcomes and
+the application's own writes.
 
 ## Data and edit ownership
 
@@ -424,7 +475,14 @@ application binds it with a `Signal`, or the component reports each change
 through a callback with a `ChangeOrigin` (user, reveal, workspace restore,
 re-description, presentation or application), so an application can tell user
 navigation from changes it caused itself. `Tabs::on_select` and
-`Accordion::on_change` follow this rule, and so does committed geometry:
+`Accordion::on_change` follow this rule. A `ListSelection` is bound state the
+application can read, and `VirtualList`, `Tree` and `Table` also report each
+change of it through `on_selection_change`, with both the active item and the
+selected keys: a collection observes its selection when it updates and reports
+the origin of the latest write, `User` for a click or a key on any collection
+sharing the selection and `Application` for a write through the selection or a
+controller, including a filter moving the active item off a hidden row, so writes between two updates of one collection
+arrive as one change. So does committed geometry:
 scroll offsets, split, region and label-column preferences and floating-frame
 placement report through `on_scroll`, `on_resize`, `on_frame` and
 `ToolWindowChangeKind::Geometry`, besides inspection and workspace capture.
@@ -523,6 +581,23 @@ handler; values sent between handlers wait for the next flush regardless of
 registration order. Concurrent worker sends join the current delivery only when
 accepted before their inbox's frontier is captured. Closing or dropping a mailbox
 immediately cancels its undelivered values, including a captured delivery frontier.
+`Runtime::keep_alive` owns a mailbox or other application-lifetime value until
+shutdown, so an application need not find another owner for it.
+
+`Runtime::spawn` runs one unit of work per call on a new thread and delivers its
+result to a UI-thread callback through a runtime-owned mailbox, in arrival
+order with the other mailboxes. At most `Runtime::MAX_BACKGROUND_TASKS` tasks
+wait at once; each holds a reserved place in that mailbox, so a worker's send
+never finds it full. Cancellation discards an undelivered result but cannot stop
+the thread; a panicking work delivers nothing and fails the flush that receives
+its outcome with `BackgroundPanicked`. The work holds no UI handle, and the
+helper is not a callback-safe endpoint.
+
+`Runtime::start_interval` repeats an application callback on the UI thread. It
+belongs to the application rather than a window or component, so focus loss,
+input cancellation and hidden windows do not stop it; the native host runs a due
+timer even while a window's redraw is withheld. A late tick does not catch up,
+a failing tick keeps its timer, and at most `Runtime::MAX_INTERVALS` timers run.
 
 Live telemetry revisions also report loss/rejection changes, but freshness and
 receipt time describe accepted values: loss alone cannot refresh an old value,
@@ -736,6 +811,11 @@ AppError::Shutdown retains the original terminal result and all cleanup causes
 in report order; otherwise the original result is preserved. Terminal cleanup
 does not enter component retry policy after the runtime has closed.
 
+Shutdown stops interval timers and discards background results still on their
+way, without waiting for running work, and drops values kept with
+`Runtime::keep_alive` last, after components have unmounted and parameters have
+ended their edits, in the reverse order of keeping.
+
 ### Calling the runtime from callbacks
 
 Components never receive the `Runtime`: their callbacks get an
@@ -776,6 +856,13 @@ mounted identity during an edit. Preedit is separate from committed text.
 Escape cancels a draft; confirmation parses and validates it before committing.
 External binding changes and focus loss follow each control's documented
 conflict and cancellation rules.
+
+A field refuses a value the application writes that it cannot hold, keeps its
+previous text and accepts no edits until the binding holds acceptable text
+again. `on_binding_refusal` reports such a refusal and its end in an event
+phase after the flush settles, as `on_modified` reports a draft's state; it is
+never a user-write callback, and refused typing and normalizer rejections do
+not call it.
 
 ### Search field
 
@@ -870,7 +957,11 @@ A component without a name of its own is named by its element's label
 (`Element::with_label`) or by a wrapping `Field`; for a composite that reports
 no semantics itself, such as a `Select`, either reaches the internal part that
 represents it.
-Unknown geometry remains absent until measured. Event history is bounded,
+Unknown geometry remains absent until measured. Development validation checks
+geometry only for a native window whose latest layout ran with a viewport that
+has area: before a host supplies the first viewport, and while a window's
+viewport is empty, layout assigns empty boxes that are reported by inspection
+but not validated. Event history is bounded,
 disabled by default, and distinguishes success, failure and cancellation;
 inspection itself schedules no polling. Secret input stays out of both: a
 component that conceals its input (`Component::conceals_input`, as a concealed
@@ -928,6 +1019,14 @@ Every public failure has a typed error, with the following common rules:
 - Conversions point upwards from focused leaf errors into `RuntimeError`, then
   into drawing, workspace, window or application errors as appropriate. A
   runtime failure has one normalized representation at each higher level.
+- One exception at the callback boundary: an application callback that calls
+  a runtime method returning `WorkspaceError`, `WindowError` or
+  `CaptureError` propagates it with `?` as `RuntimeError::Application`,
+  holding the whole error the method returned, downcastable to its type. An
+  error whose `Runtime` variant holds a runtime failure becomes that failure
+  itself, so it keeps one form. `RuntimeError` gains no variant for these,
+  and `DrawError` has no such conversion, since drawing fails in paint and
+  host paths that already return it.
 - One limit has one reporting variant across paths that share the limit.
   Every public `Result` has an `# Errors` rustdoc section naming the variants
   and conditions, including forwarded failures.

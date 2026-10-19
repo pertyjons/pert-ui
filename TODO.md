@@ -27,3 +27,14 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   than an unrelated assertion or timeout. On macOS 26.7, activating Finder
   during `--interaction-check` previously stalled for an unidentified cause;
   that platform also needs a separate interruption check.
+- [ ] **TEXT-01** 2026-10-18 `crates/pert-ui-runtime/src/text_fields.rs`
+  `TextArea` — Improvement (plan slice 6, large-buffer editing): an editor's
+  text is limited to `TextEditError::MAX_TEXT_BYTES` (16 KiB) and is prepared
+  as one `TextLayout`, which `TextLimit::MAX_RASTER_SIDE` also bounds (about
+  400 lines at scale 1), so a document editor cannot hold a real document.
+  Decide between extending `TextArea` and a separate document editor, then
+  prepare text per paragraph and rasterize only visible paragraphs, carrying
+  selection, caret, IME and movement across paragraph boundaries (the public
+  `TextSelection` is built on one `TextLayout`). Measure edit latency and
+  memory on a defined corpus before choosing a capacity; see
+  `plans/app-author-improvements.md` slice 6.

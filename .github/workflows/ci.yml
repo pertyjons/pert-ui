@@ -74,6 +74,9 @@ jobs:
       - run: cargo clippy --locked -p pert-ui --features cpu --all-targets -- -D warnings
       - run: cargo test --locked -p pert-ui --features cpu
       - run: cargo doc --locked -p pert-ui --features cpu --no-deps
+      - run: cargo clippy --locked -p pert-ui --no-default-features --features desktop-cpu --all-targets -- -D warnings
+      - run: cargo test --locked -p pert-ui --no-default-features --features desktop-cpu
+      - run: cargo doc --locked -p pert-ui --no-default-features --features desktop-cpu --no-deps
       - run: cargo run --locked -p pert-ui-gallery -- --headless
       - name: Reclaim build artifacts before packaging
         run: cargo clean

@@ -863,7 +863,7 @@ struct Host {
 }
 impl Component for Host {
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
-        let keep = cx.read(&self.keep.read_only())?;
+        let keep = cx.read(&self.keep)?;
         if keep != self.shown {
             self.shown = keep;
             let children = if keep {

@@ -60,7 +60,7 @@ impl TransientSmoke {
                                     "nested",
                                     "Nested",
                                     vec![MenuItem::new("apply", "Apply", move |_| {
-                                        c.set(c.get()? + 1).map(|_| ())
+                                        c.set(c.get()? + 1)
                                     })],
                                 )],
                             )?,

@@ -83,7 +83,7 @@ pub trait StateOwner: sealed::Sealed {
     /// ```
     fn ui_settings(&self) -> crate::UiSettings;
 }
-mod sealed {
+pub(crate) mod sealed {
     pub trait Sealed {}
     impl Sealed for crate::Runtime {}
     impl Sealed for crate::UpdateContext {}
@@ -148,13 +148,35 @@ struct Inner<T> {
 /// notifications. Values with interior mutation must still be replaced through
 /// `set`; invisible shared mutations do not notify. No worker or callback-safe endpoint.
 ///
+/// A signal is also its own read binding: it dereferences to a [`ReadSignal`],
+/// so `&signal` works wherever `&ReadSignal` is taken, such as
+/// [`UpdateContext::read`](crate::UpdateContext::read) and
+/// [`ReadSignal::combine`], and [`ReadSignal::map`] derives from it directly.
+/// Parameters that take a binding by value accept `&signal` through `From`:
+/// a reference converts to a clone sharing the value, and a writable signal
+/// converts to a [`ReadSignal`] where only reading is needed.
+///
+/// ```
+/// use pert_ui_runtime::Runtime;
+/// let ui = Runtime::new();
+/// let count = ui.signal(2);
+/// let caption = count.map(|n| format!("{n} items"))?;
+/// count.update(|n| *n += 1)?;
+/// assert_eq!(caption.get()?, "3 items");
+/// let enabled = ui.signal(false);
+/// enabled.toggle()?;
+/// assert!(enabled.get()?);
+/// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+/// ```
+///
 /// ```compile_fail
 /// let runtime = pert_ui_runtime::Runtime::new();
 /// let signal = runtime.signal(0);
 /// std::thread::spawn(move || drop(signal));
 /// ```
 pub struct Signal<T> {
-    inner: Rc<Inner<T>>,
+    /// The read capability; a signal is a read binding that can also write.
+    read: ReadSignal<T>,
 }
 
 /// Read-only view of a signal, with the same UI-thread ownership as its writer.
@@ -193,8 +215,44 @@ impl<T> core::fmt::Debug for ReadSignal<T> {
 impl<T> Clone for Signal<T> {
     fn clone(&self) -> Self {
         Self {
-            inner: self.inner.clone(),
+            read: self.read.clone(),
         }
+    }
+}
+
+impl<T> std::ops::Deref for Signal<T> {
+    type Target = ReadSignal<T>;
+    fn deref(&self) -> &ReadSignal<T> {
+        &self.read
+    }
+}
+
+/// A clone sharing the value, so a constructor taking a signal accepts `&signal`.
+impl<T> From<&Signal<T>> for Signal<T> {
+    fn from(signal: &Signal<T>) -> Self {
+        signal.clone()
+    }
+}
+
+/// The read capability of a signal, for a parameter that only reads.
+impl<T> From<Signal<T>> for ReadSignal<T> {
+    fn from(signal: Signal<T>) -> Self {
+        signal.read
+    }
+}
+
+/// The read capability of a signal, sharing its value.
+impl<T> From<&Signal<T>> for ReadSignal<T> {
+    fn from(signal: &Signal<T>) -> Self {
+        signal.read.clone()
+    }
+}
+
+/// A clone sharing the source, so a constructor taking a read binding accepts
+/// `&binding`.
+impl<T> From<&ReadSignal<T>> for ReadSignal<T> {
+    fn from(binding: &ReadSignal<T>) -> Self {
+        binding.clone()
     }
 }
 impl<T> Clone for ReadSignal<T> {
@@ -218,7 +276,12 @@ impl<T> Default for WeakSignal<T> {
 
 impl<T> WeakSignal<T> {
     pub(crate) fn upgrade(&self) -> Option<Signal<T>> {
-        self.0.upgrade().map(|inner| Signal { inner })
+        self.0.upgrade().map(|inner| Signal {
+            read: ReadSignal {
+                inner,
+                computation: None,
+            },
+        })
     }
 }
 
@@ -228,13 +291,16 @@ impl<T> Signal<T> {
     }
     pub(crate) fn new(shared: Rc<Shared>, value: T) -> Self {
         Self {
-            inner: Rc::new(Inner {
-                shared,
-                value: RefCell::new(value),
-                revision: std::cell::Cell::new(0),
-                subscribers: RefCell::new(BTreeMap::new()),
-                computations: RefCell::new(BTreeMap::new()),
-            }),
+            read: ReadSignal {
+                inner: Rc::new(Inner {
+                    shared,
+                    value: RefCell::new(value),
+                    revision: std::cell::Cell::new(0),
+                    subscribers: RefCell::new(BTreeMap::new()),
+                    computations: RefCell::new(BTreeMap::new()),
+                }),
+                computation: None,
+            },
         }
     }
     /// Creates another signal on the same runtime as this one, holding
@@ -315,10 +381,7 @@ impl<T> Signal<T> {
     /// Returns a read-only binding sharing this value, without cloning its contents.
     #[must_use]
     pub fn read_only(&self) -> ReadSignal<T> {
-        ReadSignal {
-            inner: self.inner.clone(),
-            computation: None,
-        }
+        self.read.clone()
     }
 }
 
@@ -387,7 +450,8 @@ impl<T: PartialEq> Signal<T> {
     }
     /// Replaces a changed value and coalesces dependent component invalidations.
     ///
-    /// Returns whether a value changed. No user callback runs as a notification.
+    /// An equal value changes nothing; use [`Self::set_changed`] to learn
+    /// whether the value changed. No user callback runs as a notification.
     /// Equality follows `T`; use validated values if NaN equality is undesirable.
     ///
     /// # Errors
@@ -399,7 +463,15 @@ impl<T: PartialEq> Signal<T> {
     /// [`ParameterHost`](crate::ParameterHost) sink, which must defer the write
     /// itself until the callback has returned; and `BorrowConflict` for a
     /// reentrant write from the value's own `PartialEq`.
-    pub fn set(&self, value: T) -> Result<bool, RuntimeError> {
+    pub fn set(&self, value: T) -> Result<(), RuntimeError> {
+        self.set_changed(value).map(|_| ())
+    }
+    /// Writes like [`Self::set`] and returns whether the value changed.
+    ///
+    /// # Errors
+    /// The errors of [`Self::set`], with the same guarantee that a failed write
+    /// changes nothing.
+    pub fn set_changed(&self, value: T) -> Result<bool, RuntimeError> {
         self.inner.shared.writable()?;
         self.publish(value)
     }
@@ -449,6 +521,38 @@ impl<T: PartialEq> Signal<T> {
     }
 }
 
+impl<T: Clone + PartialEq> Signal<T> {
+    /// Changes a copy of the current value in `change` and writes it like
+    /// [`Self::set`], so an unchanged copy notifies nobody.
+    ///
+    /// The write capability is checked before `change` runs, so a forbidden
+    /// phase never runs it. `change` receives an owned copy and holds no
+    /// borrow of the signal, so it may read this signal or others. A write it
+    /// makes itself, to this signal or another, is an ordinary write that takes
+    /// effect at once; the changed copy is then written over it.
+    ///
+    /// # Errors
+    /// The errors of [`Self::get`] and [`Self::set`]. They concern this
+    /// method's own write, which an error leaves unmade, notifying nobody;
+    /// writes `change` made itself stay made.
+    pub fn update(&self, change: impl FnOnce(&mut T)) -> Result<(), RuntimeError> {
+        self.inner.shared.writable()?;
+        let mut value = self.get()?;
+        change(&mut value);
+        self.set(value)
+    }
+}
+
+impl Signal<bool> {
+    /// Inverts the value, as [`Self::update`] with `!`.
+    ///
+    /// # Errors
+    /// The errors of [`Self::update`].
+    pub fn toggle(&self) -> Result<(), RuntimeError> {
+        self.update(|value| *value = !*value)
+    }
+}
+
 impl<T: Clone> ReadSignal<T> {
     /// Clones the current value without tracking; use the update context to bind it.
     ///
@@ -474,6 +578,12 @@ impl<T: Clone> ReadSignal<T> {
 impl<T: 'static> ReadSignal<T> {
     pub(crate) fn shared(&self) -> &Rc<Shared> {
         &self.inner.shared
+    }
+    /// The stored value's write counter, as [`Signal::revision`]; for a derived
+    /// binding, its published result's. Read it after reading the value, which
+    /// settles a derived binding.
+    pub(crate) fn revision(&self) -> u64 {
+        self.inner.revision.get()
     }
     pub(crate) fn subscribe(&self, node: &Rc<Node>, kind: Invalidation) -> Subscription {
         let key = Rc::as_ptr(node) as usize;
@@ -567,7 +677,7 @@ impl<T: Clone + 'static> ReadSignal<T> {
     /// use pert_ui_runtime::Runtime;
     /// let ui = Runtime::new();
     /// let count = ui.signal(2);
-    /// let caption = count.read_only().map(|n| format!("{n} items"))?;
+    /// let caption = count.map(|n| format!("{n} items"))?;
     /// count.set(3)?;
     /// assert_eq!(caption.get()?, "3 items");
     /// # Ok::<(), pert_ui_runtime::RuntimeError>(())
@@ -599,7 +709,7 @@ impl<T: Clone + 'static> ReadSignal<T> {
             }
         });
         Ok(ReadSignal {
-            inner: output.inner,
+            inner: output.read.inner,
             computation: Some(derived),
         })
     }
@@ -643,7 +753,7 @@ impl<T: Clone + 'static> ReadSignal<T> {
             }
         });
         Ok(ReadSignal {
-            inner: output.inner,
+            inner: output.read.inner,
             computation: Some(derived),
         })
     }

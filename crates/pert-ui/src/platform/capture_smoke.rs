@@ -319,13 +319,20 @@ fn capture_smoke(software: bool) -> Result<(), AppError> {
         return Err(error);
     }
     let presenter = match &driver.runner.current.renderer {
+        #[cfg(feature = "gpu")]
         Some(super::Presenter::Gpu(_)) => "gpu",
         #[cfg(feature = "cpu")]
         Some(super::Presenter::Software(_)) => "software",
         None => "none",
     };
     eprintln!("Presenter: {presenter}");
-    if presenter != if software { "software" } else { "gpu" } {
+    // Without the GPU renderer every window presents in software.
+    let expected = if software || cfg!(not(feature = "gpu")) {
+        "software"
+    } else {
+        "gpu"
+    };
+    if presenter != expected {
         return Err(AppError::Graphics(format!(
             "the window was presented by the {presenter} presenter"
         )));

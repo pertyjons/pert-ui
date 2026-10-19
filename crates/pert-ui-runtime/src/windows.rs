@@ -73,7 +73,7 @@ impl WindowController {
     /// or the phase write error when called during update, layout, paint, inspection or
     /// parameter delivery.
     pub fn close(&self) -> Result<bool, RuntimeError> {
-        self.status.set(WindowStatus::Closed)
+        self.status.set_changed(WindowStatus::Closed)
     }
     fn live(&self) -> Result<(), RuntimeError> {
         if self.ended.get() || self.status.get()? == WindowStatus::Closed {
@@ -92,7 +92,7 @@ impl WindowController {
     /// error when called during update, layout, paint, inspection or parameter delivery.
     pub fn minimize(&self) -> Result<bool, RuntimeError> {
         self.live()?;
-        self.status.set(WindowStatus::Minimized)
+        self.status.set_changed(WindowStatus::Minimized)
     }
     /// Restores minimized content with its retained identities and scroll state.
     /// Cancelled active gestures are not resumed.
@@ -104,7 +104,7 @@ impl WindowController {
     /// error when called during update, layout, paint, inspection or parameter delivery.
     pub fn restore(&self) -> Result<bool, RuntimeError> {
         self.live()?;
-        self.status.set(WindowStatus::Open)
+        self.status.set_changed(WindowStatus::Open)
     }
     /// Sets a preferred parent-local origin in logical pixels. The layer constrains
     /// actual placement to keep the top-left drag/restore area reachable; shrinking
@@ -127,7 +127,7 @@ impl WindowController {
         placement: WindowPlacement,
         origin: ChangeOrigin,
     ) -> Result<bool, RuntimeError> {
-        let changed = self.placement.set(Some(placement))?;
+        let changed = self.placement.set_changed(Some(placement))?;
         if changed {
             self.origin.set(Some(origin));
         }
@@ -1013,7 +1013,7 @@ impl Component for WindowFrame {
         }
         let status = cx.read(&self.state.status())?;
         let placement = cx
-            .read(&self.state.placement.read_only())?
+            .read(&self.state.placement)?
             .unwrap_or_else(|| self.state.initial.get());
         let resizable = self.permission.read(cx)?;
         let movable = self.move_permission.read(cx)?;

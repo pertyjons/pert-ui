@@ -47,7 +47,8 @@ impl Banner {
     }
     /// Follows local visibility. False removes the banner's layout extent and
     /// hides/cancels descendant actions while preserving their retained state.
-    pub fn visible_signal(mut self, visible: ReadSignal<bool>) -> Self {
+    pub fn visible_signal(mut self, visible: impl Into<ReadSignal<bool>>) -> Self {
+        let visible: ReadSignal<bool> = visible.into();
         self.visible = Some(visible);
         self
     }
@@ -839,7 +840,7 @@ impl Component for ToastStack {
             }
             return Err(error);
         }
-        cx.read(&self.queue.revision.read_only())?;
+        cx.read(&self.queue.revision)?;
         self.account(cx.now());
         // Register hover/focus dependencies in addition to event-time accounting.
         self.hovered = cx.hovered();

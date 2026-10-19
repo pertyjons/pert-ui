@@ -185,7 +185,7 @@ impl Model {
     }
     fn notify(&self) -> Result<(), RuntimeError> {
         let next = self.tick.get()?.wrapping_add(1);
-        self.tick.set(next).map(|_| ())
+        self.tick.set(next)
     }
     /// Writes a committed state: the editing state, the bound color and the
     /// text entry, and ends any preview.
@@ -322,7 +322,8 @@ pub struct ColorPicker {
 impl ColorPicker {
     /// Creates a picker editing `color`, without an alpha strip and with
     /// text entry. The binding belongs to the mounting runtime's UI thread.
-    pub fn new(color: Signal<Color>) -> Self {
+    pub fn new(color: impl Into<Signal<Color>>) -> Self {
+        let color: Signal<Color> = color.into();
         let initial = color.get().ok();
         let start = initial.unwrap_or(Color::WHITE);
         let hsva = Hsva::from_color(start, DEFAULT_HSVA);
@@ -465,7 +466,7 @@ impl ColorPicker {
         // The anchor follows the picker's permission, bound or fixed.
         let swatch = ColorSwatch::bound(color.read_only())
             .name(name)
-            .on_activate(move |_| opener.set(true).map(|_| ()))
+            .on_activate(move |_| opener.set(true))
             .enabled(self.model.enablement.borrow().clone());
         Popover::owned(
             open,
@@ -609,7 +610,7 @@ impl Component for ColorPicker {
             *self.model.strings.borrow_mut() = strings;
             self.described = false;
         }
-        let color = cx.read(&self.model.color.read_only())?;
+        let color = cx.read(&self.model.color)?;
         if self.model.text_entry.get() && self.model.synced.get() != Some(color) {
             // A value the picker did not write: the fields show it from fresh
             // bindings, since writes are refused here. Re-described with
@@ -897,9 +898,9 @@ impl Component for ColorPart {
             self.abandon();
             cx.cancel_input();
         }
-        let color = cx.read_paint(&self.model.color.read_only())?;
-        let committed = cx.read_paint(&self.model.committed.read_only())?;
-        cx.read_paint(&self.model.tick.read_only())?;
+        let color = cx.read_paint(&self.model.color)?;
+        let committed = cx.read_paint(&self.model.committed)?;
+        cx.read_paint(&self.model.tick)?;
         if let Some(gesture) = self.gesture
             && gesture.before != color
         {

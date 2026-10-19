@@ -51,7 +51,7 @@ fn signal_changes_are_coalesced_and_only_reach_dependents() -> TestResult {
     runtime.mount("other", other)?;
     assert_eq!(runtime.flush(Duration::ZERO)?.components_updated, 3);
     assert_eq!(runtime.next_deadline(), None);
-    assert!(!a.set(1)?);
+    assert!(!a.set_changed(1)?);
     assert_eq!(runtime.next_deadline(), None);
     a.set(3)?;
     a.set(4)?;

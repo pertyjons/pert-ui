@@ -10,11 +10,12 @@ through live-data sources.
 use std::time::Duration;
 use pert_ui::prelude::*;
 
-struct Label {
+// A custom component that follows a text binding.
+struct Status {
     text: ReadSignal<String>,
     retained: String,
 }
-impl Component for Label {
+impl Component for Status {
     fn update(&mut self, context: &mut UpdateContext) -> Result<(), RuntimeError> {
         self.retained = context.read(&self.text)?;
         Ok(())
@@ -23,8 +24,8 @@ impl Component for Label {
 
 let mut runtime = Runtime::new();
 let text = runtime.signal(String::from("Ready"));
-let label = Label { text: text.read_only(), retained: String::new() };
-let id = runtime.mount_tree(Element::new("status", label))?;
+let status = Status { text: text.read_only(), retained: String::new() };
+let id = runtime.mount_tree(Element::new("status", status))?;
 assert_eq!(runtime.flush(Duration::ZERO)?.components_updated, 1);
 assert_eq!(runtime.next_deadline(), None);
 text.set(String::from("Working"))?;
@@ -173,6 +174,62 @@ A sink error is retained in the monitor, the parameter refuses new edits and
 its controls show as disabled until the host retries or resolves the delivery.
 `Committed` is the local store's acceptance, not an external authority acknowledgement.
 Sinks run on the UI thread and cannot write to the runtime while they run.
+
+# Updating bindings after a sink
+
+A readout that depends on what a sink records, such as the depth of the
+application's undo history, is refreshed through a [`Mailbox`] of capacity one
+whose handler rereads the application's state. The sink records the outcome
+first, then sends a token as its last step and returns `Ok` whether or not the
+token fitted: a full mailbox already holds a refresh, which will read the new
+outcome, so pending refreshes collapse. The handler runs at the start of the
+next flush, where writes are allowed, and an error it returns comes from that
+flush, separately from the parameter's delivery report. Undo and reset call
+[`ParameterHost::write_base`], which ends an active edit before it returns and
+reaches no sink otherwise; the application forwards the written value to its
+engine itself, where it makes the call.
+
+```rust
+use std::{cell::RefCell, rc::Rc};
+use pert_ui::prelude::*;
+use pert_ui::{Capacity, EditOutcome, KeyAction, KeyCode};
+use std::time::Duration;
+
+let mut ui = Runtime::new();
+ui.set_viewport(Viewport::new(400.0, 200.0, 1.0)?)?;
+let (gain, host) = ui.parameter(
+    ParameterId::new(1, 1, "gain")?,
+    ParameterSpec::new("Gain", 0.0, 1.0, 0.5)?,
+)?;
+let history: Rc<RefCell<Vec<f32>>> = Rc::default();
+let depth = ui.signal(0usize);
+let (shown, read) = (depth.clone(), history.clone());
+let refresh = ui.mailbox(Capacity::new(1)?, move |()| shown.set(read.borrow().len()))?;
+let (sender, record) = (refresh.sender(), history.clone());
+let _monitor = host.on_outcome(move |event| {
+    if let EditOutcome::Committed { .. } = &event.outcome {
+        record.borrow_mut().push(event.begin_value); // the undo entry
+    }
+    let _ = sender.send(()); // full: a refresh is already pending
+    Ok(())
+})?;
+let fader = ui.mount_tree(Element::new("gain", Slider::new(gain)))?;
+ui.flush(Duration::ZERO)?;
+ui.focus(&fader)?;
+for _ in 0..2 {
+    ui.key_input(KeyCode::ArrowUp, KeyAction::Press)?;
+    ui.key_input(KeyCode::ArrowUp, KeyAction::Release)?;
+}
+ui.flush(Duration::ZERO)?;
+assert_eq!(depth.get()?, 2);
+// Undo: the application writes the base, forwards the value to its engine
+// itself and, since no sink runs, updates the readout it owns directly.
+let previous = history.borrow_mut().pop().ok_or("an entry")?;
+host.write_base(previous)?;
+depth.set(history.borrow().len())?;
+assert_eq!(depth.get()?, 1);
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
 Descriptor-driven panels use the family-tagged [`AnySpec`], [`AnyValue`],
 [`AnyParameter`] and [`AnyParameterHost`]; [`HostValue`] translates an application's
 own value types without narrowing them.
@@ -260,3 +317,20 @@ Run it headlessly from a checkout with
 `cargo run -p pert-ui --example dynamic_documents --no-default-features`.
 `Submitted` is a proposal, not authoritative acceptance; retain and inspect its
 [`AuthorityReceipt`] when delivery can be delayed or disconnected.
+
+The packaged
+[live mixer example](https://github.com/pertyjons/pert-ui/blob/main/crates/pert-ui/examples/live_mixer.rs)
+puts the live-data and parameter paths together over an application-owned
+simulation: a producer thread behind a bounded command queue publishes levels
+through a [`series_bridge`] to [`LevelMeter`]s. Parameter sinks send the base
+each edit leaves without blocking, so a cancelled audition is undone in the
+engine too; on a full or closed queue they fail, the parameter keeps the
+outcome, and a Retry button delivers it with [`ParameterHost::retry_outcome`]
+together with any undo or reset that did not reach the engine, sending current
+values so nothing stale overwrites a newer write. Undo and reset also work
+during a drag, which they end. The layout is saved and restored as a
+workspace, with decode failures and partial restores shown to the user. Dropping the engine stops and joins
+its thread. It runs a deterministic headless session with
+`cargo run -p pert-ui --example live_mixer --no-default-features`, and opens a
+window with `--window` when built with the `native` feature. The simulation is
+an ordinary thread and makes no real-time claim.

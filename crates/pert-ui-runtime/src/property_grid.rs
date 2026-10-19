@@ -62,7 +62,8 @@ impl Property {
         self
     }
     /// Follows an application-owned status binding, as [`Field::status`].
-    pub fn status(mut self, status: ReadSignal<FieldStatus>) -> Self {
+    pub fn status(mut self, status: impl Into<ReadSignal<FieldStatus>>) -> Self {
+        let status: ReadSignal<FieldStatus> = status.into();
         self.field = self.field.status(status);
         self
     }
@@ -336,7 +337,8 @@ impl PropertyGrid {
     /// width is clamped to what each grid's allocation permits without
     /// writing the clamped value back. A bound grid stays out of workspace
     /// persistence.
-    pub fn shared_label_width(mut self, width: Signal<Length>) -> Self {
+    pub fn shared_label_width(mut self, width: impl Into<Signal<Length>>) -> Self {
+        let width: Signal<Length> = width.into();
         self.shared = Some(width);
         self
     }
@@ -625,7 +627,7 @@ impl Component for PropertyGrid {
                 .any(|(a, b)| a.key != b.key || a.label != b.label);
         self.rows = rows;
         if let Some(shared) = &self.shared {
-            let value = cx.read(&shared.read_only())?;
+            let value = cx.read(shared)?;
             if self.shared_value != Some(value) {
                 self.shared_value = Some(value);
                 // The application's write is its own state, not reported.

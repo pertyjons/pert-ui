@@ -335,7 +335,7 @@ impl TagEditor {
                     Chip::removable(tag.clone(), move |_| {
                         let mut list = data.get()?;
                         list.retain(|tag| *tag != removed);
-                        data.set(list).map(|_| ())
+                        data.set(list)
                     }),
                 )
             })
@@ -348,7 +348,7 @@ impl Component for TagEditor {
         true
     }
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
-        let tags = cx.read(&self.tags.read_only())?;
+        let tags = cx.read(&self.tags)?;
         if self.shown.as_ref() != Some(&tags) {
             cx.request_children(self.describe(&tags));
             self.shown = Some(tags);

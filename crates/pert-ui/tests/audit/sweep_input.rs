@@ -165,7 +165,7 @@ struct Shrinking {
 }
 impl Component for Shrinking {
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
-        let count = cx.read(&self.count.read_only())?;
+        let count = cx.read(&self.count)?;
         if self.built != Some(count) {
             self.built = Some(count);
             let buttons: Vec<_> = (0..count)

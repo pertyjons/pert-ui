@@ -568,3 +568,38 @@ fn a_reorderable_list_offers_the_move_action_and_a_plain_one_does_not() {
     ui.flush(Duration::ZERO).unwrap();
     assert!(!actions(&ui, &list).contains(&SemanticAction::Move));
 }
+
+/// Rows built under an empty key, which only the list's own keying makes valid.
+struct UnkeyedRows(Vec<String>);
+impl ListItems for UnkeyedRows {
+    fn len(&self) -> usize {
+        self.0.len()
+    }
+    fn key(&self, index: usize) -> Option<String> {
+        self.0.get(index).cloned()
+    }
+    fn build(&self, index: usize) -> Option<Element> {
+        Some(Label::new(self.0.get(index)?.as_str()).key(""))
+    }
+}
+
+#[test]
+fn a_dragged_row_preview_is_keyed_like_the_mounted_row() {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(100.0, 200.0, 1.0).unwrap())
+        .unwrap();
+    let source = ui.signal(ListSource::new(UnkeyedRows(keys(&["a", "b"]))));
+    let list = VirtualList::new(&source, ROW)
+        .unwrap()
+        .reorderable(|_, _| Ok(false));
+    ui.mount_tree(list.key("list")).unwrap();
+    ui.flush(Duration::ZERO).unwrap();
+    let at = |x: f32, y: f32, kind| PointerEvent::new(Point::new(x, y).unwrap(), kind);
+    ui.pointer_input(at(20.0, 20.0, PointerKind::Press(PointerButton::Primary)))
+        .unwrap();
+    ui.pointer_input(at(26.0, 20.0, PointerKind::Move)).unwrap();
+    ui.flush(Duration::ZERO).unwrap();
+    assert!(ui.drag_active(), "the preview mounts and the drag starts");
+    ui.pointer_input(at(26.0, 20.0, PointerKind::Release(PointerButton::Primary)))
+        .unwrap();
+}

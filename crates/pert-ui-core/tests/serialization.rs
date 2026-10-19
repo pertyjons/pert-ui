@@ -6,7 +6,7 @@ use std::num::NonZeroU64;
 
 use pert_ui_core::{
     AnyParameterSnapshot, ChoiceId, ChoiceOption, EditSource, NormalizedValue, ParameterId,
-    ParameterMapping, ParameterSnapshot, ParameterSpec, Revision,
+    ParameterMapping, ParameterSnapshot, ParameterSpec, PowerExponent, Revision,
 };
 
 fn round_trip<T>(value: &T)
@@ -255,5 +255,25 @@ fn snapshots_reject_values_their_family_or_specification_cannot_hold()
             "{field} names no option"
         );
     }
+    Ok(())
+}
+
+#[test]
+fn a_power_mapping_round_trips_and_an_invalid_exponent_is_rejected()
+-> Result<(), Box<dyn std::error::Error>> {
+    let spec = ParameterSpec::new("Gain", -60.0, 12.0, 0.0)?
+        .with_mapping(ParameterMapping::Power(PowerExponent::new(2.0)?))?;
+    round_trip(&spec);
+    let text = serde_json::to_string(&spec)?;
+    assert!(text.contains(r#""mapping":{"Power":2.0}"#), "{text}");
+    for invalid in ["0.0", "20.0", "-1.0"] {
+        let bad = text.replace(r#"{"Power":2.0}"#, &format!(r#"{{"Power":{invalid}}}"#));
+        assert!(
+            serde_json::from_str::<ParameterSpec<f32>>(&bad).is_err(),
+            "{bad}"
+        );
+    }
+    assert!(serde_json::from_str::<PowerExponent>("0.5").is_ok());
+    assert!(serde_json::from_str::<PowerExponent>("0.05").is_err());
     Ok(())
 }

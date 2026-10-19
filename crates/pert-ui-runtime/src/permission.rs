@@ -172,7 +172,7 @@ impl Permission {
     }
     /// The permission as one derived binding when bound conditions decide it,
     /// for the builders that take a `ReadSignal<bool>`, such as
-    /// [`MenuItem::enabled_signal`](crate::MenuItem::enabled_signal); `None` when
+    /// [`Runtime::command_enabled_signal`](crate::Runtime::command_enabled_signal); `None` when
     /// it is fixed, which [`Self::fixed`] then reports. The binding reads true
     /// while every bound condition does and follows them without polling.
     ///
@@ -247,5 +247,20 @@ impl From<&ReadSignal<bool>> for Permission {
     /// Allows while the signal reads true; the signal is shared, not copied.
     fn from(signal: &ReadSignal<bool>) -> Self {
         signal.clone().into()
+    }
+}
+
+impl From<crate::Signal<bool>> for Permission {
+    /// Allows while the signal reads true; the permission only reads it.
+    fn from(signal: crate::Signal<bool>) -> Self {
+        signal.read_only().into()
+    }
+}
+
+impl From<&crate::Signal<bool>> for Permission {
+    /// Allows while the signal reads true; the signal is shared, and the
+    /// permission only reads it.
+    fn from(signal: &crate::Signal<bool>) -> Self {
+        signal.read_only().into()
     }
 }

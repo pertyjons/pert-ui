@@ -25,7 +25,7 @@ pub(crate) fn profiling(ui: &Runtime) -> Element {
                 if let Some(enabled) = enabled {
                     cx.set_profiling(enabled)?;
                 }
-                report.set(profile_report(&cx.profile())).map(|_| ())
+                report.set(profile_report(&cx.profile()))
             }),
         )
     })
@@ -35,7 +35,7 @@ pub(crate) fn profiling(ui: &Runtime) -> Element {
         "clear-profile",
         Button::new("Clear", move |cx| {
             cx.clear_profile()?;
-            clear.set(profile_report(&cx.profile())).map(|_| ())
+            clear.set(profile_report(&cx.profile()))
         }),
     ));
     page([section(

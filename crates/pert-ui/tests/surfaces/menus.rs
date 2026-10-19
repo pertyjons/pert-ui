@@ -78,10 +78,10 @@ fn separators_collapse_at_the_edges_and_leave_no_row_to_land_on() {
         "Actions",
         vec![
             MenuItem::separator(),
-            MenuItem::new("a", "First", move |_| a.set("a").map(|_| ())),
+            MenuItem::new("a", "First", move |_| a.set("a")),
             MenuItem::separator(),
             MenuItem::separator(),
-            MenuItem::new("b", "Second", move |_| b.set("b").map(|_| ())),
+            MenuItem::new("b", "Second", move |_| b.set("b")),
             MenuItem::separator(),
         ],
     )
@@ -217,7 +217,7 @@ fn shortcuts_are_presented_and_command_rows_follow_rebinding_and_enablement() {
             "Open…",
             CommandScope::Application,
             vec![ctrl('o')],
-            move |_, _| count.set(count.get()? + 1).map(|_| ()),
+            move |_, _| count.set(count.get()? + 1),
         )
         .unwrap();
     let allowed = ui.signal(false);
@@ -305,7 +305,7 @@ fn bar(ui: &mut Runtime) -> Bar {
                     .as_ref()
                     .map(|id| ui.key(id).map(str::to_owned))
                     .transpose()?;
-                seen.set(Some(key)).map(|_| ())
+                seen.set(Some(key))
             },
         )
         .unwrap();
@@ -316,9 +316,7 @@ fn bar(ui: &mut Runtime) -> Bar {
                 "file",
                 "File",
                 vec![
-                    MenuItem::new("new", "New", move |_| {
-                        count_new.set(count_new.get()? + 1).map(|_| ())
-                    }),
+                    MenuItem::new("new", "New", move |_| count_new.set(count_new.get()? + 1)),
                     MenuItem::separator(),
                     MenuItem::command(ui, "observe", &observe, |_, _| Ok(())).unwrap(),
                 ],
@@ -335,7 +333,7 @@ fn bar(ui: &mut Runtime) -> Bar {
                 vec![MenuItem::new("never", "Never", |_| Ok(())).disabled()],
             ),
             MenuItem::new("about", "About", move |_| {
-                count_about.set(count_about.get()? + 1).map(|_| ())
+                count_about.set(count_about.get()? + 1)
             }),
         ],
     )
@@ -643,7 +641,7 @@ fn f10_reaches_a_bar_while_nothing_is_focused() {
     .unwrap()
     .content(Element::new(
         "control",
-        Button::new("Control", move |_| count.set(count.get()? + 1).map(|_| ())),
+        Button::new("Control", move |_| count.set(count.get()? + 1)),
     ));
     // The bar need not be the root: the first visible bar in tree order is used.
     ui.mount_tree(Element::new(
@@ -743,7 +741,7 @@ fn a_reveal_requested_while_a_submenu_is_open_places_it_from_the_new_offset() {
             "More",
             vec![MenuItem::new("inner", "Inner", |_| Ok(()))],
         )
-        .enabled_signal(enabled.read_only()),
+        .enabled(enabled.read_only()),
     );
     items.extend((4..21).map(|index| row(index).disabled()));
     items.extend((21..30).map(row));
@@ -805,9 +803,7 @@ fn described_bar(
                     "recent",
                     "Recent",
                     vec![
-                        MenuItem::new("song", "Song", move |_| {
-                            opened.set(opened.get()? + 1).map(|_| ())
-                        }),
+                        MenuItem::new("song", "Song", move |_| opened.set(opened.get()? + 1)),
                         MenuItem::command(ui, "observe", observe, |_, _| Ok(())).unwrap(),
                     ],
                 )
@@ -844,7 +840,7 @@ fn a_redescribed_menu_bar_takes_added_removed_and_reordered_menus() {
                     .as_ref()
                     .map(|id| ui.key(id).map(str::to_owned))
                     .transpose()?;
-                seen.set(Some(key)).map(|_| ())
+                seen.set(Some(key))
             },
         )
         .unwrap();
@@ -970,7 +966,7 @@ fn rows(keys: &[&str], chosen: &Signal<String>) -> Vec<MenuItem> {
                 let chosen = chosen.clone();
                 let key = (*key).to_owned();
                 MenuItem::new(key.clone(), key.to_uppercase(), move |_| {
-                    chosen.set(key.clone()).map(|_| ())
+                    chosen.set(key.clone())
                 })
             }
         })
@@ -1076,7 +1072,7 @@ fn a_redescribed_submenu_takes_new_rows_and_closes_when_its_row_goes() {
     assert_eq!(submenu_names(&ui, "recent"), None);
     // The closed submenu keeps its own "items", so the menu's rows need a path.
     let items = ui
-        .find(&root, &["menu", "popup", "actions", "items"])
+        .find_path(&root, &["menu", "popup", "actions", "items"])
         .unwrap()
         .unwrap();
     ui.focus(&items).unwrap();
@@ -1322,12 +1318,12 @@ fn a_final_fixed_denial_keeps_bound_menu_actions_and_branches_disabled() {
                 "Blocked",
                 vec![MenuItem::new("nested", "Nested", |_| Ok(()))],
             )
-            .enabled_signal(enabled.read_only())
+            .enabled(enabled.read_only())
             .disabled(),
             MenuItem::new("blocked-action", "Blocked action", |_| Ok(()))
-                .enabled_signal(enabled.read_only())
+                .enabled(enabled.read_only())
                 .disabled(),
-            MenuItem::new("allowed", "Allowed", move |_| write.set(true).map(|_| ())),
+            MenuItem::new("allowed", "Allowed", move |_| write.set(true)),
         ],
     )
     .unwrap();
@@ -1339,7 +1335,7 @@ fn a_final_fixed_denial_keeps_bound_menu_actions_and_branches_disabled() {
         assert!(items.items[0].disabled);
         assert!(items.items[1].disabled);
         let list = ui
-            .find(&root, &["menu", "popup", "actions", "items"])
+            .find_path(&root, &["menu", "popup", "actions", "items"])
             .unwrap()
             .unwrap();
         let bounds = ui.bounds(&list).unwrap().unwrap();
@@ -1360,13 +1356,13 @@ fn live_enablement_cannot_open_empty_or_all_disabled_submenus() {
         &ui,
         "Actions",
         vec![
-            MenuItem::submenu("empty", "Empty", vec![]).enabled_signal(enabled.read_only()),
+            MenuItem::submenu("empty", "Empty", vec![]).enabled(enabled.read_only()),
             MenuItem::submenu(
                 "disabled",
                 "Disabled",
                 vec![MenuItem::new("child", "Child", |_| Ok(())).disabled()],
             )
-            .enabled_signal(enabled.read_only()),
+            .enabled(enabled.read_only()),
             MenuItem::new("allowed", "Allowed", |_| Ok(())),
         ],
     )
@@ -1382,7 +1378,7 @@ fn live_enablement_cannot_open_empty_or_all_disabled_submenus() {
         assert_eq!(submenu_names(&ui, "empty"), None);
         assert_eq!(submenu_names(&ui, "disabled"), None);
         let list = ui
-            .find(&root, &["menu", "popup", "actions", "items"])
+            .find_path(&root, &["menu", "popup", "actions", "items"])
             .unwrap()
             .unwrap();
         let bounds = ui.bounds(&list).unwrap().unwrap();
@@ -1572,7 +1568,7 @@ fn external_menu_replacement_resets_context_but_same_source_keeps_it() {
                         .as_ref()
                         .map(|id| ui.key(id).map(str::to_owned))
                         .transpose()?;
-                    recorded.set(Some(key)).map(|_| ())
+                    recorded.set(Some(key))
                 },
             )
             .unwrap();
@@ -1642,10 +1638,8 @@ fn replacement_external_menu_keeps_live_row_permissions() {
                 second.clone(),
                 "Actions",
                 vec![
-                    MenuItem::new("new", "New", move |_| {
-                        written.set(written.get()? + 1).map(|_| ())
-                    })
-                    .enabled_signal(enabled.read_only()),
+                    MenuItem::new("new", "New", move |_| written.set(written.get()? + 1))
+                        .enabled(enabled.read_only()),
                     MenuItem::new("available", "Available", |_| Ok(())),
                 ],
             )
@@ -1740,11 +1734,9 @@ fn a_revoked_menu_title_ends_its_open_menu_and_armed_press() {
                 "File",
                 vec![MenuItem::new("new", "New", |_| Ok(()))],
             )
-            .enabled_signal(file_on.read_only()),
-            MenuItem::new("about", "About", move |_| {
-                count.set(count.get()? + 1).map(|_| ())
-            })
-            .enabled_signal(about_on.read_only()),
+            .enabled(file_on.read_only()),
+            MenuItem::new("about", "About", move |_| count.set(count.get()? + 1))
+                .enabled(about_on.read_only()),
         ],
     )
     .unwrap();
@@ -1840,15 +1832,14 @@ fn revoked_menu_row_does_not_retarget_an_armed_key_or_resume_a_pointer_press() {
             &ui,
             "Menu",
             vec![
-                MenuItem::new("a", "A", move |_| a.set(a.get()? + 1).map(|_| ()))
-                    .enabled(enabled.read_only()),
-                MenuItem::new("b", "B", move |_| b.set(b.get()? + 1).map(|_| ())),
+                MenuItem::new("a", "A", move |_| a.set(a.get()? + 1)).enabled(enabled.read_only()),
+                MenuItem::new("b", "B", move |_| b.set(b.get()? + 1)),
             ],
         )
         .unwrap();
         let root = open_menu(&mut ui, menu);
         let list = ui
-            .find(&root, &["menu", "popup", "actions", "items"])
+            .find_path(&root, &["menu", "popup", "actions", "items"])
             .unwrap()
             .unwrap();
         let bounds = ui.bounds(&list).unwrap().unwrap();
@@ -1921,13 +1912,13 @@ fn fixed_menu_redescription_cancels_a_held_key() {
     let describe = |disabled| {
         let a = calls.clone();
         let b = calls.clone();
-        let item = MenuItem::new("a", "A", move |_| a.set(a.get()? + 1).map(|_| ()));
+        let item = MenuItem::new("a", "A", move |_| a.set(a.get()? + 1));
         Menu::new(
             &ui,
             "Menu",
             vec![
                 if disabled { item.disabled() } else { item },
-                MenuItem::new("b", "B", move |_| b.set(b.get()? + 1).map(|_| ())),
+                MenuItem::new("b", "B", move |_| b.set(b.get()? + 1)),
             ],
         )
         .unwrap()
@@ -1955,10 +1946,8 @@ fn title_fixed_denial_then_reenable_before_flush_cancels_the_pointer_press() {
             MenuBar::new(
                 &ui,
                 vec![
-                    MenuItem::new("action", "Action", move |_| {
-                        calls.set(calls.get()? + 1).map(|_| ())
-                    })
-                    .enabled(allowed),
+                    MenuItem::new("action", "Action", move |_| calls.set(calls.get()? + 1))
+                        .enabled(allowed),
                 ],
             )
             .unwrap(),

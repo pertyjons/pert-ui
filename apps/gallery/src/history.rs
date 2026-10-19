@@ -210,7 +210,7 @@ impl GalleryHistory {
         let label = entry.label().to_owned();
         cx.defer_detached(move |ui| {
             history.show(ui, &place)?;
-            status.set(format!("Returned to {label}.")).map(|_| ())
+            status.set(format!("Returned to {label}."))
         })
         .map(|_| ())
     }
@@ -231,9 +231,7 @@ impl GalleryHistory {
             return Ok(());
         };
         self.show(ui, entry.value())?;
-        status
-            .set(format!("Returned to {}.", entry.label()))
-            .map(|_| ())
+        status.set(format!("Returned to {}.", entry.label()))
     }
 
     /// Opens a "Go to" destination and records it as a visit.

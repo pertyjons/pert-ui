@@ -1048,8 +1048,8 @@ fn presentation_receipts_are_equal_only_for_the_same_request() -> TestResult {
     // A signal holding the latest receipt notifies for a new request even when
     // both end in the same status.
     let latest = ui.signal(first.clone());
-    assert!(!latest.set(first.clone())?);
-    assert!(latest.set(second)?);
+    assert!(!latest.set_changed(first.clone())?);
+    assert!(latest.set_changed(second)?);
     assert!(format!("{first:?}").contains("Pending"));
     drop(ui.take_presentation_requests()?);
     Ok(())

@@ -14,7 +14,15 @@ include = ["/src/**", "/tests/**", "/examples/**", "/README.md", "/LICENSE-MIT",
 
 [features]
 default = ["desktop"]
-desktop = ["dep:winit", "dep:pert-ui-wgpu", "dep:arboard"]
+# A native application (`App`) presented with the GPU renderer.
+desktop = ["gpu"]
+# A native application presented with the CPU renderer through softbuffer,
+# without compiling wgpu: for tools and machines without a usable GPU.
+desktop-cpu = ["native", "cpu"]
+# Building blocks of the two above. `native` is the window, event loop and
+# clipboard integration and needs a renderer, `gpu` or `cpu`, to present.
+native = ["dep:winit", "dep:arboard"]
+gpu = ["native", "dep:pert-ui-wgpu"]
 # Image decoding into `RasterImage`. Each format feature implies `images`, which
 # provides the `images` module; drawing images needs none of these.
 images = ["dep:image"]
@@ -38,7 +46,8 @@ serde = ["pert-ui-runtime/serde"]
 # The `cpu` module: rendering scenes and serving capture requests on the CPU,
 # without a window or GPU, for tests, tools and headless screenshots. With
 # `desktop` it also enables `App::software_rendering`, which presents those
-# frames in native windows through softbuffer instead of creating a GPU device.
+# frames in native windows through softbuffer instead of creating a GPU device;
+# with `native` and without `gpu` (`desktop-cpu`) every window presents so.
 cpu = ["dep:pert-ui-cpu", "dep:softbuffer"]
 
 [dependencies]
@@ -76,4 +85,4 @@ features = ["image-formats", "svg", "serde", "cpu"]
 
 [[example]]
 name = "getting_started"
-required-features = ["desktop"]
+required-features = ["native"]

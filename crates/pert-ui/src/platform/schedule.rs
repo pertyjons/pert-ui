@@ -458,7 +458,7 @@ mod scheduling_tests {
         assert!(!ready);
         assert_eq!(prepare_updates(&mut runtime, now, ready)?, 0);
         let _reply = runtime.request_capture(crate::CaptureRequest::new(
-            crate::CaptureTarget::Window(root.id()),
+            crate::CaptureTarget::window(&root),
         ));
         let ready = updates_ready(&runtime, &root, true);
         assert!(ready);

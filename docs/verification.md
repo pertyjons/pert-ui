@@ -5,6 +5,34 @@ outstanding checks. The commands below follow [AGENTS.md](../AGENTS.md) and
 `.github/workflows/ci.yml`; that workflow is the authoritative current gate.
 The [manual](manual.md) contains runnable application examples.
 
+## Mixer-probe plan
+
+The slices of [the mixer-probe plan](../plans/mixer-probe-improvements.md)
+(0.3.9 to 0.3.17) each passed the workspace gate on Fedora 44 Linux with Rust
+1.99.0; slice 5 also passed the three serde configurations. Each slice had an
+independent Codex implementation review whose findings were fixed. On Fedora
+44 GNOME/Wayland, with temporary instrumentation that is not kept, the native
+runner supplied its viewport before its first flush for a minimal
+`PropertyGrid` application and for the probe's mixer; this is the evidence for
+slice 1 leaving `App` startup unchanged.
+
+The `live_mixer` example's headless session, extended after its review to a
+cancelled audition, undo during a drag, a full engine queue with an undo and
+Retry, a stopped engine and a partial layout restore, passed thirty
+consecutive runs; an earlier version of
+the full-queue step raced with the engine and was made deterministic by
+having the engine confirm that it is holding before the queue is filled. The
+0.3.15 window (`--window`, default features) ran on the same system and closed
+with no error or validation output; a maintainer used it interactively. Library
+packaging was verified with `cargo package --locked --workspace --exclude
+pert-ui-gallery --exclude pert-ui-native-checks --allow-dirty`, admitting the
+uncommitted slice without disabling verification. From the extracted 0.3.17
+packages, outside the checkout and with their internal dependencies patched to
+those extracted packages, the example compiled and its headless session passed
+with `--no-default-features`, and it compiled with
+`--no-default-features --features desktop-cpu`. This is local packaged-consumer
+evidence, not a crates.io dry run; no other platform was exercised.
+
 ## Thin outlines at fractional zoom
 
 A 75% scale regression renders a one-logical-pixel rounded outline at a
@@ -342,6 +370,8 @@ or driver; it does not cover the other native checks or another platform.
 | General components of 2026-10-01 (search field, knob, chip, breadcrumb, reveal navigation, link, color picker, collapsible and accordion, multi-select, command palette, property grid, file browser) | The whole native suite passed on the branch that adds them (2026-10-01), so existing native behavior did not regress; no native check or hand check exercises the new components themselves yet. |
 | Tool window floating frames and own native windows (Layout › Tool windows: Float, then drag the header and the corner grip; Open in window, then close the native window and see the tool window back on its stripe; Dock from the window's options menu) | Linux: passed 2026-10-05 on Fedora 44 GNOME/Wayland as steps of the native gallery interaction check: float through the options menu, header drag, corner-grip resize, open in a real native window and close it back to the stripe. Input enters at the runtime's native entry points; window creation and closing were the real host's. Windows and macOS have no evidence. |
 | Gallery interaction check (`pert-ui-gallery::interaction_check`): menu-bar brand mark and history back/forward, command palette shortcut and Go to, chip removal, search field debounce/choose/clear, concealed password (no IME request, Alt+F8 reveal, concealed again on focus loss), content search shortcut and jump, knob pointer drag, collapsible section toggle, tool window expand and Escape, float, header drag, corner-grip resize, own native window and its close, collection filter and clear, settled idle | Passed natively 2026-10-02 (tool window float to close steps added and passed 2026-10-05) on Fedora 44, GNOME on Wayland, Intel UHD Graphics 770 with Mesa 26.2.3, as part of the whole native suite; Linux only. Input enters at the runtime's entry points, so it is not evidence for the adapter's OS event translation. |
+| Native suite on the application-author branch (0.3.8, `app-author-improvements`): interval timers serviced every loop turn, value-driven children, flex layout and selection notifications in the gallery, software presentation | Passed 2026-10-18 on Fedora 44, kernel 7.2.11-200.fc44.x86_64, GNOME/Wayland, Intel UHD Graphics 770 with Mesa 26.2.4 on Vulkan, Rust 1.99.0: every check of the runner, including both gallery interaction checks and the settled-idle checks, which show the interval servicing adds no wakeup when no timer runs. `--skip-clipboard` omitted the clipboard check. No check starts an interval timer in a native window. |
+| `desktop-cpu` build (no wgpu) | On the same machine and date, each ignored window check of `pert-ui` built with `--no-default-features --features desktop-cpu` ran in its own process: startup, resize and idle, capture, drag, and three software surfaces with redock passed, all presented by the CPU renderer. The pacing check is compiled only with `gpu`: in this build it measured 47.6 updates/s against a 99.981 Hz monitor, since CPU frames have no interactive budget. The native runner itself builds the default configuration and does not run this one. |
 | Native suite after the framework audit repairs | Passed 2026-10-04 on Fedora GNOME/Wayland/Vulkan, including hardware readback and real-renderer capture. `--skip-clipboard` explicitly omitted the clipboard check. Existing injected/runtime-entry interaction limits still apply; no new hand check of floating tool windows or another platform is claimed. |
 | Software presentation (`App::software_rendering`): `software_presentation_captures_the_window_and_a_widget`, `software_window_resize_and_idle`, `three_software_surfaces_animate_settle_and_redock` and `pert-ui-gallery::interaction_check_cpu` | Passed 2026-10-05 on Fedora 44 GNOME/Wayland with softbuffer over Wayland shared memory: capture, resize, minimize/restore, input, recovery, floating windows, detach/redock, the 29-step interaction check and settled idle, with no GPU device created. Input entered at the runtime's native entry points. The user then checked the `--cpu` gallery by hand on the same desktop on 2026-10-05: real pointer, keyboard and text input, the clipboard, and display scales from 75 % to 200 %, including fractional ones, all looked and behaved correctly. Windows and macOS only compiled. |
 | Native checks after the Permission and geometry slice (0.2.88): `drag_smoke`, both multi-window smokes and the GPU and CPU gallery interaction checks | Linux: passed 2026-10-07 on Fedora 44 GNOME/Wayland after detachment became a Permission evaluated at request time and floating-window movement a Permission with `on_frame`. Input entered at the runtime's native entry points; the GPU adapter was not printed by these checks. Windows and macOS have no evidence. |
@@ -594,6 +624,28 @@ The whole run peaked at 50 MiB resident. A headless gallery screenshot of the
 1280×800 window, including mounting and layout, took 0.09 s and peaked at
 40 MiB. This is a reference interpreter for offline rendering and captures; no
 interactive frame budget is claimed.
+
+### Desktop build configurations
+
+On 2026-10-18 a small notes application (menu bar, list, text editor, a
+background save and a CPU-rendered capture example; a session-local program,
+not in the repository) was built against pert-ui at commit `ace22d0` from an
+empty target directory with `cargo build --release`, the default release
+profile of a standalone package, in each desktop configuration: `pert-ui` with
+`features = ["cpu"]`, and with `default-features = false, features =
+["desktop-cpu"]`. The machine was a 12th Gen Intel Core i9-12900 (24 hardware
+threads) on Fedora 44 with Rust 1.99.0. "Stripped" is `strip -o` of the release
+binary; build time is wall-clock time of the build command:
+
+| Configuration | Packages in the normal dependency tree of `pert-ui` | Clean release build | Binary | Stripped |
+|---|---|---|---|---|
+| `desktop` (with `cpu`) | 210 | 32 s | 25.2 MiB | 20.3 MiB |
+| `desktop-cpu` | 170 | 34 s | 19.0 MiB | 15.6 MiB |
+
+`desktop-cpu` leaves wgpu and its graphics stack out, which made the program
+about a quarter smaller. It did not shorten the build on this machine, where
+wgpu compiles in parallel with the rest; a build with fewer threads was not
+measured. Package counts are from `cargo tree -e normal` for `pert-ui` alone.
 
 ## Review and publication
 

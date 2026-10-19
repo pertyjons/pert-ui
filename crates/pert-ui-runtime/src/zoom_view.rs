@@ -150,13 +150,22 @@ impl ZoomController {
         self.view.read_only()
     }
     /// Shows the content with `view`, which is not bounded by the view's
-    /// [`ScaleLimits`]. Returns whether the transform changed.
+    /// [`ScaleLimits`]. An equal transform changes nothing;
+    /// [`Self::set_changed`] reports whether it changed.
     ///
     /// # Errors
     /// The signal write's failures: `WriteDuringUpdate`, `Closed` or
     /// `BorrowConflict`.
-    pub fn set(&self, view: ViewTransform) -> Result<bool, RuntimeError> {
+    pub fn set(&self, view: ViewTransform) -> Result<(), RuntimeError> {
         self.view.set(view)
+    }
+    /// Shows the content with `view` like [`Self::set`] and returns whether the
+    /// transform changed.
+    ///
+    /// # Errors
+    /// The errors of [`Self::set`].
+    pub fn set_changed(&self, view: ViewTransform) -> Result<bool, RuntimeError> {
+        self.view.set_changed(view)
     }
     /// Shows all content, centered with a 16-pixel margin, at the largest scale
     /// that fits but not above 100%, then held within the view's
@@ -511,7 +520,7 @@ impl Component for ZoomView {
         }
         self.focused = cx.focused();
         if let Some(controller) = &self.controller {
-            let view = cx.read(&controller.view.read_only())?;
+            let view = cx.read(&controller.view)?;
             if self.seen != Some(view) {
                 if self.pan.take().is_some() {
                     cx.cancel_input();

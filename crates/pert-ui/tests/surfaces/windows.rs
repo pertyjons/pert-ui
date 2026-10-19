@@ -648,7 +648,7 @@ fn popup_and_view_dialog_inside_window_obey_ownership_and_modality() {
                     open.clone(),
                     Element::new(
                         "open-popup",
-                        Button::new("Popover", move |_| show.set(true).map(|_| ())),
+                        Button::new("Popover", move |_| show.set(true)),
                     ),
                     Element::new(
                         "popup-actions",
@@ -893,7 +893,7 @@ fn minimization_cancels_armed_content_and_late_release_cannot_activate() {
         "One",
         Element::new(
             "action",
-            Button::new("Action", move |_| n.set(n.get()? + 1).map(|_| ())),
+            Button::new("Action", move |_| n.set(n.get()? + 1)),
         ),
     )
     .initial_size(Size::from([300, 200]))
@@ -926,7 +926,7 @@ fn custom_drag_bar_controls_consume_input_and_empty_bar_space_moves() {
             Row::new([
                 Element::new(
                     "action",
-                    Button::new("Action", move |_| n.set(n.get()? + 1).map(|_| ())),
+                    Button::new("Action", move |_| n.set(n.get()? + 1)),
                 ),
                 Element::new("label", Label::new("Drag")),
             ]),
@@ -979,10 +979,7 @@ fn frameless_icon_has_no_resting_fill_and_keeps_activation_and_hover() {
     let n = clicks.clone();
     ui.mount_tree(Element::new(
         "button",
-        Button::icon(Icon::Info, "Information", move |_| {
-            n.set(n.get()? + 1).map(|_| ())
-        })
-        .frameless(),
+        Button::icon(Icon::Info, "Information", move |_| n.set(n.get()? + 1)).frameless(),
     ))
     .unwrap();
     settle(&mut ui);

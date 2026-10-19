@@ -52,14 +52,17 @@ impl TryFrom<f32> for Length {
 /// wide as the border keeps content clear of it.
 ///
 /// Re-describing the container under the same key applies its background, color
-/// roles, padding, preferred size, limits and cursor; its child reconciles by
-/// key.
+/// roles, background binding, padding, preferred size, limits and cursor; its
+/// child reconciles by key.
 #[must_use]
 #[derive(Default)]
 pub struct Container {
     children: Vec<Element>,
     background: Option<Color>,
     background_role: Option<crate::ColorRole>,
+    background_binding: Option<crate::ReadSignal<crate::ColorRole>>,
+    /// The role the binding held at the last update.
+    bound_role: Option<crate::ColorRole>,
     border_role: Option<crate::ColorRole>,
     painted_background: std::cell::Cell<Option<Color>>,
     painted_border: std::cell::Cell<Option<(f32, Color)>>,
@@ -90,16 +93,54 @@ impl Container {
         self
     }
     /// Fills the allocated rectangle with a validated linear color.
+    ///
+    /// Replaces an earlier background, role or role binding.
     pub fn background(mut self, color: Color) -> Self {
         self.background = Some(color);
         self.background_role = None;
+        self.background_binding = None;
         self
     }
     /// Fills with a theme role, replacing a literal background override.
     /// Changes to this role automatically repaint the container; default is transparent.
+    /// Replaces an earlier background, role or role binding.
     pub fn background_role(mut self, role: crate::ColorRole) -> Self {
         self.background_role = Some(role);
         self.background = None;
+        self.background_binding = None;
+        self
+    }
+    /// Fills with the theme role `role` holds, following it: a new role, or a
+    /// theme change to the current one, repaints the container without layout
+    /// or a new description, so a list can mark its selected item by binding
+    /// each item's role to the selection. Replaces an earlier background, role
+    /// or role binding, as they replace this one.
+    ///
+    /// The binding is read when the container updates and released when it is
+    /// replaced or the container unmounts. A binding from another runtime fails
+    /// that update with [`RuntimeError::ForeignRuntime`].
+    ///
+    /// ```
+    /// use pert_ui_runtime::{ColorRole, Container, Element, Label, Runtime, Viewport};
+    /// use std::time::Duration;
+    /// let mut ui = Runtime::new();
+    /// ui.set_viewport(Viewport::new(200.0, 100.0, 1.0)?)?;
+    /// let selected = ui.signal(false);
+    /// let role = selected.map(|on| if *on { ColorRole::PrimaryContainer } else { ColorRole::Surface })?;
+    /// ui.mount_tree(Element::new("strip", Container::new(Element::new("name", Label::new("Strip")))
+    ///     .background_role_signal(role)))?;
+    /// ui.flush(Duration::ZERO)?;
+    /// selected.set(true)?; // repaints the strip; no redescription
+    /// ui.flush(Duration::ZERO)?;
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn background_role_signal(
+        mut self,
+        role: impl Into<crate::ReadSignal<crate::ColorRole>>,
+    ) -> Self {
+        self.background_binding = Some(role.into());
+        self.background = None;
+        self.background_role = None;
         self
     }
     /// Outlines the allocation with a theme color at `MetricRole::BorderWidth`,
@@ -162,12 +203,19 @@ impl Component for Container {
         let layout = self.padding != next.padding
             || self.preferred != next.preferred
             || self.limits != next.limits;
+        let rebound =
+            !crate::ReadSignal::same_optional(&self.background_binding, &next.background_binding);
         let paint = self.background != next.background
             || self.background_role != next.background_role
+            || rebound
             || self.border_role != next.border_role
             || self.cursor != next.cursor;
         self.background = next.background;
         self.background_role = next.background_role;
+        if rebound {
+            self.background_binding = next.background_binding;
+            self.bound_role = None;
+        }
         self.border_role = next.border_role;
         self.padding = next.padding;
         self.preferred = next.preferred;
@@ -218,7 +266,11 @@ impl Component for Container {
     fn take_children(&mut self) -> Vec<Element> {
         std::mem::take(&mut self.children)
     }
-    fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+    fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
+        self.bound_role = match &self.background_binding {
+            Some(binding) => Some(cx.read_paint(binding)?),
+            None => None,
+        };
         Ok(())
     }
     fn measure(
@@ -270,9 +322,11 @@ impl Component for Container {
         Ok(())
     }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        let color = self
-            .background
-            .or_else(|| self.background_role.map(|role| painter.color(role)));
+        let color = self.background.or_else(|| {
+            self.background_role
+                .or(self.bound_role)
+                .map(|role| painter.color(role))
+        });
         self.painted_background.set(color);
         if let (Some(color), Some(size)) = (color, painter.size()) {
             let bounds = Rect::from_size(size);
@@ -326,6 +380,59 @@ enum Flow {
     Column,
     Wrap,
 }
+
+/// Where a [`Row`] or [`Column`] puts its children along its main axis when
+/// they leave space over: space that no child with an
+/// [`Element::with_grow`] weight takes. Without space over, every choice
+/// places like `Start`.
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub enum Justify {
+    /// Children start at the leading edge, left or top; the default.
+    #[default]
+    Start,
+    /// Children are centered as a group.
+    Center,
+    /// Children end at the trailing edge, right or bottom.
+    End,
+    /// The first child starts at the leading edge, the last ends at the
+    /// trailing edge, and the space over is shared between the gaps. A single
+    /// child starts at the leading edge.
+    SpaceBetween,
+}
+
+/// Where a [`Row`] or [`Column`] places each child across its main axis.
+///
+/// A column aligns children within its width. A row aligns them within the
+/// height of its tallest child, except that `Stretch` fills the height the row
+/// is given: in a column that grows the row, or under a bounded allocation,
+/// every child reaches it. `Stretch` gives each child that whole extent, up to
+/// the child's own maximum size and never below its minimum.
+///
+/// A row's own measured height stays that of its tallest child, so stretching
+/// fills space a parent allocates without asking for more; a row whose parent
+/// gives it only its natural height, as a column that does not grow it does,
+/// stretches its children to the tallest of them. Scroll content is given at
+/// least the visible height, so a row in a [`ScrollArea`](crate::ScrollArea) fills that.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum Align {
+    /// At the leading edge: left in a column, top in a row. A column's default.
+    Start,
+    /// Centered: a row's default.
+    Center,
+    /// At the trailing edge: right in a column, bottom in a row.
+    End,
+    /// Across the whole extent: a column's width, or the height a row is
+    /// allocated.
+    Stretch,
+}
+
+/// The main-axis and cross-axis choices of a row or column.
+#[derive(Clone, Copy, PartialEq)]
+struct FlowStyle {
+    gap: f32,
+    justify: Justify,
+    align: Align,
+}
 fn flow_limits(
     cx: &MeasureContext<'_>,
     flow: Flow,
@@ -359,8 +466,9 @@ fn flow_rects(
     cx: &MeasureContext<'_>,
     available: Constraints,
     flow: Flow,
-    gap: f32,
+    style: FlowStyle,
 ) -> Result<(Size, Vec<Rect>), RuntimeError> {
+    let gap = style.gap;
     // Ordinary children keep the offered height, including bounded viewports.
     // Separators first contribute their natural height, then fill the resolved
     // row. Only opted-in children need a second measurement constraint.
@@ -430,10 +538,163 @@ fn flow_rects(
             _ => x += size.width() + gap,
         }
     }
-    if matches!(flow, Flow::Row | Flow::Wrap) {
+    if matches!(flow, Flow::Wrap) {
         center_line(&mut out[row_start..], row_height)?;
     }
-    Ok((Size::new(width, height)?, out))
+    let natural = Size::new(width, height)?;
+    if matches!(flow, Flow::Wrap) {
+        return Ok((natural, out));
+    }
+    let size = flex(cx, available, flow, style, natural, &mut out)?;
+    Ok((size, out))
+}
+
+/// Grows, justifies and aligns the naturally placed children of a row or
+/// column, returning the container's size.
+fn flex(
+    cx: &MeasureContext<'_>,
+    available: Constraints,
+    flow: Flow,
+    style: FlowStyle,
+    natural: Size,
+    out: &mut [Rect],
+) -> Result<Size, RuntimeError> {
+    let column = matches!(flow, Flow::Column);
+    let count = out.len();
+    let main = |bounds: &Rect| {
+        if column {
+            bounds.height()
+        } else {
+            bounds.width()
+        }
+    };
+    let lengths: Vec<f32> = out.iter().map(main).collect();
+    let gaps = style.gap * count.saturating_sub(1) as f32;
+    let used = lengths.iter().sum::<f32>() + gaps;
+    let limit = if column {
+        available.height()
+    } else {
+        available.width()
+    };
+    let mut spare = limit.map_or(0.0, |limit| (limit - used).max(0.0));
+    let mut extra = vec![0.0f32; count];
+    let mut growing = Vec::new();
+    for index in 0..count {
+        let weight = cx.grow(index)?;
+        if weight > 0 {
+            let maximum = cx.limits(index)?.maximum();
+            let maximum = if column {
+                maximum.height()
+            } else {
+                maximum.width()
+            };
+            growing.push((index, f32::from(weight), maximum));
+        }
+    }
+    let grows = !growing.is_empty();
+    // Share the spare space by weight; a child that reaches its maximum takes
+    // only its room, and the rest is shared again among the others.
+    while spare > 0.0 && !growing.is_empty() {
+        let total: f32 = growing.iter().map(|(_, weight, _)| weight).sum();
+        // How much more each growing child may take before its maximum.
+        let rooms: Vec<f32> = growing
+            .iter()
+            .map(|(index, _, maximum)| {
+                maximum.map_or(f32::INFINITY, |maximum| {
+                    (maximum - lengths[*index] - extra[*index]).max(0.0)
+                })
+            })
+            .collect();
+        // The weight's fraction first, so a large spare space cannot overflow.
+        let share = |weight: f32| spare * (weight / total);
+        let capped: Vec<usize> = (0..growing.len())
+            .filter(|&position| share(growing[position].1) >= rooms[position])
+            .collect();
+        if capped.is_empty() {
+            for (index, weight, _) in &growing {
+                extra[*index] += share(*weight);
+            }
+            spare = 0.0;
+            break;
+        }
+        for position in capped.into_iter().rev() {
+            let (index, _, _) = growing.remove(position);
+            extra[index] += rooms[position];
+            spare -= rooms[position];
+        }
+        spare = spare.max(0.0);
+    }
+    let (start, spacing) = match style.justify {
+        Justify::Start => (0.0, style.gap),
+        Justify::Center => (spare / 2.0, style.gap),
+        Justify::End => (spare, style.gap),
+        Justify::SpaceBetween if count > 1 => (0.0, style.gap + spare / (count - 1) as f32),
+        Justify::SpaceBetween => (0.0, style.gap),
+    };
+    // A column aligns within its width. A row aligns within its tallest child,
+    // except that stretching fills the height the row is given: its
+    // allocation when arranged, or a bounded offer while it is measured,
+    // which only places children and never changes the row's own size.
+    let cross_extent = match (column, style.align) {
+        (true, _) => available.width().unwrap_or(natural.width()),
+        (false, Align::Stretch) => available.height().unwrap_or(natural.height()),
+        (false, _) => natural.height(),
+    };
+    let mut position = start;
+    for (index, bounds) in out.iter_mut().enumerate() {
+        let length = lengths[index] + extra[index];
+        let [_, _, width, height] = bounds.values();
+        let cross = if column { width } else { height };
+        let maximum = cx.limits(index)?.maximum();
+        let maximum = if column {
+            maximum.width()
+        } else {
+            maximum.height()
+        };
+        let (offset, cross) = match style.align {
+            Align::Start => (0.0, cross),
+            Align::Center => ((cross_extent - cross) / 2.0, cross),
+            Align::End => (cross_extent - cross, cross),
+            Align::Stretch => {
+                let minimum = cx.limits(index)?.minimum();
+                let minimum = if column {
+                    minimum.width()
+                } else {
+                    minimum.height()
+                };
+                (
+                    0.0,
+                    maximum
+                        .map_or(cross_extent, |maximum| cross_extent.min(maximum))
+                        .max(minimum),
+                )
+            }
+        };
+        *bounds = if column {
+            rect(offset, position, cross, length)?
+        } else {
+            rect(position, offset, length, cross)?
+        };
+        position += length + spacing;
+    }
+    // A container that grows or places children by its spare space fills its
+    // bounded main axis; otherwise it keeps its natural size.
+    let fills = grows || style.justify != Justify::Start;
+    let main = match limit {
+        Some(limit) if fills => limit.max(used),
+        _ => {
+            if column {
+                natural.height()
+            } else {
+                natural.width()
+            }
+        }
+    };
+    Ok(if column {
+        Size::new(natural.width(), main)?
+    } else {
+        Size::new(main, natural.height())?
+    })
 }
 
 fn center_line(placements: &mut [Rect], height: f32) -> Result<(), RuntimeError> {
@@ -452,6 +713,8 @@ macro_rules! flow_component {
         pub struct $name {
             children: Vec<Element>,
             gap: Option<Spacing>,
+            justify: Justify,
+            align: Option<Align>,
         }
         impl $name {
             /// Collects ordered children; sibling keys must be unique at mounting.
@@ -459,6 +722,8 @@ macro_rules! flow_component {
                 Self {
                     children: children.into_iter().collect(),
                     gap: None,
+                    justify: Justify::Start,
+                    align: None,
                 }
             }
             /// Overrides the inter-child gap with a fixed length or a live theme role.
@@ -472,11 +737,25 @@ macro_rules! flow_component {
                     .unwrap_or(Spacing::Theme(MetricRole::ItemGap))
                     .resolve(cx)
             }
+            fn style(&self, cx: &MeasureContext<'_>) -> FlowStyle {
+                FlowStyle {
+                    gap: self.resolved_gap(cx),
+                    justify: self.justify,
+                    align: self.align.unwrap_or(match Flow::$flow {
+                        Flow::Row => Align::Center,
+                        _ => Align::Start,
+                    }),
+                }
+            }
         }
         impl Component for $name {
             fn reconcile(&mut self, next: Self) -> Option<crate::Invalidation> {
-                let changed = self.gap != next.gap;
+                let changed = self.gap != next.gap
+                    || self.justify != next.justify
+                    || self.align != next.align;
                 self.gap = next.gap;
+                self.justify = next.justify;
+                self.align = next.align;
                 changed.then_some(crate::Invalidation::Layout)
             }
             fn measure_limits(
@@ -507,14 +786,14 @@ macro_rules! flow_component {
                 cx: &MeasureContext<'_>,
                 available: Constraints,
             ) -> Result<Size, RuntimeError> {
-                Ok(flow_rects(cx, available, Flow::$flow, self.resolved_gap(cx))?.0)
+                Ok(flow_rects(cx, available, Flow::$flow, self.style(cx))?.0)
             }
             fn arrange(&self, cx: &mut ArrangeContext<'_>, size: Size) -> Result<(), RuntimeError> {
                 let (_, placements) = flow_rects(
                     cx.measurement(),
                     Constraints::bounded(size),
                     Flow::$flow,
-                    self.resolved_gap(cx.measurement()),
+                    self.style(cx.measurement()),
                 )?;
                 for (index, bounds) in placements.into_iter().enumerate() {
                     cx.place(index, bounds)?;
@@ -527,13 +806,46 @@ macro_rules! flow_component {
 flow_component!(
     Row,
     Row,
-    "One horizontal row with the theme item gap (8 logical pixels at Standard). Children receive the offered height; children opting into Component::fills_row_height contribute their natural height first, then fill the resolved content height up to the offered height. Children are vertically centered against the tallest resolved child, aligning labels with taller controls. Unused height below the row remains empty; overflow never implicitly wraps."
+    "One horizontal row with the theme item gap (8 logical pixels at Standard). Children receive the offered height; children opting into Component::fills_row_height contribute their natural height first, then fill the resolved content height up to the offered height. Children are vertically centered against the tallest resolved child, aligning labels with taller controls; with Align::Stretch they instead fill the height the row is allocated. Otherwise unused height below the row remains empty; overflow never implicitly wraps."
 );
 flow_component!(
     Column,
     Column,
     "One vertical column with the theme item gap (8 logical pixels at Standard) and start alignment; allocated widths fit available space while hard minimums and reported overflow are preserved."
 );
+/// The main-axis and cross-axis builders of [`Row`] and [`Column`]; [`Wrap`]
+/// keeps its own line placement.
+macro_rules! flex_builders {
+    ($name:ident, $main:literal, $cross_default:literal) => {
+        impl $name {
+            #[doc = concat!("Places the children along the ", $main, " when they leave space over; [`Justify::Start`] by default.")]
+            ///
+            /// Only spare space that no child with an [`Element::with_grow`]
+            /// weight takes is placed; with spare space and any choice other
+            /// than `Start`, the container fills its bounded main axis.
+            pub fn justify(mut self, justify: Justify) -> Self {
+                self.justify = justify;
+                self
+            }
+            #[doc = concat!("Places each child across the main axis; ", $cross_default, " by default.")]
+            pub fn align(mut self, align: Align) -> Self {
+                self.align = Some(align);
+                self
+            }
+        }
+    };
+}
+flex_builders!(
+    Row,
+    "row's width",
+    "[`Align::Center`] within the tallest child's height"
+);
+flex_builders!(
+    Column,
+    "column's height",
+    "[`Align::Start`] within the column's width"
+);
+
 flow_component!(
     Wrap,
     Wrap,

@@ -226,7 +226,8 @@ impl Popover {
     /// reconciles children. A convenience-owned surface from
     /// [`ColorPicker::into_popover`] retains its controller and initial parts;
     /// changing between these ownership modes requires a new element key.
-    pub fn new(open: Signal<bool>, anchor: Element, content: Element) -> Self {
+    pub fn new(open: impl Into<Signal<bool>>, anchor: Element, content: Element) -> Self {
+        let open: Signal<bool> = open.into();
         Self {
             children: children(anchor, content),
             open,
@@ -263,7 +264,7 @@ impl Popover {
     ///     Element::new("anchor", Label::new("Anchor")),
     ///     Element::new("content", Label::new("Content")),
     /// )
-    /// .on_dismiss(move |_, why| report.set(Some(why)).map(|_| ()));
+    /// .on_dismiss(move |_, why| report.set(Some(why)));
     /// ui.mount_tree(Element::new("root", pert_ui_runtime::Column::new([
     ///     Element::new("popover", popover),
     /// ])))?;
@@ -312,7 +313,7 @@ impl Component for Popover {
         std::mem::take(&mut self.children)
     }
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
-        self.shown = cx.read(&self.open.read_only())?;
+        self.shown = cx.read(&self.open)?;
         Ok(())
     }
     fn child_visible(&self, key: &str) -> bool {

@@ -219,7 +219,13 @@ type Initialize = Box<dyn FnOnce(&mut Runtime) -> Result<(), AppError>>;
 
 /// A standalone desktop application with independently scheduled native windows with automatic retained scheduling.
 ///
-/// Requires the default `desktop` feature and a main-thread call to `run`.
+/// Requires the default `desktop` feature, or `desktop-cpu`, and a main-thread
+/// call to `run`. With `desktop-cpu` alone every window presents CPU frames, as
+/// `App::software_rendering` chooses with `desktop` and `cpu`, and wgpu is
+/// not compiled. When both features are enabled, for example because another
+/// dependency enables `desktop` through Cargo's feature unification, the GPU
+/// renderer is present and is the default again; `software_rendering` then
+/// chooses CPU frames.
 /// Defaults are a 960×640 logical-pixel resizable window, a neutral background,
 /// hardware rendering and sRGB presentation. Linux uses Wayland/Vulkan, macOS
 /// Metal and Windows DX12. An idle app waits for events; no redraw timer is added.
@@ -233,7 +239,8 @@ type Initialize = Box<dyn FnOnce(&mut Runtime) -> Result<(), AppError>>;
 /// Button transitions stay ordered, with the final position delivered before
 /// release. Focus loss, occlusion and zero-size suspension cancel active input.
 /// Motion coalescing adds no timer and does not affect direct runtime input.
-/// Component failures are reported to stderr and get three delayed presentation
+/// Component failures are reported to stderr, with the failing component's
+/// key path from [`Runtime::last_failure`], and get three delayed presentation
 /// retries by default; see [`Self::on_error`] for cleanup and host policy. GPU and
 /// native startup failures use their separate recovery rules. A successful frame
 /// resets the component allowance; repeated failure returns the last error.
@@ -290,7 +297,10 @@ impl App {
     /// Defines content once using the public runtime, with no backend configuration.
     ///
     /// Initialization runs on the calling main thread from `run`, after the native
-    /// event loop exists and before any window opens. Retain
+    /// event loop exists and before any window opens, so the runtime has no
+    /// viewport yet: it is supplied when the window opens, before the first
+    /// flush the application runs. Content laid out by a flush inside the closure
+    /// has empty bounds, which development validation does not report. Retain
     /// parameter host owners in components or captured application-owned state.
     /// The closure does not repeat on redraw. Errors are returned from `run`.
     pub fn new(
@@ -318,10 +328,10 @@ impl App {
     /// height.
     ///
     /// ```no_run
-    /// use pert_ui::{App, AppError, Label, Size};
+    /// use pert_ui::{App, AppError, Element, Label, Size};
     /// fn main() -> Result<(), AppError> {
     ///     App::new("Mixer", |ui| {
-    ///         ui.mount("label", Label::new("Ready"))?;
+    ///         ui.mount_tree(Element::new("label", Label::new("Ready")))?;
     ///         Ok(())
     ///     })
     ///     .size(Size::from([1280, 800]))?
@@ -377,8 +387,9 @@ impl App {
     /// captures keep the background's alpha as GPU captures do.
     ///
     /// The choice is made once, before [`Self::run`]: there is no automatic
-    /// fallback in either direction, and the GPU path is unchanged when this
-    /// is not called. A whole frame is rendered on the UI thread for every
+    /// fallback in either direction, and with the GPU renderer compiled in the
+    /// GPU path is unchanged when this is not called. Without it
+    /// (`desktop-cpu` alone) every window presents CPU frames anyway. A whole frame is rendered on the UI thread for every
     /// presentation, which costs far more than the GPU path; the
     /// [verification notes](https://github.com/pertyjons/pert-ui/blob/main/docs/verification.md#cpu-rendering-cost)
     /// record measured frame times. A window whose frame would exceed
@@ -387,10 +398,10 @@ impl App {
     /// through [`Self::on_error`], as an oversized GPU surface does.
     ///
     /// ```no_run
-    /// use pert_ui::{App, AppError, Label};
+    /// use pert_ui::{App, AppError, Element, Label};
     /// fn main() -> Result<(), AppError> {
     ///     App::new("Software", |ui| {
-    ///         ui.mount("label", Label::new("Drawn on the CPU"))?;
+    ///         ui.mount_tree(Element::new("label", Label::new("Drawn on the CPU")))?;
     ///         Ok(())
     ///     })
     ///     .software_rendering()
@@ -412,7 +423,8 @@ impl App {
     /// callback is safe for time-critical producers. The error is borrowed only
     /// for this call. Report or retain its details here: retrying does not
     /// return recovered errors from `run`.
-    /// Default writes each failure to standard error and requests [`ErrorAction::Retry`].
+    /// Default writes each failure to standard error, naming the component
+    /// [`Runtime::last_failure`] reports, and requests [`ErrorAction::Retry`].
     /// Failure to write that report is fatal. Initialization and native/GPU failures
     /// bypass this callback. Terminal shutdown cleanup failures also bypass it
     /// and return through [`AppError::Shutdown`]. Panics are not caught.
@@ -429,10 +441,10 @@ impl App {
     /// input nor its application action is replayed.
     ///
     /// ```no_run
-    /// use pert_ui::{App, ErrorAction, Label};
+    /// use pert_ui::{App, Element, ErrorAction, Label};
     /// # fn main() -> Result<(), pert_ui::AppError> {
     /// App::new("Example", |ui| {
-    ///     ui.mount("label", Label::new("Ready"))?;
+    ///     ui.mount_tree(Element::new("label", Label::new("Ready")))?;
     ///     Ok(())
     /// }).on_error(|_ui, _error| ErrorAction::Exit).run()?;
     /// # Ok(()) }
@@ -510,9 +522,15 @@ impl App {
             return Ok((action, error));
         }
         use std::io::Write;
+        // The site names the component, so the report says where to look.
+        let site = self
+            .runtime
+            .last_failure()
+            .map(|site| format!(" (in the {site})"))
+            .unwrap_or_default();
         match writeln!(
             std::io::stderr().lock(),
-            "[pert-ui component error] {error}"
+            "[pert-ui component error] {error}{site}"
         ) {
             Ok(()) => Ok((ErrorAction::Retry, error)),
             Err(io) => Err(AppError::ErrorReporting {
@@ -533,9 +551,9 @@ impl App {
     /// executor is started.
     ///
     /// ```no_run
-    /// use pert_ui::{App, AppError, Label};
+    /// use pert_ui::{App, AppError, Element, Label};
     /// let result = App::new("Example", |ui| {
-    ///     ui.mount("content", Label::new("Ready"))?;
+    ///     ui.mount_tree(Element::new("content", Label::new("Ready")))?;
     ///     Ok(())
     /// }).run();
     /// match result {
@@ -581,17 +599,17 @@ impl App {
 }
 
 impl AppError {
-    pub(crate) fn from_renderer(error: pert_ui_wgpu::RenderError) -> Self {
+    pub(crate) fn from_renderer(error: crate::platform::presenter::RenderError) -> Self {
         match error {
-            pert_ui_wgpu::RenderError::UnsupportedGraphics(message) => {
+            crate::platform::presenter::RenderError::UnsupportedGraphics(message) => {
                 Self::UnsupportedGraphics(message)
             }
             // Content the vector rasterizer refuses, such as geometry over its
             // limits, is the component's failure, not the GPU's.
-            pert_ui_wgpu::RenderError::Drawing(error) => Self::from(error),
-            pert_ui_wgpu::RenderError::Limit(limit) => Self::Limit(limit),
-            pert_ui_wgpu::RenderError::Graphics(message) => Self::Graphics(message),
-            pert_ui_wgpu::RenderError::Surface(message) => Self::Surface(message),
+            crate::platform::presenter::RenderError::Drawing(error) => Self::from(error),
+            crate::platform::presenter::RenderError::Limit(limit) => Self::Limit(limit),
+            crate::platform::presenter::RenderError::Graphics(message) => Self::Graphics(message),
+            crate::platform::presenter::RenderError::Surface(message) => Self::Surface(message),
             // Unconfigured and future variants.
             error => Self::Graphics(error.to_string()),
         }
@@ -656,14 +674,15 @@ mod tests {
 
     #[test]
     fn a_renderer_drawing_error_is_recovered_as_a_component_failure() {
-        let error =
-            AppError::from_renderer(pert_ui_wgpu::RenderError::Drawing(DrawError::InvalidColor));
+        let error = AppError::from_renderer(crate::platform::presenter::RenderError::Drawing(
+            DrawError::InvalidColor,
+        ));
         assert!(matches!(error, AppError::Drawing(DrawError::InvalidColor)));
         assert!(error.is_component_failure());
         for fatal in [
-            pert_ui_wgpu::RenderError::Graphics("device".into()),
-            pert_ui_wgpu::RenderError::UnsupportedGraphics("adapter".into()),
-            pert_ui_wgpu::RenderError::Surface("surface".into()),
+            crate::platform::presenter::RenderError::Graphics("device".into()),
+            crate::platform::presenter::RenderError::UnsupportedGraphics("adapter".into()),
+            crate::platform::presenter::RenderError::Surface("surface".into()),
         ] {
             assert!(!AppError::from_renderer(fatal).is_component_failure());
         }
@@ -676,9 +695,9 @@ mod tests {
             AppError::from(runtime.clone()),
             AppError::from(DrawError::Runtime(runtime.clone())),
             AppError::from(GeometryError::NonFinite),
-            AppError::from_renderer(pert_ui_wgpu::RenderError::Drawing(DrawError::Runtime(
-                runtime.clone(),
-            ))),
+            AppError::from_renderer(crate::platform::presenter::RenderError::Drawing(
+                DrawError::Runtime(runtime.clone()),
+            )),
         ];
         for error in paths {
             assert!(
@@ -711,7 +730,9 @@ mod tests {
             height: 10,
             max: 16_384,
         };
-        let error = AppError::from_renderer(pert_ui_wgpu::RenderError::Limit(limit.clone()));
+        let error = AppError::from_renderer(crate::platform::presenter::RenderError::Limit(
+            limit.clone(),
+        ));
         assert!(matches!(&error, AppError::Limit(inner) if *inner == limit));
         assert!(!error.is_component_failure());
         assert_eq!(error.to_string(), limit.to_string());

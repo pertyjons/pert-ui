@@ -488,7 +488,7 @@ struct RejectTreeMutation {
 }
 impl Component for RejectTreeMutation {
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
-        if cx.read(&self.trigger.read_only())? {
+        if cx.read(&self.trigger)? {
             assert!(matches!(
                 self.state.filter("a", &FilterMatcher::default()),
                 Err(RuntimeError::WriteDuringUpdate)
@@ -548,5 +548,35 @@ fn refused_tree_mutations_preserve_the_visible_snapshot_and_navigation() -> Test
     f.state.set_expanded("a", false)?;
     f.ui.flush(Duration::ZERO)?;
     assert!(!f.state.is_expanded("a")?);
+    Ok(())
+}
+
+/// Row content built under one shared key: the tree keys it by its node.
+struct SharedKeyNodes;
+impl TreeItems for SharedKeyNodes {
+    fn roots(&self) -> Vec<String> {
+        vec!["a".into(), "b".into()]
+    }
+    fn children(&self, _: &str) -> Vec<String> {
+        Vec::new()
+    }
+    fn build(&self, key: &str) -> Option<Element> {
+        Some(Label::new(key).key("content"))
+    }
+}
+
+#[test]
+fn the_tree_keys_each_built_row_content_with_its_node() -> TestResult {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(300.0, 200.0, 1.0)?)?;
+    let selection = ListSelection::new(&ui, SelectionMode::Single);
+    let state = TreeController::new(&ui, TreeSource::new(SharedKeyNodes), selection)?;
+    let tree = ui.mount_tree(Tree::new(&state, ROW)?.key("tree"))?;
+    ui.flush(Duration::ZERO)?;
+    for node in ["a", "b"] {
+        let row = ui.find_path(&tree, &[node])?.ok_or("the row is mounted")?;
+        let content = ui.children(&row)?;
+        assert_eq!(ui.key(&content[0])?, node);
+    }
     Ok(())
 }

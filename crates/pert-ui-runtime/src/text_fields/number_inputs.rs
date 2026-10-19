@@ -474,7 +474,7 @@ impl<T: Number> NumberSource<T> for Signal<T> {
     }
     fn read(&self, cx: &mut UpdateContext) -> Result<NumberReading<T>, RuntimeError> {
         Ok(NumberReading {
-            value: cx.read_paint(&self.read_only())?,
+            value: cx.read_paint(self)?,
             domain: None,
             lattice: None,
             editable: true,
@@ -486,7 +486,7 @@ impl<T: Number> NumberSource<T> for Signal<T> {
         self.get()
     }
     fn commit(&self, _: &mut EventContext, value: T, _: Revision) -> Result<bool, RuntimeError> {
-        self.set(value)
+        self.set_changed(value)
     }
 }
 
@@ -2154,7 +2154,8 @@ macro_rules! field_api {
             /// The binding is validated/subscribed on first update. Foreign-runtime
             /// errors propagate; an invalid bound value is refused by the field
             /// without modifying it.
-            pub fn new(value: Signal<$ty>) -> Self {
+            pub fn new(value: impl Into<Signal<$ty>>) -> Self {
+                let value: Signal<$ty> = value.into();
                 Self(NumberEditor::new(Box::new(value), false))
             }
         }
@@ -2167,7 +2168,8 @@ macro_rules! inline_api {
             /// and unit. The binding is validated/subscribed on first update;
             /// foreign-runtime errors propagate, and an invalid bound value is
             /// refused by the row without modifying it.
-            pub fn new(value: Signal<$ty>) -> Self {
+            pub fn new(value: impl Into<Signal<$ty>>) -> Self {
+                let value: Signal<$ty> = value.into();
                 Self(NumberEditor::new(Box::new(value), true))
             }
             /// Sets the leading caption, empty by default. It is presentation

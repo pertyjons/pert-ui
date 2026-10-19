@@ -30,10 +30,7 @@ fn popover_escapes_clip_focuses_and_consumes_outside_click() {
                         "popover",
                         Popover::new(
                             open.clone(),
-                            Element::new(
-                                "trigger",
-                                Button::new("Open", move |_| show.set(true).map(|_| ())),
-                            ),
+                            Element::new("trigger", Button::new("Open", move |_| show.set(true))),
                             Element::new("action", Button::new("Popup action", |_| Ok(()))),
                         ),
                     ))
@@ -41,9 +38,7 @@ fn popover_escapes_clip_focuses_and_consumes_outside_click() {
                 ),
                 Element::new(
                     "under",
-                    Button::new("Underlying", move |_| {
-                        writer.set(writer.get()? + 1).map(|_| ())
-                    }),
+                    Button::new("Underlying", move |_| writer.set(writer.get()? + 1)),
                 ),
             ]),
         ))
@@ -115,9 +110,7 @@ fn select_highlight_is_tentative_and_menu_skips_disabled() {
                         vec![
                             MenuItem::new("disabled", "Disabled", |_| panic!("disabled action"))
                                 .disabled(),
-                            MenuItem::new("apply", "Apply", move |_| {
-                                writer.set(writer.get()? + 1).map(|_| ())
-                            }),
+                            MenuItem::new("apply", "Apply", move |_| writer.set(writer.get()? + 1)),
                         ],
                     )
                     .unwrap(),
@@ -182,7 +175,7 @@ fn the_menu_key_and_shift_f10_open_a_select_list_instead_of_an_enclosing_context
                         ]),
                     ),
                     vec![MenuItem::new("apply", "Apply", move |_| {
-                        writer.set(writer.get()? + 1).map(|_| ())
+                        writer.set(writer.get()? + 1)
                     })],
                 )
                 .unwrap(),
@@ -311,7 +304,7 @@ fn nested_escape_closes_top_layer_and_restores_each_opener() {
                     outer.clone(),
                     Element::new(
                         "outer-trigger",
-                        Button::new("Outer", move |_| show_outer.set(true).map(|_| ())),
+                        Button::new("Outer", move |_| show_outer.set(true)),
                     ),
                     Element::new(
                         "inner",
@@ -319,7 +312,7 @@ fn nested_escape_closes_top_layer_and_restores_each_opener() {
                             inner.clone(),
                             Element::new(
                                 "inner-trigger",
-                                Button::new("Inner", move |_| show_inner.set(true).map(|_| ())),
+                                Button::new("Inner", move |_| show_inner.set(true)),
                             ),
                             Element::new("inner-action", Button::new("Action", |_| Ok(()))),
                         ),
@@ -408,10 +401,7 @@ fn bottom_anchor_flips_and_clipped_anchor_dismisses() {
                     "popover",
                     Popover::new(
                         open.clone(),
-                        Element::new(
-                            "trigger",
-                            Button::new("Open", move |_| show.set(true).map(|_| ())),
-                        ),
+                        Element::new("trigger", Button::new("Open", move |_| show.set(true))),
                         Element::new("content", Button::new("Action", |_| Ok(()))),
                     ),
                 ),
@@ -471,7 +461,7 @@ impl Component for ExternalSurface {
         std::mem::take(&mut self.children)
     }
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
-        self.shown = cx.read(&self.open.read_only())?;
+        self.shown = cx.read(&self.open)?;
         Ok(())
     }
     fn child_visible(&self, key: &str) -> bool {
@@ -522,10 +512,7 @@ fn custom_surface_failure_preserves_routing_and_consumed_release() {
                         fail: fail.clone(),
                         shown: false,
                         children: vec![
-                            Element::new(
-                                "trigger",
-                                Button::new("Open", move |_| show.set(true).map(|_| ())),
-                            ),
+                            Element::new("trigger", Button::new("Open", move |_| show.set(true))),
                             Element::new("popup", Button::new("Action", |_| Ok(()))),
                         ],
                     },
@@ -648,18 +635,13 @@ fn outside_press_over_an_actual_button_never_clicks_through() {
                         "owner",
                         Popover::new(
                             open.clone(),
-                            Element::new(
-                                "trigger",
-                                Button::new("Open", move |_| show.set(true).map(|_| ())),
-                            ),
+                            Element::new("trigger", Button::new("Open", move |_| show.set(true))),
                             Element::new("action", Button::new("Action", |_| Ok(()))),
                         ),
                     ),
                     Element::new(
                         "underlying",
-                        Button::new("Underlying", move |_| {
-                            writer.set(writer.get()? + 1).map(|_| ())
-                        }),
+                        Button::new("Underlying", move |_| writer.set(writer.get()? + 1)),
                     ),
                 ]),
             )]),
@@ -803,7 +785,7 @@ fn failed_hidden_or_removed_surface_does_not_leave_stale_dismissal_routing() {
                     ),
                     Element::new(
                         "outside",
-                        Button::new("Outside", move |_| c.set(c.get()? + 1).map(|_| ())),
+                        Button::new("Outside", move |_| c.set(c.get()? + 1)),
                     ),
                 ]),
             ))
@@ -919,10 +901,7 @@ fn a_surface_whose_anchor_leaves_no_room_is_refused_and_settles_closed() {
             "popover",
             Popover::new(
                 open.clone(),
-                Element::new(
-                    "opener",
-                    Button::new("Open", move |_| opener.set(true).map(|_| ())),
-                ),
+                Element::new("opener", Button::new("Open", move |_| opener.set(true))),
                 Element::new("content", Label::new("Surface")),
             ),
         )
@@ -967,10 +946,7 @@ fn anchored_popover(ui: &mut Runtime, neighbors: bool) -> (WidgetId, Signal<bool
         "popover",
         Popover::new(
             open.clone(),
-            Element::new(
-                "trigger",
-                Button::new("Open", move |_| show.set(true).map(|_| ())),
-            ),
+            Element::new("trigger", Button::new("Open", move |_| show.set(true))),
             Element::new(
                 "content",
                 Column::new([
@@ -1347,7 +1323,7 @@ fn reporting_popover(
         popover = popover.on_dismiss(move |_, reason| {
             let mut seen = log.get()?;
             seen.push(reason);
-            log.set(seen).map(|_| ())
+            log.set(seen)
         });
     }
     let _ = ui;

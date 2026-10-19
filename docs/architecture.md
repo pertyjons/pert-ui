@@ -32,7 +32,7 @@ still needs execution evidence.
 | `pert-ui-core` | Validated values and identities, parameter specifications, edit transitions and bounded live-data primitives. |
 | `pert-ui-runtime` | UI-local state, retained components, layout, input, scheduling, text, inspection and an owned backend-independent `DisplayList`. It has no window or GPU dependency. |
 | `pert-ui-wgpu` | GPU interpretation of the public display list and an explicit backend interop boundary. |
-| `pert-ui-cpu` | CPU interpretation of the public display list into `FrameImage` pixels, for rendering and serving captures without a window or GPU. The facade's optional `cpu` feature exposes it and, with `App::software_rendering`, presents its frames in native windows through softbuffer. |
+| `pert-ui-cpu` | CPU interpretation of the public display list into `FrameImage` pixels, for rendering and serving captures without a window or GPU. The facade's optional `cpu` feature exposes it and, with `App::software_rendering`, presents its frames in native windows through softbuffer; the `desktop-cpu` feature builds the native application that way without wgpu. |
 | `pert-ui` | Public facade, native startup, platform event translation and optional image loaders. |
 
 Dependencies point toward the core. Renderer and platform types stay behind

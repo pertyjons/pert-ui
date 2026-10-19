@@ -653,6 +653,21 @@ pub enum WorkspaceError {
 }
 crate::error::leaf_conversions!(WorkspaceError => WorkspaceError::Runtime);
 
+impl From<WorkspaceError> for crate::RuntimeError {
+    /// Carries a workspace capture, decode or restore failure out of an application callback with `?`, as
+    /// [`RuntimeError::Application`](crate::RuntimeError::Application) holding
+    /// the whole error, downcastable through
+    /// [`ApplicationError::downcast_ref`](crate::ApplicationError::downcast_ref).
+    /// [`WorkspaceError::Runtime`] becomes the runtime error it holds, so a runtime
+    /// failure keeps one form. This is the error policy's callback-boundary
+    /// exception; see [`RuntimeError`](crate::RuntimeError).
+    fn from(error: WorkspaceError) -> Self {
+        match error {
+            WorkspaceError::Runtime(error) => error,
+            error => Self::Application(crate::ApplicationError::new(error)),
+        }
+    }
+}
 /// Why a participant refused state addressed to it.
 ///
 /// A rejection is reported, never silently ignored, and never partially

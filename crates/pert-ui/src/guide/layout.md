@@ -51,6 +51,41 @@ invalidates that component's drawing cache, including geometry-dependent foregro
 Unchanged branches retain layout/drawing. Focus traversal skips targets that remain
 fully clipped after a reveal attempt. No periodic timer powers scrolling.
 
+# Growing and stretching rows and columns
+
+[`Element::with_grow`] gives a child of a [`Row`] or [`Column`] a share of the
+space the container's allocation leaves over, and [`Align::Stretch`] makes
+children fill the cross axis: a column's width, or the height a row is
+allocated. A row grown in a column therefore stretches tall controls, such as a
+vertical [`Slider`] beside a [`LevelMeter`], over the whole strip. A row's
+measured height stays its tallest child's, so it fills what its parent gives
+without asking for more; children keep their own maximum and minimum heights.
+A custom container does the same with the size its
+[`Component::arrange`] receives.
+
+```rust
+use pert_ui::prelude::*;
+use pert_ui::Orientation;
+use std::time::Duration;
+let mut ui = Runtime::new();
+ui.set_viewport(Viewport::new(200.0, 400.0, 1.0)?)?;
+let (gain, _host) = ui.parameter(
+    ParameterId::new(1, 1, "gain")?,
+    ParameterSpec::new("Gain", 0.0, 1.0, 0.5)?,
+)?;
+let strip = ui.mount_tree(Element::new("strip", Column::new([
+    Element::new("name", Label::new("Channel 1")),
+    Element::new("controls", Row::new([
+        Element::new("gain", Slider::new(gain).orientation(Orientation::Vertical)),
+    ]).align(Align::Stretch)).with_grow(1),
+])))?;
+ui.flush(Duration::ZERO)?;
+let fader = ui.find_descendant(&strip, "gain")?.ok_or("mounted")?;
+let row = ui.find_descendant(&strip, "controls")?.ok_or("mounted")?;
+assert_eq!(ui.bounds(&fader)?.map(|b| b.height()), ui.bounds(&row)?.map(|b| b.height()));
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
 # Independent split dividers
 
 [`SplitPane`] defaults to equal shares and enabled resizing. `LeftRight`/`TopBottom`
@@ -319,12 +354,48 @@ when it cannot build its state: the capture then fails as a whole with
 silently leaving it out. [Getting started](crate::guide::getting_started)
 has a complete capture and restore.
 
+# Children from values
+
+[`Dynamic`], [`Show`] and [`Each`] describe children from a binding, so a view
+whose structure depends on data needs no custom component. Each describes its
+children again only when the value changes; children that keep their key keep
+their state and focus. [`Show`] unmounts its child while the flag reads false,
+whereas [`View::visible_signal`] hides content and keeps it.
+
+```rust
+use std::time::Duration;
+use pert_ui::prelude::*;
+
+let mut ui = Runtime::new();
+let tasks = ui.signal(vec!["Write the plan".to_owned()]);
+let details = ui.signal(false);
+let (add, toggle) = (tasks.clone(), details.clone());
+let view = Column::new([
+    Each::new(&tasks, Clone::clone, |_, task| Label::new(task.as_str()).key("task"))
+        .key("tasks"),
+    Show::new(&details, |_| Label::new("Details are shown").key("text")).key("details"),
+    // A task's text is its key here, so each new task gets distinct text.
+    Button::new("Add", move |_| {
+        add.update(|tasks| tasks.push(format!("Task {}", tasks.len() + 1)))
+    })
+    .key("add"),
+    Button::new("Details", move |_| toggle.toggle()).key("toggle"),
+]);
+let root = ui.mount_tree(view.key("content"))?;
+ui.flush(Duration::ZERO)?;
+tasks.update(|tasks| tasks.push("Ship it".to_owned()))?;
+ui.flush(Duration::ZERO)?;
+assert!(ui.find(&root, &["tasks", "items", "Ship it"])?.is_some());
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
 # Large collections
 
 [`VirtualList`] mounts only the items near its viewport, from a [`ListSource`]
 whose [`ListItems`] answer the count, the key at a position and the element at a
 position; keys, not positions, identify rows, so a row keeps its state and focus
-across a change of the source. It lays out one or more lanes, horizontally or
+across a change of the source. The list keys each element it builds with the
+key at its position. It lays out one or more lanes, horizontally or
 vertically, with fixed or estimated extents. [`Table`] adds columns that can be
 resized, sorted and moved, with its state in a [`TableController`]: a header
 press or Alt+Up/Down on the active cell asks the application to sort, and the

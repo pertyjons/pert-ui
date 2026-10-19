@@ -79,7 +79,7 @@ fn nested_region_layout_regions_fill_and_small_windows_keep_center_accessible() 
     // looked up by their path through the layout's splits.
     let region = |path: &[&str]| {
         let path = [&["shell-viewport", "regions", "split-top"], path].concat();
-        ui.find(&region_layout, &path).unwrap().unwrap()
+        ui.find_path(&region_layout, &path).unwrap().unwrap()
     };
     let top = region(&["top"]);
     let bottom = region(&["split-bottom", "bottom"]);

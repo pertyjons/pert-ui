@@ -410,7 +410,7 @@ fn a_menu_describes_commands_disabled_commands_and_open_branches() {
         "File",
         vec![
             MenuItem::new("new", "New", |_| Ok(())),
-            MenuItem::new("save", "Save", |_| Ok(())).enabled_signal(live.read_only()),
+            MenuItem::new("save", "Save", |_| Ok(())).enabled(live.read_only()),
             MenuItem::submenu(
                 "recent",
                 "Recent",

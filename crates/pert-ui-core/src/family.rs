@@ -260,6 +260,9 @@ impl sealed::Sealed for f32 {
             ParameterMapping::Logarithmic => {
                 ((value - min) / min).ln_1p() / ((max - min) / min).ln_1p()
             }
+            ParameterMapping::Power(exponent) => {
+                ((value - min) / (max - min)).powf(1.0 / f64::from(exponent.get()))
+            }
         };
         NormalizedValue::try_from(fraction as Self).map_err(|_| ParameterError::OutOfRange)
     }
@@ -277,6 +280,9 @@ impl sealed::Sealed for f32 {
         let value = match domain.mapping {
             ParameterMapping::Linear => min + fraction * (max - min),
             ParameterMapping::Logarithmic => min * (fraction * ((max - min) / min).ln_1p()).exp(),
+            ParameterMapping::Power(exponent) => {
+                min + fraction.powf(f64::from(exponent.get())) * (max - min)
+            }
         };
         value.clamp(min, max) as Self
     }

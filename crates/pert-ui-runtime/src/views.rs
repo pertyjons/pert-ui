@@ -56,7 +56,8 @@ impl View {
     /// [`Runtime::reveal`](crate::Runtime::reveal) does not change the signal and
     /// refuses with [`RevealRefusal::ApplicationControlled`](crate::RevealRefusal::ApplicationControlled)
     /// while it reads false.
-    pub fn visible_signal(mut self, shown: ReadSignal<bool>) -> Self {
+    pub fn visible_signal(mut self, shown: impl Into<ReadSignal<bool>>) -> Self {
+        let shown: ReadSignal<bool> = shown.into();
         self.shown = Some(shown);
         self
     }

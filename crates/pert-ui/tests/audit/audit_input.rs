@@ -38,7 +38,7 @@ fn modal_blocked_capture_bindings_yield_to_dialog_keys() {
             .register_command(
                 "Captured",
                 CommandScope::Capture,
-                vec![KeyChord::new(CommandKey::Named(code), Modifiers::default())],
+                vec![KeyChord::named(code)],
                 move |_, _| {
                     hit.set(hit.get() + 1);
                     Ok(())

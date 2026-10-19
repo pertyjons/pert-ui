@@ -327,7 +327,7 @@ struct Location {
 }
 impl Component for Location {
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
-        let path = cx.read(&self.path.read_only())?;
+        let path = cx.read(&self.path)?;
         if self.shown.as_ref() == Some(&path) {
             return Ok(());
         }
@@ -336,9 +336,7 @@ impl Component for Location {
             .filter(|(key, _)| path.starts_with(key))
             .map(|(key, label)| BreadcrumbSegment::new(*key, *label));
         let target = self.path.clone();
-        let breadcrumb = Breadcrumb::new(segments, move |_, key| {
-            target.set(key.to_owned()).map(|_| ())
-        })?;
+        let breadcrumb = Breadcrumb::new(segments, move |_, key| target.set(key.to_owned()))?;
         cx.request_children(vec![Element::new("path", breadcrumb)]);
         self.shown = Some(path);
         Ok(())

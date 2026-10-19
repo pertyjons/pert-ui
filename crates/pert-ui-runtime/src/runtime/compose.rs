@@ -34,6 +34,8 @@ impl Runtime {
             .profiler
             .span(crate::ProfileOperation::Compose, None, "");
         self.shared.writable()?;
+        // A new paint describes its own failure, if any.
+        self.shared.reset_failure();
         if !self.shared.command_requests.borrow().is_empty()
             || !self.window.focus_errors.is_empty()
             || self.window.restore_focus
@@ -123,9 +125,20 @@ impl Runtime {
                         ..Default::default()
                     },
                 };
-                entry.component.paint(&mut painter)?;
-                let foreground = painter.list.fills.len();
-                entry.component.paint_foreground(&mut painter)?;
+                let painted = entry.component.paint(&mut painter).and_then(|()| {
+                    let foreground = painter.list.fills.len();
+                    entry
+                        .component
+                        .paint_foreground(&mut painter)
+                        .map(|()| foreground)
+                });
+                let foreground = match painted {
+                    Ok(foreground) => foreground,
+                    Err(error) => {
+                        self.note_failure(serial, crate::FailurePhase::Paint);
+                        return Err(error);
+                    }
+                };
                 self.shared
                     .theme
                     .borrow_mut()

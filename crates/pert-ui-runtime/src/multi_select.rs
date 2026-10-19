@@ -403,34 +403,31 @@ impl<T: Clone + Eq + Hash + 'static> Shared<T> {
             (desc.options.clone(), desc.filter.clone())
         };
         let registry = self.keys.clone();
-        let filtered = self
-            .query
-            .read_only()
-            .combine(&options, move |query, options| {
-                let keys = registry.borrow_mut().keys(options);
-                let folded = query.to_lowercase();
-                let rows: Vec<Row<T>> = options
-                    .iter()
-                    .zip(keys)
-                    .filter(|(choice, _)| match &filter {
-                        Some(filter) => filter(query, choice),
-                        None => choice.label().to_lowercase().contains(&folded),
-                    })
-                    .map(|(choice, key)| Row {
-                        key,
-                        choice: choice.clone(),
-                    })
-                    .collect();
-                let index = rows
-                    .iter()
-                    .enumerate()
-                    .map(|(index, row)| (row.key.clone(), index))
-                    .collect();
-                Filtered {
-                    rows: Rc::new(rows),
-                    index: Rc::new(index),
-                }
-            })?;
+        let filtered = self.query.combine(&options, move |query, options| {
+            let keys = registry.borrow_mut().keys(options);
+            let folded = query.to_lowercase();
+            let rows: Vec<Row<T>> = options
+                .iter()
+                .zip(keys)
+                .filter(|(choice, _)| match &filter {
+                    Some(filter) => filter(query, choice),
+                    None => choice.label().to_lowercase().contains(&folded),
+                })
+                .map(|(choice, key)| Row {
+                    key,
+                    choice: choice.clone(),
+                })
+                .collect();
+            let index = rows
+                .iter()
+                .enumerate()
+                .map(|(index, row)| (row.key.clone(), index))
+                .collect();
+            Filtered {
+                rows: Rc::new(rows),
+                index: Rc::new(index),
+            }
+        })?;
         let weak = Rc::downgrade(self);
         let source = filtered.map(move |filtered| {
             ListSource::new(Items {
@@ -438,17 +435,14 @@ impl<T: Clone + Eq + Hash + 'static> Shared<T> {
                 shared: weak.clone(),
             })
         })?;
-        let highlighted =
-            self.highlight
-                .read_only()
-                .combine(&filtered, |highlight, filtered| {
-                    let enabled = filtered.enabled_keys();
-                    highlight
-                        .as_deref()
-                        .filter(|key| enabled.contains(key))
-                        .or_else(|| enabled.first().copied())
-                        .map(str::to_owned)
-                })?;
+        let highlighted = self.highlight.combine(&filtered, |highlight, filtered| {
+            let enabled = filtered.enabled_keys();
+            highlight
+                .as_deref()
+                .filter(|key| enabled.contains(key))
+                .or_else(|| enabled.first().copied())
+                .map(str::to_owned)
+        })?;
         Ok(Chain {
             options,
             filter_generation: self.filter_generation.get(),
@@ -548,7 +542,7 @@ impl<T: Clone + Eq + Hash + 'static> Component for ChoiceRow<T> {
         }
     }
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
-        let version = cx.read_paint(&self.shared.permission_version.read_only())?;
+        let version = cx.read_paint(&self.shared.permission_version)?;
         self.allowed = self.shared.desc.borrow().enablement.read_paint(cx)?;
         if (!self.active() || version != self.permission_version) && self.pressed {
             self.pressed = false;
@@ -924,7 +918,7 @@ impl<T: Clone + Eq + Hash + 'static> Component for Trigger<T> {
         let options = cx.read(&options)?;
         validate(&options)?;
         let enabled = enabled.read_paint(cx)?;
-        self.open = cx.read_paint(&self.shared.open.read_only())?;
+        self.open = cx.read_paint(&self.shared.open)?;
         let keys = self.shared.keys.borrow_mut().keys(&options);
         let positions: HashMap<&T, usize> = options
             .iter()
@@ -1232,9 +1226,10 @@ impl<T: Clone + Eq + Hash + 'static> MultiSelect<T> {
     /// Returns [`ChoiceError::DuplicateValue`] when two options have equal values.
     pub fn new(
         ui: &impl crate::StateOwner,
-        value: Signal<Vec<T>>,
+        value: impl Into<Signal<Vec<T>>>,
         options: impl IntoIterator<Item = Choice<T>>,
     ) -> Result<Self, ChoiceError> {
+        let value: Signal<Vec<T>> = value.into();
         let options: Vec<_> = options.into_iter().collect();
         validate(&options)?;
         let source = ui.signal(options.clone()).read_only();
@@ -1292,9 +1287,11 @@ impl<T: Clone + Eq + Hash + 'static> MultiSelect<T> {
     /// existing draft-conflict rules of [`Self::commit`].
     pub fn bound(
         ui: &impl crate::StateOwner,
-        value: Signal<Vec<T>>,
-        options: ReadSignal<Vec<Choice<T>>>,
+        value: impl Into<Signal<Vec<T>>>,
+        options: impl Into<ReadSignal<Vec<Choice<T>>>>,
     ) -> Self {
+        let value: Signal<Vec<T>> = value.into();
+        let options: ReadSignal<Vec<Choice<T>>> = options.into();
         Self::with_options(ui, value, options, None)
     }
     /// Sets when the bound value is written; [`MultiSelectCommit::EachToggle`]
@@ -1339,7 +1336,7 @@ impl<T: Clone + Eq + Hash + 'static> MultiSelect<T> {
     /// let submitted = ui.signal(Vec::new());
     /// let options = [Choice::new("mix", "Mix"), Choice::new("send", "Send")];
     /// let chooser = MultiSelect::new(&ui, tags, options)?
-    ///     .on_change(move |_, values| submitted.set(values.to_vec()).map(|_| ()));
+    ///     .on_change(move |_, values| submitted.set(values.to_vec()));
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     pub fn on_change(
@@ -1469,7 +1466,7 @@ impl<T: Clone + Eq + Hash + 'static> Component for MultiSelect<T> {
             cx.notifier().request();
             self.permission_notification_pending = true;
         }
-        self.shown = cx.read(&self.shared.open.read_only())?;
+        self.shown = cx.read(&self.shared.open)?;
         Ok(())
     }
     fn deliver_notifications(&mut self, _: &mut EventContext) -> Result<(), RuntimeError> {

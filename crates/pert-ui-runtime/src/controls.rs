@@ -344,7 +344,7 @@ type ActivateFn = Box<dyn FnMut(&mut EventContext) -> Result<(), RuntimeError>>;
 /// let count = saved.clone();
 /// let button = ui.mount_tree(Element::new(
 ///     "save",
-///     Button::new("Save", move |_| count.set(count.get()? + 1).map(|_| ())),
+///     Button::new("Save", move |_| count.set(count.get()? + 1)),
 /// ))?;
 /// ui.focus(&button)?;
 /// // Enter activates on its matched release.
@@ -420,6 +420,65 @@ impl Button {
             icon: Some(icon.into()),
             ..Self::new(name, action)
         }
+    }
+    /// Creates a button that invokes a registered command, showing the command's
+    /// name, as [`MenuItem::command`](crate::MenuItem::command) does for a menu
+    /// row.
+    ///
+    /// A command whose availability is a simple binding from
+    /// [`Runtime::command_enabled_signal`](crate::Runtime::command_enabled_signal)
+    /// disables the button with it, and a later [`Self::enabled`] combines with
+    /// that binding through [`Permission::and`]. The binding is the one the
+    /// command has when the button is built: describe the button again after
+    /// replacing it. A contextual predicate from
+    /// [`Runtime::command_enabled`](crate::Runtime::command_enabled) depends on
+    /// the target, so such a button stays enabled and a refusal arrives in the
+    /// receipt as [`CommandOutcome::Disabled`](crate::CommandOutcome::Disabled).
+    ///
+    /// Activation, by pointer release or keyboard, captures
+    /// [`EventContext::command_context`] with [`CommandSource::Button`](crate::CommandSource::Button)
+    /// at that moment and queues the command through
+    /// [`EventContext::invoke_command`]; the next flush revalidates the target,
+    /// scope, modality and enabled state before the command runs once.
+    /// `on_receipt` receives each invocation's [`CommandReceipt`](crate::CommandReceipt) on the
+    /// UI thread, so a refusal or failure is reported rather than lost; a full
+    /// command queue is the activation's error. Neither the command nor the
+    /// handler is replayed after a failure. Same-key redescription replaces the
+    /// command, the handler and this description's restrictions, as for any
+    /// button. For an icon-only command button use [`Self::icon`] with an
+    /// action that calls `invoke_command`.
+    ///
+    /// # Errors
+    /// `StaleCommand` if the command is no longer registered.
+    ///
+    /// ```
+    /// use pert_ui_runtime::{Button, CommandScope, Element, KeyChord, KeyCode, Runtime};
+    /// let mut ui = Runtime::new();
+    /// let play = ui.register_command("Play", CommandScope::Application,
+    ///     vec![KeyChord::named(KeyCode::Space)], |_, _| Ok(()))?;
+    /// let button = Button::command(&ui, &play, |receipt, _| {
+    ///     let _status = receipt.status(); // pending until the next flush
+    ///     Ok(())
+    /// })?;
+    /// ui.mount_tree(Element::new("play", button))?;
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn command(
+        ui: &crate::Runtime,
+        command: &crate::CommandId,
+        mut on_receipt: impl FnMut(crate::CommandReceipt, &mut EventContext) -> Result<(), RuntimeError>
+        + 'static,
+    ) -> Result<Self, RuntimeError> {
+        let id = command.clone();
+        let mut button = Self::new(ui.command_name(command)?, move |cx| {
+            let context = cx.command_context(crate::CommandSource::Button);
+            let receipt = cx.invoke_command(&id, context)?;
+            on_receipt(receipt, cx)
+        });
+        if let Some(enabled) = ui.command_enabled_binding(command)? {
+            button = button.enabled(enabled);
+        }
+        Ok(button)
     }
     /// Removes the resting fill so this button sits directly on its parent surface.
     /// Text/icon padding, minimum size, input and focus behavior remain unchanged.

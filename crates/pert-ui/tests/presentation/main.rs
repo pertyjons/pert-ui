@@ -10,6 +10,7 @@ mod support;
 
 mod appearance;
 mod body_hit_regions;
+mod bound_background;
 mod colors;
 mod density;
 mod focus_ring;

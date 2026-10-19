@@ -38,6 +38,20 @@ impl KeyChord {
             fallback: None,
         }
     }
+    /// One named key without modifiers, such as Space for a transport or
+    /// Delete for a selection: `KeyChord::new(CommandKey::Named(key),
+    /// Modifiers::default())`.
+    ///
+    /// ```
+    /// use pert_ui_runtime::{CommandKey, KeyChord, KeyCode, Modifiers};
+    /// assert_eq!(
+    ///     KeyChord::named(KeyCode::Space),
+    ///     KeyChord::named(KeyCode::Space),
+    /// );
+    /// ```
+    pub fn named(key: KeyCode) -> Self {
+        Self::new(CommandKey::Named(key), Modifiers::default())
+    }
     /// A conventional primary-modifier letter chord.
     pub fn primary(letter: char) -> Self {
         Self::new(CommandKey::Character(letter), Modifiers::PRIMARY)
@@ -141,7 +155,7 @@ impl KeyChord {
 ///
 /// ```
 /// use pert_ui_runtime::{CommandKey, KeyChord, KeyCode, Modifiers};
-/// let chord = KeyChord::new(CommandKey::Named(KeyCode::F5), Modifiers::default());
+/// let chord = KeyChord::named(KeyCode::F5);
 /// assert_eq!(chord.to_string(), "F5");
 /// let shifted = KeyChord::new(CommandKey::Character('z'), Modifiers::default()).shifted();
 /// assert_eq!(shifted.to_string(), "Shift+Z");
@@ -1626,8 +1640,9 @@ impl Runtime {
     pub fn command_enabled_signal(
         &mut self,
         id: &CommandId,
-        enabled: ReadSignal<bool>,
+        enabled: impl Into<ReadSignal<bool>>,
     ) -> Result<(), RuntimeError> {
+        let enabled: ReadSignal<bool> = enabled.into();
         self.read_signal(&enabled)?;
         let binding = enabled.clone();
         self.command_enabled(id, move |_, _| enabled.get())?;
@@ -1768,7 +1783,7 @@ mod tests {
         let chord = KeyChord::new(CommandKey::Character('s'), all);
         assert_eq!(Label(chord, false).to_string(), "Ctrl+Alt+Shift+Super+S");
         assert_eq!(Label(chord, true).to_string(), "Ctrl+Option+Shift+Cmd+S");
-        let named = |code| KeyChord::new(CommandKey::Named(code), Modifiers::default());
+        let named = |code| KeyChord::named(code);
         assert_eq!(
             Label(named(KeyCode::PageDown), false).to_string(),
             "Page Down"

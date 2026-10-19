@@ -195,7 +195,7 @@ pub(crate) fn splits(ui: &Runtime) -> Result<Element, RuntimeError> {
             } else {
                 "Short content"
             };
-            content_writer.set(next.into()).map(|_| ())
+            content_writer.set(next.into())
         }),
     ));
     for (key, rule) in [
@@ -369,7 +369,7 @@ pub(crate) fn state(
                     Button::new("Open this view in a window (Primary+D)", move |cx| {
                         let receipt =
                             cx.invoke_command(&detach, cx.command_context(CommandSource::Button))?;
-                        invocation.set(Some(receipt)).map(|_| ())
+                        invocation.set(Some(receipt))
                     }),
                 ),
                 Element::new(
@@ -386,7 +386,7 @@ pub(crate) fn state(
                     Button::new("Try the protected view", move |cx| {
                         let receipt =
                             cx.invoke_command(&guarded, cx.command_context(CommandSource::Button))?;
-                        guarded_invocation.set(Some(receipt)).map(|_| ())
+                        guarded_invocation.set(Some(receipt))
                     }),
                 ),
                 Element::new(

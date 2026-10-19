@@ -68,24 +68,14 @@ fn inline_section(ui: &mut Runtime, id: ParameterId) -> Result<Element, AppError
                     ),
                 ]),
             ),
-            Element::new(
-                "inline-feedback",
-                Label::new(feedback.read_only().map(Clone::clone)?),
-            ),
+            Element::new("inline-feedback", Label::new(feedback.map(Clone::clone)?)),
             Element::new(
                 "inline-count-saved",
-                Label::new(
-                    count
-                        .read_only()
-                        .map(|value| format!("Saved integer: {value}"))?,
-                ),
+                Label::new(count.map(|value| format!("Saved integer: {value}"))?),
             ),
             Element::new(
                 "inline-time-saved",
-                Label::new(
-                    time.read_only()
-                        .map(|value| format!("Saved canonical time: {value} seconds"))?,
-                ),
+                Label::new(time.map(|value| format!("Saved canonical time: {value} seconds"))?),
             ),
             Element::new(
                 "inline-glide-saved",
@@ -218,7 +208,7 @@ pub(crate) fn toolbar_page(
                         Choice::icon("cut", Icon::Remove, "Split"),
                     ],
                 )?
-                .on_change(move |_, value| erasing.set(*value == "erase").map(|_| ())),
+                .on_change(move |_, value| erasing.set(*value == "erase")),
             )
             .with_label("Tool")],
         )
@@ -308,27 +298,27 @@ pub(crate) fn toolbar_page(
             Wrap::new([
                 Element::new(
                     "playing-mirror",
-                    Label::new(playing.read_only().map(|v| format!("Playing: {v}"))?),
+                    Label::new(playing.map(|v| format!("Playing: {v}"))?),
                 ),
                 Element::new(
                     "armed-mirror",
-                    Label::new(armed.read_only().map(|v| format!("Armed: {v}"))?),
+                    Label::new(armed.map(|v| format!("Armed: {v}"))?),
                 ),
                 Element::new(
                     "tempo-mirror",
-                    Label::new(tempo.read_only().map(|v| format!("Tempo: {v} bpm"))?),
+                    Label::new(tempo.map(|v| format!("Tempo: {v} bpm"))?),
                 ),
                 Element::new(
                     "snap-mirror",
-                    Label::new(snap.read_only().map(|v| format!("Snap: {v}"))?),
+                    Label::new(snap.map(|v| format!("Snap: {v}"))?),
                 ),
                 Element::new(
                     "tool-mirror",
-                    Label::new(tool.read_only().map(|v| format!("Tool: {v}"))?),
+                    Label::new(tool.map(|v| format!("Tool: {v}"))?),
                 ),
                 Element::new(
                     "name-mirror",
-                    Label::new(name.read_only().map(|v| format!("Name: {v}"))?),
+                    Label::new(name.map(|v| format!("Name: {v}"))?),
                 ),
                 Element::new(
                     "advance",
@@ -408,7 +398,7 @@ fn channel_strip(ui: &mut Runtime, ids: [ParameterId; 3]) -> Result<Element, App
             ),
             Element::new(
                 "strip-mirror",
-                Label::new(muted.read_only().map(|v| format!("Muted: {v}"))?),
+                Label::new(muted.map(|v| format!("Muted: {v}"))?),
             ),
         ],
     ))
@@ -485,7 +475,6 @@ pub(crate) fn typography(ui: &Runtime, status: &Signal<String>) -> Result<Elemen
                                 move |_| {
                                     message
                                         .set("The signal changed; this label refreshed.".to_owned())
-                                        .map(|_| ())
                                 }
                             }),
                         ),
@@ -649,7 +638,7 @@ fn family_page(ui: &mut Runtime, status: &Signal<String>) -> Result<Element, Run
                     None => format!("Undo entry names no parameter: {id:?}."),
                 },
             };
-            status.set(message).map(|_| ())
+            status.set(message)
         }),
     ));
     Ok(page(rows))
@@ -686,12 +675,10 @@ pub(crate) fn input(
                         edit.update(value)?;
                         edit.commit(value)
                     })();
-                    status
-                        .set(match result {
-                            Ok(outcome) => format!("{outcome:?}"),
-                            Err(error) => format!("Edit rejected: {error}"),
-                        })
-                        .map(|_| ())
+                    status.set(match result {
+                        Ok(outcome) => format!("{outcome:?}"),
+                        Err(error) => format!("Edit rejected: {error}"),
+                    })
                 }),
             ));
         }
@@ -723,9 +710,7 @@ pub(crate) fn input(
                 edit.update((current.base + 20.0).clamp(spec.minimum(), spec.maximum()))?;
                 edit.cancel()
             })();
-            preview_status
-                .set(format!("Preview/cancel result: {result:?}"))
-                .map(|_| ())
+            preview_status.set(format!("Preview/cancel result: {result:?}"))
         }),
     ));
     let overlay = ui.signal(false);
@@ -741,14 +726,12 @@ pub(crate) fn input(
             if result.is_ok() {
                 overlay_writer.set(next)?;
             }
-            overlay_status
-                .set(format!("Effective overlay: {result:?}"))
-                .map(|_| ())
+            overlay_status.set(format!("Effective overlay: {result:?}"))
         }),
     ));
     editors.push(Element::new(
         "effective-status",
-        Label::new(overlay.read_only().map(|value| {
+        Label::new(overlay.map(|value| {
             format!(
                 "Effective overlay: {}",
                 if *value {
@@ -775,16 +758,13 @@ pub(crate) fn input(
             if result.is_ok() {
                 readonly_writer.set(next)?;
             }
-            readonly_status
-                .set(format!("Parameter metadata: {result:?}"))
-                .map(|_| ())
+            readonly_status.set(format!("Parameter metadata: {result:?}"))
         }),
     ));
     editors.push(Element::new(
         "readonly-status",
         Label::new(
             readonly
-                .read_only()
                 .map(|value| format!("Read-only: {value}. Rejected edits appear in the footer."))?,
         ),
     ));
@@ -837,9 +817,7 @@ pub(crate) fn input(
         "host-reset",
         Button::new("Host reset to zero", move |_| {
             let result = host.write_base(0.0);
-            reset_status
-                .set(format!("Host reset: {result:?}"))
-                .map(|_| ())
+            reset_status.set(format!("Host reset: {result:?}"))
         }),
     ));
     Ok(page([
@@ -905,7 +883,7 @@ pub(crate) fn controls(ui: &Runtime) -> Result<Element, RuntimeError> {
                         "Actions",
                         vec![
                             MenuItem::new("apply", "Apply", move |_| {
-                                menu_status.set("Apply selected.".into()).map(|_| ())
+                                menu_status.set("Apply selected.".into())
                             }),
                             MenuItem::new("unavailable", "Unavailable", |_| Ok(())).disabled(),
                         ],
@@ -928,7 +906,7 @@ pub(crate) fn controls(ui: &Runtime) -> Result<Element, RuntimeError> {
                         open,
                         Element::new(
                             "popover-trigger",
-                            Button::new("Open popover", move |_| show.set(true).map(|_| ())),
+                            Button::new("Open popover", move |_| show.set(true)),
                         ),
                         Element::new(
                             "popover-content",
@@ -941,7 +919,7 @@ pub(crate) fn controls(ui: &Runtime) -> Result<Element, RuntimeError> {
                                 ),
                                 Element::new(
                                     "close-popover",
-                                    Button::new("Close", move |_| close.set(false).map(|_| ())),
+                                    Button::new("Close", move |_| close.set(false)),
                                 ),
                             ]),
                         ),
@@ -973,7 +951,7 @@ pub(crate) fn progress(ui: &Runtime) -> Element {
                 done.set(next_done)?;
                 busy.set(next_status.is_running())?;
                 status.set(next_status)?;
-                caption.set(text).map(|_| ())
+                caption.set(text)
             }),
         )
     };
@@ -1253,7 +1231,7 @@ pub(crate) fn field_status(ui: &Runtime) -> Result<Element, RuntimeError> {
                                 Button::new("Clear status", move |_| {
                                     clear_name_status.clear()?;
                                     clear_notes_status.clear()?;
-                                    clear_outcome.set("Status cleared.".to_owned()).map(|_| ())
+                                    clear_outcome.set("Status cleared.".to_owned())
                                 }),
                             ),
                         ]),
@@ -1272,7 +1250,7 @@ pub(crate) fn colors(ui: &Runtime) -> Result<Element, RuntimeError> {
     let initial = Color::from_srgb8(0x20, 0x90, 0xa0, 0xcc);
     let color = ui.signal(initial);
     let hex = ui.signal(initial.to_hex());
-    let channels = color.read_only().map(|color| describe_color(*color))?;
+    let channels = color.map(|color| describe_color(*color))?;
     let activations = ui.signal("Activate the swatch with a click, Enter or Space.".to_owned());
     let apply_color = color.clone();
     let activated = activations.clone();
@@ -1332,11 +1310,9 @@ pub(crate) fn colors(ui: &Runtime) -> Result<Element, RuntimeError> {
                                 .name("Chosen color")
                                 .on_activate(move |_| {
                                     count += 1;
-                                    activated
-                                        .set(format!(
-                                            "Activated {count} time(s); an application would open its color picker here."
-                                        ))
-                                        .map(|_| ())
+                                    activated.set(format!(
+                                        "Activated {count} time(s); an application would open its color picker here."
+                                    ))
                                 }),
                         ),
                     ]),

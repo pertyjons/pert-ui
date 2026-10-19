@@ -531,7 +531,7 @@ impl Component for Stripe {
                 .collect()
         };
         let revision = model::revision(&model, cx);
-        cx.read_paint(&revision.read_only())?;
+        cx.read_paint(&revision)?;
         self.rights.clear();
         for (key, toggle, drag, movable, reorderable) in permissions {
             let toggle = toggle.read_paint(cx)?;

@@ -522,7 +522,8 @@ macro_rules! boolean_widget {
             ///
             /// The label is a [`TextSource`]: fixed plain or rich content, or a
             /// binding the label follows, such as a translation.
-            pub fn new(label: impl Into<TextSource>, value: Signal<bool>) -> Self {
+            pub fn new(label: impl Into<TextSource>, value: impl Into<Signal<bool>>) -> Self {
+                let value: Signal<bool> = value.into();
                 Self(BooleanControl::new(label, Rc::new(value), $switch))
             }
             /// Creates a control bound to a boolean parameter, labeled with the
@@ -724,9 +725,10 @@ impl<T: Clone + Eq + 'static> RadioGroup<T> {
     /// Returns [`ChoiceError::DuplicateValue`] when two choices have equal values,
     /// including disabled ones.
     pub fn new(
-        value: Signal<T>,
+        value: impl Into<Signal<T>>,
         choices: impl IntoIterator<Item = Choice<T>>,
     ) -> Result<Self, ChoiceError> {
+        let value: Signal<T> = value.into();
         let choices: Vec<_> = choices.into_iter().collect();
         validate(&choices)?;
         Ok(Self::with_binding(Rc::new(value), choices))
@@ -774,7 +776,12 @@ impl<T: Clone + Eq + 'static> RadioGroup<T> {
     /// ui.flush(std::time::Duration::ZERO)?;
     /// # Ok::<(), pert_ui_runtime::RuntimeError>(())
     /// ```
-    pub fn bound(value: Signal<T>, choices: ReadSignal<Vec<Choice<T>>>) -> Self {
+    pub fn bound(
+        value: impl Into<Signal<T>>,
+        choices: impl Into<ReadSignal<Vec<Choice<T>>>>,
+    ) -> Self {
+        let value: Signal<T> = value.into();
+        let choices: ReadSignal<Vec<Choice<T>>> = choices.into();
         let mut group = Self::with_binding(Rc::new(value), Vec::new());
         group.source = Some(choices);
         group
@@ -1439,16 +1446,22 @@ impl<T: Clone + Eq + 'static> SegmentedControl<T> {
     /// Returns [`ChoiceError::DuplicateValue`] when two choices have equal values,
     /// including disabled ones.
     pub fn new(
-        value: Signal<T>,
+        value: impl Into<Signal<T>>,
         choices: impl IntoIterator<Item = Choice<T>>,
     ) -> Result<Self, ChoiceError> {
+        let value: Signal<T> = value.into();
         let mut group = RadioGroup::new(value, choices)?;
         group.segmented = true;
         Ok(Self(group))
     }
     /// Creates joined segments over reactive choices, with the validation,
     /// ownership, cancellation and redescription rules of [`RadioGroup::bound`].
-    pub fn bound(value: Signal<T>, choices: ReadSignal<Vec<Choice<T>>>) -> Self {
+    pub fn bound(
+        value: impl Into<Signal<T>>,
+        choices: impl Into<ReadSignal<Vec<Choice<T>>>>,
+    ) -> Self {
+        let value: Signal<T> = value.into();
+        let choices: ReadSignal<Vec<Choice<T>>> = choices.into();
         let mut group = RadioGroup::bound(value, choices);
         group.segmented = true;
         Self(group)
@@ -1577,9 +1590,10 @@ impl<T: Clone + Eq + 'static> InlineChoice<T> {
     /// Returns [`ChoiceError::DuplicateValue`] when two choices have equal values,
     /// including disabled ones.
     pub fn new(
-        value: Signal<T>,
+        value: impl Into<Signal<T>>,
         choices: impl IntoIterator<Item = Choice<T>>,
     ) -> Result<Self, ChoiceError> {
+        let value: Signal<T> = value.into();
         let mut group = RadioGroup::new(value, choices)?;
         group.segmented = true;
         group.inline = true;
@@ -1587,7 +1601,12 @@ impl<T: Clone + Eq + 'static> InlineChoice<T> {
     }
     /// Creates an inline group over reactive choices, with the validation,
     /// ownership, cancellation and redescription rules of [`RadioGroup::bound`].
-    pub fn bound(value: Signal<T>, choices: ReadSignal<Vec<Choice<T>>>) -> Self {
+    pub fn bound(
+        value: impl Into<Signal<T>>,
+        choices: impl Into<ReadSignal<Vec<Choice<T>>>>,
+    ) -> Self {
+        let value: Signal<T> = value.into();
+        let choices: ReadSignal<Vec<Choice<T>>> = choices.into();
         let mut group = RadioGroup::bound(value, choices);
         group.segmented = true;
         group.inline = true;

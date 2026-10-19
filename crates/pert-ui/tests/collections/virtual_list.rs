@@ -373,3 +373,36 @@ fn describing_the_list_again_keeps_its_mounted_rows_and_their_state() -> TestRes
     assert_eq!(ui.children(&list)?, before);
     Ok(())
 }
+
+/// Rows built under one shared key: the list keys each by its position's key.
+struct SharedKeyRows(usize);
+impl ListItems for SharedKeyRows {
+    fn len(&self) -> usize {
+        self.0
+    }
+    fn key(&self, index: usize) -> Option<String> {
+        (index < self.0).then(|| format!("row-{index}"))
+    }
+    fn build(&self, index: usize) -> Option<Element> {
+        (index < self.0).then(|| Label::new(format!("Row {index}")).key("row"))
+    }
+}
+
+#[test]
+fn the_list_keys_each_built_row_with_its_key() -> TestResult {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(300.0, 3.0 * ROW, 1.0)?)?;
+    let items = ui.signal(ListSource::new(SharedKeyRows(10)));
+    let list = ui.mount_tree(VirtualList::new(&items, ROW)?.key("list"))?;
+    ui.flush(Duration::ZERO)?;
+    let keys: Vec<String> = ui
+        .children(&list)?
+        .iter()
+        .map(|row| ui.key(row).map(str::to_owned))
+        .collect::<Result<_, _>>()?;
+    assert!(!keys.is_empty());
+    for (index, key) in keys.iter().enumerate() {
+        assert_eq!(*key, format!("row-{index}"));
+    }
+    Ok(())
+}

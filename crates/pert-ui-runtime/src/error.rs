@@ -11,7 +11,10 @@ use std::{error::Error, fmt, sync::Arc};
 /// the reason is the application's own, such as an invalid configuration file
 /// or a refused engine command, wrap it here instead of borrowing a library
 /// variant that means something else. [`RuntimeError::Application`](crate::RuntimeError::Application)
-/// carries it, and `?` converts it.
+/// carries it, and `?` converts it. It also carries a
+/// [`WorkspaceError`](crate::WorkspaceError), [`WindowError`](crate::WindowError)
+/// or [`CaptureError`](crate::CaptureError) that a callback propagates with
+/// `?` from a runtime method it called; [`Self::downcast_ref`] recovers it.
 ///
 /// The value is shared, so cloning is cheap and the original error is kept
 /// whole, reachable through [`Self::get`] and [`Self::downcast_ref`]. It is
@@ -189,6 +192,10 @@ mod tests {
             RuntimeError::Font(_) => leaf::<FontError>(),
             RuntimeError::InvalidPresentationRate
             | RuntimeError::TaskQueueFull
+            | RuntimeError::BackgroundFull
+            | RuntimeError::BackgroundSpawn(_)
+            | RuntimeError::BackgroundPanicked
+            | RuntimeError::IntervalsFull
             | RuntimeError::EmptyCommandName
             | RuntimeError::ShortcutConflict
             | RuntimeError::NotDetachable

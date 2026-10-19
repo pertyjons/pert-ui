@@ -102,7 +102,7 @@ impl BarCore {
             // notified that its menu opens.
             self.open.set(None)?;
         }
-        self.open.set(key).map(|_| ())
+        self.open.set(key)
     }
     /// The key of the title at `index`.
     fn key(&self, index: usize) -> Option<String> {
@@ -292,7 +292,7 @@ impl Component for MenuTitle {
             self.text.take();
         }
         let core = self.state.core();
-        let open = cx.read(&core.open.read_only())?;
+        let open = cx.read(&core.open)?;
         let live = match &self.live {
             Some(enabled) => enabled.read(cx)?,
             None => true,

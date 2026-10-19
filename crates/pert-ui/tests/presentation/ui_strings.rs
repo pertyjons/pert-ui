@@ -157,9 +157,7 @@ fn length_refusals_and_menu_rows_follow_the_table() {
             TextField::new(name.clone())
                 .min_length(Some(3))
                 .on_rejection(move |_, rejection| {
-                    report
-                        .set(rejection.map(|r| r.message().to_owned()))
-                        .map(|_| ())
+                    report.set(rejection.map(|r| r.message().to_owned()))
                 }),
         ))
         .unwrap();

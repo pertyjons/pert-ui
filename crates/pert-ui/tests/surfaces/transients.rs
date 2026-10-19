@@ -44,7 +44,7 @@ fn alert_safe_focus_traps_navigation_and_retains_exactly_one_outcome() {
                 alert(&ui, &state, "alert"),
                 Element::new(
                     "outside",
-                    Button::new("Outside", move |_| c.set(c.get()? + 1).map(|_| ())),
+                    Button::new("Outside", move |_| c.set(c.get()? + 1)),
                 ),
             ]),
         ))
@@ -186,7 +186,7 @@ fn view_modal_leaves_sibling_interactive_and_require_response_ignores_escape() {
                 Element::new("view", dialog),
                 Element::new(
                     "outside",
-                    Button::new("Outside", move |_| c.set(c.get()? + 1).map(|_| ())),
+                    Button::new("Outside", move |_| c.set(c.get()? + 1)),
                 ),
             ]),
         ))
@@ -229,9 +229,7 @@ fn submenu_right_left_escape_and_leaf_close_entire_chain() {
                             MenuItem::submenu(
                                 "deep",
                                 "Deep",
-                                vec![MenuItem::new("leaf", "Apply", move |_| {
-                                    c.set(c.get()? + 1).map(|_| ())
-                                })],
+                                vec![MenuItem::new("leaf", "Apply", move |_| c.set(c.get()? + 1))],
                             ),
                         ],
                     )],
@@ -273,7 +271,7 @@ fn context_menu_pointer_and_keyboard_open_and_validate_nested_keys() {
                 &ui,
                 Element::new("target", Button::new("Target", |_| Ok(()))),
                 vec![MenuItem::new("action", "Apply", move |_| {
-                    c.set(c.get()? + 1).map(|_| ())
+                    c.set(c.get()? + 1)
                 })],
             )
             .unwrap(),
@@ -645,7 +643,7 @@ fn submenu_parent_leaf_activates_with_one_pointer_click() {
                             "Branch",
                             vec![MenuItem::new("nested", "Nested", |_| Ok(()))],
                         ),
-                        MenuItem::new("leaf", "Leaf", move |_| c.set(c.get()? + 1).map(|_| ())),
+                        MenuItem::new("leaf", "Leaf", move |_| c.set(c.get()? + 1)),
                     ],
                 )
                 .unwrap(),
@@ -1058,7 +1056,7 @@ impl Component for Recorder {
         std::mem::take(&mut self.children)
     }
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
-        self.shown = cx.read(&self.open.read_only())?;
+        self.shown = cx.read(&self.open)?;
         Ok(())
     }
     fn child_visible(&self, key: &str) -> bool {
@@ -1074,7 +1072,7 @@ impl Component for Recorder {
     ) -> Result<(), RuntimeError> {
         self.reasons.borrow_mut().push(reason);
         self.shown = false;
-        self.open.set(false).map(|_| ())
+        self.open.set(false)
     }
     fn measure(&self, cx: &MeasureContext<'_>, a: Constraints) -> Result<Size, RuntimeError> {
         cx.measure(0, a)
@@ -1175,7 +1173,7 @@ fn a_context_menu_wrapper_is_not_a_tab_stop() {
                     &ui,
                     Element::new("target", Button::new("Target", |_| Ok(()))),
                     vec![MenuItem::new("action", "Apply", move |_| {
-                        c.set(c.get()? + 1).map(|_| ())
+                        c.set(c.get()? + 1)
                     })],
                 )
                 .unwrap(),

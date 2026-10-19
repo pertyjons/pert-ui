@@ -27,42 +27,30 @@ fn main() -> Result<(), AppError> {
     App::new("Profile", |ui| {
         let name = ui.signal("Ada".to_owned());
         let city = ui.signal("Stockholm".to_owned());
-        let reset_name = name.clone();
-        let reset_city = city.clone();
-        ui.mount_tree(Element::new(
-            "profile-viewport",
-            ScrollArea::new(Element::new(
-                "content",
-                Column::new([
-                    Element::new("heading", Label::new("Your profile")),
-                    Element::new(
-                        "fields",
-                        Form::new([
-                            Element::new(
-                                "name-field",
-                                Field::new(Element::new("name", TextField::new(name)))
-                                    .label("Name")
-                                    .help("Shown to other people"),
-                            ),
-                            Element::new(
-                                "city-field",
-                                Field::new(Element::new("city", TextField::new(city)))
-                                    .label("City"),
-                            ),
-                        ]),
-                    ),
-                    Element::new(
-                        "reset",
-                        Button::new("Reset", move |_| {
-                            reset_name.set("Ada".to_owned())?;
-                            reset_city.set("Stockholm".to_owned())?;
-                            Ok(())
-                        }),
-                    ),
-                ]),
-            ))
-            .axes(ScrollAxes::Both),
-        ))?;
+        let (reset_name, reset_city) = (name.clone(), city.clone());
+        let fields = Form::new([
+            Field::new(TextField::new(&name).key("name"))
+                .label("Name")
+                .help("Shown to other people")
+                .key("name-field"),
+            Field::new(TextField::new(&city).key("city"))
+                .label("City")
+                .key("city-field"),
+        ]);
+        let reset = Button::new("Reset", move |_| {
+            reset_name.set("Ada".to_owned())?;
+            reset_city.set("Stockholm".to_owned())
+        });
+        let content = Column::new([
+            Label::new("Your profile").key("heading"),
+            fields.key("fields"),
+            reset.key("reset"),
+        ]);
+        ui.mount_tree(
+            ScrollArea::new(content.key("content"))
+                .axes(ScrollAxes::Both)
+                .key("profile-viewport"),
+        )?;
         Ok(())
     })
     .run()
@@ -83,7 +71,19 @@ With no cleanup failure, it returns the original result. Terminal cleanup bypass
 `on_error` because the runtime is closed; the application reports every cause
 from the aggregate rather than requesting presentation retry.
 
-The default `desktop` feature supplies `App`, native input and rendering.
+Values the application creates once and must keep, such as a `Mailbox` made
+in the initializer, belong to `ui.keep_alive(value)`; a local value would drop,
+and a dropped mailbox closes. `ui.spawn(work, deliver)` runs work such as
+reading or saving a file on a background thread and hands the result to
+`deliver` on the UI thread, and `ui.start_interval(period, tick)` repeats
+application work such as an autosave. When a flush fails in a component,
+`ui.last_failure()` names the component and the callback that failed, and the
+native application's default error report includes it.
+
+The default `desktop` feature supplies `App`, native input and GPU rendering.
+`desktop-cpu`, with `default-features = false`, supplies the same `App`
+presented by the CPU renderer and leaves wgpu out of the build, for tools and
+machines without a usable GPU.
 `png`, `jpeg` and the other image-format features add decoders; owned
 `RasterImage` pixels need none of them. `svg` adds SVG loading and its
 component. `serde` adds serialization for the supported inspection and
@@ -91,23 +91,31 @@ workspace documents. Enable only the features your application needs.
 
 ## The construction pattern
 
-Each mounted node is `Element::new(stable_key, component)`. Keys identify
-siblings, not display text. Containers receive child elements, so a small tree
-looks like this:
+Each mounted node is an `Element`: a component under a stable key. Keys
+identify siblings, not display text. `component.key("save")` describes a
+component in place and is the same as `Element::new("save", component)`.
+Containers receive child elements, so a small tree looks like this:
 
 ```rust
 use pert_ui::prelude::*;
-let root = Element::new("content", Column::new([
-    Element::new("title", Label::new("Settings")),
-    Element::new("save", Button::new("Save", |_| Ok(()))),
-]));
+let root = Column::new([
+    Label::new("Settings").key("title"),
+    Button::new("Save", |_| Ok(())).key("save"),
+])
+.key("content");
 let mut ui = Runtime::new();
 ui.mount_tree(root)?;
 # Ok::<(), RuntimeError>(())
 ```
 
-Use `ui.signal(value)` for UI-local state. Pass a clone to each control that
-edits it, or `read_only()` to a component that only displays it. Use
+Use `ui.signal(value)` for UI-local state. Pass `&signal` to each control that
+edits or displays it: a control that only reads takes the read capability, and
+a `Signal` is also a `ReadSignal` wherever a read binding is borrowed, so
+`signal.map(..)` derives a value and `cx.read(&signal)` reads it in a custom
+component. `set` writes a value, `update(|value| ..)` changes the current one
+and `toggle` inverts a boolean; each returns `Result<(), RuntimeError>`, so a
+callback can end with the write, and `set_changed` reports whether the value
+changed. Use
 `ui.parameter(id, spec)` when the application owns an authoritative numeric
 value; retain the returned host while the control is available. Use live-data
 sources for lossy display streams, never as an edit baseline. A structural
@@ -118,7 +126,7 @@ overrides `Component::reconcile` can be checked with `check_redescription`,
 which compares a re-described component with a fresh mount.
 
 What a user may do with a component, such as resizing a divider, is a
-`Permission`: `true`, `false` or a `ReadSignal<bool>` the application changes
+`Permission`: `true`, `false` or a `bool` binding the application changes
 at run time. Permissions only restrict: repeated settings on one description,
 and a layout-wide setting combined with an item's own, combine so that the
 stricter wins. Geometry, window and collection gestures use the same policy;
@@ -141,7 +149,7 @@ so put a persistent icon in an explicit slot. The name given to `Button::icon`
 is only the action's name.
 
 Caption-bearing controls take their text as a `TextSource`: fixed plain or rich
-text, a `ReadSignal<String>` or `ReadSignal<RichText>` they follow, or a
+text, a `String` or `RichText` binding (`Signal` or `ReadSignal`) they follow, or a
 `StringRole` that follows the installed string table. Label,
 Button, Link, Chip, Tooltip, Menu, MenuItem, Checkbox, Toggle and InlineToggle
 names use it, so one constructor argument covers fixed, rich, translated and
@@ -160,9 +168,10 @@ and `label` replaces it.
 
 | Component | Build it with | Use it for |
 |---|---|---|
-| `Column`, `Row`, `Wrap` | `Column::new([Element::new(...), ...])` and the analogous constructors | Vertical, horizontal and wrapping groups. |
+| `Column`, `Row`, `Wrap` | `Column::new([Element::new(...), ...])` and the analogous constructors; `element.with_grow(1)` gives a child of a row or column a share of the spare space, `Element::spacer(key)` pushes the following children to the far end, and `.justify(Justify::End)` and `.align(Align::Stretch)` place children along and across | Vertical, horizontal and wrapping groups, such as an editor that fills the rest of a window or a status bar with right-aligned items. |
 | `Grid` | `Grid::new(tracks, children)?` | Track-based layout; at least one `Track` is required. |
 | `Container`, `View`, `Group` | Wrap one child element; `Group::titled(title, child)` adds a heading. | A bounded region, a visibility boundary or a decorated group. |
+| `Dynamic`, `Show`, `Each` | `Dynamic::new(&value, \|_, value\| element)`, `Show::new(&shown, \|_\| element)`, `Each::new(&items, key, \|_, item\| element)`, optionally `.within(\|elements\| Row::new(elements).key("row"))` | Children described from a binding: one child per value, a child that exists only while a flag reads true, or one child per list item, kept by key. |
 | `Divider` | `Divider::new()` | A visual separator. |
 | `ScrollArea` | `ScrollArea::new(child).axes(ScrollAxes::Both)`; `.on_scroll(callback)` reports the committed offset | Overflow and focus reveal. Vertical scrolling is the default. |
 | `Form` | `Form::new(fields)` | Responsive field columns. |
@@ -179,11 +188,15 @@ and `label` replaces it.
 
 For a large collection, implement the corresponding public `ListItems`,
 `TreeItems` or `TableItems` data source. Mount
-`VirtualList::new(items.read_only(), row_height)?`,
+`VirtualList::new(&items, row_height)?`,
 `Tree::new(&controller, row_height)?` or
 `Table::new(&controller, row_height)?`; the tree and table controllers own
-their source and selection. Only nearby rows mount.
-`ListSelection` holds application-visible selection by stable key.
+their source and selection. Only nearby rows mount. The collection keys each
+row it builds with the row's key from the source, so `build` may describe a
+row under any key.
+`ListSelection` holds application-visible selection by stable key; a
+collection's `on_selection_change` reports each change with its origin, for
+example to show the chosen item in a detail view.
 `VirtualAxis` supplies viewport arithmetic if you are writing a custom
 collection. Built-in reordering is opt-in; accept reported moves in your
 application's data model.
@@ -506,7 +519,7 @@ committing close. Discarded and conflicting drafts report nothing.
 `Choice` leading/trailing icons and `MenuItem` leading icons occupy replaceable
 slots that survive caption replacement. Use rich content for multiple icons.
 MenuItem `enabled` accepts a restrictive Permission; command and application
-restrictions combine, and `enabled_signal` remains a restrictive alias.
+restrictions combine.
 
 Accordion's `on_change` receives `(context, open_keys, origin)` after layout
 settles, including restore and redescription changes after initial preparation.

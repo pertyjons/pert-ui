@@ -7,10 +7,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut ui = Runtime::new();
     ui.set_viewport(Viewport::new(400.0, 200.0, 1.0)?)?;
     let open = ui.signal(false);
-    let caption = open
-        .read_only()
-        .map(|open| if *open { "Opened" } else { "Open document" }.to_owned())?;
-    let enabled = open.read_only().map(|open| !open)?;
+    let caption = open.map(|open| if *open { "Opened" } else { "Open document" }.to_owned())?;
+    let enabled = open.map(|open| !open)?;
     let document: Rc<RefCell<Option<Document>>> = Rc::default();
     let slot: Rc<RefCell<Option<WidgetId>>> = Rc::default();
     let target = slot.clone();

@@ -67,6 +67,43 @@ pub enum CaptureTarget {
     Path(Vec<String>),
 }
 
+impl CaptureTarget {
+    /// The whole of `window`, by the identity inspection reports for it,
+    /// [`NativeWindowId::id`](crate::NativeWindowId::id); for example the main
+    /// window, [`Runtime::primary_window`](crate::Runtime::primary_window).
+    ///
+    /// The request keeps the portable number, not the UI-local handle, so it
+    /// can still travel through an
+    /// [`InspectionClient`](crate::InspectionClient) and serialize. A window
+    /// that has closed by the time the request is served is answered
+    /// [`CaptureError::UnknownTarget`]. The number identifies a window of one
+    /// runtime only: a request built from another runtime's window can name an
+    /// unrelated window of this one.
+    ///
+    /// ```
+    /// use pert_ui_runtime::{CaptureTarget, Runtime};
+    /// let ui = Runtime::new();
+    /// let main = ui.primary_window();
+    /// assert_eq!(CaptureTarget::window(&main), CaptureTarget::Window(main.id()));
+    /// ```
+    #[must_use]
+    pub fn window(window: &crate::NativeWindowId) -> Self {
+        Self::Window(window.id())
+    }
+    /// The rectangle `area` of `window`, in its logical window coordinates, as
+    /// [`Self::Region`]; identity as for [`Self::window`].
+    #[must_use]
+    pub fn region(window: &crate::NativeWindowId, area: crate::Rect) -> Self {
+        Self::Region {
+            window: window.id(),
+            x: area.x(),
+            y: area.y(),
+            width: area.width(),
+            height: area.height(),
+        }
+    }
+}
+
 /// A request for a screenshot.
 ///
 /// ```
@@ -230,6 +267,21 @@ pub enum FrameError {
     },
 }
 
+impl From<CaptureError> for crate::RuntimeError {
+    /// Carries a capture failure out of an application callback with `?`, as
+    /// [`RuntimeError::Application`](crate::RuntimeError::Application) holding
+    /// the whole error, downcastable through
+    /// [`ApplicationError::downcast_ref`](crate::ApplicationError::downcast_ref).
+    /// [`CaptureError::Runtime`] becomes the runtime error it holds, so a runtime
+    /// failure keeps one form. This is the error policy's callback-boundary
+    /// exception; see [`RuntimeError`](crate::RuntimeError).
+    fn from(error: CaptureError) -> Self {
+        match error {
+            CaptureError::Runtime(error) => error,
+            error => Self::Application(crate::ApplicationError::new(error)),
+        }
+    }
+}
 impl From<FrameError> for CaptureError {
     fn from(error: FrameError) -> Self {
         Self::Frame(error)

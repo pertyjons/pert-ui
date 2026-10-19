@@ -1,18 +1,66 @@
-//! The presentation seam: how a native window turns scenes into pixels. The
-//! default is the GPU renderer; with the `cpu` feature an application can opt
-//! in to frames rendered by `pert_ui_cpu::CpuRenderer` and presented through
-//! softbuffer, which creates no GPU device. Backend types stay in this module
-//! and in `pert-ui-wgpu`; both paths report `RenderError` so the host's
-//! recovery and error policy are the same.
+//! The presentation seam: how a native window turns scenes into pixels. With
+//! the `gpu` feature the default is the GPU renderer, and with `cpu` an
+//! application can opt in to frames rendered by `pert_ui_cpu::CpuRenderer` and
+//! presented through softbuffer, which creates no GPU device. Without `gpu`
+//! (the `desktop-cpu` configuration) every window presents that way and wgpu is
+//! not compiled. Backend types stay in this module and in `pert-ui-wgpu`; both
+//! paths report `RenderError` so the host's recovery and error policy are the
+//! same.
 use pert_ui_runtime::{DisplayList, FrameImage};
-use pert_ui_wgpu::{Frame, Notice, RenderError, Renderer};
+#[cfg(feature = "gpu")]
+use pert_ui_wgpu::Renderer;
+#[cfg(feature = "gpu")]
+pub(crate) use pert_ui_wgpu::{Frame, Notice, RenderError};
+#[cfg(not(feature = "gpu"))]
+pub(crate) use software_only::{Frame, Notice, RenderError};
 use std::sync::Arc;
 use winit::window::Window;
+
+/// The presentation outcomes of `pert-ui-wgpu`, for a build without it: the
+/// same variants, so the host handles both configurations with one code path.
+/// Software presentation never constructs the GPU-only variants, which the
+/// shared host code still matches.
+#[cfg(not(feature = "gpu"))]
+#[allow(dead_code)]
+mod software_only {
+    /// Why a window could not be presented.
+    #[derive(Clone, Debug, thiserror::Error)]
+    pub(crate) enum RenderError {
+        #[error(transparent)]
+        Drawing(#[from] pert_ui_runtime::DrawError),
+        #[error(transparent)]
+        Limit(#[from] pert_ui_runtime::LimitError),
+        #[error("the surface has no nonzero extent to render into")]
+        Unconfigured,
+        #[error("unsupported graphics configuration: {0}")]
+        UnsupportedGraphics(String),
+        #[error("graphics operation failed: {0}")]
+        Graphics(String),
+        #[error("presentation surface failed: {0}")]
+        Surface(String),
+    }
+    /// A device notification; software presentation sends none.
+    #[derive(Clone, Debug)]
+    pub(crate) enum Notice {
+        Lost(String),
+        Error(String),
+    }
+    /// What one presentation did.
+    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+    #[must_use = "a frame that was not presented needs the host's recovery step"]
+    pub(crate) enum Frame {
+        Presented,
+        Retry,
+        Occluded,
+        Recreate,
+    }
+}
 
 /// One window's presenter.
 pub(super) enum Presenter {
     /// The hardware GPU renderer, boxed so a software presenter does not
     /// carry its size.
+    #[cfg(feature = "gpu")]
     Gpu(Box<Renderer>),
     /// CPU frames presented through softbuffer.
     #[cfg(feature = "cpu")]
@@ -29,7 +77,7 @@ impl Presenter {
         height: u32,
         notify: impl Fn(Notice) + Send + Sync + 'static,
     ) -> Result<Self, RenderError> {
-        #[cfg(feature = "cpu")]
+        #[cfg(all(feature = "cpu", feature = "gpu"))]
         if software {
             return Ok(Self::Software(Box::new(software::Software::new(
                 window, width, height,
@@ -37,9 +85,18 @@ impl Presenter {
         }
         #[cfg(not(feature = "cpu"))]
         let _ = software;
-        Ok(Self::Gpu(Box::new(Renderer::new(
+        #[cfg(feature = "gpu")]
+        return Ok(Self::Gpu(Box::new(Renderer::new(
             window, width, height, notify,
-        )?)))
+        )?)));
+        // Without the GPU renderer every window presents on the CPU.
+        #[cfg(not(feature = "gpu"))]
+        {
+            let _ = (software, notify);
+            Ok(Self::Software(Box::new(software::Software::new(
+                window, width, height,
+            )?)))
+        }
     }
 
     /// A presenter of the same kind for another window: a surface on the same
@@ -51,6 +108,7 @@ impl Presenter {
         height: u32,
     ) -> Result<Self, RenderError> {
         match self {
+            #[cfg(feature = "gpu")]
             Self::Gpu(renderer) => Ok(Self::Gpu(Box::new(
                 renderer.new_surface(window, width, height)?,
             ))),
@@ -64,6 +122,7 @@ impl Presenter {
     /// Applies a native size; zero in either dimension unconfigures.
     pub(super) fn resize(&mut self, width: u32, height: u32) -> Result<(), RenderError> {
         match self {
+            #[cfg(feature = "gpu")]
             Self::Gpu(renderer) => renderer.resize(width, height),
             #[cfg(feature = "cpu")]
             Self::Software(software) => software.resize(width, height),
@@ -77,6 +136,7 @@ impl Presenter {
         before_present: impl FnOnce(),
     ) -> Result<Frame, RenderError> {
         match self {
+            #[cfg(feature = "gpu")]
             Self::Gpu(renderer) => renderer.render(scene, before_present),
             #[cfg(feature = "cpu")]
             Self::Software(software) => software.render(&scene, before_present),
@@ -86,6 +146,7 @@ impl Presenter {
     /// Recreates the native surface after the presenter asked for it.
     pub(super) fn recreate(&mut self, window: Arc<Window>) -> Result<(), RenderError> {
         match self {
+            #[cfg(feature = "gpu")]
             Self::Gpu(renderer) => renderer.recreate(window),
             #[cfg(feature = "cpu")]
             Self::Software(software) => software.recreate(window),
@@ -98,6 +159,7 @@ impl Presenter {
         scene: DisplayList,
     ) -> Result<FrameImage, RenderError> {
         match self {
+            #[cfg(feature = "gpu")]
             Self::Gpu(renderer) => renderer.render_offscreen(scene),
             #[cfg(feature = "cpu")]
             Self::Software(software) => software.render_offscreen(&scene),
@@ -109,7 +171,7 @@ impl Presenter {
 mod software {
     use super::*;
     use pert_ui_cpu::{CpuRenderError, CpuRenderer};
-    use pert_ui_wgpu::LimitError;
+    use pert_ui_runtime::LimitError;
     use std::num::NonZeroU32;
 
     /// A softbuffer surface fed by the CPU renderer.

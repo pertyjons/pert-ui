@@ -35,13 +35,13 @@ pub mod getting_started {
     //! workspace and a custom widget.
     //!
     #![doc = include_str!("guide/getting-started.md")]
-    #![cfg_attr(feature = "desktop", doc = "```no_run")]
-    #![cfg_attr(not(feature = "desktop"), doc = "```text")]
+    #![cfg_attr(feature = "native", doc = "```no_run")]
+    #![cfg_attr(not(feature = "native"), doc = "```text")]
     #![doc = include_str!("../examples/getting_started.rs")]
     #![doc = "```"]
     #![doc = include_str!("guide/getting-started-continued.md")]
-    #![cfg_attr(feature = "desktop", doc = include_str!("guide/links/desktop.md"))]
-    #![cfg_attr(not(feature = "desktop"), doc = include_str!("guide/links/no-desktop.md"))]
+    #![cfg_attr(feature = "native", doc = include_str!("guide/links/desktop.md"))]
+    #![cfg_attr(not(feature = "native"), doc = include_str!("guide/links/no-desktop.md"))]
     #![cfg_attr(feature = "images", doc = include_str!("guide/links/images.md"))]
     #![cfg_attr(not(feature = "images"), doc = include_str!("guide/links/no-images.md"))]
     #![cfg_attr(feature = "svg", doc = include_str!("guide/links/svg.md"))]
@@ -57,8 +57,8 @@ pub mod state {
     //! results, live data and recovery.
     //!
     #![doc = include_str!("guide/state.md")]
-    #![cfg_attr(feature = "desktop", doc = include_str!("guide/links/desktop.md"))]
-    #![cfg_attr(not(feature = "desktop"), doc = include_str!("guide/links/no-desktop.md"))]
+    #![cfg_attr(feature = "native", doc = include_str!("guide/links/desktop.md"))]
+    #![cfg_attr(not(feature = "native"), doc = include_str!("guide/links/no-desktop.md"))]
     #![cfg_attr(feature = "images", doc = include_str!("guide/links/images.md"))]
     #![cfg_attr(not(feature = "images"), doc = include_str!("guide/links/no-images.md"))]
     #![cfg_attr(feature = "svg", doc = include_str!("guide/links/svg.md"))]
@@ -74,8 +74,8 @@ pub mod layout {
     //! workspaces, collections, zoomable content and drag and drop.
     //!
     #![doc = include_str!("guide/layout.md")]
-    #![cfg_attr(feature = "desktop", doc = include_str!("guide/links/desktop.md"))]
-    #![cfg_attr(not(feature = "desktop"), doc = include_str!("guide/links/no-desktop.md"))]
+    #![cfg_attr(feature = "native", doc = include_str!("guide/links/desktop.md"))]
+    #![cfg_attr(not(feature = "native"), doc = include_str!("guide/links/no-desktop.md"))]
     #![cfg_attr(feature = "images", doc = include_str!("guide/links/images.md"))]
     #![cfg_attr(not(feature = "images"), doc = include_str!("guide/links/no-images.md"))]
     #![cfg_attr(feature = "svg", doc = include_str!("guide/links/svg.md"))]
@@ -91,8 +91,8 @@ pub mod controls {
     //! editors, progress, inline controls and toolbars.
     //!
     #![doc = include_str!("guide/controls.md")]
-    #![cfg_attr(feature = "desktop", doc = include_str!("guide/links/desktop.md"))]
-    #![cfg_attr(not(feature = "desktop"), doc = include_str!("guide/links/no-desktop.md"))]
+    #![cfg_attr(feature = "native", doc = include_str!("guide/links/desktop.md"))]
+    #![cfg_attr(not(feature = "native"), doc = include_str!("guide/links/no-desktop.md"))]
     #![cfg_attr(feature = "images", doc = include_str!("guide/links/images.md"))]
     #![cfg_attr(not(feature = "images"), doc = include_str!("guide/links/no-images.md"))]
     #![cfg_attr(feature = "svg", doc = include_str!("guide/links/svg.md"))]
@@ -107,8 +107,8 @@ pub mod surfaces {
     //! Surfaces: selects, popovers, tooltips, menus, dialogs and notifications.
     //!
     #![doc = include_str!("guide/surfaces.md")]
-    #![cfg_attr(feature = "desktop", doc = include_str!("guide/links/desktop.md"))]
-    #![cfg_attr(not(feature = "desktop"), doc = include_str!("guide/links/no-desktop.md"))]
+    #![cfg_attr(feature = "native", doc = include_str!("guide/links/desktop.md"))]
+    #![cfg_attr(not(feature = "native"), doc = include_str!("guide/links/no-desktop.md"))]
     #![cfg_attr(feature = "images", doc = include_str!("guide/links/images.md"))]
     #![cfg_attr(not(feature = "images"), doc = include_str!("guide/links/no-images.md"))]
     #![cfg_attr(feature = "svg", doc = include_str!("guide/links/svg.md"))]
@@ -123,8 +123,8 @@ pub mod appearance {
     //! Appearance: themes, density, zoom, shapes, fonts, icons, images and SVG.
     //!
     #![doc = include_str!("guide/appearance.md")]
-    #![cfg_attr(feature = "desktop", doc = include_str!("guide/links/desktop.md"))]
-    #![cfg_attr(not(feature = "desktop"), doc = include_str!("guide/links/no-desktop.md"))]
+    #![cfg_attr(feature = "native", doc = include_str!("guide/links/desktop.md"))]
+    #![cfg_attr(not(feature = "native"), doc = include_str!("guide/links/no-desktop.md"))]
     #![cfg_attr(feature = "images", doc = include_str!("guide/links/images.md"))]
     #![cfg_attr(not(feature = "images"), doc = include_str!("guide/links/no-images.md"))]
     #![cfg_attr(feature = "svg", doc = include_str!("guide/links/svg.md"))]
@@ -140,8 +140,8 @@ pub mod diagnostics {
     //! profiling.
     //!
     #![doc = include_str!("guide/diagnostics.md")]
-    #![cfg_attr(feature = "desktop", doc = include_str!("guide/links/desktop.md"))]
-    #![cfg_attr(not(feature = "desktop"), doc = include_str!("guide/links/no-desktop.md"))]
+    #![cfg_attr(feature = "native", doc = include_str!("guide/links/desktop.md"))]
+    #![cfg_attr(not(feature = "native"), doc = include_str!("guide/links/no-desktop.md"))]
     #![cfg_attr(feature = "images", doc = include_str!("guide/links/images.md"))]
     #![cfg_attr(not(feature = "images"), doc = include_str!("guide/links/no-images.md"))]
     #![cfg_attr(feature = "svg", doc = include_str!("guide/links/svg.md"))]

@@ -289,7 +289,7 @@ fn card(ui: &Runtime, key: &str, title: &str, status: &Signal<String>) -> Elemen
                 Element::new("name", TextField::new(name)).with_label("Name"),
                 Element::new(
                     "press",
-                    Button::new("Press", move |_| status.set(pressed.clone()).map(|_| ())),
+                    Button::new("Press", move |_| status.set(pressed.clone())),
                 ),
             ]),
         ))
@@ -401,9 +401,7 @@ pub(crate) fn transforms(ui: &Runtime) -> Result<Element, RuntimeError> {
                         ),
                         Element::new(
                             "canvas-reset",
-                            Button::new("Reset", move |_| {
-                                reset.set(ViewTransform::IDENTITY).map(|_| ())
-                            }),
+                            Button::new("Reset", move |_| reset.set(ViewTransform::IDENTITY)),
                         ),
                         Element::new("zoom-readout", Label::new(readout)),
                     ]),

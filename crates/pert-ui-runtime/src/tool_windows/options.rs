@@ -87,7 +87,7 @@ impl Builder<'_> {
             Some(permission) => holds.combine(&permission, |holds, allowed| *holds && *allowed)?,
             None => holds,
         };
-        Ok(item.enabled_signal(enabled))
+        Ok(item.enabled(enabled))
     }
 }
 
@@ -149,7 +149,7 @@ fn mode_item(
         Ok(())
     })
     .checked_signal(checked)
-    .enabled_signal(enabled))
+    .enabled(enabled))
 }
 
 fn items(
@@ -304,7 +304,7 @@ impl Component for Options {
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
         let model = self.link.model();
         let revision = model::revision(&model, cx);
-        cx.read(&revision.read_only())?;
+        cx.read(&revision)?;
         let edges: Vec<ToolEdge> = {
             let model = model.borrow();
             ToolEdge::ALL

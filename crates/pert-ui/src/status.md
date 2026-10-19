@@ -15,7 +15,9 @@ scope.
 
 | Feature | Default | Adds |
 |---|---|---|
-| `desktop` | yes | `App`: the native window, event loop, hardware renderer and clipboard (winit, wgpu, arboard). Without it the crate is the backend-independent runtime, for headless use or a custom host. |
+| `desktop` | yes | `App`: the native window, event loop, hardware renderer and clipboard (winit, wgpu, arboard). Without it, or `desktop-cpu`, the crate is the backend-independent runtime, for headless use or a custom host. |
+| `desktop-cpu` | no | `App` presented by the CPU renderer through softbuffer, without compiling wgpu: smaller programs for tools and machines without a usable GPU. Use it with `default-features = false`; if `desktop` is also enabled, for example by another dependency, the GPU renderer is compiled and is the default. |
+| `native`, `gpu` | no | The building blocks of `desktop` (`gpu`) and `desktop-cpu` (`native` with `cpu`); `native` alone has no renderer and does not compile. |
 | `png` | no | PNG decoding in the `images` module. |
 | `jpeg` | no | JPEG decoding, with its EXIF orientation applied. |
 | `gif`, `webp` | no | GIF and WebP decoding, first frame only. |
@@ -23,7 +25,7 @@ scope.
 | `image-formats` | no | Every format feature above. |
 | `images` | no | The `images` module without any decoder; every format feature implies it. |
 | `svg` | no | The `svg` module: SVG icons and graphics rasterized with resvg. SVG text is not rendered. |
-| `cpu` | no | The `cpu` module: rendering scenes and serving capture requests on the CPU, with no window or GPU; with `desktop`, `App::software_rendering` presents CPU frames in native windows. |
+| `cpu` | no | The `cpu` module: rendering scenes and serving capture requests on the CPU, with no window or GPU; with `desktop`, `App::software_rendering` presents CPU frames in native windows instead of the GPU's. |
 | `serde` | no | `Serialize`/`Deserialize` for inspection snapshots, profiles, validation reports and workspace documents, and everything they carry. |
 
 Drawing images needs no feature: `RasterImage::from_srgba8` accepts pixels an

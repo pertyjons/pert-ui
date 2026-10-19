@@ -187,25 +187,25 @@ fn find_resolves_key_paths_under_a_root() -> TestResult {
             Row::new([Element::new("first", Label::new("First"))]),
         )]),
     ))?;
-    let first = ui.find(&root, &["group", "first"])?.ok_or("mounted")?;
+    let first = ui.find_path(&root, &["group", "first"])?.ok_or("mounted")?;
     assert_eq!(ui.key(&first)?, "first");
-    assert_eq!(ui.find(&root, &[])?, Some(root.clone()));
-    assert_eq!(ui.find(&root, &["first"])?, None);
-    assert_eq!(ui.find(&root, &["group", "first", "deeper"])?, None);
+    assert_eq!(ui.find_path(&root, &[])?, Some(root.clone()));
+    assert_eq!(ui.find_path(&root, &["first"])?, None);
+    assert_eq!(ui.find_path(&root, &["group", "first", "deeper"])?, None);
     // A key path is relative to its root.
-    let group = ui.find(&root, &["group"])?.ok_or("mounted")?;
-    assert_eq!(ui.find(&group, &["first"])?, Some(first.clone()));
+    let group = ui.find_path(&root, &["group"])?.ok_or("mounted")?;
+    assert_eq!(ui.find_path(&group, &["first"])?, Some(first.clone()));
     // Hidden components are still found.
     ui.set_visible(&first, false)?;
-    assert_eq!(ui.find(&root, &["group", "first"])?, Some(first));
+    assert_eq!(ui.find_path(&root, &["group", "first"])?, Some(first));
 
     let other = Runtime::new();
     assert_eq!(
-        other.find(&root, &["group"]),
+        other.find_path(&root, &["group"]),
         Err(RuntimeError::ForeignRuntime)
     );
     ui.unmount(&root)?;
-    assert_eq!(ui.find(&root, &[]), Err(RuntimeError::Unmounted));
+    assert_eq!(ui.find_path(&root, &[]), Err(RuntimeError::Unmounted));
     Ok(())
 }
 
@@ -237,9 +237,13 @@ fn find_descendant_skips_built_in_parts_and_refuses_ambiguity() -> TestResult {
         ]),
     ))?;
     ui.flush(Duration::ZERO)?;
-    let left = ui.find(&root, &["left"])?.ok_or("mounted")?;
+    let left = ui.find_path(&root, &["left"])?.ok_or("mounted")?;
     let form = ui.find_descendant(&root, "form")?.ok_or("mounted")?;
-    assert_eq!(ui.find(&left, &["form"])?, None, "the group adds levels");
+    assert_eq!(
+        ui.find_path(&left, &["form"])?,
+        None,
+        "the group adds levels"
+    );
     assert_eq!(ui.key(&form)?, "form");
     // Keys repeat across siblings' subtrees: the lookup refuses to choose.
     assert_eq!(
@@ -247,7 +251,7 @@ fn find_descendant_skips_built_in_parts_and_refuses_ambiguity() -> TestResult {
         Err(RuntimeError::AmbiguousKey)
     );
     let apply = ui.find_descendant(&left, "apply")?.ok_or("mounted")?;
-    assert_eq!(ui.find(&form, &["apply"])?, Some(apply.clone()));
+    assert_eq!(ui.find_path(&form, &["apply"])?, Some(apply.clone()));
     // The ancestor is not its own descendant.
     let same = ui.find_descendant(&root, "root")?.ok_or("mounted")?;
     assert_ne!(same, root);
@@ -315,17 +319,14 @@ fn find_address_names_addressable_segments_and_refuses_ambiguity() -> TestResult
         ]),
     ))?;
     ui.flush(Duration::ZERO)?;
-    let left = ui.find(&root, &["left"])?.ok_or("mounted")?;
+    let left = ui.find_path(&root, &["left"])?.ok_or("mounted")?;
     let form = ui.find_descendant(&left, "form")?.ok_or("mounted")?;
-    assert_eq!(
-        ui.find_address(&root, &["left", "form"])?,
-        Some(form.clone())
-    );
-    assert_eq!(ui.find_address(&left, &["form"])?, Some(form.clone()));
+    assert_eq!(ui.find(&root, &["left", "form"])?, Some(form.clone()));
+    assert_eq!(ui.find(&left, &["form"])?, Some(form.clone()));
     let apply = ui
-        .find_address(&root, &["left", "form", "apply"])?
+        .find(&root, &["left", "form", "apply"])?
         .ok_or("mounted")?;
-    assert_eq!(ui.find(&form, &["apply"])?, Some(apply.clone()));
+    assert_eq!(ui.find_path(&form, &["apply"])?, Some(apply.clone()));
     // The address agrees with inspection's path selector.
     let query = ui.query(&InspectionQuery::components(Selector::path([
         "root", "left", "form", "apply",
@@ -334,48 +335,33 @@ fn find_address_names_addressable_segments_and_refuses_ambiguity() -> TestResult
     assert_eq!(query.components[0].key, ui.key(&apply)?);
 
     let slotted = ui
-        .find_address(&root, &["right", "slotted", "apply"])?
+        .find(&root, &["right", "slotted", "apply"])?
         .ok_or("mounted")?;
     assert_ne!(slotted, apply);
-    assert_eq!(
-        ui.find_address(&root, &["right", "internal", "apply"])?,
-        None
-    );
-    let handle = ui
-        .find_address(&root, &["right", "handle"])?
-        .ok_or("mounted")?;
+    assert_eq!(ui.find(&root, &["right", "internal", "apply"])?, None);
+    let handle = ui.find(&root, &["right", "handle"])?.ok_or("mounted")?;
     assert_eq!(ui.key(&handle)?, "divider");
-    assert_eq!(ui.find_address(&root, &["right", "divider"])?, None);
+    assert_eq!(ui.find(&root, &["right", "divider"])?, None);
 
     assert_eq!(
-        ui.find_address(&root, &["twins", "item"]),
+        ui.find(&root, &["twins", "item"]),
         Err(RuntimeError::AmbiguousKey)
     );
-    assert_eq!(ui.find_address(&root, &["twins", "a", "item"])?, None);
-    assert_eq!(ui.find_address(&root, &["left", "missing"])?, None);
-    assert_eq!(
-        ui.find_address(&root, &["root", "left"])?,
-        None,
-        "relative to root"
-    );
-    assert_eq!(ui.find_address(&root, &[])?, Some(root.clone()));
+    assert_eq!(ui.find(&root, &["twins", "a", "item"])?, None);
+    assert_eq!(ui.find(&root, &["left", "missing"])?, None);
+    assert_eq!(ui.find(&root, &["root", "left"])?, None, "relative to root");
+    assert_eq!(ui.find(&root, &[])?, Some(root.clone()));
     // Hidden components are still found.
     ui.set_visible(&form, false)?;
-    assert_eq!(
-        ui.find_address(&root, &["left", "form", "apply"])?,
-        Some(apply)
-    );
+    assert_eq!(ui.find(&root, &["left", "form", "apply"])?, Some(apply));
 
     let other = Runtime::new();
     assert_eq!(
-        other.find_address(&root, &["left"]),
+        other.find(&root, &["left"]),
         Err(RuntimeError::ForeignRuntime)
     );
     ui.unmount(&root)?;
-    assert_eq!(
-        ui.find_address(&root, &["left"]),
-        Err(RuntimeError::Unmounted)
-    );
+    assert_eq!(ui.find(&root, &["left"]), Err(RuntimeError::Unmounted));
     Ok(())
 }
 

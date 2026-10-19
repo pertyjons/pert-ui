@@ -888,6 +888,21 @@ pub enum WindowError {
     #[error("native window request cancelled")]
     Cancelled,
 }
+impl From<WindowError> for crate::RuntimeError {
+    /// Carries a window operation failure out of an application callback with `?`, as
+    /// [`RuntimeError::Application`](crate::RuntimeError::Application) holding
+    /// the whole error, downcastable through
+    /// [`ApplicationError::downcast_ref`](crate::ApplicationError::downcast_ref).
+    /// [`WindowError::Runtime`] becomes the runtime error it holds, so a runtime
+    /// failure keeps one form. This is the error policy's callback-boundary
+    /// exception; see [`RuntimeError`](crate::RuntimeError).
+    fn from(error: WindowError) -> Self {
+        match error {
+            WindowError::Runtime(error) => error,
+            error => Self::Application(crate::ApplicationError::new(error)),
+        }
+    }
+}
 impl From<crate::DrawError> for WindowError {
     /// [`DrawError::Runtime`](crate::DrawError::Runtime) becomes
     /// [`WindowError::Runtime`], so a runtime failure has one form.
@@ -1474,6 +1489,7 @@ impl Runtime {
             .chain(self.parked_windows.values())
             .filter_map(|window| window.deadline(self.now()))
             .chain(self.shared.source_deadline(self.now()))
+            .chain(self.interval_deadline())
             .chain(self.shared.scale_settle_deadline().filter(|_| presentable))
             .min()
     }
@@ -1497,6 +1513,10 @@ impl Runtime {
         // another boundary, such as a queued command's flush, it answers
         // nothing; the boundary is released on unwinding too.
         let nested = self.shared.answer_depth.get() > 0;
+        if !nested {
+            // A new outermost flush of every root describes its own failure.
+            self.shared.reset_failure();
+        }
         let result = {
             let _boundary = super::AnswerBoundary::new(self.shared.clone());
             (|| {
@@ -1517,6 +1537,11 @@ impl Runtime {
                 // cancelled, as `EventContext::defer` documents.
                 if !flushed && !self.shared.tasks.borrow().is_empty() {
                     self.dispatch_tasks()?;
+                }
+                // Interval timers are the application's, not a window's: with
+                // every root hidden they still run.
+                if !flushed {
+                    self.service_intervals(now)?;
                 }
                 Ok(FlushReport {
                     components_updated: count,

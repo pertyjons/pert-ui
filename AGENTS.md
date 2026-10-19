@@ -40,8 +40,9 @@ support, X11, browser rendering and plugin hosting are outside the initial
 scope. The CPU renderer (`pert-ui-cpu`, the facade's `cpu` feature) is in
 scope: it renders scenes and serves captures without a GPU, and with
 `App::software_rendering` native windows present its frames through
-softbuffer instead of creating a GPU device. Software presentation is opt-in,
-with no automatic fallback.
+softbuffer instead of creating a GPU device; the `desktop-cpu` feature builds
+`App` that way without wgpu. Software presentation is opt-in, by that call or
+that feature, with no automatic fallback.
 
 ## Separation of concerns
 
@@ -271,6 +272,8 @@ Clippy and tests with `-p pert-ui --no-default-features --features serde`, and
 Clippy and tests with `-p pert-ui-core --features serde`, whose own
 serialization tests the facade runs do not execute), the CPU renderer
 configuration (Clippy, tests and rustdoc with `-p pert-ui --features cpu`), the
+CPU-only desktop configuration (Clippy, tests and rustdoc with
+`-p pert-ui --no-default-features --features desktop-cpu`), the
 headless gallery
 (`cargo run --locked -p pert-ui-gallery -- --headless`) and library packaging
 (`cargo package --locked --workspace --exclude pert-ui-gallery --exclude pert-ui-native-checks`).

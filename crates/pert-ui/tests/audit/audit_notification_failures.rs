@@ -71,16 +71,16 @@ struct Reporter {
 impl Component for Reporter {
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
         *self.state.notifier.borrow_mut() = Some(cx.notifier());
-        if cx.read_paint(&self.state.fail_update.read_only())? {
+        if cx.read_paint(&self.state.fail_update)? {
             return Err(RuntimeError::EmptyKey);
         }
-        if cx.read_paint(&self.state.unmount.read_only())? {
+        if cx.read_paint(&self.state.unmount)? {
             cx.request_unmount();
         }
         self.state
             .focused_allowed
-            .set(cx.read_paint(&self.state.allow_focus.read_only())?);
-        let value = cx.read_paint(&self.state.value.read_only())?;
+            .set(cx.read_paint(&self.state.allow_focus)?);
+        let value = cx.read_paint(&self.state.value)?;
         if self.state.observed.replace(value) != value
             && let Some(notifier) = self.state.updated_notifier.borrow().as_ref()
         {
@@ -306,7 +306,7 @@ fn failed_other_window_preparation_retains_entire_frontier_in_order() {
 fn cross_window_callback_writes_settle_and_contribute_to_report() {
     let mut s = stage();
     let value = s.b.value.clone();
-    *s.a.action.borrow_mut() = Some(Box::new(move |_| value.set(7).map(|_| ())));
+    *s.a.action.borrow_mut() = Some(Box::new(move |_| value.set(7)));
     s.a.request();
     let report = s.ui.flush(Duration::ZERO).unwrap();
     assert_eq!(s.b.observed.get(), 7);
@@ -336,7 +336,7 @@ fn request_only_reentry_waits_for_next_flush_and_stays_behind_frontier() {
 fn pre_callback_settlement_notifications_deliver_before_input_return() {
     let mut s = stage();
     let value = s.b.value.clone();
-    *s.a.action.borrow_mut() = Some(Box::new(move |_| value.set(7).map(|_| ())));
+    *s.a.action.borrow_mut() = Some(Box::new(move |_| value.set(7)));
     *s.b.updated_notifier.borrow_mut() = s.c.notifier.borrow().clone();
     *s.a.input_extra.borrow_mut() = s.b.notifier.borrow().clone();
     s.ui.focus(&s.a_id).unwrap();
@@ -347,12 +347,12 @@ fn pre_callback_settlement_notifications_deliver_before_input_return() {
 fn post_callback_input_cleanup_can_invalidate_an_earlier_window() {
     let mut s = stage();
     let value = s.a.value.clone();
-    *s.b.cancel_action.borrow_mut() = Some(Box::new(move |_| value.set(9).map(|_| ())));
+    *s.b.cancel_action.borrow_mut() = Some(Box::new(move |_| value.set(9)));
     s.ui.select_window(&s.b_window).unwrap();
     s.ui.focus(&s.b_id).unwrap();
     s.ui.select_window(&s.ui.primary_window()).unwrap();
     let allow = s.b.allow_focus.clone();
-    *s.a.action.borrow_mut() = Some(Box::new(move |_| allow.set(false).map(|_| ())));
+    *s.a.action.borrow_mut() = Some(Box::new(move |_| allow.set(false)));
     s.a.request();
     s.ui.flush(Duration::ZERO).unwrap();
     assert_eq!(s.a.observed.get(), 9);

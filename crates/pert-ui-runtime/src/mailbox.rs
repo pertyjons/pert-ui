@@ -231,7 +231,7 @@ impl<T> Deliverable for Inbox<T> {
 /// let result = ui.signal(0_u64);
 /// let target = result.clone();
 /// let mailbox = ui.mailbox(Capacity::new(8)?, move |sum: u64| {
-///     target.set(sum).map(|_| ())
+///     target.set(sum)
 /// })?;
 /// let sender = mailbox.sender();
 /// std::thread::spawn(move || {

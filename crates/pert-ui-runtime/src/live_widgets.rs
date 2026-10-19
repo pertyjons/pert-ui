@@ -171,7 +171,8 @@ impl LevelMeter {
     }
     /// Reads the source only while `running` is true. While false the meter keeps
     /// what it shows, is not subscribed to the source and schedules nothing.
-    pub fn running_signal(mut self, running: ReadSignal<bool>) -> Self {
+    pub fn running_signal(mut self, running: impl Into<ReadSignal<bool>>) -> Self {
+        let running: ReadSignal<bool> = running.into();
         self.running = Some(running);
         self
     }
@@ -506,7 +507,8 @@ impl Trace {
     }
     /// Reads the source only while `running` is true. While false the trace keeps
     /// what it shows, is not subscribed to the source and schedules nothing.
-    pub fn running_signal(mut self, running: ReadSignal<bool>) -> Self {
+    pub fn running_signal(mut self, running: impl Into<ReadSignal<bool>>) -> Self {
+        let running: ReadSignal<bool> = running.into();
         self.running = Some(running);
         self
     }

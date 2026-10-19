@@ -20,7 +20,7 @@ let status = ui.signal("Ready".to_owned());
 let action = status.clone();
 ui.mount_tree(Element::new("content", Column::new([
     Element::new("status", Label::new(status.read_only())),
-    Element::new("apply", Button::new("Apply", move |_| action.set("Applied".to_owned()).map(|_| ()))),
+    Element::new("apply", Button::new("Apply", move |_| action.set("Applied".to_owned()))),
 ])))?;
 ui.flush(Duration::ZERO)?;
 ui.focus_next(false)?;
@@ -116,7 +116,7 @@ assert_eq!(name("translated").as_deref(), Some("Umgehen"));
 
 Choice leading/trailing icons and MenuItem leading icons are replaceable slots
 that survive `rich_label` and `label` changes. MenuItem `enabled` combines Permission
-restrictions, including command availability; `enabled_signal` is an alias.
+restrictions, including command availability.
 
 
 Choice groups and dropdowns accept `.enabled(permission)` with the same restrictive
@@ -330,7 +330,7 @@ While IME preedit is active, the IME owns confirmation keys. Escape/focus loss
 discard preedit, retaining committed text; external binding writes win.
 
 ```no_run
-# #[cfg(feature = "desktop")]
+# #[cfg(feature = "native")]
 fn main() -> Result<(), pert_ui::AppError> {
     use pert_ui::{App, Column, Element, Label, TextArea, TextField};
     App::new("Text editing", |ui| {
@@ -340,7 +340,7 @@ fn main() -> Result<(), pert_ui::AppError> {
         let output = submitted.clone();
         ui.mount_tree(Element::new("form", Column::new([
             Element::new("name", TextField::new(name).on_submit(move |_, text| {
-                output.set(format!("Submitted: {text}")).map(|_| ())
+                output.set(format!("Submitted: {text}"))
             })),
             Element::new("notes", TextArea::new(notes.clone())),
             Element::new("mirror", TextArea::new(notes).read_only()),
@@ -349,7 +349,7 @@ fn main() -> Result<(), pert_ui::AppError> {
         Ok(())
     }).run()
 }
-# #[cfg(not(feature = "desktop"))]
+# #[cfg(not(feature = "native"))]
 # fn main() {}
 ```
 
@@ -561,7 +561,11 @@ in it cancels under the hiding rules.
 contextual groups, such as the options of the selected tool: a hidden group
 takes no space, never collapses and cannot be focused. Nest placement, not
 toolbars: a global strip in a region layout's top slot and a local strip in a
-view are siblings.
+view are siblings. Inline toggles draw no name: give each one in a toolbar an
+icon or a short glyph, as the loop toggle below has, since one without shows
+only its name's first letter. [`Icon`] covers transport roles such as
+`PlayArrow`, `Pause`, `Stop` and `Record`, each replaceable through
+[`IconManager`].
 
 ```rust
 use pert_ui::{Button, Choice, Element, Icon, InlineChoice, InlineReadout, InlineSelect,

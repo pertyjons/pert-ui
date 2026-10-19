@@ -50,6 +50,8 @@ fn automatic_inspection_is_debug_only_and_idle_does_not_poll() -> TestResult {
 #[test]
 fn overlap_and_shortcut_markers_follow_fixes_visibility_and_scope() -> TestResult {
     let mut runtime = Runtime::new();
+    // Geometry is validated only in a window whose viewport has area.
+    runtime.set_viewport(Viewport::new(100.0, 100.0, 1.0)?)?;
     let first = Observed::default();
     let second = Observed::default();
     for component in [&first, &second] {
@@ -107,6 +109,7 @@ fn overlap_and_shortcut_markers_follow_fixes_visibility_and_scope() -> TestResul
 #[test]
 fn clipping_is_valid_but_zero_sized_interactive_boxes_are_errors() -> TestResult {
     let mut runtime = Runtime::new();
+    runtime.set_viewport(Viewport::new(100.0, 100.0, 1.0)?)?;
     let component = Observed::default();
     {
         let mut details = component.details.borrow_mut();

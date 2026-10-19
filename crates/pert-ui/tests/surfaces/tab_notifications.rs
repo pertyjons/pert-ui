@@ -40,7 +40,7 @@ fn mount(ui: &mut Runtime, strip: Tabs) -> WidgetId {
 }
 
 fn at(ui: &Runtime, root: &WidgetId, path: &[&str]) -> WidgetId {
-    ui.find_address(root, path).unwrap().unwrap()
+    ui.find(root, path).unwrap().unwrap()
 }
 
 fn restore(ui: &mut Runtime, path: &str, key: &str) {
@@ -251,7 +251,7 @@ impl Component for WriteOnDelivery {
         Ok(())
     }
     fn deliver_notifications(&mut self, _: &mut EventContext) -> Result<(), RuntimeError> {
-        self.target.set(self.value.to_owned()).map(|_| ())
+        self.target.set(self.value.to_owned())
     }
 }
 
@@ -259,7 +259,7 @@ impl Component for WriteOnDelivery {
 fn a_callback_write_reaches_derived_bindings_in_the_same_flush() {
     let mut ui = Runtime::new();
     let page = ui.signal(String::from("none"));
-    let shown = page.read_only().map(|key| format!("Page {key}")).unwrap();
+    let shown = page.map(|key| format!("Page {key}")).unwrap();
     ui.set_viewport(Viewport::new(800.0, 300.0, 1.0).unwrap())
         .unwrap();
     ui.mount_tree(Element::new(

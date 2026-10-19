@@ -39,12 +39,10 @@ fn layout(
             Element::new(
                 key("main-button"),
                 Button::new("Review selected file", move |_| {
-                    review_activity
-                        .set(format!(
-                            "Reviewed {} in the main view",
-                            reviewed_file.get()?
-                        ))
-                        .map(|_| ())
+                    review_activity.set(format!(
+                        "Reviewed {} in the main view",
+                        reviewed_file.get()?
+                    ))
                 }),
             ),
             Element::new(key("main-activity"), Label::new(activity.read_only())),
@@ -67,7 +65,7 @@ fn layout(
                     Element::new(
                         key("files-open"),
                         Button::new("Select src/main.rs", move |_| {
-                            select_file.set("src/main.rs".to_owned()).map(|_| ())
+                            select_file.set("src/main.rs".to_owned())
                         }),
                     ),
                     label(&key("files-text"), "Also in this sample: docs/layout.md"),
@@ -84,7 +82,7 @@ fn layout(
             Element::new(
                 key("search-body"),
                 Button::new("Find docs/layout.md", move |_| {
-                    find_file.set("docs/layout.md".to_owned()).map(|_| ())
+                    find_file.set("docs/layout.md".to_owned())
                 }),
             ),
         )
@@ -185,12 +183,10 @@ fn layout(
             _ if change.expanded => "expanded".to_owned(),
             _ => "collapsed".to_owned(),
         };
-        writer
-            .set(format!(
-                "{prefix_owned}: {} {what} ({:?})",
-                change.key, change.origin
-            ))
-            .map(|_| ())
+        writer.set(format!(
+            "{prefix_owned}: {} {what} ({:?})",
+            change.key, change.origin
+        ))
     })
 }
 

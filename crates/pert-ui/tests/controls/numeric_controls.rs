@@ -766,3 +766,51 @@ fn slider_fill_follows_logarithmic_normalized_values_without_layout_or_idle_work
     )));
     assert_eq!(maximum, ui.paint().unwrap());
 }
+
+#[test]
+fn a_power_mapped_slider_follows_its_curve_and_new_metadata_ends_its_edit() {
+    let mut ui = ui();
+    let curve = ParameterMapping::Power(PowerExponent::new(2.0).unwrap());
+    let (p, host) = ui
+        .parameter(
+            ParameterId::new(1, 9, "gain").unwrap(),
+            ParameterSpec::new("Gain", -60.0, 12.0, 0.0)
+                .unwrap()
+                .with_mapping(curve)
+                .unwrap(),
+        )
+        .unwrap();
+    let id = ui
+        .mount_tree(Element::new("gain", Slider::new(p.clone())))
+        .unwrap();
+    ui.flush(Duration::ZERO).unwrap();
+    // The normalized position follows the curve, not the linear fraction.
+    let normalized = ui.inspect().components[0].details.properties["normalized"].clone();
+    let InspectValue::Number(normalized) = normalized else {
+        panic!("a number");
+    };
+    assert!(
+        (normalized - (60.0f64 / 72.0).sqrt()).abs() < 1e-4,
+        "{normalized}"
+    );
+    let [x, y, w, h] = ui.bounds(&id).unwrap().unwrap().values();
+    pointer(
+        &mut ui,
+        x + w / 2.0,
+        y + h / 2.0,
+        PointerKind::Press(PointerButton::Primary),
+    );
+    pointer(&mut ui, x + w * 0.6, y + h / 2.0, PointerKind::Move);
+    assert!(p.snapshot().get().unwrap().preview.is_some());
+    // Replacing the metadata during the drag ends the edit as a conflict.
+    host.replace_spec(ParameterSpec::new("Gain", -60.0, 12.0, 0.0).unwrap())
+        .unwrap();
+    assert_eq!(p.snapshot().get().unwrap().preview, None);
+    pointer(
+        &mut ui,
+        x + w * 0.6,
+        y + h / 2.0,
+        PointerKind::Release(PointerButton::Primary),
+    );
+    assert_eq!(p.snapshot().get().unwrap().base, 0.0);
+}

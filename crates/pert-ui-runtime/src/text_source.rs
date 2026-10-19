@@ -209,6 +209,30 @@ impl From<&Signal<RichText>> for TextSource {
         Self::from(source.read_only())
     }
 }
+impl From<Signal<String>> for TextSource {
+    /// Follows the signal read-only; the control never writes it.
+    fn from(source: Signal<String>) -> Self {
+        Self::from(source.read_only())
+    }
+}
+impl From<Signal<RichText>> for TextSource {
+    /// Follows the signal read-only; the control never writes it.
+    fn from(source: Signal<RichText>) -> Self {
+        Self::from(source.read_only())
+    }
+}
+impl From<&ReadSignal<String>> for TextSource {
+    /// Follows the binding; the source is shared, not copied.
+    fn from(source: &ReadSignal<String>) -> Self {
+        Self::from(source.clone())
+    }
+}
+impl From<&ReadSignal<RichText>> for TextSource {
+    /// Follows the binding; the source is shared, not copied.
+    fn from(source: &ReadSignal<RichText>) -> Self {
+        Self::from(source.clone())
+    }
+}
 
 /// A component's caption: its source, the content last read from it and the
 /// explicit icon slots, applying the [`TextSource`] contract in one place.

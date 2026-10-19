@@ -11,6 +11,7 @@ mod support;
 mod detach_permissions;
 mod drag_and_drop;
 mod geometry_callbacks;
+mod menu_changes;
 mod menus;
 mod multi_window;
 mod native_titles;

@@ -45,8 +45,8 @@ fn control(kind: Kind, value: Signal<bool>, permission: Permission, locked: bool
         Kind::InlineChoice => {
             configure!(InlineChoice::new(value, [Choice::new(true, "On")]).unwrap())
         }
-        Kind::Button => configure!(Button::new("Action", move |_| value.set(true).map(|_| ()))),
-        Kind::Link => configure!(Link::new("Action", move |_| value.set(true).map(|_| ()))),
+        Kind::Button => configure!(Button::new("Action", move |_| value.set(true))),
+        Kind::Link => configure!(Link::new("Action", move |_| value.set(true))),
         Kind::Checkbox => configure!(Checkbox::new("Value", value)),
         Kind::Toggle => configure!(Toggle::new("Value", value)),
         Kind::InlineToggle => configure!(InlineToggle::new(value, "Value")),

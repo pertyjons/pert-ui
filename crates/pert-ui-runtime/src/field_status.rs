@@ -166,7 +166,7 @@ impl FormInner {
                 }
             }
         }
-        self.summary.set(summary).map(|_| ())
+        self.summary.set(summary)
     }
 }
 
@@ -314,14 +314,21 @@ impl FieldHandle {
     pub fn key(&self) -> &str {
         &self.key
     }
-    /// Publishes a status and brings the form's summary up to date. Returns
-    /// whether the status changed.
+    /// Publishes a status and brings the form's summary up to date. An equal
+    /// status changes nothing; [`Self::set_changed`] reports whether it changed.
     ///
     /// # Errors
     /// Rejects writes during update, paint or inspection, or after shutdown, like
     /// any [`Signal::set`].
-    pub fn set(&self, status: FieldStatus) -> Result<bool, RuntimeError> {
-        let changed = self.status.set(status)?;
+    pub fn set(&self, status: FieldStatus) -> Result<(), RuntimeError> {
+        self.set_changed(status).map(|_| ())
+    }
+    /// Publishes a status like [`Self::set`] and returns whether it changed.
+    ///
+    /// # Errors
+    /// The errors of [`Self::set`].
+    pub fn set_changed(&self, status: FieldStatus) -> Result<bool, RuntimeError> {
+        let changed = self.status.set_changed(status)?;
         if changed {
             self.form.refresh()?;
         }
@@ -348,7 +355,7 @@ impl FieldHandle {
     /// # Errors
     /// Same as [`FieldHandle::set`].
     pub fn clear(&self) -> Result<bool, RuntimeError> {
-        self.set(FieldStatus::Normal)
+        self.set_changed(FieldStatus::Normal)
     }
     /// A read-only binding of the status, for components other than [`Field`].
     #[must_use]
@@ -502,7 +509,8 @@ impl Field {
         self
     }
     /// Follows an application-owned status binding, replacing an earlier one.
-    pub fn status(mut self, status: ReadSignal<FieldStatus>) -> Self {
+    pub fn status(mut self, status: impl Into<ReadSignal<FieldStatus>>) -> Self {
+        let status: ReadSignal<FieldStatus> = status.into();
         self.source = Some(status);
         self.target = None;
         self

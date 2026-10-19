@@ -10,6 +10,10 @@ use std::rc::Rc;
 
 pub(crate) type MenuAction = Box<dyn FnMut(&mut EventContext) -> Result<(), RuntimeError>>;
 type ReceiptSink = Box<dyn FnMut(CommandReceipt, &mut EventContext) -> Result<(), RuntimeError>>;
+/// A settings row's own write: the new checked state, or `None` when it wrote
+/// nothing (a radio row whose value was already selected).
+type SettingWrite = Box<dyn FnMut() -> Result<Option<bool>, RuntimeError>>;
+type ChangeHandler = Box<dyn FnMut(&mut EventContext, bool) -> Result<(), RuntimeError>>;
 type MarkRead = Box<dyn Fn(&mut UpdateContext) -> Result<bool, RuntimeError>>;
 type ChainClose = Rc<dyn Fn(&mut EventContext) -> Result<(), RuntimeError>>;
 type Sideways = Rc<dyn Fn(isize) -> Result<(), RuntimeError>>;
@@ -135,7 +139,7 @@ impl LevelState {
             // notified that its submenu opens.
             self.open.set(None)?;
         }
-        self.open.set(key).map(|_| ())
+        self.open.set(key)
     }
     /// Closes, until the next write, an open submenu whose row is not among
     /// `branches`.
@@ -153,6 +157,11 @@ pub(crate) enum LeafAction {
     Run(MenuAction),
     /// Queues a registered command with the context captured when the menu opened.
     Command { id: CommandId, receipt: ReceiptSink },
+    /// Writes a toggle or radio row's setting, then reports a write.
+    Setting {
+        write: SettingWrite,
+        on_change: Option<ChangeHandler>,
+    },
 }
 impl LeafAction {
     /// Runs the action once. A command uses the context captured when its menu
@@ -164,6 +173,10 @@ impl LeafAction {
     ) -> Result<(), RuntimeError> {
         match self {
             Self::Run(action) => action(cx),
+            Self::Setting { write, on_change } => match (write()?, on_change) {
+                (Some(checked), Some(handler)) => handler(cx, checked),
+                _ => Ok(()),
+            },
             Self::Command { id, receipt } => {
                 let captured = captured.borrow().clone();
                 let context = captured.unwrap_or_else(|| cx.command_context(CommandSource::Menu));
@@ -278,20 +291,30 @@ impl MenuItem {
     }
     /// Creates an on/off setting that shows a check mark while `value` is true.
     ///
-    /// Choosing it closes the menu and writes the opposite of the current value.
-    /// The mark follows `value` without polling, including writes from elsewhere,
-    /// and inspection reports it as the row's checked state. `value` must belong
-    /// to the runtime that mounts the menu.
+    /// Choosing it closes the menu and writes the opposite of the current value;
+    /// [`Self::on_change`] reports that write. The mark follows `value` without
+    /// polling, including writes from elsewhere, and inspection reports it as the
+    /// row's checked state. `value` must belong to the runtime that mounts the
+    /// menu.
     pub fn toggle(
         key: impl Into<String>,
         label: impl Into<TextSource>,
-        value: Signal<bool>,
+        value: impl Into<Signal<bool>>,
     ) -> Self {
+        let value: Signal<bool> = value.into();
         let read = value.read_only();
-        let mut item = Self::new(key, label, move |_| {
-            value.set(!value.get()?)?;
-            Ok(())
-        });
+        let mut item = Self::with_action(
+            key,
+            label,
+            LeafAction::Setting {
+                write: Box::new(move || {
+                    let checked = !value.get()?;
+                    value.set(checked)?;
+                    Ok(Some(checked))
+                }),
+                on_change: None,
+            },
+        );
         item.mark = Some(Mark {
             style: MarkStyle::Check,
             read: Box::new(move |cx| cx.read(&read)),
@@ -301,23 +324,35 @@ impl MenuItem {
     /// Creates one of several exclusive settings that shows a dot while
     /// `selection` equals `value`.
     ///
-    /// Choosing it closes the menu and writes `value`. Give each alternative its
-    /// own row over the same `selection`; separators around the group make it read
-    /// as one. The dot follows `selection` without polling, and inspection reports
+    /// Choosing it closes the menu and writes `value`, unless `selection` already
+    /// equals it, in which case nothing is written; [`Self::on_change`] reports
+    /// the write. Give each alternative its own row over the same `selection`;
+    /// separators around the group make it read as one. The dot follows `selection` without polling, and inspection reports
     /// it as the row's checked state. `selection` must belong to the runtime that
     /// mounts the menu.
     pub fn radio<T: Clone + PartialEq + 'static>(
         key: impl Into<String>,
         label: impl Into<TextSource>,
-        selection: Signal<T>,
+        selection: impl Into<Signal<T>>,
         value: T,
     ) -> Self {
+        let selection: Signal<T> = selection.into();
         let read = selection.read_only();
         let chosen = value.clone();
-        let mut item = Self::new(key, label, move |_| {
-            selection.set(value.clone())?;
-            Ok(())
-        });
+        let mut item = Self::with_action(
+            key,
+            label,
+            LeafAction::Setting {
+                write: Box::new(move || {
+                    if selection.get()? == value {
+                        return Ok(None);
+                    }
+                    selection.set(value.clone())?;
+                    Ok(Some(true))
+                }),
+                on_change: None,
+            },
+        );
         item.mark = Some(Mark {
             style: MarkStyle::Radio,
             read: Box::new(move |cx| Ok(cx.read(&read)? == chosen)),
@@ -378,9 +413,68 @@ impl MenuItem {
         );
         item.shortcut = Some(Shortcut::Live(ui.command_shortcuts(command)?));
         if let Some(enabled) = ui.command_enabled_binding(command)? {
-            item = item.enabled_signal(enabled);
+            item = item.enabled(enabled);
         }
         Ok(item)
+    }
+    /// Reports each successful user write of a [`Self::toggle`] or [`Self::radio`]
+    /// row with the row's new checked state: the toggle's new value, or `true`
+    /// for a radio row that became selected.
+    ///
+    /// The handler runs synchronously after the row's own write succeeded, once
+    /// the menu has requested its closure, with the event context of the list or
+    /// menu-bar title that was activated. A list is hiding by then, so work that
+    /// must outlive it is queued with
+    /// [`EventContext::defer_detached`](crate::EventContext::defer_detached).
+    /// Writes to the signal from elsewhere, choosing a radio row that is already
+    /// selected, a refused write and deselected sibling rows report nothing.
+    /// A failing handler keeps the write, propagates as the row's error and is not
+    /// replayed. The handler belongs to the row's description: a redescribed menu
+    /// replaces it, and a row described without one has none. Rows that write
+    /// nothing themselves ([`Self::new`], [`Self::command`], submenus and
+    /// separators) ignore it; for a setting the application applies itself, such
+    /// as the density of a retained [`ThemeManager`](crate::ThemeManager), use
+    /// [`Self::new`] with [`Self::checked_signal`] or [`Self::selected_signal`].
+    /// Replaces an earlier handler.
+    ///
+    /// ```
+    /// use pert_ui_runtime::{
+    ///     Column, Element, KeyAction, KeyCode, Menu, MenuItem, Runtime, Viewport,
+    /// };
+    /// use std::time::Duration;
+    /// let mut ui = Runtime::new();
+    /// ui.set_viewport(Viewport::new(400.0, 300.0, 1.0)?)?;
+    /// let playing = ui.signal(false);
+    /// let forwarded = ui.signal(None);
+    /// let engine = forwarded.clone();
+    /// let transport = Menu::new(&ui, "Transport", vec![
+    ///     MenuItem::toggle("play", "Play", playing.clone())
+    ///         // Forward the user's choice, for example to a producer thread.
+    ///         .on_change(move |_, on| engine.set(Some(on))),
+    /// ])?;
+    /// let root = ui.mount_tree(Element::new("root", Column::new([Element::new("transport", transport)])))?;
+    /// ui.flush(Duration::ZERO)?;
+    /// let trigger = ui.find_descendant(&root, "trigger")?.ok_or("mounted")?;
+    /// ui.focus(&trigger)?;
+    /// for _ in 0..2 {
+    ///     ui.key_input(KeyCode::Enter, KeyAction::Press)?; // open, then choose
+    ///     ui.key_input(KeyCode::Enter, KeyAction::Release)?;
+    ///     ui.flush(Duration::ZERO)?;
+    /// }
+    /// assert_eq!(forwarded.get()?, Some(true));
+    /// // The application's own write is not reported.
+    /// playing.set(false)?;
+    /// assert_eq!(forwarded.get()?, Some(true));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn on_change(
+        mut self,
+        handler: impl FnMut(&mut EventContext, bool) -> Result<(), RuntimeError> + 'static,
+    ) -> Self {
+        if let LeafAction::Setting { on_change, .. } = &mut self.action {
+            *on_change = Some(Box::new(handler));
+        }
+        self
     }
     /// Replaces the row's label with a [`TextSource`], retaining the action
     /// key and the leading icon slot; for example a rich or translated name for
@@ -410,7 +504,8 @@ impl MenuItem {
     /// state lives elsewhere, such as a command that toggles a host setting.
     /// Choosing the row still runs its own action; [`Self::toggle`] is the
     /// shorthand when the action only flips a signal.
-    pub fn checked_signal(mut self, checked: ReadSignal<bool>) -> Self {
+    pub fn checked_signal(mut self, checked: impl Into<ReadSignal<bool>>) -> Self {
+        let checked: ReadSignal<bool> = checked.into();
         self.mark = Some(Mark {
             style: MarkStyle::Check,
             read: Box::new(move |cx| cx.read(&checked)),
@@ -448,7 +543,8 @@ impl MenuItem {
     /// ui.mount_tree(Element::new("root", Column::new([Element::new("speed", speed)])))?;
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
-    pub fn selected_signal(mut self, selected: ReadSignal<bool>) -> Self {
+    pub fn selected_signal(mut self, selected: impl Into<ReadSignal<bool>>) -> Self {
+        let selected: ReadSignal<bool> = selected.into();
         self.mark = Some(Mark {
             style: MarkStyle::Radio,
             read: Box::new(move |cx| cx.read(&selected)),
@@ -456,7 +552,7 @@ impl MenuItem {
         self
     }
     /// Keeps the action visible but excludes it from navigation and activation.
-    /// Calling this after [`Self::enabled_signal`] preserves that fixed denial
+    /// Calling this after [`Self::enabled`] preserves that fixed denial
     /// regardless of subsequent binding values.
     pub fn disabled(mut self) -> Self {
         self.enabled = false;
@@ -473,10 +569,6 @@ impl MenuItem {
             self.live = Some(permission);
         }
         self
-    }
-    /// Restricts availability with a binding; equivalent to [`Self::enabled`].
-    pub fn enabled_signal(self, enabled: ReadSignal<bool>) -> Self {
-        self.enabled(enabled)
     }
     pub(crate) fn presented_content(&self) -> RichText {
         self.caption.display().into_owned()
@@ -512,7 +604,7 @@ impl MenuChain {
     pub(crate) fn closing(open: &Slot<Signal<bool>>) -> Self {
         let open = open.clone();
         Self {
-            close: Rc::new(move |_| open.get().set(false).map(|_| ())),
+            close: Rc::new(move |_| open.get().set(false)),
             capture: Rc::default(),
             sideways: None,
         }
@@ -667,10 +759,11 @@ impl Menu {
     /// [`ChoiceError::DuplicateValue`] for two sibling items with the same key, at every
     /// submenu level.
     pub fn with_state(
-        open: Signal<bool>,
+        open: impl Into<Signal<bool>>,
         label: impl Into<TextSource>,
         items: Vec<MenuItem>,
     ) -> Result<Self, ChoiceError> {
+        let open: Signal<bool> = open.into();
         let label = label.into();
         Self::with_trigger(open, items, move |open, enabled| {
             let button = Button::new(label, move |cx| open(cx));
@@ -708,11 +801,12 @@ impl Menu {
     /// [`ChoiceError::DuplicateValue`] for two sibling items with the same key, at every
     /// submenu level.
     pub fn icon_with_state(
-        open: Signal<bool>,
+        open: impl Into<Signal<bool>>,
         icon: impl Into<IconSource>,
         name: impl Into<TextSource>,
         items: Vec<MenuItem>,
     ) -> Result<Self, ChoiceError> {
+        let open: Signal<bool> = open.into();
         let icon = icon.into();
         let name: TextSource = name.into();
         Self::with_trigger(open, items, move |open, enabled| {
@@ -744,7 +838,7 @@ impl Menu {
             let (chain, surface) = (chain.clone(), surface.clone());
             Rc::new(move |cx| {
                 chain.capture(cx);
-                surface.get().set(true).map(|_| ())
+                surface.get().set(true)
             })
         };
         let anchor = trigger(opener, items.iter().any(MenuItem::may_enable));
@@ -1045,7 +1139,7 @@ impl Component for MenuBranch {
     }
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
         let state = self.level.get();
-        let open = cx.read(&state.open.read_only())?;
+        let open = cx.read(&state.open)?;
         self.shown = state.shown(open);
         Ok(())
     }
@@ -1135,7 +1229,7 @@ impl Component for MenuBranch {
 /// let menu = ContextMenu::new(
 ///     &ui,
 ///     Element::new("text", Label::new("Right-click me")),
-///     vec![MenuItem::new("copy", "Copy", move |_| copy.set(true).map(|_| ()))],
+///     vec![MenuItem::new("copy", "Copy", move |_| copy.set(true))],
 /// )?;
 /// ui.mount_tree(Element::new("area", menu))?;
 /// ui.flush(Duration::ZERO)?;
@@ -1241,7 +1335,7 @@ impl ContextMenuOpener {
     /// let menu = ContextMenu::new(
     ///     &ui,
     ///     Element::new("text", Label::new("Content")),
-    ///     vec![MenuItem::new("copy", "Copy", move |_| copy.set(true).map(|_| ()))],
+    ///     vec![MenuItem::new("copy", "Copy", move |_| copy.set(true))],
     /// )?;
     /// let opener = menu.opener();
     /// ui.mount_tree(Element::new("area", menu))?;
@@ -1397,7 +1491,7 @@ impl Component for ContextMenu {
         // An opener's request places the menu and gives the rows their
         // context, as a gesture does in its event; the open state itself is
         // the signal the popover already read.
-        if let Some(request) = cx.read(&self.request.read_only())?
+        if let Some(request) = cx.read(&self.request)?
             && request.serial != self.seen_request
         {
             self.seen_request = request.serial;

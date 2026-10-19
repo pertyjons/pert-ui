@@ -803,7 +803,11 @@ fn srgb_encode(linear: f64) -> f64 {
 /// physical size, which is why content appears larger.
 ///
 /// Zero width or height is a valid suspended viewport, as reported by a minimized
-/// or zero-sized window; no geometry is produced for it and presentation suspends.
+/// or zero-sized window, and the default before a host supplies one. Layout
+/// still runs against it if the runtime is flushed, giving components empty
+/// boxes that inspection reports, but presentation suspends and development
+/// validation does not check that geometry (see
+/// [`Runtime::validation_report`](crate::Runtime::validation_report)).
 /// A nonpositive or non-finite scale is invalid input instead.
 ///
 /// Fractional scales are ordinary and never round logical coordinates. The full

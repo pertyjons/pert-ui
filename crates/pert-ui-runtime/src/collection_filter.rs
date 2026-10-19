@@ -270,8 +270,9 @@ impl ListFilter {
     /// The source binding's read failures: `Closed` or `BorrowConflict`.
     pub fn new(
         ui: &impl crate::StateOwner,
-        source: ReadSignal<ListSource>,
+        source: impl Into<ReadSignal<ListSource>>,
     ) -> Result<Self, RuntimeError> {
+        let source: ReadSignal<ListSource> = source.into();
         let rows = source.get()?;
         let total = rows.len();
         Ok(Self(Rc::new(ListFilterInner {
@@ -535,10 +536,11 @@ impl CollectionFilter {
     /// Creates a filter field over `collection` that edits `query`, which the
     /// application may also read and write.
     pub fn with_query(
-        query: Signal<String>,
+        query: impl Into<Signal<String>>,
         target: impl Into<FilterTarget>,
         collection: Element,
     ) -> Self {
+        let query: Signal<String> = query.into();
         // The installed table's name until the first read.
         let name = query
             .shared()
@@ -663,7 +665,7 @@ impl Component for CollectionFilter {
             cx.request_layout();
         }
         let query = if offered {
-            cx.read(&self.query.read_only())?
+            cx.read(&self.query)?
         } else {
             String::new()
         };
@@ -725,6 +727,8 @@ impl Component for CollectionFilter {
         if self.collection_focused {
             if let (Some(key), Some(selection)) = (&outcome.nearest_active, self.target.selection())
             {
+                // The collection has focus, so the query or source changed
+                // elsewhere: an application write, reported as such.
                 selection.set_active(Some(key.clone()))?;
             }
             let field = self.parts.borrow().field.clone();

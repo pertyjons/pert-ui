@@ -613,10 +613,7 @@ fn focus_error_still_delivers_the_click_and_preserves_new_capture() {
             "root",
             Column::new([
                 Element::new("first", FailingFocus(Rc::new(Cell::new(0)))),
-                Element::new(
-                    "second",
-                    Button::new("Click", move |_| clicks.set(1).map(|_| ())),
-                ),
+                Element::new("second", Button::new("Click", move |_| clicks.set(1))),
             ]),
         ))
         .unwrap();

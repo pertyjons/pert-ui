@@ -296,7 +296,6 @@ fn a_rejected_write_leaves_the_range_anchor_where_it_was() -> TestResult {
     let writer = selection.clone();
     let refused = ui
         .signal(0_u8)
-        .read_only()
         .map(move |_| writer.set_active(Some("item-7".into())))?;
     assert_eq!(refused.get()?, Err(RuntimeError::WriteDuringUpdate));
     assert_eq!(selection.active().get()?.as_deref(), Some("item-2"));

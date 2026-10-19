@@ -692,7 +692,7 @@ fn escape_reaches_window_commands_through_idle_splits_and_region_layouts() {
                 CommandKey::Named(KeyCode::Escape),
                 Modifiers::default(),
             )],
-            move |_, _| written.set(written.get()? + 1).map(|_| ()),
+            move |_, _| written.set(written.get()? + 1),
         )
         .unwrap();
     let root = ui

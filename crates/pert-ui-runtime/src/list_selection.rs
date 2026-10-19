@@ -1,6 +1,10 @@
 //! Keyed navigation and selection shared by virtualized collections.
-use crate::{ListItems, ReadSignal, RuntimeError, Signal};
-use std::{cell::RefCell, collections::BTreeSet, rc::Rc};
+use crate::{ChangeOrigin, ListItems, ReadSignal, RuntimeError, Signal};
+use std::{
+    cell::{Cell, RefCell},
+    collections::BTreeSet,
+    rc::Rc,
+};
 
 /// How many items a [`ListSelection`] holds at once.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
@@ -61,6 +65,37 @@ pub struct ListSelection {
     selected: Signal<Rc<BTreeSet<String>>>,
     /// Where a Shift range starts; moves with every gesture that is not a range.
     anchor: Rc<RefCell<Option<String>>>,
+    /// The origin writes made now carry: `Application` unless a collection
+    /// writes on behalf of its user.
+    origin: Rc<Cell<ChangeOrigin>>,
+    /// The origin of the latest write, which a collection reports.
+    last: Rc<Cell<ChangeOrigin>>,
+}
+
+/// A change of a [`ListSelection`] that a collection reports through
+/// [`VirtualList::on_selection_change`](crate::VirtualList::on_selection_change),
+/// [`Tree::on_selection_change`](crate::Tree::on_selection_change) or
+/// [`Table::on_selection_change`](crate::Table::on_selection_change).
+///
+/// It carries both halves of the selection, before and after: the active item
+/// keyboard navigation is on, and the selected keys. In
+/// [`SelectionMode::Single`] they agree; in [`SelectionMode::Multiple`] either
+/// can change alone.
+#[derive(Clone, Debug, PartialEq)]
+#[non_exhaustive]
+pub struct ListSelectionChange {
+    /// The active item before the change.
+    pub previous_active: Option<String>,
+    /// The active item after the change.
+    pub active: Option<String>,
+    /// The selected keys before the change.
+    pub previous_selected: Rc<BTreeSet<String>>,
+    /// The selected keys after the change.
+    pub selected: Rc<BTreeSet<String>>,
+    /// What caused the change: [`ChangeOrigin::User`] for a click or key on a
+    /// collection, [`ChangeOrigin::Application`] for a write through the
+    /// [`ListSelection`] methods or a controller.
+    pub origin: ChangeOrigin,
 }
 impl ListSelection {
     /// Creates an empty selection with no active item.
@@ -76,7 +111,24 @@ impl ListSelection {
             active: ui.signal(None),
             selected: ui.signal(Rc::new(BTreeSet::new())),
             anchor: Rc::new(RefCell::new(None)),
+            origin: Rc::new(Cell::new(ChangeOrigin::Application)),
+            last: Rc::new(Cell::new(ChangeOrigin::Application)),
         }
+    }
+    /// Runs `write` with its selection writes carrying `origin`, for a
+    /// collection that writes on behalf of its user.
+    pub(crate) fn with_origin<R>(&self, origin: ChangeOrigin, write: impl FnOnce() -> R) -> R {
+        let previous = self.origin.replace(origin);
+        let result = write();
+        self.origin.set(previous);
+        result
+    }
+    /// The origin of the latest write.
+    pub(crate) fn last_origin(&self) -> ChangeOrigin {
+        self.last.get()
+    }
+    fn written(&self) {
+        self.last.set(self.origin.get());
     }
     /// Whether one or several items can be selected.
     #[must_use]
@@ -116,6 +168,7 @@ impl ListSelection {
         }
         self.active.set(key.clone())?;
         *self.anchor.borrow_mut() = key;
+        self.written();
         Ok(())
     }
     /// Replaces the selected keys. In [`SelectionMode::Single`] only the first
@@ -130,7 +183,11 @@ impl ListSelection {
         let mut keys = keys.into_iter();
         match self.mode {
             SelectionMode::Single => self.set_active(keys.next()),
-            SelectionMode::Multiple => self.selected.set(Rc::new(keys.collect())).map(|_| ()),
+            SelectionMode::Multiple => {
+                self.selected.set(Rc::new(keys.collect()))?;
+                self.written();
+                Ok(())
+            }
         }
     }
     /// Selects nothing and leaves no item active.
@@ -139,7 +196,9 @@ impl ListSelection {
     /// Same as [`ListSelection::set_active`].
     pub fn clear(&self) -> Result<(), RuntimeError> {
         self.set_active(None)?;
-        self.selected.set(Rc::new(BTreeSet::new())).map(|_| ())
+        self.selected.set(Rc::new(BTreeSet::new()))?;
+        self.written();
+        Ok(())
     }
     /// Applies one gesture that landed on `index` of `items`.
     pub(crate) fn apply(
@@ -180,6 +239,7 @@ impl ListSelection {
             Gesture::Move { keep: true, .. } if !single => self.set_active(Some(key))?,
             _ => self.replace(key)?,
         }
+        self.written();
         Ok(())
     }
     fn replace(&self, key: String) -> Result<(), RuntimeError> {

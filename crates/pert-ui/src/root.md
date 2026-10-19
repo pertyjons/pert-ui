@@ -13,24 +13,24 @@ With the default `desktop` feature, [`App`] opens a native window, runs the
 event loop and schedules presentation. Its initializer mounts content once:
 
 ```no_run
-# #[cfg(feature = "desktop")]
+# #[cfg(feature = "native")]
 fn main() -> Result<(), pert_ui::AppError> {
     use pert_ui::prelude::*;
     App::new("Hello", |ui| {
         let count = ui.signal(0_u32);
-        let caption = count.read_only().map(|n| format!("Clicked {n} times"))?;
+        let caption = count.map(|n| format!("Clicked {n} times"))?;
         let clicks = count.clone();
         ui.mount_tree(Element::new("content", Column::new([
             Element::new("caption", Label::new(caption)),
             Element::new("click", Button::new("Click", move |_| {
-                clicks.set(clicks.get()? + 1).map(|_| ())
+                clicks.update(|n| *n += 1)
             })),
         ])))?;
         Ok(())
     })
     .run()
 }
-# #[cfg(not(feature = "desktop"))]
+# #[cfg(not(feature = "native"))]
 # fn main() {}
 ```
 
@@ -53,8 +53,9 @@ writes `pert_ui::` in their place: every such item is at this crate's root, and
 | Local state and derived values | [`Signal`], [`ReadSignal`], [`UpdateContext::read`] | [state and parameters](crate::guide::state) |
 | Parameters and host edits | [`ParameterSpec`], [`Runtime::parameter`], [`ParameterHost`], [`Runtime::remote_parameter`] | [state and parameters](crate::guide::state) |
 | Worker results and live data | [`Runtime::mailbox`], [`SeriesSource`], [`Telemetry`], [`series_bridge`], [`LevelMeter`], [`Trace`] | [state and parameters](crate::guide::state) |
-| Layout and views | [`Column`], [`Row`], [`Grid`], [`Form`], [`View`], [`ScrollArea`], [`RegionLayout`], [`SplitPane`], [`Tabs`] | [layout and views](crate::guide::layout) |
+| Layout and views | [`Column`], [`Row`], [`Element::with_grow`], [`Justify`], [`Align`], [`Grid`], [`Form`], [`View`], [`ScrollArea`], [`RegionLayout`], [`SplitPane`], [`Tabs`] | [layout and views](crate::guide::layout) |
 | Windows and workspaces | [`FloatingWindow`], [`Runtime::request_detach`], [`NativeWindowOptions`], [`Workspace`] | [layout and views](crate::guide::layout) |
+| Children from values | [`Dynamic`], [`Show`], [`Each`] | [layout and views](crate::guide::layout) |
 | Large collections | [`VirtualList`], [`Table`], [`Tree`] | [layout and views](crate::guide::layout) |
 | Zoomable content | [`ZoomView`], [`AxisMapping`], [`Component::child_transform`] | [layout and views](crate::guide::layout) |
 | Drag and drop | [`EventContext::start_drag`], [`Component::drag_event`], [`DragPayload`] | [layout and views](crate::guide::layout) |
@@ -64,7 +65,7 @@ writes `pert_ui::` in their place: every such item is at this crate's root, and
 | Menus, dialogs and notifications | [`Menu`], [`MenuBar`], [`ContextMenu`], [`Select`], [`Popover`], [`Tooltip`], [`Dialog`], [`ToastHost`], [`Runtime::register_command`] | [surfaces](crate::guide::surfaces) |
 | Themes, typography and graphics | [`ThemeManager`], [`UiSettings`], [`FontManager`], [`RichText`], [`Icon`], [`Painter`], [`Image`], [`RasterImage`] | [appearance](crate::guide::appearance) |
 | Image files and SVG | [`images`] (feature `images` or a format feature), [`svg`] (feature `svg`) | [appearance](crate::guide::appearance) |
-| Keyboard, inspection and profiling | [`Runtime::key_input`], [`Runtime::inspect`], [`InspectionService`], [`Runtime::request_capture`], [`Runtime::set_profiling`] | [diagnostics](crate::guide::diagnostics) |
+| Keyboard, inspection and profiling | [`Runtime::command_key_input`], [`Runtime::key_input`], [`Runtime::inspect`], [`InspectionService`], [`Runtime::request_capture`], [`Runtime::set_profiling`] | [diagnostics](crate::guide::diagnostics) |
 | Rendering without a GPU | [`cpu`] (feature `cpu`): [`CpuRenderer`] renders frames and serves captures headlessly; `App::software_rendering` presents them in native windows | [diagnostics](crate::guide::diagnostics) |
 
 Custom widgets implement [`Component`] and use the same public measurement,

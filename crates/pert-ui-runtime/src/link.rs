@@ -55,7 +55,7 @@ pub enum LinkUnderline {
 /// let target = opened.clone();
 /// ui.mount_tree(Element::new(
 ///     "settings-link",
-///     Link::new("Go to settings", move |_| target.set(true).map(|_| ()))
+///     Link::new("Go to settings", move |_| target.set(true))
 ///         .underline(LinkUnderline::Always),
 /// ))?;
 /// let snapshot = ui.inspect();

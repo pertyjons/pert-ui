@@ -182,7 +182,7 @@ impl Component for EdgeDivider {
         let model = self.link.model();
         let permission = model.borrow().resize_permission(self.edge);
         let revision = model::revision(&model, cx);
-        cx.read(&revision.read_only())?;
+        cx.read(&revision)?;
         self.enabled = permission.read(cx)?;
         if !self.enabled && self.resizing() {
             self.cancel();

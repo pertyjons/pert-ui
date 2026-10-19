@@ -1,7 +1,8 @@
 //! Domain, mapping and identity contracts without a UI or host engine.
 
 use pert_ui_core::{
-    NormalizedValue, ParameterError, ParameterId, ParameterIdError, ParameterMapping, ParameterSpec,
+    NormalizedValue, ParameterError, ParameterId, ParameterIdError, ParameterMapping,
+    ParameterSpec, PowerExponent,
 };
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
@@ -103,7 +104,13 @@ fn extreme_and_adjacent_domains_preserve_bounds_and_monotonicity() -> TestResult
         (1.0, 1.0_f32.next_up()),
         (f32::MAX.next_down(), f32::MAX),
     ] {
-        for mapping in [ParameterMapping::Linear, ParameterMapping::Logarithmic] {
+        for mapping in [
+            ParameterMapping::Linear,
+            ParameterMapping::Logarithmic,
+            ParameterMapping::Power(PowerExponent::new(PowerExponent::MIN)?),
+            ParameterMapping::Power(PowerExponent::new(2.0)?),
+            ParameterMapping::Power(PowerExponent::new(PowerExponent::MAX)?),
+        ] {
             if mapping == ParameterMapping::Logarithmic && min <= 0.0 {
                 continue;
             }
@@ -181,5 +188,82 @@ fn identity_includes_session_object_key_and_incarnation() -> TestResult {
         ParameterId::new(1, 2, " \t"),
         Err(ParameterIdError::EmptyKey)
     );
+    Ok(())
+}
+
+#[test]
+fn power_mappings_round_trip_approximately_and_concentrate_resolution() -> TestResult {
+    // Positions whose share of the range is below the bound's f32 precision
+    // collapse onto it, so the tolerance grows with the exponent: about
+    // (ulp(60) / 72)^(1 / exponent) for a high exponent here.
+    for (exponent, tolerance) in [(0.5, 1e-4), (2.0, 1e-3), (3.0, 5e-3)] {
+        // A domain that spans zero, which a logarithmic mapping cannot have.
+        let spec = ParameterSpec::new("X", -60.0, 12.0, 0.0)?
+            .with_mapping(ParameterMapping::Power(PowerExponent::new(exponent)?))?;
+        for step in 0..=1_000 {
+            let position = NormalizedValue::try_from(step as f32 / 1_000.0)?;
+            let actual = spec.normalize(&spec.denormalize(position))?;
+            assert!(
+                (actual.get() - position.get()).abs() < tolerance,
+                "{exponent}: {position:?} -> {actual:?}"
+            );
+        }
+    }
+    // An exponent above one gives the lower end more travel: halfway is a
+    // quarter of the range.
+    let fader = ParameterSpec::new("X", 0.0, 100.0, 0.0)?
+        .with_mapping(ParameterMapping::Power(PowerExponent::new(2.0)?))?;
+    assert!((fader.denormalize(NormalizedValue::try_from(0.5)?) - 25.0).abs() < 1e-4);
+    // An exponent of one is linear in position, though a distinct mapping.
+    let one = ParameterMapping::Power(PowerExponent::new(1.0)?);
+    assert_ne!(one, ParameterMapping::Linear);
+    let spec = ParameterSpec::new("X", 0.0, 10.0, 0.0)?.with_mapping(one)?;
+    assert!((spec.normalize(&2.5)?.get() - 0.25).abs() < 1e-6);
+    Ok(())
+}
+
+#[test]
+fn power_exponents_are_validated() {
+    for invalid in [0.0, -1.0, 0.09, 10.5, f32::NAN, f32::INFINITY] {
+        assert_eq!(
+            PowerExponent::new(invalid),
+            Err(ParameterError::InvalidExponent),
+            "{invalid}"
+        );
+        assert_eq!(
+            PowerExponent::try_from(invalid),
+            Err(ParameterError::InvalidExponent)
+        );
+    }
+    for valid in [PowerExponent::MIN, 1.0, PowerExponent::MAX] {
+        assert_eq!(PowerExponent::new(valid).map(PowerExponent::get), Ok(valid));
+    }
+}
+
+#[test]
+fn linear_and_logarithmic_positions_are_unchanged() -> TestResult {
+    let linear = ParameterSpec::new("X", -100.0, 100.0, 0.0)?;
+    assert_eq!(linear.normalize(&50.0)?.get(), 0.75);
+    assert_eq!(linear.denormalize(NormalizedValue::try_from(0.25)?), -50.0);
+    let log = ParameterSpec::new("X", 0.01, 10_000.0, 1.0)?
+        .with_mapping(ParameterMapping::Logarithmic)?;
+    assert!((log.normalize(&1.0)?.get() - 1.0 / 3.0).abs() < 1e-6);
+    assert!((log.denormalize(NormalizedValue::try_from(2.0 / 3.0)?) - 100.0).abs() < 1e-2);
+    Ok(())
+}
+
+#[test]
+fn a_high_exponent_has_a_documented_plateau_at_the_lower_bound() -> TestResult {
+    let spec = ParameterSpec::new("X", -60.0, 12.0, 0.0)?.with_mapping(ParameterMapping::Power(
+        PowerExponent::new(PowerExponent::MAX)?,
+    ))?;
+    let early = NormalizedValue::try_from(0.125)?;
+    assert_eq!(spec.denormalize(early), -60.0, "f32 cannot hold the offset");
+    assert_eq!(
+        spec.normalize(&spec.denormalize(early))?,
+        NormalizedValue::MIN
+    );
+    // Past the plateau the values increase again.
+    assert!(spec.denormalize(NormalizedValue::try_from(0.5)?) > -60.0);
     Ok(())
 }

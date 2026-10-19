@@ -9,7 +9,9 @@ mod font_smoke;
 mod inline_smoke;
 #[cfg(test)]
 mod multi_window_smoke;
-#[cfg(test)]
+// Pacing at the monitor's rate is a property of GPU presentation: CPU frames
+// carry no interactive frame budget (docs/verification.md, CPU rendering cost).
+#[cfg(all(test, feature = "gpu"))]
 mod pacing_smoke;
 #[cfg(test)]
 mod smoke;
@@ -21,8 +23,8 @@ mod window_smoke;
 use smoke::{Smoke, native_test_event_loop};
 
 use crate::{App, AppError, KeyAction, PhysicalExtent, RuntimeError, Viewport, WidgetId};
-use pert_ui_wgpu::{Frame, Notice};
 use presenter::Presenter;
+use presenter::{Frame, Notice};
 use std::{
     sync::Arc,
     time::{Duration, Instant},
@@ -38,7 +40,7 @@ mod clipboard;
 mod ime;
 mod keyboard;
 mod motion;
-mod presenter;
+pub(crate) mod presenter;
 mod schedule;
 mod windows;
 use schedule::{ComponentRecovery, DeviceRecovery, SurfaceRetries};
@@ -726,11 +728,17 @@ impl ApplicationHandler<UserEvent> for Runner {
             self.fail(event_loop, error);
             return;
         }
+        // Interval timers are the application's: they run on time even while
+        // every window's redraw is withheld, and their deadline wakes the loop.
+        if let Err(error) = self.app.runtime.service_intervals(self.start.elapsed()) {
+            self.fail(event_loop, error.into());
+            return;
+        }
         let mut ids: Vec<_> = self.parked.keys().copied().collect();
         if let Some(window) = &self.current.window {
             ids.push(window.id());
         }
-        let mut next: Option<Duration> = None;
+        let mut next: Option<Duration> = self.app.runtime.interval_deadline();
         for id in ids {
             match self.select_native(id) {
                 Ok(true) => {
@@ -793,13 +801,15 @@ fn main_window_attributes(
 }
 
 // Keep backend types private while retaining portable runtime/drawing causes.
-fn capture_render_error(error: pert_ui_wgpu::RenderError) -> crate::CaptureError {
+fn capture_render_error(error: crate::platform::presenter::RenderError) -> crate::CaptureError {
     match error {
-        pert_ui_wgpu::RenderError::Drawing(error) => error.into(),
-        pert_ui_wgpu::RenderError::Unconfigured => crate::CaptureError::SurfaceUnavailable,
-        pert_ui_wgpu::RenderError::Limit(crate::LimitError::CaptureSize { .. }) => {
-            crate::CaptureError::TooLarge
+        crate::platform::presenter::RenderError::Drawing(error) => error.into(),
+        crate::platform::presenter::RenderError::Unconfigured => {
+            crate::CaptureError::SurfaceUnavailable
         }
+        crate::platform::presenter::RenderError::Limit(crate::LimitError::CaptureSize {
+            ..
+        }) => crate::CaptureError::TooLarge,
         error => crate::CaptureError::Backend(error.to_string()),
     }
 }
@@ -807,11 +817,11 @@ fn capture_render_error(error: pert_ui_wgpu::RenderError) -> crate::CaptureError
 /// Separates a renderer resize's surface-extent limit, which the window
 /// survives unpresented, from its other failures, which end the application.
 fn surface_limit(
-    result: Result<(), pert_ui_wgpu::RenderError>,
+    result: Result<(), crate::platform::presenter::RenderError>,
 ) -> Result<Option<crate::LimitError>, AppError> {
     match result {
         Ok(()) => Ok(None),
-        Err(pert_ui_wgpu::RenderError::Limit(
+        Err(crate::platform::presenter::RenderError::Limit(
             limit @ (crate::LimitError::SurfaceExtent { .. } | crate::LimitError::FrameSize { .. }),
         )) => Ok(Some(limit)),
         Err(error) => Err(AppError::from_renderer(error)),
@@ -1009,7 +1019,7 @@ fn flushes_motion_first(event: &WindowEvent) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pert_ui_wgpu::RenderError;
+    use crate::platform::presenter::RenderError;
 
     #[test]
     fn motion_is_delivered_before_a_modifier_change() {

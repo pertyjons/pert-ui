@@ -1,3 +1,4 @@
+pub(crate) mod application;
 mod capture;
 pub(crate) mod commands;
 mod compose;
@@ -44,6 +45,47 @@ pub enum Invalidation {
     Layout,
 }
 
+/// The component where a failing flush or paint first failed, as
+/// [`Runtime::last_failure`] reports it.
+///
+/// The error itself is the one the flush or paint returned; this says where it
+/// arose, for a report a developer can act on.
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[non_exhaustive]
+pub struct FailureSite {
+    /// The keys from the root to the failing component, the root's first.
+    pub path: Vec<String>,
+    /// The component callback that failed.
+    pub phase: FailurePhase,
+}
+
+/// The component callback a [`FailureSite`] names.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[non_exhaustive]
+pub enum FailurePhase {
+    /// [`Component::update`].
+    Update,
+    /// [`Component::measure`] or [`Component::measure_limits`].
+    Measure,
+    /// [`Component::arrange`].
+    Arrange,
+    /// [`Component::paint`] or [`Component::paint_foreground`].
+    Paint,
+}
+
+impl std::fmt::Display for FailureSite {
+    /// Writes the phase and the key path, as in `update of root/form/name`.
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let phase = match self.phase {
+            FailurePhase::Update => "update",
+            FailurePhase::Measure => "measurement",
+            FailurePhase::Arrange => "arrangement",
+            FailurePhase::Paint => "painting",
+        };
+        write!(f, "{phase} of {}", self.path.join("/"))
+    }
+}
+
 /// Opaque identity of one mounted component in one runtime.
 ///
 /// Clones refer to the same incarnation. Unmounted handles never address a later
@@ -87,8 +129,17 @@ impl std::fmt::Debug for WidgetId {
 /// application's own failure is [`Self::Application`]. Higher-level errors
 /// ([`DrawError`](crate::DrawError), [`WorkspaceError`](crate::WorkspaceError),
 /// [`WindowError`](crate::WindowError) and the facade's application error) wrap
-/// it; it never wraps them. The set grows with the runtime, so matches need a
-/// wildcard arm. `docs/contracts.md` records this error policy.
+/// it; it never wraps them structurally. The one exception is at the callback
+/// boundary: `?` in an application callback converts a
+/// [`WorkspaceError`](crate::WorkspaceError), [`WindowError`](crate::WindowError)
+/// or [`CaptureError`](crate::CaptureError) from a runtime method into
+/// [`Self::Application`], holding the whole error for downcasting, except that
+/// one holding a runtime failure in its `Runtime` variant becomes that failure.
+/// Through the facade such a callback failure is `AppError::Runtime`; code
+/// that returns `AppError` directly, such as an `App` initializer, converts
+/// these errors with `.map_err(RuntimeError::from)?`. The set grows with the
+/// runtime, so matches need a wildcard arm. `docs/contracts.md` records this
+/// error policy.
 ///
 /// ```
 /// use pert_ui_runtime::{Choice, ChoiceError, RadioGroup, Runtime, RuntimeError};
@@ -119,6 +170,22 @@ pub enum RuntimeError {
     /// The bounded application operation queue is full; the operation was refused.
     #[error("application operation queue is full")]
     TaskQueueFull,
+    /// [`Runtime::MAX_BACKGROUND_TASKS`] background tasks wait for their
+    /// results; [`Runtime::spawn`] started nothing.
+    #[error("too many background tasks are waiting")]
+    BackgroundFull,
+    /// The operating system could not start a background thread for
+    /// [`Runtime::spawn`]; nothing was started.
+    #[error("a background thread could not start: {0}")]
+    BackgroundSpawn(std::io::ErrorKind),
+    /// Work started with [`Runtime::spawn`] panicked, so it has no result to
+    /// deliver.
+    #[error("background work panicked")]
+    BackgroundPanicked,
+    /// [`Runtime::MAX_INTERVALS`] interval timers run;
+    /// [`Runtime::start_interval`] started nothing.
+    #[error("too many interval timers are running")]
+    IntervalsFull,
     /// Command registration requires a nonblank human-readable name.
     #[error("command name is empty")]
     EmptyCommandName,
@@ -222,7 +289,7 @@ pub enum RuntimeError {
     EmptyKey,
     /// A key or address lookup below an ancestor matched more than one
     /// descendant, because keys are unique only among siblings; see
-    /// [`Runtime::find_descendant`] and [`Runtime::find_address`].
+    /// [`Runtime::find_descendant`] and [`Runtime::find`].
     #[error("several descendants share the key")]
     AmbiguousKey,
     /// State writes during component evaluation are forbidden.
@@ -318,6 +385,8 @@ enum Phase {
 }
 
 pub(crate) struct Shared {
+    /// Where the latest failing flush or paint first failed in a component.
+    failure: RefCell<Option<FailureSite>>,
     tasks: RefCell<std::collections::VecDeque<tasks::Queued>>,
     /// Set while deferred tasks are delivered, so a flush nested inside a task
     /// (an explicit flush, or one a reveal settles with) leaves the remaining
@@ -631,6 +700,11 @@ impl Shared {
                 parameter.dispatch_deferred();
             }
         }
+    }
+    /// Forgets the failure site of an earlier operation, at the start of an
+    /// outermost flush, paint or interval service.
+    pub(crate) fn reset_failure(&self) {
+        self.failure.replace(None);
     }
     pub(crate) fn readable(&self) -> Result<(), RuntimeError> {
         if self.closed.get() {
@@ -3178,6 +3252,8 @@ struct Entry {
     label_leading: Option<crate::IconSource>,
     /// Whether the element takes part in content search (`Element::with_searchable`).
     searchable: bool,
+    /// The share of spare main-axis space (`Element::with_grow`).
+    grow: u16,
     node: Rc<Node>,
     component: Box<dyn Component>,
     drawing: Vec<crate::DrawCommand>,
@@ -3266,6 +3342,15 @@ pub struct Runtime {
     native_hiding: bool,
     /// Cleanup failures retained independently of retired native windows.
     shutdown_errors: Vec<RuntimeError>,
+    /// Values kept until shutdown (`Runtime::keep_alive`), dropped last-kept first.
+    kept: Vec<Box<dyn std::any::Any>>,
+    /// Background work started with `Runtime::spawn`, created on first use.
+    background: Option<application::Background>,
+    /// Running interval timers (`Runtime::start_interval`), by serial.
+    intervals: BTreeMap<u64, application::Interval>,
+    interval_serial: u64,
+    /// Timers whose tick runs now, out of `intervals` but still counted.
+    intervals_ticking: usize,
 }
 
 impl Default for Runtime {
@@ -3420,14 +3505,32 @@ impl Runtime {
     /// Automatically populated after changed components are flushed, regardless
     /// of diagnostic history mode. No callbacks or validation run when reading
     /// this report. Default release builds always return a disabled empty report.
+    ///
+    /// Geometry is validated only for a native window whose latest layout ran
+    /// with a viewport that has width and height: content flushed before the
+    /// first [`set_viewport`](Self::set_viewport), or laid out while a window's
+    /// viewport has no area, reports no bounds, clip, padding-exceeding-bounds,
+    /// hit-area, parent or overlap issue, and the overlay draws no boxes for it. An empty report
+    /// then says nothing about that geometry. Until the next layout after a
+    /// viewport change, the report keeps the last validation and is
+    /// [`pending`](crate::ValidationReport::pending), which covers every
+    /// window: a validation run while another window's layout is pending
+    /// leaves that window's geometry unchecked, and an issue it had is not
+    /// logged again when it reappears. Rules that do not depend on
+    /// geometry, such as keys, colors and shortcuts, apply in every window.
     #[must_use]
     pub fn validation_report(&self) -> crate::ValidationReport {
         #[cfg(debug_assertions)]
         {
-            self.validator.report(
-                !self.window.shared.pending.borrow().is_empty()
-                    || self.window.shared.layout_pending.get(),
-            )
+            // Pending in any window: validation is application-wide.
+            let pending = self
+                .shared
+                .windows
+                .borrow()
+                .iter()
+                .filter_map(Weak::upgrade)
+                .any(|window| !window.pending.borrow().is_empty() || window.layout_pending.get());
+            self.validator.report(pending)
         }
         #[cfg(not(debug_assertions))]
         {
@@ -3507,6 +3610,21 @@ impl Runtime {
     /// overlay needs when the pass changed what it shows.
     #[cfg(debug_assertions)]
     fn refresh_validation_now(&mut self) {
+        // Geometry is validated where it is current and has area: the window's
+        // latest layout ran against its present viewport, which is not empty.
+        let measured = self
+            .shared
+            .windows
+            .borrow()
+            .iter()
+            .filter_map(Weak::upgrade)
+            .filter(|window| {
+                let viewport = window.viewport.get();
+                viewport.width() > 0.0 && viewport.height() > 0.0 && !window.layout_pending.get()
+            })
+            .map(|window| window.serial)
+            .collect();
+        self.validator.set_measured(measured);
         let refreshed = self.validator.refresh();
         let damaged = match self.shared.overlay.get() {
             crate::DebugOverlay::Off => false,
@@ -3582,8 +3700,10 @@ impl Runtime {
     /// and [`Viewport::physical`](crate::Viewport::physical) is what the surface is
     /// sized from.
     ///
-    /// The desktop adapter calls this automatically. Headless callers can supply
-    /// a viewport to test custom drawing. Hidden components retain dirtiness.
+    /// The desktop adapter calls this automatically, before it first flushes.
+    /// Headless callers can supply a viewport to test custom drawing; until
+    /// they do, layout runs against an empty one. Hidden components retain
+    /// dirtiness.
     ///
     /// # Errors
     /// Rejects writes during update, paint or inspection, or after shutdown.
@@ -3606,6 +3726,7 @@ impl Runtime {
     pub fn new() -> Self {
         let text = Rc::new(crate::text::TextCache::default());
         let shared = Rc::new(Shared {
+            failure: RefCell::new(None),
             tasks: RefCell::new(std::collections::VecDeque::new()),
             task_dispatching: Cell::new(false),
             computations: RefCell::new(BTreeMap::new()),
@@ -3697,6 +3818,11 @@ impl Runtime {
             workspace_report: crate::WorkspaceReport::default(),
             native_hiding: false,
             shutdown_errors: Vec::new(),
+            kept: Vec::new(),
+            background: None,
+            intervals: BTreeMap::new(),
+            interval_serial: 0,
+            intervals_ticking: 0,
         }
     }
 
@@ -4828,6 +4954,7 @@ impl Runtime {
         [
             update,
             timer,
+            self.interval_deadline(),
             self.shared.scale_settle_deadline(),
             self.shared.source_deadline(self.shared.now.get()),
         ]
@@ -4942,6 +5069,8 @@ impl Runtime {
             self.validate_failed_flush(&result);
             return result;
         }
+        // A new outermost flush describes its own failure, if any.
+        self.shared.reset_failure();
         let result = {
             let _boundary = AnswerBoundary::new(self.shared.clone());
             self.flush_inner(now)
@@ -4988,6 +5117,7 @@ impl Runtime {
         self.apply_geometry_change()?;
         self.shared.now.set(now);
         self.dispatch_tasks()?;
+        self.dispatch_intervals(now)?;
         self.dispatch_timers(now)?;
         let woke = self.shared.wake.reset();
         self.shared.service_sources(now, woke);
@@ -5281,6 +5411,9 @@ impl Runtime {
                 Err(error) => Err(error.clone()),
             }
         };
+        if result.is_err() {
+            self.note_failure(serial, FailurePhase::Update);
+        }
         if result.is_err()
             && let Ok(previous) = resolved
         {
@@ -5780,6 +5913,7 @@ impl Runtime {
         self.text.clear();
         let clipboard = self.shared.clipboard.borrow_mut().take();
         drop(clipboard);
+        self.shut_down_application_services();
     }
 
     /// Drains typed errors retained by infallible cleanup after [`Self::shutdown`].

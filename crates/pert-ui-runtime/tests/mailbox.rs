@@ -57,9 +57,7 @@ fn the_handler_writes_signals_that_the_same_flush_shows() {
     let result = ui.signal(String::new());
     let target = result.clone();
     let mailbox = ui
-        .mailbox(capacity(1), move |text: String| {
-            target.set(text).map(|_| ())
-        })
+        .mailbox(capacity(1), move |text: String| target.set(text))
         .unwrap();
     mailbox.sender().send("decoded".to_owned()).unwrap();
     ui.flush(Duration::ZERO).unwrap();

@@ -90,7 +90,8 @@ impl Image {
         }
     }
     /// Follows an application-owned image binding; `None` presents nothing.
-    pub fn bound(source: ReadSignal<Option<RasterImage>>) -> Self {
+    pub fn bound(source: impl Into<ReadSignal<Option<RasterImage>>>) -> Self {
+        let source: ReadSignal<Option<RasterImage>> = source.into();
         Self {
             source: Some(source),
             ..Self::empty()

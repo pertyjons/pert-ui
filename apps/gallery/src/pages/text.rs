@@ -118,7 +118,7 @@ fn number_input_fields(ui: &Runtime) -> Result<Element, RuntimeError> {
                     .with_label("Integer"),
                     Element::new(
                         "integer-saved",
-                        Label::new(count.read_only().map(|v| format!("Saved integer: {v}"))?),
+                        Label::new(count.map(|v| format!("Saved integer: {v}"))?),
                     ),
                     label(
                         "decimal-label",
@@ -133,11 +133,7 @@ fn number_input_fields(ui: &Runtime) -> Result<Element, RuntimeError> {
                     .with_label("Decimal"),
                     Element::new(
                         "decimal-saved",
-                        Label::new(
-                            amount
-                                .read_only()
-                                .map(|v| format!("Saved decimal (full precision): {v}"))?,
-                        ),
+                        Label::new(amount.map(|v| format!("Saved decimal (full precision): {v}"))?),
                     ),
                     label(
                         "stepper-label",
@@ -162,7 +158,7 @@ fn number_input_fields(ui: &Runtime) -> Result<Element, RuntimeError> {
                     .with_label("Level"),
                     Element::new(
                         "normalized-saved",
-                        Label::new(level.read_only().map(|v| format!("Saved level: {v}"))?),
+                        Label::new(level.map(|v| format!("Saved level: {v}"))?),
                     ),
                     label(
                         "formatted-label",
@@ -180,7 +176,7 @@ fn number_input_fields(ui: &Runtime) -> Result<Element, RuntimeError> {
                     .with_label("Mix"),
                     Element::new(
                         "formatted-saved",
-                        Label::new(mix.read_only().map(|v| format!("Saved fraction: {v}"))?),
+                        Label::new(mix.map(|v| format!("Saved fraction: {v}"))?),
                     ),
                     label(
                         "number-invalid-help",
@@ -240,7 +236,7 @@ pub(crate) fn text_editing(ui: &Runtime) -> Result<Element, RuntimeError> {
                         Element::new(
                             "name-field",
                             TextField::new(name.clone()).on_submit(move |_, text| {
-                                submit_result.set(format!("Submitted: {text}")).map(|_| ())
+                                submit_result.set(format!("Submitted: {text}"))
                             }),
                         )
                         .with_label("Name"),
@@ -295,7 +291,7 @@ pub(crate) fn text_editing(ui: &Runtime) -> Result<Element, RuntimeError> {
                                         let next = rejection.map_or(FieldStatus::Normal, |r| {
                                             FieldStatus::error(r.message())
                                         });
-                                        tag_status.set(next).map(|_| ())
+                                        tag_status.set(next)
                                     }),
                             ))
                             .label("Tag")
@@ -356,7 +352,7 @@ fn sign_in_example(ui: &Runtime) -> Result<Element, RuntimeError> {
         let handle = handle.clone();
         move |_: &mut EventContext, rejection: Option<&InputRejection>| {
             let next = rejection.map_or(FieldStatus::Normal, |r| FieldStatus::error(r.message()));
-            handle.set(next).map(|_| ())
+            handle.set(next)
         }
     };
     let delay = form.field("delay")?;
@@ -445,7 +441,6 @@ fn sign_in_example(ui: &Runtime) -> Result<Element, RuntimeError> {
                         Button::new("Check the name", move |_| {
                             check_user
                                 .set(FieldStatus::pending("Checking whether the name is free"))
-                                .map(|_| ())
                         }),
                     ),
                     Element::new(
@@ -456,7 +451,7 @@ fn sign_in_example(ui: &Runtime) -> Result<Element, RuntimeError> {
                             } else {
                                 FieldStatus::Normal
                             };
-                            finish_user.set(next).map(|_| ())
+                            finish_user.set(next)
                         }),
                     ),
                     Element::new(
@@ -476,7 +471,7 @@ fn sign_in_example(ui: &Runtime) -> Result<Element, RuntimeError> {
                                 // `chars` would not match.
                                 format!("Signed in as {}.", sign_name.get()?)
                             };
-                            sign_outcome.set(text).map(|_| ())
+                            sign_outcome.set(text)
                         }),
                     ),
                 ])
@@ -599,19 +594,16 @@ fn search_example(ui: &Runtime) -> Result<Element, RuntimeError> {
             .with_label("Search effects"),
             Element::new(
                 "search-results",
-                Label::new(query.read_only().map(|query| match_line(query))?),
+                Label::new(query.map(|query| match_line(query))?),
             ),
             Element::new(
                 "search-highlight",
-                Label::new(query.read_only().combine(
-                    &highlight.read_only(),
-                    |query, selected| {
-                        search_highlight(query, selected).map_or_else(
-                            || "No highlighted match.".to_owned(),
-                            |index| format!("Highlighted match: {}", index + 1),
-                        )
-                    },
-                )?),
+                Label::new(query.combine(&highlight.read_only(), |query, selected| {
+                    search_highlight(query, selected).map_or_else(
+                        || "No highlighted match.".to_owned(),
+                        |index| format!("Highlighted match: {}", index + 1),
+                    )
+                })?),
             ),
             Element::new("search-chosen", Label::new(chosen.read_only())),
         ],
@@ -641,15 +633,13 @@ fn field_examples(ui: &Runtime) -> Element {
                     "field-live-input",
                     TextField::new(project).on_submit(move |_, value| {
                         let length = value.trim().chars().count();
-                        checked
-                            .set(match length {
-                                0 => FieldStatus::error("A project name is required"),
-                                1..=20 => FieldStatus::Normal,
-                                _ => FieldStatus::warning(
-                                    "Names over 20 characters are shortened in tab titles",
-                                ),
-                            })
-                            .map(|_| ())
+                        checked.set(match length {
+                            0 => FieldStatus::error("A project name is required"),
+                            1..=20 => FieldStatus::Normal,
+                            _ => FieldStatus::warning(
+                                "Names over 20 characters are shortened in tab titles",
+                            ),
+                        })
                     }),
                 ))
                 .label("Project name — live")
@@ -802,7 +792,7 @@ pub(crate) fn fonts_and_icons(ui: &Runtime) -> Result<Element, AppError> {
                 Element::new(
                     "icon",
                     Button::icon(icon, name.clone(), move |_| {
-                        output.set(format!("{message} activated")).map(|_| ())
+                        output.set(format!("{message} activated"))
                     }),
                 ),
                 name,
@@ -851,9 +841,7 @@ pub(crate) fn fonts_and_icons(ui: &Runtime) -> Result<Element, AppError> {
             .tinted_icon(icon, TextColor::Role(role));
         trailing_buttons.push(Element::new(
             key,
-            Button::new(content, move |_| {
-                output.set(format!("{title} activated")).map(|_| ())
-            }),
+            Button::new(content, move |_| output.set(format!("{title} activated"))),
         ));
     }
     let inline_font = alternate.clone();

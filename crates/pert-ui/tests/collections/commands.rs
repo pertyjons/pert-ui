@@ -48,7 +48,7 @@ fn three_unfocused_windows_route_application_once_and_window_locally() -> Result
         "Open",
         CommandScope::Application,
         vec![KeyChord::primary('o')],
-        move |_, _| written.set(written.get()? + 1).map(|_| ()),
+        move |_, _| written.set(written.get()? + 1),
     )?;
     for (window, _) in &roots {
         ui.select_window(window)?;
@@ -71,7 +71,7 @@ fn three_unfocused_windows_route_application_once_and_window_locally() -> Result
             move |_, _| {
                 let mut value = counts.get()?;
                 value[index] += 1;
-                counts.set(value).map(|_| ())
+                counts.set(value)
             },
         )?;
     }
@@ -96,7 +96,7 @@ fn layout_identity_disabled_reservation_rebinding_and_conflicts() -> Result<(), 
         "Undo",
         CommandScope::Application,
         vec![KeyChord::primary('z')],
-        move |_, _| written.set(written.get()? + 1).map(|_| ()),
+        move |_, _| written.set(written.get()? + 1),
     )?;
     let local = ui.register_command(
         "Editor undo",
@@ -320,7 +320,7 @@ fn application_modal_blocks_other_roots_and_preserves_its_editor_input() -> Resu
         "Modal action",
         CommandScope::Application,
         vec![KeyChord::primary('o')],
-        move |_, _| written.set(written.get()? + 1).map(|_| ()),
+        move |_, _| written.set(written.get()? + 1),
     )?;
     ui.command_in_modals(&command, true)?;
     let stale_menu = ui.command_context(CommandSource::Menu);
@@ -681,7 +681,7 @@ fn os_repeats_run_a_command_only_after_it_opts_in() -> Result<(), RuntimeError> 
             CommandKey::Character('a'),
             Modifiers::default(),
         )],
-        move |_, _| written.set(written.get()? + 1).map(|_| ()),
+        move |_, _| written.set(written.get()? + 1),
     )?;
     let hold = |ui: &mut Runtime| -> Result<(), RuntimeError> {
         key(ui, KeyCode::KeyA, 'a', KeyAction::Press)?;
@@ -996,7 +996,7 @@ fn listing_rejects_a_stale_context_and_rows_invoke_with_revalidation() -> Result
         "Count",
         CommandScope::View(root.clone()),
         vec![],
-        move |_, _| written.set(written.get()? + 1).map(|_| ()),
+        move |_, _| written.set(written.get()? + 1),
     )?;
     ui.set_command_target(Some(&body))?;
     let context = ui.command_context(CommandSource::Menu);

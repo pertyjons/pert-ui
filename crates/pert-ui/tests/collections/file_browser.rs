@@ -746,7 +746,7 @@ struct DeliverInUpdate {
 }
 impl Component for DeliverInUpdate {
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
-        cx.read(&self.trigger.read_only())?;
+        cx.read(&self.trigger)?;
         if let Some(response) = self.response.borrow_mut().take() {
             *self.outcome.borrow_mut() = Some(self.controller.deliver(response));
         }

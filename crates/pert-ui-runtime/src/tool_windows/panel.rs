@@ -303,7 +303,7 @@ impl Component for Panel {
         }
         let model = self.link.model();
         let revision = model::revision(&model, cx);
-        cx.read(&revision.read_only())?;
+        cx.read(&revision)?;
         let permission = model.borrow().float_permission(&self.key);
         let floatable = permission.read(cx)?;
         let mut model = model.borrow_mut();
