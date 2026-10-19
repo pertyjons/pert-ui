@@ -131,6 +131,10 @@ pub enum TextCommand {
     /// caret, as a separate word. Mirrors [`Self::PasteBefore`] in every respect,
     /// searching forward when the caret touches no word.
     PasteAfter,
+    /// Selects all text, without changing it or touching the clipboard. A
+    /// text editor and a [`SelectableText`](crate::SelectableText) answer it;
+    /// an empty text reports `Unavailable`.
+    SelectAll,
 }
 
 /// Outcome of a [`TextCommand`] delivered to a component.

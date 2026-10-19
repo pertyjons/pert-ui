@@ -378,6 +378,31 @@ Escape in a text field cancels composition first, or collapses a selection and
 ends dragging. With nothing to cancel it bubbles to ancestors. Numeric fields
 retain their separate Escape contract: restore the saved value and consume the key.
 
+# Selectable text
+
+A [`Label`] never takes focus, so its text cannot be selected. Text a reader
+needs to copy, such as a log message, an error's details or an identifier, is
+a [`SelectableText`]: it looks and wraps like a multiline label, takes one Tab
+stop, and selects with the pointer (drag, double click for a word, triple click
+for everything, Shift+press to extend) and with the editors' movement keys and
+Shift. Ctrl/Cmd+C, its context menu and [`TextCommand::Copy`] copy the
+selection; nothing edits it. Long text goes in a [`ScrollArea`], since it does
+not scroll itself.
+
+```
+use pert_ui::{Column, IntoElement, Label, Runtime, SelectableText};
+let mut ui = Runtime::new();
+let details = ui.signal("timeout after 30 s (retry 2 of 3)".to_owned());
+ui.mount_tree(
+    Column::new([
+        Label::new("Details").key("title"),
+        SelectableText::new(details.read_only()).key("details"),
+    ])
+    .key("panel"),
+)?;
+# Ok::<(), pert_ui::RuntimeError>(())
+```
+
 # Numeric text entry
 
 [`IntegerInput`] binds exact `i64` values; [`DecimalInput`] binds finite `f64` values.

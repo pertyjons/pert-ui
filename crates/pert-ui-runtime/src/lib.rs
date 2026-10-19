@@ -115,8 +115,10 @@ pub use multi_select::{MultiSelect, MultiSelectCommit};
 pub use popover::{Popover, SurfaceDismissal, SurfaceKind, Tooltip};
 pub use select::{InlineSelect, Select};
 pub use toolbar::{ToolGroup, Toolbar, ToolbarOverflow};
+mod selectable_text;
 mod tables;
 mod text;
+pub use selectable_text::SelectableText;
 mod text_fields;
 mod text_input;
 mod text_selection;
@@ -348,7 +350,7 @@ pub mod prelude {
     #[doc(no_inline)]
     pub use crate::{
         Button, Checkbox, Chip, Choice, Label, Link, LinkUnderline, RadioGroup, SegmentedControl,
-        TextOverflow, TextStyle, Toggle,
+        SelectableText, TextOverflow, TextStyle, Toggle,
     };
     #[doc(no_inline)]
     pub use crate::{

@@ -232,8 +232,9 @@ pub trait TableItems {
     /// Searchable text of row `index` in the column with key `column`, or
     /// `None` for a cell that offers none (the default).
     ///
-    /// The table joins the text of a row's cells, in column order, into the
-    /// row's [`ListItems::text`], which content search reads for rows that are
+    /// The table joins the text of a row's cells, in column order and
+    /// separated by a space, skipping cells with no or empty text, into the row's
+    /// [`ListItems::text`], which content search reads for rows that are
     /// not mounted. The rules of `ListItems::text` apply: deterministic, free
     /// of side effects and I/O, and answered from data the source holds.
     fn text(&self, index: usize, column: &str) -> Option<String> {
@@ -644,7 +645,8 @@ impl TableController {
     /// keeps applying it when the rows are replaced or a column moves; an empty
     /// or whitespace query shows every row.
     ///
-    /// A row's text is its cells' [`TableItems::text`] joined in column order,
+    /// A row's text is its cells' [`TableItems::text`] joined in column order
+    /// with a space between them,
     /// so a source that offers no text has no row matching a query. Rows that
     /// stay keep their keys and components; the selection is never pruned, so
     /// a selected row filtered out stays selected and hidden. The returned
@@ -1108,6 +1110,13 @@ enum HeaderGesture {
 /// data and state belong to its controller. Change permissions through the
 /// mounted descriptor's bound signals and data through the controller, or give
 /// the table a new key to replace its retained options.
+///
+/// Like a [`VirtualList`], the table mounts the rows inside the height it is
+/// allocated and needs a bounded one; see [the list's bounded
+/// extent](VirtualList#a-bounded-extent) for the containers that give one. It
+/// builds every column of each mounted row, including columns scrolled out of
+/// view, and an active [filter](TableController::filter) reads every row's text
+/// again whenever the source is replaced.
 #[must_use]
 pub struct Table {
     resize_permission: Permission,

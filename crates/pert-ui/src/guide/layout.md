@@ -417,6 +417,49 @@ controller fixes widths from code as a drag does. [`Tree`] shows a
 share [`ListSelection`] for single or multiple selection, and lists and trees can
 be made reorderable by dragging.
 
+A collection mounts the rows inside the height it is allocated, so it needs a
+bounded one. A window or detached view, a [`SplitPane`] pane, a [`Container`] or
+[`CollectionFilter`] with a bounded allocation, a [`Tab::fixed`] tab, a
+[`RegionLayout::fixed`] region, a [`View::fixed`] view and a grown child of a
+bounded [`Column`] give one: a grown child of a column shrinks to what the
+other children leave, so a toolbar above a grown collection works. Default
+[`Tab::new`] and [`RegionLayout`] content and a [`ScrollArea`] do not, since
+they scroll content at its natural size, which for a collection is its whole
+content; in debug builds validation reports such a collection as
+[`ValidationCode::UnboundedCollection`]. A bounded [`Row`] offers its height
+to every child, so it bounds a vertical collection beside other children, but
+it does not shrink their widths, so it never bounds a horizontal one.
+
+# Large data
+
+Virtualization bounds the components; the application's data and the
+collection's bookkeeping still cost in proportion to the rows they touch:
+
+- Replacing a source ([`TableController::set_source`], a new [`ListSource`] in
+  the binding, [`TreeController::set_source`]) rebuilds the descriptions of the
+  mounted rows, and an active filter reads every row's text again. Coalesce
+  appended data into batches, keep one source per view, and do not replace a
+  source from a selection callback that changed nothing it shows.
+- [`ListItems::index_of`] and [`TableItems::index_of`] default to a scan of
+  every row, and reveal, anchoring and the active row call them; keep a
+  reverse index from key to position in a large source.
+- A filter joins each row's [`TableItems::text`] cells into one string per row;
+  offer the text a user searches for, and nothing more.
+- [`TreeItems::children`] returns every child key, and expanding a node indexes
+  all of them; very wide nodes cost in proportion to their children.
+- A table builds every column of each mounted row, also the columns scrolled
+  out of view.
+
+The [log explorer example](https://github.com/pertyjons/pert-ui/blob/main/crates/pert-ui/examples/log_explorer/main.rs)
+puts this together over a generated log of hundreds of thousands of lines:
+bounded tables and a tree, row identities with a reverse index, loading in
+batches on a worker, appended lines inserted into each table's order instead
+of rebuilding it, a live tail that follows the last shown row, an Errors view
+that detaches, copying per table and selectable detail text. Its headless
+session reports mounted counts and flush times and checks that the counts
+stay bounded: `cargo run -p pert-ui --example log_explorer --no-default-features`,
+or open it with `cargo run -p pert-ui --example log_explorer -- --window`.
+
 # Zoomable content
 
 [`ZoomView`] places components at content-space points and lets the user pan and

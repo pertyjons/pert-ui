@@ -376,7 +376,13 @@ heights in both measurement and arrangement, including unbounded measurement.
 Row and Column give every child its natural size first, then divide the space
 their own allocation leaves over among children with an `Element::with_grow`
 weight, in proportion to the weights and up to each child's maximum, sharing
-what a maximum stops among the others. The weight is element metadata that
+what a maximum stops among the others. When a column's height is bounded
+and its children's natural heights do not fit, the grown children give up the
+difference instead, in proportion to their weights and down to each one's
+minimum, so a grown child fills what the others leave; the column then
+overflows only past the ungrown children's natural heights plus the grown
+children's minimums. Rows do not shrink: a narrower child could wrap to a
+height their measurement does not repeat. The weight is element metadata that
 reconciliation updates without remounting, and hidden children take no share.
 `Justify` places the space no child takes, and `Align` places children across
 the main axis: a column within its width, a row within its tallest child,

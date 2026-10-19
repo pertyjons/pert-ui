@@ -890,6 +890,13 @@ impl Component for TreeRow {
 /// are ignored; the tree's data, expansion and selection belong to the
 /// controller. Change them through it, make a callback read application state
 /// that changes, or give the tree a new key to replace it.
+///
+/// Like a [`VirtualList`](crate::VirtualList), the tree mounts the rows inside
+/// the height it is allocated and needs a bounded one; see [the list's
+/// bounded extent](crate::VirtualList#a-bounded-extent). Expanding a node asks
+/// [`TreeItems::children`] for all its children and indexes them, so a node
+/// with very many children costs in proportion to them although only a
+/// screenful mounts, and a replaced source flattens its expanded nodes again.
 #[must_use]
 pub struct Tree {
     list: VirtualList,

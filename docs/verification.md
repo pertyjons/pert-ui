@@ -50,6 +50,30 @@ the probe it was reduced from ran natively on Fedora 44 GNOME/Wayland, where
 the first version's drag failed because of the repeated pointer move that
 slice 1 documents.
 
+## Log-explorer plan
+
+The slices of [the log-explorer plan](../plans/log-explorer-improvements.md)
+(0.3.24 to 0.3.31) each passed the workspace gate on Fedora 44 Linux with
+Rust 1.99.0; the shrink, collection-diagnostic, selectable-text and text
+tests also passed in the release profile, the serde configuration ran the
+schema test and the CPU configuration the capture tests after the text
+change. Slices 1, 3 and 4 had a Codex design checkpoint before
+implementation (each first rejected, then approved after revision), and
+slices 1 to 5 an independent Codex implementation review whose findings
+were fixed with regression tests (0.3.26, 0.3.28 and 0.3.31). Slice 4's
+unit tests count shapings: a fitting ellipsis text is shaped once cold and
+not at all warm, a truncated one measures its whole string once; CPU
+captures of 56 ellipsis cases rendered by a temporary program against
+0.3.28 and 0.3.31 were pixel-identical. The `log_explorer`
+example's headless session over 50 000 generated lines passed in the debug
+profile, where development validation reported no unbounded collection,
+and in the release profile, where loading took about 36 ms, a wheel step
+4.13 ms (4.78 ms before slice 4), sorting 25 ms, content search 7 ms and an
+inspection snapshot from another thread 3 ms, with at most about 600
+components mounted. `SelectableText` and the example's window have not been
+recorded as used on a native platform; the probe the example was reduced
+from ran natively on Fedora 44 GNOME/Wayland.
+
 ## Thin outlines at fractional zoom
 
 A 75% scale regression renders a one-logical-pixel rounded outline at a

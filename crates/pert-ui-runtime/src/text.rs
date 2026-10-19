@@ -558,6 +558,9 @@ pub(crate) struct TextService {
     resolutions: Cell<usize>,
     #[cfg(test)]
     fit_searches: Cell<usize>,
+    /// How many times text was shaped, cached or not.
+    #[cfg(test)]
+    shapings: Cell<usize>,
 }
 /// Everything that decides where plain text is cut to fit a width.
 #[derive(PartialEq)]
@@ -606,6 +609,8 @@ impl TextService {
             resolutions: Cell::new(0),
             #[cfg(test)]
             fit_searches: Cell::new(0),
+            #[cfg(test)]
+            shapings: Cell::new(0),
         })
     }
     #[cfg(test)]
@@ -640,7 +645,25 @@ impl TextService {
         reads.set(reads.get() | role.mask());
         let font = self.registry.default_index(role);
         // Borrow the request until a miss. Ordinary rich controls use this path too.
-        if let Some(entry) = self.cache.iter().find(|entry| {
+        if let Some(entry) = self.cached_plain(text, width, scale, font, font_size) {
+            return Ok(entry.layout.clone());
+        }
+        let request = TextRequest::new(style, font_size, reads);
+        let resolved = self.resolve(&RichText::from(text), request)?;
+        self.prepare_resolved(resolved, request.width(width).scale(scale), None)
+    }
+    /// The cached layout of plain `text` in the role's default font, exactly
+    /// as `prepare_plain` would prepare it: one span covering the text (none
+    /// for empty text) with no gap, icon or color of its own.
+    fn cached_plain(
+        &self,
+        text: &str,
+        width: Option<f32>,
+        scale: f64,
+        font: usize,
+        font_size: f32,
+    ) -> Option<&CachedText> {
+        self.cache.iter().find(|entry| {
             let key = &entry.key;
             let r = &key.resolved;
             key.width == width
@@ -663,12 +686,7 @@ impl TextService {
                             icon: false,
                         }]
                 }
-        }) {
-            return Ok(entry.layout.clone());
-        }
-        let request = TextRequest::new(style, font_size, reads);
-        let resolved = self.resolve(&RichText::from(text), request)?;
-        self.prepare_resolved(resolved, request.width(width).scale(scale))
+        })
     }
     fn resolve(
         &self,
@@ -805,19 +823,30 @@ impl TextService {
             return self.prepare_plain(plain, request);
         }
         let resolved = self.resolve(text, request)?;
-        self.prepare_resolved(resolved, request)
+        self.prepare_resolved(resolved, request, None)
     }
     /// Unwrapped logical width of plain text, shaped without rasterizing.
     fn plain_width(&mut self, text: &str, request: TextRequest<'_>) -> Result<f32, RuntimeError> {
+        Ok(self.plain_shape(text, request)?.0)
+    }
+    /// Shapes plain text unwrapped without rasterizing, under the key
+    /// `prepare_plain` would prepare it with, and returns its logical width
+    /// with the key and the shaped layout, which preparing it can reuse.
+    fn plain_shape(
+        &mut self,
+        text: &str,
+        request: TextRequest<'_>,
+    ) -> Result<(f32, Key, parley::Layout<usize>), RuntimeError> {
         let scale = effective_scale(request.scale, [request.font_size]);
-        let resolved = self.resolve(&RichText::from(text), request)?;
+        let plain = TextRequest::new(request.style, request.font_size, request.reads);
+        let resolved = self.resolve(&RichText::from(text), plain)?;
         let key = Key {
             resolved,
             width: None,
             scale,
         };
         let layout = self.build_layout(&key)?;
-        Ok(layout.width() / scale as f32)
+        Ok((layout.width() / scale as f32, key, layout))
     }
     /// Prepares plain text to fit `width` as `overflow` asks. A truncated
     /// result is searched once per text, font, size, scale and width: the
@@ -841,16 +870,29 @@ impl TextService {
         }
         let request = request.width(None);
         let (line, bounds, broken) = fit::clusters(text);
-        // Measured without rasterizing first: text far wider than `width`
-        // may exceed the raster limit as a whole, though a truncation fits.
-        if !broken && self.plain_width(text, request)? <= width {
-            let full = self.prepare_plain(text, request)?;
-            if full.size().width() <= width {
-                return Ok(FittedText {
-                    layout: full,
-                    shown: None,
-                });
-            }
+        let key = FitKey {
+            text: text.to_owned(),
+            font: self.registry.default_index(request.style.font_role()),
+            size: request.font_size.to_bits(),
+            scale: effective_scale(request.scale, [request.font_size]).to_bits(),
+            width: width.to_bits(),
+            overflow,
+        };
+        // A cut is remembered only for a text that did not fit at this key,
+        // so with one the whole text is not measured again.
+        let remembered = self
+            .fits
+            .iter()
+            .find(|(k, _)| *k == key)
+            .map(|(_, kept)| *kept);
+        if remembered.is_none()
+            && !broken
+            && let Some(full) = self.fit_whole(text, request, width)?
+        {
+            return Ok(FittedText {
+                layout: full,
+                shown: None,
+            });
         }
         let count = bounds.len() - 1;
         // Without a line break the whole line did not fit, so at least one
@@ -860,19 +902,6 @@ impl TextService {
         } else {
             count.saturating_sub(1)
         };
-        let key = FitKey {
-            text: text.to_owned(),
-            font: self.registry.default_index(request.style.font_role()),
-            size: request.font_size.to_bits(),
-            scale: effective_scale(request.scale, [request.font_size]).to_bits(),
-            width: width.to_bits(),
-            overflow,
-        };
-        let remembered = self
-            .fits
-            .iter()
-            .find(|(k, _)| *k == key)
-            .map(|(_, kept)| *kept);
         let mut kept = match remembered {
             Some(kept) => kept,
             None => {
@@ -912,10 +941,53 @@ impl TextService {
             kept -= 1;
         }
     }
+    /// The whole unwrapped plain text prepared, if it fits `width`.
+    ///
+    /// Its advance width is read from a cached layout under the key
+    /// `prepare_plain` uses, or else measured by shaping without rasterizing
+    /// first: text far wider than `width` may exceed the raster limit as a
+    /// whole, though a truncation fits. A fitting text then reuses that
+    /// shaping for its raster, so it is shaped once. The prepared layout also
+    /// counts glyph overhangs, which can still make it too wide.
+    fn fit_whole(
+        &mut self,
+        text: &str,
+        request: TextRequest<'_>,
+        width: f32,
+    ) -> Result<Option<TextLayout>, RuntimeError> {
+        let TextRequest {
+            style,
+            font_size,
+            reads,
+            ..
+        } = request;
+        let scale = effective_scale(request.scale, [font_size]);
+        let role = style.font_role();
+        let font = self.registry.default_index(role);
+        let full = if let Some(entry) = self.cached_plain(text, None, scale, font, font_size) {
+            reads.set(reads.get() | role.mask());
+            if entry.layout.shaped.width() / scale as f32 > width {
+                return Ok(None);
+            }
+            entry.layout.clone()
+        } else {
+            let (advance, key, shaped) = self.plain_shape(text, request)?;
+            if advance > width {
+                return Ok(None);
+            }
+            let plain = TextRequest::new(style, font_size, reads);
+            self.prepare_resolved(key.resolved, plain.width(None).scale(scale), Some(shaped))?
+        };
+        Ok((full.size().width() <= width).then_some(full))
+    }
+    /// Prepares resolved text through the cache; `shaped`, when given, is
+    /// this very text already shaped under the same key, which a cache miss
+    /// rasterizes instead of shaping again.
     fn prepare_resolved(
         &mut self,
         resolved: Resolved,
         request: TextRequest<'_>,
+        shaped: Option<parley::Layout<usize>>,
     ) -> Result<TextLayout, RuntimeError> {
         let TextRequest { width, gap, .. } = request;
         let scale = effective_scale(
@@ -945,7 +1017,7 @@ impl TextService {
         if let Some(entry) = self.cache.iter().find(|e| e.key == key) {
             return Ok(entry.layout.clone());
         }
-        let (signature, result) = self.shape(&key)?;
+        let (signature, result) = self.shape(&key, shaped)?;
         let bytes = result
             .parts
             .iter()
@@ -975,10 +1047,17 @@ impl TextService {
     }
     /// Shapes `key`, then reuses the coverage of a cached entry whose positioned
     /// glyphs are identical, or rasterizes and composites new coverage.
-    fn shape(&mut self, key: &Key) -> Result<(RasterSignature, TextLayout), TextError> {
+    fn shape(
+        &mut self,
+        key: &Key,
+        shaped: Option<parley::Layout<usize>>,
+    ) -> Result<(RasterSignature, TextLayout), TextError> {
         let resolved = &key.resolved;
         let scale = key.scale as f32;
-        let layout = self.build_layout(key)?;
+        let layout = match shaped {
+            Some(layout) => layout,
+            None => self.build_layout(key)?,
+        };
         if !layout.width().is_finite() || !layout.height().is_finite() {
             return Err(TextError::Geometry);
         }
@@ -1024,6 +1103,8 @@ impl TextService {
     }
     /// Shapes, wraps and aligns the resolved spans in physical pixels.
     fn build_layout(&mut self, key: &Key) -> Result<parley::Layout<usize>, TextError> {
+        #[cfg(test)]
+        self.shapings.set(self.shapings.get() + 1);
         let resolved = &key.resolved;
         let text = &resolved.text;
         let scale = key.scale as f32;
@@ -2198,6 +2279,236 @@ mod rich_tests {
         assert_eq!(service.fit_searches.get(), searches);
         let _ = fit(&mut service, text, 81.0, 1.0, TextOverflow::Ellipsis);
         assert_eq!(service.fit_searches.get(), searches + 1);
+    }
+
+    fn fit_at(
+        service: &mut TextService,
+        text: &str,
+        size: f32,
+        width: f32,
+        scale: f64,
+    ) -> Result<FittedText, RuntimeError> {
+        let reads = Cell::new(0);
+        service.fit_plain(
+            text,
+            TextRequest::new(TextStyle::Body, size, &reads).scale(scale),
+            width,
+            TextOverflow::Ellipsis,
+        )
+    }
+
+    #[test]
+    fn a_fitting_ellipsis_text_is_shaped_once_and_then_not_at_all() {
+        let mut service = TextService::new().unwrap();
+        let text = "A short cell";
+        let before = service.shapings.get();
+        let first = fit(&mut service, text, 400.0, 1.0, TextOverflow::Ellipsis);
+        assert!(!first.is_truncated());
+        assert_eq!(service.shapings.get(), before + 1, "cold: shaped once");
+        // Measure, arrange and repaint at the same width, and a narrower
+        // width at which it still fits.
+        for width in [400.0, 400.0, 400.0, 200.0] {
+            let again = fit(&mut service, text, width, 1.0, TextOverflow::Ellipsis);
+            assert!(!again.is_truncated());
+            assert_eq!(again.layout().size(), first.layout().size());
+        }
+        assert_eq!(service.shapings.get(), before + 1, "warm: not shaped");
+    }
+
+    #[test]
+    fn a_truncated_text_measures_the_whole_string_once() {
+        let mut service = TextService::new().unwrap();
+        let text = "A message far too long for its narrow table column";
+        let first = fit(&mut service, text, 80.0, 1.0, TextOverflow::Ellipsis);
+        assert!(first.is_truncated());
+        let shaped = service.shapings.get();
+        for _ in 0..3 {
+            let again = fit(&mut service, text, 80.0, 1.0, TextOverflow::Ellipsis);
+            assert_eq!(again.shown(), first.shown());
+        }
+        assert_eq!(service.shapings.get(), shaped, "the remembered cut answers");
+    }
+
+    #[test]
+    fn cold_and_warm_fits_agree_around_the_advance_width() {
+        let reads = Cell::new(0);
+        let request = TextRequest::new(TextStyle::Body, 14.0, &reads);
+        let mut texts = vec!["Wide Words", "fff", "ƒjord"];
+        // A text whose glyphs overhang their advance fits by advance and not
+        // by ink at its advance width; the bundled font has some.
+        let mut probe = TextService::new().unwrap();
+        let overhanging = ["ƒ", "j", "f", "ʃ", "y", "Ψ"]
+            .into_iter()
+            .find(|text| {
+                let advance = probe.plain_width(text, request).unwrap();
+                probe.prepare_plain(text, request).unwrap().size().width() > advance
+            })
+            .expect("a glyph that overhangs its advance");
+        texts.push(overhanging);
+        for text in texts {
+            let advance = TextService::new()
+                .unwrap()
+                .plain_width(text, request)
+                .unwrap();
+            for width in [advance - 0.5, advance, advance + 0.5] {
+                let cold = fit(
+                    &mut TextService::new().unwrap(),
+                    text,
+                    width,
+                    1.0,
+                    TextOverflow::Ellipsis,
+                );
+                let mut service = TextService::new().unwrap();
+                service.prepare_plain(text, request).unwrap();
+                let _ = fit(&mut service, text, width, 1.0, TextOverflow::Ellipsis);
+                let warm = fit(&mut service, text, width, 1.0, TextOverflow::Ellipsis);
+                assert_eq!(cold.shown(), warm.shown(), "{text:?} at {width}");
+                assert_eq!(cold.layout().size(), warm.layout().size());
+                // Font handles differ between services; the raster and the
+                // positioned glyphs do not.
+                let glyphs = |layout: &TextLayout| {
+                    let signature = &layout.signature;
+                    (
+                        signature.canvas.to_vec(),
+                        signature
+                            .runs
+                            .iter()
+                            .map(|run| run.glyphs.clone())
+                            .collect::<Vec<_>>(),
+                    )
+                };
+                assert_eq!(glyphs(cold.layout()), glyphs(warm.layout()));
+            }
+        }
+    }
+
+    #[test]
+    fn only_a_plain_unwrapped_entry_under_the_same_key_answers_the_width() {
+        let reads = Cell::new(0);
+        let text = "Cached text";
+        // Wrapped and rich preparations of the same text do not answer it.
+        let mut service = TextService::new().unwrap();
+        let request = TextRequest::new(TextStyle::Body, 14.0, &reads);
+        service
+            .prepare_plain(text, request.width(Some(500.0)))
+            .unwrap();
+        service
+            .prepare_rich(
+                &RichText::new()
+                    .span(TextSpan::new(text).color(Color::rgba(1.0, 0.0, 0.0, 1.0).unwrap())),
+                request,
+            )
+            .unwrap();
+        // Entries with an icon or a gap after the same text neither.
+        service
+            .prepare_rich(
+                &RichText::from(text).icon(Icon::Check),
+                request.inline(16.0, 6.0),
+            )
+            .unwrap();
+        service
+            .prepare_rich(
+                &RichText::from(text).gap().span(TextSpan::new("")),
+                request.inline(16.0, 6.0),
+            )
+            .unwrap();
+        let before = service.shapings.get();
+        let _ = fit_at(&mut service, text, 14.0, 400.0, 1.0).unwrap();
+        assert_eq!(service.shapings.get(), before + 1);
+        // Another size or scale misses.
+        let _ = fit_at(&mut service, text, 15.0, 400.0, 1.0).unwrap();
+        let _ = fit_at(&mut service, text, 14.0, 400.0, 2.0).unwrap();
+        assert_eq!(service.shapings.get(), before + 3);
+        // Scales that reduce to the same effective scale hit: 200 px is
+        // rasterized at 256 at both 2× and 3×.
+        let _ = fit_at(&mut service, "Big", 200.0, 4000.0, 2.0).unwrap();
+        let shaped = service.shapings.get();
+        let _ = fit_at(&mut service, "Big", 200.0, 4000.0, 3.0).unwrap();
+        assert_eq!(service.shapings.get(), shaped);
+    }
+
+    #[test]
+    fn a_cache_hit_records_the_font_read_and_another_font_misses() {
+        let mut service = TextService::new().unwrap();
+        let text = "Read tracking";
+        let _ = fit_at(&mut service, text, 14.0, 400.0, 1.0).unwrap();
+        let reads = Cell::new(0);
+        let before = service.shapings.get();
+        let hit = service
+            .fit_plain(
+                text,
+                TextRequest::new(TextStyle::Body, 14.0, &reads),
+                400.0,
+                TextOverflow::Ellipsis,
+            )
+            .unwrap();
+        assert!(!hit.is_truncated());
+        assert_eq!(service.shapings.get(), before, "a hit");
+        assert_ne!(reads.get() & FontRole::Body.mask(), 0);
+        // The body role now resolves to the monospace font.
+        let monospace = service.registry.default_id(FontRole::Monospace);
+        service
+            .registry
+            .set_default(FontRole::Body, Some(&monospace))
+            .unwrap();
+        let _ = fit_at(&mut service, text, 14.0, 400.0, 1.0).unwrap();
+        assert_eq!(service.shapings.get(), before + 1);
+    }
+
+    #[test]
+    fn evicting_the_layout_or_the_cut_keeps_the_result() {
+        let mut service = TextService::new().unwrap();
+        let text = "A message far too long for its narrow table column";
+        let first = fit(&mut service, text, 80.0, 1.0, TextOverflow::Ellipsis);
+        let searches = service.fit_searches.get();
+        // Preparing other texts evicts the prepared candidate from the
+        // bounded layout cache; the cut is still remembered.
+        let reads = Cell::new(0);
+        for index in 0..130 {
+            service
+                .prepare_plain(
+                    &format!("filler {index}"),
+                    TextRequest::new(TextStyle::Body, 14.0, &reads),
+                )
+                .unwrap();
+        }
+        let shaped = service.shapings.get();
+        let again = fit(&mut service, text, 80.0, 1.0, TextOverflow::Ellipsis);
+        assert_eq!(again.shown(), first.shown());
+        assert_eq!(service.fit_searches.get(), searches, "no new search");
+        assert_eq!(service.shapings.get(), shaped + 1, "the candidate again");
+        // Fitting more texts than `FIT_MEMORY` forgets the cut; the search
+        // finds it again.
+        for index in 0..FIT_MEMORY {
+            let _ = fit(
+                &mut service,
+                &format!("another long text that is cut, number {index}"),
+                80.0,
+                1.0,
+                TextOverflow::Ellipsis,
+            );
+        }
+        let searches = service.fit_searches.get();
+        let again = fit(&mut service, text, 80.0, 1.0, TextOverflow::Ellipsis);
+        assert_eq!(again.shown(), first.shown());
+        assert_eq!(service.fit_searches.get(), searches + 1);
+    }
+
+    #[test]
+    fn a_text_beyond_the_raster_limit_truncates_unless_the_cut_is_too() {
+        let mut service = TextService::new().unwrap();
+        let text = "W".repeat(1000);
+        let reads = Cell::new(0);
+        let request = TextRequest::new(TextStyle::Body, 14.0, &reads);
+        assert!(service.plain_width(&text, request).unwrap() > MAX_SIDE as f32);
+        let fitted = fit(&mut service, &text, 100.0, 1.0, TextOverflow::Ellipsis);
+        assert!(fitted.is_truncated());
+        assert_eq!(
+            fit_at(&mut service, &text, 14.0, 9000.0, 1.0).err(),
+            Some(RuntimeError::Text(TextError::TooLarge(
+                TextLimit::RasterSide
+            )))
+        );
     }
 
     #[test]

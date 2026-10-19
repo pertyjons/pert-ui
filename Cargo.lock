@@ -1709,7 +1709,7 @@ checksum = "9b4f627cb1b25917193a259e49bdad08f671f8d9708acfd5fe0a8c1455d87220"
 
 [[package]]
 name = "pert-ui"
-version = "0.3.23"
+version = "0.3.31"
 dependencies = [
  "arboard",
  "image",
@@ -1726,7 +1726,7 @@ dependencies = [
 
 [[package]]
 name = "pert-ui-core"
-version = "0.3.23"
+version = "0.3.31"
 dependencies = [
  "loom",
  "serde",
@@ -1736,7 +1736,7 @@ dependencies = [
 
 [[package]]
 name = "pert-ui-cpu"
-version = "0.3.23"
+version = "0.3.31"
 dependencies = [
  "pert-ui-runtime",
  "thiserror 2.0.21",
@@ -1744,14 +1744,14 @@ dependencies = [
 
 [[package]]
 name = "pert-ui-gallery"
-version = "0.3.23"
+version = "0.3.31"
 dependencies = [
  "pert-ui",
 ]
 
 [[package]]
 name = "pert-ui-native-checks"
-version = "0.3.23"
+version = "0.3.31"
 dependencies = [
  "pert-ui",
  "pert-ui-wgpu",
@@ -1761,7 +1761,7 @@ dependencies = [
 
 [[package]]
 name = "pert-ui-runtime"
-version = "0.3.23"
+version = "0.3.31"
 dependencies = [
  "parley",
  "pert-ui-core",
@@ -1773,7 +1773,7 @@ dependencies = [
 
 [[package]]
 name = "pert-ui-wgpu"
-version = "0.3.23"
+version = "0.3.31"
 dependencies = [
  "pert-ui-cpu",
  "pert-ui-runtime",

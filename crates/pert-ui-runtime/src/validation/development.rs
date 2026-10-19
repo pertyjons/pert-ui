@@ -8,6 +8,8 @@ use crate::{BoxModelInspection, KeyCode, Modifiers};
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct NodeData {
+    /// A virtualized collection's extent, for `UnboundedCollection`.
+    pub(crate) collection: Option<CollectionExtent>,
     pub(crate) window: u64,
     pub(crate) parent: Option<u64>,
     pub(crate) key: String,
@@ -15,6 +17,17 @@ pub(crate) struct NodeData {
     pub(crate) focused: bool,
     pub(crate) box_model: BoxModelInspection,
     pub(crate) hints: ValidationHints,
+}
+
+/// A virtualized collection's rows and extents along its scrolling axis.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub(crate) struct CollectionExtent {
+    pub(crate) rows: usize,
+    /// The whole content's extent.
+    pub(crate) content: f64,
+    /// The extent the collection was allocated as its viewport.
+    pub(crate) allocated: f64,
+    pub(crate) horizontal: bool,
 }
 
 /// What a validation refresh changed, so the runtime can request exactly one
@@ -86,13 +99,26 @@ impl Validator {
             self.dirty = true;
         }
     }
-    pub(crate) fn geometry(&mut self, id: u64, bounds: [f32; 4], clip: [f32; 4]) {
+    /// Commits a node's arranged geometry, with a collection's extents as
+    /// that arrangement left them: an arrangement can change its viewport or
+    /// estimated content without another update.
+    pub(crate) fn geometry(
+        &mut self,
+        id: u64,
+        bounds: [f32; 4],
+        clip: [f32; 4],
+        collection: Option<CollectionExtent>,
+    ) {
         if let Some(node) = self.nodes.get_mut(&id) {
-            if node.box_model.border_box == Some(bounds) && node.hints.clip == Some(clip) {
+            if node.box_model.border_box == Some(bounds)
+                && node.hints.clip == Some(clip)
+                && same_collection(node.collection, collection)
+            {
                 return;
             }
             node.box_model.border_box = Some(bounds);
             node.hints.clip = Some(clip);
+            node.collection = collection;
             self.dirty = true;
         }
     }
@@ -369,11 +395,25 @@ fn geometric(code: ValidationCode) -> bool {
             | ValidationCode::UnexpectedOverlap
             | ValidationCode::EscapesParent
             | ValidationCode::CollapsedParent
+            | ValidationCode::UnboundedCollection
     )
 }
 
 fn issue_key(issue: &ValidationIssue) -> IssueKey {
     (issue.code, issue.components.clone(), issue.message.clone())
+}
+
+fn same_collection(a: Option<CollectionExtent>, b: Option<CollectionExtent>) -> bool {
+    match (a, b) {
+        (None, None) => true,
+        (Some(a), Some(b)) => {
+            a.rows == b.rows
+                && a.horizontal == b.horizontal
+                && a.content.to_bits() == b.content.to_bits()
+                && a.allocated.to_bits() == b.allocated.to_bits()
+        }
+        _ => false,
+    }
 }
 
 fn same_array(a: Option<[f32; 4]>, b: Option<[f32; 4]>) -> bool {
@@ -386,7 +426,8 @@ fn same_border(a: Option<crate::BorderInspection>, b: Option<crate::BorderInspec
 }
 
 fn same_node(a: &NodeData, b: &NodeData) -> bool {
-    a.window == b.window
+    same_collection(a.collection, b.collection)
+        && a.window == b.window
         && a.parent == b.parent
         && a.key == b.key
         && a.visible == b.visible
@@ -590,6 +631,41 @@ fn check(nodes: &BTreeMap<u64, NodeData>) -> Vec<ValidationIssue> {
                 ),
             );
         }
+        if let Some(collection) = node.collection
+            && collection.rows >= 100
+            && collection.allocated > 0.0
+            && collection.content <= collection.allocated + GEOMETRY_TOLERANCE
+        {
+            // Both in window coordinates, so a scaling ancestor cancels out.
+            let along = |rect: Rect| {
+                if collection.horizontal {
+                    rect.w
+                } else {
+                    rect.h
+                }
+            };
+            let shown = visible_rect(node).map_or(0.0, along);
+            let whole = node
+                .box_model
+                .border_box
+                .and_then(Rect::new)
+                .map_or(0.0, along);
+            if node.visible && whole > 0.0 && shown < whole / 2.0 {
+                let owner = node
+                    .parent
+                    .and_then(|parent| nodes.get(&parent))
+                    .map_or(String::new(), |parent| format!(" in {:?}", parent.key));
+                emit(
+                    ValidationCode::UnboundedCollection,
+                    &format!(
+                        "this collection{owner} was given its whole content extent ({:.0} px), so it mounts all {} rows and cannot scroll itself, while only {:.0}% of it is visible; give it a bounded extent (a SplitPane pane, Tab::fixed, RegionLayout::fixed, View::fixed or a grown child of a bounded Column) instead of a scrolling ancestor; see VirtualList's bounded extent.",
+                        collection.allocated,
+                        collection.rows,
+                        100.0 * shown / whole
+                    ),
+                );
+            }
+        }
         for binding in &node.hints.shortcuts {
             if binding.action.trim().is_empty() {
                 emit(
@@ -652,6 +728,7 @@ mod tests {
 
     fn node() -> NodeData {
         NodeData {
+            collection: None,
             window: 1,
             parent: None,
             key: "control".into(),

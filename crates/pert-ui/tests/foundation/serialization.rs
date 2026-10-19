@@ -472,6 +472,33 @@ fn drop_operation_sets_are_lists_of_operations() -> TestResult {
 }
 
 #[test]
+fn the_unbounded_collection_code_round_trips() -> TestResult {
+    // Added with inspection schema 14.
+    assert_eq!(InspectionSnapshot::SCHEMA_VERSION, 14);
+    assert_eq!(Runtime::new().inspect().schema_version, 14);
+    let report = ValidationReport {
+        logging_error: None,
+        enabled: true,
+        pending: false,
+        issues: vec![ValidationIssue {
+            code: ValidationCode::UnboundedCollection,
+            components: vec![7],
+            message: "given its whole content extent".into(),
+        }],
+        markers: vec![ValidationMarker {
+            component: 7,
+            bounds: Some([0.0, 0.0, 300.0, 500.0]),
+            color: [1.0, 0.0, 0.0, 1.0],
+            codes: vec![ValidationCode::UnboundedCollection],
+        }],
+    };
+    let text = serde_json::to_string(&report)?;
+    assert!(text.contains(r#""code":"UnboundedCollection""#), "{text}");
+    assert_eq!(serde_json::from_str::<ValidationReport>(&text)?, report);
+    Ok(())
+}
+
+#[test]
 fn validation_reports_and_semantic_bounds_carry_non_finite_numbers() -> TestResult {
     let report = ValidationReport {
         logging_error: None,

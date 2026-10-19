@@ -19,4 +19,5 @@ mod input_normalization;
 mod input_notifications;
 mod input_states;
 mod search_field;
+mod selectable_text;
 mod text_fields;

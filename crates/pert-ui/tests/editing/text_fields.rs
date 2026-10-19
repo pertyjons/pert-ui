@@ -1335,3 +1335,22 @@ fn selected_text_follows_an_on_surface_override() {
         "no glyph keeps the default text color"
     );
 }
+
+#[test]
+fn select_all_is_a_text_command_that_an_empty_editor_cannot_answer() {
+    let (mut ui, id, value) = setup("det snabba räven", false);
+    assert_eq!(
+        ui.text_command(&id, TextCommand::SelectAll).unwrap(),
+        TextCommandOutcome::Handled
+    );
+    let clipboard = MemoryClipboard::default();
+    ui.set_clipboard(clipboard.clone()).unwrap();
+    ui.text_command(&id, TextCommand::Copy).unwrap();
+    assert_eq!(*clipboard.0.borrow(), "det snabba räven");
+    value.set(String::new()).unwrap();
+    frame(&mut ui);
+    assert_eq!(
+        ui.text_command(&id, TextCommand::SelectAll).unwrap(),
+        TextCommandOutcome::Unavailable
+    );
+}

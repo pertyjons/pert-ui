@@ -897,7 +897,7 @@ impl InspectionSnapshot {
     /// crate version. An external inspector compares it before decoding a
     /// snapshot and treats an unknown revision as unsupported rather than
     /// reinterpreting it.
-    pub const SCHEMA_VERSION: u32 = 13;
+    pub const SCHEMA_VERSION: u32 = 14;
     /// The most events history retains. Recording one more evicts the oldest
     /// and counts it in [`Self::dropped_events`].
     pub const MAX_EVENTS: usize = 256;

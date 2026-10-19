@@ -171,8 +171,11 @@ fn a_vertical_divider_and_hidden_children_follow_the_stretched_height() -> TestR
     .align(Align::Stretch);
     let (mut ui, root) = mount(200.0, 400.0, grown(row)?)?;
     // The hidden child is still shown and makes the row taller than the space
-    // the column has left, so the row is allocated its natural height.
-    assert_eq!(bounds(&ui, &root, "divider")?[3], 380.0);
+    // the column has left. Since 0.3.25 a grown child of a bounded column
+    // shrinks to the space left (it had its natural 380 before), and the
+    // divider stretches to that.
+    assert_eq!(bounds(&ui, &root, "row")?[3], 300.0);
+    assert_eq!(bounds(&ui, &root, "divider")?[3], 300.0);
     // A hidden child neither sets the row's height nor takes the stretch.
     let hidden = ui.find_descendant(&root, "hidden")?.ok_or("mounted")?;
     ui.set_visible(&hidden, false)?;

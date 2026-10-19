@@ -28,6 +28,9 @@ pub enum StringRole {
     TextPasteBefore,
     /// The editor context-menu item that pastes after the selection.
     TextPasteAfter,
+    /// The context-menu item that selects all text, offered by
+    /// [`SelectableText`](crate::SelectableText).
+    TextSelectAll,
     /// The description of a text editor whose draft is not saved yet.
     TextModified,
     /// A choice field's placeholder while nothing is chosen (`Select`,
@@ -219,7 +222,7 @@ pub enum StringRole {
 crate::tables::variant_list! {
     /// Every string role in declaration order, checked complete at compile time.
     pub(crate) const STRING_ROLES: StringRole = [
-        TextCopy, TextCut, TextPaste, TextPasteBefore, TextPasteAfter, TextModified,
+        TextCopy, TextCut, TextPaste, TextPasteBefore, TextPasteAfter, TextSelectAll, TextModified,
         SelectPlaceholder, SearchPlaceholder, NoMatches, PickerName, PickerResults,
         PaletteName, PalettePlaceholder, PaletteNoMatches, PaletteCommands,
         CommandDisabled, CommandUnavailable, SplitterName, HistoryName, HistoryBack,
@@ -281,6 +284,7 @@ const ENGLISH: [(StringRole, &str); STRING_ROLE_COUNT] = [
     (StringRole::TextPaste, "Paste"),
     (StringRole::TextPasteBefore, "Paste Before"),
     (StringRole::TextPasteAfter, "Paste After"),
+    (StringRole::TextSelectAll, "Select All"),
     (StringRole::TextModified, "Unsaved changes"),
     (StringRole::SelectPlaceholder, "Select…"),
     (StringRole::SearchPlaceholder, "Search"),

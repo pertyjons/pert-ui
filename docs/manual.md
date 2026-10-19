@@ -168,7 +168,7 @@ and `label` replaces it.
 
 | Component | Build it with | Use it for |
 |---|---|---|
-| `Column`, `Row`, `Wrap` | `Column::new([Element::new(...), ...])` and the analogous constructors; `element.with_grow(1)` gives a child of a row or column a share of the spare space, `Element::spacer(key)` pushes the following children to the far end, and `.justify(Justify::End)` and `.align(Align::Stretch)` place children along and across | Vertical, horizontal and wrapping groups, such as an editor that fills the rest of a window or a status bar with right-aligned items. |
+| `Column`, `Row`, `Wrap` | `Column::new([Element::new(...), ...])` and the analogous constructors; `element.with_grow(1)` gives a child of a row or column a share of the spare space, and in a column whose height is bounded it also takes a share of a shortfall, down to the child's minimum, so a grown collection below a toolbar fills the rest (rows do not shrink), `Element::spacer(key)` pushes the following children to the far end, and `.justify(Justify::End)` and `.align(Align::Stretch)` place children along and across | Vertical, horizontal and wrapping groups, such as an editor that fills the rest of a window or a status bar with right-aligned items. |
 | `Grid` | `Grid::new(tracks, children)?` | Track-based layout; at least one `Track` is required. |
 | `Container`, `View`, `Group` | Wrap one child element; `Group::titled(title, child)` adds a heading. | A bounded region, a visibility boundary or a decorated group. |
 | `Dynamic`, `Show`, `Each` | `Dynamic::new(&value, \|_, value\| element)`, `Show::new(&shown, \|_\| element)`, `Each::new(&items, key, \|_, item\| element)`, optionally `.within(\|elements\| Row::new(elements).key("row"))` | Children described from a binding: one child per value, a child that exists only while a flag reads true, or one child per list item, kept by key. |
@@ -191,7 +191,13 @@ For a large collection, implement the corresponding public `ListItems`,
 `VirtualList::new(&items, row_height)?`,
 `Tree::new(&controller, row_height)?` or
 `Table::new(&controller, row_height)?`; the tree and table controllers own
-their source and selection. Only nearby rows mount. The collection keys each
+their source and selection. Only the rows inside the collection's allocated
+height mount, so a collection needs a bounded one: put it in a window, a
+`SplitPane` pane, a `Container` or `CollectionFilter` with a bounded
+allocation, a `Tab::fixed()` tab, a `RegionLayout::fixed()` region or as a
+grown child of a bounded `Column`. Default `Tabs` and `RegionLayout` content
+and a `ScrollArea` give it its whole content height, which mounts every row;
+in debug builds validation reports that as `UnboundedCollection`. The collection keys each
 row it builds with the row's key from the source, so `build` may describe a
 row under any key.
 `ListSelection` holds application-visible selection by stable key; a
@@ -289,6 +295,7 @@ Parameter construction has no independent option-list builder.
 
 | Component | Build it with | Input and behavior |
 |---|---|---|
+| `SelectableText` | `SelectableText::new(text)` with fixed, rich or bound text | Read-only text a reader can select and copy, such as a log message or error details: no frame, wraps like a multiline label, one Tab stop, drag, double/triple click and Shift with the editors' movement keys select, Ctrl/Cmd+C or its context menu copies. Rich text is shown and copied as plain text. |
 | `Label` | `Label::new(text)` with fixed, rich or bound text | Static or reactive text; rich text and icons are optional. `overflow(TextOverflow::Ellipsis)` or `MiddleEllipsis` keeps it on one line with "…", the full text as its name and as help on hover; `RichText::highlighted` marks search matches. |
 | `Button` | `Button::new(label, callback)` | An action callback; keyboard activation starts with unmodified Enter or Space. |
 | `Link` | `Link::new(text, callback)`, optionally `.underline(LinkUnderline::Always)` | Navigation presented as text-sized link text, activated like a button by pointer or unmodified Enter or Space. The destination is the application's, typically a reveal through `EventContext::request_reveal`. |
@@ -313,6 +320,9 @@ calling an action; commands use their registered scope and current enabled
 binding. `Runtime::commands_for(&context)` lists the commands a captured
 context can reach, with their names, shortcuts and enabled state, for a
 command palette or a shortcut list; `CommandPalette` presents that listing.
+A command that copies the application's own data, such as selected table rows,
+writes it with `Runtime::set_clipboard_text`, which needs no component and
+moves no focus; `Runtime::clipboard_text` reads it.
 "Search the UI and jump there" is a palette over commands the application
 registers per destination, each revealing its target with
 `Runtime::reveal_and_focus`. The gallery shows combined menus and controls on
@@ -487,7 +497,11 @@ inspector over an application document. The packaged
 [`diagram_editor`](../crates/pert-ui/examples/diagram_editor/main.rs) example
 puts them together in a canvas widget with an application around it; run its
 headless session with
-`cargo run -p pert-ui --example diagram_editor --no-default-features --features cpu`. The [gallery guide](../apps/gallery/README.md) points to
+`cargo run -p pert-ui --example diagram_editor --no-default-features --features cpu`. The
+[`log_explorer`](../crates/pert-ui/examples/log_explorer/main.rs) example
+shows large data: bounded collections over hundreds of thousands of lines,
+worker loading, a live tail and copying; run its headless session with
+`cargo run -p pert-ui --example log_explorer --no-default-features`. The [gallery guide](../apps/gallery/README.md) points to
 live examples and the current component pages.
 
 ## Appearance, diagnostics and persistence

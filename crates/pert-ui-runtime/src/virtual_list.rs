@@ -319,6 +319,26 @@ impl ListController {
 /// [`VirtualList::lanes`] and [`VirtualList::orientation`] make it a grid or
 /// horizontal.
 ///
+/// # A bounded extent
+///
+/// The list mounts the rows inside the extent it is allocated, so it needs a
+/// bounded height (or width, along a horizontal axis). Measured without a
+/// bound, it asks for its whole content extent, and a parent that grants it
+/// mounts every row. A window or detached view root, a [`SplitPane`](crate::SplitPane)
+/// pane, a [`Container`](crate::Container) or [`CollectionFilter`](crate::CollectionFilter)
+/// with a bounded allocation, a [`Tab::fixed`](crate::Tab::fixed) tab, a
+/// [`RegionLayout::fixed`](crate::RegionLayout::fixed) region, a
+/// [`View::fixed`](crate::View::fixed) view and a grown child of a bounded
+/// [`Column`](crate::Column), which shrinks to what its siblings leave, bound
+/// it. The default [`Tab::new`](crate::Tab::new) and
+/// [`RegionLayout`](crate::RegionLayout) content and a
+/// [`ScrollArea`](crate::ScrollArea) do not, since they scroll their content at
+/// its natural size. A bounded [`Row`](crate::Row) bounds a vertical list's
+/// height, which it offers to every child, but not a horizontal list's width:
+/// a row's children keep their natural widths. In debug builds validation reports a list of at least 100 rows that
+/// was given its whole extent while less than half of it is visible, as
+/// [`ValidationCode::UnboundedCollection`](crate::ValidationCode::UnboundedCollection).
+///
 /// The list is its own scroll viewport: it scrolls by wheel, by the keyboard
 /// when focused (arrows, Page Up/Down, Home, End) and by its overlay scrollbar,
 /// and it honors the [`Component::reveal`] contract, so `Runtime::focus` and
@@ -1281,6 +1301,18 @@ impl VirtualList {
     }
 
     /// The items the current offset and viewport need mounted.
+    /// The list's rows and extents along its axis, for development
+    /// validation's `UnboundedCollection`.
+    #[cfg(debug_assertions)]
+    pub(crate) fn extent_for_validation(&self) -> crate::validation::development::CollectionExtent {
+        crate::validation::development::CollectionExtent {
+            rows: self.axis().count(),
+            content: self.axis().extent(),
+            allocated: f64::from(self.main()),
+            horizontal: self.horizontal,
+        }
+    }
+
     fn wanted(&self) -> (usize, usize) {
         let window = self
             .axis()

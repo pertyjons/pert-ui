@@ -140,6 +140,16 @@ pub enum ValidationCode {
     /// [`Component::stacks_children`](crate::Component::stacks_children) is true
     /// may overlap each other.
     UnexpectedOverlap,
+    /// A virtualized collection (a [`VirtualList`](crate::VirtualList), also the
+    /// body of a [`Table`](crate::Table) or [`Tree`](crate::Tree)) of at least 100
+    /// rows was given its whole content extent, so it cannot scroll itself and
+    /// mounts every row, while less than half of that extent is visible in its
+    /// window: an ancestor offered it an unbounded height (or width), as a
+    /// default [`ScrollArea`](crate::ScrollArea), [`Tabs`](crate::Tabs) or
+    /// [`RegionLayout`](crate::RegionLayout) does. See the list's
+    /// [bounded extent](crate::VirtualList#a-bounded-extent). Schema 14 added
+    /// this code.
+    UnboundedCollection,
     /// A visible component's visible bounds leave its parent's bounds although no
     /// clip removes the excess. Content a scrolled or clipping ancestor cuts off is
     /// permitted, and so is a component with [`OverlapPolicy::Allow`], such as an

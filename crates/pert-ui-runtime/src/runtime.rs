@@ -470,6 +470,28 @@ pub(crate) struct Shared {
 }
 
 impl Shared {
+    /// Reads the clipboard service's text; see `Runtime::clipboard_text`.
+    pub(crate) fn clipboard_read(&self) -> Result<String, RuntimeError> {
+        self.writable()?;
+        self.clipboard
+            .try_borrow_mut()
+            .map_err(|_| RuntimeError::BorrowConflict)?
+            .as_mut()
+            .ok_or(crate::ClipboardError::Unavailable)?
+            .read_text()
+            .map_err(Into::into)
+    }
+    /// Writes text to the clipboard service; see `Runtime::set_clipboard_text`.
+    pub(crate) fn clipboard_write(&self, text: &str) -> Result<(), RuntimeError> {
+        self.writable()?;
+        self.clipboard
+            .try_borrow_mut()
+            .map_err(|_| RuntimeError::BorrowConflict)?
+            .as_mut()
+            .ok_or(crate::ClipboardError::Unavailable)?
+            .write_text(text)
+            .map_err(Into::into)
+    }
     /// Marks every live window's composed scene stale, for a change that alters
     /// pixels without touching any component.
     fn damage_scenes(&self) {
@@ -3048,16 +3070,7 @@ impl EventContext {
     /// is installed; and the service's own [`ClipboardError`](crate::ClipboardError), such
     /// as `NoText` or `Busy`.
     pub fn clipboard_text(&self) -> Result<String, RuntimeError> {
-        self.node.shared.writable()?;
-        self.node
-            .shared
-            .clipboard
-            .try_borrow_mut()
-            .map_err(|_| RuntimeError::BorrowConflict)?
-            .as_mut()
-            .ok_or(crate::ClipboardError::Unavailable)?
-            .read_text()
-            .map_err(Into::into)
+        self.node.shared.clipboard_read()
     }
     /// Writes the host clipboard on the UI thread. Cut should modify its binding
     /// only after this succeeds.
@@ -3066,16 +3079,7 @@ impl EventContext {
     /// As [`Self::clipboard_text`]; the service reports a failed write as its own
     /// [`ClipboardError`](crate::ClipboardError).
     pub fn set_clipboard_text(&self, text: &str) -> Result<(), RuntimeError> {
-        self.node.shared.writable()?;
-        self.node
-            .shared
-            .clipboard
-            .try_borrow_mut()
-            .map_err(|_| RuntimeError::BorrowConflict)?
-            .as_mut()
-            .ok_or(crate::ClipboardError::Unavailable)?
-            .write_text(text)
-            .map_err(Into::into)
+        self.node.shared.clipboard_write(text)
     }
 
     /// Current physical modifier state, including keys held before focus arrived.
@@ -4628,6 +4632,53 @@ impl Runtime {
         drop(previous);
         Ok(())
     }
+    /// Reads the clipboard's text on the UI thread, from application code or
+    /// a command action, without involving any component or moving focus.
+    ///
+    /// The native `App` installs the platform clipboard; a headless runtime
+    /// has none until [`Self::set_clipboard`] installs a service.
+    ///
+    /// # Errors
+    /// As [`EventContext::clipboard_text`]: `Closed` after shutdown, the phase
+    /// errors of a write from inside update, layout, paint, inspection or
+    /// delivery, `BorrowConflict` from inside the clipboard service,
+    /// [`ClipboardError::Unavailable`](crate::ClipboardError::Unavailable) without a
+    /// service, and the service's own [`ClipboardError`](crate::ClipboardError).
+    pub fn clipboard_text(&self) -> Result<String, RuntimeError> {
+        self.shared.clipboard_read()
+    }
+    /// Writes text to the clipboard on the UI thread, from application code
+    /// or a command action, without involving any component or moving focus:
+    /// a "Copy" command that copies the application's own data uses this.
+    ///
+    /// ```
+    /// use pert_ui_runtime::*;
+    /// struct Memory(std::rc::Rc<std::cell::RefCell<String>>);
+    /// impl Clipboard for Memory {
+    ///     fn read_text(&mut self) -> Result<String, ClipboardError> { Ok(self.0.borrow().clone()) }
+    ///     fn write_text(&mut self, text: &str) -> Result<(), ClipboardError> {
+    ///         *self.0.borrow_mut() = text.to_owned();
+    ///         Ok(())
+    ///     }
+    /// }
+    /// let mut ui = Runtime::new();
+    /// let held = std::rc::Rc::new(std::cell::RefCell::new(String::new()));
+    /// ui.set_clipboard(Memory(held.clone()))?;
+    /// let copy = ui.register_command("Copy line", CommandScope::Application, vec![],
+    ///     |ui, _| ui.set_clipboard_text("12:00:01 INFO started"))?;
+    /// let context = ui.command_context(CommandSource::Programmatic);
+    /// ui.invoke_command(&copy, context)?;
+    /// assert_eq!(*held.borrow(), "12:00:01 INFO started");
+    /// assert_eq!(ui.clipboard_text()?, "12:00:01 INFO started");
+    /// # Ok::<(), RuntimeError>(())
+    /// ```
+    ///
+    /// # Errors
+    /// As [`Self::clipboard_text`]; the service reports a failed write as its
+    /// own [`ClipboardError`](crate::ClipboardError).
+    pub fn set_clipboard_text(&self, text: &str) -> Result<(), RuntimeError> {
+        self.shared.clipboard_write(text)
+    }
     /// Returns the focused text recipient and its clipped window-logical IME
     /// anchor. Absent for non-editable, hidden or fully clipped components.
     pub fn text_input_state(&self) -> Option<(WidgetId, crate::TextInputState)> {
@@ -5593,6 +5644,9 @@ impl Runtime {
                 self.validator.update(
                     serial,
                     crate::validation::development::NodeData {
+                        collection: (entry.component.as_ref() as &dyn std::any::Any)
+                            .downcast_ref::<crate::VirtualList>()
+                            .map(crate::VirtualList::extent_for_validation),
                         parent: entry.node.presentation_parent_serial(),
                         window: entry.node.window().serial,
                         key: entry.key.clone(),
@@ -6184,5 +6238,52 @@ mod active_source_tests {
                 .iter()
                 .all(|s| s.serviced.get() == 0 && s.checks.get() == dormant_checks)
         );
+    }
+}
+
+#[cfg(test)]
+mod clipboard_tests {
+    use super::*;
+
+    struct Memory;
+    impl crate::Clipboard for Memory {
+        fn read_text(&mut self) -> Result<String, crate::ClipboardError> {
+            Ok("held".to_owned())
+        }
+        fn write_text(&mut self, _: &str) -> Result<(), crate::ClipboardError> {
+            Ok(())
+        }
+    }
+
+    #[test]
+    fn runtime_clipboard_text_is_refused_inside_every_phase_and_from_the_service()
+    -> Result<(), RuntimeError> {
+        let mut ui = Runtime::new();
+        ui.set_clipboard(Memory)?;
+        // Application code holds the runtime only between flushes, so these
+        // phases are set directly, as a reentrant path would find them.
+        for (phase, error) in [
+            (Phase::Update, RuntimeError::WriteDuringUpdate),
+            (Phase::Layout, RuntimeError::WriteDuringLayout),
+            (Phase::Paint, RuntimeError::WriteDuringPaint),
+            (Phase::Inspect, RuntimeError::WriteDuringInspection),
+            (Phase::Delivery, RuntimeError::WriteDuringDelivery),
+        ] {
+            let previous = ui.shared.phase.replace(phase);
+            assert_eq!(ui.clipboard_text(), Err(error.clone()));
+            assert_eq!(ui.set_clipboard_text("x"), Err(error));
+            ui.shared.phase.set(previous);
+        }
+        // Inside the service, as a reentrant call from it would be.
+        {
+            let _service = ui.shared.clipboard.borrow_mut();
+            assert_eq!(ui.clipboard_text(), Err(RuntimeError::BorrowConflict));
+            assert_eq!(
+                ui.set_clipboard_text("x"),
+                Err(RuntimeError::BorrowConflict)
+            );
+        }
+        assert_eq!(ui.clipboard_text()?, "held");
+        Ok(())
     }
 }

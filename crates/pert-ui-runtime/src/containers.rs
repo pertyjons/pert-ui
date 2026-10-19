@@ -628,6 +628,74 @@ fn flex(
         }
         spare = spare.max(0.0);
     }
+    // A bounded column whose natural heights overflow takes the deficit from
+    // its grown children by weight, none below its minimum, so a grown child
+    // fills the rest instead of keeping its whole natural height (which for a
+    // collection is its whole content). Rows keep their lengths: a narrower
+    // child could wrap to another height, which their measurement does not
+    // repeat. The arithmetic is in f64 and yields final lengths: a natural
+    // height of hundreds of millions of pixels less nearly as much would
+    // otherwise lose the few hundred that remain to f32 cancellation.
+    let mut shrunk: Vec<Option<f32>> = vec![None; count];
+    // Whether the whole deficit was absorbed, so the column is exactly its limit.
+    let mut absorbed = false;
+    if column
+        && grows
+        && let Some(limit) = limit
+    {
+        let used = lengths.iter().map(|length| f64::from(*length)).sum::<f64>()
+            + f64::from(style.gap) * count.saturating_sub(1) as f64;
+        let mut deficit = used - f64::from(limit);
+        let mut shrinking: Vec<(usize, f64, f64)> = Vec::new();
+        for index in 0..count {
+            let weight = cx.grow(index)?;
+            if weight > 0 {
+                let minimum = f64::from(cx.limits(index)?.minimum().height());
+                shrinking.push((index, f64::from(weight), minimum));
+            }
+        }
+        if deficit > 0.0 {
+            let mut taken = vec![0.0f64; count];
+            loop {
+                if shrinking.is_empty() {
+                    break;
+                }
+                let total: f64 = shrinking.iter().map(|(_, weight, _)| weight).sum();
+                // How much each may still give before its minimum.
+                let rooms: Vec<f64> = shrinking
+                    .iter()
+                    .map(|(index, _, minimum)| {
+                        (f64::from(lengths[*index]) - taken[*index] - minimum).max(0.0)
+                    })
+                    .collect();
+                let share = |weight: f64| deficit * (weight / total);
+                let capped: Vec<usize> = (0..shrinking.len())
+                    .filter(|&position| share(shrinking[position].1) >= rooms[position])
+                    .collect();
+                if capped.is_empty() {
+                    for (index, weight, _) in &shrinking {
+                        taken[*index] += share(*weight);
+                    }
+                    absorbed = true;
+                    break;
+                }
+                for position in capped.into_iter().rev() {
+                    let (index, _, _) = shrinking.remove(position);
+                    taken[index] += rooms[position];
+                    deficit -= rooms[position];
+                }
+                if deficit <= 0.0 {
+                    absorbed = true;
+                    break;
+                }
+            }
+            for (index, taken) in taken.into_iter().enumerate() {
+                if taken > 0.0 {
+                    shrunk[index] = Some((f64::from(lengths[index]) - taken) as f32);
+                }
+            }
+        }
+    }
     let (start, spacing) = match style.justify {
         Justify::Start => (0.0, style.gap),
         Justify::Center => (spare / 2.0, style.gap),
@@ -646,7 +714,7 @@ fn flex(
     };
     let mut position = start;
     for (index, bounds) in out.iter_mut().enumerate() {
-        let length = lengths[index] + extra[index];
+        let length = shrunk[index].unwrap_or(lengths[index] + extra[index]);
         let [_, _, width, height] = bounds.values();
         let cross = if column { width } else { height };
         let maximum = cx.limits(index)?.maximum();
@@ -684,8 +752,23 @@ fn flex(
     // A container that grows or places children by its spare space fills its
     // bounded main axis; otherwise it keeps its natural size.
     let fills = grows || style.justify != Justify::Start;
+    // A column that shrank is its limit when the deficit was absorbed, and
+    // otherwise the sum of its final lengths: its floor (ungrown natural
+    // heights, grown minimums and gaps) exceeds the limit.
+    let placed = if absorbed {
+        limit.unwrap_or(used)
+    } else if shrunk.iter().any(Option::is_some) {
+        (shrunk
+            .iter()
+            .zip(&lengths)
+            .map(|(shrunk, length)| f64::from(shrunk.unwrap_or(*length)))
+            .sum::<f64>()
+            + f64::from(style.gap) * count.saturating_sub(1) as f64) as f32
+    } else {
+        used
+    };
     let main = match limit {
-        Some(limit) if fills => limit.max(used),
+        Some(limit) if fills => limit.max(placed),
         _ => {
             if column {
                 natural.height()

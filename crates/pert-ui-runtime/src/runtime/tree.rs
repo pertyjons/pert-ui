@@ -1934,8 +1934,14 @@ impl Runtime {
                 entry.node.invalidate(Invalidation::Paint);
             }
             #[cfg(debug_assertions)]
-            self.validator
-                .geometry(serial, bounds.values(), clip.values());
+            self.validator.geometry(
+                serial,
+                bounds.values(),
+                clip.values(),
+                (entry.component.as_ref() as &dyn std::any::Any)
+                    .downcast_ref::<crate::VirtualList>()
+                    .map(crate::VirtualList::extent_for_validation),
+            );
         }
         self.window.shared.layout_pending.set(false);
         if moved {

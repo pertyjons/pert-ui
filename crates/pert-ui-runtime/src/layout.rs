@@ -554,7 +554,12 @@ impl Element {
     /// container's own allocation leaves: a column in a vertical scroll area
     /// is given at least the visible height, so a growing child fills the
     /// visible space the content leaves, and nothing once the content is
-    /// taller. [`Wrap`](crate::Wrap) and other containers ignore the
+    /// taller. In a column whose height is bounded, a growing child also takes
+    /// its share of a shortfall: when the natural heights do not fit, growing
+    /// children give up the difference by weight, down to each one's minimum,
+    /// so a growing list or editor fills what the others leave instead of
+    /// keeping its whole natural height. Rows never shrink a child.
+    /// [`Wrap`](crate::Wrap) and other containers ignore the
     /// weight unless they document otherwise; a custom container reads it
     /// with [`MeasureContext::grow`]. Reconciliation updates it without
     /// remounting.

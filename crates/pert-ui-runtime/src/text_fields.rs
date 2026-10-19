@@ -877,20 +877,20 @@ struct Snapshot<M> {
 ///
 /// Availability is decided once when the menu opens, from the selection and one
 /// clipboard read, and published through bindings the retained list reevaluates.
-struct FieldMenu {
-    open: Signal<bool>,
+pub(crate) struct FieldMenu {
+    pub(crate) open: Signal<bool>,
     /// Last value read through the editor's update, so `child_visible` reports a
     /// subscribed decision. An untracked read here would never reevaluate, and the
     /// menu would stay on screen after an action closed it.
-    shown: bool,
-    available: Vec<(crate::TextCommand, Signal<bool>)>,
+    pub(crate) shown: bool,
+    pub(crate) available: Vec<(crate::TextCommand, Signal<bool>)>,
     /// Filled by the editor's first update, so the actions can name their target.
     ///
     /// Weak on purpose: the menu's actions live in the editor's own child subtree,
     /// so holding the editor's node here would keep the mount alive forever.
-    target: Rc<RefCell<Option<std::rc::Weak<crate::runtime::Node>>>>,
-    position: Cell<Option<Point>>,
-    items: Option<Element>,
+    pub(crate) target: Rc<RefCell<Option<std::rc::Weak<crate::runtime::Node>>>>,
+    pub(crate) position: Cell<Option<Point>>,
+    pub(crate) items: Option<Element>,
 }
 
 impl FieldMenu {
@@ -920,14 +920,22 @@ impl FieldMenu {
     ];
 
     fn new(value: &Signal<String>) -> Result<Self, ChoiceError> {
-        let open = value.sibling(false);
+        let strings = value.shared().strings.borrow().clone();
+        Self::with_actions(&Self::ACTIONS, &strings, |initial| value.sibling(initial))
+    }
+    /// A menu of `actions`, with its state in signals `signal` creates.
+    pub(crate) fn with_actions(
+        actions: &[(crate::TextCommand, &'static str, crate::StringRole)],
+        strings: &crate::UiStrings,
+        mut signal: impl FnMut(bool) -> Signal<bool>,
+    ) -> Result<Self, ChoiceError> {
+        let open = signal(false);
         let target: Rc<RefCell<Option<std::rc::Weak<crate::runtime::Node>>>> =
             Rc::new(RefCell::new(None));
         let mut available = Vec::new();
         let mut items = Vec::new();
-        let strings = value.shared().strings.borrow().clone();
-        for (command, key, role) in Self::ACTIONS {
-            let enabled = value.sibling(false);
+        for &(command, key, role) in actions {
+            let enabled = signal(false);
             available.push((command, enabled.clone()));
             let target = target.clone();
             // The rows follow the installed string table while the menu is
@@ -952,6 +960,100 @@ impl FieldMenu {
             target,
             position: Cell::new(None),
         })
+    }
+}
+
+/// Places an open clipboard menu at its request position, or below its owner
+/// for a keyboard request, clamped to the viewport, the way every other
+/// context menu is placed.
+pub(crate) fn place_menu(
+    cx: &mut ArrangeContext<'_>,
+    size: Size,
+    menu: Option<&FieldMenu>,
+) -> Result<(), RuntimeError> {
+    if cx.is_empty() {
+        return Ok(());
+    }
+    let viewport = cx.measurement().viewport();
+    let wanted = cx.measure(
+        0,
+        Constraints::new(Some(viewport.width()), Some(viewport.height()))?,
+    )?;
+    let (x, y) = menu
+        .and_then(|menu| menu.position.get())
+        .map_or((0.0, size.height()), |p| (p.x(), p.y()));
+    cx.place(
+        0,
+        rect(
+            x,
+            y,
+            wanted.width().min(viewport.width()),
+            wanted.height().min(viewport.height()),
+        )?,
+    )
+}
+
+/// Whether the platform's command modifier is held: Command on macOS, Control
+/// without Alt elsewhere. The editors and `SelectableText` share it.
+pub(crate) fn command_modifier(m: crate::Modifiers) -> bool {
+    if cfg!(target_os = "macos") {
+        m.super_key
+    } else {
+        m.control && !m.alt
+    }
+}
+
+/// Whether the platform's word-movement modifier is held: Option on macOS,
+/// Control without Alt elsewhere.
+pub(crate) fn word_modifier(m: crate::Modifiers) -> bool {
+    if cfg!(target_os = "macos") {
+        m.alt
+    } else {
+        m.control && !m.alt
+    }
+}
+
+/// The selection movement a navigation key asks for, as the editors map it:
+/// arrows by grapheme or, with the word modifier, by word; Up and Down by
+/// line; Home and End to the line's ends; with the command modifier, to the
+/// text's ends (and on macOS Command+Left/Right to the line's ends). Shift is
+/// the caller's: it extends instead of moving.
+pub(crate) fn key_movement(code: KeyCode, m: crate::Modifiers) -> Option<TextMovement> {
+    let (command, word) = (command_modifier(m), word_modifier(m));
+    match code {
+        KeyCode::ArrowLeft if cfg!(target_os = "macos") && command => Some(TextMovement::LineStart),
+        KeyCode::ArrowRight if cfg!(target_os = "macos") && command => Some(TextMovement::LineEnd),
+        KeyCode::ArrowLeft => Some(if word {
+            TextMovement::WordLeft
+        } else {
+            TextMovement::Left
+        }),
+        KeyCode::ArrowRight => Some(if word {
+            TextMovement::WordRight
+        } else {
+            TextMovement::Right
+        }),
+        KeyCode::ArrowUp => Some(if command {
+            TextMovement::Start
+        } else {
+            TextMovement::Up
+        }),
+        KeyCode::ArrowDown => Some(if command {
+            TextMovement::End
+        } else {
+            TextMovement::Down
+        }),
+        KeyCode::Home => Some(if command {
+            TextMovement::Start
+        } else {
+            TextMovement::LineStart
+        }),
+        KeyCode::End => Some(if command {
+            TextMovement::End
+        } else {
+            TextMovement::LineEnd
+        }),
+        _ => None,
     }
 }
 
@@ -1785,6 +1887,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             C::Copy => !self.selection.get().range().is_empty(),
             C::Cut => !self.locked() && !self.selection.get().range().is_empty(),
             C::Paste | C::PasteBefore | C::PasteAfter => !self.locked() && clipboard,
+            C::SelectAll => !self.text.is_empty(),
         }
     }
     /// Opens the clipboard menu, at a pointer position or anchored below the field
@@ -1851,31 +1954,8 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
         }
         Ok(())
     }
-    /// Places the open menu at its request position, clamped to the viewport, the
-    /// way every other context menu is placed.
     fn arrange_menu(&self, cx: &mut ArrangeContext<'_>, size: Size) -> Result<(), RuntimeError> {
-        if cx.is_empty() {
-            return Ok(());
-        }
-        let viewport = cx.measurement().viewport();
-        let wanted = cx.measure(
-            0,
-            Constraints::new(Some(viewport.width()), Some(viewport.height()))?,
-        )?;
-        let (x, y) = self
-            .menu
-            .as_ref()
-            .and_then(|menu| menu.position.get())
-            .map_or((0.0, size.height()), |p| (p.x(), p.y()));
-        cx.place(
-            0,
-            rect(
-                x,
-                y,
-                wanted.width().min(viewport.width()),
-                wanted.height().min(viewport.height()),
-            )?,
-        )
+        place_menu(cx, size, self.menu.as_ref())
     }
     fn command(
         &mut self,
@@ -1956,6 +2036,16 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
                 let layout = self.layout(cx)?;
                 self.selection
                     .set(TextSelection::new(&layout, keep.start, keep.end));
+                self.changed(cx);
+                Ok(R::Handled)
+            }
+            C::SelectAll => {
+                if self.text.is_empty() {
+                    return Ok(R::Unavailable);
+                }
+                let layout = self.layout(cx)?;
+                self.selection
+                    .set(TextSelection::new(&layout, 0, usize::MAX));
                 self.changed(cx);
                 Ok(R::Handled)
             }
@@ -2852,46 +2942,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             }
             return Ok(InputOutcome::Handled);
         }
-        let movement = match e.code {
-            KeyCode::ArrowLeft if cfg!(target_os = "macos") && command => {
-                Some(TextMovement::LineStart)
-            }
-            KeyCode::ArrowRight if cfg!(target_os = "macos") && command => {
-                Some(TextMovement::LineEnd)
-            }
-            KeyCode::ArrowLeft => Some(if word {
-                TextMovement::WordLeft
-            } else {
-                TextMovement::Left
-            }),
-            KeyCode::ArrowRight => Some(if word {
-                TextMovement::WordRight
-            } else {
-                TextMovement::Right
-            }),
-            KeyCode::ArrowUp => Some(if command {
-                TextMovement::Start
-            } else {
-                TextMovement::Up
-            }),
-            KeyCode::ArrowDown => Some(if command {
-                TextMovement::End
-            } else {
-                TextMovement::Down
-            }),
-            KeyCode::Home => Some(if command {
-                TextMovement::Start
-            } else {
-                TextMovement::LineStart
-            }),
-            KeyCode::End => Some(if command {
-                TextMovement::End
-            } else {
-                TextMovement::LineEnd
-            }),
-            _ => None,
-        };
-        if let Some(movement) = movement {
+        if let Some(movement) = key_movement(e.code, m) {
             self.selection
                 .set(self.selection.get().moved(&layout, movement, m.shift));
             self.changed(cx);

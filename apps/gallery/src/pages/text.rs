@@ -307,6 +307,14 @@ pub(crate) fn text_editing(ui: &Runtime) -> Result<Element, RuntimeError> {
                         ),
                         Element::new("notes-mirror", TextArea::new(notes).read_only())
                             .with_label("Notes mirror"),
+                        label(
+                            "selectable-label",
+                            "Selectable display text — drag, double-click or Shift+arrows select; Ctrl/Cmd+C or the context menu copies",
+                        ),
+                        SelectableText::new(
+                            "12:00:03.412 WARN http request timeout after 30 s (retry 2 of 3), id=48211",
+                        )
+                        .key("selectable-text"),
                         label("proportional-label", "Explicit body typography override"),
                         Element::new(
                             "body-area",

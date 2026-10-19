@@ -1,5 +1,146 @@
 # Changelog
 
+## 0.3.31 (2026-10-19)
+
+Review fixes for log-explorer plan slices 4 and 5:
+
+- `log_explorer`: Follow turned on while a file loads starts the tail only
+  after it, and tailed lines take identities from one allocator shared by
+  every worker, so no two lines share an identity; lines a full mailbox
+  refused or a stopped worker left queued are counted as lost and reported;
+  follow reveals the last row left by every filter, the filter field
+  included, and the shown count comes from the table's filter counts;
+  timestamps are validated as dates and times of day; the session's
+  inspection request waits with a timeout. The session checks each.
+- `TableItems::text` and `TableController::filter` say that a row's text
+  joins its cells with a space.
+- Ellipsis evidence: the fit tests evict through the bounded layout cache
+  and the fit memory instead of clearing them, and cover icon and gap
+  entries; CPU captures of 56 ellipsis cases match 0.3.28 pixel for pixel.
+
+## 0.3.30 (2026-10-19)
+
+A large-data example (log-explorer plan slice 5):
+
+- The `log_explorer` package example: a log explorer over a generated log
+  of hundreds of thousands of lines with bounded tables and a tree, line
+  identities independent of storage with a reverse index, batched loading
+  on a worker with typed failures and skipped malformed lines, two tables
+  with their own sorts, a filter field and level and source filters,
+  appended lines inserted into each order, a live tail stopped by
+  generation that reports dropped lines, follow that reveals the last
+  shown row and observes its receipt, a detachable Errors view, Copy lines
+  bound per table view and selectable detail text. Its headless session
+  (`--no-default-features`) reports mounted counts and flush times and
+  checks that they stay bounded; `--window` opens it with `native`.
+- The layout guide's large-data section and the manual link it.
+
+## 0.3.29 (2026-10-19)
+
+Ellipsis text preparation (log-explorer plan slice 4):
+
+- An ellipsis or middle-ellipsis label no longer shapes its whole text on
+  every layout pass. Whether the whole text fits is read from a cached
+  unwrapped layout under the same key when there is one; a text that fits
+  is shaped once and rasterized from that shaping; a truncated text uses
+  its remembered cut before measuring the whole string again. Fit
+  decisions and output are unchanged. A wheel step over the
+  `log_explorer` example's 50 000-line table went from 4.78 to 4.13 ms
+  (release, Fedora 44).
+
+## 0.3.28 (2026-10-19)
+
+Review fixes for `SelectableText` (log-explorer plan slice 3):
+
+- Cancelled input (`Runtime::cancel_input`, focus loss, hiding) ends a
+  selection drag and keeps the selection; a later move no longer extends it.
+- On the native path every key is read in the text phase by its layout
+  identity, as the editors read theirs: the command modifier with the key
+  that types A or C selects all or copies on any keyboard layout, and a
+  physical key that types another letter does nothing.
+- A redescription with another source ends a drag even when its text is
+  the same; the same source keeps it.
+- Tests for these, multiline Up/Down, word and document movement,
+  composition, native Escape during a drag, a width change, selected glyph
+  colors and copying during a refusal.
+
+## 0.3.27 (2026-10-19)
+
+Selectable display text (log-explorer plan slice 3):
+
+- `SelectableText`: read-only text a reader can select and copy, such as a
+  log message or an error's details. It measures and wraps like a multiline
+  `Label`, takes one Tab stop (none while empty), selects by drag, double
+  and triple click, Shift+press and the editors' movement keys with Shift,
+  and copies with Ctrl/Cmd+C, its context menu (Copy and Select All) or
+  `TextCommand::Copy`. Escape ends a drag, then collapses the selection,
+  then bubbles, answered in the text phase on both key paths. A replaced
+  text keeps a selection that still fits, snapped to graphemes; text that
+  cannot be prepared is refused with a `text_error` property and the last
+  shown text stays.
+- `TextCommand::SelectAll`, answered by the text editors and
+  `SelectableText`, and `StringRole::TextSelectAll` ("Select All").
+- The gallery's Text page, the manual and the controls guide show it.
+
+## 0.3.26 (2026-10-19)
+
+Review fixes for log-explorer plan slices 1 and 2:
+
+- A shrinking column computes in f64 and from final lengths: a grown child
+  whose natural height is hundreds of millions of pixels (a 20-million-row
+  list) now gets exactly the space left, and the column reports its limit,
+  or the sum of its final lengths when it overflows at its floor, instead of
+  a size that disagreed with its children's placement.
+- `ValidationCode::UnboundedCollection` follows each arrangement: a
+  collection's allocated and estimated extents are refreshed with its
+  committed geometry, so a resize that lets it scroll itself clears the
+  issue (and the reverse reports it) without another update.
+- `VirtualList` and the layout guide said a `Row` never bounds a list; a
+  bounded row bounds a vertical list's height and only never a horizontal
+  list's width.
+- Tests: the huge-extent, fractional, propagated-limit, gap-floor,
+  stretch/space-between, grown-row, outer-only, horizontal, scaled,
+  estimated-settling and arrangement-change cases; runtime clipboard
+  refusal in every phase, from inside the service and from a failing
+  service; and a serialized report carrying the new code.
+
+## 0.3.25 (2026-10-19)
+
+Collections in unbounded layout (log-explorer plan slice 1):
+
+- Behavior change: a grown child of a column whose height is bounded now
+  shrinks when the children's natural heights do not fit, by weight and
+  down to its minimum, so a toolbar above a grown table or list fills the
+  rest and the collection mounts only the rows it shows (it mounted every
+  row before). The column overflows only past the ungrown children's
+  natural heights plus the grown children's minimums. Rows are unchanged.
+  `Element::with_grow`, the contracts, the manual and the layout guide say
+  so; `foundation/row_stretch.rs` now expects a grown row to shrink to the
+  height left.
+- `ValidationCode::UnboundedCollection`: in debug builds, a virtualized
+  collection of at least 100 rows that was given its whole content extent
+  while less than half of it is visible (in a default `Tabs` tab, a default
+  `RegionLayout` region or a `ScrollArea`) is reported with its owner and
+  a pointer to the bounded-extent documentation. The inspection snapshot
+  schema is 14.
+
+## 0.3.24 (2026-10-19)
+
+Clipboard text from the runtime (log-explorer plan slice 2):
+
+- `Runtime::clipboard_text` and `Runtime::set_clipboard_text` read and write
+  the installed clipboard service from application code and command actions,
+  with the errors of the `EventContext` methods and without involving a
+  component or moving focus.
+
+Collection sizing documentation (log-explorer plan slice 0):
+
+- `VirtualList`, `Table` and `Tree`, the manual and the layout guide state
+  that a collection mounts the rows inside its allocated height and which
+  containers give it a bounded one; the guide's new large-data section names
+  the costs of source replacement, filters, `index_of`, tree children and
+  table columns.
+
 ## 0.3.23 (2026-10-19)
 
 Review fixes for the `diagram_editor` example of 0.3.22:
