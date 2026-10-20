@@ -207,6 +207,21 @@ example to show the chosen item in a detail view.
 collection. Built-in reordering is opt-in; accept reported moves in your
 application's data model.
 
+A `Table` has an active cell: the selection's active row and
+`TableController::active_column`. `Table::on_activate` runs on Enter with the
+row and column keys. To edit cells in place, mark columns
+`TableColumn::editable`, answer `TableItems::editable` for cells that cannot be
+edited now, and give the table a `Table::cell_editor` that builds the editor for
+one cell from a `CellEdit`: a `TextField`, `IntegerInput`, `DecimalInput` or
+`Select` built with `CellEdit::session`, its signals created through
+`CellEdit::owner`. Enter, F2, a double-click or typing begins an edit; the
+table hosts the editor in the cell, keeps the row mounted while the edit is
+open, and ends or moves the edit as the editor reports it: Enter and Escape
+return to the table, Tab and Shift+Tab move to the next or previous editable
+cell. The editor writes the value; publish the plain cell's new content from
+its save callback. Enable row commands from the rows the action can reach:
+`ListSelection` keeps selected keys that a filtered source no longer shows.
+
 `FileBrowser` shows directory navigation and selection over a
 `FileBrowserController`: a path bar, a filter, a folder tree and the current
 folder's entries. The browser performs no filesystem I/O. Create the controller
@@ -501,7 +516,11 @@ headless session with
 [`log_explorer`](../crates/pert-ui/examples/log_explorer/main.rs) example
 shows large data: bounded collections over hundreds of thousands of lines,
 worker loading, a live tail and copying; run its headless session with
-`cargo run -p pert-ui --example log_explorer --no-default-features`. The [gallery guide](../apps/gallery/README.md) points to
+`cargo run -p pert-ui --example log_explorer --no-default-features`. The
+[`inventory`](../crates/pert-ui/examples/inventory/main.rs) example edits a
+table in place like a spreadsheet, with a toolbar of commands, undo and row
+copy and paste; run its headless session with
+`cargo run -p pert-ui --example inventory --no-default-features`. The [gallery guide](../apps/gallery/README.md) points to
 live examples and the current component pages.
 
 ## Appearance, diagnostics and persistence

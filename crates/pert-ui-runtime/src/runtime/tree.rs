@@ -192,7 +192,9 @@ impl Runtime {
     /// with [`RuntimeError::AmbiguousKey`]. Narrow the search by first finding
     /// a uniquely keyed ancestor and searching below it, name the addressable
     /// path with [`Self::find`], or use [`Self::find_path`] with a full path.
-    /// `ancestor` itself is not a candidate.
+    /// A common cause is a container keyed like the control it holds, such as
+    /// a [`ToolGroup`](crate::ToolGroup) named after its only control; give
+    /// the container a key of its own. `ancestor` itself is not a candidate.
     ///
     /// It follows logical children, including hidden ones and those presented
     /// in a detached window, exactly as [`Self::children`] lists them. It
@@ -377,6 +379,37 @@ impl Runtime {
     pub fn bounds(&self, id: &WidgetId) -> Result<Option<Rect>, RuntimeError> {
         self.check(id)?;
         Ok(id.0.bounds.get())
+    }
+
+    /// Returns the [`ComponentInspection::id`](crate::ComponentInspection::id)
+    /// of a mounted component, so a test or tool finds that component's entry
+    /// in a snapshot of this runtime without matching keys.
+    ///
+    /// The value names this incarnation only: it is unique within the runtime,
+    /// is never reused for another component, and a component mounted again
+    /// under the same key gets a new one. It means nothing in another runtime's
+    /// snapshot.
+    ///
+    /// # Errors
+    /// Returns `ForeignRuntime` for an ID of another runtime and `Unmounted` for an
+    /// unmounted one.
+    ///
+    /// ```
+    /// use pert_ui_runtime::{Button, Column, Element, Runtime};
+    /// let mut ui = Runtime::new();
+    /// let root = ui.mount_tree(Element::new("root", Column::new([
+    ///     Element::new("save", Button::new("Save", |_| Ok(()))),
+    /// ])))?;
+    /// let save = ui.find_descendant(&root, "save")?.ok_or("not mounted")?;
+    /// let id = ui.inspection_id(&save)?;
+    /// let snapshot = ui.inspect();
+    /// let entry = snapshot.components.iter().find(|c| c.id == id).ok_or("no entry")?;
+    /// assert_eq!(entry.key, "save");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn inspection_id(&self, id: &WidgetId) -> Result<u64, RuntimeError> {
+        self.check(id)?;
+        Ok(id.incarnation())
     }
 
     /// Reconciles a composed parent's children by key and concrete component type.

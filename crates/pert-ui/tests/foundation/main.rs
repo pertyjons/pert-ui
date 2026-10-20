@@ -21,6 +21,7 @@ mod failure_sites;
 mod flex_layout;
 mod foundation;
 mod host_adapter;
+mod inspection_ids;
 mod inspection_service;
 mod key_repaint;
 mod live_widgets;

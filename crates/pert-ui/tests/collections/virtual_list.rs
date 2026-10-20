@@ -406,3 +406,58 @@ fn the_list_keys_each_built_row_with_its_key() -> TestResult {
     }
     Ok(())
 }
+
+#[test]
+fn a_kept_item_stays_mounted_out_of_range_until_released() -> TestResult {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(300.0, 200.0, 1.0)?)?;
+    let items = ui.signal(rows(100));
+    let kept = ui.signal(Some("row-0".to_owned()));
+    let controller = ListController::new(&ui);
+    let list = ui.mount_tree(Element::new(
+        "list",
+        VirtualList::new(items.read_only(), ROW)?
+            .controller(controller.clone())
+            .keep_mounted(kept.read_only()),
+    ))?;
+    ui.flush(Duration::ZERO)?;
+    let _ = controller.reveal("row-99")?;
+    ui.flush(Duration::ZERO)?;
+    assert!(ui.find_descendant(&list, "row-0")?.is_some(), "kept");
+    assert!(ui.find_descendant(&list, "row-1")?.is_none(), "not kept");
+    kept.set(None)?;
+    ui.flush(Duration::ZERO)?;
+    assert!(ui.find_descendant(&list, "row-0")?.is_none(), "released");
+    // A key the source does not hold keeps nothing.
+    kept.set(Some("row-500".to_owned()))?;
+    ui.flush(Duration::ZERO)?;
+    assert!(ui.find_descendant(&list, "row-500")?.is_none());
+    Ok(())
+}
+
+#[test]
+fn typed_text_reaches_the_focused_list_but_not_from_its_items() -> TestResult {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(300.0, 200.0, 1.0)?)?;
+    let items = ui.signal(rows(10));
+    let typed = std::rc::Rc::new(std::cell::RefCell::new(String::new()));
+    let sink = typed.clone();
+    let list = ui.mount_tree(Element::new(
+        "list",
+        VirtualList::new(items.read_only(), ROW)?
+            .selection(ListSelection::new(&ui, SelectionMode::Single))
+            .on_text_input(move |_, text| {
+                sink.borrow_mut().push_str(text);
+                Ok(())
+            }),
+    ))?;
+    ui.flush(Duration::ZERO)?;
+    ui.focus(&list)?;
+    ui.text_input("ab")?;
+    assert_eq!(*typed.borrow(), "ab");
+    let row = ui.find_descendant(&list, "row-0")?.ok_or("mounted")?;
+    ui.focus(&row)?;
+    ui.text_input("c")?;
+    assert_eq!(*typed.borrow(), "ab", "an item's text is its own");
+    Ok(())
+}

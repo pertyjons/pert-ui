@@ -203,6 +203,26 @@ fn key(ui: &mut Runtime, code: KeyCode) -> Outcome {
     Ok(())
 }
 
+/// Presses Escape while tooltip help is shown anywhere in the window, which
+/// takes an unmodified Escape before any editor.
+fn dismiss_help(ui: &mut Runtime) -> Outcome {
+    let shown = |ui: &Runtime| {
+        ui.inspect().components.iter().any(|c| {
+            c.visible
+                && c.details.properties.get("presentation_layer")
+                    == Some(&InspectValue::Text("Tooltip".into()))
+        })
+    };
+    for _ in 0..4 {
+        if !shown(ui) {
+            return Ok(());
+        }
+        key(ui, KeyCode::Escape)?;
+        ui.flush(ui.now()).map_err(failed)?;
+    }
+    Err("tooltip help stayed shown after Escape".into())
+}
+
 /// The modifier state the window system would report while `keys` are held.
 fn reported(keys: &[KeyCode]) -> Modifiers {
     let held = |options: &[KeyCode]| keys.iter().any(|key| options.contains(key));
@@ -474,7 +494,11 @@ pub(crate) fn steps() -> Vec<Step> {
         },
         Step {
             name: "search field: Escape clears the query",
-            act: |ui, _| key(ui, KeyCode::Escape),
+            act: |ui, _| {
+                // Shown help takes the first Escape, so dismiss any first.
+                dismiss_help(ui)?;
+                key(ui, KeyCode::Escape)
+            },
             check: |ui, _| {
                 let found = texts(ui, "search-results");
                 ensure(

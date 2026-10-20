@@ -37,4 +37,5 @@ mod numeric_controls;
 mod parameter_controls;
 mod readout_formats;
 mod segmented_control;
+mod tab_traversal;
 mod toolbar;

@@ -1288,6 +1288,9 @@ impl Component for Tree {
     fn focusable(&self) -> bool {
         self.list.focusable()
     }
+    fn descendant_tab_stops(&self) -> bool {
+        self.list.descendant_tab_stops()
+    }
     fn measure(
         &self,
         cx: &MeasureContext<'_>,
@@ -1305,6 +1308,9 @@ impl Component for Tree {
         event: PointerEvent,
     ) -> Result<InputOutcome, RuntimeError> {
         self.list.pointer_input(cx, event)
+    }
+    fn text_input(&mut self, cx: &mut EventContext, text: &str) -> Result<(), RuntimeError> {
+        self.list.text_input(cx, text)
     }
     fn keyboard_event(
         &mut self,

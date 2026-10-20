@@ -415,6 +415,34 @@ impl Tooltip {
     pub fn new(anchor: Element, text: impl Into<TextSource>) -> Self {
         Self::with_help(anchor, Label::new(text))
     }
+    /// Wraps an anchor that presents a registered command, such as a
+    /// [`Button::command_icon`](crate::Button::command_icon), with help naming
+    /// the command and its first shortcut, for example `Undo (Ctrl+Z)`, as a
+    /// menu row shows them. The shortcut follows
+    /// [`Runtime::command_shortcuts`](crate::Runtime::command_shortcuts), so
+    /// rebinding the command updates the help; a command without shortcuts
+    /// shows its name alone. The name is the one the command has when the
+    /// tooltip is built, and unregistering the command later leaves the help
+    /// with its last name and shortcut. Otherwise this is [`Self::new`].
+    ///
+    /// # Errors
+    /// `StaleCommand` if the command is no longer registered, and the errors of
+    /// [`ReadSignal::map`] when called where a binding cannot be derived, such
+    /// as `WriteDuringInspection` inside an inspection callback.
+    pub fn command(
+        ui: &crate::Runtime,
+        anchor: Element,
+        command: &crate::CommandId,
+    ) -> Result<Self, RuntimeError> {
+        let name = ui.command_name(command)?.to_owned();
+        let help = ui
+            .command_shortcuts(command)?
+            .map(move |chords| match chords.first() {
+                Some(chord) => format!("{name} ({chord})"),
+                None => name.clone(),
+            })?;
+        Ok(Self::new(anchor, help))
+    }
     fn with_help(anchor: Element, help: Label) -> Self {
         Self {
             children: children(anchor, Element::new("help", help).structural()),

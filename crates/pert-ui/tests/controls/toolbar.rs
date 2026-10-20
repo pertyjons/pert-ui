@@ -878,3 +878,80 @@ fn toolbar_overflow_reports_its_painted_frame_and_resets_inherited_cursor() {
         Palette::dark().color(ColorRole::PanelBorder).channels()
     );
 }
+
+fn semantics(ui: &Runtime, key: &str) -> Semantics {
+    ui.inspect()
+        .components
+        .iter()
+        .find(|c| c.key == key)
+        .and_then(|c| c.details.semantics.clone())
+        .unwrap()
+}
+/// The help text once the focused anchor's help has had time to show.
+fn help_text(ui: &mut Runtime) -> InspectValue {
+    frame(ui);
+    let later = ui.now() + std::time::Duration::from_millis(600);
+    ui.flush(later).unwrap();
+    assert_eq!(visible(ui, "help"), vec![true]);
+    property(ui, "help", "text")
+}
+
+#[test]
+fn command_icon_buttons_follow_the_command_and_show_its_shortcut_as_help() {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(320.0, 200.0, 1.0).unwrap())
+        .unwrap();
+    let runs = ui.signal(0_i64);
+    let counter = runs.clone();
+    let undo = ui
+        .register_command(
+            "Undo",
+            CommandScope::Application,
+            vec![KeyChord::primary('z')],
+            move |_, _| counter.update(|n| *n += 1),
+        )
+        .unwrap();
+    let can_undo = ui.signal(true);
+    ui.command_enabled_signal(&undo, can_undo.read_only())
+        .unwrap();
+    let button = Button::command_icon(&ui, &undo, Icon::Undo, |_, _| Ok(())).unwrap();
+    let help = Tooltip::command(&ui, Element::new("undo", button), &undo).unwrap();
+    // In a column, so the anchor leaves room below it for the help.
+    let root = ui
+        .mount_tree(Element::new(
+            "root",
+            Column::new([Element::new("undo-help", help)]),
+        ))
+        .unwrap();
+    frame(&mut ui);
+    let button = find(&ui, &root, "undo").unwrap();
+    ui.focus(&button).unwrap();
+
+    // The command's name is the accessible name; the icon is the content.
+    assert_eq!(semantics(&ui, "undo").name.as_deref(), Some("Undo"));
+    let shortcut = KeyChord::primary('z').to_string();
+    assert_eq!(
+        help_text(&mut ui),
+        InspectValue::Text(format!("Undo ({shortcut})"))
+    );
+
+    // Rebinding updates the shown help; no shortcut leaves the name alone.
+    ui.rebind_command(&undo, vec![KeyChord::named(KeyCode::F9)])
+        .unwrap();
+    frame(&mut ui);
+    assert_eq!(help_text(&mut ui), InspectValue::Text("Undo (F9)".into()));
+    ui.rebind_command(&undo, Vec::new()).unwrap();
+    frame(&mut ui);
+    assert_eq!(help_text(&mut ui), InspectValue::Text("Undo".into()));
+    ui.rebind_command(&undo, vec![KeyChord::primary('z')])
+        .unwrap();
+
+    key(&mut ui, KeyCode::Enter);
+    frame(&mut ui);
+    assert_eq!(runs.get().unwrap(), 1);
+
+    // Enablement follows the command's binding.
+    can_undo.set(false).unwrap();
+    frame(&mut ui);
+    assert!(semantics(&ui, "undo").disabled);
+}

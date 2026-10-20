@@ -107,9 +107,11 @@ ui.flush(Duration::ZERO)?;
 Menu rows also cover separators, check-mark toggles, radio settings and
 shortcuts. [`MenuItem::command`] presents a registered command with its live
 shortcut and enabled binding, and runs it with the command context captured
-when the menu opened; [`Button::command`] does the same for a toolbar button,
-capturing the context when it is activated, and [`KeyChord::named`] binds a
-single key such as Space. [`MenuBar`] arranges top-level submenus as a desktop menu
+when the menu opened. [`Button::command`] and its icon-only form
+[`Button::command_icon`] present a command as a toolbar button with its
+enabled binding, capturing the context when it is activated, and
+[`Tooltip::command`] shows the command's name and live shortcut as the
+button's help. [`KeyChord::named`] binds a single key such as Space. [`MenuBar`] arranges top-level submenus as a desktop menu
 bar: titles open on press and switch while one is open, F10 focuses the titles,
 arrows move between titles and menus, and leaving returns focus to the content.
 Give the content to [`MenuBar::content`] so F10 reaches the bar from it. There are

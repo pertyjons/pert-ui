@@ -174,12 +174,32 @@ fn the_collections_page_navigates_a_grid_a_lazy_tree_and_a_sorted_table() {
     key(&mut ui, KeyCode::End);
     assert!(text(&ui, "table-active").contains(&"Active item: sample-100000".into()));
     // Right enters the first column and then walks past the visible ones, which
-    // scrolls the columns; Enter reports the cell.
+    // scrolls the columns; Enter edits the Note cell in place and saves it.
     for _ in 0..6 {
         key(&mut ui, KeyCode::ArrowRight);
     }
     key(&mut ui, KeyCode::Enter);
-    assert!(text(&ui, "table-cell").contains(&"Activated sample-100000, column note.".into()));
+    ui.text_input("Calibrated").unwrap();
+    key(&mut ui, KeyCode::Enter);
+    let row = find(&ui, &body, "sample-100000");
+    let label = find(&ui, &find(&ui, &row, "note"), "text");
+    let id = ui.inspection_id(&label).unwrap();
+    let shown = ui
+        .inspect()
+        .components
+        .iter()
+        .find(|component| component.id == id)
+        .and_then(|component| component.details.properties.get("text").cloned());
+    assert_eq!(shown, Some(InspectValue::Text("Calibrated".into())));
+    assert_eq!(
+        ui.focused(),
+        Some(body.clone()),
+        "Enter returns to the table"
+    );
+    // Enter on a column that is not edited in place reports the cell.
+    key(&mut ui, KeyCode::ArrowLeft);
+    key(&mut ui, KeyCode::Enter);
+    assert!(text(&ui, "table-cell").contains(&"Activated sample-100000, column parity.".into()));
 
     // Rows of their own height stack without gaps and stay bounded.
     let notes = find(&ui, &root, "collections-notes");

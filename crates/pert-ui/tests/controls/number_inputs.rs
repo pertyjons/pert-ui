@@ -956,3 +956,128 @@ fn a_decimal_input_edits_a_continuous_parameter_at_its_resolution() {
     ui.flush(Duration::ZERO).unwrap();
     assert_eq!(gain.snapshot().get().unwrap().base, 0.75);
 }
+
+/// Records each Escape press that bubbles to it from its only child.
+struct EscapeWitness {
+    child: Option<Element>,
+    escapes: Rc<Cell<u32>>,
+}
+impl Component for EscapeWitness {
+    fn take_children(&mut self) -> Vec<Element> {
+        self.child.take().into_iter().collect()
+    }
+    fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+        Ok(())
+    }
+    fn keyboard_event(
+        &mut self,
+        _: &mut EventContext,
+        event: KeyEvent,
+        _: &KeyboardState,
+    ) -> Result<InputOutcome, RuntimeError> {
+        if event.code == KeyCode::Escape && event.transition == KeyTransition::Pressed {
+            self.escapes.set(self.escapes.get() + 1);
+            return Ok(InputOutcome::Handled);
+        }
+        Ok(InputOutcome::Ignored)
+    }
+}
+
+/// Presses Escape on the headless or the native key path.
+fn escape(ui: &mut Runtime, native: bool) {
+    for action in [KeyAction::Press, KeyAction::Release] {
+        if native {
+            ui.command_key_input(CommandKeyInput::new(
+                KeyCode::Escape,
+                action,
+                CommandKey::Named(KeyCode::Escape),
+            ))
+            .unwrap();
+        } else {
+            ui.key_input(KeyCode::Escape, action).unwrap();
+        }
+    }
+    frame(ui);
+}
+
+#[test]
+fn escape_bubbles_from_a_clean_number_field_and_cancels_a_changed_draft() {
+    for native in [false, true] {
+        for decimal in [false, true] {
+            let mut ui = Runtime::new();
+            ui.set_viewport(Viewport::new(320.0, 200.0, 1.0).unwrap())
+                .unwrap();
+            let escapes = Rc::new(Cell::new(0));
+            let integer = ui.signal(27_i64);
+            let amount = ui.signal(1.234567_f64);
+            let field = if decimal {
+                Element::new(
+                    "field",
+                    DecimalInput::new(amount.clone()).decimal_places(2).unwrap(),
+                )
+            } else {
+                Element::new("field", IntegerInput::new(integer.clone()))
+            };
+            let root = ui
+                .mount_tree(Element::new(
+                    "owner",
+                    EscapeWitness {
+                        child: Some(field),
+                        escapes: escapes.clone(),
+                    },
+                ))
+                .unwrap();
+            let field = ui.children(&root).unwrap()[0].clone();
+            ui.focus(&field).unwrap();
+            frame(&mut ui);
+            let case = format!("native {native}, decimal {decimal}");
+
+            // A clean field, with or without its text selected, leaves Escape
+            // to its owner.
+            escape(&mut ui, native);
+            assert_eq!(escapes.get(), 1, "{case}: clean");
+            command(&mut ui, KeyCode::KeyA);
+            escape(&mut ui, native);
+            assert_eq!(escapes.get(), 2, "{case}: clean and selected");
+
+            // A changed draft is restored by the first Escape; the second
+            // finds nothing to cancel.
+            replace(&mut ui, "12");
+            escape(&mut ui, native);
+            assert_eq!(escapes.get(), 2, "{case}: changed draft");
+            assert_eq!(property(&ui, "dirty"), InspectValue::Bool(false), "{case}");
+            escape(&mut ui, native);
+            assert_eq!(escapes.get(), 3, "{case}: restored");
+
+            // Escape during a selection drag over clean text ends the drag
+            // and stays with the field.
+            let [x, y, w, h] = ui.bounds(&field).unwrap().unwrap().values();
+            let start = Point::new(x + 4.0, y + h / 2.0).unwrap();
+            let end = Point::new(x + w - 4.0, y + h / 2.0).unwrap();
+            ui.pointer_input(PointerEvent::new(
+                start,
+                PointerKind::Press(PointerButton::Primary),
+            ))
+            .unwrap();
+            ui.pointer_input(PointerEvent::new(end, PointerKind::Move))
+                .unwrap();
+            escape(&mut ui, native);
+            assert_eq!(escapes.get(), 3, "{case}: during a drag");
+            ui.pointer_input(PointerEvent::new(
+                end,
+                PointerKind::Release(PointerButton::Primary),
+            ))
+            .unwrap();
+            frame(&mut ui);
+            escape(&mut ui, native);
+            assert_eq!(escapes.get(), 4, "{case}: after the drag");
+
+            // An invalid draft is a draft too.
+            replace(&mut ui, "x");
+            escape(&mut ui, native);
+            assert_eq!(escapes.get(), 4, "{case}: invalid draft");
+            assert_eq!(integer.get().unwrap(), 27, "{case}");
+            assert_eq!(amount.get().unwrap(), 1.234567, "{case}");
+        }
+    }
+}

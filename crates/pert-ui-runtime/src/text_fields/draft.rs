@@ -447,9 +447,12 @@ impl<P: Copy + PartialEq + 'static> DraftEditorController<P> {
 ///   [`UpdateContext::focus_within`] is true. The editor draws no frame and no
 ///   focus outline.
 /// - **Keys.** The editor handles caret movement, selection, deletion,
-///   select-all, clipboard chords and undo/redo. It leaves Enter, Tab, Up,
-///   Down, Page Up and Page Down to the owner, where they arrive by ordinary
-///   bubbling: commit on Enter, step on Up/Down. Escape reaches the owner too,
+///   select-all, clipboard chords and undo/redo. It leaves Enter, Up, Down,
+///   Page Up and Page Down to the owner, where they arrive by ordinary
+///   bubbling: commit on Enter, step on Up/Down. An unmodified Tab or
+///   Shift+Tab never reaches the owner's `keyboard_event`: the runtime moves
+///   focus to the next Tab stop before ordinary bubbling, and the owner learns
+///   of it as a departure (see **Ending**). Escape reaches the owner too,
 ///   unless it cancels the editor's own composition or drag-selection; the
 ///   owner cancels the session on it. While a composition is active the editor
 ///   keeps every key.

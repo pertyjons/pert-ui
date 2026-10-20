@@ -456,6 +456,11 @@ pub struct VirtualList {
     selection_pending: Vec<crate::ListSelectionChange>,
     notifier: Option<crate::Notifier>,
     outline: bool,
+    /// Whether interactive content inside items takes part in Tab traversal.
+    item_stops: bool,
+    /// The key of an item kept mounted outside the range ([`Self::keep_mounted`]).
+    keep: Option<ReadSignal<Option<String>>>,
+    on_text: Option<OnText>,
     snapshot: Option<ListSource>,
     /// Whether row construction completed for the retained source snapshot.
     rows_current: bool,
@@ -499,6 +504,7 @@ pub struct VirtualList {
 }
 
 type Activate = Box<dyn FnMut(&mut EventContext, &str) -> Result<(), RuntimeError>>;
+type OnText = Box<dyn FnMut(&mut EventContext, &str) -> Result<(), RuntimeError>>;
 type OnSelection =
     Box<dyn FnMut(&mut EventContext, &crate::ListSelectionChange) -> Result<(), RuntimeError>>;
 type Reorder = Box<dyn FnMut(&mut EventContext, &ListDrop<'_>) -> Result<bool, RuntimeError>>;
@@ -673,6 +679,9 @@ impl VirtualList {
             notifier: None,
             activate: None,
             outline: true,
+            item_stops: true,
+            keep: None,
+            on_text: None,
             snapshot: None,
             rows_current: false,
             offset: Cell::new(0.0),
@@ -760,6 +769,48 @@ impl VirtualList {
     /// for its active cell, turns it off.
     pub fn active_outline(mut self, outline: bool) -> Self {
         self.outline = outline;
+        self
+    }
+
+    /// Whether interactive content inside items, such as a checkbox in a
+    /// row, is a stop of Tab traversal; true by default. With false the
+    /// items' content leaves traversal through
+    /// [`Component::descendant_tab_stops`], so Tab moves past the list in one
+    /// step; pointer presses and explicit focus still reach the content. The
+    /// list keeps its own focusability: with a selection it is one stop while
+    /// it has items, without one only while it overflows. An owner that turns
+    /// this off gives keyboard users another way to reach the content.
+    pub fn item_tab_stops(mut self, stops: bool) -> Self {
+        self.item_stops = stops;
+        self
+    }
+
+    /// Keeps the item whose key `key` holds mounted while the source holds
+    /// it, as the list keeps an item that holds focus or a pointer gesture:
+    /// scrolled out of the range it stays mounted, unrevealed and unpainted.
+    /// `None` keeps nothing extra. An owner that hosts state in one item, such
+    /// as a table cell's editor that must outlive focus, sets it for as long
+    /// as that state lives. The list reads the signal in its update, so a
+    /// change applies at the next flush; an item the source no longer holds
+    /// is unmounted. Set at construction; describing the list again keeps the
+    /// first signal.
+    pub fn keep_mounted(mut self, key: ReadSignal<Option<String>>) -> Self {
+        self.keep = Some(key);
+        self
+    }
+
+    /// Calls `handler` with committed text (typed characters, or an IME's
+    /// committed composition) delivered while the list itself holds focus;
+    /// text never reaches it while an item's content is focused. The list
+    /// has no text input state, so an IME composes nothing over it. A table
+    /// begins a cell edit from typed text this way. The handler runs in the
+    /// event phase; its error propagates from the text input call. Set at
+    /// construction; describing the list again keeps the first handler.
+    pub fn on_text_input(
+        mut self,
+        handler: impl FnMut(&mut EventContext, &str) -> Result<(), RuntimeError> + 'static,
+    ) -> Self {
+        self.on_text = Some(Box::new(handler));
         self
     }
 
@@ -1728,12 +1779,18 @@ impl Component for VirtualList {
         let (start, end) = self.needed.take().unwrap_or_else(|| self.wanted());
         let count = self.axis().count();
         let (start, end) = (start.min(count), end.min(count));
-        // Items outside the range stay mounted while they own focus or a gesture.
+        // Items outside the range stay mounted while they own focus or a
+        // gesture, or while the owner keeps them.
+        let kept = match &self.keep {
+            Some(key) => cx.read(key)?.and_then(|key| items.index_of(&key)),
+            None => None,
+        };
         let pinned = cx
             .children()
             .iter()
             .filter(|child| child.focus_within() || child.captures_pointer())
-            .filter_map(|child| items.index_of(child.key()));
+            .filter_map(|child| items.index_of(child.key()))
+            .chain(kept);
         let mut wanted = Vec::new();
         for index in self.axis().mount_order(start..end, pinned) {
             wanted.push((index, items.key(index).ok_or(LayoutError::InvalidChild)?));
@@ -1790,6 +1847,10 @@ impl Component for VirtualList {
             revision,
             mounted_current,
         })))
+    }
+
+    fn descendant_tab_stops(&self) -> bool {
+        self.item_stops
     }
 
     fn focusable(&self) -> bool {
@@ -2020,6 +2081,13 @@ impl Component for VirtualList {
             _ => {}
         }
         Ok(InputOutcome::Ignored)
+    }
+
+    fn text_input(&mut self, cx: &mut EventContext, text: &str) -> Result<(), RuntimeError> {
+        match &mut self.on_text {
+            Some(handler) => handler(cx, text),
+            None => Ok(()),
+        }
     }
 
     fn keyboard_event(

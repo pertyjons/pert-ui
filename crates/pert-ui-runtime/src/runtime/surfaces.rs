@@ -257,10 +257,11 @@ impl Runtime {
             self.defer_surface_dismissal(owner, reason);
         }
     }
-    pub(super) fn surface_escape(&mut self) -> Result<bool, RuntimeError> {
-        // Shown help is dismissed first by an unmodified Escape and takes it;
-        // a modified Escape and one with no help shown reach surfaces and
-        // components as before.
+    /// Dismisses shown help on an unmodified Escape, which it takes; a
+    /// modified Escape and one with no help shown go on to editors, surfaces
+    /// and components. Both key paths call this before their editing phase,
+    /// so help is the first thing Escape dismisses.
+    pub(super) fn tooltip_escape(&mut self) -> Result<bool, RuntimeError> {
         let unmodified = self.keyboard.modifiers() == crate::Modifiers::default();
         let tooltips: Vec<u64> = self
             .window
@@ -269,11 +270,17 @@ impl Runtime {
             .filter(|s| unmodified && s.kind == SurfaceKind::Tooltip)
             .map(|s| s.owner)
             .collect();
-        if !tooltips.is_empty() {
-            for owner in tooltips {
-                self.dismiss_owner(owner, SurfaceDismissal::Escape)?;
-            }
-            self.flush(self.shared.now.get())?;
+        if tooltips.is_empty() {
+            return Ok(false);
+        }
+        for owner in tooltips {
+            self.dismiss_owner(owner, SurfaceDismissal::Escape)?;
+        }
+        self.flush(self.shared.now.get())?;
+        Ok(true)
+    }
+    pub(super) fn surface_escape(&mut self) -> Result<bool, RuntimeError> {
+        if self.tooltip_escape()? {
             return Ok(true);
         }
         if let Some(owner) = self

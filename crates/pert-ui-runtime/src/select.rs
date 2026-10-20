@@ -854,6 +854,14 @@ impl<T: Clone + Eq + 'static> Component for OptionList<T> {
 type SelectHandler<T> = Box<dyn FnMut(&mut EventContext, &T) -> Result<(), RuntimeError>>;
 struct SelectTarget<T> {
     on_change: RefCell<Option<SelectHandler<T>>>,
+    /// The host's edit this dropdown reports into ([`Select::session`]).
+    session: RefCell<Option<EditorAttachment>>,
+    /// The edit attached when the list opened: its choice completes that edit,
+    /// not one the host began after reattaching the anchor.
+    opened: RefCell<Option<EditorAttachment>>,
+    /// A parameter dropdown ignores sessions: a refused submission and an
+    /// unchanged choice look alike.
+    parameter: Cell<bool>,
     binding: RefCell<Rc<dyn ValueBinding<T>>>,
     /// The revision observed when the list opened. `None` after the anchor was
     /// rebound while the list was open: a choice from that list only closes it.
@@ -884,8 +892,48 @@ struct SelectAnchor<T> {
     caption: RefCell<Option<TextLayout>>,
 }
 impl<T: Clone + Eq + 'static> SelectAnchor<T> {
+    /// The keys a closed trigger with a session keeps: Escape cancels the
+    /// edit and an unmodified Tab confirms it unchanged, each reported once.
+    /// `None` leaves the key to ordinary handling, as for an armed press.
+    fn session_key(
+        &mut self,
+        e: KeyEvent,
+        control: KeyCode,
+        keys: &KeyboardState,
+    ) -> Option<InputOutcome> {
+        let session = self.target.session.borrow().clone()?;
+        if !matches!(
+            e.transition,
+            KeyTransition::Pressed | KeyTransition::Repeated
+        ) {
+            return None;
+        }
+        let pressed = e.transition == KeyTransition::Pressed;
+        let modifiers = keys.modifiers();
+        match control {
+            KeyCode::Escape if !self.input.pressed() => {
+                if pressed {
+                    session.report(EditorTrigger::Escape, EditorOutcome::Cancelled);
+                }
+                Some(InputOutcome::Handled)
+            }
+            KeyCode::Tab if !(modifiers.control || modifiers.alt || modifiers.super_key) => {
+                if pressed {
+                    session.report(
+                        EditorTrigger::Tab {
+                            reverse: modifiers.shift,
+                        },
+                        EditorOutcome::Unchanged,
+                    );
+                }
+                Some(InputOutcome::Handled)
+            }
+            _ => None,
+        }
+    }
     fn open_list(&self) -> Result<(), RuntimeError> {
         self.target.observed.set(Some(self.revision));
+        *self.target.opened.borrow_mut() = self.target.session.borrow().clone();
         self.open.set(true)?;
         Ok(())
     }
@@ -940,6 +988,7 @@ impl<T: Clone + Eq + 'static> Component for SelectAnchor<T> {
             parameter_name: _,
         } = next;
         *self.target.on_change.borrow_mut() = target.on_change.borrow_mut().take();
+        *self.target.session.borrow_mut() = target.session.borrow_mut().take();
         // The wrapper type fixes the presentation; it never changes here.
         debug_assert_eq!(inline, self.inline);
         let mut invalidation = None;
@@ -1099,6 +1148,9 @@ impl<T: Clone + Eq + 'static> Component for SelectAnchor<T> {
         if !self.focusable() {
             return Ok(InputOutcome::Ignored);
         }
+        if let Some(outcome) = self.session_key(e, control, keys) {
+            return Ok(outcome);
+        }
         if e.requests_context_menu(keys.modifiers()) {
             // The list is this control's menu, so the keyboard context-menu
             // request opens it rather than bubbling to an enclosing ContextMenu.
@@ -1122,6 +1174,38 @@ impl<T: Clone + Eq + 'static> Component for SelectAnchor<T> {
         } else {
             Ok(InputOutcome::Ignored)
         }
+    }
+    fn text_key_event(
+        &mut self,
+        _: &mut EventContext,
+        input: CommandKeyInput,
+        transition: KeyTransition,
+        keys: &KeyboardState,
+    ) -> Result<TextKeyOutcome, RuntimeError> {
+        // With a session the closed trigger keeps Escape and Tab ahead of
+        // surfaces and capture bindings; otherwise it is no editor.
+        let event = input.editing_event(transition);
+        if self.focusable()
+            && matches!(input.physical, KeyCode::Escape | KeyCode::Tab)
+            && self.session_key(event, input.physical, keys) == Some(InputOutcome::Handled)
+        {
+            return Ok(TextKeyOutcome::Handled);
+        }
+        Ok(TextKeyOutcome::NotAnEditor)
+    }
+    fn tab_navigation(
+        &mut self,
+        _: &mut EventContext,
+        reverse: bool,
+        repeat: bool,
+    ) -> Result<InputOutcome, RuntimeError> {
+        let Some(session) = self.target.session.borrow().clone() else {
+            return Ok(InputOutcome::Ignored);
+        };
+        if !repeat {
+            session.report(EditorTrigger::Tab { reverse }, EditorOutcome::Unchanged);
+        }
+        Ok(InputOutcome::Handled)
     }
     fn input_reset(&mut self) {
         self.input.reset();
@@ -1277,6 +1361,8 @@ impl<T: Clone + Eq + 'static> Component for SelectAnchor<T> {
 #[must_use]
 pub struct Select<T> {
     popover: Popover,
+    /// Shared with the anchor and the list's choose callback.
+    target: Rc<SelectTarget<T>>,
     anchor: Option<SelectAnchor<T>>,
     list: Option<OptionList<T>>,
 }
@@ -1311,6 +1397,9 @@ impl<T: Clone + Eq + 'static> Select<T> {
         let close = open.clone();
         let target = Rc::new(SelectTarget {
             on_change: RefCell::new(None),
+            session: RefCell::new(None),
+            opened: RefCell::new(None),
+            parameter: Cell::new(false),
             binding: RefCell::new(value.clone()),
             observed: Cell::new(Some(Revision::INITIAL)),
         });
@@ -1326,6 +1415,19 @@ impl<T: Clone + Eq + 'static> Select<T> {
                     None => false,
                 };
                 close.set(false)?;
+                // Reported before the application's callback runs, so a
+                // failing callback cannot lose the completion.
+                let opened = chooser.opened.borrow_mut().take();
+                if let Some(session) = opened {
+                    session.report(
+                        EditorTrigger::Choice,
+                        if changed {
+                            EditorOutcome::Saved
+                        } else {
+                            EditorOutcome::Unchanged
+                        },
+                    );
+                }
                 if changed {
                     let handler = chooser.on_change.borrow_mut().take();
                     if let Some(mut handler) = handler {
@@ -1359,6 +1461,7 @@ impl<T: Clone + Eq + 'static> Select<T> {
         };
         Self {
             popover: Popover::empty(open),
+            target: anchor.target.clone(),
             anchor: Some(anchor),
             list: Some(list),
         }
@@ -1385,6 +1488,38 @@ impl<T: Clone + Eq + 'static> Select<T> {
     ) -> Self {
         if let Some(anchor) = &self.anchor {
             *anchor.target.on_change.borrow_mut() = Some(Box::new(handler));
+        }
+        self
+    }
+    /// Makes this dropdown the editor of a host's
+    /// [`EditorSession`](crate::EditorSession), such as a table cell's: it
+    /// attaches to the edit open now, so the host calls
+    /// [`EditorSession::begin`](crate::EditorSession::begin) first, and
+    /// reports each completion once. The edit's start does not apply to a
+    /// dropdown.
+    ///
+    /// - A choice in the open list, by key or click, reports
+    ///   [`EditorTrigger::Choice`](crate::EditorTrigger::Choice) with
+    ///   `Saved`, or `Unchanged` for the current option, before `on_change`
+    ///   runs.
+    /// - On the closed trigger Escape reports `Cancelled` and an unmodified
+    ///   Tab or Shift+Tab reports `Unchanged`; the dropdown keeps both keys,
+    ///   ahead of surfaces and capture bindings. Enter, Space and the arrows
+    ///   open the list as without a session.
+    /// - In the open list Escape closes the list only, and Tab keeps its
+    ///   behavior there.
+    /// - Focus leaving the dropdown and its list reports `FocusLeft`,
+    ///   `Unchanged`; moving between them is no departure.
+    ///
+    /// A choice completes the edit that was open when the list opened, so
+    /// a list left open across a new edit cannot end that edit.
+    ///
+    /// A dropdown made with [`Self::for_parameter`] ignores the session and
+    /// keeps its ordinary keys: its refused submission cannot be told from
+    /// an unchanged choice. Replaces an earlier session.
+    pub fn session(self, session: &crate::EditorSession) -> Self {
+        if !self.target.parameter.get() {
+            *self.target.session.borrow_mut() = Some(session.attach());
         }
         self
     }
@@ -1503,7 +1638,9 @@ impl Select<ChoiceId> {
     /// [`EventContext`](crate::EventContext) of a component that builds this
     /// while it describes its children.
     pub fn for_parameter(ui: &impl crate::StateOwner, parameter: Parameter<ChoiceId>) -> Self {
-        Self::with_binding(ui, Rc::new(parameter), Vec::new())
+        let select = Self::with_binding(ui, Rc::new(parameter), Vec::new());
+        select.target.parameter.set(true);
+        select
     }
 }
 impl<T: Clone + Eq + 'static> Component for Select<T> {
@@ -1523,6 +1660,17 @@ impl<T: Clone + Eq + 'static> Component for Select<T> {
     }
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
         self.popover.update(cx)
+    }
+    fn focus_within_changed(
+        &mut self,
+        _: &mut EventContext,
+        within: bool,
+    ) -> Result<(), RuntimeError> {
+        // Moving between the trigger and its own list stays within.
+        if !within && let Some(session) = self.target.session.borrow().as_ref() {
+            session.report(EditorTrigger::FocusLeft, EditorOutcome::Unchanged);
+        }
+        Ok(())
     }
     fn child_visible(&self, key: &str) -> bool {
         self.popover.child_visible(key)

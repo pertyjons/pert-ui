@@ -122,12 +122,28 @@ pub(crate) fn toolbar_page(
         )
         .unit(|_| "%".into())
     };
-    let transport = {
-        let play_status = status.clone();
-        let play_state = playing.clone();
+    // Stop is a registered command: its icon button grays out with the
+    // command and its tooltip shows the shortcut.
+    let stop = {
         let stop_status = status.clone();
         let stop_state = playing.clone();
         let stop_position = position.clone();
+        ui.register_command(
+            "Stop",
+            CommandScope::Application,
+            vec![KeyChord::named(KeyCode::F7)],
+            move |_, _| {
+                stop_state.set(false)?;
+                stop_position.set("001:01:000".into())?;
+                stop_status.set("Stop pressed (synthetic).".into())?;
+                Ok(())
+            },
+        )?
+    };
+    ui.command_enabled_signal(&stop, playing.read_only())?;
+    let transport = {
+        let play_status = status.clone();
+        let play_state = playing.clone();
         ToolGroup::new(
             "transport",
             [
@@ -142,13 +158,14 @@ pub(crate) fn toolbar_page(
                 ),
                 Element::new(
                     "stop",
-                    Button::icon(Icon::Stop, "Stop", move |_| {
-                        stop_state.set(false)?;
-                        stop_position.set("001:01:000".into())?;
-                        stop_status.set("Stop pressed (synthetic).".into())?;
-                        Ok(())
-                    })
-                    .frameless(),
+                    Tooltip::command(
+                        ui,
+                        Element::new(
+                            "button",
+                            Button::command_icon(ui, &stop, Icon::Stop, |_, _| Ok(()))?.frameless(),
+                        ),
+                        &stop,
+                    )?,
                 ),
                 Element::new(
                     "record",

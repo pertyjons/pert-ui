@@ -1308,6 +1308,60 @@ pub trait Component: std::any::Any {
     fn tab_stop(&self) -> bool {
         self.focusable()
     }
+    /// Whether this component's descendants take part in keyboard traversal
+    /// ([`Runtime::focus_next`], Tab and Shift+Tab).
+    ///
+    /// Default true. With false, traversal skips every descendant in this
+    /// component's presentation subtree, at any depth, while the component
+    /// itself stays a stop when [`Self::tab_stop`] holds. A surface (a popup,
+    /// menu or dialog) starts a traversal scope of its own, as does a detached
+    /// native window's root, so a dialog opened from inside this component
+    /// keeps its stops. Pointer presses, explicit focus and the descendants'
+    /// own focus requests still reach them, and focus restoration after hiding
+    /// or removal is unaffected. Traversal from a focused descendant continues
+    /// from its place in navigation order, which visits this component's
+    /// ordinary descendants right after it: Tab moves past them and Shift+Tab
+    /// reaches this component or the stop before it. A collection that keeps
+    /// its items' content out of traversal, as
+    /// [`VirtualList::item_tab_stops`](crate::VirtualList::item_tab_stops)
+    /// does, provides another keyboard route to that content.
+    fn descendant_tab_stops(&self) -> bool {
+        true
+    }
+    /// Offered an unmodified Tab (`reverse` false) or Shift+Tab press or
+    /// repeat that has reached default keyboard traversal, before the runtime
+    /// moves focus. Return [`InputOutcome::Handled`](crate::InputOutcome::Handled) to claim it: traversal
+    /// does not run, and the component moves focus itself if it wants to, for
+    /// example to the next cell of a table it is editing. Default `Ignored`.
+    ///
+    /// The offer goes to the focused component and then to each ancestor
+    /// ordinary bubbling reaches, innermost first, stopping at an ancestor a
+    /// modal surface does not admit. Keys owned before traversal keep their
+    /// owner: on [`Runtime::command_key_input`], the native path, a key held
+    /// by an earlier press or a command, the editing phase
+    /// ([`Self::text_key_event`]), capture bindings and held-input
+    /// registrations all come first; [`Runtime::key_input`] offers the key
+    /// where it would traverse. Claiming does not take the key's release,
+    /// which is dispatched as before to the component focused when it
+    /// arrives. `repeat` is true for an operating-system repeat.
+    ///
+    /// # Errors
+    /// An implementation returns an error when handling the key fails. It
+    /// propagates from the key entry point, the key reaches no other handler,
+    /// nothing traverses and the components offered the key are cleaned up
+    /// as after a failed [`Self::keyboard_event`]. Effects the implementation
+    /// committed before failing, such as a signal write, are not undone;
+    /// whether a request it queued, such as a focus request, survives follows
+    /// the entry point's failure cleanup, as for `keyboard_event`: the native
+    /// path cancels pending focus requests. The default never fails.
+    fn tab_navigation(
+        &mut self,
+        _cx: &mut EventContext,
+        _reverse: bool,
+        _repeat: bool,
+    ) -> Result<crate::InputOutcome, RuntimeError> {
+        Ok(crate::InputOutcome::Ignored)
+    }
     /// Whether focus passes to a sibling of the same type when this component is
     /// removed while it holds focus.
     ///
@@ -4568,7 +4622,9 @@ impl Runtime {
         }
         if event.code == crate::KeyCode::Escape
             && event.transition == crate::KeyTransition::Pressed
-            && (self.escape_text_phase(event, recipients)? || self.surface_escape()?)
+            && (self.tooltip_escape()?
+                || self.escape_text_phase(event, recipients)?
+                || self.surface_escape()?)
         {
             return Ok(());
         }
@@ -4587,7 +4643,12 @@ impl Runtime {
             && event.transition != crate::KeyTransition::Released
             && event.transition != crate::KeyTransition::UnmatchedRelease
         {
-            self.focus_next(self.keyboard.modifiers().shift)?;
+            if let Some(input) = self.shared.notification_input.borrow().as_ref() {
+                input.dispatched.set(true);
+            }
+            if !self.offer_tab(event, Some(recipients))? {
+                self.focus_next(self.keyboard.modifiers().shift)?;
+            }
         } else if let Some(id) = self.window.focus.clone() {
             if event.code == crate::KeyCode::Escape
                 && event.transition == crate::KeyTransition::Pressed

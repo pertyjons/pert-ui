@@ -7,6 +7,7 @@ use crate::samples::{ReceiptReadout, VectorShapes};
 pub(crate) use drag_and_drop::drag_and_drop;
 pub(crate) use files::file_browser;
 use pert_ui::*;
+use std::{cell::RefCell, rc::Rc};
 
 /// One hundred thousand rows, of which only the ones near the viewport exist.
 struct Catalog {
@@ -227,12 +228,28 @@ impl ListItems for Notes {
     }
 }
 
+/// Notes the user wrote, by sample number, over the generated ones.
+type WrittenNotes = Rc<RefCell<std::collections::HashMap<u32, String>>>;
+
 /// 100,000 rows in whatever order the gallery, playing the application, chose.
 struct Measurements {
     count: u32,
     descending: bool,
+    notes: WrittenNotes,
 }
 impl Measurements {
+    /// A written note, or the generated one.
+    fn note(&self, number: u32) -> String {
+        match self.notes.borrow().get(&number) {
+            Some(note) => note.clone(),
+            None => (if number.is_multiple_of(7) {
+                "every seventh"
+            } else {
+                ""
+            })
+            .to_owned(),
+        }
+    }
     fn number(&self, index: usize) -> Option<u32> {
         let index = u32::try_from(index)
             .ok()
@@ -262,7 +279,7 @@ impl TableItems for Measurements {
         Some(match column {
             "sample" => format!("Sample {number}"),
             "value" => format!("{:.3}", f64::from(number).sqrt()),
-            "note" => (if number % 7 == 0 { "every seventh" } else { "" }).to_owned(),
+            "note" => self.note(number),
             "square" => (u64::from(number) * u64::from(number)).to_string(),
             "cube" => (u64::from(number).pow(3)).to_string(),
             "parity" => (if number % 2 == 0 { "even" } else { "odd" }).to_owned(),
@@ -305,6 +322,7 @@ pub(crate) fn collections(ui: &Runtime) -> Result<Element, RuntimeError> {
         TreeSource::new(Folders),
         ListSelection::new(ui, SelectionMode::Single),
     )?;
+    let written = WrittenNotes::default();
     let table_state = TableController::new(
         ui,
         [
@@ -328,15 +346,23 @@ pub(crate) fn collections(ui: &Runtime) -> Result<Element, RuntimeError> {
                 .width(Length::new(120.0)?)
                 .resizable(true)
                 .movable(true),
-            TableColumn::new("note", "Note").width(Length::new(200.0)?),
+            TableColumn::new("note", "Note")
+                .width(Length::new(200.0)?)
+                .editable(true),
         ],
         TableSource::new(Measurements {
             count: ROWS,
             descending: false,
+            notes: written.clone(),
         }),
         ListSelection::new(ui, SelectionMode::Single),
     )?;
     let sorted = table_state.clone();
+    // The order the gallery shows, which a saved note keeps.
+    let descending = Rc::new(std::cell::Cell::new(false));
+    let (order, sorted_notes) = (descending.clone(), written.clone());
+    let (editing, saved_order) = (written.clone(), descending.clone());
+    let republish = table_state.clone();
     let cell = ui.signal("Press Enter on a cell.".to_owned());
     let opened = cell.clone();
     let notes = VirtualList::estimated(ui.signal(ListSource::new(Notes(5_000))).read_only(), 40.0)?;
@@ -398,7 +424,7 @@ pub(crate) fn collections(ui: &Runtime) -> Result<Element, RuntimeError> {
             [
                 label(
                     "table-help",
-                    "Click Sample to sort; the gallery reorders its own data and hands it back. Drag a column edge to resize it. Drag the titles from Square root to Parity to reorder those columns, or press Alt with Left or Right on a cell; Sample and Note stay where they are. The columns need more than the table's width, so header and rows scroll together: use a horizontal wheel, the bar along the bottom, or move the active cell with Left and Right, which scrolls its column into view. Click a cell or use the arrows, then press Enter.",
+                    "Click Sample to sort; the gallery reorders its own data and hands it back. Drag a column edge to resize it. Drag the titles from Square root to Parity to reorder those columns, or press Alt with Left or Right on a cell; Sample and Note stay where they are. The columns need more than the table's width, so header and rows scroll together: use a horizontal wheel, the bar along the bottom, or move the active cell with Left and Right, which scrolls its column into view. Click a cell or use the arrows, then press Enter. Note is edited in place: Enter, F2, a double-click or typing edits it, Enter saves, Escape cancels and Tab saves and moves to the next row's note.",
                 ),
                 stage(
                     "table-stage",
@@ -412,10 +438,48 @@ pub(crate) fn collections(ui: &Runtime) -> Result<Element, RuntimeError> {
                                 "collections-table",
                                 Table::new(&table_state, 28.0)?
                                     .on_sort(move |_, sort| {
+                                        order.set(sort.direction == SortDirection::Descending);
                                         sorted.set_source(TableSource::new(Measurements {
                                             count: ROWS,
-                                            descending: sort.direction == SortDirection::Descending,
+                                            descending: order.get(),
+                                            notes: sorted_notes.clone(),
                                         }))
+                                    })
+                                    // The Note column is edited in place; the
+                                    // gallery keeps what the user wrote.
+                                    .cell_editor(move |edit| {
+                                        let number: u32 = edit
+                                            .row()
+                                            .strip_prefix("sample-")
+                                            .and_then(|number| number.parse().ok())
+                                            .unwrap_or(0);
+                                        let written = editing.clone();
+                                        let current = Measurements {
+                                            count: ROWS,
+                                            descending: saved_order.get(),
+                                            notes: written.clone(),
+                                        }
+                                        .note(number);
+                                        let (republish, order) =
+                                            (republish.clone(), saved_order.clone());
+                                        Ok(Element::new(
+                                            "note-editor",
+                                            TextField::new(edit.owner().signal(current))
+                                                .max_length(Some(60))
+                                                .on_save(move |_, note| {
+                                                    written
+                                                        .borrow_mut()
+                                                        .insert(number, note.to_owned());
+                                                    republish.set_source(TableSource::new(
+                                                        Measurements {
+                                                            count: ROWS,
+                                                            descending: order.get(),
+                                                            notes: written.clone(),
+                                                        },
+                                                    ))
+                                                })
+                                                .session(edit.session()),
+                                        ))
                                     })
                                     .on_activate(move |_, row, column| {
                                         opened.set(format!(

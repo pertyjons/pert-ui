@@ -99,6 +99,14 @@ pub enum Icon {
     Forward,
     /// A list of places visited before.
     History,
+    /// Copy to the clipboard: two overlapping sheets.
+    Copy,
+    /// Cut to the clipboard: scissors.
+    Cut,
+    /// Paste from the clipboard: a clipboard.
+    Paste,
+    /// A duplicate of an item: a sheet with a plus on another sheet.
+    Duplicate,
 }
 crate::tables::variant_list! {
     const ICONS: Icon = [
@@ -148,6 +156,10 @@ crate::tables::variant_list! {
         Back,
         Forward,
         History,
+        Copy,
+        Cut,
+        Paste,
+        Duplicate,
     ];
 }
 // Font roles and icons share one `u64` dependency mask; past 64 bits a shift
@@ -212,6 +224,10 @@ impl Icon {
             Self::Back => '\u{e5c4}',
             Self::Forward => '\u{e5c8}',
             Self::History => '\u{e889}',
+            Self::Copy => '\u{f08a}',
+            Self::Cut => '\u{f08b}',
+            Self::Paste => '\u{f098}',
+            Self::Duplicate => '\u{e3bb}',
         }
     }
 }
@@ -232,5 +248,25 @@ impl From<Icon> for IconSource {
 impl From<IconGlyph> for IconSource {
     fn from(value: IconGlyph) -> Self {
         Self::Custom(value)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Every role's default character has a glyph in the bundled icon font,
+    /// so a new role cannot silently draw nothing.
+    #[test]
+    fn every_role_has_a_bundled_glyph() {
+        let bytes = include_bytes!("../../assets/MaterialIconsOutlined-Regular.otf");
+        let font = swash::FontRef::from_index(bytes, 0).expect("bundled icon font");
+        for icon in Icon::ALL {
+            assert_ne!(
+                font.charmap().map(icon.character()),
+                0,
+                "{icon:?} has no glyph"
+            );
+        }
     }
 }

@@ -37,6 +37,8 @@ type ModifiedReport = Box<dyn FnMut(&mut EventContext, bool) -> Result<(), Runti
 enum Report {
     Modified,
     Refusal,
+    /// Applies the editor session's pending start.
+    Start,
 }
 type RefusalReport =
     Box<dyn FnMut(&mut EventContext, Option<&TextEditError>) -> Result<(), RuntimeError>>;
@@ -44,7 +46,8 @@ type RefusalReport =
 /// A single-line editor bound to a UI-local `Signal<String>`.
 ///
 /// Defaults to body typography and a 240-pixel preferred width. Changes immediately
-/// update the binding, unless [normalization or length limits](#normalization) enable draft mode;
+/// update the binding, unless [normalization or length limits](#normalization)
+/// or a [session](Self::session) enable draft mode;
 /// Enter invokes an optional submit callback once per press.
 /// Text is vertically centered in the field's available height.
 /// Escape/focus loss discard only uncommitted IME text. External writes win, reset
@@ -372,8 +375,9 @@ macro_rules! editor_api {
             /// user finished entering, for example to update other state from
             /// it.
             ///
-            /// Only an editor in draft mode saves, one with a normalizer or a
-            /// length limit: see [`Self::normalize`] for when. The callback runs on the UI thread in the event phase,
+            /// Only an editor in draft mode saves, one with a normalizer, a
+            /// length limit or, for a `TextField`, a
+            /// [session](TextField::session): see [`Self::normalize`] for when. The callback runs on the UI thread in the event phase,
             /// after the binding holds the saved text, once per save that wrote
             /// it, whether Enter or focus loss saved it. It does not run for a
             /// refused draft, a draft that normalizes to the bound text (which
@@ -469,8 +473,9 @@ macro_rules! editor_api {
             /// Paints a small mark in the field's top end corner, in the
             /// Primary role, while an unsaved draft differs from the saved
             /// value. Only an editor in draft mode (with a
-            /// [normalizer](Self::normalize) or a length limit) holds such a
-            /// draft; without one every edit is written at once and nothing is
+            /// [normalizer](Self::normalize), a length limit or, for a
+            /// `TextField`, a [session](TextField::session)) holds such a
+            /// draft; otherwise every edit is written at once and nothing is
             /// ever unsaved. Inspection reports the state as `dirty` and the
             /// semantics describe an unsaved draft with the installed
             /// [`UiStrings`](crate::UiStrings)'
@@ -709,7 +714,21 @@ macro_rules! editor_api {
                 // Revealed concealed text is hidden again when focus leaves.
                 self.0.set_revealed(cx, false)?;
                 cx.invalidate(Invalidation::Paint);
-                let outcome = self.0.save(cx).map(|_| ());
+                let outcome = if self.0.session.is_some() {
+                    self.0.complete(cx, EditorTrigger::FocusLeft).map(|_| ())
+                } else {
+                    self.0.save(cx).map(|_| ())
+                };
+                self.0.note_modified();
+                outcome
+            }
+            fn tab_navigation(
+                &mut self,
+                cx: &mut EventContext,
+                reverse: bool,
+                repeat: bool,
+            ) -> Result<InputOutcome, RuntimeError> {
+                let outcome = self.0.session_tab(cx, reverse, repeat);
                 self.0.note_modified();
                 outcome
             }
@@ -749,6 +768,39 @@ macro_rules! editor_api {
 editor_api!(TextField, false);
 editor_api!(TextArea, true);
 impl TextField {
+    /// Makes this field the editor of a host's [`EditorSession`], such as a
+    /// table cell's: it attaches to the edit open now
+    /// ([`EditorSession::attach`]), so the host calls
+    /// [`EditorSession::begin`] first.
+    ///
+    /// With a session the field is in draft mode whether or not it has a
+    /// normalizer or limits, applies the edit's [`EditorStart`] from its next
+    /// delivery once the host has focused it, and keeps Enter, Tab and
+    /// Escape, reporting each once:
+    ///
+    /// - Enter and an unmodified Tab or Shift+Tab save as Enter does
+    ///   (normalizer, length limits, required minimum, `on_save`) and report
+    ///   [`EditorOutcome::Saved`], [`EditorOutcome::Unchanged`] (nothing to
+    ///   write, a normalized text equal to the value, or an application write
+    ///   that replaced the draft) or [`EditorOutcome::Refused`] (the draft
+    ///   stays for correction, as does focus). A read-only field with a
+    ///   changed draft reports `Refused`.
+    /// - Escape discards the draft in one press and reports
+    ///   [`EditorOutcome::Cancelled`]; no surface or ancestor sees it.
+    /// - While a composition or a selection drag is active Enter and Tab are
+    ///   kept without saving, Escape ends the composition or drag only, and
+    ///   nothing is reported.
+    /// - Focus leaving by other means saves as focus loss does and reports
+    ///   [`EditorTrigger::FocusLeft`] with the outcome, unless an earlier
+    ///   report already ended the edit. Hiding and removal report nothing.
+    ///
+    /// The report comes before `on_save` runs; see [`EditorSession`] for
+    /// delivery. Replaces an earlier session. Ordinary bubbling, traversal
+    /// and command bindings see none of these keys while a session is set.
+    pub fn session(mut self, session: &EditorSession) -> Self {
+        self.0.session = Some(session.attach());
+        self
+    }
     /// Conceals the text, as for a password: each grapheme cluster is shown as
     /// one dot, and the field closes every way the content could leak.
     ///
@@ -1192,6 +1244,12 @@ pub(super) struct Editor<M = ()> {
     /// The report each requested delivery is for, oldest first: one entry per
     /// notifier request, so each delivery makes its own report in order.
     reports: RefCell<std::collections::VecDeque<Report>>,
+    /// The host's edit this editor reports into ([`TextField::session`]).
+    session: Option<EditorAttachment>,
+    /// What the save in progress completes, reported once at its outcome.
+    pending_trigger: Option<EditorTrigger>,
+    /// A start delivery is requested and not yet made.
+    start_pending: Cell<bool>,
 }
 /// The character a concealed editor shows for each grapheme of its text.
 const CONCEAL_DOT: &str = "\u{2022}";
@@ -1297,6 +1355,9 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             refusal_reported: None,
             refusal_pending: Cell::new(false),
             reports: RefCell::new(std::collections::VecDeque::new()),
+            session: None,
+            pending_trigger: None,
+            start_pending: Cell::new(false),
         }
     }
     /// Whether the text is shown as dots: concealed and not revealed.
@@ -1405,7 +1466,8 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
     /// Whether edits stay local until a save: a bound editor with a
     /// normalizer or a length limit.
     fn drafting(&self) -> bool {
-        (self.normalizer.is_some() || self.limited()) && self.value.is_some()
+        (self.normalizer.is_some() || self.limited() || self.session.is_some())
+            && self.value.is_some()
     }
     /// Whether a draft differs from the bound text.
     fn dirty(&self) -> bool {
@@ -1444,6 +1506,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
         match report {
             Some(Report::Modified) => self.deliver_modified(cx),
             Some(Report::Refusal) => self.deliver_refusal(cx),
+            Some(Report::Start) => self.apply_start(cx),
             None => Ok(()),
         }
     }
@@ -1503,10 +1566,137 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             let error = EntryError::from(error);
             cx.invalidate(Invalidation::Paint);
             self.rejection = Some(error.clone());
+            self.report_session(EditorOutcome::Refused);
             self.report.outcome(cx, Some(&error))?;
             return Ok(false);
         }
         self.save(cx)
+    }
+    /// Reports the outcome of the save in progress to the editor session,
+    /// once, when a session trigger is waiting for it.
+    fn report_session(&mut self, outcome: EditorOutcome) {
+        if let Some(trigger) = self.pending_trigger.take()
+            && let Some(session) = &self.session
+        {
+            session.report(trigger, outcome);
+        }
+    }
+    /// Saves for a session completion and reports its outcome: an explicit
+    /// confirmation (Enter, Tab) validates as Enter does, a departure as focus
+    /// loss does. Returns whether the draft was saved or found unchanged.
+    fn complete(
+        &mut self,
+        cx: &mut EventContext,
+        trigger: EditorTrigger,
+    ) -> Result<bool, RuntimeError> {
+        self.pending_trigger = Some(trigger);
+        let result = if trigger == EditorTrigger::FocusLeft {
+            self.save(cx)
+        } else {
+            self.submit_save(cx)
+        };
+        match &result {
+            Ok(saved) => self.report_session(if *saved {
+                EditorOutcome::Unchanged
+            } else {
+                EditorOutcome::Refused
+            }),
+            Err(_) => self.pending_trigger = None,
+        }
+        result
+    }
+    /// The keys an editor with a session keeps: Enter and Tab confirm, Escape
+    /// cancels, each reported once. While a composition or selection drag is
+    /// active Enter and Tab are kept without saving and Escape is left to
+    /// ordinary handling, which ends the composition or drag only.
+    fn session_key(
+        &mut self,
+        cx: &mut EventContext,
+        e: KeyEvent,
+    ) -> Result<Option<InputOutcome>, RuntimeError> {
+        if self.session.is_none() || self.multi {
+            return Ok(None);
+        }
+        let busy = self.preedit.is_some() || self.dragging || self.bar_drag.is_some();
+        let m = cx.modifiers();
+        match e.code {
+            KeyCode::Escape if !busy => {
+                if e.transition == KeyTransition::Pressed {
+                    self.discard();
+                    self.changed(cx);
+                    if let Some(session) = &self.session {
+                        session.report(EditorTrigger::Escape, EditorOutcome::Cancelled);
+                    }
+                    self.report.clear(cx)?;
+                }
+                Ok(Some(InputOutcome::Handled))
+            }
+            KeyCode::Enter => {
+                if !busy
+                    && e.transition == KeyTransition::Pressed
+                    && self.complete(cx, EditorTrigger::Enter)?
+                    && let Some(submit) = &mut self.submit
+                {
+                    (submit)(cx, &self.text)?;
+                }
+                Ok(Some(InputOutcome::Handled))
+            }
+            KeyCode::Tab if !(m.control || m.alt || m.super_key) => self
+                .session_tab(cx, m.shift, e.transition == KeyTransition::Repeated)
+                .map(Some),
+            _ => Ok(None),
+        }
+    }
+    /// Tab with a session: confirms and reports, or acts on a composition or
+    /// drag only; the key is kept either way. Without a session it is left
+    /// to traversal.
+    fn session_tab(
+        &mut self,
+        cx: &mut EventContext,
+        reverse: bool,
+        repeat: bool,
+    ) -> Result<InputOutcome, RuntimeError> {
+        if self.session.is_none() || self.multi {
+            return Ok(InputOutcome::Ignored);
+        }
+        if !repeat && self.preedit.is_none() && !self.dragging && self.bar_drag.is_none() {
+            self.complete(cx, EditorTrigger::Tab { reverse })?;
+        }
+        Ok(InputOutcome::Handled)
+    }
+    /// Applies the session's pending start, from the editor's own delivery.
+    fn apply_start(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
+        self.start_pending.set(false);
+        let Some(start) = self.session.as_ref().and_then(EditorAttachment::take_start) else {
+            return Ok(());
+        };
+        match start {
+            EditorStart::SelectAll => self.command(cx, TextCommand::SelectAll).map(|_| ()),
+            EditorStart::CaretAtEnd => {
+                let layout = self.layout(cx)?;
+                self.selection
+                    .set(TextSelection::new(&layout, usize::MAX, usize::MAX));
+                self.changed(cx);
+                Ok(())
+            }
+            EditorStart::Typed(text) => {
+                self.command(cx, TextCommand::SelectAll)?;
+                self.type_start(cx, &text)
+            }
+        }
+    }
+    /// Replaces the selected value with a typed start's text, which may be
+    /// empty, as one undoable edit. Text this editor cannot hold fails with
+    /// its text error and leaves the value selected; a read-only editor keeps
+    /// its value.
+    fn type_start(&mut self, cx: &mut EventContext, text: &str) -> Result<(), RuntimeError> {
+        self.validate(text)?;
+        if !self.enabled || self.locked() {
+            return Ok(());
+        }
+        self.cancel_composition();
+        let range = self.real_range();
+        self.replace(cx, range, text, true).map(|_| ())
     }
     /// Saves a changed draft: normalizes it, checks and prepares the result,
     /// then writes it and clears the local undo history. Returns `false` when
@@ -1534,10 +1724,16 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             }
             self.rejection = None;
             self.changed(cx);
+            self.report_session(EditorOutcome::Unchanged);
             self.report.clear(cx)?;
             return Ok(false);
         }
         if self.locked() || self.text == self.observed {
+            self.report_session(if self.text == self.observed {
+                EditorOutcome::Unchanged
+            } else {
+                EditorOutcome::Refused
+            });
             self.report.clear(cx)?;
             // A read-only field keeps an unsaved draft, which is not saved, so
             // the save does not report success for it. (Its key handling
@@ -1560,6 +1756,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
                 // reaches the application.
                 cx.invalidate(Invalidation::Paint);
                 self.rejection = Some(error.clone());
+                self.report_session(EditorOutcome::Refused);
                 self.report.outcome(cx, Some(&error))?;
                 return Ok(false);
             }
@@ -1580,6 +1777,13 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
         self.redo.clear();
         self.rejection = None;
         self.changed(cx);
+        // Reported before the application's callbacks run, so a failing
+        // callback cannot lose the completion.
+        self.report_session(if wrote {
+            EditorOutcome::Saved
+        } else {
+            EditorOutcome::Unchanged
+        });
         // Both notifications are attempted, so a failing rejection report
         // cannot swallow the save; the first error is returned.
         let reported = self.report.clear(cx);
@@ -1614,7 +1818,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             (None, None) => false,
             _ => true,
         };
-        let next_drafting = next.normalizer.is_some() || next.limited();
+        let next_drafting = next.normalizer.is_some() || next.limited() || next.session.is_some();
         let mut invalidation: Option<Invalidation> = None;
         let mut widen = |level: Invalidation| {
             invalidation = Some(invalidation.map_or(level, |current| current.max(level)));
@@ -1637,6 +1841,15 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             widen(Invalidation::Paint);
         }
         self.normalizer = next.normalizer;
+        if next
+            .session
+            .as_ref()
+            .is_some_and(EditorAttachment::has_start)
+        {
+            // Update schedules the new edit's start.
+            widen(Invalidation::Paint);
+        }
+        self.session = next.session;
         if (self.min_length, self.max_length, self.required)
             != (next.min_length, next.max_length, next.required)
         {
@@ -2066,8 +2279,21 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
     }
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
         self.update_inner(cx)?;
-        if (self.modified.is_some() || self.refusal.is_some()) && self.notifier.is_none() {
+        if (self.modified.is_some() || self.refusal.is_some() || self.session.is_some())
+            && self.notifier.is_none()
+        {
             self.notifier = Some(cx.notifier());
+        }
+        if !self.start_pending.get()
+            && self
+                .session
+                .as_ref()
+                .is_some_and(EditorAttachment::has_start)
+            && let Some(notifier) = &self.notifier
+        {
+            self.start_pending.set(true);
+            self.reports.borrow_mut().push_back(Report::Start);
+            notifier.request();
         }
         self.note_refusal();
         if self.drafting() {
@@ -2842,6 +3068,9 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             KeyTransition::Pressed | KeyTransition::Repeated
         ) {
             return Ok(InputOutcome::Ignored);
+        }
+        if let Some(outcome) = self.session_key(cx, e)? {
+            return Ok(outcome);
         }
         let m = cx.modifiers();
         let command = if cfg!(target_os = "macos") {

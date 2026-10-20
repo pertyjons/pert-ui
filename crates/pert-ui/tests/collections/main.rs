@@ -23,6 +23,7 @@ mod reveal;
 mod selection_notifications;
 mod table;
 mod table_columns;
+mod table_editing;
 mod tree;
 mod tree_reorder;
 mod virtual_collections;

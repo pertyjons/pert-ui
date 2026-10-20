@@ -13,8 +13,11 @@ then the focused component and its ancestors, and last the view, window and
 application command bindings. A stage that consumes the key ends routing, so a
 focused editor that uses a chord keeps it from an application shortcut; the
 method's documentation gives the complete order. [`Runtime::key_input`]
-delivers to components only and routes neither commands nor held input, so it
-suits driving one component directly. A test of what a user sees from a key,
+delivers to components only and routes neither commands nor held input, and
+runs the text-editing stage only for an Escape while a popup, menu or dialog
+is open, so it suits driving one component directly. On both paths an
+unmodified Tab moves focus before the focused component's ordinary key handler
+sees it. A test of what a user sees from a key,
 such as a shortcut, uses `command_key_input` and reports held modifiers through
 [`Runtime::native_modifiers`], as the native host does:
 
@@ -57,7 +60,9 @@ input contract.
 
 `Runtime::inspect()` returns a versioned owned [`InspectionSnapshot`], safe to send
 to the application's own inspector or tooling thread. [`Component::inspect`] and `inspect_with` explicitly
-contribute component and host state. Unmeasured box-model values stay absent,
+contribute component and host state. [`Runtime::inspection_id`] gives a mounted
+component's snapshot id, so a test finds the entry of a component it holds
+without matching keys, which repeat across a real application. Unmeasured box-model values stay absent,
 including [`BoxModelInspection::border`], which reports a painted outline's width
 and color only after the paint that drew it.
 [`DebugMode::Inspect`] enables a 256-event history. [`DebugOverlay`] separately draws

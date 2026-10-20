@@ -58,7 +58,10 @@ impl NumberInputError {
 ///
 /// Enter (fresh press, outside IME composition) or focus transfer/window focus
 /// loss saves a valid draft. Escape first cancels IME composition while preserving
-/// committed draft text; outside composition it restores the latest bound value. Empty,
+/// committed draft text; outside composition it restores the latest bound value
+/// when the draft differs from it, and ends a selection drag. With nothing to
+/// restore or end, Escape is left to the field's owner, as in [`TextField`], so a dialog or cell editor around the field
+/// can close on it. Empty,
 /// incomplete, invalid and out-of-range text stays editable with an error outline,
 /// including after an unsuccessful save; the binding retains its previous value.
 /// Hiding and unmount discard drafts without saving. Input/clipboard errors and
@@ -798,6 +801,13 @@ struct NumberEditor<T> {
     normalizer: Option<Normalizer<T>>,
     report: RejectionReport,
     saved_report: SaveReport<T>,
+    /// The host's edit this field reports into ([`IntegerInput::session`]).
+    session: Option<EditorAttachment>,
+    /// What the commit in progress completes, reported once at its outcome.
+    pending_trigger: Option<EditorTrigger>,
+    notifier: Option<crate::Notifier>,
+    /// A start delivery is requested and not yet made.
+    start_pending: bool,
 }
 impl<T: Number> NumberEditor<T> {
     fn new(source: Box<dyn NumberSource<T>>, inline: bool) -> Self {
@@ -822,6 +832,138 @@ impl<T: Number> NumberEditor<T> {
             normalizer: None,
             report: RejectionReport::default(),
             saved_report: SaveReport::default(),
+            session: None,
+            pending_trigger: None,
+            notifier: None,
+            start_pending: false,
+        }
+    }
+    /// The session this field reports into: only a plain field over a local
+    /// signal takes part, so an inline row or a parameter ignores it.
+    fn session(&self) -> Option<&EditorAttachment> {
+        self.session
+            .as_ref()
+            .filter(|_| !self.field.inline && !self.source.is_parameter())
+    }
+    /// Reports the outcome of the commit in progress, once.
+    fn report_session(&mut self, outcome: EditorOutcome) {
+        if let Some(trigger) = self.pending_trigger.take()
+            && let Some(session) = self.session()
+        {
+            session.report(trigger, outcome);
+        }
+    }
+    /// Commits for a session completion and reports its outcome.
+    fn complete(
+        &mut self,
+        cx: &mut EventContext,
+        trigger: EditorTrigger,
+    ) -> Result<(), RuntimeError> {
+        self.pending_trigger = Some(trigger);
+        let result = self.commit(cx);
+        // A commit that failed before reaching its outcome reports nothing.
+        self.pending_trigger = None;
+        result
+    }
+    /// The keys a field with a session keeps: Enter and Tab confirm, Escape
+    /// cancels, each reported once. While a composition or selection drag is
+    /// active Enter and Tab are kept without saving and Escape goes to the
+    /// text editor, which ends the composition or drag only.
+    fn session_key(
+        &mut self,
+        cx: &mut EventContext,
+        event: KeyEvent,
+        control: KeyCode,
+        chord: Modifiers,
+    ) -> Result<Option<InputOutcome>, RuntimeError> {
+        if self.session().is_none()
+            || !matches!(
+                event.transition,
+                KeyTransition::Pressed | KeyTransition::Repeated
+            )
+        {
+            return Ok(None);
+        }
+        let busy = self.field.editor.preedit.is_some() || self.field.editor.dragging;
+        let pressed = event.transition == KeyTransition::Pressed;
+        match control {
+            KeyCode::Escape if busy => self
+                .field
+                .editor
+                .key(
+                    cx,
+                    KeyEvent {
+                        code: control,
+                        ..event
+                    },
+                )
+                .map(Some),
+            KeyCode::Escape => {
+                if pressed {
+                    self.sync(self.source.current()?)?;
+                    self.cancel();
+                    self.field.editor.changed(cx);
+                    if let Some(session) = self.session() {
+                        session.report(EditorTrigger::Escape, EditorOutcome::Cancelled);
+                    }
+                    self.report.clear(cx)?;
+                }
+                Ok(Some(InputOutcome::Handled))
+            }
+            KeyCode::Enter => {
+                if pressed && !busy {
+                    self.complete(cx, EditorTrigger::Enter)?;
+                }
+                Ok(Some(InputOutcome::Handled))
+            }
+            KeyCode::Tab if !(chord.control || chord.alt || chord.super_key) => self
+                .session_tab(cx, cx.modifiers().shift, !pressed)
+                .map(Some),
+            _ => Ok(None),
+        }
+    }
+    /// Tab with a session: confirms and reports, or acts on a composition or
+    /// drag only; the key is kept either way.
+    fn session_tab(
+        &mut self,
+        cx: &mut EventContext,
+        reverse: bool,
+        repeat: bool,
+    ) -> Result<InputOutcome, RuntimeError> {
+        if self.session().is_none() {
+            return Ok(InputOutcome::Ignored);
+        }
+        if !repeat
+            && self.field.editor.preedit.is_none()
+            && !self.field.editor.dragging
+            && !self.held()
+        {
+            self.complete(cx, EditorTrigger::Tab { reverse })?;
+        }
+        Ok(InputOutcome::Handled)
+    }
+    /// Applies the session's pending start, from the field's own delivery.
+    fn apply_start(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
+        self.start_pending = false;
+        let Some(start) = self.session().and_then(EditorAttachment::take_start) else {
+            return Ok(());
+        };
+        self.sync(self.source.current()?)?;
+        let editor = &mut self.field.editor;
+        match start {
+            EditorStart::SelectAll => editor.command(cx, TextCommand::SelectAll).map(|_| ()),
+            EditorStart::CaretAtEnd => {
+                let layout = editor.layout(cx)?;
+                editor
+                    .selection
+                    .set(TextSelection::new(&layout, usize::MAX, usize::MAX));
+                editor.changed(cx);
+                Ok(())
+            }
+            EditorStart::Typed(text) => {
+                editor.command(cx, TextCommand::SelectAll)?;
+                editor.type_start(cx, &text)
+            }
         }
     }
     /// Applies the effective read-only state: the editing permission, a
@@ -843,13 +985,15 @@ impl<T: Number> NumberEditor<T> {
     /// the session begun at activation.
     fn gesture_step(&mut self, cx: &mut EventContext, up: bool) -> Result<(), RuntimeError> {
         let parameter = self.source.is_parameter();
-        let stepped = self.increment(cx, up, !parameter)?;
+        // With a session, steps edit the draft, so Escape can restore it.
+        let saves = !parameter && self.session().is_none();
+        let stepped = self.increment(cx, up, saves)?;
         if parameter {
             if let Ok(value) = self.draft() {
                 self.source.preview(value)?;
             }
             Ok(())
-        } else if stepped {
+        } else if stepped && saves {
             self.commit(cx)
         } else {
             // A refused step changes neither the draft nor the binding.
@@ -986,6 +1130,16 @@ impl<T: Number> NumberEditor<T> {
         Ok(())
     }
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
+        if self.session.is_some() && self.notifier.is_none() {
+            self.notifier = Some(cx.notifier());
+        }
+        if !self.start_pending
+            && self.session().is_some_and(EditorAttachment::has_start)
+            && let Some(notifier) = &self.notifier
+        {
+            self.start_pending = true;
+            notifier.request();
+        }
         let reading = self.source.read(cx)?;
         if let Some((min, max)) = reading.domain {
             if (min, max) != (self.min, self.max) {
@@ -1072,6 +1226,18 @@ impl<T: Number> NumberEditor<T> {
         self.field.error = self.draft().err();
         self.field.editor.changed(cx);
         let error = self.field.error.clone();
+        // Reported before the application's callbacks run, so a failing
+        // callback cannot lose the completion. A read-only field keeps a
+        // changed draft unsaved; a field refused since mount has no draft to
+        // correct, although its empty text does not parse.
+        let outcome = if wrote.is_some() {
+            EditorOutcome::Saved
+        } else if self.dirty() {
+            EditorOutcome::Refused
+        } else {
+            EditorOutcome::Unchanged
+        };
+        self.report_session(outcome);
         // Both notifications are attempted, so a failing rejection report
         // cannot swallow the save; the first error is returned.
         let reported = self.report.outcome(cx, error.as_ref());
@@ -1166,9 +1332,22 @@ impl<T: Number> NumberEditor<T> {
             invalidation = Some(Invalidation::Layout);
         }
         self.normalizer = next.normalizer;
+        if next
+            .session
+            .as_ref()
+            .is_some_and(EditorAttachment::has_start)
+        {
+            // Update schedules the new edit's start.
+            invalidation = invalidation.or(Some(Invalidation::Paint));
+        }
+        self.session = next.session;
         self.report.adopt(next.report);
         self.saved_report.adopt(next.saved_report);
         invalidation
+    }
+    /// Whether the draft differs from the saved value or its presentation.
+    fn dirty(&self) -> bool {
+        self.field.draft_text() != self.formatted || self.draft().ok() != self.saved
     }
     fn reset_draft(&mut self) {
         self.held_key = None;
@@ -1311,6 +1490,11 @@ impl<T: Number> NumberEditor<T> {
                 },
             );
         }
+        if self.field.editor.enabled
+            && let Some(outcome) = self.session_key(cx, event, control, chord)?
+        {
+            return Ok(outcome);
+        }
         if !self.field.editor.enabled
             || self.field.editor.read_only
             || !matches!(
@@ -1336,6 +1520,14 @@ impl<T: Number> NumberEditor<T> {
             }
             KeyCode::Escape => {
                 self.sync(self.source.current()?)?;
+                if !self.dirty() && !self.field.editor.dragging && !self.source.owns_preview()? {
+                    // Nothing to cancel: as in a text field, a refusal whose
+                    // draft an application write discarded ends here and
+                    // Escape bubbles to the owner. A selection drag is
+                    // cancelled first.
+                    self.report.clear(cx)?;
+                    return Ok(InputOutcome::Ignored);
+                }
                 self.cancel();
                 self.field.editor.changed(cx);
                 self.report.clear(cx)?;
@@ -1664,12 +1856,9 @@ impl<T: Number> NumberEditor<T> {
         details
             .properties
             .insert("valid".into(), InspectValue::Bool(error.is_none()));
-        details.properties.insert(
-            "dirty".into(),
-            InspectValue::Bool(
-                self.field.draft_text() != self.formatted || self.draft().ok() != self.saved,
-            ),
-        );
+        details
+            .properties
+            .insert("dirty".into(), InspectValue::Bool(self.dirty()));
         if let Some(value) = self.saved {
             // String preserves exact i64 identities and full decimal precision.
             details
@@ -1979,6 +2168,17 @@ macro_rules! number_shared {
             fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
                 self.0.update(cx)
             }
+            fn deliver_notifications(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
+                self.0.apply_start(cx)
+            }
+            fn tab_navigation(
+                &mut self,
+                cx: &mut EventContext,
+                reverse: bool,
+                repeat: bool,
+            ) -> Result<InputOutcome, RuntimeError> {
+                self.0.session_tab(cx, reverse, repeat)
+            }
             fn measure(
                 &self,
                 cx: &MeasureContext<'_>,
@@ -2139,6 +2339,8 @@ impl<T: Number> NumberEditor<T> {
         let result = if self.field.pressed() || self.hold.is_some() || self.source.is_parameter() {
             self.cancel();
             Ok(())
+        } else if self.session().is_some() {
+            self.complete(cx, EditorTrigger::FocusLeft)
         } else {
             self.commit(cx)
         };
@@ -2157,6 +2359,26 @@ macro_rules! field_api {
             pub fn new(value: impl Into<Signal<$ty>>) -> Self {
                 let value: Signal<$ty> = value.into();
                 Self(NumberEditor::new(Box::new(value), false))
+            }
+            /// Makes this field the editor of a host's
+            /// [`EditorSession`](crate::EditorSession), such as a table cell's,
+            /// as [`TextField::session`](crate::TextField::session) describes:
+            /// it attaches to the edit open now, applies its start from its
+            /// next delivery, keeps Enter, Tab and Escape and reports each
+            /// once. Enter and Tab save a valid draft as Enter does and report
+            /// `Saved` or `Unchanged`; an invalid or out-of-range draft, or a
+            /// read-only field's changed draft, reports `Refused` and stays.
+            /// Escape restores the value and reports `Cancelled`. With a
+            /// session the arrow keys, wheel and step buttons change the
+            /// draft instead of saving each step, so Escape restores what the
+            /// steps changed; during a held step every key is consumed and
+            /// nothing is reported. A field that refused its bound value has
+            /// nothing to correct and reports `Unchanged`. Focus leaving
+            /// reports `FocusLeft` with its save's outcome. A field bound to
+            /// a parameter ignores the session. Replaces an earlier session.
+            pub fn session(mut self, session: &crate::EditorSession) -> Self {
+                self.0.session = Some(session.attach());
+                self
             }
         }
     };

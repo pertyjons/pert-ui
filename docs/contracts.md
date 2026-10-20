@@ -410,7 +410,22 @@ tool window does when Escape returns the user to the main content.
 Tab and Shift+Tab stop at focusable components whose `Component::tab_stop`
 allows it; a component whose focus moves by other keys, such as menu-bar
 titles in menu mode, is focusable but not a tab stop, and Tab continues from
-it to the next tab stop in navigation order.
+it to the next tab stop in navigation order. A component whose
+`Component::descendant_tab_stops` is false keeps its whole presentation
+subtree out of traversal, up to the next surface or native window root, which
+starts a scope of its own; `VirtualList::item_tab_stops(false)` uses it to make
+a list with interactive rows one stop. Pointer presses, explicit focus and
+focus restoration are unaffected, and traversal from a focused descendant
+continues from its place in navigation order.
+
+An unmodified Tab or Shift+Tab that reaches default traversal is first offered
+through `Component::tab_navigation` to the focused component and the ancestors
+ordinary bubbling reaches, innermost first; a component that claims it moves
+focus itself, as an editor moving to the next cell does. Keys owned earlier
+keep their owner: on the native path held keys, command presses, the editing
+phase, capture bindings and held-input registrations come first, so view,
+window and application bindings still never see an unmodified Tab. The offer
+does not take the key's release.
 
 An element can opt out of native detachment; detachable tabs and explicit
 runtime requests honor the same permission. Native multi-window support remains
@@ -890,6 +905,41 @@ phase after the flush settles, as `on_modified` reports a draft's state; it is
 never a user-write callback, and refused typing and normalizer rejections do
 not call it.
 
+### Editor sessions
+
+A host that runs one editor at a time, such as a table cell, owns an
+`EditorSession` and learns from it how each edit ended, because a component
+cannot call another one while it handles an event. The host calls `begin`
+with an `EditorStart` before it builds the editor, which attaches to that edit
+through its `session` builder (`TextField`, `IntegerInput`, `DecimalInput`,
+`Select`) or `EditorSession::attach`. The editor applies the start, keeps
+Enter, Tab and Escape (claiming them in its editing phase on the native path,
+so capture bindings, surfaces and ancestors never see them), performs its own
+save, normalization and refusal, and reports an `EditorCompletion` before any
+fallible application callback runs; the report requests the host's
+`deliver_notifications`. `Saved`, `Unchanged` and `Cancelled` end the edit, so
+reports of an older edit, including a focus departure the host's own focus
+move caused, are dropped; `Refused` keeps it open. When a callback fails,
+dispatch returns its error and the completion arrives at the next flush. A
+text or number field with a session is always in draft mode, and its steps
+change the draft rather than the binding, so Escape restores. While a
+composition or selection drag is active the editor keeps Enter and Tab without
+saving and Escape ends only the composition or drag. Reattaching a mounted,
+focused editor to a new edit applies that edit's start. A `Select` list's
+choice completes the edit that was open when the list opened. Parameter-bound
+editors ignore sessions, since a refused submission cannot be told from an
+unchanged value. Hiding and removal report nothing. A host never takes focus
+back after `FocusLeft`.
+
+`Table` is such a host. It owns the open cell edit rather than the cell,
+creates the session from its own notifier so a completion reaches it even when
+the edited row is gone, and keeps the edited row mounted through
+`VirtualList::keep_mounted` for the whole edit. It acts on completions in its
+delivery, after the save's callbacks, so Tab's destination follows the order
+they left; a completion delivered after focus left the editor never moves
+focus. An edit closes when its row leaves the rows, when another edit begins
+(discarding a refused draft), and when the table is hidden or unmounted.
+
 ### Search field
 
 `SearchField` is the editor an owner presenting results embeds, such as a
@@ -899,7 +949,8 @@ paths a fresh Escape reaches the focused editors before an open popup, menu
 or dialog closes on it: `command_key_input` through its text phase, and
 `key_input` by running that phase for Escape while a surface is open. A
 search field with a query inside a popup therefore clears on the first
-Escape and the popup closes on the second. Navigation keys
+Escape and the popup closes on the second. Shown tooltip help comes before
+both: on both paths an unmodified Escape first dismisses it. Navigation keys
 and Enter are reported to the owner without moving focus. An optional
 debounce is one runtime deadline that each edit restarts, never a polling
 loop.

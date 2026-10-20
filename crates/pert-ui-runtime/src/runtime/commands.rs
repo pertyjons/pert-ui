@@ -1376,6 +1376,14 @@ impl Runtime {
             result.handled = true;
             return Ok(result);
         }
+        // Shown help takes an unmodified Escape before any editor does.
+        if input.physical == KeyCode::Escape
+            && event.transition == KeyTransition::Pressed
+            && self.tooltip_escape()?
+        {
+            result.handled = true;
+            return Ok(result);
+        }
         // The text phase starts at the focused component. An editor that
         // leaves the key (`Ignored`) passes the text phase on to its parent, so
         // a control that owns an embedded editor answers the keys the editor
@@ -1446,7 +1454,9 @@ impl Runtime {
             && !self.keyboard.modifiers().super_key
             && press
         {
-            self.focus_next(self.keyboard.modifiers().shift)?;
+            if !self.offer_tab(event, None)? {
+                self.focus_next(self.keyboard.modifiers().shift)?;
+            }
             result.handled = true;
             return Ok(result);
         }

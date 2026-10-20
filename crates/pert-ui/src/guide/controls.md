@@ -376,7 +376,8 @@ own [`Clipboard`] service through [`Runtime::set_clipboard`].
 
 Escape in a text field cancels composition first, or collapses a selection and
 ends dragging. With nothing to cancel it bubbles to ancestors. Numeric fields
-retain their separate Escape contract: restore the saved value and consume the key.
+restore the saved value of a changed draft and consume the key; with no changed
+draft, selected text included, Escape bubbles there too.
 
 # Selectable text
 
@@ -407,7 +408,8 @@ ui.mount_tree(
 
 [`IntegerInput`] binds exact `i64` values; [`DecimalInput`] binds finite `f64` values.
 Text stays local until Enter or focus loss saves a valid draft; Escape restores
-its saved value. Hiding/removal cancels. Invalid text remains visible with an error
+its saved value, and with nothing to restore it reaches the field's owner.
+Hiding/removal cancels. Invalid text remains visible with an error
 outline and never overwrites the number. External changed values win over drafts.
 Ranges and keyboard steps are optional; Up/Down edits the draft. Decimal display
 precision does not round the stored value, and both `.` and `,` are accepted as

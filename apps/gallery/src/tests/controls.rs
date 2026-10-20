@@ -484,3 +484,44 @@ fn the_colors_page_quick_pick_chooses_a_named_color_and_refuses_a_disabled_one()
     assert_eq!(text(&ui, "named-status"), ["Chose Steel blue."]);
     assert!(ui.validation_report().issues.is_empty());
 }
+
+#[test]
+fn toolbar_stop_is_a_command_button_enabled_while_playing() {
+    let (mut ui, root) = mounted();
+    open(&mut ui, &root, "toolbar");
+    let toolbar = find(&ui, &root, "global-toolbar");
+    let f7 = |ui: &mut Runtime| {
+        for action in [KeyAction::Press, KeyAction::Release] {
+            ui.command_key_input(CommandKeyInput::new(
+                KeyCode::F7,
+                action,
+                CommandKey::Named(KeyCode::F7),
+            ))
+            .unwrap();
+        }
+        settle(ui);
+    };
+    // Other pages have "message" labels too: read the status bar's own.
+    let message = find(&ui, &find(&ui, &root, "status-bar"), "message");
+    let message = ui.inspection_id(&message).unwrap();
+    let stopped = |ui: &Runtime| {
+        ui.inspect()
+            .components
+            .iter()
+            .find(|c| c.id == message)
+            .and_then(|c| c.details.properties.get("text").cloned())
+            == Some(InspectValue::Text("Stop pressed (synthetic).".into()))
+    };
+    // Nothing plays yet, so the command and its button are disabled.
+    f7(&mut ui);
+    assert!(!stopped(&ui));
+    let play = find(&ui, &toolbar, "play");
+    click(&mut ui, &play);
+    let stop = find(&ui, &find(&ui, &toolbar, "stop"), "button");
+    click(&mut ui, &stop);
+    settle(&mut ui);
+    assert!(stopped(&ui));
+    click(&mut ui, &play);
+    f7(&mut ui);
+    assert!(stopped(&ui));
+}

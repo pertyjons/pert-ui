@@ -1,5 +1,189 @@
 # Changelog
 
+## 0.3.44 (2026-10-20)
+
+Review fixes for table-editing plan slice 7 (the `inventory` example):
+
+- Row commands act on, and are enabled by, the selected rows that the
+  category and Active filters and the table's search leave shown; a hidden
+  selected row is no longer deleted, copied or duplicated.
+- The store bounds quantities and prices and sums totals in `i128`, parses
+  pasted Active flags strictly, refuses a value of the wrong kind for a
+  field, and checks a group of edits in order before applying any of it.
+- The headless session also checks choosing a category, saving a price,
+  Shift+Tab, redo, a refused edit left by focus, the Add button, the
+  Duplicate shortcut, copied and pasted values, refused pastes, the
+  filters' effect on row commands and the store's refusals.
+
+## 0.3.43 (2026-10-20)
+
+An editable-table example (table-editing plan slice 7):
+
+- The `inventory` example: a table edited in place with one editor per
+  column built from `CellEdit`, a checkbox column whose state a retained
+  cell component makes lazily, the table as one Tab stop, an
+  application-owned store with checked edits, undo and redo, row copy and
+  paste, and a toolbar of icon command buttons with shortcut help. Its
+  headless session checks editing, undo, copy and paste.
+- The gallery's Collections table edits its Note column in place.
+
+## 0.3.42 (2026-10-20)
+
+Review fixes for table-editing plan slice 6:
+
+- Unmounting a table drops its cell editor callback, so a callback that
+  holds the controller no longer keeps it alive, and a later table on the
+  same controller edits only with its own editor.
+- `Table::cell_tab_stops` takes effect when the table mounts; building or
+  applying a later description no longer changes the mounted table's F2 and
+  Escape route.
+- Beginning an edit on the cell whose edit is open focuses its editor again
+  even when the source no longer allows editing that cell.
+- Cell content keyed like the editor's host sits under a table-owned
+  wrapper, so such a key no longer fails the edit.
+- `CellEdit` documents that signals made through its owner are ordinary
+  runtime signals.
+
+## 0.3.41 (2026-10-20)
+
+Cell editing in tables (table-editing plan slice 6):
+
+- `TableColumn::editable`, `TableItems::editable` and `Table::cell_editor`
+  with `CellEdit`: the table edits cells in place. Enter begins with the value
+  selected, F2 and a double-click with the caret at the end, typed text with
+  that text; the table hosts the editor in the cell through an
+  `EditorSession`, keeps the row mounted for the whole edit, and ends or moves
+  the edit from the editor's reports (Enter and Escape return to the body,
+  Tab and Shift+Tab move to the next or previous editable cell, a refused
+  edit stays open). An edit closes when its row leaves the rows, when another
+  begins, and when the table is hidden or unmounted.
+- `Table::cell_tab_stops(false)` makes the body the table's one Tab stop; F2
+  then enters a cell's resting content and Escape returns.
+- `VirtualList::keep_mounted` keeps one item mounted outside the range, and
+  `VirtualList::on_text_input` receives text typed on the focused list.
+- Behavior change: Enter on an editable cell of a table with a cell editor
+  edits it instead of running `on_activate`.
+
+## 0.3.40 (2026-10-20)
+
+Review fixes for table-editing plan slice 5:
+
+- A session editor keeps Enter during a selection drag without saving; it
+  previously saved without reporting. A number field's Escape during a drag
+  ends the drag only instead of discarding the draft.
+- Reattaching a focused editor to a new edit, with nothing else changed,
+  applies the new edit's start in the same flush.
+- `EditorStart::Typed` replaces the value with the text even when it is empty,
+  and refuses a line break in a single-line editor with its text error instead
+  of turning it into a space.
+- A `Select` list's choice completes the edit open when the list opened, so a
+  list left open across a new edit cannot end it.
+- `Select::for_parameter` ignores `.session`, as the number fields do.
+- A number field that refused its bound value since mount reports
+  `Unchanged` instead of `Refused`.
+- The text editors' draft-mode rustdoc names sessions.
+
+## 0.3.39 (2026-10-20)
+
+Editor sessions (table-editing plan slice 5):
+
+- `EditorSession`, `EditorAttachment`, `EditorStart`, `EditorCompletion`,
+  `EditorTrigger` and `EditorOutcome`: a host that runs one editor at a time
+  learns how each edit ended (`Saved`, `Unchanged`, `Refused`, `Cancelled`)
+  and by what (Enter, Tab, Escape, a choice, focus leaving), reported before
+  the editor's own fallible callbacks and delivered through the host's
+  notifier. Reports of an older edit are dropped.
+- `TextField::session`, `IntegerInput::session`, `DecimalInput::session` and
+  `Select::session`: with a session the editor keeps Enter, Tab and Escape
+  (ahead of capture bindings, surfaces and ancestors), is always in draft
+  mode, applies the edit's start (value selected, caret at the end, typed
+  text), and a number field's steps change the draft instead of the binding.
+- Behavior fix: shown tooltip help takes an unmodified Escape before any
+  editor on both key paths, as the contracts state; previously an editor
+  answered first on the native path and while a surface was open. The
+  gallery's interaction check dismisses help before its search Escape step.
+
+## 0.3.38 (2026-10-20)
+
+Review fixes for table-editing plan slice 4:
+
+- `Component::tab_navigation` documents its failure cleanup: committed
+  effects stay, and a queued focus request follows the entry point's
+  cleanup, which on the native path cancels it.
+- Tests: a failing offer cleans up its recipient and keeps its committed
+  write on both key paths; a held Tab registration wins over the offer;
+  pointer presses and focus restoration ignore a scope; a dialog opened
+  inside a scope takes its initial focus.
+
+## 0.3.37 (2026-10-20)
+
+Keyboard traversal scope and a Tab hook (table-editing plan slice 4):
+
+- `Component::descendant_tab_stops`: a component returning false keeps its
+  presentation subtree out of Tab traversal and `focus_next`, up to the next
+  surface or native window root, which starts its own scope; pointer
+  presses, explicit focus and focus restoration are unaffected.
+- `Component::tab_navigation`: an unmodified Tab or Shift+Tab that reaches
+  default traversal is offered to the focused component and its bubbling
+  ancestors, innermost first, before focus moves; a claim stops traversal.
+  On the native path held keys, command presses, the editing phase, capture
+  bindings and held input still come first, and the release is dispatched
+  as before.
+- `VirtualList::item_tab_stops(false)` makes a list with interactive rows
+  one stop; `Tree` forwards the scope. `Table` does not use it yet.
+
+## 0.3.36 (2026-10-20)
+
+Inspection ids (table-editing plan slice 3) and slice 2 review fixes:
+
+- `Runtime::inspection_id` returns a mounted component's
+  `ComponentInspection::id`, so a test finds that component's snapshot entry
+  without matching keys; the diagnostics guide names it.
+- `Tooltip::command` documents that unregistering the command leaves its
+  last help, and the binding-derivation errors it can return.
+- The gallery's Stop test reads the toolbar status bar's own message.
+
+## 0.3.35 (2026-10-20)
+
+Editing icon roles (table-editing plan slice 3):
+
+- `Icon::Copy`, `Icon::Cut`, `Icon::Paste` and `Icon::Duplicate`, drawn from
+  the bundled Material Icons Outlined font; a unit test checks that every
+  role's default character has a glyph in that font.
+
+## 0.3.34 (2026-10-20)
+
+Command buttons with icons and shortcut help (table-editing plan slice 2):
+
+- `Button::command_icon` builds the icon-only form of `Button::command`,
+  with the command's enabled binding, receipts and its name as accessible
+  name, replacing the hand-wired `Button::icon` and `invoke_command` recipe.
+- `Tooltip::command` wraps such an anchor in help naming the command and its
+  first shortcut, for example `Undo (Ctrl+Z)`, following
+  `Runtime::command_shortcuts` when the command is rebound.
+- The gallery's toolbar Stop button is a command (F7) enabled while playing.
+
+## 0.3.33 (2026-10-20)
+
+Review fix for table-editing plan slice 1:
+
+- `IntegerInput` and `DecimalInput` keep Escape during a selection drag over
+  unchanged text and end the drag, instead of letting it bubble to an owner
+  or close a surface; the Escape test covers the drag on both key paths.
+
+## 0.3.32 (2026-10-20)
+
+Number inputs and Escape (table-editing plan slice 1):
+
+- Behavior: `IntegerInput` and `DecimalInput` leave Escape to their owner
+  when there is nothing to restore, as `TextField` does, so a dialog or cell
+  editor around a clean number field closes on it; a changed or invalid
+  draft is still restored and the key consumed, on both key paths.
+- Tests: every built-in editor opens with its value selected whether focus
+  or `SelectAll` is requested first, also over a draft binding set while the
+  editor mounts. The probe's "select-all on open is lost" observation did
+  not reproduce and is withdrawn.
+
 ## 0.3.31 (2026-10-19)
 
 Review fixes for log-explorer plan slices 4 and 5:

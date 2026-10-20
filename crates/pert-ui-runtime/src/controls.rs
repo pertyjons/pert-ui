@@ -445,8 +445,9 @@ impl Button {
     /// command queue is the activation's error. Neither the command nor the
     /// handler is replayed after a failure. Same-key redescription replaces the
     /// command, the handler and this description's restrictions, as for any
-    /// button. For an icon-only command button use [`Self::icon`] with an
-    /// action that calls `invoke_command`.
+    /// button. [`Self::command_icon`] builds the same button with an icon in
+    /// place of the name, and [`Tooltip::command`](crate::Tooltip::command)
+    /// shows the command's name and shortcut on hover or focus.
     ///
     /// # Errors
     /// `StaleCommand` if the command is no longer registered.
@@ -479,6 +480,40 @@ impl Button {
             button = button.enabled(enabled);
         }
         Ok(button)
+    }
+    /// Creates an icon-only button that invokes a registered command: the
+    /// button of [`Self::command`], with its activation, enabled binding,
+    /// receipts and errors, showing `icon` instead of the command's name. The
+    /// name remains the button's accessible name, as for [`Self::icon`]. Wrap
+    /// it in [`Tooltip::command`](crate::Tooltip::command) to show the name
+    /// and the command's shortcut as help.
+    ///
+    /// # Errors
+    /// `StaleCommand` if the command is no longer registered.
+    ///
+    /// ```
+    /// use pert_ui_runtime::{Button, CommandScope, Element, Icon, KeyChord, Runtime, Tooltip};
+    /// let mut ui = Runtime::new();
+    /// let undo = ui.register_command("Undo", CommandScope::Application,
+    ///     vec![KeyChord::primary('z')], |_, _| Ok(()))?;
+    /// let can_undo = ui.signal(false);
+    /// ui.command_enabled_signal(&undo, can_undo.read_only())?;
+    /// let button = Button::command_icon(&ui, &undo, Icon::Undo, |_, _| Ok(()))?.frameless();
+    /// let help = Tooltip::command(&ui, Element::new("undo", button), &undo)?;
+    /// ui.mount_tree(Element::new("undo-help", help))?;
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn command_icon(
+        ui: &crate::Runtime,
+        command: &crate::CommandId,
+        icon: impl Into<IconSource>,
+        on_receipt: impl FnMut(crate::CommandReceipt, &mut EventContext) -> Result<(), RuntimeError>
+        + 'static,
+    ) -> Result<Self, RuntimeError> {
+        Ok(Self {
+            icon: Some(icon.into()),
+            ..Self::command(ui, command, on_receipt)?
+        })
     }
     /// Removes the resting fill so this button sits directly on its parent surface.
     /// Text/icon padding, minimum size, input and focus behavior remain unchanged.

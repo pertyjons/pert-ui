@@ -137,6 +137,26 @@ itself unfocusable while editing and applies its own policy when
 [`Component::focus_within_changed`] reports that focus left. A [`TextField`]
 instead writes a binding and suits a form.
 
+A composite control decides how Tab moves through it. Returning false from
+[`Component::descendant_tab_stops`] keeps its content out of traversal, so a
+grid of cells with checkboxes is one Tab stop while pointer presses still
+reach the checkboxes; give keyboard users another route to them. To move
+focus on Tab yourself, for example to the next cell of an editor, answer
+[`Component::tab_navigation`]: the runtime offers it the Tab or Shift+Tab
+before it would move focus, and a claim stops the default traversal.
+
+A host that opens one editor at a time, as a table editing a cell does, owns
+an [`EditorSession`]. It calls [`EditorSession::begin`] with an
+[`EditorStart`] (the value selected, the caret at the end, or the text the
+user typed), builds the editor with its `session` builder, such as
+[`TextField::session`], and focuses it. The editor keeps Enter, Tab and
+Escape, saves or refuses as it always does, and reports an
+[`EditorCompletion`]; the host reads it with
+[`EditorSession::take_completion`] in [`Component::deliver_notifications`]
+and closes the editor, moves to the next cell on Tab, or leaves it open after
+[`EditorOutcome::Refused`]. A custom editor takes part through
+[`EditorSession::attach`] and the returned [`EditorAttachment`].
+
 # Inspection
 
 [`Component::inspect`] describes the widget to tooling: a [`Semantics`] role,

@@ -17,6 +17,10 @@ use std::{
     rc::Rc,
 };
 
+mod editing;
+pub use editing::CellEdit;
+use editing::{CellEditorFn, Editing};
+
 /// One column of a [`Table`]: identity, title, width and what its header offers.
 ///
 /// A column is one weighted share of the width by default, never narrower than
@@ -40,6 +44,7 @@ pub struct TableColumn {
     resizable: bool,
     sortable: bool,
     movable: bool,
+    editable: bool,
 }
 impl PartialEq for TableColumn {
     fn eq(&self, other: &Self) -> bool {
@@ -50,6 +55,7 @@ impl PartialEq for TableColumn {
             && self.resizable == other.resizable
             && self.sortable == other.sortable
             && self.movable == other.movable
+            && self.editable == other.editable
     }
 }
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -83,6 +89,7 @@ impl TableColumn {
             resizable: false,
             sortable: false,
             movable: false,
+            editable: false,
         }
     }
     /// Uses a fixed width, never below [`TableColumn::MIN_WIDTH`].
@@ -124,6 +131,13 @@ impl TableColumn {
     /// movable keeps the first where it is.
     pub fn movable(mut self, movable: bool) -> Self {
         self.movable = movable;
+        self
+    }
+    /// Whether the table edits this column's cells in place with its
+    /// [`Table::cell_editor`]. Default false. A cell of an editable column
+    /// is edited only when [`TableItems::editable`] also allows it.
+    pub fn editable(mut self, editable: bool) -> Self {
+        self.editable = editable;
         self
     }
     /// The column's key.
@@ -185,6 +199,12 @@ impl TableColumn {
     pub const fn is_movable(&self) -> bool {
         self.movable
     }
+    /// Whether the table edits this column's cells in place; see
+    /// [`TableColumn::editable`].
+    #[must_use]
+    pub const fn is_editable(&self) -> bool {
+        self.editable
+    }
 }
 
 /// Which way a column is sorted.
@@ -241,6 +261,16 @@ pub trait TableItems {
         let _ = (index, column);
         None
     }
+    /// Whether the cell of row `index` in the [editable](TableColumn::editable)
+    /// column with key `column` can be edited now; true by default. The table
+    /// asks when an edit would begin and when Tab looks for the next cell to
+    /// edit, never during an open edit, so answering false later does not end
+    /// one. Answer from data the source holds, without side effects, as for
+    /// [`Self::text`].
+    fn editable(&self, index: usize, column: &str) -> bool {
+        let _ = (index, column);
+        true
+    }
 }
 
 /// A shared, replaceable set of table rows, equal only to itself.
@@ -295,6 +325,8 @@ struct Shared {
     /// Bumped by controller writes that change the columns' extents, which the
     /// table answers by arranging again; the rows follow `revision`.
     relayout: Signal<u64>,
+    /// The open cell edit and what the table needs to run it.
+    editing: Editing,
 }
 impl Shared {
     // Fixed columns take their width, the rest share what is left by weight, and
@@ -458,10 +490,22 @@ impl ListItems for Rows {
             .borrow()
             .iter()
             .map(|column| {
+                // The edited cell holds the editor's host instead. Content
+                // keyed like the host sits in a wrapper of the table's, so
+                // the two never meet under one key.
+                let content = Editing::host(&self.shared, &key, &column.key).or_else(|| {
+                    self.source.0.cell(index, &column.key).map(|content| {
+                        if content.key() == editing::HOST_KEY {
+                            Element::new(CONTENT_KEY, CellContent(Some(content))).structural()
+                        } else {
+                            content
+                        }
+                    })
+                });
                 Element::new(
                     column.key.clone(),
                     TableCell {
-                        content: self.source.0.cell(index, &column.key),
+                        content,
                         column: column.key.clone(),
                         shared: self.shared.clone(),
                     },
@@ -475,6 +519,8 @@ impl ListItems for Rows {
                 key: self.source.0.key(index)?,
                 shared: self.shared.clone(),
                 active: None,
+                clicks: crate::ClickCounter::new(),
+                clicked: None,
             },
         ))
     }
@@ -562,6 +608,7 @@ impl TableController {
             user_sized: RefCell::new(BTreeSet::new()),
             resizing: Cell::new(false),
             relayout: ui.signal(0),
+            editing: Editing::new(ui),
         });
         let total = source.0.len();
         Ok(Self(Rc::new(StateInner {
@@ -808,6 +855,28 @@ impl TableController {
     }
 }
 
+/// The key of the wrapper around application content keyed like the
+/// editor's host.
+const CONTENT_KEY: &str = "content";
+
+/// A cell's application content keyed like the editor's host, under a key
+/// of the table's own, so the content's key stays free.
+struct CellContent(Option<Element>);
+impl Component for CellContent {
+    fn take_children(&mut self) -> Vec<Element> {
+        self.0.take().into_iter().collect()
+    }
+    fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+        Ok(())
+    }
+    fn measure(&self, cx: &MeasureContext<'_>, space: Constraints) -> Result<Size, RuntimeError> {
+        cx.measure(0, space)
+    }
+    fn arrange(&self, cx: &mut ArrangeContext<'_>, size: Size) -> Result<(), RuntimeError> {
+        cx.place(0, Rect::from_size(size))
+    }
+}
+
 /// One cell: the application's content inset by ControlPaddingX and clipped to
 /// its column, centered vertically in the row.
 struct TableCell {
@@ -860,10 +929,22 @@ impl Component for TableCell {
     }
     fn keyboard_event(
         &mut self,
-        _: &mut EventContext,
-        _: KeyEvent,
-        _: &KeyboardState,
+        cx: &mut EventContext,
+        event: KeyEvent,
+        keys: &KeyboardState,
     ) -> Result<InputOutcome, RuntimeError> {
+        // With the body as the one Tab stop, Escape that resting content F2
+        // entered leaves unhandled returns to the body.
+        let editing = &self.shared.editing;
+        if !editing.cell_stops.get()
+            && keys.control_key(event) == KeyCode::Escape
+            && event.transition == KeyTransition::Pressed
+            && keys.chord_modifiers(event) == crate::Modifiers::default()
+            && let Some(body) = &*editing.body.borrow()
+        {
+            cx.request_focus_for(body)?;
+            return Ok(InputOutcome::Handled);
+        }
         Ok(InputOutcome::Ignored)
     }
     fn inspect(&self) -> ComponentDetails {
@@ -889,6 +970,10 @@ struct TableRow {
     shared: Rc<Shared>,
     /// The active cell's column index while this is the active row.
     active: Option<usize>,
+    /// Primary presses on this row's cells, for a double-click that begins
+    /// an edit, and the column of the last one.
+    clicks: crate::ClickCounter,
+    clicked: Option<String>,
 }
 impl Component for TableRow {
     fn take_children(&mut self) -> Vec<Element> {
@@ -900,10 +985,19 @@ impl Component for TableRow {
         cx.read(&self.shared.revision)?;
         let row = cx.read_paint(&self.shared.selection.active())?;
         let column = cx.read_paint(&self.shared.active_column)?;
-        self.active = (row.as_deref() == Some(self.key.as_str()))
+        let is_active = row.as_deref() == Some(self.key.as_str());
+        self.active = is_active
             .then_some(column)
             .flatten()
             .and_then(|key| self.shared.column_index(&key));
+        if is_active {
+            // F2 moves focus into the active cell's resting content.
+            *self.shared.editing.active_cells.borrow_mut() = cx
+                .children()
+                .iter()
+                .map(|child| (child.key().to_owned(), child.id().clone()))
+                .collect();
+        }
         Ok(())
     }
     fn measure(
@@ -938,7 +1032,8 @@ impl Component for TableRow {
         event: PointerEvent,
     ) -> Result<InputOutcome, RuntimeError> {
         // A press names the cell's column and is then left unhandled, so the list
-        // still makes this row active and selects it.
+        // still makes this row active and selects it. The second press of an
+        // unmodified double-click on one cell also asks the table to edit it.
         if event.kind() == PointerKind::Press(PointerButton::Primary)
             && let Some(point) = cx.to_local(event.position())
         {
@@ -951,7 +1046,20 @@ impl Component for TableRow {
                 .position(|(start, width)| x >= *start && x < start + width);
             if let Some(column) = column {
                 let key = self.shared.columns.borrow()[column].key.clone();
-                self.shared.active_column.set(Some(key))?;
+                self.shared.active_column.set(Some(key.clone()))?;
+                let unmodified = cx.modifiers() == crate::Modifiers::default();
+                if !unmodified || self.clicked.as_deref() != Some(key.as_str()) {
+                    self.clicks.reset();
+                }
+                let count = self.clicks.press_event(cx, event);
+                self.clicked = unmodified.then_some(key.clone());
+                if unmodified && count == Some(2) {
+                    self.shared.editing.request(
+                        self.key.clone(),
+                        key,
+                        crate::EditorStart::CaretAtEnd,
+                    );
+                }
             }
         }
         Ok(InputOutcome::Ignored)
@@ -1072,9 +1180,11 @@ enum HeaderGesture {
 /// modified chords than Alt's column move are left to command bindings); a press on a cell
 /// sets its column as well as its row. The cell gets the
 /// [`ColorRole::FocusRing`] ring in place of the list's row ring, shown whenever a column is
-/// active. Enter runs [`Table::on_activate`] with the row and the column. Cells
-/// are not Tab stops: editing in place is what the application mounts on
-/// activation, and interactive content inside a cell keeps its own input.
+/// active. Enter runs [`Table::on_activate`] with the row and the column,
+/// except on a cell the table edits in place ([cell editing](#cell-editing)).
+/// Cells themselves are not Tab stops; interactive content inside a cell keeps
+/// its own input, including its own Tab stop unless
+/// [`Table::cell_tab_stops`] turns those off.
 ///
 /// ```
 /// use pert_ui_runtime::{Element, Label, ListSelection, Runtime, SelectionMode, Table,
@@ -1117,6 +1227,104 @@ enum HeaderGesture {
 /// builds every column of each mounted row, including columns scrolled out of
 /// view, and an active [filter](TableController::filter) reads every row's text
 /// again whenever the source is replaced.
+///
+/// # Cell editing
+///
+/// With a [`Table::cell_editor`], cells of [editable](TableColumn::editable)
+/// columns that [`TableItems::editable`] allows are edited in place. The table
+/// owns the open edit: it puts a host in the edited cell, which builds the
+/// editor once with an [`EditorSession`](crate::EditorSession) and focuses
+/// it, keeps the edited row mounted for the whole edit (scrolled away or not;
+/// it is not kept in view), and follows the session's reports.
+///
+/// - **Begin.** Enter on the active cell begins with the value selected, F2
+///   and a double-click with the caret at the end, and committed text typed
+///   while the body is focused with that text in place of the value
+///   ([`EditorStart`](crate::EditorStart)); text that is only whitespace
+///   does not begin, since Space selects. The body has no text input state,
+///   so typing never starts an IME composition there: an IME user begins
+///   with Enter or F2. A begin makes the cell active. On the cell whose edit
+///   is open it focuses the editor again; on another cell it closes the open
+///   edit, discarding a refused draft. Content inside a cell that handles a
+///   press, such as a checkbox, takes a double-click first, and a press with
+///   a modifier never begins an edit.
+/// - **End.** The table acts only on reports, in its own delivery after the
+///   editor's save callbacks have run, so a sort or filter they caused
+///   applies. Escape, and Enter or a choice that saved or changed nothing,
+///   close the edit and return focus to the body on the edited cell. Tab and
+///   Shift+Tab that saved or changed nothing move the edit to the next or
+///   previous eligible cell, along the row in the current column order and
+///   then on the following or preceding rows, with the value selected; past
+///   either end of the table the body takes focus on the edited cell. Focus
+///   leaving the editor otherwise closes the edit without moving focus, and
+///   a refused confirmation keeps it open with its draft. A report delivered
+///   after focus left the editor never moves focus. Help, a composition, a
+///   selection drag and an open dropdown list take Escape first, as their
+///   editors define, and a press that leaves focus in the editor leaves the
+///   edit open.
+/// - **Rows and lifetime.** Rows are keyed, so sorting and same-key
+///   replacement keep the editor and its draft. When the edited row leaves
+///   the rows, by deletion or a [filter](TableController::filter), the edit
+///   closes with its draft discarded and the body takes focus if the editor
+///   had it; the selection is not pruned. Hiding or unmounting the table
+///   closes the edit. Escape on the body cancels an open edit whose editor
+///   does not hold focus, such as a disabled one.
+///
+/// Tab looks for the next eligible cell row by row, asking
+/// [`TableItems::index_of`] and [`TableItems::editable`] for each, so a table
+/// with few editable rows pays for the rows it passes.
+///
+/// ```
+/// use pert_ui_runtime::*;
+/// use std::rc::Rc;
+/// struct Items(Rc<Vec<Signal<String>>>);
+/// impl TableItems for Items {
+///     fn len(&self) -> usize { self.0.len() }
+///     fn key(&self, index: usize) -> Option<String> {
+///         (index < self.0.len()).then(|| format!("item{index}"))
+///     }
+///     fn cell(&self, index: usize, _: &str) -> Option<Element> {
+///         let name = self.0.get(index)?.get().ok()?;
+///         Some(Element::new("name", Label::new(name)))
+///     }
+/// }
+/// let mut ui = Runtime::new();
+/// ui.set_viewport(Viewport::new(320.0, 200.0, 1.0)?)?;
+/// let names = Rc::new(vec![ui.signal("Cable".to_owned()), ui.signal("Mouse".to_owned())]);
+/// let state = TableController::new(
+///     &ui,
+///     [TableColumn::new("name", "Name").editable(true)],
+///     TableSource::new(Items(names.clone())),
+///     ListSelection::new(&ui, SelectionMode::Single),
+/// )?;
+/// let (rows, republish) = (names.clone(), state.clone());
+/// let table = Table::new(&state, 24.0)?.cell_editor(move |edit| {
+///     let index: usize = edit.row().trim_start_matches("item").parse().unwrap_or(0);
+///     let (name, rows, republish) = (rows[index].clone(), rows.clone(), republish.clone());
+///     Ok(Element::new(
+///         "field",
+///         TextField::new(name)
+///             .session(edit.session())
+///             // Show the saved name in the plain cell.
+///             .on_save(move |_, _| republish.set_source(TableSource::new(Items(rows.clone())))),
+///     ))
+/// });
+/// let root = ui.mount_tree(Element::new("table", table))?;
+/// ui.flush(ui.now())?;
+/// let body = ui.children(&root)?[0].clone();
+/// ui.focus(&body)?;
+/// state.selection().set_active(Some("item0".into()))?;
+/// state.set_active_column(Some("name".into()))?;
+/// ui.key_input(KeyCode::Enter, KeyAction::Press)?;
+/// ui.key_input(KeyCode::Enter, KeyAction::Release)?;
+/// ui.text_input("Laptop")?;
+/// ui.key_input(KeyCode::Enter, KeyAction::Press)?;
+/// ui.key_input(KeyCode::Enter, KeyAction::Release)?;
+/// ui.flush(ui.now())?;
+/// assert_eq!(names[0].get()?, "Laptop");
+/// assert_eq!(ui.focused(), Some(body), "the body has focus again");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub struct Table {
     resize_permission: Permission,
@@ -1124,7 +1332,13 @@ pub struct Table {
     resize_allowed: bool,
     reorder_allowed: bool,
     resize_original: Option<(String, ColumnWidth, bool)>,
-    body: Option<Element>,
+    /// The body until it becomes the table's child, so builders can still
+    /// configure it.
+    body: Option<VirtualList>,
+    /// The editor callback until the mounted table installs it.
+    cell_editor: Option<CellEditorFn>,
+    /// Whether cell content is a Tab stop, installed by the mounted table.
+    cell_stops: bool,
     /// The mounted body, which a header press focuses so Escape reaches the
     /// header gesture; retained from the last update.
     body_id: Option<WidgetId>,
@@ -1233,6 +1447,7 @@ impl Table {
         let on_selection: Rc<RefCell<Option<SelectionHandler>>> = Rc::new(RefCell::new(None));
         let selection_handler = on_selection.clone();
         let observe_selection = Rc::new(Cell::new(false));
+        let (editor, typed) = (controller.clone(), controller.clone());
         Ok(Self {
             resize_permission: Permission::allowed(),
             reorder_permission: Permission::allowed(),
@@ -1240,29 +1455,51 @@ impl Table {
             reorder_allowed: true,
             resize_original: None,
             body_id: None,
+            cell_editor: None,
+            cell_stops: true,
             body: Some(
-                Element::new(
-                    "body",
-                    VirtualList::new(controller.0.items.read_only(), row_height)?
-                        .selection(controller.selection())
-                        .controller(controller.0.reveal.clone())
-                        // The active cell is outlined by its row instead.
-                        .active_outline(false)
-                        .on_selection_change_gated(observe_selection.clone(), move |cx, change| {
-                            match selection_handler.borrow_mut().as_mut() {
-                                Some(handler) => handler(cx, change),
-                                None => Ok(()),
-                            }
-                        })
-                        .on_activate(move |cx, row| {
-                            let column = column.get()?;
-                            match handler.borrow_mut().as_mut() {
-                                Some(handler) => handler(cx, row, column.as_deref()),
-                                None => Ok(()),
-                            }
-                        }),
-                )
-                .structural(),
+                VirtualList::new(controller.0.items.read_only(), row_height)?
+                    .selection(controller.selection())
+                    .controller(controller.0.reveal.clone())
+                    // The active cell is outlined by its row instead.
+                    .active_outline(false)
+                    .keep_mounted(controller.0.shared.editing.row.read_only())
+                    .on_selection_change_gated(observe_selection.clone(), move |cx, change| {
+                        match selection_handler.borrow_mut().as_mut() {
+                            Some(handler) => handler(cx, change),
+                            None => Ok(()),
+                        }
+                    })
+                    .on_activate(move |cx, row| {
+                        let column = column.get()?;
+                        // Enter on an editable cell edits it with its value selected.
+                        if let Some(column) = &column
+                            && editor.begin_edit(cx, row, column, crate::EditorStart::SelectAll)?
+                        {
+                            return Ok(());
+                        }
+                        match handler.borrow_mut().as_mut() {
+                            Some(handler) => handler(cx, row, column.as_deref()),
+                            None => Ok(()),
+                        }
+                    })
+                    .on_text_input(move |cx, text| {
+                        // Typed text begins an edit of the active cell; Space selects.
+                        if text.trim().is_empty() {
+                            return Ok(());
+                        }
+                        let row = typed.0.selection.active().get()?;
+                        let column = typed.0.shared.active_column.get()?;
+                        if let (Some(row), Some(column)) = (row, column) {
+                            typed.begin_edit(
+                                cx,
+                                &row,
+                                &column,
+                                crate::EditorStart::Typed(text.to_owned()),
+                            )?;
+                        }
+                        Ok(())
+                    }),
             ),
             state: controller.clone(),
             on_sort: None,
@@ -1327,6 +1564,93 @@ impl Table {
         *self.on_selection.borrow_mut() = Some(Box::new(on_change));
         self.observe_selection.set(true);
         self
+    }
+    /// Edits cells of [editable](TableColumn::editable) columns in place:
+    /// `editor` builds the editor for one cell when an edit of it begins,
+    /// and the table hosts it in the cell and follows how the edit ends.
+    /// See [cell editing](Table#cell-editing) for when edits begin, end and
+    /// move, and [`CellEdit`] for what the callback receives. The editor
+    /// must be a session editor that takes focus, built with
+    /// [`CellEdit::session`]; parameter-bound editors ignore sessions and
+    /// are not cell editors.
+    ///
+    /// The callback runs once per edit, in the update of the cell's host:
+    /// its error fails that flush, is not retried, and closes the edit with
+    /// the body keeping focus. Like the table's other callbacks it belongs
+    /// to the first description of a mounted table; a later call replaces
+    /// an earlier one on the same description.
+    pub fn cell_editor(
+        mut self,
+        editor: impl FnMut(&mut CellEdit<'_>) -> Result<Element, RuntimeError> + 'static,
+    ) -> Self {
+        self.cell_editor = Some(Box::new(editor));
+        self
+    }
+    /// Whether interactive content inside cells, such as a checkbox, is a
+    /// stop of Tab traversal; true by default. With false the body is the
+    /// table's one Tab stop ([`VirtualList::item_tab_stops`]): F2 on an
+    /// active cell that is not edited in place moves focus into its content,
+    /// and Escape that the content leaves unhandled returns focus to the
+    /// body. Pointer presses still reach the content. Set before the table
+    /// mounts; a later description keeps the first choice.
+    pub fn cell_tab_stops(mut self, stops: bool) -> Self {
+        self.cell_stops = stops;
+        self.body = self.body.take().map(|body| body.item_tab_stops(stops));
+        self
+    }
+    /// F2 and Escape for cell editing, after a header gesture's Escape: F2
+    /// edits the active cell with the caret at the end, or enters its resting
+    /// content when cells are not Tab stops; Escape cancels an open edit
+    /// whose editor does not hold focus.
+    fn edit_key(
+        &mut self,
+        cx: &mut EventContext,
+        event: KeyEvent,
+        control: KeyCode,
+        keys: &KeyboardState,
+    ) -> Result<Option<InputOutcome>, RuntimeError> {
+        if event.transition != KeyTransition::Pressed
+            || keys.chord_modifiers(event) != crate::Modifiers::default()
+        {
+            return Ok(None);
+        }
+        let editing = &self.state.0.shared.editing;
+        match control {
+            KeyCode::F2 => {
+                let row = self.state.0.selection.active().get()?;
+                let column = self.state.0.shared.active_column.get()?;
+                let (Some(row), Some(column)) = (row, column) else {
+                    return Ok(None);
+                };
+                if self
+                    .state
+                    .begin_edit(cx, &row, &column, crate::EditorStart::CaretAtEnd)?
+                {
+                    return Ok(Some(InputOutcome::Handled));
+                }
+                if editing.cell_stops.get() {
+                    return Ok(None);
+                }
+                let cell = editing
+                    .active_cells
+                    .borrow()
+                    .iter()
+                    .find(|(key, _)| *key == column)
+                    .map(|(_, id)| id.clone());
+                match cell {
+                    Some(cell) => {
+                        cx.request_focus_within(&cell)?;
+                        Ok(Some(InputOutcome::Handled))
+                    }
+                    None => Ok(None),
+                }
+            }
+            KeyCode::Escape if self.gesture.is_none() => Ok(self
+                .state
+                .cancel_unfocused()?
+                .then_some(InputOutcome::Handled)),
+            _ => Ok(None),
+        }
     }
     /// Moves the keyboard focus to the body, where a press on a cell puts it, so
     /// the Escape that ends a header gesture reaches the header by bubbling
@@ -1777,9 +2101,30 @@ impl Component for Table {
         Ok(Invalidation::Layout)
     }
     fn take_children(&mut self) -> Vec<Element> {
-        self.body.take().into_iter().collect()
+        self.body
+            .take()
+            .map(|body| Element::new("body", body).structural())
+            .into_iter()
+            .collect()
     }
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
+        let editing = &self.state.0.shared.editing;
+        // The mounted (first) description's editing options.
+        if let Some(editor) = self.cell_editor.take() {
+            *editing.editor.borrow_mut() = Some(editor);
+        }
+        editing.cell_stops.set(self.cell_stops);
+        if editing.notifier.borrow().is_none() {
+            *editing.notifier.borrow_mut() = Some(cx.notifier());
+        }
+        *editing.body.borrow_mut() = cx.children().first().map(|child| child.id().clone());
+        // An edit whose row left the rows, or whose editor failed, closes at
+        // the next delivery, where the rows can be published again.
+        if editing.row_gone(&*cx.read_paint(&self.state.0.items)?)
+            && let Some(notifier) = &*editing.notifier.borrow()
+        {
+            notifier.request();
+        }
         // Bound titles are read here, which subscribes the table to them.
         let bound: Vec<(String, TextSource)> = self
             .state
@@ -2321,6 +2666,30 @@ impl Component for Table {
     }
     // The body is the Tab stop. With one lane it leaves the cross arrows
     // unhandled, and they arrive here to move the active cell.
+    fn deliver_notifications(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
+        self.state.deliver_edits(cx)
+    }
+    fn visibility_changed(&mut self, visible: bool) {
+        // No edit survives hiding; the plain cell returns at the next delivery.
+        if !visible {
+            self.state.0.shared.editing.close_quietly();
+        }
+    }
+    fn unmounted(&mut self) {
+        // The controller may outlive the table and serve another one, which
+        // brings its own options; the callback goes, so a capture of the
+        // controller in it cannot keep the controller alive.
+        let editing = &self.state.0.shared.editing;
+        editing.close_quietly();
+        editing.stale.set(false);
+        let editor = editing.editor.borrow_mut().take();
+        drop(editor);
+        editing.cell_stops.set(true);
+        editing.pending.borrow_mut().take();
+        editing.active_cells.borrow_mut().clear();
+        *editing.notifier.borrow_mut() = None;
+        *editing.body.borrow_mut() = None;
+    }
     fn keyboard_event(
         &mut self,
         cx: &mut EventContext,
@@ -2328,6 +2697,9 @@ impl Component for Table {
         keys: &KeyboardState,
     ) -> Result<InputOutcome, RuntimeError> {
         let control = keys.control_key(event);
+        if let Some(outcome) = self.edit_key(cx, event, control, keys)? {
+            return Ok(outcome);
+        }
         // Escape ends a header gesture, which the runtime's own Escape handling
         // does not reach: the pointer capture is this component's while the
         // focus, and so the context Escape cancels, is the body's.

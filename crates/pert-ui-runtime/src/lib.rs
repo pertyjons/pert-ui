@@ -32,9 +32,14 @@ mod navigation_history;
 mod table;
 mod tree;
 pub use table::{
-    SortDirection, Table, TableColumn, TableController, TableItems, TableSort, TableSource,
+    CellEdit, SortDirection, Table, TableColumn, TableController, TableItems, TableSort,
+    TableSource,
 };
 mod described;
+mod editor_session;
+pub use editor_session::{
+    EditorAttachment, EditorCompletion, EditorOutcome, EditorSession, EditorStart, EditorTrigger,
+};
 mod render_limits;
 pub use render_limits::{LimitError, ResourceKind};
 mod views;
@@ -354,6 +359,11 @@ pub mod prelude {
     };
     #[doc(no_inline)]
     pub use crate::{
+        CellEdit, SortDirection, Table, TableColumn, TableController, TableItems, TableSort,
+        TableSource,
+    };
+    #[doc(no_inline)]
+    pub use crate::{
         ChoiceId, ChoiceOption, NormalizedValue, ParameterId, ParameterMapping, ParameterSpec,
     };
     #[doc(no_inline)]
@@ -454,10 +464,6 @@ pub mod prelude {
     pub use crate::{ProgressBar, ProgressStatus, Spinner};
     #[doc(no_inline)]
     pub use crate::{ScaleLimits, WheelGesture, ZoomController, ZoomView};
-    #[doc(no_inline)]
-    pub use crate::{
-        SortDirection, Table, TableColumn, TableController, TableItems, TableSort, TableSource,
-    };
     #[doc(no_inline)]
     pub use crate::{SplitAxis, SplitPane, SplitRule, SplitSizing};
     #[doc(no_inline)]

@@ -169,6 +169,9 @@ impl Runtime {
                 && entry.component.tab_stop()
                 && (self.revealable(serial)
                     || entry.node.clip.get().is_some_and(|clip| !clip.is_empty()));
+            // A scope's descendants are no stops, but the focused one keeps
+            // its place, so traversal from it continues after the scope.
+            let stop = stop && !self.outside_tab_scope(serial);
             if Some(serial) == focused {
                 // Between the stops before it and the stops after it.
                 current = Some((ids.len(), stop));
@@ -202,7 +205,8 @@ impl Runtime {
             };
             let id = WidgetId(entry.node.clone());
             self.reveal_focus(&id)?;
-            if !id.0.mounted.get() || !id.0.visible.get() {
+            // Settling the reveal can also change which scopes exclude it.
+            if !id.0.mounted.get() || !id.0.visible.get() || self.outside_tab_scope(id.0.serial) {
                 continue;
             }
             if id.0.clip.get().is_some_and(|clip| !clip.is_empty()) {
@@ -210,6 +214,74 @@ impl Runtime {
             }
         }
         Ok(())
+    }
+
+    /// Whether an ancestor keeps this component out of Tab traversal through
+    /// [`Component::descendant_tab_stops`]. The walk follows presentation
+    /// parents up to the root and stops at a surface root, which starts a
+    /// traversal scope of its own; a detached window root has no
+    /// presentation parent, so it ends the walk too.
+    pub(super) fn outside_tab_scope(&self, mut serial: u64) -> bool {
+        loop {
+            if self.surface_kind(serial).is_some() {
+                return false;
+            }
+            let Some(parent) = self
+                .entries
+                .get(&serial)
+                .and_then(|entry| entry.node.presentation_parent_serial())
+            else {
+                return false;
+            };
+            match self.entries.get(&parent) {
+                Some(entry) if !entry.component.descendant_tab_stops() => return true,
+                Some(_) => serial = parent,
+                None => return false,
+            }
+        }
+    }
+
+    /// Offers an unmodified Tab or Shift+Tab that reached default traversal to
+    /// the focused component and the ancestors ordinary bubbling reaches,
+    /// innermost first ([`Component::tab_navigation`]). Returns whether one
+    /// claimed it, in which case traversal does not run.
+    pub(super) fn offer_tab(
+        &mut self,
+        event: crate::KeyEvent,
+        mut recipients: Option<&mut Vec<WidgetId>>,
+    ) -> Result<bool, RuntimeError> {
+        let reverse = self.keyboard.modifiers().shift;
+        let repeat = event.transition == crate::KeyTransition::Repeated;
+        let mut serial = match &self.window.focus {
+            Some(id) => id.0.serial,
+            None => return Ok(false),
+        };
+        loop {
+            if !self.modal_allows(serial) {
+                return Ok(false);
+            }
+            let Some(entry) = self.entries.get_mut(&serial) else {
+                return Ok(false);
+            };
+            entry.node.input_cancelled.set(false);
+            if let Some(recipients) = recipients.as_deref_mut() {
+                recipients.push(WidgetId(entry.node.clone()));
+            }
+            let outcome = entry.component.tab_navigation(
+                &mut EventContext {
+                    node: entry.node.clone(),
+                },
+                reverse,
+                repeat,
+            )?;
+            if outcome == InputOutcome::Handled {
+                return Ok(true);
+            }
+            match entry.node.presentation_parent_serial() {
+                Some(parent) => serial = parent,
+                None => return Ok(false),
+            }
+        }
     }
 
     /// Applies a pointer transition and dispatches through the frontmost clipped tree.
