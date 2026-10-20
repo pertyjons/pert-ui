@@ -37,4 +37,26 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   selection, caret, IME and movement across paragraph boundaries (the public
   `TextSelection` is built on one `TextLayout`). Measure edit latency and
   memory on a defined corpus before choosing a capacity; see
-  `plans/app-author-improvements.md` slice 6.
+  `plans/app-author-improvements.md` slice 6. The editor capacity must also
+  become separate from the label and toast limits, which share
+  `MAX_TEXT_BYTES` today.
+- [ ] **NATIVE-05** 2026-10-20 `docs/verification.md` — Verification and
+  review: the `diagram_editor`, `log_explorer` and `inventory` example
+  windows, `SelectableText`, table cell editing (the gallery's Note column)
+  and Tab traversal scopes have headless tests but no native evidence on any
+  platform; the example windows were at most opened to see that they start
+  and close.
+  Run them by hand on Linux, Windows and macOS (pointer selection and
+  copying, double-click and F2 editing, Tab through a scoped table, IME into
+  a cell editor) and record the results.
+- [ ] **TOOL-01** 2026-10-20 `crates/pert-ui-runtime/src/tool_windows/mod.rs`
+  `ToolWindow::mode` — State and interaction contracts (found by
+  plan-audit-repairs slice 6): `ToolWindow::mode` promises where the tool
+  window "starts to be presented when it expands", and the type's
+  **Own window** section says a window-mode panel opens in its own native
+  window when expanded. A tool window described with `ToolWindowMode::Window`
+  and `expanded(true)` opens no native window at mount, though: it is
+  placed as a floating frame until the mode or expansion is set again
+  through `ToolWindowController`, which requests the detach. Request the
+  detach for an expanded window-mode description at mount (or after the
+  first layout), and add a mount-time regression test.

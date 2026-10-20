@@ -95,3 +95,34 @@ fn a_write_inside_update_takes_effect_and_the_changed_copy_replaces_it() -> Test
     );
     Ok(())
 }
+
+#[test]
+fn a_panicking_update_makes_no_write_of_its_own() -> TestResult {
+    let ui = Runtime::new();
+    let value = ui.signal(1);
+    let revision = value.revision();
+    let panicked = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        let _ = value.update(|copy| {
+            *copy = 2;
+            panic!("the change failed");
+        });
+    }));
+    assert!(panicked.is_err());
+    assert_eq!(value.get()?, 1);
+    assert_eq!(value.revision(), revision, "nobody was notified");
+    // A write the change made itself before panicking stays made.
+    let inner = value.clone();
+    let panicked = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        let _ = value.update(|copy| {
+            inner.set(7).unwrap();
+            *copy = 9;
+            panic!("the change failed after a write");
+        });
+    }));
+    assert!(panicked.is_err());
+    assert_eq!(value.get()?, 7);
+    // The signal is still usable.
+    value.update(|copy| *copy += 1)?;
+    assert_eq!(value.get()?, 8);
+    Ok(())
+}

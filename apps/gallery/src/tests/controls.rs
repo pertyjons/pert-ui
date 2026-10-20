@@ -525,3 +525,65 @@ fn toolbar_stop_is_a_command_button_enabled_while_playing() {
     f7(&mut ui);
     assert!(stopped(&ui));
 }
+
+#[test]
+fn the_progress_page_clock_ticks_until_stopped_also_without_focus() {
+    let (mut ui, root) = mounted();
+    open(&mut ui, &root, "progress");
+    assert!(ui.next_deadline().is_none(), "nothing runs before Start");
+    let start = find(&ui, &root, "clock-start");
+    click(&mut ui, &start);
+    let now = ui.inspect().at;
+    assert!(ui.next_deadline().is_some(), "the timer is scheduled");
+    // Focus elsewhere, then cancelled input: the application timer runs on.
+    ui.clear_focus();
+    ui.cancel_input().unwrap();
+    ui.flush(now + Duration::from_secs(1)).unwrap();
+    ui.flush(now + Duration::from_secs(2)).unwrap();
+    assert_eq!(text(&ui, "clock-ticks"), ["Ticks: 2"]);
+    let stop = find(&ui, &root, "clock-stop");
+    click(&mut ui, &stop);
+    ui.flush(now + Duration::from_secs(5)).unwrap();
+    // Two Starts in a row start one clock, which Stop ends.
+    ui.focus(&start).unwrap();
+    for _ in 0..2 {
+        ui.key_input(KeyCode::Enter, KeyAction::Press).unwrap();
+        ui.key_input(KeyCode::Enter, KeyAction::Release).unwrap();
+    }
+    settle(&mut ui);
+    click(&mut ui, &stop);
+    settle(&mut ui);
+    assert!(
+        ui.next_deadline().is_none(),
+        "Stop ends every clock started"
+    );
+    assert_eq!(text(&ui, "clock-ticks"), ["Ticks: 2"]);
+    assert!(
+        ui.next_deadline().is_none(),
+        "nothing is scheduled once stopped"
+    );
+}
+
+#[test]
+fn the_power_mapped_parameter_spreads_its_low_end() {
+    let (mut ui, root) = mounted();
+    open(&mut ui, &root, "families");
+    let page = find(&ui, &root, "families");
+    let power = find(&ui, &page, "power");
+    let slider = find(&ui, &power, "slider");
+    ui.focus(&slider).unwrap();
+    press(&mut ui, KeyCode::Home);
+    assert_eq!(parameter_base(&mut ui, "drive"), AnyValue::Continuous(0.0));
+    press(&mut ui, KeyCode::End);
+    assert_eq!(parameter_base(&mut ui, "drive"), AnyValue::Continuous(10.0));
+    // Halfway along the travel: 2.5 with the exponent of two, where a linear
+    // mapping would give 5.
+    press(&mut ui, KeyCode::Home);
+    for _ in 0..5 {
+        press(&mut ui, KeyCode::PageUp);
+    }
+    let AnyValue::Continuous(half) = parameter_base(&mut ui, "drive") else {
+        panic!("a continuous parameter");
+    };
+    assert!((half - 2.5).abs() < 0.05, "{half}");
+}

@@ -271,8 +271,9 @@ impl SelectableText {
     }
 }
 
-/// Whether a preparation error refuses the text rather than failing.
-fn refused(error: &RuntimeError) -> bool {
+/// Whether a preparation error refuses the text rather than failing: the
+/// size limits, which a later text, width, style or scale can meet.
+pub(crate) fn refused(error: &RuntimeError) -> bool {
     matches!(
         error,
         RuntimeError::Text(TextError::TooLarge(_))

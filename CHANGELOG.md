@@ -1,5 +1,181 @@
 # Changelog
 
+## 0.3.51 (2026-10-20)
+
+Documentation repairs (plan-audit-repairs slice 7):
+
+- **`Runtime::command_key_input`:**
+  - its rustdoc lists the complete routing order, including shown help
+    taking Escape first and the Tab offer to `Component::tab_navigation`;
+  - `# Errors` names `tab_navigation` and the dismissals;
+  - the diagnostics guide's summary follows it.
+- **`DraftEditor`:** an owner can claim Tab through `tab_navigation`.
+- **`Painter::stroke_path` and `stroke_polyline`:** they link to the inward
+  `stroke_shape`.
+- **Editor sessions:** `TextField::session`, the number fields' `session`
+  and the contracts state that disabling an editor reports nothing and
+  keeps the edit open, and that a hidden native window delivers its
+  `FocusLeft` once shown again.
+- **The manual:**
+  - `on_binding_refusal`, command buttons, menu row `on_change`, power
+    mapping, `background_role_signal`, `KeyChord::named`;
+  - `?` on runtime errors in command actions, `CaptureTarget::window`,
+    `Runtime::find`, `View::fixed` among the bounding containers;
+  - the sorted-row caveat with `TableController::reveal`;
+  - the `live_mixer` example.
+- **The guide:**
+  - power mapping, `background_role_signal`, `on_binding_refusal` and a
+    tree source's re-flattening;
+  - in the custom widgets chapter, an `App::on_error` that reaches the
+    application through the initializer's slot, and a section on exporting
+    a widget as a picture.
+- **The `diagram_editor` example:**
+  - it installs that error handler;
+  - its export uses `CaptureTarget::window`.
+
+## 0.3.50 (2026-10-20)
+
+Missing contract tests of table-editing slices 4 to 6 (plan-audit-repairs
+slice 6), with no behavior change:
+
+- Traversal scopes:
+  - inside a detached view and a tool window in every mode;
+  - dialogs of every modality opened inside a scope;
+  - a scoped popover reached in its deferred place and closed when left;
+  - tooltips kept out of traversal;
+  - the menu bar and F10 with a scope active;
+  - Tab repeats offered like presses.
+- Editor sessions:
+  - a consumer-written list host whose rows open editors, moving the edit
+    with Tab and keeping a refused one open;
+  - normalization-equivalent drafts reporting `Unchanged`;
+  - refused Tab;
+  - composition protecting Enter, Tab and Escape, and a Unicode start
+    replacing a composition;
+  - permission revocation and disabling;
+  - window focus loss versus hiding;
+  - a click in an open `Select`;
+  - `DecimalInput`, and parameter-backed numbers ignoring sessions, also
+    with changed and invalid drafts;
+  - Tab during a selection drag.
+- Table cell editing:
+  - an editor that cannot take focus;
+  - read-only revocation keeping focus;
+  - a disabled editor closed by Escape on the body;
+  - unmounting with an edit open;
+  - the keyboard scenarios on both key paths.
+
+## 0.3.49 (2026-10-20)
+
+Missing contract tests of the diagram plan and table-editing slice 1
+(plan-audit-repairs slice 5), with no behavior change:
+
+- `ColorPicker`:
+  - alpha End;
+  - hex and channel drafts dropped by hiding or removal, which write and
+    report nothing;
+  - a handler replaced while the popover is open.
+- `Knob`: an enabled knob whose edit is refused by a delivery fault does not
+  arm a double-click.
+- `ClickCounter`:
+  - a later builder replaces an earlier one;
+  - a threshold changed during a series applies from the next press;
+  - the count saturates.
+- The text editors' clear button and scrollbar end a click series.
+- Every built-in editor opens with its value selected over a draft set
+  while it mounts.
+
+## 0.3.48 (2026-10-20)
+
+Missing contract tests of the app-author and mixer plans (plan-audit-repairs
+slice 4):
+
+- `Signal::update` documents that its change cannot fail and what a
+  panicking change leaves: no write of its own and no notification, while
+  writes the change made itself stay made.
+- New tests:
+  - an application interval surviving focus loss and cancelled input and
+    stopping at shutdown;
+  - binding refusals: a second value refused for the same reason, a
+    replaced callback, and a failed report that is not replayed;
+  - a panicking `Signal::update`;
+  - an application error's own cause kept in the chain;
+  - a full command queue as `Button::command`'s activation error;
+  - `CaptureTarget::window` and `region` serialized as their variants;
+  - pointer choices in nested and context menus, and a direct menu-bar
+    title chosen by keyboard;
+  - a stretched row under unbounded height, and a short vertical slider
+    whose readout stays inside it;
+  - a secondary window with zero height, an in-view window keeping its
+    minimum size, and minimized window content not validated until
+    restored.
+
+## 0.3.47 (2026-10-20)
+
+Example sessions in CI (plan-audit-repairs slice 3):
+
+- CI runs the headless sessions of the `live_mixer`, `dynamic_documents`,
+  `diagram_editor`, `log_explorer` and `inventory` examples after the
+  workspace tests, with the features that build unifies and a step timeout.
+  Previously CI only compiled them. AGENTS.md lists the commands in the
+  workspace gate.
+- The `live_mixer` session bounds every wait on its engine: the hold
+  confirmation, the resume, and the wait until the engine's queue is closed
+  and its thread has returned, so dropping the mixer then joins at once.
+  The `dynamic_documents` worker bounds its wait for a proposal, and the
+  `log_explorer` session joins its inspection thread only once it has
+  returned.
+
+## 0.3.46 (2026-10-20)
+
+Display text beyond the text limits (plan-audit-repairs slice 2):
+
+- Ellipsis truncation (`TextOverflow::Ellipsis` and `MiddleEllipsis`,
+  `MeasureContext::fitted_text`) cuts a first line longer than
+  `TextEditError::MAX_TEXT_BYTES` before fitting it, so a long log line in
+  an ellipsis table cell shows its start (or start and end) with "…"
+  instead of failing the flush. The cut keeps the line's own grapheme
+  cluster boundaries, shows the ellipsis and stays within the limit.
+  Previously the whole line was segmented and copied, then refused.
+- `Label` refuses text it still cannot prepare, as `SelectableText` does:
+  - wrapped or rich text over the byte limit;
+  - a layout beyond a raster limit;
+  - rich content beyond `RichText::MAX_SEGMENTS`.
+
+  The flush no longer fails. The label keeps its last prepared text and
+  size, or is empty before any success, reports `text_error` in
+  inspection with invalid semantics, and recovers when the text or size
+  fits. `Tooltip::new`, `AlertDialog` titles and messages and `Group`
+  headings inherit this.
+- Help labels (an ellipsis label's help and `Tooltip::new`) show nothing
+  while refused instead of earlier text. An ellipsis label offers no help
+  for text over the byte limit.
+- Truncation trims whitespace beside the ellipsis by the line's cluster
+  boundaries. The remembered cuts are keyed by the first line, so a long
+  text after a line break is no longer copied into the key.
+
+## 0.3.45 (2026-10-20)
+
+Failure sites for rejected children (plan-audit-repairs slice 1):
+
+- When the children a component requested through
+  `UpdateContext::request_children` are rejected during a flush (an empty
+  or duplicated key, a changed component type under a kept key, an error
+  from `Component::check_description`, or children given to a surviving
+  component that manages its own), `Runtime::last_failure` now names that
+  component with the new `FailurePhase::Reconcile`. `Dynamic`, `Show` and
+  `Each` request their children this way. Previously the flush failed
+  without a site. The new `FailureSite::description` holds the keys from the
+  requested children down to the rejected description, and `Display` adds
+  them, as in `reconciliation of root/list at items/row-3`; the default `App`
+  error report prints it.
+- `FailureSite` and `FailurePhase` stay `#[non_exhaustive]`; the new field
+  takes part in equality and `Debug`. Direct calls to
+  `Runtime::reconcile_children` and `mount_tree` still return their error to
+  the caller and record no site.
+- The `last_failure` rustdoc names every operation that starts without a
+  site, including `flush_windows` and `service_intervals`.
+
 ## 0.3.44 (2026-10-20)
 
 Review fixes for table-editing plan slice 7 (the `inventory` example):

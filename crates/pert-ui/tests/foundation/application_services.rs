@@ -304,3 +304,39 @@ fn an_interval_error_names_no_component_from_an_earlier_failure() -> TestResult 
     assert_eq!(ui.last_failure(), None);
     Ok(())
 }
+
+#[test]
+fn an_interval_survives_focus_loss_and_cancelled_input_and_stops_at_shutdown() -> TestResult {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(200.0, 100.0, 1.0)?)?;
+    let button = ui.mount_tree(Button::new("Focus", |_| Ok(())).key("button"))?;
+    ui.flush(Duration::ZERO)?;
+    ui.focus(&button)?;
+    // Counted outside the runtime, so shutdown cannot hide a tick.
+    let count = Rc::new(std::cell::Cell::new(0));
+    let counter = count.clone();
+    ui.start_interval(Duration::from_secs(1), move |_| {
+        counter.set(counter.get() + 1);
+        Ok(())
+    })?;
+    // What a native window losing focus does, and an explicit cancellation:
+    // both end component input, not the application's timers.
+    ui.clear_focus();
+    ui.cancel_input()?;
+    ui.flush(Duration::from_secs(1))?;
+    assert_eq!(count.get(), 1);
+    ui.cancel_input()?;
+    ui.flush(Duration::from_secs(2))?;
+    assert_eq!(count.get(), 2);
+    ui.shutdown();
+    assert_eq!(
+        ui.service_intervals(Duration::from_secs(3)).err(),
+        Some(RuntimeError::Closed)
+    );
+    assert_eq!(
+        ui.flush(Duration::from_secs(4)).err(),
+        Some(RuntimeError::Closed)
+    );
+    assert_eq!(count.get(), 2, "no tick during or after shutdown");
+    Ok(())
+}

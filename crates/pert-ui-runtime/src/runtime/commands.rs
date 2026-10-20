@@ -1220,6 +1220,48 @@ impl Runtime {
     /// fallback. The returned flag controls associated native text insertion.
     /// Native hosts must discard synthetic events before calling this method.
     ///
+    /// The complete order, after a flush of every window; the first stage that
+    /// consumes the key ends routing. A fresh press is the first press of a
+    /// key, not a repeat.
+    ///
+    /// 1. A repeat of a key that is not held (an orphan) is consumed and
+    ///    changes nothing.
+    /// 2. During a drag session, Escape's fresh press cancels the drag.
+    /// 3. Keys already owned are consumed by their owner. First a held-input
+    ///    owner that is no longer available, or that a modal surface now
+    ///    blocks, is cancelled. Then:
+    ///    - a held key whose input was cancelled stays suppressed until its
+    ///      release or a new fresh press;
+    ///    - a key whose fresh press a held-input registration took sends its
+    ///      repeats and release to that registration;
+    ///    - a key whose fresh press matched a command binding keeps it: each
+    ///      repeat runs the command again when its press was admitted (a
+    ///      disabled command's press was consumed without running), and the
+    ///      release ends it.
+    /// 4. A key that a modal surface forbids to commands is consumed.
+    /// 5. Shown delayed help takes an unmodified fresh Escape press.
+    /// 6. The text phase: from the focused component up, each
+    ///    [`Component::text_key_event`](crate::Component::text_key_event)
+    ///    may handle the key or insert its text; an editor that leaves it
+    ///    passes it to its parent, and the first component that is not an
+    ///    editor ends the phase. An active composition then consumes the key.
+    /// 7. On a fresh press, command bindings of [`CommandScope::Capture`],
+    ///    then [`Runtime::register_held_input`] registrations, each taking
+    ///    the key as in stage 3. A repeat never starts a command.
+    /// 8. Escape's fresh press dismisses the frontmost dismissible surface,
+    ///    and otherwise ends the focused component's timers, capture and
+    ///    gesture contexts before it is delivered.
+    /// 9. An unmodified Tab or Shift+Tab, pressed or repeated, is offered to
+    ///    the focused component and its ancestors through
+    ///    [`Component::tab_navigation`](crate::Component::tab_navigation); when
+    ///    none claims it, focus moves to the next or previous Tab stop. Either
+    ///    way the key is consumed.
+    /// 10. Ordinary bubbling
+    ///     ([`Component::keyboard_event`](crate::Component::keyboard_event)),
+    ///     from the component that ended the text phase upward.
+    /// 11. On a fresh press, command bindings of the command target's views,
+    ///     outward, then of the window, then of the application.
+    ///
     /// This is the entry point the native `App` uses, and the only one that
     /// routes command bindings and [`Runtime::register_held_input`]
     /// registrations. A test or custom host that should behave as an
@@ -1234,7 +1276,9 @@ impl Runtime {
     /// `WriteDuringInspection` or `WriteDuringDelivery` when called from inside that phase;
     /// forwards the errors of the flush that runs first, of the focused component's key
     /// callbacks ([`Component::text_key_event`](crate::Component::text_key_event),
-    /// [`Component::keyboard_event`](crate::Component::keyboard_event)), of held-input
+    /// [`Component::tab_navigation`](crate::Component::tab_navigation),
+    /// [`Component::keyboard_event`](crate::Component::keyboard_event)), of dismissing
+    /// shown help or a surface, of held-input
     /// actions, of any command invoked (see [`Self::invoke_command`]) and of the flush
     /// that delivers a notification the key requested; and returns
     /// `ShortcutConflict` when bindings of more than one command in one scope match the

@@ -77,7 +77,9 @@ and a dropped mailbox closes. `ui.spawn(work, deliver)` runs work such as
 reading or saving a file on a background thread and hands the result to
 `deliver` on the UI thread, and `ui.start_interval(period, tick)` repeats
 application work such as an autosave. When a flush fails in a component,
-`ui.last_failure()` names the component and the callback that failed, and the
+`ui.last_failure()` names the component and what failed: a callback, or the
+children it described through `Dynamic`, `Show` or `Each`, with the keys of
+the rejected description (`reconciliation of root/list at items/row-3`). The
 native application's default error report includes it.
 
 The default `desktop` feature supplies `App`, native input and GPU rendering.
@@ -170,7 +172,7 @@ and `label` replaces it.
 |---|---|---|
 | `Column`, `Row`, `Wrap` | `Column::new([Element::new(...), ...])` and the analogous constructors; `element.with_grow(1)` gives a child of a row or column a share of the spare space, and in a column whose height is bounded it also takes a share of a shortfall, down to the child's minimum, so a grown collection below a toolbar fills the rest (rows do not shrink), `Element::spacer(key)` pushes the following children to the far end, and `.justify(Justify::End)` and `.align(Align::Stretch)` place children along and across | Vertical, horizontal and wrapping groups, such as an editor that fills the rest of a window or a status bar with right-aligned items. |
 | `Grid` | `Grid::new(tracks, children)?` | Track-based layout; at least one `Track` is required. |
-| `Container`, `View`, `Group` | Wrap one child element; `Group::titled(title, child)` adds a heading. | A bounded region, a visibility boundary or a decorated group. |
+| `Container`, `View`, `Group` | Wrap one child element; `Group::titled(title, child)` adds a heading. | A bounded region, a visibility boundary or a decorated group. A container's `background_role` fills it with a theme role; `background_role_signal` follows a binding, for example to mark a selected strip. |
 | `Dynamic`, `Show`, `Each` | `Dynamic::new(&value, \|_, value\| element)`, `Show::new(&shown, \|_\| element)`, `Each::new(&items, key, \|_, item\| element)`, optionally `.within(\|elements\| Row::new(elements).key("row"))` | Children described from a binding: one child per value, a child that exists only while a flag reads true, or one child per list item, kept by key. |
 | `Divider` | `Divider::new()` | A visual separator. |
 | `ScrollArea` | `ScrollArea::new(child).axes(ScrollAxes::Both)`; `.on_scroll(callback)` reports the committed offset | Overflow and focus reveal. Vertical scrolling is the default. |
@@ -194,8 +196,8 @@ For a large collection, implement the corresponding public `ListItems`,
 their source and selection. Only the rows inside the collection's allocated
 height mount, so a collection needs a bounded one: put it in a window, a
 `SplitPane` pane, a `Container` or `CollectionFilter` with a bounded
-allocation, a `Tab::fixed()` tab, a `RegionLayout::fixed()` region or as a
-grown child of a bounded `Column`. Default `Tabs` and `RegionLayout` content
+allocation, a `Tab::fixed()` tab, a `RegionLayout::fixed()` region, a
+`View::fixed()` view or as a grown child of a bounded `Column`. Default `Tabs` and `RegionLayout` content
 and a `ScrollArea` give it its whole content height, which mounts every row;
 in debug builds validation reports that as `UnboundedCollection`. The collection keys each
 row it builds with the row's key from the source, so `build` may describe a
@@ -219,7 +221,10 @@ table hosts the editor in the cell, keeps the row mounted while the edit is
 open, and ends or moves the edit as the editor reports it: Enter and Escape
 return to the table, Tab and Shift+Tab move to the next or previous editable
 cell. The editor writes the value; publish the plain cell's new content from
-its save callback. Enable row commands from the rows the action can reach:
+its save callback. A save that sorts or filters the source can move the edited
+row out of view; the table does not follow it, so call
+`TableController::reveal` with its key if it should stay visible. Enable row
+commands from the rows the action can reach:
 `ListSelection` keeps selected keys that a filtered source no longer shows.
 
 `FileBrowser` shows directory navigation and selection over a
@@ -311,8 +316,8 @@ Parameter construction has no independent option-list builder.
 | Component | Build it with | Input and behavior |
 |---|---|---|
 | `SelectableText` | `SelectableText::new(text)` with fixed, rich or bound text | Read-only text a reader can select and copy, such as a log message or error details: no frame, wraps like a multiline label, one Tab stop, drag, double/triple click and Shift with the editors' movement keys select, Ctrl/Cmd+C or its context menu copies. Rich text is shown and copied as plain text. |
-| `Label` | `Label::new(text)` with fixed, rich or bound text | Static or reactive text; rich text and icons are optional. `overflow(TextOverflow::Ellipsis)` or `MiddleEllipsis` keeps it on one line with "…", the full text as its name and as help on hover; `RichText::highlighted` marks search matches. |
-| `Button` | `Button::new(label, callback)` | An action callback; keyboard activation starts with unmodified Enter or Space. |
+| `Label` | `Label::new(text)` with fixed, rich or bound text | Static or reactive text; rich text and icons are optional. `overflow(TextOverflow::Ellipsis)` or `MiddleEllipsis` keeps it on one line with "…", the full text as its name and, up to the text limit, as help on hover; a line too long to prepare is cut first. Text it cannot prepare is refused without failing the flush (`text_error` in inspection). `RichText::highlighted` marks search matches. |
+| `Button` | `Button::new(label, callback)`, or `Button::command(&ui, &command, on_receipt)?` and `command_icon` for a registered command | An action callback; keyboard activation starts with unmodified Enter or Space. A command button shows the command's name (or an icon), follows its enabled binding and reports each invocation's receipt. |
 | `Link` | `Link::new(text, callback)`, optionally `.underline(LinkUnderline::Always)` | Navigation presented as text-sized link text, activated like a button by pointer or unmodified Enter or Space. The destination is the application's, typically a reveal through `EventContext::request_reveal`. |
 | `Chip` | `Chip::new(text)` or `Chip::removable(text, on_remove)` | A compact tag or chosen item. A static chip has no Tab stop; a removable one reports Delete, Backspace or its × button to the owner, which removes the item and describes its chips again. Focus moves on to the next chip. |
 | `Checkbox`, `Toggle` | `Checkbox::new(label, bool_signal)` / `Toggle::new(label, bool_signal)` | Two presentations of a local boolean. |
@@ -320,7 +325,7 @@ Parameter construction has no independent option-list builder.
 | `SegmentedControl` | `SegmentedControl::new(signal, choices)?` | Joined, exclusive choices. |
 | `Select` | `Select::new(&ui, signal, choices)?` | A popup for one selection. |
 | `MultiSelect` | `MultiSelect::new(&ui, vec_signal, choices)?` | Several values from one option set, shown as removable chips. The popup filters its list with a search field; Up/Down move the highlight and Enter or a click toggles. `commit(MultiSelectCommit::OnClose)` writes a draft when the popup closes instead of on every toggle; Escape discards it. |
-| `Menu` | `Menu::new(&ui, title, items)?` with `MenuItem::new(key, label, action)` rows | An anchored action list and submenus. |
+| `Menu` | `Menu::new(&ui, title, items)?` with `MenuItem::new(key, label, action)` rows | An anchored action list and submenus. `MenuItem::toggle` and `radio` rows write a binding; their `on_change` reports each choice the user makes. |
 | `Breadcrumb` | `Breadcrumb::new([BreadcrumbSegment::new(key, label), ...], on_activate)?` | A path of keyed segments; activating one reports its key. The last segment is the current location. At narrow widths the middle segments collapse into a menu. |
 | `ContextMenu` | `ContextMenu::new(&ui, content, items)?`; `.opener()` opens it from application code | A menu opened from content by secondary press, its keyboard shortcut or an opener with a captured command context. |
 | `MenuBar` | `MenuBar::new(&ui, menus)?.content(content)` | A top-level menu strip and its owned content; `leading` and `trailing` add content before the titles and at the row's right edge. |
@@ -335,6 +340,11 @@ calling an action; commands use their registered scope and current enabled
 binding. `Runtime::commands_for(&context)` lists the commands a captured
 context can reach, with their names, shortcuts and enabled state, for a
 command palette or a shortcut list; `CommandPalette` presents that listing.
+`KeyChord::named(KeyCode::Space)` is a chord of one named key without
+modifiers. A command action may use `?` on the workspace, window and capture
+errors of the runtime methods it calls. They arrive as
+`RuntimeError::Application`, downcastable to the original error, except a
+`Runtime` variant, which becomes the runtime error it holds.
 A command that copies the application's own data, such as selected table rows,
 writes it with `Runtime::set_clipboard_text`, which needs no component and
 moves no focus; `Runtime::clipboard_text` reads it.
@@ -375,12 +385,14 @@ and register the platform's shortcuts from `KeyChord::navigate_back` and
 | `InlineInteger`, `InlineDecimal` | Construct from a numeric signal. | Compact editable value rows. |
 | `InlineReadout` | `InlineReadout::new(read_signal)` | A read-only compact value. |
 | `InlineToggle`, `InlineChoice`, `InlineSelect` | `InlineToggle::new(bool_signal, name)`, `InlineChoice::new(signal, choices)?`, `InlineSelect::new(&ui, signal, choices)?` | Controls that fit a toolbar or dense row. |
-| `TextField`, `TextArea` | `TextField::new(string_signal)` / `TextArea::new(string_signal)` | Single-line and multiline editing with selection, clipboard and IME. `placeholder`, `required`, `min_length`/`max_length` with a `counter`; `TextField::concealed` for a password, with an optional `revealable` eye button; `TextField::clearable`, `leading_icon` and `suffix`; `modified_indicator` and `on_modified` for unsaved drafts. |
+| `TextField`, `TextArea` | `TextField::new(string_signal)` / `TextArea::new(string_signal)` | Single-line and multiline editing with selection, clipboard and IME. `placeholder`, `required`, `min_length`/`max_length` with a `counter`; `TextField::concealed` for a password, with an optional `revealable` eye button; `TextField::clearable`, `leading_icon` and `suffix`; `modified_indicator` and `on_modified` for unsaved drafts; `on_binding_refusal` reports when the field refuses a value the application wrote. |
 | `SearchField` | `SearchField::new(string_signal)` | A query with a search icon and clear button. Escape clears; Up/Down, Page Up/Down and Enter go to `on_key` for a result list while focus stays in the field; `debounce` delays the query until typing pauses. |
 | `InlineText` | Bind a string signal. | Compact editable text. |
 | `DraftEditor` | `DraftEditor::new(DraftEditorController::new())` | Embed a draft text session in a custom component. |
 
-`ParameterSpec` defines the numeric domain, default and mapping. Formatting
+`ParameterSpec` defines the numeric domain, default and mapping: linear,
+logarithmic for a positive domain, or `ParameterMapping::Power` with a
+`PowerExponent` to give part of the range more travel. Formatting
 and units are presentation choices. A slider's local preview is separate from
 the host's accepted base value. Escape or lost context cancels a pending edit.
 For text input, IME preedit is kept separate from committed text.
@@ -520,7 +532,11 @@ worker loading, a live tail and copying; run its headless session with
 [`inventory`](../crates/pert-ui/examples/inventory/main.rs) example edits a
 table in place like a spreadsheet, with a toolbar of commands, undo and row
 copy and paste; run its headless session with
-`cargo run -p pert-ui --example inventory --no-default-features`. The [gallery guide](../apps/gallery/README.md) points to
+`cargo run -p pert-ui --example inventory --no-default-features`. The
+[`live_mixer`](../crates/pert-ui/examples/live_mixer.rs) example connects a
+producer thread to meters and parameters, with undo, retry of undelivered
+edits and a saved layout; run its headless session with
+`cargo run -p pert-ui --example live_mixer --no-default-features`. The [gallery guide](../apps/gallery/README.md) points to
 live examples and the current component pages.
 
 ## Appearance, diagnostics and persistence
@@ -531,8 +547,10 @@ roles configure appearance without a renderer choice. `FontManager` and
 inspection service to capture owned semantic snapshots; name a control that
 has no visible label with `Element::with_label` or a `Field`. Optional profiling
 and the debug overlay help find actual invalidation and layout costs. Capture
-requests target a rendered window or widget; they are separate from inspection
-event history. `InspectionReply::flush_error` carries an owned `RuntimeError`
+requests target a rendered window or widget, for example
+`CaptureTarget::window(&ui.primary_window())` or `CaptureTarget::region`;
+they are separate from inspection event history. `Runtime::find` looks a
+component up by the path inspection reports, without its root segment. `InspectionReply::flush_error` carries an owned `RuntimeError`
 without discarding a reply's value. Match it directly; when an application
 protocol needs text, use `.as_ref().map(ToString::to_string)`. Capture failures
 retain runtime and drawing causes, including application errors. The `serde`

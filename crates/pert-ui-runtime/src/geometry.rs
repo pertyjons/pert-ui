@@ -680,7 +680,11 @@ impl Painter {
 
     /// Strokes a path with a centered outline of the given style.
     ///
-    /// Half the width lies on each side of the path. Open subpaths receive the
+    /// Half the width lies on each side of the path, so the stroke extends
+    /// past the path's bounds: by half the width along a segment, and further
+    /// at miter joins and square caps. [`Self::stroke_shape`] strokes a
+    /// rectangle, rounded rectangle or ellipse inward instead, keeping the
+    /// whole stroke inside the shape. Open subpaths receive the
     /// style's cap at both ends; closed subpaths join at their start instead.
     /// Joins apply between consecutive segments, including between the flattened
     /// pieces of a curve, where the turn is small. Zero-length subpaths draw a
@@ -717,7 +721,9 @@ impl Painter {
     /// Strokes an open polyline through points, the usual form of a trace or graph.
     ///
     /// Equivalent to stroking [`Path::polyline`] of the same points, without
-    /// retaining a path. A polyline has only straight segments, so it is
+    /// retaining a path. The stroke is centered on the line, as for
+    /// [`Self::stroke_path`]; [`Self::stroke_shape`] is the inward stroke of a
+    /// closed shape. A polyline has only straight segments, so it is
     /// covered on the fast path described at [`Self::stroke_path`], whatever
     /// its join. An empty slice draws nothing and a single point is a
     /// zero-length subpath. At most [`Path::MAX_POINTS`] points are accepted.

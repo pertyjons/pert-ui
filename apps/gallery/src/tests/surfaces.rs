@@ -113,6 +113,8 @@ fn the_menu_bar_page_runs_commands_and_settings_from_the_keyboard() {
     press(&mut ui, KeyCode::ArrowDown);
     press(&mut ui, KeyCode::Enter);
     assert_eq!(text(&ui, "grid-setting"), ["Grid hidden."]);
+    // The row's `on_change` reports the user's own choice.
+    assert_eq!(text(&ui, "menu-bar-status"), ["You turned the grid off."]);
     assert_eq!(ui.focused(), Some(document.clone()));
 
     // The trailing slot's button is a Tab stop on the title row that F10 skips.

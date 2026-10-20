@@ -545,6 +545,15 @@ fn family_page(ui: &mut Runtime, status: &Signal<String>) -> Result<Element, Run
             ),
         ),
         (
+            // A power mapping gives the low end of a range that includes zero
+            // more travel, which a logarithmic mapping cannot.
+            ParameterId::new(3, 6, "drive")?,
+            AnySpec::from(
+                ParameterSpec::new("Drive", 0.0, 10.0, 1.0)?
+                    .with_mapping(ParameterMapping::Power(PowerExponent::new(2.0)?))?,
+            ),
+        ),
+        (
             ParameterId::new(3, 2, "voices")?,
             AnySpec::from(ParameterSpec::stepped("Voices", 1, 16, 8)?),
         ),
@@ -583,6 +592,18 @@ fn family_page(ui: &mut Runtime, status: &Signal<String>) -> Result<Element, Run
             Ok(())
         })?);
         rows.push(match parameter {
+            AnyParameter::Continuous(parameter)
+                if matches!(parameter.spec()?.mapping(), ParameterMapping::Power(_)) =>
+            {
+                section(
+                    "power",
+                    "Continuous (power)",
+                    [
+                        Element::new("slider", Slider::new(parameter.clone()).show_value(true)),
+                        Element::new("inline", InlineSlider::new(parameter).label("Drive")),
+                    ],
+                )
+            }
             AnyParameter::Continuous(parameter) => section(
                 "continuous",
                 "Continuous (logarithmic)",
@@ -1108,7 +1129,64 @@ pub(crate) fn progress(ui: &Runtime) -> Element {
                 ),
             ],
         ),
+        clock(ui),
     ])
+}
+
+/// An application timer: `Runtime::start_interval` ticks once a second until
+/// stopped, also while focus is elsewhere or the window is hidden, and only
+/// while it runs does the gallery schedule anything.
+fn clock(ui: &Runtime) -> Element {
+    let ticks = ui.signal(0_u64);
+    let timer = Rc::new(RefCell::new(None::<IntervalTimer>));
+    let (counter, running) = (ticks.clone(), timer.clone());
+    let start = Button::new("Start the clock", move |cx| {
+        if running.borrow().is_some() {
+            return Ok(());
+        }
+        let (counter, running) = (counter.clone(), running.clone());
+        let _task = cx.defer(move |ui| {
+            // A second Start queued before this task ran finds the clock
+            // running and starts nothing.
+            if running.borrow().is_some() {
+                return Ok(());
+            }
+            let started = ui.start_interval(std::time::Duration::from_secs(1), move |_| {
+                counter.update(|ticks| *ticks += 1)
+            })?;
+            *running.borrow_mut() = Some(started);
+            Ok(())
+        })?;
+        Ok(())
+    });
+    let stop = Button::new("Stop", move |_| {
+        if let Some(timer) = timer.borrow_mut().take() {
+            timer.cancel();
+        }
+        Ok(())
+    });
+    let shown = ticks.map(|ticks| format!("Ticks: {ticks}"));
+    section(
+        "clock-section",
+        "An application timer",
+        [
+            label(
+                "clock-help",
+                "Start the clock: a timer the application owns ticks once a second, also while another control has focus or the window is hidden, until you stop it. It is not a component's, so cancelled input and focus loss leave it running.",
+            ),
+            Element::new(
+                "clock-row",
+                Row::new([
+                    Element::new("clock-start", start),
+                    Element::new("clock-stop", stop),
+                    match shown {
+                        Ok(text) => Element::new("clock-ticks", Label::new(text)),
+                        Err(error) => label("clock-ticks", error.to_string()),
+                    },
+                ]),
+            ),
+        ],
+    )
 }
 
 // The application owns the rules: the library only presents what is published.

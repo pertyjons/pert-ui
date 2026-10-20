@@ -418,14 +418,29 @@ impl Runtime {
     }
 
     /// Where the latest failing flush or paint first failed in a component:
-    /// the key path to it and the callback that failed. A developer report,
-    /// such as the native application's default error report, names it beside
-    /// the error.
+    /// the key path to it and what failed, a callback or the reconciliation
+    /// of the children it requested. A developer report, such as the native
+    /// application's default error report, names it beside the error.
     ///
-    /// Each outermost [`Self::flush`] and each [`Self::paint`] starts without
-    /// a site, so `None` means the latest one succeeded or failed outside any
-    /// component, for example in a deferred task. A failure inside a
-    /// component's child is reported at the child, where it arose.
+    /// Each outermost [`Self::flush`], [`Self::paint`],
+    /// [`Self::flush_windows`] and [`Self::service_intervals`] starts without
+    /// a site once it is admitted, so `None` means the latest one succeeded or
+    /// failed outside any component, for example in a deferred task. A call
+    /// refused at entry (a time before the runtime's current one, a forbidden
+    /// phase, after shutdown) returns that error and leaves an earlier site in
+    /// place; nested calls never reset it. A failure inside a component's child
+    /// is reported at the child, where it arose, and the first site of an
+    /// operation is kept.
+    ///
+    /// Children a component requested through
+    /// [`crate::UpdateContext::request_children`], as [`crate::Dynamic`],
+    /// [`crate::Show`] and [`crate::Each`] do, are reconciled during the
+    /// flush. When they are rejected, the site is
+    /// [`crate::FailurePhase::Reconcile`] at that component, with the rejected
+    /// description's keys in [`crate::FailureSite::description`]. Calling
+    /// [`Self::reconcile_children`] or [`Self::mount_tree`] directly returns
+    /// the error to the caller and records no site; it leaves an earlier one
+    /// in place.
     ///
     /// ```
     /// use pert_ui_runtime::{Column, Component, FailurePhase, IntoElement, LayoutError,
@@ -453,6 +468,17 @@ impl Runtime {
     /// Records the first component failure of the current flush or paint;
     /// an inner component fails before the ancestors its error passes through.
     pub(crate) fn note_failure(&self, serial: u64, phase: crate::FailurePhase) {
+        self.note_failure_at(serial, phase, Vec::new());
+    }
+
+    /// [`Self::note_failure`] with the keys of a rejected description below
+    /// the component, for [`crate::FailurePhase::Reconcile`].
+    pub(crate) fn note_failure_at(
+        &self,
+        serial: u64,
+        phase: crate::FailurePhase,
+        description: Vec<String>,
+    ) {
         if self.shared.failure.borrow().is_some() {
             return;
         }
@@ -466,9 +492,11 @@ impl Runtime {
             at = entry.node.logical_parent_serial();
         }
         path.reverse();
-        self.shared
-            .failure
-            .replace(Some(crate::FailureSite { path, phase }));
+        self.shared.failure.replace(Some(crate::FailureSite {
+            path,
+            phase,
+            description,
+        }));
     }
 
     /// Releases the application services at shutdown: timers stop, waiting

@@ -359,7 +359,9 @@ normalizes CRLF, CR, NEL, vertical tab, form feed and the Unicode separators to
 LF, and other pasted control characters are dropped. An external binding value
 the editor cannot accept is refused without rewriting the source: the field keeps
 its previous text, shows the error outline and accepts no edits until the
-binding is acceptable again. [`TextField::check`] and [`TextArea::check`] test a
+binding is acceptable again. `on_binding_refusal` tells the application when
+that starts, with the reason, and when it ends, for example to show a
+[`FieldStatus`] or shorten the text. [`TextField::check`] and [`TextArea::check`] test a
 string before it is written. Clipboard errors propagate; failed cut preserves its
 source text.
 On Linux the desktop clipboard tries the Wayland data-control protocol first and

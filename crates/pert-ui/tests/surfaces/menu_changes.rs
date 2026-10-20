@@ -276,3 +276,92 @@ fn context_menus_and_menu_bar_titles_report_too_and_detached_work_survives() {
     ui.flush(Duration::ZERO).unwrap();
     assert!(deferred.get().unwrap());
 }
+
+/// Clicks the middle of the open list furthest right, a submenu's list once
+/// one opens; the lists here hold one row, so that chooses it.
+fn click_open_row(ui: &mut Runtime) {
+    let list = ui
+        .inspect()
+        .components
+        .into_iter()
+        .filter(|c| c.key == "items" && c.visible)
+        .filter_map(|c| c.details.box_model.border_box)
+        .max_by(|a, b| a[0].total_cmp(&b[0]))
+        .expect("an open list");
+    let [x, y, w, h] = list;
+    click(ui, x + w / 2.0, y + h / 2.0, PointerButton::Primary);
+}
+
+/// Clicks the shown component keyed `key` below `root`.
+fn click_key(ui: &mut Runtime, root: &WidgetId, key: &str, button: PointerButton) {
+    let id = ui
+        .find_descendant(root, key)
+        .unwrap()
+        .unwrap_or_else(|| panic!("no {key}"));
+    let (x, y) = center(ui, &id);
+    click(ui, x, y, button);
+}
+
+#[test]
+fn pointer_choices_in_nested_and_context_menus_report() {
+    let mut ui = ui();
+    let nested = ui.signal(false);
+    let wrap = ui.signal(false);
+    let log = Log::default();
+    let context = ContextMenu::new(
+        &ui,
+        Element::new("target", Button::new("Target", |_| Ok(()))),
+        vec![MenuItem::toggle("wrap", "Wrap", wrap.clone()).on_change(logging(&log, "wrap"))],
+    )
+    .unwrap();
+    let menu = Menu::new(
+        &ui,
+        "View",
+        vec![MenuItem::submenu(
+            "more",
+            "More",
+            vec![
+                MenuItem::toggle("nested", "Nested", nested.clone())
+                    .on_change(logging(&log, "nested")),
+            ],
+        )],
+    )
+    .unwrap();
+    let root = ui
+        .mount_tree(Element::new(
+            "root",
+            Column::new([Element::new("menu", menu), Element::new("context", context)]),
+        ))
+        .unwrap();
+    ui.flush(Duration::ZERO).unwrap();
+    click_key(&mut ui, &root, "trigger", PointerButton::Primary);
+    // The first click opens the submenu, the second chooses its row.
+    click_open_row(&mut ui);
+    click_open_row(&mut ui);
+    assert!(nested.get().unwrap());
+    assert_eq!(*log.borrow(), [("nested", true)]);
+    click_key(&mut ui, &root, "target", PointerButton::Secondary);
+    click_open_row(&mut ui);
+    assert!(wrap.get().unwrap());
+    assert_eq!(log.borrow().last(), Some(&("wrap", true)));
+}
+
+#[test]
+fn a_direct_menu_bar_title_reports_when_chosen_by_keyboard() {
+    let mut ui = ui();
+    let ruler = ui.signal(false);
+    let log = Log::default();
+    let bar = MenuBar::new(
+        &ui,
+        vec![MenuItem::toggle("ruler", "Ruler", ruler.clone()).on_change(logging(&log, "ruler"))],
+    )
+    .unwrap()
+    .content(Element::new("body", Label::new("Body")));
+    let root = ui.mount_tree(Element::new("bar", bar)).unwrap();
+    ui.flush(Duration::ZERO).unwrap();
+    let title = ui.find_descendant(&root, "title/ruler").unwrap().unwrap();
+    ui.focus(&title).unwrap();
+    press(&mut ui, KeyCode::Enter);
+    assert!(ruler.get().unwrap());
+    assert_eq!(*log.borrow(), [("ruler", true)]);
+}

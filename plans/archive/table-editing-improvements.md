@@ -1,10 +1,13 @@
 # Plan: improvements found by an inventory-editor probe
 
 Status: proposed 2026-10-19 and revised after an independent Codex review of
-the findings and the first draft (see the review record); being implemented
-on branch `table-editing-improvements` (slice 0 done, documentation only; slice 1 in 0.3.32 and 0.3.33; slice 2 in 0.3.34; slice 3 in 0.3.35 and 0.3.36; slice 4 in 0.3.37 and 0.3.38; slice 5 in 0.3.39). Every
-type and method named below as new is a proposal until a slice implements and
-documents it.
+the findings and the first draft (see the review record); implemented in
+0.3.32 to 0.3.44 and squash-merged into `main` as 5a6e451 (slice 0
+documentation only; slice 1 in 0.3.32 and 0.3.33; slice 2 in 0.3.34; slice 3
+in 0.3.35 and 0.3.36; slice 4 in 0.3.37 and 0.3.38; slice 5 in 0.3.39 and
+0.3.40; slice 6 in 0.3.41 and 0.3.42; slice 7 in 0.3.43 and 0.3.44). The API
+sketches below are the design as proposed; each slice's status line says
+where the implementation differs.
 
 ## Background
 
@@ -147,7 +150,7 @@ checkout on 2026-10-19) or by the probe:
 
 ## Working rules
 
-The rules of [app-author-improvements](app-author-improvements.md#working-rules)
+The rules of [app-author-improvements](../app-author-improvements.md#working-rules)
 apply unchanged: one slice per commit with its rustdoc, examples, gallery,
 manual and CHANGELOG; the maintainer's patch version bump per slice; an
 independent Codex review before a slice is called merge-ready; the contracts
@@ -596,7 +599,8 @@ and replaces the conflicting parts above.
   `InlineText`, the inline number rows, `TextArea`, `SearchField` and
   parameter sources ignore sessions entirely (no start, no key consumption),
   as documented on `.session`; inline rows already own a resting and editing
-  policy that a later slice can map onto the protocol.
+  policy that a later slice can map onto the protocol. Those sessions are in
+  the [follow-up index](../follow-ups.md).
 - **API conventions.** `.session` replaces an earlier session; `EditStart`,
   `EditTrigger` and `EditOutcome` are `#[non_exhaustive]`; `take_completion`
   and `take_start` are `#[must_use]`; reporting is infallible.
@@ -796,7 +800,8 @@ impl VirtualList {
   keeps `on_activate`, Space keeps selection), and Escape that the content
   leaves unhandled returns focus to the body. That is the keyboard route the
   custom-widget guide requires when descendant stops are suppressed.
-- **Not in this slice:** moving down after Enter, range selection.
+- **Not in this slice:** moving down after Enter, range selection. Both are
+  in the [follow-up index](../follow-ups.md).
 
 Contract tests, on both key paths where keys are involved: each begin (Enter
 with `SelectAll`, F2 and double-click with the caret at the end, typed text,
@@ -816,10 +821,8 @@ editor built with the host's owner; no edit surviving hiding or unmount.
 ### 7. An editable-table example
 
 Status: done in 0.3.43. The example is `crates/pert-ui/examples/inventory`;
-its headless session over 10 000 and 100 000 generated items passed in the
-release profile on Fedora 44 x86_64, with 752 components mounted at both
-sizes, Enter opening an editor in about 2 ms and saving in 5 to 9 ms, and
-a save that re-sorts 100 000 rows and moves the edit in about 66 ms. The
+its headless session and timings are recorded in
+[verification](../../docs/verification.md#table-editing-plan). The
 gallery edits the Collections table's Note column in place. Review fixes in
 0.3.44 made the row commands follow every filter, the search included,
 bounded the store's numbers and checked its edit groups in order, and
@@ -838,7 +841,9 @@ widened the session's checks.
 Taken up only when an application needs them, each with its own checkpoint:
 range selection of cells and multi-cell copy and paste; a fill handle; a
 row-level edit transaction across several cells; the session protocol in
-`Tree` rows and `PropertyGrid`.
+`Tree` rows and `PropertyGrid`. They are in the
+[follow-up index](../follow-ups.md), with Enter moving down, sessions for the
+editors slice 5 left out, controlled controls and the removed-column rule.
 
 ## Not in this plan
 
@@ -863,3 +868,17 @@ the library, and accessibility integration.
   background, isolate the numeric loss, design completion and traversal,
   prove them with a custom collection, then integrate) is the order above.
   Each correction was checked against the code before it was adopted.
+
+Implementation, 2026-10-20: slices 4, 5 and 6 had Codex design checkpoints,
+recorded in their sections. Slice 5 was revised twice and slice 6 once
+before approval. Every slice had an independent Codex implementation review
+whose findings were fixed (0.3.33, 0.3.36, 0.3.38, 0.3.40, 0.3.42 and
+0.3.44), as
+the squash commit 5a6e451 states. Per-slice gate runs were not recorded;
+[verification](../../docs/verification.md#table-editing-plan) records the
+workspace gate on the merged result.
+
+2026-10-20 audit ([plan-audit-repairs](../plan-audit-repairs.md)): several
+contract tests of slices 1 and 4 to 6 are missing, some rustdoc is stale
+after slice 4, and the manual lost the sorted-row caveat. That plan
+repairs them.

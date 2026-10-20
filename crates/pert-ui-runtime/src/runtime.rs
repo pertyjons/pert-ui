@@ -53,13 +53,25 @@ pub enum Invalidation {
 #[derive(Clone, Debug, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct FailureSite {
-    /// The keys from the root to the failing component, the root's first.
+    /// The keys from the root to the component the failure belongs to, the
+    /// root's first: the component whose callback failed, or for
+    /// [`FailurePhase::Reconcile`] the component whose requested children were
+    /// rejected. Every key names a mounted component.
     pub path: Vec<String>,
-    /// The component callback that failed.
+    /// What failed for that component.
     pub phase: FailurePhase,
+    /// For [`FailurePhase::Reconcile`], the keys from the requested children
+    /// down to the rejected description: the duplicated key, the element
+    /// whose type changed or whose description failed, the parent of an empty
+    /// key, or a surviving child that manages its own children but was given
+    /// some. These descriptions need not be mounted. Empty for the other
+    /// phases, and for an error that names no element, such as an owner that
+    /// cannot take children.
+    pub description: Vec<String>,
 }
 
-/// The component callback a [`FailureSite`] names.
+/// What a [`FailureSite`] says failed: one of the component's callbacks, or
+/// the runtime's reconciliation of the children it requested.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum FailurePhase {
@@ -71,18 +83,32 @@ pub enum FailurePhase {
     Arrange,
     /// [`Component::paint`] or [`Component::paint_foreground`].
     Paint,
+    /// The children the component requested through
+    /// [`UpdateContext::request_children`], as [`crate::Dynamic`],
+    /// [`crate::Show`] and [`crate::Each`] do, were rejected before they replaced the current ones: an
+    /// empty or duplicated key, a changed component type under a kept key,
+    /// or an error from [`Component::check_description`]. A panic is not
+    /// reported here: it resumes unwinding.
+    Reconcile,
 }
 
 impl std::fmt::Display for FailureSite {
-    /// Writes the phase and the key path, as in `update of root/form/name`.
+    /// Writes the phase and the key path, as in `update of root/form/name`,
+    /// followed for a rejected description by its keys, as in
+    /// `reconciliation of root/list at items/row-3`.
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let phase = match self.phase {
             FailurePhase::Update => "update",
             FailurePhase::Measure => "measurement",
             FailurePhase::Arrange => "arrangement",
             FailurePhase::Paint => "painting",
+            FailurePhase::Reconcile => "reconciliation",
         };
-        write!(f, "{phase} of {}", self.path.join("/"))
+        write!(f, "{phase} of {}", self.path.join("/"))?;
+        if !self.description.is_empty() {
+            write!(f, " at {}", self.description.join("/"))?;
+        }
+        Ok(())
     }
 }
 
@@ -5796,7 +5822,12 @@ impl Runtime {
             if !owner.mounted.get() {
                 continue;
             }
-            if let Err(error) = self.reconcile_children(&WidgetId(owner.clone()), children) {
+            let mut trail = Vec::new();
+            if let Err(error) =
+                self.reconcile_children_traced(&WidgetId(owner.clone()), children, &mut trail)
+            {
+                trail.reverse();
+                self.note_failure_at(owner.serial, FailurePhase::Reconcile, trail);
                 let mut queued = self.shared.requested_children.borrow_mut();
                 queued.splice(0..0, requests);
                 return Err(error);

@@ -78,7 +78,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Real authorities validate expected_revision and deduplicate token and
     // generation before applying. This demonstrates the owned transport only.
     let worker = std::thread::spawn(move || -> Result<(), &'static str> {
-        let proposal = requests.recv().map_err(|_| "request queue closed")?;
+        // Bounded, so a missing proposal fails the example instead of
+        // hanging it and the join below.
+        let proposal = requests
+            .recv_timeout(Duration::from_secs(5))
+            .map_err(|_| "no proposal arrived")?;
         sender
             .send((proposal, AuthorityResponse::Accepted(0.75)))
             .map_err(|_| "response queue unavailable")

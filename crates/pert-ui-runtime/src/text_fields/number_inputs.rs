@@ -2374,7 +2374,10 @@ macro_rules! field_api {
             /// steps changed; during a held step every key is consumed and
             /// nothing is reported. A field that refused its bound value has
             /// nothing to correct and reports `Unchanged`. Focus leaving
-            /// reports `FocusLeft` with its save's outcome. A field bound to
+            /// reports `FocusLeft` with its save's outcome, delivered once a
+            /// hidden native window is shown again. Disabling the field
+            /// reports nothing: it releases focus as cancelled input, so the
+            /// draft stays unsaved and the edit open. A field bound to
             /// a parameter ignores the session. Replaces an earlier session.
             pub fn session(mut self, session: &crate::EditorSession) -> Self {
                 self.0.session = Some(session.attach());

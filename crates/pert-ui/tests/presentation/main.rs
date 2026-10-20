@@ -13,6 +13,7 @@ mod body_hit_regions;
 mod bound_background;
 mod colors;
 mod density;
+mod display_text_limits;
 mod focus_ring;
 mod fonts_icons;
 mod hover_feedback;

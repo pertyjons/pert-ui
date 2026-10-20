@@ -7,6 +7,15 @@ use pert_ui::*;
 /// An application menu bar over a small document: command rows with live
 /// shortcuts and enablement, submenus, separators, check and radio settings and
 /// a title that runs an action directly.
+/// A radio row's `on_change`: reports the user's choice on the status line.
+fn chose(
+    status: &Signal<String>,
+    zoom: &'static str,
+) -> impl FnMut(&mut EventContext, bool) -> Result<(), RuntimeError> + 'static {
+    let status = status.clone();
+    move |_, _| status.set(format!("You chose {zoom}."))
+}
+
 pub(crate) fn menu_bar(ui: &mut Runtime) -> Result<Element, AppError> {
     let status = ui.signal("Press a title, or focus the document and press F10.".to_owned());
     let dirty = ui.signal(false);
@@ -92,11 +101,24 @@ pub(crate) fn menu_bar(ui: &mut Runtime) -> Result<Element, AppError> {
                 "view",
                 "View",
                 vec![
-                    MenuItem::toggle("grid", "Show grid", grid.clone()),
+                    // `on_change` reports the user's own choice, never an
+                    // application write.
+                    MenuItem::toggle("grid", "Show grid", grid.clone()).on_change({
+                        let status = status.clone();
+                        move |_, shown| {
+                            status.set(format!(
+                                "You turned the grid {}.",
+                                if shown { "on" } else { "off" }
+                            ))
+                        }
+                    }),
                     MenuItem::separator(),
-                    MenuItem::radio("zoom-50", "50%", zoom.clone(), 50),
-                    MenuItem::radio("zoom-100", "100%", zoom.clone(), 100),
-                    MenuItem::radio("zoom-200", "200%", zoom.clone(), 200),
+                    MenuItem::radio("zoom-50", "50%", zoom.clone(), 50)
+                        .on_change(chose(&status, "50%")),
+                    MenuItem::radio("zoom-100", "100%", zoom.clone(), 100)
+                        .on_change(chose(&status, "100%")),
+                    MenuItem::radio("zoom-200", "200%", zoom.clone(), 200)
+                        .on_change(chose(&status, "200%")),
                 ],
             ),
             MenuItem::new("about", "About", move |_| {

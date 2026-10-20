@@ -7,7 +7,7 @@ The [manual](manual.md) contains runnable application examples.
 
 ## Mixer-probe plan
 
-The slices of [the mixer-probe plan](../plans/mixer-probe-improvements.md)
+The slices of [the mixer-probe plan](../plans/archive/mixer-probe-improvements.md)
 (0.3.9 to 0.3.17) each passed the workspace gate on Fedora 44 Linux with Rust
 1.99.0; slice 5 also passed the three serde configurations. Each slice had an
 independent Codex implementation review whose findings were fixed. On Fedora
@@ -35,7 +35,7 @@ evidence, not a crates.io dry run; no other platform was exercised.
 
 ## Diagram-probe plan
 
-The slices of [the diagram-probe plan](../plans/diagram-probe-improvements.md)
+The slices of [the diagram-probe plan](../plans/archive/diagram-probe-improvements.md)
 (0.3.18 to 0.3.23) each passed the workspace gate on Fedora 44 Linux with Rust
 1.99.0, and the pointer-refresh tests also passed in the release profile.
 Slices 1, 2 and 3 had a Codex design checkpoint before implementation, and
@@ -52,7 +52,7 @@ slice 1 documents.
 
 ## Log-explorer plan
 
-The slices of [the log-explorer plan](../plans/log-explorer-improvements.md)
+The slices of [the log-explorer plan](../plans/archive/log-explorer-improvements.md)
 (0.3.24 to 0.3.31) each passed the workspace gate on Fedora 44 Linux with
 Rust 1.99.0; the shrink, collection-diagnostic, selectable-text and text
 tests also passed in the release profile, the serde configuration ran the
@@ -73,6 +73,57 @@ inspection snapshot from another thread 3 ms, with at most about 600
 components mounted. `SelectableText` and the example's window have not been
 recorded as used on a native platform; the probe the example was reduced
 from ran natively on Fedora 44 GNOME/Wayland.
+
+On 2026-10-20 (0.3.51), with temporary instrumentation that is not kept, the
+release-profile wheel step was split. Each value is the median of three runs
+on Fedora 44 x86_64 with 24 threads.
+
+| Lines | Wheel step | Text preparation | Shapings | Shaping | Rasterizations | Rasterization |
+|---|---|---|---|---|---|---|
+| 50 000 | 4.28 ms | 2.12 ms | 49.4 | 0.92 ms | 19.9 | 0.96 ms |
+| 200 000 | 4.28 ms | 2.12 ms | 49.3 | 0.92 ms | 19.8 | 0.96 ms |
+
+Every step prepares the newly mounted rows' cells, so neither the layout
+cache nor raster reuse answered any of them. The step does not grow with the
+log's length, since only the mounted rows prepare text. The "before" of the
+slice 4 comparison (0.3.28) cannot be rebuilt: the plan's branch was
+squash-merged and deleted, so only the 4.78 ms recorded then remains.
+
+## Table-editing plan
+
+The slices of [the table-editing plan](../plans/archive/table-editing-improvements.md)
+(0.3.32 to 0.3.44) each had an independent Codex implementation review
+whose findings were fixed (0.3.33, 0.3.36, 0.3.38, 0.3.40, 0.3.42 and
+0.3.44), and
+slices 4, 5 and 6 a Codex design checkpoint before implementation. These are
+claimed by the plan and the squash commit; the per-slice gate runs were not
+recorded. On 2026-10-20 the merged result (5a6e451) passed the workspace gate
+on Fedora 44 Linux (kernel 7.2.11) with Rust 1.99.0.
+
+The `inventory` example's headless session over 10 000 and 100 000
+generated items passed in the release profile on Fedora 44 x86_64. It
+mounted 752 components at both sizes. Enter opened an editor in about 2 ms
+and a save took 5 to 9 ms. A save that re-sorts 100 000 rows and moves the
+edit took about 66 ms. The example's window, the gallery's editable Note
+column and Tab traversal scopes have no native evidence (TODO.md NATIVE-05).
+
+## Plan-audit repairs
+
+The slices of [the plan-audit repairs](../plans/plan-audit-repairs.md)
+(0.3.45 onward) each passed the workspace gate on Fedora 44 Linux (kernel
+7.2.11) with Rust 1.99.0. From slice 3 that gate includes the examples'
+headless sessions. Slice 2 also passed its tests in the release profile, and
+slice 4 its serialization test with `serde`. Each slice had an independent
+Codex review whose findings were fixed before the commit or in a follow-up
+commit; slices 1 and 2 also had a design checkpoint.
+
+The gallery demonstrations of slice 8 have headless gallery tests. On
+2026-10-20, after they were added, `cargo run --locked -p
+pert-ui-native-checks -- interaction` passed both gallery interaction checks
+on Fedora 44 Workstation, GNOME on Wayland: `interaction_check` and
+`interaction_check_cpu`, 30 steps each. Input entered at the runtime's native
+entry points, and these checks do not step through the new demonstrations
+themselves. No hand check of them is claimed.
 
 ## Thin outlines at fractional zoom
 
@@ -411,7 +462,7 @@ or driver; it does not cover the other native checks or another platform.
 | General components of 2026-10-01 (search field, knob, chip, breadcrumb, reveal navigation, link, color picker, collapsible and accordion, multi-select, command palette, property grid, file browser) | The whole native suite passed on the branch that adds them (2026-10-01), so existing native behavior did not regress; no native check or hand check exercises the new components themselves yet. |
 | Tool window floating frames and own native windows (Layout › Tool windows: Float, then drag the header and the corner grip; Open in window, then close the native window and see the tool window back on its stripe; Dock from the window's options menu) | Linux: passed 2026-10-05 on Fedora 44 GNOME/Wayland as steps of the native gallery interaction check: float through the options menu, header drag, corner-grip resize, open in a real native window and close it back to the stripe. Input enters at the runtime's native entry points; window creation and closing were the real host's. Windows and macOS have no evidence. |
 | Gallery interaction check (`pert-ui-gallery::interaction_check`): menu-bar brand mark and history back/forward, command palette shortcut and Go to, chip removal, search field debounce/choose/clear, concealed password (no IME request, Alt+F8 reveal, concealed again on focus loss), content search shortcut and jump, knob pointer drag, collapsible section toggle, tool window expand and Escape, float, header drag, corner-grip resize, own native window and its close, collection filter and clear, settled idle | Passed natively 2026-10-02 (tool window float to close steps added and passed 2026-10-05) on Fedora 44, GNOME on Wayland, Intel UHD Graphics 770 with Mesa 26.2.3, as part of the whole native suite; Linux only. Input enters at the runtime's entry points, so it is not evidence for the adapter's OS event translation. |
-| Native suite on the application-author branch (0.3.8, `app-author-improvements`): interval timers serviced every loop turn, value-driven children, flex layout and selection notifications in the gallery, software presentation | Passed 2026-10-18 on Fedora 44, kernel 7.2.11-200.fc44.x86_64, GNOME/Wayland, Intel UHD Graphics 770 with Mesa 26.2.4 on Vulkan, Rust 1.99.0: every check of the runner, including both gallery interaction checks and the settled-idle checks, which show the interval servicing adds no wakeup when no timer runs. `--skip-clipboard` omitted the clipboard check. No check starts an interval timer in a native window. |
+| Native suite on the application-author branch (0.3.8, `app-author-improvements`): interval timers serviced every loop turn, software presentation, and the gallery as it then was, which showed value-driven children only through `Dynamic` on the Chips page and did not yet demonstrate flex layout or selection notifications | Passed 2026-10-18 on Fedora 44, kernel 7.2.11-200.fc44.x86_64, GNOME/Wayland, Intel UHD Graphics 770 with Mesa 26.2.4 on Vulkan, Rust 1.99.0: every check of the runner, including both gallery interaction checks and the settled-idle checks, which show the interval servicing adds no wakeup when no timer runs. `--skip-clipboard` omitted the clipboard check. No check starts an interval timer in a native window. |
 | `desktop-cpu` build (no wgpu) | On the same machine and date, each ignored window check of `pert-ui` built with `--no-default-features --features desktop-cpu` ran in its own process: startup, resize and idle, capture, drag, and three software surfaces with redock passed, all presented by the CPU renderer. The pacing check is compiled only with `gpu`: in this build it measured 47.6 updates/s against a 99.981 Hz monitor, since CPU frames have no interactive budget. The native runner itself builds the default configuration and does not run this one. |
 | Native suite after the framework audit repairs | Passed 2026-10-04 on Fedora GNOME/Wayland/Vulkan, including hardware readback and real-renderer capture. `--skip-clipboard` explicitly omitted the clipboard check. Existing injected/runtime-entry interaction limits still apply; no new hand check of floating tool windows or another platform is claimed. |
 | Software presentation (`App::software_rendering`): `software_presentation_captures_the_window_and_a_widget`, `software_window_resize_and_idle`, `three_software_surfaces_animate_settle_and_redock` and `pert-ui-gallery::interaction_check_cpu` | Passed 2026-10-05 on Fedora 44 GNOME/Wayland with softbuffer over Wayland shared memory: capture, resize, minimize/restore, input, recovery, floating windows, detach/redock, the 29-step interaction check and settled idle, with no GPU device created. Input entered at the runtime's native entry points. The user then checked the `--cpu` gallery by hand on the same desktop on 2026-10-05: real pointer, keyboard and text input, the clipboard, and display scales from 75 % to 200 %, including fractional ones, all looked and behaved correctly. Windows and macOS only compiled. |

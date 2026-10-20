@@ -74,7 +74,9 @@ assert_ne!(id, id.next_incarnation()?);
 Positions are dimensionless; canonical numeric values have application-defined
 meaning. Linear mapping and editable metadata are defaults. An optional
 `with_mapping(ParameterMapping::Logarithmic)` selects a strictly positive
-logarithmic domain. Metadata does not hold a current value or enforce host edits.
+logarithmic domain, and `with_mapping(ParameterMapping::Power(exponent))` with
+a [`PowerExponent`] gives part of any range more travel, also one that
+includes zero or negative values: an exponent above one spreads the low end. Metadata does not hold a current value or enforce host edits.
 The library ships no unit presets: units and their meaning stay with the
 application. Four closed parameter families share one protocol: continuous
 `f32` ([`ParameterSpec::new`]), exact stepped `i64` ([`ParameterSpec::stepped`]),

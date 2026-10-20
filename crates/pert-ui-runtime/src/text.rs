@@ -561,11 +561,20 @@ pub(crate) struct TextService {
     /// How many times text was shaped, cached or not.
     #[cfg(test)]
     shapings: Cell<usize>,
+    /// The longest text shaped, in bytes.
+    #[cfg(test)]
+    longest_shaped: Cell<usize>,
 }
 /// Everything that decides where plain text is cut to fit a width.
 #[derive(PartialEq)]
 struct FitKey {
-    text: String,
+    /// The first line, which is all a truncation shows.
+    line: String,
+    /// Whether more text follows the line, so the ellipsis always shows.
+    more: bool,
+    /// Whether `line` is the bounded cut of a longer line, whose cluster
+    /// boundaries at the join differ from a text of the same bytes.
+    cut: bool,
     font: usize,
     size: u32,
     scale: u64,
@@ -611,6 +620,8 @@ impl TextService {
             fit_searches: Cell::new(0),
             #[cfg(test)]
             shapings: Cell::new(0),
+            #[cfg(test)]
+            longest_shaped: Cell::new(0),
         })
     }
     #[cfg(test)]
@@ -869,9 +880,17 @@ impl TextService {
             });
         }
         let request = request.width(None);
-        let (line, bounds, broken) = fit::clusters(text);
+        // A line too long to prepare is cut first; the cut always shows the
+        // ellipsis, as a line followed by a line break does.
+        let bounded = fit::bounded(text, overflow);
+        let (line, bounds, broken) = match &bounded {
+            Some((cut, bounds)) => (cut.as_str(), bounds.clone(), true),
+            None => fit::clusters(text),
+        };
         let key = FitKey {
-            text: text.to_owned(),
+            line: line.to_owned(),
+            more: broken,
+            cut: bounded.is_some(),
             font: self.registry.default_index(request.style.font_role()),
             size: request.font_size.to_bits(),
             scale: effective_scale(request.scale, [request.font_size]).to_bits(),
@@ -911,7 +930,11 @@ impl TextService {
                 while low < high {
                     let middle = (low + high).div_ceil(2);
                     let shown = fit::candidate(line, &bounds, middle, overflow);
-                    if self.plain_width(&shown, request)? <= width {
+                    // A candidate is longer with every kept cluster, so one
+                    // beyond the byte limit is treated as too wide.
+                    if shown.len() <= crate::TextEditError::MAX_TEXT_BYTES
+                        && self.plain_width(&shown, request)? <= width
+                    {
                         low = middle;
                     } else {
                         high = middle - 1;
@@ -924,6 +947,10 @@ impl TextService {
         // overhangs, so step back while the result is still too wide.
         loop {
             let shown = fit::candidate(line, &bounds, kept, overflow);
+            if shown.len() > crate::TextEditError::MAX_TEXT_BYTES && kept > 0 {
+                kept -= 1;
+                continue;
+            }
             let layout = self.prepare_plain(&shown, request)?;
             if layout.size().width() <= width || kept == 0 {
                 if remembered != Some(kept) {
@@ -1104,7 +1131,11 @@ impl TextService {
     /// Shapes, wraps and aligns the resolved spans in physical pixels.
     fn build_layout(&mut self, key: &Key) -> Result<parley::Layout<usize>, TextError> {
         #[cfg(test)]
-        self.shapings.set(self.shapings.get() + 1);
+        {
+            self.shapings.set(self.shapings.get() + 1);
+            let length = key.resolved.text.len().max(self.longest_shaped.get());
+            self.longest_shaped.set(length);
+        }
         let resolved = &key.resolved;
         let text = &resolved.text;
         let scale = key.scale as f32;
@@ -2233,6 +2264,172 @@ mod rich_tests {
                 overflow,
             )
             .unwrap()
+    }
+
+    /// The grapheme cluster boundaries of `text`, including its end.
+    fn cluster_bounds(text: &str) -> Vec<usize> {
+        unicode_segmentation::UnicodeSegmentation::grapheme_indices(text, true)
+            .map(|(index, _)| index)
+            .chain([text.len()])
+            .collect()
+    }
+
+    #[test]
+    fn a_line_beyond_the_byte_limit_is_cut_on_its_own_cluster_boundaries() {
+        let limit = crate::TextEditError::MAX_TEXT_BYTES;
+        let budget = limit - fit::ELLIPSIS.len();
+        // Exactly the limit is not cut; one byte more is.
+        assert!(fit::bounded(&"a".repeat(limit), TextOverflow::Ellipsis).is_none());
+        let (cut, bounds) = fit::bounded(&"a".repeat(limit + 1), TextOverflow::Ellipsis).unwrap();
+        assert_eq!(cut.len(), budget);
+        assert_eq!(bounds, cluster_bounds(&cut));
+        // A line break ends the line before the limit applies.
+        let broken = format!("short\n{}", "a".repeat(2 * limit));
+        assert!(fit::bounded(&broken, TextOverflow::Ellipsis).is_none());
+        // One cluster longer than the budget leaves nothing.
+        let huge = format!("e{}", "\u{301}".repeat(limit));
+        let (cut, bounds) = fit::bounded(&huge, TextOverflow::Ellipsis).unwrap();
+        assert_eq!((cut.as_str(), bounds.as_slice()), ("", &[0][..]));
+        assert_eq!(
+            fit::candidate(&cut, &bounds, 0, TextOverflow::Ellipsis),
+            fit::ELLIPSIS
+        );
+        // Regional-indicator flags and combining marks across both shares,
+        // after an odd and an even number of leading indicators.
+        for lead in ["", "\u{1F1F8}"] {
+            let flags = "\u{1F1F8}\u{1F1EA}".repeat(limit / 8 + 1);
+            let marks = "e\u{301}\u{302}".repeat(limit / 5 + 1);
+            let text = format!("{lead}{flags} {marks}x{flags}");
+            let whole = cluster_bounds(&text);
+            for overflow in [TextOverflow::Ellipsis, TextOverflow::MiddleEllipsis] {
+                let (cut, bounds) = fit::bounded(&text, overflow).unwrap();
+                assert!(cut.len() <= budget, "{overflow:?}");
+                assert_eq!(*bounds.last().unwrap(), cut.len());
+                let count = bounds.len() - 1;
+                let shown = fit::candidate(&cut, &bounds, count, overflow);
+                assert!(shown.len() <= limit);
+                let (head, tail) = shown.split_once(fit::ELLIPSIS).unwrap();
+                assert!(text.starts_with(head) && text.ends_with(tail));
+                assert!(whole.contains(&head.len()), "{overflow:?} head");
+                assert!(
+                    whole.contains(&(text.len() - tail.len())),
+                    "{overflow:?} tail"
+                );
+                if overflow == TextOverflow::MiddleEllipsis {
+                    // As many clusters from each end, and the ellipsis at the join.
+                    let join = bounds.iter().position(|b| *b == head.len()).unwrap();
+                    assert_eq!(join, count - join);
+                    assert!(!tail.is_empty());
+                } else {
+                    assert!(tail.is_empty());
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn the_cut_keeps_whole_source_clusters_at_each_share_boundary() {
+        let limit = crate::TextEditError::MAX_TEXT_BYTES;
+        let budget = limit - fit::ELLIPSIS.len();
+        let filler = "x".repeat(limit);
+        // A combining sequence across the end of the head's share is left out.
+        let text = format!("{}e\u{301}\u{302}{filler}", "a".repeat(budget - 2));
+        let (cut, _) = fit::bounded(&text, TextOverflow::Ellipsis).unwrap();
+        assert_eq!(cut, "a".repeat(budget - 2));
+        // Middle: the head's share is budget - budget / 2 bytes, the tail's
+        // budget / 2. Whitespace beside the join is trimmed by the cluster
+        // boundaries; the kept counts are equal.
+        let (head, tail) = (budget - budget / 2, budget / 2);
+        let text = format!("{} {filler} {}", "h".repeat(head - 1), "t".repeat(tail - 1));
+        let (cut, bounds) = fit::bounded(&text, TextOverflow::MiddleEllipsis).unwrap();
+        let count = bounds.len() - 1;
+        assert_eq!(count % 2, 0);
+        let shown = fit::candidate(&cut, &bounds, count, TextOverflow::MiddleEllipsis);
+        let (start, end) = shown.split_once(fit::ELLIPSIS).unwrap();
+        assert!(
+            !start.ends_with(' ') && !end.starts_with(' '),
+            "{:?}",
+            &shown[..8]
+        );
+        assert!(start.chars().all(|c| c == 'h') && end.chars().all(|c| c == 't'));
+        // Fewer kept clusters come from both ends, on source boundaries.
+        for kept in [1, 2, 7, count / 3] {
+            let shown = fit::candidate(&cut, &bounds, kept, TextOverflow::MiddleEllipsis);
+            let (start, end) = shown.split_once(fit::ELLIPSIS).unwrap();
+            assert!(text.starts_with(start) && text.ends_with(end), "{kept}");
+        }
+        // A tail run of regional indicators of either parity: pairs from the
+        // run's start, so an odd run ends in a single indicator.
+        for run in [3, 4, 2001, 2002] {
+            let text = format!("{filler}x{}", "\u{1F1F8}".repeat(run));
+            let whole = cluster_bounds(&text);
+            let (cut, bounds) = fit::bounded(&text, TextOverflow::MiddleEllipsis).unwrap();
+            let count = bounds.len() - 1;
+            for kept in [count, count - 1, 2] {
+                let shown = fit::candidate(&cut, &bounds, kept, TextOverflow::MiddleEllipsis);
+                let (_, end) = shown.split_once(fit::ELLIPSIS).unwrap();
+                assert!(text.ends_with(end));
+                assert!(
+                    whole.contains(&(text.len() - end.len())),
+                    "run {run}, kept {kept}"
+                );
+            }
+        }
+        // One cluster longer than the budget on both sides leaves "…" alone.
+        let huge = format!("e{}", "\u{301}".repeat(limit));
+        let (cut, bounds) = fit::bounded(&huge, TextOverflow::MiddleEllipsis).unwrap();
+        assert_eq!(
+            fit::candidate(&cut, &bounds, 0, TextOverflow::MiddleEllipsis),
+            fit::ELLIPSIS
+        );
+    }
+
+    #[test]
+    fn a_line_at_the_limit_is_truncated_within_it() {
+        // Not cut by the bound, but no candidate with its ellipsis may pass
+        // the byte limit either: zero-width clusters fit any width.
+        let mut service = TextService::new().unwrap();
+        let limit = crate::TextEditError::MAX_TEXT_BYTES;
+        for text in [
+            format!("{}a\n", "\u{200B}".repeat(limit / 3)),
+            format!("{}a", "\u{200B}".repeat(limit / 3)),
+            format!("{}\n", "\u{200B}".repeat(limit / 3 - 1)),
+        ] {
+            for overflow in [TextOverflow::Ellipsis, TextOverflow::MiddleEllipsis] {
+                let fitted = fit(&mut service, &text, 120.0, 1.0, overflow);
+                if let Some(shown) = fitted.shown() {
+                    assert!(shown.len() <= limit, "{overflow:?}");
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn a_cut_line_is_fitted_with_its_ellipsis_and_never_shaped_whole() {
+        let mut service = TextService::new().unwrap();
+        let limit = crate::TextEditError::MAX_TEXT_BYTES;
+        // A long log line, and zero-width clusters whose whole cut would fit
+        // the width: the ellipsis shows either way.
+        let words = "word ".repeat(200_000);
+        let invisible = "\u{200B}".repeat(20_000);
+        for overflow in [TextOverflow::Ellipsis, TextOverflow::MiddleEllipsis] {
+            for text in [&words, &invisible] {
+                let fitted = fit(&mut service, text, 120.0, 1.0, overflow);
+                let shown = fitted.shown().expect("cut text is truncated");
+                assert!(shown.contains(fit::ELLIPSIS));
+                assert!(shown.len() <= limit);
+            }
+        }
+        assert!(service.longest_shaped.get() <= limit);
+        // A cut and an ordinary text of the same bytes keep separate entries,
+        // warm or cold: the ordinary one fits whole at the same width.
+        let (cut, _) = fit::bounded(&invisible, TextOverflow::Ellipsis).unwrap();
+        for _ in 0..2 {
+            let ordinary = fit(&mut service, &cut, 120.0, 1.0, TextOverflow::Ellipsis);
+            assert_eq!(ordinary.shown(), None);
+            let again = fit(&mut service, &invisible, 120.0, 1.0, TextOverflow::Ellipsis);
+            assert!(again.shown().is_some());
+        }
     }
 
     #[test]

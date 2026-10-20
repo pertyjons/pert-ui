@@ -1354,3 +1354,25 @@ fn select_all_is_a_text_command_that_an_empty_editor_cannot_answer() {
         TextCommandOutcome::Unavailable
     );
 }
+#[test]
+fn a_scrollbar_press_ends_a_click_series() {
+    let (mut ui, id, _) = setup(&"line with words\n".repeat(40), true);
+    let [_, _, width, _] = ui.bounds(&id).unwrap().unwrap().values();
+    let metrics = ThemeMetrics::default();
+    // On the thumb, inside the track strip along the right edge.
+    let lane = width - metrics.get(MetricRole::ControlPaddingX) - 2.0;
+    let top = metrics.get(MetricRole::ControlPaddingY);
+    click(&mut ui, 25.0, 15.0, 1000);
+    let caret = property(&ui, "selection");
+    // A press on the bar moves no caret: it is the bar's, not the text's.
+    click(&mut ui, lane, top + 4.0, 1100);
+    assert_eq!(property(&ui, "selection"), caret, "the press hit the bar");
+    // Within the interval of the first click and at its place: a single
+    // click again, since the bar press ended the series.
+    click(&mut ui, 25.0, 15.0, 1200);
+    let InspectValue::Text(range) = property(&ui, "selection") else {
+        panic!("a selection");
+    };
+    let (start, end) = range.split_once("..").unwrap();
+    assert_eq!(start, end, "a caret, not a word: {range}");
+}

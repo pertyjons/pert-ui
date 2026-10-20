@@ -1,9 +1,12 @@
 # Plan: improvements for application authors
 
-Status: proposed 2026-10-18 and revised after an independent Codex review;
-implementation runs on the `app-author-improvements` branch. Slices 0 to 5 and 7,
-and the first part of slice 6, are implemented, and each slice's own status line says so. Every type and
-method a slice without such a line names is a proposal until that slice
+Status: proposed 2026-10-18 and revised after an independent Codex review.
+Slices 0 to 5 and 7, and the refusal notification of slice 6, are
+implemented in 0.3.2 to 0.3.8 and squash-merged into `main` as 116ab0c,
+with the [mixer-probe plan](archive/mixer-probe-improvements.md); each slice's own
+status line says so. The large-buffer editing of slice 6 is deferred to
+TODO.md TEXT-01. Slices 8 and 9 are not started, and this plan stays open
+for them: every type and method they name is a proposal until a slice
 implements and documents it.
 
 ## Background
@@ -199,6 +202,9 @@ Status: implemented in 0.3.4. Decisions taken while implementing:
   to the first description of a mounted list, tree or table.
 - Not separately reported: `Reveal` and `Restore` origins, since reveal does
   not write the selection and the selection is not persisted in workspaces.
+- A source change does not prune selected keys: the selection keeps keys
+  that are no longer shown, as `ListSelection` documents, so a source
+  replacement reports no selection change.
 
 - A selection-change callback on `VirtualList`, `Tree` and `Table`, delivered
   after layout settles through the public notification contract with its
@@ -220,10 +226,18 @@ Status: implemented in 0.3.5. Decisions taken while implementing:
 - `justify` and `align` are `Row`/`Column` builders; `Wrap` keeps its line
   placement. Row cross alignment is relative to the tallest child, as its
   existing centering is, and the defaults keep the previous layout.
+  Superseded in 0.3.10 by
+  [mixer plan slice 2](archive/mixer-probe-improvements.md#2-cross-axis-fill-in-rows):
+  cross alignment is relative to the row's allocated height.
 - The spare space is what the container's allocation leaves, so a column in a
   scroll area grows children into the visible height while its content is
   shorter.
-- No overflow shrinking, and default insets are unchanged.
+- No overflow shrinking, and default insets are unchanged. Superseded in
+  0.3.25 by
+  [log-explorer plan slice 1](archive/log-explorer-improvements.md#1-collections-in-unbounded-layout):
+  a bounded column shrinks children
+  below their natural size. Default insets are in the
+  [follow-up index](follow-ups.md).
 
 - Grow weights per child, main-axis and cross-axis alignment, cross-axis
   stretch and a spacer, as element-level layout properties or as `Column`/
@@ -238,7 +252,7 @@ Status: implemented in 0.3.5. Decisions taken while implementing:
 
 ### 5. Application resources, background work and diagnostics
 
-Status: implemented in 0.3.6, as three parts on the plan branch. Decisions
+Status: implemented in 0.3.6, as three parts. Decisions
 taken while implementing:
 
 - `Runtime::keep_alive` is the owner; shutdown drops kept values last, in
@@ -345,15 +359,30 @@ stays window-free.
   as a separate public-API branch: removing a prelude name can break
   consumers.
 
+Inputs from later plans and the 2026-10-20 audit:
+
+- The guide already has a two-part getting-started tutorial
+  (`guide/getting-started.md`, `guide/getting-started-continued.md`) and a
+  screenshot and capture section in `guide/diagnostics.md`. The packaged
+  examples (`live_mixer`, `diagram_editor`, `log_explorer`, `inventory`)
+  are applications with headless sessions. The tutorial and the testing
+  chapter start from these rather than beside them.
+- The [mixer-probe plan](archive/mixer-probe-improvements.md) found that the
+  prelude lacks the names an ordinary command or live-data application uses
+  (`CommandScope`, `KeyChord`, `CommandSource`, `series_bridge`,
+  `SeriesConfig`, `SeriesSource`, `Delivery`, `Timestamp`, `LevelMeter`,
+  `Trace`, `MeterAxis`, `EditOutcome`). So a smaller prelude still needs
+  those names, or thematic modules that make them easy to find.
+- The same probe found inspection bounds only under
+  `details.box_model.border_box`. The diagnostics guide should say where a
+  component's bounds are.
+
 ## Optional follow-ups
 
-Taken up only when an application path needs them: a general signal observer
-outside components (it would need ownership, event-phase delivery, batching,
-reentrancy, failure and feedback budgets defined first, since writes are
-forbidden during update, layout, paint, inspection and delivery), find in an
-editor buffer, a longer editor undo history, and pruning duplicated
-dependencies (two `tiny-skia` versions, `thiserror` 1 and 2, winit's Adwaita
-decorations, arboard's X11 fallback) once their cost is measured.
+The optional follow-ups of this plan are in the
+[follow-up index](follow-ups.md): a general signal observer outside
+components (declined for now), find in an editor buffer, a longer editor undo
+history, pruning duplicated dependencies and default insets.
 
 ## Not in this plan
 
@@ -372,3 +401,14 @@ findings: the appearance guide's `Accent` and the keyboard guide's missing
 stale ColorPicker area after revoking permission during a hue drag was not
 reproduced by a headless capture probe, which showed the area return to the
 committed hue.
+
+Implementation, 2026-10-18: each of slices 1 to 7 passed the workspace gate
+and an independent Codex implementation review whose findings were fixed
+before the next slice, as the squash commit 116ab0c states. The per-slice
+findings were not recorded here. The native suite and the `desktop-cpu`
+window checks are in [verification](../docs/verification.md).
+
+2026-10-20 audit ([plan-audit-repairs](plan-audit-repairs.md)): the
+gallery, the manual and some tests lag behind slices 2 to 6. The
+reconciliation failures of slice 5 have no failure site. That plan repairs
+both.

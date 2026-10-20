@@ -31,10 +31,11 @@ fn all_tags() -> Vec<String> {
     TAGS.iter().map(|tag| (*tag).to_owned()).collect()
 }
 
-fn chips_section(ui: &Runtime, status: &Signal<String>) -> Element {
+fn chips_section(ui: &Runtime, status: &Signal<String>) -> Result<Element, RuntimeError> {
     let tags = ui.signal(all_tags());
     let reset = tags.clone();
-    section(
+    let none_left = tags.map(Vec::is_empty)?;
+    Ok(section(
         "chip-section",
         "Chips",
         [
@@ -60,8 +61,19 @@ fn chips_section(ui: &Runtime, status: &Signal<String>) -> Element {
                 "reset-tags",
                 Button::new("Reset tags", move |_| reset.set(all_tags())),
             ),
+            label(
+                "tag-list-help",
+                "The same tags as a list: Each keeps one row per tag by its key, and \
+                 Show adds a note only while no tag is left.",
+            ),
+            Each::new(&tags, Clone::clone, |_, tag| {
+                Label::new(format!("• {tag}")).key("label")
+            })
+            .within(|rows| Column::new(rows).key("rows"))
+            .key("tag-list"),
+            Show::new(none_left, |_| label("note", "Every tag was removed.")).key("no-tags-note"),
         ],
-    )
+    ))
 }
 
 /// A sample folder path, outermost first: (key, label).
@@ -227,7 +239,7 @@ pub(crate) fn chips_and_breadcrumbs(
     status: &Signal<String>,
 ) -> Result<Element, RuntimeError> {
     Ok(page([
-        chips_section(ui, status),
+        chips_section(ui, status)?,
         multi_select_section(ui)?,
         breadcrumb_section(ui, status)?,
     ]))

@@ -124,3 +124,29 @@ fn press_event_counts_presses_on_the_runtime_clock_and_ignores_the_rest() {
     assert_eq!(seen.borrow()[1], None, "a release is not counted");
     assert_eq!(seen.borrow()[2], None, "a move is not counted");
 }
+
+#[test]
+fn a_later_builder_replaces_an_earlier_one_from_the_next_press() {
+    // The last builder call wins.
+    let mut replaced = ClickCounter::new()
+        .with_interval(ms(50))
+        .with_interval(ms(1000));
+    replaced.press(ms(0), at(0.0, 0.0), PRIMARY);
+    assert_eq!(replaced.press(ms(900), at(0.0, 0.0), PRIMARY), 2);
+    let mut narrowed = ClickCounter::new()
+        .with_distance(Length::new(20.0).unwrap())
+        .with_distance(Length::new(1.0).unwrap());
+    narrowed.press(ms(0), at(0.0, 0.0), PRIMARY);
+    assert_eq!(narrowed.press(ms(10), at(5.0, 0.0), PRIMARY), 1);
+
+    // Changed during a series, a threshold applies to the next press and
+    // keeps the count reached so far.
+    let mut clicks = ClickCounter::new();
+    clicks.press(ms(0), at(0.0, 0.0), PRIMARY);
+    assert_eq!(clicks.press(ms(100), at(0.0, 0.0), PRIMARY), 2);
+    let mut clicks = clicks.with_interval(ms(1000));
+    assert_eq!(clicks.count(), 2);
+    assert_eq!(clicks.press(ms(900), at(0.0, 0.0), PRIMARY), 3);
+    let mut clicks = clicks.with_interval(ms(10));
+    assert_eq!(clicks.press(ms(950), at(0.0, 0.0), PRIMARY), 1);
+}

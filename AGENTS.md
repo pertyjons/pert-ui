@@ -237,7 +237,7 @@ checks that exist; never claim a check you did not run.
 | Change | Required checks |
 |---|---|
 | Markdown only | Author review, links and whitespace; review consistency with existing decisions. |
-| Rustdoc/public examples | Targeted doctests, example compilation and warning-free rustdoc. |
+| Rustdoc/public examples | Targeted doctests, example compilation, the affected example's headless session and warning-free rustdoc. |
 | Package-local ordinary implementation | Formatting, targeted Clippy and package tests, including affected doctests. |
 | Public API, identity, scheduling, concurrency, persistence, real-time boundary or cross-package change | Workspace checks below, focused contract tests and semantic review before merge. |
 | Dependencies, features, platform integration or release | Workspace checks, MSRV, supported feature configurations, packaging/consumer checks and affected native platform checks. |
@@ -248,9 +248,18 @@ Workspace gate, as CI runs it (`--locked` keeps `Cargo.lock` authoritative):
 cargo fmt --all --check
 cargo clippy --locked --workspace --all-targets -- -D warnings
 cargo test --locked --workspace
+cargo run --locked -p pert-ui --features png,svg,cpu --example live_mixer
+cargo run --locked -p pert-ui --features png,svg,cpu --example dynamic_documents
+cargo run --locked -p pert-ui --features png,svg,cpu --example diagram_editor
+cargo run --locked -p pert-ui --features png,svg,cpu --example log_explorer -- --lines 10000
+cargo run --locked -p pert-ui --features png,svg,cpu --example inventory -- --items 2000
 cargo test --locked --workspace --doc
 RUSTDOCFLAGS="-D warnings" cargo doc --locked --workspace --no-deps
 ```
+
+The `cargo run` lines are the packaged examples' headless sessions, with the
+features the workspace build unifies so its examples are reused. A new
+headless example joins them here and in the workflow.
 
 A change to the live-data protocols in `pert-ui-core`'s `live` module also
 runs their `loom` models, which CI runs on Linux after the release-profile

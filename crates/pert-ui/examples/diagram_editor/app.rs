@@ -223,8 +223,8 @@ pub fn export_png(diagram: &Diagram) -> Result<Vec<u8>, Box<dyn std::error::Erro
     ui.mount_tree(Element::new("export", Canvas::new(editor, Rc::default())))?;
     ui.flush(std::time::Duration::ZERO)?;
     ui.set_capture_support(true);
-    let window = ui.primary_window().id();
-    let pending = ui.request_capture(CaptureRequest::new(CaptureTarget::Window(window)));
+    let window = CaptureTarget::window(&ui.primary_window());
+    let pending = ui.request_capture(CaptureRequest::new(window));
     ui.flush(std::time::Duration::ZERO)?;
     CpuRenderer::new().serve_captures(&mut ui);
     Ok(pending.wait()?.value?.image.encode_png())

@@ -1,10 +1,12 @@
 # Plan: improvements found by a log-explorer probe
 
 Status: proposed 2026-10-19 after an independent Codex review of the
-findings; being implemented on branch `log-explorer-improvements` (slice 0
-documentation only, slice 2 in 0.3.24 while slice 1's checkpoint was under
-review, slice 1 in 0.3.25). Every type and method named below as new is a
-proposal until a slice implements and documents it.
+findings; implemented in 0.3.24 to 0.3.31 and squash-merged into `main` as
+9d23503 (slice 0 documentation only, slice 2 in 0.3.24, slice 1 in 0.3.25
+and 0.3.26, slice 3 in 0.3.27 and 0.3.28, slice 4 in 0.3.29, slice 5 in
+0.3.30, review fixes of slices 4 and 5 in 0.3.31). The API sketches below
+are the design as proposed; each slice's status line says where the
+implementation differs.
 
 ## Background
 
@@ -94,7 +96,7 @@ checkout on 2026-10-19) or by measurement:
 
 ## Working rules
 
-The rules of [app-author-improvements](app-author-improvements.md#working-rules)
+The rules of [app-author-improvements](../app-author-improvements.md#working-rules)
 apply unchanged: one slice per commit with its rustdoc, examples, gallery,
 manual and CHANGELOG; the maintainer's patch version bump per slice; an
 independent Codex review before a slice is called merge-ready; the contracts
@@ -110,7 +112,7 @@ Additionally:
 - Performance claims are measured before and after on a defined workload
   (the probe's 200 000-line table and its wheel-step profile, kept as a
   benchmark in slice 5), in the release profile, and recorded with the
-  platform in [verification](../docs/verification.md); nothing is claimed
+  platform in [verification](../../docs/verification.md); nothing is claimed
   from compilation.
 - `TODO.md` TEXT-01 (large-buffer `TextArea`) stays separate; slice 3 states
   how its component relates to it.
@@ -152,9 +154,16 @@ weight and minimum, the floor, nested columns, rows unchanged, a short list
 in a scroll area, the diagnostic for scroll area, default tab and region,
 its absence for bounded containers and a self-scrolling tall list, a
 clipped panel and an estimated list), the serde round trip in
-`serialization.rs`, and the migrated `row_stretch.rs`. Not covered by a
-test of its own: a scaling `child_transform`, `Justify::SpaceBetween` after
-shrinking and clearing by redescription.
+`serialization.rs`, and the migrated `row_stretch.rs`. The 0.3.26 review
+fixes added tests for a scaling `child_transform`
+(`a_scaled_list_is_judged_by_its_visible_share`), `Justify::SpaceBetween`
+after shrinking (`stretch_and_space_between_place_shrunk_children`) and a
+report that clears and returns when a `Dynamic` redescribes the frame
+(`the_report_follows_an_arrangement_that_changes_the_allocation`).
+The diagnostic is simpler than the checkpoint below: the runtime keeps the
+row count, content extent, allocation and axis, not a mounted range, and
+the message gives the allocated extent in pixels and the visible share as a
+percentage. That is enough to act on, so the simplification stays.
 
 - Decide how the default composition keeps virtualization. Alternatives,
   each with its compatibility cost:
@@ -293,8 +302,10 @@ clipped-panel, transform-threshold and estimated-extent tests were added.
 Status: implemented in 0.3.24; review fixes (phase, reentrancy and service-error tests) in 0.3.26. The headless runtime has no clipboard until
 one is installed (the plan's "in-memory clipboard" was wrong); the methods
 then report `ClipboardError::Unavailable`. Tests:
-`crates/pert-ui/tests/foundation/runtime_clipboard.rs` and the
-`Runtime::set_clipboard_text` doctest.
+`crates/pert-ui/tests/foundation/runtime_clipboard.rs`, the phase and
+reentrancy unit test in `runtime.rs`
+(`runtime_clipboard_text_is_refused_inside_every_phase_and_from_the_service`)
+and the `Runtime::set_clipboard_text` doctest.
 
 - `Runtime::clipboard_text` and `Runtime::set_clipboard_text`, with the
   `EventContext` methods' errors, phase restrictions and concealment rules,
@@ -314,6 +325,12 @@ doctest.
 The implementation review's fixes are in 0.3.28: cancelled input ends a
 drag, native keys are read by their layout identity in the text phase, and
 a redescription with another source ends a drag even when its text is equal.
+An Escape that `SelectableText` does not use (no drag, no selection) returns
+`TextKeyOutcome::Ignored` from `text_key_event`, not `NotAnEditor` as the
+checkpoint said; it still reaches enclosing bindings and surfaces, as the
+tests `a_capture_command_on_escape_waits_while_the_selection_collapses` and
+`inside_a_popover_the_first_escape_collapses_and_the_second_closes` show,
+so the implemented outcome stays.
 
 - A component for read-only display text that the user can select and copy:
   wrapping, keyboard and pointer selection with the editors' click rules
@@ -477,6 +494,15 @@ vague. The revision above answers each.
 Status: implemented in 0.3.29 as the revised checkpoint decided; tests in
 `text.rs` (`shapings` counter). A wheel step over the `log_explorer`
 example's 50 000-line table went from 4.78 to 4.13 ms (release, Fedora 44).
+That workload is the example's default, not the probe's 200 000 lines the
+working rules name. Slice 9 of [plan-audit-repairs](../plan-audit-repairs.md)
+measured both:
+- the step takes the same 4.3 ms at 200 000 lines;
+- text preparation is about 2.1 ms of it, split evenly between about 49
+  shapings and 20 rasterizations, with no cache hits.
+
+The figures are in [verification](../../docs/verification.md#log-explorer-plan).
+The 0.3.28 "before" cannot be rebuilt after the squash merge.
 After the implementation review (0.3.31) the eviction tests use real
 eviction, icon and gap entries are covered, and CPU captures of 56 ellipsis
 cases (four scales, seven widths, both ellipsis modes, warm and cold passes)
@@ -571,7 +597,7 @@ eviction, font and raster cases. The revision above answers each; a second
 review approved it, correcting how font replacement keeps the caches sound.
 
 Measured afterwards on the same benchmark and recorded in
-[verification](../docs/verification.md).
+[verification](../../docs/verification.md).
 
 ### 5. A large-data example
 
@@ -602,7 +628,9 @@ an indexed or paged child source for trees with extreme fan-out and
 incremental flattening; horizontal virtualization of table cells; an
 incremental source-update API (append, replace a range) with its
 consistency and invalidation contract; text selection across collection rows;
-bounded preparation of very long display text (with TEXT-01).
+bounded preparation of very long display text (with TEXT-01). They are in
+the [follow-up index](../follow-ups.md); long display text is slice 2 of
+[plan-audit-repairs](../plan-audit-repairs.md).
 
 ## Not in this plan
 
@@ -621,3 +649,16 @@ integration, and file dialogs (app-author plan slice 8).
   that preparation counts include cache hits; added the large-data costs and
   the probe defects listed above. It recommended documentation and a
   diagnostic before any sizing change.
+
+Implementation, 2026-10-19: slices 1, 3 and 4 had the Codex design
+checkpoints recorded in their sections, each first rejected and approved
+after revision. Slices 1 to 5 had independent Codex implementation reviews
+whose findings were fixed with regression tests (0.3.26, 0.3.28 and
+0.3.31), as [verification](../../docs/verification.md#log-explorer-plan)
+records.
+
+2026-10-20 audit ([plan-audit-repairs](../plan-audit-repairs.md)): slice 4's
+measurements differ from the working rules. The layout guide does not say
+a tree source replacement re-flattens. The manual omits `View::fixed`. A
+display text over the byte limit still fails the flush. That plan repairs
+them.

@@ -80,6 +80,27 @@ adopted. A foreign binding fails the update with `ForeignRuntime`. Custom
 components follow the same contract through `TextSource::read`, `read_paint`
 and `same_as`.
 
+#### Text beyond the limits
+
+Display text is application data, so its size does not fail a flush. An
+ellipsis truncation (`TextOverflow`, `MeasureContext::fitted_text`) cuts a
+first line longer than `TextEditError::MAX_TEXT_BYTES` before fitting it:
+the start, or as many grapheme clusters from the start as from the end, on
+the line's own cluster boundaries and within the limit together with the
+ellipsis, which then always shows. A `Label` refuses what it still cannot
+prepare (wrapped or rich text over the byte limit, a layout beyond a raster
+limit, rich content beyond its segment limit). It keeps its last prepared
+text and size, reports `text_error` with invalid semantics, and recovers
+when a later text, width, style or scale fits. Its `text` property and name
+stay the current text, which is the application's value. `SelectableText`
+names the text it still shows, because its selection refers to that text.
+Help labels, an ellipsis label's and `Tooltip::new`'s, show nothing while
+refused rather than stale text. An ellipsis label offers no help for text
+over the byte limit. Components built on `Label` (`AlertDialog` titles and
+messages, `Group` headings, table and tree cells an application builds from
+labels) inherit this. Controls that prepare their own captions (buttons,
+chips, links, menu rows, tab and window titles) still fail on such text.
+
 #### Placeholders and library text
 
 Placeholders and the builders that replace a library text take a `TextSource`
@@ -928,8 +949,13 @@ saving and Escape ends only the composition or drag. Reattaching a mounted,
 focused editor to a new edit applies that edit's start. A `Select` list's
 choice completes the edit that was open when the list opened. Parameter-bound
 editors ignore sessions, since a refused submission cannot be told from an
-unchanged value. Hiding and removal report nothing. A host never takes focus
-back after `FocusLeft`.
+unchanged value. Hiding and removal report nothing. Disabling an editor
+reports nothing either: revoking its enabled permission releases focus as
+cancelled input, not as focus loss, so its draft stays unsaved and the edit
+open until the host ends it (a table closes it on Escape on its body). A
+native window that hides clears focus and records `FocusLeft`, which is
+delivered once the window is shown again, as hidden windows hold
+notifications. A host never takes focus back after `FocusLeft`.
 
 `Table` is such a host. It owns the open cell edit rather than the cell,
 creates the session from its own notifier so a completion reaches it even when
@@ -1104,6 +1130,14 @@ Every public failure has a typed error, with the following common rules:
   itself, so it keeps one form. `RuntimeError` gains no variant for these,
   and `DrawError` has no such conversion, since drawing fails in paint and
   host paths that already return it.
+- Errors carry no location. `Runtime::last_failure` reports where the
+  latest flush, paint or interval service first failed in a component: its
+  key path and the failing callback, or `FailurePhase::Reconcile` when the
+  children it requested were rejected. A reconciliation site keeps two
+  paths apart: `path` names the mounted component that requested the
+  children, and `description` the keys down to the rejected description,
+  which need not be mounted. Direct calls to `reconcile_children` and
+  `mount_tree` return their error to the caller and record no site.
 - One limit has one reporting variant across paths that share the limit.
   Every public `Result` has an `# Errors` rustdoc section naming the variants
   and conditions, including forwarded failures.

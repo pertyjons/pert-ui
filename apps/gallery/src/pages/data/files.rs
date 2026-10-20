@@ -83,7 +83,7 @@ pub(crate) fn send_or_keep(
     }
 }
 
-pub(crate) fn file_browser(ui: &Runtime) -> Result<Element, AppError> {
+pub(crate) fn file_browser(ui: &mut Runtime) -> Result<Element, AppError> {
     // The mailbox stands in for the channel back from a worker thread: its
     // handler runs on the UI thread at the start of a flush and delivers.
     let slot: Rc<OnceCell<FileBrowserController>> = Rc::new(OnceCell::new());
@@ -145,11 +145,10 @@ pub(crate) fn file_browser(ui: &Runtime) -> Result<Element, AppError> {
     let _ = slot.set(controller.clone());
     let opened = ui.signal("Double-click a file or press Enter on it.".to_owned());
     let sink = opened.clone();
-    // The open callback owns the mailbox, so it lives as long as the browser.
-    controller.on_open(move |_, entry| {
-        let _keep = &mailbox;
-        sink.set(format!("Opened {}", entry.path().display()))
-    });
+    // The runtime keeps the mailbox until it shuts down, as the browser
+    // that answers through it lives as long as the gallery.
+    ui.keep_alive(mailbox);
+    controller.on_open(move |_, entry| sink.set(format!("Opened {}", entry.path().display())));
     let paths = controller.clone();
     let selected = controller.selection().selected().map(move |keys| {
         let mut names: Vec<String> = keys

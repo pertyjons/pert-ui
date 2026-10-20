@@ -1,0 +1,91 @@
+# Follow-up index
+
+Optional and deferred work that the completed plans leave open. Each item
+is taken up only when an application needs it. That need must be shown by
+a probe or a real consumer. Each item then gets a plan of its own with a
+design checkpoint. This index records where an item came from and what
+is already decided. It is not a design: decisions that hold stay in
+[contracts](../docs/contracts.md), [architecture](../docs/architecture.md)
+or the plan that made them. Verified deviations from AGENTS.md or the
+design notes belong in [TODO.md](../TODO.md), not here.
+
+Remove an item when a plan takes it up, and link that plan from the item
+until then if one is being written.
+
+## Application structure
+
+- **General signal observer outside components.** From the
+  [app-author plan](app-author-improvements.md). Declined by the
+  [mixer-probe plan](archive/mixer-probe-improvements.md) slice 3 checkpoint and in
+  [user-write callbacks](../docs/contracts.md#user-write-callbacks):
+  user writes report through the controls' callbacks, application writes
+  are known to the code that makes them. It would need ownership,
+  event-phase delivery, batching, reentrancy, failure and feedback budgets
+  defined first, since writes are forbidden during update, layout, paint,
+  inspection and delivery. Reopen only for a need those callbacks cannot
+  serve.
+- **Writable model projection.** From the
+  [diagram-probe plan](archive/diagram-probe-improvements.md): a field of an
+  application model as a control binding. It must define validation, write
+  revisions, transaction failure and external-write conflicts, and route
+  writes through the application rather than treating a document mutation as
+  an undo step or an authoritative acceptance.
+- **Typed state handoff from `App::new`** to its lifecycle callbacks
+  (`on_close`, `on_error`). From the diagram-probe plan; today a shared slot
+  carries it, as the custom-widget guide shows.
+- **Default insets.** From the app-author plan slice 4: list rows and a
+  bottom status region touch the window edge. It is a visual default
+  decision, separate from flex layout.
+
+## Text and editing
+
+- **Initial caret or selection for a `TextField` focused from code.** From
+  the diagram-probe plan. Partly answered by `TextField::session` with
+  `EditorStart` (table-editing plan, 0.3.39). Still open is whether a
+  standalone policy without a session is wanted.
+- **Find in an editor buffer** and **a longer editor undo history.** From
+  the app-author plan. Large-buffer editing itself is TODO.md TEXT-01.
+- **Sessions for more editors.** From the
+  [table-editing plan](archive/table-editing-improvements.md) slice 5: `InlineText`,
+  the inline number rows, `TextArea` and `SearchField` ignore editor
+  sessions today. The inline rows already own a resting and editing policy
+  that a later slice can map onto the protocol. Parameter-backed numbers
+  ignore sessions too.
+- **Controlled controls** (a `Checkbox` built from a `bool` that reports a
+  toggle). From table-editing slice 6. Considered only with their refusal,
+  optimistic-presentation and callback timing specified.
+
+- **Refusal for other captioned controls.** From
+  [plan-audit-repairs](plan-audit-repairs.md) slice 2: `Label` and the
+  components built on it refuse display text they cannot prepare, but
+  buttons, chips, links, menu rows and tab and window titles prepare their
+  captions themselves and still fail on such text. Extend the refusal to
+  them if a consumer binds data to those captions.
+
+## Collections
+
+- **Table editing extensions.** From table-editing slice 6 and its
+  follow-ups:
+  - Enter moving down after a confirm.
+  - Range selection of cells with multi-cell copy and paste.
+  - A fill handle.
+  - A row-level edit transaction across several cells.
+  - The session protocol in `Tree` rows and `PropertyGrid`.
+- **The removed-column rule.** From table-editing slice 6: an open edit
+  whose column is removed. Columns cannot be removed from a mounted table
+  today, so the rule has no trigger. It gets one, and a test, when columns
+  become removable.
+- **Large collections.** From the
+  [log-explorer plan](archive/log-explorer-improvements.md):
+  - An indexed or paged child source for trees with extreme fan-out, with
+    incremental flattening.
+  - Horizontal virtualization of table cells.
+  - An incremental source-update API (append, replace a range) with its
+    consistency and invalidation contract.
+  - Text selection across collection rows.
+
+## Build and dependencies
+
+- **Duplicate dependency pruning.** From the app-author plan slice 7: two
+  `tiny-skia` versions, `thiserror` 1 and 2, winit's Adwaita decorations and
+  arboard's X11 fallback, once their cost is measured.

@@ -450,9 +450,12 @@ impl<P: Copy + PartialEq + 'static> DraftEditorController<P> {
 ///   select-all, clipboard chords and undo/redo. It leaves Enter, Up, Down,
 ///   Page Up and Page Down to the owner, where they arrive by ordinary
 ///   bubbling: commit on Enter, step on Up/Down. An unmodified Tab or
-///   Shift+Tab never reaches the owner's `keyboard_event`: the runtime moves
-///   focus to the next Tab stop before ordinary bubbling, and the owner learns
-///   of it as a departure (see **Ending**). Escape reaches the owner too,
+///   Shift+Tab never reaches the owner's `keyboard_event`. Before ordinary
+///   bubbling the runtime offers it to the focused component's ancestors
+///   through [`Component::tab_navigation`], where an owner that moves its
+///   edit itself, as a table moves between cells, claims it. Unclaimed, it
+///   moves focus to the next Tab stop, and the owner learns of it as a
+///   departure (see **Ending**). Escape reaches the owner too,
 ///   unless it cancels the editor's own composition or drag-selection; the
 ///   owner cancels the session on it. While a composition is active the editor
 ///   keeps every key.

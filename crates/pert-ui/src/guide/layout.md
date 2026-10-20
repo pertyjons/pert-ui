@@ -437,7 +437,9 @@ collection's bookkeeping still cost in proportion to the rows they touch:
 
 - Replacing a source ([`TableController::set_source`], a new [`ListSource`] in
   the binding, [`TreeController::set_source`]) rebuilds the descriptions of the
-  mounted rows, and an active filter reads every row's text again. Coalesce
+  mounted rows, and an active filter reads every row's text again. A tree
+  source's replacement also flattens its expanded branches again, asking
+  each expanded node for its children. Coalesce
   appended data into batches, keep one source per view, and do not replace a
   source from a selection callback that changed nothing it shows.
 - [`ListItems::index_of`] and [`TableItems::index_of`] default to a scan of

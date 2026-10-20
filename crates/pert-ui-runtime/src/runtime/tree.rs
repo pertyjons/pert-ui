@@ -43,6 +43,13 @@ fn same_bound_label(mine: Option<&crate::TextSource>, theirs: Option<&crate::Tex
 }
 
 fn validate(elements: &[Element]) -> Result<u64, RuntimeError> {
+    validate_traced(elements, &mut Vec::new())
+}
+
+/// [`validate`], recording in `trail`, innermost first, the keys down to the
+/// element an error names: the duplicated key, the element whose description
+/// failed, or the parent of an empty key.
+fn validate_traced(elements: &[Element], trail: &mut Vec<String>) -> Result<u64, RuntimeError> {
     let mut keys = std::collections::BTreeSet::new();
     let mut count = 0u64;
     for element in elements {
@@ -50,10 +57,15 @@ fn validate(elements: &[Element]) -> Result<u64, RuntimeError> {
             return Err(RuntimeError::EmptyKey);
         }
         if !keys.insert(&element.key) {
+            trail.push(element.key.clone());
             return Err(RuntimeError::DuplicateKey);
         }
-        element.component.check_description()?;
-        let descendants = validate(&element.children)?;
+        element
+            .component
+            .check_description()
+            .inspect_err(|_| trail.push(element.key.clone()))?;
+        let descendants = validate_traced(&element.children, trail)
+            .inspect_err(|_| trail.push(element.key.clone()))?;
         count = count
             .checked_add(1)
             .and_then(|n| n.checked_add(descendants))
@@ -445,7 +457,20 @@ impl Runtime {
     pub fn reconcile_children(
         &mut self,
         parent: &WidgetId,
+        children: Vec<Element>,
+    ) -> Result<(), RuntimeError> {
+        self.reconcile_children_traced(parent, children, &mut Vec::new())
+    }
+
+    /// [`Self::reconcile_children`], recording in `trail`, innermost first, the
+    /// keys from `children` down to the description an error names. It stays
+    /// empty for an error that names no element, such as a parent that cannot
+    /// take children.
+    pub(crate) fn reconcile_children_traced(
+        &mut self,
+        parent: &WidgetId,
         mut children: Vec<Element>,
+        trail: &mut Vec<String>,
     ) -> Result<(), RuntimeError> {
         let _timing = self
             .shared
@@ -456,12 +481,12 @@ impl Runtime {
         if !self.entries[&parent.0.serial].composed {
             return Err(LayoutError::InvalidChild.into());
         }
-        self.discard_owned_descriptions(parent.0.serial, &mut children)?;
-        let count = validate(&children)?;
+        self.discard_owned_descriptions(parent.0.serial, &mut children, trail)?;
+        let count = validate_traced(&children, trail)?;
         self.serial
             .checked_add(count)
             .ok_or(RuntimeError::Exhausted)?;
-        self.validate_types(parent.0.serial, &children)?;
+        self.validate_types(parent.0.serial, &children, trail)?;
         let mut labels = Vec::new();
         self.metadata_changes(parent.0.serial, &children, &mut labels);
         let start = self.serial;
@@ -475,6 +500,7 @@ impl Runtime {
                 &mut patches,
                 &mut properties,
                 &mut kept,
+                trail,
             )
         }));
         match result {
@@ -992,27 +1018,42 @@ impl Runtime {
         &self,
         parent: u64,
         children: &mut [Element],
+        trail: &mut Vec<String>,
     ) -> Result<(), RuntimeError> {
         for element in children {
-            if let Some(serial) = self.described_child(parent, &element.key)? {
+            let described = self
+                .described_child(parent, &element.key)
+                .inspect_err(|_| trail.push(element.key.clone()))?;
+            if let Some(serial) = described {
                 let entry = &self.entries[&serial];
                 if entry.kind == element.kind && entry.node.initial_children_owned {
                     element.children.clear();
                 } else {
-                    self.discard_owned_descriptions(serial, &mut element.children)?;
+                    self.discard_owned_descriptions(serial, &mut element.children, trail)
+                        .inspect_err(|_| trail.push(element.key.clone()))?;
                 }
             }
         }
         Ok(())
     }
 
-    fn validate_types(&self, parent: u64, children: &[Element]) -> Result<(), RuntimeError> {
+    fn validate_types(
+        &self,
+        parent: u64,
+        children: &[Element],
+        trail: &mut Vec<String>,
+    ) -> Result<(), RuntimeError> {
         for element in children {
-            if let Some(serial) = self.described_child(parent, &element.key)? {
+            let described = self
+                .described_child(parent, &element.key)
+                .inspect_err(|_| trail.push(element.key.clone()))?;
+            if let Some(serial) = described {
                 if self.entries[&serial].kind != element.kind {
+                    trail.push(element.key.clone());
                     return Err(RuntimeError::ChildTypeChanged);
                 }
-                self.validate_types(serial, &element.children)?;
+                self.validate_types(serial, &element.children, trail)
+                    .inspect_err(|_| trail.push(element.key.clone()))?;
             }
         }
         Ok(())
@@ -1025,16 +1066,21 @@ impl Runtime {
         patches: &mut Vec<(u64, Vec<u64>)>,
         properties: &mut Vec<(u64, crate::layout::Reconcile, Box<dyn Component>)>,
         kept: &mut std::collections::BTreeSet<u64>,
+        trail: &mut Vec<String>,
     ) -> Result<(), RuntimeError> {
         let mut order = Vec::new();
         for mut element in children {
             let descendants = std::mem::take(&mut element.children);
-            let existing = self.described_child(parent, &element.key)?;
+            let key = element.key.clone();
+            let existing = self
+                .described_child(parent, &key)
+                .inspect_err(|_| trail.push(key.clone()))?;
             let serial = if let Some(serial) = existing {
                 properties.push((serial, element.reconcile, element.component));
                 serial
             } else {
-                self.mount_description(element, Some(parent), true)?
+                self.mount_description(element, Some(parent), true)
+                    .inspect_err(|_| trail.push(key.clone()))?
                     .0
                     .serial
             };
@@ -1052,11 +1098,13 @@ impl Runtime {
                     || self.entries[&serial].node.initial_children_owned)
             {
                 if !descendants.is_empty() {
+                    trail.push(key);
                     return Err(LayoutError::InvalidChild.into());
                 }
                 continue;
             }
-            self.prepare_children(serial, descendants, patches, properties, kept)?;
+            self.prepare_children(serial, descendants, patches, properties, kept, trail)
+                .inspect_err(|_| trail.push(key))?;
         }
         patches.push((parent, order));
         Ok(())

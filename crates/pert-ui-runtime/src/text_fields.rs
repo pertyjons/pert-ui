@@ -792,7 +792,12 @@ impl TextField {
     ///   nothing is reported.
     /// - Focus leaving by other means saves as focus loss does and reports
     ///   [`EditorTrigger::FocusLeft`] with the outcome, unless an earlier
-    ///   report already ended the edit. Hiding and removal report nothing.
+    ///   report already ended the edit. A hidden native window clears focus
+    ///   too, and its report is delivered once the window is shown again,
+    ///   as hidden windows hold notifications. Hiding and removal of the
+    ///   field itself report nothing, and so does disabling it: revoking
+    ///   [`Self::enabled`] releases focus as cancelled input, which keeps the
+    ///   draft unsaved and the edit open for the host to end.
     ///
     /// The report comes before `on_save` runs; see [`EditorSession`] for
     /// delivery. Replaces an earlier session. Ordinary bubbling, traversal

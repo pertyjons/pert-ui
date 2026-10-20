@@ -88,3 +88,25 @@ fn breadcrumbs_navigate_and_the_narrow_one_collapses_its_middle() {
     assert!(ui.find_descendant(&narrow, mixes).unwrap().is_some());
     assert!(collapsed(&ui, "narrow-crumbs") > 0.0);
 }
+
+#[test]
+fn the_tag_list_follows_the_tags_and_shows_its_note_when_none_is_left() {
+    let (mut ui, root) = mounted();
+    open(&mut ui, &root, "chips");
+    let list = find(&ui, &root, "tag-list");
+    let rows = |ui: &Runtime| ui.children(&find(ui, &list, "rows")).unwrap().len();
+    assert_eq!(rows(&ui), 5);
+    assert!(text(&ui, "note").is_empty(), "no note while tags remain");
+    let editor = find(&ui, &root, "tag-editor");
+    for tag in ["Draft", "Review", "Urgent", "Shared", "Archived"] {
+        let chip = find(&ui, &editor, tag);
+        ui.focus(&chip).unwrap();
+        press(&mut ui, KeyCode::Delete);
+    }
+    assert_eq!(rows(&ui), 0);
+    assert_eq!(text(&ui, "note"), ["Every tag was removed."]);
+    let reset = find(&ui, &root, "reset-tags");
+    click(&mut ui, &reset);
+    assert_eq!(rows(&ui), 5);
+    assert!(text(&ui, "note").is_empty());
+}

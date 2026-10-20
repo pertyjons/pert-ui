@@ -1538,3 +1538,142 @@ fn the_handler_follows_redescription_in_both_forms() {
         "a description without one removes it"
     );
 }
+
+#[test]
+fn alpha_end_reports_the_opaque_color() {
+    let calls = Calls::default();
+    let Setup {
+        mut ui,
+        color,
+        root,
+    } = setup("#2090a080", |color| {
+        let handler = recording(&calls, &color);
+        ColorPicker::new(color).alpha(true).on_change(handler)
+    });
+    let alpha = find(&ui, &root, "alpha");
+    ui.focus(&alpha).unwrap();
+    key(&mut ui, KeyCode::End);
+    assert_eq!(color.get().unwrap().alpha(), 1.0);
+    assert_eq!(calls.borrow().len(), 1);
+    assert_eq!(calls.borrow()[0].0, color.get().unwrap());
+}
+
+/// Types into channel `part`'s entry without saving it.
+fn draft_channel(ui: &mut Runtime, root: &WidgetId, part: &str, text: &str) {
+    let entry = find(ui, &find(ui, root, part), "input");
+    ui.focus(&entry).unwrap();
+    key(ui, KeyCode::End);
+    for _ in 0..3 {
+        key(ui, KeyCode::Backspace);
+    }
+    ui.text_input(text).unwrap();
+    settle(ui);
+}
+
+/// The text shown by part `part`'s entry.
+fn entry_text(ui: &Runtime, root: &WidgetId, part: &str) -> InspectValue {
+    let entry = find(ui, &find(ui, root, part), "input");
+    let id = ui.inspection_id(&entry).unwrap();
+    ui.inspect()
+        .components
+        .into_iter()
+        .find(|c| c.id == id)
+        .unwrap()
+        .details
+        .properties["text"]
+        .clone()
+}
+
+#[test]
+fn drafts_dropped_by_hiding_or_removal_write_and_report_nothing() {
+    for draft in ["hex", "channel"] {
+        for removed in [false, true] {
+            let calls = Calls::default();
+            let Setup {
+                mut ui,
+                color,
+                root,
+            } = setup("#808080", |color| {
+                let handler = recording(&calls, &color);
+                ColorPicker::new(color).on_change(handler)
+            });
+            let (part, typed) = if draft == "hex" {
+                replace_hex(&mut ui, &root, "#123456");
+                ("hex", "#123456")
+            } else {
+                draft_channel(&mut ui, &root, "r", "12");
+                ("r", "12")
+            };
+            let saved = if draft == "hex" { "#808080" } else { "128" };
+            assert_eq!(
+                entry_text(&ui, &root, part),
+                InspectValue::Text(typed.into()),
+                "the draft was typed"
+            );
+            let picker = find(&ui, &root, "picker");
+            if removed {
+                ui.reconcile_children(
+                    &root,
+                    vec![Element::new("other", Button::new("Other", |_| Ok(())))],
+                )
+                .unwrap();
+                settle(&mut ui);
+            } else {
+                ui.set_visible(&picker, false).unwrap();
+                settle(&mut ui);
+                ui.set_visible(&picker, true).unwrap();
+                settle(&mut ui);
+                // Shown again, the entry holds the saved value, so a save
+                // cannot commit the dropped draft.
+                assert_eq!(
+                    entry_text(&ui, &root, part),
+                    InspectValue::Text(saved.into()),
+                    "{draft}: the draft is gone"
+                );
+                let entry = find(&ui, &find(&ui, &root, part), "input");
+                ui.focus(&entry).unwrap();
+                key(&mut ui, KeyCode::Enter);
+            }
+            assert_eq!(hex(&color), "#808080", "{draft}, removed {removed}");
+            assert!(
+                calls.borrow().is_empty(),
+                "{draft}, removed {removed}: {:?}",
+                calls.borrow()
+            );
+        }
+    }
+}
+
+#[test]
+fn a_handler_replaced_while_the_popover_is_open_receives_the_commit() {
+    let first = Calls::default();
+    let second = Calls::default();
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(500.0, 700.0, 1.0).unwrap())
+        .unwrap();
+    let color = ui.signal(Color::from_hex("#2090a0").unwrap());
+    let describe = |calls: &Calls| {
+        vec![Element::new(
+            "color",
+            ColorPicker::new(color.clone())
+                .name("Mounted color")
+                .on_change(recording(calls, &color))
+                .into_popover(),
+        )]
+    };
+    let root = ui
+        .mount_tree(Element::new("page", Column::new(describe(&first))))
+        .unwrap();
+    settle(&mut ui);
+    let swatch = find(&ui, &root, "swatch");
+    ui.focus(&swatch).unwrap();
+    key(&mut ui, KeyCode::Enter);
+    assert!(popover_open(&ui));
+    ui.reconcile_children(&root, describe(&second)).unwrap();
+    settle(&mut ui);
+    assert!(popover_open(&ui));
+    let hue = find(&ui, &root, "hue");
+    ui.focus(&hue).unwrap();
+    key(&mut ui, KeyCode::ArrowRight);
+    assert_eq!((first.borrow().len(), second.borrow().len()), (0, 1));
+}

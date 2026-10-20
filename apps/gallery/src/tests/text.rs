@@ -309,3 +309,39 @@ fn search_highlight_readout_and_submission_share_the_current_query() {
     press(&mut ui, KeyCode::Enter);
     assert_eq!(text(&ui, "search-chosen"), ["No match to choose."]);
 }
+
+#[test]
+fn the_refusing_field_reports_a_refused_write_and_its_end() {
+    let (mut ui, root) = mounted();
+    open(&mut ui, &root, "editing");
+    assert_eq!(
+        text(&ui, "refusal-report"),
+        ["The application's writes are accepted."]
+    );
+    let refuse = find(&ui, &root, "write-line-break");
+    click(&mut ui, &refuse);
+    let report = text(&ui, "refusal-report").join("");
+    assert!(
+        report.starts_with("The field refused the write: "),
+        "{report}"
+    );
+    let field = find(&ui, &root, "refusal-field");
+    let id = ui.inspection_id(&field).unwrap();
+    let shown = ui
+        .inspect()
+        .components
+        .into_iter()
+        .find(|c| c.id == id)
+        .and_then(|c| c.details.properties.get("text").cloned());
+    assert_eq!(
+        shown,
+        Some(InspectValue::Text("Single line".into())),
+        "the previous text stays"
+    );
+    let accept = find(&ui, &root, "write-single-line");
+    click(&mut ui, &accept);
+    assert_eq!(
+        text(&ui, "refusal-report"),
+        ["The application's writes are accepted again."]
+    );
+}

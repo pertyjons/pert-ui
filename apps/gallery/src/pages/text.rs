@@ -210,6 +210,45 @@ Text taller than the field shows the standard scrollbar.
 Drag its thumb or click its track to scroll this text.
 The wheel scrolls it as well, leaving the caret alone.
 The next edit or caret movement reveals the caret again.";
+/// A single-line field the application writes a value it refuses, such as a
+/// line break, with `on_binding_refusal` reporting the refusal and its end.
+fn refused_binding(ui: &Runtime) -> Element {
+    let value = ui.signal("Single line".to_owned());
+    let report = ui.signal("The application's writes are accepted.".to_owned());
+    let (refuse, accept, shown) = (value.clone(), value.clone(), report.clone());
+    Element::new(
+        "refusal-example",
+        Column::new([
+            Element::new(
+                "refusal-field",
+                TextField::new(value).on_binding_refusal(move |_, refusal| {
+                    shown.set(match refusal {
+                        Some(reason) => format!("The field refused the write: {reason}"),
+                        None => "The application's writes are accepted again.".to_owned(),
+                    })
+                }),
+            )
+            .with_label("Refusing field"),
+            Element::new(
+                "refusal-buttons",
+                Row::new([
+                    Element::new(
+                        "write-line-break",
+                        Button::new("Write a line break", move |_| {
+                            refuse.set("Two\nlines".to_owned())
+                        }),
+                    ),
+                    Element::new(
+                        "write-single-line",
+                        Button::new("Write one line", move |_| accept.set("One line".to_owned())),
+                    ),
+                ]),
+            ),
+            Element::new("refusal-report", Label::new(report.read_only())),
+        ]),
+    )
+}
+
 pub(crate) fn text_editing(ui: &Runtime) -> Result<Element, RuntimeError> {
     let name = ui.signal("Editable name".to_owned());
     let notes = ui.signal(NOTES_TEXT.to_owned());
@@ -336,6 +375,7 @@ pub(crate) fn text_editing(ui: &Runtime) -> Result<Element, RuntimeError> {
                                 Ok(())
                             }),
                         ),
+                        refused_binding(ui),
                     ]),
                 ),
             ),

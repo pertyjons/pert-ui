@@ -70,6 +70,17 @@ fn text(ui: &Runtime) -> InspectValue {
         .clone()
 }
 
+fn selection(ui: &Runtime) -> InspectValue {
+    ui.inspect()
+        .components
+        .iter()
+        .find(|c| c.key == "editor")
+        .expect("editor mounted")
+        .details
+        .properties["selection"]
+        .clone()
+}
+
 fn opener(editor: Element, focus_first: bool) -> Element {
     Element::new(
         "opener",
@@ -134,4 +145,66 @@ fn integer_input_opens_selected_over_a_draft_set_while_mounting() {
         frame(&mut ui);
         assert_eq!(text(&ui), InspectValue::Text("12".into()), "{focus_first}");
     }
+}
+
+/// Opens `make`'s editor over `draft`, replaced by `value` in the step that
+/// mounts it, and types "12", which must replace the whole value.
+fn opens_selected_over_a_replaced_draft<T: Clone + PartialEq + 'static>(
+    name: &str,
+    initial: T,
+    value: T,
+    make: fn(Signal<T>) -> Element,
+) {
+    for focus_first in [true, false] {
+        let mut ui = runtime();
+        let draft = ui.signal(initial.clone());
+        let open = ui.signal(false);
+        let bound = draft.clone();
+        ui.mount_tree(Element::new(
+            "cell",
+            Show::new(&open, move |_| opener(make(bound.clone()), focus_first)),
+        ))
+        .unwrap();
+        frame(&mut ui);
+        draft.set(value.clone()).unwrap();
+        open.set(true).unwrap();
+        frame(&mut ui);
+        // The replacement is shown and wholly selected before typing.
+        let shown = text(&ui);
+        let InspectValue::Text(shown_text) = &shown else {
+            panic!("{name}: text {shown:?}");
+        };
+        assert!(shown_text.starts_with("27"), "{name}: {shown_text}");
+        assert_eq!(
+            selection(&ui),
+            InspectValue::Text(format!("0..{}", shown_text.len())),
+            "{name}, {focus_first}"
+        );
+        ui.text_input("12").unwrap();
+        frame(&mut ui);
+        assert_eq!(
+            text(&ui),
+            InspectValue::Text("12".into()),
+            "{name}, {focus_first}"
+        );
+    }
+}
+
+#[test]
+fn every_editor_opens_selected_over_a_draft_set_while_mounting() {
+    opens_selected_over_a_replaced_draft("text field", "5".to_owned(), "27".to_owned(), |v| {
+        Element::new("editor", TextField::new(v))
+    });
+    opens_selected_over_a_replaced_draft("text area", "5".to_owned(), "27".to_owned(), |v| {
+        Element::new("editor", TextArea::new(v))
+    });
+    opens_selected_over_a_replaced_draft("search field", "5".to_owned(), "27".to_owned(), |v| {
+        Element::new("editor", SearchField::new(v))
+    });
+    opens_selected_over_a_replaced_draft("integer", 5_i64, 27, |v| {
+        Element::new("editor", IntegerInput::new(v))
+    });
+    opens_selected_over_a_replaced_draft("decimal", 5.0_f64, 27.0, |v| {
+        Element::new("editor", DecimalInput::new(v))
+    });
 }

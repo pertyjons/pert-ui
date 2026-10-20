@@ -217,9 +217,19 @@ fn text_size_admission_and_mask_validation_are_explicit() {
     let mut ui = ui();
     ui.mount_tree(Element::new("large", Label::new("x".repeat(16 * 1024 + 1))))
         .unwrap();
+    // A label refuses text over the limit without failing the flush.
+    ui.flush(Duration::ZERO).unwrap();
+    let large = ui
+        .inspect()
+        .components
+        .into_iter()
+        .find(|c| c.key == "large")
+        .unwrap();
     assert_eq!(
-        ui.flush(Duration::ZERO),
-        Err(RuntimeError::TextEdit(TextEditError::TooLarge))
+        large.details.properties.get("text_error"),
+        Some(&InspectValue::Text(
+            RuntimeError::TextEdit(TextEditError::TooLarge).to_string()
+        ))
     );
     assert!(MaskImage::new(0, 1, vec![]).is_err());
     assert!(MaskImage::new(2, 2, vec![255]).is_err());

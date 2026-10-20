@@ -14,6 +14,7 @@ pub(crate) use tool_windows::tool_windows;
 pub(crate) use transforms::{transforms, zoom_benchmark};
 
 pub(crate) fn layout(status: &Signal<String>) -> Result<Element, RuntimeError> {
+    let marked = status.sibling(false);
     Ok(page([
         section(
             "linear",
@@ -33,6 +34,7 @@ pub(crate) fn layout(status: &Signal<String>) -> Result<Element, RuntimeError> {
                 ),
             ],
         ),
+        flex()?,
         section(
             "wrap",
             "Wrap",
@@ -106,9 +108,75 @@ pub(crate) fn layout(status: &Signal<String>) -> Result<Element, RuntimeError> {
                         "A group without a heading uses the same spacing.",
                     )),
                 ),
+                toggle("mark-box", "Mark the bound box", &marked)?,
+                Element::new(
+                    "bound-box",
+                    Container::new(label("body", "Its fill follows a binding"))
+                        .padding(Length::from(12))
+                        .background_role_signal(marked.map(|on| {
+                            if *on {
+                                ColorRole::PrimaryContainer
+                            } else {
+                                ColorRole::SurfaceContainer
+                            }
+                        })?),
+                ),
             ],
         ),
     ]))
+}
+
+/// Growth, a spacer, justification and cross-axis stretching in rows and a
+/// column.
+fn flex() -> Result<Element, RuntimeError> {
+    Ok(section(
+        "flex",
+        "Growth and alignment",
+        [
+            label(
+                "help",
+                "The middle tile grows into the spare width and the spacer pushes Help to the end. Below, Justify::SpaceBetween spreads fixed tiles, Align::Stretch fills a row's height, and a column grows its body into the stage.",
+            ),
+            stage(
+                "grow-row",
+                56,
+                Row::new([
+                    tile("name", "Name"),
+                    tile("grows", "Grows into the spare width").with_grow(1),
+                    Element::spacer("gap"),
+                    tile("help", "Help"),
+                ])
+                .key("row"),
+            ),
+            stage(
+                "spread-row",
+                56,
+                Row::new([tile("a", "Start"), tile("b", "Middle"), tile("c", "End")])
+                    .justify(Justify::SpaceBetween)
+                    .key("row"),
+            ),
+            stage(
+                "stretch-row",
+                96,
+                Row::new([
+                    tile("short", "Stretched"),
+                    tile("tall", "Every tile fills the row's height"),
+                ])
+                .align(Align::Stretch)
+                .key("row"),
+            ),
+            stage(
+                "grow-column",
+                160,
+                Column::new([
+                    tile("header", "Header"),
+                    tile("body", "The body grows into the stage's height").with_grow(1),
+                    tile("footer", "Footer"),
+                ])
+                .key("column"),
+            ),
+        ],
+    ))
 }
 const CONTENT_SPLIT_HELP: &str = "Content rules follow the label until a drag commits a fixed extent; cancelling restores the previous rule.";
 pub(crate) fn splits(ui: &Runtime) -> Result<Element, RuntimeError> {

@@ -74,6 +74,9 @@ shown. This does not rebuild the tree or invalidate layout/text masks. Reads via
 [`ThemeManager::palette`] are untracked snapshots; use [`Painter::color`] for adaptive
 drawing. [`Label::color_role`] and [`Container::background_role`] select roles, while
 [`Label::color`] and [`Container::background`] provide fixed per-component overrides.
+[`Container::background_role_signal`] follows a binding of a role instead, for a
+fill that marks state, such as the selected strip of a mixer; a change of the
+binding or of the theme repaints it without layout.
 The last literal/role builder wins. Existing [`Color`] constants stay fixed.
 
 ## Seed palettes

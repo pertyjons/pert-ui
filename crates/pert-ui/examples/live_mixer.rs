@@ -72,6 +72,11 @@ impl Engine {
             thread: Some(thread),
         }
     }
+    /// Whether the producer thread has returned, so dropping the engine
+    /// joins it at once.
+    fn finished(&self) -> bool {
+        self.thread.as_ref().is_none_or(JoinHandle::is_finished)
+    }
     /// Queues a command without blocking the UI thread; a full or closed
     /// queue is the caller's to report.
     fn send(&self, command: Command) -> Result<(), SinkError> {
@@ -537,12 +542,16 @@ fn mount(
 }
 
 /// Flushes until `done` holds, or fails after a bounded wait for the engine.
+/// How long one step of the headless session waits for the engine before it
+/// fails, so a stalled engine ends the session instead of hanging it.
+const STEP: Duration = Duration::from_secs(5);
+
 fn settle(
     ui: &mut Runtime,
     start: Instant,
     mut done: impl FnMut(&Runtime) -> bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let deadline = Instant::now() + Duration::from_secs(5);
+    let deadline = Instant::now() + STEP;
     loop {
         ui.flush(start.elapsed())?;
         if done(ui) {
@@ -669,11 +678,13 @@ fn headless() -> Result<(), Box<dyn std::error::Error>> {
     // parameter, and the undo that follows cannot be delivered either; the
     // toolbar says so, and Retry delivers both once the engine has room,
     // sending the undone value rather than the faulted commit's.
+    // Both channels have room for their one message, so neither side blocks.
     let (holding, held) = sync_channel(1);
-    let (resume, waiting) = sync_channel(0);
+    let (resume, waiting) = sync_channel(1);
     mixer.engine.send(Command::Hold(holding, waiting))?;
     // Once the engine confirms, it takes nothing more from its queue.
-    held.recv()?;
+    held.recv_timeout(STEP)
+        .map_err(|_| "the engine did not confirm that it holds")?;
     while mixer.engine.send(Command::Tick).is_ok() {}
     ui.focus(&fader)?;
     ui.key_input(KeyCode::ArrowUp, KeyAction::Press)?;
@@ -693,7 +704,9 @@ fn headless() -> Result<(), Box<dyn std::error::Error>> {
         mixer.status.get()?
     );
     let undone = base(0)?;
-    resume.send(())?;
+    resume
+        .try_send(())
+        .map_err(|_| "the engine is not waiting to resume")?;
     // Retry until the engine has drained enough to take everything.
     settle(&mut ui, start, |_| {
         mixer.retry().is_ok()
@@ -733,11 +746,18 @@ fn headless() -> Result<(), Box<dyn std::error::Error>> {
     settle(&mut ui, start, |_| true)?;
 
     // A stopped engine: an outcome stays faulted, and Retry says why.
+    // Closed means the engine dropped its queue; it has stopped once its
+    // thread has also returned, so dropping the mixer below joins at once.
     mixer.engine.send(Command::Stop)?;
+    let deadline = Instant::now() + STEP;
     while !matches!(
         mixer.engine.send(Command::Tick),
         Err(error) if error.kind() == SinkErrorKind::Closed
-    ) {
+    ) || !mixer.engine.finished()
+    {
+        if Instant::now() > deadline {
+            return Err("the engine did not stop".into());
+        }
         std::thread::yield_now();
     }
     ui.focus(&fader)?;

@@ -160,3 +160,21 @@ impl ClickCounter {
         self.count = 0;
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_series_count_saturates() {
+        let mut clicks = ClickCounter::new();
+        let at = Point::new(0.0, 0.0).unwrap();
+        clicks.press(Duration::ZERO, at, PointerButton::Primary);
+        clicks.count = u32::MAX - 1;
+        let next = |clicks: &mut ClickCounter, ms| {
+            clicks.press(Duration::from_millis(ms), at, PointerButton::Primary)
+        };
+        assert_eq!(next(&mut clicks, 10), u32::MAX);
+        assert_eq!(next(&mut clicks, 20), u32::MAX, "stays at the maximum");
+    }
+}

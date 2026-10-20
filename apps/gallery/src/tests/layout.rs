@@ -1104,3 +1104,72 @@ fn the_tool_windows_page_floats_a_tool_window_and_asks_for_its_own_window() {
         "the panel asks for its own native window"
     );
 }
+
+/// The border box of the widget keyed `key` below `parent`.
+fn border(ui: &Runtime, parent: &WidgetId, key: &str) -> [f32; 4] {
+    let id = find(ui, parent, key);
+    ui.bounds(&id).unwrap().unwrap().values()
+}
+
+#[test]
+fn the_layout_page_grows_justifies_and_stretches_its_flex_samples() {
+    let (mut ui, root) = mounted();
+    open(&mut ui, &root, "layout");
+    let page = page(&ui, &root, "layout");
+    // The growing tile takes the spare width and the spacer pushes Help to the
+    // stage's end.
+    let grow = find(&ui, &page, "grow-row");
+    let [sx, _, sw, _] = ui.bounds(&grow).unwrap().unwrap().values();
+    let [_, _, name_w, _] = border(&ui, &grow, "name");
+    let [_, _, grows_w, _] = border(&ui, &grow, "grows");
+    let [hx, _, hw, _] = border(&ui, &grow, "help");
+    assert!(grows_w > 2.0 * name_w, "{grows_w} vs {name_w}");
+    assert!(
+        (hx + hw - (sx + sw)).abs() < 1.0,
+        "Help ends at the stage's end"
+    );
+    // SpaceBetween puts the last tile at the end.
+    let spread = find(&ui, &page, "spread-row");
+    let [px, _, pw, _] = ui.bounds(&spread).unwrap().unwrap().values();
+    let [cx, _, cw, _] = border(&ui, &spread, "c");
+    assert!((cx + cw - (px + pw)).abs() < 1.0);
+    // Stretch gives both tiles the row's height.
+    let stretch = find(&ui, &page, "stretch-row");
+    let [_, _, _, short_h] = border(&ui, &stretch, "short");
+    let [_, _, _, tall_h] = border(&ui, &stretch, "tall");
+    assert_eq!(short_h, tall_h);
+    assert!(short_h >= 90.0, "{short_h}");
+    // The column grows its body into the stage.
+    let column = find(&ui, &page, "grow-column");
+    let [_, _, _, header_h] = border(&ui, &column, "header");
+    let [_, _, _, body_h] = border(&ui, &column, "body");
+    assert!(body_h > header_h, "{body_h} vs {header_h}");
+}
+
+#[test]
+fn the_bound_box_follows_its_role_binding() {
+    let (mut ui, root) = mounted();
+    open(&mut ui, &root, "layout");
+    let page = page(&ui, &root, "layout");
+    // The fill is recorded when the box paints.
+    let background = |ui: &mut Runtime| {
+        ui.paint().unwrap();
+        let id = ui.inspection_id(&find(ui, &page, "bound-box")).unwrap();
+        ui.inspect()
+            .components
+            .into_iter()
+            .find(|c| c.id == id)
+            .unwrap()
+            .details
+            .box_model
+            .background
+    };
+    let before = background(&mut ui);
+    assert!(before.is_some());
+    let toggle = find(&ui, &find(&ui, &page, "mark-box"), "toggle");
+    click(&mut ui, &toggle);
+    let after = background(&mut ui);
+    assert_ne!(before, after);
+    click(&mut ui, &toggle);
+    assert_eq!(background(&mut ui), before);
+}

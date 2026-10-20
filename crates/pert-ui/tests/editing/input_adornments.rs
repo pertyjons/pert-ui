@@ -376,3 +376,30 @@ fn a_replaced_modified_callback_receives_later_changes() {
     assert_eq!(*first.borrow(), [true]);
     assert_eq!(*second.borrow(), [false]);
 }
+
+fn selection(ui: &Runtime) -> InspectValue {
+    details(ui, "field").properties["selection"].clone()
+}
+
+#[test]
+fn the_clear_button_ends_a_click_series() {
+    let mut ui = Runtime::new();
+    let value = ui.signal("hello world".to_owned());
+    let (_, field, _) = mount(&mut ui, TextField::new(value.clone()).clearable(true));
+    let [x, y, _, h] = ui.bounds(&field).unwrap().unwrap().values();
+    let text = (x + 25.0, y + h / 2.0);
+    click(&mut ui, text.0, text.1, 1000);
+    let (cx, cy) = clear_point(&ui, &field);
+    click(&mut ui, cx, cy, 1100);
+    assert_eq!(value.get().unwrap(), "");
+    chord(&mut ui, KeyCode::primary(), KeyCode::KeyZ);
+    assert_eq!(value.get().unwrap(), "hello world");
+    // Within the interval of the first click and at its place: a single
+    // click again, since the clear press ended the series.
+    click(&mut ui, text.0, text.1, 1200);
+    let InspectValue::Text(range) = selection(&ui) else {
+        panic!("a selection");
+    };
+    let (start, end) = range.split_once("..").unwrap();
+    assert_eq!(start, end, "a caret, not a word: {range}");
+}

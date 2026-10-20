@@ -309,12 +309,34 @@ pub(crate) fn collections(ui: &Runtime) -> Result<Element, RuntimeError> {
         })?;
         Ok(Element::new(key, Label::new(text)))
     };
+    // Each collection reports its selection changes with their origin.
+    let changes = |key: &str, name: &'static str| {
+        let line = ui.signal(format!("{name}: no selection change yet."));
+        let writer = line.clone();
+        let report = move |_: &mut EventContext, change: &ListSelectionChange| {
+            let origin = if change.origin == ChangeOrigin::User {
+                "you"
+            } else {
+                "the application"
+            };
+            let active = change.active.as_deref().unwrap_or("none");
+            writer.set(format!(
+                "{name}: {} selected, active {active}, changed by {origin}.",
+                change.selected.len()
+            ))
+        };
+        (Element::new(key, Label::new(line.read_only())), report)
+    };
+    let (grid_changes, report_grid) = changes("grid-changes", "Grid");
+    let (tree_changes, report_tree) = changes("tree-changes", "Tree");
+    let (table_changes, report_table) = changes("table-changes", "Table");
     let grid_selection = ListSelection::new(ui, SelectionMode::Multiple);
     let swatches = ui.signal(ListSource::new(Swatches(10_000)));
     let grid_filter = ListFilter::new(ui, swatches.read_only())?.selection(grid_selection.clone());
     let grid = VirtualList::new(grid_filter.items(), 48.0)?
         .lanes(5)?
-        .selection(grid_selection.clone());
+        .selection(grid_selection.clone())
+        .on_selection_change(report_grid);
     // A filter applies once typing pauses, since each query reads every row.
     let pause = std::time::Duration::from_millis(200);
     let tree_state = TreeController::new(
@@ -390,6 +412,7 @@ pub(crate) fn collections(ui: &Runtime) -> Result<Element, RuntimeError> {
                     ),
                 ),
                 picked("grid-active", &grid_selection)?,
+                grid_changes,
             ],
         ),
         section(
@@ -408,14 +431,18 @@ pub(crate) fn collections(ui: &Runtime) -> Result<Element, RuntimeError> {
                         CollectionFilter::new(
                             ui,
                             tree_state.clone(),
-                            Element::new("collections-tree", Tree::new(&tree_state, 26.0)?)
-                                .with_label("Tree"),
+                            Element::new(
+                                "collections-tree",
+                                Tree::new(&tree_state, 26.0)?.on_selection_change(report_tree),
+                            )
+                            .with_label("Tree"),
                         )
                         .name("Filter folders and files")
                         .debounce(pause),
                     ),
                 ),
                 picked("tree-active", &tree_state.selection())?,
+                tree_changes,
             ],
         ),
         section(
@@ -437,6 +464,7 @@ pub(crate) fn collections(ui: &Runtime) -> Result<Element, RuntimeError> {
                             Element::new(
                                 "collections-table",
                                 Table::new(&table_state, 28.0)?
+                                    .on_selection_change(report_table)
                                     .on_sort(move |_, sort| {
                                         order.set(sort.direction == SortDirection::Descending);
                                         sorted.set_source(TableSource::new(Measurements {
@@ -496,6 +524,7 @@ pub(crate) fn collections(ui: &Runtime) -> Result<Element, RuntimeError> {
                 ),
                 picked("table-active", &table_state.selection())?,
                 Element::new("table-cell", Label::new(cell.read_only())),
+                table_changes,
             ],
         ),
         section(
@@ -598,37 +627,40 @@ pub(crate) fn images(ui: &Runtime) -> Result<Element, AppError> {
         ),
         Err(error) => label("sampling", format!("The checker image is invalid: {error}")),
     };
-    // Decoding off the UI thread: a worker decodes, and a mailbox hands the
-    // owned result to the UI thread, whose handler writes the binding.
+    // Decoding off the UI thread: `Runtime::spawn` runs the work on a thread
+    // of its own and delivers the result on the UI thread, where it writes the
+    // binding. Each press counts a generation, so a result that a later press
+    // overtook is dropped instead of shown.
     let decoded = ui.signal(None::<RasterImage>);
     let decode_status = ui.signal("Not decoded yet.".to_owned());
+    let latest = Rc::new(std::cell::Cell::new(0_u32));
     let (target, status) = (decoded.clone(), decode_status.clone());
-    let capacity = Capacity::new(1)?;
-    let mailbox = ui.mailbox(
-        capacity,
-        move |result: Result<RasterImage, images::ImageError>| {
-            match result {
-                Ok(image) => {
-                    target.set(Some(image))?;
-                    status.set("Decoded on a worker thread.".to_owned())?;
-                }
-                Err(error) => {
-                    status.set(format!("Decoding failed: {error}"))?;
-                }
-            }
+    let decode = Button::new("Decode on a worker", move |cx| {
+        latest.set(latest.get() + 1);
+        let (generation, current) = (latest.get(), latest.clone());
+        let (target, status) = (target.clone(), status.clone());
+        status.set("Decoding…".to_owned())?;
+        let _task = cx.defer(move |ui| {
+            let _work = ui.spawn(
+                || images::decode(BADGE),
+                move |result| {
+                    if generation != current.get() {
+                        return Ok(());
+                    }
+                    match result {
+                        Ok(image) => {
+                            target.set(Some(image))?;
+                            status.set(format!(
+                                "Decoded on a worker thread (request {generation})."
+                            ))
+                        }
+                        Err(error) => status.set(format!("Decoding failed: {error}")),
+                    }
+                },
+            )?;
             Ok(())
-        },
-    )?;
-    let busy = decode_status.clone();
-    // The button owns the mailbox, so the mailbox lives as long as the page.
-    let decode = Button::new("Decode on a worker", move |_| {
-        let sender = mailbox.sender();
-        std::thread::spawn(move || {
-            // Full means a result is already waiting and Closed that the page
-            // is gone; either way this result is not needed.
-            let _ = sender.send(images::decode(BADGE));
-        });
-        busy.set("Decoding…".to_owned())
+        })?;
+        Ok(())
     });
     // SVG: one monochrome mark rasterized at three sizes and tinted by the
     // theme, and one drawing that keeps the colors it declares.
@@ -683,7 +715,7 @@ pub(crate) fn images(ui: &Runtime) -> Result<Element, AppError> {
             [
                 label(
                     "worker-help",
-                    "The button decodes the same PNG on a new thread. A mailbox carries the image to the UI thread, where its handler sets the binding this image follows.",
+                    "The button decodes the same PNG with Runtime::spawn, which runs the work on a thread of its own and delivers the image on the UI thread, where it sets the binding this image follows. A result overtaken by a later press is dropped.",
                 ),
                 Element::new("decode-on-worker", decode),
                 Element::new("worker-status", Label::new(decode_status.read_only())),

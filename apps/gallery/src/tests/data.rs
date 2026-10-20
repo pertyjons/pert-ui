@@ -305,17 +305,24 @@ fn the_images_page_tints_its_svg_marks_and_keeps_the_dial_in_color() {
 }
 
 #[test]
-fn the_images_page_decodes_on_a_worker_and_delivers_through_a_mailbox() {
+fn the_images_page_decodes_with_background_work_and_delivers_on_the_ui_thread() {
     let (mut ui, root) = mounted();
     ui.set_viewport(Viewport::new(960.0, 1600.0, 1.0).unwrap())
         .unwrap();
     open(&mut ui, &root, "images");
     assert_eq!(text(&ui, "worker-status"), ["Not decoded yet."]);
     let button = find(&ui, &root, "decode-on-worker");
+    // Two requests: whichever finishes first, only the second is shown.
     click(&mut ui, &button);
-    // The worker delivers when it finishes; the mailbox marks the runtime due.
+    click(&mut ui, &button);
+    // The work delivers when it finishes; its result marks the runtime due.
     let deadline = std::time::Instant::now() + Duration::from_secs(30);
-    while text(&ui, "worker-status") != ["Decoded on a worker thread."] {
+    while text(&ui, "worker-status") != ["Decoded on a worker thread (request 2)."] {
+        assert_ne!(
+            text(&ui, "worker-status"),
+            ["Decoded on a worker thread (request 1)."],
+            "an overtaken result is dropped"
+        );
         assert!(
             std::time::Instant::now() < deadline,
             "the worker never delivered"
@@ -739,4 +746,35 @@ fn the_file_browser_filters_only_listed_folders() {
         .unwrap()
         .details;
     assert_eq!(details.properties["shown"], InspectValue::Number(0.0));
+}
+
+#[test]
+fn each_collection_reports_its_selection_changes_with_their_origin() {
+    let (mut ui, root) = mounted();
+    ui.set_viewport(Viewport::new(960.0, 2000.0, 1.0).unwrap())
+        .unwrap();
+    open(&mut ui, &root, "collections");
+    assert_eq!(
+        text(&ui, "grid-changes"),
+        ["Grid: no selection change yet."]
+    );
+    for (collection, line, name) in [
+        ("collections-grid", "grid-changes", "Grid"),
+        ("collections-tree", "tree-changes", "Tree"),
+        ("collections-table", "table-changes", "Table"),
+    ] {
+        let mut id = find(&ui, &root, collection);
+        // A table takes focus in its body.
+        if collection == "collections-table" {
+            id = ui.children(&id).unwrap()[0].clone();
+        }
+        ui.focus(&id).unwrap();
+        press(&mut ui, KeyCode::ArrowDown);
+        settle(&mut ui);
+        let report = text(&ui, line).join("");
+        assert!(
+            report.starts_with(&format!("{name}: ")) && report.ends_with("changed by you."),
+            "{report}"
+        );
+    }
 }

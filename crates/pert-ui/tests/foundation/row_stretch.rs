@@ -287,3 +287,102 @@ fn a_stretched_vertical_slider_and_meter_use_the_whole_height() -> TestResult {
     assert_eq!(tallest, 300.0);
     Ok(())
 }
+
+/// Measures its child without a height bound and places it at the height it
+/// asked for, as a parent with unbounded height does.
+struct Unbounded;
+impl Component for Unbounded {
+    fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+        Ok(())
+    }
+    fn measure(
+        &self,
+        cx: &MeasureContext<'_>,
+        available: Constraints,
+    ) -> Result<Size, RuntimeError> {
+        cx.measure(0, Constraints::new(available.width(), None)?)
+    }
+    fn arrange(&self, cx: &mut ArrangeContext<'_>, size: Size) -> Result<(), RuntimeError> {
+        let natural = cx
+            .measurement()
+            .measure(0, Constraints::new(Some(size.width()), None)?)?;
+        cx.place(0, Rect::new(0.0, 0.0, size.width(), natural.height())?)
+    }
+}
+
+#[test]
+fn under_unbounded_height_a_stretched_row_takes_its_tallest_child() -> TestResult {
+    let row = Row::new([fixed("short", 10.0, 20.0), fixed("tall", 10.0, 60.0)])
+        .gap(no_gap()?)
+        .align(Align::Stretch)
+        .key("row");
+    let (ui, root) = mount(
+        200.0,
+        400.0,
+        Element::new("host", Unbounded).children([row]),
+    )?;
+    assert_eq!(bounds(&ui, &root, "row")?[3], 60.0);
+    assert_eq!(bounds(&ui, &root, "short")?[3], 60.0);
+    assert_eq!(bounds(&ui, &root, "tall")?[3], 60.0);
+    Ok(())
+}
+
+#[test]
+fn a_short_stretched_vertical_slider_clips_its_readout_inside_itself() -> TestResult {
+    for height in [200.0, 40.0, 12.0] {
+        let mut ui = Runtime::new();
+        ui.set_viewport(Viewport::new(200.0, height + 100.0, 1.0)?)?;
+        let (gain, _host) = ui.parameter(
+            ParameterId::new(1, 1, "gain")?,
+            ParameterSpec::new("Gain", 0.0, 1.0, 0.5)?,
+        )?;
+        let row = Row::new([Element::new(
+            "fader",
+            Slider::new(gain)
+                .orientation(Orientation::Vertical)
+                .show_value(true),
+        )])
+        .align(Align::Stretch);
+        let root = ui.mount_tree(grown(row)?)?;
+        ui.flush(Duration::ZERO)?;
+        let [x, y, w, h] = bounds(&ui, &root, "fader")?;
+        assert_eq!(h, height, "the fader fills the row");
+        let scene = ui.paint()?;
+        // The readout is the one text mask; the rest are the track's shapes.
+        let readout: Vec<(Rect, Rect)> = scene
+            .commands()
+            .iter()
+            .filter_map(|command| match command {
+                DrawCommand::DrawMask { rect, clip, .. } if rect.height() >= 10.0 => {
+                    Some((*rect, clip.unwrap_or(*rect)))
+                }
+                _ => None,
+            })
+            .collect();
+        let [(text, visible)] = readout[..] else {
+            panic!("one readout at {height}: {readout:?}");
+        };
+        // Drawn inside the fader, below its track; cut where the fader ends.
+        assert!(
+            visible.x() >= x
+                && visible.y() >= y
+                && visible.x() + visible.width() <= x + w
+                && visible.y() + visible.height() <= y + h + 0.01,
+            "{visible:?} outside {:?} at {height}",
+            [x, y, w, h]
+        );
+        let clipped = text.y() + text.height() > y + h;
+        assert_eq!(
+            visible.height() < text.height(),
+            clipped,
+            "clipped exactly where the fader ends at {height}"
+        );
+        if height <= 12.0 {
+            assert!(
+                clipped && visible.height() > 0.0,
+                "partly shown at {height}"
+            );
+        }
+    }
+    Ok(())
+}

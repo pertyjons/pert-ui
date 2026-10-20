@@ -37,6 +37,19 @@ jobs:
       - run: cargo fmt --all --check
       - run: cargo clippy --locked --workspace --all-targets -- -D warnings
       - run: cargo test --locked --workspace
+      - name: Run the examples' headless sessions
+        # The features are those the workspace build above unifies (the
+        # gallery adds png, svg and cpu), so the examples it built are reused,
+        # and diagram_editor's CPU export runs. Each session bounds its own
+        # waits; the timeout contains a hang that slips through.
+        timeout-minutes: 10
+        shell: bash
+        run: |
+          cargo run --locked -p pert-ui --features png,svg,cpu --example live_mixer
+          cargo run --locked -p pert-ui --features png,svg,cpu --example dynamic_documents
+          cargo run --locked -p pert-ui --features png,svg,cpu --example diagram_editor
+          cargo run --locked -p pert-ui --features png,svg,cpu --example log_explorer -- --lines 10000
+          cargo run --locked -p pert-ui --features png,svg,cpu --example inventory -- --items 2000
       - run: cargo test --locked --workspace --doc
       - run: cargo test --locked --release --workspace
       - name: Model-check the live-data protocols with loom

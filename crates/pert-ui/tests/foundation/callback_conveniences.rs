@@ -522,3 +522,79 @@ fn a_new_description_replaces_the_buttons_own_restriction() -> TestResult {
     );
     Ok(())
 }
+
+/// An application error with a cause of its own.
+#[derive(Debug)]
+struct SaveFailed(std::io::Error);
+impl std::fmt::Display for SaveFailed {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("saving failed")
+    }
+}
+impl Error for SaveFailed {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        Some(&self.0)
+    }
+}
+
+#[test]
+fn an_error_with_a_cause_of_its_own_keeps_it_in_the_chain() -> TestResult {
+    let mut ui = ui()?;
+    let save = ui.register_command("Save", CommandScope::Application, vec![], |_, _| {
+        Err(ApplicationError::new(SaveFailed(std::io::Error::other("disk full"))).into())
+    })?;
+    let context = ui.command_context(CommandSource::Programmatic);
+    let error = ui.invoke_command(&save, context).unwrap_err();
+    let mut chain = Vec::new();
+    let mut link: Option<&(dyn Error + 'static)> = Some(&error);
+    while let Some(current) = link {
+        chain.push(current.to_string());
+        link = current.source();
+    }
+    assert!(
+        chain.iter().any(|message| message == "disk full"),
+        "{chain:?}"
+    );
+    let RuntimeError::Application(failure) = &error else {
+        panic!("an application failure: {error:?}");
+    };
+    assert!(failure.downcast_ref::<SaveFailed>().is_some());
+    Ok(())
+}
+
+#[test]
+fn a_full_command_queue_is_the_command_buttons_error() -> TestResult {
+    let mut ui = ui()?;
+    let play = ui.register_command("Play", CommandScope::Application, vec![], |_, _| Ok(()))?;
+    let receipts: Receipts = Rc::default();
+    let root = ui.mount_tree(Element::new(
+        "window",
+        Column::new([Element::new(
+            "play",
+            Button::command(&ui, &play, recording(&receipts))?,
+        )]),
+    ))?;
+    ui.flush(Duration::ZERO)?;
+    let button = ui.find(&root, &["play"])?.ok_or("mounted")?;
+    ui.focus(&button)?;
+    // Arm the button, then fill the queue from an event on the same button,
+    // which keeps its focus and so the press.
+    ui.key_input(KeyCode::Enter, KeyAction::Press)?;
+    ui.flush(Duration::ZERO)?;
+    ui.try_event(&button, |cx| {
+        for _ in 0..Runtime::MAX_QUEUED_COMMANDS {
+            let _queued =
+                cx.invoke_command(&play, cx.command_context(CommandSource::Programmatic))?;
+        }
+        Ok::<_, RuntimeError>(())
+    })??;
+    assert_eq!(
+        ui.key_input(KeyCode::Enter, KeyAction::Release).err(),
+        Some(RuntimeError::CommandQueueFull)
+    );
+    assert!(
+        receipts.borrow().is_empty(),
+        "no receipt for a refused activation"
+    );
+    Ok(())
+}

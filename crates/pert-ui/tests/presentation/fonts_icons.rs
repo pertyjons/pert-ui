@@ -349,7 +349,27 @@ fn invalid_rich_text_is_rejected_without_panics() -> Result {
     ] {
         let mut ui = ui();
         ui.mount_tree(Element::new("bad", Label::new(content)))?;
-        assert_eq!(ui.flush(Duration::ZERO), Err(error));
+        // Size limits are refused by the label without failing the flush;
+        // other errors fail it.
+        if matches!(
+            error,
+            RuntimeError::TextEdit(TextEditError::TooLarge)
+                | RuntimeError::Text(TextError::TooLarge(_))
+        ) {
+            ui.flush(Duration::ZERO)?;
+            let bad = ui
+                .inspect()
+                .components
+                .into_iter()
+                .find(|c| c.key == "bad")
+                .ok_or("mounted")?;
+            assert_eq!(
+                bad.details.properties.get("text_error"),
+                Some(&InspectValue::Text(error.to_string()))
+            );
+        } else {
+            assert_eq!(ui.flush(Duration::ZERO), Err(error));
+        }
     }
     let mut most = ui();
     most.mount_tree(Element::new(

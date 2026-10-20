@@ -411,9 +411,12 @@ impl Tooltip {
     /// the help follows, for controls whose accessible name changes with their
     /// state. Text changes remeasure the help when needed. The panel follows
     /// its content width, bounded by the viewport; a wider anchor does not
-    /// stretch short help text.
+    /// stretch short help text. Help text its [`Label`] cannot prepare, such
+    /// as text too long to lay out at the panel's width, is refused as the
+    /// label documents, and the panel is then empty rather than showing
+    /// earlier text.
     pub fn new(anchor: Element, text: impl Into<TextSource>) -> Self {
-        Self::with_help(anchor, Label::new(text))
+        Self::with_help(anchor, Label::new(text).clearing_refused())
     }
     /// Wraps an anchor that presents a registered command, such as a
     /// [`Button::command_icon`](crate::Button::command_icon), with help naming

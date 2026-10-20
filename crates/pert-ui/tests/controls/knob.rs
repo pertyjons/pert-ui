@@ -505,3 +505,71 @@ fn a_refused_press_does_not_arm_a_double_click() {
     );
     assert_eq!(base(&parameter), 60.0);
 }
+
+#[test]
+fn an_enabled_knob_whose_edit_is_refused_does_not_arm_a_double_click() {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(400.0, 400.0, 1.0).unwrap())
+        .unwrap();
+    let (parameter, host) = ui
+        .parameter(
+            ParameterId::new(1, 1, "value").unwrap(),
+            ParameterSpec::new("Value", -100.0, 100.0, 0.0).unwrap(),
+        )
+        .unwrap();
+    // A sink that fails while `failing` is set faults the parameter, and a
+    // faulted parameter refuses new edits although the knob is enabled.
+    let failing = std::rc::Rc::new(std::cell::Cell::new(true));
+    let sink = failing.clone();
+    let monitor = host
+        .on_outcome(move |_| {
+            if sink.get() {
+                Err(SinkError::new(SinkErrorKind::Full, "busy"))
+            } else {
+                Ok(())
+            }
+        })
+        .unwrap();
+    let knob = ui
+        .mount_tree(Element::new("knob", Knob::new(parameter.clone())))
+        .unwrap();
+    ui.flush(Duration::ZERO).unwrap();
+    let bounds = ui.bounds(&knob).unwrap().unwrap();
+    let center = Point::new(
+        bounds.x() + bounds.width() / 2.0,
+        bounds.y() + bounds.width() / 2.0,
+    )
+    .unwrap();
+    ui.focus(&knob).unwrap();
+    ui.key_input(KeyCode::ArrowUp, KeyAction::Press).unwrap();
+    ui.key_input(KeyCode::ArrowUp, KeyAction::Release).unwrap();
+    ui.flush(Duration::from_millis(10)).unwrap();
+    assert!(monitor.snapshot().is_faulted());
+    let stepped = base(&parameter);
+    // The refused press begins no edit and counts nothing.
+    pointer(&mut ui, center, PointerKind::Press(PointerButton::Primary));
+    assert_eq!(parameter.snapshot().get().unwrap().edit_source, None);
+    pointer(
+        &mut ui,
+        center,
+        PointerKind::Release(PointerButton::Primary),
+    );
+    // Recover, then press again within the double-click interval.
+    failing.set(false);
+    let retained = monitor.snapshot().terminal.unwrap();
+    host.retry_outcome(&retained.token).unwrap();
+    assert!(!monitor.snapshot().is_faulted());
+    ui.flush(Duration::from_millis(100)).unwrap();
+    pointer(&mut ui, center, PointerKind::Press(PointerButton::Primary));
+    assert!(
+        parameter.snapshot().get().unwrap().edit_source.is_some(),
+        "the recovered press begins an edit"
+    );
+    pointer(
+        &mut ui,
+        center,
+        PointerKind::Release(PointerButton::Primary),
+    );
+    assert_eq!(base(&parameter), stepped, "no reset to the default");
+    assert_ne!(stepped, 0.0);
+}

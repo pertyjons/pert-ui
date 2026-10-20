@@ -1,14 +1,16 @@
 # Plan: improvements found by a diagram-editor probe
 
 Status: proposed 2026-10-19 after an independent Codex review of the
-findings; being implemented on branch `diagram-probe-improvements` (slice 0
-in 0.3.18, slice 1 in 0.3.19, slice 2 in 0.3.20, slice 3 in 0.3.21, slice 4 in 0.3.22 and its review fixes in 0.3.23). Every type and method named below as new is a
-proposal until a slice implements and documents it.
+findings; implemented in 0.3.18 to 0.3.23 and squash-merged into `main` as
+0ba201b (slice 0 in 0.3.18, slice 1 in 0.3.19, slice 2 in 0.3.20, slice 3 in
+0.3.21, slice 4 in 0.3.22 and its review fixes in 0.3.23). The API sketches
+below are the design as proposed; each slice's status line says where the
+implementation differs.
 
 ## Background
 
 On 2026-10-19, after the notes application of
-[app-author-improvements](app-author-improvements.md) and the mixer panel of
+[app-author-improvements](../app-author-improvements.md) and the mixer panel of
 [mixer-probe-improvements](mixer-probe-improvements.md), the maintainer's
 session built a third application against the public facade only, chosen to
 exercise what neither did: a custom widget built from the public extension
@@ -126,7 +128,7 @@ checkout on 2026-10-19) or by execution:
 
 ## Working rules
 
-The rules of [app-author-improvements](app-author-improvements.md#working-rules)
+The rules of [app-author-improvements](../app-author-improvements.md#working-rules)
 apply unchanged: one slice per branch with its rustdoc, examples, gallery,
 manual and CHANGELOG; the maintainer's patch version bump per slice; an
 independent Codex review before a slice is called merge-ready; the contracts
@@ -141,7 +143,7 @@ Additionally:
   before implementation starts.
 - Slice 1 changes input routing and takes the public-API/scheduling row of
   the gate table; any change to what the native runner delivers needs native
-  evidence recorded in [verification](../docs/verification.md).
+  evidence recorded in [verification](../../docs/verification.md).
 - `TODO.md` entry TEXT-01 (large-buffer `TextArea`) touches the text editors
   that slices 2 and 4 use; it stays out of scope.
 
@@ -161,12 +163,12 @@ the `EventContext::now` doctest.
   field that should save on confirmation without other validation.
 - `Painter::stroke_shape` and the centered path strokes: cross-link the two
   conventions and state where each stroke falls relative to its bounds.
-- `EventContext::now` and the headless testing guide: state that the clock
+- `EventContext::now` and `guide/custom-widgets.md`: state that the clock
   advances through `flush`, with a double-click test as the example.
 - The `UnexpectedOverlap` message and the layout guide name
   `OverlapPolicy::Allow` (for document-order overlap without raising) and
   `stacks_children` (for raised overlap).
-- No version bump for documentation only, as before.
+- Shipped as 0.3.18, since the corrected rustdoc is packaged.
 
 ### 1. Pointer refresh after layout
 
@@ -550,7 +552,9 @@ failure and external-write conflicts, and route writes through the
 application rather than treating a document mutation as an undo step or an
 authoritative acceptance); a typed state handoff from `App::new` to its
 lifecycle callbacks; an initial caret or selection policy for `TextField`
-focused from code.
+focused from code. They are in the [follow-up index](../follow-ups.md); the
+third is partly answered by `TextField::session` with `EditorStart`
+(table-editing plan, 0.3.39).
 
 ## Not in this plan
 
@@ -570,3 +574,14 @@ and large-buffer text editing (TODO.md TEXT-01).
   draft dropped by redescription, button-agnostic pan release, unreported
   defer results, ad-hoc inspection). The author reproduced the picker
   defect headlessly and found that the dialog's deferred save did run.
+
+Implementation, 2026-10-19: slices 1, 2 and 3 had the Codex design
+checkpoints recorded in their sections, and every slice had an independent
+Codex implementation review whose findings were fixed with regression tests
+(the example's in 0.3.23), as [verification](../../docs/verification.md#diagram-probe-plan)
+records.
+
+2026-10-20 audit ([plan-audit-repairs](../plan-audit-repairs.md)): several
+contract tests of slices 2 and 3 are missing. The guide chapter describes
+error handling without showing `App::on_error`. The custom-widget guide does not explain
+export. That plan repairs them.

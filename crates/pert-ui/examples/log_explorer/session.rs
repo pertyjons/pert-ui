@@ -372,6 +372,11 @@ pub fn run(path: PathBuf, lines: u64) -> Result {
         s.flush()?;
         std::thread::sleep(Duration::from_millis(1));
     }
+    // Joined only once it has returned, so a stalled thread fails the session
+    // instead of hanging it.
+    if !asked.is_finished() {
+        return Err("the inspection snapshot timed out".into());
+    }
     let components = asked
         .join()
         .map_err(|_| "the inspection thread panicked")??;

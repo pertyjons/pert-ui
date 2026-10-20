@@ -531,6 +531,12 @@ impl<T: Clone + PartialEq> Signal<T> {
     /// makes itself, to this signal or another, is an ordinary write that takes
     /// effect at once; the changed copy is then written over it.
     ///
+    /// `change` cannot fail. An edit that can fail reads the value with
+    /// [`Self::get`], decides, and writes with [`Self::set`] only on success.
+    /// If `change` panics, the panic propagates and this method's own write
+    /// is not made, so the signal keeps its value and nobody is notified;
+    /// writes `change` made itself before panicking stay made.
+    ///
     /// # Errors
     /// The errors of [`Self::get`] and [`Self::set`]. They concern this
     /// method's own write, which an error leaves unmade, notifying nobody;

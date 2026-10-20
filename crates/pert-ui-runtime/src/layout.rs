@@ -793,11 +793,19 @@ impl MeasureContext<'_> {
     /// rasterizing them; the cut is remembered per text, font, size, scale and
     /// width, so later layout passes at the same width prepare only the shown
     /// text. When even the ellipsis alone does not fit, the result shows the
-    /// ellipsis and is wider than `width`; the caller clips it.
+    /// ellipsis and is wider than `width`; the caller clips it. With an
+    /// ellipsis mode, a first line longer than
+    /// [`TextEditError::MAX_TEXT_BYTES`](crate::TextEditError::MAX_TEXT_BYTES) is
+    /// cut first, as [`TextOverflow`](crate::TextOverflow) describes, so its
+    /// length is not an error and the result is always truncated.
     ///
     /// # Errors
-    /// The errors of [`Self::text`]; a non-finite or negative `width` is
-    /// [`RuntimeError::Text`] with [`TextError::Geometry`](crate::TextError::Geometry).
+    /// The errors of [`Self::text`], except that with an ellipsis mode the
+    /// byte limit is never one; a shown truncation wider than the raster
+    /// limit (in a very wide `width`) is still
+    /// [`TextLimit::RasterSide`](crate::TextLimit::RasterSide). A non-finite
+    /// or negative `width` is [`RuntimeError::Text`] with
+    /// [`TextError::Geometry`](crate::TextError::Geometry).
     ///
     /// ```
     /// use pert_ui_runtime::{

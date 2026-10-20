@@ -162,3 +162,77 @@ fn a_callback_installed_on_a_refusing_field_reports_the_refusal() -> TestResult 
     assert_eq!(*log.borrow(), [Some(TextEditError::TooLarge)]);
     Ok(())
 }
+
+#[test]
+fn a_second_value_refused_for_the_same_reason_reports_nothing_new() -> TestResult {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(300.0, 100.0, 1.0)?)?;
+    let value = ui.signal("ok".to_owned());
+    let log: Log = Rc::default();
+    field(&mut ui, &value, &log)?;
+    ui.flush(Duration::ZERO)?;
+    value.set("x".repeat(TextEditError::MAX_TEXT_BYTES + 1))?;
+    ui.flush(Duration::ZERO)?;
+    value.set("y".repeat(TextEditError::MAX_TEXT_BYTES + 2))?;
+    ui.flush(Duration::ZERO)?;
+    assert_eq!(*log.borrow(), [Some(TextEditError::TooLarge)]);
+    Ok(())
+}
+
+#[test]
+fn a_replaced_callback_receives_the_later_reports() -> TestResult {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(300.0, 100.0, 1.0)?)?;
+    let value = ui.signal("ok".to_owned());
+    let (first, second): (Log, Log) = (Rc::default(), Rc::default());
+    let describe = |log: &Log| {
+        let record = log.clone();
+        vec![
+            TextField::new(&value)
+                .on_binding_refusal(move |_, refusal| {
+                    record.borrow_mut().push(refusal.cloned());
+                    Ok(())
+                })
+                .key("field"),
+        ]
+    };
+    let root = ui.mount_tree(Column::new(describe(&first)).key("root"))?;
+    ui.flush(Duration::ZERO)?;
+    value.set("x".repeat(TextEditError::MAX_TEXT_BYTES + 1))?;
+    ui.flush(Duration::ZERO)?;
+    ui.reconcile_children(&root, describe(&second))?;
+    ui.flush(Duration::ZERO)?;
+    value.set("fine".to_owned())?;
+    ui.flush(Duration::ZERO)?;
+    assert_eq!(*first.borrow(), [Some(TextEditError::TooLarge)]);
+    assert_eq!(*second.borrow(), [None]);
+    Ok(())
+}
+
+#[test]
+fn a_failed_report_is_not_replayed_by_a_later_flush() -> TestResult {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(300.0, 100.0, 1.0)?)?;
+    let value = ui.signal("ok".to_owned());
+    let calls = Rc::new(std::cell::Cell::new(0));
+    let counted = calls.clone();
+    ui.mount_tree(
+        TextField::new(&value)
+            .on_binding_refusal(move |_, _| {
+                counted.set(counted.get() + 1);
+                Err(RuntimeError::Exhausted)
+            })
+            .key("field"),
+    )?;
+    ui.flush(Duration::ZERO)?;
+    value.set("x".repeat(TextEditError::MAX_TEXT_BYTES + 1))?;
+    assert_eq!(
+        ui.flush(Duration::ZERO).err(),
+        Some(RuntimeError::Exhausted)
+    );
+    // Nothing changed: the failed report is not delivered again.
+    ui.flush(Duration::ZERO)?;
+    ui.flush(Duration::ZERO)?;
+    assert_eq!(calls.get(), 1);
+    Ok(())
+}

@@ -12,8 +12,8 @@ pub(crate) const ELLIPSIS: &str = "\u{2026}";
 /// The default, [`Self::Wrap`], breaks text into lines at the width it is given,
 /// so the whole text always shows. The ellipsis variants keep the text on one
 /// line and replace removed grapheme clusters with "…" (U+2026); the full text
-/// stays available to inspection and, for a [`Label`](crate::Label), in a
-/// delayed tooltip. Truncation never splits a grapheme cluster, so combining
+/// stays available to inspection and, for a [`Label`](crate::Label) whose text
+/// is within the limit below, in a delayed tooltip. Truncation never splits a grapheme cluster, so combining
 /// marks, emoji sequences and other clusters stay whole, and the whitespace
 /// trimmed beside the ellipsis is removed only as whole clusters. Text with a
 /// line break (a line feed, carriage return, vertical tab, form feed, next
@@ -21,6 +21,16 @@ pub(crate) const ELLIPSIS: &str = "\u{2026}";
 /// always shows the ellipsis. Text far wider than its width is measured
 /// without being rasterized, so only the shown truncation must fit the
 /// [raster limit](crate::TextLimit::MAX_RASTER_SIDE).
+///
+/// A first line longer than
+/// [`TextEditError::MAX_TEXT_BYTES`](crate::TextEditError::MAX_TEXT_BYTES) is
+/// cut before it is fitted, so its length never makes truncation fail or
+/// costs more than a bounded amount of shaping: [`Self::Ellipsis`] keeps its
+/// start and [`Self::MiddleEllipsis`] as many grapheme clusters from its start
+/// as from its end, within the limit together with the ellipsis. The cut
+/// line is then fitted like a line followed by a line break, so it always
+/// shows the ellipsis. Finding where the line ends still reads the whole
+/// text.
 ///
 /// Truncation applies to plain text. A rich label with icons or styled spans
 /// stays on one line and is clipped at its edge instead.
@@ -73,7 +83,8 @@ impl FittedText {
 
 /// The text a truncation candidate shows when it keeps `kept` grapheme
 /// clusters of `line`, whose cluster boundaries are `bounds` (including the
-/// end). The clusters next to the ellipsis lose surrounding whitespace.
+/// end). The clusters next to the ellipsis lose surrounding whitespace,
+/// judged by those boundaries, so a cut line keeps its source clusters.
 pub(crate) fn candidate(
     line: &str,
     bounds: &[usize],
@@ -81,17 +92,29 @@ pub(crate) fn candidate(
     overflow: TextOverflow,
 ) -> String {
     let count = bounds.len() - 1;
+    let cluster = |index: usize| &line[bounds[index]..bounds[index + 1]];
+    // The end of the kept start, without the whitespace clusters before it.
+    let head_end = |mut head: usize| {
+        while head > 0 && blank(cluster(head - 1)) {
+            head -= 1;
+        }
+        bounds[head]
+    };
     match overflow {
         TextOverflow::MiddleEllipsis => {
             let tail = kept / 2;
             let head = kept - tail;
+            let mut start = count - tail;
+            while start < count && blank(cluster(start)) {
+                start += 1;
+            }
             format!(
                 "{}{ELLIPSIS}{}",
-                trim_end(&line[..bounds[head]]),
-                trim_start(&line[bounds[count - tail]..])
+                &line[..head_end(head)],
+                &line[bounds[start]..]
             )
         }
-        _ => format!("{}{ELLIPSIS}", trim_end(&line[..bounds[kept]])),
+        _ => format!("{}{ELLIPSIS}", &line[..head_end(kept)]),
     }
 }
 
@@ -101,31 +124,72 @@ fn blank(cluster: &str) -> bool {
     cluster.chars().all(char::is_whitespace)
 }
 
-/// `text` without its trailing whitespace clusters.
-fn trim_end(text: &str) -> &str {
-    let end = text
-        .grapheme_indices(true)
-        .rev()
-        .find(|(_, cluster)| !blank(cluster))
-        .map_or(0, |(index, cluster)| index + cluster.len());
-    &text[..end]
-}
-
-/// `text` without its leading whitespace clusters.
-fn trim_start(text: &str) -> &str {
-    let start = text
-        .grapheme_indices(true)
-        .find(|(_, cluster)| !blank(cluster))
-        .map_or(text.len(), |(index, _)| index);
-    &text[start..]
-}
-
 /// The characters that force a line break when text is shaped (Unicode line
 /// breaking classes BK, CR, LF and NL), so a single-line fit ends its first
 /// line at any of them.
 const HARD_BREAKS: [char; 7] = [
     '\n', '\r', '\u{0B}', '\u{0C}', '\u{85}', '\u{2028}', '\u{2029}',
 ];
+
+/// The first line of `text` cut so that its kept clusters and the ellipsis
+/// fit [`TextEditError::MAX_TEXT_BYTES`](crate::TextEditError::MAX_TEXT_BYTES),
+/// with the boundaries of the kept clusters (including the end), when the
+/// line is longer than that limit; `None` otherwise.
+///
+/// [`TextOverflow::MiddleEllipsis`] keeps as many clusters from the end as
+/// from the start, joined, so a candidate keeping all of them puts the
+/// ellipsis at the join. Clusters are found by iterating the line from its
+/// start and from its end, never from inside it, so every boundary is one
+/// of the line's own; the work stays within the limit except where the
+/// segmenter must look back through a long run of regional indicators, or
+/// read one cluster longer than the limit, such as a base with many
+/// combining marks, before it can leave it out.
+pub(crate) fn bounded(text: &str, overflow: TextOverflow) -> Option<(String, Vec<usize>)> {
+    let line = &text[..text.find(HARD_BREAKS).unwrap_or(text.len())];
+    if line.len() <= crate::TextEditError::MAX_TEXT_BYTES {
+        return None;
+    }
+    let budget = crate::TextEditError::MAX_TEXT_BYTES - ELLIPSIS.len();
+    let tail_share = if overflow == TextOverflow::MiddleEllipsis {
+        budget / 2
+    } else {
+        0
+    };
+    let head_share = budget - tail_share;
+    // Ends of the clusters kept from the start, in order.
+    let mut head: Vec<usize> = line
+        .grapheme_indices(true)
+        .map(|(index, cluster)| index + cluster.len())
+        .take_while(|end| *end <= head_share)
+        .collect();
+    // Starts of the clusters kept from the end, nearest the end first.
+    let mut tail: Vec<usize> = if tail_share == 0 {
+        Vec::new()
+    } else {
+        line.grapheme_indices(true)
+            .rev()
+            .map(|(index, _)| index)
+            .take_while(|start| line.len() - start <= tail_share)
+            .collect()
+    };
+    if overflow == TextOverflow::MiddleEllipsis {
+        let kept = head.len().min(tail.len());
+        head.truncate(kept);
+        tail.truncate(kept);
+    }
+    let head_end = head.last().copied().unwrap_or(0);
+    let tail_start = tail.last().copied().unwrap_or(line.len());
+    let mut cut = String::with_capacity(head_end + line.len() - tail_start);
+    cut.push_str(&line[..head_end]);
+    cut.push_str(&line[tail_start..]);
+    let shift = |index: usize| index - tail_start + head_end;
+    let bounds = std::iter::once(0)
+        .chain(head)
+        .chain(tail.iter().rev().skip(1).map(|start| shift(*start)))
+        .chain((!tail.is_empty()).then_some(cut.len()))
+        .collect();
+    Some((cut, bounds))
+}
 
 /// The first line of `text` and the boundaries of its grapheme clusters,
 /// including the end, plus whether a line break removed more text.

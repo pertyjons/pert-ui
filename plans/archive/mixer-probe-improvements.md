@@ -1,15 +1,17 @@
 # Plan: improvements found by a mixer-panel probe
 
 Status: proposed 2026-10-18 and revised after an independent Codex review;
-being implemented on branch `mixer-probe-improvements` (slice 1 in 0.3.9
-and 0.3.11, slice 2 in 0.3.10, slice 3 in 0.3.12, slice 4 in 0.3.13, slice 5 in 0.3.14, slice 6 in 0.3.15
-to 0.3.17). Every type and method named below is a proposal until a
-slice implements and documents it.
+implemented in 0.3.9 to 0.3.17 and squash-merged into `main` as 116ab0c with
+the [app-author plan](../app-author-improvements.md): slice 1 in 0.3.9 and
+0.3.11, slice 2 in 0.3.10, slice 3 in 0.3.12, slice 4 in 0.3.13, slice 5 in
+0.3.14, slice 6 in 0.3.15 to 0.3.17. The API sketches below are the design
+as proposed; each slice's status line says where the implementation
+differs.
 
 ## Background
 
 On 2026-10-18, after the notes application of
-[app-author-improvements](app-author-improvements.md), the maintainer's
+[app-author-improvements](../app-author-improvements.md), the maintainer's
 session built a second application against the public facade only, chosen to
 exercise what the notes application did not: a mixer panel. Channel strips
 hold application-owned parameters (gain, pan, mute and an input choice) edited
@@ -98,7 +100,7 @@ What the author ran into, verified in code or by execution:
 
 ## Working rules
 
-The rules of [app-author-improvements](app-author-improvements.md#working-rules)
+The rules of [app-author-improvements](../app-author-improvements.md#working-rules)
 apply unchanged: one slice per branch with its rustdoc, examples, gallery,
 manual and CHANGELOG; the maintainer's patch version bump per slice; an
 independent Codex review before a slice is called merge-ready; the contracts
@@ -113,7 +115,7 @@ Additionally:
   before implementation starts. A slice is implementable only after that.
 - Slice 1 changes the native startup path and takes the dependency, feature
   and platform row of the gate table, with native evidence recorded in
-  [verification](../docs/verification.md). A mapping change in slice 5 that
+  [verification](../../docs/verification.md). A mapping change in slice 5 that
   touches serialization also runs the serde configurations.
 
 ## Slices in order
@@ -214,7 +216,12 @@ Contract tests (facade, `foundation` area, debug builds):
    no area reports nothing.
 5. With a nonzero viewport, an interactive component in a `SplitPane` pane
    sized to zero is still reported as `EmptyHitArea`, and so is one in a
-   collapsed in-view window of a measured native window.
+   collapsed in-view window of a measured native window. (Corrected by the
+   2026-10-20 audit: an in-view window keeps its minimum size, so the window
+   cannot collapse its content to zero; minimizing it hides the content,
+   which is then not validated. The tests show the empty pane inside a
+   floating window reported, its minimum size, and minimized content
+   unreported until restored.)
 6. A non-geometry rule (an invalid shortcut description) is still reported
    with no viewport.
 7. A native secondary window (`prepare_detach`, `commit_detach`,
@@ -266,7 +273,7 @@ One decision governs three gaps, so they share a slice and its design
 checkpoint.
 
 - **Menu rows:** `on_change` for `MenuItem::toggle` and `MenuItem::radio`
-  under the [user-write callback contract](../docs/contracts.md#user-write-callbacks): successful
+  under the [user-write callback contract](../../docs/contracts.md#user-write-callbacks): successful
   user writes only, delivered after the menu closes; application writes,
   re-choosing the selected radio value and refused writes report nothing;
   failures neither undo the write nor replay; handler replacement and removal
@@ -283,7 +290,7 @@ checkpoint.
   on sink failure, `retry_outcome` (a retried delivery must not enqueue a
   second follow-up), host removal, unregistering and shutdown. Report a
   follow-up's own error separately from sink delivery failure. If it uses
-  [component notifications](../docs/contracts.md#component-notifications),
+  [component notifications](../../docs/contracts.md#component-notifications),
   adopt their FIFO, removal, hidden-window and failure rules; otherwise
   document the differences. Tests prove that no write happens during sink
   delivery or update and that terminal information cannot silently
@@ -334,7 +341,7 @@ impl MenuItem {
   itself, such as density through a retained `ThemeManager`, and the
   guide shows it. Permission and enablement are unchanged.
 - **Sink follow-ups.** No new API: a sink sends to an application-owned
-  [`Mailbox`](../docs/contracts.md), whose handler runs at the start of a
+  [`Mailbox`](../../docs/contracts.md), whose handler runs at the start of a
   later flush where writes are allowed. Ownership, capacity and order are the
   mailbox's: bounded, FIFO within the mailbox, `SendError::Full` or `Closed`
   returned to the sink. The recommended shape is a dedicated refresh mailbox
@@ -378,15 +385,15 @@ Contract tests:
 7. With the capacity-one refresh mailbox already full, a second commit's
    sink still returns `Ok`, and the one pending refresh shows both commits.
    A preview sink refreshes the same way.
+8. `write_base` during an active drag delivers `Rejected(Conflict)` with
+   the edit's `begin_value` to the terminal sink, in the order documented,
+   also for an equal value; `write_base` without an edit calls no sink.
 9. A failing refresh handler consumes its token, returns its error from
    that flush and does not fault the parameter or replay the sink; a closed
    mailbox returns `Closed` to the sink, which still returns `Ok`.
 10. A settings row reports through pointer and keyboard choice in a nested
     `Menu`, a `ContextMenu` and a direct `MenuBar` title, and work queued
     with `defer_detached` from the handler still runs after the list hides.
-8. `write_base` during an active drag delivers `Rejected(Conflict)` with
-   the edit's `begin_value` to the terminal sink, in the order documented,
-   also for an equal value; `write_base` without an edit calls no sink.
 
 Codex reviewed this checkpoint (2026-10-19): no blocker. Applied: a sink
 records the outcome before sending, because a successful delivery may drop
@@ -399,10 +406,11 @@ before returning, also for an equal value.
 
 ### 4. Errors, lookup and command conveniences
 
-Status: implemented in 0.3.13 as the checkpoint below decided. Not done from
-its tests: the receipt's captured target is not asserted separately (the
-existing `command_context` tests cover it). Tests:
-`crates/pert-ui/tests/foundation/callback_conveniences.rs`.
+Status: implemented in 0.3.13 as the checkpoint below decided. Tests:
+`crates/pert-ui/tests/foundation/callback_conveniences.rs`, where
+`a_command_button_captures_the_context_at_activation` asserts the source,
+target and focus the action sees. A `CommandReceipt` carries no context, so
+contract test 4's last clause is about the action's context.
 
 - **Error path:** decide, as an error-policy change or not, how application
   callbacks propagate the library's higher-level errors with `?`. Either keep
@@ -514,7 +522,9 @@ impl KeyChord {
   binding is the one the command has when the button is built; a later
   replacement of the command's binding or predicate needs a new description
   of the button (documented). Icon-only command buttons stay out of scope:
-  `Button::icon` with `invoke_command` covers them. A stale command fails construction with
+  `Button::icon` with `invoke_command` covers them. (Later added as
+  `Button::command_icon` in 0.3.34 by the
+  [table-editing plan](table-editing-improvements.md).) A stale command fails construction with
   `StaleCommand`; a command unregistered later answers through the receipt.
 - **Chord.** `KeyChord::named(key)` is `KeyChord::new(CommandKey::Named(key),
   Modifiers::default())`.
@@ -543,7 +553,8 @@ Contract tests:
    action, and a failing receipt handler, are reported once and not
    replayed; an unregistered command answers through the receipt and a
    stale one fails construction; a full command queue is the action's
-   error; the receipt's context names the target current at activation.
+   error; the context the action receives names the target current at
+   activation.
 5. `KeyChord::named(KeyCode::Space)` equals the long form and routes.
 
 Codex reviewed this checkpoint (2026-10-19): no blocker. Applied: the
@@ -599,7 +610,7 @@ and covering an undo while the queue is full and a stopped engine. Its
 headless session is the deterministic check (each step waits, bounded, for
 what it asserts); it compiled from the extracted packaged artifacts and its
 window ran on Fedora 44 GNOME/Wayland, recorded in
-[verification](../docs/verification.md). Building it confirmed the
+[verification](../../docs/verification.md). Building it confirmed the
 prelude finding: it imports `DeliveryMonitor`, `CommandReceipt`, `KeyChord`,
 `LevelMeter`, `PowerExponent` and the live-data names explicitly.
 
@@ -622,16 +633,17 @@ application undo history and a saved workspace.
 ## Relation to the previous plan
 
 Slices 8 (operating system services) and 9 (tutorial and API layout) of
-[app-author-improvements](app-author-improvements.md) remain open. The
+[app-author-improvements](../app-author-improvements.md) remain open. The
 prelude and discoverability findings above are input to its slice 9 prelude
 decision, not a separate slice here: they argue that a smaller prelude still
-needs the command and live-data names an ordinary application uses.
+needs the command and live-data names an ordinary application uses. They
+are recorded in that slice.
 
 ## Not in this plan
 
 Audio, unit presets or any other domain semantics in the library; a
 library-owned undo history; accessibility integration and X11. The missing
-native evidence recorded in [TODO.md](../TODO.md) stays missing; the example
+native evidence recorded in [TODO.md](../../TODO.md) stays missing; the example
 in slice 6 does not substitute for it.
 
 ## Review record
@@ -646,3 +658,14 @@ positive domain; density is reachable today through custom menu actions with
 a bound mark; the startup claim was narrowed to the probe's observation; and
 the slices gained the design checkpoint and the missing contract decisions
 and tests. Codex did not run the probe, tests or native checks.
+
+Implementation, 2026-10-19: slices 1, 3 and 4 had the Codex design
+checkpoints recorded above. Every slice had an independent Codex
+implementation review whose findings were fixed (0.3.11, 0.3.16, 0.3.17).
+Each slice passed the workspace gate, as
+[verification](../../docs/verification.md#mixer-probe-plan) records.
+
+2026-10-20 audit ([plan-audit-repairs](../plan-audit-repairs.md)): several
+contract tests of slices 1 to 4 are missing. Slice 5's guide and gallery
+coverage is missing. `live_mixer`'s headless session has unbounded waits.
+That plan repairs them.

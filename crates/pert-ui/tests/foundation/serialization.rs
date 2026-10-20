@@ -569,6 +569,30 @@ fn queries_and_their_results_round_trip() -> TestResult {
 }
 
 #[test]
+fn typed_capture_targets_serialize_as_their_variants() -> TestResult {
+    let ui = Runtime::new();
+    let primary = ui.primary_window();
+    let window = CaptureTarget::window(&primary);
+    assert_eq!(window, CaptureTarget::Window(primary.id()));
+    assert_eq!(
+        serde_json::to_value(&window)?,
+        serde_json::json!({ "Window": primary.id() })
+    );
+    assert_eq!(round_trip(&window)?, window);
+    let region = CaptureTarget::region(&primary, Rect::new(1.0, 2.0, 30.0, 40.0)?);
+    assert_eq!(
+        serde_json::to_value(&region)?,
+        serde_json::json!({ "Region": {
+            "window": primary.id(), "x": 1.0, "y": 2.0, "width": 30.0, "height": 40.0
+        } })
+    );
+    assert_eq!(round_trip(&region)?, region);
+    let request = round_trip(&CaptureRequest::new(window.clone()))?;
+    assert_eq!(request.target(), &window);
+    Ok(())
+}
+
+#[test]
 fn capture_types_round_trip() -> TestResult {
     let request =
         CaptureRequest::new(CaptureTarget::Path(vec!["main".into()])).include_overlay(true);

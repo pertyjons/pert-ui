@@ -33,8 +33,23 @@ pub(crate) fn adorned_content<'a>(
 ///
 /// [`Self::overflow`] keeps the label on one line and replaces what does not
 /// fit with an ellipsis; the full text then stays the label's name in
-/// inspection and shows as delayed help while the pointer rests on a truncated
-/// label.
+/// inspection and, when it is within [`TextEditError::MAX_TEXT_BYTES`], shows
+/// as delayed help while the pointer rests on a truncated label.
+///
+/// Text the label cannot prepare is refused without failing the flush: text
+/// longer than [`TextEditError::MAX_TEXT_BYTES`] that is wrapped or rich, a
+/// layout beyond a raster limit at the current width, style or scale, or rich
+/// content beyond [`RichText::MAX_SEGMENTS`] ([`TextLimit`]). The label then
+/// keeps showing the last text it prepared, clipped to its allocation, and
+/// measures as it last did; before any success it is empty and has no size.
+/// It reports the refusal as the `text_error` inspection property, marks its
+/// semantics invalid, and recovers once a later text, width, style or scale
+/// fits. Its `text` property and name stay the current text. Plain text with
+/// an ellipsis mode is never refused for its length: it is cut first (see
+/// [`TextOverflow`]). Other errors, such as a binding from another runtime,
+/// still fail the update or layout. Components built on a label, such as a
+/// [`Tooltip`], an [`AlertDialog`]'s title and message and a [`Group`]
+/// heading, behave the same way.
 ///
 /// Re-describing the label under the same key applies its text or binding,
 /// adornments, style, rotation, overflow, color and role; changing the overflow
@@ -53,6 +68,13 @@ pub struct Label {
     shown: RefCell<Option<String>>,
     /// The allocation of the last arrangement, which painting clips to.
     arranged: Cell<Option<Size>>,
+    /// The size of the last successful measurement, kept while refused.
+    measured: Cell<Option<Size>>,
+    /// Why the last arrangement refused the text, while it does.
+    refusal: RefCell<Option<String>>,
+    /// Whether a refusal clears the last prepared text instead of keeping it,
+    /// for help, where stale text would mislead.
+    clears_refused: bool,
     help: HelpTimer,
 }
 impl Label {
@@ -81,8 +103,17 @@ impl Label {
             overflow: TextOverflow::Wrap,
             shown: RefCell::new(None),
             arranged: Cell::new(None),
+            measured: Cell::new(None),
+            refusal: RefCell::new(None),
+            clears_refused: false,
             help: HelpTimer::default(),
         }
+    }
+    /// Shows nothing while refused instead of the last prepared text, for help
+    /// whose stale text would mislead.
+    pub(crate) fn clearing_refused(mut self) -> Self {
+        self.clears_refused = true;
+        self
     }
     /// Chooses how text that does not fit is shown. Default
     /// [`TextOverflow::Wrap`] wraps at the allocated width.
@@ -91,12 +122,15 @@ impl Label {
     /// label stays on one line: plain text loses the grapheme clusters that do
     /// not fit, replaced by "…", and rich content with icons or styled spans
     /// is clipped at the label's edge. Measured without a width limit, the
-    /// label is as wide as its whole first line. The full text stays the
-    /// label's name in inspection, the `truncated` property says whether text
-    /// was removed and `shown` holds what the label shows, and while the
-    /// pointer rests on a truncated label the full text appears as delayed
-    /// help with the [`Tooltip`] timing and appearance. The label never takes
-    /// focus, so keyboard users read the full text from the name.
+    /// label is as wide as its whole first line, or as its cut start when the
+    /// line is longer than [`TextEditError::MAX_TEXT_BYTES`] (see
+    /// [`TextOverflow`]). The full text stays the label's name in inspection,
+    /// the `truncated` property says whether text was removed and `shown`
+    /// holds what the label shows, and while the pointer rests on a truncated
+    /// label the full text appears as delayed help with the [`Tooltip`] timing
+    /// and appearance. Help is not offered for text longer than
+    /// `MAX_TEXT_BYTES`, which a tooltip could not show whole. The label never
+    /// takes focus, so keyboard users read the full text from the name.
     ///
     /// ```
     /// use pert_ui_runtime::{Element, Label, Runtime, TextOverflow, Viewport, Wrap};
@@ -189,7 +223,7 @@ impl Component for Label {
         }
         // The help follows the same source as the label, so a bound label's
         // help changes with it without any state of its own.
-        let help = Label::new(self.caption.source().clone());
+        let help = Label::new(self.caption.source().clone()).clearing_refused();
         vec![Element::new(
             "help",
             transient_panel(Element::new("text", help)).padding(MetricRole::ControlPaddingX),
@@ -219,9 +253,10 @@ impl Component for Label {
         self.color = next.color;
         self.role = next.role;
         if self.overflow != next.overflow {
+            // The prepared layout and its shown text stay together until the
+            // next arrangement replaces both, which a refusal does not.
             self.overflow = next.overflow;
             self.help = HelpTimer::default();
-            self.shown.replace(None);
         }
         if layout {
             Some(Invalidation::Layout)
@@ -235,8 +270,11 @@ impl Component for Label {
         self.caption.update(cx)?;
         if self.overflow != TextOverflow::Wrap {
             // Help is offered only for text that is actually cut, as of the
-            // latest arrangement.
-            let active = cx.hovered() && self.shown.borrow().is_some();
+            // latest arrangement, and short enough to show whole.
+            let active = cx.hovered()
+                && self.shown.borrow().is_some()
+                && self.refusal.borrow().is_none()
+                && self.caption.text().len() <= TextEditError::MAX_TEXT_BYTES;
             self.help.update(cx, active)?;
         }
         Ok(())
@@ -252,7 +290,18 @@ impl Component for Label {
         } else {
             available.width()
         };
-        let (layout, _) = self.prepare(cx, line)?;
+        let layout = match self.prepare(cx, line) {
+            Ok((layout, _)) => layout,
+            // A refused text measures as the last one prepared did.
+            Err(error) if crate::selectable_text::refused(&error) => {
+                return Ok(if self.clears_refused {
+                    Size::ZERO
+                } else {
+                    self.measured.get().unwrap_or(Size::ZERO)
+                });
+            }
+            Err(error) => return Err(error),
+        };
         let mut size = layout.size();
         if self.overflow != TextOverflow::Wrap
             && let Some(line) = line
@@ -260,20 +309,40 @@ impl Component for Label {
         {
             size = Size::new(line, size.height())?;
         }
-        Ok(self.turn.turned(size))
+        let size = self.turn.turned(size);
+        self.measured.set(Some(size));
+        Ok(size)
     }
     fn arrange(&self, cx: &mut ArrangeContext<'_>, size: Size) -> Result<(), RuntimeError> {
-        let (layout, shown) =
-            self.prepare(cx.measurement(), Some(self.turn.turned(size).width()))?;
-        *self.prepared.borrow_mut() = Some(layout);
-        // Help is offered only while the text is cut; when this arrangement
-        // starts or stops cutting it, the update reconsiders the help with
-        // the new state inside the same flush.
         let was_cut = self.shown.borrow().is_some();
-        if self.overflow != TextOverflow::Wrap && was_cut != shown.is_some() {
+        let was_refused = self.refusal.borrow().is_some();
+        match self.prepare(cx.measurement(), Some(self.turn.turned(size).width())) {
+            Ok((layout, shown)) => {
+                *self.prepared.borrow_mut() = Some(layout);
+                *self.shown.borrow_mut() = shown;
+                self.refusal.replace(None);
+            }
+            // The last prepared text and its truncation stay together, or are
+            // cleared together for help.
+            Err(error) if crate::selectable_text::refused(&error) => {
+                if self.clears_refused {
+                    self.prepared.replace(None);
+                    self.shown.replace(None);
+                    self.measured.set(None);
+                }
+                self.refusal.replace(Some(error.to_string()));
+            }
+            Err(error) => return Err(error),
+        }
+        // Help is offered only while the text is cut and not refused; when
+        // this arrangement changes either, the update reconsiders the help
+        // with the new state inside the same flush.
+        if self.overflow != TextOverflow::Wrap
+            && (was_cut != self.shown.borrow().is_some()
+                || was_refused != self.refusal.borrow().is_some())
+        {
             cx.request_update();
         }
-        *self.shown.borrow_mut() = shown;
         self.arranged.set(Some(size));
         if cx.is_empty() {
             return Ok(());
@@ -287,8 +356,11 @@ impl Component for Label {
         if let Some(text) = self.prepared.borrow().as_ref() {
             let color = self.color.unwrap_or_else(|| painter.color(self.role));
             self.painted_color.set(Some(color));
+            // A refused label keeps an earlier text, which may be larger
+            // than its allocation now.
+            let clipped = self.overflow != TextOverflow::Wrap || self.refusal.borrow().is_some();
             match self.arranged.get() {
-                Some(size) if self.overflow != TextOverflow::Wrap => {
+                Some(size) if clipped => {
                     let bounds = Rect::new(0.0, 0.0, size.width(), size.height())?;
                     painter.with_clip(bounds, |painter| {
                         text.paint_turned(painter, 0.0, 0.0, self.turn, color)
@@ -319,8 +391,18 @@ impl Component for Label {
                 .properties
                 .insert("help_open".into(), InspectValue::Bool(self.help.shown()));
         }
+        let refusal = self.refusal.borrow();
+        if let Some(refusal) = refusal.as_ref() {
+            details
+                .properties
+                .insert("text_error".into(), InspectValue::Text(refusal.clone()));
+        }
         details.box_model.foreground = self.painted_color.get().map(Color::channels);
-        details.semantics = Some(Semantics::new(SemanticRole::Label).name(self.caption.text()));
+        details.semantics = Some(
+            Semantics::new(SemanticRole::Label)
+                .name(self.caption.text())
+                .invalid(refusal.is_some()),
+        );
         details
     }
 }

@@ -237,6 +237,47 @@ one file one at a time. Work a
 closing dialog starts belongs to the window rather than the dialog:
 [`EventContext::defer_detached`] queues it there, whereas [`EventContext::defer`]
 is skipped when its owner is hidden first. Close admission (`App::on_close`)
-and error handling receive the [`Runtime`] but not what the initializer
-created; share the application with them through a slot the initializer
-fills, and decide what the callbacks do while it is still empty.
+and error handling (`App::on_error`) receive the [`Runtime`] but not what
+the initializer created; share the application with them through a slot the
+initializer fills, and decide what the callbacks do while it is still empty.
+The example's error handler shows a component failure on the status line
+and keeps the window running. A failing initializer never reaches it: its
+error returns from `run`. The handler still exits when the slot is empty,
+defensively, since it has nothing to show the failure on then:
+
+```no_run
+# #[cfg(feature = "native")]
+fn main() -> Result<(), pert_ui::AppError> {
+    use pert_ui::{App, ErrorAction, Signal};
+    use std::{cell::RefCell, rc::Rc};
+    // What the error handler needs from the application: here its status line.
+    let slot: Rc<RefCell<Option<Signal<String>>>> = Rc::default();
+    let (filled, failing) = (slot.clone(), slot.clone());
+    App::new("Editor", move |ui| {
+        *filled.borrow_mut() = Some(ui.signal(String::new()));
+        Ok(())
+    })
+    .on_error(move |_, error| match failing.borrow().as_ref() {
+        Some(status) if status.set(format!("Something went wrong: {error}")).is_ok() => {
+            ErrorAction::Retry
+        }
+        _ => ErrorAction::Exit,
+    })
+    .run()?;
+    Ok(())
+}
+# #[cfg(not(feature = "native"))]
+# fn main() {}
+```
+
+# Exporting a picture of a widget
+
+A widget is exported as an image by rendering it on a runtime of its own:
+mount it alone, size the viewport to it, flush, and answer a capture
+request with the CPU renderer (the `cpu` feature), which needs no window or
+GPU. [`CaptureTarget::window`] names the runtime's window and
+[`FrameImage::encode_png`] gives the file's bytes. The example's
+`export_png` does this with a light theme and a scale of two, over a copy of
+the document, so the editor's own window is not disturbed; the
+[diagnostics chapter](crate::guide::diagnostics) covers captures of a running
+application.

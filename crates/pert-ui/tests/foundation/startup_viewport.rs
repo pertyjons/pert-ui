@@ -195,5 +195,55 @@ fn each_native_window_is_validated_by_its_own_viewport() -> TestResult {
     ui.select_window(&other)?;
     ui.set_viewport(Viewport::new(0.0, 200.0, 1.0)?)?;
     assert_eq!(issue_windows(&mut ui)?, ["split"]);
+    // A secondary window with zero height likewise.
+    ui.select_window(&other)?;
+    ui.set_viewport(Viewport::new(320.0, 0.0, 1.0)?)?;
+    assert_eq!(issue_windows(&mut ui)?, ["split"]);
+    Ok(())
+}
+
+#[test]
+fn an_in_view_window_keeps_its_minimum_size_so_its_content_has_area() -> TestResult {
+    // Asked for no height, the window keeps its minimum, so an interactive
+    // child keeps a hit area and nothing is reported.
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(800.0, 600.0, 1.0)?)?;
+    let field = Element::new("field", TextField::new(ui.signal(String::new())));
+    let window =
+        FloatingWindow::new(&ui, "panel", "Panel", field).initial_size(Size::from([400, 0]))?;
+    let root = ui.mount_tree(Element::new(
+        "view",
+        View::new(Element::new("windows", WindowLayer::new([window]))),
+    ))?;
+    ui.flush(Duration::ZERO)?;
+    let field = ui.find_descendant(&root, "field")?.ok_or("mounted")?;
+    let bounds = ui.bounds(&field)?.ok_or("laid out")?;
+    assert!(bounds.width() > 0.0 && bounds.height() > 0.0, "{bounds:?}");
+    assert!(codes(&ui).is_empty());
+    Ok(())
+}
+
+#[test]
+fn minimized_window_content_is_not_validated_until_restored() -> TestResult {
+    // Minimizing collapses an in-view window to its title bar and hides its
+    // content, which is then not validated; restoring it reports the empty
+    // pane again.
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(800.0, 600.0, 1.0)?)?;
+    let window = FloatingWindow::new(&ui, "panel", "Panel", collapsed_pane(&ui)?)
+        .initial_size(Size::from([400, 280]))?;
+    let state = window.controller();
+    ui.mount_tree(Element::new(
+        "view",
+        View::new(Element::new("windows", WindowLayer::new([window]))),
+    ))?;
+    ui.flush(Duration::ZERO)?;
+    assert_eq!(codes(&ui), [ValidationCode::EmptyHitArea]);
+    state.minimize()?;
+    ui.flush(Duration::ZERO)?;
+    assert!(codes(&ui).is_empty(), "hidden content is not validated");
+    state.restore()?;
+    ui.flush(Duration::ZERO)?;
+    assert_eq!(codes(&ui), [ValidationCode::EmptyHitArea]);
     Ok(())
 }

@@ -477,8 +477,6 @@ fn steps_edit_the_draft_while_a_session_is_open() {
     let (value, build) = quantity(&ui, 27);
     let mut s = Setup::new(ui, EditorStart::SelectAll, build);
     s.key(KeyCode::ArrowUp, false, false);
-    let editor = s.ui.find_descendant(&s.root, "editor").unwrap().unwrap();
-    let _ = editor;
     // The plus button: the trailing icon square inside the padding.
     let editor = s.ui.find_descendant(&s.root, "editor").unwrap().unwrap();
     let [x, y, w, h] = s.ui.bounds(&editor).unwrap().unwrap().values();
@@ -687,6 +685,48 @@ fn end_selection_drag(s: &mut Setup) {
     s.settle();
 }
 
+/// The selection of the editor or of the text editor inside it, as
+/// inspection reports it.
+fn drag_selection(s: &Setup) -> InspectValue {
+    let editor = s.ui.find_descendant(&s.root, "editor").unwrap().unwrap();
+    let root = s.ui.inspection_id(&editor).unwrap();
+    let snapshot = s.ui.inspect();
+    let mut subtree = vec![root];
+    let mut grown = true;
+    while grown {
+        grown = false;
+        for c in &snapshot.components {
+            if !subtree.contains(&c.id) && c.parent.is_some_and(|p| subtree.contains(&p)) {
+                subtree.push(c.id);
+                grown = true;
+            }
+        }
+    }
+    snapshot
+        .components
+        .iter()
+        .filter(|c| subtree.contains(&c.id))
+        .find_map(|c| c.details.properties.get("selection").cloned())
+        .expect("the editor reports a selection")
+}
+/// A collapsed selection at the start, which a drag from the left edge to
+/// the middle cannot leave.
+fn drag_selection_at_rest() -> InspectValue {
+    InspectValue::Text("0..0".into())
+}
+/// Moves the held pointer back to where the drag began and checks that the
+/// selection follows, so the drag `dragged` began is still active.
+fn assert_drag_active(s: &mut Setup, dragged: &InspectValue) {
+    let editor = s.ui.find_descendant(&s.root, "editor").unwrap().unwrap();
+    let [x, y, w, h] = s.ui.bounds(&editor).unwrap().unwrap().values();
+    let _ = w;
+    let back = Point::new(x + 12.0, y + h / 2.0).unwrap();
+    s.ui.pointer_input(PointerEvent::new(back, PointerKind::Move))
+        .unwrap();
+    s.settle();
+    assert_ne!(&drag_selection(s), dragged, "the drag still selects");
+}
+
 #[test]
 fn a_selection_drag_keeps_enter_and_escape_from_the_session() {
     for native in [false, true] {
@@ -695,10 +735,22 @@ fn a_selection_drag_keeps_enter_and_escape_from_the_session() {
         let mut s = Setup::new(ui, EditorStart::SelectAll, build);
         s.type_text("Laptop");
         begin_selection_drag(&mut s);
+        let dragged = drag_selection(&s);
+        assert_ne!(dragged, drag_selection_at_rest(), "native {native}");
         s.key(KeyCode::Enter, false, native);
         assert_eq!(value.get().unwrap(), "Cable", "native {native}");
         assert_eq!(*saves.borrow(), 0);
         assert!(s.log().is_empty(), "native {native}");
+        // Tab and Shift+Tab are kept for the drag: nothing saved or reported,
+        // focus stays, and the drag is still active afterwards.
+        for reverse in [false, true] {
+            s.key(KeyCode::Tab, reverse, native);
+            assert_eq!(s.focused().as_deref(), Some("editor"), "native {native}");
+            assert_eq!(value.get().unwrap(), "Cable", "native {native}");
+            assert_eq!(*saves.borrow(), 0);
+            assert!(s.log().is_empty(), "native {native}, reverse {reverse}");
+        }
+        assert_drag_active(&mut s, &dragged);
         end_selection_drag(&mut s);
         s.key(KeyCode::Enter, false, native);
         assert_eq!(value.get().unwrap(), "Laptop");
@@ -710,7 +762,15 @@ fn a_selection_drag_keeps_enter_and_escape_from_the_session() {
         let mut s = Setup::new(ui, EditorStart::SelectAll, build);
         s.type_text("9");
         begin_selection_drag(&mut s);
+        let dragged = drag_selection(&s);
         s.key(KeyCode::Enter, false, native);
+        for reverse in [false, true] {
+            s.key(KeyCode::Tab, reverse, native);
+            assert_eq!(s.focused().as_deref(), Some("editor"), "native {native}");
+            assert_eq!(value.get().unwrap(), 27, "native {native}");
+            assert!(s.log().is_empty(), "native {native}, reverse {reverse}");
+        }
+        assert_drag_active(&mut s, &dragged);
         s.key(KeyCode::Escape, false, native);
         assert_eq!(value.get().unwrap(), 27, "native {native}");
         assert_eq!(s.text(), InspectValue::Text("9".into()), "native {native}");
@@ -820,4 +880,924 @@ fn a_number_field_refused_since_mount_completes_unchanged() {
     s.key(KeyCode::Enter, false, false);
     assert_eq!(value.get().unwrap(), 2000);
     assert_eq!(s.log(), [(EditorTrigger::Enter, EditorOutcome::Unchanged)]);
+}
+
+/// The inspected property `name` of the widget keyed `key` under `root`.
+fn property(ui: &Runtime, root: &WidgetId, key: &str, name: &str) -> Option<InspectValue> {
+    let widget = support::widget(ui, root, key);
+    let id = ui.inspection_id(&widget).unwrap();
+    ui.inspect()
+        .components
+        .into_iter()
+        .find(|c| c.id == id)
+        .and_then(|c| c.details.properties.get(name).cloned())
+}
+
+/// Whether a widget keyed `key` is mounted and visible.
+fn shown(ui: &Runtime, key: &str) -> bool {
+    ui.inspect()
+        .components
+        .iter()
+        .any(|c| c.key == key && c.visible)
+}
+
+type RowLog = Rc<RefCell<Vec<(usize, EditorTrigger, EditorOutcome)>>>;
+
+/// A consumer-defined list host: each row rests as a button showing its
+/// value, and pressing it edits that row in a session text field that trims
+/// and requires a name. A Tab completion moves the edit to the next or
+/// previous row, a refused one keeps the edit open, and any other terminal
+/// completion closes it, focusing the row again unless focus left.
+struct RowList {
+    rows: Vec<Signal<String>>,
+    /// The edited row; buttons and the host's delivery write it.
+    editing: Signal<Option<usize>>,
+    /// The row whose editor or resting buttons are built.
+    built: Option<Option<usize>>,
+    session: Option<EditorSession>,
+    /// A child key to focus once it is mounted, then its id.
+    focus_key: Option<String>,
+    focus_id: Option<WidgetId>,
+    notifier: Option<Notifier>,
+    log: RowLog,
+}
+impl Component for RowList {
+    fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
+        let notifier = self.notifier.get_or_insert_with(|| cx.notifier()).clone();
+        let session = self
+            .session
+            .get_or_insert_with(|| EditorSession::new(notifier.clone()))
+            .clone();
+        let editing = cx.read(&self.editing)?;
+        if self.built != Some(editing) {
+            self.built = Some(editing);
+            // Begin before building the editor, which attaches to this edit.
+            match editing {
+                Some(_) => session.begin(EditorStart::SelectAll),
+                None => session.end(),
+            }
+            let mut children = Vec::new();
+            for (index, value) in self.rows.iter().enumerate() {
+                children.push(if editing == Some(index) {
+                    Element::new(
+                        format!("editor-{index}"),
+                        TextField::new(value.clone())
+                            .normalize(|text: String| {
+                                let text = text.trim();
+                                if text.is_empty() {
+                                    Err(InputRejection::new("A name is required"))
+                                } else {
+                                    Ok(text.to_owned())
+                                }
+                            })
+                            .session(&session),
+                    )
+                } else {
+                    let open = self.editing.clone();
+                    Element::new(
+                        format!("row-{index}"),
+                        Button::new(value.get()?, move |_| open.set(Some(index))),
+                    )
+                });
+            }
+            cx.request_children(children);
+            if let Some(index) = editing {
+                self.focus_key = Some(format!("editor-{index}"));
+            }
+        } else if let Some(key) = self.focus_key.take() {
+            match cx.children().iter().find(|child| child.key() == key) {
+                Some(child) => {
+                    self.focus_id = Some(child.id().clone());
+                    notifier.request();
+                }
+                None => self.focus_key = Some(key),
+            }
+        }
+        Ok(())
+    }
+    fn deliver_notifications(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
+        if let Some(target) = self.focus_id.take() {
+            cx.request_focus_within(&target)?;
+        }
+        let (Some(session), Some(Some(row))) = (self.session.clone(), self.built) else {
+            return Ok(());
+        };
+        while let Some(done) = session.take_completion() {
+            self.log
+                .borrow_mut()
+                .push((row, done.trigger, done.outcome));
+            match (done.trigger, done.outcome) {
+                (_, EditorOutcome::Refused) => {}
+                (EditorTrigger::Tab { reverse }, _) => {
+                    let next = if reverse {
+                        row.checked_sub(1)
+                    } else {
+                        Some(row + 1).filter(|next| *next < self.rows.len())
+                    };
+                    if next.is_none() {
+                        self.focus_key = Some(format!("row-{row}"));
+                    }
+                    self.editing.set(next)?;
+                }
+                (EditorTrigger::FocusLeft, _) => self.editing.set(None)?,
+                _ => {
+                    self.focus_key = Some(format!("row-{row}"));
+                    self.editing.set(None)?;
+                }
+            }
+        }
+        Ok(())
+    }
+    fn measure(&self, cx: &MeasureContext<'_>, space: Constraints) -> Result<Size, RuntimeError> {
+        for index in 0..cx.len() {
+            cx.measure(index, space)?;
+        }
+        Ok(Size::new(300.0, 40.0 * cx.len() as f32)?)
+    }
+    fn arrange(&self, cx: &mut ArrangeContext<'_>, _: Size) -> Result<(), RuntimeError> {
+        for index in 0..cx.len() {
+            cx.place(index, Rect::new(0.0, 40.0 * index as f32, 300.0, 40.0)?)?;
+        }
+        Ok(())
+    }
+}
+
+struct ListSetup {
+    ui: Runtime,
+    root: WidgetId,
+    rows: Vec<Signal<String>>,
+    log: RowLog,
+}
+impl ListSetup {
+    fn new(names: &[&str]) -> Self {
+        let mut ui = Runtime::new();
+        ui.set_viewport(Viewport::new(400.0, 300.0, 1.0).unwrap())
+            .unwrap();
+        let rows: Vec<_> = names
+            .iter()
+            .map(|name| ui.signal((*name).to_owned()))
+            .collect();
+        let log = RowLog::default();
+        let root = ui
+            .mount_tree(Element::new(
+                "list",
+                RowList {
+                    rows: rows.clone(),
+                    editing: ui.signal(None),
+                    built: None,
+                    session: None,
+                    focus_key: None,
+                    focus_id: None,
+                    notifier: None,
+                    log: log.clone(),
+                },
+            ))
+            .unwrap();
+        let mut setup = Self {
+            ui,
+            root,
+            rows,
+            log,
+        };
+        setup.settle();
+        setup
+    }
+    fn settle(&mut self) {
+        for _ in 0..4 {
+            frame(&mut self.ui);
+        }
+    }
+    fn focused(&self) -> Option<String> {
+        self.ui
+            .focused()
+            .map(|id| self.ui.key(&id).unwrap().to_owned())
+    }
+    fn values(&self) -> Vec<String> {
+        self.rows.iter().map(|row| row.get().unwrap()).collect()
+    }
+    fn log(&self) -> Vec<(usize, EditorTrigger, EditorOutcome)> {
+        self.log.borrow().clone()
+    }
+    fn key(&mut self, code: KeyCode, shift: bool, native: bool) {
+        let send = |ui: &mut Runtime, code: KeyCode, action| {
+            if native {
+                ui.command_key_input(CommandKeyInput::new(code, action, CommandKey::Named(code)))
+                    .map(|_| ())
+            } else {
+                ui.key_input(code, action).map(|_| ())
+            }
+        };
+        if shift {
+            send(&mut self.ui, KeyCode::ShiftLeft, KeyAction::Press).unwrap();
+        }
+        send(&mut self.ui, code, KeyAction::Press).unwrap();
+        send(&mut self.ui, code, KeyAction::Release).unwrap();
+        if shift {
+            send(&mut self.ui, KeyCode::ShiftLeft, KeyAction::Release).unwrap();
+        }
+        self.settle();
+    }
+    fn type_text(&mut self, text: &str) {
+        self.ui.text_input(text).unwrap();
+        self.settle();
+    }
+    /// Presses the resting button of `row` with the pointer.
+    fn click_row(&mut self, row: usize) {
+        let button = support::widget(&self.ui, &self.root, &format!("row-{row}"));
+        let [x, y, w, h] = self.ui.bounds(&button).unwrap().unwrap().values();
+        let point = Point::new(x + w / 2.0, y + h / 2.0).unwrap();
+        for kind in [
+            PointerKind::Press(PointerButton::Primary),
+            PointerKind::Release(PointerButton::Primary),
+        ] {
+            self.ui
+                .pointer_input(PointerEvent::new(point, kind))
+                .unwrap();
+        }
+        self.settle();
+    }
+}
+
+#[test]
+fn a_consumer_list_moves_its_edit_between_rows_and_keeps_a_refused_one_open() {
+    use EditorOutcome::{Refused, Saved, Unchanged};
+    for native in [false, true] {
+        let mut s = ListSetup::new(&["Cable", "Mouse", "Toner"]);
+        assert_eq!(s.focused(), None);
+        s.click_row(0);
+        assert_eq!(s.focused().as_deref(), Some("editor-0"), "native {native}");
+        // The edit started with the value selected: typing replaces it.
+        s.type_text("Laptop");
+        s.key(KeyCode::Tab, false, native);
+        assert_eq!(s.focused().as_deref(), Some("editor-1"), "native {native}");
+        assert_eq!(s.values(), ["Laptop", "Mouse", "Toner"]);
+        // A blank name is refused; the edit stays open on its row.
+        s.type_text(" ");
+        s.key(KeyCode::Tab, false, native);
+        assert_eq!(s.focused().as_deref(), Some("editor-1"), "native {native}");
+        assert_eq!(
+            property(&s.ui, &s.root, "editor-1", "text"),
+            Some(InspectValue::Text(" ".into()))
+        );
+        s.type_text("Monitor ");
+        s.key(KeyCode::Tab, true, native);
+        assert_eq!(s.focused().as_deref(), Some("editor-0"), "native {native}");
+        assert_eq!(s.values(), ["Laptop", "Monitor", "Toner"]);
+        s.key(KeyCode::Enter, false, native);
+        assert_eq!(s.focused().as_deref(), Some("row-0"), "native {native}");
+        assert!(support::find(&s.ui, &s.root, "editor-0").is_none());
+        // Tab from the last row closes the edit on it.
+        s.click_row(2);
+        assert_eq!(s.focused().as_deref(), Some("editor-2"));
+        s.key(KeyCode::Tab, false, native);
+        assert_eq!(s.focused().as_deref(), Some("row-2"), "native {native}");
+        assert_eq!(
+            s.log(),
+            [
+                (0, EditorTrigger::Tab { reverse: false }, Saved),
+                (1, EditorTrigger::Tab { reverse: false }, Refused),
+                (1, EditorTrigger::Tab { reverse: true }, Saved),
+                (0, EditorTrigger::Enter, Unchanged),
+                (2, EditorTrigger::Tab { reverse: false }, Unchanged),
+            ],
+            "native {native}"
+        );
+    }
+}
+
+impl Setup {
+    /// The inspected property `name` of the editor.
+    fn property(&self, name: &str) -> Option<InspectValue> {
+        property(&self.ui, &self.root, "editor", name)
+    }
+}
+
+#[test]
+fn a_normalization_equivalent_draft_completes_unchanged() {
+    for native in [false, true] {
+        for code in [KeyCode::Enter, KeyCode::Tab] {
+            let ui = Runtime::new();
+            let (value, saves, build) = name_field(&ui, "Cable");
+            let mut s = Setup::new(ui, EditorStart::SelectAll, build);
+            s.type_text("  Cable ");
+            // The draft differs from the value until it is normalized.
+            assert_eq!(s.text(), InspectValue::Text("  Cable ".into()));
+            assert_eq!(s.property("dirty"), Some(InspectValue::Bool(true)));
+            s.key(code, false, native);
+            assert_eq!(value.get().unwrap(), "Cable");
+            assert_eq!(*saves.borrow(), 0, "native {native}, {code:?}");
+            let trigger = if code == KeyCode::Enter {
+                EditorTrigger::Enter
+            } else {
+                EditorTrigger::Tab { reverse: false }
+            };
+            assert_eq!(
+                s.log(),
+                [(trigger, EditorOutcome::Unchanged)],
+                "native {native}"
+            );
+        }
+    }
+    // Focus leaving with an equivalent draft is unchanged too.
+    let ui = Runtime::new();
+    let (_, saves, build) = name_field(&ui, "Cable");
+    let mut s = Setup::new(ui, EditorStart::SelectAll, build);
+    s.type_text("Cable  ");
+    let other = s.ui.find_descendant(&s.root, "other").unwrap().unwrap();
+    s.ui.focus(&other).unwrap();
+    s.settle();
+    assert_eq!(*saves.borrow(), 0);
+    assert_eq!(
+        s.log(),
+        [(EditorTrigger::FocusLeft, EditorOutcome::Unchanged)]
+    );
+}
+
+#[test]
+fn a_refused_tab_keeps_the_draft_and_focus_for_a_retry() {
+    for native in [false, true] {
+        for reverse in [false, true] {
+            let ui = Runtime::new();
+            let (value, saves, build) = name_field(&ui, "Cable");
+            let mut s = Setup::new(ui, EditorStart::SelectAll, build);
+            s.type_text("   ");
+            s.key(KeyCode::Tab, reverse, native);
+            assert_eq!(value.get().unwrap(), "Cable", "native {native}");
+            assert_eq!(*saves.borrow(), 0);
+            assert_eq!(s.focused().as_deref(), Some("editor"), "native {native}");
+            assert_eq!(s.text(), InspectValue::Text("   ".into()));
+            assert_eq!(
+                s.log(),
+                [(EditorTrigger::Tab { reverse }, EditorOutcome::Refused)],
+                "native {native}, reverse {reverse}"
+            );
+            // The edit stayed open: a corrected draft completes it.
+            s.type_text("Toner");
+            s.key(KeyCode::Tab, reverse, native);
+            assert_eq!(value.get().unwrap(), "Toner", "native {native}");
+            assert_eq!(*saves.borrow(), 1);
+            assert_eq!(
+                s.log()[1..],
+                [(EditorTrigger::Tab { reverse }, EditorOutcome::Saved)]
+            );
+        }
+    }
+}
+
+#[test]
+fn a_composition_keeps_enter_tab_and_escape_from_the_session() {
+    for native in [false, true] {
+        let ui = Runtime::new();
+        let (value, saves, build) = name_field(&ui, "Cable");
+        let mut s = Setup::new(ui, EditorStart::SelectAll, build);
+        s.type_text("Lap");
+        s.ui.text_preedit(&TextPreedit::new("top", None).unwrap())
+            .unwrap();
+        s.settle();
+        assert_eq!(s.property("composing"), Some(InspectValue::Bool(true)));
+        s.key(KeyCode::Enter, false, native);
+        s.key(KeyCode::Tab, false, native);
+        assert_eq!(s.focused().as_deref(), Some("editor"), "native {native}");
+        assert_eq!(value.get().unwrap(), "Cable", "native {native}");
+        assert!(s.log().is_empty(), "native {native}");
+        // Escape ends the composition only; the draft and the edit stay.
+        s.key(KeyCode::Escape, false, native);
+        assert_eq!(s.property("composing"), Some(InspectValue::Bool(false)));
+        assert_eq!(
+            s.text(),
+            InspectValue::Text("Lap".into()),
+            "native {native}"
+        );
+        assert!(s.log().is_empty(), "native {native}");
+        assert_eq!(*s.escapes.borrow(), 0);
+        s.key(KeyCode::Enter, false, native);
+        assert_eq!(value.get().unwrap(), "Lap");
+        assert_eq!(*saves.borrow(), 1);
+        assert_eq!(s.log(), [(EditorTrigger::Enter, EditorOutcome::Saved)]);
+    }
+}
+
+#[test]
+fn a_unicode_typed_start_replaces_an_active_composition() {
+    let ui = Runtime::new();
+    let (value, _, build) = name_field(&ui, "Cable");
+    let mut s = Setup::new(ui, EditorStart::SelectAll, build);
+    s.ui.text_preedit(&TextPreedit::new("かな", Some(0..6)).unwrap())
+        .unwrap();
+    s.settle();
+    assert_eq!(s.property("composing"), Some(InspectValue::Bool(true)));
+    // A decomposed accent: two scalar values, one grapheme.
+    s.restart(EditorStart::Typed("日本e\u{301}".into()));
+    assert_eq!(s.property("composing"), Some(InspectValue::Bool(false)));
+    assert_eq!(s.text(), InspectValue::Text("日本e\u{301}".into()));
+    s.type_text("語");
+    assert_eq!(s.text(), InspectValue::Text("日本e\u{301}語".into()));
+    s.key(KeyCode::Enter, false, false);
+    assert_eq!(value.get().unwrap(), "日本e\u{301}語");
+    assert_eq!(s.log(), [(EditorTrigger::Enter, EditorOutcome::Saved)]);
+}
+
+/// A session text field over `value` whose editing is restricted by
+/// `editable` and whose enablement by `enabled`.
+fn permitted_field(
+    value: &Signal<String>,
+    editable: &Signal<bool>,
+    enabled: &Signal<bool>,
+) -> impl Fn(&EditorSession) -> Element + 'static {
+    let (value, editable, enabled) = (value.clone(), editable.clone(), enabled.clone());
+    move |session: &EditorSession| {
+        Element::new(
+            "editor",
+            TextField::new(value.clone())
+                .editable(&editable)
+                .enabled(&enabled)
+                .session(session),
+        )
+    }
+}
+
+#[test]
+fn revoking_editing_refuses_a_dirty_draft_and_keeps_the_edit_open() {
+    for native in [false, true] {
+        let ui = Runtime::new();
+        let value = ui.signal("Cable".to_owned());
+        let (editable, enabled) = (ui.signal(true), ui.signal(true));
+        let mut s = Setup::new(
+            ui,
+            EditorStart::SelectAll,
+            permitted_field(&value, &editable, &enabled),
+        );
+        s.type_text("Laptop");
+        editable.set(false).unwrap();
+        s.settle();
+        assert_eq!(s.property("read_only"), Some(InspectValue::Bool(true)));
+        s.key(KeyCode::Enter, false, native);
+        s.key(KeyCode::Tab, false, native);
+        assert_eq!(value.get().unwrap(), "Cable", "native {native}");
+        assert_eq!(s.text(), InspectValue::Text("Laptop".into()));
+        assert_eq!(s.focused().as_deref(), Some("editor"), "native {native}");
+        // Allowing editing again replays nothing; the next Enter saves.
+        editable.set(true).unwrap();
+        s.settle();
+        assert_eq!(s.log().len(), 2, "native {native}");
+        s.key(KeyCode::Enter, false, native);
+        assert_eq!(value.get().unwrap(), "Laptop", "native {native}");
+        assert_eq!(
+            s.log(),
+            [
+                (EditorTrigger::Enter, EditorOutcome::Refused),
+                (
+                    EditorTrigger::Tab { reverse: false },
+                    EditorOutcome::Refused
+                ),
+                (EditorTrigger::Enter, EditorOutcome::Saved),
+            ],
+            "native {native}"
+        );
+
+        // A clean field made read-only completes unchanged, and Escape is
+        // still the session's.
+        let ui = Runtime::new();
+        let value = ui.signal("Cable".to_owned());
+        let (editable, enabled) = (ui.signal(true), ui.signal(true));
+        let mut s = Setup::new(
+            ui,
+            EditorStart::SelectAll,
+            permitted_field(&value, &editable, &enabled),
+        );
+        editable.set(false).unwrap();
+        s.settle();
+        assert_eq!(s.property("read_only"), Some(InspectValue::Bool(true)));
+        s.key(KeyCode::Escape, false, native);
+        assert_eq!(*s.escapes.borrow(), 0, "native {native}");
+        assert_eq!(s.log(), [(EditorTrigger::Escape, EditorOutcome::Cancelled)]);
+    }
+}
+
+#[test]
+fn disabling_the_editor_keeps_its_draft_unsaved() {
+    let ui = Runtime::new();
+    let value = ui.signal("Cable".to_owned());
+    let (editable, enabled) = (ui.signal(true), ui.signal(true));
+    let mut s = Setup::new(
+        ui,
+        EditorStart::SelectAll,
+        permitted_field(&value, &editable, &enabled),
+    );
+    s.type_text("Laptop");
+    assert_eq!(s.focused().as_deref(), Some("editor"));
+    enabled.set(false).unwrap();
+    s.settle();
+    assert_eq!(s.property("enabled"), Some(InspectValue::Bool(false)));
+    assert_ne!(s.focused().as_deref(), Some("editor"));
+    assert_eq!(value.get().unwrap(), "Cable");
+    assert_eq!(s.text(), InspectValue::Text("Laptop".into()));
+    // The editor lost focus without a focus loss: nothing is reported and
+    // the edit stays open for the host to close or resume.
+    assert!(s.log().is_empty());
+    enabled.set(true).unwrap();
+    s.settle();
+    assert!(s.log().is_empty(), "enabling replays nothing");
+    let editor = s.ui.find_descendant(&s.root, "editor").unwrap().unwrap();
+    s.ui.focus(&editor).unwrap();
+    s.settle();
+    assert_eq!(s.text(), InspectValue::Text("Laptop".into()));
+    s.key(KeyCode::Enter, false, false);
+    assert_eq!(value.get().unwrap(), "Laptop");
+    assert_eq!(s.log(), [(EditorTrigger::Enter, EditorOutcome::Saved)]);
+}
+
+#[test]
+fn window_focus_loss_and_hiding_report_focus_left_but_hiding_the_editor_does_not() {
+    // The window losing focus saves the draft, leaving the composition out.
+    let ui = Runtime::new();
+    let (value, saves, build) = name_field(&ui, "Cable");
+    let mut s = Setup::new(ui, EditorStart::SelectAll, build);
+    s.type_text("Monitor");
+    s.ui.text_preedit(&TextPreedit::new("s", None).unwrap())
+        .unwrap();
+    s.settle();
+    assert_eq!(s.property("composing"), Some(InspectValue::Bool(true)));
+    s.ui.clear_focus();
+    s.settle();
+    assert_eq!(s.focused(), None);
+    assert_eq!(value.get().unwrap(), "Monitor");
+    assert_eq!(*saves.borrow(), 1);
+    assert_eq!(s.log(), [(EditorTrigger::FocusLeft, EditorOutcome::Saved)]);
+
+    // Hiding the window clears focus the same way.
+    let ui = Runtime::new();
+    let (value, _, build) = name_field(&ui, "Cable");
+    let mut s = Setup::new(ui, EditorStart::SelectAll, build);
+    s.type_text("Monitor");
+    assert_eq!(s.focused().as_deref(), Some("editor"));
+    s.ui.set_window_visible(false).unwrap();
+    s.settle();
+    assert_eq!(s.focused(), None);
+    assert_eq!(value.get().unwrap(), "Monitor");
+    // A hidden window retains the host's notification until it is shown.
+    assert!(s.log().is_empty());
+    s.ui.set_window_visible(true).unwrap();
+    s.settle();
+    assert_eq!(s.log(), [(EditorTrigger::FocusLeft, EditorOutcome::Saved)]);
+
+    // A refused draft is refused on the window's focus loss too.
+    let ui = Runtime::new();
+    let (value, _, build) = name_field(&ui, "Cable");
+    let mut s = Setup::new(ui, EditorStart::SelectAll, build);
+    s.type_text(" ");
+    s.ui.clear_focus();
+    s.settle();
+    assert_eq!(value.get().unwrap(), "Cable");
+    assert_eq!(
+        s.log(),
+        [(EditorTrigger::FocusLeft, EditorOutcome::Refused)]
+    );
+
+    // Hiding the editor's view discards the draft and reports nothing: the
+    // host caused it.
+    let ui = Runtime::new();
+    let (value, saves, build) = name_field(&ui, "Cable");
+    let mut s = Setup::new(ui, EditorStart::SelectAll, build);
+    s.type_text("Monitor");
+    assert_eq!(s.focused().as_deref(), Some("editor"));
+    let host = s.ui.find_descendant(&s.root, "host").unwrap().unwrap();
+    s.ui.set_visible(&host, false).unwrap();
+    s.settle();
+    assert_ne!(s.focused().as_deref(), Some("editor"));
+    assert_eq!(value.get().unwrap(), "Cable");
+    assert_eq!(*saves.borrow(), 0);
+    assert!(s.log().is_empty());
+    // Shown and focused again, the editor holds the saved value, not the
+    // draft, and completing it saves nothing.
+    s.ui.set_visible(&host, true).unwrap();
+    s.settle();
+    let editor = s.ui.find_descendant(&s.root, "editor").unwrap().unwrap();
+    s.ui.focus(&editor).unwrap();
+    s.settle();
+    assert_eq!(s.focused().as_deref(), Some("editor"));
+    assert_eq!(s.text(), InspectValue::Text("Cable".into()));
+    assert_eq!(s.property("dirty"), Some(InspectValue::Bool(false)));
+    s.key(KeyCode::Enter, false, false);
+    assert_eq!(value.get().unwrap(), "Cable");
+    assert_eq!(*saves.borrow(), 0);
+    assert_eq!(s.log(), [(EditorTrigger::Enter, EditorOutcome::Unchanged)]);
+}
+
+/// Clicks the option at `row` of two in the open list of `s`'s dropdown.
+fn click_option(s: &mut Setup, row: usize) {
+    let list = support::widget(&s.ui, &s.root, "options");
+    let [x, y, w, h] = s.ui.bounds(&list).unwrap().unwrap().values();
+    let point = Point::new(x + w / 2.0, y + h * (row as f32 * 2.0 + 1.0) / 4.0).unwrap();
+    for kind in [
+        PointerKind::Press(PointerButton::Primary),
+        PointerKind::Release(PointerButton::Primary),
+    ] {
+        s.ui.pointer_input(PointerEvent::new(point, kind)).unwrap();
+    }
+    s.settle();
+}
+
+#[test]
+fn a_click_in_the_open_list_completes_the_dropdown_edit() {
+    for (row, chosen, outcome) in [
+        (1, "software", EditorOutcome::Saved),
+        (0, "hardware", EditorOutcome::Unchanged),
+    ] {
+        let ui = Runtime::new();
+        let value = ui.signal("hardware");
+        let changes = Rc::new(RefCell::new(0));
+        let (bound, counter) = (value.clone(), changes.clone());
+        let mut s = Setup::with_owner(ui, EditorStart::SelectAll, move |cx, session| {
+            let counter = counter.clone();
+            Element::new(
+                "editor",
+                Select::new(
+                    cx,
+                    bound.clone(),
+                    [
+                        Choice::new("hardware", "Hardware"),
+                        Choice::new("software", "Software"),
+                    ],
+                )
+                .unwrap()
+                .on_change(move |_, _| {
+                    *counter.borrow_mut() += 1;
+                    Ok(())
+                })
+                .session(session),
+            )
+        });
+        s.key(KeyCode::ArrowDown, false, false);
+        assert!(shown(&s.ui, "options"), "the list is open");
+        // Moving focus into the list is no departure.
+        assert!(s.log().is_empty());
+        click_option(&mut s, row);
+        assert!(!shown(&s.ui, "options"), "the click chose and closed");
+        assert_eq!(value.get().unwrap(), chosen);
+        assert_eq!(*changes.borrow(), usize::from(row == 1));
+        assert_eq!(s.log(), [(EditorTrigger::Choice, outcome)]);
+    }
+}
+
+fn price(
+    ui: &Runtime,
+    initial: f64,
+) -> (Signal<f64>, impl Fn(&EditorSession) -> Element + 'static) {
+    let value = ui.signal(initial);
+    let bound = value.clone();
+    let build = move |session: &EditorSession| {
+        Element::new(
+            "editor",
+            DecimalInput::new(bound.clone())
+                .range(0.0, 100.0)
+                .unwrap()
+                .session(session),
+        )
+    };
+    (value, build)
+}
+
+#[test]
+fn decimal_fields_report_through_the_session() {
+    for native in [false, true] {
+        // A typed start, completed by Enter.
+        let ui = Runtime::new();
+        let (value, build) = price(&ui, 2.25);
+        let mut s = Setup::new(ui, EditorStart::Typed("7".into()), build);
+        assert_eq!(s.text(), InspectValue::Text("7".into()));
+        s.type_text(".5");
+        s.key(KeyCode::Enter, false, native);
+        assert_eq!(value.get().unwrap(), 7.5, "native {native}");
+        assert_eq!(s.log(), [(EditorTrigger::Enter, EditorOutcome::Saved)]);
+
+        // A draft that parses to the value is unchanged.
+        let ui = Runtime::new();
+        let (value, build) = price(&ui, 2.25);
+        let mut s = Setup::new(ui, EditorStart::SelectAll, build);
+        s.type_text("2.250");
+        assert_eq!(s.text(), InspectValue::Text("2.250".into()));
+        s.key(KeyCode::Tab, false, native);
+        assert_eq!(value.get().unwrap(), 2.25);
+        assert_eq!(
+            s.log(),
+            [(
+                EditorTrigger::Tab { reverse: false },
+                EditorOutcome::Unchanged
+            )],
+            "native {native}"
+        );
+
+        // Out of range is refused and kept; Escape then restores in one press.
+        let ui = Runtime::new();
+        let (value, build) = price(&ui, 2.25);
+        let mut s = Setup::new(ui, EditorStart::CaretAtEnd, build);
+        s.type_text("00");
+        assert_eq!(s.text(), InspectValue::Text("2.2500".into()));
+        s.text_replace("500.5");
+        s.key(KeyCode::Tab, true, native);
+        assert_eq!(value.get().unwrap(), 2.25, "native {native}");
+        assert_eq!(s.text(), InspectValue::Text("500.5".into()));
+        assert_eq!(s.focused().as_deref(), Some("editor"));
+        s.key(KeyCode::Escape, false, native);
+        assert_eq!(value.get().unwrap(), 2.25);
+        assert_eq!(
+            s.text(),
+            InspectValue::Text("2.25".into()),
+            "native {native}"
+        );
+        assert_eq!(*s.escapes.borrow(), 0);
+        assert_eq!(
+            s.log(),
+            [
+                (EditorTrigger::Tab { reverse: true }, EditorOutcome::Refused),
+                (EditorTrigger::Escape, EditorOutcome::Cancelled)
+            ],
+            "native {native}"
+        );
+
+        // A step changes the draft only.
+        let ui = Runtime::new();
+        let (value, build) = price(&ui, 2.25);
+        let mut s = Setup::new(ui, EditorStart::SelectAll, build);
+        s.key(KeyCode::ArrowUp, false, native);
+        assert_ne!(
+            s.text(),
+            InspectValue::Text("2.25".into()),
+            "native {native}"
+        );
+        assert_eq!(value.get().unwrap(), 2.25, "native {native}");
+        assert!(s.log().is_empty());
+        s.key(KeyCode::Escape, false, native);
+        assert_eq!(s.text(), InspectValue::Text("2.25".into()));
+        assert_eq!(s.log(), [(EditorTrigger::Escape, EditorOutcome::Cancelled)]);
+    }
+}
+
+impl Setup {
+    /// Selects the editor's whole text and types `text` over it.
+    fn text_replace(&mut self, text: &str) {
+        let editor = self
+            .ui
+            .find_descendant(&self.root, "editor")
+            .unwrap()
+            .unwrap();
+        self.ui
+            .text_command(&editor, TextCommand::SelectAll)
+            .unwrap();
+        self.settle();
+        self.type_text(text);
+    }
+}
+
+/// Drives a parameter-bound number field, with or without a session, through
+/// an invalid and changed drafts, completion keys and a focus departure, and
+/// returns what each step left: the editor's text, focus, the parameter's
+/// base and the outcomes its host saw, plus the session's reports.
+fn parameter_script(decimal: bool, native: bool, with_session: bool) -> (Vec<String>, Setup) {
+    let mut ui = Runtime::new();
+    let (voices, voices_host) = ui
+        .parameter(
+            ParameterId::new(1, 1, "voices").unwrap(),
+            ParameterSpec::stepped("Voices", 0, 16, 4).unwrap(),
+        )
+        .unwrap();
+    let (gain, gain_host) = ui
+        .parameter(
+            ParameterId::new(1, 2, "gain").unwrap(),
+            ParameterSpec::new("Gain", 0.0, 1.0, 0.5).unwrap(),
+        )
+        .unwrap();
+    let proposals = Rc::new(RefCell::new(Vec::<String>::new()));
+    let sink = proposals.clone();
+    let _voices_monitor = voices_host
+        .on_outcome(move |event| {
+            sink.borrow_mut().push(format!("{:?}", event.outcome));
+            Ok(())
+        })
+        .unwrap();
+    let sink = proposals.clone();
+    let _gain_monitor = gain_host
+        .on_outcome(move |event| {
+            sink.borrow_mut().push(format!("{:?}", event.outcome));
+            Ok(())
+        })
+        .unwrap();
+    let (built_voices, built_gain) = (voices.clone(), gain.clone());
+    let mut s = Setup::new(ui, EditorStart::Typed("1".into()), move |session| {
+        if decimal {
+            let field = DecimalInput::for_parameter(built_gain.clone());
+            let field = if with_session {
+                field.session(session)
+            } else {
+                field
+            };
+            Element::new("editor", field)
+        } else {
+            let field = IntegerInput::for_parameter(built_voices.clone());
+            let field = if with_session {
+                field.session(session)
+            } else {
+                field
+            };
+            Element::new("editor", field)
+        }
+    });
+    let base = |decimal: bool| {
+        if decimal {
+            format!("{:?}", gain.snapshot().get().unwrap().base)
+        } else {
+            format!("{:?}", voices.snapshot().get().unwrap().base)
+        }
+    };
+    let [invalid, first, second, third] = if decimal {
+        ["1.5", "0.25", "0.75", "1"]
+    } else {
+        ["41", "8", "12", "2"]
+    };
+    let mut trace = Vec::new();
+    let mut observe = |s: &Setup, step: &str| {
+        trace.push(format!(
+            "{step}: text {:?}, focus {:?}, base {}, proposals {:?}, escapes {}",
+            s.text(),
+            s.focused(),
+            base(decimal),
+            proposals.borrow(),
+            s.escapes.borrow()
+        ));
+    };
+    observe(&s, "mounted");
+    s.key(KeyCode::Escape, false, native);
+    observe(&s, "escape at rest");
+    s.text_replace(invalid);
+    s.key(KeyCode::Enter, false, native);
+    observe(&s, "enter on an invalid draft");
+    s.key(KeyCode::Tab, false, native);
+    observe(&s, "tab on an invalid draft");
+    let editor = s.ui.find_descendant(&s.root, "editor").unwrap().unwrap();
+    s.ui.focus(&editor).unwrap();
+    s.text_replace(first);
+    s.key(KeyCode::Enter, false, native);
+    observe(&s, "enter on a changed draft");
+    s.text_replace(second);
+    s.key(KeyCode::Escape, false, native);
+    observe(&s, "escape on a changed draft");
+    s.text_replace(second);
+    s.key(KeyCode::Tab, true, native);
+    observe(&s, "shift-tab on a changed draft");
+    s.ui.focus(&editor).unwrap();
+    s.text_replace(third);
+    let other = s.ui.find_descendant(&s.root, "other").unwrap().unwrap();
+    s.ui.focus(&other).unwrap();
+    s.settle();
+    observe(&s, "focus departure with a changed draft");
+    drop(observe);
+    (trace, s)
+}
+
+#[test]
+fn parameter_number_fields_ignore_the_session() {
+    for (decimal, native) in [(false, false), (false, true), (true, false), (true, true)] {
+        let case = format!("decimal {decimal}, native {native}");
+        let (with, s) = parameter_script(decimal, native, true);
+        let (without, plain) = parameter_script(decimal, native, false);
+        // The session changed nothing and heard nothing.
+        assert_eq!(with, without, "{case}");
+        assert!(s.log().is_empty(), "{case}");
+        assert!(plain.log().is_empty(), "{case}");
+        // The script did what it claims: the start was not applied, Escape
+        // at rest bubbled, the invalid draft was not proposed, and the
+        // changed draft committed through the parameter.
+        let (initial, committed) = if decimal { ("0.5", "0.25") } else { ("4", "8") };
+        assert!(
+            with[0].starts_with(&format!(
+                "mounted: text Text({initial:?}), focus Some(\"editor\")"
+            )),
+            "{case}: {}",
+            with[0]
+        );
+        assert!(with[1].ends_with("escapes 1"), "{case}: {}", with[1]);
+        assert!(with[2].contains("proposals []"), "{case}: {}", with[2]);
+        assert!(
+            with[4].contains(&format!("base {committed}")) && with[4].contains("Committed"),
+            "{case}: {}",
+            with[4]
+        );
+        // Escape restored the changed draft, and Shift+Tab and the focus
+        // departure cancelled theirs instead of proposing them.
+        assert!(
+            with[5].starts_with(&format!(
+                "escape on a changed draft: text Text({committed:?})"
+            )),
+            "{case}: {}",
+            with[5]
+        );
+        for step in &with[6..] {
+            assert!(
+                step.contains(&format!("base {committed}, proposals [\"Committed"))
+                    && step.matches("Committed").count() == 1,
+                "{case}: {step}"
+            );
+        }
+    }
 }
