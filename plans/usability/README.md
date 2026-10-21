@@ -84,8 +84,11 @@ confined by the outer sandbox, which has nothing of the maintainer's to
 read. The tester probe checks, from the commands' recorded results rather
 than the session's prose, that a shell command gets no HTTP response from a
 model host and cannot write to the tester's home.
-Claude runs with WebFetch and WebSearch disallowed and Codex with
-`web_search = "disabled"`; `summarize.py` lists every mention of the proxy
+Claude runs with `--strict-mcp-config` and the account's claude.ai
+connectors turned off, and without the web tools or the tools that reach
+cloud sessions, other sessions or schedules (`CLAUDE_DISALLOWED` in
+`run.sh`); the probe checks the session's tool list and fails if the proxy
+log shows a connector attempt. Codex runs with `web_search = "disabled"`; `summarize.py` lists every mention of the proxy
 or a model host in the transcript for the author to read, and a tester
 command that uses them is a protocol violation recorded with the run.
 
@@ -164,10 +167,20 @@ harness, bubblewrap sandbox:
   could open the socket and get `200 Connection established`; Codex's
   sandbox already refused it.
 
-Not yet run: `probe` with the Claude and Codex testers (the sessions' own
-file, shell and web tools, what they report having loaded, Claude's
-sandbox and Codex's `--add-dir` for `/log` and the Cargo home in a real
-session), and the pilot. Starting a
-tester session from the author's Claude Code session was refused by its
-auto-mode permission classifier, also after the maintainer asked for it,
-so the maintainer starts those runs.
+- The maintainer's first Claude tester probe (2026-10-21) passed every
+  check: the canary and checkout absent for the Read tool and the shell,
+  GitHub and a search engine refused by Claude's sandbox (`host is not on
+  the allow list`), the model host refused to a shell command, the write to
+  the tester's home refused (`Read-only file system`), no instruction or
+  memory file loaded, the build logged, and the image's color named. It
+  also showed the account's claude.ai connectors being tried through the
+  proxy (refused) and the cloud and scheduling tools present, which are now
+  turned off and checked; and the probe printed no final verdict line,
+  which it now does.
+
+Not yet run: the Codex tester probe (its tools, what it reports having
+loaded and `--add-dir` for `/log` and the Cargo home in a real session),
+the Claude probe again after the connector and tool changes, and the pilot.
+Starting a tester session from the author's Claude Code session was refused
+by its auto-mode permission classifier, also after the maintainer asked for
+it, so the maintainer starts those runs.

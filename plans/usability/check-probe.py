@@ -1,6 +1,7 @@
 """Check a tester probe's shell-isolation results from its transcript.
 
-Usage: python3 -I check-probe.py <transcript.jsonl>
+Usage: python3 -I check-probe.py claude <transcript.jsonl> <disallowed tool>...
+       python3 -I check-probe.py codex <transcript.jsonl>
 
 Pairs every shell command the tester session ran with its completed result,
 from Claude's stream-json (tool_use and tool_result) or Codex's --json
@@ -10,23 +11,32 @@ asks for: the curl to the model host must have failed before any HTTP
 response, with the reason, and no other command naming that host may have
 succeeded; the `touch` outside the writable directories must have been
 refused by the filesystem for that file. A check whose command never ran
-fails. Prints one line per
-check and exits non-zero when any fails.
+fails. For Claude, the session's init event must be present and list no
+MCP server and none of the disallowed tools given after the transcript
+(run.sh passes its CLAUDE_DISALLOWED). Prints one line per check and exits
+non-zero when any fails.
 """
 
 import json
 import re
 import sys
 
+tester, transcript, disallowed = sys.argv[1], sys.argv[2], sys.argv[3:]
+if tester not in ("claude", "codex") or (tester == "claude") != bool(disallowed):
+    sys.exit("usage: check-probe.py claude <transcript> <disallowed tool>... | codex <transcript>")
+
 runs = []  # (command, output, failed)
 pending = {}
-for line in open(sys.argv[1], errors="replace"):
+init = None
+for line in open(transcript, errors="replace"):
     try:
         e = json.loads(line)
     except ValueError:
         continue
     if not isinstance(e, dict):
         continue
+    if e.get("type") == "system" and e.get("subtype") == "init" and init is None:
+        init = e
     if e.get("type") == "item.completed":
         item = e.get("item") or {}
         if item.get("type") == "command_execution":
@@ -92,4 +102,18 @@ check("shell write outside the writable directories",
       [r for r in runs if plain(r[0]) == TOUCH],
       lambda o, failed: failed and DENIED.search(o),
       "refused")
+# Claude's init event: no MCP server (the account's claude.ai connectors
+# included) and none of the disallowed tools.
+if tester == "claude":
+    if init is None or not isinstance(init.get("tools"), list) or not isinstance(init.get("mcp_servers"), list):
+        print("FAIL: session tools: no init event with its tool and MCP server lists")
+        failures += 1
+    else:
+        present = sorted(set(disallowed) & set(init["tools"]))
+        servers = [m.get("name") if isinstance(m, dict) else m for m in init["mcp_servers"]]
+        if present or servers:
+            print(f"FAIL: session tools: disallowed tools {present}, MCP servers {servers}")
+            failures += 1
+        else:
+            print("ok: session tools: no MCP server and none of the disallowed tools")
 sys.exit(1 if failures else 0)

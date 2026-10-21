@@ -8,7 +8,8 @@ submissions are evaluated the same way, item by item.
 For every run:
 
 1. Initialize a fresh acceptance directory with `run.sh exec <kit>
-   <acceptance-dir> true`, copy the submitted `work/` (without `target/`)
+   <acceptance-dir> true`, copy the submitted `work/` (without `target/` and the
+   CLI's `.claude/`)
    into its `work/`, and build and test it there with `run.sh exec` and the
    task's features. Record whether it builds and whether the tester's own
    checks pass.

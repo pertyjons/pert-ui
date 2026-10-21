@@ -289,7 +289,9 @@ sandbox_args() {
             SANDBOX+=(--ro-bind "$(readlink -f "$(command -v claude)")" /opt/cli/claude
                       --ro-bind "$HERE/claude-settings.json" /opt/claude-settings.json
                       --setenv DISABLE_AUTOUPDATER 1
-                      --setenv CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC 1)
+                      --setenv CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC 1
+                      --setenv ENABLE_CLAUDEAI_MCP_SERVERS false
+                      --setenv CLAUDE_CODE_DISABLE_CRON 1)
             ;;
         codex)
             local codex_dir; codex_dir="$(dirname "$(readlink -f "$(command -v codex)")")"
@@ -314,6 +316,11 @@ in_sandbox() {
          exec bwrap --dev-bind / / --tmpfs /run --die-with-parent -- "$@"' bridge "$@"
 }
 
+# Claude tools the tester does without: the web tools, and those that reach
+# cloud sessions, other sessions or schedules outside the sandbox. The probe
+# checks that the session's tool list holds none of them.
+CLAUDE_DISALLOWED="WebFetch WebSearch RemoteTrigger Workflow ListAgents SendMessage CronCreate CronDelete CronList ScheduleWakeup"
+
 # Fills CMD with the non-interactive tester command for prompt $2.
 tester_cmd() {
     case "$1" in
@@ -324,7 +331,8 @@ tester_cmd() {
             CMD=(claude -p "$2" --dangerously-skip-permissions
                  --settings /opt/claude-settings.json
                  --model "$CLAUDE_MODEL" --effort "$CLAUDE_EFFORT"
-                 --disallowedTools WebFetch WebSearch
+                 --strict-mcp-config
+                 --disallowedTools $CLAUDE_DISALLOWED
                  --output-format stream-json --verbose) ;;
         codex)
             # Codex's own sandbox stays on inside ours: it denies tool
@@ -439,7 +447,7 @@ PY
         refused 'curl -sSf --max-time 10 https://docs.rs/'
         refused 'getent hosts github.com'
         refused 'test -e /run/proxy.sock'
-        works 'env | grep -v -E \"^(HOME|USER|LOGNAME|LANG|TERM|PATH|PWD|SHLVL|_|OLDPWD|RUSTUP_HOME|RUSTUP_TOOLCHAIN|CARGO_HOME|HTTPS?_PROXY|https?_proxy|NO_PROXY|CODEX_HOME|DISABLE_AUTOUPDATER|CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC)=\" | wc -l | grep -qx 0 && echo only-allowed-variables'
+        works 'env | grep -v -E \"^(HOME|USER|LOGNAME|LANG|TERM|PATH|PWD|SHLVL|_|OLDPWD|RUSTUP_HOME|RUSTUP_TOOLCHAIN|CARGO_HOME|HTTPS?_PROXY|https?_proxy|NO_PROXY|CODEX_HOME|DISABLE_AUTOUPDATER|CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC|ENABLE_CLAUDEAI_MCP_SERVERS|CLAUDE_CODE_DISABLE_CRON)=\" | wc -l | grep -qx 0 && echo only-allowed-variables'
         works 'command -v rustc | grep -qx /opt/cargo-bin/rustc && rustc --version'
         works 'test -f /kit/doc/pert_ui/index.html && echo docs'
         works 'curl -sS --max-time 20 -o /dev/null -w %{http_code} https://api.anthropic.com/'
@@ -459,7 +467,9 @@ PY
     fi
     # Shell commands must get no network and no writes outside /work, /log
     # and the Cargo home: the CLI's own sandbox, inside ours, enforces this.
-    python3 -I "$HERE/check-probe.py" "$RUN/log/transcript.jsonl" || failed=1
+    local disallowed=()
+    [ "$tester" = claude ] && read -ra disallowed <<<"$CLAUDE_DISALLOWED"
+    python3 -I "$HERE/check-probe.py" "$tester" "$RUN/log/transcript.jsonl" "${disallowed[@]}" || failed=1
     if [ -e "$RUN/home/sandbox-write-probe" ]; then
         echo "FAIL: a tester shell command wrote outside its writable directories"; failed=1
     fi
@@ -492,8 +502,14 @@ sys.exit(1)
     else
         echo "FAIL: the session did not name the image's color ($color)"; failed=1
     fi
+    # The account's claude.ai connectors load after the init event, so their
+    # attempts show only in the proxy log.
+    if grep -q 'mcp-proxy' "$RUN/proxy.log" 2>/dev/null; then
+        echo "FAIL: the session tried to reach the account's claude.ai connectors"; failed=1
+    fi
     echo "== proxy log"; cat "$RUN/proxy.log" 2>/dev/null || true
     echo "== read $RUN/log for the session's own report"
+    if [ "$failed" = 0 ]; then echo "== probe passed"; else echo "== probe FAILED"; fi
     return "$failed"
 }
 

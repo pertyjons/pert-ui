@@ -461,4 +461,9 @@ found that the proxy socket was open to the tester's processes and that the
 probe's network and write checks could pass on the session's prose or on a
 skipped command; the socket was hidden in a nested namespace and the checks
 now read the exact commands' recorded results. Two rechecks confirmed the
-fixes.
+fixes. The maintainer's first Claude tester probe passed its isolation
+checks but showed the account's claude.ai connectors being tried and the
+cloud and scheduling tools present; turning them off and checking for them
+was reviewed by Codex, whose two findings in the new check (a tool list
+that could default to empty and a missing init event passing) were fixed
+and confirmed.
