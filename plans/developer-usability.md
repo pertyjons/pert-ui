@@ -1,8 +1,10 @@
 # Plan: blind developer tests and public API review
 
-Status: proposed 2026-10-21 and revised after a Codex review; no slice is
-started. Every tool, file and check named below as new is a proposal until
-a slice implements it.
+Status: proposed 2026-10-21 and revised after a Codex review. Slice 0's
+kit and design checkpoint are on branch `developer-usability` and wait for
+the maintainer's approval and for the tester probes and pilot, which the
+maintainer starts. Every tool, file and check named below as new is a
+proposal until a slice implements it.
 
 ## Background
 
@@ -151,6 +153,19 @@ Design checkpoint first. It decides and records:
 - **Budget.** A wall-time limit per run. An unfinished task is a result,
   recorded with how far the tester got.
 
+Checkpoint outcome, recorded with its evidence in the
+[kit's README](usability/README.md#checkpoint-decisions-slice-0): a
+bubblewrap sandbox per run with a cleared environment and only loopback,
+and a host-side proxy that admits the model and authentication hosts only.
+Two decisions narrow the bullets above. Tool commands are kept off the
+network by Codex's own sandbox, which stays on inside the outer one; Claude
+Code's own sandbox is not available on the maintainer's machine, so
+Claude's tool commands can reach the model hosts (and only those) through
+the proxy, and the transcripts are audited for it. Instead of canary
+instructions in the maintainer's user-level files, which the maintainer's
+own sessions load, the probe shows that those files do not exist in the
+sandbox and that its environment holds only the run's variables.
+
 Then the kit, in `plans/usability/`:
 
 - `tester-brief.md`: the shared instructions (rules above, wrapper, friction
@@ -188,8 +203,9 @@ Then the kit, in `plans/usability/`:
   5. **Reserved task.** Written now with its acceptance checks, in another
      domain, and not run or used to guide fixes until round 2, where it is
      run against both the round-1 commit and the branch head.
-- `run.sh` and `summarize.sh`: building the consumer directory from the
-  current checkout's packages and summarizing a run's build log.
+- `run.sh` and `summarize.py`: building the consumer directory from the
+  current checkout's packages, launching and probing runs, and summarizing
+  a run's build log.
 
 Pilot: one run of task 2 by each tester, to prove isolation, offline
 builds and the logs. Fix the kit, not the library, from what the pilot
@@ -415,3 +431,25 @@ rule for TODO.md and follow-up destinations; and link repair on
 archiving. It also found that the workspace-gate block in
 `docs/verification.md` omits the packaged examples' headless sessions;
 that is outside this plan and recorded in TODO.md.
+
+2026-10-21, Codex on slice 0's design checkpoint and harness, static (it
+cannot run bwrap, Cargo or the CLIs): fifteen findings, eleven major. All
+were verified and addressed: a cleared sandbox environment; new-only run
+directories and a kit marker written last; physical path checks; no
+initialization inside command substitution; run-local credential copies
+instead of host mounts; probes that fail on any failed check; a wrapper
+that keeps stdout and stderr apart and records each build before it runs;
+structured build classification; bounded diagnostics with JSON support;
+the import list marked as a candidate inventory; acceptance-based
+completion with recorded model and effort; acceptance initialization; and
+the plan text aligned. The proxy finding (any sandbox process can reach
+the allowed hosts) was resolved by keeping Codex's own sandbox on and by
+narrowing the guarantee for Claude, recorded in the checkpoint outcome.
+A first recheck found credential write-back, probe exit handling, session
+classification, effective-model recording, task 4's application visible to
+all tasks, a broken-pipe hang in the wrapper and an undocumented public type
+in the application; these were fixed. A second recheck confirmed them and
+found three remaining points (the probe accepting `cargo build --help`, a
+kit from an earlier script keeping task 4's application, and interruption
+causes), which were fixed; Codex's effective model stays unrecorded, as the
+kit's README says.
