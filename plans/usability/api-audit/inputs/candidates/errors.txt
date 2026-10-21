@@ -11,8 +11,11 @@ D::Error	# Errors: NO	<pert_ui_core::ChoiceId as Deserialize<'de>>::deserialize<
 D::Error	# Errors: NO	<pert_ui_core::ChoiceOption as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-core/src/choice.rs:139	[configs: serde]
 D::Error	# Errors: NO	<pert_ui_core::NormalizedValue as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-core/src/normalized.rs:218	[configs: serde]
 D::Error	# Errors: NO	<pert_ui_core::ParameterId as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-core/src/parameter_id.rs:210	[configs: serde]
-D::Error	# Errors: NO	<pert_ui_core::ParameterSnapshot as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-core/src/edit.rs:676	[configs: serde]
-D::Error	# Errors: NO	<pert_ui_core::ParameterSpec as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-core/src/parameter.rs:653	[configs: serde]
+D::Error	# Errors: NO	<pert_ui_core::ParameterSnapshot<T> as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-core/src/edit.rs:676	[configs: serde]
+D::Error	# Errors: NO	<pert_ui_core::ParameterSpec<bool> as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-core/src/parameter.rs:711	[configs: serde]
+D::Error	# Errors: NO	<pert_ui_core::ParameterSpec<crate::ChoiceId> as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-core/src/parameter.rs:733	[configs: serde]
+D::Error	# Errors: NO	<pert_ui_core::ParameterSpec<f32> as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-core/src/parameter.rs:653	[configs: serde]
+D::Error	# Errors: NO	<pert_ui_core::ParameterSpec<i64> as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-core/src/parameter.rs:684	[configs: serde]
 EditError	# Errors: yes	pert_ui_core::ParameterState::acknowledge(&mut self, token: &EditToken) -> Result<(), EditError>	-	crates/pert-ui-core/src/edit.rs:568
 EditError	# Errors: yes	pert_ui_core::ParameterState::begin(&mut self, expected: Revision, source: EditSource) -> Result<EditToken, EditError>	-	crates/pert-ui-core/src/edit.rs:367
 EditError	# Errors: yes	pert_ui_core::ParameterState::cancel(&mut self, token: &EditToken) -> Result<EditOutcome<T>, EditError>	-	crates/pert-ui-core/src/edit.rs:521
@@ -45,7 +48,10 @@ S::Error	# Errors: NO	<pert_ui_core::ChoiceId as Serialize>::serialize<S: Serial
 S::Error	# Errors: NO	<pert_ui_core::ChoiceOption as Serialize>::serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>	(trait impl)	crates/pert-ui-core/src/choice.rs:129	[configs: serde]
 S::Error	# Errors: NO	<pert_ui_core::NormalizedValue as Serialize>::serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>	(trait impl)	crates/pert-ui-core/src/normalized.rs:212	[configs: serde]
 S::Error	# Errors: NO	<pert_ui_core::ParameterId as Serialize>::serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>	(trait impl)	crates/pert-ui-core/src/parameter_id.rs:198	[configs: serde]
-S::Error	# Errors: NO	<pert_ui_core::ParameterSpec as Serialize>::serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>	(trait impl)	crates/pert-ui-core/src/parameter.rs:637	[configs: serde]
+S::Error	# Errors: NO	<pert_ui_core::ParameterSpec<bool> as Serialize>::serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>	(trait impl)	crates/pert-ui-core/src/parameter.rs:699	[configs: serde]
+S::Error	# Errors: NO	<pert_ui_core::ParameterSpec<crate::ChoiceId> as Serialize>::serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>	(trait impl)	crates/pert-ui-core/src/parameter.rs:719	[configs: serde]
+S::Error	# Errors: NO	<pert_ui_core::ParameterSpec<f32> as Serialize>::serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>	(trait impl)	crates/pert-ui-core/src/parameter.rs:637	[configs: serde]
+S::Error	# Errors: NO	<pert_ui_core::ParameterSpec<i64> as Serialize>::serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>	(trait impl)	crates/pert-ui-core/src/parameter.rs:668	[configs: serde]
 Self::Error	# Errors: NO	<bool as TryFrom<AnyValue>>::try_from(value: AnyValue) -> Result<Self, Self::Error>	(trait impl)	crates/pert-ui-core/src/erased.rs:155
 Self::Error	# Errors: NO	<f32 as TryFrom<AnyValue>>::try_from(value: AnyValue) -> Result<Self, Self::Error>	(trait impl)	crates/pert-ui-core/src/erased.rs:153
 Self::Error	# Errors: NO	<i64 as TryFrom<AnyValue>>::try_from(value: AnyValue) -> Result<Self, Self::Error>	(trait impl)	crates/pert-ui-core/src/erased.rs:154
@@ -54,7 +60,7 @@ Self::Error	# Errors: NO	<pert_ui_core::ChoiceId as TryFrom<&str>>::try_from(id:
 Self::Error	# Errors: NO	<pert_ui_core::ChoiceId as TryFrom<AnyValue>>::try_from(value: AnyValue) -> Result<Self, Self::Error>	(trait impl)	crates/pert-ui-core/src/erased.rs:156
 Self::Error	# Errors: NO	<pert_ui_core::ChoiceId as TryFrom<String>>::try_from(id: String) -> Result<Self, Self::Error>	(trait impl)	crates/pert-ui-core/src/choice.rs:72
 Self::Error	# Errors: yes	<pert_ui_core::NormalizedValue as TryFrom<f32>>::try_from(value: f32) -> Result<Self, Self::Error>	(trait impl)	crates/pert-ui-core/src/normalized.rs:97
-Self::Error	# Errors: NO	<pert_ui_core::ParameterSpec as TryFrom<AnySpec>>::try_from(spec: AnySpec) -> Result<Self, Self::Error>	(trait impl)	crates/pert-ui-core/src/erased.rs:90
+Self::Error	# Errors: NO	<pert_ui_core::ParameterSpec<T> as TryFrom<AnySpec>>::try_from(spec: AnySpec) -> Result<Self, Self::Error>	(trait impl)	crates/pert-ui-core/src/erased.rs:90
 Self::Error	# Errors: NO	<pert_ui_core::PowerExponent as TryFrom<f32>>::try_from(exponent: f32) -> Result<Self, Self::Error>	(trait impl)	crates/pert-ui-core/src/parameter.rs:92
 Self::Error	# Errors: yes	pert_ui_core::HostValue::from_canonical(value: Self::Canonical) -> Result<Self, Self::Error>	-	crates/pert-ui-core/src/erased.rs:424
 Self::Error	# Errors: yes	pert_ui_core::HostValue::to_canonical(&self) -> Result<Self::Canonical, Self::Error>	-	crates/pert-ui-core/src/erased.rs:418

@@ -168,14 +168,20 @@ pert_ui_core::ParameterSnapshot	struct	role: 	crates/pert-ui-core/src/edit.rs:11
     field effective: T
     field preview: Option<T>
     field revision: Revision
-    <pert_ui_core::ParameterSnapshot as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-core/src/edit.rs:676	[configs: serde]
+    <pert_ui_core::ParameterSnapshot<T> as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-core/src/edit.rs:676	[configs: serde]
 pert_ui_core::ParameterSpec	struct	role: 	crates/pert-ui-core/src/parameter.rs:151
-    <pert_ui_core::ParameterSpec as Clone>::clone(&self) -> Self	(trait impl)	crates/pert-ui-core/src/parameter.rs:159
-    <pert_ui_core::ParameterSpec as Debug>::fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result	(trait impl)	crates/pert-ui-core/src/parameter.rs:170
-    <pert_ui_core::ParameterSpec as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-core/src/parameter.rs:653	[configs: serde]
-    <pert_ui_core::ParameterSpec as PartialEq>::eq(&self, other: &Self) -> bool	(trait impl)	crates/pert-ui-core/src/parameter.rs:181
-    <pert_ui_core::ParameterSpec as Serialize>::serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>	(trait impl)	crates/pert-ui-core/src/parameter.rs:637	[configs: serde]
-    <pert_ui_core::ParameterSpec as TryFrom<AnySpec>>::try_from(spec: AnySpec) -> Result<Self, Self::Error>	(trait impl)	crates/pert-ui-core/src/erased.rs:90
+    <pert_ui_core::ParameterSpec<T> as Clone>::clone(&self) -> Self	(trait impl)	crates/pert-ui-core/src/parameter.rs:159
+    <pert_ui_core::ParameterSpec<T> as Debug>::fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result	(trait impl)	crates/pert-ui-core/src/parameter.rs:170
+    <pert_ui_core::ParameterSpec<T> as PartialEq>::eq(&self, other: &Self) -> bool	(trait impl)	crates/pert-ui-core/src/parameter.rs:181
+    <pert_ui_core::ParameterSpec<T> as TryFrom<AnySpec>>::try_from(spec: AnySpec) -> Result<Self, Self::Error>	(trait impl)	crates/pert-ui-core/src/erased.rs:90
+    <pert_ui_core::ParameterSpec<bool> as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-core/src/parameter.rs:711	[configs: serde]
+    <pert_ui_core::ParameterSpec<bool> as Serialize>::serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>	(trait impl)	crates/pert-ui-core/src/parameter.rs:699	[configs: serde]
+    <pert_ui_core::ParameterSpec<crate::ChoiceId> as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-core/src/parameter.rs:733	[configs: serde]
+    <pert_ui_core::ParameterSpec<crate::ChoiceId> as Serialize>::serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>	(trait impl)	crates/pert-ui-core/src/parameter.rs:719	[configs: serde]
+    <pert_ui_core::ParameterSpec<f32> as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-core/src/parameter.rs:653	[configs: serde]
+    <pert_ui_core::ParameterSpec<f32> as Serialize>::serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>	(trait impl)	crates/pert-ui-core/src/parameter.rs:637	[configs: serde]
+    <pert_ui_core::ParameterSpec<i64> as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-core/src/parameter.rs:684	[configs: serde]
+    <pert_ui_core::ParameterSpec<i64> as Serialize>::serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>	(trait impl)	crates/pert-ui-core/src/parameter.rs:668	[configs: serde]
     pert_ui_core::ParameterSpec::boolean(name: impl Into<String>, default: bool) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:481
     pert_ui_core::ParameterSpec::choices(name: impl Into<String>, options: impl IntoIterator<Item = ChoiceOption>, default: ChoiceId) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:497
     pert_ui_core::ParameterSpec::default_value(&self) -> T	#[must_use]	crates/pert-ui-core/src/parameter.rs:222
@@ -204,7 +210,7 @@ pert_ui_core::ParameterSpec	struct	role: 	crates/pert-ui-core/src/parameter.rs:1
     pert_ui_core::ParameterSpec::with_step(self, step: NonZeroU64) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:413
 pert_ui_core::ParameterState	struct	role: 	crates/pert-ui-core/src/edit.rs:272
     const MAX_TERMINAL_RECEIPTS: usize = 64
-    <pert_ui_core::ParameterState as Debug>::fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result	(trait impl)	crates/pert-ui-core/src/edit.rs:289
+    <pert_ui_core::ParameterState<T> as Debug>::fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result	(trait impl)	crates/pert-ui-core/src/edit.rs:289
     pert_ui_core::ParameterState::acknowledge(&mut self, token: &EditToken) -> Result<(), EditError>	-	crates/pert-ui-core/src/edit.rs:568
     pert_ui_core::ParameterState::begin(&mut self, expected: Revision, source: EditSource) -> Result<EditToken, EditError>	-	crates/pert-ui-core/src/edit.rs:367
     pert_ui_core::ParameterState::cancel(&mut self, token: &EditToken) -> Result<EditOutcome<T>, EditError>	-	crates/pert-ui-core/src/edit.rs:521
@@ -223,6 +229,7 @@ pert_ui_core::ParameterState	struct	role: 	crates/pert-ui-core/src/edit.rs:272
     pert_ui_core::ParameterState::update(&mut self, token: &EditToken, sequence: EditSequence, value: T) -> Result<PreviewOutcome, EditError>	-	crates/pert-ui-core/src/edit.rs:450
     pert_ui_core::ParameterState::write_base(&mut self, value: T) -> Result<(), EditError>	-	crates/pert-ui-core/src/edit.rs:581
 pert_ui_core::ParameterValue	trait	role: 	crates/pert-ui-core/src/family.rs:47
+    const FAMILY: ParameterFamily
     pert_ui_core::ParameterValue::from_any(value: AnyValue) -> Result<Self, AnyValue>	-	crates/pert-ui-core/src/family.rs:61
     pert_ui_core::ParameterValue::into_any(self) -> AnyValue	-	crates/pert-ui-core/src/family.rs:54
     pert_ui_core::ParameterValue::snapshot_into_any(spec: ParameterSpec<Self>, state: ParameterSnapshot<Self>) -> AnyParameterSnapshot	-	crates/pert-ui-core/src/family.rs:74
@@ -270,8 +277,8 @@ pert_ui_core::SeriesConfig	struct	role: 	crates/pert-ui-core/src/live/mod.rs:244
     pert_ui_core::SeriesConfig::window_capacity(&self) -> Capacity	-	crates/pert-ui-core/src/live/mod.rs:274
     pert_ui_core::SeriesConfig::with_ring_capacity(self, ring: Capacity) -> Self	-	crates/pert-ui-core/src/live/mod.rs:268
 pert_ui_core::SeriesConsumer	struct	role: 	crates/pert-ui-core/src/live/series.rs:292
-    <pert_ui_core::SeriesConsumer as Debug>::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result	(trait impl)	crates/pert-ui-core/src/live/series.rs:519
-    <pert_ui_core::SeriesConsumer as Drop>::drop(&mut self)	(trait impl)	crates/pert-ui-core/src/live/series.rs:513
+    <pert_ui_core::SeriesConsumer<T> as Debug>::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result	(trait impl)	crates/pert-ui-core/src/live/series.rs:519
+    <pert_ui_core::SeriesConsumer<T> as Drop>::drop(&mut self)	(trait impl)	crates/pert-ui-core/src/live/series.rs:513
     pert_ui_core::SeriesConsumer::config(&self) -> &SeriesConfig	-	crates/pert-ui-core/src/live/series.rs:411
     pert_ui_core::SeriesConsumer::drain(&mut self) -> &DrainReport	-	crates/pert-ui-core/src/live/series.rs:318
     pert_ui_core::SeriesConsumer::dropped_total(&self) -> u64	#[must_use]	crates/pert-ui-core/src/live/series.rs:428
@@ -284,8 +291,8 @@ pert_ui_core::SeriesConsumer	struct	role: 	crates/pert-ui-core/src/live/series.r
     pert_ui_core::SeriesConsumer::resume(&mut self) -> &DrainReport	-	crates/pert-ui-core/src/live/series.rs:382
     pert_ui_core::SeriesConsumer::window(&self) -> &SampleWindow<T>	#[must_use]	crates/pert-ui-core/src/live/series.rs:400
 pert_ui_core::SeriesEndpoint	struct	role: 	crates/pert-ui-core/src/live/series.rs:138
-    <pert_ui_core::SeriesEndpoint as Debug>::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result	(trait impl)	crates/pert-ui-core/src/live/series.rs:258
-    <pert_ui_core::SeriesEndpoint as Drop>::drop(&mut self)	(trait impl)	crates/pert-ui-core/src/live/series.rs:252
+    <pert_ui_core::SeriesEndpoint<T> as Debug>::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result	(trait impl)	crates/pert-ui-core/src/live/series.rs:258
+    <pert_ui_core::SeriesEndpoint<T> as Drop>::drop(&mut self)	(trait impl)	crates/pert-ui-core/src/live/series.rs:252
     pert_ui_core::SeriesEndpoint::incarnation(&self) -> Incarnation	-	crates/pert-ui-core/src/live/series.rs:233
     pert_ui_core::SeriesEndpoint::last_sequence(&self) -> Option<Sequence>	#[must_use]	crates/pert-ui-core/src/live/series.rs:239
     pert_ui_core::SeriesEndpoint::publish(&mut self, value: T, timestamp: Timestamp) -> PublishOutcome	-	crates/pert-ui-core/src/live/series.rs:165

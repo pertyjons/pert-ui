@@ -541,35 +541,42 @@ finding goes.
 
 #### API audit findings
 
-Outcome of slice 4 (2026-10-21), audited at d4ba108. The merged table has
-127 findings and one row per finding with the record's fields. It lives in
-[the findings record](usability/api-audit/findings.md) rather than here,
-because its size would swamp the plan. This section gives the ranking and
-the questions for the checkpoint.
+Outcome of slice 4 (2026-10-21), audited at d4ba108. The merged table holds
+127 findings, one row each with the record's fields. It lives in [the
+findings record](usability/api-audit/findings.md) rather than here, because
+the plan could not hold it. This section gives the ranking and the
+questions for the checkpoint.
 
 **How it ran:**
 - **Inputs:** [`inventory.py`](usability/api-audit/inventory.py) froze the
   inputs, checked byte for byte against every `api/` listing.
 - **Audit:** Codex and a fresh Claude agent audited each of the five
   rubric groups independently.
-- **Inventory gaps:** the auditors found gaps in the inventory. The gaps
-  were fixed in two further versions, each version's additions were
-  reviewed, and none hid a finding.
+- **Inventory gaps:** the auditors found gaps in the inventory.
+  - The script was fixed and the inputs regenerated three times. Both
+    auditors reviewed the additions of versions 2 and 3.
+  - Version 4 adds rows the auditors had already covered by hand, which
+    `inputs/CHANGES.md` records.
+  - Two residual gaps were checked by hand.
 - **Verification:** each auditor verified the other's findings against the
   source, and the other's delta findings.
-- **Disputes:** the author settled 22 disputed facts against the source,
-  recorded per group. None needed a new rule.
+- **Disputes:** the author settled the disputed facts against the source,
+  recorded per group. One dispute turned out to be a reading of the rubric
+  (G2-20) and went to the maintainer.
 
 **Result:**
-- **Severity:** no finding is high, 13 are medium and the rest are low.
+- **Severity:** no finding is high after verification. Fifteen findings
+  are medium or have a medium instance, and the rest are low.
 - **Medium findings (the record ranks them):**
   - **Behavior:**
     - **G1-4:** `Workspace::set_settings` can make a saved workspace fail
       to load.
     - **G2-2, G2-14:** the collections ignore a redescription's
       permissions and callbacks.
+    - **G2-13:** numeric reconciliation publishes a parameter snapshot.
     - **G2-20:** `on_rejection` differs between the text and number
-      editors; this is F6.
+      editors. This is F6, and whether it departs from the rubric is a
+      policy question.
     - **G4-25:** a protected semantic value can leak.
   - **Types and names:**
     - **G2-9:** owners that tear down on drop lack `#[must_use]`.
@@ -577,6 +584,8 @@ the questions for the checkpoint.
       depending on the type.
     - **G3-6:** the wgpu renderer takes bare `u32` sizes.
     - **G4-1:** 113 types lack `Debug`.
+    - **G3-11:** `Component::tab_navigation` takes two adjacent
+      `bool`s.
     - **G4-14:** key errors do not name the key; this is F23.
   - **Discovery:**
     - **G5-2, G5-3, G5-4:** missing routes to `spawn`, to per-row
@@ -588,8 +597,8 @@ the questions for the checkpoint.
   - units in bare numbers (G3);
   - `# Errors` sections that understate their variants (G4);
   - inconsistent naming within families (G1, G3).
-- **Policy questions:** 43 rows carry one, listed by theme in the record.
-  The main ones are below.
+- **Policy questions:** the record lists every policy question and
+  consistency proposal, by theme. The main ones are below.
   - **Collections:** whether they get a contract exception for
     redescription (G2-2, G2-14).
   - **Role suffixes:** what they mean for snapshots, inspection records and
@@ -614,8 +623,10 @@ the questions for the checkpoint.
     pert-ui trait bound, the sealed `StateOwner` included.
   - `#[diagnostic::do_not_recommend]` on `AppError`'s blanket `From`
     fixes F11's message.
-  - rustc 1.99.1 suggests no imports from non-std dependencies, so only
-    prelude membership helps a missing name (F3).
+  - In the survey's probes, rustc 1.99.1 suggested no import from any
+    non-std dependency. Of the arrangements tried, only prelude
+    membership or a pointer on the prelude page helped a missing name
+    (F3).
   - `compile_fail` does not check error codes on stable. Wording needs
     `trybuild` snapshots in their own job on the pinned toolchain.
 

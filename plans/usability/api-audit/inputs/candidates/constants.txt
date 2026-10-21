@@ -7,6 +7,7 @@ pert_ui_core::Incarnation::FIRST: Self = _	crates/pert-ui-core/src/live/mod.rs:5
 pert_ui_core::NormalizedValue::MAX: Self = _	crates/pert-ui-core/src/normalized.rs:79
 pert_ui_core::NormalizedValue::MIN: Self = _	crates/pert-ui-core/src/normalized.rs:76
 pert_ui_core::ParameterState::MAX_TERMINAL_RECEIPTS: usize = 64	crates/pert-ui-core/src/edit.rs:307
+pert_ui_core::ParameterValue::FAMILY: ParameterFamily	(trait constant)	crates/pert-ui-core/src/family.rs:51
 pert_ui_core::PowerExponent::MAX: f32 = 10.0	crates/pert-ui-core/src/parameter.rs:70
 pert_ui_core::PowerExponent::MIN: f32 = 0.1	crates/pert-ui-core/src/parameter.rs:68
 pert_ui_core::Revision::INITIAL: Self = _	crates/pert-ui-core/src/edit.rs:16

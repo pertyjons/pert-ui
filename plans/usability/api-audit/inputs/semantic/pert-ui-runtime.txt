@@ -91,8 +91,8 @@ pert_ui_runtime::ArrangeContext	struct	role: 	crates/pert-ui-runtime/src/layout.
     pert_ui_runtime::ArrangeContext::place_clipped(&mut self, index: usize, bounds: Rect, clip: Rect) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/layout.rs:1002
     pert_ui_runtime::ArrangeContext::request_update(&self)	-	crates/pert-ui-runtime/src/layout.rs:1023
 pert_ui_runtime::AuthorityReceipt	struct	role: 	crates/pert-ui-runtime/src/parameter_binding/remote.rs:80
-    <pert_ui_runtime::AuthorityReceipt as Debug>::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result	(trait impl)	crates/pert-ui-runtime/src/parameter_binding/remote.rs:84
-    <pert_ui_runtime::AuthorityReceipt as PartialEq>::eq(&self, other: &Self) -> bool	(trait impl)	crates/pert-ui-runtime/src/parameter_binding/remote.rs:91
+    <pert_ui_runtime::AuthorityReceipt<T> as Debug>::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result	(trait impl)	crates/pert-ui-runtime/src/parameter_binding/remote.rs:84
+    <pert_ui_runtime::AuthorityReceipt<T> as PartialEq>::eq(&self, other: &Self) -> bool	(trait impl)	crates/pert-ui-runtime/src/parameter_binding/remote.rs:91
     pert_ui_runtime::AuthorityReceipt::status(&self) -> AuthorityStatus<T>	#[must_use]	crates/pert-ui-runtime/src/parameter_binding/remote.rs:100
     pert_ui_runtime::AuthorityReceipt::status_binding(&self) -> ReadSignal<AuthorityStatus<T>>	-	crates/pert-ui-runtime/src/parameter_binding/remote.rs:107
 pert_ui_runtime::AuthorityResponse	enum	role: 	crates/pert-ui-runtime/src/parameter_binding/remote.rs:40
@@ -691,8 +691,8 @@ pert_ui_runtime::DeliveryError	enum	role: 	crates/pert-ui-runtime/src/parameter_
     variant SinkFailed
     variant UnknownEdit
 pert_ui_runtime::DeliveryMonitor	struct	role: 	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:247
-    <pert_ui_runtime::DeliveryMonitor as Clone>::clone(&self) -> Self	(trait impl)	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:269
-    <pert_ui_runtime::DeliveryMonitor as Debug>::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result	(trait impl)	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:254
+    <pert_ui_runtime::DeliveryMonitor<T> as Clone>::clone(&self) -> Self	(trait impl)	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:269
+    <pert_ui_runtime::DeliveryMonitor<T> as Debug>::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result	(trait impl)	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:254
     pert_ui_runtime::DeliveryMonitor::observe(&self) -> ReadSignal<DeliverySnapshot<T>>	#[must_use]	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:284
     pert_ui_runtime::DeliveryMonitor::snapshot(&self) -> DeliverySnapshot<T>	-	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:279
 pert_ui_runtime::DeliveryResolution	enum	role: 	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:188
@@ -718,8 +718,8 @@ pert_ui_runtime::Depth	enum	role: 	crates/pert-ui-runtime/src/inspection.rs:144
     variant Matches
     variant Subtree
 pert_ui_runtime::DescribeContext	struct	role: 	crates/pert-ui-runtime/src/described.rs:26
-    <pert_ui_runtime::DescribeContext as StateOwner>::signal<T>(&self, value: T) -> Signal<T>	(trait impl)	crates/pert-ui-runtime/src/described.rs:30
-    <pert_ui_runtime::DescribeContext as StateOwner>::ui_settings(&self) -> UiSettings	(trait impl)	crates/pert-ui-runtime/src/described.rs:33
+    <pert_ui_runtime::DescribeContext<'_> as StateOwner>::signal<T>(&self, value: T) -> Signal<T>	(trait impl)	crates/pert-ui-runtime/src/described.rs:30
+    <pert_ui_runtime::DescribeContext<'_> as StateOwner>::ui_settings(&self) -> UiSettings	(trait impl)	crates/pert-ui-runtime/src/described.rs:33
 pert_ui_runtime::DetachedClosePolicy	enum	role: 	crates/pert-ui-runtime/src/runtime/native_windows.rs:171
     variant KeepOpen
     variant Redock
@@ -796,14 +796,14 @@ pert_ui_runtime::DraftAlign	enum	role: 	crates/pert-ui-runtime/src/text_fields/d
     variant End
     variant Start
 pert_ui_runtime::DraftEditor	struct	role: 	crates/pert-ui-runtime/src/text_fields/draft.rs:582
-    <pert_ui_runtime::DraftEditor as Debug>::fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result	(trait impl)	crates/pert-ui-runtime/src/text_fields/draft.rs:591
+    <pert_ui_runtime::DraftEditor<P> as Debug>::fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result	(trait impl)	crates/pert-ui-runtime/src/text_fields/draft.rs:591
     pert_ui_runtime::DraftEditor::align(self, align: DraftAlign) -> Self	#[must_use]	crates/pert-ui-runtime/src/text_fields/draft.rs:622
     pert_ui_runtime::DraftEditor::new(controller: DraftEditorController<P>) -> Self	#[must_use]	crates/pert-ui-runtime/src/text_fields/draft.rs:604
     pert_ui_runtime::DraftEditor::style(self, style: TextStyle) -> Self	#[must_use]	crates/pert-ui-runtime/src/text_fields/draft.rs:615
 pert_ui_runtime::DraftEditorController	struct	role: 	crates/pert-ui-runtime/src/text_fields/draft.rs:153
-    <pert_ui_runtime::DraftEditorController as Clone>::clone(&self) -> Self	(trait impl)	crates/pert-ui-runtime/src/text_fields/draft.rs:158
-    <pert_ui_runtime::DraftEditorController as Debug>::fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result	(trait impl)	crates/pert-ui-runtime/src/text_fields/draft.rs:166
-    <pert_ui_runtime::DraftEditorController as Default>::default() -> Self	(trait impl)	crates/pert-ui-runtime/src/text_fields/draft.rs:173
+    <pert_ui_runtime::DraftEditorController<P> as Clone>::clone(&self) -> Self	(trait impl)	crates/pert-ui-runtime/src/text_fields/draft.rs:158
+    <pert_ui_runtime::DraftEditorController<P> as Debug>::fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result	(trait impl)	crates/pert-ui-runtime/src/text_fields/draft.rs:166
+    <pert_ui_runtime::DraftEditorController<P> as Default>::default() -> Self	(trait impl)	crates/pert-ui-runtime/src/text_fields/draft.rs:173
     pert_ui_runtime::DraftEditorController::begin(&self, cx: &mut EventContext, text: &str, payload: Option<P>, selection: DraftSelection) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/text_fields/draft.rs:284
     pert_ui_runtime::DraftEditorController::begin_read_only(&self, cx: &mut EventContext, text: &str, selection: DraftSelection) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/text_fields/draft.rs:302
     pert_ui_runtime::DraftEditorController::end(&self)	-	crates/pert-ui-runtime/src/text_fields/draft.rs:357
@@ -920,8 +920,8 @@ pert_ui_runtime::EdgeMode	enum	role: 	crates/pert-ui-runtime/src/tool_windows/mo
     variant Panels
     variant Stripe
 pert_ui_runtime::EditSession	struct	role: 	crates/pert-ui-runtime/src/parameter_binding.rs:706
-    <pert_ui_runtime::EditSession as Debug>::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result	(trait impl)	crates/pert-ui-runtime/src/parameter_binding.rs:712
-    <pert_ui_runtime::EditSession as Drop>::drop(&mut self)	(trait impl)	crates/pert-ui-runtime/src/parameter_binding.rs:903
+    <pert_ui_runtime::EditSession<T> as Debug>::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result	(trait impl)	crates/pert-ui-runtime/src/parameter_binding.rs:712
+    <pert_ui_runtime::EditSession<T> as Drop>::drop(&mut self)	(trait impl)	crates/pert-ui-runtime/src/parameter_binding.rs:903
     pert_ui_runtime::EditSession::cancel(&self) -> Result<EditOutcome<T>, RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding.rs:868
     pert_ui_runtime::EditSession::commit(&self, value: T) -> Result<EditOutcome<T>, RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding.rs:797
     pert_ui_runtime::EditSession::outcome(&self) -> Result<Option<EditOutcome<T>>, EditError>	-	crates/pert-ui-runtime/src/parameter_binding.rs:893
@@ -1860,8 +1860,8 @@ pert_ui_runtime::Magnification	struct	role: 	crates/pert-ui-runtime/src/pointer.
     pert_ui_runtime::Magnification::get(self) -> f32	#[must_use]	crates/pert-ui-runtime/src/pointer.rs:127
     pert_ui_runtime::Magnification::new(factor: f32) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/pointer.rs:116
 pert_ui_runtime::Mailbox	struct	role: 	crates/pert-ui-runtime/src/mailbox.rs:249
-    <pert_ui_runtime::Mailbox as Debug>::fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result	(trait impl)	crates/pert-ui-runtime/src/mailbox.rs:263
-    <pert_ui_runtime::Mailbox as Drop>::drop(&mut self)	(trait impl)	crates/pert-ui-runtime/src/mailbox.rs:255
+    <pert_ui_runtime::Mailbox<T> as Debug>::fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result	(trait impl)	crates/pert-ui-runtime/src/mailbox.rs:263
+    <pert_ui_runtime::Mailbox<T> as Drop>::drop(&mut self)	(trait impl)	crates/pert-ui-runtime/src/mailbox.rs:255
     pert_ui_runtime::Mailbox::capacity(&self) -> usize	-	crates/pert-ui-runtime/src/mailbox.rs:308
     pert_ui_runtime::Mailbox::close(&self)	-	crates/pert-ui-runtime/src/mailbox.rs:314
     pert_ui_runtime::Mailbox::pending(&self) -> usize	-	crates/pert-ui-runtime/src/mailbox.rs:303
@@ -1987,8 +1987,8 @@ pert_ui_runtime::NativeWindowOptions	struct	role: 	crates/pert-ui-runtime/src/ru
     pert_ui_runtime::NativeWindowOptions::title(&self) -> &str	-	crates/pert-ui-runtime/src/runtime/native_windows.rs:230
 pert_ui_runtime::NavigationHistory	struct	role: 	crates/pert-ui-runtime/src/navigation_history.rs:194
     const DEFAULT_CAPACITY: NonZeroUsize = _
-    <pert_ui_runtime::NavigationHistory as Clone>::clone(&self) -> Self	(trait impl)	crates/pert-ui-runtime/src/navigation_history.rs:210
-    <pert_ui_runtime::NavigationHistory as Debug>::fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result	(trait impl)	crates/pert-ui-runtime/src/navigation_history.rs:225
+    <pert_ui_runtime::NavigationHistory<T> as Clone>::clone(&self) -> Self	(trait impl)	crates/pert-ui-runtime/src/navigation_history.rs:210
+    <pert_ui_runtime::NavigationHistory<T> as Debug>::fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result	(trait impl)	crates/pert-ui-runtime/src/navigation_history.rs:225
     pert_ui_runtime::NavigationHistory::back(&self) -> Result<Option<HistoryEntry<T>>, RuntimeError>	-	crates/pert-ui-runtime/src/navigation_history.rs:347
     pert_ui_runtime::NavigationHistory::can_go_back(&self) -> ReadSignal<bool>	#[must_use]	crates/pert-ui-runtime/src/navigation_history.rs:287
     pert_ui_runtime::NavigationHistory::can_go_forward(&self) -> ReadSignal<bool>	#[must_use]	crates/pert-ui-runtime/src/navigation_history.rs:293
@@ -2005,7 +2005,7 @@ pert_ui_runtime::Notifier	struct	role: 	crates/pert-ui-runtime/src/runtime/notif
     <pert_ui_runtime::Notifier as Debug>::fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result	(trait impl)	crates/pert-ui-runtime/src/runtime/notify.rs:247
     pert_ui_runtime::Notifier::request(&self)	-	crates/pert-ui-runtime/src/runtime/notify.rs:289
 pert_ui_runtime::NumberFormat	struct	role: 	crates/pert-ui-runtime/src/number_format.rs:38
-    <pert_ui_runtime::NumberFormat as Clone>::clone(&self) -> Self	(trait impl)	crates/pert-ui-runtime/src/number_format.rs:47
+    <pert_ui_runtime::NumberFormat<T> as Clone>::clone(&self) -> Self	(trait impl)	crates/pert-ui-runtime/src/number_format.rs:47
     pert_ui_runtime::NumberFormat::edit_text(self, edit: impl Fn(T) -> String + 'static) -> Self	-	crates/pert-ui-runtime/src/number_format.rs:100
     pert_ui_runtime::NumberFormat::edit_unit(self, unit: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/number_format.rs:128
     pert_ui_runtime::NumberFormat::localized_decimal(locale: NumberLocale, places: Option<u8>, width_hint: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/number_format.rs:387
@@ -2080,8 +2080,8 @@ pert_ui_runtime::Palette	struct	role: 	crates/pert-ui-runtime/src/runtime/theme.
     pert_ui_runtime::Palette::with_color(self, role: ColorRole, color: Color) -> Self	-	crates/pert-ui-runtime/src/runtime/theme.rs:875
     pert_ui_runtime::Palette::with_default_color(self, role: ColorRole) -> Self	-	crates/pert-ui-runtime/src/runtime/theme.rs:882
 pert_ui_runtime::Parameter	struct	role: 	crates/pert-ui-runtime/src/parameter_binding.rs:283
-    <pert_ui_runtime::Parameter as Clone>::clone(&self) -> Self	(trait impl)	crates/pert-ui-runtime/src/parameter_binding.rs:298
-    <pert_ui_runtime::Parameter as Debug>::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result	(trait impl)	crates/pert-ui-runtime/src/parameter_binding.rs:290
+    <pert_ui_runtime::Parameter<T> as Clone>::clone(&self) -> Self	(trait impl)	crates/pert-ui-runtime/src/parameter_binding.rs:298
+    <pert_ui_runtime::Parameter<T> as Debug>::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result	(trait impl)	crates/pert-ui-runtime/src/parameter_binding.rs:290
     pert_ui_runtime::Parameter::authority_status(&self) -> Option<ReadSignal<AuthorityStatus<T>>>	-	crates/pert-ui-runtime/src/parameter_binding/remote.rs:686
     pert_ui_runtime::Parameter::begin_edit(&self, context: &mut EventContext, expected: Revision) -> Result<EditSession<T>, RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding.rs:351
     pert_ui_runtime::Parameter::delivery_status(&self) -> ReadSignal<DeliveryStatus>	#[must_use]	crates/pert-ui-runtime/src/parameter_binding.rs:327
@@ -2089,8 +2089,8 @@ pert_ui_runtime::Parameter	struct	role: 	crates/pert-ui-runtime/src/parameter_bi
     pert_ui_runtime::Parameter::snapshot(&self) -> ReadSignal<ParameterSnapshot<T>>	#[must_use]	crates/pert-ui-runtime/src/parameter_binding.rs:316
     pert_ui_runtime::Parameter::spec(&self) -> Result<ParameterSpec<T>, RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding.rs:335
 pert_ui_runtime::ParameterHost	struct	role: 	crates/pert-ui-runtime/src/parameter_binding.rs:495
-    <pert_ui_runtime::ParameterHost as Debug>::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result	(trait impl)	crates/pert-ui-runtime/src/parameter_binding.rs:501
-    <pert_ui_runtime::ParameterHost as Drop>::drop(&mut self)	(trait impl)	crates/pert-ui-runtime/src/parameter_binding.rs:627
+    <pert_ui_runtime::ParameterHost<T> as Debug>::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result	(trait impl)	crates/pert-ui-runtime/src/parameter_binding.rs:501
+    <pert_ui_runtime::ParameterHost<T> as Drop>::drop(&mut self)	(trait impl)	crates/pert-ui-runtime/src/parameter_binding.rs:627
     pert_ui_runtime::ParameterHost::clear_sinks(&self) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:557
     pert_ui_runtime::ParameterHost::id(&self) -> &ParameterId	-	crates/pert-ui-runtime/src/parameter_binding.rs:511
     pert_ui_runtime::ParameterHost::on_outcome(&self, sink: impl FnMut(&TerminalEvent<T>) -> Result<(), SinkError> + 'static) -> Result<DeliveryMonitor<T>, RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:500
@@ -2136,7 +2136,7 @@ pert_ui_runtime::PathError	enum	role: 	crates/pert-ui-runtime/src/geometry.rs:12
     variant MissingMoveTo
     variant TooLarge
 pert_ui_runtime::Pending	struct	role: 	crates/pert-ui-runtime/src/inspection.rs:565
-    <pert_ui_runtime::Pending as Debug>::fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result	(trait impl)	crates/pert-ui-runtime/src/inspection.rs:570
+    <pert_ui_runtime::Pending<T> as Debug>::fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result	(trait impl)	crates/pert-ui-runtime/src/inspection.rs:570
     pert_ui_runtime::Pending::try_reply(&self) -> Result<InspectionReply<T>, WaitError>	-	crates/pert-ui-runtime/src/inspection.rs:640
     pert_ui_runtime::Pending::wait(self) -> Result<InspectionReply<T>, WaitError>	-	crates/pert-ui-runtime/src/inspection.rs:588
     pert_ui_runtime::Pending::wait_timeout(&self, timeout: Duration) -> Result<InspectionReply<T>, WaitError>	-	crates/pert-ui-runtime/src/inspection.rs:610
@@ -2401,11 +2401,11 @@ pert_ui_runtime::RasterImage	struct	role: 	crates/pert-ui-runtime/src/resources.
     pert_ui_runtime::RasterImage::pixels(&self) -> &[u8]	#[must_use]	crates/pert-ui-runtime/src/resources.rs:204
     pert_ui_runtime::RasterImage::width(&self) -> u32	#[must_use]	crates/pert-ui-runtime/src/resources.rs:185
 pert_ui_runtime::ReadSignal	struct	role: 	crates/pert-ui-runtime/src/signal.rs:192
-    <pert_ui_runtime::ReadSignal as Clone>::clone(&self) -> Self	(trait impl)	crates/pert-ui-runtime/src/signal.rs:259
-    <pert_ui_runtime::ReadSignal as Debug>::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result	(trait impl)	crates/pert-ui-runtime/src/signal.rs:208
-    <pert_ui_runtime::ReadSignal as From<&ReadSignal<T>>>::from(binding: &ReadSignal<T>) -> Self	(trait impl)	crates/pert-ui-runtime/src/signal.rs:254
-    <pert_ui_runtime::ReadSignal as From<&Signal<T>>>::from(signal: &Signal<T>) -> Self	(trait impl)	crates/pert-ui-runtime/src/signal.rs:246
-    <pert_ui_runtime::ReadSignal as From<Signal<T>>>::from(signal: Signal<T>) -> Self	(trait impl)	crates/pert-ui-runtime/src/signal.rs:239
+    <pert_ui_runtime::ReadSignal<T> as Clone>::clone(&self) -> Self	(trait impl)	crates/pert-ui-runtime/src/signal.rs:259
+    <pert_ui_runtime::ReadSignal<T> as Debug>::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result	(trait impl)	crates/pert-ui-runtime/src/signal.rs:208
+    <pert_ui_runtime::ReadSignal<T> as From<&ReadSignal<T>>>::from(binding: &ReadSignal<T>) -> Self	(trait impl)	crates/pert-ui-runtime/src/signal.rs:254
+    <pert_ui_runtime::ReadSignal<T> as From<&Signal<T>>>::from(signal: &Signal<T>) -> Self	(trait impl)	crates/pert-ui-runtime/src/signal.rs:246
+    <pert_ui_runtime::ReadSignal<T> as From<Signal<T>>>::from(signal: Signal<T>) -> Self	(trait impl)	crates/pert-ui-runtime/src/signal.rs:239
     pert_ui_runtime::ReadSignal::combine<U: Clone + 'static, V: Clone + PartialEq + 'static>(&self, other: &ReadSignal<U>, map: impl Fn(&T, &U) -> V + 'static) -> Result<ReadSignal<V>, RuntimeError>	-	crates/pert-ui-runtime/src/signal.rs:729
     pert_ui_runtime::ReadSignal::get(&self) -> Result<T, RuntimeError>	-	crates/pert-ui-runtime/src/signal.rs:570
     pert_ui_runtime::ReadSignal::map<U: Clone + PartialEq + 'static>(&self, map: impl Fn(&T) -> U + 'static) -> Result<ReadSignal<U>, RuntimeError>	-	crates/pert-ui-runtime/src/signal.rs:691
@@ -2461,7 +2461,7 @@ pert_ui_runtime::RemoteCommit	struct	role: 	crates/pert-ui-runtime/src/parameter
     pert_ui_runtime::RemoteCommit::token(&self) -> &EditToken	-	crates/pert-ui-runtime/src/parameter_binding/remote.rs:21
     pert_ui_runtime::RemoteCommit::value(&self) -> &T	-	crates/pert-ui-runtime/src/parameter_binding/remote.rs:33
 pert_ui_runtime::RemoteHost	struct	role: 	crates/pert-ui-runtime/src/parameter_binding/remote.rs:421
-    <pert_ui_runtime::RemoteHost as Debug>::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result	(trait impl)	crates/pert-ui-runtime/src/parameter_binding/remote.rs:428
+    <pert_ui_runtime::RemoteHost<T> as Debug>::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result	(trait impl)	crates/pert-ui-runtime/src/parameter_binding/remote.rs:428
     pert_ui_runtime::RemoteHost::clear_submission_sink(&self) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/remote.rs:478
     pert_ui_runtime::RemoteHost::disconnect(&self) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/remote.rs:630
     pert_ui_runtime::RemoteHost::local_host(&self) -> &ParameterHost<T>	-	crates/pert-ui-runtime/src/parameter_binding/remote.rs:549
@@ -2477,11 +2477,11 @@ pert_ui_runtime::RequestError	enum	role: 	crates/pert-ui-runtime/src/inspection.
     variant CommandsDisabled
     variant Full
 pert_ui_runtime::RequestTicket	struct	role: 	crates/pert-ui-runtime/src/async_source.rs:28
-    <pert_ui_runtime::RequestTicket as PartialEq>::eq(&self, other: &Self) -> bool	(trait impl)	crates/pert-ui-runtime/src/async_source.rs:46
+    <pert_ui_runtime::RequestTicket<K> as PartialEq>::eq(&self, other: &Self) -> bool	(trait impl)	crates/pert-ui-runtime/src/async_source.rs:46
     pert_ui_runtime::RequestTicket::generation(&self) -> u64	#[must_use]	crates/pert-ui-runtime/src/async_source.rs:41
     pert_ui_runtime::RequestTicket::key(&self) -> &K	-	crates/pert-ui-runtime/src/async_source.rs:35
 pert_ui_runtime::RequestTracker	struct	role: 	crates/pert-ui-runtime/src/async_source.rs:108
-    <pert_ui_runtime::RequestTracker as Default>::default() -> Self	(trait impl)	crates/pert-ui-runtime/src/async_source.rs:116
+    <pert_ui_runtime::RequestTracker<K> as Default>::default() -> Self	(trait impl)	crates/pert-ui-runtime/src/async_source.rs:116
     pert_ui_runtime::RequestTracker::cancel(&self, key: &K) -> bool	-	crates/pert-ui-runtime/src/async_source.rs:178
     pert_ui_runtime::RequestTracker::complete(&self, ticket: &RequestTicket<K>) -> bool	-	crates/pert-ui-runtime/src/async_source.rs:168
     pert_ui_runtime::RequestTracker::is_pending(&self, key: &K) -> bool	#[must_use]	crates/pert-ui-runtime/src/async_source.rs:190
@@ -2953,12 +2953,12 @@ pert_ui_runtime::Semantics	struct	role: 	crates/pert-ui-runtime/src/diagnostics.
 pert_ui_runtime::SendError	enum	role: 	crates/pert-ui-runtime/src/mailbox.rs:25
     variant Closed(T)
     variant Full(T)
-    <pert_ui_runtime::SendError as Debug>::fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result	(trait impl)	crates/pert-ui-runtime/src/mailbox.rs:44
-    <pert_ui_runtime::SendError as Display>::fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result	(trait impl)	crates/pert-ui-runtime/src/mailbox.rs:53
+    <pert_ui_runtime::SendError<T> as Debug>::fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result	(trait impl)	crates/pert-ui-runtime/src/mailbox.rs:44
+    <pert_ui_runtime::SendError<T> as Display>::fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result	(trait impl)	crates/pert-ui-runtime/src/mailbox.rs:53
     pert_ui_runtime::SendError::into_inner(self) -> T	-	crates/pert-ui-runtime/src/mailbox.rs:36
 pert_ui_runtime::SeriesSource	struct	role: 	crates/pert-ui-runtime/src/live.rs:627
-    <pert_ui_runtime::SeriesSource as Clone>::clone(&self) -> Self	(trait impl)	crates/pert-ui-runtime/src/live.rs:632
-    <pert_ui_runtime::SeriesSource as Debug>::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result	(trait impl)	crates/pert-ui-runtime/src/live.rs:713
+    <pert_ui_runtime::SeriesSource<T> as Clone>::clone(&self) -> Self	(trait impl)	crates/pert-ui-runtime/src/live.rs:632
+    <pert_ui_runtime::SeriesSource<T> as Debug>::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result	(trait impl)	crates/pert-ui-runtime/src/live.rs:713
     pert_ui_runtime::SeriesSource::same_source(&self, other: &Self) -> bool	#[must_use]	crates/pert-ui-runtime/src/live.rs:661
     pert_ui_runtime::SeriesSource::telemetry(&self) -> Result<Telemetry<T>, RuntimeError>	-	crates/pert-ui-runtime/src/live.rs:707
     pert_ui_runtime::SeriesSource::with_window<R>(&self, f: impl FnOnce(&Telemetry<T>, &SampleWindow<T>) -> R) -> Result<R, RuntimeError>	-	crates/pert-ui-runtime/src/live.rs:684
@@ -2980,10 +2980,10 @@ pert_ui_runtime::ShortcutScope	enum	role: 	crates/pert-ui-runtime/src/validation
 pert_ui_runtime::Show	struct	role: 	crates/pert-ui-runtime/src/described.rs:223
     pert_ui_runtime::Show::new(when: impl Into<ReadSignal<bool>>, build: impl Fn(&DescribeContext<'_>) -> Element + 'static) -> Self	-	crates/pert-ui-runtime/src/described.rs:227
 pert_ui_runtime::Signal	struct	role: 	crates/pert-ui-runtime/src/signal.rs:177
-    <pert_ui_runtime::Signal as Clone>::clone(&self) -> Self	(trait impl)	crates/pert-ui-runtime/src/signal.rs:216
-    <pert_ui_runtime::Signal as Debug>::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result	(trait impl)	crates/pert-ui-runtime/src/signal.rs:201
-    <pert_ui_runtime::Signal as Deref>::deref(&self) -> &ReadSignal<T>	(trait impl)	crates/pert-ui-runtime/src/signal.rs:225
-    <pert_ui_runtime::Signal as From<&Signal<T>>>::from(signal: &Signal<T>) -> Self	(trait impl)	crates/pert-ui-runtime/src/signal.rs:232
+    <pert_ui_runtime::Signal<T> as Clone>::clone(&self) -> Self	(trait impl)	crates/pert-ui-runtime/src/signal.rs:216
+    <pert_ui_runtime::Signal<T> as Debug>::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result	(trait impl)	crates/pert-ui-runtime/src/signal.rs:201
+    <pert_ui_runtime::Signal<T> as Deref>::deref(&self) -> &ReadSignal<T>	(trait impl)	crates/pert-ui-runtime/src/signal.rs:225
+    <pert_ui_runtime::Signal<T> as From<&Signal<T>>>::from(signal: &Signal<T>) -> Self	(trait impl)	crates/pert-ui-runtime/src/signal.rs:232
     pert_ui_runtime::Signal::get(&self) -> Result<T, RuntimeError>	-	crates/pert-ui-runtime/src/signal.rs:393
     pert_ui_runtime::Signal::read_only(&self) -> ReadSignal<T>	#[must_use]	crates/pert-ui-runtime/src/signal.rs:383
     pert_ui_runtime::Signal::revision(&self) -> u64	#[must_use]	crates/pert-ui-runtime/src/signal.rs:378
@@ -3680,8 +3680,8 @@ pert_ui_runtime::UiMessage	enum	role: 	crates/pert-ui-runtime/src/strings.rs:663
     variant ToolWindowOptions { title: &'a str }
     pert_ui_runtime::UiMessage::role(&self) -> StringRole	#[must_use]	crates/pert-ui-runtime/src/strings.rs:750
 pert_ui_runtime::UiSender	struct	role: 	crates/pert-ui-runtime/src/mailbox.rs:88
-    <pert_ui_runtime::UiSender as Clone>::clone(&self) -> Self	(trait impl)	crates/pert-ui-runtime/src/mailbox.rs:94
-    <pert_ui_runtime::UiSender as Debug>::fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result	(trait impl)	crates/pert-ui-runtime/src/mailbox.rs:103
+    <pert_ui_runtime::UiSender<T> as Clone>::clone(&self) -> Self	(trait impl)	crates/pert-ui-runtime/src/mailbox.rs:94
+    <pert_ui_runtime::UiSender<T> as Debug>::fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result	(trait impl)	crates/pert-ui-runtime/src/mailbox.rs:103
     pert_ui_runtime::UiSender::is_closed(&self) -> bool	-	crates/pert-ui-runtime/src/mailbox.rs:139
     pert_ui_runtime::UiSender::send(&self, value: T) -> Result<(), SendError<T>>	-	crates/pert-ui-runtime/src/mailbox.rs:121
 pert_ui_runtime::UiSettings	struct	role: 	crates/pert-ui-runtime/src/runtime/settings.rs:213

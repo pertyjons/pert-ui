@@ -8,9 +8,20 @@ and the library source is unchanged since d4ba108. The cross-verification
 reviewed what version 2 adds, so a shared omission in version 1 cannot
 hide a finding.
 
-**Version 3** is this directory, built at aacbdd3. It closes the gaps the
-cross-verification found in version 2. A separate delta review by both
-auditors covers what it adds.
+**Version 3** was built at aacbdd3. It closed the gaps the
+cross-verification found in version 2, and a separate delta review by both
+auditors covered its additions.
+
+**Version 4** is this directory, built at 0497d51. It closes two gaps the
+review of slice 4 found. Both auditors reviewed its additions.
+- Hand-written trait methods carry their concrete target, so
+  `ParameterSpec<f32>`, `<i64>`, `<bool>` and `<ChoiceId>` each list
+  their serde methods instead of collapsing into one row. That adds 6
+  rows to `errors.txt`. Codex's G4 verification had already covered them
+  by hand (`reports/verification/codex-G4.md`), and other rows only gain
+  their generic parameters.
+- Trait-associated constants join `constants.txt` and the semantic lists;
+  the only one is `ParameterValue::FAMILY`.
 
 | Gap (reported by) | Fix | Entries version 2 adds or changes |
 |---|---|---|
