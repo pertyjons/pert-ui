@@ -33,9 +33,14 @@ Version 3 adds:
 |---|---|---|
 | Numbers wrapped in `Option` in no list (claude G3 verification) | `numeric.txt` includes `Option<number>` parameters and returns | 41 |
 | Associated constants in no list (claude G3 verification) | New `constants.txt`; the semantic lists show them with their types | 93 |
-| Fallible conversions into foreign types missing from `errors.txt`, such as `TryFrom<AnyValue> for f32` (claude G4 verification) | They join `errors.txt` | 8 |
+| Fallible conversions into foreign types missing from `errors.txt`, such as `TryFrom<AnyValue> for f32` (claude G4 verification) | They join `errors.txt` | 3 |
 | The prelude column was per package, so core types in pert-ui-runtime's prelude read "no" (claude G5 verification) | They read "yes (via pert_ui_runtime::prelude)" | 6 |
 
-A gap the script cannot close is recorded instead. The `builder` mark in
+Gaps that remain are recorded instead. The version 3 delta reviews checked
+them by hand and found no finding hidden in them:
+- `ParameterValue::{from_any, spec_from_any}` for `f32`, `i64` and `bool`
+  are not in `errors.txt`.
+- Numbers inside `Range` or arrays, such as `TextSelection::range`, are in
+  no N3 list. The `builder` mark in
 `bool-params.txt` is mechanical, so a `Copy` value's `self -> Self`
 operation, such as `TextSelection::moved`, also matches it (claude G3).
