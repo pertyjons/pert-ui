@@ -6,8 +6,9 @@ developer-usability plan](../../developer-usability.md).
 
 **How the recommendations were drafted:** a fresh Claude agent per rubric
 group read the rows, the reports, the contracts and the source, and counted
-the affected call sites. The author reviewed them, and Codex reviewed them
-before the maintainer saw them. Each recommendation applies four criteria,
+the affected call sites. The author reviewed them. Codex reviewed them, and each
+group's agent revised its section for Codex's points (each group ends with
+its revision notes). Each recommendation applies four criteria,
 in order:
 1. no consumer misled into wrong behavior or data loss;
 2. AGENTS.md's "do not change authority, callback timing or cancellation
@@ -37,10 +38,10 @@ column is filled in when the maintainer decides.
 | G1-3 | Order in keyed-item constructors | C: owner `ui`, key, bound state, the rest | breaking, 2 items | |
 | G1-5 | `ChoiceId::as_str` against `get()` | A: string exception (`as_str`) | doc-only | |
 | G1-6 | `get()` for compound values | A: single-value types only | doc-only | |
-| G1-9 | Where shared limits live, constant types | A: on the shared format's owner, else the reporting error; `Self` for value limits | doc-only; `PowerExponent::MIN/MAX` to `Self` (breaking, tiny) | |
+| G1-9 | Where shared limits live, constant types | A: validation limits on the shared format's owner, else the reporting error; rendering caps on the error type of the operation they protect; `Self` for value limits | doc-only; `PowerExponent::MIN/MAX` to `Self` (breaking, tiny) | |
 | G1-10 | Constants for zero, one, nonnegative bounds | A: only chosen limits get constants | doc-only | |
-| G1-12 | May a documented convenience clamp | A: presentation mappings may saturate; offsets, identities and persisted values are rejected | doc-only, edits an AGENTS.md rule | |
-| G1-13 | Meanings of `with_` | A: two meanings by receiver, documented | doc-only | |
+| G1-12 | May a documented convenience clamp | A: presentation mappings may saturate; scroll offsets and layout of valid saved sizes stay clamped; invalid explicit text offsets, identities and stored preferences are rejected | doc-only, edits an AGENTS.md rule | |
+| G1-13 | Meanings of `with_` | A: three meanings by receiver (constructor with a supplied part, consuming builder, scoped closure), documented | doc-only | |
 | G1-14 | `Color::rgba` takes linear values | B: rename to `Color::from_linear` | breaking, about 90 call sites | |
 | G1-15 | Parameter names `ui`, `controller` | B: rename in four constructors | rustdoc only | |
 | G1-16 | Collections and keyed containers under "Choice sources" | A: outside, one sentence | doc-only | |
@@ -51,18 +52,18 @@ column is filled in when the maintainer decides.
 | G2-4 | `disabled(bool)` on data descriptions | A: data descriptions take `bool` | doc-only | |
 | G2-5 | Accumulating builders | A: "Adds/Offers" builders append, documented | doc-only | |
 | G2-6 | Two-way bindings | B: `bind_<property>` (author's correction of the draft's `_binding`) | breaking, 3 items | |
-| G2-8 | `#[must_use]` on receipts | C: only where dropping hides a failure; `ToastReceipt` loses it | not breaking | |
-| G2-13 | Reconciliation publishes a parameter snapshot | A: a narrow lifecycle exception (AGENTS.md wording to approve); `ContextMenu` gets private non-signal state | doc-only plus a private fix | |
+| G2-8 | `#[must_use]` on receipts | C: only where dropping hides an otherwise unreported outcome (failure or cancellation); `ToastReceipt` loses it | not breaking | |
+| G2-13 | Reconciliation publishes a parameter snapshot | A: a narrow lifecycle exception, doc-only only if a test first shows dependents settle in the same flush (else a scheduling fix); `ContextMenu` gets private non-signal state | doc-only plus a private fix, or slice 6 scheduling | |
 | G2-17 | `on_select` against `on_selection_change` | A: keep both, document the difference | doc-only | |
 | G2-18 | `MultiSelect::filter` closure | C: keep it, add a doctest using `FilterMatcher` | doc-only | |
 | G2-19 | `set_wake_delivery` takes a `Box` | B: `impl Fn`; `Box` callers still compile | additive | |
-| G2-20 | Editor exceptions need contracts.md | B: yes; add the `on_rejection` sentence and correct the rustdoc. The behavior change stays F6's | doc-only | |
+| G2-20 | Editor exceptions need contracts.md | B: yes; a contracts.md sentence that parse and range errors appear only in inspection. F6 stays a behavior decision; recommended route: report them through `on_rejection` | doc-only; F6's route is additive | |
 | G3-16 | `ParameterState` and `*State` | A: `*State` by ownership | doc-only | |
 | G3-17 | `*Snapshot`, `*Inspection`, `*Report` | A: name these suffixes in the rule | doc-only | |
 | G3-18 | `*Outcome` and operation results | A: the rule goes one way only; continuations allowed | doc-only | |
 | G3-19 | `FormStatus` as a controller | A: application-owned, like `ListSelection` | doc-only | |
 | G3-21 | `Pending<T>` and receipts | A: a cross-thread reply is not a receipt | doc-only | |
-| G3-1 | Owned against reactive reads | C: where both exist, bare name is owned and `x_binding()` reactive; 8 renames | breaking, about 20 call sites | |
+| G3-1 | Owned against reactive reads | C with one accepted residual risk (`Parameter::snapshot` stays a live signal, documented); 8 renames. D also renames `Parameter::snapshot` | breaking, about 20 call sites (D: about 340) | |
 | G3-2 | `reorderable`/`resizable` | A: document the rule the code follows | doc-only | |
 | G3-3 | Accessor pairs on role tables | C: `ThemeMetrics::metric`, `UiStrings::text`/`with_text` | breaking, 3 methods | |
 | G3-4 | `DragPayload::get::<T>` | B: `downcast_ref` | breaking, 1 method | |
@@ -71,12 +72,12 @@ column is filled in when the maintainer decides.
 | G3-12 | Family prefixes | C: `DropPosition` to `ListDropPosition`; `PickStatus` stays | breaking, 1 type | |
 | G3-23 | `UiStrings::MAX_LENGTH` counts bytes | B: `MAX_TEXT_BYTES` | breaking, 1 constant | |
 | G3-24 | `Completed` against `Succeeded` | B: `TaskStatus::Succeeded` | breaking, 1 variant | |
-| G4-6 | Incidental `Send` on `Divider`, `Svg` | A: `Send` is not contract unless documented | doc-only | |
+| G4-6 | Incidental `Send` on `Divider`, `Svg` | B: a private `!Send` marker on every description now | breaking in auto traits only | |
 | G4-7 | `RichText` not `Send` | A: document as UI-thread; sendable font key to follow-ups | doc-only | |
-| G4-8, G4-9 | `#[non_exhaustive]` on growing records | C: every type inside `InspectionSnapshot`; status enums stay exhaustive | breaking | |
+| G4-8, G4-9 | `#[non_exhaustive]` on growing records | C: the records only the runtime builds (10 structs, `EventKind`, `ValidationCode`); records a component builds and status enums stay exhaustive | breaking, 6 test literals | |
 | G4-10 | `AnyValue`/`AnySpec` returned as errors | A: documented std-idiom exception | doc-only | |
 | G4-15 | Losing `Copy` to carry keys | C: identity payloads only; `LayoutError`, `ParameterError` lose `Copy` | breaking, with G4-14 | |
-| G4-19, G4-20 | Standard-trait impls forward `# Errors` | A: one-line forwarding allowed | doc-only | |
+| G4-19, G4-20 | Standard-trait impls and `# Errors` | A: one-line forwarding for `TryFrom`/`FromStr`; for serde the type's `# Serialization` section suffices (two types gain one) | doc-only | |
 | G4-21 | `DrawError` into `RuntimeError` | A: keep the exclusion; document `Result<_, DrawError>` for test helpers | doc-only | |
 | G4-22 | `From<Box<dyn Error + Send + Sync>>` for `RuntimeError` | A: no; doc pointers | doc-only | |
 | G4-23 | User text in `Display` | A: documented exception for application and OS text | doc-only | |
@@ -84,9 +85,9 @@ column is filled in when the maintainer decides.
 | G4-30 | `From` back to the raw number | B: add it to the six other validated scalars | additive | |
 | G5-11 | `SeriesSource` in the prelude | A: stays at the root, one exclusion sentence | doc-only | |
 | G5-16 | Parameter host sink and monitor types | B: they are "hosts"; 7 names join the prelude | additive | |
-| G5-26, G5-27, G5-14 | How far the prelude rule reaches | C: names a consumer must write; about 20 names join; received values stay out | additive, prelude rule rewritten (weigh against slice 9's smaller prelude) | |
+| G5-26, G5-27, G5-14 | How far the prelude rule reaches | D: names a consumer writes or keeps go to a new `pert_ui::component` module (about 24 names), not the prelude; follows slice 9's smaller prelude | additive | |
 | G5-30 | `WindowError` in the facade prelude | B: add it under `native` | additive | |
-| G5-32 | A testing prelude | A: none until it owns F2's helpers; root pointers instead | doc-only | |
+| G5-32 | A testing prelude | A: none until it owns F2's helpers, root pointers instead; `ApplicationError` joins the prelude | doc-only, plus 1 additive name | |
 
 ## G1
 
@@ -176,28 +177,41 @@ section "Public naming rules" (`docs/contracts.md:1149`).
   are `f32`, while `NormalizedValue`, `UiZoom`, `ViewScale` and `Capacity`
   use `Self`.
 - **Options:**
-  - (A) Make today's placement the rule. A shared limit is defined once, in
-    this order: on the owner of the shared format (`Workspace` for its
-    document, the `svg` module for SVG input, which has only free-function
-    entry points), otherwise on the error type whose one variant reports it.
-    Its rustdoc says why it lives there, and every bounded constructor links
-    to it from `# Errors`. There are no aliases.
+  - (A) Make today's placement the rule, for two kinds of limit. Each is
+    defined once, its rustdoc says why it lives there, and there are no
+    aliases.
+    - A validation limit, which input fails: on the owner of the shared
+      format (`Workspace` for its document, the `svg` module for SVG input,
+      which has only free-function entry points), otherwise on the error
+      type whose one variant reports it. Bounded constructors link to it
+      from `# Errors`.
+    - A rendering cap, at which output degrades instead of failing: no
+      variant reports it, so it lives on the error type of the operation it
+      keeps from failing, whose variant rustdoc names it as the case that is
+      not an error. `TextError::MAX_FONT_PIXELS` is one: larger text is
+      rasterized at 256 px and stretched (`text.rs:58-79`).
   - (B) Move each limit to a "principal" bounded type, with aliases or links
     from the others. This is breaking, and picking the principal type is
     arbitrary for text.
+  - (C) For the cap only: move it to `TextLayout`, which records the scale
+    used. Breaking, 1 item, 4 intra-doc links outside `text.rs`
+    (`rg -n 'MAX_FONT_PIXELS' apps crates`), but the cap also bounds icon
+    rasterization (`drawing.rs:1439`), which `TextLayout` does not cover.
   - Constant type: either "a bound on the value itself is `Self`, a bound on
     a measure (bytes, count, depth, digits) has that measure's integer
     type", or leave the type free.
 - **Recommendation:** A for placement. It matches
   `docs/contracts.md:1141`'s "one limit has one reporting variant" and the
   existing reasoned example `MAX_TEXT_BYTES` (`text_input.rs:29-41`), and
-  moves nothing. Adopt the `Self`/measure typing rule: every value-bound
+  moves nothing. The cap clause keeps `MAX_FONT_PIXELS` where a consumer
+  asking "is large text rejected?" finds the answer (`TextError::TooLarge`).
+  Adopt the `Self`/measure typing rule: every value-bound
   constant except `PowerExponent`'s already follows it. A `Self` constant
   can be used directly as a valid value, and `get()` gives the raw number.
 - **Consequence:**
-  - Doc-only for placement: the naming-rules sentence, plus a "why it lives
-    here" sentence on `MAX_PRECISION` and `MAX_FONT_PIXELS` (the latter is a
-    raster cap that no variant reports).
+  - Doc-only for placement: the naming-rules sentence with both kinds, plus
+    a "why it lives here" sentence on `MAX_PRECISION` (reported by
+    `InvalidPrecision`) and `MAX_FONT_PIXELS` (a cap no variant reports).
   - Breaking but tiny for `PowerExponent::MIN`/`MAX: Self`: 1 item pair and
     4 lines in `pert-ui-core/tests/parameters.rs`.
   - Slice 5 (rule) and slice 6 (`PowerExponent`).
@@ -239,9 +253,9 @@ section "Public naming rules" (`docs/contracts.md:1149`).
   part, `table.rs:95`, `:765`).
 - **Options:**
   - (A) Name a second allowed case. A constructor may saturate when it is
-    total over its input type and documents what every input presents as;
-    canonical values, offsets, identities and persisted data are still
-    rejected.
+    total over its input type and documents what every input presents as.
+    Invalid explicit text offsets, identities and stored preference values
+    are still rejected, not coerced.
   - (B) Add a checked `try_of`. As Codex notes, that leaves `of`'s status
     unsettled.
 - **Recommendation: A.**
@@ -251,15 +265,21 @@ section "Public naming rules" (`docs/contracts.md:1149`).
   - The `Table` width floor is a layout minimum and fits the existing
     control-limit wording. It needs no new rule, only the wording that says
     so.
-  - The rule must keep G1-11 (`TextSelection::new` clamping offsets) and
-    V3-2's restore path as departures; the "offsets, identities and
-    persisted data" clause does that.
+  - The rule must keep G1-11 (`TextSelection::new` clamping explicit
+    offsets) and V3-2 (restore overwriting a stored width below the floor)
+    as departures, and must not forbid documented clamping. Scroll offsets
+    limited to the scroll range (`VirtualAxis::clamp_offset`,
+    `virtual_axis.rs:253`, used by `VirtualList`) are a control limit. Layout
+    clamping a valid saved size to the current bounds without rewriting it
+    (`docs/contracts.md:1015`) is a layout limit, not coercion of the
+    preference. Hence "text offsets" and "stored preference values".
 - **Consequence:** doc-only. In AGENTS.md "Rust and data invariants",
   "clamp only for documented control-limit behavior" becomes "clamp only for
   documented control or layout limits, or a documented presentation mapping
-  that is total over its input (`ProgressStatus::of`); never clamp offsets,
-  identities or persisted values". The naming rules link to it. The AGENTS.md
-  edit is the user's decision. Slice 5.
+  that is total over its input (`ProgressStatus::of`); reject, never coerce,
+  an invalid explicit text offset, identity or stored preference value". The
+  naming rules link to it. The AGENTS.md edit is the user's decision.
+  Slice 5.
 - **Depends on:** G1-11, V3-2.
 
 ### G1-13 Which meanings does `with_` keep?
@@ -276,28 +296,37 @@ section "Public naming rules" (`docs/contracts.md:1149`).
 
   Component builders use bare nouns.
 - **Options:**
-  - (A) Keep the names and document two meanings, told apart by receiver:
-    - an associated `Type::with_x(x, …)` is `new` with `x` supplied by the
-      caller, as `Vec::with_capacity` is; `with_state` and `with_query` fit
-      this;
-    - a method `self.with_x(…)` is a builder on a value or data type that
-      reads `x` back by a getter of the bare name, or scopes a closure
-      (`with_clip`).
+  - (A) Keep the names and document three meanings, told apart by receiver:
+    - associated `Type::with_x(x, …)`: `new` with `x` supplied by the
+      caller, as `Vec::with_capacity` is (`with_state`, `with_query`);
+    - consuming `self.with_x(…) -> Self` (or `Result<Self, _>`): a builder on
+      a value or data type. It need not have a readback getter
+      (`ClickCounter::with_interval`; `ToolWindowChange::with_geometry` sets
+      public fields), but a getter, where one exists, takes the bare name;
+    - borrowing `(&self).with_x(closure)`: scoped access returning the
+      closure's result (`Painter::with_clip`, `SeriesSource::with_window`).
   - (B) Claude's rename: drop `with_` from builders and rename the
-    state-supplying constructors. This breaks about 400 call sites in about
-    110 files, and bare names collide with existing getters (`Color::alpha`,
-    `Element::grow`, `Element::detachable`, `Element::searchable`).
+    state-supplying constructors, keeping `with_capacity` and the closure
+    forms. This touches 30 items (27 builders, 3 constructors) at about 340
+    lines in 85 files, and bare names collide with existing getters
+    (`Color::alpha`, `Element::grow`, `Element::detachable`,
+    `Element::searchable`).
   - (C) A, plus rename only the three state-supplying constructors.
 - **Recommendation: A.**
   - No round-1 run or probe recorded a cost from the prefix (r1-2's
     `with_grow` errors were about the argument type).
-  - The builder/getter split is what makes `Element` and `Color` readable.
+  - Where a getter exists, the builder/getter split is what makes `Element`
+    and `Color` readable.
   - The "supplied part" meaning already matches std, so C would rename for
     spelling only.
   - B fails criterion 4.
+- **Count:** `rg -n '\.with_(mapping|step|ring_capacity|kind|placement|overlay|mode|geometry|label|detachable|searchable|grow|rich_label|cap|join|miter_limit|interval|distance|count|lanes|alpha|zoom|theme_mode|density|metric|color|default_color)\b|\b(Menu::(icon_)?with_state|CollectionFilter::with_query|Self::(icon_)?with_state|Self::with_query)\b' apps crates | grep -v 'fn '`. Each name is defined once in the workspace, and the
+  generic ones (`label`, `color`, `kind`, `mode`, `count`, `step`, `cap`,
+  `join`) were read: all receivers are pert-ui types. The 52 `with_clip`/
+  `with_window` calls are excluded.
 - **Consequence:** doc-only. One sentence in the naming rules stating the
-  two meanings and that component descriptions, which have no getters, use
-  bare builder names. Slice 5.
+  three meanings, that a builder needs no getter but a getter takes the bare
+  name, and that component descriptions use bare builder names. Slice 5.
 - **Depends on:** G3-3 (`Palette::with_color`, `ThemeMetrics::with_metric`,
   `UiStrings::with` accessor pairs), G2-6 (`Collapsible::bound` as another
   state-supplying spelling).
@@ -404,21 +433,30 @@ section "Public naming rules" (`docs/contracts.md:1149`).
   call sites. Slice 6.
 - **Depends on:** G1-10.
 
+#### G1 revision notes
+
+- Point 5 (G1-12): Codex is right. The prohibition now covers invalid explicit text offsets, identities and stored preference values ("reject, never coerce"). The reasoning keeps `VirtualAxis::clamp_offset` (a control limit) and layout clamping of valid saved sizes (`contracts.md:1015`, a layout limit) explicitly allowed. The summary row in decisions.md should read "offsets" as "explicit text offsets" and "persisted values" as "stored preference values".
+- Point 9 (G1-13 count): Codex is right. B is recounted by affected item: 30 items (27 builders, 3 constructors) at 340 lines in 85 files. The 52 `with_clip`/`with_window` calls and `with_capacity` are excluded, the receivers were checked and the `rg` pattern is given.
+- Point 11 (G1-9): Codex is right. Option A now separates validation limits from rendering caps and gives caps their own placement rule: on the error type of the operation they keep from failing. Option C (move to `TextLayout`) is weighed and rejected because the cap also bounds icons. The recommendation stays A, with no move.
+- Point 12 (G1-13): Codex is right. Option A now has three meanings by receiver and drops the getter requirement: a builder needs no readback getter, and a getter, where one exists, takes the bare name. Scoped closure methods are a separate meaning. The summary row should read "three meanings by receiver".
+
 ## G2
 
 Read at HEAD 467d6ec (`crates/` unchanged since the audit commit). Call-site
 counts are `rg` hits over `crates/` and `apps/`. They include definitions,
-rustdoc and tests, so they are upper bounds. Every consistency proposal of G2
+rustdoc and tests, so they are upper bounds. G2-1 and G2-5 count call lines
+per affected item, with receiver checks and the pattern given. Every consistency proposal of G2
 (G2-6, G2-17, G2-18, G2-19) is also in the index, so each is decided once,
 in index order.
 
 ### G2-1 No-argument boolean shortcuts
 
-- **The question:** about fifteen builders set one boolean with no argument
+- **The question:** seventeen builders set one boolean with no argument
   and have no way back: `Button::frameless`, `Group::frameless`,
   `Field::hide_label`, `QuickPick`/`CommandPalette::nonmodal`,
   `Dialog::require_response`, `Toolbar::attached_below`, `Divider::vertical`,
-  `RegionLayout::fixed`, `InspectionQuery::{parameters, windows, …}`,
+  `RegionLayout::fixed`,
+  `InspectionQuery::{parameters, windows, sources, validation, application}`,
   `Semantics::names_children`, `PointerEvent::outside` and
   `App::software_rendering`. contracts.md "Public naming rules" reserves
   no-argument shortcuts for `disabled()` and `read_only()`. Do these get
@@ -437,9 +475,22 @@ in index order.
     `plans/usability/runs` finds none.
   - A shortcut cannot mislead a consumer into wrong behavior; at worst a
     computed choice needs an `if`.
-  - B would add about fifteen methods, or touch about 90 call sites
-    (`frameless` 32, `nonmodal` 13, `vertical` 36 and others), for symmetry
-    alone.
+  - B would add seventeen methods, or, as signature changes, touch 83 call
+    lines for symmetry alone: 24 in the gallery, examples, guide and
+    READMEs, 24 in library source, 35 in tests. Per item: `frameless` 28,
+    `InspectionQuery` 12, `RegionLayout::fixed` 11, `nonmodal` 8,
+    `outside` 7, `Divider::vertical` 5, `require_response` 4,
+    `software_rendering` 3, `hide_label` 2, `names_children` 2,
+    `attached_below` 1.
+  - Count: `rg -n '\.(frameless|hide_label|require_response|attached_below|names_children|outside|software_rendering)\(\)'`
+    (each name has one definer, two for `frameless`);
+    `rg -n '\.nonmodal\(\)' | rg -v 'popover.rs|runtime/surfaces.rs'`
+    (drops the private `SurfaceKind` getter);
+    `rg -n 'Divider::new\(\)\.vertical\(\)'` (the other 21 `.vertical()`
+    calls are the private `ToolEdge` getter);
+    `rg -nU 'RegionLayout::new\(\)\s*\.fixed\(\)' | rg RegionLayout`;
+    `rg -n '\.(parameters|windows|sources|validation|application)\(\)' | rg -v 'client\.validation'`;
+    each over `crates apps`.
 - **Consequence:** doc-only: one contracts.md sentence. Rustdoc already
   states each default. Slice 5.
 - **Depends on:** G2-4. The same sentence settles where a `bool` is
@@ -564,13 +615,15 @@ in index order.
   neighbors `ToolWindow::actions` and `Semantics::items` replace. Are
   element builders a documented family exception, or do they replace?
 - **Options:**
-  - (A) Add to "Public naming rules" a sentence such as: "A builder whose
-    rustdoc begins 'Adds' or 'Offers' appends one element to a described
-    collection (a layout's tool windows, a title bar's actions, a
-    description's semantic actions), and its plural form appends several.
-    A builder that sets a whole list or one slot (`Semantics::items`,
-    `ToolWindow::actions`) replaces." Fix the rustdoc of
-    `Semantics::actions`, which does not say that it accumulates.
+  - (A) Add to "Public naming rules" a sentence such as: "An element
+    builder appends one element to a described collection (a layout's tool
+    windows, a title bar's actions, a description's semantic actions), and
+    its plural form appends several. A builder that sets a whole list or one
+    slot (`Semantics::items`, `ToolWindow::actions`, `Toast::action`)
+    replaces." Fix the rustdoc of `Semantics::actions`, which does not say
+    that it accumulates, and of `Toast::action`, which begins "Adds" but
+    holds one action (notifications.rs:156-163), so rustdoc wording alone
+    cannot carry the rule.
   - (B) Rename the accumulating builders to `add_*` (breaking).
   - (C) Make them replace, so that `title_action` takes all elements at
     once (breaking).
@@ -580,10 +633,23 @@ in index order.
   - Appending is what a caller building a layout element by element
     expects, and the rustdoc already says "Adds" or "Offers".
   - No consumer hit a surprise.
-  - B or C would touch about 39 `ToolWindow::new` sites, 7 `title_action`
-    sites and the many `Semantics::action` calls inside widgets.
-- **Consequence:** doc-only: one contracts.md sentence and one rustdoc fix.
-  Slice 5.
+  - B would rename 126 call lines, 15 of them in the gallery, examples,
+    guide and READMEs: `ToolWindowLayout::window` 92 (80 in tests),
+    `title_action` 7, `Semantics`/`SemanticItem::action` and
+    `Semantics::actions` 27 (22 in library source); `ToolWindowLayout::windows`
+    has no call.
+  - C is worse than its count: a layout with several `.window` calls would
+    still compile and silently keep only the last window (criterion 1).
+  - Count: `rg -n '\.title_action\('`;
+    `rg -n '\.window\(\s*$|\.window\((ToolWindow|window|window_named)\b'`
+    (each open call's next line checked to be a `ToolWindow`; the other
+    `.window(` calls are `VirtualAxis::window` and a private lookup);
+    `rg -n '\.windows\([^)]'` (all `slice::windows`);
+    `rg -n '\.action\(SemanticAction::|item(\.expanded\(expanded\))?\.action\(if|\.actions\('`
+    (the other `.action(` calls are `Toast::action`); each over
+    `crates apps`.
+- **Consequence:** doc-only: one contracts.md sentence and two rustdoc
+  fixes. Slice 5.
 - **Depends on:** none.
 
 ### G2-6 Two-way boolean bindings (consistency proposal)
@@ -618,13 +684,14 @@ in index order.
   - `Breaking:` changelog entries with the replacement usage. Slice 6a.
 - **Depends on:** G1-16 (the scope of the `bound` choice-source name).
 
-### G2-8 `#[must_use]` on receipts whose failures also propagate
+### G2-8 `#[must_use]` on receipts
 
 - **The question:** `TaskReceipt` and `ToastReceipt` are `#[must_use]`
   although their failures also propagate through the flush. The guide,
   the examples and the gallery discard them with `let _receipt` (about 22
   sites). Do receipts stay `must_use` by design, or only where dropping
-  loses the only report? This joins slice 3's F19.
+  loses the only report of an outcome, a failure or a cancellation? This
+  joins slice 3's F19.
 - **Options:**
   - (A) Keep `must_use` on every receipt, and document the `let _ =` idiom
     as intended.
@@ -639,7 +706,8 @@ in index order.
       propagates, and expiry or dismissal is presentation.
     - Keep `CommandReceipt`, `RevealReceipt`, `ListRevealReceipt` and
       `PresentationReceipt` (D1).
-- **Recommendation:** C.
+- **Recommendation:** C: `must_use` only where dropping hides an otherwise
+  unreported outcome, a failure or a cancellation.
   - It is one rule a consumer can learn, and it matches D1's settled facts.
   - It protects against the one silent loss (criterion 1).
   - Two round 1 testers hit the `TaskReceipt` warning. Triage judged that
@@ -662,13 +730,17 @@ in index order.
 
 - **The question:** `ContextMenu::reconcile` publishes its private
   `enabled_signal` (menu.rs:1472). In numeric reconciliation, a rebind or
-  a fixed denial abandons a parameter session, whose drop cancels it and
-  publishes the public `Parameter::snapshot` at once. Only the terminal
-  event is deferred. Is immediate lifecycle cleanup an exception to
-  AGENTS.md's "Never publish signals from reconciliation"?
-  contracts.md:166-167 says "cancelled at the next safe point", while
-  `ParameterHost`'s rustdoc says cleanup "applies at once"
-  (parameter_binding.rs:432).
+  a fixed denial drops the parameter's `EditSession`
+  (numeric_controls.rs:565-588, number_inputs.rs:1274, 1309). The drop
+  cancels the edit and publishes the public `Parameter::snapshot` at once,
+  which invalidates its subscribers and computations (signal.rs:431-450,
+  parameter_binding.rs:678); only the terminal event waits for the next
+  safe point (parameter_binding.rs:679-686). `EditSession`'s rustdoc
+  permits this: "Terminal lifecycle cleanup is permitted during an update"
+  (parameter_binding.rs:698-699). contracts.md:166-167 says the gesture "is
+  cancelled at the next safe point", and number_inputs.rs:1260-1261 says
+  the same of the cancellation. Is immediate lifecycle cleanup an
+  exception to AGENTS.md's "Never publish signals from reconciliation"?
 - **Options:**
   - (A) A narrow lifecycle exception:
     - contracts.md "Component redescription": "A redescription that
@@ -678,28 +750,47 @@ in index order.
       point."
     - AGENTS.md's sentence then refers to the exceptions contracts.md
       names.
-  - (B) Defer the cancellation's publication to the next safe point.
+  - (B) Disarm the control at once, and defer the cancellation and its
+    publication together: the control hands its session to the runtime's
+    deferred queue instead of dropping it.
   - In both options, `ContextMenu` gets non-signal shared state, such as a
     `Cell` in the opener link. It is private and has no API change.
-- **Recommendation:** A for parameters, and the private fix for
-  `ContextMenu`.
-  - Publishing at once keeps the snapshot consistent with the host's
-    cancelled state.
-  - B would open a window in which the snapshot reports a cancelled gesture
-    as active. It changes cancellation timing, which criterion 2 advises
-    against, and no consumer consequence of the immediate publication was
-    found.
-  - The contracts.md sentence currently contradicts both the code and
-    `ParameterHost`'s rustdoc, so leaving it is not an option.
+- **Recommendation:** A for parameters, conditional on the test below, and
+  the private fix for `ContextMenu`.
+  - B also keeps the snapshot consistent with the parameter's state; the
+    draft's claim of an inconsistent window was wrong. B is rejected on
+    timing and authority, criterion 2:
+    - The deferred queue runs after the flush's settle loop
+      (runtime.rs:5443), so dependents would see the cancellation only in
+      a further flush, unless the loop gains a new hook.
+    - Until then the parameter holds an orphaned edit. A notification
+      callback in the same flush that writes the parameter ends it as
+      `Rejected(Conflict)` instead of `Cancelled`
+      (parameter_binding.rs:516-520), and another control on the parameter
+      is refused with `EditError::Busy` (pert-ui-core edit.rs:381-382).
+  - The draft cited `ParameterHost`'s "applies at once"
+    (parameter_binding.rs:432). That sentence concerns cleanup a sink
+    causes, not reconciliation; the `EditSession` sentence above is the
+    governing one.
+  - Evidence before A counts as doc-only: a test that a component and a
+    `Computed` reading the old parameter's snapshot both settle in the
+    reconciling flush. The settle loop (runtime.rs:5465-5471) repeats while
+    components are pending, but a computation queued during
+    `update_pending` is refreshed only if the loop runs again; that case is
+    unverified. control_reconcile.rs:98 and redescription.rs:256 check only
+    the snapshot value and the terminal outcome.
   - `ContextMenu`'s signal has a single event-time `get()` reader and
     nothing can subscribe to it. Replacing it is cheap and removes the
     literal breach.
 - **Consequence:**
-  - Parameters: doc-only (contracts.md:166-167 and the AGENTS.md wording,
-    which the maintainer must approve), plus a test that the flush
-    settles the snapshot's dependents.
+  - Parameters: the dependency test first. If it passes, doc-only:
+    contracts.md:166-167, number_inputs.rs:1260-1261 and the AGENTS.md
+    wording, which the maintainer must approve. If the computation case
+    fails, the settle loop needs a scheduling fix (slice 6d), and B is
+    reconsidered against it.
   - `ContextMenu`: a private implementation change, nonbreaking.
-  - Slice 5 for the documentation, slice 6d for `ContextMenu`.
+  - Slice 5 for the documentation, slice 6d for the test, any scheduling
+    fix and `ContextMenu`.
 - **Depends on:** G2-2 and G2-14, if the collections start adopting
   permissions in `reconcile`. A fixed denial there must cancel without
   publishing, or fall under the same exception.
@@ -783,31 +874,59 @@ in index order.
 - **The question:**
   - `TextField` and `TextArea` report their length limits through
     `on_rejection`. The number inputs do not report parse or range errors,
-    yet their rustdoc says "with the rules of `TextField::on_rejection`".
+    yet their rustdoc says "with the rules of `TextField::on_rejection`"
+    (number_inputs.rs:2086-2087) before saying that such a draft is not a
+    refusal.
+  - Those errors reach no application-observable route. They appear only
+    as the inspection property `validation_error`
+    (number_inputs.rs:1868-1874) and as the semantics' invalid flag; the
+    message is fixed English. `FieldStatus` is application-owned: "The
+    library presents status and never decides it" (field_status.rs:1-5).
+    Probe 2 of triage group B verified this: `on_rejection` silent, field
+    status normal.
   - The difference is documented in the item rustdoc but not in
-    contracts.md.
-  - Does B3's allowance for an editor's "own documented contracts" cover
-    rustdoc, or does an exception need a contracts.md sentence? The
-    problem itself is F6's either way.
+    contracts.md. Does B3's allowance for an editor's "own documented
+    contracts" cover rustdoc, or does an exception need a contracts.md
+    sentence?
 - **Options:**
   - (A) Item rustdoc suffices.
   - (B) An exception needs a contracts.md sentence; rustdoc elaborates it.
-- **Recommendation:** B. AGENTS.md says "Keep the explicit family
-  exceptions in contracts.md", and the rubric's exception rule asks for
-  "the exact contract sentence". A consumer who reads contracts.md should
-  learn every difference from it.
-- **Consequence:** doc-only, in slice 5:
-  - Add to "Text and draft editing" or "Editor sessions": "`on_rejection`
-    reports `InputRejection`s only: the normalizer's, and on `TextField`
-    and `TextArea` the length limit. Number inputs' parse and range errors
-    are not rejections and appear only in the field's status."
-  - Correct number_inputs.rs:2086-2087.
-- **Depends on:** F6, at the checkpoint.
-  - If F6 is fixed by reporting the number inputs' built-in errors through
-    `on_rejection` (slice 6d, a behavior change), the sentence states one
-    coverage rule instead of an exception.
+- **Recommendation:** B for where an exception lives. AGENTS.md says "Keep
+  the explicit family exceptions in contracts.md", and the rubric's
+  exception rule asks for "the exact contract sentence". A consumer who
+  reads contracts.md should learn every difference from it.
+  - Documentation does not resolve F6, which stays an open behavior
+    decision for the checkpoint. The recommended route for it: the number
+    inputs report built-in parse and range refusals through `on_rejection`
+    with localized `InputRejection`s, as `TextField` does its length
+    limits (text_fields.rs:1405-1426). One coverage rule then replaces the
+    exception, and a `Field` can show the refusal through the documented
+    `FieldHandle` route.
   - Criterion 1 favors that fix: two round 1 runs, with severity "slow",
     missed parse errors on the number inputs.
+- **Consequence:**
+  - Slice 5, doc-only, until F6 is decided: add to "Text and draft
+    editing" or "Editor sessions": "`on_rejection` reports
+    `InputRejection`s only: the normalizer's, and on `TextField` and
+    `TextArea` the length limit. A number input's parse and range errors
+    are not rejections: they appear only in inspection
+    (`validation_error`) and as its semantics' invalid flag, and no
+    callback or binding reports them to the application." Make
+    number_inputs.rs:2086-2087 say that it shares the `Some`/`None`
+    protocol, not the coverage.
+  - If F6 takes the recommended route (slice 6d): a behavior change, as
+    `on_rejection` runs in new cases, plus additive `UiMessage` and
+    `StringRole` variants (both `#[non_exhaustive]`). The sentence then
+    states the one rule.
+- **Depends on:** F6, at the checkpoint.
+
+#### G2 revision notes
+
+- Point 1 (G2-13): Codex is right on both counts. The "applies at once" citation concerned sink-caused cleanup and is replaced by `EditSession`'s "Terminal lifecycle cleanup is permitted during an update"; option B is now "disarm at once, defer cancellation and publication together", evaluated and rejected on criterion 2 (cancellation lands after the flush's settle loop at runtime.rs:5443, and the orphaned edit turns a same-flush host write into `Rejected(Conflict)` and refuses other controls with `Busy`), and A is conditional on a test that component and `Computed` dependents settle in the reconciling flush, with a scheduling fix in slice 6d if the computation case fails. Summary row: "A: a narrow lifecycle exception, doc-only once a dependency test passes (AGENTS.md wording to approve); `ContextMenu` gets private non-signal state | doc-only plus a test and a private fix".
+- Point 3 (G2-20): Codex is right. The contracts sentence no longer claims a field status; it says the errors appear only in inspection (`validation_error`) and as the semantics' invalid flag, with no callback or binding. F6 stays an open behavior decision, with the recommended route stated: report parse and range refusals through `on_rejection` with localized `InputRejection`s. Summary row: "B: yes; add the `on_rejection` sentence (inspection-only errors) and correct the rustdoc. F6 stays open; recommended: report built-in refusals through `on_rejection` | doc-only; F6's fix a behavior change".
+- Point 9 (G2-1): recounted per item with receiver checks: 83 call lines (24 consumer-facing, 24 library, 35 tests), not about 90; `Divider::vertical` has 5 calls, not 36. The item list is seventeen, not about fifteen. Recommendation unchanged.
+- Point 9 (G2-5): recounted the affected layout builder `ToolWindowLayout::window` (92 lines, 80 in tests) instead of `ToolWindow::new`; B renames 126 lines in total. Added that C would silently drop windows from multi-window layouts, and that `Toast::action` begins "Adds" but replaces, so the rule names element builders rather than rustdoc wording and gains a second rustdoc fix. Recommendation unchanged.
+- Point 10 (G2-8): Codex is right. The heading, question and recommendation now say "an otherwise unreported outcome, a failure or a cancellation". Summary row: "C: only where dropping hides an otherwise unreported outcome (failure or cancellation); `ToastReceipt` loses it | not breaking".
 
 ## G3
 
@@ -962,45 +1081,50 @@ means `crates/pert-ui/examples`, `apps/gallery` and `crates/pert-ui/src/guide`.
 
 - **The question:** should one convention govern owned and reactive reads?
   Today `x()` is owned and `x_binding()` reactive on receipts, but bare
-  names return a `ReadSignal` elsewhere, and reactive reads are also spelled
-  `*_signal` and `observe`. (G3-1)
+  names return a `ReadSignal` elsewhere (`Parameter::snapshot`, the
+  `status()` of `DialogController`, `WindowController` and `FieldHandle`),
+  and reactive reads are also spelled `*_signal` and `observe`. (G3-1)
 - **Options:**
   - **(A)** Keep everything and document the current spread.
-  - **(B)** Adopt it generally: every reactive read becomes `x_binding()`.
-    This renames `Parameter::snapshot` (about 280 `.snapshot().get/with` test
-    and consumer lines), the reactive `status()` on `DialogController`,
-    `WindowController` and `FieldHandle`, `FormStatus::summary`, and about 20
-    other bare reactive getters (`ListSelection::selected`,
-    `TableController::sort`, `NavigationHistory::current` and others).
-  - **(C)** Adopt the rule only where a type offers both forms, and rename
-    the departures from it.
-    - Proposed rule, for "Public naming rules": "`_signal` marks a parameter
-      that takes a `ReadSignal`. When a type offers an owned read and a
-      reactive read of one value, the bare name is the owned read and
-      `x_binding()` the reactive one. A type with only a reactive read uses
-      the bare name."
-    - Renames: the seven `UiSettings`/`ThemeManager` getters `*_signal` →
-      `*_binding` (`zoom`, `text_rendering`, `motion`, `strings`,
-      `debug_overlay`, `density`, `mode`), whose owned forms exist beside
-      them. `DeliveryMonitor::observe` → `snapshot_binding`.
-    - `Runtime::command_enabled_signal` (takes a signal) and
-      `command_enabled_binding` (returns it) already conform.
-- **Recommendation: (C).**
-  - No wrong behavior is possible: the owned and reactive forms have
-    different types, so a mix-up does not compile. Criterion 1 therefore
-    does not force (B), and its cost is large (criterion 4).
-  - (C) is one learnable rule. It fixes the cases where one type spells the
-    pair differently from receipts, at a cost of 10 consumer and 6 test call
-    sites for the `*_signal` getters and 1 consumer and 2 source sites for
-    `observe`.
-  - Add a rustdoc note on `AnyParameter::snapshot` that it is owned, unlike
-    `Parameter::snapshot`.
+  - **(B)** Every reactive read becomes `x_binding()`: `Parameter::snapshot`
+    (about 280 `.snapshot().get/with` test and consumer lines), the three
+    reactive `status()`, `FormStatus::summary` and about 20 other bare
+    getters (`ListSelection::selected`, `TableController::sort`, …).
+  - **(C)** Adopt the rule only where a type offers both forms. Proposed
+    text: "`_signal` names a method that takes a one-way `ReadSignal`, and
+    `bind_<property>` a builder that takes a two-way `Signal`. When a type
+    offers an owned and a reactive read of one value, the bare name is the
+    owned read and `x_binding()` the reactive one. A type with only a
+    reactive read uses the bare name." Renames: the seven
+    `UiSettings`/`ThemeManager` getters `*_signal` → `*_binding` (`zoom`,
+    `text_rendering`, `motion`, `strings`, `debug_overlay`, `density`,
+    `mode`) and `DeliveryMonitor::observe` → `snapshot_binding`.
+    `Runtime::command_enabled_signal`/`command_enabled_binding` conform.
+  - **(D)** (C), plus `Parameter::snapshot` → `snapshot_binding`, so that
+    a read named `snapshot` always captures.
+- **Recommendation: (C), with one accepted residual risk.**
+  - Different return types catch a `ReadSignal` passed where a value is
+    expected, but not a retained one. `let before = parameter.snapshot();`
+    compiles on `Parameter<T>`, and a later `before.get()?` returns the
+    current value. The same line captures on `AnyParameter` (with `?`,
+    `crates/pert-ui-runtime/tests/parameter_delivery.rs:547`) and on
+    `ParameterState` (`crates/pert-ui-core/tests/edits.rs:209`), and G3-17
+    gives `*Snapshot` a point-in-time meaning. Codex's point holds.
+  - No consumer or run hit it: the 23 consumer calls read at once or keep
+    the signal as a binding on purpose (`apps/gallery/src/main.rs:231`).
+    (D) would cost 23 consumer, about 265 test and about 50 source lines
+    (`rg '\.snapshot\(\)'` without `monitor`/`state`/`client`/`profiler`/
+    `self` receivers or `?`, checked by hand), so (C) records the risk
+    rather than removing it (criterion 4); the maintainer may choose (D).
+  - (C) is one learnable rule at a cost of 10 consumer and 6 test lines for
+    the `*_signal` getters and 1 consumer and 2 source lines for `observe`.
+  - Rustdoc: `Parameter::snapshot` says its signal is live and `get()`
+    captures; `AnyParameter::snapshot` says it is owned.
 - **Consequence:** breaking but small: 8 renamed methods and about 20 call
-  sites. The rule sentence and the `AnyParameter::snapshot` note are
-  doc-only (slice 5), and the renames go to slice 6a. This severity-medium
-  row is resolved without the general rename.
-- **Depends on:** G2-6 (two-way boolean bindings, which uses the `_signal`
-  wording).
+  sites (slice 6a). The rule and both rustdoc notes are doc-only (slice
+  5). The medium row is resolved without the general rename.
+- **Depends on:** G2-6 (`bind_<property>` keeps `_binding()` a read and
+  `_signal` one-way), G3-17 (`*Snapshot` as a point-in-time copy).
 
 ### G3-2 `reorderable` and `resizable`: capability or restriction
 
@@ -1043,8 +1167,9 @@ means `crates/pert-ui/examples`, `apps/gallery` and `crates/pert-ui/src/guide`.
 - **Options:**
   - **(A)** Keep the pairs and document them.
   - **(B)** Use `get(role)`/`with(role, value)` everywhere, as proposed. This
-    renames `Palette::color` (about 62 consumer lines) and separates it from
-    `Painter::color(role)`.
+    renames `Palette::color`/`with_color` and `ThemeMetrics::with_metric`
+    (28 consumer lines: 21 `Palette::color`, 6 `with_color`, 1
+    `with_metric`) and separates it from `Painter::color(role)`.
   - **(C)** Use the noun pair everywhere: `ThemeMetrics::get` → `metric`
     (matching `Painter::metric` and `MeasureContext::metric`), and
     `UiStrings::get`/`with` → `text`/`with_text`. Validation and palette
@@ -1055,6 +1180,10 @@ means `crates/pert-ui/examples`, `apps/gallery` and `crates/pert-ui/src/guide`.
   one gallery line (`apps/gallery/src/language.rs:108`) for `UiStrings`, and
   about 100 mechanical test lines. It also takes keyed lookups out of the
   `get()` rule, which contracts reserves for a validated value's raw value.
+  (B)'s 21 `Palette::color` lines are receiver-checked: the consumers'
+  other `.color(` calls are `Painter::color` or a live-widget builder.
+  Pattern: `rg '(palette|light|dark|Palette::dark\(\)|\])\.color\('`.
+  The count narrows (B)'s cost but leaves (C) cheaper.
 - **Consequence:** breaking. Three methods are renamed; about 1 consumer
   line and about 100 test lines change. Slice 6a.
 - **Depends on:** G1-13 (`with_` as a keyed property builder on a value
@@ -1185,14 +1314,22 @@ means `crates/pert-ui/examples`, `apps/gallery` and `crates/pert-ui/src/guide`.
 - **Consequence:** breaking: 1 variant and about 20 lines. Slice 6a.
 - **Depends on:** none.
 
+#### G3 revision notes
+
+- Point 6 (G3-1): removed "no wrong behavior is possible"; the retained `Parameter::snapshot()` signal reading live values is now assessed with evidence and recorded as an accepted residual risk of (C), with a costed option (D) and a rustdoc mitigation; the rule text and G2-6 dependency now use G2-6's `bind_<property>` so `_binding()` stays the reactive read.
+- Point 9 (G3-3): Codex is right; `Palette::color` has 21 consumer lines, not about 62 (`Painter::color` was counted). (B)'s cost is restated by affected item (28 lines with `with_color` and `with_metric`) with the rg pattern; the recommendation stays (C), which still costs 1 consumer line.
+
 ## G4
 
 ### G4-6 Incidental `Send` on `Divider` and `Svg`
 
-- **The question:** `Divider` and `pert_ui::Svg` are the only `Send + !Sync` component descriptions (their `Cell`/`RefCell` fields are `Send`; every other description holds an `Rc`-based callback, `Dynamic` or `Element`). Do descriptions become uniformly `!Send` through a private marker, or is their `Send` documented? (G4-6)
-- **Options:** (A) one sentence in contracts.md "Element trees and identity": "Descriptions are built and mounted on the UI thread; whether a description type is `Send` is not part of its contract unless its rustdoc says so." No code change. (B) A `PhantomData<Rc<()>>` marker in both types (breaking only for code that moves them across threads, which nothing in the repository does).
-- **Recommendation: A.** Codex refuted the rule departure (`Component` fixes callback threads, not construction affinity), no consumer was misled, and a marker changes a type's auto traits merely for symmetry (criterion 2). The sentence turns a later loss of `Send` into a documented non-break, which is the protection B was after. If the maintainer wants to support parsing an SVG on a worker, which is the costly step, that is a separate decision: promise `Svg: Send` in its rustdoc with a static assertion test. Workers can already use `pert_ui::svg::rasterize`.
-- **Consequence:** doc-only, one contracts.md sentence and no call sites. Slice 5.
+- **The question:** `Divider` and `pert_ui::Svg` are the only `Send + !Sync` component descriptions (their `Cell`/`RefCell` fields are `Send`; every other description holds an `Rc`-based callback, `Dynamic` or `Element`). `Svg`'s `Send` also follows the auto traits of a dependency's type, `resvg::usvg::Tree` (`F/svg/component.rs:43`). Removing `Send` later breaks downstream code that moves the value to another thread, whatever the documentation says, and the API listings show it (`impl core::marker::Send for pert_ui::Svg`). Is that later break accepted as a policy exception, or is the auto-trait boundary fixed now? (G4-6)
+- **Options:**
+  - (A) A compatibility-policy opt-out in contracts.md "Public compatibility policy": "A description's auto traits are not part of its contract unless its rustdoc promises them." A later loss of `Send` still breaks code that sends the value; the sentence only declares that break permitted outside a semver-major release. It needs the maintainer's explicit acceptance as an exception to the usual treatment of auto traits.
+  - (B) A stable boundary now: a private `PhantomData<Rc<()>>` marker in both types, so every description is `!Send`, and contracts.md "Element trees and identity" says "Component descriptions are UI-thread values and are not `Send`." Breaking only for code that moves them across threads, which nothing in the repository does. The facade's nesting test builds an `Svg` on a worker and returns only its error (`crates/pert-ui/tests/presentation/svg.rs:355-358`), which the marker still allows.
+  - (C) Promise `Svg: Send` in rustdoc with a static assertion test, so a worker can parse one, and mark only `Divider`.
+- **Recommendation: B.** Codex refuted the rule departure (`Component` fixes callback threads, not construction affinity) and no consumer was misled, so criterion 1 does not decide. Criterion 3 does: B gives one rule the compiler enforces, matching G4-7's UI-thread `RichText`, where A gives a rule that only the documentation enforces. The change is not merely symmetry: it removes a dependency-driven auto trait. The asymmetry decides the timing: adding `Send` later is compatible, removing it is not, and while the library is unpublished the marker costs two private fields and no call sites (criterion 4). C commits the contract to usvg's auto traits for a need no run showed. Workers already have `pert_ui::svg::rasterize` and `rasterize_mask`, and C remains an additive change if the need appears.
+- **Consequence:** breaking in auto traits only, with no call sites. Two private marker fields, a `compile_fail` doctest per type proving `!Send`, the contracts.md sentence, the `api/` listing diff and a changelog line. Slice 6.
 - **Depends on:** G4-7 (the same thread statement covers styled text).
 
 ### G4-7 `RichText` and `TextSpan` are `!Send`
@@ -1205,14 +1342,24 @@ means `crates/pert-ui/examples`, `apps/gallery` and `crates/pert-ui/src/guide`.
 
 ### G4-8, G4-9 `#[non_exhaustive]` on inspection records and status enums
 
-- **The question:** `InspectionSnapshot`, `ComponentInspection` and `ValidationCode` are exhaustive, although their rustdoc records growth through schemas 5 and 10–14. 30 further DTOs and status enums are exhaustive with no recorded growth. Which get `#[non_exhaustive]`? (G4-8, G4-9)
+- **The question:** `InspectionSnapshot`, `ComponentInspection` and `ValidationCode` are exhaustive, although their rustdoc records growth through schemas 5 and 10–14. 30 further DTOs and status enums are exhaustive with no recorded growth. Which get `#[non_exhaustive]`? A snapshot also contains records that components build (`ComponentDetails` and its `ValidationHints`, `BoxModelInspection`, `BorderInspection` and `InspectValue`), shared values (`Viewport`, `AnyParameterSnapshot`, `Invalidation`) and status enums (`EventStatus`, `DeliveryStatus`, `DebugMode`, `DebugOverlay`). So the boundary follows who constructs a type, not containment. (G4-8, G4-9)
 - **Options:**
   - (A) Keep all exhaustive and record that inspection types follow schema-breaking releases.
   - (B) Mark all 33.
-  - (C) One rule: every type an `InspectionSnapshot` contains is `#[non_exhaustive]`, because it grows with `SCHEMA_VERSION`. That covers G4-8's three plus, from G4-9, `WindowInspection`, `SourceInspection`, `ParameterInspection`, `DragInspection`, `EventRecord`, `EventKind`, `InspectValue`, `ValidationReport`, `ValidationIssue` and `ValidationMarker`. Status and outcome enums an application handles (`TaskStatus`, `ToastStatus`, `DialogOutcome`, `CommandStatus`, `PresentationStatus`, `AuthorityStatus`, …) stay exhaustive.
-- **Recommendation: C.** Growth is demonstrated only for the schema-bound types: `SCHEMA_VERSION` is at 14, and `ValidationCode` gained a code in schema 14. An extern consumer reads them or decodes them with serde, which `#[non_exhaustive]` does not affect. For an application's status enums, an exhaustive match turns a new state into a compile error instead of a silently ignored `_` arm, which serves criterion 1. Codex showed that T3 asks for a "closed" statement only on error enums, so these need none. Extend contracts.md "Public compatibility policy": "Every type an `InspectionSnapshot` contains is `#[non_exhaustive]`; status and outcome enums are closed unless their rustdoc says they grow." Profile records, `Selector`, `DiagnosticCommand`, `QueryResult`, `Capture` and `CaptureJob` stay as they are (`CaptureJob` is reshaped by G4-26).
-- **Consequence:** breaking for extern struct literals and exhaustive matches only. About 13 types. Known call sites: `crates/pert-ui/tests/foundation/serialization.rs:483,507` build `ValidationIssue` literals and need constructors or a move into runtime unit tests. The compiler finds any exhaustive `match` on `EventKind`, `InspectValue` or `ValidationCode` in apps/gallery and the facade tests. Slice 6, plus the contracts sentence.
-- **Depends on:** G4-4 (no `Eq` sweep that would freeze these records), G3-17 (suffixes for these records), G4-26.
+  - (C) Mark only the *runtime-built records*, the types that only `Runtime::inspect` and `Runtime::validation_report` construct. These are the structs `InspectionSnapshot`, `WindowInspection`, `ComponentInspection`, `ParameterInspection`, `SourceInspection`, `DragInspection`, `EventRecord`, `ValidationReport`, `ValidationIssue` and `ValidationMarker`, and the enums `EventKind` and `ValidationCode`, whose variants name runtime operations and checks. Everything else in a snapshot follows its own policy:
+    - `ComponentDetails`, `ValidationHints` and `BoxModelInspection` are built by `Component::inspect` (literal at `crates/pert-ui/examples/diagram_editor/canvas.rs:867`). They stay exhaustive and are built from `Default`.
+    - `BorderInspection` (width and color) and `InspectValue` (a JSON-like value algebra, as `serde_json::Value` is) are closed.
+    - Shared values keep their own type's policy; `KeyCode` and `Semantics` are already non-exhaustive.
+    - Status and outcome enums are closed, `EventStatus` included (`TaskStatus`, `ToastStatus`, `DialogOutcome`, `CommandStatus`, `PresentationStatus`, `AuthorityStatus`, …).
+- **Recommendation: C.** Growth is demonstrated only for runtime-built records: `SCHEMA_VERSION` is at 14, `ComponentInspection` gained fields in schemas 11 and 12, and `ValidationCode` gained a code in schema 14. A consumer reads these or decodes them with serde, which `#[non_exhaustive]` does not affect. Marking the authoring records would break custom components' `..ComponentDetails::default()` literals while `Default` already lets them grow. A new field breaks only a literal without that update syntax, and the changelog says so. For status enums, including `EventStatus`'s success/cancelled/dispatched/failed distinction, an exhaustive match turns a new state into a compile error instead of a silently ignored `_` arm (criterion 1). Codex showed that T3 asks for a "closed" statement only on error enums. Extend contracts.md "Public compatibility policy": "Inspection records that only the runtime builds are `#[non_exhaustive]` and grow with `SCHEMA_VERSION`. Records a component builds for `Component::inspect` are built from `Default`. Status and outcome enums are closed unless their rustdoc says they grow." Profile records, `Selector`, `DiagnosticCommand`, `QueryResult`, `Capture` and `CaptureJob` stay as they are (`CaptureJob` is reshaped by G4-26).
+- **Consequence:** breaking for extern struct expressions and exhaustive matches of the 12 types only. Call sites outside `pert-ui-runtime/src`:
+  - 6 struct expressions, all in `crates/pert-ui/tests/foundation/serialization.rs:479-516` (`ValidationReport`, `ValidationIssue` and `ValidationMarker`, twice each). They become JSON fixtures decoded with serde, which is what they test. No constructor is added, because no consumer builds these records.
+  - No exhaustive match on `EventKind` or `ValidationCode`. All 49 uses are `==`, `matches!`, assertions or array elements.
+  - Patterns, each excluding `-g '!crates/pert-ui-runtime/src/**'`:
+    - `rg -n --type rust '\b(InspectionSnapshot|WindowInspection|ComponentInspection|ParameterInspection|SourceInspection|DragInspection|EventRecord|ValidationReport|ValidationIssue|ValidationMarker)\s*\{'`, with the `fn … -> ComponentInspection {` return types removed by hand;
+    - `rg -n --type rust '(EventKind|ValidationCode)::\w+[^,;]*=>'`, which finds nothing.
+  - One rustdoc sentence on each of the three authoring records says to build them from `Default`. Slice 6, plus the contracts sentence.
+- **Depends on:** G4-4 (no `Eq` sweep that would freeze these records), G3-17 (suffixes for these records), G4-26, G5-26. G5-26 decides where the authoring records are exported. This rule keeps them constructible from `Default` wherever they land, so G5-26 needs no exhaustiveness change.
 
 ### G4-10 `AnyValue`/`AnySpec` returned as conversion errors
 
@@ -1232,10 +1379,20 @@ means `crates/pert-ui/examples`, `apps/gallery` and `crates/pert-ui/src/guide`.
 
 ### G4-19, G4-20 Forwarded `# Errors` in standard-trait implementations
 
-- **The question:** may `TryFrom`, `FromStr` and hand-written serde impls forward in one line to the documented constructor or `# Serialization` section, instead of carrying their own `# Errors` section? contracts.md says "Every public `Result`". The question covers ten conversion impls and 31 serde methods. (G4-19, G4-20)
-- **Options:** (A) Add to contracts.md "Error policy": "An implementation of a standard trait (`TryFrom`, `FromStr`, `Serialize`, `Deserialize`) may state its failures in one line linking the constructor or the type's `# Serialization` section that names them; serde implementations do not invent variants for `D::Error`." (B) Write an `# Errors` section on every impl.
-- **Recommendation: A.** The forwarding lines already name an authoritative, complete source, and Claude verified that every validating type has a `# Serialization` rule. Rustdoc shows trait-impl docs collapsed under the impl, and `clippy::missing_errors_doc` does not apply to trait impls. B duplicates text across 41 methods without informing anyone (criterion 2). G4-18's five impls that have no line at all still need the forwarding line.
-- **Consequence:** doc-only: one contracts bullet, plus G4-18's five lines. Slice 5.
+- **The question:** may `TryFrom`, `FromStr` and serde impls rely on documentation elsewhere instead of carrying their own `# Errors` section? contracts.md says "Every public `Result`". Ten conversion impls carry a one-line forward to the validating constructor (for example `C/parameter.rs:91`, "Validates like [`PowerExponent::new`]"), and G4-18's five carry nothing. The 31 hand-written serde methods carry no doc line at all. Their documentation is the type's `# Serialization` section, which all 14 types have. Two validating derived impls have neither: `PowerExponent`'s `serde(try_from = "f32")` (`C/parameter.rs:61`) and `FrameImage`'s `try_from = "FrameImageRepr"` (`R/capture.rs:315`). (G4-19, G4-20)
+- **Options:**
+  - (A) A two-part rule in contracts.md "Error policy":
+    - "A `TryFrom` or `FromStr` implementation states its failures in one line linking the constructor that documents them."
+    - "Serde implementations, derived or hand-written, are documented at the type. A type whose deserialization validates has a `# Serialization` section naming the format and every rejection, and its impls carry no documentation of their own. They do not invent variants for `D::Error`."
+  - (B) Write an `# Errors` section on every impl (41 methods).
+  - (C) Add a forwarding line to each of the 31 hand-written serde impls as well as the type section.
+- **Recommendation: A.** Codex is right that the serde methods have no forwarding lines; the earlier text took the type sections for method documentation. Type-level documentation is still the right place. Callers reach serde impls through a format crate (`serde_json::from_str`), never by naming the method, and rustdoc collapses trait-impl docs under the impl. C would document hand-written impls but cannot reach derived ones. The same trait would then be documented in two places depending on how it is implemented (criterion 3), while the type section covers both. `clippy::missing_errors_doc` does not apply to trait impls. B and C add 41 and 31 lines that repeat the type sections (criterion 4). Evidence: `rg -n -B4 'fn (serialize|deserialize)<' crates/pert-ui-core/src crates/pert-ui-runtime/src` shows no `///` above any of the 31 methods or their impl blocks, and `rg -n '# Serialization'` over the same paths gives the 14 sections.
+- **Consequence:** doc-only, all in slice 5:
+  - the two-part contracts bullet;
+  - G4-18's five forwarding lines;
+  - `# Serialization` sections for `PowerExponent` and `FrameImage`, which the rule newly requires.
+
+  No serde method gains a line.
 - **Depends on:** G4-10, G4-18.
 
 ### G4-21 `DrawError` into `RuntimeError` (F11's second half)
@@ -1268,7 +1425,7 @@ means `crates/pert-ui/examples`, `apps/gallery` and `crates/pert-ui/src/guide`.
 
 - **The question:** 21 records derive `PartialEq` without `Eq`, although their data permits it (conditional on `T: Eq` where generic). Adopt `Eq`? (G4-4)
 - **Options:** (A) Do not adopt: T1 makes a missing trait a finding only where a consumer plausibly needs it. Record the proposal as closed. (B) Derive `Eq` on all 21, which is additive.
-- **Recommendation: A.** No need is shown: tests need only `PartialEq`, and the parameter records are mostly `f32`. Several of the records (`SourceInspection`, `ProfileStats`, `PresentationStatus`, `EventHistory`) are schema-growing DTOs, and a derived `Eq` would forbid a future float field without a break. Not cheap in commitment, and no consumer cost was demonstrated (criterion 3).
+- **Recommendation: A.** No need is shown: tests need only `PartialEq`, and the parameter records are mostly `f32`. Several of the records are runtime-built records that grow with the schema (`SourceInspection`, which G4-8/G4-9 marks `#[non_exhaustive]`, and `ProfileStats` and `EventHistory`), and a derived `Eq` would forbid a future float field without a break. (Author's correction: the draft also named `PresentationStatus`, a status enum that G4-8/G4-9 keeps closed.) Not cheap in commitment, and no consumer cost was demonstrated (criterion 3).
 - **Consequence:** none; G4-4 is closed as not adopted, with no TODO entry.
 - **Depends on:** G4-8/G4-9.
 
@@ -1279,6 +1436,12 @@ means `crates/pert-ui/examples`, `apps/gallery` and `crates/pert-ui/src/guide`.
 - **Recommendation: B.** It gives one learnable rule matching std ("a validated scalar reads with `get()` and converts into its raw type with `From`"), instead of two unexplained exceptions. It is cheap and local: six additive impls in four files, no call site changes, and no conflict with existing `From` impls on `f32`, `f64` or `usize` (criterion 3). C breaks for symmetry alone.
 - **Consequence:** additive, six `From` impls with rustdoc and a mention in the `get()` rule. Slice 6.
 - **Depends on:** G1-5, G1-6 (the scope of the `get()` rule).
+
+#### G4 revision notes
+
+- Point 2 (G4-8/9), Codex right. The rule now covers "runtime-built records", not "every type a snapshot contains": 10 structs plus `EventKind` and `ValidationCode`. `InspectValue` moved out as a closed value algebra. Component-authoring records (`ComponentDetails`, `ValidationHints`, `BoxModelInspection`) stay exhaustive and are built from `Default`. `BorderInspection` and the status enums, `EventStatus` included, are closed. Call sites were recounted with patterns: 6 struct expressions in one test file and 0 exhaustive matches. G5-26 was added as a dependency.
+- Point 7 (G4-19/20), Codex right. No serde method has a forwarding line. Option A now explicitly makes type-level `# Serialization` documentation sufficient for serde impls, because derived impls cannot carry method docs. Option C (31 per-method lines) was added and rejected. The consequence now adds `# Serialization` sections for `PowerExponent` and `FrameImage`, the two validating derived impls without one.
+- Point 8 (G4-6), Codex right. A is now described as a compatibility-policy opt-out that permits a later break rather than preventing it. The recommendation changed to B, a `!Send` marker now: it gives one compiler-enforced rule, removes `Svg`'s dependency on `usvg::Tree`'s auto traits, and costs no call sites while unpublished. Adding `Send` later stays additive. The consequence moved from doc-only (slice 5) to breaking in auto traits (slice 6), with the `api/` diff and `compile_fail` doctests.
 
 ## G5
 
@@ -1359,74 +1522,89 @@ covers both.
   `DeliveryResolution`, which is constructed, and `SinkError`). G5-32 (`ApplicationError`
   follows the same constructed-error sentence).
 
-### G5-26, G5-27 (with G5-14) How far "every type its signatures name" reaches
+### G5-26, G5-27 (with G5-14) How far "every type its signatures name" reaches, and where it lives
 
 - **The question:** does the closure include field, variant-payload,
-  constructor-parameter and one-hop types? Does the "a custom component needs
+  constructor-parameter, one-hop and kept types? Does the "a custom component needs
   no other import" guarantee (stated three times: `R/lib.rs:324-326`,
-  `F/lib.rs:53-55`, `root.md:39-40`) override the inspection exclusion?
-  G5-27 adds the one-hop types of `EventContext`, `MeasureContext` and
-  `ChildInfo`. G5-14 adds `EditSource`.
+  `F/lib.rs:53-55`, `root.md:39-40`) override the inspection exclusion? Does the
+  result belong in the application prelude, which slice 9 plans to shrink
+  (`plans/app-author-improvements.md:358-360`), or in a component-authoring module?
+  G5-27 adds the one-hop types of `EventContext`, `MeasureContext` and `ChildInfo`;
+  G5-14 adds `EditSource`.
 - **Options:**
-  - (A) Direct only. Signatures of the anchor items count, and nothing reached
-    through them. Narrow the three guarantee sentences to "a component that
-    lays out, draws and handles input". List on the prelude page the root names a
-    self-describing component, a drag source or a detaching view adds.
-    Doc-only.
-  - (B) A mechanical one-hop or transitive closure over signatures, fields and payloads.
-    "One hop from a member" is transitive in effect: it pulls in received handles
-    (`TaskReceipt`, `PresentationReceipt`), two-hop types (`VectorStyle`) and
-    `ProfileSnapshot` against the profiling exclusion, and it works against slice 9's
-    smaller prelude.
-  - (C) A "names a consumer writes" closure.
-- **Rule under C:**
-  - A type is a member when using a member requires writing its name:
-    - an argument the consumer constructs;
-    - an enum it matches;
-    - a field or variant payload it builds or destructures, followed through the values it
-      builds for a `Component` method.
-  - A value the consumer only receives and passes on, compares or calls methods on is not
-    required by this rule.
+  - (A) Direct only: narrow the three sentences to "a component that lays out, draws and
+    handles input", and list the root names a self-describing, dragging or detaching
+    component adds. Doc-only.
+  - (B) A mechanical one-hop closure. It is transitive in effect (`VectorStyle`), takes
+    `ProfileSnapshot` against the profiling exclusion and works against slice 9.
+  - (C) The rule below, added to the application prelude.
+  - (D) The same rule, its result in a new re-export module `pert_ui::component` (and
+    `pert_ui_runtime::component`): `Component`, the prelude's component names and the
+    rest. The prelude keeps today's members; its three sentences point to the module.
+- **Rule (C and D):**
+  - A type is a member when using an anchor requires writing its name: an argument the
+    consumer constructs; an enum it matches, including a kept receipt's status; a field or
+    payload it builds or destructures for a `Component` method; or a value it keeps past
+    the returning call (field, signal, collection) when the rustdoc says to keep it. That
+    is the receipts (`R/runtime/tasks.rs:27`, `R/runtime/reveal.rs:131`,
+    `R/runtime/native_windows.rs:946`) and `EditorAttachment`, through which the editor
+    reports the end of the edit (`R/editor_session.rs:215-219`, `:245`).
+  - A value used only in the returning call (passed on, compared, converted) is not
+    required.
   - The excluded families still win: profiling, capture, inspection *queries and records*,
-    live-data plumbing, host transport and other errors.
-  - The inspection *description* that `Component::inspect` returns is not excluded.
-- **Recommendation: C.**
-  - The guarantee is false today, and every self-describing custom component in the corpus
-    imports the description types from the root: `diagram_editor` `canvas.rs:866-879`,
-    r1-3-claude, r1-3-codex, and the custom-widgets guide at `:124` and `:162`.
-  - rustc offers no import help (G5-6, diagnostics survey). Only membership or a pointer
-    helps, so the cost to consumers is real (criteria 1 and 3).
-  - C keeps the guarantee as the one rule a consumer learns ("if you have to write it to
-    implement `Component`, it is in the prelude"). Unlike B, it does not grow transitively.
-- **Results under C:**
+    live-data plumbing, host transport and other errors. The inspection *description*
+    that `Component::inspect` returns is not excluded.
+- **Recommendation: D.**
+  - The guarantee is false today: every self-describing custom component in the corpus
+    imports the description types from the root (`diagram_editor` `canvas.rs:866-879`,
+    r1-3-claude, r1-3-codex, the custom-widgets guide at `:124` and `:162`), and rustc
+    offers no import help (G5-6). Only membership or a pointer helps (criteria 1 and 3).
+  - Codex is right that receiving a value does not end the need to name it. The
+    consumer-defined editor stores `attachment: EditorAttachment`
+    (`crates/pert-ui/tests/editing/editor_sessions.rs:606`), and the gallery keeps
+    `PresentationReceipt` and `RevealReceipt` in signals (`apps/gallery/src/gallery.rs:112`,
+    `multi_window.rs:66`, `pages/layout/navigation.rs:282`). The draft's "received values
+    stay out" left the guarantee false; the kept-value clause covers them.
+  - C and D yield the same names. C puts them into the prelude slice 9 means to shrink,
+    where a later removal breaks consumers. D adds them once, to a thematic module of the
+    kind slice 9 plans (criteria 3 and 4). The rule a consumer learns: "applications glob
+    the prelude; implementing `Component` also globs `pert_ui::component`, which holds
+    every name you have to write". Two globs re-exporting one item do not conflict.
+- **Results under C and D:**
   - **In:** `Semantics`, `SemanticRole`, `SemanticValue`, `SemanticAction`, `InspectValue`,
-    `ValidationHints`, `OverlapPolicy`, `BoxModelInspection`, and `ShortcutBinding` and
-    `ShortcutScope` (built into `ValidationHints`, from G5-27).
-  - **In:** `DragPreview` and `DRAG_THRESHOLD`, `NativeWindowOptions` (the argument of
-    `detach_view`) and `NativeWindowId` (the argument of `activate_window`). The last one
-    also covers G5-28 in every configuration.
-  - **In:** `Transform2D`, `PathElement` (matched), `EditorTrigger` and `EditorOutcome`
-    (arguments of `EditorAttachment::report`), and `TaskStatus` (matched).
-  - **Not required:** `TaskReceipt`, `RevealReceipt`, `PresentationReceipt`, `FittedText`,
-    `EditorAttachment`, `EditorCompletion`, `IgnoredEntry` and `VectorStyle`. `TextLayout` is
-    in anyway through G5-18's drawing clause.
-  - **Out:** `ProfileSnapshot` (the profiling exclusion). G5-14's `EditSource`: a newtype
-    (`C/edit.rs:59`) that a runtime consumer only receives and compares
-    (`Parameter::begin_edit` takes `Revision`, not a source), so it stays at the root.
-- **Consequence:** additive. About 20 names in the runtime prelude. The membership section
-  of `R/lib.rs` is rewritten, along with `F/lib.rs:46-63` and `root.md:39-40`. No consumer
-  call site must change. Tests and the gallery import these names from the root in many files
-  (for example `InspectValue` in about 87 facade test files), which may optionally be
-  simplified. Slice 9 as recorded. If the prelude change waits, slice 5 narrows G5-25's
-  three sentences in the meantime. The rule is mechanical enough that `inventory.py`'s field
-  and variant lines could check it.
-- **Depends on:**
-  - G5-25: it is resolved by this decision.
-  - G5-12, G5-17 to G5-24: their direct members are unaffected.
-  - G5-11: the exclusion wins.
-  - G5-16: same constructed-type reasoning.
-  - G5-28: subsumed if the runtime prelude takes `NativeWindowId`.
-  - Slice 9's prelude shape: the rule defines the component-authoring set.
+    `ValidationHints`, `OverlapPolicy`, `BoxModelInspection`, `ShortcutBinding`,
+    `ShortcutScope`, `DragPreview`, `DRAG_THRESHOLD`, `NativeWindowOptions`,
+    `NativeWindowId`, `Transform2D`, `PathElement`, `EditorTrigger`, `EditorOutcome` and
+    `TaskStatus`; kept: `EditorAttachment`, `TaskReceipt`, `RevealReceipt`,
+    `PresentationReceipt` and its `PresentationStatus` (`RevealStatus` is in the prelude).
+    24 names beyond the prelude; the module also re-exports G5-21's `EditorSession` and
+    `EditorStart`.
+  - **In, application prelude:** `IgnoredEntry`, as G5-23 records. Codex is right: a
+    consumer matches it from the prelude's `WorkspaceReport::ignored` (`R/workspace.rs:763`,
+    `crates/pert-ui/tests/surfaces/workspace.rs:345`), so "not required" contradicted the
+    rule.
+  - **Not required:** `FittedText` (`into_layout` gives the kept `TextLayout`, in through
+    G5-18; `R/tool_windows/stripe.rs:390`), `EditorCompletion` (read by field) and
+    `VectorStyle` (only a test destructuring a display list reaches it).
+  - **Out:** `ProfileSnapshot` (profiling). G5-14's `EditSource`, a newtype (`C/edit.rs:59`)
+    a runtime consumer only receives and compares (`Parameter::begin_edit` takes
+    `Revision`), stays at the root.
+- **Consequence:** additive. One module per crate, `IgnoredEntry` in the prelude, the three
+  sentences rewritten. No call site must change. Root imports that could switch to the
+  glob, by the pattern below (type and constant names, so the word boundary is the
+  receiver check; no hit is a same-named local type):
+  `rg -n '\b<Name>\b' apps crates/pert-ui/examples crates/pert-ui/tests crates/pert-ui-runtime/tests crates/pert-ui/src/guide`:
+  `EditorAttachment` 2 lines in 2 files, `PresentationReceipt` 6 in 4, `RevealReceipt` 5 in
+  2, `TaskReceipt` 0, `IgnoredEntry` 3 in 1; the largest, `InspectValue`, 744 in 104 (87
+  facade test files). Slice 9's API-layout branch, or 6 if chosen; slice 5 narrows G5-25's
+  sentences as in A meanwhile.
+- **Depends on:** G5-25 (resolved here); G5-21 and G5-23 (`EditorSession`, `EditorStart`,
+  `IgnoredEntry`); G5-12, G5-17 to G5-24 (direct members unaffected); G5-11 (the exclusion
+  wins); G5-16 and G5-30 (the same "writes" test for hosts and `App`); G5-28 (not subsumed
+  under D: `App::on_close` still needs `NativeWindowId` in the facade prelude); slice 9 (it
+  names the module and decides, on its breaking branch, whether component-only names leave
+  the prelude).
 
 ### G5-30 `WindowError` in the facade prelude
 
@@ -1468,7 +1646,8 @@ covers both.
   - (B) A `pert_ui::testing` module re-exporting the capture, CPU and inspection-query names.
   - (C) Put them in the main prelude, against the stated exclusions and slice 9's smaller
     prelude.
-- **Recommendation: A, with one part moved under G5-16's rule.**
+- **Recommendation: A for the testing names; `ApplicationError` joins the prelude
+  (additive, one name).**
   - No tester recorded friction from these imports. claude-D2-8 records use,
     not cost, and Codex corrected the count to six.
   - F2's real cost is the missing helpers (click at bounds, replace text, key chord, find
@@ -1476,12 +1655,24 @@ covers both.
   - AGENTS.md: "Add abstractions for demonstrated responsibilities". A module is justified
     when it owns those helpers (FU or slice 9), not by re-exports alone. The capture names can
     be re-exported there then.
-  - The semantics types are settled by G5-26.
-  - `ApplicationError`, which an application constructs to wrap its own failure for `?`,
-    joins the prelude under G5-16's constructed-error sentence. It is not a testing name.
-- **Consequence:** doc-only for the pointer (the prelude page, slice 9's testing chapter).
-  `ApplicationError` is additive, one name. Its call sites (`main.rs` of `diagram_editor`,
-  `inventory` and `log_explorer`, plus `live_mixer.rs:788`) need no change. No new module now.
-  Input to slice 9.
+  - The semantics types are settled by G5-26 (its component module).
+  - `ApplicationError` (`R/error.rs:46`, built with `new` or `From<String>`/`From<&str>`)
+    is what an application constructs to wrap its own failure for `?`. It joins the
+    prelude under G5-16's constructed-error sentence. It is not a testing name.
+- **Consequence:** additive, one name (`ApplicationError` in the runtime prelude), with
+  its error sentence; the rest is doc-only (the prelude page, slice 9's testing chapter).
+  No new module now. No call site must change. By
+  `rg -n '\bApplicationError\b' apps crates/pert-ui/examples crates/pert-ui/tests crates/pert-ui-runtime/tests crates/pert-ui/src/guide`
+  (every hit is the type itself: `ApplicationError::new`, `::from`, a `use` line or one
+  return type, `crates/pert-ui-runtime/tests/errors.rs:20`; no method is so named, so the
+  word boundary is the receiver check): 45 lines in 28 files. The examples have 6 in 5
+  files (`main.rs` of `diagram_editor`, `inventory` and `log_explorer`, `inventory/app.rs:6`
+  and `:40`, `live_mixer.rs:788`), four of them path-qualified; gallery and tests 39 in 23;
+  the guide none. Only root `use` lines could shrink. Slice 9, or 6 with G5-16.
 - **Depends on:** G5-16 (the constructed-error sentence), G5-26 (semantics types), G5-11 (the
   live-data family in a thematic module), F2 (testing helpers).
+
+#### G5 revision notes
+
+- Point 4 (G5-26): Codex is right on all three counts (`editor_sessions.rs:606` stores `EditorAttachment`; the gallery keeps `PresentationReceipt`/`RevealReceipt` in signals; `IgnoredEntry` is matched, as G5-23 records). The rule gains a kept-value clause; `EditorAttachment`, the three receipts and `PresentationStatus` move to In, `IgnoredEntry` to the application prelude. A new option D puts the rule's result in a `component` module instead of the prelude, per slice 9 (`plans/app-author-improvements.md:358-360`), and the recommendation changes from C to D; G5-28 is no longer subsumed. Summary row: "D: names a component must write, kept receipts included, in a new `component` module; `IgnoredEntry` joins the prelude | additive (new module), prelude rustdoc rewritten".
+- Point 10 (G5-32): Codex is right; the body added `ApplicationError` while the summary said doc-only. The recommendation heading and consequence now state the additive export, with a recount (45 lines in 28 files, 6 in 5 example files; pattern given). Summary row: "A: no testing module until it owns F2's helpers, root pointers instead; `ApplicationError` joins the prelude | doc-only, plus 1 additive name".
