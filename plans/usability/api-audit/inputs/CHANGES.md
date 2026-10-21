@@ -31,7 +31,7 @@ Version 3 adds:
 
 | Gap (reported by) | Fix | Entries version 3 adds or changes |
 |---|---|---|
-| Numbers wrapped in `Option` in no list (claude G3 verification) | `numeric.txt` includes `Option<number>` parameters and returns | 41 |
+| Numbers wrapped in `Option` in no list (claude G3 verification) | `numeric.txt` includes `Option<number>` parameters and returns | 31 |
 | Associated constants in no list (claude G3 verification) | New `constants.txt`; the semantic lists show them with their types | 93 |
 | Fallible conversions into foreign types missing from `errors.txt`, such as `TryFrom<AnyValue> for f32` (claude G4 verification) | They join `errors.txt` | 3 |
 | The prelude column was per package, so core types in pert-ui-runtime's prelude read "no" (claude G5 verification) | They read "yes (via pert_ui_runtime::prelude)" | 6 |

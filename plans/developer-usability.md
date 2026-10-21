@@ -8,8 +8,9 @@ their 90-minute budget. Slice 1 is done: the API listings are under
 `api/` with their CI job, on Rust 1.99.1 (0.3.52); its CI run waits for
 an authorized push. Slice 2 is done: round 1's eight runs are recorded in
 `plans/usability/runs/`. Slice 3 is done: 36 findings are ranked in the
-round 1 findings table. Slice 4, the API consistency audit, is in
-progress: the rubric is approved and the audit runs. Every tool, file and check named below as new is a
+round 1 findings table. Slice 4 is done: the API audit's 127 findings and
+two surveys are recorded, and the joint checkpoint with the maintainer is
+next. Every tool, file and check named below as new is a
 proposal until a slice implements it.
 
 ## Background
@@ -537,6 +538,93 @@ deviations and concrete improvements go to TODO.md, and optional
 capabilities waiting for an application's need go to
 [follow-ups](follow-ups.md). Not choosing a fix does not change where a
 finding goes.
+
+#### API audit findings
+
+Outcome of slice 4 (2026-10-21), audited at d4ba108. The merged table has
+127 findings and one row per finding with the record's fields. It lives in
+[the findings record](usability/api-audit/findings.md) rather than here,
+because its size would swamp the plan. This section gives the ranking and
+the questions for the checkpoint.
+
+**How it ran:**
+- **Inputs:** [`inventory.py`](usability/api-audit/inventory.py) froze the
+  inputs, checked byte for byte against every `api/` listing.
+- **Audit:** Codex and a fresh Claude agent audited each of the five
+  rubric groups independently.
+- **Inventory gaps:** the auditors found gaps in the inventory. The gaps
+  were fixed in two further versions, each version's additions were
+  reviewed, and none hid a finding.
+- **Verification:** each auditor verified the other's findings against the
+  source, and the other's delta findings.
+- **Disputes:** the author settled 22 disputed facts against the source,
+  recorded per group. None needed a new rule.
+
+**Result:**
+- **Severity:** no finding is high, 13 are medium and the rest are low.
+- **Medium findings (the record ranks them):**
+  - **Behavior:**
+    - **G1-4:** `Workspace::set_settings` can make a saved workspace fail
+      to load.
+    - **G2-2, G2-14:** the collections ignore a redescription's
+      permissions and callbacks.
+    - **G2-20:** `on_rejection` differs between the text and number
+      editors; this is F6.
+    - **G4-25:** a protected semantic value can leak.
+  - **Types and names:**
+    - **G2-9:** owners that tear down on drop lack `#[must_use]`.
+    - **G3-1:** `status()` and `snapshot()` mean owned or reactive
+      depending on the type.
+    - **G3-6:** the wgpu renderer takes bare `u32` sizes.
+    - **G4-1:** 113 types lack `Debug`.
+    - **G4-14:** key errors do not name the key; this is F23.
+  - **Discovery:**
+    - **G5-2, G5-3, G5-4:** missing routes to `spawn`, to per-row
+      bindings and to `retain_initial_children`; these are F13, F14, F16
+      and F17.
+- **Low findings, mostly consistency:**
+  - prelude members the rule includes but the prelude lacks (G5,
+    extending F3);
+  - units in bare numbers (G3);
+  - `# Errors` sections that understate their variants (G4);
+  - inconsistent naming within families (G1, G3).
+- **Policy questions:** 43 rows carry one, listed by theme in the record.
+  The main ones are below.
+  - **Collections:** whether they get a contract exception for
+    redescription (G2-2, G2-14).
+  - **Role suffixes:** what they mean for snapshots, inspection records and
+    operation results (G3-17, G3-18).
+  - **Prelude rule:** how far "every type its signatures name" reaches
+    (G5-26).
+  - **`get()` and limit constants:** how far each applies (G1-5, G1-9,
+    G1-10).
+  - **Standard-trait implementations:** whether they may forward
+    `# Errors` (G4-19).
+  - **`#[must_use]` on receipts:** with F19 (G2-8).
+
+**Surveys:**
+- **[Lints](usability/api-audit/lints/survey.md):**
+  - Deny now: `return_self_not_must_use`, `fn_params_excessive_bools` and
+    `missing_panics_doc`, the last with one `#[expect]`.
+  - Deny `missing_debug_implementations` together with G4-1.
+  - Decide `must_use_candidate` as a getter policy.
+  - Leave `unreachable_pub` and `struct_excessive_bools` off.
+- **[Diagnostics](usability/api-audit/diagnostics/survey.md):**
+  - `#[diagnostic::on_unimplemented]` improves every unsatisfied
+    pert-ui trait bound, the sealed `StateOwner` included.
+  - `#[diagnostic::do_not_recommend]` on `AppError`'s blanket `From`
+    fixes F11's message.
+  - rustc 1.99.1 suggests no imports from non-std dependencies, so only
+    prelude membership helps a missing name (F3).
+  - `compile_fail` does not check error codes on stable. Wording needs
+    `trybuild` snapshots in their own job on the pinned toolchain.
+
+**Destinations if not chosen:**
+- Verified deviations go to TODO.md.
+- Module layout and prelude shape go to app-author slice 9.
+- Documentation-only items go to slice 5.
+
+Each row of the record names its destination.
 
 ### 5. Documentation and guide fixes
 
