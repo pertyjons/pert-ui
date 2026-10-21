@@ -520,11 +520,20 @@ def collect(c, config, rows):
             # methods are reviewed once, at the trait's declaration.
             if ("automatically_derived" not in imp.get("attrs", []) and not ii["is_synthetic"]
                     and tn != "Component"):
-                impl_methods += [(m, trait) for m in ii["items"]
+                # The concrete target keeps ParameterSpec<f32> and
+                # ParameterSpec<bool> apart.
+                impl_methods += [(m, trait, render(ii["for"])) for m in ii["items"]
                                  if c.item(m) and "function" in c.item(m)["inner"]]
         if kind == "trait":
             methods = [m for m in it["inner"]["trait"]["items"]
                        if c.item(m) and "function" in c.item(m)["inner"]]
+            for k in it["inner"]["trait"]["items"]:
+                ac = c.item(k)
+                if ac and "assoc_const" in ac["inner"]:
+                    detail = render(ac["inner"]["assoc_const"]["type"])
+                    note("members", f"const {ac['name']}", f"    const {ac['name']}: {detail}")
+                    add("constants", (tpath, ac["name"]),
+                        f"{tpath}::{ac['name']}: {detail}\t(trait constant)\t{c.span(k)}")
         if attrs:
             add("attributes", tpath, f"{tpath}\t{kind}\t{attrs}\t{c.span(t_id)}")
         if kind in {"enum", "struct"}:
@@ -574,9 +583,12 @@ def collect(c, config, rows):
         # Hand-written trait implementations: their methods (Debug::fmt,
         # TryFrom::try_from, FromStr::from_str and the like) are reviewed with
         # the type, and their Results join the error list.
-        for m, trait in impl_methods:
+        for m, trait, target_type in impl_methods:
             f = c.item(m)
-            sig = fn_sig(c, m, f"<{tpath} as {trait}>")
+            head, _, args = target_type.partition("<")
+            owner = f"{tpath.rsplit('::', 1)[0]}::{head.rsplit('::', 1)[-1]}" + (
+                f"<{args}" if args else "")
+            sig = fn_sig(c, m, f"<{owner} as {trait}>")
             loc = c.span(m)
             note("methods", sig, f"    {sig}\t(trait impl)\t{loc}")
             err = result_error(c, f["inner"]["function"]["sig"].get("output"))
