@@ -20,7 +20,7 @@ It then writes the inputs to plans/usability/api-audit/inputs/:
   type with its inherent and trait-declared methods and an empty role
   column for the auditor. The script never assigns a role.
 
-Usage: plans/usability/api-audit/inventory.py [--skip-build]
+Usage: plans/usability/api-audit/inventory.py [--skip-build] [--out DIR]
 --skip-build reuses the copies already in target/api-audit/. Needs the
 pinned toolchain and the cargo-public-api version generate.sh names.
 """
@@ -45,7 +45,11 @@ NUMERIC = {
     "u8", "u16", "u32", "u64", "u128", "usize",
     "i8", "i16", "i32", "i64", "i128", "isize", "f32", "f64",
 }
-STATE_TYPES = {"StateOwner", "Runtime", "Signal", "ReadSignal", "ListSelection"}
+# Parameter type names that mark a constructor as binding state (rubric C3).
+STATE_NAMES = re.compile(
+    r"(StateOwner|Runtime|Signal|Selection|Controller|Host|Session|Binding|State"
+    r"|^NavigationHistory|^ToastQueue|^SeriesSource|^Parameter)$")
+CONVERSION_TRAITS = {"From", "TryFrom", "AsRef", "AsMut", "FromStr", "Into", "TryInto"}
 AUTO_TRAITS = {"Send", "Sync", "Unpin", "UnwindSafe", "RefUnwindSafe", "Freeze"}
 
 
@@ -138,8 +142,16 @@ def render_args(args):
     return ""
 
 
+PATHS = {}
+
+
 def render_path(p):
-    return p["path"] + render_args(p.get("args"))
+    name = p["path"]
+    # A bare `Error` is ambiguous (std::io::Error, fmt::Error, a crate's own);
+    # name it by its full path.
+    if name == "Error" and str(p.get("id")) in PATHS:
+        name = "::".join(PATHS[str(p["id"])]["path"])
+    return name + render_args(p.get("args"))
 
 
 def render_bounds(bounds):
@@ -280,6 +292,8 @@ class Crate:
         self.data = json.loads(Path(path).read_text())
         self.index = self.data["index"]
         self.paths = self.data["paths"]
+        PATHS.clear()
+        PATHS.update(self.paths)
         self.name = self.index[str(self.data["root"])]["name"]
         # id -> list of public paths; external re-exports kept by path.
         self.public = defaultdict(list)
@@ -341,6 +355,9 @@ class Crate:
             return sorted(ps, key=lambda p: (p.count("::"), p))[0]
         p = self.paths.get(str(i))
         return "::".join(p["path"]) if p else f"<id {i}>"
+
+    def in_prelude(self, i):
+        return any("::prelude::" in p for p in self.public.get(i, []))
 
     def span(self, i):
         s = self.item(i).get("span")
@@ -438,7 +455,19 @@ def collect(c, config, rows):
         kind = c.kind(t_id)
         attrs = " ".join(attrs_of(it))
         gen = render_generics(it["inner"][kind].get("generics", {})) if kind != "type_alias" else ""
-        traits, autos, methods = [], [], []
+        info = rows["_types"].setdefault(tpath, {
+            "head": f"{tpath}{gen}\t{kind}\t{attrs or '-'}\t{c.span(t_id)}\t"
+                    f"prelude: {'yes' if c.in_prelude(t_id) else 'no'}",
+            "kind": kind, "configs": set(), "traits": {}, "autos": {}, "methods": {},
+            "members": {},
+        })
+        info["configs"].add(config)
+
+        def note(table, key, text=None):
+            entry = info[table].setdefault(key, [text or key, set()])
+            entry[1].add(config)
+
+        methods, impl_methods = [], []
         for imp in c.impls(t_id) if kind != "trait" and kind != "type_alias" else []:
             ii = imp["inner"]["impl"]
             if ii.get("blanket_impl") is not None:
@@ -449,22 +478,29 @@ def collect(c, config, rows):
                             and c.item(m)["visibility"] == "public"]
                 continue
             cond = render_generics(ii["generics"])
-            label = ("!" if ii["is_negative"] else "") + render_path(ii["trait"])
-            if cond:
-                label += f" [{cond}]"
-            (autos if ii["is_synthetic"] or tn in AUTO_TRAITS else traits).append(label)
-            if tn in {"From", "TryFrom", "AsRef", "AsMut", "FromStr", "Into", "TryInto"}:
-                add("conversion-traits", (tpath, label),
-                    f"{tpath}\timpl {label}\t{c.span(imp['id'])}")
+            trait = ("!" if ii["is_negative"] else "") + render_path(ii["trait"])
+            target = ii["for"].get("resolved_path", {}).get("id")
+            full = f"impl {trait} for {render(ii['for'])}" + (f" [{cond}]" if cond else "")
+            if tn in CONVERSION_TRAITS:
+                add("conversion-traits", full, f"{full}\t{c.span(imp['id'])}")
+            if target != t_id:
+                # rustdoc also lists an impl under a type its trait arguments
+                # name, such as `From<ChoiceId> for AnyValue` under ChoiceId.
+                note("traits", f"(for another type) {full}")
+                continue
+            label = trait + (f" [{cond}]" if cond else "")
+            note("autos" if ii["is_synthetic"] or tn in AUTO_TRAITS else "traits", label)
             if tn == "Error":
                 add("errors", (tpath, "impl Error"), f"{tpath}\timpl Error\t{c.span(imp['id'])}")
-            # Trait impl methods returning Self are constructors too (Default, From).
+            # Component implementations are the widget contract itself; their
+            # methods are reviewed once, at the trait's declaration.
+            if ("automatically_derived" not in imp.get("attrs", []) and not ii["is_synthetic"]
+                    and tn != "Component"):
+                impl_methods += [(m, trait) for m in ii["items"]
+                                 if c.item(m) and "function" in c.item(m)["inner"]]
         if kind == "trait":
             methods = [m for m in it["inner"]["trait"]["items"]
                        if c.item(m) and "function" in c.item(m)["inner"]]
-        add("types", tpath,
-            f"{tpath}{gen}\t{kind}\t{attrs or '-'}\t{c.span(t_id)}\t"
-            f"traits: {', '.join(sorted(traits)) or '-'}\tauto: {', '.join(sorted(autos)) or '-'}")
         if attrs:
             add("attributes", tpath, f"{tpath}\t{kind}\t{attrs}\t{c.span(t_id)}")
         if kind in {"enum", "struct"}:
@@ -479,6 +515,8 @@ def collect(c, config, rows):
                     fields = [f for f in sk["tuple"] if f is not None]
                 pub = [c.item(f) for f in fields if c.item(f) and c.item(f)["visibility"] == "public"]
                 for fl in pub:
+                    note("members", f"field {fl['name']}",
+                         f"    field {fl['name']}: {render(fl['inner']['struct_field'])}")
                     add("fields", (tpath, fl["name"]),
                         f"{tpath}.{fl['name']}: {render(fl['inner']['struct_field'])}\t{c.span(fl['id'])}")
                 if pub:
@@ -486,22 +524,60 @@ def collect(c, config, rows):
                         f"{tpath}\tstruct with public fields\t{attrs or '-'}\t"
                         f"docs mention closed/exhaustive: {'yes' if closed else 'no'}\t{c.span(t_id)}")
             else:
+                for v_id in body["variants"]:
+                    v = c.item(v_id)
+                    vk = v["inner"]["variant"]["kind"]
+                    payload = ""
+                    if isinstance(vk, dict) and "tuple" in vk:
+                        payload = "(" + ", ".join(
+                            render(c.item(f)["inner"]["struct_field"])
+                            for f in vk["tuple"] if f is not None and c.item(f)) + ")"
+                    elif isinstance(vk, dict) and "struct" in vk:
+                        payload = " { " + ", ".join(
+                            f"{c.item(f)['name']}: {render(c.item(f)['inner']['struct_field'])}"
+                            for f in vk["struct"]["fields"] if c.item(f)) + " }"
+                    note("members", f"variant {v['name']}", f"    variant {v['name']}{payload}")
                 add("non-exhaustive", tpath,
                     f"{tpath}\tenum ({len(body['variants'])} variants)\t{attrs or '-'}\t"
                     f"docs mention closed/exhaustive: {'yes' if closed else 'no'}\t{c.span(t_id)}")
-        sem = []
         for m in methods:
             f = c.item(m)
             sig = fn_sig(c, m, tpath)
             fattrs = " ".join(attrs_of(f))
             loc = c.span(m)
-            sem.append(f"    {sig}\t{fattrs or '-'}\t{loc}")
+            note("methods", sig, f"    {sig}\t{fattrs or '-'}\t{loc}")
             fn_candidates(c, add, t_id, tpath, f, sig, fattrs, loc, kind)
-        add("semantic", tpath,
-            f"{tpath}\t{kind}\trole: \t{c.span(t_id)}\n" + "\n".join(sem))
+        # Hand-written trait implementations: their methods (Debug::fmt,
+        # TryFrom::try_from, FromStr::from_str and the like) are reviewed with
+        # the type, and their Results join the error list.
+        for m, trait in impl_methods:
+            f = c.item(m)
+            sig = fn_sig(c, m, f"<{tpath} as {trait}>")
+            loc = c.span(m)
+            note("methods", sig, f"    {sig}\t(trait impl)\t{loc}")
+            err = result_error(c, f["inner"]["function"]["sig"].get("output"))
+            if err is not None:
+                docs = f.get("docs") or ""
+                add("errors", (render(err), sig),
+                    f"{render(err)}\t# Errors: {'yes' if '# Errors' in docs else 'NO'}\t"
+                    f"{sig}\t(trait impl)\t{loc}")
 
     for i in list(c.public):
-        if c.kind(i) == "function":
+        kind = c.kind(i)
+        if kind in {"function", "constant", "static", "module", "macro"}:
+            it = c.item(i)
+            if kind == "constant":
+                detail = render(it["inner"]["constant"]["type"])
+            elif kind == "static":
+                detail = render(it["inner"]["static"]["type"])
+            elif kind == "function":
+                detail = fn_sig(c, i, c.path_of(i).rsplit("::", 1)[0])
+            else:
+                detail = "-"
+            add("free-items", c.path_of(i),
+                f"{c.path_of(i)}\t{kind}\t{detail}\t{c.span(i)}\t"
+                f"prelude: {'yes' if c.in_prelude(i) else 'no'}")
+        if kind == "function":
             f = c.item(i)
             sig = fn_sig(c, i, c.path_of(i).rsplit("::", 1)[0])
             fn_candidates(c, add, None, None, f, sig, " ".join(attrs_of(f)), c.span(i), None)
@@ -518,8 +594,9 @@ def fn_candidates(c, add, owner_id, owner, f, sig, fattrs, loc, owner_kind):
     if owner_id is not None and recv is None:
         rs = returns_self(c, f, owner_id)
         if rs:
-            m = re.match(r"(try_|from_|with_|new|bound|for_parameter|default)", name)
-            prefix = m.group(1) if m else "other"
+            m = re.match(r"(try_|from_|with_)", name)
+            exact = name in {"new", "bound", "for_parameter", "default"}
+            prefix = name if exact else (m.group(1) if m else "other")
             add("constructors", (prefix, key), f"[{prefix}] returns {rs}\t{row}")
         ids = type_ids(fn["sig"]["inputs"], set())
         names = {c.paths.get(str(x), {}).get("path", ["?"])[-1] for x in ids}
@@ -534,16 +611,34 @@ def fn_candidates(c, add, owner_id, owner, f, sig, fattrs, loc, owner_kind):
             if "type" in p["kind"]:
                 bound_names |= {b["trait_bound"]["trait"]["path"].split("::")[-1]
                                 for b in p["kind"]["type"]["bounds"] if "trait_bound" in b}
-        hits = (names | bound_names) & STATE_TYPES
-        if hits or any(n.endswith("Controller") for n in names):
+        if any(STATE_NAMES.search(n) for n in names | bound_names):
             order = ", ".join(n for n, _ in fn["sig"]["inputs"])
             add("state-owners", key, f"params({order})\t{row}")
-    if recv == "Self":
-        out = fn["sig"].get("output")
-        if out == {"generic": "Self"} or (out and out.get("resolved_path", {}).get("id") == owner_id):
+    if recv == "Self" and owner_id is not None:
+        rs = returns_self(c, f, owner_id)
+        if rs == "Self":
             add("builders", key, row)
-    if name.startswith("on_"):
-        add("callbacks", key, row)
+        elif rs == "Result<Self>":
+            add("builders", key, f"[fallible] {row}")
+    closures = {b["trait_bound"]["trait"]["path"].split("::")[-1]
+                for tnode in walk_types([fn["sig"]["inputs"], fn["generics"]])
+                if "impl_trait" in tnode
+                for b in tnode["impl_trait"] if "trait_bound" in b}
+    for p in fn["generics"].get("params", []):
+        if "type" in p["kind"]:
+            closures |= {b["trait_bound"]["trait"]["path"].split("::")[-1]
+                         for b in p["kind"]["type"]["bounds"] if "trait_bound" in b}
+    for w in fn["generics"].get("where_predicates", []):
+        if "bound_predicate" in w:
+            closures |= {b["trait_bound"]["trait"]["path"].split("::")[-1]
+                         for b in w["bound_predicate"]["bounds"] if "trait_bound" in b}
+    takes_closure = bool(closures & {"Fn", "FnMut", "FnOnce"}) or any(
+        "function_pointer" in t or "dyn_trait" in t and any(
+            p["trait"]["path"].split("::")[-1] in {"Fn", "FnMut", "FnOnce"}
+            for p in t["dyn_trait"]["traits"])
+        for t in walk_types(fn["sig"]["inputs"]))
+    if name.startswith("on_") or takes_closure:
+        add("callbacks", key, f"[{'on_' if name.startswith('on_') else 'closure'}] {row}")
     inputs = fn["sig"]["inputs"]
     bools = [n for n, t in inputs if t == {"primitive": "bool"}]
     nums = [f"{n}: {t['primitive']}" for n, t in inputs if t.get("primitive") in NUMERIC]
@@ -575,56 +670,98 @@ def write_lists(rows, all_configs):
         d.mkdir(parents=True)
     headers = {
         "types": "Every public type: path+generics, kind, attributes, definition, "
-                 "trait impls (conditional ones with [bounds]), auto-trait impls (! = negative).",
+                 "whether the package's prelude holds it, "
+                 "trait impls (conditional ones with [bounds]; impls rustdoc files under "
+                 "the type although they are for another type are marked so), "
+                 "auto-trait impls (! = negative). Per-configuration differences are "
+                 "marked on each trait.",
         "attributes": "Every #[must_use] and #[non_exhaustive] on a public type or function.",
         "constructors": "Associated functions without a receiver returning Self, "
                         "Result<Self, _> or Option<Self>, grouped by name prefix.",
-        "state-owners": "Associated functions whose parameters name a state owner, "
-                        "Signal, ReadSignal, ListSelection or *Controller, with parameter order.",
-        "builders": "Methods taking self and returning Self.",
-        "callbacks": "Every on_* function with its closure bounds.",
-        "bool-params": "Functions with bool parameters; builder = takes self, returns Self.",
+        "state-owners": "Associated functions whose parameter types or bounds end in "
+                        "StateOwner, Runtime, Signal, Selection, Controller, Host, Session, "
+                        "Binding or State, or are NavigationHistory, ToastQueue, SeriesSource "
+                        "or Parameter, with parameter order. Free-function constructors "
+                        "are in free-items.txt.",
+        "builders": "Methods taking self and returning Self, and [fallible] ones "
+                    "returning Result<Self, _>.",
+        "callbacks": "Every on_* function, and every function taking a closure "
+                     "(Fn, FnMut, FnOnce, a function pointer or a boxed closure), "
+                     "with its closure bounds.",
+        "bool-params": "Functions with bool parameters; builder = takes self and returns Self "
+                       "(a mechanical mark: an operation computing a new value also matches).",
         "numeric": "Functions with bare numeric parameters or return values.",
         "getters": "Functions named get or get_*.",
         "conversion-methods": "as_*, to_*, into_* and iter* methods with their receivers.",
         "conversion-traits": "From, TryFrom, AsRef, AsMut and FromStr implementations "
-                             "(Into/TryInto when written by hand).",
+                             "(Into/TryInto when written by hand), as impl Trait for Target.",
         "errors": "Error types of public Results (first column) with # Errors coverage, "
-                  "and every std::error::Error implementation.",
+                  "including hand-written trait implementations such as TryFrom and "
+                  "FromStr, and every std::error::Error implementation.",
         "fields": "Every public field.",
+        "free-items": "Every public item that is not a type or a method: free "
+                      "functions, constants, statics and modules, with whether the "
+                      "prelude holds it.",
         "non-exhaustive": "Every public enum, and every struct with public fields, with its "
                           "attributes and whether its rustdoc mentions closed/exhaustive.",
     }
+    def marker(cfgs, configs):
+        return "" if cfgs == set(configs) else f"\t[configs: {', '.join(sorted(cfgs))}]"
+
     for package, lists in rows.items():
         configs = all_configs[package]
+        types = lists.pop("_types", {})
+        with (cand / "types.txt").open("a" if (cand / "types.txt").exists() else "w") as fh:
+            if fh.tell() == 0:
+                fh.write(f"# {headers['types']}\n# A trailing [configs: ...] means the "
+                         "entry exists only in those configurations.\n")
+            fh.write(f"\n## {package}\n")
+            for tpath in sorted(types):
+                t = types[tpath]
+                traits = ", ".join(f"{k}{marker(v[1], t['configs']).replace(chr(9), ' ')}"
+                                   for k, v in sorted(t["traits"].items())) or "-"
+                autos = ", ".join(f"{k}{marker(v[1], t['configs']).replace(chr(9), ' ')}"
+                                  for k, v in sorted(t["autos"].items())) or "-"
+                fh.write(f"{t['head']}\ttraits: {traits}\tauto: {autos}"
+                         f"{marker(t['configs'], configs)}\n")
+        with (sem / f"{package}.txt").open("w") as fh:
+            fh.write(f"# {package}: every public type with its public fields, its "
+                     "variants and their payloads,\n# its inherent methods, its trait-declared "
+                     "methods and the methods of its hand-written\n# trait implementations. "
+                     "Classify each type's role with a source reference,\n# or write "
+                     "'unresolved'.\n\n## {package}\n")
+            for tpath in sorted(types):
+                t = types[tpath]
+                kind = t["kind"]
+                head = t["head"].split("\t")
+                fh.write(f"{tpath}\t{kind}\trole: \t{head[3]}{marker(t['configs'], configs)}\n")
+                for key in sorted(t["members"]):
+                    text, cfgs = t["members"][key]
+                    fh.write(f"{text}{marker(cfgs, t['configs'])}\n")
+                for sig in sorted(t["methods"]):
+                    text, cfgs = t["methods"][sig]
+                    fh.write(f"{text}{marker(cfgs, t['configs'])}\n")
         for name, entries in lists.items():
-            target = sem if name == "semantic" else cand
-            f = target / (f"{package}.txt" if name == "semantic" else f"{name}.txt")
+            f = cand / f"{name}.txt"
             mode = "a" if f.exists() else "w"
             with f.open(mode) as fh:
                 if mode == "w":
-                    if name == "semantic":
-                        fh.write(f"# {package}: every public type with its inherent and "
-                                 "trait-declared methods.\n# Classify each type's role with a "
-                                 "source reference, or write 'unresolved'.\n")
-                    else:
-                        fh.write(f"# {headers[name]}\n# A trailing [configs: ...] means the "
-                                 "entry exists only in those configurations.\n")
+                    fh.write(f"# {headers[name]}\n# A trailing [configs: ...] means the "
+                             "entry exists only in those configurations.\n")
                 fh.write(f"\n## {package}\n")
                 for key in sorted(entries, key=str):
                     text, cfgs = entries[key]
-                    suffix = "" if cfgs == set(configs) else f"\t[configs: {', '.join(sorted(cfgs))}]"
-                    if name == "semantic":
-                        head, _, rest = text.partition("\n")
-                        fh.write(f"{head}{suffix}\n{rest}\n" if rest else f"{head}{suffix}\n")
-                    else:
-                        fh.write(f"{text}{suffix}\n")
+                    fh.write(f"{text}{marker(cfgs, configs)}\n")
 
 
 def main():
+    global OUT
     ap = argparse.ArgumentParser()
     ap.add_argument("--skip-build", action="store_true")
+    ap.add_argument("--out", type=Path, default=OUT,
+                    help="output directory (default: inputs/ beside this script)")
     args = ap.parse_args()
+    OUT = args.out.resolve()
 
     target, tool_version, configs = configurations()
     tool = run(["cargo-public-api", "--version"]).stdout.strip()
