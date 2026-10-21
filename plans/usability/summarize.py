@@ -105,19 +105,17 @@ def output(b, stream):
 
 
 DIAG_START = re.compile(r"^(error|warning)(\[(\w+)\])?: (.*)")
-NOT_DIAGNOSTIC = re.compile(r"^(aborting due|could not compile|build failed|unused manifest key|`.*` \(.*\) generated|\d+ warnings? emitted)")
+NOT_DIAGNOSTIC = re.compile(r"^(aborting due|could not compile|build failed|test failed|unused manifest key|`.*` \(.*\) generated|\d+ warnings? emitted)")
 errors, warnings = collections.Counter(), collections.Counter()
 diagnostics = collections.OrderedDict()
 
 
+occurrences = []
+
+
 def record(level, code, message, text):
-    """Counts every occurrence and keeps the text of each distinct one."""
-    location = re.search(r"--> (\S+)", text)
-    key = (level, code, message, location[1] if location else "")
-    lint = code or (re.search(r"#\[warn\(([\w:]+)\)\]", text) or [None, None])[1] or message[:60]
-    (errors if level == "error" else warnings)[code or (message[:60] if level == "error" else lint)] += 1
-    if (level == "error" or "pert_ui" in text) and key not in diagnostics:
-        diagnostics[key] = text
+    """Keeps every occurrence; they are counted after all builds are read."""
+    occurrences.append((level, code, message, text))
 
 
 for b in compiling:
@@ -153,6 +151,23 @@ for b in compiling:
             continue
         record(d["level"], (d.get("code") or {}).get("code"), d["message"],
                (d.get("rendered") or d["message"]).rstrip())
+
+# rustc names a warning's lint (`#[warn(...)]`) only at its first occurrence
+# in a build, so a message seen with its lint once is counted under it.
+lint_of = {}
+for level, code, message, text in occurrences:
+    lint = re.search(r"#\[warn\(([\w:]+)\)\]", text)
+    if lint:
+        lint_of.setdefault(message, lint[1])
+for level, code, message, text in occurrences:
+    if level == "error":
+        errors[code or message[:60]] += 1
+    else:
+        warnings[code or lint_of.get(message) or message[:60]] += 1
+    location = re.search(r"--> (\S+)", text)
+    key = (level, code, message, location[1] if location else "")
+    if (level == "error" or "pert_ui" in text) and key not in diagnostics:
+        diagnostics[key] = text
 
 sessions = [b for b in compiling if b.get("status") == 0 and executes_session(b["argv"])]
 first_session = min(sessions, key=lambda b: b["end"]) if sessions else None

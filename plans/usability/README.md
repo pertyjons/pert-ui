@@ -208,7 +208,19 @@ harness, bubblewrap sandbox:
   before that point; the dispatch is now one function whose call and
   `exit` are parsed before anything runs, so later edits cannot do this.
 
-Not yet run: both tester probes again after these changes, and the pilot.
+- The Claude pilot on task 2 (2026-10-21, harness 39d483f) ran end to end:
+  the session ended after 8.4 minutes, its submission builds and its nine
+  headless tests pass in a fresh acceptance directory, and the author
+  recorded every acceptance item as met (`acceptance.md` and
+  `acceptance.env` in the run directory). The tester read no library
+  source and kept a detailed friction log, for slice 3. `summarize.py`
+  worked; it counted `test failed` as an error and split one warning
+  between its lint and its message, which are fixed. The task took far
+  less than its 90-minute budget; whether the tasks or the budget change is
+  a kit decision for after the Codex pilot.
+
+Not yet run: both tester probes again after these changes, and the Codex
+pilot.
 Starting a tester session from the author's Claude Code session was refused
 by its auto-mode permission classifier, also after the maintainer asked for
 it, so the maintainer starts those runs.
