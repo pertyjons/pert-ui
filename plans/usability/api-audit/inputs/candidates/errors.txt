@@ -1,0 +1,598 @@
+# Error types of public Results (first column) with # Errors coverage, and every std::error::Error implementation.
+# A trailing [configs: ...] means the entry exists only in those configurations.
+
+## pert-ui-core
+AnySpec	# Errors: yes	pert_ui_core::ParameterValue::spec_from_any(spec: AnySpec) -> Result<ParameterSpec<Self>, AnySpec>	-	crates/pert-ui-core/src/family.rs:71
+AnyValue	# Errors: yes	pert_ui_core::ParameterValue::from_any(value: AnyValue) -> Result<Self, AnyValue>	-	crates/pert-ui-core/src/family.rs:61
+EditError	# Errors: yes	pert_ui_core::ParameterState::acknowledge(&mut self, token: &EditToken) -> Result<(), EditError>	-	crates/pert-ui-core/src/edit.rs:568
+EditError	# Errors: yes	pert_ui_core::ParameterState::begin(&mut self, expected: Revision, source: EditSource) -> Result<EditToken, EditError>	-	crates/pert-ui-core/src/edit.rs:367
+EditError	# Errors: yes	pert_ui_core::ParameterState::cancel(&mut self, token: &EditToken) -> Result<EditOutcome<T>, EditError>	-	crates/pert-ui-core/src/edit.rs:521
+EditError	# Errors: yes	pert_ui_core::ParameterState::commit(&mut self, token: &EditToken, sequence: EditSequence, value: T) -> Result<EditOutcome<T>, EditError>	-	crates/pert-ui-core/src/edit.rs:486
+EditError	# Errors: yes	pert_ui_core::ParameterState::outcome(&self, token: &EditToken) -> Result<Option<EditOutcome<T>>, EditError>	-	crates/pert-ui-core/src/edit.rs:426
+EditError	# Errors: yes	pert_ui_core::ParameterState::preview_sequence(&self, token: &EditToken) -> Result<Option<EditSequence>, EditError>	-	crates/pert-ui-core/src/edit.rs:435
+EditError	# Errors: yes	pert_ui_core::ParameterState::reject_authority(&mut self, token: &EditToken) -> Result<EditOutcome<T>, EditError>	-	crates/pert-ui-core/src/edit.rs:554
+EditError	# Errors: yes	pert_ui_core::ParameterState::reject_delivery(&mut self, token: &EditToken) -> Result<EditOutcome<T>, EditError>	-	crates/pert-ui-core/src/edit.rs:540
+EditError	# Errors: yes	pert_ui_core::ParameterState::replace_spec(&mut self, spec: ParameterSpec<T>) -> Result<(), EditError>	-	crates/pert-ui-core/src/edit.rs:606
+EditError	# Errors: yes	pert_ui_core::ParameterState::set_effective(&mut self, value: Option<T>) -> Result<(), EditError>	-	crates/pert-ui-core/src/edit.rs:632
+EditError	# Errors: yes	pert_ui_core::ParameterState::update(&mut self, token: &EditToken, sequence: EditSequence, value: T) -> Result<PreviewOutcome, EditError>	-	crates/pert-ui-core/src/edit.rs:450
+EditError	# Errors: yes	pert_ui_core::ParameterState::write_base(&mut self, value: T) -> Result<(), EditError>	-	crates/pert-ui-core/src/edit.rs:581
+LiveError	# Errors: yes	pert_ui_core::Capacity::new(items: usize) -> Result<Self, LiveError>	-	crates/pert-ui-core/src/live/mod.rs:194
+LiveError	# Errors: yes	pert_ui_core::SeriesEndpoint::restart(&mut self) -> Result<Incarnation, LiveError>	-	crates/pert-ui-core/src/live/series.rs:219
+ParameterError	# Errors: yes	pert_ui_core::ChoiceId::new(id: impl Into<String>) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/choice.rs:40
+ParameterError	# Errors: yes	pert_ui_core::ParameterSpec::boolean(name: impl Into<String>, default: bool) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:481
+ParameterError	# Errors: yes	pert_ui_core::ParameterSpec::choices(name: impl Into<String>, options: impl IntoIterator<Item = ChoiceOption>, default: ChoiceId) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:497
+ParameterError	# Errors: yes	pert_ui_core::ParameterSpec::new(name: impl Into<String>, minimum: f32, maximum: f32, default: f32) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:311
+ParameterError	# Errors: yes	pert_ui_core::ParameterSpec::normalize(&self, value: &T) -> Result<NormalizedValue, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:279
+ParameterError	# Errors: yes	pert_ui_core::ParameterSpec::offset(&self, value: i64, steps: i64) -> Result<i64, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:466
+ParameterError	# Errors: yes	pert_ui_core::ParameterSpec::stepped(name: impl Into<String>, minimum: i64, maximum: i64, default: i64) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:380
+ParameterError	# Errors: yes	pert_ui_core::ParameterSpec::validate(&self, value: &T) -> Result<(), ParameterError>	-	crates/pert-ui-core/src/parameter.rs:250
+ParameterError	# Errors: yes	pert_ui_core::ParameterSpec::validate_effective(&self, value: &T) -> Result<(), ParameterError>	-	crates/pert-ui-core/src/parameter.rs:263
+ParameterError	# Errors: yes	pert_ui_core::ParameterSpec::with_mapping(self, mapping: ParameterMapping) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:342
+ParameterError	# Errors: yes	pert_ui_core::ParameterSpec::with_step(self, step: NonZeroU64) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:413
+ParameterError	# Errors: yes	pert_ui_core::PowerExponent::new(exponent: f32) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:76
+ParameterIdError	# Errors: yes	pert_ui_core::ParameterId::new(session: u128, object: u128, key: impl Into<String>) -> Result<Self, ParameterIdError>	-	crates/pert-ui-core/src/parameter_id.rs:66
+ParameterIdError	# Errors: yes	pert_ui_core::ParameterId::next_incarnation(&self) -> Result<Self, ParameterIdError>	-	crates/pert-ui-core/src/parameter_id.rs:117
+Self::Error	# Errors: yes	pert_ui_core::HostValue::from_canonical(value: Self::Canonical) -> Result<Self, Self::Error>	-	crates/pert-ui-core/src/erased.rs:424
+Self::Error	# Errors: yes	pert_ui_core::HostValue::to_canonical(&self) -> Result<Self::Canonical, Self::Error>	-	crates/pert-ui-core/src/erased.rs:418
+crate::ParameterError	# Errors: yes	pert_ui_core::AnyParameterSnapshot::try_new<T: ParameterValue>(spec: ParameterSpec<T>, state: ParameterSnapshot<T>) -> Result<Self, crate::ParameterError>	-	crates/pert-ui-core/src/erased.rs:239
+pert_ui_core::EditError	impl Error	crates/pert-ui-core/src/edit.rs:187
+pert_ui_core::LiveError	impl Error	crates/pert-ui-core/src/live/mod.rs:161
+pert_ui_core::NormalizedValueError	impl Error	crates/pert-ui-core/src/normalized.rs:112
+pert_ui_core::ParameterError	impl Error	crates/pert-ui-core/src/parameter.rs:539
+pert_ui_core::ParameterIdError	impl Error	crates/pert-ui-core/src/parameter_id.rs:130
+
+## pert-ui-runtime
+&ListingError	# Errors: yes	pert_ui_runtime::DirectoryResponse::listing(&self) -> Result<&[DirectoryEntry], &ListingError>	-	crates/pert-ui-runtime/src/file_browser.rs:241
+CaptureError	# Errors: yes	pert_ui_runtime::FrameImage::crop(&self, x: u32, y: u32, width: u32, height: u32) -> Result<Self, CaptureError>	-	crates/pert-ui-runtime/src/capture.rs:409
+CaptureError	# Errors: yes	pert_ui_runtime::FrameImage::new(width: u32, height: u32, rgba: Vec<u8>) -> Result<Self, CaptureError>	-	crates/pert-ui-runtime/src/capture.rs:362
+ChoiceError	# Errors: yes	pert_ui_runtime::ContextMenu::new(ui: &impl crate::StateOwner, content: Element, items: Vec<MenuItem>) -> Result<Self, ChoiceError>	-	crates/pert-ui-runtime/src/menu.rs:1398
+ChoiceError	# Errors: yes	pert_ui_runtime::InlineChoice::new(value: impl Into<Signal<T>>, choices: impl IntoIterator<Item = Choice<T>>) -> Result<Self, ChoiceError>	-	crates/pert-ui-runtime/src/choice_controls.rs:1592
+ChoiceError	# Errors: yes	pert_ui_runtime::InlineSelect::new(ui: &impl crate::StateOwner, value: impl Into<Signal<T>>, options: impl IntoIterator<Item = Choice<T>>) -> Result<Self, ChoiceError>	-	crates/pert-ui-runtime/src/select.rs:1752
+ChoiceError	# Errors: yes	pert_ui_runtime::Menu::icon(ui: &impl crate::StateOwner, icon: impl Into<IconSource>, name: impl Into<TextSource>, items: Vec<MenuItem>) -> Result<Self, ChoiceError>	-	crates/pert-ui-runtime/src/menu.rs:788
+ChoiceError	# Errors: yes	pert_ui_runtime::Menu::icon_with_state(open: impl Into<Signal<bool>>, icon: impl Into<IconSource>, name: impl Into<TextSource>, items: Vec<MenuItem>) -> Result<Self, ChoiceError>	-	crates/pert-ui-runtime/src/menu.rs:803
+ChoiceError	# Errors: yes	pert_ui_runtime::Menu::new(ui: &impl crate::StateOwner, label: impl Into<TextSource>, items: Vec<MenuItem>) -> Result<Self, ChoiceError>	-	crates/pert-ui-runtime/src/menu.rs:702
+ChoiceError	# Errors: yes	pert_ui_runtime::Menu::with_state(open: impl Into<Signal<bool>>, label: impl Into<TextSource>, items: Vec<MenuItem>) -> Result<Self, ChoiceError>	-	crates/pert-ui-runtime/src/menu.rs:761
+ChoiceError	# Errors: yes	pert_ui_runtime::MenuBar::new(ui: &impl crate::StateOwner, menus: Vec<MenuItem>) -> Result<Self, ChoiceError>	-	crates/pert-ui-runtime/src/menu_bar.rs:662
+ChoiceError	# Errors: yes	pert_ui_runtime::MultiSelect::new(ui: &impl crate::StateOwner, value: impl Into<Signal<Vec<T>>>, options: impl IntoIterator<Item = Choice<T>>) -> Result<Self, ChoiceError>	-	crates/pert-ui-runtime/src/multi_select.rs:1227
+ChoiceError	# Errors: yes	pert_ui_runtime::RadioGroup::new(value: impl Into<Signal<T>>, choices: impl IntoIterator<Item = Choice<T>>) -> Result<Self, ChoiceError>	-	crates/pert-ui-runtime/src/choice_controls.rs:727
+ChoiceError	# Errors: yes	pert_ui_runtime::SegmentedControl::new(value: impl Into<Signal<T>>, choices: impl IntoIterator<Item = Choice<T>>) -> Result<Self, ChoiceError>	-	crates/pert-ui-runtime/src/choice_controls.rs:1448
+ChoiceError	# Errors: yes	pert_ui_runtime::Select::new(ui: &impl crate::StateOwner, value: impl Into<Signal<T>>, options: impl IntoIterator<Item = Choice<T>>) -> Result<Self, ChoiceError>	-	crates/pert-ui-runtime/src/select.rs:1381
+ClipboardError	# Errors: yes	pert_ui_runtime::Clipboard::read_text(&mut self) -> Result<String, ClipboardError>	-	crates/pert-ui-runtime/src/text_input.rs:202
+ClipboardError	# Errors: yes	pert_ui_runtime::Clipboard::write_text(&mut self, text: &str) -> Result<(), ClipboardError>	-	crates/pert-ui-runtime/src/text_input.rs:209
+ContentSearchError	# Errors: yes	pert_ui_runtime::ContentQuery::budget(self, budget: usize) -> Result<Self, ContentSearchError>	-	crates/pert-ui-runtime/src/content_search.rs:90
+ContentSearchError	# Errors: yes	pert_ui_runtime::ContentQuery::limit(self, limit: usize) -> Result<Self, ContentSearchError>	-	crates/pert-ui-runtime/src/content_search.rs:76
+ContentSearchError	# Errors: yes	pert_ui_runtime::ContentQuery::new(text: impl AsRef<str>) -> Result<Self, ContentSearchError>	-	crates/pert-ui-runtime/src/content_search.rs:45
+ContentSearchError	# Errors: yes	pert_ui_runtime::ContentSearch::step(&mut self, ui: &crate::Runtime) -> Result<ContentStep, ContentSearchError>	-	crates/pert-ui-runtime/src/content_search.rs:331
+DrawError	# Errors: yes	pert_ui_runtime::Color::from_srgb(red: f32, green: f32, blue: f32, alpha: f32) -> Result<Self, DrawError>	-	crates/pert-ui-runtime/src/drawing.rs:327
+DrawError	# Errors: yes	pert_ui_runtime::Color::mix(self, other: Self, t: f32) -> Result<Self, DrawError>	-	crates/pert-ui-runtime/src/drawing.rs:564
+DrawError	# Errors: yes	pert_ui_runtime::Color::rgba(red: f32, green: f32, blue: f32, alpha: f32) -> Result<Self, DrawError>	-	crates/pert-ui-runtime/src/drawing.rs:258
+DrawError	# Errors: yes	pert_ui_runtime::Color::scale_alpha(self, factor: f32) -> Result<Self, DrawError>	-	crates/pert-ui-runtime/src/drawing.rs:528
+DrawError	# Errors: yes	pert_ui_runtime::Color::with_alpha(self, alpha: f32) -> Result<Self, DrawError>	-	crates/pert-ui-runtime/src/drawing.rs:504
+DrawError	# Errors: yes	pert_ui_runtime::DisplayList::rasterized(&self) -> Result<Self, DrawError>	-	crates/pert-ui-runtime/src/drawing.rs:1235
+DrawError	# Errors: yes	pert_ui_runtime::MaskImage::new(width: u32, height: u32, pixels: Vec<u8>) -> Result<Self, DrawError>	-	crates/pert-ui-runtime/src/drawing.rs:1144
+DrawError	# Errors: yes	pert_ui_runtime::Painter::fill_ellipse(&mut self, rect: Rect, color: Color) -> Result<(), DrawError>	-	crates/pert-ui-runtime/src/geometry.rs:775
+DrawError	# Errors: yes	pert_ui_runtime::Painter::fill_path(&mut self, path: &Path, rule: FillRule, color: Color) -> Result<(), DrawError>	-	crates/pert-ui-runtime/src/geometry.rs:671
+DrawError	# Errors: yes	pert_ui_runtime::Painter::fill_shape(&mut self, rect: Rect, shape: Shape, color: Color) -> Result<(), DrawError>	-	crates/pert-ui-runtime/src/shapes.rs:329
+DrawError	# Errors: yes	pert_ui_runtime::Painter::fill_triangle(&mut self, vertices: [Point; 3], color: Color) -> Result<(), DrawError>	-	crates/pert-ui-runtime/src/shapes.rs:289
+DrawError	# Errors: yes	pert_ui_runtime::Painter::icon(&mut self, icon: impl Into<crate::IconSource>, rect: Rect, color: Color) -> Result<(), DrawError>	-	crates/pert-ui-runtime/src/drawing.rs:1406
+DrawError	# Errors: yes	pert_ui_runtime::Painter::icon_turned(&mut self, icon: impl Into<crate::IconSource>, rect: Rect, color: Color, turn: crate::QuarterTurn) -> Result<(), DrawError>	-	crates/pert-ui-runtime/src/drawing.rs:1426
+DrawError	# Errors: yes	pert_ui_runtime::Painter::rich_text(&self, text: &crate::RichText, width: Option<f32>, style: crate::TextStyle) -> Result<crate::TextLayout, DrawError>	-	crates/pert-ui-runtime/src/drawing.rs:1375
+DrawError	# Errors: yes	pert_ui_runtime::Painter::stroke_arc(&mut self, center: Point, radius: Length, start_degrees: f32, sweep_degrees: f32, width: Length, color: Color) -> Result<(), DrawError>	-	crates/pert-ui-runtime/src/shapes.rs:239
+DrawError	# Errors: yes	pert_ui_runtime::Painter::stroke_ellipse(&mut self, rect: Rect, style: StrokeStyle, color: Color) -> Result<(), DrawError>	-	crates/pert-ui-runtime/src/geometry.rs:785
+DrawError	# Errors: yes	pert_ui_runtime::Painter::stroke_path(&mut self, path: &Path, style: StrokeStyle, color: Color) -> Result<(), DrawError>	-	crates/pert-ui-runtime/src/geometry.rs:709
+DrawError	# Errors: yes	pert_ui_runtime::Painter::stroke_polyline(&mut self, points: &[Point], style: StrokeStyle, color: Color) -> Result<(), DrawError>	-	crates/pert-ui-runtime/src/geometry.rs:758
+DrawError	# Errors: yes	pert_ui_runtime::Painter::stroke_shape(&mut self, rect: Rect, shape: Shape, width: Length, color: Color) -> Result<(), DrawError>	-	crates/pert-ui-runtime/src/shapes.rs:365
+DrawError	# Errors: yes	pert_ui_runtime::Painter::text(&self, text: &str, width: Option<f32>, style: crate::TextStyle) -> Result<crate::TextLayout, DrawError>	-	crates/pert-ui-runtime/src/drawing.rs:1350
+DrawError	# Errors: yes	pert_ui_runtime::RasterImage::from_srgba8(width: u32, height: u32, pixels: Vec<u8>) -> Result<Self, DrawError>	-	crates/pert-ui-runtime/src/resources.rs:168
+DrawError	# Errors: yes	pert_ui_runtime::TextLayout::paint(&self, painter: &mut Painter, x: f32, y: f32, color: Color) -> Result<(), DrawError>	-	crates/pert-ui-runtime/src/text.rs:262
+DrawError	# Errors: yes	pert_ui_runtime::TextLayout::paint_turned(&self, painter: &mut Painter, x: f32, y: f32, turn: crate::QuarterTurn, color: Color) -> Result<(), DrawError>	-	crates/pert-ui-runtime/src/text.rs:284
+DrawError	# Errors: yes	pert_ui_runtime::VectorRasterizer::prepare(&mut self, scene: &DisplayList) -> Result<DisplayList, DrawError>	-	crates/pert-ui-runtime/src/vector_scene.rs:149
+EditError	# Errors: yes	pert_ui_runtime::EditSession::outcome(&self) -> Result<Option<EditOutcome<T>>, EditError>	-	crates/pert-ui-runtime/src/parameter_binding.rs:893
+FileBrowserError	# Errors: yes	pert_ui_runtime::FileBrowserController::new(ui: &impl crate::StateOwner, roots: impl IntoIterator<Item = impl Into<PathBuf>>, selection: ListSelection, request: impl FnMut(DirectoryRequest) + 'static) -> Result<Self, FileBrowserError>	-	crates/pert-ui-runtime/src/file_browser/controller.rs:509
+GeometryError	# Errors: yes	pert_ui_runtime::AxisMapping::new(start: f64, pixels_per_unit: f64) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/axis_mapping.rs:53
+GeometryError	# Errors: yes	pert_ui_runtime::AxisMapping::panned(self, pixels: f64) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/axis_mapping.rs:117
+GeometryError	# Errors: yes	pert_ui_runtime::AxisMapping::zoomed_at(self, pixels_per_unit: f64, anchor: f64) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/axis_mapping.rs:101
+GeometryError	# Errors: yes	pert_ui_runtime::CommandPalette::width(self, width: f32) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/command_palette.rs:611
+GeometryError	# Errors: yes	pert_ui_runtime::Constraints::new(width: Option<f32>, height: Option<f32>) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/layout.rs:262
+GeometryError	# Errors: yes	pert_ui_runtime::QuarterTurn::place(self, upright: crate::Size, part: Rect) -> Result<Rect, GeometryError>	-	crates/pert-ui-runtime/src/transform.rs:221
+GeometryError	# Errors: yes	pert_ui_runtime::QuickPick::width(self, width: f32) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/quick_pick.rs:975
+GeometryError	# Errors: yes	pert_ui_runtime::Size::new(width: f32, height: f32) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/layout.rs:143
+GeometryError	# Errors: yes	pert_ui_runtime::SizeLimits::new(minimum: Size, maximum: Constraints) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/layout.rs:209
+GeometryError	# Errors: yes	pert_ui_runtime::Transform2D::about(self, center: Point) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/transform.rs:104
+GeometryError	# Errors: yes	pert_ui_runtime::Transform2D::apply(self, point: Point) -> Result<Point, GeometryError>	-	crates/pert-ui-runtime/src/transform.rs:148
+GeometryError	# Errors: yes	pert_ui_runtime::Transform2D::inverse(self) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/transform.rs:131
+GeometryError	# Errors: yes	pert_ui_runtime::Transform2D::new(a: f32, b: f32, c: f32, d: f32, e: f32, f: f32) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/transform.rs:54
+GeometryError	# Errors: yes	pert_ui_runtime::Transform2D::rotation_degrees(degrees: f32) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/transform.rs:86
+GeometryError	# Errors: yes	pert_ui_runtime::Transform2D::scale(x: f32, y: f32) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/transform.rs:79
+GeometryError	# Errors: yes	pert_ui_runtime::Transform2D::then(self, next: Self) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/transform.rs:114
+GeometryError	# Errors: yes	pert_ui_runtime::Transform2D::translation(x: f32, y: f32) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/transform.rs:71
+GeometryError	# Errors: yes	pert_ui_runtime::ViewScale::new(factor: f32) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/transform.rs:291
+GeometryError	# Errors: yes	pert_ui_runtime::ViewTransform::apply(self, content: Point) -> Result<Point, GeometryError>	-	crates/pert-ui-runtime/src/transform.rs:369
+GeometryError	# Errors: yes	pert_ui_runtime::ViewTransform::invert(self, local: Point) -> Result<Point, GeometryError>	-	crates/pert-ui-runtime/src/transform.rs:382
+GeometryError	# Errors: yes	pert_ui_runtime::ViewTransform::zoomed_at(self, scale: ViewScale, anchor: Point) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/transform.rs:399
+GeometryError	# Errors: yes	pert_ui_runtime::VirtualAxis::estimated(estimate: f32) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/virtual_axis.rs:164
+GeometryError	# Errors: yes	pert_ui_runtime::VirtualAxis::new(item_extent: f32) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/virtual_axis.rs:150
+HexColorError	# Errors: yes	pert_ui_runtime::Color::from_hex(text: &str) -> Result<Self, HexColorError>	-	crates/pert-ui-runtime/src/drawing.rs:435
+HighlightError	# Errors: yes	pert_ui_runtime::RichText::highlighted(text: &str, ranges: impl IntoIterator<Item = Range<usize>>) -> Result<Self, HighlightError>	-	crates/pert-ui-runtime/src/text/fit.rs:254
+LayoutError	# Errors: yes	pert_ui_runtime::Breadcrumb::new(segments: impl IntoIterator<Item = BreadcrumbSegment>, on_activate: impl FnMut(&mut EventContext, &str) -> Result<(), RuntimeError> + 'static) -> Result<Self, LayoutError>	-	crates/pert-ui-runtime/src/breadcrumb.rs:180
+LayoutError	# Errors: yes	pert_ui_runtime::Grid::new(tracks: impl IntoIterator<Item = Track>, children: impl IntoIterator<Item = Element>) -> Result<Self, LayoutError>	-	crates/pert-ui-runtime/src/containers.rs:1037
+LayoutError	# Errors: yes	pert_ui_runtime::SplitSizing::ratio(value: f32) -> Result<Self, LayoutError>	-	crates/pert-ui-runtime/src/split.rs:107
+LayoutError	# Errors: yes	pert_ui_runtime::TableColumn::flex(self, weight: f32) -> Result<Self, LayoutError>	-	crates/pert-ui-runtime/src/table.rs:105
+LayoutError	# Errors: yes	pert_ui_runtime::Toolbar::new(ui: &impl crate::StateOwner, groups: impl IntoIterator<Item = ToolGroup>) -> Result<Self, LayoutError>	-	crates/pert-ui-runtime/src/toolbar.rs:355
+LayoutError	# Errors: yes	pert_ui_runtime::Track::weighted(weight: f32) -> Result<Self, LayoutError>	-	crates/pert-ui-runtime/src/containers.rs:968
+LayoutError	# Errors: yes	pert_ui_runtime::VirtualAxis::with_lanes(self, lanes: usize) -> Result<Self, LayoutError>	-	crates/pert-ui-runtime/src/virtual_axis.rs:188
+LayoutError	# Errors: yes	pert_ui_runtime::VirtualList::lanes(self, lanes: usize) -> Result<Self, LayoutError>	-	crates/pert-ui-runtime/src/virtual_list.rs:727
+ListingError	# Errors: yes	pert_ui_runtime::list_directory(directory: &std::path::Path) -> Result<Vec<DirectoryEntry>, ListingError>	-	crates/pert-ui-runtime/src/file_browser.rs:296
+NumberInputError	# Errors: yes	pert_ui_runtime::DecimalInput::normalize(self, normalize: impl Fn(f64) -> Result<f64, InputRejection> + 'static) -> Result<Self, NumberInputError>	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2538
+NumberInputError	# Errors: yes	pert_ui_runtime::InlineDecimal::normalize(self, normalize: impl Fn(f64) -> Result<f64, InputRejection> + 'static) -> Result<Self, NumberInputError>	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2540
+NumberInputError	# Errors: yes	pert_ui_runtime::InlineInteger::normalize(self, normalize: impl Fn(i64) -> Result<i64, InputRejection> + 'static) -> Result<Self, NumberInputError>	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2539
+NumberInputError	# Errors: yes	pert_ui_runtime::IntegerInput::normalize(self, normalize: impl Fn(i64) -> Result<i64, InputRejection> + 'static) -> Result<Self, NumberInputError>	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2537
+NumberInputError	# Errors: yes	pert_ui_runtime::DecimalInput::decimal_places(self, digits: u8) -> Result<Self, NumberInputError>	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2545
+NumberInputError	# Errors: yes	pert_ui_runtime::DecimalInput::precision(self, digits: u8) -> Result<Self, NumberInputError>	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2545
+NumberInputError	# Errors: yes	pert_ui_runtime::DecimalInput::range(self, min: f64, max: f64) -> Result<Self, NumberInputError>	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2538
+NumberInputError	# Errors: yes	pert_ui_runtime::DecimalInput::step(self, step: f64) -> Result<Self, NumberInputError>	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2538
+NumberInputError	# Errors: yes	pert_ui_runtime::InlineDecimal::decimal_places(self, digits: u8) -> Result<Self, NumberInputError>	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2546
+NumberInputError	# Errors: yes	pert_ui_runtime::InlineDecimal::precision(self, digits: u8) -> Result<Self, NumberInputError>	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2546
+NumberInputError	# Errors: yes	pert_ui_runtime::InlineDecimal::range(self, min: f64, max: f64) -> Result<Self, NumberInputError>	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2540
+NumberInputError	# Errors: yes	pert_ui_runtime::InlineDecimal::step(self, step: f64) -> Result<Self, NumberInputError>	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2540
+NumberInputError	# Errors: yes	pert_ui_runtime::InlineInteger::range(self, min: i64, max: i64) -> Result<Self, NumberInputError>	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2539
+NumberInputError	# Errors: yes	pert_ui_runtime::InlineInteger::step(self, step: i64) -> Result<Self, NumberInputError>	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2539
+NumberInputError	# Errors: yes	pert_ui_runtime::IntegerInput::range(self, min: i64, max: i64) -> Result<Self, NumberInputError>	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2537
+NumberInputError	# Errors: yes	pert_ui_runtime::IntegerInput::step(self, step: i64) -> Result<Self, NumberInputError>	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2537
+NumberInputError	# Errors: yes	pert_ui_runtime::NumberLocale::parse_decimal(self, text: &str) -> Result<f64, NumberInputError>	-	crates/pert-ui-runtime/src/number_format.rs:272
+NumberInputError	# Errors: yes	pert_ui_runtime::NumberLocale::parse_integer(self, text: &str) -> Result<i64, NumberInputError>	-	crates/pert-ui-runtime/src/number_format.rs:289
+NumberLocaleError	# Errors: yes	pert_ui_runtime::NumberLocale::new(decimal: char, grouping: Option<char>) -> Result<Self, NumberLocaleError>	-	crates/pert-ui-runtime/src/number_format.rs:218
+PathError	# Errors: yes	pert_ui_runtime::Path::circle(center: Point, radius: Length) -> Result<Self, PathError>	-	crates/pert-ui-runtime/src/geometry.rs:270
+PathError	# Errors: yes	pert_ui_runtime::Path::ellipse(rect: Rect) -> Result<Self, PathError>	-	crates/pert-ui-runtime/src/geometry.rs:257
+PathError	# Errors: yes	pert_ui_runtime::Path::polygon(points: impl IntoIterator<Item = Point>) -> Result<Self, PathError>	-	crates/pert-ui-runtime/src/geometry.rs:230
+PathError	# Errors: yes	pert_ui_runtime::Path::polyline(points: impl IntoIterator<Item = Point>) -> Result<Self, PathError>	-	crates/pert-ui-runtime/src/geometry.rs:223
+PathError	# Errors: yes	pert_ui_runtime::Path::rounded_rect(rect: Rect, radius: Length) -> Result<Self, PathError>	-	crates/pert-ui-runtime/src/geometry.rs:283
+PathError	# Errors: yes	pert_ui_runtime::Path::transformed(&self, transform: &crate::Transform2D) -> Result<Self, PathError>	-	crates/pert-ui-runtime/src/geometry.rs:343
+PathError	# Errors: yes	pert_ui_runtime::PathBuilder::build(self) -> Result<Path, PathError>	-	crates/pert-ui-runtime/src/geometry.rs:539
+PathError	# Errors: yes	pert_ui_runtime::StrokeStyle::with_miter_limit(self, limit: f32) -> Result<Self, PathError>	-	crates/pert-ui-runtime/src/geometry.rs:127
+RedescriptionError	# Errors: yes	pert_ui_runtime::check_redescription(ui: &mut crate::Runtime, before: crate::Element, after: crate::Element, fresh: crate::Element) -> Result<Redescribed, RedescriptionError>	-	crates/pert-ui-runtime/src/conformance.rs:209
+RedescriptionError	# Errors: yes	pert_ui_runtime::redescribe(ui: &mut crate::Runtime, before: crate::Element, after: crate::Element) -> Result<Redescribed, RedescriptionError>	-	crates/pert-ui-runtime/src/conformance.rs:145
+RequestError	# Errors: yes	pert_ui_runtime::InspectionClient::capture(&self, request: CaptureRequest) -> Result<Pending<Result<Capture, CaptureError>>, RequestError>	-	crates/pert-ui-runtime/src/inspection.rs:835
+RequestError	# Errors: yes	pert_ui_runtime::InspectionClient::command(&self, command: DiagnosticCommand) -> Result<Pending<()>, RequestError>	-	crates/pert-ui-runtime/src/inspection.rs:856
+RequestError	# Errors: yes	pert_ui_runtime::InspectionClient::profile(&self) -> Result<Pending<ProfileSnapshot>, RequestError>	-	crates/pert-ui-runtime/src/inspection.rs:799
+RequestError	# Errors: yes	pert_ui_runtime::InspectionClient::query(&self, query: InspectionQuery) -> Result<Pending<QueryResult>, RequestError>	-	crates/pert-ui-runtime/src/inspection.rs:789
+RequestError	# Errors: yes	pert_ui_runtime::InspectionClient::snapshot(&self) -> Result<Pending<InspectionSnapshot>, RequestError>	-	crates/pert-ui-runtime/src/inspection.rs:778
+RequestError	# Errors: yes	pert_ui_runtime::InspectionClient::validation(&self) -> Result<Pending<ValidationReport>, RequestError>	-	crates/pert-ui-runtime/src/inspection.rs:809
+RequestError	# Errors: yes	pert_ui_runtime::InspectionClient::workspace(&self) -> Result<Pending<Result<Workspace, WorkspaceError>>, RequestError>	-	crates/pert-ui-runtime/src/inspection.rs:820
+RestoreRejection	# Errors: yes	pert_ui_runtime::ViewState::expect_only(&self, expected: &[&str]) -> Result<(), RestoreRejection>	-	crates/pert-ui-runtime/src/workspace.rs:284
+RestoreRejection	# Errors: yes	pert_ui_runtime::ViewState::flag(&self, name: &str) -> Result<bool, RestoreRejection>	-	crates/pert-ui-runtime/src/workspace.rs:298
+RestoreRejection	# Errors: yes	pert_ui_runtime::ViewState::integer(&self, name: &str) -> Result<i64, RestoreRejection>	-	crates/pert-ui-runtime/src/workspace.rs:307
+RestoreRejection	# Errors: yes	pert_ui_runtime::ViewState::map(&self, name: &str) -> Result<&BTreeMap<String, WorkspaceValue>, RestoreRejection>	-	crates/pert-ui-runtime/src/workspace.rs:334
+RestoreRejection	# Errors: yes	pert_ui_runtime::ViewState::number(&self, name: &str) -> Result<f64, RestoreRejection>	-	crates/pert-ui-runtime/src/workspace.rs:316
+RestoreRejection	# Errors: yes	pert_ui_runtime::ViewState::text(&self, name: &str) -> Result<&str, RestoreRejection>	-	crates/pert-ui-runtime/src/workspace.rs:325
+RuntimeError	# Errors: yes	pert_ui_runtime::AnyParameterHost::on_outcome(&self, sink: impl FnMut(&AnyTerminalEvent) -> Result<(), SinkError> + 'static) -> Result<AnyDeliveryMonitor, RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/erased.rs:335
+RuntimeError	# Errors: yes	pert_ui_runtime::AnyParameterHost::on_preview(&self, sink: impl FnMut(&AnyPreviewEvent) -> Result<(), SinkError> + 'static) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/erased.rs:358
+RuntimeError	# Errors: yes	pert_ui_runtime::Button::command(ui: &crate::Runtime, command: &crate::CommandId, on_receipt: impl FnMut(crate::CommandReceipt, &mut EventContext) -> Result<(), RuntimeError> + 'static) -> Result<Self, RuntimeError>	-	crates/pert-ui-runtime/src/controls.rs:549
+RuntimeError	# Errors: yes	pert_ui_runtime::Button::command_icon(ui: &crate::Runtime, command: &crate::CommandId, icon: impl Into<IconSource>, on_receipt: impl FnMut(crate::CommandReceipt, &mut EventContext) -> Result<(), RuntimeError> + 'static) -> Result<Self, RuntimeError>	-	crates/pert-ui-runtime/src/controls.rs:588
+RuntimeError	# Errors: yes	pert_ui_runtime::Component::arrange(&self, cx: &mut crate::ArrangeContext<'_>, size: crate::Size) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:1823
+RuntimeError	# Errors: yes	pert_ui_runtime::Component::drag_event(&mut self, _cx: &mut EventContext, _event: &crate::DragEvent<'_>) -> Result<crate::DropResponse, RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:2292
+RuntimeError	# Errors: yes	pert_ui_runtime::Component::measure(&self, cx: &crate::MeasureContext<'_>, available: crate::Constraints) -> Result<crate::Size, RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:1790
+RuntimeError	# Errors: yes	pert_ui_runtime::Component::measure_limits(&self, _cx: &crate::MeasureContext<'_>) -> Result<crate::SizeLimits, RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:1716
+RuntimeError	# Errors: yes	pert_ui_runtime::EventContext::defer(&self, action: impl FnOnce(&mut Runtime) -> Result<(), RuntimeError> + 'static) -> Result<TaskReceipt, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/tasks.rs:121
+RuntimeError	# Errors: yes	pert_ui_runtime::EventContext::defer_detached(&self, action: impl FnOnce(&mut Runtime) -> Result<(), RuntimeError> + 'static) -> Result<TaskReceipt, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/tasks.rs:189
+RuntimeError	# Errors: yes	pert_ui_runtime::HistoryNavigator::new(ui: &impl crate::StateOwner, history: NavigationHistory<T>, restore: impl FnMut(&mut EventContext, &HistoryEntry<T>) -> Result<(), RuntimeError> + 'static) -> Result<Self, RuntimeError>	-	crates/pert-ui-runtime/src/history_navigator.rs:136
+RuntimeError	# Errors: yes	pert_ui_runtime::MenuItem::command(ui: &Runtime, key: impl Into<String>, command: &CommandId, on_receipt: impl FnMut(CommandReceipt, &mut EventContext) -> Result<(), RuntimeError> + 'static) -> Result<Self, RuntimeError>	-	crates/pert-ui-runtime/src/menu.rs:400
+RuntimeError	# Errors: yes	pert_ui_runtime::ParameterHost::on_outcome(&self, sink: impl FnMut(&TerminalEvent<T>) -> Result<(), SinkError> + 'static) -> Result<DeliveryMonitor<T>, RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:500
+RuntimeError	# Errors: yes	pert_ui_runtime::ParameterHost::on_preview(&self, sink: impl FnMut(&PreviewEvent<T>) -> Result<(), SinkError> + 'static) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:537
+RuntimeError	# Errors: yes	pert_ui_runtime::ReadSignal::combine<U: Clone + 'static, V: Clone + PartialEq + 'static>(&self, other: &ReadSignal<U>, map: impl Fn(&T, &U) -> V + 'static) -> Result<ReadSignal<V>, RuntimeError>	-	crates/pert-ui-runtime/src/signal.rs:729
+RuntimeError	# Errors: yes	pert_ui_runtime::ReadSignal::map<U: Clone + PartialEq + 'static>(&self, map: impl Fn(&T) -> U + 'static) -> Result<ReadSignal<U>, RuntimeError>	-	crates/pert-ui-runtime/src/signal.rs:691
+RuntimeError	# Errors: yes	pert_ui_runtime::RemoteHost::on_submit(&self, sink: impl FnMut(&RemoteCommit<T>) -> Result<(), SinkError> + 'static) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/remote.rs:453
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::command_enabled(&mut self, id: &CommandId, enabled: impl Fn(&Runtime, &CommandContext) -> Result<bool, RuntimeError> + 'static) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime/commands.rs:705
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::defer(&self, action: impl FnOnce(&mut Self) -> Result<(), RuntimeError> + 'static) -> Result<TaskReceipt, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/tasks.rs:211
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::mailbox<T: Send + 'static>(&self, capacity: crate::Capacity, handler: impl FnMut(T) -> Result<(), RuntimeError> + 'static) -> Result<crate::Mailbox<T>, RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:4111
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::mount(&mut self, key: impl Into<String>, component: impl Component + 'static) -> Result<WidgetId, RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:4203
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::read_signal<T: Clone + 'static>(&self, signal: &ReadSignal<T>) -> Result<T, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/native_windows.rs:1205
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::register_command(&mut self, name: impl Into<String>, scope: CommandScope, chords: Vec<KeyChord>, action: impl FnMut(&mut Runtime, &CommandContext) -> Result<(), RuntimeError> + 'static) -> Result<CommandId, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/commands.rs:542
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::register_held_input(&mut self, owner: &WidgetId, keys: Vec<KeyCode>, modifiers: Modifiers, action: impl FnMut(KeyCode, KeyTransition, &CommandContext) -> Result<InputOutcome, RuntimeError> + 'static, cancel: impl FnMut(KeyCode, HeldCancellation) + 'static) -> Result<HeldInputId, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/held.rs:71
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::set_clipboard(&mut self, clipboard: impl crate::Clipboard + 'static) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:4708
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::spawn<T: Send + 'static>(&mut self, work: impl FnOnce() -> T + Send + 'static, deliver: impl FnOnce(T) -> Result<(), RuntimeError> + 'static) -> Result<BackgroundTask, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/application.rs:194
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::start_interval(&mut self, period: Duration, tick: impl FnMut(&mut Runtime) -> Result<(), RuntimeError> + 'static) -> Result<IntervalTimer, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/application.rs:299
+RuntimeError	# Errors: yes	pert_ui_runtime::UpdateContext::read<T: Clone + 'static>(&mut self, signal: &ReadSignal<T>) -> Result<T, RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:2798
+RuntimeError	# Errors: yes	pert_ui_runtime::UpdateContext::read_paint<T: Clone + 'static>(&mut self, signal: &ReadSignal<T>) -> Result<T, RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:2808
+RuntimeError	# Errors: yes	pert_ui_runtime::AnyParameter::snapshot(&self) -> Result<AnyParameterSnapshot, RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/erased.rs:99
+RuntimeError	# Errors: yes	pert_ui_runtime::AnyParameterHost::clear_sinks(&self) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/erased.rs:381
+RuntimeError	# Errors: yes	pert_ui_runtime::AnyParameterHost::remove(&self) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/erased.rs:328
+RuntimeError	# Errors: yes	pert_ui_runtime::AnyParameterHost::replace_spec(&self, spec: AnySpec) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/erased.rs:304
+RuntimeError	# Errors: yes	pert_ui_runtime::AnyParameterHost::resolve_delivery(&self, token: &EditToken, resolution: DeliveryResolution) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/erased.rs:395
+RuntimeError	# Errors: yes	pert_ui_runtime::AnyParameterHost::retry_outcome(&self, token: &EditToken) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/erased.rs:388
+RuntimeError	# Errors: yes	pert_ui_runtime::AnyParameterHost::set_effective(&self, value: Option<AnyValue>) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/erased.rs:321
+RuntimeError	# Errors: yes	pert_ui_runtime::AnyParameterHost::write_base(&self, value: AnyValue) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/erased.rs:296
+RuntimeError	# Errors: yes	pert_ui_runtime::ArrangeContext::measure(&self, index: usize, available: Constraints) -> Result<Size, RuntimeError>	-	crates/pert-ui-runtime/src/layout.rs:993
+RuntimeError	# Errors: yes	pert_ui_runtime::ArrangeContext::place(&mut self, index: usize, rect: Rect) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/layout.rs:1031
+RuntimeError	# Errors: yes	pert_ui_runtime::ArrangeContext::place_clipped(&mut self, index: usize, bounds: Rect, clip: Rect) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/layout.rs:1002
+RuntimeError	# Errors: yes	pert_ui_runtime::CommandPaletteController::close(&self) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/command_palette.rs:323
+RuntimeError	# Errors: yes	pert_ui_runtime::CommandPaletteController::open(&self, ui: &mut Runtime, context: &CommandContext) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/command_palette.rs:274
+RuntimeError	# Errors: yes	pert_ui_runtime::CommandPaletteController::open_with(&self, context: CommandContext, entries: Vec<CommandEntry>) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/command_palette.rs:294
+RuntimeError	# Errors: yes	pert_ui_runtime::CommandPaletteController::receipt(&self) -> Result<Option<CommandReceipt>, RuntimeError>	-	crates/pert-ui-runtime/src/command_palette.rs:339
+RuntimeError	# Errors: yes	pert_ui_runtime::CommandPaletteController::status(&self) -> Result<CommandPaletteStatus, RuntimeError>	-	crates/pert-ui-runtime/src/command_palette.rs:330
+RuntimeError	# Errors: yes	pert_ui_runtime::Component::check_description(&self) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:1068
+RuntimeError	# Errors: yes	pert_ui_runtime::Component::deliver_notifications(&mut self, _cx: &mut EventContext) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:1651
+RuntimeError	# Errors: yes	pert_ui_runtime::Component::dismiss_surface(&mut self, _cx: &mut EventContext, _reason: crate::SurfaceDismissal) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:1297
+RuntimeError	# Errors: yes	pert_ui_runtime::Component::drag_finished(&mut self, _cx: &mut EventContext, _outcome: crate::DragOutcome) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:2315
+RuntimeError	# Errors: yes	pert_ui_runtime::Component::focus_lost(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:2355
+RuntimeError	# Errors: yes	pert_ui_runtime::Component::focus_within_changed(&mut self, _cx: &mut EventContext, _within: bool) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:2410
+RuntimeError	# Errors: yes	pert_ui_runtime::Component::key_input(&mut self, _context: &mut EventContext, _event: crate::KeyEvent, _keyboard: &crate::KeyboardState) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:2206
+RuntimeError	# Errors: yes	pert_ui_runtime::Component::keyboard_event(&mut self, cx: &mut EventContext, event: crate::KeyEvent, keyboard: &crate::KeyboardState) -> Result<crate::InputOutcome, RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:1538
+RuntimeError	# Errors: yes	pert_ui_runtime::Component::pointer_input(&mut self, _: &mut EventContext, _: crate::PointerEvent) -> Result<crate::InputOutcome, RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:1508
+RuntimeError	# Errors: yes	pert_ui_runtime::Component::reveal(&mut self, _cx: &mut EventContext, _rect: crate::Rect) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:1577
+RuntimeError	# Errors: yes	pert_ui_runtime::Component::reveal_child(&mut self, _cx: &mut EventContext, _key: &str) -> Result<crate::ChildReveal, RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:1608
+RuntimeError	# Errors: yes	pert_ui_runtime::Component::tab_navigation(&mut self, _cx: &mut EventContext, _reverse: bool, _repeat: bool) -> Result<crate::InputOutcome, RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:1383
+RuntimeError	# Errors: yes	pert_ui_runtime::Component::text_command(&mut self, _cx: &mut EventContext, _command: crate::TextCommand) -> Result<crate::TextCommandOutcome, RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:1124
+RuntimeError	# Errors: yes	pert_ui_runtime::Component::text_input(&mut self, _context: &mut EventContext, _text: &str) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:2246
+RuntimeError	# Errors: yes	pert_ui_runtime::Component::text_key_event(&mut self, _cx: &mut EventContext, _input: crate::CommandKeyInput, _transition: crate::KeyTransition, _keyboard: &crate::KeyboardState) -> Result<crate::TextKeyOutcome, RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:1099
+RuntimeError	# Errors: yes	pert_ui_runtime::Component::text_preedit(&mut self, _cx: &mut EventContext, _preedit: &crate::TextPreedit) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:2230
+RuntimeError	# Errors: yes	pert_ui_runtime::Component::timer_elapsed(&mut self, _cx: &mut EventContext) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:2460
+RuntimeError	# Errors: yes	pert_ui_runtime::Component::try_content_rows(&self) -> Result<Option<Rc<dyn crate::ContentRows>>, RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:2092
+RuntimeError	# Errors: yes	pert_ui_runtime::Component::update(&mut self, context: &mut UpdateContext) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:2472
+RuntimeError	# Errors: yes	pert_ui_runtime::ContentRows::reveal(&self, key: &str) -> Result<ListRevealReceipt, RuntimeError>	-	crates/pert-ui-runtime/src/content_search.rs:386
+RuntimeError	# Errors: yes	pert_ui_runtime::ContextMenuOpener::open(&self, position: Option<Point>, context: &CommandContext) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/menu.rs:1355
+RuntimeError	# Errors: yes	pert_ui_runtime::DialogController::accept(&self) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/dialog.rs:113
+RuntimeError	# Errors: yes	pert_ui_runtime::DialogController::cancel(&self) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/dialog.rs:122
+RuntimeError	# Errors: yes	pert_ui_runtime::DialogController::open(&self) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/dialog.rs:100
+RuntimeError	# Errors: yes	pert_ui_runtime::DialogController::take_outcome(&self) -> Result<Option<DialogOutcome>, RuntimeError>	-	crates/pert-ui-runtime/src/dialog.rs:140
+RuntimeError	# Errors: yes	pert_ui_runtime::DraftEditorController::begin(&self, cx: &mut EventContext, text: &str, payload: Option<P>, selection: DraftSelection) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/text_fields/draft.rs:284
+RuntimeError	# Errors: yes	pert_ui_runtime::DraftEditorController::begin_read_only(&self, cx: &mut EventContext, text: &str, selection: DraftSelection) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/text_fields/draft.rs:302
+RuntimeError	# Errors: yes	pert_ui_runtime::DraftEditorController::replace(&self, cx: &mut EventContext, text: &str, payload: Option<P>) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/text_fields/draft.rs:324
+RuntimeError	# Errors: yes	pert_ui_runtime::EditSession::cancel(&self) -> Result<EditOutcome<T>, RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding.rs:868
+RuntimeError	# Errors: yes	pert_ui_runtime::EditSession::commit(&self, value: T) -> Result<EditOutcome<T>, RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding.rs:797
+RuntimeError	# Errors: yes	pert_ui_runtime::EditSession::update(&self, value: T) -> Result<PreviewOutcome, RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding.rs:743
+RuntimeError	# Errors: yes	pert_ui_runtime::EventContext::activate_window(&self, window: &NativeWindowId) -> Result<PresentationReceipt, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/native_windows.rs:1393
+RuntimeError	# Errors: yes	pert_ui_runtime::EventContext::capture_pointer(&self) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:3308
+RuntimeError	# Errors: yes	pert_ui_runtime::EventContext::clear_profile(&self) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:3198
+RuntimeError	# Errors: yes	pert_ui_runtime::EventContext::clipboard_text(&self) -> Result<String, RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:3152
+RuntimeError	# Errors: yes	pert_ui_runtime::EventContext::close_window(&self) -> Result<PresentationReceipt, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/native_windows.rs:1333
+RuntimeError	# Errors: yes	pert_ui_runtime::EventContext::detach_view(&self, view: &WidgetId, options: NativeWindowOptions) -> Result<PresentationReceipt, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/native_windows.rs:1304
+RuntimeError	# Errors: yes	pert_ui_runtime::EventContext::invoke_command(&self, id: &CommandId, context: CommandContext) -> Result<CommandReceipt, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/commands.rs:1750
+RuntimeError	# Errors: yes	pert_ui_runtime::EventContext::redock_window(&self) -> Result<PresentationReceipt, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/native_windows.rs:1348
+RuntimeError	# Errors: yes	pert_ui_runtime::EventContext::request_focus_for(&self, target: &WidgetId) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:3231
+RuntimeError	# Errors: yes	pert_ui_runtime::EventContext::request_focus_within(&self, target: &WidgetId) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:3254
+RuntimeError	# Errors: yes	pert_ui_runtime::EventContext::request_reveal(&self, target: &WidgetId, focus: bool) -> Result<RevealReceipt, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/reveal.rs:260
+RuntimeError	# Errors: yes	pert_ui_runtime::EventContext::request_text_command(&mut self, target: &WidgetId, command: crate::TextCommand) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:3127
+RuntimeError	# Errors: yes	pert_ui_runtime::EventContext::set_clipboard_text(&self, text: &str) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:3161
+RuntimeError	# Errors: yes	pert_ui_runtime::EventContext::set_profiling(&self, enabled: bool) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:3182
+RuntimeError	# Errors: yes	pert_ui_runtime::EventContext::set_timer(&self, delay: Duration) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:3412
+RuntimeError	# Errors: yes	pert_ui_runtime::EventContext::set_window_title(&self, window: &NativeWindowId, title: impl Into<String>) -> Result<PresentationReceipt, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/native_windows.rs:1369
+RuntimeError	# Errors: yes	pert_ui_runtime::EventContext::start_drag(&self, payload: DragPayload, permitted: impl Into<DropOperations>, preview: DragPreview) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime/drag.rs:132
+RuntimeError	# Errors: yes	pert_ui_runtime::EventContext::text(&self, text: &str, width: Option<f32>, style: crate::TextStyle) -> Result<crate::TextLayout, RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:2924
+RuntimeError	# Errors: yes	pert_ui_runtime::FieldHandle::clear(&self) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/field_status.rs:357
+RuntimeError	# Errors: yes	pert_ui_runtime::FieldHandle::remove(&self) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/field_status.rs:379
+RuntimeError	# Errors: yes	pert_ui_runtime::FieldHandle::set(&self, status: FieldStatus) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/field_status.rs:323
+RuntimeError	# Errors: yes	pert_ui_runtime::FieldHandle::set_changed(&self, status: FieldStatus) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/field_status.rs:330
+RuntimeError	# Errors: yes	pert_ui_runtime::FieldHandle::set_modified(&self, modified: bool) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/field_status.rs:346
+RuntimeError	# Errors: yes	pert_ui_runtime::FileBrowserController::deliver(&self, response: DirectoryResponse) -> Result<ListingDelivery, RuntimeError>	-	crates/pert-ui-runtime/src/file_browser/controller.rs:749
+RuntimeError	# Errors: yes	pert_ui_runtime::FileBrowserController::navigate(&self, directory: impl AsRef<Path>) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/file_browser/controller.rs:686
+RuntimeError	# Errors: yes	pert_ui_runtime::FileBrowserController::navigate_up(&self) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/file_browser/controller.rs:708
+RuntimeError	# Errors: yes	pert_ui_runtime::FileBrowserController::refresh(&self) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/file_browser/controller.rs:724
+RuntimeError	# Errors: yes	pert_ui_runtime::FileBrowserController::selected_paths(&self) -> Result<Vec<PathBuf>, RuntimeError>	-	crates/pert-ui-runtime/src/file_browser/controller.rs:657
+RuntimeError	# Errors: yes	pert_ui_runtime::FloatingWindow::fixed_size(self, size: Size) -> Result<Self, RuntimeError>	-	crates/pert-ui-runtime/src/windows.rs:303
+RuntimeError	# Errors: yes	pert_ui_runtime::FloatingWindow::initial_size(self, size: Size) -> Result<Self, RuntimeError>	-	crates/pert-ui-runtime/src/windows.rs:289
+RuntimeError	# Errors: yes	pert_ui_runtime::FloatingWindow::position(self, position: Point) -> Result<Self, RuntimeError>	-	crates/pert-ui-runtime/src/windows.rs:276
+RuntimeError	# Errors: yes	pert_ui_runtime::FontManager::default_font(&self, role: FontRole) -> Result<FontId, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/fonts.rs:75
+RuntimeError	# Errors: yes	pert_ui_runtime::FontManager::icon_glyph(&self, font: FontId, character: char) -> Result<IconGlyph, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/fonts.rs:149
+RuntimeError	# Errors: yes	pert_ui_runtime::FontManager::material_icon(&self, name: &str) -> Result<IconGlyph, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/fonts.rs:122
+RuntimeError	# Errors: yes	pert_ui_runtime::FontManager::register(&self, data: FontData) -> Result<FontId, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/fonts.rs:64
+RuntimeError	# Errors: yes	pert_ui_runtime::FontManager::reset_default(&self, role: FontRole) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime/fonts.rs:101
+RuntimeError	# Errors: yes	pert_ui_runtime::FontManager::set_default(&self, role: FontRole, font: FontId) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime/fonts.rs:92
+RuntimeError	# Errors: yes	pert_ui_runtime::FormStatus::field(&self, key: impl Into<String>) -> Result<FieldHandle, RuntimeError>	-	crates/pert-ui-runtime/src/field_status.rs:238
+RuntimeError	# Errors: yes	pert_ui_runtime::FormStatus::focus_first_error(&self, cx: &EventContext) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/field_status.rs:284
+RuntimeError	# Errors: yes	pert_ui_runtime::IconManager::reset(&self, role: Icon) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime/fonts.rs:184
+RuntimeError	# Errors: yes	pert_ui_runtime::IconManager::set(&self, role: Icon, glyph: IconGlyph) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime/fonts.rs:175
+RuntimeError	# Errors: yes	pert_ui_runtime::IconManager::set_overrides(&self, icons: impl IntoIterator<Item = (Icon, IconGlyph)>) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime/fonts.rs:208
+RuntimeError	# Errors: yes	pert_ui_runtime::ListController::reveal(&self, key: impl Into<String>) -> Result<ListRevealReceipt, RuntimeError>	-	crates/pert-ui-runtime/src/virtual_list.rs:292
+RuntimeError	# Errors: yes	pert_ui_runtime::ListFilter::filter(&self, query: &str, matcher: &FilterMatcher) -> Result<FilterOutcome, RuntimeError>	-	crates/pert-ui-runtime/src/collection_filter.rs:318
+RuntimeError	# Errors: yes	pert_ui_runtime::ListFilter::new(ui: &impl crate::StateOwner, source: impl Into<ReadSignal<ListSource>>) -> Result<Self, RuntimeError>	-	crates/pert-ui-runtime/src/collection_filter.rs:271
+RuntimeError	# Errors: yes	pert_ui_runtime::ListFilter::refresh(&self) -> Result<FilterOutcome, RuntimeError>	-	crates/pert-ui-runtime/src/collection_filter.rs:344
+RuntimeError	# Errors: yes	pert_ui_runtime::ListSelection::clear(&self) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/list_selection.rs:197
+RuntimeError	# Errors: yes	pert_ui_runtime::ListSelection::is_selected(&self, key: &str) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/list_selection.rs:152
+RuntimeError	# Errors: yes	pert_ui_runtime::ListSelection::select(&self, keys: impl IntoIterator<Item = String>) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/list_selection.rs:182
+RuntimeError	# Errors: yes	pert_ui_runtime::ListSelection::set_active(&self, key: Option<String>) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/list_selection.rs:165
+RuntimeError	# Errors: yes	pert_ui_runtime::MeasureContext::fills_row_height(&self, index: usize) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/layout.rs:916
+RuntimeError	# Errors: yes	pert_ui_runtime::MeasureContext::fitted_text(&self, text: &str, width: f32, style: crate::TextStyle, overflow: crate::TextOverflow) -> Result<crate::FittedText, RuntimeError>	-	crates/pert-ui-runtime/src/layout.rs:842
+RuntimeError	# Errors: yes	pert_ui_runtime::MeasureContext::grow(&self, index: usize) -> Result<u16, RuntimeError>	-	crates/pert-ui-runtime/src/layout.rs:927
+RuntimeError	# Errors: yes	pert_ui_runtime::MeasureContext::key(&self, index: usize) -> Result<&str, RuntimeError>	-	crates/pert-ui-runtime/src/layout.rs:893
+RuntimeError	# Errors: yes	pert_ui_runtime::MeasureContext::limits(&self, index: usize) -> Result<SizeLimits, RuntimeError>	-	crates/pert-ui-runtime/src/layout.rs:937
+RuntimeError	# Errors: yes	pert_ui_runtime::MeasureContext::measure(&self, index: usize, available: Constraints) -> Result<Size, RuntimeError>	-	crates/pert-ui-runtime/src/layout.rs:957
+RuntimeError	# Errors: yes	pert_ui_runtime::MeasureContext::position(&self, index: usize) -> Result<crate::Point, RuntimeError>	-	crates/pert-ui-runtime/src/layout.rs:903
+RuntimeError	# Errors: yes	pert_ui_runtime::MeasureContext::rich_text(&self, text: &crate::RichText, width: Option<f32>, style: crate::TextStyle) -> Result<crate::TextLayout, RuntimeError>	-	crates/pert-ui-runtime/src/layout.rs:871
+RuntimeError	# Errors: yes	pert_ui_runtime::MeasureContext::text(&self, text: &str, width: Option<f32>, style: crate::TextStyle) -> Result<crate::TextLayout, RuntimeError>	-	crates/pert-ui-runtime/src/layout.rs:772
+RuntimeError	# Errors: yes	pert_ui_runtime::NativeWindowOptions::new(title: impl Into<String>) -> Result<Self, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/native_windows.rs:197
+RuntimeError	# Errors: yes	pert_ui_runtime::NativeWindowOptions::size(self, size: crate::Size) -> Result<Self, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/native_windows.rs:222
+RuntimeError	# Errors: yes	pert_ui_runtime::NavigationHistory::back(&self) -> Result<Option<HistoryEntry<T>>, RuntimeError>	-	crates/pert-ui-runtime/src/navigation_history.rs:347
+RuntimeError	# Errors: yes	pert_ui_runtime::NavigationHistory::clear(&self) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/navigation_history.rs:392
+RuntimeError	# Errors: yes	pert_ui_runtime::NavigationHistory::forward(&self) -> Result<Option<HistoryEntry<T>>, RuntimeError>	-	crates/pert-ui-runtime/src/navigation_history.rs:360
+RuntimeError	# Errors: yes	pert_ui_runtime::NavigationHistory::go_to(&self, id: HistoryEntryId) -> Result<Option<HistoryEntry<T>>, RuntimeError>	-	crates/pert-ui-runtime/src/navigation_history.rs:380
+RuntimeError	# Errors: yes	pert_ui_runtime::NavigationHistory::new(ui: &impl crate::StateOwner) -> Result<Self, RuntimeError>	-	crates/pert-ui-runtime/src/navigation_history.rs:248
+RuntimeError	# Errors: yes	pert_ui_runtime::NavigationHistory::visit(&self, value: T, label: impl Into<String>) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/navigation_history.rs:319
+RuntimeError	# Errors: yes	pert_ui_runtime::NavigationHistory::with_capacity(ui: &impl crate::StateOwner, capacity: NonZeroUsize) -> Result<Self, RuntimeError>	-	crates/pert-ui-runtime/src/navigation_history.rs:257
+RuntimeError	# Errors: yes	pert_ui_runtime::Parameter::begin_edit(&self, context: &mut EventContext, expected: Revision) -> Result<EditSession<T>, RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding.rs:351
+RuntimeError	# Errors: yes	pert_ui_runtime::Parameter::spec(&self) -> Result<ParameterSpec<T>, RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding.rs:335
+RuntimeError	# Errors: yes	pert_ui_runtime::ParameterHost::clear_sinks(&self) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:557
+RuntimeError	# Errors: yes	pert_ui_runtime::ParameterHost::remove(&self) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding.rs:608
+RuntimeError	# Errors: yes	pert_ui_runtime::ParameterHost::replace_spec(&self, spec: ParameterSpec<T>) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding.rs:543
+RuntimeError	# Errors: yes	pert_ui_runtime::ParameterHost::resolve_delivery(&self, token: &EditToken, resolution: DeliveryResolution) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:622
+RuntimeError	# Errors: yes	pert_ui_runtime::ParameterHost::retry_outcome(&self, token: &EditToken) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:574
+RuntimeError	# Errors: yes	pert_ui_runtime::ParameterHost::set_effective(&self, value: Option<T>) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding.rs:590
+RuntimeError	# Errors: yes	pert_ui_runtime::ParameterHost::write_base(&self, value: T) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding.rs:528
+RuntimeError	# Errors: yes	pert_ui_runtime::Permission::get(&self) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/permission.rs:147
+RuntimeError	# Errors: yes	pert_ui_runtime::Permission::read(&self, cx: &mut UpdateContext) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/permission.rs:110
+RuntimeError	# Errors: yes	pert_ui_runtime::Permission::read_paint(&self, cx: &mut UpdateContext) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/permission.rs:125
+RuntimeError	# Errors: yes	pert_ui_runtime::Permission::signal(&self) -> Result<Option<ReadSignal<bool>>, RuntimeError>	-	crates/pert-ui-runtime/src/permission.rs:197
+RuntimeError	# Errors: yes	pert_ui_runtime::PickPending::result(&self) -> Result<Option<Result<(), String>>, RuntimeError>	-	crates/pert-ui-runtime/src/quick_pick.rs:343
+RuntimeError	# Errors: yes	pert_ui_runtime::PresentationRate::new(hertz: f64) -> Result<Self, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/presentation.rs:17
+RuntimeError	# Errors: yes	pert_ui_runtime::PresentationRequest::complete(self, status: PresentationStatus) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime/native_windows.rs:1040
+RuntimeError	# Errors: yes	pert_ui_runtime::QuickPickController::close(&self) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/quick_pick.rs:507
+RuntimeError	# Errors: yes	pert_ui_runtime::QuickPickController::open(&self, items: Vec<PickItem>) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/quick_pick.rs:480
+RuntimeError	# Errors: yes	pert_ui_runtime::QuickPickController::status(&self) -> Result<PickStatus, RuntimeError>	-	crates/pert-ui-runtime/src/quick_pick.rs:518
+RuntimeError	# Errors: yes	pert_ui_runtime::ReadSignal::get(&self) -> Result<T, RuntimeError>	-	crates/pert-ui-runtime/src/signal.rs:570
+RuntimeError	# Errors: yes	pert_ui_runtime::RemoteHost::clear_submission_sink(&self) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/remote.rs:478
+RuntimeError	# Errors: yes	pert_ui_runtime::RemoteHost::disconnect(&self) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/remote.rs:630
+RuntimeError	# Errors: yes	pert_ui_runtime::RemoteHost::respond(&self, request: &RemoteCommit<T>, response: AuthorityResponse<T>) -> Result<ResponseDisposition, RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/remote.rs:564
+RuntimeError	# Errors: yes	pert_ui_runtime::RemoteHost::resynchronize(&self, value: T) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/remote.rs:663
+RuntimeError	# Errors: yes	pert_ui_runtime::RemoteHost::retry_submission(&self, request: &RemoteCommit<T>) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/remote.rs:506
+RuntimeError	# Errors: yes	pert_ui_runtime::RequestTracker::issue(&self, key: K) -> Result<RequestTicket<K>, RuntimeError>	-	crates/pert-ui-runtime/src/async_source.rs:138
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::bounds(&self, id: &WidgetId) -> Result<Option<Rect>, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/tree.rs:391
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::cancel_input(&mut self) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:4887
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::children(&self, parent: &WidgetId) -> Result<Vec<WidgetId>, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/tree.rs:132
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::clear_profile(&self) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:3709
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::clipboard_text(&self) -> Result<String, RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:4734
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::close_detached_window(&mut self) -> Result<PresentationStatus, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/native_windows.rs:1265
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::command_enabled_binding(&self, id: &CommandId) -> Result<Option<ReadSignal<bool>>, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/commands.rs:689
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::command_enabled_signal(&mut self, id: &CommandId, enabled: impl Into<ReadSignal<bool>>) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime/commands.rs:1694
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::command_in_modals(&mut self, id: &CommandId, allowed: bool) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime/commands.rs:729
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::command_info(&mut self, id: &CommandId, context: &CommandContext) -> Result<CommandInfo, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/commands.rs:837
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::command_key_input(&mut self, input: CommandKeyInput) -> Result<KeyDispatch, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/commands.rs:1301
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::command_name(&self, id: &CommandId) -> Result<&str, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/commands.rs:663
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::command_repeats(&mut self, id: &CommandId, repeat: bool) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime/commands.rs:749
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::command_shortcuts(&self, id: &CommandId) -> Result<ReadSignal<Vec<KeyChord>>, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/commands.rs:674
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::commands_for(&mut self, context: &CommandContext) -> Result<Vec<CommandEntry>, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/commands.rs:916
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::commit_detach(&mut self, prepared: PreparedDetach) -> Result<NativeWindowId, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/native_windows.rs:658
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::event<R>(&mut self, id: &WidgetId, event: impl FnOnce(&mut EventContext) -> R) -> Result<R, RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:4239
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::find(&self, root: &WidgetId, segments: &[&str]) -> Result<Option<WidgetId>, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/tree.rs:331
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::find_descendant(&self, ancestor: &WidgetId, key: &str) -> Result<Option<WidgetId>, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/tree.rs:242
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::find_path(&self, root: &WidgetId, path: &[&str]) -> Result<Option<WidgetId>, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/tree.rs:173
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::flush(&mut self, now: Duration) -> Result<FlushReport, RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:5318
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::flush_commands(&mut self) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime/commands.rs:1658
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::flush_windows(&mut self, now: Duration) -> Result<FlushReport, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/native_windows.rs:1507
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::focus(&mut self, id: &WidgetId) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:4284
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::focus_next(&mut self, reverse: bool) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime/pointer.rs:153
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::inspection_id(&self, id: &WidgetId) -> Result<u64, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/tree.rs:422
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::inspection_service(&self, capacity: crate::Capacity) -> Result<crate::InspectionService, RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:4137
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::invalidate(&self, id: &WidgetId, kind: Invalidation) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:5090
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::invoke_command(&mut self, id: &CommandId, context: CommandContext) -> Result<CommandOutcome, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/commands.rs:1015
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::jump_to_content(&mut self, target: &ContentTarget) -> Result<ContentJump, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/content_search.rs:357
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::key(&self, id: &WidgetId) -> Result<&str, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/tree.rs:124
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::key_input(&mut self, code: crate::KeyCode, action: crate::KeyAction) -> Result<crate::KeyEvent, RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:4505
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::mount_tree(&mut self, element: Element) -> Result<WidgetId, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/tree.rs:88
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::native_modifiers(&mut self, modifiers: Modifiers) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime/commands.rs:1572
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::parameter<T: ParameterValue>(&mut self, id: ParameterId, spec: ParameterSpec<T>) -> Result<(Parameter<T>, ParameterHost<T>), RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding.rs:954
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::parameter_any(&mut self, id: ParameterId, spec: AnySpec) -> Result<(AnyParameter, AnyParameterHost), RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/erased.rs:15
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::pointer_input(&mut self, event: PointerEvent) -> Result<InputOutcome, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/pointer.rs:314
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::prepare_detach(&mut self, view: &WidgetId, options: NativeWindowOptions) -> Result<PreparedDetach, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/native_windows.rs:425
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::rebind_command(&mut self, id: &CommandId, chords: Vec<KeyChord>) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime/commands.rs:643
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::reconcile_children(&mut self, parent: &WidgetId, children: Vec<Element>) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime/tree.rs:457
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::redock(&mut self, window: &NativeWindowId) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime/native_windows.rs:768
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::remote_parameter<T: ParameterValue>(&mut self, id: ParameterId, spec: ParameterSpec<T>) -> Result<(Parameter<T>, RemoteHost<T>), RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/remote.rs:701
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::reparent(&mut self, child: &WidgetId, parent: &WidgetId, index: usize) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime/tree.rs:705
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::request_close(&self, window: &NativeWindowId) -> Result<PresentationReceipt, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/native_windows.rs:1224
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::request_detach(&self, view: &WidgetId, options: NativeWindowOptions) -> Result<PresentationReceipt, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/native_windows.rs:1152
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::request_redock(&self, window: &NativeWindowId) -> Result<PresentationReceipt, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/native_windows.rs:1177
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::request_window_title(&self, window: &NativeWindowId, title: impl Into<String>) -> Result<PresentationReceipt, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/native_windows.rs:1246
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::resume_content_jump(&mut self, pending: &crate::PendingJump) -> Result<ContentJump, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/content_search.rs:395
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::reveal(&mut self, target: &WidgetId) -> Result<RevealOutcome, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/reveal.rs:347
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::reveal_and_focus(&mut self, target: &WidgetId) -> Result<RevealOutcome, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/reveal.rs:394
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::reveal_child(&mut self, container: &WidgetId, key: &str) -> Result<ChildReveal, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/reveal.rs:436
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::select_window(&mut self, window: &NativeWindowId) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime/native_windows.rs:324
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::service_inspection(&mut self) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:4163
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::service_intervals(&mut self, now: Duration) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime/application.rs:359
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::set_clipboard_text(&self, text: &str) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:4766
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::set_command_target(&mut self, target: Option<&WidgetId>) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime/commands.rs:768
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::set_presentation_rate(&self, rate: Option<PresentationRate>) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime/presentation.rs:49
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::set_profiling(&self, enabled: bool) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:3692
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::set_viewport(&self, viewport: crate::Viewport) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:3928
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::set_visible(&mut self, id: &WidgetId, visible: bool) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:5021
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::set_window_visible(&mut self, visible: bool) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime/native_windows.rs:382
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::take_presentation_requests(&self) -> Result<Vec<PresentationRequest>, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/native_windows.rs:1193
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::text_command(&mut self, id: &WidgetId, command: crate::TextCommand) -> Result<crate::TextCommandOutcome, RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:5115
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::text_input(&mut self, text: &str) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:4828
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::text_preedit(&mut self, preedit: &crate::TextPreedit) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:4807
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::try_event<R, E: std::fmt::Display>(&mut self, id: &WidgetId, event: impl FnOnce(&mut EventContext) -> Result<R, E>) -> Result<Result<R, E>, RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:3893
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::unmount(&mut self, id: &WidgetId) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:5064
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::unregister_command(&mut self, id: &CommandId) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime/commands.rs:628
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::unregister_held_input(&mut self, id: &HeldInputId) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime/held.rs:131
+RuntimeError	# Errors: yes	pert_ui_runtime::Runtime::window_of(&self, view: &WidgetId) -> Result<NativeWindowId, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/native_windows.rs:356
+RuntimeError	# Errors: yes	pert_ui_runtime::SeriesSource::telemetry(&self) -> Result<Telemetry<T>, RuntimeError>	-	crates/pert-ui-runtime/src/live.rs:707
+RuntimeError	# Errors: yes	pert_ui_runtime::SeriesSource::with_window<R>(&self, f: impl FnOnce(&Telemetry<T>, &SampleWindow<T>) -> R) -> Result<R, RuntimeError>	-	crates/pert-ui-runtime/src/live.rs:684
+RuntimeError	# Errors: yes	pert_ui_runtime::Signal::get(&self) -> Result<T, RuntimeError>	-	crates/pert-ui-runtime/src/signal.rs:393
+RuntimeError	# Errors: yes	pert_ui_runtime::Signal::set(&self, value: T) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/signal.rs:466
+RuntimeError	# Errors: yes	pert_ui_runtime::Signal::set_changed(&self, value: T) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/signal.rs:474
+RuntimeError	# Errors: yes	pert_ui_runtime::Signal::toggle(&self) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/signal.rs:557
+RuntimeError	# Errors: yes	pert_ui_runtime::Signal::update(&self, change: impl FnOnce(&mut T)) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/signal.rs:544
+RuntimeError	# Errors: yes	pert_ui_runtime::TableController::filter(&self, query: &str, matcher: &crate::FilterMatcher) -> Result<crate::FilterOutcome, RuntimeError>	-	crates/pert-ui-runtime/src/table.rs:707
+RuntimeError	# Errors: yes	pert_ui_runtime::TableController::new(ui: &impl crate::StateOwner, columns: impl IntoIterator<Item = TableColumn>, source: TableSource, selection: ListSelection) -> Result<Self, RuntimeError>	-	crates/pert-ui-runtime/src/table.rs:574
+RuntimeError	# Errors: yes	pert_ui_runtime::TableController::reveal(&self, key: impl Into<String>) -> Result<crate::ListRevealReceipt, RuntimeError>	-	crates/pert-ui-runtime/src/table.rs:853
+RuntimeError	# Errors: yes	pert_ui_runtime::TableController::set_active_column(&self, column: Option<String>) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/table.rs:757
+RuntimeError	# Errors: yes	pert_ui_runtime::TableController::set_column_width(&self, key: &str, width: Length) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/table.rs:804
+RuntimeError	# Errors: yes	pert_ui_runtime::TableController::set_sort(&self, sort: Option<TableSort>) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/table.rs:742
+RuntimeError	# Errors: yes	pert_ui_runtime::TableController::set_source(&self, source: TableSource) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/table.rs:640
+RuntimeError	# Errors: yes	pert_ui_runtime::TextSource::read(&self, cx: &mut UpdateContext) -> Result<RichText, RuntimeError>	-	crates/pert-ui-runtime/src/text_source.rs:137
+RuntimeError	# Errors: yes	pert_ui_runtime::TextSource::read_paint(&self, cx: &mut UpdateContext) -> Result<RichText, RuntimeError>	-	crates/pert-ui-runtime/src/text_source.rs:152
+RuntimeError	# Errors: yes	pert_ui_runtime::ThemeManager::density(&self) -> Result<Density, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/theme.rs:1022
+RuntimeError	# Errors: yes	pert_ui_runtime::ThemeManager::density_signal(&self) -> Result<ReadSignal<Density>, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/theme.rs:1069
+RuntimeError	# Errors: yes	pert_ui_runtime::ThemeManager::metrics(&self, density: Density) -> Result<ThemeMetrics, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/theme.rs:1030
+RuntimeError	# Errors: yes	pert_ui_runtime::ThemeManager::mode(&self) -> Result<ThemeMode, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/theme.rs:1107
+RuntimeError	# Errors: yes	pert_ui_runtime::ThemeManager::mode_signal(&self) -> Result<ReadSignal<ThemeMode>, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/theme.rs:1147
+RuntimeError	# Errors: yes	pert_ui_runtime::ThemeManager::palette(&self, mode: ThemeMode) -> Result<Palette, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/theme.rs:1115
+RuntimeError	# Errors: yes	pert_ui_runtime::ThemeManager::set_color(&self, mode: ThemeMode, role: ColorRole, color: Color) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/theme.rs:1187
+RuntimeError	# Errors: yes	pert_ui_runtime::ThemeManager::set_density(&self, density: Density) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/theme.rs:1043
+RuntimeError	# Errors: yes	pert_ui_runtime::ThemeManager::set_metrics(&self, density: Density, metrics: ThemeMetrics) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/theme.rs:1087
+RuntimeError	# Errors: yes	pert_ui_runtime::ThemeManager::set_mode(&self, mode: ThemeMode) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/theme.rs:1127
+RuntimeError	# Errors: yes	pert_ui_runtime::ThemeManager::set_palette(&self, mode: ThemeMode, palette: Palette) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/theme.rs:1164
+RuntimeError	# Errors: yes	pert_ui_runtime::ToastQueue::push(&self, toast: Toast) -> Result<ToastReceipt, RuntimeError>	-	crates/pert-ui-runtime/src/notifications.rs:318
+RuntimeError	# Errors: yes	pert_ui_runtime::ToolWindowController::collapse(&self, key: &str) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:2347
+RuntimeError	# Errors: yes	pert_ui_runtime::ToolWindowController::expand(&self, key: &str) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:2339
+RuntimeError	# Errors: yes	pert_ui_runtime::ToolWindowController::is_expanded(&self, key: &str) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:2363
+RuntimeError	# Errors: yes	pert_ui_runtime::ToolWindowController::is_overlay(&self, key: &str) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:2475
+RuntimeError	# Errors: yes	pert_ui_runtime::ToolWindowController::mode(&self, key: &str) -> Result<ToolWindowMode, RuntimeError>	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:2433
+RuntimeError	# Errors: yes	pert_ui_runtime::ToolWindowController::move_to(&self, key: &str, edge: ToolEdge, group: StripeGroup) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:2380
+RuntimeError	# Errors: yes	pert_ui_runtime::ToolWindowController::names(&self) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:2510
+RuntimeError	# Errors: yes	pert_ui_runtime::ToolWindowController::placement(&self, key: &str) -> Result<(ToolEdge, StripeGroup, usize), RuntimeError>	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:2460
+RuntimeError	# Errors: yes	pert_ui_runtime::ToolWindowController::reorder(&self, key: &str, position: usize) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:2403
+RuntimeError	# Errors: yes	pert_ui_runtime::ToolWindowController::set_mode(&self, key: &str, mode: ToolWindowMode) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:2420
+RuntimeError	# Errors: yes	pert_ui_runtime::ToolWindowController::set_names(&self, names: bool) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:2491
+RuntimeError	# Errors: yes	pert_ui_runtime::ToolWindowController::set_overlay(&self, key: &str, overlay: bool) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:2446
+RuntimeError	# Errors: yes	pert_ui_runtime::ToolWindowController::toggle(&self, key: &str) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:2355
+RuntimeError	# Errors: yes	pert_ui_runtime::Tooltip::command(ui: &crate::Runtime, anchor: Element, command: &crate::CommandId) -> Result<Self, RuntimeError>	-	crates/pert-ui-runtime/src/popover.rs:435
+RuntimeError	# Errors: yes	pert_ui_runtime::TreeController::filter(&self, query: &str, matcher: &crate::FilterMatcher) -> Result<crate::FilterOutcome, RuntimeError>	-	crates/pert-ui-runtime/src/tree.rs:468
+RuntimeError	# Errors: yes	pert_ui_runtime::TreeController::is_expanded(&self, key: &str) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/tree.rs:331
+RuntimeError	# Errors: yes	pert_ui_runtime::TreeController::new(ui: &impl crate::StateOwner, source: TreeSource, selection: ListSelection) -> Result<Self, RuntimeError>	-	crates/pert-ui-runtime/src/tree.rs:272
+RuntimeError	# Errors: yes	pert_ui_runtime::TreeController::reveal(&self, key: impl Into<String>) -> Result<crate::ListRevealReceipt, RuntimeError>	-	crates/pert-ui-runtime/src/tree.rs:541
+RuntimeError	# Errors: yes	pert_ui_runtime::TreeController::set_expanded(&self, key: &str, expanded: bool) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/tree.rs:343
+RuntimeError	# Errors: yes	pert_ui_runtime::TreeController::set_source(&self, source: TreeSource) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/tree.rs:390
+RuntimeError	# Errors: yes	pert_ui_runtime::TreeController::toggle(&self, key: &str) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/tree.rs:382
+RuntimeError	# Errors: yes	pert_ui_runtime::UiSettings::debug_overlay(&self) -> Result<crate::DebugOverlay, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/settings.rs:447
+RuntimeError	# Errors: yes	pert_ui_runtime::UiSettings::debug_overlay_signal(&self) -> Result<ReadSignal<crate::DebugOverlay>, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/settings.rs:472
+RuntimeError	# Errors: yes	pert_ui_runtime::UiSettings::motion(&self) -> Result<MotionPreference, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/settings.rs:342
+RuntimeError	# Errors: yes	pert_ui_runtime::UiSettings::motion_signal(&self) -> Result<ReadSignal<MotionPreference>, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/settings.rs:385
+RuntimeError	# Errors: yes	pert_ui_runtime::UiSettings::set_debug_overlay(&self, overlay: crate::DebugOverlay) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/settings.rs:456
+RuntimeError	# Errors: yes	pert_ui_runtime::UiSettings::set_motion(&self, motion: MotionPreference) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/settings.rs:355
+RuntimeError	# Errors: yes	pert_ui_runtime::UiSettings::set_strings(&self, strings: crate::UiStrings) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/settings.rs:415
+RuntimeError	# Errors: yes	pert_ui_runtime::UiSettings::set_text_rendering(&self, mode: TextRenderingMode) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/settings.rs:249
+RuntimeError	# Errors: yes	pert_ui_runtime::UiSettings::set_zoom(&self, zoom: UiZoom) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/settings.rs:297
+RuntimeError	# Errors: yes	pert_ui_runtime::UiSettings::strings(&self) -> Result<crate::UiStrings, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/settings.rs:398
+RuntimeError	# Errors: yes	pert_ui_runtime::UiSettings::strings_signal(&self) -> Result<ReadSignal<crate::UiStrings>, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/settings.rs:434
+RuntimeError	# Errors: yes	pert_ui_runtime::UiSettings::text_rendering(&self) -> Result<TextRenderingMode, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/settings.rs:223
+RuntimeError	# Errors: yes	pert_ui_runtime::UiSettings::text_rendering_signal(&self) -> Result<ReadSignal<TextRenderingMode>, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/settings.rs:264
+RuntimeError	# Errors: yes	pert_ui_runtime::UiSettings::zoom(&self) -> Result<UiZoom, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/settings.rs:276
+RuntimeError	# Errors: yes	pert_ui_runtime::UiSettings::zoom_signal(&self) -> Result<ReadSignal<UiZoom>, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/settings.rs:330
+RuntimeError	# Errors: yes	pert_ui_runtime::UpdateContext::animate(&mut self) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:2865
+RuntimeError	# Errors: yes	pert_ui_runtime::UpdateContext::read_series<T: crate::LiveItem, R>(&mut self, source: &crate::SeriesSource<T>, f: impl FnOnce(&crate::Telemetry<T>, &pert_ui_core::SampleWindow<T>) -> R) -> Result<R, RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:2839
+RuntimeError	# Errors: yes	pert_ui_runtime::UpdateContext::request_reparent(&mut self, child: &WidgetId, parent: &WidgetId, index: usize) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:2663
+RuntimeError	# Errors: yes	pert_ui_runtime::UpdateContext::strings(&mut self) -> Result<crate::UiStrings, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/settings.rs:659
+RuntimeError	# Errors: yes	pert_ui_runtime::UpdateContext::wake_after(&mut self, delay: Duration) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:2877
+RuntimeError	# Errors: yes	pert_ui_runtime::WindowController::close(&self) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/windows.rs:75
+RuntimeError	# Errors: yes	pert_ui_runtime::WindowController::minimize(&self) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/windows.rs:93
+RuntimeError	# Errors: yes	pert_ui_runtime::WindowController::restore(&self) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/windows.rs:105
+RuntimeError	# Errors: yes	pert_ui_runtime::WindowController::set_position(&self, position: Point) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/windows.rs:118
+RuntimeError	# Errors: yes	pert_ui_runtime::WindowController::set_size(&self, size: Size) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/windows.rs:146
+RuntimeError	# Errors: yes	pert_ui_runtime::ZoomController::fit(&self) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/zoom_view.rs:180
+RuntimeError	# Errors: yes	pert_ui_runtime::ZoomController::set(&self, view: ViewTransform) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/zoom_view.rs:159
+RuntimeError	# Errors: yes	pert_ui_runtime::ZoomController::set_changed(&self, view: ViewTransform) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/zoom_view.rs:167
+SendError<T>	# Errors: yes	pert_ui_runtime::UiSender::send(&self, value: T) -> Result<(), SendError<T>>	-	crates/pert-ui-runtime/src/mailbox.rs:121
+TextEditError	# Errors: yes	pert_ui_runtime::TextArea::check(text: &str) -> Result<(), TextEditError>	-	crates/pert-ui-runtime/src/text_fields.rs:769
+TextEditError	# Errors: yes	pert_ui_runtime::TextField::check(text: &str) -> Result<(), TextEditError>	-	crates/pert-ui-runtime/src/text_fields.rs:768
+TextEditError	# Errors: yes	pert_ui_runtime::TextPreedit::new(text: impl Into<String>, cursor: Option<std::ops::Range<usize>>) -> Result<Self, TextEditError>	-	crates/pert-ui-runtime/src/text_input.rs:74
+UiStringError	# Errors: yes	pert_ui_runtime::UiStrings::with(self, role: StringRole, text: impl Into<String>) -> Result<Self, UiStringError>	-	crates/pert-ui-runtime/src/strings.rs:601
+WaitError	# Errors: yes	pert_ui_runtime::Pending::try_reply(&self) -> Result<InspectionReply<T>, WaitError>	-	crates/pert-ui-runtime/src/inspection.rs:640
+WaitError	# Errors: yes	pert_ui_runtime::Pending::wait(self) -> Result<InspectionReply<T>, WaitError>	-	crates/pert-ui-runtime/src/inspection.rs:588
+WaitError	# Errors: yes	pert_ui_runtime::Pending::wait_timeout(&self, timeout: Duration) -> Result<InspectionReply<T>, WaitError>	-	crates/pert-ui-runtime/src/inspection.rs:610
+WakeError	# Errors: yes	pert_ui_runtime::LiveWaker::notify(&self) -> Result<(), WakeError>	-	crates/pert-ui-runtime/src/live.rs:156
+WorkspaceError	# Errors: yes	pert_ui_runtime::ViewState::new(kind: impl Into<String>) -> Result<Self, WorkspaceError>	-	crates/pert-ui-runtime/src/workspace.rs:236
+WorkspaceError	# Errors: yes	pert_ui_runtime::ViewState::with(self, name: impl Into<String>, value: WorkspaceValue) -> Result<Self, WorkspaceError>	-	crates/pert-ui-runtime/src/workspace.rs:248
+WorkspaceError	# Errors: yes	pert_ui_runtime::Workspace::decode(text: &str) -> Result<Self, WorkspaceError>	-	crates/pert-ui-runtime/src/workspace.rs:865
+WorkspaceError	# Errors: yes	pert_ui_runtime::Workspace::new(settings: WorkspaceSettings, entries: impl IntoIterator<Item = (WorkspacePath, ViewState)>) -> Result<Self, WorkspaceError>	-	crates/pert-ui-runtime/src/workspace.rs:518
+WorkspaceError	# Errors: yes	pert_ui_runtime::WorkspacePath::new(segments: impl IntoIterator<Item = impl Into<String>>) -> Result<Self, WorkspaceError>	-	crates/pert-ui-runtime/src/workspace.rs:364
+WorkspaceError	# Errors: yes	pert_ui_runtime::WorkspaceValue::map(entries: impl IntoIterator<Item = (String, Self)>) -> Result<Self, WorkspaceError>	-	crates/pert-ui-runtime/src/workspace.rs:116
+WorkspaceError	# Errors: yes	pert_ui_runtime::WorkspaceValue::number(value: f64) -> Result<Self, WorkspaceError>	-	crates/pert-ui-runtime/src/workspace.rs:93
+WorkspaceError	# Errors: yes	pert_ui_runtime::WorkspaceValue::text(value: impl Into<String>) -> Result<Self, WorkspaceError>	-	crates/pert-ui-runtime/src/workspace.rs:105
+crate::CaptureError	# Errors: yes	pert_ui_runtime::Runtime::capture_scene(&mut self, job: &crate::CaptureJob) -> Result<crate::DisplayList, crate::CaptureError>	-	crates/pert-ui-runtime/src/runtime/capture.rs:299
+crate::DrawError	# Errors: yes	pert_ui_runtime::Component::paint(&self, _painter: &mut crate::Painter) -> Result<(), crate::DrawError>	-	crates/pert-ui-runtime/src/runtime.rs:2108
+crate::DrawError	# Errors: yes	pert_ui_runtime::Component::paint_foreground(&self, _painter: &mut crate::Painter) -> Result<(), crate::DrawError>	-	crates/pert-ui-runtime/src/runtime.rs:2118
+crate::DrawError	# Errors: yes	pert_ui_runtime::Runtime::paint(&mut self) -> Result<crate::DisplayList, crate::DrawError>	-	crates/pert-ui-runtime/src/runtime/compose.rs:22
+crate::GeometryError	# Errors: yes	pert_ui_runtime::Container::limits(self, minimum: Size, maximum: Option<Size>) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/containers.rs:193
+crate::GeometryError	# Errors: yes	pert_ui_runtime::FileBrowser::new(controller: &FileBrowserController, row_height: f32) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/file_browser/view.rs:87
+crate::GeometryError	# Errors: yes	pert_ui_runtime::Length::new(value: f32) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/containers.rs:24
+crate::GeometryError	# Errors: yes	pert_ui_runtime::Magnification::new(factor: f32) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/pointer.rs:116
+crate::GeometryError	# Errors: yes	pert_ui_runtime::Point::new(x: f32, y: f32) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/pointer.rs:17
+crate::GeometryError	# Errors: yes	pert_ui_runtime::Rect::new(x: f32, y: f32, width: f32, height: f32) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/drawing.rs:61
+crate::GeometryError	# Errors: yes	pert_ui_runtime::Table::new(controller: &TableController, row_height: f32) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/table.rs:1441
+crate::GeometryError	# Errors: yes	pert_ui_runtime::TextSelection::caret(self, layout: &TextLayout) -> Result<Rect, crate::GeometryError>	-	crates/pert-ui-runtime/src/text_selection.rs:112
+crate::GeometryError	# Errors: yes	pert_ui_runtime::TextSelection::rectangles(self, layout: &TextLayout) -> Result<Vec<Rect>, crate::GeometryError>	-	crates/pert-ui-runtime/src/text_selection.rs:121
+crate::GeometryError	# Errors: yes	pert_ui_runtime::ThemeMetrics::with_metric(self, role: MetricRole, value: crate::Length) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/runtime/theme.rs:290
+crate::GeometryError	# Errors: yes	pert_ui_runtime::Tree::new(controller: &TreeController, row_height: f32) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/tree.rs:914
+crate::GeometryError	# Errors: yes	pert_ui_runtime::UiZoom::new(factor: f64) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/runtime/settings.rs:39
+crate::GeometryError	# Errors: yes	pert_ui_runtime::Viewport::from_physical(extent: PhysicalExtent, scale: f64) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/drawing.rs:932
+crate::GeometryError	# Errors: yes	pert_ui_runtime::Viewport::new(width: f32, height: f32, scale: f64) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/drawing.rs:900
+crate::GeometryError	# Errors: yes	pert_ui_runtime::Viewport::to_logical(self, x: f64, y: f64) -> Result<crate::Point, crate::GeometryError>	-	crates/pert-ui-runtime/src/drawing.rs:1012
+crate::GeometryError	# Errors: yes	pert_ui_runtime::VirtualList::estimated(items: impl Into<ReadSignal<ListSource>>, estimate: f32) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/virtual_list.rs:659
+crate::GeometryError	# Errors: yes	pert_ui_runtime::VirtualList::new(items: impl Into<ReadSignal<ListSource>>, row_height: f32) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/virtual_list.rs:635
+crate::NumberInputError	# Errors: yes	pert_ui_runtime::InlineSlider::decimal_places(self, places: u8) -> Result<Self, crate::NumberInputError>	-	crates/pert-ui-runtime/src/numeric_controls.rs:1592
+crate::NumberInputError	# Errors: yes	pert_ui_runtime::Knob::decimal_places(self, places: u8) -> Result<Self, crate::NumberInputError>	-	crates/pert-ui-runtime/src/numeric_controls.rs:1598
+crate::NumberInputError	# Errors: yes	pert_ui_runtime::Slider::decimal_places(self, places: u8) -> Result<Self, crate::NumberInputError>	-	crates/pert-ui-runtime/src/numeric_controls.rs:1586
+crate::RestoreRejection	# Errors: yes	pert_ui_runtime::Component::restore_workspace_state(&mut self, _state: &crate::ViewState) -> Result<Invalidation, crate::RestoreRejection>	-	crates/pert-ui-runtime/src/runtime.rs:1952
+crate::RestoreRejection	# Errors: yes	pert_ui_runtime::Component::restore_workspace_state_with_children(&mut self, state: &crate::ViewState, _children: &[ChildInfo]) -> Result<Invalidation, crate::RestoreRejection>	-	crates/pert-ui-runtime/src/runtime.rs:2029
+crate::RuntimeError	# Errors: yes	pert_ui_runtime::VirtualAxis::measure_line(&mut self, line: usize, extent: f32, offset: f64) -> Result<f64, crate::RuntimeError>	-	crates/pert-ui-runtime/src/virtual_axis.rs:372
+crate::WorkspaceError	# Errors: yes	pert_ui_runtime::Component::workspace_state(&self) -> Result<Option<crate::ViewState>, crate::WorkspaceError>	-	crates/pert-ui-runtime/src/runtime.rs:1910
+crate::WorkspaceError	# Errors: yes	pert_ui_runtime::Component::workspace_state_with_children(&self, _children: &[ChildInfo]) -> Result<Option<crate::ViewState>, crate::WorkspaceError>	-	crates/pert-ui-runtime/src/runtime.rs:1927
+crate::WorkspaceError	# Errors: yes	pert_ui_runtime::Runtime::capture_workspace(&self) -> Result<Workspace, crate::WorkspaceError>	-	crates/pert-ui-runtime/src/runtime/workspace.rs:63
+crate::WorkspaceError	# Errors: yes	pert_ui_runtime::Runtime::restore_workspace(&mut self, workspace: &Workspace) -> Result<WorkspaceReport, crate::WorkspaceError>	-	crates/pert-ui-runtime/src/runtime/workspace.rs:121
+pert_ui_runtime::ApplicationError	impl Error	crates/pert-ui-runtime/src/error.rs:106
+pert_ui_runtime::BindingError	impl Error	crates/pert-ui-runtime/src/parameter_binding.rs:60
+pert_ui_runtime::CaptureError	impl Error	crates/pert-ui-runtime/src/capture.rs:161
+pert_ui_runtime::ChoiceError	impl Error	crates/pert-ui-runtime/src/choice_controls.rs:111
+pert_ui_runtime::ClipboardError	impl Error	crates/pert-ui-runtime/src/text_input.rs:156
+pert_ui_runtime::ContentSearchError	impl Error	crates/pert-ui-runtime/src/content_search.rs:434
+pert_ui_runtime::DeliveryError	impl Error	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:9
+pert_ui_runtime::DrawError	impl Error	crates/pert-ui-runtime/src/drawing.rs:22
+pert_ui_runtime::FileBrowserError	impl Error	crates/pert-ui-runtime/src/file_browser.rs:259
+pert_ui_runtime::FontError	impl Error	crates/pert-ui-runtime/src/text/fonts.rs:119
+pert_ui_runtime::FrameError	impl Error	crates/pert-ui-runtime/src/capture.rs:221
+pert_ui_runtime::GeometryError	impl Error	crates/pert-ui-runtime/src/layout.rs:78
+pert_ui_runtime::HexColorError	impl Error	crates/pert-ui-runtime/src/drawing.rs:753
+pert_ui_runtime::HighlightError	impl Error	crates/pert-ui-runtime/src/text/fit.rs:208
+pert_ui_runtime::InputRejection	impl Error	crates/pert-ui-runtime/src/text_fields/normalize.rs:22
+pert_ui_runtime::LayoutError	impl Error	crates/pert-ui-runtime/src/layout.rs:8
+pert_ui_runtime::LimitError	impl Error	crates/pert-ui-runtime/src/render_limits.rs:44
+pert_ui_runtime::ListingError	impl Error	crates/pert-ui-runtime/src/file_browser.rs:75
+pert_ui_runtime::NumberInputError	impl Error	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:12
+pert_ui_runtime::NumberLocaleError	impl Error	crates/pert-ui-runtime/src/number_format.rs:145
+pert_ui_runtime::PathError	impl Error	crates/pert-ui-runtime/src/geometry.rs:10
+pert_ui_runtime::RedescriptionError	impl Error	crates/pert-ui-runtime/src/conformance.rs:12
+pert_ui_runtime::RequestError	impl Error	crates/pert-ui-runtime/src/inspection.rs:411
+pert_ui_runtime::RestoreRejection	impl Error	crates/pert-ui-runtime/src/workspace.rs:675
+pert_ui_runtime::RuntimeError	impl Error	crates/pert-ui-runtime/src/runtime.rs:182
+pert_ui_runtime::SendError	impl Error	crates/pert-ui-runtime/src/mailbox.rs:61
+pert_ui_runtime::SinkError	impl Error	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:87
+pert_ui_runtime::TextEditError	impl Error	crates/pert-ui-runtime/src/text_input.rs:9
+pert_ui_runtime::TextError	impl Error	crates/pert-ui-runtime/src/text.rs:52
+pert_ui_runtime::TranslucentColorError	impl Error	crates/pert-ui-runtime/src/drawing.rs:740
+pert_ui_runtime::UiStringError	impl Error	crates/pert-ui-runtime/src/strings.rs:508
+pert_ui_runtime::WaitError	impl Error	crates/pert-ui-runtime/src/inspection.rs:429
+pert_ui_runtime::WakeError	impl Error	crates/pert-ui-runtime/src/live.rs:103
+pert_ui_runtime::WindowError	impl Error	crates/pert-ui-runtime/src/runtime/native_windows.rs:868
+pert_ui_runtime::WorkspaceError	impl Error	crates/pert-ui-runtime/src/workspace.rs:577
+
+## pert-ui-cpu
+CpuRenderError	# Errors: yes	pert_ui_cpu::CpuRenderer::render(&mut self, scene: &DisplayList) -> Result<FrameImage, CpuRenderError>	-	crates/pert-ui-cpu/src/lib.rs:145
+CpuRenderError	# Errors: yes	pert_ui_cpu::CpuRenderer::render_opaque(&mut self, scene: &DisplayList) -> Result<FrameImage, CpuRenderError>	-	crates/pert-ui-cpu/src/lib.rs:166
+pert_ui_cpu::CpuRenderError	impl Error	crates/pert-ui-cpu/src/lib.rs:14
+
+## pert-ui-wgpu
+RenderError	# Errors: yes	pert_ui_wgpu::Renderer::new(target: impl Into<wgpu::SurfaceTarget<'static>>, width: u32, height: u32, notify: impl Fn(Notice) + Send + Sync + 'static) -> Result<Self, RenderError>	-	crates/pert-ui-wgpu/src/lib.rs:391
+RenderError	# Errors: yes	pert_ui_wgpu::Renderer::new_surface(&self, target: impl Into<wgpu::SurfaceTarget<'static>>, width: u32, height: u32) -> Result<Self, RenderError>	-	crates/pert-ui-wgpu/src/lib.rs:1271
+RenderError	# Errors: yes	pert_ui_wgpu::Renderer::recreate(&mut self, target: impl Into<wgpu::SurfaceTarget<'static>>) -> Result<(), RenderError>	-	crates/pert-ui-wgpu/src/lib.rs:505
+RenderError	# Errors: yes	pert_ui_wgpu::Renderer::render(&mut self, scene: DisplayList, before_present: impl FnOnce()) -> Result<Frame, RenderError>	-	crates/pert-ui-wgpu/src/lib.rs:609
+RenderError	# Errors: yes	pert_ui_wgpu::Renderer::render_offscreen(&mut self, scene: DisplayList) -> Result<pert_ui_runtime::FrameImage, RenderError>	-	crates/pert-ui-wgpu/src/lib.rs:659
+RenderError	# Errors: yes	pert_ui_wgpu::Renderer::resize(&mut self, width: u32, height: u32) -> Result<(), RenderError>	-	crates/pert-ui-wgpu/src/lib.rs:485
+pert_ui_wgpu::RenderError	impl Error	crates/pert-ui-wgpu/src/lib.rs:44
+
+## pert-ui
+AppError	# Errors: yes	pert_ui::App::run(self) -> Result<(), AppError>	-	crates/pert-ui/src/app.rs:596	[configs: cpu, default, image-formats, images, no-default-desktop-cpu, serde, svg]
+ImageError	# Errors: yes	pert_ui::images::decode(bytes: &[u8]) -> Result<crate::RasterImage, ImageError>	-	crates/pert-ui/src/images.rs:262	[configs: image-formats, images, no-default-png]
+ImageError	# Errors: yes	pert_ui::images::load(path: impl AsRef<std::path::Path>) -> Result<crate::RasterImage, ImageError>	-	crates/pert-ui/src/images.rs:304	[configs: image-formats, images, no-default-png]
+RuntimeError	# Errors: yes	pert_ui::App::max_size(self, size: crate::Size) -> Result<Self, RuntimeError>	-	crates/pert-ui/src/app.rs:366	[configs: cpu, default, image-formats, images, no-default-desktop-cpu, serde, svg]
+RuntimeError	# Errors: yes	pert_ui::App::min_size(self, size: crate::Size) -> Result<Self, RuntimeError>	-	crates/pert-ui/src/app.rs:353	[configs: cpu, default, image-formats, images, no-default-desktop-cpu, serde, svg]
+RuntimeError	# Errors: yes	pert_ui::App::size(self, size: crate::Size) -> Result<Self, RuntimeError>	-	crates/pert-ui/src/app.rs:342	[configs: cpu, default, image-formats, images, no-default-desktop-cpu, serde, svg]
+SvgError	# Errors: yes	pert_ui::Svg::new(source: &[u8]) -> Result<Self, SvgError>	-	crates/pert-ui/src/svg/component.rs:76	[configs: no-default-svg, svg]
+SvgError	# Errors: yes	pert_ui::Svg::tinted(source: &[u8], role: ColorRole) -> Result<Self, SvgError>	-	crates/pert-ui/src/svg/component.rs:97	[configs: no-default-svg, svg]
+SvgError	# Errors: yes	pert_ui::svg::intrinsic_size(source: &[u8]) -> Result<pert_ui_runtime::Size, SvgError>	-	crates/pert-ui/src/svg.rs:238	[configs: no-default-svg, svg]
+SvgError	# Errors: yes	pert_ui::svg::rasterize(source: &[u8], width: u32, height: u32) -> Result<pert_ui_runtime::RasterImage, SvgError>	-	crates/pert-ui/src/svg.rs:295	[configs: no-default-svg, svg]
+SvgError	# Errors: yes	pert_ui::svg::rasterize_mask(source: &[u8], width: u32, height: u32) -> Result<pert_ui_runtime::MaskImage, SvgError>	-	crates/pert-ui/src/svg.rs:310	[configs: no-default-svg, svg]
+pert_ui::AppError	impl Error	crates/pert-ui/src/app.rs:28	[configs: cpu, default, image-formats, images, no-default-desktop-cpu, serde, svg]
+pert_ui::AppShutdownError	impl Error	crates/pert-ui/src/app.rs:149	[configs: cpu, default, image-formats, images, no-default-desktop-cpu, serde, svg]
+pert_ui::images::ImageError	impl Error	crates/pert-ui/src/images.rs:213	[configs: image-formats, images, no-default-png]
+pert_ui::svg::SvgError	impl Error	crates/pert-ui/src/svg.rs:50	[configs: no-default-svg, svg]

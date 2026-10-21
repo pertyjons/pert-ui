@@ -1,0 +1,29 @@
+# Functions named get or get_*.
+# A trailing [configs: ...] means the entry exists only in those configurations.
+
+## pert-ui-core
+pert_ui_core::Capacity::get(self) -> usize	#[must_use]	crates/pert-ui-core/src/live/mod.rs:206
+pert_ui_core::EditSequence::get(self) -> u64	#[must_use]	crates/pert-ui-core/src/edit.rs:42
+pert_ui_core::EditSource::get(self) -> u64	#[must_use]	crates/pert-ui-core/src/edit.rs:70
+pert_ui_core::Incarnation::get(self) -> u64	#[must_use]	crates/pert-ui-core/src/live/mod.rs:55
+pert_ui_core::NormalizedValue::get(self) -> f32	#[must_use]	crates/pert-ui-core/src/normalized.rs:83
+pert_ui_core::PowerExponent::get(self) -> f32	#[must_use]	crates/pert-ui-core/src/parameter.rs:85
+pert_ui_core::Revision::get(self) -> u64	#[must_use]	crates/pert-ui-core/src/edit.rs:20
+pert_ui_core::Sequence::get(self) -> u64	#[must_use]	crates/pert-ui-core/src/live/mod.rs:91
+pert_ui_core::Timestamp::get(self) -> u64	#[must_use]	crates/pert-ui-core/src/live/mod.rs:130
+
+## pert-ui-runtime
+pert_ui_runtime::ApplicationError::get(&self) -> &dyn Error + Send + Sync + 'static	#[must_use]	crates/pert-ui-runtime/src/error.rs:55
+pert_ui_runtime::DragPayload::get<T: 'static>(&self) -> Option<&T>	#[must_use]	crates/pert-ui-runtime/src/drag.rs:53
+pert_ui_runtime::HistoryEntryId::get(self) -> u64	#[must_use]	crates/pert-ui-runtime/src/navigation_history.rs:21
+pert_ui_runtime::HistorySnapshot::get(&self, id: HistoryEntryId) -> Option<&HistoryEntry<T>>	#[must_use]	crates/pert-ui-runtime/src/navigation_history.rs:106
+pert_ui_runtime::Length::get(self) -> f32	#[must_use]	crates/pert-ui-runtime/src/containers.rs:30
+pert_ui_runtime::Magnification::get(self) -> f32	#[must_use]	crates/pert-ui-runtime/src/pointer.rs:127
+pert_ui_runtime::Permission::get(&self) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/permission.rs:147
+pert_ui_runtime::ReadSignal::get(&self) -> Result<T, RuntimeError>	-	crates/pert-ui-runtime/src/signal.rs:570
+pert_ui_runtime::Signal::get(&self) -> Result<T, RuntimeError>	-	crates/pert-ui-runtime/src/signal.rs:393
+pert_ui_runtime::ThemeMetrics::get(&self, role: MetricRole) -> f32	-	crates/pert-ui-runtime/src/runtime/theme.rs:279
+pert_ui_runtime::UiStrings::get(&self, role: StringRole) -> &str	#[must_use]	crates/pert-ui-runtime/src/strings.rs:625
+pert_ui_runtime::UiZoom::get(self) -> f64	#[must_use]	crates/pert-ui-runtime/src/runtime/settings.rs:50
+pert_ui_runtime::ViewScale::get(self) -> f32	#[must_use]	crates/pert-ui-runtime/src/transform.rs:302
+pert_ui_runtime::ViewState::get(&self, name: &str) -> Option<&WorkspaceValue>	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:266

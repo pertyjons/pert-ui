@@ -1,0 +1,263 @@
+# Every public enum, and every struct with public fields, with its attributes and whether its rustdoc mentions closed/exhaustive.
+# A trailing [configs: ...] means the entry exists only in those configurations.
+
+## pert-ui-core
+pert_ui_core::AnyParameterSnapshot	enum (4 variants)	-	docs mention closed/exhaustive: yes	crates/pert-ui-core/src/erased.rs:179
+pert_ui_core::AnySpec	enum (4 variants)	#[must_use]	docs mention closed/exhaustive: yes	crates/pert-ui-core/src/erased.rs:24
+pert_ui_core::AnyValue	enum (4 variants)	-	docs mention closed/exhaustive: yes	crates/pert-ui-core/src/erased.rs:112
+pert_ui_core::DrainReport	struct with public fields	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-core/src/live/mod.rs:312
+pert_ui_core::EditError	enum (14 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-core/src/edit.rs:189
+pert_ui_core::EditOutcome	enum (4 variants)	#[non_exhaustive]	docs mention closed/exhaustive: yes	crates/pert-ui-core/src/edit.rs:163
+pert_ui_core::LiveError	enum (3 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-core/src/live/mod.rs:163
+pert_ui_core::NormalizedValueError	enum (2 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-core/src/normalized.rs:114
+pert_ui_core::ParameterError	enum (13 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-core/src/parameter.rs:541
+pert_ui_core::ParameterFamily	enum (4 variants)	-	docs mention closed/exhaustive: yes	crates/pert-ui-core/src/family.rs:17
+pert_ui_core::ParameterIdError	enum (3 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-core/src/parameter_id.rs:132
+pert_ui_core::ParameterMapping	enum (3 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-core/src/parameter.rs:14
+pert_ui_core::ParameterSnapshot	struct with public fields	-	docs mention closed/exhaustive: yes	crates/pert-ui-core/src/edit.rs:116
+pert_ui_core::PreviewOutcome	enum (2 variants)	-	docs mention closed/exhaustive: yes	crates/pert-ui-core/src/edit.rs:139
+pert_ui_core::PublishOutcome	enum (5 variants)	#[must_use = "a closed or exhausted endpoint will never accept again"] #[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-core/src/live/mod.rs:143
+pert_ui_core::Sample	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-core/src/live/mod.rs:286
+pert_ui_core::SampleWindowEntry	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-core/src/live/mod.rs:367
+
+## pert-ui-runtime
+pert_ui_runtime::Align	enum (4 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/containers.rs:421
+pert_ui_runtime::AnyDeliveryMonitor	enum (4 variants)	#[must_use = "a delivery monitor is the only record of failed host deliveries"]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/parameter_binding/erased.rs:223
+pert_ui_runtime::AnyParameter	enum (4 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/parameter_binding/erased.rs:58
+pert_ui_runtime::AnyParameterHost	enum (4 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/parameter_binding/erased.rs:255
+pert_ui_runtime::AnyPreviewEvent	enum (4 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/parameter_binding/erased.rs:202
+pert_ui_runtime::AnyTerminalEvent	enum (4 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/parameter_binding/erased.rs:114
+pert_ui_runtime::ArcOrigin	enum (2 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/numeric_controls.rs:36
+pert_ui_runtime::AuthorityResponse	enum (2 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/parameter_binding/remote.rs:40
+pert_ui_runtime::AuthorityStatus	enum (5 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/parameter_binding/remote.rs:49
+pert_ui_runtime::BindingError	enum (4 variants)	#[non_exhaustive]	docs mention closed/exhaustive: yes	crates/pert-ui-runtime/src/parameter_binding.rs:62
+pert_ui_runtime::BorderInspection	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/diagnostics.rs:142
+pert_ui_runtime::BoxModelInspection	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/diagnostics.rs:96
+pert_ui_runtime::Capture	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/capture.rs:487
+pert_ui_runtime::CaptureError	enum (12 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/capture.rs:164
+pert_ui_runtime::CaptureJob	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/capture.rs:532
+pert_ui_runtime::CaptureTarget	enum (4 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/capture.rs:38
+pert_ui_runtime::ChangeOrigin	enum (6 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime/notify.rs:152
+pert_ui_runtime::ChildReveal	enum (4 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime/reveal.rs:11
+pert_ui_runtime::ChoiceError	enum (2 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/choice_controls.rs:113
+pert_ui_runtime::ClipboardError	enum (4 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/text_input.rs:158
+pert_ui_runtime::ColorRole	enum (52 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime/theme.rs:357
+pert_ui_runtime::CommandContext	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime/commands.rs:365
+pert_ui_runtime::CommandEntry	struct with public fields	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime/commands.rs:419
+pert_ui_runtime::CommandInfo	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime/commands.rs:404
+pert_ui_runtime::CommandKey	enum (2 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime/commands.rs:7
+pert_ui_runtime::CommandKeyInput	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime/commands.rs:269
+pert_ui_runtime::CommandOutcome	enum (4 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime/commands.rs:392
+pert_ui_runtime::CommandPaletteStatus	enum (3 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/command_palette.rs:120
+pert_ui_runtime::CommandScope	enum (4 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime/commands.rs:340
+pert_ui_runtime::CommandSource	enum (4 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime/commands.rs:352
+pert_ui_runtime::CommandStatus	enum (3 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime/commands.rs:1585
+pert_ui_runtime::ComponentDetails	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/diagnostics.rs:646
+pert_ui_runtime::ComponentInspection	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/diagnostics.rs:667
+pert_ui_runtime::ContentField	enum (3 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/content_search.rs:164
+pert_ui_runtime::ContentHit	struct with public fields	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/content_search.rs:176
+pert_ui_runtime::ContentJump	enum (3 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/content_search.rs:392
+pert_ui_runtime::ContentSearchError	enum (5 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/content_search.rs:436
+pert_ui_runtime::ContentStep	struct with public fields	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/content_search.rs:204
+pert_ui_runtime::ContentTarget	enum (2 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/content_search.rs:148
+pert_ui_runtime::CursorIcon	enum (11 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/pointer.rs:230
+pert_ui_runtime::DebugMode	enum (2 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/diagnostics.rs:14
+pert_ui_runtime::DebugOverlay	enum (3 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/diagnostics.rs:41
+pert_ui_runtime::Delivery	enum (2 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/live.rs:23
+pert_ui_runtime::DeliveryError	enum (10 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:11
+pert_ui_runtime::DeliveryResolution	enum (2 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:188
+pert_ui_runtime::DeliverySnapshot	struct with public fields	-	docs mention closed/exhaustive: yes	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:206
+pert_ui_runtime::DeliveryStatus	enum (3 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:176
+pert_ui_runtime::Density	enum (3 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime/theme.rs:25
+pert_ui_runtime::Depth	enum (3 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/inspection.rs:144
+pert_ui_runtime::DetachedClosePolicy	enum (3 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime/native_windows.rs:171
+pert_ui_runtime::Detail	enum (4 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/inspection.rs:162
+pert_ui_runtime::DiagnosticCommand	enum (5 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/inspection.rs:397
+pert_ui_runtime::DialogOutcome	enum (4 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/dialog.rs:11
+pert_ui_runtime::DialogStatus	enum (3 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/dialog.rs:23
+pert_ui_runtime::DraftAlign	enum (2 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/text_fields/draft.rs:26
+pert_ui_runtime::DraftSelection	enum (3 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/text_fields/draft.rs:12
+pert_ui_runtime::DragInspection	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/drag.rs:355
+pert_ui_runtime::DragOutcome	enum (4 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/drag.rs:330
+pert_ui_runtime::DragPhase	enum (4 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/drag.rs:222
+pert_ui_runtime::DragRole	enum (2 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/drag.rs:243
+pert_ui_runtime::DrawCommand	enum (4 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/drawing.rs:1026
+pert_ui_runtime::DrawError	enum (6 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/drawing.rs:24
+pert_ui_runtime::DropOperation	enum (3 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/drag.rs:74
+pert_ui_runtime::DropPosition	enum (4 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/list_drag.rs:47
+pert_ui_runtime::DropResponse	enum (3 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/drag.rs:307
+pert_ui_runtime::EdgeMode	enum (3 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/tool_windows/mod.rs:109
+pert_ui_runtime::EditorCompletion	struct with public fields	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/editor_session.rs:74
+pert_ui_runtime::EditorOutcome	enum (4 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/editor_session.rs:50
+pert_ui_runtime::EditorStart	enum (3 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/editor_session.rs:14
+pert_ui_runtime::EditorTrigger	enum (5 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/editor_session.rs:29
+pert_ui_runtime::EntryKind	enum (4 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/file_browser.rs:26
+pert_ui_runtime::EventHistory	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/inspection.rs:339
+pert_ui_runtime::EventKind	enum (21 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/diagnostics.rs:735
+pert_ui_runtime::EventRecord	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/diagnostics.rs:820
+pert_ui_runtime::EventStatus	enum (4 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/diagnostics.rs:795
+pert_ui_runtime::ExpandMode	enum (2 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/collapsible.rs:794
+pert_ui_runtime::FailurePhase	enum (5 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime.rs:77
+pert_ui_runtime::FailureSite	struct with public fields	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime.rs:55
+pert_ui_runtime::FieldStatus	enum (4 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/field_status.rs:27
+pert_ui_runtime::FileBrowserError	enum (3 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/file_browser.rs:261
+pert_ui_runtime::FillRule	enum (2 variants)	-	docs mention closed/exhaustive: yes	crates/pert-ui-runtime/src/geometry.rs:33
+pert_ui_runtime::FilterCounts	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/collection_filter.rs:100
+pert_ui_runtime::FilterOutcome	struct with public fields	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/collection_filter.rs:115
+pert_ui_runtime::FilterTarget	enum (3 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/collection_filter.rs:353
+pert_ui_runtime::FlushReport	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime.rs:3485
+pert_ui_runtime::FontError	enum (6 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/text/fonts.rs:121
+pert_ui_runtime::FontRole	enum (3 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/text/fonts.rs:99
+pert_ui_runtime::FrameError	enum (3 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/capture.rs:224
+pert_ui_runtime::Freshness	enum (3 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/live.rs:47
+pert_ui_runtime::GeometryError	enum (8 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/layout.rs:80
+pert_ui_runtime::HeldCancellation	enum (7 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime/held.rs:15
+pert_ui_runtime::HexColorError	enum (2 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/drawing.rs:755
+pert_ui_runtime::HighlightError	enum (2 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/text/fit.rs:210
+pert_ui_runtime::Icon	enum (50 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/text/icons.rs:9
+pert_ui_runtime::IconSource	enum (2 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/text/icons.rs:237
+pert_ui_runtime::IgnoredEntry	enum (3 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/workspace.rs:719
+pert_ui_runtime::ImageFit	enum (3 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/image.rs:17
+pert_ui_runtime::ImageSampling	enum (2 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/resources.rs:106
+pert_ui_runtime::InputOutcome	enum (2 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/pointer.rs:216
+pert_ui_runtime::InspectValue	enum (5 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/diagnostics.rs:71
+pert_ui_runtime::InspectionReply	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/inspection.rs:448
+pert_ui_runtime::InspectionSnapshot	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/diagnostics.rs:849
+pert_ui_runtime::Invalidation	enum (2 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime.rs:41
+pert_ui_runtime::Justify	enum (4 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/containers.rs:393
+pert_ui_runtime::KeyAction	enum (3 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/input.rs:206
+pert_ui_runtime::KeyCode	enum (86 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/input.rs:11
+pert_ui_runtime::KeyDispatch	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime/commands.rs:452
+pert_ui_runtime::KeyEvent	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/input.rs:241
+pert_ui_runtime::KeyTransition	enum (4 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/input.rs:220
+pert_ui_runtime::LayoutError	enum (12 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/layout.rs:10
+pert_ui_runtime::LimitError	enum (7 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/render_limits.rs:46
+pert_ui_runtime::LineCap	enum (3 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/geometry.rs:47
+pert_ui_runtime::LineJoin	enum (3 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/geometry.rs:63
+pert_ui_runtime::LinkTarget	enum (4 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/file_browser.rs:42
+pert_ui_runtime::LinkUnderline	enum (2 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/link.rs:11
+pert_ui_runtime::ListDropMark	enum (2 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/virtual_list.rs:592
+pert_ui_runtime::ListRevealStatus	enum (5 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/virtual_list.rs:200
+pert_ui_runtime::ListSelectionChange	struct with public fields	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/list_selection.rs:86
+pert_ui_runtime::ListingDelivery	enum (2 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/file_browser.rs:249
+pert_ui_runtime::ListingErrorKind	enum (4 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/file_browser.rs:58
+pert_ui_runtime::MeterAxis	enum (2 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/live_widgets.rs:18
+pert_ui_runtime::MetricRole	enum (30 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime/theme.rs:74
+pert_ui_runtime::Modifiers	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/input.rs:285
+pert_ui_runtime::MotionPreference	enum (2 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime/settings.rs:120
+pert_ui_runtime::MultiSelectCommit	enum (2 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/multi_select.rs:20
+pert_ui_runtime::NumberInputError	enum (8 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:14
+pert_ui_runtime::NumberLocaleError	enum (2 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/number_format.rs:147
+pert_ui_runtime::Orientation	enum (2 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/numeric_controls.rs:20
+pert_ui_runtime::OverlapPolicy	enum (2 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/validation.rs:11
+pert_ui_runtime::ParameterInspection	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/diagnostics.rs:718
+pert_ui_runtime::PathElement	enum (5 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/geometry.rs:158
+pert_ui_runtime::PathError	enum (4 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/geometry.rs:12
+pert_ui_runtime::PickChoice	enum (3 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/quick_pick.rs:361
+pert_ui_runtime::PickItem	struct with public fields	#[must_use]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/quick_pick.rs:33
+pert_ui_runtime::PickStatus	enum (3 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/quick_pick.rs:281
+pert_ui_runtime::PointerButton	enum (6 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/pointer.rs:40
+pert_ui_runtime::PointerKind	enum (6 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/pointer.rs:62
+pert_ui_runtime::PresentationAction	enum (5 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime/native_windows.rs:984
+pert_ui_runtime::PresentationStatus	enum (7 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime/native_windows.rs:919
+pert_ui_runtime::PreviewEvent	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:156
+pert_ui_runtime::ProfileOperation	enum (31 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/profiling.rs:14
+pert_ui_runtime::ProfileSample	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/profiling.rs:114
+pert_ui_runtime::ProfileSnapshot	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/profiling.rs:137
+pert_ui_runtime::ProfileStats	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/profiling.rs:89
+pert_ui_runtime::ProgressStatus	enum (6 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/progress.rs:22
+pert_ui_runtime::QuarterTurn	enum (4 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/transform.rs:172
+pert_ui_runtime::QueryResult	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/inspection.rs:364
+pert_ui_runtime::Redescribed	struct with public fields	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/conformance.rs:76
+pert_ui_runtime::RedescriptionError	enum (6 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/conformance.rs:14
+pert_ui_runtime::RegionEdge	enum (4 variants)	-	docs mention closed/exhaustive: yes	crates/pert-ui-runtime/src/region_layout.rs:64
+pert_ui_runtime::RequestError	enum (3 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/inspection.rs:413
+pert_ui_runtime::ResourceKind	enum (2 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/render_limits.rs:7
+pert_ui_runtime::ResponseDisposition	enum (3 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/parameter_binding/remote.rs:114
+pert_ui_runtime::RestoreRejection	enum (8 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/workspace.rs:677
+pert_ui_runtime::RevealOutcome	enum (4 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime/reveal.rs:64
+pert_ui_runtime::RevealRefusal	enum (4 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime/reveal.rs:33
+pert_ui_runtime::RevealStatus	enum (3 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime/reveal.rs:110
+pert_ui_runtime::RuntimeError	enum (60 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime.rs:184
+pert_ui_runtime::ScrollAxes	enum (4 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/views.rs:294
+pert_ui_runtime::SearchKey	enum (5 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/text_fields/search.rs:16
+pert_ui_runtime::SelectionChange	struct with public fields	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime/notify.rs:181
+pert_ui_runtime::SelectionMode	enum (2 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/list_selection.rs:11
+pert_ui_runtime::Selector	enum (9 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/inspection.rs:60
+pert_ui_runtime::SemanticAction	enum (12 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/diagnostics.rs:299
+pert_ui_runtime::SemanticItem	struct with public fields	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/diagnostics.rs:350
+pert_ui_runtime::SemanticRole	enum (38 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/diagnostics.rs:162
+pert_ui_runtime::SemanticValue	enum (4 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/diagnostics.rs:256
+pert_ui_runtime::Semantics	struct with public fields	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/diagnostics.rs:464
+pert_ui_runtime::SendError	enum (2 variants)	-	docs mention closed/exhaustive: yes	crates/pert-ui-runtime/src/mailbox.rs:25
+pert_ui_runtime::Shape	enum (4 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/shapes.rs:17
+pert_ui_runtime::ShortcutBinding	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/validation.rs:44
+pert_ui_runtime::ShortcutScope	enum (2 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/validation.rs:23
+pert_ui_runtime::SinkErrorKind	enum (4 variants)	-	docs mention closed/exhaustive: yes	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:53
+pert_ui_runtime::SortDirection	enum (2 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/table.rs:212
+pert_ui_runtime::SourceInspection	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/live.rs:281
+pert_ui_runtime::Spacing	enum (2 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime/theme.rs:313
+pert_ui_runtime::SplitAxis	enum (2 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/split.rs:8
+pert_ui_runtime::SplitRule	enum (5 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/split.rs:141
+pert_ui_runtime::StringRole	enum (90 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/strings.rs:20
+pert_ui_runtime::StripeGroup	enum (2 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/tool_windows/mod.rs:84
+pert_ui_runtime::SubmissionDelivery	enum (3 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/parameter_binding/remote.rs:132
+pert_ui_runtime::SurfaceDismissal	enum (10 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/popover.rs:50
+pert_ui_runtime::SurfaceKind	enum (8 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/popover.rs:8
+pert_ui_runtime::TableSort	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/table.rs:221
+pert_ui_runtime::TaskStatus	enum (4 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime/tasks.rs:6
+pert_ui_runtime::Telemetry	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/live.rs:79
+pert_ui_runtime::TerminalEvent	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:130
+pert_ui_runtime::TextColor	enum (3 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/text/rich.rs:6
+pert_ui_runtime::TextCommand	enum (6 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/text_input.rs:111
+pert_ui_runtime::TextCommandOutcome	enum (3 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/text_input.rs:143
+pert_ui_runtime::TextEditError	enum (4 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/text_input.rs:11
+pert_ui_runtime::TextError	enum (3 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/text.rs:54
+pert_ui_runtime::TextInputState	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/text_input.rs:217
+pert_ui_runtime::TextKeyOutcome	enum (4 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime/commands.rs:327
+pert_ui_runtime::TextLimit	enum (3 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/text.rs:94
+pert_ui_runtime::TextMovement	enum (10 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/text_selection.rs:8
+pert_ui_runtime::TextOverflow	enum (3 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/text/fit.rs:39
+pert_ui_runtime::TextRenderingMode	enum (2 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime/settings.rs:133
+pert_ui_runtime::TextStyle	enum (5 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/text.rs:123
+pert_ui_runtime::ThemeMode	enum (2 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime/theme.rs:14
+pert_ui_runtime::TicketStatus	enum (4 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/async_source.rs:58
+pert_ui_runtime::ToastStatus	enum (7 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/notifications.rs:169
+pert_ui_runtime::ToolEdge	enum (4 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/tool_windows/mod.rs:20
+pert_ui_runtime::ToolWindowChange	struct with public fields	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/tool_windows/mod.rs:218
+pert_ui_runtime::ToolWindowChangeKind	enum (4 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/tool_windows/mod.rs:191
+pert_ui_runtime::ToolWindowMode	enum (3 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/tool_windows/mod.rs:158
+pert_ui_runtime::ToolbarOverflow	enum (2 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/toolbar.rs:15
+pert_ui_runtime::UiMessage	enum (15 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/strings.rs:663
+pert_ui_runtime::UiStringError	enum (4 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/strings.rs:510
+pert_ui_runtime::ValidationCode	enum (16 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/validation.rs:114
+pert_ui_runtime::ValidationHints	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/validation.rs:89
+pert_ui_runtime::ValidationIssue	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/validation.rs:174
+pert_ui_runtime::ValidationMarker	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/validation.rs:191
+pert_ui_runtime::ValidationReport	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/validation.rs:220
+pert_ui_runtime::VectorStyle	enum (2 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/vector_scene.rs:16
+pert_ui_runtime::WaitError	enum (3 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/inspection.rs:431
+pert_ui_runtime::WakeError	enum (1 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/live.rs:105
+pert_ui_runtime::WheelGesture	enum (2 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/zoom_view.rs:67
+pert_ui_runtime::WindowCloseAction	enum (2 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/windows.rs:156
+pert_ui_runtime::WindowError	enum (5 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/runtime/native_windows.rs:870
+pert_ui_runtime::WindowInspection	struct with public fields	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/diagnostics.rs:961
+pert_ui_runtime::WindowPlacement	struct with public fields	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/windows.rs:25
+pert_ui_runtime::WindowStatus	enum (3 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/windows.rs:11
+pert_ui_runtime::WorkspaceError	enum (15 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-runtime/src/workspace.rs:579
+
+## pert-ui-cpu
+pert_ui_cpu::CpuRenderError	enum (5 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-cpu/src/lib.rs:16
+
+## pert-ui-wgpu
+pert_ui_wgpu::Frame	enum (4 variants)	#[must_use = "a frame that was not presented needs the host's recovery step"]	docs mention closed/exhaustive: no	crates/pert-ui-wgpu/src/lib.rs:92
+pert_ui_wgpu::Notice	enum (2 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui-wgpu/src/lib.rs:80
+pert_ui_wgpu::RenderError	enum (6 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui-wgpu/src/lib.rs:46
+
+## pert-ui
+pert_ui::AppError	enum (13 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui/src/app.rs:30	[configs: cpu, default, image-formats, images, no-default-desktop-cpu, serde, svg]
+pert_ui::ErrorAction	enum (2 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui/src/app.rs:184	[configs: cpu, default, image-formats, images, no-default-desktop-cpu, serde, svg]
+pert_ui::NativeCloseAction	enum (3 variants)	-	docs mention closed/exhaustive: no	crates/pert-ui/src/app.rs:202	[configs: cpu, default, image-formats, images, no-default-desktop-cpu, serde, svg]
+pert_ui::images::ImageError	enum (6 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui/src/images.rs:215	[configs: image-formats, images, no-default-png]
+pert_ui::images::ImageFormat	enum (9 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui/src/images.rs:87	[configs: image-formats, images, no-default-png]
+pert_ui::svg::SvgError	enum (4 variants)	#[non_exhaustive]	docs mention closed/exhaustive: no	crates/pert-ui/src/svg.rs:52	[configs: no-default-svg, svg]

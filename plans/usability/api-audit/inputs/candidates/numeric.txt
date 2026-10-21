@@ -1,0 +1,254 @@
+# Functions with bare numeric parameters or return values.
+# A trailing [configs: ...] means the entry exists only in those configurations.
+
+## pert-ui-core
+params[] returns usize	pert_ui_core::Capacity::get(self) -> usize	#[must_use]	crates/pert-ui-core/src/live/mod.rs:206
+params[items: usize] returns -	pert_ui_core::Capacity::new(items: usize) -> Result<Self, LiveError>	-	crates/pert-ui-core/src/live/mod.rs:194
+params[] returns u64	pert_ui_core::EditSequence::get(self) -> u64	#[must_use]	crates/pert-ui-core/src/edit.rs:42
+params[value: u64] returns -	pert_ui_core::EditSequence::new(value: u64) -> Self	#[must_use]	crates/pert-ui-core/src/edit.rs:36
+params[] returns u64	pert_ui_core::EditSource::get(self) -> u64	#[must_use]	crates/pert-ui-core/src/edit.rs:70
+params[value: u64] returns -	pert_ui_core::EditSource::new(value: u64) -> Self	#[must_use]	crates/pert-ui-core/src/edit.rs:64
+params[] returns u64	pert_ui_core::Incarnation::get(self) -> u64	#[must_use]	crates/pert-ui-core/src/live/mod.rs:55
+params[] returns f32	pert_ui_core::NormalizedValue::get(self) -> f32	#[must_use]	crates/pert-ui-core/src/normalized.rs:83
+params[] returns u64	pert_ui_core::ParameterId::incarnation(&self) -> u64	#[must_use]	crates/pert-ui-core/src/parameter_id.rs:105
+params[session: u128, object: u128] returns -	pert_ui_core::ParameterId::new(session: u128, object: u128, key: impl Into<String>) -> Result<Self, ParameterIdError>	-	crates/pert-ui-core/src/parameter_id.rs:66
+params[] returns u128	pert_ui_core::ParameterId::object(&self) -> u128	#[must_use]	crates/pert-ui-core/src/parameter_id.rs:94
+params[] returns u128	pert_ui_core::ParameterId::session(&self) -> u128	#[must_use]	crates/pert-ui-core/src/parameter_id.rs:88
+params[] returns u64	pert_ui_core::ParameterSpec::intervals(&self) -> u64	#[must_use]	crates/pert-ui-core/src/parameter.rs:443
+params[] returns f32	pert_ui_core::ParameterSpec::maximum(&self) -> f32	#[must_use]	crates/pert-ui-core/src/parameter.rs:358
+params[] returns i64	pert_ui_core::ParameterSpec::maximum(&self) -> i64	#[must_use]	crates/pert-ui-core/src/parameter.rs:431
+params[] returns f32	pert_ui_core::ParameterSpec::minimum(&self) -> f32	#[must_use]	crates/pert-ui-core/src/parameter.rs:352
+params[] returns i64	pert_ui_core::ParameterSpec::minimum(&self) -> i64	#[must_use]	crates/pert-ui-core/src/parameter.rs:425
+params[minimum: f32, maximum: f32, default: f32] returns -	pert_ui_core::ParameterSpec::new(name: impl Into<String>, minimum: f32, maximum: f32, default: f32) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:311
+params[value: i64, steps: i64] returns -	pert_ui_core::ParameterSpec::offset(&self, value: i64, steps: i64) -> Result<i64, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:466
+params[minimum: i64, maximum: i64, default: i64] returns -	pert_ui_core::ParameterSpec::stepped(name: impl Into<String>, minimum: i64, maximum: i64, default: i64) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:380
+params[] returns f32	pert_ui_core::PowerExponent::get(self) -> f32	#[must_use]	crates/pert-ui-core/src/parameter.rs:85
+params[exponent: f32] returns -	pert_ui_core::PowerExponent::new(exponent: f32) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:76
+params[] returns u64	pert_ui_core::Revision::get(self) -> u64	#[must_use]	crates/pert-ui-core/src/edit.rs:20
+params[] returns usize	pert_ui_core::SampleWindow::capacity(&self) -> usize	#[must_use]	crates/pert-ui-core/src/live/mod.rs:463
+params[] returns usize	pert_ui_core::SampleWindow::len(&self) -> usize	#[must_use]	crates/pert-ui-core/src/live/mod.rs:451
+params[] returns u64	pert_ui_core::Sequence::get(self) -> u64	#[must_use]	crates/pert-ui-core/src/live/mod.rs:91
+params[number: u64] returns -	pert_ui_core::Sequence::new(number: u64) -> Option<Self>	#[must_use]	crates/pert-ui-core/src/live/mod.rs:97
+params[] returns u64	pert_ui_core::SeriesConsumer::dropped_total(&self) -> u64	#[must_use]	crates/pert-ui-core/src/live/series.rs:428
+params[] returns u64	pert_ui_core::SeriesConsumer::fill(&self) -> u64	#[must_use]	crates/pert-ui-core/src/live/series.rs:422
+params[] returns u64	pert_ui_core::SeriesConsumer::rejected_total(&self) -> u64	#[must_use]	crates/pert-ui-core/src/live/series.rs:434
+params[] returns u64	pert_ui_core::Timestamp::get(self) -> u64	#[must_use]	crates/pert-ui-core/src/live/mod.rs:130
+params[ticks: u64] returns -	pert_ui_core::Timestamp::new(ticks: u64) -> Self	-	crates/pert-ui-core/src/live/mod.rs:124
+
+## pert-ui-runtime
+params[] returns usize	pert_ui_runtime::ArrangeContext::len(&self) -> usize	#[must_use]	crates/pert-ui-runtime/src/layout.rs:981
+params[index: usize] returns -	pert_ui_runtime::ArrangeContext::measure(&self, index: usize, available: Constraints) -> Result<Size, RuntimeError>	-	crates/pert-ui-runtime/src/layout.rs:993
+params[index: usize] returns -	pert_ui_runtime::ArrangeContext::place(&mut self, index: usize, rect: Rect) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/layout.rs:1031
+params[index: usize] returns -	pert_ui_runtime::ArrangeContext::place_clipped(&mut self, index: usize, bounds: Rect, clip: Rect) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/layout.rs:1002
+params[start: f64, pixels_per_unit: f64] returns -	pert_ui_runtime::AxisMapping::new(start: f64, pixels_per_unit: f64) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/axis_mapping.rs:53
+params[pixels: f64] returns -	pert_ui_runtime::AxisMapping::panned(self, pixels: f64) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/axis_mapping.rs:117
+params[value: f64] returns f64	pert_ui_runtime::AxisMapping::pixel(self, value: f64) -> f64	#[must_use]	crates/pert-ui-runtime/src/axis_mapping.rs:77
+params[] returns f64	pert_ui_runtime::AxisMapping::pixels_per_unit(self) -> f64	#[must_use]	crates/pert-ui-runtime/src/axis_mapping.rs:72
+params[] returns f64	pert_ui_runtime::AxisMapping::start(self) -> f64	#[must_use]	crates/pert-ui-runtime/src/axis_mapping.rs:67
+params[min_pixels: f64] returns -	pert_ui_runtime::AxisMapping::tick_step(self, min_pixels: f64) -> Option<f64>	#[must_use]	crates/pert-ui-runtime/src/axis_mapping.rs:127
+params[extent: f64, min_pixels: f64] returns -	pert_ui_runtime::AxisMapping::ticks(self, extent: f64, min_pixels: f64) -> impl Iterator<Item = f64>	-	crates/pert-ui-runtime/src/axis_mapping.rs:146
+params[pixel: f64] returns f64	pert_ui_runtime::AxisMapping::value(self, pixel: f64) -> f64	#[must_use]	crates/pert-ui-runtime/src/axis_mapping.rs:82
+params[extent: f64] returns -	pert_ui_runtime::AxisMapping::visible(self, extent: f64) -> (f64, f64)	#[must_use]	crates/pert-ui-runtime/src/axis_mapping.rs:88
+params[pixels_per_unit: f64, anchor: f64] returns -	pert_ui_runtime::AxisMapping::zoomed_at(self, pixels_per_unit: f64, anchor: f64) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/axis_mapping.rs:101
+params[] returns u32	pert_ui_runtime::ClickCounter::count(&self) -> u32	#[must_use]	crates/pert-ui-runtime/src/click.rs:153
+params[] returns u32	pert_ui_runtime::ClickCounter::press(&mut self, at: Duration, position: Point, button: PointerButton) -> u32	-	crates/pert-ui-runtime/src/click.rs:117
+params[] returns f32	pert_ui_runtime::Color::alpha(self) -> f32	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:293
+params[] returns f32	pert_ui_runtime::Color::blue(self) -> f32	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:288
+params[red: f32, green: f32, blue: f32, alpha: f32] returns -	pert_ui_runtime::Color::from_srgb(red: f32, green: f32, blue: f32, alpha: f32) -> Result<Self, DrawError>	-	crates/pert-ui-runtime/src/drawing.rs:327
+params[red: u8, green: u8, blue: u8, alpha: u8] returns -	pert_ui_runtime::Color::from_srgb8(red: u8, green: u8, blue: u8, alpha: u8) -> Self	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:358
+params[] returns f32	pert_ui_runtime::Color::green(self) -> f32	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:283
+params[t: f32] returns -	pert_ui_runtime::Color::mix(self, other: Self, t: f32) -> Result<Self, DrawError>	-	crates/pert-ui-runtime/src/drawing.rs:564
+params[] returns f32	pert_ui_runtime::Color::red(self) -> f32	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:278
+params[red: f32, green: f32, blue: f32, alpha: f32] returns -	pert_ui_runtime::Color::rgba(red: f32, green: f32, blue: f32, alpha: f32) -> Result<Self, DrawError>	-	crates/pert-ui-runtime/src/drawing.rs:258
+params[factor: f32] returns -	pert_ui_runtime::Color::scale_alpha(self, factor: f32) -> Result<Self, DrawError>	-	crates/pert-ui-runtime/src/drawing.rs:528
+params[alpha: f32] returns -	pert_ui_runtime::Color::with_alpha(self, alpha: f32) -> Result<Self, DrawError>	-	crates/pert-ui-runtime/src/drawing.rs:504
+params[width: f32] returns -	pert_ui_runtime::CommandPalette::width(self, width: f32) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/command_palette.rs:611
+params[] returns i32	pert_ui_runtime::Component::child_stacking_priority(&self, _key: &str) -> i32	-	crates/pert-ui-runtime/src/runtime.rs:1207
+params[budget: usize] returns -	pert_ui_runtime::ContentQuery::budget(self, budget: usize) -> Result<Self, ContentSearchError>	-	crates/pert-ui-runtime/src/content_search.rs:90
+params[limit: usize] returns -	pert_ui_runtime::ContentQuery::limit(self, limit: usize) -> Result<Self, ContentSearchError>	-	crates/pert-ui-runtime/src/content_search.rs:76
+params[] returns usize	pert_ui_runtime::ContentQuery::result_limit(&self) -> usize	#[must_use]	crates/pert-ui-runtime/src/content_search.rs:125
+params[] returns usize	pert_ui_runtime::ContentQuery::work_budget(&self) -> usize	#[must_use]	crates/pert-ui-runtime/src/content_search.rs:130
+params[index: usize] returns -	pert_ui_runtime::ContentRows::key(&self, index: usize) -> Option<String>	-	crates/pert-ui-runtime/src/content_search.rs:358
+params[] returns usize	pert_ui_runtime::ContentRows::len(&self) -> usize	-	crates/pert-ui-runtime/src/content_search.rs:352
+params[] returns u64	pert_ui_runtime::ContentRows::revision(&self) -> u64	-	crates/pert-ui-runtime/src/content_search.rs:364
+params[index: usize] returns -	pert_ui_runtime::ContentRows::text(&self, index: usize) -> Option<String>	-	crates/pert-ui-runtime/src/content_search.rs:361
+params[digits: u8] returns -	pert_ui_runtime::DecimalInput::decimal_places(self, digits: u8) -> Result<Self, NumberInputError>	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2545
+params[digits: u8] returns -	pert_ui_runtime::DecimalInput::precision(self, digits: u8) -> Result<Self, NumberInputError>	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2545
+params[min: f64, max: f64] returns -	pert_ui_runtime::DecimalInput::range(self, min: f64, max: f64) -> Result<Self, NumberInputError>	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2538
+params[step: f64] returns -	pert_ui_runtime::DecimalInput::step(self, step: f64) -> Result<Self, NumberInputError>	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2538
+params[] returns u64	pert_ui_runtime::DirectoryRequest::generation(&self) -> u64	#[must_use]	crates/pert-ui-runtime/src/file_browser.rs:210
+params[] returns usize	pert_ui_runtime::DisplayList::len(&self) -> usize	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:1291
+params[] returns u16	pert_ui_runtime::Element::grow(&self) -> u16	#[must_use]	crates/pert-ui-runtime/src/layout.rs:593
+params[weight: u16] returns -	pert_ui_runtime::Element::with_grow(self, weight: u16) -> Self	-	crates/pert-ui-runtime/src/layout.rs:587
+params[] returns f32	pert_ui_runtime::EventContext::view_scale(&self) -> f32	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:3099
+params[row_height: f32] returns -	pert_ui_runtime::FileBrowser::new(controller: &FileBrowserController, row_height: f32) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/file_browser/view.rs:87
+params[] returns usize	pert_ui_runtime::FormSummary::errors(&self) -> usize	#[must_use]	crates/pert-ui-runtime/src/field_status.rs:111
+params[] returns usize	pert_ui_runtime::FormSummary::modified(&self) -> usize	#[must_use]	crates/pert-ui-runtime/src/field_status.rs:130
+params[] returns usize	pert_ui_runtime::FormSummary::pending(&self) -> usize	#[must_use]	crates/pert-ui-runtime/src/field_status.rs:123
+params[] returns usize	pert_ui_runtime::FormSummary::warnings(&self) -> usize	#[must_use]	crates/pert-ui-runtime/src/field_status.rs:116
+params[x: u32, y: u32, width: u32, height: u32] returns -	pert_ui_runtime::FrameImage::crop(&self, x: u32, y: u32, width: u32, height: u32) -> Result<Self, CaptureError>	-	crates/pert-ui-runtime/src/capture.rs:409
+params[] returns u32	pert_ui_runtime::FrameImage::height(&self) -> u32	#[must_use]	crates/pert-ui-runtime/src/capture.rs:392
+params[width: u32, height: u32] returns -	pert_ui_runtime::FrameImage::new(width: u32, height: u32, rgba: Vec<u8>) -> Result<Self, CaptureError>	-	crates/pert-ui-runtime/src/capture.rs:362
+params[] returns u32	pert_ui_runtime::FrameImage::width(&self) -> u32	#[must_use]	crates/pert-ui-runtime/src/capture.rs:387
+params[] returns u64	pert_ui_runtime::HistoryEntryId::get(self) -> u64	#[must_use]	crates/pert-ui-runtime/src/navigation_history.rs:21
+params[] returns usize	pert_ui_runtime::ImageId::index(self) -> usize	#[must_use]	crates/pert-ui-runtime/src/resources.rs:91
+params[digits: u8] returns -	pert_ui_runtime::InlineDecimal::decimal_places(self, digits: u8) -> Result<Self, NumberInputError>	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2546
+params[digits: u8] returns -	pert_ui_runtime::InlineDecimal::precision(self, digits: u8) -> Result<Self, NumberInputError>	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2546
+params[min: f64, max: f64] returns -	pert_ui_runtime::InlineDecimal::range(self, min: f64, max: f64) -> Result<Self, NumberInputError>	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2540
+params[step: f64] returns -	pert_ui_runtime::InlineDecimal::step(self, step: f64) -> Result<Self, NumberInputError>	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2540
+params[min: i64, max: i64] returns -	pert_ui_runtime::InlineInteger::range(self, min: i64, max: i64) -> Result<Self, NumberInputError>	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2539
+params[step: i64] returns -	pert_ui_runtime::InlineInteger::step(self, step: i64) -> Result<Self, NumberInputError>	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2539
+params[places: u8] returns -	pert_ui_runtime::InlineSlider::decimal_places(self, places: u8) -> Result<Self, crate::NumberInputError>	-	crates/pert-ui-runtime/src/numeric_controls.rs:1592
+params[] returns usize	pert_ui_runtime::InspectionClient::pending(&self) -> usize	-	crates/pert-ui-runtime/src/inspection.rs:869
+params[sequence: u64] returns -	pert_ui_runtime::InspectionQuery::events_after(self, sequence: u64) -> Self	-	crates/pert-ui-runtime/src/inspection.rs:254
+params[limit: usize] returns -	pert_ui_runtime::InspectionQuery::limit(self, limit: usize) -> Self	-	crates/pert-ui-runtime/src/inspection.rs:242
+params[] returns usize	pert_ui_runtime::InspectionService::capacity(&self) -> usize	-	crates/pert-ui-runtime/src/inspection.rs:1125
+params[] returns usize	pert_ui_runtime::InspectionService::pending(&self) -> usize	-	crates/pert-ui-runtime/src/inspection.rs:1118
+params[min: i64, max: i64] returns -	pert_ui_runtime::IntegerInput::range(self, min: i64, max: i64) -> Result<Self, NumberInputError>	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2537
+params[step: i64] returns -	pert_ui_runtime::IntegerInput::step(self, step: i64) -> Result<Self, NumberInputError>	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2537
+params[places: u8] returns -	pert_ui_runtime::Knob::decimal_places(self, places: u8) -> Result<Self, crate::NumberInputError>	-	crates/pert-ui-runtime/src/numeric_controls.rs:1598
+params[] returns f32	pert_ui_runtime::Length::get(self) -> f32	#[must_use]	crates/pert-ui-runtime/src/containers.rs:30
+params[value: f32] returns -	pert_ui_runtime::Length::new(value: f32) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/containers.rs:24
+params[] returns f32	pert_ui_runtime::ListDropPoint::across(&self) -> f32	#[must_use]	crates/pert-ui-runtime/src/virtual_list.rs:554
+params[] returns f32	pert_ui_runtime::ListDropPoint::fraction(&self) -> f32	#[must_use]	crates/pert-ui-runtime/src/virtual_list.rs:547
+params[index: usize] returns -	pert_ui_runtime::ListItems::build(&self, index: usize) -> Option<Element>	-	crates/pert-ui-runtime/src/virtual_list.rs:50
+params[index: usize] returns -	pert_ui_runtime::ListItems::key(&self, index: usize) -> Option<String>	-	crates/pert-ui-runtime/src/virtual_list.rs:47
+params[] returns usize	pert_ui_runtime::ListItems::len(&self) -> usize	-	crates/pert-ui-runtime/src/virtual_list.rs:41
+params[index: usize] returns -	pert_ui_runtime::ListItems::text(&self, index: usize) -> Option<String>	-	crates/pert-ui-runtime/src/virtual_list.rs:65
+params[] returns f32	pert_ui_runtime::Magnification::get(self) -> f32	#[must_use]	crates/pert-ui-runtime/src/pointer.rs:127
+params[factor: f32] returns -	pert_ui_runtime::Magnification::new(factor: f32) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/pointer.rs:116
+params[] returns usize	pert_ui_runtime::Mailbox::capacity(&self) -> usize	-	crates/pert-ui-runtime/src/mailbox.rs:308
+params[] returns usize	pert_ui_runtime::Mailbox::pending(&self) -> usize	-	crates/pert-ui-runtime/src/mailbox.rs:303
+params[] returns usize	pert_ui_runtime::MaskId::index(self) -> usize	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:1101
+params[] returns u64	pert_ui_runtime::MaskImage::content_key(&self) -> u64	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:1180
+params[] returns u32	pert_ui_runtime::MaskImage::height(&self) -> u32	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:1163
+params[width: u32, height: u32] returns -	pert_ui_runtime::MaskImage::new(width: u32, height: u32, pixels: Vec<u8>) -> Result<Self, DrawError>	-	crates/pert-ui-runtime/src/drawing.rs:1144
+params[] returns u32	pert_ui_runtime::MaskImage::width(&self) -> u32	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:1158
+params[index: usize] returns -	pert_ui_runtime::MeasureContext::fills_row_height(&self, index: usize) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/layout.rs:916
+params[width: f32] returns -	pert_ui_runtime::MeasureContext::fitted_text(&self, text: &str, width: f32, style: crate::TextStyle, overflow: crate::TextOverflow) -> Result<crate::FittedText, RuntimeError>	-	crates/pert-ui-runtime/src/layout.rs:842
+params[index: usize] returns -	pert_ui_runtime::MeasureContext::grow(&self, index: usize) -> Result<u16, RuntimeError>	-	crates/pert-ui-runtime/src/layout.rs:927
+params[index: usize] returns -	pert_ui_runtime::MeasureContext::key(&self, index: usize) -> Result<&str, RuntimeError>	-	crates/pert-ui-runtime/src/layout.rs:893
+params[] returns usize	pert_ui_runtime::MeasureContext::len(&self) -> usize	#[must_use]	crates/pert-ui-runtime/src/layout.rs:943
+params[index: usize] returns -	pert_ui_runtime::MeasureContext::limits(&self, index: usize) -> Result<SizeLimits, RuntimeError>	-	crates/pert-ui-runtime/src/layout.rs:937
+params[index: usize] returns -	pert_ui_runtime::MeasureContext::measure(&self, index: usize, available: Constraints) -> Result<Size, RuntimeError>	-	crates/pert-ui-runtime/src/layout.rs:957
+params[] returns f32	pert_ui_runtime::MeasureContext::metric(&self, role: crate::MetricRole) -> f32	#[must_use]	crates/pert-ui-runtime/src/layout.rs:744
+params[index: usize] returns -	pert_ui_runtime::MeasureContext::position(&self, index: usize) -> Result<crate::Point, RuntimeError>	-	crates/pert-ui-runtime/src/layout.rs:903
+params[] returns f64	pert_ui_runtime::MeasureContext::raster_scale(&self) -> f64	#[must_use]	crates/pert-ui-runtime/src/layout.rs:735
+params[] returns u64	pert_ui_runtime::NativeWindowId::id(&self) -> u64	#[must_use]	crates/pert-ui-runtime/src/runtime/native_windows.rs:156
+params[value: f64] returns -	pert_ui_runtime::NumberLocale::format_decimal(self, value: f64, places: Option<u8>) -> String	#[must_use]	crates/pert-ui-runtime/src/number_format.rs:251
+params[value: i64] returns -	pert_ui_runtime::NumberLocale::format_integer(self, value: i64) -> String	#[must_use]	crates/pert-ui-runtime/src/number_format.rs:263
+params[] returns f32	pert_ui_runtime::OpaqueColor::contrast_ratio(self, other: Self) -> f32	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:707
+params[] returns f32	pert_ui_runtime::OpaqueColor::relative_luminance(self) -> f32	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:684
+params[] returns f32	pert_ui_runtime::Painter::metric(&self, role: crate::MetricRole) -> f32	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:1461
+params[start_degrees: f32, sweep_degrees: f32] returns -	pert_ui_runtime::Painter::stroke_arc(&mut self, center: Point, radius: Length, start_degrees: f32, sweep_degrees: f32, width: Length, color: Color) -> Result<(), DrawError>	-	crates/pert-ui-runtime/src/shapes.rs:239
+params[] returns f32	pert_ui_runtime::Painter::view_scale(&self) -> f32	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:1639
+params[start_degrees: f32, sweep_degrees: f32] returns -	pert_ui_runtime::PathBuilder::arc(self, center: Point, radius: Length, start_degrees: f32, sweep_degrees: f32) -> Self	-	crates/pert-ui-runtime/src/geometry.rs:458
+params[] returns u32	pert_ui_runtime::PhysicalExtent::height(self) -> u32	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:877
+params[width: u32, height: u32] returns -	pert_ui_runtime::PhysicalExtent::new(width: u32, height: u32) -> Self	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:867
+params[] returns u32	pert_ui_runtime::PhysicalExtent::width(self) -> u32	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:872
+params[x: f32, y: f32] returns -	pert_ui_runtime::Point::new(x: f32, y: f32) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/pointer.rs:17
+params[] returns f32	pert_ui_runtime::Point::x(self) -> f32	#[must_use]	crates/pert-ui-runtime/src/pointer.rs:25
+params[] returns f32	pert_ui_runtime::Point::y(self) -> f32	#[must_use]	crates/pert-ui-runtime/src/pointer.rs:30
+params[] returns f64	pert_ui_runtime::PresentationRate::hertz(self) -> f64	-	crates/pert-ui-runtime/src/runtime/presentation.rs:24
+params[hertz: f64] returns -	pert_ui_runtime::PresentationRate::new(hertz: f64) -> Result<Self, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/presentation.rs:17
+params[completed: u64, total: u64] returns -	pert_ui_runtime::ProgressStatus::of(completed: u64, total: u64) -> Self	#[must_use]	crates/pert-ui-runtime/src/progress.rs:57
+params[u: f32, v: f32] returns -	pert_ui_runtime::QuarterTurn::source(self, u: f32, v: f32) -> [f32; 2]	#[must_use]	crates/pert-ui-runtime/src/transform.rs:252
+params[width: f32] returns -	pert_ui_runtime::QuickPick::width(self, width: f32) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/quick_pick.rs:975
+params[] returns u64	pert_ui_runtime::RasterImage::content_key(&self) -> u64	#[must_use]	crates/pert-ui-runtime/src/resources.rs:216
+params[width: u32, height: u32] returns -	pert_ui_runtime::RasterImage::from_srgba8(width: u32, height: u32, pixels: Vec<u8>) -> Result<Self, DrawError>	-	crates/pert-ui-runtime/src/resources.rs:168
+params[] returns u32	pert_ui_runtime::RasterImage::height(&self) -> u32	#[must_use]	crates/pert-ui-runtime/src/resources.rs:190
+params[] returns u32	pert_ui_runtime::RasterImage::width(&self) -> u32	#[must_use]	crates/pert-ui-runtime/src/resources.rs:185
+params[] returns f32	pert_ui_runtime::Rect::height(self) -> f32	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:190
+params[x: f32, y: f32, width: f32, height: f32] returns -	pert_ui_runtime::Rect::new(x: f32, y: f32, width: f32, height: f32) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/drawing.rs:61
+params[] returns f32	pert_ui_runtime::Rect::width(self) -> f32	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:185
+params[] returns f32	pert_ui_runtime::Rect::x(self) -> f32	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:175
+params[] returns f32	pert_ui_runtime::Rect::y(self) -> f32	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:180
+params[] returns u64	pert_ui_runtime::RemoteCommit::generation(&self) -> u64	-	crates/pert-ui-runtime/src/parameter_binding/remote.rs:25
+params[] returns u64	pert_ui_runtime::RequestTicket::generation(&self) -> u64	#[must_use]	crates/pert-ui-runtime/src/async_source.rs:41
+params[] returns usize	pert_ui_runtime::ResourceKind::scene_budget(self) -> usize	#[must_use]	crates/pert-ui-runtime/src/render_limits.rs:21
+params[job: u64] returns -	pert_ui_runtime::Runtime::complete_capture(&self, job: u64, frame: Result<crate::FrameImage, crate::CaptureError>) -> bool	-	crates/pert-ui-runtime/src/runtime/capture.rs:323
+params[index: usize] returns -	pert_ui_runtime::Runtime::reparent(&mut self, child: &WidgetId, parent: &WidgetId, index: usize) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime/tree.rs:705
+params[factor: f32] returns -	pert_ui_runtime::ScaleLimits::clamp(self, factor: f32) -> ViewScale	#[must_use]	crates/pert-ui-runtime/src/zoom_view.rs:53
+params[id: u64] returns -	pert_ui_runtime::Selector::id(id: u64) -> Self	#[must_use]	crates/pert-ui-runtime/src/inspection.rs:109
+params[id: u64] returns -	pert_ui_runtime::Selector::window(id: u64) -> Self	#[must_use]	crates/pert-ui-runtime/src/inspection.rs:130
+params[] returns u64	pert_ui_runtime::Signal::revision(&self) -> u64	#[must_use]	crates/pert-ui-runtime/src/signal.rs:378
+params[] returns f32	pert_ui_runtime::Size::height(self) -> f32	#[must_use]	crates/pert-ui-runtime/src/layout.rs:159
+params[width: f32, height: f32] returns -	pert_ui_runtime::Size::new(width: f32, height: f32) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/layout.rs:143
+params[] returns f32	pert_ui_runtime::Size::width(self) -> f32	#[must_use]	crates/pert-ui-runtime/src/layout.rs:154
+params[places: u8] returns -	pert_ui_runtime::Slider::decimal_places(self, places: u8) -> Result<Self, crate::NumberInputError>	-	crates/pert-ui-runtime/src/numeric_controls.rs:1586
+params[value: f32] returns -	pert_ui_runtime::SplitSizing::ratio(value: f32) -> Result<Self, LayoutError>	-	crates/pert-ui-runtime/src/split.rs:107
+params[] returns f32	pert_ui_runtime::StrokeStyle::miter_limit(self) -> f32	#[must_use]	crates/pert-ui-runtime/src/geometry.rs:151
+params[limit: f32] returns -	pert_ui_runtime::StrokeStyle::with_miter_limit(self, limit: f32) -> Result<Self, PathError>	-	crates/pert-ui-runtime/src/geometry.rs:127
+params[row_height: f32] returns -	pert_ui_runtime::Table::new(controller: &TableController, row_height: f32) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/table.rs:1441
+params[weight: f32] returns -	pert_ui_runtime::TableColumn::flex(self, weight: f32) -> Result<Self, LayoutError>	-	crates/pert-ui-runtime/src/table.rs:105
+params[index: usize] returns -	pert_ui_runtime::TableItems::cell(&self, index: usize, column: &str) -> Option<Element>	-	crates/pert-ui-runtime/src/table.rs:247
+params[index: usize] returns -	pert_ui_runtime::TableItems::editable(&self, index: usize, column: &str) -> bool	-	crates/pert-ui-runtime/src/table.rs:270
+params[index: usize] returns -	pert_ui_runtime::TableItems::key(&self, index: usize) -> Option<String>	-	crates/pert-ui-runtime/src/table.rs:244
+params[] returns usize	pert_ui_runtime::TableItems::len(&self) -> usize	-	crates/pert-ui-runtime/src/table.rs:238
+params[index: usize] returns -	pert_ui_runtime::TableItems::text(&self, index: usize, column: &str) -> Option<String>	-	crates/pert-ui-runtime/src/table.rs:260
+params[x: f32, y: f32] returns -	pert_ui_runtime::TextLayout::paint(&self, painter: &mut Painter, x: f32, y: f32, color: Color) -> Result<(), DrawError>	-	crates/pert-ui-runtime/src/text.rs:262
+params[x: f32, y: f32] returns -	pert_ui_runtime::TextLayout::paint_turned(&self, painter: &mut Painter, x: f32, y: f32, turn: crate::QuarterTurn, color: Color) -> Result<(), DrawError>	-	crates/pert-ui-runtime/src/text.rs:284
+params[] returns usize	pert_ui_runtime::TextSelection::anchor(self) -> usize	-	crates/pert-ui-runtime/src/text_selection.rs:50
+params[] returns usize	pert_ui_runtime::TextSelection::focus(self) -> usize	-	crates/pert-ui-runtime/src/text_selection.rs:54
+params[anchor: usize, focus: usize] returns -	pert_ui_runtime::TextSelection::new(layout: &TextLayout, anchor: usize, focus: usize) -> Self	-	crates/pert-ui-runtime/src/text_selection.rs:43
+params[] returns f32	pert_ui_runtime::ThemeMetrics::get(&self, role: MetricRole) -> f32	-	crates/pert-ui-runtime/src/runtime/theme.rs:279
+params[position: usize] returns -	pert_ui_runtime::ToolWindowController::reorder(&self, key: &str, position: usize) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:2403
+params[weight: f32] returns -	pert_ui_runtime::Track::weighted(weight: f32) -> Result<Self, LayoutError>	-	crates/pert-ui-runtime/src/containers.rs:968
+params[a: f32, b: f32, c: f32, d: f32, e: f32, f: f32] returns -	pert_ui_runtime::Transform2D::new(a: f32, b: f32, c: f32, d: f32, e: f32, f: f32) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/transform.rs:54
+params[degrees: f32] returns -	pert_ui_runtime::Transform2D::rotation_degrees(degrees: f32) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/transform.rs:86
+params[x: f32, y: f32] returns -	pert_ui_runtime::Transform2D::scale(x: f32, y: f32) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/transform.rs:79
+params[x: f32, y: f32] returns -	pert_ui_runtime::Transform2D::translation(x: f32, y: f32) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/transform.rs:71
+params[row_height: f32] returns -	pert_ui_runtime::Tree::new(controller: &TreeController, row_height: f32) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/tree.rs:914
+params[] returns f64	pert_ui_runtime::UiZoom::get(self) -> f64	#[must_use]	crates/pert-ui-runtime/src/runtime/settings.rs:50
+params[factor: f64] returns -	pert_ui_runtime::UiZoom::new(factor: f64) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/runtime/settings.rs:39
+params[index: usize] returns -	pert_ui_runtime::UpdateContext::request_reparent(&mut self, child: &WidgetId, parent: &WidgetId, index: usize) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:2663
+params[] returns u64	pert_ui_runtime::VectorGeometry::content_key(&self) -> u64	-	crates/pert-ui-runtime/src/vector_scene.rs:77
+params[] returns usize	pert_ui_runtime::VectorId::index(self) -> usize	-	crates/pert-ui-runtime/src/vector_scene.rs:10
+params[] returns f32	pert_ui_runtime::ViewScale::get(self) -> f32	#[must_use]	crates/pert-ui-runtime/src/transform.rs:302
+params[factor: f32] returns -	pert_ui_runtime::ViewScale::new(factor: f32) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/transform.rs:291
+params[scale: f64] returns -	pert_ui_runtime::Viewport::from_physical(extent: PhysicalExtent, scale: f64) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/drawing.rs:932
+params[] returns f32	pert_ui_runtime::Viewport::height(self) -> f32	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:993
+params[width: f32, height: f32, scale: f64] returns -	pert_ui_runtime::Viewport::new(width: f32, height: f32, scale: f64) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/drawing.rs:900
+params[] returns f64	pert_ui_runtime::Viewport::scale(self) -> f64	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:998
+params[x: f64, y: f64] returns -	pert_ui_runtime::Viewport::to_logical(self, x: f64, y: f64) -> Result<crate::Point, crate::GeometryError>	-	crates/pert-ui-runtime/src/drawing.rs:1012
+params[] returns f32	pert_ui_runtime::Viewport::width(self) -> f32	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:988
+params[offset: f64, viewport: f32] returns f64	pert_ui_runtime::VirtualAxis::clamp_offset(&self, offset: f64, viewport: f32) -> f64	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:253
+params[] returns usize	pert_ui_runtime::VirtualAxis::count(&self) -> usize	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:208
+params[estimate: f32] returns -	pert_ui_runtime::VirtualAxis::estimated(estimate: f32) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/virtual_axis.rs:164
+params[] returns f64	pert_ui_runtime::VirtualAxis::extent(&self) -> f64	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:242
+params[] returns f32	pert_ui_runtime::VirtualAxis::item_extent(&self) -> f32	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:203
+params[index: usize] returns usize	pert_ui_runtime::VirtualAxis::lane(&self, index: usize) -> usize	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:266
+params[] returns usize	pert_ui_runtime::VirtualAxis::lanes(&self) -> usize	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:213
+params[index: usize] returns usize	pert_ui_runtime::VirtualAxis::line(&self, index: usize) -> usize	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:261
+params[position: f64] returns usize	pert_ui_runtime::VirtualAxis::line_at(&self, position: f64) -> usize	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:278
+params[line: usize] returns f32	pert_ui_runtime::VirtualAxis::line_extent(&self, line: usize) -> f32	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:223
+params[index: usize] returns f64	pert_ui_runtime::VirtualAxis::line_offset(&self, index: usize) -> f64	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:271
+params[] returns usize	pert_ui_runtime::VirtualAxis::lines(&self) -> usize	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:218
+params[viewport: f32] returns usize	pert_ui_runtime::VirtualAxis::lines_per_page(&self, viewport: f32) -> usize	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:303
+params[viewport: f32] returns f64	pert_ui_runtime::VirtualAxis::maximum_offset(&self, viewport: f32) -> f64	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:247
+params[line: usize, extent: f32, offset: f64] returns -	pert_ui_runtime::VirtualAxis::measure_line(&mut self, line: usize, extent: f32, offset: f64) -> Result<f64, crate::RuntimeError>	-	crates/pert-ui-runtime/src/virtual_axis.rs:372
+params[item_extent: f32] returns -	pert_ui_runtime::VirtualAxis::new(item_extent: f32) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/virtual_axis.rs:150
+params[index: usize, offset: f64, viewport: f32] returns f64	pert_ui_runtime::VirtualAxis::reveal(&self, index: usize, offset: f64, viewport: f32) -> f64	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:345
+params[count: usize] returns -	pert_ui_runtime::VirtualAxis::set_count(&mut self, count: usize)	-	crates/pert-ui-runtime/src/virtual_axis.rs:176
+params[offset: f64, viewport: f32, overscan: usize] returns -	pert_ui_runtime::VirtualAxis::window(&self, offset: f64, viewport: f32, overscan: usize) -> Range<usize>	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:313
+params[count: usize] returns -	pert_ui_runtime::VirtualAxis::with_count(self, count: usize) -> Self	-	crates/pert-ui-runtime/src/virtual_axis.rs:170
+params[lanes: usize] returns -	pert_ui_runtime::VirtualAxis::with_lanes(self, lanes: usize) -> Result<Self, LayoutError>	-	crates/pert-ui-runtime/src/virtual_axis.rs:188
+params[estimate: f32] returns -	pert_ui_runtime::VirtualList::estimated(items: impl Into<ReadSignal<ListSource>>, estimate: f32) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/virtual_list.rs:659
+params[lanes: usize] returns -	pert_ui_runtime::VirtualList::lanes(self, lanes: usize) -> Result<Self, LayoutError>	-	crates/pert-ui-runtime/src/virtual_list.rs:727
+params[row_height: f32] returns -	pert_ui_runtime::VirtualList::new(items: impl Into<ReadSignal<ListSource>>, row_height: f32) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/virtual_list.rs:635
+params[lines: usize] returns -	pert_ui_runtime::VirtualList::overscan(self, lines: usize) -> Self	-	crates/pert-ui-runtime/src/virtual_list.rs:716
+params[] returns usize	pert_ui_runtime::Workspace::len(&self) -> usize	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:561
+params[value: i64] returns -	pert_ui_runtime::WorkspaceValue::integer(value: i64) -> Self	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:68
+params[value: f64] returns -	pert_ui_runtime::WorkspaceValue::number(value: f64) -> Result<Self, WorkspaceError>	-	crates/pert-ui-runtime/src/workspace.rs:93
+
+## pert-ui-cpu
+params[] returns usize	pert_ui_cpu::CpuRenderer::serve_captures(&mut self, runtime: &mut Runtime) -> usize	-	crates/pert-ui-cpu/src/lib.rs:251
+
+## pert-ui-wgpu
+params[width: u32, height: u32] returns -	pert_ui_wgpu::Renderer::new(target: impl Into<wgpu::SurfaceTarget<'static>>, width: u32, height: u32, notify: impl Fn(Notice) + Send + Sync + 'static) -> Result<Self, RenderError>	-	crates/pert-ui-wgpu/src/lib.rs:391
+params[width: u32, height: u32] returns -	pert_ui_wgpu::Renderer::new_surface(&self, target: impl Into<wgpu::SurfaceTarget<'static>>, width: u32, height: u32) -> Result<Self, RenderError>	-	crates/pert-ui-wgpu/src/lib.rs:1271
+params[width: u32, height: u32] returns -	pert_ui_wgpu::Renderer::resize(&mut self, width: u32, height: u32) -> Result<(), RenderError>	-	crates/pert-ui-wgpu/src/lib.rs:485
+
+## pert-ui
+params[width: u32, height: u32] returns -	pert_ui::svg::rasterize(source: &[u8], width: u32, height: u32) -> Result<pert_ui_runtime::RasterImage, SvgError>	-	crates/pert-ui/src/svg.rs:295	[configs: no-default-svg, svg]
+params[width: u32, height: u32] returns -	pert_ui::svg::rasterize_mask(source: &[u8], width: u32, height: u32) -> Result<pert_ui_runtime::MaskImage, SvgError>	-	crates/pert-ui/src/svg.rs:310	[configs: no-default-svg, svg]

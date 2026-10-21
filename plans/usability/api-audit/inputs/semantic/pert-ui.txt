@@ -1,0 +1,35 @@
+# pert-ui: every public type with its inherent and trait-declared methods.
+# Classify each type's role with a source reference, or write 'unresolved'.
+
+## pert-ui
+pert_ui::App	struct	role: 	crates/pert-ui/src/app.rs:285	[configs: cpu, default, image-formats, images, no-default-desktop-cpu, serde, svg]
+    pert_ui::App::new(title: impl Into<String>, initialize: impl FnOnce(&mut Runtime) -> Result<(), AppError> + 'static) -> Self	-	crates/pert-ui/src/app.rs:306
+    pert_ui::App::size(self, size: crate::Size) -> Result<Self, RuntimeError>	-	crates/pert-ui/src/app.rs:342
+    pert_ui::App::min_size(self, size: crate::Size) -> Result<Self, RuntimeError>	-	crates/pert-ui/src/app.rs:353
+    pert_ui::App::max_size(self, size: crate::Size) -> Result<Self, RuntimeError>	-	crates/pert-ui/src/app.rs:366
+    pert_ui::App::resizable(self, resizable: bool) -> Self	-	crates/pert-ui/src/app.rs:375
+    pert_ui::App::on_error(self, handler: impl FnMut(&mut Runtime, &AppError) -> ErrorAction + 'static) -> Self	-	crates/pert-ui/src/app.rs:452
+    pert_ui::App::on_close(self, handler: impl FnMut(&mut Runtime, &crate::NativeWindowId) -> Result<NativeCloseAction, RuntimeError> + 'static) -> Self	-	crates/pert-ui/src/app.rs:465
+    pert_ui::App::on_window_error(self, handler: impl FnMut(&mut Runtime, &crate::WindowError) + 'static) -> Self	-	crates/pert-ui/src/app.rs:480
+    pert_ui::App::run(self) -> Result<(), AppError>	-	crates/pert-ui/src/app.rs:596
+pert_ui::AppError	enum	role: 	crates/pert-ui/src/app.rs:30	[configs: cpu, default, image-formats, images, no-default-desktop-cpu, serde, svg]
+pert_ui::AppShutdownError	struct	role: 	crates/pert-ui/src/app.rs:108	[configs: cpu, default, image-formats, images, no-default-desktop-cpu, serde, svg]
+    pert_ui::AppShutdownError::failure(&self) -> Option<&AppError>	#[must_use]	crates/pert-ui/src/app.rs:128
+    pert_ui::AppShutdownError::errors(&self) -> &[RuntimeError]	#[must_use]	crates/pert-ui/src/app.rs:134
+    pert_ui::AppShutdownError::into_parts(self) -> (Option<AppError>, Vec<RuntimeError>)	#[must_use]	crates/pert-ui/src/app.rs:140
+pert_ui::ErrorAction	enum	role: 	crates/pert-ui/src/app.rs:184	[configs: cpu, default, image-formats, images, no-default-desktop-cpu, serde, svg]
+pert_ui::NativeCloseAction	enum	role: 	crates/pert-ui/src/app.rs:202	[configs: cpu, default, image-formats, images, no-default-desktop-cpu, serde, svg]
+pert_ui::Svg	struct	role: 	crates/pert-ui/src/svg/component.rs:42	[configs: no-default-svg, svg]
+    pert_ui::Svg::new(source: &[u8]) -> Result<Self, SvgError>	-	crates/pert-ui/src/svg/component.rs:76
+    pert_ui::Svg::tinted(source: &[u8], role: ColorRole) -> Result<Self, SvgError>	-	crates/pert-ui/src/svg/component.rs:97
+    pert_ui::Svg::size(self, size: Size) -> Self	-	crates/pert-ui/src/svg/component.rs:104
+    pert_ui::Svg::description(self, description: impl Into<String>) -> Self	-	crates/pert-ui/src/svg/component.rs:110
+    pert_ui::Svg::intrinsic_size(&self) -> Size	-	crates/pert-ui/src/svg/component.rs:115
+pert_ui::images::ImageError	enum	role: 	crates/pert-ui/src/images.rs:215	[configs: image-formats, images, no-default-png]
+pert_ui::images::ImageFormat	enum	role: 	crates/pert-ui/src/images.rs:87	[configs: image-formats, images, no-default-png]
+    pert_ui::images::ImageFormat::is_enabled(self) -> bool	#[must_use]	crates/pert-ui/src/images.rs:125
+    pert_ui::images::ImageFormat::feature(self) -> &'static str	#[must_use]	crates/pert-ui/src/images.rs:140
+    pert_ui::images::ImageFormat::extensions(self) -> &'static [&'static str]	#[must_use]	crates/pert-ui/src/images.rs:156
+    pert_ui::images::ImageFormat::enabled() -> impl Iterator<Item = Self>	-	crates/pert-ui/src/images.rs:170
+    pert_ui::images::ImageFormat::guess(bytes: &[u8]) -> Option<Self>	#[must_use]	crates/pert-ui/src/images.rs:179
+pert_ui::svg::SvgError	enum	role: 	crates/pert-ui/src/svg.rs:52	[configs: no-default-svg, svg]

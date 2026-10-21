@@ -1,0 +1,86 @@
+# Functions with bool parameters; builder = takes self, returns Self.
+# A trailing [configs: ...] means the entry exists only in those configurations.
+
+## pert-ui-core
+bools=1 builder=no	pert_ui_core::ParameterSpec::boolean(name: impl Into<String>, default: bool) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:481
+
+## pert-ui-runtime
+bools=1 builder=yes	pert_ui_runtime::Accordion::persist(self, persist: bool) -> Self	-	crates/pert-ui-runtime/src/collapsible.rs:1002
+bools=1 builder=yes	pert_ui_runtime::CaptureRequest::include_overlay(self, include: bool) -> Self	-	crates/pert-ui-runtime/src/capture.rs:137
+bools=1 builder=yes	pert_ui_runtime::Collapsible::expanded(self, expanded: bool) -> Self	-	crates/pert-ui-runtime/src/collapsible.rs:525
+bools=1 builder=yes	pert_ui_runtime::Collapsible::persist(self, persist: bool) -> Self	-	crates/pert-ui-runtime/src/collapsible.rs:541
+bools=1 builder=yes	pert_ui_runtime::ColorPicker::alpha(self, enabled: bool) -> Self	-	crates/pert-ui-runtime/src/color_picker.rs:430
+bools=1 builder=yes	pert_ui_runtime::ColorPicker::text_entry(self, enabled: bool) -> Self	-	crates/pert-ui-runtime/src/color_picker.rs:435
+bools=1 builder=no	pert_ui_runtime::Component::focus_within_changed(&mut self, _cx: &mut EventContext, _within: bool) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:2410
+bools=1 builder=no	pert_ui_runtime::Component::hover_changed(&mut self, _cx: &mut EventContext, _hovered: bool)	-	crates/pert-ui-runtime/src/runtime.rs:2328
+bools=2 builder=no	pert_ui_runtime::Component::tab_navigation(&mut self, _cx: &mut EventContext, _reverse: bool, _repeat: bool) -> Result<crate::InputOutcome, RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:1383
+bools=1 builder=no	pert_ui_runtime::Component::visibility_changed(&mut self, _visible: bool)	-	crates/pert-ui-runtime/src/runtime.rs:2474
+bools=1 builder=yes	pert_ui_runtime::ContentQuery::hidden(self, include: bool) -> Self	#[must_use]	crates/pert-ui-runtime/src/content_search.rs:100
+bools=1 builder=yes	pert_ui_runtime::ContentQuery::rows(self, include: bool) -> Self	#[must_use]	crates/pert-ui-runtime/src/content_search.rs:109
+bools=1 builder=yes	pert_ui_runtime::DecimalInput::stepper(self, enabled: bool) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2538
+bools=1 builder=yes	pert_ui_runtime::Element::with_searchable(self, searchable: bool) -> Self	-	crates/pert-ui-runtime/src/layout.rs:539
+bools=1 builder=no	pert_ui_runtime::EventContext::request_reveal(&self, target: &WidgetId, focus: bool) -> Result<RevealReceipt, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/reveal.rs:260
+bools=1 builder=no	pert_ui_runtime::EventContext::set_profiling(&self, enabled: bool) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:3182
+bools=1 builder=yes	pert_ui_runtime::Field::required(self, required: bool) -> Self	-	crates/pert-ui-runtime/src/field_status.rs:478
+bools=1 builder=no	pert_ui_runtime::FieldHandle::set_modified(&self, modified: bool) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/field_status.rs:346
+bools=1 builder=yes	pert_ui_runtime::FloatingWindow::closable(self, closable: bool) -> Self	-	crates/pert-ui-runtime/src/windows.rs:327
+bools=1 builder=yes	pert_ui_runtime::FloatingWindow::decorated(self, decorated: bool) -> Self	-	crates/pert-ui-runtime/src/windows.rs:321
+bools=1 builder=yes	pert_ui_runtime::FloatingWindow::minimizable(self, enabled: bool) -> Self	-	crates/pert-ui-runtime/src/windows.rs:333
+bools=1 builder=yes	pert_ui_runtime::InlineDecimal::stepper(self, enabled: bool) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2540
+bools=1 builder=yes	pert_ui_runtime::InlineInteger::stepper(self, enabled: bool) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2539
+bools=1 builder=no	pert_ui_runtime::InspectionService::allow_diagnostic_commands(&self, allowed: bool)	-	crates/pert-ui-runtime/src/inspection.rs:1107
+bools=1 builder=yes	pert_ui_runtime::IntegerInput::stepper(self, enabled: bool) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2537
+bools=1 builder=yes	pert_ui_runtime::Knob::show_value(self, visible: bool) -> Self	-	crates/pert-ui-runtime/src/numeric_controls.rs:1605
+bools=1 builder=yes	pert_ui_runtime::PickItem::disabled(self, disabled: bool) -> Self	-	crates/pert-ui-runtime/src/quick_pick.rs:78
+bools=1 builder=yes	pert_ui_runtime::Property::required(self, required: bool) -> Self	-	crates/pert-ui-runtime/src/property_grid.rs:75
+bools=1 builder=yes	pert_ui_runtime::PropertyGrid::persist(self, persist: bool) -> Self	-	crates/pert-ui-runtime/src/property_grid.rs:377
+bools=1 builder=no	pert_ui_runtime::Runtime::command_in_modals(&mut self, id: &CommandId, allowed: bool) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime/commands.rs:729
+bools=1 builder=no	pert_ui_runtime::Runtime::command_repeats(&mut self, id: &CommandId, repeat: bool) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime/commands.rs:749
+bools=1 builder=no	pert_ui_runtime::Runtime::focus_next(&mut self, reverse: bool) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime/pointer.rs:153
+bools=1 builder=no	pert_ui_runtime::Runtime::set_capture_support(&self, supported: bool)	-	crates/pert-ui-runtime/src/runtime/capture.rs:36
+bools=1 builder=no	pert_ui_runtime::Runtime::set_profiling(&self, enabled: bool) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:3692
+bools=1 builder=no	pert_ui_runtime::Runtime::set_visible(&mut self, id: &WidgetId, visible: bool) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime.rs:5021
+bools=1 builder=no	pert_ui_runtime::Runtime::set_window_visible(&mut self, visible: bool) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/runtime/native_windows.rs:382
+bools=1 builder=yes	pert_ui_runtime::SelectableText::wrap(self, wrap: bool) -> Self	-	crates/pert-ui-runtime/src/selectable_text.rs:165
+bools=1 builder=yes	pert_ui_runtime::SemanticItem::checked(self, checked: bool) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:407
+bools=1 builder=yes	pert_ui_runtime::SemanticItem::disabled(self, disabled: bool) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:392
+bools=1 builder=yes	pert_ui_runtime::SemanticItem::expanded(self, expanded: bool) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:401
+bools=1 builder=yes	pert_ui_runtime::SemanticItem::selected(self, selected: bool) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:385
+bools=1 builder=yes	pert_ui_runtime::Semantics::disabled(self, disabled: bool) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:579
+bools=1 builder=yes	pert_ui_runtime::Semantics::expanded(self, expanded: bool) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:610
+bools=1 builder=yes	pert_ui_runtime::Semantics::invalid(self, invalid: bool) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:604
+bools=1 builder=yes	pert_ui_runtime::Semantics::protected(self, protected: bool) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:624
+bools=1 builder=yes	pert_ui_runtime::Semantics::read_only(self, read_only: bool) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:598
+bools=1 builder=yes	pert_ui_runtime::Semantics::required(self, required: bool) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:616
+bools=1 builder=yes	pert_ui_runtime::Slider::show_value(self, visible: bool) -> Self	-	crates/pert-ui-runtime/src/numeric_controls.rs:1604
+bools=1 builder=yes	pert_ui_runtime::Table::cell_tab_stops(self, stops: bool) -> Self	-	crates/pert-ui-runtime/src/table.rs:1596
+bools=1 builder=yes	pert_ui_runtime::TableColumn::editable(self, editable: bool) -> Self	-	crates/pert-ui-runtime/src/table.rs:139
+bools=1 builder=yes	pert_ui_runtime::TableColumn::movable(self, movable: bool) -> Self	-	crates/pert-ui-runtime/src/table.rs:132
+bools=1 builder=yes	pert_ui_runtime::TableColumn::resizable(self, resizable: bool) -> Self	-	crates/pert-ui-runtime/src/table.rs:115
+bools=1 builder=yes	pert_ui_runtime::TableColumn::sortable(self, sortable: bool) -> Self	-	crates/pert-ui-runtime/src/table.rs:121
+bools=1 builder=yes	pert_ui_runtime::TextArea::counter(self, shown: bool) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:769
+bools=1 builder=yes	pert_ui_runtime::TextArea::modified_indicator(self, shown: bool) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:769
+bools=1 builder=yes	pert_ui_runtime::TextArea::required(self, required: bool) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:769
+bools=1 builder=yes	pert_ui_runtime::TextField::clearable(self, clearable: bool) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:884
+bools=1 builder=yes	pert_ui_runtime::TextField::concealed(self, concealed: bool) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:845
+bools=1 builder=yes	pert_ui_runtime::TextField::counter(self, shown: bool) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:768
+bools=1 builder=yes	pert_ui_runtime::TextField::modified_indicator(self, shown: bool) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:768
+bools=1 builder=yes	pert_ui_runtime::TextField::required(self, required: bool) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:768
+bools=1 builder=yes	pert_ui_runtime::TextField::revealable(self, revealable: bool) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:858
+bools=1 builder=yes	pert_ui_runtime::TextSelection::at_point(self, layout: &TextLayout, point: Point, extend: bool) -> Self	-	crates/pert-ui-runtime/src/text_selection.rs:87
+bools=1 builder=yes	pert_ui_runtime::TextSelection::moved(self, layout: &TextLayout, movement: TextMovement, extend: bool) -> Self	-	crates/pert-ui-runtime/src/text_selection.rs:62
+bools=1 builder=yes	pert_ui_runtime::ToolWindow::expanded(self, expanded: bool) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:443
+bools=1 builder=yes	pert_ui_runtime::ToolWindow::overlay(self, overlay: bool) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:364
+bools=1 builder=no	pert_ui_runtime::ToolWindowChange::new(key: String, expanded: bool, origin: ChangeOrigin) -> Self	#[must_use]	crates/pert-ui-runtime/src/tool_windows/mod.rs:247
+bools=1 builder=yes	pert_ui_runtime::ToolWindowChange::with_overlay(self, overlay: bool) -> Self	#[must_use]	crates/pert-ui-runtime/src/tool_windows/mod.rs:276
+bools=1 builder=no	pert_ui_runtime::ToolWindowController::set_names(&self, names: bool) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:2491
+bools=1 builder=no	pert_ui_runtime::ToolWindowController::set_overlay(&self, key: &str, overlay: bool) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:2446
+bools=1 builder=yes	pert_ui_runtime::ToolWindowLayout::persist(self, persist: bool) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:931
+bools=1 builder=yes	pert_ui_runtime::ToolWindowLayout::show_names(self, names: bool) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:916
+bools=1 builder=no	pert_ui_runtime::TreeController::set_expanded(&self, key: &str, expanded: bool) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/tree.rs:343
+bools=1 builder=yes	pert_ui_runtime::VirtualList::active_outline(self, outline: bool) -> Self	-	crates/pert-ui-runtime/src/virtual_list.rs:770
+bools=1 builder=yes	pert_ui_runtime::VirtualList::item_tab_stops(self, stops: bool) -> Self	-	crates/pert-ui-runtime/src/virtual_list.rs:783
+bools=1 builder=no	pert_ui_runtime::WorkspaceValue::flag(value: bool) -> Self	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:62
+
+## pert-ui
+bools=1 builder=yes	pert_ui::App::resizable(self, resizable: bool) -> Self	-	crates/pert-ui/src/app.rs:375	[configs: cpu, default, image-formats, images, no-default-desktop-cpu, serde, svg]

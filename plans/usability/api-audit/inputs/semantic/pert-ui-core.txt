@@ -1,0 +1,162 @@
+# pert-ui-core: every public type with its inherent and trait-declared methods.
+# Classify each type's role with a source reference, or write 'unresolved'.
+
+## pert-ui-core
+pert_ui_core::AnyParameterSnapshot	enum	role: 	crates/pert-ui-core/src/erased.rs:179
+    pert_ui_core::AnyParameterSnapshot::new<T: ParameterValue>(spec: ParameterSpec<T>, state: ParameterSnapshot<T>) -> Self	-	crates/pert-ui-core/src/erased.rs:217
+    pert_ui_core::AnyParameterSnapshot::try_new<T: ParameterValue>(spec: ParameterSpec<T>, state: ParameterSnapshot<T>) -> Result<Self, crate::ParameterError>	-	crates/pert-ui-core/src/erased.rs:239
+    pert_ui_core::AnyParameterSnapshot::family(&self) -> ParameterFamily	#[must_use]	crates/pert-ui-core/src/erased.rs:253
+    pert_ui_core::AnyParameterSnapshot::name(&self) -> &str	#[must_use]	crates/pert-ui-core/src/erased.rs:264
+    pert_ui_core::AnyParameterSnapshot::revision(&self) -> Revision	#[must_use]	crates/pert-ui-core/src/erased.rs:275
+    pert_ui_core::AnyParameterSnapshot::available(&self) -> bool	#[must_use]	crates/pert-ui-core/src/erased.rs:286
+    pert_ui_core::AnyParameterSnapshot::base(&self) -> AnyValue	-	crates/pert-ui-core/src/erased.rs:296
+pert_ui_core::AnySpec	enum	role: 	crates/pert-ui-core/src/erased.rs:24
+    pert_ui_core::AnySpec::family(&self) -> ParameterFamily	#[must_use]	crates/pert-ui-core/src/erased.rs:38
+    pert_ui_core::AnySpec::name(&self) -> &str	#[must_use]	crates/pert-ui-core/src/erased.rs:49
+    pert_ui_core::AnySpec::default_value(&self) -> AnyValue	-	crates/pert-ui-core/src/erased.rs:59
+    pert_ui_core::AnySpec::is_editable(&self) -> bool	#[must_use]	crates/pert-ui-core/src/erased.rs:70
+pert_ui_core::AnyValue	enum	role: 	crates/pert-ui-core/src/erased.rs:112
+    pert_ui_core::AnyValue::family(&self) -> ParameterFamily	#[must_use]	crates/pert-ui-core/src/erased.rs:126
+pert_ui_core::Capacity	struct	role: 	crates/pert-ui-core/src/live/mod.rs:183
+    pert_ui_core::Capacity::new(items: usize) -> Result<Self, LiveError>	-	crates/pert-ui-core/src/live/mod.rs:194
+    pert_ui_core::Capacity::get(self) -> usize	#[must_use]	crates/pert-ui-core/src/live/mod.rs:206
+pert_ui_core::ChoiceId	struct	role: 	crates/pert-ui-core/src/choice.rs:32
+    pert_ui_core::ChoiceId::new(id: impl Into<String>) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/choice.rs:40
+    pert_ui_core::ChoiceId::as_str(&self) -> &str	#[must_use]	crates/pert-ui-core/src/choice.rs:50
+pert_ui_core::ChoiceOption	struct	role: 	crates/pert-ui-core/src/choice.rs:97
+    pert_ui_core::ChoiceOption::new(id: ChoiceId, label: impl Into<String>) -> Self	-	crates/pert-ui-core/src/choice.rs:148
+    pert_ui_core::ChoiceOption::id(&self) -> &ChoiceId	#[must_use]	crates/pert-ui-core/src/choice.rs:157
+    pert_ui_core::ChoiceOption::label(&self) -> &str	#[must_use]	crates/pert-ui-core/src/choice.rs:163
+pert_ui_core::DrainReport	struct	role: 	crates/pert-ui-core/src/live/mod.rs:312
+pert_ui_core::EditError	enum	role: 	crates/pert-ui-core/src/edit.rs:189
+pert_ui_core::EditOutcome	enum	role: 	crates/pert-ui-core/src/edit.rs:163
+pert_ui_core::EditSequence	struct	role: 	crates/pert-ui-core/src/edit.rs:31
+    pert_ui_core::EditSequence::new(value: u64) -> Self	#[must_use]	crates/pert-ui-core/src/edit.rs:36
+    pert_ui_core::EditSequence::get(self) -> u64	#[must_use]	crates/pert-ui-core/src/edit.rs:42
+pert_ui_core::EditSource	struct	role: 	crates/pert-ui-core/src/edit.rs:59
+    pert_ui_core::EditSource::new(value: u64) -> Self	#[must_use]	crates/pert-ui-core/src/edit.rs:64
+    pert_ui_core::EditSource::get(self) -> u64	#[must_use]	crates/pert-ui-core/src/edit.rs:70
+pert_ui_core::EditToken	struct	role: 	crates/pert-ui-core/src/edit.rs:82
+    pert_ui_core::EditToken::target(&self) -> &ParameterId	-	crates/pert-ui-core/src/edit.rs:90
+    pert_ui_core::EditToken::source(&self) -> EditSource	#[must_use]	crates/pert-ui-core/src/edit.rs:96
+pert_ui_core::HostValue	trait	role: 	crates/pert-ui-core/src/erased.rs:408
+    pert_ui_core::HostValue::to_canonical(&self) -> Result<Self::Canonical, Self::Error>	-	crates/pert-ui-core/src/erased.rs:418
+    pert_ui_core::HostValue::from_canonical(value: Self::Canonical) -> Result<Self, Self::Error>	-	crates/pert-ui-core/src/erased.rs:424
+pert_ui_core::Incarnation	struct	role: 	crates/pert-ui-core/src/live/mod.rs:47
+    pert_ui_core::Incarnation::get(self) -> u64	#[must_use]	crates/pert-ui-core/src/live/mod.rs:55
+pert_ui_core::LiveError	enum	role: 	crates/pert-ui-core/src/live/mod.rs:163
+pert_ui_core::LiveItem	trait	role: 	crates/pert-ui-core/src/live/item.rs:36
+pert_ui_core::NormalizedValue	struct	role: 	crates/pert-ui-core/src/normalized.rs:47
+    pert_ui_core::NormalizedValue::get(self) -> f32	#[must_use]	crates/pert-ui-core/src/normalized.rs:83
+pert_ui_core::NormalizedValueError	enum	role: 	crates/pert-ui-core/src/normalized.rs:114
+pert_ui_core::ParameterError	enum	role: 	crates/pert-ui-core/src/parameter.rs:541
+pert_ui_core::ParameterFamily	enum	role: 	crates/pert-ui-core/src/family.rs:17
+pert_ui_core::ParameterId	struct	role: 	crates/pert-ui-core/src/parameter_id.rs:44
+    pert_ui_core::ParameterId::new(session: u128, object: u128, key: impl Into<String>) -> Result<Self, ParameterIdError>	-	crates/pert-ui-core/src/parameter_id.rs:66
+    pert_ui_core::ParameterId::session(&self) -> u128	#[must_use]	crates/pert-ui-core/src/parameter_id.rs:88
+    pert_ui_core::ParameterId::object(&self) -> u128	#[must_use]	crates/pert-ui-core/src/parameter_id.rs:94
+    pert_ui_core::ParameterId::key(&self) -> &str	-	crates/pert-ui-core/src/parameter_id.rs:99
+    pert_ui_core::ParameterId::incarnation(&self) -> u64	#[must_use]	crates/pert-ui-core/src/parameter_id.rs:105
+    pert_ui_core::ParameterId::next_incarnation(&self) -> Result<Self, ParameterIdError>	-	crates/pert-ui-core/src/parameter_id.rs:117
+pert_ui_core::ParameterIdError	enum	role: 	crates/pert-ui-core/src/parameter_id.rs:132
+pert_ui_core::ParameterMapping	enum	role: 	crates/pert-ui-core/src/parameter.rs:14
+pert_ui_core::ParameterSnapshot	struct	role: 	crates/pert-ui-core/src/edit.rs:116
+pert_ui_core::ParameterSpec	struct	role: 	crates/pert-ui-core/src/parameter.rs:151
+    pert_ui_core::ParameterSpec::family(&self) -> ParameterFamily	#[must_use]	crates/pert-ui-core/src/parameter.rs:210
+    pert_ui_core::ParameterSpec::name(&self) -> &str	#[must_use]	crates/pert-ui-core/src/parameter.rs:216
+    pert_ui_core::ParameterSpec::default_value(&self) -> T	#[must_use]	crates/pert-ui-core/src/parameter.rs:222
+    pert_ui_core::ParameterSpec::is_editable(&self) -> bool	#[must_use]	crates/pert-ui-core/src/parameter.rs:230
+    pert_ui_core::ParameterSpec::read_only(self) -> Self	-	crates/pert-ui-core/src/parameter.rs:238
+    pert_ui_core::ParameterSpec::validate(&self, value: &T) -> Result<(), ParameterError>	-	crates/pert-ui-core/src/parameter.rs:250
+    pert_ui_core::ParameterSpec::validate_effective(&self, value: &T) -> Result<(), ParameterError>	-	crates/pert-ui-core/src/parameter.rs:263
+    pert_ui_core::ParameterSpec::normalize(&self, value: &T) -> Result<NormalizedValue, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:279
+    pert_ui_core::ParameterSpec::denormalize(&self, position: NormalizedValue) -> T	-	crates/pert-ui-core/src/parameter.rs:295
+    pert_ui_core::ParameterSpec::new(name: impl Into<String>, minimum: f32, maximum: f32, default: f32) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:311
+    pert_ui_core::ParameterSpec::with_mapping(self, mapping: ParameterMapping) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:342
+    pert_ui_core::ParameterSpec::minimum(&self) -> f32	#[must_use]	crates/pert-ui-core/src/parameter.rs:352
+    pert_ui_core::ParameterSpec::maximum(&self) -> f32	#[must_use]	crates/pert-ui-core/src/parameter.rs:358
+    pert_ui_core::ParameterSpec::mapping(&self) -> ParameterMapping	#[must_use]	crates/pert-ui-core/src/parameter.rs:364
+    pert_ui_core::ParameterSpec::stepped(name: impl Into<String>, minimum: i64, maximum: i64, default: i64) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:380
+    pert_ui_core::ParameterSpec::with_step(self, step: NonZeroU64) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:413
+    pert_ui_core::ParameterSpec::minimum(&self) -> i64	#[must_use]	crates/pert-ui-core/src/parameter.rs:425
+    pert_ui_core::ParameterSpec::maximum(&self) -> i64	#[must_use]	crates/pert-ui-core/src/parameter.rs:431
+    pert_ui_core::ParameterSpec::step(&self) -> NonZeroU64	#[must_use]	crates/pert-ui-core/src/parameter.rs:437
+    pert_ui_core::ParameterSpec::intervals(&self) -> u64	#[must_use]	crates/pert-ui-core/src/parameter.rs:443
+    pert_ui_core::ParameterSpec::offset(&self, value: i64, steps: i64) -> Result<i64, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:466
+    pert_ui_core::ParameterSpec::boolean(name: impl Into<String>, default: bool) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:481
+    pert_ui_core::ParameterSpec::choices(name: impl Into<String>, options: impl IntoIterator<Item = ChoiceOption>, default: ChoiceId) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:497
+    pert_ui_core::ParameterSpec::options(&self) -> &[ChoiceOption]	-	crates/pert-ui-core/src/parameter.rs:517
+    pert_ui_core::ParameterSpec::option(&self, id: &ChoiceId) -> Option<&ChoiceOption>	#[must_use]	crates/pert-ui-core/src/parameter.rs:523
+    pert_ui_core::ParameterSpec::index_of(&self, id: &ChoiceId) -> Option<usize>	#[must_use]	crates/pert-ui-core/src/parameter.rs:533
+pert_ui_core::ParameterState	struct	role: 	crates/pert-ui-core/src/edit.rs:272
+    pert_ui_core::ParameterState::new(id: ParameterId, spec: ParameterSpec<T>) -> Self	#[must_use]	crates/pert-ui-core/src/edit.rs:311
+    pert_ui_core::ParameterState::id(&self) -> &ParameterId	-	crates/pert-ui-core/src/edit.rs:326
+    pert_ui_core::ParameterState::spec(&self) -> &ParameterSpec<T>	-	crates/pert-ui-core/src/edit.rs:331
+    pert_ui_core::ParameterState::snapshot(&self) -> ParameterSnapshot<T>	#[must_use]	crates/pert-ui-core/src/edit.rs:338
+    pert_ui_core::ParameterState::begin(&mut self, expected: Revision, source: EditSource) -> Result<EditToken, EditError>	-	crates/pert-ui-core/src/edit.rs:367
+    pert_ui_core::ParameterState::outcome(&self, token: &EditToken) -> Result<Option<EditOutcome<T>>, EditError>	-	crates/pert-ui-core/src/edit.rs:426
+    pert_ui_core::ParameterState::preview_sequence(&self, token: &EditToken) -> Result<Option<EditSequence>, EditError>	-	crates/pert-ui-core/src/edit.rs:435
+    pert_ui_core::ParameterState::update(&mut self, token: &EditToken, sequence: EditSequence, value: T) -> Result<PreviewOutcome, EditError>	-	crates/pert-ui-core/src/edit.rs:450
+    pert_ui_core::ParameterState::commit(&mut self, token: &EditToken, sequence: EditSequence, value: T) -> Result<EditOutcome<T>, EditError>	-	crates/pert-ui-core/src/edit.rs:486
+    pert_ui_core::ParameterState::cancel(&mut self, token: &EditToken) -> Result<EditOutcome<T>, EditError>	-	crates/pert-ui-core/src/edit.rs:521
+    pert_ui_core::ParameterState::reject_delivery(&mut self, token: &EditToken) -> Result<EditOutcome<T>, EditError>	-	crates/pert-ui-core/src/edit.rs:540
+    pert_ui_core::ParameterState::reject_authority(&mut self, token: &EditToken) -> Result<EditOutcome<T>, EditError>	-	crates/pert-ui-core/src/edit.rs:554
+    pert_ui_core::ParameterState::acknowledge(&mut self, token: &EditToken) -> Result<(), EditError>	-	crates/pert-ui-core/src/edit.rs:568
+    pert_ui_core::ParameterState::write_base(&mut self, value: T) -> Result<(), EditError>	-	crates/pert-ui-core/src/edit.rs:581
+    pert_ui_core::ParameterState::replace_spec(&mut self, spec: ParameterSpec<T>) -> Result<(), EditError>	-	crates/pert-ui-core/src/edit.rs:606
+    pert_ui_core::ParameterState::set_effective(&mut self, value: Option<T>) -> Result<(), EditError>	-	crates/pert-ui-core/src/edit.rs:632
+    pert_ui_core::ParameterState::remove(&mut self)	-	crates/pert-ui-core/src/edit.rs:647
+pert_ui_core::ParameterValue	trait	role: 	crates/pert-ui-core/src/family.rs:47
+    pert_ui_core::ParameterValue::into_any(self) -> AnyValue	-	crates/pert-ui-core/src/family.rs:54
+    pert_ui_core::ParameterValue::from_any(value: AnyValue) -> Result<Self, AnyValue>	-	crates/pert-ui-core/src/family.rs:61
+    pert_ui_core::ParameterValue::spec_into_any(spec: ParameterSpec<Self>) -> AnySpec	-	crates/pert-ui-core/src/family.rs:64
+    pert_ui_core::ParameterValue::spec_from_any(spec: AnySpec) -> Result<ParameterSpec<Self>, AnySpec>	-	crates/pert-ui-core/src/family.rs:71
+    pert_ui_core::ParameterValue::snapshot_into_any(spec: ParameterSpec<Self>, state: ParameterSnapshot<Self>) -> AnyParameterSnapshot	-	crates/pert-ui-core/src/family.rs:74
+pert_ui_core::PowerExponent	struct	role: 	crates/pert-ui-core/src/parameter.rs:63
+    pert_ui_core::PowerExponent::new(exponent: f32) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:76
+    pert_ui_core::PowerExponent::get(self) -> f32	#[must_use]	crates/pert-ui-core/src/parameter.rs:85
+pert_ui_core::PreviewOutcome	enum	role: 	crates/pert-ui-core/src/edit.rs:139
+pert_ui_core::PublishOutcome	enum	role: 	crates/pert-ui-core/src/live/mod.rs:143
+pert_ui_core::Revision	struct	role: 	crates/pert-ui-core/src/edit.rs:12
+    pert_ui_core::Revision::get(self) -> u64	#[must_use]	crates/pert-ui-core/src/edit.rs:20
+pert_ui_core::Sample	struct	role: 	crates/pert-ui-core/src/live/mod.rs:286
+pert_ui_core::SampleWindow	struct	role: 	crates/pert-ui-core/src/live/mod.rs:382
+    pert_ui_core::SampleWindow::iter(&self) -> impl DoubleEndedIterator<Item = &SampleWindowEntry<T>> + ExactSizeIterator + '_	-	crates/pert-ui-core/src/live/mod.rs:435
+    pert_ui_core::SampleWindow::latest(&self) -> Option<&SampleWindowEntry<T>>	#[must_use]	crates/pert-ui-core/src/live/mod.rs:445
+    pert_ui_core::SampleWindow::len(&self) -> usize	#[must_use]	crates/pert-ui-core/src/live/mod.rs:451
+    pert_ui_core::SampleWindow::is_empty(&self) -> bool	#[must_use]	crates/pert-ui-core/src/live/mod.rs:457
+    pert_ui_core::SampleWindow::capacity(&self) -> usize	#[must_use]	crates/pert-ui-core/src/live/mod.rs:463
+pert_ui_core::SampleWindowEntry	struct	role: 	crates/pert-ui-core/src/live/mod.rs:367
+pert_ui_core::Sequence	struct	role: 	crates/pert-ui-core/src/live/mod.rs:83
+    pert_ui_core::Sequence::get(self) -> u64	#[must_use]	crates/pert-ui-core/src/live/mod.rs:91
+    pert_ui_core::Sequence::new(number: u64) -> Option<Self>	#[must_use]	crates/pert-ui-core/src/live/mod.rs:97
+pert_ui_core::SeriesConfig	struct	role: 	crates/pert-ui-core/src/live/mod.rs:244
+    pert_ui_core::SeriesConfig::new(window: Capacity) -> Self	-	crates/pert-ui-core/src/live/mod.rs:251
+    pert_ui_core::SeriesConfig::with_ring_capacity(self, ring: Capacity) -> Self	-	crates/pert-ui-core/src/live/mod.rs:268
+    pert_ui_core::SeriesConfig::window_capacity(&self) -> Capacity	-	crates/pert-ui-core/src/live/mod.rs:274
+    pert_ui_core::SeriesConfig::ring_capacity(&self) -> Capacity	-	crates/pert-ui-core/src/live/mod.rs:279
+pert_ui_core::SeriesConsumer	struct	role: 	crates/pert-ui-core/src/live/series.rs:292
+    pert_ui_core::SeriesConsumer::drain(&mut self) -> &DrainReport	-	crates/pert-ui-core/src/live/series.rs:318
+    pert_ui_core::SeriesConsumer::resume(&mut self) -> &DrainReport	-	crates/pert-ui-core/src/live/series.rs:382
+    pert_ui_core::SeriesConsumer::window(&self) -> &SampleWindow<T>	#[must_use]	crates/pert-ui-core/src/live/series.rs:400
+    pert_ui_core::SeriesConsumer::report(&self) -> &DrainReport	#[must_use]	crates/pert-ui-core/src/live/series.rs:406
+    pert_ui_core::SeriesConsumer::config(&self) -> &SeriesConfig	-	crates/pert-ui-core/src/live/series.rs:411
+    pert_ui_core::SeriesConsumer::incarnation(&self) -> Incarnation	-	crates/pert-ui-core/src/live/series.rs:416
+    pert_ui_core::SeriesConsumer::fill(&self) -> u64	#[must_use]	crates/pert-ui-core/src/live/series.rs:422
+    pert_ui_core::SeriesConsumer::dropped_total(&self) -> u64	#[must_use]	crates/pert-ui-core/src/live/series.rs:428
+    pert_ui_core::SeriesConsumer::rejected_total(&self) -> u64	#[must_use]	crates/pert-ui-core/src/live/series.rs:434
+    pert_ui_core::SeriesConsumer::is_disconnected(&self) -> bool	#[must_use]	crates/pert-ui-core/src/live/series.rs:440
+    pert_ui_core::SeriesConsumer::is_exhausted(&self) -> bool	#[must_use]	crates/pert-ui-core/src/live/series.rs:448
+pert_ui_core::SeriesEndpoint	struct	role: 	crates/pert-ui-core/src/live/series.rs:138
+    pert_ui_core::SeriesEndpoint::publish(&mut self, value: T, timestamp: Timestamp) -> PublishOutcome	-	crates/pert-ui-core/src/live/series.rs:165
+    pert_ui_core::SeriesEndpoint::restart(&mut self) -> Result<Incarnation, LiveError>	-	crates/pert-ui-core/src/live/series.rs:219
+    pert_ui_core::SeriesEndpoint::incarnation(&self) -> Incarnation	-	crates/pert-ui-core/src/live/series.rs:233
+    pert_ui_core::SeriesEndpoint::last_sequence(&self) -> Option<Sequence>	#[must_use]	crates/pert-ui-core/src/live/series.rs:239
+pert_ui_core::Timestamp	struct	role: 	crates/pert-ui-core/src/live/mod.rs:120
+    pert_ui_core::Timestamp::new(ticks: u64) -> Self	-	crates/pert-ui-core/src/live/mod.rs:124
+    pert_ui_core::Timestamp::get(self) -> u64	#[must_use]	crates/pert-ui-core/src/live/mod.rs:130
+pert_ui_core::WakeFlag	struct	role: 	crates/pert-ui-core/src/live/wake.rs:36
+    pert_ui_core::WakeFlag::new() -> Self	#[must_use]	crates/pert-ui-core/src/live/wake.rs:43
+    pert_ui_core::WakeFlag::request(&self) -> bool	#[must_use = "the caller that receives true must deliver the wake"]	crates/pert-ui-core/src/live/wake.rs:55
+    pert_ui_core::WakeFlag::reset(&self) -> bool	-	crates/pert-ui-core/src/live/wake.rs:64
+    pert_ui_core::WakeFlag::is_pending(&self) -> bool	#[must_use]	crates/pert-ui-core/src/live/wake.rs:70

@@ -1,0 +1,538 @@
+# Methods taking self and returning Self.
+# A trailing [configs: ...] means the entry exists only in those configurations.
+
+## pert-ui-core
+pert_ui_core::ParameterSpec::read_only(self) -> Self	-	crates/pert-ui-core/src/parameter.rs:238
+pert_ui_core::SeriesConfig::with_ring_capacity(self, ring: Capacity) -> Self	-	crates/pert-ui-core/src/live/mod.rs:268
+
+## pert-ui-runtime
+pert_ui_runtime::Accordion::disabled(self) -> Self	-	crates/pert-ui-runtime/src/collapsible.rs:1009
+pert_ui_runtime::Accordion::enabled(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/collapsible.rs:1020
+pert_ui_runtime::Accordion::expanded(self, keys: impl IntoIterator<Item = impl Into<String>>) -> Self	-	crates/pert-ui-runtime/src/collapsible.rs:996
+pert_ui_runtime::Accordion::mode(self, mode: ExpandMode) -> Self	-	crates/pert-ui-runtime/src/collapsible.rs:988
+pert_ui_runtime::Accordion::on_change(self, handler: impl FnMut(&mut EventContext, &[String], crate::ChangeOrigin) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/collapsible.rs:1049
+pert_ui_runtime::Accordion::persist(self, persist: bool) -> Self	-	crates/pert-ui-runtime/src/collapsible.rs:1002
+pert_ui_runtime::AlertDialog::application_modal(self) -> Self	-	crates/pert-ui-runtime/src/dialog.rs:563
+pert_ui_runtime::AlertDialog::cancel_label(self, label: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/dialog.rs:551
+pert_ui_runtime::AlertDialog::view_modal(self) -> Self	-	crates/pert-ui-runtime/src/dialog.rs:557
+pert_ui_runtime::Banner::visible_signal(self, visible: impl Into<ReadSignal<bool>>) -> Self	-	crates/pert-ui-runtime/src/notifications.rs:50
+pert_ui_runtime::BreadcrumbSegment::leading_icon(self, icon: impl Into<IconSource>) -> Self	-	crates/pert-ui-runtime/src/breadcrumb.rs:69
+pert_ui_runtime::Button::disabled(self) -> Self	-	crates/pert-ui-runtime/src/controls.rs:642
+pert_ui_runtime::Button::enabled(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/controls.rs:650
+pert_ui_runtime::Button::frameless(self) -> Self	-	crates/pert-ui-runtime/src/controls.rs:604
+pert_ui_runtime::Button::leading_icon(self, icon: impl Into<IconSource>) -> Self	-	crates/pert-ui-runtime/src/controls.rs:610
+pert_ui_runtime::Button::trailing_icon(self, icon: impl Into<IconSource>) -> Self	-	crates/pert-ui-runtime/src/controls.rs:616
+pert_ui_runtime::CaptureRequest::include_overlay(self, include: bool) -> Self	-	crates/pert-ui-runtime/src/capture.rs:137
+pert_ui_runtime::Checkbox::disabled(self) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:647
+pert_ui_runtime::Checkbox::enabled(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:647
+pert_ui_runtime::Checkbox::label(self, label: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:647
+pert_ui_runtime::Checkbox::leading_icon(self, icon: impl Into<IconSource>) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:647
+pert_ui_runtime::Checkbox::on_change(self, handler: impl FnMut(&mut EventContext, bool) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:647
+pert_ui_runtime::Checkbox::trailing_icon(self, icon: impl Into<IconSource>) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:647
+pert_ui_runtime::Chip::disabled(self) -> Self	-	crates/pert-ui-runtime/src/chip.rs:144
+pert_ui_runtime::Chip::enabled(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/chip.rs:152
+pert_ui_runtime::Chip::leading_icon(self, icon: impl Into<IconSource>) -> Self	-	crates/pert-ui-runtime/src/chip.rs:125
+pert_ui_runtime::Chip::remove_name(self, name: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/chip.rs:138
+pert_ui_runtime::Choice::disabled(self) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:78
+pert_ui_runtime::Choice::leading_icon(self, icon: impl Into<IconSource>) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:62
+pert_ui_runtime::Choice::rich_label(self, content: RichText) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:57
+pert_ui_runtime::Choice::trailing_icon(self, icon: impl Into<IconSource>) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:68
+pert_ui_runtime::ClickCounter::with_distance(self, distance: Length) -> Self	#[must_use]	crates/pert-ui-runtime/src/click.rs:110
+pert_ui_runtime::ClickCounter::with_interval(self, interval: Duration) -> Self	#[must_use]	crates/pert-ui-runtime/src/click.rs:101
+pert_ui_runtime::Collapsible::bound(self, expanded: impl Into<Signal<bool>>) -> Self	-	crates/pert-ui-runtime/src/collapsible.rs:533
+pert_ui_runtime::Collapsible::disabled(self) -> Self	-	crates/pert-ui-runtime/src/collapsible.rs:548
+pert_ui_runtime::Collapsible::enabled(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/collapsible.rs:560
+pert_ui_runtime::Collapsible::expanded(self, expanded: bool) -> Self	-	crates/pert-ui-runtime/src/collapsible.rs:525
+pert_ui_runtime::Collapsible::leading_icon(self, icon: impl Into<IconSource>) -> Self	-	crates/pert-ui-runtime/src/collapsible.rs:511
+pert_ui_runtime::Collapsible::persist(self, persist: bool) -> Self	-	crates/pert-ui-runtime/src/collapsible.rs:541
+pert_ui_runtime::CollectionFilter::debounce(self, delay: Duration) -> Self	-	crates/pert-ui-runtime/src/collection_filter.rs:613
+pert_ui_runtime::CollectionFilter::matcher(self, matcher: FilterMatcher) -> Self	-	crates/pert-ui-runtime/src/collection_filter.rs:587
+pert_ui_runtime::CollectionFilter::name(self, name: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/collection_filter.rs:599
+pert_ui_runtime::CollectionFilter::offered(self, offered: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/collection_filter.rs:622
+pert_ui_runtime::CollectionFilter::placeholder(self, text: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/collection_filter.rs:606
+pert_ui_runtime::ColorPicker::alpha(self, enabled: bool) -> Self	-	crates/pert-ui-runtime/src/color_picker.rs:430
+pert_ui_runtime::ColorPicker::disabled(self) -> Self	-	crates/pert-ui-runtime/src/color_picker.rs:471
+pert_ui_runtime::ColorPicker::enabled(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/color_picker.rs:485
+pert_ui_runtime::ColorPicker::name(self, name: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/color_picker.rs:454
+pert_ui_runtime::ColorPicker::on_change(self, handler: impl FnMut(&mut crate::EventContext, Color) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/color_picker.rs:542
+pert_ui_runtime::ColorPicker::text_entry(self, enabled: bool) -> Self	-	crates/pert-ui-runtime/src/color_picker.rs:435
+pert_ui_runtime::ColorSwatch::disabled(self) -> Self	-	crates/pert-ui-runtime/src/color_swatch.rs:171
+pert_ui_runtime::ColorSwatch::enabled(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/color_swatch.rs:181
+pert_ui_runtime::ColorSwatch::name(self, name: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/color_swatch.rs:143
+pert_ui_runtime::ColorSwatch::on_activate(self, action: impl FnMut(&mut EventContext) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/color_swatch.rs:161
+pert_ui_runtime::Column::align(self, align: Align) -> Self	-	crates/pert-ui-runtime/src/containers.rs:930
+pert_ui_runtime::Column::gap(self, gap: impl Into<Spacing>) -> Self	-	crates/pert-ui-runtime/src/containers.rs:898
+pert_ui_runtime::Column::justify(self, justify: Justify) -> Self	-	crates/pert-ui-runtime/src/containers.rs:930
+pert_ui_runtime::CommandPalette::empty_text(self, text: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/command_palette.rs:569
+pert_ui_runtime::CommandPalette::matcher(self, matcher: CommandMatcher) -> Self	-	crates/pert-ui-runtime/src/command_palette.rs:546
+pert_ui_runtime::CommandPalette::nonmodal(self) -> Self	-	crates/pert-ui-runtime/src/command_palette.rs:540
+pert_ui_runtime::CommandPalette::outcome_text(self, text: impl Fn(&str, &Result<CommandOutcome, RuntimeError>) -> String + 'static) -> Self	-	crates/pert-ui-runtime/src/command_palette.rs:582
+pert_ui_runtime::CommandPalette::placeholder(self, text: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/command_palette.rs:561
+pert_ui_runtime::Container::background(self, color: Color) -> Self	-	crates/pert-ui-runtime/src/containers.rs:102
+pert_ui_runtime::Container::background_role(self, role: crate::ColorRole) -> Self	-	crates/pert-ui-runtime/src/containers.rs:111
+pert_ui_runtime::Container::background_role_signal(self, role: impl Into<crate::ReadSignal<crate::ColorRole>>) -> Self	-	crates/pert-ui-runtime/src/containers.rs:141
+pert_ui_runtime::Container::border_role(self, role: crate::ColorRole) -> Self	-	crates/pert-ui-runtime/src/containers.rs:156
+pert_ui_runtime::Container::cursor(self, icon: crate::CursorIcon) -> Self	-	crates/pert-ui-runtime/src/containers.rs:95
+pert_ui_runtime::Container::padding(self, padding: impl Into<Spacing>) -> Self	-	crates/pert-ui-runtime/src/containers.rs:165
+pert_ui_runtime::Container::preferred_size(self, size: Size) -> Self	-	crates/pert-ui-runtime/src/containers.rs:175
+pert_ui_runtime::Container::size_limits(self, limits: crate::SizeLimits) -> Self	-	crates/pert-ui-runtime/src/containers.rs:182
+pert_ui_runtime::ContentQuery::hidden(self, include: bool) -> Self	#[must_use]	crates/pert-ui-runtime/src/content_search.rs:100
+pert_ui_runtime::ContentQuery::rows(self, include: bool) -> Self	#[must_use]	crates/pert-ui-runtime/src/content_search.rs:109
+pert_ui_runtime::DecimalInput::disabled(self) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2538
+pert_ui_runtime::DecimalInput::editable(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2538
+pert_ui_runtime::DecimalInput::enabled(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2538
+pert_ui_runtime::DecimalInput::format(self, format: NumberFormat<f64>) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2538
+pert_ui_runtime::DecimalInput::on_rejection(self, report: impl FnMut(&mut EventContext, Option<&InputRejection>) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2538
+pert_ui_runtime::DecimalInput::on_save(self, saved: impl FnMut(&mut EventContext, f64) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2538
+pert_ui_runtime::DecimalInput::read_only(self) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2538
+pert_ui_runtime::DecimalInput::session(self, session: &crate::EditorSession) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2542
+pert_ui_runtime::DecimalInput::stepper(self, enabled: bool) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2538
+pert_ui_runtime::DecimalInput::style(self, style: TextStyle) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2538
+pert_ui_runtime::DecimalInput::unit(self, unit: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2538
+pert_ui_runtime::Dialog::application_modal(self) -> Self	-	crates/pert-ui-runtime/src/dialog.rs:214
+pert_ui_runtime::Dialog::require_response(self) -> Self	-	crates/pert-ui-runtime/src/dialog.rs:226
+pert_ui_runtime::Dialog::view_modal(self) -> Self	-	crates/pert-ui-runtime/src/dialog.rs:220
+pert_ui_runtime::Divider::spacing(self, value: impl Into<Spacing>) -> Self	-	crates/pert-ui-runtime/src/views.rs:933
+pert_ui_runtime::Divider::vertical(self) -> Self	-	crates/pert-ui-runtime/src/views.rs:928
+pert_ui_runtime::DraftEditor::align(self, align: DraftAlign) -> Self	#[must_use]	crates/pert-ui-runtime/src/text_fields/draft.rs:622
+pert_ui_runtime::DraftEditor::style(self, style: TextStyle) -> Self	#[must_use]	crates/pert-ui-runtime/src/text_fields/draft.rs:615
+pert_ui_runtime::DragPreview::hot_spot(self, hot_spot: crate::Point) -> Self	-	crates/pert-ui-runtime/src/drag.rs:214
+pert_ui_runtime::Each::within(self, within: impl Fn(Vec<Element>) -> Element + 'static) -> Self	-	crates/pert-ui-runtime/src/described.rs:307
+pert_ui_runtime::Element::children(self, children: impl IntoIterator<Item = Self>) -> Self	-	crates/pert-ui-runtime/src/layout.rs:638
+pert_ui_runtime::Element::part(self, name: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/layout.rs:681
+pert_ui_runtime::Element::slot(self, name: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/layout.rs:668
+pert_ui_runtime::Element::structural(self) -> Self	-	crates/pert-ui-runtime/src/layout.rs:655
+pert_ui_runtime::Element::with_detachable(self, permission: impl Into<crate::Permission>) -> Self	-	crates/pert-ui-runtime/src/layout.rs:500
+pert_ui_runtime::Element::with_grow(self, weight: u16) -> Self	-	crates/pert-ui-runtime/src/layout.rs:587
+pert_ui_runtime::Element::with_label(self, label: impl Into<crate::TextSource>) -> Self	-	crates/pert-ui-runtime/src/layout.rs:437
+pert_ui_runtime::Element::with_rich_label(self, label: crate::RichText) -> Self	-	crates/pert-ui-runtime/src/layout.rs:615
+pert_ui_runtime::Element::with_searchable(self, searchable: bool) -> Self	-	crates/pert-ui-runtime/src/layout.rs:539
+pert_ui_runtime::Field::form(self, handle: &FieldHandle) -> Self	-	crates/pert-ui-runtime/src/field_status.rs:520
+pert_ui_runtime::Field::help(self, help: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/field_status.rs:507
+pert_ui_runtime::Field::hide_label(self) -> Self	-	crates/pert-ui-runtime/src/field_status.rs:498
+pert_ui_runtime::Field::label(self, label: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/field_status.rs:489
+pert_ui_runtime::Field::required(self, required: bool) -> Self	-	crates/pert-ui-runtime/src/field_status.rs:478
+pert_ui_runtime::Field::status(self, status: impl Into<ReadSignal<FieldStatus>>) -> Self	-	crates/pert-ui-runtime/src/field_status.rs:512
+pert_ui_runtime::FileBrowser::folder_filter(self, offered: impl Into<crate::Permission>) -> Self	-	crates/pert-ui-runtime/src/file_browser/view.rs:109
+pert_ui_runtime::FloatingWindow::closable(self, closable: bool) -> Self	-	crates/pert-ui-runtime/src/windows.rs:327
+pert_ui_runtime::FloatingWindow::close_label(self, label: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/windows.rs:479
+pert_ui_runtime::FloatingWindow::decorated(self, decorated: bool) -> Self	-	crates/pert-ui-runtime/src/windows.rs:321
+pert_ui_runtime::FloatingWindow::drag_area(self, content: Element) -> Self	-	crates/pert-ui-runtime/src/windows.rs:428
+pert_ui_runtime::FloatingWindow::minimizable(self, enabled: bool) -> Self	-	crates/pert-ui-runtime/src/windows.rs:333
+pert_ui_runtime::FloatingWindow::minimize_label(self, label: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/windows.rs:450
+pert_ui_runtime::FloatingWindow::movable(self, movable: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/windows.rs:346
+pert_ui_runtime::FloatingWindow::on_close(self, action: impl FnMut(&mut EventContext) -> Result<WindowCloseAction, RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/windows.rs:436
+pert_ui_runtime::FloatingWindow::on_frame(self, on_frame: impl FnMut(&mut EventContext, WindowPlacement, ChangeOrigin) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/windows.rs:393
+pert_ui_runtime::FloatingWindow::resizable(self, enabled: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/windows.rs:412
+pert_ui_runtime::FloatingWindow::size_limits(self, limits: SizeLimits) -> Self	-	crates/pert-ui-runtime/src/windows.rs:315
+pert_ui_runtime::FloatingWindow::title_action(self, action: Element) -> Self	-	crates/pert-ui-runtime/src/windows.rs:421
+pert_ui_runtime::Grid::gap(self, gap: impl Into<Spacing>) -> Self	-	crates/pert-ui-runtime/src/containers.rs:1053
+pert_ui_runtime::Group::frameless(self) -> Self	-	crates/pert-ui-runtime/src/views.rs:168
+pert_ui_runtime::Group::padding(self, padding: impl Into<Spacing>) -> Self	-	crates/pert-ui-runtime/src/views.rs:161
+pert_ui_runtime::HistoryButtons::enabled(self, enabled: impl Into<crate::Permission>) -> Self	-	crates/pert-ui-runtime/src/history_navigator.rs:520
+pert_ui_runtime::HistoryNavigator::buttons(self, offered: impl Into<crate::Permission>) -> Self	-	crates/pert-ui-runtime/src/history_navigator.rs:169
+pert_ui_runtime::HistoryNavigator::list(self, offered: impl Into<crate::Permission>) -> Self	-	crates/pert-ui-runtime/src/history_navigator.rs:175
+pert_ui_runtime::HistoryNavigator::name(self, name: impl Into<crate::TextSource>) -> Self	-	crates/pert-ui-runtime/src/history_navigator.rs:190
+pert_ui_runtime::Image::description(self, text: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/image.rs:129
+pert_ui_runtime::Image::fit(self, fit: ImageFit) -> Self	-	crates/pert-ui-runtime/src/image.rs:111
+pert_ui_runtime::Image::sampling(self, sampling: ImageSampling) -> Self	-	crates/pert-ui-runtime/src/image.rs:116
+pert_ui_runtime::Image::size(self, size: Size) -> Self	-	crates/pert-ui-runtime/src/image.rs:123
+pert_ui_runtime::InlineChoice::disabled(self) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:1616
+pert_ui_runtime::InlineChoice::enabled(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:1621
+pert_ui_runtime::InlineChoice::on_change(self, handler: impl FnMut(&mut EventContext, &T) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:1627
+pert_ui_runtime::InlineDecimal::disabled(self) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2540
+pert_ui_runtime::InlineDecimal::editable(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2540
+pert_ui_runtime::InlineDecimal::enabled(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2540
+pert_ui_runtime::InlineDecimal::format(self, format: NumberFormat<f64>) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2540
+pert_ui_runtime::InlineDecimal::label(self, label: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2544
+pert_ui_runtime::InlineDecimal::on_rejection(self, report: impl FnMut(&mut EventContext, Option<&InputRejection>) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2540
+pert_ui_runtime::InlineDecimal::on_save(self, saved: impl FnMut(&mut EventContext, f64) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2540
+pert_ui_runtime::InlineDecimal::read_only(self) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2540
+pert_ui_runtime::InlineDecimal::stepper(self, enabled: bool) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2540
+pert_ui_runtime::InlineDecimal::style(self, style: TextStyle) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2540
+pert_ui_runtime::InlineDecimal::unit(self, unit: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2540
+pert_ui_runtime::InlineInteger::disabled(self) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2539
+pert_ui_runtime::InlineInteger::editable(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2539
+pert_ui_runtime::InlineInteger::enabled(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2539
+pert_ui_runtime::InlineInteger::format(self, format: NumberFormat<i64>) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2539
+pert_ui_runtime::InlineInteger::label(self, label: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2543
+pert_ui_runtime::InlineInteger::on_rejection(self, report: impl FnMut(&mut EventContext, Option<&InputRejection>) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2539
+pert_ui_runtime::InlineInteger::on_save(self, saved: impl FnMut(&mut EventContext, i64) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2539
+pert_ui_runtime::InlineInteger::read_only(self) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2539
+pert_ui_runtime::InlineInteger::stepper(self, enabled: bool) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2539
+pert_ui_runtime::InlineInteger::style(self, style: TextStyle) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2539
+pert_ui_runtime::InlineInteger::unit(self, unit: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2539
+pert_ui_runtime::InlineReadout::label(self, label: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/inline_controls.rs:632
+pert_ui_runtime::InlineReadout::style(self, style: TextStyle) -> Self	-	crates/pert-ui-runtime/src/inline_controls.rs:651
+pert_ui_runtime::InlineReadout::unit(self, unit: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/inline_controls.rs:638
+pert_ui_runtime::InlineReadout::width_hint(self, hint: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/inline_controls.rs:644
+pert_ui_runtime::InlineSelect::disabled(self) -> Self	-	crates/pert-ui-runtime/src/select.rs:1808
+pert_ui_runtime::InlineSelect::enabled(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/select.rs:1823
+pert_ui_runtime::InlineSelect::label(self, label: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/select.rs:1772
+pert_ui_runtime::InlineSelect::on_change(self, handler: impl FnMut(&mut EventContext, &T) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/select.rs:1814
+pert_ui_runtime::InlineSelect::placeholder(self, placeholder: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/select.rs:1802
+pert_ui_runtime::InlineSelect::width_hint(self, hint: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/select.rs:1779
+pert_ui_runtime::InlineSlider::disabled(self) -> Self	-	crates/pert-ui-runtime/src/numeric_controls.rs:1592
+pert_ui_runtime::InlineSlider::enabled(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/numeric_controls.rs:1592
+pert_ui_runtime::InlineSlider::format(self, format: NumberFormat<f32>) -> Self	-	crates/pert-ui-runtime/src/numeric_controls.rs:1645
+pert_ui_runtime::InlineSlider::label(self, label: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/numeric_controls.rs:1638
+pert_ui_runtime::InlineSlider::unit(self, unit: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/numeric_controls.rs:1592
+pert_ui_runtime::InlineText::disabled(self) -> Self	-	crates/pert-ui-runtime/src/text_fields/inline_text.rs:139
+pert_ui_runtime::InlineText::enabled(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/text_fields/inline_text.rs:153
+pert_ui_runtime::InlineText::normalize(self, normalize: impl Fn(String) -> Result<String, InputRejection> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields/inline_text.rs:191
+pert_ui_runtime::InlineText::on_rejection(self, report: impl FnMut(&mut EventContext, Option<&InputRejection>) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields/inline_text.rs:205
+pert_ui_runtime::InlineText::on_save(self, saved: impl FnMut(&mut EventContext, &str) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields/inline_text.rs:218
+pert_ui_runtime::InlineText::placeholder(self, text: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/text_fields/inline_text.rs:126
+pert_ui_runtime::InlineText::style(self, style: TextStyle) -> Self	-	crates/pert-ui-runtime/src/text_fields/inline_text.rs:131
+pert_ui_runtime::InlineToggle::disabled(self) -> Self	-	crates/pert-ui-runtime/src/inline_controls.rs:168
+pert_ui_runtime::InlineToggle::enabled(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/inline_controls.rs:176
+pert_ui_runtime::InlineToggle::glyph(self, glyph: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/inline_controls.rs:160
+pert_ui_runtime::InlineToggle::icon(self, icon: impl Into<IconSource>) -> Self	-	crates/pert-ui-runtime/src/inline_controls.rs:151
+pert_ui_runtime::InlineToggle::name(self, name: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/inline_controls.rs:139
+pert_ui_runtime::InlineToggle::on_change(self, handler: impl FnMut(&mut EventContext, bool) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/inline_controls.rs:186
+pert_ui_runtime::InspectionQuery::application(self) -> Self	-	crates/pert-ui-runtime/src/inspection.rs:276
+pert_ui_runtime::InspectionQuery::depth(self, depth: Depth) -> Self	-	crates/pert-ui-runtime/src/inspection.rs:231
+pert_ui_runtime::InspectionQuery::detail(self, detail: Detail) -> Self	-	crates/pert-ui-runtime/src/inspection.rs:236
+pert_ui_runtime::InspectionQuery::events_after(self, sequence: u64) -> Self	-	crates/pert-ui-runtime/src/inspection.rs:254
+pert_ui_runtime::InspectionQuery::limit(self, limit: usize) -> Self	-	crates/pert-ui-runtime/src/inspection.rs:242
+pert_ui_runtime::InspectionQuery::parameters(self) -> Self	-	crates/pert-ui-runtime/src/inspection.rs:247
+pert_ui_runtime::InspectionQuery::select(self, selector: Selector) -> Self	-	crates/pert-ui-runtime/src/inspection.rs:226
+pert_ui_runtime::InspectionQuery::sources(self) -> Self	-	crates/pert-ui-runtime/src/inspection.rs:264
+pert_ui_runtime::InspectionQuery::validation(self) -> Self	-	crates/pert-ui-runtime/src/inspection.rs:269
+pert_ui_runtime::InspectionQuery::windows(self) -> Self	-	crates/pert-ui-runtime/src/inspection.rs:259
+pert_ui_runtime::IntegerInput::disabled(self) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2537
+pert_ui_runtime::IntegerInput::editable(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2537
+pert_ui_runtime::IntegerInput::enabled(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2537
+pert_ui_runtime::IntegerInput::format(self, format: NumberFormat<i64>) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2537
+pert_ui_runtime::IntegerInput::on_rejection(self, report: impl FnMut(&mut EventContext, Option<&InputRejection>) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2537
+pert_ui_runtime::IntegerInput::on_save(self, saved: impl FnMut(&mut EventContext, i64) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2537
+pert_ui_runtime::IntegerInput::read_only(self) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2537
+pert_ui_runtime::IntegerInput::session(self, session: &crate::EditorSession) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2541
+pert_ui_runtime::IntegerInput::stepper(self, enabled: bool) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2537
+pert_ui_runtime::IntegerInput::style(self, style: TextStyle) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2537
+pert_ui_runtime::IntegerInput::unit(self, unit: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2537
+pert_ui_runtime::KeyChord::physical_fallback(self, key: KeyCode) -> Self	-	crates/pert-ui-runtime/src/runtime/commands.rs:108
+pert_ui_runtime::KeyChord::shifted(self) -> Self	-	crates/pert-ui-runtime/src/runtime/commands.rs:60
+pert_ui_runtime::Knob::arc_origin(self, origin: ArcOrigin) -> Self	-	crates/pert-ui-runtime/src/numeric_controls.rs:1610
+pert_ui_runtime::Knob::disabled(self) -> Self	-	crates/pert-ui-runtime/src/numeric_controls.rs:1598
+pert_ui_runtime::Knob::enabled(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/numeric_controls.rs:1598
+pert_ui_runtime::Knob::format(self, format: NumberFormat<f32>) -> Self	-	crates/pert-ui-runtime/src/numeric_controls.rs:1605
+pert_ui_runtime::Knob::show_value(self, visible: bool) -> Self	-	crates/pert-ui-runtime/src/numeric_controls.rs:1605
+pert_ui_runtime::Knob::unit(self, unit: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/numeric_controls.rs:1598
+pert_ui_runtime::Label::color(self, color: Color) -> Self	-	crates/pert-ui-runtime/src/controls.rs:203
+pert_ui_runtime::Label::color_role(self, role: ColorRole) -> Self	-	crates/pert-ui-runtime/src/controls.rs:208
+pert_ui_runtime::Label::leading_icon(self, icon: impl Into<IconSource>) -> Self	-	crates/pert-ui-runtime/src/controls.rs:192
+pert_ui_runtime::Label::overflow(self, overflow: TextOverflow) -> Self	-	crates/pert-ui-runtime/src/controls.rs:155
+pert_ui_runtime::Label::style(self, style: TextStyle) -> Self	-	crates/pert-ui-runtime/src/controls.rs:214
+pert_ui_runtime::Label::trailing_icon(self, icon: impl Into<IconSource>) -> Self	-	crates/pert-ui-runtime/src/controls.rs:198
+pert_ui_runtime::Label::turned(self, turn: QuarterTurn) -> Self	-	crates/pert-ui-runtime/src/controls.rs:186
+pert_ui_runtime::LevelMeter::axis(self, axis: MeterAxis) -> Self	-	crates/pert-ui-runtime/src/live_widgets.rs:163
+pert_ui_runtime::LevelMeter::color(self, role: ColorRole) -> Self	-	crates/pert-ui-runtime/src/live_widgets.rs:168
+pert_ui_runtime::LevelMeter::peak_hold(self, hold: Duration) -> Self	-	crates/pert-ui-runtime/src/live_widgets.rs:180
+pert_ui_runtime::LevelMeter::running_signal(self, running: impl Into<ReadSignal<bool>>) -> Self	-	crates/pert-ui-runtime/src/live_widgets.rs:174
+pert_ui_runtime::Link::disabled(self) -> Self	-	crates/pert-ui-runtime/src/link.rs:138
+pert_ui_runtime::Link::enabled(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/link.rs:146
+pert_ui_runtime::Link::leading_icon(self, icon: impl Into<IconSource>) -> Self	-	crates/pert-ui-runtime/src/link.rs:111
+pert_ui_runtime::Link::style(self, style: TextStyle) -> Self	-	crates/pert-ui-runtime/src/link.rs:132
+pert_ui_runtime::Link::trailing_icon(self, icon: impl Into<IconSource>) -> Self	-	crates/pert-ui-runtime/src/link.rs:118
+pert_ui_runtime::Link::underline(self, underline: LinkUnderline) -> Self	-	crates/pert-ui-runtime/src/link.rs:126
+pert_ui_runtime::ListFilter::selection(self, selection: ListSelection) -> Self	-	crates/pert-ui-runtime/src/collection_filter.rs:292
+pert_ui_runtime::MenuBar::content(self, content: Element) -> Self	-	crates/pert-ui-runtime/src/menu_bar.rs:737
+pert_ui_runtime::MenuBar::leading(self, content: Element) -> Self	-	crates/pert-ui-runtime/src/menu_bar.rs:767
+pert_ui_runtime::MenuBar::trailing(self, content: Element) -> Self	-	crates/pert-ui-runtime/src/menu_bar.rs:778
+pert_ui_runtime::MenuItem::checked_signal(self, checked: impl Into<ReadSignal<bool>>) -> Self	-	crates/pert-ui-runtime/src/menu.rs:507
+pert_ui_runtime::MenuItem::disabled(self) -> Self	-	crates/pert-ui-runtime/src/menu.rs:557
+pert_ui_runtime::MenuItem::enabled(self, enabled: impl Into<crate::Permission>) -> Self	-	crates/pert-ui-runtime/src/menu.rs:565
+pert_ui_runtime::MenuItem::label(self, label: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/menu.rs:483
+pert_ui_runtime::MenuItem::leading_icon(self, icon: impl Into<IconSource>) -> Self	-	crates/pert-ui-runtime/src/menu.rs:491
+pert_ui_runtime::MenuItem::on_change(self, handler: impl FnMut(&mut EventContext, bool) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/menu.rs:470
+pert_ui_runtime::MenuItem::selected_signal(self, selected: impl Into<ReadSignal<bool>>) -> Self	-	crates/pert-ui-runtime/src/menu.rs:546
+pert_ui_runtime::MenuItem::shortcut(self, chord: KeyChord) -> Self	-	crates/pert-ui-runtime/src/menu.rs:499
+pert_ui_runtime::MultiSelect::commit(self, commit: MultiSelectCommit) -> Self	-	crates/pert-ui-runtime/src/multi_select.rs:1310
+pert_ui_runtime::MultiSelect::disabled(self) -> Self	-	crates/pert-ui-runtime/src/multi_select.rs:1392
+pert_ui_runtime::MultiSelect::enabled(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/multi_select.rs:1405
+pert_ui_runtime::MultiSelect::filter(self, filter: impl Fn(&str, &Choice<T>) -> bool + 'static) -> Self	-	crates/pert-ui-runtime/src/multi_select.rs:1382
+pert_ui_runtime::MultiSelect::on_change(self, handler: impl FnMut(&mut EventContext, &[T]) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/multi_select.rs:1342
+pert_ui_runtime::MultiSelect::placeholder(self, placeholder: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/multi_select.rs:1359
+pert_ui_runtime::MultiSelect::search_placeholder(self, placeholder: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/multi_select.rs:1372
+pert_ui_runtime::NativeWindowOptions::close_policy(self, policy: DetachedClosePolicy) -> Self	-	crates/pert-ui-runtime/src/runtime/native_windows.rs:209
+pert_ui_runtime::NumberFormat::edit_text(self, edit: impl Fn(T) -> String + 'static) -> Self	-	crates/pert-ui-runtime/src/number_format.rs:100
+pert_ui_runtime::NumberFormat::edit_unit(self, unit: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/number_format.rs:128
+pert_ui_runtime::NumberFormat::unit(self, unit: impl Fn(T) -> String + 'static) -> Self	-	crates/pert-ui-runtime/src/number_format.rs:121
+pert_ui_runtime::Palette::with_color(self, role: ColorRole, color: Color) -> Self	-	crates/pert-ui-runtime/src/runtime/theme.rs:875
+pert_ui_runtime::Palette::with_default_color(self, role: ColorRole) -> Self	-	crates/pert-ui-runtime/src/runtime/theme.rs:882
+pert_ui_runtime::PathBuilder::arc(self, center: Point, radius: Length, start_degrees: f32, sweep_degrees: f32) -> Self	-	crates/pert-ui-runtime/src/geometry.rs:458
+pert_ui_runtime::PathBuilder::close(self) -> Self	-	crates/pert-ui-runtime/src/geometry.rs:524
+pert_ui_runtime::PathBuilder::cubic_to(self, first: Point, second: Point, point: Point) -> Self	-	crates/pert-ui-runtime/src/geometry.rs:442
+pert_ui_runtime::PathBuilder::line_to(self, point: Point) -> Self	-	crates/pert-ui-runtime/src/geometry.rs:430
+pert_ui_runtime::PathBuilder::move_to(self, point: Point) -> Self	-	crates/pert-ui-runtime/src/geometry.rs:422
+pert_ui_runtime::PathBuilder::quad_to(self, control: Point, point: Point) -> Self	-	crates/pert-ui-runtime/src/geometry.rs:436
+pert_ui_runtime::Permission::and(self, other: impl Into<Self>) -> Self	#[must_use]	crates/pert-ui-runtime/src/permission.rs:79
+pert_ui_runtime::PickItem::detail(self, detail: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/quick_pick.rs:63
+pert_ui_runtime::PickItem::disabled(self, disabled: bool) -> Self	-	crates/pert-ui-runtime/src/quick_pick.rs:78
+pert_ui_runtime::PickItem::kind(self, kind: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/quick_pick.rs:68
+pert_ui_runtime::PickItem::shortcut(self, shortcut: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/quick_pick.rs:73
+pert_ui_runtime::PointerEvent::outside(self) -> Self	#[must_use]	crates/pert-ui-runtime/src/pointer.rs:192
+pert_ui_runtime::Popover::on_dismiss(self, dismiss: impl FnMut(&mut EventContext, SurfaceDismissal) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/popover.rs:286
+pert_ui_runtime::Property::form(self, handle: &FieldHandle) -> Self	-	crates/pert-ui-runtime/src/property_grid.rs:81
+pert_ui_runtime::Property::help(self, help: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/property_grid.rs:60
+pert_ui_runtime::Property::required(self, required: bool) -> Self	-	crates/pert-ui-runtime/src/property_grid.rs:75
+pert_ui_runtime::Property::status(self, status: impl Into<ReadSignal<FieldStatus>>) -> Self	-	crates/pert-ui-runtime/src/property_grid.rs:65
+pert_ui_runtime::PropertyGrid::label_overflow(self, overflow: TextOverflow) -> Self	-	crates/pert-ui-runtime/src/property_grid.rs:371
+pert_ui_runtime::PropertyGrid::label_width(self, width: Length) -> Self	-	crates/pert-ui-runtime/src/property_grid.rs:291
+pert_ui_runtime::PropertyGrid::on_resize(self, on_resize: impl FnMut(&mut EventContext, Option<Length>, ChangeOrigin) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/property_grid.rs:315
+pert_ui_runtime::PropertyGrid::persist(self, persist: bool) -> Self	-	crates/pert-ui-runtime/src/property_grid.rs:377
+pert_ui_runtime::PropertyGrid::resizable(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/property_grid.rs:356
+pert_ui_runtime::PropertyGrid::shared_label_width(self, width: impl Into<Signal<Length>>) -> Self	-	crates/pert-ui-runtime/src/property_grid.rs:340
+pert_ui_runtime::QuickPick::empty_text(self, text: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/quick_pick.rs:946
+pert_ui_runtime::QuickPick::list_name(self, name: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/quick_pick.rs:963
+pert_ui_runtime::QuickPick::matcher(self, matcher: PickMatcher) -> Self	-	crates/pert-ui-runtime/src/quick_pick.rs:926
+pert_ui_runtime::QuickPick::name(self, name: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/quick_pick.rs:955
+pert_ui_runtime::QuickPick::nonmodal(self) -> Self	-	crates/pert-ui-runtime/src/quick_pick.rs:920
+pert_ui_runtime::QuickPick::placeholder(self, text: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/quick_pick.rs:938
+pert_ui_runtime::RadioGroup::disabled(self) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:790
+pert_ui_runtime::RadioGroup::enabled(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:799
+pert_ui_runtime::RadioGroup::on_change(self, handler: impl FnMut(&mut EventContext, &T) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:809
+pert_ui_runtime::Rect::intersection(self, other: Self) -> Self	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:153
+pert_ui_runtime::RegionLayout::bottom(self, content: Element) -> Self	-	crates/pert-ui-runtime/src/region_layout.rs:161
+pert_ui_runtime::RegionLayout::bottom_height(self, extent: Length) -> Self	-	crates/pert-ui-runtime/src/region_layout.rs:227
+pert_ui_runtime::RegionLayout::bottom_resizable(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/region_layout.rs:190
+pert_ui_runtime::RegionLayout::center(self, content: Element) -> Self	-	crates/pert-ui-runtime/src/region_layout.rs:176
+pert_ui_runtime::RegionLayout::fixed(self) -> Self	-	crates/pert-ui-runtime/src/region_layout.rs:151
+pert_ui_runtime::RegionLayout::left(self, content: Element) -> Self	-	crates/pert-ui-runtime/src/region_layout.rs:166
+pert_ui_runtime::RegionLayout::left_resizable(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/region_layout.rs:194
+pert_ui_runtime::RegionLayout::left_width(self, extent: Length) -> Self	-	crates/pert-ui-runtime/src/region_layout.rs:232
+pert_ui_runtime::RegionLayout::on_resize(self, on_resize: impl FnMut(&mut EventContext, RegionEdge, SplitSizing, ChangeOrigin) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/region_layout.rs:256
+pert_ui_runtime::RegionLayout::resizable(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/region_layout.rs:209
+pert_ui_runtime::RegionLayout::right(self, content: Element) -> Self	-	crates/pert-ui-runtime/src/region_layout.rs:171
+pert_ui_runtime::RegionLayout::right_resizable(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/region_layout.rs:198
+pert_ui_runtime::RegionLayout::right_width(self, extent: Length) -> Self	-	crates/pert-ui-runtime/src/region_layout.rs:237
+pert_ui_runtime::RegionLayout::top(self, content: Element) -> Self	-	crates/pert-ui-runtime/src/region_layout.rs:156
+pert_ui_runtime::RegionLayout::top_height(self, extent: Length) -> Self	-	crates/pert-ui-runtime/src/region_layout.rs:222
+pert_ui_runtime::RegionLayout::top_resizable(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/region_layout.rs:186
+pert_ui_runtime::RichText::gap(self) -> Self	-	crates/pert-ui-runtime/src/text/rich.rs:123
+pert_ui_runtime::RichText::icon(self, icon: impl Into<IconSource>) -> Self	-	crates/pert-ui-runtime/src/text/rich.rs:114
+pert_ui_runtime::RichText::leading_icon(self, icon: impl Into<IconSource>) -> Self	-	crates/pert-ui-runtime/src/text/rich.rs:128
+pert_ui_runtime::RichText::span(self, span: TextSpan) -> Self	-	crates/pert-ui-runtime/src/text/rich.rs:109
+pert_ui_runtime::RichText::text(self, text: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/text/rich.rs:103
+pert_ui_runtime::RichText::tinted_icon(self, icon: impl Into<IconSource>, color: TextColor) -> Self	-	crates/pert-ui-runtime/src/text/rich.rs:118
+pert_ui_runtime::RichText::trailing_icon(self, icon: impl Into<IconSource>) -> Self	-	crates/pert-ui-runtime/src/text/rich.rs:141
+pert_ui_runtime::Row::align(self, align: Align) -> Self	-	crates/pert-ui-runtime/src/containers.rs:925
+pert_ui_runtime::Row::gap(self, gap: impl Into<Spacing>) -> Self	-	crates/pert-ui-runtime/src/containers.rs:893
+pert_ui_runtime::Row::justify(self, justify: Justify) -> Self	-	crates/pert-ui-runtime/src/containers.rs:925
+pert_ui_runtime::ScrollArea::axes(self, axes: ScrollAxes) -> Self	-	crates/pert-ui-runtime/src/views.rs:427
+pert_ui_runtime::ScrollArea::on_scroll(self, on_scroll: impl FnMut(&mut EventContext, Point, ChangeOrigin) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/views.rs:410
+pert_ui_runtime::SearchField::debounce(self, delay: Duration) -> Self	-	crates/pert-ui-runtime/src/text_fields/search.rs:248
+pert_ui_runtime::SearchField::disabled(self) -> Self	-	crates/pert-ui-runtime/src/text_fields/search.rs:185
+pert_ui_runtime::SearchField::editable(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/text_fields/search.rs:179
+pert_ui_runtime::SearchField::enabled(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/text_fields/search.rs:199
+pert_ui_runtime::SearchField::on_key(self, report: impl FnMut(&mut EventContext, SearchKey) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields/search.rs:258
+pert_ui_runtime::SearchField::placeholder(self, text: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/text_fields/search.rs:229
+pert_ui_runtime::SearchField::read_only(self) -> Self	-	crates/pert-ui-runtime/src/text_fields/search.rs:164
+pert_ui_runtime::SearchField::style(self, style: TextStyle) -> Self	-	crates/pert-ui-runtime/src/text_fields/search.rs:157
+pert_ui_runtime::Section::leading_icon(self, icon: impl Into<IconSource>) -> Self	-	crates/pert-ui-runtime/src/collapsible.rs:842
+pert_ui_runtime::Section::rich_title(self, title: RichText) -> Self	-	crates/pert-ui-runtime/src/collapsible.rs:834
+pert_ui_runtime::SegmentedControl::disabled(self) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:1470
+pert_ui_runtime::SegmentedControl::enabled(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:1475
+pert_ui_runtime::SegmentedControl::on_change(self, handler: impl FnMut(&mut EventContext, &T) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:1490
+pert_ui_runtime::Select::disabled(self) -> Self	-	crates/pert-ui-runtime/src/select.rs:1564
+pert_ui_runtime::Select::enabled(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/select.rs:1573
+pert_ui_runtime::Select::on_change(self, handler: impl FnMut(&mut EventContext, &T) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/select.rs:1485
+pert_ui_runtime::Select::placeholder(self, placeholder: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/select.rs:1618
+pert_ui_runtime::Select::session(self, session: &crate::EditorSession) -> Self	-	crates/pert-ui-runtime/src/select.rs:1520
+pert_ui_runtime::SelectableText::style(self, style: TextStyle) -> Self	-	crates/pert-ui-runtime/src/selectable_text.rs:158
+pert_ui_runtime::SelectableText::wrap(self, wrap: bool) -> Self	-	crates/pert-ui-runtime/src/selectable_text.rs:165
+pert_ui_runtime::SemanticItem::action(self, action: SemanticAction) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:420
+pert_ui_runtime::SemanticItem::checked(self, checked: bool) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:407
+pert_ui_runtime::SemanticItem::disabled(self, disabled: bool) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:392
+pert_ui_runtime::SemanticItem::expanded(self, expanded: bool) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:401
+pert_ui_runtime::SemanticItem::selected(self, selected: bool) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:385
+pert_ui_runtime::SemanticItem::shortcut(self, shortcut: impl Into<String>) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:413
+pert_ui_runtime::Semantics::action(self, action: SemanticAction) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:556
+pert_ui_runtime::Semantics::actions(self, actions: impl IntoIterator<Item = SemanticAction>) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:566
+pert_ui_runtime::Semantics::description(self, description: impl Into<String>) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:539
+pert_ui_runtime::Semantics::disabled(self, disabled: bool) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:579
+pert_ui_runtime::Semantics::enabled_actions(self, actions: impl IntoIterator<Item = SemanticAction>) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:589
+pert_ui_runtime::Semantics::expanded(self, expanded: bool) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:610
+pert_ui_runtime::Semantics::invalid(self, invalid: bool) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:604
+pert_ui_runtime::Semantics::items(self, items: impl IntoIterator<Item = SemanticItem>) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:571
+pert_ui_runtime::Semantics::name(self, name: impl Into<String>) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:533
+pert_ui_runtime::Semantics::names_children(self) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:633
+pert_ui_runtime::Semantics::protected(self, protected: bool) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:624
+pert_ui_runtime::Semantics::read_only(self, read_only: bool) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:598
+pert_ui_runtime::Semantics::required(self, required: bool) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:616
+pert_ui_runtime::Semantics::role(self, role: SemanticRole) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:527
+pert_ui_runtime::Semantics::value(self, value: SemanticValue) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:546
+pert_ui_runtime::Slider::disabled(self) -> Self	-	crates/pert-ui-runtime/src/numeric_controls.rs:1586
+pert_ui_runtime::Slider::enabled(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/numeric_controls.rs:1586
+pert_ui_runtime::Slider::format(self, format: NumberFormat<f32>) -> Self	-	crates/pert-ui-runtime/src/numeric_controls.rs:1604
+pert_ui_runtime::Slider::orientation(self, orientation: Orientation) -> Self	-	crates/pert-ui-runtime/src/numeric_controls.rs:1624
+pert_ui_runtime::Slider::show_value(self, visible: bool) -> Self	-	crates/pert-ui-runtime/src/numeric_controls.rs:1604
+pert_ui_runtime::Slider::unit(self, unit: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/numeric_controls.rs:1586
+pert_ui_runtime::SplitPane::locked(self) -> Self	-	crates/pert-ui-runtime/src/split.rs:363
+pert_ui_runtime::SplitPane::on_resize(self, on_resize: impl FnMut(&mut EventContext, SplitSizing, ChangeOrigin) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/split.rs:322
+pert_ui_runtime::SplitPane::resizable(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/split.rs:354
+pert_ui_runtime::SplitPane::sizing(self, sizing: SplitSizing) -> Self	-	crates/pert-ui-runtime/src/split.rs:259
+pert_ui_runtime::StrokeStyle::with_cap(self, cap: LineCap) -> Self	-	crates/pert-ui-runtime/src/geometry.rs:112
+pert_ui_runtime::StrokeStyle::with_join(self, join: LineJoin) -> Self	-	crates/pert-ui-runtime/src/geometry.rs:117
+pert_ui_runtime::Tab::detachable(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/tabs.rs:80
+pert_ui_runtime::Tab::fixed(self) -> Self	-	crates/pert-ui-runtime/src/tabs.rs:55
+pert_ui_runtime::Tab::leading_icon(self, icon: impl Into<IconSource>) -> Self	-	crates/pert-ui-runtime/src/tabs.rs:113
+pert_ui_runtime::Tab::rich_title(self, title: RichText) -> Self	-	crates/pert-ui-runtime/src/tabs.rs:94
+pert_ui_runtime::Table::cell_editor(self, editor: impl FnMut(&mut CellEdit<'_>) -> Result<Element, RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/table.rs:1582
+pert_ui_runtime::Table::cell_tab_stops(self, stops: bool) -> Self	-	crates/pert-ui-runtime/src/table.rs:1596
+pert_ui_runtime::Table::on_activate(self, activate: impl FnMut(&mut EventContext, &str, Option<&str>) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/table.rs:1540
+pert_ui_runtime::Table::on_selection_change(self, on_change: impl FnMut(&mut EventContext, &crate::ListSelectionChange) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/table.rs:1556
+pert_ui_runtime::Table::on_sort(self, sort: impl FnMut(&mut EventContext, &TableSort) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/table.rs:1529
+pert_ui_runtime::Table::reorder_permission(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/table.rs:1432
+pert_ui_runtime::Table::resize_permission(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/table.rs:1421
+pert_ui_runtime::TableColumn::editable(self, editable: bool) -> Self	-	crates/pert-ui-runtime/src/table.rs:139
+pert_ui_runtime::TableColumn::movable(self, movable: bool) -> Self	-	crates/pert-ui-runtime/src/table.rs:132
+pert_ui_runtime::TableColumn::resizable(self, resizable: bool) -> Self	-	crates/pert-ui-runtime/src/table.rs:115
+pert_ui_runtime::TableColumn::sortable(self, sortable: bool) -> Self	-	crates/pert-ui-runtime/src/table.rs:121
+pert_ui_runtime::TableColumn::width(self, width: Length) -> Self	-	crates/pert-ui-runtime/src/table.rs:96
+pert_ui_runtime::Tabs::detachable(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/tabs.rs:455
+pert_ui_runtime::Tabs::on_select(self, on_select: impl FnMut(&mut EventContext, &crate::SelectionChange) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/tabs.rs:607
+pert_ui_runtime::Tabs::reorderable(self, on_reorder: impl FnMut(&mut EventContext, &ListDrop<'_>) -> Result<bool, RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/tabs.rs:535
+pert_ui_runtime::Tabs::selected(self, key: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/tabs.rs:415
+pert_ui_runtime::TextArea::counter(self, shown: bool) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:769
+pert_ui_runtime::TextArea::disabled(self) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:769
+pert_ui_runtime::TextArea::editable(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:769
+pert_ui_runtime::TextArea::enabled(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:769
+pert_ui_runtime::TextArea::max_length(self, count: Option<usize>) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:769
+pert_ui_runtime::TextArea::min_length(self, count: Option<usize>) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:769
+pert_ui_runtime::TextArea::modified_indicator(self, shown: bool) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:769
+pert_ui_runtime::TextArea::normalize(self, normalize: impl Fn(String) -> Result<String, InputRejection> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:769
+pert_ui_runtime::TextArea::on_binding_refusal(self, refusal: impl FnMut(&mut EventContext, Option<&TextEditError>) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:769
+pert_ui_runtime::TextArea::on_modified(self, modified: impl FnMut(&mut EventContext, bool) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:769
+pert_ui_runtime::TextArea::on_rejection(self, report: impl FnMut(&mut EventContext, Option<&InputRejection>) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:769
+pert_ui_runtime::TextArea::on_save(self, saved: impl FnMut(&mut EventContext, &str) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:769
+pert_ui_runtime::TextArea::placeholder(self, text: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:769
+pert_ui_runtime::TextArea::read_only(self) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:769
+pert_ui_runtime::TextArea::required(self, required: bool) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:769
+pert_ui_runtime::TextArea::style(self, style: TextStyle) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:769
+pert_ui_runtime::TextField::clearable(self, clearable: bool) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:884
+pert_ui_runtime::TextField::concealed(self, concealed: bool) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:845
+pert_ui_runtime::TextField::counter(self, shown: bool) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:768
+pert_ui_runtime::TextField::disabled(self) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:768
+pert_ui_runtime::TextField::editable(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:768
+pert_ui_runtime::TextField::enabled(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:768
+pert_ui_runtime::TextField::leading_icon(self, icon: impl Into<IconSource>) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:892
+pert_ui_runtime::TextField::max_length(self, count: Option<usize>) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:768
+pert_ui_runtime::TextField::min_length(self, count: Option<usize>) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:768
+pert_ui_runtime::TextField::modified_indicator(self, shown: bool) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:768
+pert_ui_runtime::TextField::normalize(self, normalize: impl Fn(String) -> Result<String, InputRejection> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:768
+pert_ui_runtime::TextField::on_binding_refusal(self, refusal: impl FnMut(&mut EventContext, Option<&TextEditError>) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:768
+pert_ui_runtime::TextField::on_modified(self, modified: impl FnMut(&mut EventContext, bool) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:768
+pert_ui_runtime::TextField::on_rejection(self, report: impl FnMut(&mut EventContext, Option<&InputRejection>) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:768
+pert_ui_runtime::TextField::on_save(self, saved: impl FnMut(&mut EventContext, &str) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:768
+pert_ui_runtime::TextField::on_submit(self, submit: impl FnMut(&mut EventContext, &str) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:909
+pert_ui_runtime::TextField::placeholder(self, text: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:768
+pert_ui_runtime::TextField::read_only(self) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:768
+pert_ui_runtime::TextField::required(self, required: bool) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:768
+pert_ui_runtime::TextField::revealable(self, revealable: bool) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:858
+pert_ui_runtime::TextField::session(self, session: &EditorSession) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:805
+pert_ui_runtime::TextField::style(self, style: TextStyle) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:768
+pert_ui_runtime::TextField::suffix(self, text: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:901
+pert_ui_runtime::TextSelection::at_point(self, layout: &TextLayout, point: Point, extend: bool) -> Self	-	crates/pert-ui-runtime/src/text_selection.rs:87
+pert_ui_runtime::TextSelection::moved(self, layout: &TextLayout, movement: TextMovement, extend: bool) -> Self	-	crates/pert-ui-runtime/src/text_selection.rs:62
+pert_ui_runtime::TextSpan::color(self, color: Color) -> Self	-	crates/pert-ui-runtime/src/text/rich.rs:57
+pert_ui_runtime::TextSpan::color_role(self, role: ColorRole) -> Self	-	crates/pert-ui-runtime/src/text/rich.rs:62
+pert_ui_runtime::TextSpan::font(self, font: FontId) -> Self	-	crates/pert-ui-runtime/src/text/rich.rs:42
+pert_ui_runtime::TextSpan::font_role(self, role: FontRole) -> Self	-	crates/pert-ui-runtime/src/text/rich.rs:47
+pert_ui_runtime::TextSpan::size(self, size: Length) -> Self	-	crates/pert-ui-runtime/src/text/rich.rs:52
+pert_ui_runtime::Toast::action(self, label: impl Into<TextSource>, action: impl FnMut(&mut EventContext) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/notifications.rs:158
+pert_ui_runtime::ToastHost::dismiss_label(self, label: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/notifications.rs:441
+pert_ui_runtime::Toggle::disabled(self) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:652
+pert_ui_runtime::Toggle::enabled(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:652
+pert_ui_runtime::Toggle::label(self, label: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:652
+pert_ui_runtime::Toggle::leading_icon(self, icon: impl Into<IconSource>) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:652
+pert_ui_runtime::Toggle::on_change(self, handler: impl FnMut(&mut EventContext, bool) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:652
+pert_ui_runtime::Toggle::trailing_icon(self, icon: impl Into<IconSource>) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:652
+pert_ui_runtime::ToolGroup::collapse_first(self) -> Self	-	crates/pert-ui-runtime/src/toolbar.rs:116
+pert_ui_runtime::ToolGroup::essential(self) -> Self	-	crates/pert-ui-runtime/src/toolbar.rs:107
+pert_ui_runtime::ToolGroup::visible_signal(self, shown: impl Into<ReadSignal<bool>>) -> Self	-	crates/pert-ui-runtime/src/toolbar.rs:100
+pert_ui_runtime::ToolWindow::actions(self, actions: Element) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:457
+pert_ui_runtime::ToolWindow::detachable(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:387
+pert_ui_runtime::ToolWindow::draggable(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:412
+pert_ui_runtime::ToolWindow::edge(self, edge: ToolEdge) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:430
+pert_ui_runtime::ToolWindow::expanded(self, expanded: bool) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:443
+pert_ui_runtime::ToolWindow::extent(self, extent: Length) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:450
+pert_ui_runtime::ToolWindow::floatable(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:379
+pert_ui_runtime::ToolWindow::group(self, group: StripeGroup) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:436
+pert_ui_runtime::ToolWindow::icon(self, icon: impl Into<IconSource>) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:425
+pert_ui_runtime::ToolWindow::mode(self, mode: ToolWindowMode) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:371
+pert_ui_runtime::ToolWindow::movable(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:395
+pert_ui_runtime::ToolWindow::overlay(self, overlay: bool) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:364
+pert_ui_runtime::ToolWindow::overlayable(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:419
+pert_ui_runtime::ToolWindow::reorderable(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:403
+pert_ui_runtime::ToolWindow::resizable(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:464
+pert_ui_runtime::ToolWindow::toggles(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:473
+pert_ui_runtime::ToolWindowChange::with_geometry(self, extent: Option<f32>, floating: Option<Rect>) -> Self	#[must_use]	crates/pert-ui-runtime/src/tool_windows/mod.rs:288
+pert_ui_runtime::ToolWindowChange::with_kind(self, kind: ToolWindowChangeKind) -> Self	#[must_use]	crates/pert-ui-runtime/src/tool_windows/mod.rs:263
+pert_ui_runtime::ToolWindowChange::with_mode(self, mode: ToolWindowMode) -> Self	#[must_use]	crates/pert-ui-runtime/src/tool_windows/mod.rs:282
+pert_ui_runtime::ToolWindowChange::with_overlay(self, overlay: bool) -> Self	#[must_use]	crates/pert-ui-runtime/src/tool_windows/mod.rs:276
+pert_ui_runtime::ToolWindowChange::with_placement(self, edge: ToolEdge, group: StripeGroup) -> Self	#[must_use]	crates/pert-ui-runtime/src/tool_windows/mod.rs:269
+pert_ui_runtime::ToolWindowLayout::controller(self, controller: &ToolWindowController) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:953
+pert_ui_runtime::ToolWindowLayout::detachable(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:890
+pert_ui_runtime::ToolWindowLayout::draggable(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:856
+pert_ui_runtime::ToolWindowLayout::edge(self, edge: ToolEdge, mode: EdgeMode) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:783
+pert_ui_runtime::ToolWindowLayout::floatable(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:879
+pert_ui_runtime::ToolWindowLayout::locked(self) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:902
+pert_ui_runtime::ToolWindowLayout::movable(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:835
+pert_ui_runtime::ToolWindowLayout::names(self, names: impl Into<Signal<bool>>) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:924
+pert_ui_runtime::ToolWindowLayout::on_change(self, on_change: impl FnMut(&mut EventContext, &ToolWindowChange) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:943
+pert_ui_runtime::ToolWindowLayout::overlayable(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:867
+pert_ui_runtime::ToolWindowLayout::persist(self, persist: bool) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:931
+pert_ui_runtime::ToolWindowLayout::reorderable(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:846
+pert_ui_runtime::ToolWindowLayout::resizable(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:813
+pert_ui_runtime::ToolWindowLayout::show_names(self, names: bool) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:916
+pert_ui_runtime::ToolWindowLayout::toggles(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:824
+pert_ui_runtime::ToolWindowLayout::window(self, window: ToolWindow) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:788
+pert_ui_runtime::ToolWindowLayout::windows(self, windows: impl IntoIterator<Item = ToolWindow>) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:807
+pert_ui_runtime::Toolbar::attached_below(self) -> Self	-	crates/pert-ui-runtime/src/toolbar.rs:479
+pert_ui_runtime::Toolbar::more_label(self, label: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/toolbar.rs:470
+pert_ui_runtime::Toolbar::overflow(self, policy: ToolbarOverflow) -> Self	-	crates/pert-ui-runtime/src/toolbar.rs:446
+pert_ui_runtime::Trace::color(self, role: ColorRole) -> Self	-	crates/pert-ui-runtime/src/live_widgets.rs:504
+pert_ui_runtime::Trace::running_signal(self, running: impl Into<ReadSignal<bool>>) -> Self	-	crates/pert-ui-runtime/src/live_widgets.rs:510
+pert_ui_runtime::Tree::drag_operations(self, operations: DropOperations) -> Self	-	crates/pert-ui-runtime/src/tree.rs:1042
+pert_ui_runtime::Tree::on_activate(self, activate: impl FnMut(&mut EventContext, &str) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/tree.rs:1066
+pert_ui_runtime::Tree::on_selection_change(self, on_change: impl FnMut(&mut EventContext, &crate::ListSelectionChange) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/tree.rs:1054
+pert_ui_runtime::Tree::reorder_permission(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/tree.rs:1036
+pert_ui_runtime::Tree::reorderable(self, on_drop: impl FnMut(&mut EventContext, &ListDrop<'_>) -> Result<bool, RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/tree.rs:1016
+pert_ui_runtime::UiZoom::decreased(self) -> Self	#[must_use]	crates/pert-ui-runtime/src/runtime/settings.rs:66
+pert_ui_runtime::UiZoom::increased(self) -> Self	#[must_use]	crates/pert-ui-runtime/src/runtime/settings.rs:56
+pert_ui_runtime::View::fixed(self) -> Self	-	crates/pert-ui-runtime/src/views.rs:35
+pert_ui_runtime::View::visible_signal(self, shown: impl Into<ReadSignal<bool>>) -> Self	-	crates/pert-ui-runtime/src/views.rs:59
+pert_ui_runtime::VirtualAxis::with_count(self, count: usize) -> Self	-	crates/pert-ui-runtime/src/virtual_axis.rs:170
+pert_ui_runtime::VirtualList::active_outline(self, outline: bool) -> Self	-	crates/pert-ui-runtime/src/virtual_list.rs:770
+pert_ui_runtime::VirtualList::controller(self, controller: ListController) -> Self	-	crates/pert-ui-runtime/src/virtual_list.rs:745
+pert_ui_runtime::VirtualList::drag_operations(self, operations: DropOperations) -> Self	-	crates/pert-ui-runtime/src/virtual_list.rs:993
+pert_ui_runtime::VirtualList::item_tab_stops(self, stops: bool) -> Self	-	crates/pert-ui-runtime/src/virtual_list.rs:783
+pert_ui_runtime::VirtualList::keep_mounted(self, key: ReadSignal<Option<String>>) -> Self	-	crates/pert-ui-runtime/src/virtual_list.rs:797
+pert_ui_runtime::VirtualList::on_activate(self, activate: impl FnMut(&mut EventContext, &str) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/virtual_list.rs:938
+pert_ui_runtime::VirtualList::on_selection_change(self, on_change: impl FnMut(&mut EventContext, &crate::ListSelectionChange) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/virtual_list.rs:872
+pert_ui_runtime::VirtualList::on_text_input(self, handler: impl FnMut(&mut EventContext, &str) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/virtual_list.rs:809
+pert_ui_runtime::VirtualList::orientation(self, orientation: Orientation) -> Self	-	crates/pert-ui-runtime/src/virtual_list.rs:734
+pert_ui_runtime::VirtualList::overscan(self, lines: usize) -> Self	-	crates/pert-ui-runtime/src/virtual_list.rs:716
+pert_ui_runtime::VirtualList::placement(self, rule: impl Fn(&[String], &ListDropPoint) -> Option<ListDropPlacement> + 'static) -> Self	-	crates/pert-ui-runtime/src/virtual_list.rs:1046
+pert_ui_runtime::VirtualList::reorder_permission(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/virtual_list.rs:986
+pert_ui_runtime::VirtualList::reorderable(self, on_drop: impl FnMut(&mut EventContext, &ListDrop<'_>) -> Result<bool, RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/virtual_list.rs:970
+pert_ui_runtime::VirtualList::selection(self, selection: ListSelection) -> Self	-	crates/pert-ui-runtime/src/virtual_list.rs:762
+pert_ui_runtime::WorkspaceSettings::with_density(self, density: Option<crate::Density>) -> Self	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:454
+pert_ui_runtime::WorkspaceSettings::with_theme_mode(self, mode: Option<crate::ThemeMode>) -> Self	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:448
+pert_ui_runtime::WorkspaceSettings::with_zoom(self, zoom: Option<crate::UiZoom>) -> Self	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:442
+pert_ui_runtime::Wrap::gap(self, gap: impl Into<Spacing>) -> Self	-	crates/pert-ui-runtime/src/containers.rs:936
+pert_ui_runtime::ZoomView::controller(self, controller: &ZoomController) -> Self	-	crates/pert-ui-runtime/src/zoom_view.rs:374
+pert_ui_runtime::ZoomView::grid(self, spacing: Length) -> Self	-	crates/pert-ui-runtime/src/zoom_view.rs:368
+pert_ui_runtime::ZoomView::scale_limits(self, limits: ScaleLimits) -> Self	-	crates/pert-ui-runtime/src/zoom_view.rs:355
+pert_ui_runtime::ZoomView::wheel(self, gesture: WheelGesture) -> Self	-	crates/pert-ui-runtime/src/zoom_view.rs:360
+
+## pert-ui
+pert_ui::App::on_close(self, handler: impl FnMut(&mut Runtime, &crate::NativeWindowId) -> Result<NativeCloseAction, RuntimeError> + 'static) -> Self	-	crates/pert-ui/src/app.rs:465	[configs: cpu, default, image-formats, images, no-default-desktop-cpu, serde, svg]
+pert_ui::App::on_error(self, handler: impl FnMut(&mut Runtime, &AppError) -> ErrorAction + 'static) -> Self	-	crates/pert-ui/src/app.rs:452	[configs: cpu, default, image-formats, images, no-default-desktop-cpu, serde, svg]
+pert_ui::App::on_window_error(self, handler: impl FnMut(&mut Runtime, &crate::WindowError) + 'static) -> Self	-	crates/pert-ui/src/app.rs:480	[configs: cpu, default, image-formats, images, no-default-desktop-cpu, serde, svg]
+pert_ui::App::resizable(self, resizable: bool) -> Self	-	crates/pert-ui/src/app.rs:375	[configs: cpu, default, image-formats, images, no-default-desktop-cpu, serde, svg]
+pert_ui::App::software_rendering(self) -> Self	-	crates/pert-ui/src/app.rs:412	[configs: cpu, no-default-desktop-cpu]
+pert_ui::Svg::description(self, description: impl Into<String>) -> Self	-	crates/pert-ui/src/svg/component.rs:110	[configs: no-default-svg, svg]
+pert_ui::Svg::size(self, size: Size) -> Self	-	crates/pert-ui/src/svg/component.rs:104	[configs: no-default-svg, svg]

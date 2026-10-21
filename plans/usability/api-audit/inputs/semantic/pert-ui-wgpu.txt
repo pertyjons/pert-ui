@@ -1,0 +1,15 @@
+# pert-ui-wgpu: every public type with its inherent and trait-declared methods.
+# Classify each type's role with a source reference, or write 'unresolved'.
+
+## pert-ui-wgpu
+pert_ui_wgpu::Frame	enum	role: 	crates/pert-ui-wgpu/src/lib.rs:92
+pert_ui_wgpu::Notice	enum	role: 	crates/pert-ui-wgpu/src/lib.rs:80
+pert_ui_wgpu::RenderError	enum	role: 	crates/pert-ui-wgpu/src/lib.rs:46
+pert_ui_wgpu::Renderer	struct	role: 	crates/pert-ui-wgpu/src/lib.rs:234
+    pert_ui_wgpu::Renderer::new(target: impl Into<wgpu::SurfaceTarget<'static>>, width: u32, height: u32, notify: impl Fn(Notice) + Send + Sync + 'static) -> Result<Self, RenderError>	-	crates/pert-ui-wgpu/src/lib.rs:391
+    pert_ui_wgpu::Renderer::extent(&self) -> Option<PhysicalExtent>	#[must_use]	crates/pert-ui-wgpu/src/lib.rs:468
+    pert_ui_wgpu::Renderer::resize(&mut self, width: u32, height: u32) -> Result<(), RenderError>	-	crates/pert-ui-wgpu/src/lib.rs:485
+    pert_ui_wgpu::Renderer::recreate(&mut self, target: impl Into<wgpu::SurfaceTarget<'static>>) -> Result<(), RenderError>	-	crates/pert-ui-wgpu/src/lib.rs:505
+    pert_ui_wgpu::Renderer::render(&mut self, scene: DisplayList, before_present: impl FnOnce()) -> Result<Frame, RenderError>	-	crates/pert-ui-wgpu/src/lib.rs:609
+    pert_ui_wgpu::Renderer::render_offscreen(&mut self, scene: DisplayList) -> Result<pert_ui_runtime::FrameImage, RenderError>	-	crates/pert-ui-wgpu/src/lib.rs:659
+    pert_ui_wgpu::Renderer::new_surface(&self, target: impl Into<wgpu::SurfaceTarget<'static>>, width: u32, height: u32) -> Result<Self, RenderError>	-	crates/pert-ui-wgpu/src/lib.rs:1271

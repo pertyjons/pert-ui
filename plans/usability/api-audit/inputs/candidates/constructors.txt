@@ -1,0 +1,319 @@
+# Associated functions without a receiver returning Self, Result<Self, _> or Option<Self>, grouped by name prefix.
+# A trailing [configs: ...] means the entry exists only in those configurations.
+
+## pert-ui-core
+[from_] returns Result<Self>	pert_ui_core::HostValue::from_canonical(value: Self::Canonical) -> Result<Self, Self::Error>	-	crates/pert-ui-core/src/erased.rs:424
+[from_] returns Result<Self>	pert_ui_core::ParameterValue::from_any(value: AnyValue) -> Result<Self, AnyValue>	-	crates/pert-ui-core/src/family.rs:61
+[new] returns Self	pert_ui_core::AnyParameterSnapshot::new<T: ParameterValue>(spec: ParameterSpec<T>, state: ParameterSnapshot<T>) -> Self	-	crates/pert-ui-core/src/erased.rs:217
+[new] returns Result<Self>	pert_ui_core::Capacity::new(items: usize) -> Result<Self, LiveError>	-	crates/pert-ui-core/src/live/mod.rs:194
+[new] returns Result<Self>	pert_ui_core::ChoiceId::new(id: impl Into<String>) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/choice.rs:40
+[new] returns Self	pert_ui_core::ChoiceOption::new(id: ChoiceId, label: impl Into<String>) -> Self	-	crates/pert-ui-core/src/choice.rs:148
+[new] returns Self	pert_ui_core::EditSequence::new(value: u64) -> Self	#[must_use]	crates/pert-ui-core/src/edit.rs:36
+[new] returns Self	pert_ui_core::EditSource::new(value: u64) -> Self	#[must_use]	crates/pert-ui-core/src/edit.rs:64
+[new] returns Result<Self>	pert_ui_core::ParameterId::new(session: u128, object: u128, key: impl Into<String>) -> Result<Self, ParameterIdError>	-	crates/pert-ui-core/src/parameter_id.rs:66
+[new] returns Result<Self>	pert_ui_core::ParameterSpec::new(name: impl Into<String>, minimum: f32, maximum: f32, default: f32) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:311
+[new] returns Self	pert_ui_core::ParameterState::new(id: ParameterId, spec: ParameterSpec<T>) -> Self	#[must_use]	crates/pert-ui-core/src/edit.rs:311
+[new] returns Result<Self>	pert_ui_core::PowerExponent::new(exponent: f32) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:76
+[new] returns Option<Self>	pert_ui_core::Sequence::new(number: u64) -> Option<Self>	#[must_use]	crates/pert-ui-core/src/live/mod.rs:97
+[new] returns Self	pert_ui_core::SeriesConfig::new(window: Capacity) -> Self	-	crates/pert-ui-core/src/live/mod.rs:251
+[new] returns Self	pert_ui_core::Timestamp::new(ticks: u64) -> Self	-	crates/pert-ui-core/src/live/mod.rs:124
+[new] returns Self	pert_ui_core::WakeFlag::new() -> Self	#[must_use]	crates/pert-ui-core/src/live/wake.rs:43
+[other] returns Result<Self>	pert_ui_core::ParameterSpec::boolean(name: impl Into<String>, default: bool) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:481
+[other] returns Result<Self>	pert_ui_core::ParameterSpec::choices(name: impl Into<String>, options: impl IntoIterator<Item = ChoiceOption>, default: ChoiceId) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:497
+[other] returns Result<Self>	pert_ui_core::ParameterSpec::stepped(name: impl Into<String>, minimum: i64, maximum: i64, default: i64) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:380
+[try_] returns Result<Self>	pert_ui_core::AnyParameterSnapshot::try_new<T: ParameterValue>(spec: ParameterSpec<T>, state: ParameterSnapshot<T>) -> Result<Self, crate::ParameterError>	-	crates/pert-ui-core/src/erased.rs:239
+
+## pert-ui-runtime
+[bound] returns Self	pert_ui_runtime::ColorSwatch::bound(color: impl Into<ReadSignal<Color>>) -> Self	-	crates/pert-ui-runtime/src/color_swatch.rs:126
+[bound] returns Self	pert_ui_runtime::Constraints::bounded(size: Size) -> Self	#[must_use]	crates/pert-ui-runtime/src/layout.rs:274
+[bound] returns Self	pert_ui_runtime::Image::bound(source: impl Into<ReadSignal<Option<RasterImage>>>) -> Self	-	crates/pert-ui-runtime/src/image.rs:93
+[bound] returns Self	pert_ui_runtime::InlineChoice::bound(value: impl Into<Signal<T>>, choices: impl Into<ReadSignal<Vec<Choice<T>>>>) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:1604
+[bound] returns Self	pert_ui_runtime::InlineSelect::bound(ui: &impl crate::StateOwner, value: impl Into<Signal<T>>, options: impl Into<ReadSignal<Vec<Choice<T>>>>) -> Self	-	crates/pert-ui-runtime/src/select.rs:1787
+[bound] returns Self	pert_ui_runtime::MultiSelect::bound(ui: &impl crate::StateOwner, value: impl Into<Signal<Vec<T>>>, options: impl Into<ReadSignal<Vec<Choice<T>>>>) -> Self	-	crates/pert-ui-runtime/src/multi_select.rs:1288
+[bound] returns Self	pert_ui_runtime::RadioGroup::bound(value: impl Into<Signal<T>>, choices: impl Into<ReadSignal<Vec<Choice<T>>>>) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:779
+[bound] returns Self	pert_ui_runtime::SegmentedControl::bound(value: impl Into<Signal<T>>, choices: impl Into<ReadSignal<Vec<Choice<T>>>>) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:1459
+[bound] returns Self	pert_ui_runtime::Select::bound(ui: &impl crate::StateOwner, value: impl Into<Signal<T>>, options: impl Into<ReadSignal<Vec<Choice<T>>>>) -> Self	-	crates/pert-ui-runtime/src/select.rs:1544
+[for_parameter] returns Self	pert_ui_runtime::Checkbox::for_parameter(parameter: Parameter<bool>) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:647
+[for_parameter] returns Self	pert_ui_runtime::DecimalInput::for_parameter(parameter: Parameter<f32>) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2526
+[for_parameter] returns Self	pert_ui_runtime::InlineChoice::for_parameter(parameter: Parameter<ChoiceId>) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:1639
+[for_parameter] returns Self	pert_ui_runtime::InlineDecimal::for_parameter(parameter: Parameter<f32>) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2533
+[for_parameter] returns Self	pert_ui_runtime::InlineInteger::for_parameter(parameter: Parameter<i64>) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2489
+[for_parameter] returns Self	pert_ui_runtime::InlineSelect::for_parameter(ui: &impl crate::StateOwner, parameter: Parameter<ChoiceId>) -> Self	-	crates/pert-ui-runtime/src/select.rs:1838
+[for_parameter] returns Self	pert_ui_runtime::InlineToggle::for_parameter(parameter: Parameter<bool>) -> Self	-	crates/pert-ui-runtime/src/inline_controls.rs:105
+[for_parameter] returns Self	pert_ui_runtime::IntegerInput::for_parameter(parameter: Parameter<i64>) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2482
+[for_parameter] returns Self	pert_ui_runtime::RadioGroup::for_parameter(parameter: Parameter<ChoiceId>) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:901
+[for_parameter] returns Self	pert_ui_runtime::SegmentedControl::for_parameter(parameter: Parameter<ChoiceId>) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:1502
+[for_parameter] returns Self	pert_ui_runtime::Select::for_parameter(ui: &impl crate::StateOwner, parameter: Parameter<ChoiceId>) -> Self	-	crates/pert-ui-runtime/src/select.rs:1640
+[for_parameter] returns Self	pert_ui_runtime::Toggle::for_parameter(parameter: Parameter<bool>) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:652
+[from_] returns Self	pert_ui_runtime::FontData::from_static(bytes: &'static [u8]) -> Self	-	crates/pert-ui-runtime/src/text/fonts.rs:51
+[from_] returns Result<Self>	pert_ui_runtime::Color::from_hex(text: &str) -> Result<Self, HexColorError>	-	crates/pert-ui-runtime/src/drawing.rs:435
+[from_] returns Result<Self>	pert_ui_runtime::Color::from_srgb(red: f32, green: f32, blue: f32, alpha: f32) -> Result<Self, DrawError>	-	crates/pert-ui-runtime/src/drawing.rs:327
+[from_] returns Self	pert_ui_runtime::Color::from_srgb8(red: u8, green: u8, blue: u8, alpha: u8) -> Self	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:358
+[from_] returns Self	pert_ui_runtime::FontData::from_owned(bytes: Vec<u8>) -> Self	-	crates/pert-ui-runtime/src/text/fonts.rs:64
+[from_] returns Self	pert_ui_runtime::Palette::from_seeds(mode: ThemeMode, primary: OpaqueColor, secondary: Option<OpaqueColor>) -> Self	-	crates/pert-ui-runtime/src/runtime/theme.rs:838
+[from_] returns Result<Self>	pert_ui_runtime::RasterImage::from_srgba8(width: u32, height: u32, pixels: Vec<u8>) -> Result<Self, DrawError>	-	crates/pert-ui-runtime/src/resources.rs:168
+[from_] returns Self	pert_ui_runtime::Rect::from_origin_size(origin: crate::Point, size: crate::Size) -> Self	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:101
+[from_] returns Self	pert_ui_runtime::Rect::from_size(size: crate::Size) -> Self	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:85
+[from_] returns Result<Self>	pert_ui_runtime::Viewport::from_physical(extent: PhysicalExtent, scale: f64) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/drawing.rs:932
+[new] returns Self	pert_ui_runtime::ApplicationError::new(error: impl Error + Send + Sync + 'static) -> Self	-	crates/pert-ui-runtime/src/error.rs:50
+[new] returns Result<Self>	pert_ui_runtime::Breadcrumb::new(segments: impl IntoIterator<Item = BreadcrumbSegment>, on_activate: impl FnMut(&mut EventContext, &str) -> Result<(), RuntimeError> + 'static) -> Result<Self, LayoutError>	-	crates/pert-ui-runtime/src/breadcrumb.rs:180
+[new] returns Self	pert_ui_runtime::Button::new(text: impl Into<TextSource>, action: impl FnMut(&mut EventContext) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/controls.rs:473
+[new] returns Self	pert_ui_runtime::CommandMatcher::new(score: impl Fn(&str, &CommandEntry) -> Option<u32> + 'static) -> Self	-	crates/pert-ui-runtime/src/command_palette.rs:46
+[new] returns Self	pert_ui_runtime::DragPayload::new<T: 'static>(value: T) -> Self	-	crates/pert-ui-runtime/src/drag.rs:45
+[new] returns Self	pert_ui_runtime::Dynamic::new(source: impl Into<ReadSignal<T>>, build: impl Fn(&DescribeContext<'_>, &T) -> Element + 'static) -> Self	-	crates/pert-ui-runtime/src/described.rs:182
+[new] returns Self	pert_ui_runtime::Each::new(items: impl Into<ReadSignal<Vec<T>>>, key: impl Fn(&T) -> String + 'static, build: impl Fn(&DescribeContext<'_>, &T) -> Element + 'static) -> Self	-	crates/pert-ui-runtime/src/described.rs:286
+[new] returns Self	pert_ui_runtime::Element::new<C: Component + 'static>(key: impl Into<String>, component: C) -> Self	-	crates/pert-ui-runtime/src/layout.rs:375
+[new] returns Result<Self>	pert_ui_runtime::FileBrowserController::new(ui: &impl crate::StateOwner, roots: impl IntoIterator<Item = impl Into<PathBuf>>, selection: ListSelection, request: impl FnMut(DirectoryRequest) + 'static) -> Result<Self, FileBrowserError>	-	crates/pert-ui-runtime/src/file_browser/controller.rs:509
+[new] returns Self	pert_ui_runtime::FilterMatcher::new(matches: impl Fn(&str, &str) -> bool + 'static) -> Self	-	crates/pert-ui-runtime/src/collection_filter.rs:44
+[new] returns Self	pert_ui_runtime::HistoryButtons::new(history: NavigationHistory<T>, content: Element, restore: impl FnMut(&mut EventContext, &HistoryEntry<T>) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/history_navigator.rs:502
+[new] returns Result<Self>	pert_ui_runtime::HistoryNavigator::new(ui: &impl crate::StateOwner, history: NavigationHistory<T>, restore: impl FnMut(&mut EventContext, &HistoryEntry<T>) -> Result<(), RuntimeError> + 'static) -> Result<Self, RuntimeError>	-	crates/pert-ui-runtime/src/history_navigator.rs:136
+[new] returns Self	pert_ui_runtime::Link::new(text: impl Into<TextSource>, action: impl FnMut(&mut EventContext) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/link.rs:94
+[new] returns Self	pert_ui_runtime::ListSource::new(items: impl ListItems + 'static) -> Self	-	crates/pert-ui-runtime/src/virtual_list.rs:83
+[new] returns Self	pert_ui_runtime::MenuItem::new(key: impl Into<String>, label: impl Into<TextSource>, action: impl FnMut(&mut EventContext) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/menu.rs:262
+[new] returns Self	pert_ui_runtime::NumberFormat::new(width_hint: impl Into<String>, display: impl Fn(T) -> String + 'static, parse: impl Fn(&str) -> Result<T, NumberInputError> + 'static) -> Self	-	crates/pert-ui-runtime/src/number_format.rs:83
+[new] returns Self	pert_ui_runtime::PickMatcher::new(score: impl Fn(&str, &PickItem) -> Option<u32> + 'static) -> Self	-	crates/pert-ui-runtime/src/quick_pick.rs:122
+[new] returns Self	pert_ui_runtime::PickPending::new<S: Clone + 'static>(binding: impl Into<ReadSignal<S>>, resolve: impl Fn(&S) -> Option<Result<(), String>> + 'static) -> Self	-	crates/pert-ui-runtime/src/quick_pick.rs:325
+[new] returns Self	pert_ui_runtime::QuickPick::new(controller: QuickPickController, anchor: Element, choose: impl FnMut(&mut EventContext, &PickItem) -> Result<PickChoice, RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/quick_pick.rs:888
+[new] returns Self	pert_ui_runtime::Show::new(when: impl Into<ReadSignal<bool>>, build: impl Fn(&DescribeContext<'_>) -> Element + 'static) -> Self	-	crates/pert-ui-runtime/src/described.rs:227
+[new] returns Self	pert_ui_runtime::TableSource::new(items: impl TableItems + 'static) -> Self	-	crates/pert-ui-runtime/src/table.rs:281
+[new] returns Self	pert_ui_runtime::TreeSource::new(items: impl TreeItems + 'static) -> Self	-	crates/pert-ui-runtime/src/tree.rs:84
+[new] returns Self	pert_ui_runtime::Accordion::new(sections: impl IntoIterator<Item = Section>) -> Self	-	crates/pert-ui-runtime/src/collapsible.rs:966
+[new] returns Self	pert_ui_runtime::AlertDialog::new(state: DialogController, anchor: Element, title: impl Into<TextSource>, message: impl Into<TextSource>, accept_label: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/dialog.rs:506
+[new] returns Result<Self>	pert_ui_runtime::AxisMapping::new(start: f64, pixels_per_unit: f64) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/axis_mapping.rs:53
+[new] returns Self	pert_ui_runtime::Banner::new(message: impl Into<TextSource>, actions: impl IntoIterator<Item = Element>) -> Self	-	crates/pert-ui-runtime/src/notifications.rs:35
+[new] returns Self	pert_ui_runtime::BreadcrumbSegment::new(key: impl Into<String>, label: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/breadcrumb.rs:51
+[new] returns Self	pert_ui_runtime::CaptureRequest::new(target: CaptureTarget) -> Self	-	crates/pert-ui-runtime/src/capture.rs:128
+[new] returns Self	pert_ui_runtime::Checkbox::new(label: impl Into<TextSource>, value: impl Into<Signal<bool>>) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:647
+[new] returns Self	pert_ui_runtime::Chip::new(text: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/chip.rs:93
+[new] returns Self	pert_ui_runtime::Choice::new(value: T, label: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:27
+[new] returns Self	pert_ui_runtime::ClickCounter::new() -> Self	#[must_use]	crates/pert-ui-runtime/src/click.rs:88
+[new] returns Self	pert_ui_runtime::Collapsible::new(title: impl Into<TextSource>, content: Element) -> Self	-	crates/pert-ui-runtime/src/collapsible.rs:487
+[new] returns Self	pert_ui_runtime::CollectionFilter::new(ui: &impl crate::StateOwner, target: impl Into<FilterTarget>, collection: Element) -> Self	-	crates/pert-ui-runtime/src/collection_filter.rs:529
+[new] returns Self	pert_ui_runtime::ColorPicker::new(color: impl Into<Signal<Color>>) -> Self	-	crates/pert-ui-runtime/src/color_picker.rs:397
+[new] returns Self	pert_ui_runtime::ColorSwatch::new(color: Color) -> Self	-	crates/pert-ui-runtime/src/color_swatch.rs:112
+[new] returns Self	pert_ui_runtime::Column::new(children: impl IntoIterator<Item = Element>) -> Self	-	crates/pert-ui-runtime/src/containers.rs:898
+[new] returns Self	pert_ui_runtime::CommandKeyInput::new(physical: KeyCode, action: KeyAction, base: CommandKey) -> Self	-	crates/pert-ui-runtime/src/runtime/commands.rs:298
+[new] returns Self	pert_ui_runtime::CommandPalette::new(controller: CommandPaletteController, anchor: Element) -> Self	-	crates/pert-ui-runtime/src/command_palette.rs:520
+[new] returns Self	pert_ui_runtime::CommandPaletteController::new(ui: &impl crate::StateOwner) -> Self	-	crates/pert-ui-runtime/src/command_palette.rs:229
+[new] returns Result<Self>	pert_ui_runtime::Constraints::new(width: Option<f32>, height: Option<f32>) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/layout.rs:262
+[new] returns Self	pert_ui_runtime::Container::new(child: Element) -> Self	-	crates/pert-ui-runtime/src/containers.rs:81
+[new] returns Result<Self>	pert_ui_runtime::ContentQuery::new(text: impl AsRef<str>) -> Result<Self, ContentSearchError>	-	crates/pert-ui-runtime/src/content_search.rs:45
+[new] returns Result<Self>	pert_ui_runtime::ContextMenu::new(ui: &impl crate::StateOwner, content: Element, items: Vec<MenuItem>) -> Result<Self, ChoiceError>	-	crates/pert-ui-runtime/src/menu.rs:1398
+[new] returns Self	pert_ui_runtime::DecimalInput::new(value: impl Into<Signal<f64>>) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2542
+[new] returns Self	pert_ui_runtime::Dialog::new(state: DialogController, anchor: Element, content: Element) -> Self	-	crates/pert-ui-runtime/src/dialog.rs:195
+[new] returns Self	pert_ui_runtime::DialogController::new(ui: &impl crate::StateOwner) -> Self	-	crates/pert-ui-runtime/src/dialog.rs:71
+[new] returns Self	pert_ui_runtime::DirectoryEntry::new(path: impl Into<PathBuf>, kind: EntryKind) -> Self	-	crates/pert-ui-runtime/src/file_browser.rs:128
+[new] returns Self	pert_ui_runtime::Divider::new() -> Self	-	crates/pert-ui-runtime/src/views.rs:919
+[new] returns Self	pert_ui_runtime::DraftEditor::new(controller: DraftEditorController<P>) -> Self	#[must_use]	crates/pert-ui-runtime/src/text_fields/draft.rs:604
+[new] returns Self	pert_ui_runtime::DraftEditorController::new() -> Self	#[must_use]	crates/pert-ui-runtime/src/text_fields/draft.rs:181
+[new] returns Self	pert_ui_runtime::EditorSession::new(notifier: Notifier) -> Self	#[must_use]	crates/pert-ui-runtime/src/editor_session.rs:159
+[new] returns Self	pert_ui_runtime::Field::new(control: Element) -> Self	-	crates/pert-ui-runtime/src/field_status.rs:456
+[new] returns Result<Self>	pert_ui_runtime::FileBrowser::new(controller: &FileBrowserController, row_height: f32) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/file_browser/view.rs:87
+[new] returns Self	pert_ui_runtime::FloatingWindow::new(ui: &impl crate::StateOwner, key: impl Into<String>, title: impl Into<TextSource>, content: Element) -> Self	-	crates/pert-ui-runtime/src/windows.rs:231
+[new] returns Self	pert_ui_runtime::Form::new(children: impl IntoIterator<Item = Element>) -> Self	-	crates/pert-ui-runtime/src/form.rs:64
+[new] returns Self	pert_ui_runtime::FormStatus::new(ui: &impl crate::StateOwner) -> Self	-	crates/pert-ui-runtime/src/field_status.rs:225
+[new] returns Result<Self>	pert_ui_runtime::FrameImage::new(width: u32, height: u32, rgba: Vec<u8>) -> Result<Self, CaptureError>	-	crates/pert-ui-runtime/src/capture.rs:362
+[new] returns Result<Self>	pert_ui_runtime::Grid::new(tracks: impl IntoIterator<Item = Track>, children: impl IntoIterator<Item = Element>) -> Result<Self, LayoutError>	-	crates/pert-ui-runtime/src/containers.rs:1037
+[new] returns Self	pert_ui_runtime::Group::new(content: Element) -> Self	-	crates/pert-ui-runtime/src/views.rs:145
+[new] returns Self	pert_ui_runtime::Image::new(image: RasterImage) -> Self	-	crates/pert-ui-runtime/src/image.rs:86
+[new] returns Result<Self>	pert_ui_runtime::InlineChoice::new(value: impl Into<Signal<T>>, choices: impl IntoIterator<Item = Choice<T>>) -> Result<Self, ChoiceError>	-	crates/pert-ui-runtime/src/choice_controls.rs:1592
+[new] returns Self	pert_ui_runtime::InlineDecimal::new(value: impl Into<Signal<f64>>) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2544
+[new] returns Self	pert_ui_runtime::InlineInteger::new(value: impl Into<Signal<i64>>) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2543
+[new] returns Self	pert_ui_runtime::InlineReadout::new(source: impl Into<ReadSignal<String>>) -> Self	-	crates/pert-ui-runtime/src/inline_controls.rs:604
+[new] returns Result<Self>	pert_ui_runtime::InlineSelect::new(ui: &impl crate::StateOwner, value: impl Into<Signal<T>>, options: impl IntoIterator<Item = Choice<T>>) -> Result<Self, ChoiceError>	-	crates/pert-ui-runtime/src/select.rs:1752
+[new] returns Self	pert_ui_runtime::InlineSlider::new(parameter: Parameter<f32>) -> Self	-	crates/pert-ui-runtime/src/numeric_controls.rs:1592
+[new] returns Self	pert_ui_runtime::InlineText::new(value: impl Into<Signal<String>>) -> Self	-	crates/pert-ui-runtime/src/text_fields/inline_text.rs:96
+[new] returns Self	pert_ui_runtime::InlineToggle::new(value: impl Into<Signal<bool>>, name: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/inline_controls.rs:92
+[new] returns Self	pert_ui_runtime::InputRejection::new(message: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/text_fields/normalize.rs:29
+[new] returns Self	pert_ui_runtime::InspectionQuery::new() -> Self	-	crates/pert-ui-runtime/src/inspection.rs:215
+[new] returns Self	pert_ui_runtime::IntegerInput::new(value: impl Into<Signal<i64>>) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2541
+[new] returns Self	pert_ui_runtime::KeyChord::new(key: CommandKey, modifiers: Modifiers) -> Self	-	crates/pert-ui-runtime/src/runtime/commands.rs:34
+[new] returns Self	pert_ui_runtime::Knob::new(parameter: Parameter<f32>) -> Self	-	crates/pert-ui-runtime/src/numeric_controls.rs:1598
+[new] returns Self	pert_ui_runtime::Label::new(text: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/controls.rs:94
+[new] returns Result<Self>	pert_ui_runtime::Length::new(value: f32) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/containers.rs:24
+[new] returns Self	pert_ui_runtime::LevelMeter::new(source: SeriesSource<f32>, scale: ParameterSpec<f32>) -> Self	-	crates/pert-ui-runtime/src/live_widgets.rs:148
+[new] returns Self	pert_ui_runtime::ListController::new(runtime: &impl crate::StateOwner) -> Self	#[must_use]	crates/pert-ui-runtime/src/virtual_list.rs:275
+[new] returns Self	pert_ui_runtime::ListDragItems::new(keys: impl IntoIterator<Item = String>) -> Self	-	crates/pert-ui-runtime/src/list_drag.rs:26
+[new] returns Self	pert_ui_runtime::ListDropPlacement::new(position: DropPosition, mark: ListDropMark) -> Self	#[must_use]	crates/pert-ui-runtime/src/virtual_list.rs:570
+[new] returns Result<Self>	pert_ui_runtime::ListFilter::new(ui: &impl crate::StateOwner, source: impl Into<ReadSignal<ListSource>>) -> Result<Self, RuntimeError>	-	crates/pert-ui-runtime/src/collection_filter.rs:271
+[new] returns Self	pert_ui_runtime::ListSelection::new(ui: &impl crate::StateOwner, mode: SelectionMode) -> Self	-	crates/pert-ui-runtime/src/list_selection.rs:108
+[new] returns Self	pert_ui_runtime::ListingError::new(kind: ListingErrorKind, message: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/file_browser.rs:83
+[new] returns Result<Self>	pert_ui_runtime::Magnification::new(factor: f32) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/pointer.rs:116
+[new] returns Result<Self>	pert_ui_runtime::MaskImage::new(width: u32, height: u32, pixels: Vec<u8>) -> Result<Self, DrawError>	-	crates/pert-ui-runtime/src/drawing.rs:1144
+[new] returns Result<Self>	pert_ui_runtime::Menu::new(ui: &impl crate::StateOwner, label: impl Into<TextSource>, items: Vec<MenuItem>) -> Result<Self, ChoiceError>	-	crates/pert-ui-runtime/src/menu.rs:702
+[new] returns Result<Self>	pert_ui_runtime::MenuBar::new(ui: &impl crate::StateOwner, menus: Vec<MenuItem>) -> Result<Self, ChoiceError>	-	crates/pert-ui-runtime/src/menu_bar.rs:662
+[new] returns Result<Self>	pert_ui_runtime::MultiSelect::new(ui: &impl crate::StateOwner, value: impl Into<Signal<Vec<T>>>, options: impl IntoIterator<Item = Choice<T>>) -> Result<Self, ChoiceError>	-	crates/pert-ui-runtime/src/multi_select.rs:1227
+[new] returns Result<Self>	pert_ui_runtime::NativeWindowOptions::new(title: impl Into<String>) -> Result<Self, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/native_windows.rs:197
+[new] returns Result<Self>	pert_ui_runtime::NavigationHistory::new(ui: &impl crate::StateOwner) -> Result<Self, RuntimeError>	-	crates/pert-ui-runtime/src/navigation_history.rs:248
+[new] returns Result<Self>	pert_ui_runtime::NumberLocale::new(decimal: char, grouping: Option<char>) -> Result<Self, NumberLocaleError>	-	crates/pert-ui-runtime/src/number_format.rs:218
+[new] returns Self	pert_ui_runtime::PathBuilder::new() -> Self	-	crates/pert-ui-runtime/src/geometry.rs:393
+[new] returns Self	pert_ui_runtime::PhysicalExtent::new(width: u32, height: u32) -> Self	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:867
+[new] returns Self	pert_ui_runtime::PickItem::new(key: impl Into<String>, label: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/quick_pick.rs:52
+[new] returns Result<Self>	pert_ui_runtime::Point::new(x: f32, y: f32) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/pointer.rs:17
+[new] returns Self	pert_ui_runtime::PointerEvent::new(position: Point, kind: PointerKind) -> Self	#[must_use]	crates/pert-ui-runtime/src/pointer.rs:149
+[new] returns Self	pert_ui_runtime::Popover::new(open: impl Into<Signal<bool>>, anchor: Element, content: Element) -> Self	-	crates/pert-ui-runtime/src/popover.rs:233
+[new] returns Result<Self>	pert_ui_runtime::PresentationRate::new(hertz: f64) -> Result<Self, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/presentation.rs:17
+[new] returns Self	pert_ui_runtime::ProgressBar::new(status: impl Into<ReadSignal<ProgressStatus>>) -> Self	-	crates/pert-ui-runtime/src/progress.rs:152
+[new] returns Self	pert_ui_runtime::Property::new(key: impl Into<String>, label: impl Into<TextSource>, editor: Element) -> Self	-	crates/pert-ui-runtime/src/property_grid.rs:50
+[new] returns Self	pert_ui_runtime::PropertyGrid::new(rows: impl IntoIterator<Item = Property>) -> Self	-	crates/pert-ui-runtime/src/property_grid.rs:261
+[new] returns Self	pert_ui_runtime::QuickPickController::new(ui: &impl crate::StateOwner) -> Self	-	crates/pert-ui-runtime/src/quick_pick.rs:453
+[new] returns Result<Self>	pert_ui_runtime::RadioGroup::new(value: impl Into<Signal<T>>, choices: impl IntoIterator<Item = Choice<T>>) -> Result<Self, ChoiceError>	-	crates/pert-ui-runtime/src/choice_controls.rs:727
+[new] returns Result<Self>	pert_ui_runtime::Rect::new(x: f32, y: f32, width: f32, height: f32) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/drawing.rs:61
+[new] returns Self	pert_ui_runtime::RegionLayout::new() -> Self	-	crates/pert-ui-runtime/src/region_layout.rs:144
+[new] returns Self	pert_ui_runtime::RequestTracker::new() -> Self	#[must_use]	crates/pert-ui-runtime/src/async_source.rs:123
+[new] returns Self	pert_ui_runtime::RichText::new() -> Self	-	crates/pert-ui-runtime/src/text/rich.rs:99
+[new] returns Self	pert_ui_runtime::Row::new(children: impl IntoIterator<Item = Element>) -> Self	-	crates/pert-ui-runtime/src/containers.rs:893
+[new] returns Self	pert_ui_runtime::Runtime::new() -> Self	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:3944
+[new] returns Self	pert_ui_runtime::ScaleLimits::new(a: ViewScale, b: ViewScale) -> Self	#[must_use]	crates/pert-ui-runtime/src/zoom_view.rs:33
+[new] returns Self	pert_ui_runtime::ScrollArea::new(content: Element) -> Self	-	crates/pert-ui-runtime/src/views.rs:346
+[new] returns Self	pert_ui_runtime::SearchField::new(query: impl Into<Signal<String>>) -> Self	-	crates/pert-ui-runtime/src/text_fields/search.rs:138
+[new] returns Self	pert_ui_runtime::Section::new(key: impl Into<String>, title: impl Into<TextSource>, content: Element) -> Self	-	crates/pert-ui-runtime/src/collapsible.rs:825
+[new] returns Result<Self>	pert_ui_runtime::SegmentedControl::new(value: impl Into<Signal<T>>, choices: impl IntoIterator<Item = Choice<T>>) -> Result<Self, ChoiceError>	-	crates/pert-ui-runtime/src/choice_controls.rs:1448
+[new] returns Result<Self>	pert_ui_runtime::Select::new(ui: &impl crate::StateOwner, value: impl Into<Signal<T>>, options: impl IntoIterator<Item = Choice<T>>) -> Result<Self, ChoiceError>	-	crates/pert-ui-runtime/src/select.rs:1381
+[new] returns Self	pert_ui_runtime::SelectableText::new(text: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/selectable_text.rs:139
+[new] returns Self	pert_ui_runtime::SelectionChange::new(previous: Option<String>, selected: Option<String>, origin: ChangeOrigin) -> Self	#[must_use]	crates/pert-ui-runtime/src/runtime/notify.rs:192
+[new] returns Self	pert_ui_runtime::SemanticItem::new(name: impl Into<String>) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:372
+[new] returns Self	pert_ui_runtime::Semantics::new(role: SemanticRole) -> Self	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:507
+[new] returns Self	pert_ui_runtime::ShortcutBinding::new(key: KeyCode, action: impl Into<String>) -> Self	#[must_use]	crates/pert-ui-runtime/src/validation.rs:63
+[new] returns Self	pert_ui_runtime::SinkError::new(kind: SinkErrorKind, message: impl Into<String>) -> Self	#[must_use]	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:97
+[new] returns Result<Self>	pert_ui_runtime::Size::new(width: f32, height: f32) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/layout.rs:143
+[new] returns Result<Self>	pert_ui_runtime::SizeLimits::new(minimum: Size, maximum: Constraints) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/layout.rs:209
+[new] returns Self	pert_ui_runtime::Slider::new(parameter: Parameter<f32>) -> Self	-	crates/pert-ui-runtime/src/numeric_controls.rs:1586
+[new] returns Self	pert_ui_runtime::Spinner::new(busy: impl Into<ReadSignal<bool>>) -> Self	-	crates/pert-ui-runtime/src/progress.rs:357
+[new] returns Self	pert_ui_runtime::SplitPane::new(axis: SplitAxis, first: Element, second: Element) -> Self	-	crates/pert-ui-runtime/src/split.rs:232
+[new] returns Self	pert_ui_runtime::StrokeStyle::new(width: Length) -> Self	-	crates/pert-ui-runtime/src/geometry.rs:103
+[new] returns Self	pert_ui_runtime::Tab::new(key: impl Into<String>, title: impl Into<TextSource>, content: Element) -> Self	-	crates/pert-ui-runtime/src/tabs.rs:34
+[new] returns Result<Self>	pert_ui_runtime::Table::new(controller: &TableController, row_height: f32) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/table.rs:1441
+[new] returns Self	pert_ui_runtime::TableColumn::new(key: impl Into<String>, title: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/table.rs:79
+[new] returns Result<Self>	pert_ui_runtime::TableController::new(ui: &impl crate::StateOwner, columns: impl IntoIterator<Item = TableColumn>, source: TableSource, selection: ListSelection) -> Result<Self, RuntimeError>	-	crates/pert-ui-runtime/src/table.rs:574
+[new] returns Self	pert_ui_runtime::Tabs::new(tabs: impl IntoIterator<Item = Tab>) -> Self	-	crates/pert-ui-runtime/src/tabs.rs:332
+[new] returns Self	pert_ui_runtime::TextArea::new(value: impl Into<Signal<String>>) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:769
+[new] returns Self	pert_ui_runtime::TextField::new(value: impl Into<Signal<String>>) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:768
+[new] returns Result<Self>	pert_ui_runtime::TextPreedit::new(text: impl Into<String>, cursor: Option<std::ops::Range<usize>>) -> Result<Self, TextEditError>	-	crates/pert-ui-runtime/src/text_input.rs:74
+[new] returns Self	pert_ui_runtime::TextSelection::new(layout: &TextLayout, anchor: usize, focus: usize) -> Self	-	crates/pert-ui-runtime/src/text_selection.rs:43
+[new] returns Self	pert_ui_runtime::TextSpan::new(text: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/text/rich.rs:33
+[new] returns Self	pert_ui_runtime::Toast::new(message: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/notifications.rs:150
+[new] returns Self	pert_ui_runtime::ToastHost::new(queue: ToastQueue, content: Element) -> Self	-	crates/pert-ui-runtime/src/notifications.rs:407
+[new] returns Self	pert_ui_runtime::ToastQueue::new(ui: &impl crate::StateOwner) -> Self	-	crates/pert-ui-runtime/src/notifications.rs:293
+[new] returns Self	pert_ui_runtime::Toggle::new(label: impl Into<TextSource>, value: impl Into<Signal<bool>>) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:652
+[new] returns Self	pert_ui_runtime::ToolGroup::new(key: impl Into<String>, controls: impl IntoIterator<Item = Element>) -> Self	-	crates/pert-ui-runtime/src/toolbar.rs:60
+[new] returns Self	pert_ui_runtime::ToolWindow::new(key: impl Into<String>, title: impl Into<TextSource>, content: Element) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:318
+[new] returns Self	pert_ui_runtime::ToolWindowChange::new(key: String, expanded: bool, origin: ChangeOrigin) -> Self	#[must_use]	crates/pert-ui-runtime/src/tool_windows/mod.rs:247
+[new] returns Self	pert_ui_runtime::ToolWindowController::new() -> Self	#[must_use]	crates/pert-ui-runtime/src/tool_windows/mod.rs:2293
+[new] returns Self	pert_ui_runtime::ToolWindowLayout::new(center: Element) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:765
+[new] returns Result<Self>	pert_ui_runtime::Toolbar::new(ui: &impl crate::StateOwner, groups: impl IntoIterator<Item = ToolGroup>) -> Result<Self, LayoutError>	-	crates/pert-ui-runtime/src/toolbar.rs:355
+[new] returns Self	pert_ui_runtime::Tooltip::new(anchor: Element, text: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/popover.rs:418
+[new] returns Self	pert_ui_runtime::Trace::new(source: SeriesSource<f32>, scale: ParameterSpec<f32>) -> Self	-	crates/pert-ui-runtime/src/live_widgets.rs:493
+[new] returns Result<Self>	pert_ui_runtime::Transform2D::new(a: f32, b: f32, c: f32, d: f32, e: f32, f: f32) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/transform.rs:54
+[new] returns Result<Self>	pert_ui_runtime::Tree::new(controller: &TreeController, row_height: f32) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/tree.rs:914
+[new] returns Result<Self>	pert_ui_runtime::TreeController::new(ui: &impl crate::StateOwner, source: TreeSource, selection: ListSelection) -> Result<Self, RuntimeError>	-	crates/pert-ui-runtime/src/tree.rs:272
+[new] returns Result<Self>	pert_ui_runtime::UiZoom::new(factor: f64) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/runtime/settings.rs:39
+[new] returns Self	pert_ui_runtime::View::new(content: Element) -> Self	-	crates/pert-ui-runtime/src/views.rs:22
+[new] returns Result<Self>	pert_ui_runtime::ViewScale::new(factor: f32) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/transform.rs:291
+[new] returns Result<Self>	pert_ui_runtime::ViewState::new(kind: impl Into<String>) -> Result<Self, WorkspaceError>	-	crates/pert-ui-runtime/src/workspace.rs:236
+[new] returns Self	pert_ui_runtime::ViewTransform::new(scale: ViewScale, offset: Point) -> Self	#[must_use]	crates/pert-ui-runtime/src/transform.rs:347
+[new] returns Result<Self>	pert_ui_runtime::Viewport::new(width: f32, height: f32, scale: f64) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/drawing.rs:900
+[new] returns Result<Self>	pert_ui_runtime::VirtualAxis::new(item_extent: f32) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/virtual_axis.rs:150
+[new] returns Result<Self>	pert_ui_runtime::VirtualList::new(items: impl Into<ReadSignal<ListSource>>, row_height: f32) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/virtual_list.rs:635
+[new] returns Self	pert_ui_runtime::WindowLayer::new(windows: impl IntoIterator<Item = FloatingWindow>) -> Self	-	crates/pert-ui-runtime/src/windows.rs:655
+[new] returns Result<Self>	pert_ui_runtime::Workspace::new(settings: WorkspaceSettings, entries: impl IntoIterator<Item = (WorkspacePath, ViewState)>) -> Result<Self, WorkspaceError>	-	crates/pert-ui-runtime/src/workspace.rs:518
+[new] returns Result<Self>	pert_ui_runtime::WorkspacePath::new(segments: impl IntoIterator<Item = impl Into<String>>) -> Result<Self, WorkspaceError>	-	crates/pert-ui-runtime/src/workspace.rs:364
+[new] returns Self	pert_ui_runtime::Wrap::new(children: impl IntoIterator<Item = Element>) -> Self	-	crates/pert-ui-runtime/src/containers.rs:936
+[new] returns Self	pert_ui_runtime::ZoomController::new(runtime: &impl crate::StateOwner) -> Self	#[must_use]	crates/pert-ui-runtime/src/zoom_view.rs:140
+[new] returns Self	pert_ui_runtime::ZoomView::new(items: impl IntoIterator<Item = (Point, Element)>) -> Self	-	crates/pert-ui-runtime/src/zoom_view.rs:331
+[other] returns Result<Self>	pert_ui_runtime::Button::command(ui: &crate::Runtime, command: &crate::CommandId, on_receipt: impl FnMut(crate::CommandReceipt, &mut EventContext) -> Result<(), RuntimeError> + 'static) -> Result<Self, RuntimeError>	-	crates/pert-ui-runtime/src/controls.rs:549
+[other] returns Result<Self>	pert_ui_runtime::Button::command_icon(ui: &crate::Runtime, command: &crate::CommandId, icon: impl Into<IconSource>, on_receipt: impl FnMut(crate::CommandReceipt, &mut EventContext) -> Result<(), RuntimeError> + 'static) -> Result<Self, RuntimeError>	-	crates/pert-ui-runtime/src/controls.rs:588
+[other] returns Self	pert_ui_runtime::Button::icon(icon: impl Into<IconSource>, name: impl Into<TextSource>, action: impl FnMut(&mut EventContext) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/controls.rs:496
+[other] returns Self	pert_ui_runtime::Chip::removable(text: impl Into<TextSource>, on_remove: impl FnMut(&mut EventContext) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/chip.rs:114
+[other] returns Self	pert_ui_runtime::InlineReadout::formatted<T: Copy + 'static>(source: impl Into<ReadSignal<T>>, format: NumberFormat<T>) -> Self	-	crates/pert-ui-runtime/src/inline_controls.rs:611
+[other] returns Result<Self>	pert_ui_runtime::MenuItem::command(ui: &Runtime, key: impl Into<String>, command: &CommandId, on_receipt: impl FnMut(CommandReceipt, &mut EventContext) -> Result<(), RuntimeError> + 'static) -> Result<Self, RuntimeError>	-	crates/pert-ui-runtime/src/menu.rs:400
+[other] returns Self	pert_ui_runtime::MenuItem::radio<T: Clone + PartialEq + 'static>(key: impl Into<String>, label: impl Into<TextSource>, selection: impl Into<Signal<T>>, value: T) -> Self	-	crates/pert-ui-runtime/src/menu.rs:333
+[other] returns Self	pert_ui_runtime::CaptureTarget::region(window: &crate::NativeWindowId, area: crate::Rect) -> Self	#[must_use]	crates/pert-ui-runtime/src/capture.rs:96
+[other] returns Self	pert_ui_runtime::CaptureTarget::window(window: &crate::NativeWindowId) -> Self	#[must_use]	crates/pert-ui-runtime/src/capture.rs:90
+[other] returns Self	pert_ui_runtime::Choice::icon(value: T, icon: impl Into<IconSource>, name: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:31
+[other] returns Result<Self>	pert_ui_runtime::Color::rgba(red: f32, green: f32, blue: f32, alpha: f32) -> Result<Self, DrawError>	-	crates/pert-ui-runtime/src/drawing.rs:258
+[other] returns Self	pert_ui_runtime::CommandMatcher::fuzzy() -> Self	-	crates/pert-ui-runtime/src/command_palette.rs:51
+[other] returns Self	pert_ui_runtime::ContentQuery::everything() -> Self	#[must_use]	crates/pert-ui-runtime/src/content_search.rs:62
+[other] returns Self	pert_ui_runtime::DirectoryEntry::unreadable(path: impl Into<PathBuf>, error: ListingError) -> Self	-	crates/pert-ui-runtime/src/file_browser.rs:142
+[other] returns Self	pert_ui_runtime::DragPreview::element(element: crate::Element) -> Self	-	crates/pert-ui-runtime/src/drag.rs:206
+[other] returns Self	pert_ui_runtime::DragPreview::none() -> Self	-	crates/pert-ui-runtime/src/drag.rs:198
+[other] returns Self	pert_ui_runtime::Element::spacer(key: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/layout.rs:607
+[other] returns Self	pert_ui_runtime::FieldStatus::error(message: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/field_status.rs:47
+[other] returns Self	pert_ui_runtime::FieldStatus::pending(message: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/field_status.rs:51
+[other] returns Self	pert_ui_runtime::FieldStatus::warning(message: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/field_status.rs:43
+[other] returns Self	pert_ui_runtime::FilterMatcher::fuzzy() -> Self	-	crates/pert-ui-runtime/src/collection_filter.rs:61
+[other] returns Self	pert_ui_runtime::FilterMatcher::substring() -> Self	-	crates/pert-ui-runtime/src/collection_filter.rs:50
+[other] returns Self	pert_ui_runtime::FontData::bundled(role: FontRole) -> Self	-	crates/pert-ui-runtime/src/text/fonts.rs:57
+[other] returns Self	pert_ui_runtime::Group::titled(title: impl Into<String>, content: Element) -> Self	-	crates/pert-ui-runtime/src/views.rs:173
+[other] returns Self	pert_ui_runtime::InspectionQuery::components(selector: Selector) -> Self	-	crates/pert-ui-runtime/src/inspection.rs:219
+[other] returns Self	pert_ui_runtime::KeyChord::named(key: KeyCode) -> Self	-	crates/pert-ui-runtime/src/runtime/commands.rs:52
+[other] returns Self	pert_ui_runtime::KeyChord::navigate_back() -> Self	-	crates/pert-ui-runtime/src/runtime/commands.rs:79
+[other] returns Self	pert_ui_runtime::KeyChord::navigate_forward() -> Self	-	crates/pert-ui-runtime/src/runtime/commands.rs:85
+[other] returns Self	pert_ui_runtime::KeyChord::primary(letter: char) -> Self	-	crates/pert-ui-runtime/src/runtime/commands.rs:56
+[other] returns Self	pert_ui_runtime::KeyCode::primary() -> Self	#[must_use]	crates/pert-ui-runtime/src/input.rs:195
+[other] returns Result<Self>	pert_ui_runtime::Menu::icon(ui: &impl crate::StateOwner, icon: impl Into<IconSource>, name: impl Into<TextSource>, items: Vec<MenuItem>) -> Result<Self, ChoiceError>	-	crates/pert-ui-runtime/src/menu.rs:788
+[other] returns Result<Self>	pert_ui_runtime::Menu::icon_with_state(open: impl Into<Signal<bool>>, icon: impl Into<IconSource>, name: impl Into<TextSource>, items: Vec<MenuItem>) -> Result<Self, ChoiceError>	-	crates/pert-ui-runtime/src/menu.rs:803
+[other] returns Self	pert_ui_runtime::MenuItem::separator() -> Self	-	crates/pert-ui-runtime/src/menu.rs:286
+[other] returns Self	pert_ui_runtime::MenuItem::submenu(key: impl Into<String>, label: impl Into<TextSource>, items: Vec<Self>) -> Self	-	crates/pert-ui-runtime/src/menu.rs:273
+[other] returns Self	pert_ui_runtime::MenuItem::toggle(key: impl Into<String>, label: impl Into<TextSource>, value: impl Into<Signal<bool>>) -> Self	-	crates/pert-ui-runtime/src/menu.rs:299
+[other] returns Self	pert_ui_runtime::NumberFormat::localized_decimal(locale: NumberLocale, places: Option<u8>, width_hint: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/number_format.rs:387
+[other] returns Self	pert_ui_runtime::NumberFormat::localized_integer(locale: NumberLocale, width_hint: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/number_format.rs:405
+[other] returns Self	pert_ui_runtime::Palette::dark() -> Self	-	crates/pert-ui-runtime/src/runtime/theme.rs:761
+[other] returns Self	pert_ui_runtime::Palette::light() -> Self	-	crates/pert-ui-runtime/src/runtime/theme.rs:765
+[other] returns Result<Self>	pert_ui_runtime::Path::circle(center: Point, radius: Length) -> Result<Self, PathError>	-	crates/pert-ui-runtime/src/geometry.rs:270
+[other] returns Result<Self>	pert_ui_runtime::Path::ellipse(rect: Rect) -> Result<Self, PathError>	-	crates/pert-ui-runtime/src/geometry.rs:257
+[other] returns Result<Self>	pert_ui_runtime::Path::polygon(points: impl IntoIterator<Item = Point>) -> Result<Self, PathError>	-	crates/pert-ui-runtime/src/geometry.rs:230
+[other] returns Result<Self>	pert_ui_runtime::Path::polyline(points: impl IntoIterator<Item = Point>) -> Result<Self, PathError>	-	crates/pert-ui-runtime/src/geometry.rs:223
+[other] returns Result<Self>	pert_ui_runtime::Path::rounded_rect(rect: Rect, radius: Length) -> Result<Self, PathError>	-	crates/pert-ui-runtime/src/geometry.rs:283
+[other] returns Self	pert_ui_runtime::Permission::allowed() -> Self	#[must_use]	crates/pert-ui-runtime/src/permission.rs:60
+[other] returns Self	pert_ui_runtime::Permission::denied() -> Self	#[must_use]	crates/pert-ui-runtime/src/permission.rs:68
+[other] returns Self	pert_ui_runtime::PickMatcher::fuzzy() -> Self	-	crates/pert-ui-runtime/src/quick_pick.rs:127
+[other] returns Self	pert_ui_runtime::ProgressStatus::of(completed: u64, total: u64) -> Self	#[must_use]	crates/pert-ui-runtime/src/progress.rs:57
+[other] returns Result<Self>	pert_ui_runtime::RichText::highlighted(text: &str, ranges: impl IntoIterator<Item = Range<usize>>) -> Result<Self, HighlightError>	-	crates/pert-ui-runtime/src/text/fit.rs:254
+[other] returns Self	pert_ui_runtime::Selector::children(segments: impl IntoIterator<Item = impl Into<String>>) -> Self	-	crates/pert-ui-runtime/src/inspection.rs:100
+[other] returns Self	pert_ui_runtime::Selector::descendants(segments: impl IntoIterator<Item = impl Into<String>>) -> Self	-	crates/pert-ui-runtime/src/inspection.rs:104
+[other] returns Self	pert_ui_runtime::Selector::focused() -> Self	#[must_use]	crates/pert-ui-runtime/src/inspection.rs:125
+[other] returns Self	pert_ui_runtime::Selector::id(id: u64) -> Self	#[must_use]	crates/pert-ui-runtime/src/inspection.rs:109
+[other] returns Self	pert_ui_runtime::Selector::key(key: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/inspection.rs:113
+[other] returns Self	pert_ui_runtime::Selector::path(segments: impl IntoIterator<Item = impl Into<String>>) -> Self	-	crates/pert-ui-runtime/src/inspection.rs:96
+[other] returns Self	pert_ui_runtime::Selector::semantic(role: SemanticRole, name: Option<impl Into<String>>) -> Self	-	crates/pert-ui-runtime/src/inspection.rs:117
+[other] returns Self	pert_ui_runtime::Selector::window(id: u64) -> Self	#[must_use]	crates/pert-ui-runtime/src/inspection.rs:130
+[other] returns Self	pert_ui_runtime::Selector::within(ancestor: Self, inner: Self) -> Self	#[must_use]	crates/pert-ui-runtime/src/inspection.rs:136
+[other] returns Self	pert_ui_runtime::SizeLimits::at_least(minimum: Size) -> Self	#[must_use]	crates/pert-ui-runtime/src/layout.rs:184
+[other] returns Self	pert_ui_runtime::SplitSizing::first(extent: Length) -> Self	#[must_use]	crates/pert-ui-runtime/src/split.rs:115
+[other] returns Result<Self>	pert_ui_runtime::SplitSizing::ratio(value: f32) -> Result<Self, LayoutError>	-	crates/pert-ui-runtime/src/split.rs:107
+[other] returns Self	pert_ui_runtime::SplitSizing::second(extent: Length) -> Self	#[must_use]	crates/pert-ui-runtime/src/split.rs:120
+[other] returns Self	pert_ui_runtime::TextSelection::word_at_point(layout: &TextLayout, point: Point) -> Self	-	crates/pert-ui-runtime/src/text_selection.rs:98
+[other] returns Self	pert_ui_runtime::ThemeMetrics::for_density(density: Density) -> Self	-	crates/pert-ui-runtime/src/runtime/theme.rs:255
+[other] returns Self	pert_ui_runtime::ToolGroup::separator(key: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/toolbar.rs:72
+[other] returns Self	pert_ui_runtime::ToolGroup::spacer(key: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/toolbar.rs:84
+[other] returns Result<Self>	pert_ui_runtime::Tooltip::command(ui: &crate::Runtime, anchor: Element, command: &crate::CommandId) -> Result<Self, RuntimeError>	-	crates/pert-ui-runtime/src/popover.rs:435
+[other] returns Self	pert_ui_runtime::Track::fixed(length: Length) -> Self	#[must_use]	crates/pert-ui-runtime/src/containers.rs:961
+[other] returns Result<Self>	pert_ui_runtime::Track::weighted(weight: f32) -> Result<Self, LayoutError>	-	crates/pert-ui-runtime/src/containers.rs:968
+[other] returns Result<Self>	pert_ui_runtime::Transform2D::rotation_degrees(degrees: f32) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/transform.rs:86
+[other] returns Result<Self>	pert_ui_runtime::Transform2D::scale(x: f32, y: f32) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/transform.rs:79
+[other] returns Result<Self>	pert_ui_runtime::Transform2D::translation(x: f32, y: f32) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/transform.rs:71
+[other] returns Self	pert_ui_runtime::UiStrings::english() -> Self	-	crates/pert-ui-runtime/src/strings.rs:580
+[other] returns Result<Self>	pert_ui_runtime::VirtualAxis::estimated(estimate: f32) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/virtual_axis.rs:164
+[other] returns Result<Self>	pert_ui_runtime::VirtualList::estimated(items: impl Into<ReadSignal<ListSource>>, estimate: f32) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/virtual_list.rs:659
+[other] returns Result<Self>	pert_ui_runtime::Workspace::decode(text: &str) -> Result<Self, WorkspaceError>	-	crates/pert-ui-runtime/src/workspace.rs:865
+[other] returns Self	pert_ui_runtime::WorkspaceValue::flag(value: bool) -> Self	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:62
+[other] returns Self	pert_ui_runtime::WorkspaceValue::integer(value: i64) -> Self	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:68
+[other] returns Result<Self>	pert_ui_runtime::WorkspaceValue::map(entries: impl IntoIterator<Item = (String, Self)>) -> Result<Self, WorkspaceError>	-	crates/pert-ui-runtime/src/workspace.rs:116
+[other] returns Result<Self>	pert_ui_runtime::WorkspaceValue::number(value: f64) -> Result<Self, WorkspaceError>	-	crates/pert-ui-runtime/src/workspace.rs:93
+[other] returns Result<Self>	pert_ui_runtime::WorkspaceValue::text(value: impl Into<String>) -> Result<Self, WorkspaceError>	-	crates/pert-ui-runtime/src/workspace.rs:105
+[with_] returns Self	pert_ui_runtime::CollectionFilter::with_query(query: impl Into<Signal<String>>, target: impl Into<FilterTarget>, collection: Element) -> Self	-	crates/pert-ui-runtime/src/collection_filter.rs:538
+[with_] returns Result<Self>	pert_ui_runtime::Menu::with_state(open: impl Into<Signal<bool>>, label: impl Into<TextSource>, items: Vec<MenuItem>) -> Result<Self, ChoiceError>	-	crates/pert-ui-runtime/src/menu.rs:761
+[with_] returns Result<Self>	pert_ui_runtime::NavigationHistory::with_capacity(ui: &impl crate::StateOwner, capacity: NonZeroUsize) -> Result<Self, RuntimeError>	-	crates/pert-ui-runtime/src/navigation_history.rs:257
+
+## pert-ui-cpu
+[new] returns Self	pert_ui_cpu::CpuRenderer::new() -> Self	#[must_use]	crates/pert-ui-cpu/src/lib.rs:131
+
+## pert-ui-wgpu
+[new] returns Result<Self>	pert_ui_wgpu::Renderer::new(target: impl Into<wgpu::SurfaceTarget<'static>>, width: u32, height: u32, notify: impl Fn(Notice) + Send + Sync + 'static) -> Result<Self, RenderError>	-	crates/pert-ui-wgpu/src/lib.rs:391
+
+## pert-ui
+[new] returns Self	pert_ui::App::new(title: impl Into<String>, initialize: impl FnOnce(&mut Runtime) -> Result<(), AppError> + 'static) -> Self	-	crates/pert-ui/src/app.rs:306	[configs: cpu, default, image-formats, images, no-default-desktop-cpu, serde, svg]
+[new] returns Result<Self>	pert_ui::Svg::new(source: &[u8]) -> Result<Self, SvgError>	-	crates/pert-ui/src/svg/component.rs:76	[configs: no-default-svg, svg]
+[other] returns Result<Self>	pert_ui::Svg::tinted(source: &[u8], role: ColorRole) -> Result<Self, SvgError>	-	crates/pert-ui/src/svg/component.rs:97	[configs: no-default-svg, svg]
+[other] returns Option<Self>	pert_ui::images::ImageFormat::guess(bytes: &[u8]) -> Option<Self>	#[must_use]	crates/pert-ui/src/images.rs:179	[configs: image-formats, images, no-default-png]

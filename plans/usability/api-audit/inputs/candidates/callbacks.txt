@@ -1,0 +1,66 @@
+# Every on_* function with its closure bounds.
+# A trailing [configs: ...] means the entry exists only in those configurations.
+
+## pert-ui-runtime
+pert_ui_runtime::Accordion::on_change(self, handler: impl FnMut(&mut EventContext, &[String], crate::ChangeOrigin) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/collapsible.rs:1049
+pert_ui_runtime::AnyParameterHost::on_outcome(&self, sink: impl FnMut(&AnyTerminalEvent) -> Result<(), SinkError> + 'static) -> Result<AnyDeliveryMonitor, RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/erased.rs:335
+pert_ui_runtime::AnyParameterHost::on_preview(&self, sink: impl FnMut(&AnyPreviewEvent) -> Result<(), SinkError> + 'static) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/erased.rs:358
+pert_ui_runtime::Checkbox::on_change(self, handler: impl FnMut(&mut EventContext, bool) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:647
+pert_ui_runtime::ColorPicker::on_change(self, handler: impl FnMut(&mut crate::EventContext, Color) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/color_picker.rs:542
+pert_ui_runtime::ColorSwatch::on_activate(self, action: impl FnMut(&mut EventContext) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/color_swatch.rs:161
+pert_ui_runtime::DecimalInput::on_rejection(self, report: impl FnMut(&mut EventContext, Option<&InputRejection>) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2538
+pert_ui_runtime::DecimalInput::on_save(self, saved: impl FnMut(&mut EventContext, f64) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2538
+pert_ui_runtime::DraftEditorController::on_edit(&self, callback: impl FnMut(&mut EventContext, &str, Option<P>) -> Result<(), RuntimeError> + 'static)	-	crates/pert-ui-runtime/src/text_fields/draft.rs:411
+pert_ui_runtime::FileBrowserController::on_open(&self, open: impl FnMut(&mut EventContext, &DirectoryEntry) -> Result<(), RuntimeError> + 'static)	-	crates/pert-ui-runtime/src/file_browser/controller.rs:613
+pert_ui_runtime::FloatingWindow::on_close(self, action: impl FnMut(&mut EventContext) -> Result<WindowCloseAction, RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/windows.rs:436
+pert_ui_runtime::FloatingWindow::on_frame(self, on_frame: impl FnMut(&mut EventContext, WindowPlacement, ChangeOrigin) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/windows.rs:393
+pert_ui_runtime::InlineChoice::on_change(self, handler: impl FnMut(&mut EventContext, &T) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:1627
+pert_ui_runtime::InlineDecimal::on_rejection(self, report: impl FnMut(&mut EventContext, Option<&InputRejection>) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2540
+pert_ui_runtime::InlineDecimal::on_save(self, saved: impl FnMut(&mut EventContext, f64) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2540
+pert_ui_runtime::InlineInteger::on_rejection(self, report: impl FnMut(&mut EventContext, Option<&InputRejection>) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2539
+pert_ui_runtime::InlineInteger::on_save(self, saved: impl FnMut(&mut EventContext, i64) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2539
+pert_ui_runtime::InlineSelect::on_change(self, handler: impl FnMut(&mut EventContext, &T) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/select.rs:1814
+pert_ui_runtime::InlineText::on_rejection(self, report: impl FnMut(&mut EventContext, Option<&InputRejection>) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields/inline_text.rs:205
+pert_ui_runtime::InlineText::on_save(self, saved: impl FnMut(&mut EventContext, &str) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields/inline_text.rs:218
+pert_ui_runtime::InlineToggle::on_change(self, handler: impl FnMut(&mut EventContext, bool) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/inline_controls.rs:186
+pert_ui_runtime::IntegerInput::on_rejection(self, report: impl FnMut(&mut EventContext, Option<&InputRejection>) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2537
+pert_ui_runtime::IntegerInput::on_save(self, saved: impl FnMut(&mut EventContext, i64) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:2537
+pert_ui_runtime::MenuItem::on_change(self, handler: impl FnMut(&mut EventContext, bool) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/menu.rs:470
+pert_ui_runtime::MultiSelect::on_change(self, handler: impl FnMut(&mut EventContext, &[T]) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/multi_select.rs:1342
+pert_ui_runtime::ParameterHost::on_outcome(&self, sink: impl FnMut(&TerminalEvent<T>) -> Result<(), SinkError> + 'static) -> Result<DeliveryMonitor<T>, RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:500
+pert_ui_runtime::ParameterHost::on_preview(&self, sink: impl FnMut(&PreviewEvent<T>) -> Result<(), SinkError> + 'static) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:537
+pert_ui_runtime::Popover::on_dismiss(self, dismiss: impl FnMut(&mut EventContext, SurfaceDismissal) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/popover.rs:286
+pert_ui_runtime::PropertyGrid::on_resize(self, on_resize: impl FnMut(&mut EventContext, Option<Length>, ChangeOrigin) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/property_grid.rs:315
+pert_ui_runtime::RadioGroup::on_change(self, handler: impl FnMut(&mut EventContext, &T) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:809
+pert_ui_runtime::RegionLayout::on_resize(self, on_resize: impl FnMut(&mut EventContext, RegionEdge, SplitSizing, ChangeOrigin) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/region_layout.rs:256
+pert_ui_runtime::RemoteHost::on_submit(&self, sink: impl FnMut(&RemoteCommit<T>) -> Result<(), SinkError> + 'static) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/parameter_binding/remote.rs:453
+pert_ui_runtime::ScrollArea::on_scroll(self, on_scroll: impl FnMut(&mut EventContext, Point, ChangeOrigin) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/views.rs:410
+pert_ui_runtime::SearchField::on_key(self, report: impl FnMut(&mut EventContext, SearchKey) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields/search.rs:258
+pert_ui_runtime::SegmentedControl::on_change(self, handler: impl FnMut(&mut EventContext, &T) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:1490
+pert_ui_runtime::Select::on_change(self, handler: impl FnMut(&mut EventContext, &T) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/select.rs:1485
+pert_ui_runtime::SplitPane::on_resize(self, on_resize: impl FnMut(&mut EventContext, SplitSizing, ChangeOrigin) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/split.rs:322
+pert_ui_runtime::Table::on_activate(self, activate: impl FnMut(&mut EventContext, &str, Option<&str>) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/table.rs:1540
+pert_ui_runtime::Table::on_selection_change(self, on_change: impl FnMut(&mut EventContext, &crate::ListSelectionChange) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/table.rs:1556
+pert_ui_runtime::Table::on_sort(self, sort: impl FnMut(&mut EventContext, &TableSort) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/table.rs:1529
+pert_ui_runtime::Tabs::on_select(self, on_select: impl FnMut(&mut EventContext, &crate::SelectionChange) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/tabs.rs:607
+pert_ui_runtime::TextArea::on_binding_refusal(self, refusal: impl FnMut(&mut EventContext, Option<&TextEditError>) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:769
+pert_ui_runtime::TextArea::on_modified(self, modified: impl FnMut(&mut EventContext, bool) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:769
+pert_ui_runtime::TextArea::on_rejection(self, report: impl FnMut(&mut EventContext, Option<&InputRejection>) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:769
+pert_ui_runtime::TextArea::on_save(self, saved: impl FnMut(&mut EventContext, &str) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:769
+pert_ui_runtime::TextField::on_binding_refusal(self, refusal: impl FnMut(&mut EventContext, Option<&TextEditError>) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:768
+pert_ui_runtime::TextField::on_modified(self, modified: impl FnMut(&mut EventContext, bool) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:768
+pert_ui_runtime::TextField::on_rejection(self, report: impl FnMut(&mut EventContext, Option<&InputRejection>) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:768
+pert_ui_runtime::TextField::on_save(self, saved: impl FnMut(&mut EventContext, &str) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:768
+pert_ui_runtime::TextField::on_submit(self, submit: impl FnMut(&mut EventContext, &str) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/text_fields.rs:909
+pert_ui_runtime::Toggle::on_change(self, handler: impl FnMut(&mut EventContext, bool) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:652
+pert_ui_runtime::ToolWindowLayout::on_change(self, on_change: impl FnMut(&mut EventContext, &ToolWindowChange) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/tool_windows/mod.rs:943
+pert_ui_runtime::Tree::on_activate(self, activate: impl FnMut(&mut EventContext, &str) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/tree.rs:1066
+pert_ui_runtime::Tree::on_selection_change(self, on_change: impl FnMut(&mut EventContext, &crate::ListSelectionChange) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/tree.rs:1054
+pert_ui_runtime::VirtualList::on_activate(self, activate: impl FnMut(&mut EventContext, &str) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/virtual_list.rs:938
+pert_ui_runtime::VirtualList::on_selection_change(self, on_change: impl FnMut(&mut EventContext, &crate::ListSelectionChange) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/virtual_list.rs:872
+pert_ui_runtime::VirtualList::on_text_input(self, handler: impl FnMut(&mut EventContext, &str) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/virtual_list.rs:809
+
+## pert-ui
+pert_ui::App::on_close(self, handler: impl FnMut(&mut Runtime, &crate::NativeWindowId) -> Result<NativeCloseAction, RuntimeError> + 'static) -> Self	-	crates/pert-ui/src/app.rs:465	[configs: cpu, default, image-formats, images, no-default-desktop-cpu, serde, svg]
+pert_ui::App::on_error(self, handler: impl FnMut(&mut Runtime, &AppError) -> ErrorAction + 'static) -> Self	-	crates/pert-ui/src/app.rs:452	[configs: cpu, default, image-formats, images, no-default-desktop-cpu, serde, svg]
+pert_ui::App::on_window_error(self, handler: impl FnMut(&mut Runtime, &crate::WindowError) + 'static) -> Self	-	crates/pert-ui/src/app.rs:480	[configs: cpu, default, image-formats, images, no-default-desktop-cpu, serde, svg]

@@ -1,0 +1,10 @@
+# pert-ui-cpu: every public type with its inherent and trait-declared methods.
+# Classify each type's role with a source reference, or write 'unresolved'.
+
+## pert-ui-cpu
+pert_ui_cpu::CpuRenderError	enum	role: 	crates/pert-ui-cpu/src/lib.rs:16
+pert_ui_cpu::CpuRenderer	struct	role: 	crates/pert-ui-cpu/src/lib.rs:108
+    pert_ui_cpu::CpuRenderer::new() -> Self	#[must_use]	crates/pert-ui-cpu/src/lib.rs:131
+    pert_ui_cpu::CpuRenderer::render(&mut self, scene: &DisplayList) -> Result<FrameImage, CpuRenderError>	-	crates/pert-ui-cpu/src/lib.rs:145
+    pert_ui_cpu::CpuRenderer::render_opaque(&mut self, scene: &DisplayList) -> Result<FrameImage, CpuRenderError>	-	crates/pert-ui-cpu/src/lib.rs:166
+    pert_ui_cpu::CpuRenderer::serve_captures(&mut self, runtime: &mut Runtime) -> usize	-	crates/pert-ui-cpu/src/lib.rs:251

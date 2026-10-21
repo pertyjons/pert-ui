@@ -1,0 +1,825 @@
+# Every #[must_use] and #[non_exhaustive] on a public type or function.
+# A trailing [configs: ...] means the entry exists only in those configurations.
+
+## pert-ui-core
+pert_ui_core::AnyParameterSnapshot::available(&self) -> bool	function	#[must_use]	crates/pert-ui-core/src/erased.rs:286
+pert_ui_core::AnyParameterSnapshot::family(&self) -> ParameterFamily	function	#[must_use]	crates/pert-ui-core/src/erased.rs:253
+pert_ui_core::AnyParameterSnapshot::name(&self) -> &str	function	#[must_use]	crates/pert-ui-core/src/erased.rs:264
+pert_ui_core::AnyParameterSnapshot::revision(&self) -> Revision	function	#[must_use]	crates/pert-ui-core/src/erased.rs:275
+pert_ui_core::AnySpec	enum	#[must_use]	crates/pert-ui-core/src/erased.rs:24
+pert_ui_core::AnySpec::family(&self) -> ParameterFamily	function	#[must_use]	crates/pert-ui-core/src/erased.rs:38
+pert_ui_core::AnySpec::is_editable(&self) -> bool	function	#[must_use]	crates/pert-ui-core/src/erased.rs:70
+pert_ui_core::AnySpec::name(&self) -> &str	function	#[must_use]	crates/pert-ui-core/src/erased.rs:49
+pert_ui_core::AnyValue::family(&self) -> ParameterFamily	function	#[must_use]	crates/pert-ui-core/src/erased.rs:126
+pert_ui_core::Capacity	struct	#[must_use]	crates/pert-ui-core/src/live/mod.rs:183
+pert_ui_core::Capacity::get(self) -> usize	function	#[must_use]	crates/pert-ui-core/src/live/mod.rs:206
+pert_ui_core::ChoiceId::as_str(&self) -> &str	function	#[must_use]	crates/pert-ui-core/src/choice.rs:50
+pert_ui_core::ChoiceOption	struct	#[must_use]	crates/pert-ui-core/src/choice.rs:97
+pert_ui_core::ChoiceOption::id(&self) -> &ChoiceId	function	#[must_use]	crates/pert-ui-core/src/choice.rs:157
+pert_ui_core::ChoiceOption::label(&self) -> &str	function	#[must_use]	crates/pert-ui-core/src/choice.rs:163
+pert_ui_core::DrainReport	struct	#[non_exhaustive]	crates/pert-ui-core/src/live/mod.rs:312
+pert_ui_core::EditError	enum	#[non_exhaustive]	crates/pert-ui-core/src/edit.rs:189
+pert_ui_core::EditOutcome	enum	#[non_exhaustive]	crates/pert-ui-core/src/edit.rs:163
+pert_ui_core::EditSequence::get(self) -> u64	function	#[must_use]	crates/pert-ui-core/src/edit.rs:42
+pert_ui_core::EditSequence::new(value: u64) -> Self	function	#[must_use]	crates/pert-ui-core/src/edit.rs:36
+pert_ui_core::EditSource::get(self) -> u64	function	#[must_use]	crates/pert-ui-core/src/edit.rs:70
+pert_ui_core::EditSource::new(value: u64) -> Self	function	#[must_use]	crates/pert-ui-core/src/edit.rs:64
+pert_ui_core::EditToken	struct	#[must_use]	crates/pert-ui-core/src/edit.rs:82
+pert_ui_core::EditToken::source(&self) -> EditSource	function	#[must_use]	crates/pert-ui-core/src/edit.rs:96
+pert_ui_core::Incarnation	struct	#[must_use]	crates/pert-ui-core/src/live/mod.rs:47
+pert_ui_core::Incarnation::get(self) -> u64	function	#[must_use]	crates/pert-ui-core/src/live/mod.rs:55
+pert_ui_core::LiveError	enum	#[non_exhaustive]	crates/pert-ui-core/src/live/mod.rs:163
+pert_ui_core::NormalizedValue	struct	#[must_use]	crates/pert-ui-core/src/normalized.rs:47
+pert_ui_core::NormalizedValue::get(self) -> f32	function	#[must_use]	crates/pert-ui-core/src/normalized.rs:83
+pert_ui_core::NormalizedValueError	enum	#[non_exhaustive]	crates/pert-ui-core/src/normalized.rs:114
+pert_ui_core::ParameterError	enum	#[non_exhaustive]	crates/pert-ui-core/src/parameter.rs:541
+pert_ui_core::ParameterId	struct	#[must_use]	crates/pert-ui-core/src/parameter_id.rs:44
+pert_ui_core::ParameterId::incarnation(&self) -> u64	function	#[must_use]	crates/pert-ui-core/src/parameter_id.rs:105
+pert_ui_core::ParameterId::object(&self) -> u128	function	#[must_use]	crates/pert-ui-core/src/parameter_id.rs:94
+pert_ui_core::ParameterId::session(&self) -> u128	function	#[must_use]	crates/pert-ui-core/src/parameter_id.rs:88
+pert_ui_core::ParameterIdError	enum	#[non_exhaustive]	crates/pert-ui-core/src/parameter_id.rs:132
+pert_ui_core::ParameterMapping	enum	#[non_exhaustive]	crates/pert-ui-core/src/parameter.rs:14
+pert_ui_core::ParameterSpec	struct	#[must_use]	crates/pert-ui-core/src/parameter.rs:151
+pert_ui_core::ParameterSpec::default_value(&self) -> T	function	#[must_use]	crates/pert-ui-core/src/parameter.rs:222
+pert_ui_core::ParameterSpec::family(&self) -> ParameterFamily	function	#[must_use]	crates/pert-ui-core/src/parameter.rs:210
+pert_ui_core::ParameterSpec::index_of(&self, id: &ChoiceId) -> Option<usize>	function	#[must_use]	crates/pert-ui-core/src/parameter.rs:533
+pert_ui_core::ParameterSpec::intervals(&self) -> u64	function	#[must_use]	crates/pert-ui-core/src/parameter.rs:443
+pert_ui_core::ParameterSpec::is_editable(&self) -> bool	function	#[must_use]	crates/pert-ui-core/src/parameter.rs:230
+pert_ui_core::ParameterSpec::mapping(&self) -> ParameterMapping	function	#[must_use]	crates/pert-ui-core/src/parameter.rs:364
+pert_ui_core::ParameterSpec::maximum(&self) -> f32	function	#[must_use]	crates/pert-ui-core/src/parameter.rs:358
+pert_ui_core::ParameterSpec::maximum(&self) -> i64	function	#[must_use]	crates/pert-ui-core/src/parameter.rs:431
+pert_ui_core::ParameterSpec::minimum(&self) -> f32	function	#[must_use]	crates/pert-ui-core/src/parameter.rs:352
+pert_ui_core::ParameterSpec::minimum(&self) -> i64	function	#[must_use]	crates/pert-ui-core/src/parameter.rs:425
+pert_ui_core::ParameterSpec::name(&self) -> &str	function	#[must_use]	crates/pert-ui-core/src/parameter.rs:216
+pert_ui_core::ParameterSpec::option(&self, id: &ChoiceId) -> Option<&ChoiceOption>	function	#[must_use]	crates/pert-ui-core/src/parameter.rs:523
+pert_ui_core::ParameterSpec::step(&self) -> NonZeroU64	function	#[must_use]	crates/pert-ui-core/src/parameter.rs:437
+pert_ui_core::ParameterState::new(id: ParameterId, spec: ParameterSpec<T>) -> Self	function	#[must_use]	crates/pert-ui-core/src/edit.rs:311
+pert_ui_core::ParameterState::snapshot(&self) -> ParameterSnapshot<T>	function	#[must_use]	crates/pert-ui-core/src/edit.rs:338
+pert_ui_core::PowerExponent::get(self) -> f32	function	#[must_use]	crates/pert-ui-core/src/parameter.rs:85
+pert_ui_core::PublishOutcome	enum	#[must_use = "a closed or exhausted endpoint will never accept again"] #[non_exhaustive]	crates/pert-ui-core/src/live/mod.rs:143
+pert_ui_core::Revision::get(self) -> u64	function	#[must_use]	crates/pert-ui-core/src/edit.rs:20
+pert_ui_core::SampleWindow::capacity(&self) -> usize	function	#[must_use]	crates/pert-ui-core/src/live/mod.rs:463
+pert_ui_core::SampleWindow::is_empty(&self) -> bool	function	#[must_use]	crates/pert-ui-core/src/live/mod.rs:457
+pert_ui_core::SampleWindow::latest(&self) -> Option<&SampleWindowEntry<T>>	function	#[must_use]	crates/pert-ui-core/src/live/mod.rs:445
+pert_ui_core::SampleWindow::len(&self) -> usize	function	#[must_use]	crates/pert-ui-core/src/live/mod.rs:451
+pert_ui_core::Sequence	struct	#[must_use]	crates/pert-ui-core/src/live/mod.rs:83
+pert_ui_core::Sequence::get(self) -> u64	function	#[must_use]	crates/pert-ui-core/src/live/mod.rs:91
+pert_ui_core::Sequence::new(number: u64) -> Option<Self>	function	#[must_use]	crates/pert-ui-core/src/live/mod.rs:97
+pert_ui_core::SeriesConfig	struct	#[must_use]	crates/pert-ui-core/src/live/mod.rs:244
+pert_ui_core::SeriesConsumer	struct	#[must_use = "dropping the consumer closes the bridge"]	crates/pert-ui-core/src/live/series.rs:292
+pert_ui_core::SeriesConsumer::dropped_total(&self) -> u64	function	#[must_use]	crates/pert-ui-core/src/live/series.rs:428
+pert_ui_core::SeriesConsumer::fill(&self) -> u64	function	#[must_use]	crates/pert-ui-core/src/live/series.rs:422
+pert_ui_core::SeriesConsumer::is_disconnected(&self) -> bool	function	#[must_use]	crates/pert-ui-core/src/live/series.rs:440
+pert_ui_core::SeriesConsumer::is_exhausted(&self) -> bool	function	#[must_use]	crates/pert-ui-core/src/live/series.rs:448
+pert_ui_core::SeriesConsumer::rejected_total(&self) -> u64	function	#[must_use]	crates/pert-ui-core/src/live/series.rs:434
+pert_ui_core::SeriesConsumer::report(&self) -> &DrainReport	function	#[must_use]	crates/pert-ui-core/src/live/series.rs:406
+pert_ui_core::SeriesConsumer::window(&self) -> &SampleWindow<T>	function	#[must_use]	crates/pert-ui-core/src/live/series.rs:400
+pert_ui_core::SeriesEndpoint	struct	#[must_use = "dropping the endpoint disconnects the source"]	crates/pert-ui-core/src/live/series.rs:138
+pert_ui_core::SeriesEndpoint::last_sequence(&self) -> Option<Sequence>	function	#[must_use]	crates/pert-ui-core/src/live/series.rs:239
+pert_ui_core::Timestamp	struct	#[must_use]	crates/pert-ui-core/src/live/mod.rs:120
+pert_ui_core::Timestamp::get(self) -> u64	function	#[must_use]	crates/pert-ui-core/src/live/mod.rs:130
+pert_ui_core::WakeFlag::is_pending(&self) -> bool	function	#[must_use]	crates/pert-ui-core/src/live/wake.rs:70
+pert_ui_core::WakeFlag::new() -> Self	function	#[must_use]	crates/pert-ui-core/src/live/wake.rs:43
+pert_ui_core::WakeFlag::request(&self) -> bool	function	#[must_use = "the caller that receives true must deliver the wake"]	crates/pert-ui-core/src/live/wake.rs:55
+
+## pert-ui-runtime
+pert_ui_runtime::Accordion	struct	#[must_use]	crates/pert-ui-runtime/src/collapsible.rs:947
+pert_ui_runtime::AlertDialog	struct	#[must_use]	crates/pert-ui-runtime/src/dialog.rs:493
+pert_ui_runtime::AnyDeliveryMonitor	enum	#[must_use = "a delivery monitor is the only record of failed host deliveries"]	crates/pert-ui-runtime/src/parameter_binding/erased.rs:223
+pert_ui_runtime::AnyDeliveryMonitor::is_faulted(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/parameter_binding/erased.rs:237
+pert_ui_runtime::AnyDeliveryMonitor::is_registered(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/parameter_binding/erased.rs:242
+pert_ui_runtime::AnyParameter::delivery_status(&self) -> ReadSignal<DeliveryStatus>	function	#[must_use]	crates/pert-ui-runtime/src/parameter_binding/erased.rs:107
+pert_ui_runtime::AnyParameter::family(&self) -> ParameterFamily	function	#[must_use]	crates/pert-ui-runtime/src/parameter_binding/erased.rs:83
+pert_ui_runtime::AnyParameterHost::family(&self) -> ParameterFamily	function	#[must_use]	crates/pert-ui-runtime/src/parameter_binding/erased.rs:279
+pert_ui_runtime::AnyTerminalEvent::begin_value(&self) -> AnyValue	function	#[must_use]	crates/pert-ui-runtime/src/parameter_binding/erased.rs:133
+pert_ui_runtime::AnyTerminalEvent::outcome(&self) -> EditOutcome<AnyValue>	function	#[must_use]	crates/pert-ui-runtime/src/parameter_binding/erased.rs:174
+pert_ui_runtime::ApplicationError::downcast_ref<T: Error + 'static>(&self) -> Option<&T>	function	#[must_use]	crates/pert-ui-runtime/src/error.rs:60
+pert_ui_runtime::ApplicationError::get(&self) -> &dyn Error + Send + Sync + 'static	function	#[must_use]	crates/pert-ui-runtime/src/error.rs:55
+pert_ui_runtime::ArcOrigin	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/numeric_controls.rs:36
+pert_ui_runtime::ArrangeContext::is_empty(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/layout.rs:986
+pert_ui_runtime::ArrangeContext::len(&self) -> usize	function	#[must_use]	crates/pert-ui-runtime/src/layout.rs:981
+pert_ui_runtime::ArrangeContext::measurement(&self) -> &MeasureContext<'_>	function	#[must_use]	crates/pert-ui-runtime/src/layout.rs:976
+pert_ui_runtime::AuthorityReceipt	struct	#[must_use = "retain the receipt to observe delayed or unknown acceptance"]	crates/pert-ui-runtime/src/parameter_binding/remote.rs:80
+pert_ui_runtime::AuthorityReceipt::status(&self) -> AuthorityStatus<T>	function	#[must_use]	crates/pert-ui-runtime/src/parameter_binding/remote.rs:100
+pert_ui_runtime::AxisMapping::pixel(self, value: f64) -> f64	function	#[must_use]	crates/pert-ui-runtime/src/axis_mapping.rs:77
+pert_ui_runtime::AxisMapping::pixels_per_unit(self) -> f64	function	#[must_use]	crates/pert-ui-runtime/src/axis_mapping.rs:72
+pert_ui_runtime::AxisMapping::start(self) -> f64	function	#[must_use]	crates/pert-ui-runtime/src/axis_mapping.rs:67
+pert_ui_runtime::AxisMapping::tick_step(self, min_pixels: f64) -> Option<f64>	function	#[must_use]	crates/pert-ui-runtime/src/axis_mapping.rs:127
+pert_ui_runtime::AxisMapping::value(self, pixel: f64) -> f64	function	#[must_use]	crates/pert-ui-runtime/src/axis_mapping.rs:82
+pert_ui_runtime::AxisMapping::visible(self, extent: f64) -> (f64, f64)	function	#[must_use]	crates/pert-ui-runtime/src/axis_mapping.rs:88
+pert_ui_runtime::Banner	struct	#[must_use]	crates/pert-ui-runtime/src/notifications.rs:25
+pert_ui_runtime::BindingError	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/parameter_binding.rs:62
+pert_ui_runtime::Breadcrumb	struct	#[must_use]	crates/pert-ui-runtime/src/breadcrumb.rs:143
+pert_ui_runtime::BreadcrumbSegment	struct	#[must_use]	crates/pert-ui-runtime/src/breadcrumb.rs:28
+pert_ui_runtime::BreadcrumbSegment::key(&self) -> &str	function	#[must_use]	crates/pert-ui-runtime/src/breadcrumb.rs:90
+pert_ui_runtime::Button	struct	#[must_use]	crates/pert-ui-runtime/src/controls.rs:445
+pert_ui_runtime::CaptureError	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/capture.rs:164
+pert_ui_runtime::CaptureRequest	struct	#[must_use]	crates/pert-ui-runtime/src/capture.rs:121
+pert_ui_runtime::CaptureRequest::overlay_included(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/capture.rs:148
+pert_ui_runtime::CaptureRequest::target(&self) -> &CaptureTarget	function	#[must_use]	crates/pert-ui-runtime/src/capture.rs:143
+pert_ui_runtime::CaptureTarget	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/capture.rs:38
+pert_ui_runtime::CaptureTarget::region(window: &crate::NativeWindowId, area: crate::Rect) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/capture.rs:96
+pert_ui_runtime::CaptureTarget::window(window: &crate::NativeWindowId) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/capture.rs:90
+pert_ui_runtime::CellEdit	struct	#[non_exhaustive]	crates/pert-ui-runtime/src/table/editing.rs:29
+pert_ui_runtime::CellEdit::column(&self) -> &str	function	#[must_use]	crates/pert-ui-runtime/src/table/editing.rs:44
+pert_ui_runtime::CellEdit::row(&self) -> &str	function	#[must_use]	crates/pert-ui-runtime/src/table/editing.rs:39
+pert_ui_runtime::CellEdit::session(&self) -> &EditorSession	function	#[must_use]	crates/pert-ui-runtime/src/table/editing.rs:59
+pert_ui_runtime::CellEdit::start(&self) -> &EditorStart	function	#[must_use]	crates/pert-ui-runtime/src/table/editing.rs:52
+pert_ui_runtime::ChangeOrigin	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/runtime/notify.rs:152
+pert_ui_runtime::Checkbox	struct	#[must_use]	crates/pert-ui-runtime/src/choice_controls.rs:647
+pert_ui_runtime::ChildInfo::captures_pointer(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:2503
+pert_ui_runtime::ChildInfo::focus_within(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:2497
+pert_ui_runtime::ChildReveal	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/runtime/reveal.rs:11
+pert_ui_runtime::Chip	struct	#[must_use]	crates/pert-ui-runtime/src/chip.rs:72
+pert_ui_runtime::Choice	struct	#[must_use]	crates/pert-ui-runtime/src/choice_controls.rs:16
+pert_ui_runtime::ChoiceError	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/choice_controls.rs:113
+pert_ui_runtime::ClickCounter::count(&self) -> u32	function	#[must_use]	crates/pert-ui-runtime/src/click.rs:153
+pert_ui_runtime::ClickCounter::new() -> Self	function	#[must_use]	crates/pert-ui-runtime/src/click.rs:88
+pert_ui_runtime::ClickCounter::with_distance(self, distance: Length) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/click.rs:110
+pert_ui_runtime::ClickCounter::with_interval(self, interval: Duration) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/click.rs:101
+pert_ui_runtime::ClipboardError	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/text_input.rs:158
+pert_ui_runtime::Collapsible	struct	#[must_use]	crates/pert-ui-runtime/src/collapsible.rs:464
+pert_ui_runtime::CollectionFilter	struct	#[must_use]	crates/pert-ui-runtime/src/collection_filter.rs:499
+pert_ui_runtime::CollectionFilter::query(&self) -> Signal<String>	function	#[must_use]	crates/pert-ui-runtime/src/collection_filter.rs:628
+pert_ui_runtime::Color::alpha(self) -> f32	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:293
+pert_ui_runtime::Color::blue(self) -> f32	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:288
+pert_ui_runtime::Color::channels(self) -> [f32; 4]	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:302
+pert_ui_runtime::Color::from_srgb8(red: u8, green: u8, blue: u8, alpha: u8) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:358
+pert_ui_runtime::Color::green(self) -> f32	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:283
+pert_ui_runtime::Color::over(self, background: OpaqueColor) -> OpaqueColor	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:616
+pert_ui_runtime::Color::red(self) -> f32	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:278
+pert_ui_runtime::Color::to_hex(self) -> String	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:479
+pert_ui_runtime::Color::to_srgb(self) -> [f32; 4]	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:376
+pert_ui_runtime::Color::to_srgb8(self) -> [u8; 4]	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:393
+pert_ui_runtime::ColorPicker	struct	#[must_use]	crates/pert-ui-runtime/src/color_picker.rs:386
+pert_ui_runtime::ColorRole	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/runtime/theme.rs:357
+pert_ui_runtime::ColorSwatch	struct	#[must_use]	crates/pert-ui-runtime/src/color_swatch.rs:96
+pert_ui_runtime::Column	struct	#[must_use]	crates/pert-ui-runtime/src/containers.rs:898
+pert_ui_runtime::CommandEntry	struct	#[non_exhaustive]	crates/pert-ui-runtime/src/runtime/commands.rs:419
+pert_ui_runtime::CommandId	struct	#[must_use]	crates/pert-ui-runtime/src/runtime/commands.rs:380
+pert_ui_runtime::CommandMatcher	struct	#[must_use]	crates/pert-ui-runtime/src/command_palette.rs:40
+pert_ui_runtime::CommandMatcher::fuzzy_score(query: &str, text: &str) -> Option<u32>	function	#[must_use]	crates/pert-ui-runtime/src/command_palette.rs:99
+pert_ui_runtime::CommandMatcher::rank(&self, query: &str, entries: &[CommandEntry]) -> Vec<usize>	function	#[must_use]	crates/pert-ui-runtime/src/command_palette.rs:64
+pert_ui_runtime::CommandMatcher::score(&self, query: &str, entry: &CommandEntry) -> Option<u32>	function	#[must_use]	crates/pert-ui-runtime/src/command_palette.rs:56
+pert_ui_runtime::CommandPalette	struct	#[must_use]	crates/pert-ui-runtime/src/command_palette.rs:505
+pert_ui_runtime::CommandPaletteController	struct	#[must_use]	crates/pert-ui-runtime/src/command_palette.rs:208
+pert_ui_runtime::CommandPaletteStatus	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/command_palette.rs:120
+pert_ui_runtime::CommandReceipt	struct	#[must_use]	crates/pert-ui-runtime/src/runtime/commands.rs:1607
+pert_ui_runtime::CommandReceipt::status(&self) -> CommandStatus	function	#[must_use]	crates/pert-ui-runtime/src/runtime/commands.rs:1612
+pert_ui_runtime::Constraints::bounded(size: Size) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/layout.rs:274
+pert_ui_runtime::Constraints::height(self) -> Option<f32>	function	#[must_use]	crates/pert-ui-runtime/src/layout.rs:287
+pert_ui_runtime::Constraints::width(self) -> Option<f32>	function	#[must_use]	crates/pert-ui-runtime/src/layout.rs:282
+pert_ui_runtime::Container	struct	#[must_use]	crates/pert-ui-runtime/src/containers.rs:63
+pert_ui_runtime::ContentField	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/content_search.rs:164
+pert_ui_runtime::ContentHit	struct	#[non_exhaustive]	crates/pert-ui-runtime/src/content_search.rs:176
+pert_ui_runtime::ContentJump	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/content_search.rs:392
+pert_ui_runtime::ContentQuery::everything() -> Self	function	#[must_use]	crates/pert-ui-runtime/src/content_search.rs:62
+pert_ui_runtime::ContentQuery::hidden(self, include: bool) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/content_search.rs:100
+pert_ui_runtime::ContentQuery::includes_hidden(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/content_search.rs:135
+pert_ui_runtime::ContentQuery::includes_rows(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/content_search.rs:115
+pert_ui_runtime::ContentQuery::result_limit(&self) -> usize	function	#[must_use]	crates/pert-ui-runtime/src/content_search.rs:125
+pert_ui_runtime::ContentQuery::rows(self, include: bool) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/content_search.rs:109
+pert_ui_runtime::ContentQuery::text(&self) -> Option<&str>	function	#[must_use]	crates/pert-ui-runtime/src/content_search.rs:120
+pert_ui_runtime::ContentQuery::work_budget(&self) -> usize	function	#[must_use]	crates/pert-ui-runtime/src/content_search.rs:130
+pert_ui_runtime::ContentSearch::is_done(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/content_search.rs:310
+pert_ui_runtime::ContentSearch::query(&self) -> &ContentQuery	function	#[must_use]	crates/pert-ui-runtime/src/content_search.rs:305
+pert_ui_runtime::ContentSearchError	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/content_search.rs:436
+pert_ui_runtime::ContentStep	struct	#[non_exhaustive]	crates/pert-ui-runtime/src/content_search.rs:204
+pert_ui_runtime::ContentTarget	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/content_search.rs:148
+pert_ui_runtime::ContextMenu	struct	#[must_use]	crates/pert-ui-runtime/src/menu.rs:1250
+pert_ui_runtime::ContextMenuOpener	struct	#[must_use]	crates/pert-ui-runtime/src/menu.rs:1303
+pert_ui_runtime::CursorIcon	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/pointer.rs:230
+pert_ui_runtime::DecimalInput	struct	#[must_use]	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:203
+pert_ui_runtime::DeliveryError	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:11
+pert_ui_runtime::DeliveryMonitor	struct	#[must_use = "a delivery monitor is the only record of failed host deliveries"]	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:247
+pert_ui_runtime::DeliveryMonitor::observe(&self) -> ReadSignal<DeliverySnapshot<T>>	function	#[must_use]	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:284
+pert_ui_runtime::DeliverySnapshot::is_faulted(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:233
+pert_ui_runtime::Dialog	struct	#[must_use]	crates/pert-ui-runtime/src/dialog.rs:177
+pert_ui_runtime::DialogController	struct	#[must_use]	crates/pert-ui-runtime/src/dialog.rs:47
+pert_ui_runtime::DirectoryEntry::error(&self) -> Option<&ListingError>	function	#[must_use]	crates/pert-ui-runtime/src/file_browser.rs:165
+pert_ui_runtime::DirectoryEntry::kind(&self) -> EntryKind	function	#[must_use]	crates/pert-ui-runtime/src/file_browser.rs:159
+pert_ui_runtime::DirectoryEntry::name(&self) -> &std::ffi::OsStr	function	#[must_use]	crates/pert-ui-runtime/src/file_browser.rs:154
+pert_ui_runtime::DirectoryEntry::opens_as_directory(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/file_browser.rs:171
+pert_ui_runtime::DirectoryEntry::path(&self) -> &Path	function	#[must_use]	crates/pert-ui-runtime/src/file_browser.rs:149
+pert_ui_runtime::DirectoryRequest	struct	#[must_use = "a request the host never answers leaves its directory loading"]	crates/pert-ui-runtime/src/file_browser.rs:196
+pert_ui_runtime::DirectoryRequest::directory(&self) -> &Path	function	#[must_use]	crates/pert-ui-runtime/src/file_browser.rs:205
+pert_ui_runtime::DirectoryRequest::generation(&self) -> u64	function	#[must_use]	crates/pert-ui-runtime/src/file_browser.rs:210
+pert_ui_runtime::DirectoryResponse	struct	#[must_use = "a response does nothing until it is delivered"]	crates/pert-ui-runtime/src/file_browser.rs:228
+pert_ui_runtime::DisplayList::background(&self) -> Color	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:1243
+pert_ui_runtime::DisplayList::commands(&self) -> &[DrawCommand]	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:1281
+pert_ui_runtime::DisplayList::image(&self, id: crate::ImageId) -> Option<&crate::RasterImage>	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:1262
+pert_ui_runtime::DisplayList::images(&self) -> &[crate::RasterImage]	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:1268
+pert_ui_runtime::DisplayList::is_empty(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:1296
+pert_ui_runtime::DisplayList::len(&self) -> usize	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:1291
+pert_ui_runtime::DisplayList::mask(&self, id: MaskId) -> Option<&MaskImage>	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:1250
+pert_ui_runtime::DisplayList::masks(&self) -> &[MaskImage]	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:1256
+pert_ui_runtime::DisplayList::viewport(&self) -> Viewport	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:1273
+pert_ui_runtime::Divider	struct	#[must_use]	crates/pert-ui-runtime/src/views.rs:906
+pert_ui_runtime::DraftAlign	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/text_fields/draft.rs:26
+pert_ui_runtime::DraftEditor::align(self, align: DraftAlign) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/text_fields/draft.rs:622
+pert_ui_runtime::DraftEditor::new(controller: DraftEditorController<P>) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/text_fields/draft.rs:604
+pert_ui_runtime::DraftEditor::style(self, style: TextStyle) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/text_fields/draft.rs:615
+pert_ui_runtime::DraftEditorController::is_active(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/text_fields/draft.rs:375
+pert_ui_runtime::DraftEditorController::is_read_only(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/text_fields/draft.rs:381
+pert_ui_runtime::DraftEditorController::new() -> Self	function	#[must_use]	crates/pert-ui-runtime/src/text_fields/draft.rs:181
+pert_ui_runtime::DraftEditorController::payload(&self) -> Option<P>	function	#[must_use]	crates/pert-ui-runtime/src/text_fields/draft.rs:397
+pert_ui_runtime::DraftEditorController::text(&self) -> String	function	#[must_use]	crates/pert-ui-runtime/src/text_fields/draft.rs:388
+pert_ui_runtime::DraftSelection	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/text_fields/draft.rs:12
+pert_ui_runtime::DragEvent::payload(&self) -> &DragPayload	function	#[must_use]	crates/pert-ui-runtime/src/drag.rs:284
+pert_ui_runtime::DragEvent::permitted(&self) -> DropOperations	function	#[must_use]	crates/pert-ui-runtime/src/drag.rs:289
+pert_ui_runtime::DragEvent::phase(&self) -> DragPhase	function	#[must_use]	crates/pert-ui-runtime/src/drag.rs:267
+pert_ui_runtime::DragEvent::position(&self) -> crate::Point	function	#[must_use]	crates/pert-ui-runtime/src/drag.rs:279
+pert_ui_runtime::DragEvent::preferred(&self) -> DropOperation	function	#[must_use]	crates/pert-ui-runtime/src/drag.rs:295
+pert_ui_runtime::DragEvent::role(&self) -> DragRole	function	#[must_use]	crates/pert-ui-runtime/src/drag.rs:272
+pert_ui_runtime::DragEvent::source(&self) -> &crate::WidgetId	function	#[must_use]	crates/pert-ui-runtime/src/drag.rs:300
+pert_ui_runtime::DragOutcome	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/drag.rs:330
+pert_ui_runtime::DragPayload::get<T: 'static>(&self) -> Option<&T>	function	#[must_use]	crates/pert-ui-runtime/src/drag.rs:53
+pert_ui_runtime::DragPayload::type_name(&self) -> &'static str	function	#[must_use]	crates/pert-ui-runtime/src/drag.rs:58
+pert_ui_runtime::DragPreview	struct	#[must_use]	crates/pert-ui-runtime/src/drag.rs:191
+pert_ui_runtime::DrawCommand	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/drawing.rs:1026
+pert_ui_runtime::DrawError	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/drawing.rs:24
+pert_ui_runtime::DropOperations::contains(self, operation: DropOperation) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/drag.rs:128
+pert_ui_runtime::DropOperations::is_empty(self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/drag.rs:133
+pert_ui_runtime::DropOperations::preferred(self, modifiers: crate::Modifiers) -> Option<DropOperation>	function	#[must_use]	crates/pert-ui-runtime/src/drag.rs:144
+pert_ui_runtime::DropPosition	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/list_drag.rs:47
+pert_ui_runtime::Dynamic	struct	#[must_use]	crates/pert-ui-runtime/src/described.rs:178
+pert_ui_runtime::Each	struct	#[must_use]	crates/pert-ui-runtime/src/described.rs:277
+pert_ui_runtime::EditSession	struct	#[must_use = "dropping an edit session cancels unfinished work"]	crates/pert-ui-runtime/src/parameter_binding.rs:706
+pert_ui_runtime::EditorAttachment::has_start(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/editor_session.rs:239
+pert_ui_runtime::EditorAttachment::is_current(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/editor_session.rs:226
+pert_ui_runtime::EditorAttachment::take_start(&self) -> Option<EditorStart>	function	#[must_use]	crates/pert-ui-runtime/src/editor_session.rs:231
+pert_ui_runtime::EditorCompletion	struct	#[non_exhaustive]	crates/pert-ui-runtime/src/editor_session.rs:74
+pert_ui_runtime::EditorOutcome	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/editor_session.rs:50
+pert_ui_runtime::EditorOutcome::is_terminal(self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/editor_session.rs:66
+pert_ui_runtime::EditorSession::attach(&self) -> EditorAttachment	function	#[must_use]	crates/pert-ui-runtime/src/editor_session.rs:194
+pert_ui_runtime::EditorSession::is_open(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/editor_session.rs:188
+pert_ui_runtime::EditorSession::new(notifier: Notifier) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/editor_session.rs:159
+pert_ui_runtime::EditorSession::take_completion(&self) -> Option<EditorCompletion>	function	#[must_use]	crates/pert-ui-runtime/src/editor_session.rs:202
+pert_ui_runtime::EditorStart	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/editor_session.rs:14
+pert_ui_runtime::EditorTrigger	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/editor_session.rs:29
+pert_ui_runtime::Element	struct	#[must_use]	crates/pert-ui-runtime/src/layout.rs:312
+pert_ui_runtime::Element::detach_permission(&self) -> &crate::Permission	function	#[must_use]	crates/pert-ui-runtime/src/layout.rs:513
+pert_ui_runtime::Element::detachable(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/layout.rs:508
+pert_ui_runtime::Element::grow(&self) -> u16	function	#[must_use]	crates/pert-ui-runtime/src/layout.rs:593
+pert_ui_runtime::Element::label_source(&self) -> Option<&crate::TextSource>	function	#[must_use]	crates/pert-ui-runtime/src/layout.rs:458
+pert_ui_runtime::Element::searchable(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/layout.rs:545
+pert_ui_runtime::EntryKind	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/file_browser.rs:26
+pert_ui_runtime::EventContext::bounds(&self) -> Option<crate::Rect>	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:3263
+pert_ui_runtime::EventContext::drag_active(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/runtime/drag.rs:162
+pert_ui_runtime::EventContext::focused(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:3276
+pert_ui_runtime::EventContext::id(&self) -> WidgetId	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:3173
+pert_ui_runtime::EventContext::modifiers(&self) -> crate::Modifiers	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:3168
+pert_ui_runtime::EventContext::notifier(&self) -> crate::Notifier	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:3206
+pert_ui_runtime::EventContext::parent_bounds(&self) -> Option<crate::Rect>	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:3269
+pert_ui_runtime::EventContext::parent_size(&self) -> Option<crate::Size>	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:3093
+pert_ui_runtime::EventContext::pointer_inside(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:3281
+pert_ui_runtime::EventContext::pointer_position(&self) -> Option<crate::Point>	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:3300
+pert_ui_runtime::EventContext::position_in_parent(&self) -> Option<crate::Point>	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:3072
+pert_ui_runtime::EventContext::profile(&self) -> crate::ProfileSnapshot	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:3189
+pert_ui_runtime::EventContext::size(&self) -> Option<crate::Size>	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:3107
+pert_ui_runtime::EventContext::to_local(&self, point: crate::Point) -> Option<crate::Point>	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:3031
+pert_ui_runtime::EventContext::to_local_delta(&self, delta: crate::Point) -> crate::Point	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:3045
+pert_ui_runtime::EventContext::to_local_rect(&self, rect: crate::Rect) -> Option<crate::Rect>	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:3055
+pert_ui_runtime::EventContext::view_scale(&self) -> f32	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:3099
+pert_ui_runtime::FailurePhase	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/runtime.rs:77
+pert_ui_runtime::FailureSite	struct	#[non_exhaustive]	crates/pert-ui-runtime/src/runtime.rs:55
+pert_ui_runtime::Field	struct	#[must_use]	crates/pert-ui-runtime/src/field_status.rs:438
+pert_ui_runtime::FieldHandle	struct	#[must_use]	crates/pert-ui-runtime/src/field_status.rs:304
+pert_ui_runtime::FieldHandle::key(&self) -> &str	function	#[must_use]	crates/pert-ui-runtime/src/field_status.rs:314
+pert_ui_runtime::FieldHandle::status(&self) -> ReadSignal<FieldStatus>	function	#[must_use]	crates/pert-ui-runtime/src/field_status.rs:362
+pert_ui_runtime::FieldStatus	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/field_status.rs:27
+pert_ui_runtime::FieldStatus::is_error(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/field_status.rs:64
+pert_ui_runtime::FieldStatus::is_pending(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/field_status.rs:74
+pert_ui_runtime::FieldStatus::is_warning(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/field_status.rs:69
+pert_ui_runtime::FieldStatus::message(&self) -> Option<&str>	function	#[must_use]	crates/pert-ui-runtime/src/field_status.rs:56
+pert_ui_runtime::FileBrowser	struct	#[must_use]	crates/pert-ui-runtime/src/file_browser/view.rs:70
+pert_ui_runtime::FileBrowserController	struct	#[must_use]	crates/pert-ui-runtime/src/file_browser/controller.rs:480
+pert_ui_runtime::FileBrowserController::current(&self) -> ReadSignal<PathBuf>	function	#[must_use]	crates/pert-ui-runtime/src/file_browser/controller.rs:622
+pert_ui_runtime::FileBrowserController::filter(&self) -> Signal<String>	function	#[must_use]	crates/pert-ui-runtime/src/file_browser/controller.rs:630
+pert_ui_runtime::FileBrowserController::folder_filter(&self) -> Signal<String>	function	#[must_use]	crates/pert-ui-runtime/src/file_browser/controller.rs:641
+pert_ui_runtime::FileBrowserController::path_of(&self, key: &str) -> Option<PathBuf>	function	#[must_use]	crates/pert-ui-runtime/src/file_browser/controller.rs:669
+pert_ui_runtime::FileBrowserError	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/file_browser.rs:261
+pert_ui_runtime::FilterMatcher	struct	#[must_use]	crates/pert-ui-runtime/src/collection_filter.rs:39
+pert_ui_runtime::FilterMatcher::matches(&self, query: &str, text: &str) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/collection_filter.rs:76
+pert_ui_runtime::FilterOutcome	struct	#[non_exhaustive]	crates/pert-ui-runtime/src/collection_filter.rs:115
+pert_ui_runtime::FilterTarget	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/collection_filter.rs:353
+pert_ui_runtime::FittedText	struct	#[must_use]	crates/pert-ui-runtime/src/text/fit.rs:58
+pert_ui_runtime::FittedText::is_truncated(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/text/fit.rs:73
+pert_ui_runtime::FittedText::shown(&self) -> Option<&str>	function	#[must_use]	crates/pert-ui-runtime/src/text/fit.rs:79
+pert_ui_runtime::FloatingWindow	struct	#[must_use]	crates/pert-ui-runtime/src/windows.rs:195
+pert_ui_runtime::FontData	struct	#[must_use]	crates/pert-ui-runtime/src/text/fonts.rs:44
+pert_ui_runtime::FontError	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/text/fonts.rs:121
+pert_ui_runtime::FontId	struct	#[must_use]	crates/pert-ui-runtime/src/text/fonts.rs:86
+pert_ui_runtime::FontManager	struct	#[must_use]	crates/pert-ui-runtime/src/runtime/fonts.rs:38
+pert_ui_runtime::Form	struct	#[must_use]	crates/pert-ui-runtime/src/form.rs:53
+pert_ui_runtime::FormStatus	struct	#[must_use]	crates/pert-ui-runtime/src/field_status.rs:216
+pert_ui_runtime::FormStatus::summary(&self) -> ReadSignal<FormSummary>	function	#[must_use]	crates/pert-ui-runtime/src/field_status.rs:266
+pert_ui_runtime::FormSummary::errors(&self) -> usize	function	#[must_use]	crates/pert-ui-runtime/src/field_status.rs:111
+pert_ui_runtime::FormSummary::first_error(&self) -> Option<&str>	function	#[must_use]	crates/pert-ui-runtime/src/field_status.rs:135
+pert_ui_runtime::FormSummary::modified(&self) -> usize	function	#[must_use]	crates/pert-ui-runtime/src/field_status.rs:130
+pert_ui_runtime::FormSummary::pending(&self) -> usize	function	#[must_use]	crates/pert-ui-runtime/src/field_status.rs:123
+pert_ui_runtime::FormSummary::warnings(&self) -> usize	function	#[must_use]	crates/pert-ui-runtime/src/field_status.rs:116
+pert_ui_runtime::FrameError	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/capture.rs:224
+pert_ui_runtime::FrameImage::encode_png(&self) -> Vec<u8>	function	#[must_use]	crates/pert-ui-runtime/src/capture.rs:452
+pert_ui_runtime::FrameImage::height(&self) -> u32	function	#[must_use]	crates/pert-ui-runtime/src/capture.rs:392
+pert_ui_runtime::FrameImage::pixels(&self) -> &[u8]	function	#[must_use]	crates/pert-ui-runtime/src/capture.rs:399
+pert_ui_runtime::FrameImage::width(&self) -> u32	function	#[must_use]	crates/pert-ui-runtime/src/capture.rs:387
+pert_ui_runtime::GeometryError	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/layout.rs:80
+pert_ui_runtime::Grid	struct	#[must_use]	crates/pert-ui-runtime/src/containers.rs:1027
+pert_ui_runtime::Group	struct	#[must_use]	crates/pert-ui-runtime/src/views.rs:136
+pert_ui_runtime::HeldCancellation	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/runtime/held.rs:15
+pert_ui_runtime::HeldInputId	struct	#[must_use]	crates/pert-ui-runtime/src/runtime/held.rs:8
+pert_ui_runtime::HexColorError	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/drawing.rs:755
+pert_ui_runtime::HighlightError	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/text/fit.rs:210
+pert_ui_runtime::HistoryButtons	struct	#[must_use]	crates/pert-ui-runtime/src/history_navigator.rs:486
+pert_ui_runtime::HistoryEntry::id(&self) -> HistoryEntryId	function	#[must_use]	crates/pert-ui-runtime/src/navigation_history.rs:38
+pert_ui_runtime::HistoryEntry::label(&self) -> &str	function	#[must_use]	crates/pert-ui-runtime/src/navigation_history.rs:49
+pert_ui_runtime::HistoryEntry::value(&self) -> &T	function	#[must_use]	crates/pert-ui-runtime/src/navigation_history.rs:44
+pert_ui_runtime::HistoryEntryId::get(self) -> u64	function	#[must_use]	crates/pert-ui-runtime/src/navigation_history.rs:21
+pert_ui_runtime::HistoryNavigator	struct	#[must_use]	crates/pert-ui-runtime/src/history_navigator.rs:111
+pert_ui_runtime::HistorySnapshot::can_go_back(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/navigation_history.rs:83
+pert_ui_runtime::HistorySnapshot::can_go_forward(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/navigation_history.rs:88
+pert_ui_runtime::HistorySnapshot::current(&self) -> Option<&HistoryEntry<T>>	function	#[must_use]	crates/pert-ui-runtime/src/navigation_history.rs:78
+pert_ui_runtime::HistorySnapshot::entries(&self) -> &[HistoryEntry<T>]	function	#[must_use]	crates/pert-ui-runtime/src/navigation_history.rs:73
+pert_ui_runtime::HistorySnapshot::get(&self, id: HistoryEntryId) -> Option<&HistoryEntry<T>>	function	#[must_use]	crates/pert-ui-runtime/src/navigation_history.rs:106
+pert_ui_runtime::HistorySnapshot::next(&self) -> Option<&HistoryEntry<T>>	function	#[must_use]	crates/pert-ui-runtime/src/navigation_history.rs:101
+pert_ui_runtime::HistorySnapshot::previous(&self) -> Option<&HistoryEntry<T>>	function	#[must_use]	crates/pert-ui-runtime/src/navigation_history.rs:94
+pert_ui_runtime::Icon	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/text/icons.rs:9
+pert_ui_runtime::IconGlyph	struct	#[must_use]	crates/pert-ui-runtime/src/text/fonts.rs:149
+pert_ui_runtime::IconManager	struct	#[must_use]	crates/pert-ui-runtime/src/runtime/fonts.rs:162
+pert_ui_runtime::IgnoredEntry	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/workspace.rs:719
+pert_ui_runtime::Image	struct	#[must_use]	crates/pert-ui-runtime/src/image.rs:76
+pert_ui_runtime::ImageFit	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/image.rs:17
+pert_ui_runtime::ImageId::index(self) -> usize	function	#[must_use]	crates/pert-ui-runtime/src/resources.rs:91
+pert_ui_runtime::ImageSampling	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/resources.rs:106
+pert_ui_runtime::InlineChoice	struct	#[must_use]	crates/pert-ui-runtime/src/choice_controls.rs:1585
+pert_ui_runtime::InlineDecimal	struct	#[must_use]	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:274
+pert_ui_runtime::InlineInteger	struct	#[must_use]	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:247
+pert_ui_runtime::InlineReadout	struct	#[must_use]	crates/pert-ui-runtime/src/inline_controls.rs:579
+pert_ui_runtime::InlineSelect	struct	#[must_use]	crates/pert-ui-runtime/src/select.rs:1740
+pert_ui_runtime::InlineSlider	struct	#[must_use]	crates/pert-ui-runtime/src/numeric_controls.rs:1592
+pert_ui_runtime::InlineText	struct	#[must_use]	crates/pert-ui-runtime/src/text_fields/inline_text.rs:66
+pert_ui_runtime::InlineToggle	struct	#[must_use]	crates/pert-ui-runtime/src/inline_controls.rs:54
+pert_ui_runtime::InspectionQuery	struct	#[must_use]	crates/pert-ui-runtime/src/inspection.rs:200
+pert_ui_runtime::InspectionQuery::depth_value(&self) -> Depth	function	#[must_use]	crates/pert-ui-runtime/src/inspection.rs:287
+pert_ui_runtime::InspectionQuery::detail_value(&self) -> Detail	function	#[must_use]	crates/pert-ui-runtime/src/inspection.rs:292
+pert_ui_runtime::InspectionQuery::events_after_value(&self) -> Option<u64>	function	#[must_use]	crates/pert-ui-runtime/src/inspection.rs:302
+pert_ui_runtime::InspectionQuery::limit_value(&self) -> Option<usize>	function	#[must_use]	crates/pert-ui-runtime/src/inspection.rs:297
+pert_ui_runtime::InspectionQuery::selector(&self) -> Option<&Selector>	function	#[must_use]	crates/pert-ui-runtime/src/inspection.rs:282
+pert_ui_runtime::InspectionQuery::wants_application(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/inspection.rs:327
+pert_ui_runtime::InspectionQuery::wants_parameters(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/inspection.rs:307
+pert_ui_runtime::InspectionQuery::wants_sources(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/inspection.rs:317
+pert_ui_runtime::InspectionQuery::wants_validation(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/inspection.rs:322
+pert_ui_runtime::InspectionQuery::wants_windows(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/inspection.rs:312
+pert_ui_runtime::InspectionService	struct	#[must_use = "dropping the service closes it"]	crates/pert-ui-runtime/src/inspection.rs:1053
+pert_ui_runtime::IntegerInput	struct	#[must_use]	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:166
+pert_ui_runtime::IntervalTimer::is_cancelled(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/runtime/application.rs:95
+pert_ui_runtime::KeyChord	struct	#[must_use]	crates/pert-ui-runtime/src/runtime/commands.rs:27
+pert_ui_runtime::KeyChord::key(self) -> CommandKey	function	#[must_use]	crates/pert-ui-runtime/src/runtime/commands.rs:114
+pert_ui_runtime::KeyChord::modifiers(self) -> Modifiers	function	#[must_use]	crates/pert-ui-runtime/src/runtime/commands.rs:119
+pert_ui_runtime::KeyCode	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/input.rs:11
+pert_ui_runtime::KeyCode::primary() -> Self	function	#[must_use]	crates/pert-ui-runtime/src/input.rs:195
+pert_ui_runtime::KeyEvent::requests_context_menu(self, modifiers: Modifiers) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/input.rs:268
+pert_ui_runtime::KeyboardState::chord_modifiers(&self, event: KeyEvent) -> Modifiers	function	#[must_use]	crates/pert-ui-runtime/src/input.rs:450
+pert_ui_runtime::KeyboardState::control_key(&self, event: KeyEvent) -> KeyCode	function	#[must_use]	crates/pert-ui-runtime/src/input.rs:397
+pert_ui_runtime::KeyboardState::is_pressed(&self, key: KeyCode) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/input.rs:407
+pert_ui_runtime::KeyboardState::modifiers(&self) -> Modifiers	function	#[must_use]	crates/pert-ui-runtime/src/input.rs:426
+pert_ui_runtime::Knob	struct	#[must_use]	crates/pert-ui-runtime/src/numeric_controls.rs:1598
+pert_ui_runtime::Label	struct	#[must_use]	crates/pert-ui-runtime/src/controls.rs:58
+pert_ui_runtime::LayoutError	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/layout.rs:10
+pert_ui_runtime::Length::get(self) -> f32	function	#[must_use]	crates/pert-ui-runtime/src/containers.rs:30
+pert_ui_runtime::LevelMeter	struct	#[must_use]	crates/pert-ui-runtime/src/live_widgets.rs:131
+pert_ui_runtime::LimitError	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/render_limits.rs:46
+pert_ui_runtime::Link	struct	#[must_use]	crates/pert-ui-runtime/src/link.rs:76
+pert_ui_runtime::LinkTarget	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/file_browser.rs:42
+pert_ui_runtime::LinkUnderline	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/link.rs:11
+pert_ui_runtime::ListController::new(runtime: &impl crate::StateOwner) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/virtual_list.rs:275
+pert_ui_runtime::ListDragItems::keys(&self) -> &[String]	function	#[must_use]	crates/pert-ui-runtime/src/list_drag.rs:33
+pert_ui_runtime::ListDrop::is_internal(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/list_drag.rs:92
+pert_ui_runtime::ListDrop::items(&self) -> &[String]	function	#[must_use]	crates/pert-ui-runtime/src/list_drag.rs:76
+pert_ui_runtime::ListDrop::operation(&self) -> DropOperation	function	#[must_use]	crates/pert-ui-runtime/src/list_drag.rs:87
+pert_ui_runtime::ListDrop::position(&self) -> &DropPosition	function	#[must_use]	crates/pert-ui-runtime/src/list_drag.rs:81
+pert_ui_runtime::ListDropPlacement::mark(&self) -> ListDropMark	function	#[must_use]	crates/pert-ui-runtime/src/virtual_list.rs:581
+pert_ui_runtime::ListDropPlacement::new(position: DropPosition, mark: ListDropMark) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/virtual_list.rs:570
+pert_ui_runtime::ListDropPlacement::position(&self) -> &DropPosition	function	#[must_use]	crates/pert-ui-runtime/src/virtual_list.rs:576
+pert_ui_runtime::ListDropPoint::across(&self) -> f32	function	#[must_use]	crates/pert-ui-runtime/src/virtual_list.rs:554
+pert_ui_runtime::ListDropPoint::fraction(&self) -> f32	function	#[must_use]	crates/pert-ui-runtime/src/virtual_list.rs:547
+pert_ui_runtime::ListDropPoint::index(&self) -> Option<usize>	function	#[must_use]	crates/pert-ui-runtime/src/virtual_list.rs:535
+pert_ui_runtime::ListDropPoint::key(&self) -> Option<&str>	function	#[must_use]	crates/pert-ui-runtime/src/virtual_list.rs:541
+pert_ui_runtime::ListFilter	struct	#[must_use]	crates/pert-ui-runtime/src/collection_filter.rs:255
+pert_ui_runtime::ListFilter::counts(&self) -> ReadSignal<FilterCounts>	function	#[must_use]	crates/pert-ui-runtime/src/collection_filter.rs:308
+pert_ui_runtime::ListFilter::items(&self) -> ReadSignal<ListSource>	function	#[must_use]	crates/pert-ui-runtime/src/collection_filter.rs:298
+pert_ui_runtime::ListFilter::source(&self) -> ReadSignal<ListSource>	function	#[must_use]	crates/pert-ui-runtime/src/collection_filter.rs:303
+pert_ui_runtime::ListRevealReceipt	struct	#[must_use = "the receipt is the only report of whether the row was found and mounted"]	crates/pert-ui-runtime/src/virtual_list.rs:229
+pert_ui_runtime::ListRevealReceipt::status(&self) -> ListRevealStatus	function	#[must_use]	crates/pert-ui-runtime/src/virtual_list.rs:234
+pert_ui_runtime::ListRevealStatus	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/virtual_list.rs:200
+pert_ui_runtime::ListSelection	struct	#[must_use]	crates/pert-ui-runtime/src/list_selection.rs:62
+pert_ui_runtime::ListSelection::active(&self) -> ReadSignal<Option<String>>	function	#[must_use]	crates/pert-ui-runtime/src/list_selection.rs:140
+pert_ui_runtime::ListSelection::mode(&self) -> SelectionMode	function	#[must_use]	crates/pert-ui-runtime/src/list_selection.rs:135
+pert_ui_runtime::ListSelection::selected(&self) -> ReadSignal<Rc<BTreeSet<String>>>	function	#[must_use]	crates/pert-ui-runtime/src/list_selection.rs:145
+pert_ui_runtime::ListSelectionChange	struct	#[non_exhaustive]	crates/pert-ui-runtime/src/list_selection.rs:86
+pert_ui_runtime::ListingDelivery	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/file_browser.rs:249
+pert_ui_runtime::ListingError::kind(&self) -> ListingErrorKind	function	#[must_use]	crates/pert-ui-runtime/src/file_browser.rs:91
+pert_ui_runtime::ListingError::message(&self) -> &str	function	#[must_use]	crates/pert-ui-runtime/src/file_browser.rs:96
+pert_ui_runtime::ListingErrorKind	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/file_browser.rs:58
+pert_ui_runtime::Magnification::get(self) -> f32	function	#[must_use]	crates/pert-ui-runtime/src/pointer.rs:127
+pert_ui_runtime::Mailbox	struct	#[must_use = "dropping the mailbox closes it"]	crates/pert-ui-runtime/src/mailbox.rs:249
+pert_ui_runtime::MaskId::index(self) -> usize	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:1101
+pert_ui_runtime::MaskImage::content_key(&self) -> u64	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:1180
+pert_ui_runtime::MaskImage::height(&self) -> u32	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:1163
+pert_ui_runtime::MaskImage::pixels(&self) -> &[u8]	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:1168
+pert_ui_runtime::MaskImage::width(&self) -> u32	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:1158
+pert_ui_runtime::MeasureContext::is_empty(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/layout.rs:948
+pert_ui_runtime::MeasureContext::len(&self) -> usize	function	#[must_use]	crates/pert-ui-runtime/src/layout.rs:943
+pert_ui_runtime::MeasureContext::metric(&self, role: crate::MetricRole) -> f32	function	#[must_use]	crates/pert-ui-runtime/src/layout.rs:744
+pert_ui_runtime::MeasureContext::raster_scale(&self) -> f64	function	#[must_use]	crates/pert-ui-runtime/src/layout.rs:735
+pert_ui_runtime::MeasureContext::viewport(&self) -> crate::Viewport	function	#[must_use]	crates/pert-ui-runtime/src/layout.rs:717
+pert_ui_runtime::Menu	struct	#[must_use]	crates/pert-ui-runtime/src/menu.rs:675
+pert_ui_runtime::MenuBar	struct	#[must_use]	crates/pert-ui-runtime/src/menu_bar.rs:624
+pert_ui_runtime::MenuItem	struct	#[must_use]	crates/pert-ui-runtime/src/menu.rs:222
+pert_ui_runtime::MetricRole	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/runtime/theme.rs:74
+pert_ui_runtime::Modifiers::primary(self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/input.rs:334
+pert_ui_runtime::MultiSelect	struct	#[must_use]	crates/pert-ui-runtime/src/multi_select.rs:1209
+pert_ui_runtime::MultiSelectCommit	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/multi_select.rs:20
+pert_ui_runtime::NativeWindowId	struct	#[must_use]	crates/pert-ui-runtime/src/runtime/native_windows.rs:131
+pert_ui_runtime::NativeWindowId::id(&self) -> u64	function	#[must_use]	crates/pert-ui-runtime/src/runtime/native_windows.rs:156
+pert_ui_runtime::NativeWindowOptions	struct	#[must_use]	crates/pert-ui-runtime/src/runtime/native_windows.rs:186
+pert_ui_runtime::NavigationHistory::can_go_back(&self) -> ReadSignal<bool>	function	#[must_use]	crates/pert-ui-runtime/src/navigation_history.rs:287
+pert_ui_runtime::NavigationHistory::can_go_forward(&self) -> ReadSignal<bool>	function	#[must_use]	crates/pert-ui-runtime/src/navigation_history.rs:293
+pert_ui_runtime::NavigationHistory::capacity(&self) -> NonZeroUsize	function	#[must_use]	crates/pert-ui-runtime/src/navigation_history.rs:275
+pert_ui_runtime::NavigationHistory::current(&self) -> ReadSignal<Option<HistoryEntry<T>>>	function	#[must_use]	crates/pert-ui-runtime/src/navigation_history.rs:299
+pert_ui_runtime::NavigationHistory::state(&self) -> ReadSignal<Rc<HistorySnapshot<T>>>	function	#[must_use]	crates/pert-ui-runtime/src/navigation_history.rs:281
+pert_ui_runtime::NumberFormat	struct	#[must_use]	crates/pert-ui-runtime/src/number_format.rs:38
+pert_ui_runtime::NumberInputError	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:14
+pert_ui_runtime::NumberLocale::decimal(self) -> char	function	#[must_use]	crates/pert-ui-runtime/src/number_format.rs:237
+pert_ui_runtime::NumberLocale::format_decimal(self, value: f64, places: Option<u8>) -> String	function	#[must_use]	crates/pert-ui-runtime/src/number_format.rs:251
+pert_ui_runtime::NumberLocale::format_integer(self, value: i64) -> String	function	#[must_use]	crates/pert-ui-runtime/src/number_format.rs:263
+pert_ui_runtime::NumberLocale::grouping(self) -> Option<char>	function	#[must_use]	crates/pert-ui-runtime/src/number_format.rs:242
+pert_ui_runtime::NumberLocaleError	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/number_format.rs:147
+pert_ui_runtime::OpaqueColor::contrast_ratio(self, other: Self) -> f32	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:707
+pert_ui_runtime::OpaqueColor::relative_luminance(self) -> f32	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:684
+pert_ui_runtime::Painter::color(&self, role: crate::ColorRole) -> Color	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:1473
+pert_ui_runtime::Painter::focus_within(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:1453
+pert_ui_runtime::Painter::metric(&self, role: crate::MetricRole) -> f32	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:1461
+pert_ui_runtime::Painter::size(&self) -> Option<crate::Size>	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:1596
+pert_ui_runtime::Painter::view_scale(&self) -> f32	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:1639
+pert_ui_runtime::Painter::viewport(&self) -> Viewport	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:1625
+pert_ui_runtime::Palette	struct	#[must_use]	crates/pert-ui-runtime/src/runtime/theme.rs:742
+pert_ui_runtime::Parameter::delivery_status(&self) -> ReadSignal<DeliveryStatus>	function	#[must_use]	crates/pert-ui-runtime/src/parameter_binding.rs:327
+pert_ui_runtime::Parameter::snapshot(&self) -> ReadSignal<ParameterSnapshot<T>>	function	#[must_use]	crates/pert-ui-runtime/src/parameter_binding.rs:316
+pert_ui_runtime::Path::bounds(&self) -> Rect	function	#[must_use]	crates/pert-ui-runtime/src/geometry.rs:368
+pert_ui_runtime::PathBuilder	struct	#[must_use]	crates/pert-ui-runtime/src/geometry.rs:382
+pert_ui_runtime::PathError	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/geometry.rs:12
+pert_ui_runtime::Pending	struct	#[must_use = "dropping a pending reply discards the answer"]	crates/pert-ui-runtime/src/inspection.rs:565
+pert_ui_runtime::PendingJump::status(&self) -> ListRevealStatus	function	#[must_use]	crates/pert-ui-runtime/src/content_search.rs:422
+pert_ui_runtime::PendingJump::status_binding(&self) -> crate::ReadSignal<ListRevealStatus>	function	#[must_use]	crates/pert-ui-runtime/src/content_search.rs:428
+pert_ui_runtime::Permission::allowed() -> Self	function	#[must_use]	crates/pert-ui-runtime/src/permission.rs:60
+pert_ui_runtime::Permission::and(self, other: impl Into<Self>) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/permission.rs:79
+pert_ui_runtime::Permission::denied() -> Self	function	#[must_use]	crates/pert-ui-runtime/src/permission.rs:68
+pert_ui_runtime::Permission::fixed(&self) -> Option<bool>	function	#[must_use]	crates/pert-ui-runtime/src/permission.rs:95
+pert_ui_runtime::Permission::same_as(&self, other: &Self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/permission.rs:215
+pert_ui_runtime::PhysicalExtent::height(self) -> u32	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:877
+pert_ui_runtime::PhysicalExtent::is_empty(self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:882
+pert_ui_runtime::PhysicalExtent::new(width: u32, height: u32) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:867
+pert_ui_runtime::PhysicalExtent::width(self) -> u32	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:872
+pert_ui_runtime::PickChoice	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/quick_pick.rs:361
+pert_ui_runtime::PickItem	struct	#[must_use]	crates/pert-ui-runtime/src/quick_pick.rs:33
+pert_ui_runtime::PickMatcher	struct	#[must_use]	crates/pert-ui-runtime/src/quick_pick.rs:116
+pert_ui_runtime::PickMatcher::fuzzy_score(query: &str, text: &str) -> Option<u32>	function	#[must_use]	crates/pert-ui-runtime/src/quick_pick.rs:173
+pert_ui_runtime::PickMatcher::rank(&self, query: &str, items: &[PickItem]) -> Vec<usize>	function	#[must_use]	crates/pert-ui-runtime/src/quick_pick.rs:139
+pert_ui_runtime::PickMatcher::score(&self, query: &str, item: &PickItem) -> Option<u32>	function	#[must_use]	crates/pert-ui-runtime/src/quick_pick.rs:132
+pert_ui_runtime::PickPending	struct	#[must_use]	crates/pert-ui-runtime/src/quick_pick.rs:319
+pert_ui_runtime::PickStatus	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/quick_pick.rs:281
+pert_ui_runtime::Point::x(self) -> f32	function	#[must_use]	crates/pert-ui-runtime/src/pointer.rs:25
+pert_ui_runtime::Point::y(self) -> f32	function	#[must_use]	crates/pert-ui-runtime/src/pointer.rs:30
+pert_ui_runtime::PointerButton	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/pointer.rs:40
+pert_ui_runtime::PointerEvent::is_outside(self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/pointer.rs:200
+pert_ui_runtime::PointerEvent::is_refresh(self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/pointer.rs:186
+pert_ui_runtime::PointerEvent::kind(self) -> PointerKind	function	#[must_use]	crates/pert-ui-runtime/src/pointer.rs:210
+pert_ui_runtime::PointerEvent::new(position: Point, kind: PointerKind) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/pointer.rs:149
+pert_ui_runtime::PointerEvent::outside(self) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/pointer.rs:192
+pert_ui_runtime::PointerEvent::position(self) -> Point	function	#[must_use]	crates/pert-ui-runtime/src/pointer.rs:205
+pert_ui_runtime::PointerKind	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/pointer.rs:62
+pert_ui_runtime::Popover	struct	#[must_use]	crates/pert-ui-runtime/src/popover.rs:193
+pert_ui_runtime::PreparedDetach	struct	#[must_use]	crates/pert-ui-runtime/src/runtime/native_windows.rs:245
+pert_ui_runtime::PresentationReceipt	struct	#[must_use]	crates/pert-ui-runtime/src/runtime/native_windows.rs:950
+pert_ui_runtime::PresentationReceipt::status(&self) -> PresentationStatus	function	#[must_use]	crates/pert-ui-runtime/src/runtime/native_windows.rs:957
+pert_ui_runtime::PresentationRequest	struct	#[must_use]	crates/pert-ui-runtime/src/runtime/native_windows.rs:1015
+pert_ui_runtime::ProgressBar	struct	#[must_use]	crates/pert-ui-runtime/src/progress.rs:143
+pert_ui_runtime::ProgressStatus	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/progress.rs:22
+pert_ui_runtime::ProgressStatus::is_finished(self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/progress.rs:74
+pert_ui_runtime::ProgressStatus::is_running(self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/progress.rs:69
+pert_ui_runtime::ProgressStatus::of(completed: u64, total: u64) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/progress.rs:57
+pert_ui_runtime::Property	struct	#[must_use]	crates/pert-ui-runtime/src/property_grid.rs:35
+pert_ui_runtime::PropertyGrid	struct	#[must_use]	crates/pert-ui-runtime/src/property_grid.rs:222
+pert_ui_runtime::QuarterTurn::corners(self) -> [[f32; 2]; 4]	function	#[must_use]	crates/pert-ui-runtime/src/transform.rs:237
+pert_ui_runtime::QuarterTurn::source(self, u: f32, v: f32) -> [f32; 2]	function	#[must_use]	crates/pert-ui-runtime/src/transform.rs:252
+pert_ui_runtime::QuarterTurn::swaps_axes(self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/transform.rs:189
+pert_ui_runtime::QuarterTurn::turned(self, size: crate::Size) -> crate::Size	function	#[must_use]	crates/pert-ui-runtime/src/transform.rs:194
+pert_ui_runtime::QuickPick	struct	#[must_use]	crates/pert-ui-runtime/src/quick_pick.rs:866
+pert_ui_runtime::QuickPickController	struct	#[must_use]	crates/pert-ui-runtime/src/quick_pick.rs:425
+pert_ui_runtime::RadioGroup	struct	#[must_use]	crates/pert-ui-runtime/src/choice_controls.rs:697
+pert_ui_runtime::RasterImage::content_key(&self) -> u64	function	#[must_use]	crates/pert-ui-runtime/src/resources.rs:216
+pert_ui_runtime::RasterImage::height(&self) -> u32	function	#[must_use]	crates/pert-ui-runtime/src/resources.rs:190
+pert_ui_runtime::RasterImage::logical_size(&self) -> crate::Size	function	#[must_use]	crates/pert-ui-runtime/src/resources.rs:199
+pert_ui_runtime::RasterImage::pixels(&self) -> &[u8]	function	#[must_use]	crates/pert-ui-runtime/src/resources.rs:204
+pert_ui_runtime::RasterImage::width(&self) -> u32	function	#[must_use]	crates/pert-ui-runtime/src/resources.rs:185
+pert_ui_runtime::ReadSignal::same_source(&self, other: &Self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/signal.rs:799
+pert_ui_runtime::Rect::contains(self, point: crate::Point) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:126
+pert_ui_runtime::Rect::from_origin_size(origin: crate::Point, size: crate::Size) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:101
+pert_ui_runtime::Rect::from_size(size: crate::Size) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:85
+pert_ui_runtime::Rect::height(self) -> f32	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:190
+pert_ui_runtime::Rect::intersection(self, other: Self) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:153
+pert_ui_runtime::Rect::is_empty(self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:147
+pert_ui_runtime::Rect::values(self) -> [f32; 4]	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:200
+pert_ui_runtime::Rect::width(self) -> f32	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:185
+pert_ui_runtime::Rect::x(self) -> f32	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:175
+pert_ui_runtime::Rect::y(self) -> f32	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:180
+pert_ui_runtime::Redescribed	struct	#[non_exhaustive]	crates/pert-ui-runtime/src/conformance.rs:76
+pert_ui_runtime::RedescriptionError	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/conformance.rs:14
+pert_ui_runtime::RegionLayout	struct	#[must_use]	crates/pert-ui-runtime/src/region_layout.rs:43
+pert_ui_runtime::RemoteHost	struct	#[must_use = "dropping the authority owner makes the binding unavailable"]	crates/pert-ui-runtime/src/parameter_binding/remote.rs:421
+pert_ui_runtime::RequestError	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/inspection.rs:413
+pert_ui_runtime::RequestTicket	struct	#[must_use = "a ticket the host never answers leaves its key pending"]	crates/pert-ui-runtime/src/async_source.rs:28
+pert_ui_runtime::RequestTicket::generation(&self) -> u64	function	#[must_use]	crates/pert-ui-runtime/src/async_source.rs:41
+pert_ui_runtime::RequestTracker::is_pending(&self, key: &K) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/async_source.rs:190
+pert_ui_runtime::RequestTracker::new() -> Self	function	#[must_use]	crates/pert-ui-runtime/src/async_source.rs:123
+pert_ui_runtime::ResourceKind	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/render_limits.rs:7
+pert_ui_runtime::ResourceKind::scene_budget(self) -> usize	function	#[must_use]	crates/pert-ui-runtime/src/render_limits.rs:21
+pert_ui_runtime::RestoreRejection	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/workspace.rs:677
+pert_ui_runtime::RevealOutcome	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/runtime/reveal.rs:64
+pert_ui_runtime::RevealOutcome::activation(&self) -> Option<&PresentationReceipt>	function	#[must_use]	crates/pert-ui-runtime/src/runtime/reveal.rs:97
+pert_ui_runtime::RevealOutcome::is_revealed(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/runtime/reveal.rs:88
+pert_ui_runtime::RevealReceipt	struct	#[must_use = "retain the receipt if the application needs the reveal's outcome"]	crates/pert-ui-runtime/src/runtime/reveal.rs:132
+pert_ui_runtime::RevealReceipt::status(&self) -> RevealStatus	function	#[must_use]	crates/pert-ui-runtime/src/runtime/reveal.rs:137
+pert_ui_runtime::RevealRefusal	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/runtime/reveal.rs:33
+pert_ui_runtime::RichText	struct	#[must_use]	crates/pert-ui-runtime/src/text/rich.rs:87
+pert_ui_runtime::Row	struct	#[must_use]	crates/pert-ui-runtime/src/containers.rs:893
+pert_ui_runtime::Runtime::captures_supported(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/runtime/capture.rs:42
+pert_ui_runtime::Runtime::content_search(&self, query: ContentQuery) -> ContentSearch	function	#[must_use]	crates/pert-ui-runtime/src/runtime/content_search.rs:70
+pert_ui_runtime::Runtime::debug_overlay(&self) -> crate::DebugOverlay	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:3799
+pert_ui_runtime::Runtime::drag_active(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/runtime/drag.rs:170
+pert_ui_runtime::Runtime::focused(&self) -> Option<WidgetId>	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:3717
+pert_ui_runtime::Runtime::inspect(&self) -> crate::InspectionSnapshot	function	#[must_use]	crates/pert-ui-runtime/src/runtime/inspect.rs:39
+pert_ui_runtime::Runtime::interval_deadline(&self) -> Option<Duration>	function	#[must_use]	crates/pert-ui-runtime/src/runtime/application.rs:341
+pert_ui_runtime::Runtime::last_failure(&self) -> Option<crate::FailureSite>	function	#[must_use]	crates/pert-ui-runtime/src/runtime/application.rs:464
+pert_ui_runtime::Runtime::live_waker(&self) -> crate::LiveWaker	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:4089
+pert_ui_runtime::Runtime::needs_paint(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/runtime/compose.rs:328
+pert_ui_runtime::Runtime::new() -> Self	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:3944
+pert_ui_runtime::Runtime::next_deadline(&self) -> Option<Duration>	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:5190
+pert_ui_runtime::Runtime::now(&self) -> Duration	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:3617
+pert_ui_runtime::Runtime::pending_captures(&self) -> Vec<crate::CaptureJob>	function	#[must_use]	crates/pert-ui-runtime/src/runtime/capture.rs:272
+pert_ui_runtime::Runtime::profile(&self) -> crate::ProfileSnapshot	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:3700
+pert_ui_runtime::Runtime::query(&self, query: &crate::InspectionQuery) -> crate::QueryResult	function	#[must_use]	crates/pert-ui-runtime/src/runtime/inspect.rs:220
+pert_ui_runtime::Runtime::take_shutdown_errors(&mut self) -> Vec<RuntimeError>	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:6258
+pert_ui_runtime::Runtime::validation_report(&self) -> crate::ValidationReport	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:3740
+pert_ui_runtime::Runtime::viewport(&self) -> crate::Viewport	function	#[must_use]	crates/pert-ui-runtime/src/runtime/settings.rs:517
+pert_ui_runtime::RuntimeError	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/runtime.rs:184
+pert_ui_runtime::ScaleLimits::clamp(self, factor: f32) -> ViewScale	function	#[must_use]	crates/pert-ui-runtime/src/zoom_view.rs:53
+pert_ui_runtime::ScaleLimits::max(self) -> ViewScale	function	#[must_use]	crates/pert-ui-runtime/src/zoom_view.rs:47
+pert_ui_runtime::ScaleLimits::min(self) -> ViewScale	function	#[must_use]	crates/pert-ui-runtime/src/zoom_view.rs:42
+pert_ui_runtime::ScaleLimits::new(a: ViewScale, b: ViewScale) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/zoom_view.rs:33
+pert_ui_runtime::ScrollArea	struct	#[must_use]	crates/pert-ui-runtime/src/views.rs:329
+pert_ui_runtime::SearchField	struct	#[must_use]	crates/pert-ui-runtime/src/text_fields/search.rs:107
+pert_ui_runtime::SearchKey	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/text_fields/search.rs:16
+pert_ui_runtime::Section	struct	#[must_use]	crates/pert-ui-runtime/src/collapsible.rs:809
+pert_ui_runtime::SegmentedControl	struct	#[must_use]	crates/pert-ui-runtime/src/choice_controls.rs:1441
+pert_ui_runtime::Select	struct	#[must_use]	crates/pert-ui-runtime/src/select.rs:1362
+pert_ui_runtime::SelectableText	struct	#[must_use]	crates/pert-ui-runtime/src/selectable_text.rs:108
+pert_ui_runtime::SelectionChange	struct	#[non_exhaustive]	crates/pert-ui-runtime/src/runtime/notify.rs:181
+pert_ui_runtime::SelectionChange::new(previous: Option<String>, selected: Option<String>, origin: ChangeOrigin) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/runtime/notify.rs:192
+pert_ui_runtime::Selector::focused() -> Self	function	#[must_use]	crates/pert-ui-runtime/src/inspection.rs:125
+pert_ui_runtime::Selector::id(id: u64) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/inspection.rs:109
+pert_ui_runtime::Selector::window(id: u64) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/inspection.rs:130
+pert_ui_runtime::Selector::within(ancestor: Self, inner: Self) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/inspection.rs:136
+pert_ui_runtime::SemanticAction	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/diagnostics.rs:299
+pert_ui_runtime::SemanticItem	struct	#[non_exhaustive]	crates/pert-ui-runtime/src/diagnostics.rs:350
+pert_ui_runtime::SemanticItem::action(self, action: SemanticAction) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:420
+pert_ui_runtime::SemanticItem::checked(self, checked: bool) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:407
+pert_ui_runtime::SemanticItem::disabled(self, disabled: bool) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:392
+pert_ui_runtime::SemanticItem::expanded(self, expanded: bool) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:401
+pert_ui_runtime::SemanticItem::new(name: impl Into<String>) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:372
+pert_ui_runtime::SemanticItem::selected(self, selected: bool) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:385
+pert_ui_runtime::SemanticItem::shortcut(self, shortcut: impl Into<String>) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:413
+pert_ui_runtime::SemanticRole	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/diagnostics.rs:162
+pert_ui_runtime::SemanticValue	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/diagnostics.rs:256
+pert_ui_runtime::Semantics	struct	#[non_exhaustive]	crates/pert-ui-runtime/src/diagnostics.rs:464
+pert_ui_runtime::Semantics::action(self, action: SemanticAction) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:556
+pert_ui_runtime::Semantics::actions(self, actions: impl IntoIterator<Item = SemanticAction>) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:566
+pert_ui_runtime::Semantics::description(self, description: impl Into<String>) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:539
+pert_ui_runtime::Semantics::disabled(self, disabled: bool) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:579
+pert_ui_runtime::Semantics::enabled_actions(self, actions: impl IntoIterator<Item = SemanticAction>) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:589
+pert_ui_runtime::Semantics::expanded(self, expanded: bool) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:610
+pert_ui_runtime::Semantics::invalid(self, invalid: bool) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:604
+pert_ui_runtime::Semantics::items(self, items: impl IntoIterator<Item = SemanticItem>) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:571
+pert_ui_runtime::Semantics::name(self, name: impl Into<String>) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:533
+pert_ui_runtime::Semantics::names_children(self) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:633
+pert_ui_runtime::Semantics::new(role: SemanticRole) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:507
+pert_ui_runtime::Semantics::protected(self, protected: bool) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:624
+pert_ui_runtime::Semantics::read_only(self, read_only: bool) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:598
+pert_ui_runtime::Semantics::required(self, required: bool) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:616
+pert_ui_runtime::Semantics::role(self, role: SemanticRole) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:527
+pert_ui_runtime::Semantics::value(self, value: SemanticValue) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/diagnostics.rs:546
+pert_ui_runtime::SeriesSource::same_source(&self, other: &Self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/live.rs:661
+pert_ui_runtime::ShortcutBinding::new(key: KeyCode, action: impl Into<String>) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/validation.rs:63
+pert_ui_runtime::Show	struct	#[must_use]	crates/pert-ui-runtime/src/described.rs:223
+pert_ui_runtime::Signal::read_only(&self) -> ReadSignal<T>	function	#[must_use]	crates/pert-ui-runtime/src/signal.rs:383
+pert_ui_runtime::Signal::revision(&self) -> u64	function	#[must_use]	crates/pert-ui-runtime/src/signal.rs:378
+pert_ui_runtime::SinkError::kind(&self) -> SinkErrorKind	function	#[must_use]	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:105
+pert_ui_runtime::SinkError::message(&self) -> &str	function	#[must_use]	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:110
+pert_ui_runtime::SinkError::new(kind: SinkErrorKind, message: impl Into<String>) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:97
+pert_ui_runtime::Size::height(self) -> f32	function	#[must_use]	crates/pert-ui-runtime/src/layout.rs:159
+pert_ui_runtime::Size::width(self) -> f32	function	#[must_use]	crates/pert-ui-runtime/src/layout.rs:154
+pert_ui_runtime::SizeLimits::at_least(minimum: Size) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/layout.rs:184
+pert_ui_runtime::SizeLimits::constrain(self, size: Size) -> Size	function	#[must_use]	crates/pert-ui-runtime/src/layout.rs:243
+pert_ui_runtime::SizeLimits::maximum(self) -> Constraints	function	#[must_use]	crates/pert-ui-runtime/src/layout.rs:224
+pert_ui_runtime::SizeLimits::minimum(self) -> Size	function	#[must_use]	crates/pert-ui-runtime/src/layout.rs:219
+pert_ui_runtime::Slider	struct	#[must_use]	crates/pert-ui-runtime/src/numeric_controls.rs:1586
+pert_ui_runtime::Spinner	struct	#[must_use]	crates/pert-ui-runtime/src/progress.rs:348
+pert_ui_runtime::SplitPane	struct	#[must_use]	crates/pert-ui-runtime/src/split.rs:198
+pert_ui_runtime::SplitRule	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/split.rs:141
+pert_ui_runtime::SplitSizing::first(extent: Length) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/split.rs:115
+pert_ui_runtime::SplitSizing::rule(self) -> SplitRule	function	#[must_use]	crates/pert-ui-runtime/src/split.rs:126
+pert_ui_runtime::SplitSizing::second(extent: Length) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/split.rs:120
+pert_ui_runtime::StringRole	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/strings.rs:20
+pert_ui_runtime::StringRole::placeholders(self) -> &'static [&'static str]	function	#[must_use]	crates/pert-ui-runtime/src/strings.rs:258
+pert_ui_runtime::StrokeStyle	struct	#[must_use]	crates/pert-ui-runtime/src/geometry.rs:94
+pert_ui_runtime::StrokeStyle::cap(self) -> LineCap	function	#[must_use]	crates/pert-ui-runtime/src/geometry.rs:141
+pert_ui_runtime::StrokeStyle::join(self) -> LineJoin	function	#[must_use]	crates/pert-ui-runtime/src/geometry.rs:146
+pert_ui_runtime::StrokeStyle::miter_limit(self) -> f32	function	#[must_use]	crates/pert-ui-runtime/src/geometry.rs:151
+pert_ui_runtime::StrokeStyle::width(self) -> Length	function	#[must_use]	crates/pert-ui-runtime/src/geometry.rs:136
+pert_ui_runtime::Tab	struct	#[must_use]	crates/pert-ui-runtime/src/tabs.rs:12
+pert_ui_runtime::Table	struct	#[must_use]	crates/pert-ui-runtime/src/table.rs:1329
+pert_ui_runtime::TableColumn	struct	#[must_use]	crates/pert-ui-runtime/src/table.rs:34
+pert_ui_runtime::TableColumn::fixed_width(&self) -> Option<f32>	function	#[must_use]	crates/pert-ui-runtime/src/table.rs:169
+pert_ui_runtime::TableColumn::flex_weight(&self) -> Option<f32>	function	#[must_use]	crates/pert-ui-runtime/src/table.rs:178
+pert_ui_runtime::TableColumn::is_editable(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/table.rs:205
+pert_ui_runtime::TableColumn::is_movable(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/table.rs:199
+pert_ui_runtime::TableColumn::is_resizable(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/table.rs:187
+pert_ui_runtime::TableColumn::is_sortable(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/table.rs:193
+pert_ui_runtime::TableColumn::key(&self) -> &str	function	#[must_use]	crates/pert-ui-runtime/src/table.rs:145
+pert_ui_runtime::TableColumn::title(&self) -> &str	function	#[must_use]	crates/pert-ui-runtime/src/table.rs:152
+pert_ui_runtime::TableController	struct	#[must_use]	crates/pert-ui-runtime/src/table.rs:561
+pert_ui_runtime::TableController::active_column(&self) -> ReadSignal<Option<String>>	function	#[must_use]	crates/pert-ui-runtime/src/table.rs:748
+pert_ui_runtime::TableController::columns(&self) -> Vec<TableColumn>	function	#[must_use]	crates/pert-ui-runtime/src/table.rs:828
+pert_ui_runtime::TableController::filter_counts(&self) -> ReadSignal<crate::FilterCounts>	function	#[must_use]	crates/pert-ui-runtime/src/table.rs:730
+pert_ui_runtime::TableController::sort(&self) -> ReadSignal<Option<TableSort>>	function	#[must_use]	crates/pert-ui-runtime/src/table.rs:735
+pert_ui_runtime::Tabs	struct	#[must_use]	crates/pert-ui-runtime/src/tabs.rs:263
+pert_ui_runtime::TaskReceipt	struct	#[must_use = "retain the receipt if the application needs the operation's outcome"]	crates/pert-ui-runtime/src/runtime/tasks.rs:28
+pert_ui_runtime::TaskReceipt::status(&self) -> TaskStatus	function	#[must_use]	crates/pert-ui-runtime/src/runtime/tasks.rs:33
+pert_ui_runtime::TextArea	struct	#[must_use]	crates/pert-ui-runtime/src/text_fields.rs:203
+pert_ui_runtime::TextCommand	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/text_input.rs:111
+pert_ui_runtime::TextCommandOutcome	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/text_input.rs:143
+pert_ui_runtime::TextEditError	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/text_input.rs:11
+pert_ui_runtime::TextError	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/text.rs:54
+pert_ui_runtime::TextField	struct	#[must_use]	crates/pert-ui-runtime/src/text_fields.rs:154
+pert_ui_runtime::TextLayout::size(&self) -> Size	function	#[must_use]	crates/pert-ui-runtime/src/text.rs:195
+pert_ui_runtime::TextLimit	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/text.rs:94
+pert_ui_runtime::TextMovement	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/text_selection.rs:8
+pert_ui_runtime::TextOverflow	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/text/fit.rs:39
+pert_ui_runtime::TextPreedit	struct	#[must_use]	crates/pert-ui-runtime/src/text_input.rs:50
+pert_ui_runtime::TextPreedit::cursor(&self) -> Option<std::ops::Range<usize>>	function	#[must_use]	crates/pert-ui-runtime/src/text_input.rs:97
+pert_ui_runtime::TextSelection	struct	#[must_use]	crates/pert-ui-runtime/src/text_selection.rs:39
+pert_ui_runtime::TextSource	struct	#[must_use]	crates/pert-ui-runtime/src/text_source.rs:60
+pert_ui_runtime::TextSource::fixed(&self) -> Option<&RichText>	function	#[must_use]	crates/pert-ui-runtime/src/text_source.rs:82
+pert_ui_runtime::TextSource::is_bound(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/text_source.rs:112
+pert_ui_runtime::TextSource::role(&self) -> Option<StringRole>	function	#[must_use]	crates/pert-ui-runtime/src/text_source.rs:90
+pert_ui_runtime::TextSource::same_as(&self, other: &Self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/text_source.rs:120
+pert_ui_runtime::TextSpan	struct	#[must_use]	crates/pert-ui-runtime/src/text/rich.rs:25
+pert_ui_runtime::ThemeManager	struct	#[must_use]	crates/pert-ui-runtime/src/runtime/theme.rs:1014
+pert_ui_runtime::ThemeMetrics	struct	#[must_use]	crates/pert-ui-runtime/src/runtime/theme.rs:244
+pert_ui_runtime::TicketStatus	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/async_source.rs:58
+pert_ui_runtime::Toast	struct	#[must_use]	crates/pert-ui-runtime/src/notifications.rs:144
+pert_ui_runtime::ToastHost	struct	#[must_use]	crates/pert-ui-runtime/src/notifications.rs:398
+pert_ui_runtime::ToastQueue	struct	#[must_use]	crates/pert-ui-runtime/src/notifications.rs:262
+pert_ui_runtime::ToastReceipt	struct	#[must_use]	crates/pert-ui-runtime/src/notifications.rs:196
+pert_ui_runtime::ToastReceipt::status(&self) -> ToastStatus	function	#[must_use]	crates/pert-ui-runtime/src/notifications.rs:215
+pert_ui_runtime::Toggle	struct	#[must_use]	crates/pert-ui-runtime/src/choice_controls.rs:652
+pert_ui_runtime::ToolGroup	struct	#[must_use]	crates/pert-ui-runtime/src/toolbar.rs:47
+pert_ui_runtime::ToolWindow	struct	#[must_use]	crates/pert-ui-runtime/src/tool_windows/mod.rs:303
+pert_ui_runtime::ToolWindowChange	struct	#[non_exhaustive]	crates/pert-ui-runtime/src/tool_windows/mod.rs:218
+pert_ui_runtime::ToolWindowChange::new(key: String, expanded: bool, origin: ChangeOrigin) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/tool_windows/mod.rs:247
+pert_ui_runtime::ToolWindowChange::with_geometry(self, extent: Option<f32>, floating: Option<Rect>) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/tool_windows/mod.rs:288
+pert_ui_runtime::ToolWindowChange::with_kind(self, kind: ToolWindowChangeKind) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/tool_windows/mod.rs:263
+pert_ui_runtime::ToolWindowChange::with_mode(self, mode: ToolWindowMode) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/tool_windows/mod.rs:282
+pert_ui_runtime::ToolWindowChange::with_overlay(self, overlay: bool) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/tool_windows/mod.rs:276
+pert_ui_runtime::ToolWindowChange::with_placement(self, edge: ToolEdge, group: StripeGroup) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/tool_windows/mod.rs:269
+pert_ui_runtime::ToolWindowChangeKind	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/tool_windows/mod.rs:191
+pert_ui_runtime::ToolWindowController::new() -> Self	function	#[must_use]	crates/pert-ui-runtime/src/tool_windows/mod.rs:2293
+pert_ui_runtime::ToolWindowLayout	struct	#[must_use]	crates/pert-ui-runtime/src/tool_windows/mod.rs:749
+pert_ui_runtime::ToolWindowMode	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/tool_windows/mod.rs:158
+pert_ui_runtime::Toolbar	struct	#[must_use]	crates/pert-ui-runtime/src/toolbar.rs:327
+pert_ui_runtime::ToolbarOverflow	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/toolbar.rs:15
+pert_ui_runtime::Tooltip	struct	#[must_use]	crates/pert-ui-runtime/src/popover.rs:404
+pert_ui_runtime::Trace	struct	#[must_use]	crates/pert-ui-runtime/src/live_widgets.rs:481
+pert_ui_runtime::Track::fixed(length: Length) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/containers.rs:961
+pert_ui_runtime::Transform2D::entries(self) -> [f64; 6]	function	#[must_use]	crates/pert-ui-runtime/src/transform.rs:158
+pert_ui_runtime::Tree	struct	#[must_use]	crates/pert-ui-runtime/src/tree.rs:901
+pert_ui_runtime::TreeController	struct	#[must_use]	crates/pert-ui-runtime/src/tree.rs:258
+pert_ui_runtime::TreeController::expanded(&self) -> ReadSignal<BTreeSet<String>>	function	#[must_use]	crates/pert-ui-runtime/src/tree.rs:323
+pert_ui_runtime::TreeController::filter_counts(&self) -> ReadSignal<crate::FilterCounts>	function	#[must_use]	crates/pert-ui-runtime/src/tree.rs:515
+pert_ui_runtime::UiMessage	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/strings.rs:663
+pert_ui_runtime::UiMessage::role(&self) -> StringRole	function	#[must_use]	crates/pert-ui-runtime/src/strings.rs:750
+pert_ui_runtime::UiSettings	struct	#[must_use]	crates/pert-ui-runtime/src/runtime/settings.rs:213
+pert_ui_runtime::UiStringError	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/strings.rs:510
+pert_ui_runtime::UiStrings	struct	#[must_use]	crates/pert-ui-runtime/src/strings.rs:558
+pert_ui_runtime::UiStrings::format(&self, message: UiMessage<'_>) -> String	function	#[must_use]	crates/pert-ui-runtime/src/strings.rs:631
+pert_ui_runtime::UiStrings::get(&self, role: StringRole) -> &str	function	#[must_use]	crates/pert-ui-runtime/src/strings.rs:625
+pert_ui_runtime::UiZoom::decreased(self) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/runtime/settings.rs:66
+pert_ui_runtime::UiZoom::get(self) -> f64	function	#[must_use]	crates/pert-ui-runtime/src/runtime/settings.rs:50
+pert_ui_runtime::UiZoom::increased(self) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/runtime/settings.rs:56
+pert_ui_runtime::UpdateContext::focused(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:2769
+pert_ui_runtime::UpdateContext::id(&self) -> WidgetId	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:2637
+pert_ui_runtime::UpdateContext::invalidation(&self) -> Invalidation	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:2780
+pert_ui_runtime::UpdateContext::motion(&self) -> MotionPreference	function	#[must_use]	crates/pert-ui-runtime/src/runtime/settings.rs:635
+pert_ui_runtime::UpdateContext::notifier(&self) -> crate::Notifier	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:2612
+pert_ui_runtime::UpdateContext::ui_zoom(&self) -> UiZoom	function	#[must_use]	crates/pert-ui-runtime/src/runtime/settings.rs:676
+pert_ui_runtime::UpdateContext::viewport(&self) -> crate::Viewport	function	#[must_use]	crates/pert-ui-runtime/src/runtime.rs:2774
+pert_ui_runtime::View	struct	#[must_use]	crates/pert-ui-runtime/src/views.rs:14
+pert_ui_runtime::ViewScale::get(self) -> f32	function	#[must_use]	crates/pert-ui-runtime/src/transform.rs:302
+pert_ui_runtime::ViewState::get(&self, name: &str) -> Option<&WorkspaceValue>	function	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:266
+pert_ui_runtime::ViewState::is_empty(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:275
+pert_ui_runtime::ViewState::kind(&self) -> &str	function	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:261
+pert_ui_runtime::ViewTransform::is_identity(self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/transform.rs:362
+pert_ui_runtime::ViewTransform::new(scale: ViewScale, offset: Point) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/transform.rs:347
+pert_ui_runtime::ViewTransform::offset(self) -> Point	function	#[must_use]	crates/pert-ui-runtime/src/transform.rs:357
+pert_ui_runtime::ViewTransform::scale(self) -> ViewScale	function	#[must_use]	crates/pert-ui-runtime/src/transform.rs:352
+pert_ui_runtime::Viewport::frame_extent(self) -> PhysicalExtent	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:958
+pert_ui_runtime::Viewport::height(self) -> f32	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:993
+pert_ui_runtime::Viewport::physical(self) -> Option<PhysicalExtent>	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:983
+pert_ui_runtime::Viewport::scale(self) -> f64	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:998
+pert_ui_runtime::Viewport::width(self) -> f32	function	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:988
+pert_ui_runtime::VirtualAxis	struct	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:123
+pert_ui_runtime::VirtualAxis::clamp_offset(&self, offset: f64, viewport: f32) -> f64	function	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:253
+pert_ui_runtime::VirtualAxis::count(&self) -> usize	function	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:208
+pert_ui_runtime::VirtualAxis::extent(&self) -> f64	function	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:242
+pert_ui_runtime::VirtualAxis::is_estimated(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:198
+pert_ui_runtime::VirtualAxis::item_extent(&self) -> f32	function	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:203
+pert_ui_runtime::VirtualAxis::lane(&self, index: usize) -> usize	function	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:266
+pert_ui_runtime::VirtualAxis::lanes(&self) -> usize	function	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:213
+pert_ui_runtime::VirtualAxis::line(&self, index: usize) -> usize	function	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:261
+pert_ui_runtime::VirtualAxis::line_at(&self, position: f64) -> usize	function	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:278
+pert_ui_runtime::VirtualAxis::line_extent(&self, line: usize) -> f32	function	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:223
+pert_ui_runtime::VirtualAxis::line_offset(&self, index: usize) -> f64	function	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:271
+pert_ui_runtime::VirtualAxis::lines(&self) -> usize	function	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:218
+pert_ui_runtime::VirtualAxis::lines_per_page(&self, viewport: f32) -> usize	function	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:303
+pert_ui_runtime::VirtualAxis::maximum_offset(&self, viewport: f32) -> f64	function	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:247
+pert_ui_runtime::VirtualAxis::mount_order(&self, window: Range<usize>, pinned: impl IntoIterator<Item = usize>) -> Vec<usize>	function	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:407
+pert_ui_runtime::VirtualAxis::reveal(&self, index: usize, offset: f64, viewport: f32) -> f64	function	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:345
+pert_ui_runtime::VirtualAxis::window(&self, offset: f64, viewport: f32, overscan: usize) -> Range<usize>	function	#[must_use]	crates/pert-ui-runtime/src/virtual_axis.rs:313
+pert_ui_runtime::VirtualList	struct	#[must_use]	crates/pert-ui-runtime/src/virtual_list.rs:439
+pert_ui_runtime::WaitError	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/inspection.rs:431
+pert_ui_runtime::WakeError	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/live.rs:105
+pert_ui_runtime::WindowController	struct	#[must_use]	crates/pert-ui-runtime/src/windows.rs:41
+pert_ui_runtime::WindowError	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/runtime/native_windows.rs:870
+pert_ui_runtime::WindowLayer	struct	#[must_use]	crates/pert-ui-runtime/src/windows.rs:650
+pert_ui_runtime::WindowPlacement	struct	#[non_exhaustive]	crates/pert-ui-runtime/src/windows.rs:25
+pert_ui_runtime::Workspace	struct	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:488
+pert_ui_runtime::Workspace::encode(&self) -> String	function	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:809
+pert_ui_runtime::Workspace::is_empty(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:566
+pert_ui_runtime::Workspace::len(&self) -> usize	function	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:561
+pert_ui_runtime::Workspace::settings(&self) -> &WorkspaceSettings	function	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:548
+pert_ui_runtime::WorkspaceError	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/workspace.rs:579
+pert_ui_runtime::WorkspaceReport	struct	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:746
+pert_ui_runtime::WorkspaceReport::is_complete(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:772
+pert_ui_runtime::WorkspaceSettings::density(&self) -> Option<crate::Density>	function	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:437
+pert_ui_runtime::WorkspaceSettings::theme_mode(&self) -> Option<crate::ThemeMode>	function	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:432
+pert_ui_runtime::WorkspaceSettings::with_density(self, density: Option<crate::Density>) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:454
+pert_ui_runtime::WorkspaceSettings::with_theme_mode(self, mode: Option<crate::ThemeMode>) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:448
+pert_ui_runtime::WorkspaceSettings::with_zoom(self, zoom: Option<crate::UiZoom>) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:442
+pert_ui_runtime::WorkspaceSettings::zoom(&self) -> Option<crate::UiZoom>	function	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:427
+pert_ui_runtime::WorkspaceValue::as_flag(&self) -> Option<bool>	function	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:140
+pert_ui_runtime::WorkspaceValue::as_integer(&self) -> Option<i64>	function	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:148
+pert_ui_runtime::WorkspaceValue::as_map(&self) -> Option<&BTreeMap<String, Self>>	function	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:174
+pert_ui_runtime::WorkspaceValue::as_number(&self) -> Option<f64>	function	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:158
+pert_ui_runtime::WorkspaceValue::as_text(&self) -> Option<&str>	function	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:166
+pert_ui_runtime::WorkspaceValue::flag(value: bool) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:62
+pert_ui_runtime::WorkspaceValue::integer(value: i64) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/workspace.rs:68
+pert_ui_runtime::Wrap	struct	#[must_use]	crates/pert-ui-runtime/src/containers.rs:936
+pert_ui_runtime::ZoomController::new(runtime: &impl crate::StateOwner) -> Self	function	#[must_use]	crates/pert-ui-runtime/src/zoom_view.rs:140
+pert_ui_runtime::ZoomController::view(&self) -> ReadSignal<ViewTransform>	function	#[must_use]	crates/pert-ui-runtime/src/zoom_view.rs:149
+pert_ui_runtime::ZoomView	struct	#[must_use]	crates/pert-ui-runtime/src/zoom_view.rs:306
+
+## pert-ui-cpu
+pert_ui_cpu::CpuRenderError	enum	#[non_exhaustive]	crates/pert-ui-cpu/src/lib.rs:16
+pert_ui_cpu::CpuRenderer::new() -> Self	function	#[must_use]	crates/pert-ui-cpu/src/lib.rs:131
+
+## pert-ui-wgpu
+pert_ui_wgpu::Frame	enum	#[must_use = "a frame that was not presented needs the host's recovery step"]	crates/pert-ui-wgpu/src/lib.rs:92
+pert_ui_wgpu::RenderError	enum	#[non_exhaustive]	crates/pert-ui-wgpu/src/lib.rs:46
+pert_ui_wgpu::Renderer::extent(&self) -> Option<PhysicalExtent>	function	#[must_use]	crates/pert-ui-wgpu/src/lib.rs:468
+
+## pert-ui
+pert_ui::App	struct	#[must_use = "call run to open the application"]	crates/pert-ui/src/app.rs:285	[configs: cpu, default, image-formats, images, no-default-desktop-cpu, serde, svg]
+pert_ui::AppError	enum	#[non_exhaustive]	crates/pert-ui/src/app.rs:30	[configs: cpu, default, image-formats, images, no-default-desktop-cpu, serde, svg]
+pert_ui::AppShutdownError::errors(&self) -> &[RuntimeError]	function	#[must_use]	crates/pert-ui/src/app.rs:134	[configs: cpu, default, image-formats, images, no-default-desktop-cpu, serde, svg]
+pert_ui::AppShutdownError::failure(&self) -> Option<&AppError>	function	#[must_use]	crates/pert-ui/src/app.rs:128	[configs: cpu, default, image-formats, images, no-default-desktop-cpu, serde, svg]
+pert_ui::AppShutdownError::into_parts(self) -> (Option<AppError>, Vec<RuntimeError>)	function	#[must_use]	crates/pert-ui/src/app.rs:140	[configs: cpu, default, image-formats, images, no-default-desktop-cpu, serde, svg]
+pert_ui::Svg	struct	#[must_use]	crates/pert-ui/src/svg/component.rs:42	[configs: no-default-svg, svg]
+pert_ui::images::ImageError	enum	#[non_exhaustive]	crates/pert-ui/src/images.rs:215	[configs: image-formats, images, no-default-png]
+pert_ui::images::ImageFormat	enum	#[non_exhaustive]	crates/pert-ui/src/images.rs:87	[configs: image-formats, images, no-default-png]
+pert_ui::images::ImageFormat::extensions(self) -> &'static [&'static str]	function	#[must_use]	crates/pert-ui/src/images.rs:156	[configs: image-formats, images, no-default-png]
+pert_ui::images::ImageFormat::feature(self) -> &'static str	function	#[must_use]	crates/pert-ui/src/images.rs:140	[configs: image-formats, images, no-default-png]
+pert_ui::images::ImageFormat::guess(bytes: &[u8]) -> Option<Self>	function	#[must_use]	crates/pert-ui/src/images.rs:179	[configs: image-formats, images, no-default-png]
+pert_ui::images::ImageFormat::is_enabled(self) -> bool	function	#[must_use]	crates/pert-ui/src/images.rs:125	[configs: image-formats, images, no-default-png]
+pert_ui::svg::SvgError	enum	#[non_exhaustive]	crates/pert-ui/src/svg.rs:52	[configs: no-default-svg, svg]

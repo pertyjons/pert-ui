@@ -1,0 +1,362 @@
+{
+  "commit": "d4ba108f66b7c8ffbf350ae01bedc95d147cd7e6",
+  "tree_clean": true,
+  "rustc": [
+    "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+    "binary: rustc",
+    "commit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67",
+    "commit-date: 2026-10-13",
+    "host: x86_64-unknown-linux-gnu",
+    "release: 1.99.1",
+    "LLVM version: 23.1.1"
+  ],
+  "cargo_public_api": "cargo-public-api 0.52.0",
+  "target": "x86_64-unknown-linux-gnu",
+  "configurations": [
+    {
+      "package": "pert-ui-core",
+      "configuration": "default",
+      "features": [],
+      "format_version": 61,
+      "crate_version": "0.3.52",
+      "rustdoc_json_sha256": "0c8eff51c38889a05f10b25ea5ae01e93c839e29b2a5e73ed9a6daf7072f0da0",
+      "listing": "api/pert-ui-core/default.txt",
+      "external_reexports": []
+    },
+    {
+      "package": "pert-ui-core",
+      "configuration": "serde",
+      "features": [
+        "--features",
+        "serde"
+      ],
+      "format_version": 61,
+      "crate_version": "0.3.52",
+      "rustdoc_json_sha256": "7d36f253187ec2b228af54004a3a9cf47cb24731d454abe750304d99fffc9dea",
+      "listing": "api/pert-ui-core/serde.txt",
+      "external_reexports": []
+    },
+    {
+      "package": "pert-ui-runtime",
+      "configuration": "default",
+      "features": [],
+      "format_version": 61,
+      "crate_version": "0.3.52",
+      "rustdoc_json_sha256": "ac5b7114b6a8cce38f64dff691f891619c0eb1b4b4d473be3f639a8a6667728c",
+      "listing": "api/pert-ui-runtime/default.txt",
+      "external_reexports": [
+        "pert_ui_runtime <- pert_ui_core::AnyParameterSnapshot",
+        "pert_ui_runtime <- pert_ui_core::AnySpec",
+        "pert_ui_runtime <- pert_ui_core::AnyValue",
+        "pert_ui_runtime <- pert_ui_core::Capacity",
+        "pert_ui_runtime <- pert_ui_core::ChoiceId",
+        "pert_ui_runtime <- pert_ui_core::ChoiceOption",
+        "pert_ui_runtime <- pert_ui_core::DrainReport",
+        "pert_ui_runtime <- pert_ui_core::EditError",
+        "pert_ui_runtime <- pert_ui_core::EditOutcome",
+        "pert_ui_runtime <- pert_ui_core::EditSequence",
+        "pert_ui_runtime <- pert_ui_core::EditSource",
+        "pert_ui_runtime <- pert_ui_core::EditToken",
+        "pert_ui_runtime <- pert_ui_core::HostValue",
+        "pert_ui_runtime <- pert_ui_core::Incarnation",
+        "pert_ui_runtime <- pert_ui_core::LiveError",
+        "pert_ui_runtime <- pert_ui_core::LiveItem",
+        "pert_ui_runtime <- pert_ui_core::NormalizedValue",
+        "pert_ui_runtime <- pert_ui_core::NormalizedValueError",
+        "pert_ui_runtime <- pert_ui_core::ParameterError",
+        "pert_ui_runtime <- pert_ui_core::ParameterFamily",
+        "pert_ui_runtime <- pert_ui_core::ParameterId",
+        "pert_ui_runtime <- pert_ui_core::ParameterIdError",
+        "pert_ui_runtime <- pert_ui_core::ParameterMapping",
+        "pert_ui_runtime <- pert_ui_core::ParameterSnapshot",
+        "pert_ui_runtime <- pert_ui_core::ParameterSpec",
+        "pert_ui_runtime <- pert_ui_core::ParameterState",
+        "pert_ui_runtime <- pert_ui_core::ParameterValue",
+        "pert_ui_runtime <- pert_ui_core::PowerExponent",
+        "pert_ui_runtime <- pert_ui_core::PreviewOutcome",
+        "pert_ui_runtime <- pert_ui_core::PublishOutcome",
+        "pert_ui_runtime <- pert_ui_core::Revision",
+        "pert_ui_runtime <- pert_ui_core::Sample",
+        "pert_ui_runtime <- pert_ui_core::SampleWindow",
+        "pert_ui_runtime <- pert_ui_core::SampleWindowEntry",
+        "pert_ui_runtime <- pert_ui_core::Sequence",
+        "pert_ui_runtime <- pert_ui_core::SeriesConfig",
+        "pert_ui_runtime <- pert_ui_core::SeriesConsumer",
+        "pert_ui_runtime <- pert_ui_core::SeriesEndpoint",
+        "pert_ui_runtime <- pert_ui_core::Timestamp",
+        "pert_ui_runtime <- pert_ui_core::WakeFlag",
+        "pert_ui_runtime <- pert_ui_core::series_bridge",
+        "pert_ui_runtime::prelude <- crate::ChoiceId",
+        "pert_ui_runtime::prelude <- crate::ChoiceOption",
+        "pert_ui_runtime::prelude <- crate::NormalizedValue",
+        "pert_ui_runtime::prelude <- crate::ParameterId",
+        "pert_ui_runtime::prelude <- crate::ParameterMapping",
+        "pert_ui_runtime::prelude <- crate::ParameterSpec"
+      ]
+    },
+    {
+      "package": "pert-ui-runtime",
+      "configuration": "serde",
+      "features": [
+        "--features",
+        "serde"
+      ],
+      "format_version": 61,
+      "crate_version": "0.3.52",
+      "rustdoc_json_sha256": "4051679dd44136a5e48d11d632e68f36e535ce364bc767a648ee321ffa93a4fc",
+      "listing": "api/pert-ui-runtime/serde.txt",
+      "external_reexports": [
+        "pert_ui_runtime <- pert_ui_core::AnyParameterSnapshot",
+        "pert_ui_runtime <- pert_ui_core::AnySpec",
+        "pert_ui_runtime <- pert_ui_core::AnyValue",
+        "pert_ui_runtime <- pert_ui_core::Capacity",
+        "pert_ui_runtime <- pert_ui_core::ChoiceId",
+        "pert_ui_runtime <- pert_ui_core::ChoiceOption",
+        "pert_ui_runtime <- pert_ui_core::DrainReport",
+        "pert_ui_runtime <- pert_ui_core::EditError",
+        "pert_ui_runtime <- pert_ui_core::EditOutcome",
+        "pert_ui_runtime <- pert_ui_core::EditSequence",
+        "pert_ui_runtime <- pert_ui_core::EditSource",
+        "pert_ui_runtime <- pert_ui_core::EditToken",
+        "pert_ui_runtime <- pert_ui_core::HostValue",
+        "pert_ui_runtime <- pert_ui_core::Incarnation",
+        "pert_ui_runtime <- pert_ui_core::LiveError",
+        "pert_ui_runtime <- pert_ui_core::LiveItem",
+        "pert_ui_runtime <- pert_ui_core::NormalizedValue",
+        "pert_ui_runtime <- pert_ui_core::NormalizedValueError",
+        "pert_ui_runtime <- pert_ui_core::ParameterError",
+        "pert_ui_runtime <- pert_ui_core::ParameterFamily",
+        "pert_ui_runtime <- pert_ui_core::ParameterId",
+        "pert_ui_runtime <- pert_ui_core::ParameterIdError",
+        "pert_ui_runtime <- pert_ui_core::ParameterMapping",
+        "pert_ui_runtime <- pert_ui_core::ParameterSnapshot",
+        "pert_ui_runtime <- pert_ui_core::ParameterSpec",
+        "pert_ui_runtime <- pert_ui_core::ParameterState",
+        "pert_ui_runtime <- pert_ui_core::ParameterValue",
+        "pert_ui_runtime <- pert_ui_core::PowerExponent",
+        "pert_ui_runtime <- pert_ui_core::PreviewOutcome",
+        "pert_ui_runtime <- pert_ui_core::PublishOutcome",
+        "pert_ui_runtime <- pert_ui_core::Revision",
+        "pert_ui_runtime <- pert_ui_core::Sample",
+        "pert_ui_runtime <- pert_ui_core::SampleWindow",
+        "pert_ui_runtime <- pert_ui_core::SampleWindowEntry",
+        "pert_ui_runtime <- pert_ui_core::Sequence",
+        "pert_ui_runtime <- pert_ui_core::SeriesConfig",
+        "pert_ui_runtime <- pert_ui_core::SeriesConsumer",
+        "pert_ui_runtime <- pert_ui_core::SeriesEndpoint",
+        "pert_ui_runtime <- pert_ui_core::Timestamp",
+        "pert_ui_runtime <- pert_ui_core::WakeFlag",
+        "pert_ui_runtime <- pert_ui_core::series_bridge",
+        "pert_ui_runtime::prelude <- crate::ChoiceId",
+        "pert_ui_runtime::prelude <- crate::ChoiceOption",
+        "pert_ui_runtime::prelude <- crate::NormalizedValue",
+        "pert_ui_runtime::prelude <- crate::ParameterId",
+        "pert_ui_runtime::prelude <- crate::ParameterMapping",
+        "pert_ui_runtime::prelude <- crate::ParameterSpec"
+      ]
+    },
+    {
+      "package": "pert-ui-cpu",
+      "configuration": "default",
+      "features": [],
+      "format_version": 61,
+      "crate_version": "0.3.52",
+      "rustdoc_json_sha256": "f6c44ed778d2fc0dcf7ed54e2644fefb81e9900687f8387228bcfe0469bbf4b3",
+      "listing": "api/pert-ui-cpu/default.txt",
+      "external_reexports": []
+    },
+    {
+      "package": "pert-ui-wgpu",
+      "configuration": "default",
+      "features": [],
+      "format_version": 61,
+      "crate_version": "0.3.52",
+      "rustdoc_json_sha256": "c081f2cfc18fd73097cb90afe0b8c03c4012f7dffd2ba26e873a0d46b163b5e8",
+      "listing": "api/pert-ui-wgpu/default.txt",
+      "external_reexports": [
+        "pert_ui_wgpu <- pert_ui_runtime::LimitError",
+        "pert_ui_wgpu <- pert_ui_runtime::ResourceKind"
+      ]
+    },
+    {
+      "package": "pert-ui",
+      "configuration": "default",
+      "features": [],
+      "format_version": 61,
+      "crate_version": "0.3.52",
+      "rustdoc_json_sha256": "a3a4b5277fe6e8d6663544cbc4c121a8e665bd98d03fb82248c239e956485b0e",
+      "listing": "api/pert-ui/default.txt",
+      "external_reexports": [
+        "pert_ui <- pert_ui_runtime::*",
+        "pert_ui::prelude <- pert_ui_runtime::prelude::*"
+      ]
+    },
+    {
+      "package": "pert-ui",
+      "configuration": "no-default",
+      "features": [
+        "--no-default-features"
+      ],
+      "format_version": 61,
+      "crate_version": "0.3.52",
+      "rustdoc_json_sha256": "cc67d7dd37a5fda5e0ac403368f2569941ef8479b3e282485e26d0a535eee314",
+      "listing": "api/pert-ui/no-default.txt",
+      "external_reexports": [
+        "pert_ui <- pert_ui_runtime::*",
+        "pert_ui::prelude <- pert_ui_runtime::prelude::*"
+      ]
+    },
+    {
+      "package": "pert-ui",
+      "configuration": "images",
+      "features": [
+        "--features",
+        "images"
+      ],
+      "format_version": 61,
+      "crate_version": "0.3.52",
+      "rustdoc_json_sha256": "9b1e970369dd3cd26ebe72bd22f79990808575a90d6ce812236bb46d9bd0912b",
+      "listing": "api/pert-ui/images.txt",
+      "external_reexports": [
+        "pert_ui <- pert_ui_runtime::*",
+        "pert_ui::prelude <- pert_ui_runtime::prelude::*"
+      ]
+    },
+    {
+      "package": "pert-ui",
+      "configuration": "image-formats",
+      "features": [
+        "--features",
+        "image-formats"
+      ],
+      "format_version": 61,
+      "crate_version": "0.3.52",
+      "rustdoc_json_sha256": "99888ec2b358d56077731bb58e7b42acefa43653d5c8632625c946a3b52f41b8",
+      "listing": "api/pert-ui/image-formats.txt",
+      "external_reexports": [
+        "pert_ui <- pert_ui_runtime::*",
+        "pert_ui::prelude <- pert_ui_runtime::prelude::*"
+      ]
+    },
+    {
+      "package": "pert-ui",
+      "configuration": "no-default-png",
+      "features": [
+        "--no-default-features",
+        "--features",
+        "png"
+      ],
+      "format_version": 61,
+      "crate_version": "0.3.52",
+      "rustdoc_json_sha256": "020902ae2e5ba092441872136b31d8627449f7189c89330badee21a4bc233348",
+      "listing": "api/pert-ui/no-default-png.txt",
+      "external_reexports": [
+        "pert_ui <- pert_ui_runtime::*",
+        "pert_ui::prelude <- pert_ui_runtime::prelude::*"
+      ]
+    },
+    {
+      "package": "pert-ui",
+      "configuration": "svg",
+      "features": [
+        "--features",
+        "svg"
+      ],
+      "format_version": 61,
+      "crate_version": "0.3.52",
+      "rustdoc_json_sha256": "507e41b6f7fba3c4194b3ec67e940aca5768753a43816067aa0247a7e9970434",
+      "listing": "api/pert-ui/svg.txt",
+      "external_reexports": [
+        "pert_ui <- pert_ui_runtime::*",
+        "pert_ui::prelude <- pert_ui_runtime::prelude::*"
+      ]
+    },
+    {
+      "package": "pert-ui",
+      "configuration": "no-default-svg",
+      "features": [
+        "--no-default-features",
+        "--features",
+        "svg"
+      ],
+      "format_version": 61,
+      "crate_version": "0.3.52",
+      "rustdoc_json_sha256": "a9cb184546f597a9c5e67b22dde73f117609c5a0c3ed7c73a7ed06a678b72653",
+      "listing": "api/pert-ui/no-default-svg.txt",
+      "external_reexports": [
+        "pert_ui <- pert_ui_runtime::*",
+        "pert_ui::prelude <- pert_ui_runtime::prelude::*"
+      ]
+    },
+    {
+      "package": "pert-ui",
+      "configuration": "serde",
+      "features": [
+        "--features",
+        "serde"
+      ],
+      "format_version": 61,
+      "crate_version": "0.3.52",
+      "rustdoc_json_sha256": "2ced89a22ea76f87af356c7368c70d4894d35e8e5e8eae53fd0b10193db23857",
+      "listing": "api/pert-ui/serde.txt",
+      "external_reexports": [
+        "pert_ui <- pert_ui_runtime::*",
+        "pert_ui::prelude <- pert_ui_runtime::prelude::*"
+      ]
+    },
+    {
+      "package": "pert-ui",
+      "configuration": "no-default-serde",
+      "features": [
+        "--no-default-features",
+        "--features",
+        "serde"
+      ],
+      "format_version": 61,
+      "crate_version": "0.3.52",
+      "rustdoc_json_sha256": "83c01c302c111e9d012e9bdfccec1a6ea819346c95e5aabcff3fb5bbe9b87247",
+      "listing": "api/pert-ui/no-default-serde.txt",
+      "external_reexports": [
+        "pert_ui <- pert_ui_runtime::*",
+        "pert_ui::prelude <- pert_ui_runtime::prelude::*"
+      ]
+    },
+    {
+      "package": "pert-ui",
+      "configuration": "cpu",
+      "features": [
+        "--features",
+        "cpu"
+      ],
+      "format_version": 61,
+      "crate_version": "0.3.52",
+      "rustdoc_json_sha256": "05ac271d39f395773f31e36f75e9530ee3a60b4db03bb25fdda950a1f965511b",
+      "listing": "api/pert-ui/cpu.txt",
+      "external_reexports": [
+        "pert_ui <- pert_ui_runtime::*",
+        "pert_ui::cpu <- pert_ui_cpu::CpuRenderError",
+        "pert_ui::cpu <- pert_ui_cpu::CpuRenderer",
+        "pert_ui::prelude <- pert_ui_runtime::prelude::*"
+      ]
+    },
+    {
+      "package": "pert-ui",
+      "configuration": "no-default-desktop-cpu",
+      "features": [
+        "--no-default-features",
+        "--features",
+        "desktop-cpu"
+      ],
+      "format_version": 61,
+      "crate_version": "0.3.52",
+      "rustdoc_json_sha256": "561b97580d8101652fe0657b3790228cb2b26d5815418ebaa81ef11f48cd2f6c",
+      "listing": "api/pert-ui/no-default-desktop-cpu.txt",
+      "external_reexports": [
+        "pert_ui <- pert_ui_runtime::*",
+        "pert_ui::cpu <- pert_ui_cpu::CpuRenderError",
+        "pert_ui::cpu <- pert_ui_cpu::CpuRenderer",
+        "pert_ui::prelude <- pert_ui_runtime::prelude::*"
+      ]
+    }
+  ]
+}
