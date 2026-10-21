@@ -51,9 +51,15 @@ until then if one is being written.
   sessions today. The inline rows already own a resting and editing policy
   that a later slice can map onto the protocol. Parameter-backed numbers
   ignore sessions too.
+  The developer-usability blind tests (F15) supply application evidence for
+  `InlineText`: two task-list testers needed to start a row's rename from
+  the list and sent synthetic key presses instead.
 - **Controlled controls** (a `Checkbox` built from a `bool` that reports a
   toggle). From table-editing slice 6. Considered only with their refusal,
   optimistic-presentation and callback timing specified.
+  The developer-usability blind tests (F16) supply application evidence:
+  two task-list testers bound per-row checkboxes and titles to their own
+  `Vec` through throwaway `Signal::sibling` signals.
 
 - **Refusal for other captioned controls.** From
   [plan-audit-repairs](plan-audit-repairs.md) slice 2: `Label` and the

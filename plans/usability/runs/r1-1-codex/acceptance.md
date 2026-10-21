@@ -69,9 +69,10 @@ Notes for the triage (not acceptance failures):
   an in-view `FloatingWindow` inside a `WindowLayer` inside the native window
   (`src/main.rs:260-276`). In the native app that window can be moved inside
   the native window, and closing it while clean removes the editor and leaves
-  an empty native window running. The in-view close path does not clear focus
-  first, unlike the native one (`:299`), so an uncommitted draft is not
-  considered by that guard.
+  an empty native window running. (Corrected in triage: activating the
+  in-view window's close button moves focus to it, which saves a valid
+  draft before the guard runs, so that path does consider an uncommitted
+  draft; a probe confirmed it.)
 - The save uses a hand-built `std::thread` plus `Runtime::mailbox` rather than
   `Runtime::spawn`; `spawn` needs `&mut Runtime`, which the `Button` callback
   (an `EventContext`) does not have.

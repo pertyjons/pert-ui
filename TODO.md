@@ -72,5 +72,15 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   packaged examples' headless sessions (`cargo run --locked -p pert-ui
   --features png,svg,cpu --example ...`) that AGENTS.md and
   `.github/workflows/ci.yml` include, so a reader following it runs less
-  than CI. Replace the block with a reference to the AGENTS.md gate, or
-  copy the full list and keep it in step with the other two.
+  than CI; since slice 1 of the developer-usability plan it also lacks the
+  API listing gate. Replace the block with a reference to the AGENTS.md
+  gate, or copy the full list and keep it in step with the other two.
+- [ ] 2026-10-21 `crates/pert-ui-runtime/src/capture.rs` `FrameImage::encode_png`
+  — Concrete improvement (found by the developer-usability triage): the
+  encoder writes stored, uncompressed deflate blocks without row filters,
+  as its rustdoc says, for determinism without a dependency. A blind-test
+  window capture of 1040×600 took 2.5 MB; a level-6 zlib encode of the same
+  pixels takes 18 KB. A small deterministic deflate (or an optional
+  pure-Rust one such as `miniz_oxide`, already in the lockfile through
+  `png`) would make captures practical to attach and commit; keep the
+  output deterministic and test it against a decoder.

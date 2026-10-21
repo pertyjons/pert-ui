@@ -7,7 +7,8 @@ maintainer approved the checkpoint on 2026-10-21, keeping the tasks and
 their 90-minute budget. Slice 1 is done: the API listings are under
 `api/` with their CI job, on Rust 1.99.1 (0.3.52); its CI run waits for
 an authorized push. Slice 2 is done: round 1's eight runs are recorded in
-`plans/usability/runs/`. Slice 3, the triage, is next. Every tool, file and check named below as new is a
+`plans/usability/runs/`. Slice 3 is done: 36 findings are ranked in the
+round 1 findings table. Slice 4, the API consistency audit, is next. Every tool, file and check named below as new is a
 proposal until a slice implements it.
 
 ## Background
@@ -365,6 +366,105 @@ Documentation only, no version.
   evidence is exploratory, and which model family tested, triaged and
   reviewed each part.
 
+#### Round 1 findings
+
+Outcome of slice 3 (2026-10-21). The evidence is exploratory: two AI
+testers, one run per task each, plus the two task 2 pilots (marked
+separately).
+
+**Who did what:**
+- **Testing:** Claude (Opus 5.5) and Codex (`gpt-6.1-sol`).
+- **Verification:** five fresh Claude agents checked every entry against
+  the rustdoc, the guide and the code, with throwaway probes for runtime
+  claims. Their per-entry tables are in
+  [`usability/runs/triage/`](usability/runs/triage/).
+- **Merging and ranking:** the author (Claude) merged and ranked the
+  entries, and spot-checked the decisive claims in the source.
+- **Review:** Codex reviewed the triage, including the runs it produced
+  itself. Two of its changes concerned its own runs (F4's count and F7's
+  split); a fresh Claude agent checked both against the records and the
+  source, agreed, and found that r1-1-codex's in-view close does save
+  drafts, which corrected that run's acceptance note.
+
+The 64 friction entries resolve as follows:
+- 36 findings in the table below. F1 is a kit issue today. F30 to F34
+  were found while verifying, not by a tester.
+- Kit issues, listed in [the runs' README](usability/runs/README.md#kit-fixes-found-in-round-1).
+- Tester errors: r1-1-codex#5, r1-2-codex#2 (its guesses, not its prelude
+  part), r1-3-claude#4 and pilot-2-codex#5.
+- Notes with no problem: r1-4-claude#6–#9, r1-4-codex#4–#5.
+
+Ranking is by round 1 runs that hit the finding, in a friction entry or in
+their code and acceptance notes, then by the worst severity a tester gave.
+
+**"If not fixed"** is where a finding goes if the joint checkpoint after
+slice 4 does not choose it:
+- **S9:** app-author slice 9's inputs.
+- **FU:** [follow-ups](follow-ups.md).
+- **TODO:** TODO.md.
+
+| # | Finding | Class | Item or page | Runs (pilot) | Worst | If not fixed |
+|---|---|---|---|---|---|---|
+| F1 | The guide's dependency instructions say to use a checkout because no registry release exists; the kit stood in for a release. Two other chapters already use a registry requirement. | Kit issue now, documentation error at the first release | guide/getting-started.md "Run your first window" | 6 (2) | annoyance | S9 and the release checklist; the round 2 brief says the kit stands in for a release |
+| F2 | Testing an application headlessly has no chapter and no helpers. The task 4 testers, the task 1 testers in part, the pilots and the packaged examples' sessions built recurring helpers: click at bounds, replace a field's text, a key chord, find a component's semantics, read label and field text, settle after input. Group E maps each helper to its runs. Further problems:<br>• The typed single lookup `Runtime::query` with `Selector::id` is not pointed to; the `inspection_id` example teaches a full snapshot search.<br>• `text_input("")` is a no-op.<br>• `focus` puts the caret at the start.<br>• Input methods do not say when derived UI is settled.<br>• `pointer_input` has no example. | Documentation gap; a helper type is a missing capability | guide (no testing chapter), `Runtime::inspection_id`, `Runtime::text_input`, `Runtime::pointer_input`, `Runtime::query` | 4 (2) | slow | S9 (chapter), FU (helper type) |
+| F3 | The prelude lacks `Modifiers`, `KeyChord`, `CommandKey` and `CommandScope`, against its own rule for keyboard types an application configures; `ListDrop` and `DropPosition`, which `VirtualList::reorderable` takes, are missing too. rustc suggests no `use pert_ui::…` for facade items. | API ergonomics (discovery) | `pert_ui::prelude` | 6 by use, 2 by entries (2) | annoyance | S9 |
+| F4 | A focused editor's uncommitted draft is neither committed nor cancelled before `App::on_close`, so a close policy sees no change and an accepted close loses the typed text. Window deactivation commits valid drafts by clearing focus, and so does an in-view `FloatingWindow` close, whose button takes focus. Calling `Runtime::clear_focus` inside `on_close` is an undocumented workaround (r1-1-codex used it). | Defect | `App::on_close`, platform close path | 1 | partly met acceptance | TODO |
+| F5 | `App::on_close` cannot be driven headlessly: `App::handle_close` is crate-private, and `take_presentation_requests` says only native hosts need it. | Missing capability | `App::on_close`, `Runtime::request_close` | 2 | slow | FU (driver), TODO (doc lines) |
+| F6 | Built-in parse and range rejections of `IntegerInput` and `DecimalInput` do not reach `on_rejection`. Their messages are fixed English strings shown only in inspection, and the fields have no `on_modified`. `TextField` reports its own limits through `on_rejection`. | Missing capability | `IntegerInput::on_rejection`, `DecimalInput` | 2 | slow | TODO |
+| F7a | A selection hidden by a filter stays selected, as documented, but no page shows how to tell that the selected row is hidden (from `ListFilter::items()` and `ListItems::index_of` with `ListSelection::active`). | Documentation gap | `CollectionFilter` "Selection and focus", `ListFilter` | 1 | annoyance | TODO, S9 (list recipe) |
+| F7b | `CollectionFilter` moves a hidden active item only while the collection has focus, so never while the user types in its field, and offers no policy or outcome callback. `ListFilter::filter` returns `FilterOutcome::nearest_active` only to an application that applies the query itself. | Missing capability (optional policy) | `CollectionFilter`, `FilterOutcome::nearest_active` | 1 | slow | FU |
+| F7c | Filters trim a non-blank query before matching, undocumented, while `FilterMatcher::matches` takes the raw query, so an application that repeats the match disagrees with the list (r1-2-claude's partly met item 3, found at acceptance). | Documentation gap | `FilterMatcher`, `ListFilter::filter`, the table and tree filters | 1 (acceptance) | partly met acceptance | TODO |
+| F8 | A `Label` reports its text as the semantic name and has no value, while `SemanticValue::Text` and `Semantics::value` describe presented text. | Documentation error | `Semantics::value`, `SemanticValue::Text`, `Label` | 2 | annoyance | TODO |
+| F9 | `Each` puts its rows under an implicit `items` segment and replaces the element's own key; documented, but the only example uses `within`. | Documentation gap | `Each` | 2 | annoyance | S9 |
+| F10 | `CaptureTarget::window` takes `&NativeWindowId`; the guide names the type but never shows the call. | Documentation gap | guide/diagnostics.md captures, `CaptureTarget::window` | 3 (one only in its diagnostics) | annoyance | TODO |
+| F11 | Error conversions point at the wrong type: the blanket `From` for `AppError` makes rustc name `DrawError`, and `Runtime::paint`'s `DrawError` does not convert into `RuntimeError` for a test helper. | API ergonomics (diagnostics) | `AppError`, `DrawError` | 2 | annoyance | TODO, slice 4 diagnostics survey |
+| F12 | `Component::cancel_input` does not say whether it may write signals or how a failed restore surfaces; it returns `()`. A restore deferred to `deliver_notifications` is lost if the component is removed first. | Documentation gap | `Component::cancel_input` | 2 | slow | TODO |
+| F13 | Starting background work from a callback: `EventContext` has no `spawn`, and the `defer`-then-`Runtime::spawn` pattern that the `diagram_editor` example uses is not documented. | Documentation gap; a convenience is optional | `EventContext`, `Runtime::spawn`, guide/state.md | 2 | slow | S9 (recipe), TODO, FU (convenience) |
+| F14 | No recipe for an editable, selectable, filterable list of application records. The guide's task list uses `Each`, which has neither selection nor filtering. | Documentation gap | guide | 1 (2) | slow | S9 |
+| F15 | `InlineText` cannot begin editing from code. Testers sent synthetic key presses, which fail while the key is still held. | Missing capability | `InlineText` | 1 (1) | slow | FU, updating "Sessions for more editors" |
+| F16 | Per-row controls bound to an application's `Vec` need per-row signals; `Signal::sibling` works but is documented for popup state and discards an open rename when the vector changes. | API ergonomics | `Checkbox`, `InlineText`, `Signal::sibling`, `ListItems::build` | 1 (1) | slow | S9 (per-row state recipe), FU (controlled controls, updating "Controlled controls") |
+| F17 | Owning a `DraftEditor` inside rows that are described again needs `retain_initial_children`, and cancellation during the owner's focus transfer is easy to get wrong. | Documentation gap | `DraftEditor`, `Component::retain_initial_children` | 1 (1) | slow | TODO |
+| F18 | Escape does not call `cancel_input` on the focused component; it silently releases its pointer capture and timer, and then arrives as an ordinary key. The custom-widgets guide says Escape calls `cancel_input`. Not reported by a tester: guide/controls.md says Escape cancels capture owned by nonfocusable components, which a probe disproved. | Documentation error (or a contract change) | guide/custom-widgets.md, guide/controls.md, `Runtime::key_input` | 1 | slow | TODO |
+| F19 | `CommandId` is `#[must_use]` although dropping it keeps the command registered, so application-lifetime commands need `let _ =`, and the guide's shortcut example warns when copied. | API ergonomics | `Runtime::register_command`, guide/diagnostics.md | 2 by warnings (1) | annoyance | TODO, slice 4 audit |
+| F20 | Examples on the facade's item pages import `pert_ui_runtime` or `pert_ui_core`: 276 of 310 blocks, and an item page does not show that the item is re-exported. | Documentation error | rustdoc examples of re-exported items | 1 (1) | annoyance | S9 |
+| F21 | A `Field` passes its description only to children without one, so a refused draft's control reports "Unsaved changes" rather than the field's error. | API ergonomics | `Field`, `TextField` semantics | 1 | annoyance | TODO |
+| F22 | Editors take Alt+Up/Down (and Super) before application commands, also where the chord has no editing meaning; undocumented on `TextField`. | Documentation gap | `TextField`, `Runtime::command_key_input` | 1 | annoyance | TODO |
+| F23 | `AmbiguousKey` does not name the key. | API ergonomics (error text) | `RuntimeError::AmbiguousKey` | 1 | annoyance | TODO, slice 4 audit |
+| F24 | `SemanticValue` has no two-dimensional value; the convention is documented only on `ColorPicker`. | Documentation gap; a variant is optional | `SemanticValue`, guide inspection section | 1 | annoyance | TODO, FU (variant) |
+| F25 | `check_redescription` reports a false `UnexpectedOverlap` when a viewport is set. The tester's expectation that `Redescribed::root` is the component was a tester error: the docs say the retained tree under `root`, although a pointer to `Redescribed::component` would help. | Defect | `check_redescription` | 1 | annoyance | TODO |
+| F26 | `CollectionFilter` documents `filter-field` as a slot, but the wrapper is structural, so the field's path is `…/filter`. | Documentation error | `CollectionFilter` | 0 (1) | annoyance | TODO |
+| F27 | `InlineText` in a list row takes the row's first press, so the list does not select. | Documentation gap | `InlineText`, `VirtualList` | 0 (1) | slow | TODO |
+| F28 | `Signal::update` requires `PartialEq`; the signal page says so, the guide does not. | Documentation gap | guide/state.md | 0 (1) | annoyance | TODO |
+| F29 | An empty `Label` still takes height, unlike an empty `Field` block. | API ergonomics | `Label` | author note | — | TODO |
+| F30 | `ApplicationError::new` rejects a boxed `dyn Error + Send + Sync`, and there is no `From` for it, so an application using a boxed error loses the source chain. | Missing capability | `ApplicationError` | author-found (group A) | — | TODO |
+| F31 | With the key `CollectionFilter` documents as valid, `filter`, the collection and the search field share one address and `find` reports `AmbiguousKey`. | Defect | `CollectionFilter` | author-found (group C) | — | TODO |
+| F32 | `ColorPicker::cancel_input`'s comment says writes are refused when hiding or removing; they succeeded on every such path probed. | Documentation error (code comment) | `ColorPicker` | author-found (group D) | — | TODO |
+| F33 | A fixed-size custom control must unwrap `SizeLimits::new` or switch to `measure_limits`; there is no infallible constructor for a fixed size. | API ergonomics | `SizeLimits` | author-found (group D) | — | TODO |
+| F34 | The packaged examples press modifiers through `command_key_input` while the guide sets them with `native_modifiers`: two recipes for one thing. | Documentation gap | guide/diagnostics.md, the examples' sessions | author-found (group E) | — | S9 |
+
+Two other observations:
+- `FrameImage::encode_png` writes stored deflate blocks, a documented
+  trade-off for determinism and no dependency, which makes captures about a
+  hundred times larger than a compressed encode. It is outside this plan's
+  scope and is recorded in TODO.md.
+- A lead, not verified: the example sessions flush three times to settle.
+
+**Compile diagnostics that misled testers,** for slice 4's survey; the
+full texts are in the runs' `diagnostics.md`:
+- `Modifiers` not found: rustc suggests the unrelated `Notifier`.
+- `CommandScope`, `KeyChord` and `CommandKey` not found: no help at all.
+- `?` or `AppError::from` on an unsupported error: the message names
+  `DrawError` (F11).
+- `paint()?` into `RuntimeError`: the cause is named but no fix is offered.
+- `Modifiers::CONTROL`: no hint at the fields.
+- `E0614` "f64 cannot be dereferenced" after `entry.properties`: a cascade
+  from the `E0609` on the same expression, fixed by `entry.details.properties`
+  alone.
+
+The others, among them the `CaptureTarget::window` borrow, the
+`PartialEq` bound, `details.properties` and `with_grow`'s `u16`, led
+straight to the fix.
+
 ### 4. API consistency audit
 
 Documentation only, no version. The rubric, the inventories, the
@@ -575,3 +675,14 @@ r1-1-claude became partly met; a second probe and an explicit reading were
 recorded for r1-2-codex, whose verdict stays met; the pointer was fixed. A
 recheck found a false README attribution in that reading, which was
 removed.
+
+Slice 3: Codex reviewed the triage, including its own runs, and reported
+fourteen points: wrong merges (F7, F11, F26), counts (F2, F4, F10, F14), a
+misread documentation sentence (F25), discovery findings not routed to
+app-author slice 9, verified observations without a destination,
+overstatements in the verification section (source availability, the
+Codex model) and a missing cascading diagnostic. Its two changes to its
+own runs' findings (F4's count and F7's split) were checked by a fresh
+Claude agent, which agreed and corrected r1-1-codex's acceptance note about
+its in-view close. A recheck confirmed the fixes and found two remaining
+routing and wording points in the slice 9 inputs, which were fixed.

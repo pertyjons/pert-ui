@@ -125,6 +125,63 @@ on Fedora 44 Workstation, GNOME on Wayland: `interaction_check` and
 entry points, and these checks do not step through the new demonstrations
 themselves. No hand check of them is claimed.
 
+## Developer usability
+
+[The developer-usability plan](../plans/developer-usability.md) runs blind
+tests: AI testers build small applications from the packaged documentation
+in a sandbox with no network beyond the model hosts and no access to the
+repository. The kit holds the packaged crates, whose source a tester may
+read if it logs it; none did.
+
+The evidence is exploratory. There are two testers, one run per task each,
+so the times and counts describe how each tester worked, not a usability
+score. Who did what:
+
+- **Testing:** Claude Code with Opus 5.5 at high effort, and Codex CLI with
+  `gpt-6.1-sol` requested at medium effort (Codex's effective model is not
+  in its transcript).
+- **Acceptance and triage:** fresh Claude agents, followed by the author's
+  checks.
+- **Review:** Codex. It also reviewed the acceptance and triage of the runs
+  it produced itself.
+
+Round 1 ran on 2026-10-21 against 0.3.52 (commit 359122e, Rust 1.99.1).
+Each run's records are in
+[`plans/usability/runs/`](../plans/usability/runs/README.md):
+
+| Task | Claude: session, acceptance | Codex: session, acceptance |
+|---|---|---|
+| 1 settings editor | 5.5 min, partly met | 6.3 min, partly met |
+| 2 task list | 7.6 min, partly met | 6.9 min, met |
+| 3 custom control | 8.0 min, met | 3.8 min, met |
+| 4 testing an existing app | 4.5 min, met | 4.2 min, met |
+
+**Results:**
+- Every run finished well inside its 90-minute budget.
+- The three partly met runs missed one behavior each:
+  - closing with an uncommitted typed change;
+  - a close refusal tested only on a window added for testing;
+  - list actions that did nothing for a shown selection when the query
+    ended in a space.
+
+**Triage:** the 64 friction entries of round 1 and the two task 2 pilots,
+with the acceptance notes and what verification turned up, resolve into 36
+findings (one of them, the getting-started dependency, a kit issue today),
+ranked in
+[the plan's findings table](../plans/developer-usability.md#round-1-findings).
+The most frequent are:
+- the getting-started dependency instructions, an artifact of the
+  unpublished library;
+- the missing testing chapter and helpers;
+- prelude gaps for keyboard and command types.
+
+Defects found:
+- a focused editor's draft is not committed before a window's close policy
+  runs;
+- `check_redescription` reports a false overlap with a viewport set;
+- `CollectionFilter`'s documented `filter` key collides with its search
+  field (found while verifying, not by a tester).
+
 ## Thin outlines at fractional zoom
 
 A 75% scale regression renders a one-logical-pixel rounded outline at a

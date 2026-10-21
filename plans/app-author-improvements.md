@@ -376,6 +376,31 @@ Inputs from later plans and the 2026-10-20 audit:
 - The same probe found inspection bounds only under
   `details.box_model.border_box`. The diagnostics guide should say where a
   component's bounds are.
+- The [developer-usability plan](developer-usability.md#round-1-findings)'s
+  blind tests (2026-10-21) add discovery and prelude evidence:
+  - **Prelude (F3):** six of eight round 1 submissions imported `Modifiers`,
+    `KeyChord`, `CommandKey` or `CommandScope` from the crate root, and
+    rustc suggests no `use pert_ui::…` for them. `VirtualList::reorderable`'s
+    `ListDrop` and `DropPosition` are missing too.
+  - **Testing chapter (F2):** the testers who tested an application, the
+    pilots and the packaged examples built recurring helpers (click at
+    bounds, replace a field's text, a key chord, find a component's
+    semantics, settle after input), not all of them in every submission.
+    The chapter should start from `Runtime::query` with `Selector::id`,
+    not a full snapshot search.
+  - **Background work from a callback (F13):** the `defer`-then-
+    `Runtime::spawn` pattern the `diagram_editor` example uses, which both
+    task 1 testers had to invent or work around.
+  - **Per-row state (F16):** how per-row controls bind to an application's
+    own `Vec`; an optional controlled-control API stays in follow-ups.
+  - **Editable-list recipe (F14):** an editable, selectable, filterable
+    list of application records was the most common shape testers wanted.
+  - **Getting started (F1)** should lead with the registry dependency once
+    a release exists.
+  - **Facade examples (F20)** import `pert_ui_runtime`, and **`Each`'s
+    `items` segment (F9)** needs an example of the default path.
+  Those findings may instead be fixed in that plan's slices 5 and 6 if its
+  joint checkpoint chooses them.
 
 ## Optional follow-ups
 
