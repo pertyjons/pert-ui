@@ -244,6 +244,68 @@ Design checkpoint first. It decides and records:
 - **Freshness.** A CI step on one Linux job regenerates the listings and
   fails on a difference, with the regeneration command in its message.
 
+Checkpoint proposal (2026-10-21), revised after a Codex review, for the
+maintainer's approval. Evidence was gathered with throwaway builds under
+`target/`:
+
+- **Tool: `cargo-public-api` 0.52.0 only**, installed with `cargo install
+  --locked cargo-public-api@0.52.0` (it builds on stable). Its output is
+  committed as it prints it, with `--simplified` once (blanket impls
+  omitted) and no filtering of ours: a filter inferring which impl a line
+  belongs to from its position was tried and dropped free functions that
+  follow an impl. `cargo-semver-checks` (0.51.0) reports breaking changes
+  against a baseline and gives no listing; while the crates are unpublished
+  and the component review may break them, the listing's diff in review is
+  what this plan needs. It is reconsidered at the first publication.
+- **Toolchain: an extraction-only exception, no nightly.** rustdoc JSON
+  still needs `-Z unstable-options`, and `cargo-public-api` would switch to
+  a nightly by itself to build it. `api/generate.sh` instead builds the
+  JSON with exactly Rust 1.99.0 (the pinned toolchain) and
+  `RUSTC_BOOTSTRAP=1`, set on that one command only, and passes the file
+  with `--rustdoc-json` (a flag the tool's help does not list, held stable
+  by the pinned tool version). This is a documented exception for
+  extracting the listing: no build, test, check or package of the library
+  uses `RUSTC_BOOTSTRAP`, and the library's stable and MSRV contract is
+  unchanged. The alternative is a date-pinned nightly used only for
+  extraction, which states the unstable dependency more directly but adds a
+  second toolchain to install and bump; the maintainer chooses. Verified:
+  1.99.0 emits format 61, which 0.52.0 parses without error, and two
+  builds give identical listings.
+- **Reproducible inputs.** Target `x86_64-unknown-linux-gnu`; exactly the
+  pinned toolchain and tool version; `cargo rustdoc --locked -p <package>`
+  with that configuration's features and nothing unified from other
+  packages; no color; `RUSTFLAGS` and `RUSTDOCFLAGS` cleared for the
+  extraction. The listings are a Linux view: items gated on another
+  platform would not appear. They also name dependency paths (for example
+  `serde_core::ser::Serialize`) and auto-trait impls that follow
+  dependencies, so a dependency or toolchain update regenerates them in the
+  same change, and the review reads that churn separately from intended API
+  changes.
+- **Configurations: those CI already checks**, each package on its own.
+  The facade's `pub use pert_ui_runtime::*` is one line, so the runtime's
+  listing is the bulk of what a consumer sees.
+  - `pert-ui`: default; `--no-default-features`; `--features images`;
+    `--features image-formats`; `--no-default-features --features png`;
+    `--features svg`; `--no-default-features --features svg`; `--features
+    serde`; `--no-default-features --features serde`; `--features cpu`;
+    `--no-default-features --features desktop-cpu`. Each is at most a few
+    hundred lines.
+  - `pert-ui-runtime`: default and `serde` (CI builds it with `serde`
+    through the facade); about 37,000 lines and 3.9 MB each, mostly
+    because the tool, since version 0.51, lists every default trait method
+    under each impl, which repeats `Component`'s methods for every widget.
+  - `pert-ui-core`: default and `serde`, about 1,000 lines each.
+  - `pert-ui-cpu` and `pert-ui-wgpu`: default, under 100 lines each.
+- **Location.** `api/<package>/<configuration>.txt` at the root, with
+  `api/generate.sh` that removes the old listings and writes every listing
+  again; nothing under `crates/`, so packaging is unaffected.
+- **Freshness.** A separate CI job on Linux with the pinned toolchain
+  installs the tool, runs `api/generate.sh` (which stops at the first
+  failure) and fails when `git status --porcelain -- api/` shows any
+  changed, new or removed file, printing the regeneration command. The
+  workspace jobs are unchanged. Generating the listings took about two
+  minutes locally.
+
 Implementation: the listings, the CI step, and in the same commit the
 AGENTS.md gate table and commands and CONTRIBUTING.md's description of how
 to regenerate. AGENTS.md gains the rule that a change to `api/` is part of
@@ -482,3 +544,11 @@ commands run through its script tool. Codex's review of that change found
 the canary's content in its file name, incomplete or repeated script logs
 passing, prose counted as an apps tool call and a tester-writable script
 and log; all were fixed, the last by moving the verdict to the host.
+
+Slice 1's checkpoint: Codex found that a filter collapsing trait-impl
+methods dropped free functions that follow an impl, that a combined
+feature set did not match CI's configurations, and that the
+`RUSTC_BOOTSTRAP` choice, the reproducibility inputs and the freshness
+check needed stating; the proposal was revised to the tool's own output,
+CI's configurations, an extraction-only exception, explicit inputs and a
+check that sees new and removed files. A recheck approved it.
