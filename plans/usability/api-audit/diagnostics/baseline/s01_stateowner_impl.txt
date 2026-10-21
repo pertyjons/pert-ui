@@ -1,0 +1,35 @@
+error[E0277]: the trait bound `MyOwner: pert_ui_runtime::signal::sealed::Sealed` is not satisfied
+  --> src/bin/s01_stateowner_impl.rs:4:21
+   |
+ 4 | impl StateOwner for MyOwner {
+   |                     ^^^^^^^ unsatisfied trait bound
+   |
+help: the trait `pert_ui_runtime::signal::sealed::Sealed` is not implemented for `MyOwner`
+  --> src/bin/s01_stateowner_impl.rs:3:1
+   |
+ 3 | struct MyOwner(Runtime);
+   | ^^^^^^^^^^^^^^
+   = note: `MyOwner` implements similarly named trait `unicode_width::private::Sealed`, but not `pert_ui_runtime::signal::sealed::Sealed`
+   = help: the following other types implement trait `pert_ui_runtime::signal::sealed::Sealed`:
+             &O
+             &mut O
+             DescribeContext<'_>
+             EventContext
+             UpdateContext
+             pert_ui::Runtime
+note: required by a bound in `pert_ui::StateOwner`
+  --> <repo>/crates/pert-ui-runtime/src/signal.rs:64:23
+   |
+64 | pub trait StateOwner: sealed::Sealed {
+   |                       ^^^^^^^^^^^^^^ required by this bound in `StateOwner`
+   = note: `StateOwner` is a "sealed trait", because to implement it you also need to implement `pert_ui_runtime::signal::sealed::Sealed`, which is not accessible; this is usually done to force you to use one of the provided types that already implement it
+   = help: the following types implement the trait:
+             pert_ui::DescribeContext<'_>
+             pert_ui::Runtime
+             pert_ui::UpdateContext
+             pert_ui::EventContext
+             &O
+             &mut O
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `diag-consumer` (bin "s01_stateowner_impl") due to 1 previous error

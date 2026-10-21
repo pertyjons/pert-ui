@@ -1,0 +1,16 @@
+error[E0053]: method `children` has an incompatible type for trait
+ --> src/bin/t03_treeitems_wrong_signature.rs:6:30
+  |
+6 |     fn children(&self, _key: String) -> Vec<String> { vec![] }
+  |                              ^^^^^^ expected `&str`, found `String`
+  |
+  = note: expected signature `fn(&Files, &str) -> Vec<_>`
+             found signature `fn(&Files, String) -> Vec<_>`
+help: change the parameter type to match the trait
+  |
+6 -     fn children(&self, _key: String) -> Vec<String> { vec![] }
+6 +     fn children(&self, _key: &str) -> Vec<String> { vec![] }
+  |
+
+For more information about this error, try `rustc --explain E0053`.
+error: could not compile `diag-consumer` (bin "t03_treeitems_wrong_signature") due to 1 previous error

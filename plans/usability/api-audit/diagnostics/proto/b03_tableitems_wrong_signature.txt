@@ -1,0 +1,16 @@
+error[E0053]: method `cell` has an incompatible type for trait
+ --> src/bin/b03_tableitems_wrong_signature.rs:7:42
+  |
+7 |     fn cell(&self, index: usize, column: usize) -> Option<Element> {
+  |                                          ^^^^^ expected `&str`, found `usize`
+  |
+  = note: expected signature `fn(&Rows, _, &str) -> Option<_>`
+             found signature `fn(&Rows, _, usize) -> Option<_>`
+help: change the parameter type to match the trait
+  |
+7 -     fn cell(&self, index: usize, column: usize) -> Option<Element> {
+7 +     fn cell(&self, index: usize, column: &str) -> Option<Element> {
+  |
+
+For more information about this error, try `rustc --explain E0053`.
+error: could not compile `diag-consumer-proto` (bin "b03_tableitems_wrong_signature") due to 1 previous error

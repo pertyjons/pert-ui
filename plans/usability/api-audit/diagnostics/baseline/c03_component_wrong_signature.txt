@@ -1,0 +1,15 @@
+error[E0053]: method `update` has an incompatible type for trait
+ --> src/bin/c03_component_wrong_signature.rs:5:50
+  |
+5 |     fn update(&mut self, _cx: &mut UpdateContext) {}
+  |                                                  ^ expected `Result<(), RuntimeError>`, found `()`
+  |
+  = note: expected signature `fn(&mut Panel, &mut UpdateContext) -> Result<(), RuntimeError>`
+             found signature `fn(&mut Panel, &mut UpdateContext) -> ()`
+help: change the output type to match the trait
+  |
+5 |     fn update(&mut self, _cx: &mut UpdateContext) -> Result<(), RuntimeError> {}
+  |                                                   +++++++++++++++++++++++++++
+
+For more information about this error, try `rustc --explain E0053`.
+error: could not compile `diag-consumer` (bin "c03_component_wrong_signature") due to 1 previous error

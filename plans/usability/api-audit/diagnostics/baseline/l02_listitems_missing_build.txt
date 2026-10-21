@@ -1,0 +1,18 @@
+error[E0046]: not all trait items implemented, missing: `build`
+ --> src/bin/l02_listitems_missing_build.rs:4:1
+  |
+4 | impl ListItems for Rows {
+  | ^^^^^^^^^^^^^^^^^^^^^^^ missing `build` in implementation
+  |
+  = help: implement the missing item: `fn build(&self, _: usize) -> Option<pert_ui::Element> { todo!() }`
+
+warning: unused import: `prelude`
+ --> src/bin/l02_listitems_missing_build.rs:2:26
+  |
+2 | use pert_ui::{ListItems, prelude::*};
+  |                          ^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+For more information about this error, try `rustc --explain E0046`.
+error: could not compile `diag-consumer` (bin "l02_listitems_missing_build") due to 1 previous error; 1 warning emitted

@@ -1,0 +1,23 @@
+error[E0277]: `?` couldn't convert the error to `pert_ui::RuntimeError`
+ --> src/bin/m05_paint_into_runtime_error.rs:3:80
+  |
+3 | fn frame(ui: &mut Runtime) -> Result<DisplayList, RuntimeError> { Ok(ui.paint()?) }
+  |                               ---------------------------------         -------^ the trait `From<DrawError>` is not implemented for `pert_ui::RuntimeError`
+  |                               |                                         |
+  |                               |                                         this can't be annotated with `?` because it has type `Result<_, DrawError>`
+  |                               expected `pert_ui::RuntimeError` because of this
+  |
+  = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+  = help: `pert_ui::RuntimeError` implements trait `From<T>`:
+            From<ApplicationError>
+            From<BindingError>
+            From<CaptureError>
+            From<ChoiceError>
+            From<ClipboardError>
+            From<DeliveryError>
+            From<EditError>
+            From<FontError>
+          and 11 others
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `diag-consumer` (bin "m05_paint_into_runtime_error") due to 1 previous error

@@ -1,0 +1,41 @@
+error[E0478]: lifetime bound not satisfied
+ --> src/bin/c04_component_not_static.rs:4:10
+  |
+4 | impl<'a> Component for Title<'a> {
+  |          ^^^^^^^^^
+  |
+note: lifetime parameter instantiated with the lifetime `'a` as defined here
+ --> src/bin/c04_component_not_static.rs:4:6
+  |
+4 | impl<'a> Component for Title<'a> {
+  |      ^^
+  = note: but lifetime parameter must outlive the static lifetime
+
+error[E0803]: cannot infer an appropriate lifetime for lifetime parameter `'a` due to conflicting requirements
+ --> src/bin/c04_component_not_static.rs:4:24
+  |
+4 | impl<'a> Component for Title<'a> {
+  |                        ^^^^^^^^^
+  |
+note: first, the lifetime cannot outlive the lifetime `'a` as defined here...
+ --> src/bin/c04_component_not_static.rs:4:6
+  |
+4 | impl<'a> Component for Title<'a> {
+  |      ^^
+note: ...so that the types are compatible
+ --> src/bin/c04_component_not_static.rs:4:24
+  |
+4 | impl<'a> Component for Title<'a> {
+  |                        ^^^^^^^^^
+  = note: expected `<Title<'a> as pert_ui::Component>`
+             found `<Title<'_> as pert_ui::Component>`
+  = note: but, the lifetime must be valid for the static lifetime...
+note: ...so that the declared lifetime parameter bounds are satisfied
+ --> src/bin/c04_component_not_static.rs:4:24
+  |
+4 | impl<'a> Component for Title<'a> {
+  |                        ^^^^^^^^^
+
+Some errors have detailed explanations: E0478, E0803.
+For more information about an error, try `rustc --explain E0478`.
+error: could not compile `diag-consumer` (bin "c04_component_not_static") due to 2 previous errors

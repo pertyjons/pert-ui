@@ -1,0 +1,21 @@
+error[E0425]: cannot find type `AppError` in this scope
+ --> src/bin/m02f_loaded_facade.rs:3:69
+  |
+3 | fn main() { let _ = Runtime::new(); let _ = App::new; let _: Option<AppError> = None; let _ = Label::new("x"); }
+  |                                                                     ^^^^^^^^ not found in this scope
+
+error[E0433]: cannot find type `App` in this scope
+ --> src/bin/m02f_loaded_facade.rs:3:45
+  |
+3 | fn main() { let _ = Runtime::new(); let _ = App::new; let _: Option<AppError> = None; let _ = Label::new("x"); }
+  |                                             ^^^ use of undeclared type `App`
+
+error[E0433]: cannot find type `Label` in this scope
+ --> src/bin/m02f_loaded_facade.rs:3:95
+  |
+3 | fn main() { let _ = Runtime::new(); let _ = App::new; let _: Option<AppError> = None; let _ = Label::new("x"); }
+  |                                                                                               ^^^^^ use of undeclared type `Label`
+
+Some errors have detailed explanations: E0425, E0433.
+For more information about an error, try `rustc --explain E0425`.
+error: could not compile `diag-consumer` (bin "m02f_loaded_facade") due to 3 previous errors

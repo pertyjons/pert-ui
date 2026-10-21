@@ -1,0 +1,16 @@
+error[E0053]: method `reveal` has an incompatible type for trait
+ --> src/bin/r03_contentrows_wrong_signature.rs:9:37
+  |
+9 |     fn reveal(&self, _key: &str) -> Result<(), RuntimeError> { Ok(()) }
+  |                                     ^^^^^^^^^^^^^^^^^^^^^^^^ expected `ListRevealReceipt`, found `()`
+  |
+  = note: expected signature `fn(&Lines, &_) -> Result<ListRevealReceipt, _>`
+             found signature `fn(&Lines, &_) -> Result<(), _>`
+help: change the output type to match the trait
+  |
+9 -     fn reveal(&self, _key: &str) -> Result<(), RuntimeError> { Ok(()) }
+9 +     fn reveal(&self, _key: &str) -> Result<ListRevealReceipt, pert_ui::RuntimeError> { Ok(()) }
+  |
+
+For more information about this error, try `rustc --explain E0053`.
+error: could not compile `diag-consumer-proto` (bin "r03_contentrows_wrong_signature") due to 1 previous error

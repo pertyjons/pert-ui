@@ -1,0 +1,10 @@
+error[E0046]: not all trait items implemented, missing: `cell`
+ --> src/bin/b02_tableitems_missing_cell.rs:4:1
+  |
+4 | impl TableItems for Rows {
+  | ^^^^^^^^^^^^^^^^^^^^^^^^ missing `cell` in implementation
+  |
+  = help: implement the missing item: `fn cell(&self, _: usize, _: &str) -> Option<pert_ui::Element> { todo!() }`
+
+For more information about this error, try `rustc --explain E0046`.
+error: could not compile `diag-consumer-proto` (bin "b02_tableitems_missing_cell") due to 1 previous error

@@ -1,0 +1,8 @@
+error[E0277]: the trait bound `pert_ui::AppError: From<std::io::Error>` is not satisfied
+ --> src/bin/m03_apperror_from_io.rs:3:21
+  |
+3 | fn main() { let _ = AppError::from(std::io::Error::other("x")); }
+  |                     ^^^^^^^^ the trait `From<std::io::Error>` is not implemented for `pert_ui::AppError`
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `diag-consumer-proto` (bin "m03_apperror_from_io") due to 1 previous error

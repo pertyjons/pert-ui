@@ -1,0 +1,10 @@
+error[E0046]: not all trait items implemented, missing: `update`
+ --> src/bin/c02_component_missing_update.rs:4:1
+  |
+4 | impl Component for Panel {}
+  | ^^^^^^^^^^^^^^^^^^^^^^^^ missing `update` in implementation
+  |
+  = help: implement the missing item: `fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> { todo!() }`
+
+For more information about this error, try `rustc --explain E0046`.
+error: could not compile `diag-consumer-proto` (bin "c02_component_missing_update") due to 1 previous error

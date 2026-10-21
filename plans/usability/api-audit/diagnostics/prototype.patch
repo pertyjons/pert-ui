@@ -1,0 +1,198 @@
+diff -ru <repo>/crates/pert-ui/src/app.rs repo/crates/pert-ui/src/app.rs
+--- <repo>/crates/pert-ui/src/app.rs	2026-10-21 18:41:38.104117337 +0200
++++ repo/crates/pert-ui/src/app.rs	2026-10-21 18:57:56.322287557 +0200
+@@ -164,6 +164,7 @@
+ /// [`DrawError::Runtime`] and a leaf both become [`AppError::Runtime`], and any
+ /// other drawing failure becomes [`AppError::Drawing`]. Deriving the set from
+ /// `DrawError` keeps the list of leaf errors in one place, the runtime.
++#[diagnostic::do_not_recommend]
+ impl<E> From<E> for AppError
+ where
+     DrawError: From<E>,
+diff -ru <repo>/crates/pert-ui-runtime/src/content_search.rs repo/crates/pert-ui-runtime/src/content_search.rs
+--- <repo>/crates/pert-ui-runtime/src/content_search.rs	2026-10-21 18:41:38.103117330 +0200
++++ repo/crates/pert-ui-runtime/src/content_search.rs	2026-10-21 18:57:56.303851582 +0200
+@@ -347,6 +347,11 @@
+ /// Implementations answer from data they already hold: deterministic, free
+ /// of side effects and I/O, and never forcing a lazy source to load. The
+ /// cost is the implementation owner's, once per row a search examines.
++#[diagnostic::on_unimplemented(
++    message = "`{Self}` does not offer searchable rows",
++    label = "`{Self}` does not implement `ContentRows`",
++    note = "implement `ContentRows` (`len`, `key`, `text`, `revision`, `reveal`) for `{Self}`, answering from data it owns"
++)]
+ pub trait ContentRows {
+     /// Number of rows.
+     fn len(&self) -> usize;
+diff -ru <repo>/crates/pert-ui-runtime/src/described.rs repo/crates/pert-ui-runtime/src/described.rs
+--- <repo>/crates/pert-ui-runtime/src/described.rs	2026-10-21 18:41:38.103117330 +0200
++++ repo/crates/pert-ui-runtime/src/described.rs	2026-10-21 18:59:54.077903757 +0200
+@@ -25,7 +25,7 @@
+ /// callback.
+ pub struct DescribeContext<'a>(&'a UpdateContext);
+ 
+-impl crate::signal::sealed::Sealed for DescribeContext<'_> {}
++impl crate::signal::sealed::StateOwnerSeal for DescribeContext<'_> {}
+ impl StateOwner for DescribeContext<'_> {
+     fn signal<T>(&self, value: T) -> Signal<T> {
+         self.0.signal(value)
+diff -ru <repo>/crates/pert-ui-runtime/src/input.rs repo/crates/pert-ui-runtime/src/input.rs
+--- <repo>/crates/pert-ui-runtime/src/input.rs	2026-10-21 18:41:38.103117330 +0200
++++ repo/crates/pert-ui-runtime/src/input.rs	2026-10-21 18:57:56.305352529 +0200
+@@ -307,6 +307,7 @@
+     /// assert!(Modifiers::PRIMARY.primary());
+     /// assert!(!Modifiers::PRIMARY.shift && !Modifiers::PRIMARY.alt);
+     /// ```
++    #[doc(alias("CONTROL", "CTRL", "COMMAND", "CMD"))]
+     pub const PRIMARY: Self = Self {
+         shift: false,
+         control: !cfg!(target_os = "macos"),
+diff -ru <repo>/crates/pert-ui-runtime/src/layout.rs repo/crates/pert-ui-runtime/src/layout.rs
+--- <repo>/crates/pert-ui-runtime/src/layout.rs	2026-10-21 18:41:38.104117337 +0200
++++ repo/crates/pert-ui-runtime/src/layout.rs	2026-10-21 18:57:56.304978268 +0200
+@@ -362,6 +362,11 @@
+ /// )?;
+ /// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+ /// ```
++#[diagnostic::on_unimplemented(
++    message = "`{Self}` cannot be keyed into an `Element`",
++    label = "`{Self}` is not a `Component`",
++    note = "`IntoElement` comes from a blanket implementation for every `Component`; implement `Component` instead"
++)]
+ pub trait IntoElement: Component + Sized + 'static {
+     /// Describes this component under `key`, as [`Element::new`] does.
+     fn key(self, key: impl Into<String>) -> Element {
+diff -ru <repo>/crates/pert-ui-runtime/src/runtime/commands.rs repo/crates/pert-ui-runtime/src/runtime/commands.rs
+--- <repo>/crates/pert-ui-runtime/src/runtime/commands.rs	2026-10-21 18:41:38.103117330 +0200
++++ repo/crates/pert-ui-runtime/src/runtime/commands.rs	2026-10-21 18:57:56.305720781 +0200
+@@ -376,7 +376,7 @@
+ }
+ /// Stable command incarnation. Unregistering never retargets an old identity.
+ #[derive(Clone, Debug)]
+-#[must_use]
++#[must_use = "dropping a CommandId keeps the command registered; keep it only to unregister or invoke the command later"]
+ pub struct CommandId {
+     serial: u64,
+     identity: Rc<()>,
+diff -ru <repo>/crates/pert-ui-runtime/src/runtime.rs repo/crates/pert-ui-runtime/src/runtime.rs
+--- <repo>/crates/pert-ui-runtime/src/runtime.rs	2026-10-21 18:41:38.104117337 +0200
++++ repo/crates/pert-ui-runtime/src/runtime.rs	2026-10-21 18:57:56.299599201 +0200
+@@ -1016,6 +1016,12 @@
+ /// passes; previous subscriptions are replaced. No state writes are permitted
+ /// during evaluation. Errors preserve dirtiness for a later retry.
+ /// Callbacks run on the runtime's owning thread. None is safe for time-critical producers.
++#[diagnostic::on_unimplemented(
++    message = "`{Self}` is not a pert-ui component",
++    label = "`{Self}` does not implement `Component`",
++    note = "implement `Component` for `{Self}`; only `update` is required, and the type must own its data (`'static`)",
++    note = "an `Element` from `.key(..)` or `Element::new` is already a described child: pass it in a children list instead of describing it again"
++)]
+ pub trait Component: std::any::Any {
+     /// Applies a new same-key, same-type description to this mounted component.
+     ///
+diff -ru <repo>/crates/pert-ui-runtime/src/signal.rs repo/crates/pert-ui-runtime/src/signal.rs
+--- <repo>/crates/pert-ui-runtime/src/signal.rs	2026-10-21 18:41:38.104117337 +0200
++++ repo/crates/pert-ui-runtime/src/signal.rs	2026-10-21 18:59:54.077434641 +0200
+@@ -61,7 +61,12 @@
+ /// assert!(ui.inspect().components.iter().any(|item| item.key == "mode"));
+ /// # Ok::<(), Box<dyn std::error::Error>>(())
+ /// ```
+-pub trait StateOwner: sealed::Sealed {
++#[diagnostic::on_unimplemented(
++    message = "`{Self}` cannot create signals",
++    label = "expected a `Runtime`, `UpdateContext`, `EventContext` or `DescribeContext`",
++    note = "pass the runtime or the context of the callback you are in; `StateOwner` cannot be implemented outside pert-ui"
++)]
++pub trait StateOwner: sealed::StateOwnerSeal {
+     /// Creates a signal owned by this owner's runtime, holding `value`.
+     fn signal<T>(&self, value: T) -> Signal<T>;
+     /// Shared UI-thread presentation settings for this owner's runtime.
+@@ -84,12 +89,17 @@
+     fn ui_settings(&self) -> crate::UiSettings;
+ }
+ pub(crate) mod sealed {
+-    pub trait Sealed {}
+-    impl Sealed for crate::Runtime {}
+-    impl Sealed for crate::UpdateContext {}
+-    impl Sealed for crate::EventContext {}
+-    impl<O: Sealed + ?Sized> Sealed for &O {}
+-    impl<O: Sealed + ?Sized> Sealed for &mut O {}
++    #[diagnostic::on_unimplemented(
++        message = "`StateOwner` is sealed and cannot be implemented for `{Self}`",
++        label = "not one of pert-ui's state owners",
++        note = "only `Runtime`, `UpdateContext`, `EventContext` and `DescribeContext` own state; hold one of them, or take `&impl StateOwner` and pass one through"
++    )]
++    pub trait StateOwnerSeal {}
++    impl StateOwnerSeal for crate::Runtime {}
++    impl StateOwnerSeal for crate::UpdateContext {}
++    impl StateOwnerSeal for crate::EventContext {}
++    impl<O: StateOwnerSeal + ?Sized> StateOwnerSeal for &O {}
++    impl<O: StateOwnerSeal + ?Sized> StateOwnerSeal for &mut O {}
+ }
+ impl StateOwner for crate::Runtime {
+     fn signal<T>(&self, value: T) -> Signal<T> {
+diff -ru <repo>/crates/pert-ui-runtime/src/table.rs repo/crates/pert-ui-runtime/src/table.rs
+--- <repo>/crates/pert-ui-runtime/src/table.rs	2026-10-21 18:41:38.104117337 +0200
++++ repo/crates/pert-ui-runtime/src/table.rs	2026-10-21 18:57:56.302335732 +0200
+@@ -233,6 +233,11 @@
+ /// and column; the element's own key is free, since the table wraps each cell.
+ /// A row exists when `key` answers for its index; its cells may be missing.
+ /// The order of rows is the application's: the table never sorts them.
++#[diagnostic::on_unimplemented(
++    message = "`{Self}` cannot be used as table rows",
++    label = "`{Self}` does not implement `TableItems`",
++    note = "implement `TableItems` (`len`, `key`, `cell`) on a type that owns or shares the rows"
++)]
+ pub trait TableItems {
+     /// Number of rows.
+     fn len(&self) -> usize;
+diff -ru <repo>/crates/pert-ui-runtime/src/text_input.rs repo/crates/pert-ui-runtime/src/text_input.rs
+--- <repo>/crates/pert-ui-runtime/src/text_input.rs	2026-10-21 18:41:38.104117337 +0200
++++ repo/crates/pert-ui-runtime/src/text_input.rs	2026-10-21 18:59:01.498746958 +0200
+@@ -189,6 +189,11 @@
+ /// without a service. Implementations must return failures, retain ownership of
+ /// copied data as required by their platform, and never access live widgets.
+ /// Calls are synchronous ordinary UI operations, never safe for time-critical callbacks.
++#[diagnostic::on_unimplemented(
++    message = "`{Self}` is not a clipboard service",
++    label = "`{Self}` does not implement `Clipboard`",
++    note = "implement `Clipboard` (`read_text`, `write_text`) on a type that owns its storage, such as a struct holding an `Rc<RefCell<String>>`"
++)]
+ pub trait Clipboard {
+     /// Reads owned UTF-8 text.
+     /// The service may allocate the complete clipboard payload; editor limits
+diff -ru <repo>/crates/pert-ui-runtime/src/tree.rs repo/crates/pert-ui-runtime/src/tree.rs
+--- <repo>/crates/pert-ui-runtime/src/tree.rs	2026-10-21 18:41:38.104117337 +0200
++++ repo/crates/pert-ui-runtime/src/tree.rs	2026-10-21 18:57:56.302318931 +0200
+@@ -22,6 +22,11 @@
+ /// produce children lazily. `build` returns the row content for a node, an
+ /// element whose key equals the node's.
+ /// Implementations are UI-local and read-only while the tree is flattened.
++#[diagnostic::on_unimplemented(
++    message = "`{Self}` cannot be used as a tree hierarchy",
++    label = "`{Self}` does not implement `TreeItems`",
++    note = "implement `TreeItems` (`roots`, `children`, `build`) on a type that owns or shares the hierarchy"
++)]
+ pub trait TreeItems {
+     /// The top-level nodes, in order.
+     fn roots(&self) -> Vec<String>;
+diff -ru <repo>/crates/pert-ui-runtime/src/virtual_list.rs repo/crates/pert-ui-runtime/src/virtual_list.rs
+--- <repo>/crates/pert-ui-runtime/src/virtual_list.rs	2026-10-21 18:41:38.104117337 +0200
++++ repo/crates/pert-ui-runtime/src/virtual_list.rs	2026-10-21 18:57:56.301532810 +0200
+@@ -36,6 +36,12 @@
+ /// row at the top of its viewport in place by key across a replacement, when
+ /// the new source still has it. Implement `index_of` in better than linear time
+ /// when a host reveals rows by key in large collections.
++#[diagnostic::on_unimplemented(
++    message = "`{Self}` cannot be used as list rows",
++    label = "`{Self}` does not implement `ListItems`",
++    note = "implement `ListItems` (`len`, `key`, `build`) on a type that owns or shares the rows, such as a struct holding an `Rc<Vec<_>>`",
++    note = "`ListSource::new` takes the implementation itself, not an `Rc` of it"
++)]
+ pub trait ListItems {
+     /// Number of rows.
+     fn len(&self) -> usize;
+2c2
+< members = ["crates/pert-ui-core", "crates/pert-ui-runtime", "crates/pert-ui-cpu", "crates/pert-ui-wgpu", "crates/pert-ui", "apps/gallery", "apps/native-checks"]
+---
+> members = ["crates/pert-ui-core", "crates/pert-ui-runtime", "crates/pert-ui-cpu", "crates/pert-ui-wgpu", "crates/pert-ui"]

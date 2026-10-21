@@ -1,0 +1,10 @@
+error[E0046]: not all trait items implemented, missing: `build`
+ --> src/bin/t02_treeitems_missing_build.rs:4:1
+  |
+4 | impl TreeItems for Files {
+  | ^^^^^^^^^^^^^^^^^^^^^^^^ missing `build` in implementation
+  |
+  = help: implement the missing item: `fn build(&self, _: &str) -> Option<pert_ui::Element> { todo!() }`
+
+For more information about this error, try `rustc --explain E0046`.
+error: could not compile `diag-consumer` (bin "t02_treeitems_missing_build") due to 1 previous error

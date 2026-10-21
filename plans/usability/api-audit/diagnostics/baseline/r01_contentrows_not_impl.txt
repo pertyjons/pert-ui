@@ -1,0 +1,15 @@
+error[E0277]: the trait bound `Lines: pert_ui::ContentRows` is not satisfied
+ --> src/bin/r01_contentrows_not_impl.rs:8:66
+  |
+8 |     fn content_rows(&self) -> Option<Rc<dyn ContentRows>> { Some(self.0.clone()) }
+  |                                                                  ^^^^^^^^^^^^^^ unsatisfied trait bound
+  |
+help: the trait `pert_ui::ContentRows` is not implemented for `Lines`
+ --> src/bin/r01_contentrows_not_impl.rs:4:1
+  |
+4 | struct Lines(Vec<String>);
+  | ^^^^^^^^^^^^
+  = note: required for the cast from `Rc<Lines>` to `Rc<dyn pert_ui::ContentRows>`
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `diag-consumer` (bin "r01_contentrows_not_impl") due to 1 previous error

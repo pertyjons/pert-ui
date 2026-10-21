@@ -1,0 +1,16 @@
+error[E0053]: method `reconcile` has an incompatible type for trait
+ --> src/bin/c05_component_reconcile_ref.rs:5:35
+  |
+5 |     fn reconcile(&mut self, next: &Self) -> Option<Invalidation> {
+  |                                   ^^^^^ expected `Panel`, found `&Panel`
+  |
+  = note: expected signature `fn(&mut Panel, Panel) -> Option<_>`
+             found signature `fn(&mut Panel, &Panel) -> Option<_>`
+help: change the parameter type to match the trait
+  |
+5 -     fn reconcile(&mut self, next: &Self) -> Option<Invalidation> {
+5 +     fn reconcile(&mut self, next: Panel) -> Option<Invalidation> {
+  |
+
+For more information about this error, try `rustc --explain E0053`.
+error: could not compile `diag-consumer-proto` (bin "c05_component_reconcile_ref") due to 1 previous error

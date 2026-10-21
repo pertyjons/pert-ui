@@ -1,0 +1,17 @@
+error[E0597]: `held` does not live long enough
+    --> src/bin/k05_clipboard_borrowed.rs:8:124
+     |
+   8 | ...ror> { let mut held = String::new(); let mut ui = Runtime::new(); ui.set_clipboard(Shared(&mut held))?; Ok(()) }
+     |               --------                                               ------------------------^^^^^^^^^--          - `held` dropped here while still borrowed
+     |               |                                                      |                       |
+     |               |                                                      |                       borrowed value does not live long enough
+     |               binding `held` declared here                           argument requires that `held` is borrowed for `'static`
+     |
+note: requirement that the value outlives `'static` introduced here
+    --> <repo>/crates/pert-ui-runtime/src/runtime.rs:4710:44
+     |
+4710 |         clipboard: impl crate::Clipboard + 'static,
+     |                                            ^^^^^^^
+
+For more information about this error, try `rustc --explain E0597`.
+error: could not compile `diag-consumer` (bin "k05_clipboard_borrowed") due to 1 previous error

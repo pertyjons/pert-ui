@@ -1,0 +1,16 @@
+error[E0053]: method `update` has an incompatible type for trait
+ --> src/bin/c07_component_wrong_error.rs:5:54
+  |
+5 |     fn update(&mut self, _cx: &mut UpdateContext) -> Result<(), DrawError> { Ok(()) }
+  |                                                      ^^^^^^^^^^^^^^^^^^^^^ expected `RuntimeError`, found `pert_ui::DrawError`
+  |
+  = note: expected signature `fn(&mut Panel, &mut UpdateContext) -> Result<_, RuntimeError>`
+             found signature `fn(&mut Panel, &mut UpdateContext) -> Result<_, pert_ui::DrawError>`
+help: change the output type to match the trait
+  |
+5 -     fn update(&mut self, _cx: &mut UpdateContext) -> Result<(), DrawError> { Ok(()) }
+5 +     fn update(&mut self, _cx: &mut UpdateContext) -> Result<(), RuntimeError> { Ok(()) }
+  |
+
+For more information about this error, try `rustc --explain E0053`.
+error: could not compile `diag-consumer-proto` (bin "c07_component_wrong_error") due to 1 previous error

@@ -1,0 +1,36 @@
+warning: unused import: `prelude::*`
+ --> src/bin/s02_stateowner_not_owner.rs:2:31
+  |
+2 | use pert_ui::{ListController, prelude::*};
+  |                               ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+error[E0277]: the trait bound `Model: StateOwner` is not satisfied
+   --> src/bin/s02_stateowner_not_owner.rs:4:41
+    |
+  4 | fn main() { let _ = ListController::new(&Model); }
+    |                     ------------------- ^^^^^^ unsatisfied trait bound
+    |                     |
+    |                     required by a bound introduced by this call
+    |
+help: the trait `StateOwner` is not implemented for `Model`
+   --> src/bin/s02_stateowner_not_owner.rs:3:1
+    |
+  3 | struct Model;
+    | ^^^^^^^^^^^^
+    = help: the following other types implement trait `StateOwner`:
+              &O
+              &mut O
+              DescribeContext<'_>
+              EventContext
+              UpdateContext
+              pert_ui::Runtime
+note: required by a bound in `ListController::new`
+   --> <repo>/crates/pert-ui-runtime/src/virtual_list.rs:275:31
+    |
+275 |     pub fn new(runtime: &impl crate::StateOwner) -> Self {
+    |                               ^^^^^^^^^^^^^^^^^ required by this bound in `ListController::new`
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `diag-consumer` (bin "s02_stateowner_not_owner") due to 1 previous error; 1 warning emitted

@@ -1,0 +1,16 @@
+error[E0053]: method `read_text` has an incompatible type for trait
+ --> src/bin/k04_clipboard_wrong_error.rs:5:32
+  |
+5 |     fn read_text(&mut self) -> Result<String, std::io::Error> { Ok(self.0.clone()) }
+  |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `ClipboardError`, found `std::io::Error`
+  |
+  = note: expected signature `fn(&mut Memory) -> Result<_, ClipboardError>`
+             found signature `fn(&mut Memory) -> Result<_, std::io::Error>`
+help: change the output type to match the trait
+  |
+5 -     fn read_text(&mut self) -> Result<String, std::io::Error> { Ok(self.0.clone()) }
+5 +     fn read_text(&mut self) -> Result<String, ClipboardError> { Ok(self.0.clone()) }
+  |
+
+For more information about this error, try `rustc --explain E0053`.
+error: could not compile `diag-consumer` (bin "k04_clipboard_wrong_error") due to 1 previous error

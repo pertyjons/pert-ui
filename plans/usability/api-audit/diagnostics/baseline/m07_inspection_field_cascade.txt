@@ -1,0 +1,20 @@
+error[E0609]: no field `properties` on type `&ComponentInspection`
+ --> src/bin/m07_inspection_field_cascade.rs:6:17
+  |
+6 |     match entry.properties.get(key) {
+  |                 ^^^^^^^^^^ unknown field
+  |
+help: one of the expressions' fields has a field of the same name
+  |
+6 |     match entry.details.properties.get(key) {
+  |                 ++++++++
+
+error[E0614]: type `f64` cannot be dereferenced
+ --> src/bin/m07_inspection_field_cascade.rs:7:45
+  |
+7 |         Some(InspectValue::Number(n)) => Ok(*n),
+  |                                             ^^ can't be dereferenced
+
+Some errors have detailed explanations: E0609, E0614.
+For more information about an error, try `rustc --explain E0609`.
+error: could not compile `diag-consumer` (bin "m07_inspection_field_cascade") due to 2 previous errors

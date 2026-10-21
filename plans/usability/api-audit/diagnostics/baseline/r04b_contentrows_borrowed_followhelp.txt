@@ -1,0 +1,17 @@
+error: `impl` item signature doesn't match `trait` item signature
+    --> src/bin/r04b_contentrows_borrowed_followhelp.rs:15:5
+     |
+  15 |     fn content_rows(&self) -> Option<Rc<dyn ContentRows + '_>> { Some(Rc::new(Lines(&self.0))) }
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ found `fn(&'1 Log) -> Option<Rc<(dyn pert_ui::ContentRows + '1)>>`
+     |
+    ::: <repo>/crates/pert-ui-runtime/src/runtime.rs:2059:5
+     |
+2059 |     fn content_rows(&self) -> Option<Rc<dyn crate::ContentRows>> {
+     |     ------------------------------------------------------------ expected `fn(&'1 Log) -> Option<Rc<(dyn pert_ui::ContentRows + 'static)>>`
+     |
+     = note: expected signature `fn(&'1 Log) -> Option<Rc<(dyn pert_ui::ContentRows + 'static)>>`
+                found signature `fn(&'1 Log) -> Option<Rc<(dyn pert_ui::ContentRows + '1)>>`
+     = help: the lifetime requirements from the `impl` do not correspond to the requirements in the `trait`
+     = help: verify the lifetime relationships in the `trait` and `impl` between the `self` argument, the other inputs and its output
+
+error: could not compile `diag-consumer` (bin "r04b_contentrows_borrowed_followhelp") due to 1 previous error

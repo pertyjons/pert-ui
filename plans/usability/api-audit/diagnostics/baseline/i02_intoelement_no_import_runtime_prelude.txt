@@ -1,0 +1,53 @@
+error[E0599]: no method named `key` found for struct `pert_ui::Label` in the current scope
+   --> src/bin/i02_intoelement_no_import_runtime_prelude.rs:5:48
+    |
+  5 |     ui.mount_tree(Column::new([Label::new("x").key("title"), Button::new("Save", |_| Ok(())).key("save")]).key("root"))?;
+    |                                                ^^^ method not found in `pert_ui::Label`
+    |
+   ::: <repo>/crates/pert-ui-runtime/src/layout.rs:367:8
+    |
+367 |     fn key(self, key: impl Into<String>) -> Element {
+    |        --- the method is available for `pert_ui::Label` here
+    |
+    = help: items from traits can only be used if the trait is in scope
+help: trait `IntoElement` which provides `key` is implemented but not in scope; perhaps you want to import it
+    |
+  2 + use pert_ui::IntoElement;
+    |
+
+error[E0599]: no method named `key` found for struct `pert_ui::Button` in the current scope
+   --> src/bin/i02_intoelement_no_import_runtime_prelude.rs:5:94
+    |
+  5 |     ui.mount_tree(Column::new([Label::new("x").key("title"), Button::new("Save", |_| Ok(())).key("save")]).key("root"))?;
+    |                                                                                              ^^^ method not found in `pert_ui::Button`
+    |
+   ::: <repo>/crates/pert-ui-runtime/src/layout.rs:367:8
+    |
+367 |     fn key(self, key: impl Into<String>) -> Element {
+    |        --- the method is available for `pert_ui::Button` here
+    |
+    = help: items from traits can only be used if the trait is in scope
+help: trait `IntoElement` which provides `key` is implemented but not in scope; perhaps you want to import it
+    |
+  2 + use pert_ui::IntoElement;
+    |
+
+error[E0599]: no method named `key` found for struct `Column` in the current scope
+   --> src/bin/i02_intoelement_no_import_runtime_prelude.rs:5:108
+    |
+  5 |     ui.mount_tree(Column::new([Label::new("x").key("title"), Button::new("Save", |_| Ok(())).key("save")]).key("root"))?;
+    |                                                                                                            ^^^ method not found in `Column`
+    |
+   ::: <repo>/crates/pert-ui-runtime/src/layout.rs:367:8
+    |
+367 |     fn key(self, key: impl Into<String>) -> Element {
+    |        --- the method is available for `Column` here
+    |
+    = help: items from traits can only be used if the trait is in scope
+help: trait `IntoElement` which provides `key` is implemented but not in scope; perhaps you want to import it
+    |
+  2 + use pert_ui::IntoElement;
+    |
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `diag-consumer` (bin "i02_intoelement_no_import_runtime_prelude") due to 3 previous errors

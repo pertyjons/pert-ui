@@ -1,0 +1,26 @@
+error[E0433]: cannot find type `CommandScope` in this scope
+ --> src/bin/m02b_command_types_no_glob.rs:4:40
+  |
+4 |     let _ = ui.register_command("New", CommandScope::Application,
+  |                                        ^^^^^^^^^^^^ use of undeclared type `CommandScope`
+
+error[E0433]: cannot find type `KeyChord` in this scope
+ --> src/bin/m02b_command_types_no_glob.rs:5:14
+  |
+5 |         vec![KeyChord::new(CommandKey::Character('n'), Modifiers::default())], |_, _| Ok(()))?;
+  |              ^^^^^^^^ use of undeclared type `KeyChord`
+
+error[E0433]: cannot find type `CommandKey` in this scope
+ --> src/bin/m02b_command_types_no_glob.rs:5:28
+  |
+5 |         vec![KeyChord::new(CommandKey::Character('n'), Modifiers::default())], |_, _| Ok(()))?;
+  |                            ^^^^^^^^^^ use of undeclared type `CommandKey`
+
+error[E0433]: cannot find type `Modifiers` in this scope
+ --> src/bin/m02b_command_types_no_glob.rs:5:56
+  |
+5 |         vec![KeyChord::new(CommandKey::Character('n'), Modifiers::default())], |_, _| Ok(()))?;
+  |                                                        ^^^^^^^^^ use of undeclared type `Modifiers`
+
+For more information about this error, try `rustc --explain E0433`.
+error: could not compile `diag-consumer-proto` (bin "m02b_command_types_no_glob") due to 4 previous errors

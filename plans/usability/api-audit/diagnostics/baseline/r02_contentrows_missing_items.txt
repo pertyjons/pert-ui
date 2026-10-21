@@ -1,0 +1,11 @@
+error[E0046]: not all trait items implemented, missing: `revision`, `reveal`
+ --> src/bin/r02_contentrows_missing_items.rs:4:1
+  |
+4 | impl ContentRows for Lines {
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^ missing `revision`, `reveal` in implementation
+  |
+  = help: implement the missing item: `fn revision(&self) -> u64 { todo!() }`
+  = help: implement the missing item: `fn reveal(&self, _: &str) -> Result<ListRevealReceipt, RuntimeError> { todo!() }`
+
+For more information about this error, try `rustc --explain E0046`.
+error: could not compile `diag-consumer` (bin "r02_contentrows_missing_items") due to 1 previous error

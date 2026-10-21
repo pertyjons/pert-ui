@@ -1,0 +1,24 @@
+error[E0433]: cannot find type `HashMap` in this scope
+ --> src/bin/m02c_std_control.rs:2:21
+  |
+2 | fn main() { let _ = HashMap::<u8, u8>::new(); let _ = Rc::new(1); }
+  |                     ^^^^^^^ use of undeclared type `HashMap`
+  |
+help: consider importing this struct
+  |
+2 + use std::collections::HashMap;
+  |
+
+error[E0433]: cannot find type `Rc` in this scope
+ --> src/bin/m02c_std_control.rs:2:55
+  |
+2 | fn main() { let _ = HashMap::<u8, u8>::new(); let _ = Rc::new(1); }
+  |                                                       ^^ use of undeclared type `Rc`
+  |
+help: consider importing this struct
+  |
+2 + use std::rc::Rc;
+  |
+
+For more information about this error, try `rustc --explain E0433`.
+error: could not compile `diag-consumer` (bin "m02c_std_control") due to 2 previous errors

@@ -1,0 +1,14 @@
+error[E0433]: cannot find type `ListSource` in this scope
+ --> src/bin/m02d_unimported_widget.rs:2:21
+  |
+2 | fn main() { let _ = ListSource::new; let _ = Label::new("x"); }
+  |                     ^^^^^^^^^^ use of undeclared type `ListSource`
+
+error[E0433]: cannot find type `Label` in this scope
+ --> src/bin/m02d_unimported_widget.rs:2:46
+  |
+2 | fn main() { let _ = ListSource::new; let _ = Label::new("x"); }
+  |                                              ^^^^^ use of undeclared type `Label`
+
+For more information about this error, try `rustc --explain E0433`.
+error: could not compile `diag-consumer` (bin "m02d_unimported_widget") due to 2 previous errors

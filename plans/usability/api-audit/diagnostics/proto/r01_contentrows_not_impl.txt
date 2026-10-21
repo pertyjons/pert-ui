@@ -1,0 +1,16 @@
+error[E0277]: `Lines` does not offer searchable rows
+ --> src/bin/r01_contentrows_not_impl.rs:8:66
+  |
+8 |     fn content_rows(&self) -> Option<Rc<dyn ContentRows>> { Some(self.0.clone()) }
+  |                                                                  ^^^^^^^^^^^^^^ `Lines` does not implement `ContentRows`
+  |
+help: the trait `pert_ui::ContentRows` is not implemented for `Lines`
+ --> src/bin/r01_contentrows_not_impl.rs:4:1
+  |
+4 | struct Lines(Vec<String>);
+  | ^^^^^^^^^^^^
+  = note: implement `ContentRows` (`len`, `key`, `text`, `revision`, `reveal`) for `Lines`, answering from data it owns
+  = note: required for the cast from `Rc<Lines>` to `Rc<dyn pert_ui::ContentRows>`
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `diag-consumer-proto` (bin "r01_contentrows_not_impl") due to 1 previous error

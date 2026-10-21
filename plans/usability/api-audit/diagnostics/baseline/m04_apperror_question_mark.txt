@@ -1,0 +1,24 @@
+error[E0277]: `?` couldn't convert the error to `DrawError`
+ --> src/bin/m04_apperror_question_mark.rs:3:84
+  |
+3 | fn load() -> Result<String, AppError> { Ok(std::fs::read_to_string("settings.toml")?) }
+  |              ------------------------      ----------------------------------------^ the trait `From<std::io::Error>` is not implemented for `DrawError`
+  |              |                             |
+  |              |                             this can't be annotated with `?` because it has type `Result<_, std::io::Error>`
+  |              expected `DrawError` because of this
+  |
+  = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+  = help: `DrawError` implements trait `From<T>`:
+            From<ApplicationError>
+            From<BindingError>
+            From<ChoiceError>
+            From<ClipboardError>
+            From<DeliveryError>
+            From<EditError>
+            From<FontError>
+            From<GeometryError>
+          and 10 others
+  = note: required for `pert_ui::AppError` to implement `From<std::io::Error>`
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `diag-consumer` (bin "m04_apperror_question_mark") due to 1 previous error

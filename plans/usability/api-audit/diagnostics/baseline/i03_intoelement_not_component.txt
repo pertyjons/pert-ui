@@ -1,0 +1,29 @@
+error[E0599]: the method `key` exists for struct `Panel`, but its trait bounds were not satisfied
+    --> src/bin/i03_intoelement_not_component.rs:4:27
+     |
+   3 | struct Panel;
+     | ------------ method `key` not found for this struct because it doesn't satisfy `Panel: pert_ui::Component` or `Panel: pert_ui::IntoElement`
+   4 | fn main() { let _ = Panel.key("panel"); }
+     |                           ^^^ method cannot be called on `Panel` due to unsatisfied trait bounds
+     |
+     = note: the following trait bounds were not satisfied:
+             `Panel: pert_ui::Component`
+             which is required by `Panel: pert_ui::IntoElement`
+             `&Panel: pert_ui::Component`
+             which is required by `&Panel: pert_ui::IntoElement`
+             `&mut Panel: pert_ui::Component`
+             which is required by `&mut Panel: pert_ui::IntoElement`
+note: the trait `pert_ui::Component` must be implemented
+    --> <repo>/crates/pert-ui-runtime/src/runtime.rs:1019:1
+     |
+1019 | pub trait Component: std::any::Any {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = help: items from traits can only be used if the trait is implemented and in scope
+     = note: the following traits define an item `key`, perhaps you need to implement one of them:
+             candidate #1: `pert_ui::ContentRows`
+             candidate #2: `pert_ui::IntoElement`
+             candidate #3: `pert_ui::ListItems`
+             candidate #4: `pert_ui::TableItems`
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `diag-consumer` (bin "i03_intoelement_not_component") due to 1 previous error

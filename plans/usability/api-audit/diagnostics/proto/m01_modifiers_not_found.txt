@@ -1,0 +1,40 @@
+error[E0422]: cannot find struct, variant or union type `Modifiers` in this scope
+   --> src/bin/m01_modifiers_not_found.rs:3:24
+    |
+  3 | fn main() { let _alt = Modifiers { alt: true, ..Modifiers::default() }; }
+    |                        ^^^^^^^^^
+    |
+   ::: <repo>/target/diag-survey/repo/crates/pert-ui-runtime/src/runtime/notify.rs:242:1
+    |
+242 | pub struct Notifier {
+    | ------------------- similarly named struct `Notifier` defined here
+    |
+help: a struct with a similar name exists
+    |
+  3 - fn main() { let _alt = Modifiers { alt: true, ..Modifiers::default() }; }
+  3 + fn main() { let _alt = Notifier { alt: true, ..Modifiers::default() }; }
+    |
+
+warning: unused import: `pert_ui::prelude::*`
+ --> src/bin/m01_modifiers_not_found.rs:2:5
+  |
+2 | use pert_ui::prelude::*;
+  |     ^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+error[E0433]: cannot find type `Modifiers` in this scope
+ --> src/bin/m01_modifiers_not_found.rs:3:49
+  |
+3 | fn main() { let _alt = Modifiers { alt: true, ..Modifiers::default() }; }
+  |                                                 ^^^^^^^^^ use of undeclared type `Modifiers`
+  |
+help: a struct with a similar name exists
+  |
+3 - fn main() { let _alt = Modifiers { alt: true, ..Modifiers::default() }; }
+3 + fn main() { let _alt = Modifiers { alt: true, ..Notifier::default() }; }
+  |
+
+Some errors have detailed explanations: E0422, E0433.
+For more information about an error, try `rustc --explain E0422`.
+error: could not compile `diag-consumer-proto` (bin "m01_modifiers_not_found") due to 2 previous errors; 1 warning emitted

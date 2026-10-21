@@ -1,0 +1,16 @@
+error[E0053]: method `key` has an incompatible type for trait
+ --> src/bin/l03_listitems_wrong_signature.rs:6:36
+  |
+6 |     fn key(&self, index: usize) -> Option<&str> { self.0.get(index).map(String::as_str) }
+  |                                    ^^^^^^^^^^^^ expected `String`, found `&str`
+  |
+  = note: expected signature `fn(&Rows, _) -> Option<String>`
+             found signature `fn(&Rows, _) -> Option<&str>`
+help: change the output type to match the trait
+  |
+6 -     fn key(&self, index: usize) -> Option<&str> { self.0.get(index).map(String::as_str) }
+6 +     fn key(&self, index: usize) -> Option<String> { self.0.get(index).map(String::as_str) }
+  |
+
+For more information about this error, try `rustc --explain E0053`.
+error: could not compile `diag-consumer` (bin "l03_listitems_wrong_signature") due to 1 previous error

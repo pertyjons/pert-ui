@@ -1,0 +1,13 @@
+error[E0277]: `?` couldn't convert the error to `pert_ui::AppError`
+ --> src/bin/m04_apperror_question_mark.rs:3:84
+  |
+3 | fn load() -> Result<String, AppError> { Ok(std::fs::read_to_string("settings.toml")?) }
+  |              ------------------------      ----------------------------------------^ the trait `From<std::io::Error>` is not implemented for `pert_ui::AppError`
+  |              |                             |
+  |              |                             this can't be annotated with `?` because it has type `Result<_, std::io::Error>`
+  |              expected `pert_ui::AppError` because of this
+  |
+  = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `diag-consumer-proto` (bin "m04_apperror_question_mark") due to 1 previous error

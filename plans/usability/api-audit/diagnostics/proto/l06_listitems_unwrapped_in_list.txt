@@ -1,0 +1,30 @@
+error[E0277]: the trait bound `ReadSignal<ListSource>: From<Rows>` is not satisfied
+   --> src/bin/l06_listitems_unwrapped_in_list.rs:9:38
+    |
+  9 | fn main() { let _ = VirtualList::new(Rows(vec![]), 24.0); }
+    |                     ---------------- ^^^^^^^^^^^^ the trait `From<Rows>` is not implemented for `ReadSignal<ListSource>`
+    |                     |
+    |                     required by a bound introduced by this call
+    |
+help: `ReadSignal<T>` implements trait `From<T>`
+   --> <repo>/target/diag-survey/repo/crates/pert-ui-runtime/src/signal.rs:248:1
+    |
+248 | impl<T> From<Signal<T>> for ReadSignal<T> {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `From<Signal<T>>`
+...
+255 | impl<T> From<&Signal<T>> for ReadSignal<T> {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `From<&Signal<T>>`
+...
+263 | impl<T> From<&ReadSignal<T>> for ReadSignal<T> {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `From<&ReadSignal<T>>`
+    = note: required for `Rows` to implement `std::convert::Into<ReadSignal<ListSource>>`
+note: required by a bound in `VirtualList::new`
+   --> <repo>/target/diag-survey/repo/crates/pert-ui-runtime/src/virtual_list.rs:642:21
+    |
+641 |     pub fn new(
+    |            --- required by a bound in this associated function
+642 |         items: impl Into<ReadSignal<ListSource>>,
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `VirtualList::new`
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `diag-consumer-proto` (bin "l06_listitems_unwrapped_in_list") due to 1 previous error
