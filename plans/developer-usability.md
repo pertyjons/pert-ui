@@ -813,3 +813,23 @@ mechanical candidates are kept apart from semantic review; and policy
 disputes go to the maintainer. Two rechecks found five remaining points
 (cross-family callback names, composite observation timing, C-ITER, T6's
 attribution, C3's owner order), which were fixed, and approved it.
+
+Slice 4's audit: Codex's review of the result found nine points. Among
+them:
+- a refutation in the author's resolutions that missed a runtime captured
+  by a parameter sink (`set_visible`);
+- a rubric reading settled as though it were a fact (G2-20, now a policy
+  question);
+- verification corrections left as annotations instead of applied to the
+  rows;
+- two medium instances missing from the ranking;
+- a compiler claim broader than the survey measured;
+- two inventory gaps (collapsed concrete serde targets, trait constants),
+  closed in inventory version 4, whose additions both auditors reviewed;
+- one added instance not yet cross-verified, which Codex then confirmed;
+- a duplicate row and an incomplete policy index.
+
+A recheck found three remaining points: an unpropagated correction in
+G4-30, the diagnostics survey's universal conclusion, and the policy
+index's claimed coverage. They were fixed, and the second recheck
+approved.
