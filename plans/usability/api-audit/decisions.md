@@ -57,7 +57,7 @@ column is filled in when the maintainer decides.
 | G2-17 | `on_select` against `on_selection_change` | A: keep both, document the difference | doc-only | |
 | G2-18 | `MultiSelect::filter` closure | C: keep it, add a doctest using `FilterMatcher` | doc-only | |
 | G2-19 | `set_wake_delivery` takes a `Box` | B: `impl Fn`; `Box` callers still compile | additive | |
-| G2-20 | Editor exceptions need contracts.md | B: yes; a contracts.md sentence that parse and range errors appear only in inspection. F6 stays a behavior decision; recommended route: report them through `on_rejection` | doc-only; F6's route is additive | |
+| G2-20 | Editor exceptions need contracts.md | B: yes; a contracts.md sentence that parse and range errors appear only in inspection. F6 stays a behavior decision; recommended route: report them through `on_rejection` | doc-only; F6's route changes when existing `on_rejection` handlers run (behavior) and adds `UiMessage`/`StringRole` variants (additive, both `#[non_exhaustive]`) | |
 | G3-16 | `ParameterState` and `*State` | A: `*State` by ownership | doc-only | |
 | G3-17 | `*Snapshot`, `*Inspection`, `*Report` | A: name these suffixes in the rule | doc-only | |
 | G3-18 | `*Outcome` and operation results | A: the rule goes one way only; continuations allowed | doc-only | |
@@ -85,7 +85,7 @@ column is filled in when the maintainer decides.
 | G4-30 | `From` back to the raw number | B: add it to the six other validated scalars | additive | |
 | G5-11 | `SeriesSource` in the prelude | A: stays at the root, one exclusion sentence | doc-only | |
 | G5-16 | Parameter host sink and monitor types | B: they are "hosts"; 7 names join the prelude | additive | |
-| G5-26, G5-27, G5-14 | How far the prelude rule reaches | D: names a consumer writes or keeps go to a new `pert_ui::component` module (about 24 names), not the prelude; follows slice 9's smaller prelude | additive | |
+| G5-26, G5-27, G5-14 | How far the prelude rule reaches | D: names a consumer writes or keeps go to a new `pert_ui::component` module (about 26 names), not the prelude; `IgnoredEntry` joins the application prelude; follows slice 9's smaller prelude | additive | |
 | G5-30 | `WindowError` in the facade prelude | B: add it under `native` | additive | |
 | G5-32 | A testing prelude | A: none until it owns F2's helpers, root pointers instead; `ApplicationError` joins the prelude | doc-only, plus 1 additive name | |
 
@@ -1573,13 +1573,16 @@ covers both.
     every name you have to write". Two globs re-exporting one item do not conflict.
 - **Results under C and D:**
   - **In:** `Semantics`, `SemanticRole`, `SemanticValue`, `SemanticAction`, `InspectValue`,
-    `ValidationHints`, `OverlapPolicy`, `BoxModelInspection`, `ShortcutBinding`,
+    `ValidationHints`, `OverlapPolicy`, `BoxModelInspection`, `BorderInspection`,
+    `SemanticItem`, `ShortcutBinding`,
     `ShortcutScope`, `DragPreview`, `DRAG_THRESHOLD`, `NativeWindowOptions`,
     `NativeWindowId`, `Transform2D`, `PathElement`, `EditorTrigger`, `EditorOutcome` and
     `TaskStatus`; kept: `EditorAttachment`, `TaskReceipt`, `RevealReceipt`,
     `PresentationReceipt` and its `PresentationStatus` (`RevealStatus` is in the prelude).
-    24 names beyond the prelude; the module also re-exports G5-21's `EditorSession` and
-    `EditorStart`.
+    26 names beyond the prelude; the module also re-exports G5-21's `EditorSession` and
+    `EditorStart`. (Author's correction after Codex's recheck: `BorderInspection`, which a
+    component builds for `BoxModelInspection::border`, and `SemanticItem`, which it builds
+    for `Semantics::items`, were missing.)
   - **In, application prelude:** `IgnoredEntry`, as G5-23 records. Codex is right: a
     consumer matches it from the prelude's `WorkspaceReport::ignored` (`R/workspace.rs:763`,
     `crates/pert-ui/tests/surfaces/workspace.rs:345`), so "not required" contradicted the
