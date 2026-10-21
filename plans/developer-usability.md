@@ -597,8 +597,9 @@ questions for the checkpoint.
   - units in bare numbers (G3);
   - `# Errors` sections that understate their variants (G4);
   - inconsistent naming within families (G1, G3).
-- **Policy questions:** the record lists every policy question and
-  consistency proposal, by theme. The main ones are below.
+- **Policy questions:** the record's index lists the policy questions by
+  theme. Each row marks its own consistency proposals, which are policy
+  decisions too. The main questions are below.
   - **Collections:** whether they get a contract exception for
     redescription (G2-2, G2-14).
   - **Role suffixes:** what they mean for snapshots, inspection records and

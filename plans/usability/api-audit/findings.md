@@ -694,7 +694,7 @@ alternative fix), G4-22 (proposal part), G4-27 (`Borrow<str>`).
 | G4-27 | T6, guideline C-CONV-TRAITS | `ChoiceId` exposes `as_str` but no `AsRef<str>` (`C/choice.rs:32,50`), so it cannot be passed to `impl AsRef<str>` APIs such as `ContentQuery::new`. Claude also proposes `Borrow<str>` for `&str` lookups in `HashMap<ChoiceId, _>`. | sig | all | low | high | Add `AsRef<str>` (and `Borrow<str>` if adopted); non-breaking | TODO.md | codex-T6-1, claude-T6-1: **both** for `AsRef<str>`; `Borrow<str>` is a proposal, not a required T6 trait (codex) | - |
 | G4-28 | T6, guideline C-CONV-TRAITS | `FontData::from_owned(Vec<u8>)` and `from_static(&'static [u8])` have no matching `From` impls (`R/text/fonts.rs:43,51,64`). | sig | all | low (small benefit: `FontManager::register` takes the concrete type) | high | Add the two `From` impls, keep the named constructors; non-breaking | TODO.md | codex-T6-1: **confirmed** by claude | - |
 | G4-29 | T6, guideline C-CONV-TRAITS | `Tab::into_element`, `Section::into_element`, `Property::into_element` and `FloatingWindow::into_element` (`R/tabs.rs:119`, `R/collapsible.rs:849`, `R/property_grid.rs:88`, `R/windows.rs:494`) are infallible conversions with no `From<_> for Element`, so `.map(Into::into)` into `reconcile_children`'s `Vec<Element>` fails. | sig | all | low | high | Add the `From` impls, keep the methods; non-breaking | TODO.md | claude-T6-1: **confirmed** by codex | - |
-| G4-30 | T6, consistency proposal | Only `PowerExponent` (`From<PowerExponent> for f32`, `C/parameter.rs:96`) and `UiZoom` (`From<UiZoom> for f64`, `R/runtime/settings.rs:81`) convert back to their raw number; `NormalizedValue`, `Capacity`, `Length`, `Magnification`, `ViewScale`, `PresentationRate` read only through `get()`. | sig | all | low | high | Add `From<Self>` for the raw type everywhere, or keep `get()` as the one reading and serialize `PowerExponent` through a private conversion (breaking for the removal) | TODO.md if adopted | claude-T6-d1: **partly** confirmed by codex: the asymmetry holds, but `PresentationRate` reads through `hertz()`, not `get()`; low consistency proposal | - |
+| G4-30 | T6, consistency proposal | Only `PowerExponent` (`From<PowerExponent> for f32`, `C/parameter.rs:96`) and `UiZoom` (`From<UiZoom> for f64`, `R/runtime/settings.rs:81`) convert back to their raw number; `NormalizedValue`, `Capacity`, `Length`, `Magnification` and `ViewScale` read only through `get()`, and `PresentationRate` through `hertz()`. | sig | all | low | high | Add `From<Self>` for the raw type everywhere, or keep `get()` as the one reading and serialize `PowerExponent` through a private conversion (breaking for the removal) | TODO.md if adopted | claude-T6-d1: **partly** confirmed by codex: the asymmetry holds, but `PresentationRate` reads through `hertz()`, not `get()`; low consistency proposal | - |
 
 ### Disputed facts
 
@@ -846,10 +846,11 @@ The author settled each disputed fact against the source the merge sheet cites:
       without borrowing the runtime.
     - Delivery enters its phase before calling the sink
       (`crates/pert-ui-runtime/src/parameter_binding/delivery.rs:423`), so
-      `set_visible`'s `writable()` check
-      (`crates/pert-ui-runtime/src/runtime.rs:5030`) rejects with
-      `WriteDuringDelivery`, which its section, "Rejects foreign or
-      unmounted IDs", omits.
+      `set_visible` fails with `WriteDuringDelivery` in `select_window`'s
+      `writable()` check
+      (`crates/pert-ui-runtime/src/runtime/native_windows.rs:325`), before
+      its own check at `runtime.rs:5030`. Its section, "Rejects foreign or
+      unmounted IDs", omits that variant.
     - Update, layout and paint stay unreachable, because the runtime is
       borrowed during its flush. After shutdown, `window_of` fails with
       `Unmounted` first.

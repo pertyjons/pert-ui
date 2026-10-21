@@ -398,8 +398,11 @@ re-exported from `pert_ui_runtime` (`Label`, `Modifiers`, `CommandScope`), items
 defined in `pert_ui` itself (`App`, `AppError`), and a control crate's own item
 (`control/user` → `mini::OwnThing`, no suggestion). The facade's glob
 re-export is therefore not the cause. Std items got `consider importing` (m02c).
-The attribute does not apply (a resolution error). Verdict: cannot help. The only
-library-side lever is prelude membership, which is app-author slice 9's decision.
+The attribute does not apply (a resolution error). Verdict: cannot help. Among the
+arrangements these probes tried, only prelude membership routed a consumer to the
+name (a pointer on the prelude page is the documentation counterpart). That is
+app-author slice 9's decision. The probes do not establish a general compiler
+limitation.
 
 **m02: `CommandScope`, `KeyChord` and `CommandKey` not imported.** Measured:
 three E0433 `use of undeclared type …` errors, with no help. This has the same
