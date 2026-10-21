@@ -1,0 +1,6 @@
+clippy::must_use_candidate	crates/pert-ui-core/src/edit.rs:90	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-core/src/erased.rs:296	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-core/src/erased.rs:59	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-core/src/live/series.rs:411	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-core/src/parameter_id.rs:99	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-core/src/parameter.rs:517	lib	this method could have a `#[must_use]` attribute

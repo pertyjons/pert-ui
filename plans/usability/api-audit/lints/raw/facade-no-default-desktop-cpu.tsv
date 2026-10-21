@@ -1,0 +1,411 @@
+clippy::missing_panics_doc	crates/pert-ui-runtime/src/runtime/theme.rs:255	lib	docs for function which may panic missing `# Panics` section
+clippy::must_use_candidate	crates/pert-ui-core/src/edit.rs:90	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-core/src/erased.rs:296	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-core/src/erased.rs:59	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-core/src/live/series.rs:411	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-core/src/parameter_id.rs:99	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-core/src/parameter.rs:517	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/dialog.rs:86	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/drawing.rs:1222	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/drawing.rs:1226	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/file_browser.rs:234	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/geometry.rs:206	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/inspection.rs:1088	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/inspection.rs:1112	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/inspection.rs:1118	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/inspection.rs:1125	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/inspection.rs:863	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/inspection.rs:869	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/layout.rs:625	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/layout.rs:629	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/layout.rs:634	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/mailbox.rs:139	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/mailbox.rs:295	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/mailbox.rs:303	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/mailbox.rs:308	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/notifications.rs:229	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:279	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/parameter_binding/erased.rs:127	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/parameter_binding/erased.rs:215	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/parameter_binding/erased.rs:288	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/parameter_binding/erased.rs:92	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/parameter_binding/remote.rs:107	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/parameter_binding/remote.rs:497	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/parameter_binding/remote.rs:526	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/parameter_binding/remote.rs:541	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/parameter_binding/remote.rs:549	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/parameter_binding/remote.rs:686	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/parameter_binding.rs:307	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/parameter_binding.rs:511	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/parameter_binding.rs:730	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/runtime/commands.rs:1619	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/runtime/commands.rs:298	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/runtime/native_windows.rs:1030	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/runtime/native_windows.rs:1417	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/runtime/native_windows.rs:214	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/runtime/native_windows.rs:230	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/runtime/native_windows.rs:234	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/runtime/native_windows.rs:268	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/runtime/native_windows.rs:964	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/runtime/presentation.rs:24	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/runtime/reveal.rs:144	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/runtime.rs:2507	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/runtime.rs:2511	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/runtime.rs:2515	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/runtime.rs:2519	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/runtime.rs:2523	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/runtime.rs:2532	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/runtime.rs:2541	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/runtime.rs:2718	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/runtime.rs:2723	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/runtime.rs:2749	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/runtime.rs:3000	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/runtime/tasks.rs:40	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/runtime/theme.rs:279	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/runtime/theme.rs:586	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/runtime/theme.rs:856	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/text_fields/normalize.rs:35	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/text/fit.rs:64	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/text/fit.rs:68	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/text_input.rs:92	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/text/rich.rs:153	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/text_selection.rs:50	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/text_selection.rs:54	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/text_selection.rs:58	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/vector_scene.rs:10	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/vector_scene.rs:68	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/vector_scene.rs:72	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/vector_scene.rs:77	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/virtual_list.rs:241	lib	this method could have a `#[must_use]` attribute
+clippy::must_use_candidate	crates/pert-ui-runtime/src/windows.rs:64	lib	this method could have a `#[must_use]` attribute
+clippy::struct_excessive_bools	crates/pert-ui-runtime/src/chip.rs:72	lib	more than 3 bools in a struct
+clippy::struct_excessive_bools	crates/pert-ui-runtime/src/choice_controls.rs:171	lib	more than 3 bools in a struct
+clippy::struct_excessive_bools	crates/pert-ui-runtime/src/choice_controls.rs:697	lib	more than 3 bools in a struct
+clippy::struct_excessive_bools	crates/pert-ui-runtime/src/diagnostics.rs:464	lib	more than 3 bools in a struct
+clippy::struct_excessive_bools	crates/pert-ui-runtime/src/inline_controls.rs:54	lib	more than 3 bools in a struct
+clippy::struct_excessive_bools	crates/pert-ui-runtime/src/input.rs:285	lib	more than 3 bools in a struct
+clippy::struct_excessive_bools	crates/pert-ui-runtime/src/inspection.rs:200	lib	more than 3 bools in a struct
+clippy::struct_excessive_bools	crates/pert-ui-runtime/src/menu_bar.rs:187	lib	more than 3 bools in a struct
+clippy::struct_excessive_bools	crates/pert-ui-runtime/src/multi_select.rs:504	lib	more than 3 bools in a struct
+clippy::struct_excessive_bools	crates/pert-ui-runtime/src/numeric_controls.rs:57	lib	more than 3 bools in a struct
+clippy::struct_excessive_bools	crates/pert-ui-runtime/src/property_grid.rs:222	lib	more than 3 bools in a struct
+clippy::struct_excessive_bools	crates/pert-ui-runtime/src/quick_pick.rs:1557	lib	more than 3 bools in a struct
+clippy::struct_excessive_bools	crates/pert-ui-runtime/src/selectable_text.rs:108	lib	more than 3 bools in a struct
+clippy::struct_excessive_bools	crates/pert-ui-runtime/src/split.rs:198	lib	more than 3 bools in a struct
+clippy::struct_excessive_bools	crates/pert-ui-runtime/src/table.rs:1329	lib	more than 3 bools in a struct
+clippy::struct_excessive_bools	crates/pert-ui-runtime/src/table.rs:34	lib	more than 3 bools in a struct
+clippy::struct_excessive_bools	crates/pert-ui-runtime/src/text_fields/inline.rs:13	lib	more than 3 bools in a struct
+clippy::struct_excessive_bools	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:776	lib	more than 3 bools in a struct
+clippy::struct_excessive_bools	crates/pert-ui-runtime/src/text_fields.rs:1128	lib	more than 3 bools in a struct
+clippy::struct_excessive_bools	crates/pert-ui-runtime/src/text_fields/search.rs:107	lib	more than 3 bools in a struct
+clippy::struct_excessive_bools	crates/pert-ui-runtime/src/tool_windows/model.rs:111	lib	more than 3 bools in a struct
+clippy::struct_excessive_bools	crates/pert-ui-runtime/src/tool_windows/model.rs:42	lib	more than 3 bools in a struct
+clippy::struct_excessive_bools	crates/pert-ui-runtime/src/virtual_list.rs:439	lib	more than 3 bools in a struct
+clippy::struct_excessive_bools	crates/pert-ui-runtime/src/windows.rs:195	lib	more than 3 bools in a struct
+clippy::struct_excessive_bools	crates/pert-ui-runtime/src/windows.rs:724	lib	more than 3 bools in a struct
+clippy::struct_excessive_bools	crates/pert-ui/src/platform/mod.rs:831	lib	more than 3 bools in a struct
+missing_debug_implementations	crates/pert-ui-runtime/src/breadcrumb.rs:143	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/chip.rs:72	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/choice_controls.rs:1441	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/choice_controls.rs:1585	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/choice_controls.rs:519	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/choice_controls.rs:697	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/collapsible.rs:464	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/collapsible.rs:809	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/collapsible.rs:947	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/collection_filter.rs:255	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/collection_filter.rs:353	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/collection_filter.rs:499	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/color_picker.rs:386	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/color_swatch.rs:96	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/command_palette.rs:505	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/containers.rs:1027	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/containers.rs:63	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/containers.rs:800	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/controls.rs:445	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/controls.rs:58	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/described.rs:178	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/described.rs:223	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/described.rs:26	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/described.rs:277	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/dialog.rs:177	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/dialog.rs:493	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/drag.rs:191	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/drawing.rs:1307	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/field_status.rs:216	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/field_status.rs:304	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/field_status.rs:438	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/file_browser/view.rs:70	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/form.rs:53	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/history_navigator.rs:111	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/history_navigator.rs:486	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/image.rs:76	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/inline_controls.rs:54	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/inline_controls.rs:579	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/layout.rs:312	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/layout.rs:706	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/layout.rs:968	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/link.rs:76	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/list_selection.rs:62	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/live_widgets.rs:131	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/live_widgets.rs:481	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/menu_bar.rs:624	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/menu.rs:1250	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/menu.rs:1303	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/menu.rs:222	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/menu.rs:675	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/multi_select.rs:1209	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/notifications.rs:144	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/notifications.rs:25	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/notifications.rs:398	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/number_format.rs:38	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/numeric_controls.rs:1309	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/popover.rs:193	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/popover.rs:404	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/progress.rs:143	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/progress.rs:348	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/property_grid.rs:222	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/property_grid.rs:35	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/quick_pick.rs:866	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/region_layout.rs:43	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/runtime/fonts.rs:162	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/runtime/fonts.rs:38	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/runtime.rs:2482	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/runtime.rs:2551	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/runtime.rs:2897	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/runtime.rs:3508	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/runtime/settings.rs:213	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/runtime/theme.rs:1014	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/selectable_text.rs:108	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/select.rs:1362	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/select.rs:1740	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/split.rs:198	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/table/editing.rs:29	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/table.rs:1329	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/table.rs:561	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/tabs.rs:12	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/tabs.rs:263	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/text_fields/inline_text.rs:66	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:166	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:203	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:247	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:274	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/text_fields.rs:154	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/text_fields.rs:203	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/text_fields/search.rs:107	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/toolbar.rs:327	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/toolbar.rs:47	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/tool_windows/mod.rs:303	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/tool_windows/mod.rs:749	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/tree.rs:258	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/tree.rs:901	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/vector_scene.rs:112	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/views.rs:136	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/views.rs:14	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/views.rs:329	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/views.rs:906	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/virtual_list.rs:178	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/virtual_list.rs:439	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/windows.rs:195	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/windows.rs:650	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui-runtime/src/zoom_view.rs:306	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+missing_debug_implementations	crates/pert-ui/src/app.rs:285	lib	type does not implement `std::fmt::Debug`; consider adding `#[derive(Debug)]` or a manual implementation
+unreachable_pub	crates/pert-ui/examples/diagram_editor/app.rs:100	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/app.rs:142	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/app.rs:154	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/app.rs:172	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/app.rs:191	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/app.rs:204	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/app.rs:20	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/app.rs:34	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/app.rs:587	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/app.rs:61	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/app.rs:892	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/canvas.rs:62	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/canvas.rs:68	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/canvas.rs:884	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/canvas.rs:88	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/editor.rs:107	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/editor.rs:111	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/editor.rs:121	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/editor.rs:129	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/editor.rs:14	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/editor.rs:175	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/editor.rs:201	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/editor.rs:212	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/editor.rs:226	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/editor.rs:240	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/editor.rs:255	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/editor.rs:260	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/editor.rs:26	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/editor.rs:273	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/editor.rs:280	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/editor.rs:290	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/editor.rs:295	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/editor.rs:318	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/editor.rs:325	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/editor.rs:37	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/editor.rs:54	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/editor.rs:79	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/model.rs:102	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/model.rs:105	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/model.rs:109	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/model.rs:11	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/model.rs:123	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/model.rs:139	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/model.rs:13	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/model.rs:152	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/model.rs:159	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/model.rs:165	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/model.rs:16	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/model.rs:174	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/model.rs:188	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/model.rs:211	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/model.rs:21	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/model.rs:24	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/model.rs:343	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/model.rs:45	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/model.rs:57	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/model.rs:62	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/model.rs:65	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/model.rs:79	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/model.rs:87	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/model.rs:93	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/model.rs:94	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/model.rs:95	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/model.rs:96	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/model.rs:99	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/diagram_editor/session.rs:148	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/app.rs:174	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/app.rs:197	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/app.rs:19	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/app.rs:335	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/app.rs:364	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/app.rs:416	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/app.rs:425	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/app.rs:488	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/app.rs:500	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/app.rs:523	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/app.rs:535	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/app.rs:546	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/app.rs:555	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/app.rs:584	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/app.rs:689	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:105	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:108	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:127	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:12	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:138	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:15	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:167	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:172	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:179	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:18	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:191	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:206	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:214	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:232	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:237	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:240	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:243	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:246	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:24	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:31	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:333	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:343	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:365	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:37	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:45	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:54	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:62	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:69	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:6	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:78	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:84	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:8	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/model.rs:94	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/inventory/session.rs:194	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/app.rs:147	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/app.rs:155	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/app.rs:175	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/app.rs:179	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/app.rs:233	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/app.rs:247	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/app.rs:25	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/app.rs:274	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/app.rs:293	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/app.rs:330	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/app.rs:517	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/app.rs:564	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/app.rs:570	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/app.rs:641	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/app.rs:658	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/app.rs:751	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/app.rs:814	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/model.rs:108	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/model.rs:15	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/model.rs:177	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/model.rs:183	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/model.rs:200	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/model.rs:203	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/model.rs:209	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/model.rs:223	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/model.rs:22	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/model.rs:273	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/model.rs:277	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/model.rs:39	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/model.rs:41	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/model.rs:44	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/model.rs:51	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/model.rs:62	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/model.rs:72	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/model.rs:76	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/model.rs:7	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/model.rs:84	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/model.rs:95	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/examples/log_explorer/session.rs:106	example	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/audit/../support/mod.rs:103	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/audit/../support/mod.rs:30	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/audit/../support/mod.rs:51	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/audit/../support/mod.rs:63	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/audit/../support/mod.rs:80	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/audit/../support/mod.rs:91	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/collections/../support/mod.rs:103	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/collections/../support/mod.rs:30	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/collections/../support/mod.rs:51	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/collections/../support/mod.rs:63	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/collections/../support/mod.rs:80	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/collections/../support/mod.rs:91	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/controls/../support/mod.rs:103	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/controls/../support/mod.rs:30	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/controls/../support/mod.rs:51	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/controls/../support/mod.rs:63	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/controls/../support/mod.rs:80	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/controls/../support/mod.rs:91	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/editing/../support/mod.rs:103	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/editing/../support/mod.rs:30	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/editing/../support/mod.rs:51	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/editing/../support/mod.rs:63	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/editing/../support/mod.rs:80	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/editing/../support/mod.rs:91	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/foundation/host_adapter.rs:19	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/foundation/host_adapter.rs:21	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/foundation/host_adapter.rs:26	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/foundation/../support/mod.rs:103	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/foundation/../support/mod.rs:30	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/foundation/../support/mod.rs:51	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/foundation/../support/mod.rs:63	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/foundation/../support/mod.rs:80	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/foundation/../support/mod.rs:91	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/presentation/../support/mod.rs:103	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/presentation/../support/mod.rs:30	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/presentation/../support/mod.rs:51	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/presentation/../support/mod.rs:63	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/presentation/../support/mod.rs:80	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/presentation/../support/mod.rs:91	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/surfaces/../support/mod.rs:103	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/surfaces/../support/mod.rs:30	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/surfaces/../support/mod.rs:51	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/surfaces/../support/mod.rs:63	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/surfaces/../support/mod.rs:80	test	unreachable `pub` item
+unreachable_pub	crates/pert-ui/tests/surfaces/../support/mod.rs:91	test	unreachable `pub` item
