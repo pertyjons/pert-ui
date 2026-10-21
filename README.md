@@ -56,7 +56,7 @@ Violet palette; the other images use the default dark palette.
 
 ## Development
 
-Rust 1.99.0, edition 2024, is pinned in `rust-toolchain.toml` and is the declared
+Rust 1.99.1, edition 2024, is pinned in `rust-toolchain.toml` and is the declared
 minimum supported version. The workspace packages are:
 
 - `pert-ui-core`: parameter specs of every family, IDs and the synchronous edit protocol.

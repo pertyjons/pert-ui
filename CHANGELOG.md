@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.52 (2026-10-21)
+
+Toolchain:
+
+- **Rust 1.99.1:** the pinned toolchain and the declared minimum Rust
+  version (`rust-version`) move from 1.99.0 to 1.99.1, and CI's minimum
+  version job follows. The point release fixes a missing `wcslen` symbol on
+  UEFI and embedded targets, a miscompilation of FFI `bool` return values
+  on x86_64 and the `libLLVM` rpath of rust-lld on macOS; no source change
+  is needed.
+
 ## 0.3.51 (2026-10-20)
 
 Documentation repairs (plan-audit-repairs slice 7):

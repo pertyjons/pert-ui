@@ -267,9 +267,19 @@ text and font output on macOS and Windows still need execution evidence.
 
 ### Rust 1.99 upgrade review
 
-The toolchain and declared minimum Rust version are 1.99.0. The
+The toolchain and declared minimum Rust version are 1.99.1 since 0.3.52;
+the 1.99.0 runs recorded in this file predate that. The 1.99.1 point
+release (2026-10-15) fixes a missing `wcslen` symbol on UEFI and embedded
+targets, a miscompilation of FFI `bool` return values on x86_64 and the
+`libLLVM` rpath of rust-lld on macOS; it needs no source change. On
+2026-10-21 on Fedora 44 with `rustc 1.99.1 (58cf8f9c3 2026-10-13)`, every
+step of the CI workflow passed locally (formatting, Clippy, debug and
+release tests, the examples' headless sessions, doctests, rustdoc, the
+feature configurations, the release Loom models and the headless gallery),
+and the five library packages were packaged and verified. The native checks
+were not rerun for the point release. The
 [official release notes](https://doc.rust-lang.org/1.99.0/releases.html#version-1990-2026-10-01)
-inform this upgrade:
+inform the 1.99 upgrade:
 
 - `String::from_utf8_lossy_owned` fits the internal validation test log:
   the log already owns its byte buffer, so valid UTF-8 can reuse that allocation

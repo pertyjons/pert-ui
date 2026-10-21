@@ -345,7 +345,7 @@ History is off by default and causes no periodic scheduling. Success/failure and
 cancellation are recorded; generic `event` only records dispatch, while `try_event`
 records the application's returned result. Text input contents are not logged.
 
-Requires Rust 1.99.0 or later, edition 2024. Licensed under either MIT or
+Requires Rust 1.99.1 or later, edition 2024. Licensed under either MIT or
 Apache-2.0, at your option; both license texts are included in this package.
 
 ## Retained composition and custom layout

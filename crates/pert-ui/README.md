@@ -84,7 +84,7 @@ application decoded or generated itself.
 
 # Minimum Rust version and license
 
-Requires Rust 1.99.0 or later, edition 2024. Licensed under either the MIT
+Requires Rust 1.99.1 or later, edition 2024. Licensed under either the MIT
 license or the Apache License 2.0, at your option; both texts are included in
 this package. The bundled fonts keep their own licenses (SIL OFL 1.1 for Noto
 Sans and Noto Sans Mono, Apache 2.0 for Material Icons), shipped with the

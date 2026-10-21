@@ -62,7 +62,7 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   first layout), and add a mount-time regression test.
 - [ ] 2026-10-21 `NOW.md` — Reporting deviations and improvements: the
   handoff file was last updated 2026-10-15 and is stale. It gives the
-  version as 0.2.96 (the workspace is at 0.3.51) and says the
+  version as 0.2.96 (the workspace is at 0.3.52) and says the
   `app-author-improvements` branch is not merged, while 116ab0c and later
   commits merged it and the probe and audit plans that followed. Rewrite
   it for the current `main` and open plans, or remove it if

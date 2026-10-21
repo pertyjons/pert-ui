@@ -33,5 +33,5 @@ assert_eq!(NormalizedValue::try_from(1.5), Err(NormalizedValueError::OutOfRange)
 # Ok::<(), NormalizedValueError>(())
 ```
 
-Requires Rust 1.99.0 or later, edition 2024. Licensed under either MIT or
+Requires Rust 1.99.1 or later, edition 2024. Licensed under either MIT or
 Apache-2.0, at your option; both license texts are included in this package.
