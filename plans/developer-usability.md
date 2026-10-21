@@ -4,7 +4,9 @@ Status: proposed 2026-10-21 and revised after a Codex review. Slice 0 is
 done on branch `developer-usability`: both tester probes passed, both
 pilots were accepted (the kit's README has the evidence), and the
 maintainer approved the checkpoint on 2026-10-21, keeping the tasks and
-their 90-minute budget. Slice 1 is next. Every tool, file and check named below as new is a
+their 90-minute budget. Slice 1 is done: the API listings are under
+`api/` with their CI job, on Rust 1.99.1 (0.3.52); its CI run waits for
+an authorized push. Slice 2 is next. Every tool, file and check named below as new is a
 proposal until a slice implements it.
 
 ## Background
@@ -244,8 +246,9 @@ Design checkpoint first. It decides and records:
 - **Freshness.** A CI step on one Linux job regenerates the listings and
   fails on a difference, with the regeneration command in its message.
 
-Checkpoint proposal (2026-10-21), revised after a Codex review, for the
-maintainer's approval. Evidence was gathered with throwaway builds under
+Checkpoint outcome (2026-10-21), revised after a Codex review and approved
+by the maintainer, who chose the `RUSTC_BOOTSTRAP` exception over a pinned
+nightly and moved the pinned toolchain to Rust 1.99.1 first (0.3.52). Evidence was gathered with throwaway builds under
 `target/`:
 
 - **Tool: `cargo-public-api` 0.52.0 only**, installed with `cargo install
@@ -260,16 +263,16 @@ maintainer's approval. Evidence was gathered with throwaway builds under
 - **Toolchain: an extraction-only exception, no nightly.** rustdoc JSON
   still needs `-Z unstable-options`, and `cargo-public-api` would switch to
   a nightly by itself to build it. `api/generate.sh` instead builds the
-  JSON with exactly Rust 1.99.0 (the pinned toolchain) and
+  JSON with exactly the pinned toolchain (Rust 1.99.1 since 0.3.52) and
   `RUSTC_BOOTSTRAP=1`, set on that one command only, and passes the file
   with `--rustdoc-json` (a flag the tool's help does not list, held stable
   by the pinned tool version). This is a documented exception for
   extracting the listing: no build, test, check or package of the library
   uses `RUSTC_BOOTSTRAP`, and the library's stable and MSRV contract is
-  unchanged. The alternative is a date-pinned nightly used only for
-  extraction, which states the unstable dependency more directly but adds a
-  second toolchain to install and bump; the maintainer chooses. Verified:
-  1.99.0 emits format 61, which 0.52.0 parses without error, and two
+  unchanged. The alternative, a date-pinned nightly used only for
+  extraction, states the unstable dependency more directly but adds a
+  second toolchain to install and bump. Verified:
+  1.99.0 and 1.99.1 emit format 61, which 0.52.0 parses without error, and two
   builds give identical listings.
 - **Reproducible inputs.** Target `x86_64-unknown-linux-gnu`; exactly the
   pinned toolchain and tool version; `cargo rustdoc --locked -p <package>`
@@ -552,3 +555,11 @@ feature set did not match CI's configurations, and that the
 check needed stating; the proposal was revised to the tool's own output,
 CI's configurations, an extraction-only exception, explicit inputs and a
 check that sees new and removed files. A recheck approved it.
+
+Slice 1's implementation: Codex found that unsetting the flag variables
+left target-specific and configured flags in effect, and that AGENTS.md's
+commands lacked the new gate; the script now sets empty encoded flags, which
+take precedence over every other source, and AGENTS.md lists the API
+listing gate's commands and names it in the two gate-table rows. A recheck
+confirmed both. The workspace gate passed on the same code at bebb411 with
+Rust 1.99.1; slice 1 changes no Rust source.

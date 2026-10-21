@@ -1,0 +1,88 @@
+pub mod pert_ui
+pub use pert_ui::<<pert_ui_runtime::*>>
+pub mod pert_ui::guide
+pub mod pert_ui::guide::appearance
+pub mod pert_ui::guide::controls
+pub mod pert_ui::guide::custom_widgets
+pub mod pert_ui::guide::diagnostics
+pub mod pert_ui::guide::getting_started
+pub mod pert_ui::guide::layout
+pub mod pert_ui::guide::state
+pub mod pert_ui::guide::surfaces
+pub mod pert_ui::prelude
+pub use pert_ui::prelude::<<pert_ui_runtime::prelude::*>>
+pub struct pert_ui::prelude::Svg
+impl pert_ui::Svg
+pub fn pert_ui::Svg::description(self, impl core::convert::Into<alloc::string::String>) -> Self
+pub const fn pert_ui::Svg::intrinsic_size(&self) -> pert_ui_runtime::layout::Size
+pub fn pert_ui::Svg::new(&[u8]) -> core::result::Result<Self, pert_ui::svg::SvgError>
+pub const fn pert_ui::Svg::size(self, pert_ui_runtime::layout::Size) -> Self
+pub fn pert_ui::Svg::tinted(&[u8], pert_ui_runtime::runtime::theme::ColorRole) -> core::result::Result<Self, pert_ui::svg::SvgError>
+impl pert_ui_runtime::runtime::Component for pert_ui::Svg
+pub fn pert_ui::Svg::arrange(&self, &mut pert_ui_runtime::layout::ArrangeContext<'_>, pert_ui_runtime::layout::Size) -> core::result::Result<(), pert_ui_runtime::runtime::RuntimeError>
+pub fn pert_ui::Svg::inspect(&self) -> pert_ui_runtime::diagnostics::ComponentDetails
+pub fn pert_ui::Svg::measure(&self, &pert_ui_runtime::layout::MeasureContext<'_>, pert_ui_runtime::layout::Constraints) -> core::result::Result<pert_ui_runtime::layout::Size, pert_ui_runtime::runtime::RuntimeError>
+pub fn pert_ui::Svg::paint(&self, &mut pert_ui_runtime::drawing::Painter) -> core::result::Result<(), pert_ui_runtime::drawing::DrawError>
+pub fn pert_ui::Svg::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::runtime::Invalidation>
+pub fn pert_ui::Svg::update(&mut self, &mut pert_ui_runtime::runtime::UpdateContext) -> core::result::Result<(), pert_ui_runtime::runtime::RuntimeError>
+impl !core::marker::Freeze for pert_ui::Svg
+impl core::marker::Send for pert_ui::Svg
+impl !core::marker::Sync for pert_ui::Svg
+impl core::marker::Unpin for pert_ui::Svg
+impl core::marker::UnsafeUnpin for pert_ui::Svg
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui::Svg
+impl core::panic::unwind_safe::UnwindSafe for pert_ui::Svg
+pub mod pert_ui::svg
+#[non_exhaustive] pub enum pert_ui::svg::SvgError
+pub pert_ui::svg::SvgError::InvalidSize
+pub pert_ui::svg::SvgError::Parse(alloc::string::String)
+pub pert_ui::svg::SvgError::Resource(pert_ui_runtime::drawing::DrawError)
+pub pert_ui::svg::SvgError::TooLarge
+pub pert_ui::svg::SvgError::TooLarge::height: u32
+pub pert_ui::svg::SvgError::TooLarge::width: u32
+impl core::clone::Clone for pert_ui::svg::SvgError
+pub fn pert_ui::svg::SvgError::clone(&self) -> pert_ui::svg::SvgError
+impl core::cmp::Eq for pert_ui::svg::SvgError
+impl core::cmp::PartialEq for pert_ui::svg::SvgError
+pub fn pert_ui::svg::SvgError::eq(&self, &pert_ui::svg::SvgError) -> bool
+impl core::convert::From<pert_ui_runtime::drawing::DrawError> for pert_ui::svg::SvgError
+pub fn pert_ui::svg::SvgError::from(pert_ui_runtime::drawing::DrawError) -> Self
+impl core::error::Error for pert_ui::svg::SvgError
+pub fn pert_ui::svg::SvgError::source(&self) -> core::option::Option<&(dyn core::error::Error + 'static)>
+impl core::fmt::Debug for pert_ui::svg::SvgError
+pub fn pert_ui::svg::SvgError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui::svg::SvgError
+pub fn pert_ui::svg::SvgError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui::svg::SvgError
+impl core::marker::Freeze for pert_ui::svg::SvgError
+impl core::marker::Send for pert_ui::svg::SvgError
+impl core::marker::Sync for pert_ui::svg::SvgError
+impl core::marker::Unpin for pert_ui::svg::SvgError
+impl core::marker::UnsafeUnpin for pert_ui::svg::SvgError
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui::svg::SvgError
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui::svg::SvgError
+pub const pert_ui::svg::MAX_NESTING: usize
+pub fn pert_ui::svg::intrinsic_size(&[u8]) -> core::result::Result<pert_ui_runtime::layout::Size, pert_ui::svg::SvgError>
+pub fn pert_ui::svg::rasterize(&[u8], u32, u32) -> core::result::Result<pert_ui_runtime::resources::RasterImage, pert_ui::svg::SvgError>
+pub fn pert_ui::svg::rasterize_mask(&[u8], u32, u32) -> core::result::Result<pert_ui_runtime::drawing::MaskImage, pert_ui::svg::SvgError>
+pub struct pert_ui::Svg
+impl pert_ui::Svg
+pub fn pert_ui::Svg::description(self, impl core::convert::Into<alloc::string::String>) -> Self
+pub const fn pert_ui::Svg::intrinsic_size(&self) -> pert_ui_runtime::layout::Size
+pub fn pert_ui::Svg::new(&[u8]) -> core::result::Result<Self, pert_ui::svg::SvgError>
+pub const fn pert_ui::Svg::size(self, pert_ui_runtime::layout::Size) -> Self
+pub fn pert_ui::Svg::tinted(&[u8], pert_ui_runtime::runtime::theme::ColorRole) -> core::result::Result<Self, pert_ui::svg::SvgError>
+impl pert_ui_runtime::runtime::Component for pert_ui::Svg
+pub fn pert_ui::Svg::arrange(&self, &mut pert_ui_runtime::layout::ArrangeContext<'_>, pert_ui_runtime::layout::Size) -> core::result::Result<(), pert_ui_runtime::runtime::RuntimeError>
+pub fn pert_ui::Svg::inspect(&self) -> pert_ui_runtime::diagnostics::ComponentDetails
+pub fn pert_ui::Svg::measure(&self, &pert_ui_runtime::layout::MeasureContext<'_>, pert_ui_runtime::layout::Constraints) -> core::result::Result<pert_ui_runtime::layout::Size, pert_ui_runtime::runtime::RuntimeError>
+pub fn pert_ui::Svg::paint(&self, &mut pert_ui_runtime::drawing::Painter) -> core::result::Result<(), pert_ui_runtime::drawing::DrawError>
+pub fn pert_ui::Svg::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::runtime::Invalidation>
+pub fn pert_ui::Svg::update(&mut self, &mut pert_ui_runtime::runtime::UpdateContext) -> core::result::Result<(), pert_ui_runtime::runtime::RuntimeError>
+impl !core::marker::Freeze for pert_ui::Svg
+impl core::marker::Send for pert_ui::Svg
+impl !core::marker::Sync for pert_ui::Svg
+impl core::marker::Unpin for pert_ui::Svg
+impl core::marker::UnsafeUnpin for pert_ui::Svg
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui::Svg
+impl core::panic::unwind_safe::UnwindSafe for pert_ui::Svg

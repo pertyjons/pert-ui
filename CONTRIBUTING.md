@@ -17,6 +17,13 @@ in [verification](docs/verification.md#native-evidence); headless checks alone d
 not establish native support.
 
 Public API changes need rustdoc and a complete example using the public facade.
+The files under `api/` list each published package's public API per feature
+configuration. When a change adds, removes or changes a public item, or updates
+a dependency or the toolchain, install the tool version that
+[`api/generate.sh`](api/generate.sh) names (`cargo install --locked
+cargo-public-api@<version>`), run `api/generate.sh` on x86_64 Linux and commit
+the changed listings; CI fails when they are out of date. Name the added,
+removed or changed items in the CHANGELOG entry.
 Do not add application-specific semantics to general controls. See the
 [architecture](docs/architecture.md) and [contracts](docs/contracts.md) for the
 library boundaries and compatibility policy.

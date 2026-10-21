@@ -161,6 +161,9 @@ Subsequent ordinary fixes still follow the compatibility policy below.
   still require a version beside the workspace path; Cargo normalizes inheritance
   when packaging.
 - Follow the toolchain/MSRV policy; use stable Rust and the selected edition.
+  The one exception is `api/generate.sh`, which sets `RUSTC_BOOTSTRAP=1` on
+  its rustdoc JSON command to extract the API listings; nothing else may use
+  it.
   Use `Self` in impls, conventional conversion traits and focused public types.
 - Give domain quantities and identities appropriate validated types with private
   invariants. Keep IDs distinct from indices, labels, display order and samples/
@@ -239,8 +242,8 @@ checks that exist; never claim a check you did not run.
 | Markdown only | Author review, links and whitespace; review consistency with existing decisions. |
 | Rustdoc/public examples | Targeted doctests, example compilation, the affected example's headless session and warning-free rustdoc. |
 | Package-local ordinary implementation | Formatting, targeted Clippy and package tests, including affected doctests. |
-| Public API, identity, scheduling, concurrency, persistence, real-time boundary or cross-package change | Workspace checks below, focused contract tests and semantic review before merge. |
-| Dependencies, features, platform integration or release | Workspace checks, MSRV, supported feature configurations, packaging/consumer checks and affected native platform checks. |
+| Public API, identity, scheduling, concurrency, persistence, real-time boundary or cross-package change | Workspace checks below, the API listing gate, focused contract tests and semantic review before merge. |
+| Dependencies, features, platform integration or release | Workspace checks, MSRV, supported feature configurations, the API listing gate, packaging/consumer checks and affected native platform checks. |
 
 Workspace gate, as CI runs it (`--locked` keeps `Cargo.lock` authoritative):
 
@@ -260,6 +263,21 @@ RUSTDOCFLAGS="-D warnings" cargo doc --locked --workspace --no-deps
 The `cargo run` lines are the packaged examples' headless sessions, with the
 features the workspace build unifies so its examples are reused. A new
 headless example joins them here and in the workflow.
+
+The public API listings under `api/` must match the code. A change that adds,
+removes or changes a public item, a dependency or the toolchain runs the API
+listing gate on x86_64 Linux and commits the result; CI's separate
+`api-listing` job runs the same commands and fails on any difference:
+
+```sh
+cargo install --locked cargo-public-api@0.52.0  # the version api/generate.sh names
+api/generate.sh
+git status --porcelain -- api/                  # must print nothing once committed
+```
+
+The diff of `api/` is part of the review, and the CHANGELOG entry names every
+added, removed or changed item it shows; churn from a dependency or toolchain
+update is described as such.
 
 A change to the live-data protocols in `pert-ui-core`'s `live` module also
 runs their `loom` models, which CI runs on Linux after the release-profile

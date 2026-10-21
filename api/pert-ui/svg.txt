@@ -1,0 +1,294 @@
+pub mod pert_ui
+pub use pert_ui::<<pert_ui_runtime::*>>
+pub mod pert_ui::guide
+pub mod pert_ui::guide::appearance
+pub mod pert_ui::guide::controls
+pub mod pert_ui::guide::custom_widgets
+pub mod pert_ui::guide::diagnostics
+pub mod pert_ui::guide::getting_started
+pub mod pert_ui::guide::layout
+pub mod pert_ui::guide::state
+pub mod pert_ui::guide::surfaces
+pub mod pert_ui::prelude
+pub use pert_ui::prelude::<<pert_ui_runtime::prelude::*>>
+#[non_exhaustive] pub enum pert_ui::prelude::AppError
+pub pert_ui::prelude::AppError::DeviceLost(alloc::string::String)
+pub pert_ui::prelude::AppError::Drawing(pert_ui_runtime::drawing::DrawError)
+pub pert_ui::prelude::AppError::ErrorReporting
+pub pert_ui::prelude::AppError::ErrorReporting::failure: alloc::boxed::Box<pert_ui::AppError>
+pub pert_ui::prelude::AppError::ErrorReporting::io: core::io::error::Error
+pub pert_ui::prelude::AppError::EventLoop(alloc::string::String)
+pub pert_ui::prelude::AppError::Graphics(alloc::string::String)
+pub pert_ui::prelude::AppError::InvalidTitle
+pub pert_ui::prelude::AppError::Limit(pert_ui_runtime::render_limits::LimitError)
+pub pert_ui::prelude::AppError::Runtime(pert_ui_runtime::runtime::RuntimeError)
+pub pert_ui::prelude::AppError::Shutdown(pert_ui::AppShutdownError)
+pub pert_ui::prelude::AppError::Surface(alloc::string::String)
+pub pert_ui::prelude::AppError::UnsupportedGraphics(alloc::string::String)
+pub pert_ui::prelude::AppError::Window(alloc::string::String)
+pub pert_ui::prelude::AppError::WindowErrorReporting
+pub pert_ui::prelude::AppError::WindowErrorReporting::failure: pert_ui_runtime::runtime::native_windows::WindowError
+pub pert_ui::prelude::AppError::WindowErrorReporting::io: core::io::error::Error
+impl core::error::Error for pert_ui::AppError
+pub fn pert_ui::AppError::source(&self) -> core::option::Option<&(dyn core::error::Error + 'static)>
+impl core::fmt::Debug for pert_ui::AppError
+pub fn pert_ui::AppError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui::AppError
+pub fn pert_ui::AppError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl<E> core::convert::From<E> for pert_ui::AppError where pert_ui_runtime::drawing::DrawError: core::convert::From<E>
+pub fn pert_ui::AppError::from(E) -> Self
+impl core::marker::Freeze for pert_ui::AppError
+impl core::marker::Send for pert_ui::AppError
+impl core::marker::Sync for pert_ui::AppError
+impl core::marker::Unpin for pert_ui::AppError
+impl core::marker::UnsafeUnpin for pert_ui::AppError
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui::AppError
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui::AppError
+pub enum pert_ui::prelude::ErrorAction
+pub pert_ui::prelude::ErrorAction::Exit
+pub pert_ui::prelude::ErrorAction::Retry
+impl core::clone::Clone for pert_ui::ErrorAction
+pub fn pert_ui::ErrorAction::clone(&self) -> pert_ui::ErrorAction
+impl core::cmp::Eq for pert_ui::ErrorAction
+impl core::cmp::PartialEq for pert_ui::ErrorAction
+pub fn pert_ui::ErrorAction::eq(&self, &pert_ui::ErrorAction) -> bool
+impl core::default::Default for pert_ui::ErrorAction
+pub fn pert_ui::ErrorAction::default() -> pert_ui::ErrorAction
+impl core::fmt::Debug for pert_ui::ErrorAction
+pub fn pert_ui::ErrorAction::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui::ErrorAction
+impl core::marker::StructuralPartialEq for pert_ui::ErrorAction
+impl core::marker::Freeze for pert_ui::ErrorAction
+impl core::marker::Send for pert_ui::ErrorAction
+impl core::marker::Sync for pert_ui::ErrorAction
+impl core::marker::Unpin for pert_ui::ErrorAction
+impl core::marker::UnsafeUnpin for pert_ui::ErrorAction
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui::ErrorAction
+impl core::panic::unwind_safe::UnwindSafe for pert_ui::ErrorAction
+pub enum pert_ui::prelude::NativeCloseAction
+pub pert_ui::prelude::NativeCloseAction::Close
+pub pert_ui::prelude::NativeCloseAction::Defer(pert_ui_runtime::signal::ReadSignal<core::option::Option<bool>>)
+pub pert_ui::prelude::NativeCloseAction::KeepOpen
+impl core::fmt::Debug for pert_ui::NativeCloseAction
+pub fn pert_ui::NativeCloseAction::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for pert_ui::NativeCloseAction
+impl !core::marker::Send for pert_ui::NativeCloseAction
+impl !core::marker::Sync for pert_ui::NativeCloseAction
+impl core::marker::Unpin for pert_ui::NativeCloseAction
+impl core::marker::UnsafeUnpin for pert_ui::NativeCloseAction
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui::NativeCloseAction
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui::NativeCloseAction
+pub struct pert_ui::prelude::App
+impl pert_ui::App
+pub fn pert_ui::App::max_size(self, pert_ui_runtime::layout::Size) -> core::result::Result<Self, pert_ui_runtime::runtime::RuntimeError>
+pub fn pert_ui::App::min_size(self, pert_ui_runtime::layout::Size) -> core::result::Result<Self, pert_ui_runtime::runtime::RuntimeError>
+pub fn pert_ui::App::new(impl core::convert::Into<alloc::string::String>, impl core::ops::function::FnOnce(&mut pert_ui_runtime::runtime::Runtime) -> core::result::Result<(), pert_ui::AppError> + 'static) -> Self
+pub fn pert_ui::App::on_close(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::runtime::Runtime, &pert_ui_runtime::runtime::native_windows::NativeWindowId) -> core::result::Result<pert_ui::NativeCloseAction, pert_ui_runtime::runtime::RuntimeError> + 'static) -> Self
+pub fn pert_ui::App::on_error(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::runtime::Runtime, &pert_ui::AppError) -> pert_ui::ErrorAction + 'static) -> Self
+pub fn pert_ui::App::on_window_error(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::runtime::Runtime, &pert_ui_runtime::runtime::native_windows::WindowError) + 'static) -> Self
+pub fn pert_ui::App::resizable(self, bool) -> Self
+pub fn pert_ui::App::run(self) -> core::result::Result<(), pert_ui::AppError>
+pub fn pert_ui::App::size(self, pert_ui_runtime::layout::Size) -> core::result::Result<Self, pert_ui_runtime::runtime::RuntimeError>
+impl !core::marker::Freeze for pert_ui::App
+impl !core::marker::Send for pert_ui::App
+impl !core::marker::Sync for pert_ui::App
+impl core::marker::Unpin for pert_ui::App
+impl core::marker::UnsafeUnpin for pert_ui::App
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui::App
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui::App
+pub struct pert_ui::prelude::AppShutdownError
+impl pert_ui::AppShutdownError
+pub fn pert_ui::AppShutdownError::errors(&self) -> &[pert_ui_runtime::runtime::RuntimeError]
+pub fn pert_ui::AppShutdownError::failure(&self) -> core::option::Option<&pert_ui::AppError>
+pub fn pert_ui::AppShutdownError::into_parts(self) -> (core::option::Option<pert_ui::AppError>, alloc::vec::Vec<pert_ui_runtime::runtime::RuntimeError>)
+impl core::error::Error for pert_ui::AppShutdownError
+pub fn pert_ui::AppShutdownError::source(&self) -> core::option::Option<&(dyn core::error::Error + 'static)>
+impl core::fmt::Debug for pert_ui::AppShutdownError
+pub fn pert_ui::AppShutdownError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui::AppShutdownError
+pub fn pert_ui::AppShutdownError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for pert_ui::AppShutdownError
+impl core::marker::Send for pert_ui::AppShutdownError
+impl core::marker::Sync for pert_ui::AppShutdownError
+impl core::marker::Unpin for pert_ui::AppShutdownError
+impl core::marker::UnsafeUnpin for pert_ui::AppShutdownError
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui::AppShutdownError
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui::AppShutdownError
+pub struct pert_ui::prelude::Svg
+impl pert_ui::Svg
+pub fn pert_ui::Svg::description(self, impl core::convert::Into<alloc::string::String>) -> Self
+pub const fn pert_ui::Svg::intrinsic_size(&self) -> pert_ui_runtime::layout::Size
+pub fn pert_ui::Svg::new(&[u8]) -> core::result::Result<Self, pert_ui::svg::SvgError>
+pub const fn pert_ui::Svg::size(self, pert_ui_runtime::layout::Size) -> Self
+pub fn pert_ui::Svg::tinted(&[u8], pert_ui_runtime::runtime::theme::ColorRole) -> core::result::Result<Self, pert_ui::svg::SvgError>
+impl pert_ui_runtime::runtime::Component for pert_ui::Svg
+pub fn pert_ui::Svg::arrange(&self, &mut pert_ui_runtime::layout::ArrangeContext<'_>, pert_ui_runtime::layout::Size) -> core::result::Result<(), pert_ui_runtime::runtime::RuntimeError>
+pub fn pert_ui::Svg::inspect(&self) -> pert_ui_runtime::diagnostics::ComponentDetails
+pub fn pert_ui::Svg::measure(&self, &pert_ui_runtime::layout::MeasureContext<'_>, pert_ui_runtime::layout::Constraints) -> core::result::Result<pert_ui_runtime::layout::Size, pert_ui_runtime::runtime::RuntimeError>
+pub fn pert_ui::Svg::paint(&self, &mut pert_ui_runtime::drawing::Painter) -> core::result::Result<(), pert_ui_runtime::drawing::DrawError>
+pub fn pert_ui::Svg::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::runtime::Invalidation>
+pub fn pert_ui::Svg::update(&mut self, &mut pert_ui_runtime::runtime::UpdateContext) -> core::result::Result<(), pert_ui_runtime::runtime::RuntimeError>
+impl !core::marker::Freeze for pert_ui::Svg
+impl core::marker::Send for pert_ui::Svg
+impl !core::marker::Sync for pert_ui::Svg
+impl core::marker::Unpin for pert_ui::Svg
+impl core::marker::UnsafeUnpin for pert_ui::Svg
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui::Svg
+impl core::panic::unwind_safe::UnwindSafe for pert_ui::Svg
+pub mod pert_ui::svg
+#[non_exhaustive] pub enum pert_ui::svg::SvgError
+pub pert_ui::svg::SvgError::InvalidSize
+pub pert_ui::svg::SvgError::Parse(alloc::string::String)
+pub pert_ui::svg::SvgError::Resource(pert_ui_runtime::drawing::DrawError)
+pub pert_ui::svg::SvgError::TooLarge
+pub pert_ui::svg::SvgError::TooLarge::height: u32
+pub pert_ui::svg::SvgError::TooLarge::width: u32
+impl core::clone::Clone for pert_ui::svg::SvgError
+pub fn pert_ui::svg::SvgError::clone(&self) -> pert_ui::svg::SvgError
+impl core::cmp::Eq for pert_ui::svg::SvgError
+impl core::cmp::PartialEq for pert_ui::svg::SvgError
+pub fn pert_ui::svg::SvgError::eq(&self, &pert_ui::svg::SvgError) -> bool
+impl core::convert::From<pert_ui_runtime::drawing::DrawError> for pert_ui::svg::SvgError
+pub fn pert_ui::svg::SvgError::from(pert_ui_runtime::drawing::DrawError) -> Self
+impl core::error::Error for pert_ui::svg::SvgError
+pub fn pert_ui::svg::SvgError::source(&self) -> core::option::Option<&(dyn core::error::Error + 'static)>
+impl core::fmt::Debug for pert_ui::svg::SvgError
+pub fn pert_ui::svg::SvgError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui::svg::SvgError
+pub fn pert_ui::svg::SvgError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui::svg::SvgError
+impl core::marker::Freeze for pert_ui::svg::SvgError
+impl core::marker::Send for pert_ui::svg::SvgError
+impl core::marker::Sync for pert_ui::svg::SvgError
+impl core::marker::Unpin for pert_ui::svg::SvgError
+impl core::marker::UnsafeUnpin for pert_ui::svg::SvgError
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui::svg::SvgError
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui::svg::SvgError
+pub const pert_ui::svg::MAX_NESTING: usize
+pub fn pert_ui::svg::intrinsic_size(&[u8]) -> core::result::Result<pert_ui_runtime::layout::Size, pert_ui::svg::SvgError>
+pub fn pert_ui::svg::rasterize(&[u8], u32, u32) -> core::result::Result<pert_ui_runtime::resources::RasterImage, pert_ui::svg::SvgError>
+pub fn pert_ui::svg::rasterize_mask(&[u8], u32, u32) -> core::result::Result<pert_ui_runtime::drawing::MaskImage, pert_ui::svg::SvgError>
+#[non_exhaustive] pub enum pert_ui::AppError
+pub pert_ui::AppError::DeviceLost(alloc::string::String)
+pub pert_ui::AppError::Drawing(pert_ui_runtime::drawing::DrawError)
+pub pert_ui::AppError::ErrorReporting
+pub pert_ui::AppError::ErrorReporting::failure: alloc::boxed::Box<pert_ui::AppError>
+pub pert_ui::AppError::ErrorReporting::io: core::io::error::Error
+pub pert_ui::AppError::EventLoop(alloc::string::String)
+pub pert_ui::AppError::Graphics(alloc::string::String)
+pub pert_ui::AppError::InvalidTitle
+pub pert_ui::AppError::Limit(pert_ui_runtime::render_limits::LimitError)
+pub pert_ui::AppError::Runtime(pert_ui_runtime::runtime::RuntimeError)
+pub pert_ui::AppError::Shutdown(pert_ui::AppShutdownError)
+pub pert_ui::AppError::Surface(alloc::string::String)
+pub pert_ui::AppError::UnsupportedGraphics(alloc::string::String)
+pub pert_ui::AppError::Window(alloc::string::String)
+pub pert_ui::AppError::WindowErrorReporting
+pub pert_ui::AppError::WindowErrorReporting::failure: pert_ui_runtime::runtime::native_windows::WindowError
+pub pert_ui::AppError::WindowErrorReporting::io: core::io::error::Error
+impl core::error::Error for pert_ui::AppError
+pub fn pert_ui::AppError::source(&self) -> core::option::Option<&(dyn core::error::Error + 'static)>
+impl core::fmt::Debug for pert_ui::AppError
+pub fn pert_ui::AppError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui::AppError
+pub fn pert_ui::AppError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl<E> core::convert::From<E> for pert_ui::AppError where pert_ui_runtime::drawing::DrawError: core::convert::From<E>
+pub fn pert_ui::AppError::from(E) -> Self
+impl core::marker::Freeze for pert_ui::AppError
+impl core::marker::Send for pert_ui::AppError
+impl core::marker::Sync for pert_ui::AppError
+impl core::marker::Unpin for pert_ui::AppError
+impl core::marker::UnsafeUnpin for pert_ui::AppError
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui::AppError
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui::AppError
+pub enum pert_ui::ErrorAction
+pub pert_ui::ErrorAction::Exit
+pub pert_ui::ErrorAction::Retry
+impl core::clone::Clone for pert_ui::ErrorAction
+pub fn pert_ui::ErrorAction::clone(&self) -> pert_ui::ErrorAction
+impl core::cmp::Eq for pert_ui::ErrorAction
+impl core::cmp::PartialEq for pert_ui::ErrorAction
+pub fn pert_ui::ErrorAction::eq(&self, &pert_ui::ErrorAction) -> bool
+impl core::default::Default for pert_ui::ErrorAction
+pub fn pert_ui::ErrorAction::default() -> pert_ui::ErrorAction
+impl core::fmt::Debug for pert_ui::ErrorAction
+pub fn pert_ui::ErrorAction::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui::ErrorAction
+impl core::marker::StructuralPartialEq for pert_ui::ErrorAction
+impl core::marker::Freeze for pert_ui::ErrorAction
+impl core::marker::Send for pert_ui::ErrorAction
+impl core::marker::Sync for pert_ui::ErrorAction
+impl core::marker::Unpin for pert_ui::ErrorAction
+impl core::marker::UnsafeUnpin for pert_ui::ErrorAction
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui::ErrorAction
+impl core::panic::unwind_safe::UnwindSafe for pert_ui::ErrorAction
+pub enum pert_ui::NativeCloseAction
+pub pert_ui::NativeCloseAction::Close
+pub pert_ui::NativeCloseAction::Defer(pert_ui_runtime::signal::ReadSignal<core::option::Option<bool>>)
+pub pert_ui::NativeCloseAction::KeepOpen
+impl core::fmt::Debug for pert_ui::NativeCloseAction
+pub fn pert_ui::NativeCloseAction::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for pert_ui::NativeCloseAction
+impl !core::marker::Send for pert_ui::NativeCloseAction
+impl !core::marker::Sync for pert_ui::NativeCloseAction
+impl core::marker::Unpin for pert_ui::NativeCloseAction
+impl core::marker::UnsafeUnpin for pert_ui::NativeCloseAction
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui::NativeCloseAction
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui::NativeCloseAction
+pub struct pert_ui::App
+impl pert_ui::App
+pub fn pert_ui::App::max_size(self, pert_ui_runtime::layout::Size) -> core::result::Result<Self, pert_ui_runtime::runtime::RuntimeError>
+pub fn pert_ui::App::min_size(self, pert_ui_runtime::layout::Size) -> core::result::Result<Self, pert_ui_runtime::runtime::RuntimeError>
+pub fn pert_ui::App::new(impl core::convert::Into<alloc::string::String>, impl core::ops::function::FnOnce(&mut pert_ui_runtime::runtime::Runtime) -> core::result::Result<(), pert_ui::AppError> + 'static) -> Self
+pub fn pert_ui::App::on_close(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::runtime::Runtime, &pert_ui_runtime::runtime::native_windows::NativeWindowId) -> core::result::Result<pert_ui::NativeCloseAction, pert_ui_runtime::runtime::RuntimeError> + 'static) -> Self
+pub fn pert_ui::App::on_error(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::runtime::Runtime, &pert_ui::AppError) -> pert_ui::ErrorAction + 'static) -> Self
+pub fn pert_ui::App::on_window_error(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::runtime::Runtime, &pert_ui_runtime::runtime::native_windows::WindowError) + 'static) -> Self
+pub fn pert_ui::App::resizable(self, bool) -> Self
+pub fn pert_ui::App::run(self) -> core::result::Result<(), pert_ui::AppError>
+pub fn pert_ui::App::size(self, pert_ui_runtime::layout::Size) -> core::result::Result<Self, pert_ui_runtime::runtime::RuntimeError>
+impl !core::marker::Freeze for pert_ui::App
+impl !core::marker::Send for pert_ui::App
+impl !core::marker::Sync for pert_ui::App
+impl core::marker::Unpin for pert_ui::App
+impl core::marker::UnsafeUnpin for pert_ui::App
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui::App
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui::App
+pub struct pert_ui::AppShutdownError
+impl pert_ui::AppShutdownError
+pub fn pert_ui::AppShutdownError::errors(&self) -> &[pert_ui_runtime::runtime::RuntimeError]
+pub fn pert_ui::AppShutdownError::failure(&self) -> core::option::Option<&pert_ui::AppError>
+pub fn pert_ui::AppShutdownError::into_parts(self) -> (core::option::Option<pert_ui::AppError>, alloc::vec::Vec<pert_ui_runtime::runtime::RuntimeError>)
+impl core::error::Error for pert_ui::AppShutdownError
+pub fn pert_ui::AppShutdownError::source(&self) -> core::option::Option<&(dyn core::error::Error + 'static)>
+impl core::fmt::Debug for pert_ui::AppShutdownError
+pub fn pert_ui::AppShutdownError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui::AppShutdownError
+pub fn pert_ui::AppShutdownError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for pert_ui::AppShutdownError
+impl core::marker::Send for pert_ui::AppShutdownError
+impl core::marker::Sync for pert_ui::AppShutdownError
+impl core::marker::Unpin for pert_ui::AppShutdownError
+impl core::marker::UnsafeUnpin for pert_ui::AppShutdownError
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui::AppShutdownError
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui::AppShutdownError
+pub struct pert_ui::Svg
+impl pert_ui::Svg
+pub fn pert_ui::Svg::description(self, impl core::convert::Into<alloc::string::String>) -> Self
+pub const fn pert_ui::Svg::intrinsic_size(&self) -> pert_ui_runtime::layout::Size
+pub fn pert_ui::Svg::new(&[u8]) -> core::result::Result<Self, pert_ui::svg::SvgError>
+pub const fn pert_ui::Svg::size(self, pert_ui_runtime::layout::Size) -> Self
+pub fn pert_ui::Svg::tinted(&[u8], pert_ui_runtime::runtime::theme::ColorRole) -> core::result::Result<Self, pert_ui::svg::SvgError>
+impl pert_ui_runtime::runtime::Component for pert_ui::Svg
+pub fn pert_ui::Svg::arrange(&self, &mut pert_ui_runtime::layout::ArrangeContext<'_>, pert_ui_runtime::layout::Size) -> core::result::Result<(), pert_ui_runtime::runtime::RuntimeError>
+pub fn pert_ui::Svg::inspect(&self) -> pert_ui_runtime::diagnostics::ComponentDetails
+pub fn pert_ui::Svg::measure(&self, &pert_ui_runtime::layout::MeasureContext<'_>, pert_ui_runtime::layout::Constraints) -> core::result::Result<pert_ui_runtime::layout::Size, pert_ui_runtime::runtime::RuntimeError>
+pub fn pert_ui::Svg::paint(&self, &mut pert_ui_runtime::drawing::Painter) -> core::result::Result<(), pert_ui_runtime::drawing::DrawError>
+pub fn pert_ui::Svg::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::runtime::Invalidation>
+pub fn pert_ui::Svg::update(&mut self, &mut pert_ui_runtime::runtime::UpdateContext) -> core::result::Result<(), pert_ui_runtime::runtime::RuntimeError>
+impl !core::marker::Freeze for pert_ui::Svg
+impl core::marker::Send for pert_ui::Svg
+impl !core::marker::Sync for pert_ui::Svg
+impl core::marker::Unpin for pert_ui::Svg
+impl core::marker::UnsafeUnpin for pert_ui::Svg
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui::Svg
+impl core::panic::unwind_safe::UnwindSafe for pert_ui::Svg

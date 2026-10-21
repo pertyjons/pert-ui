@@ -97,3 +97,29 @@ jobs:
         run: cargo package --locked --workspace --exclude pert-ui-gallery --exclude pert-ui-native-checks --list
       - name: Verify library packages
         run: cargo package --locked --workspace --exclude pert-ui-gallery --exclude pert-ui-native-checks
+
+  api-listing:
+    # The public API listings under api/ must match the code. They are a view
+    # for x86_64 Linux built with the pinned toolchain, so one Linux job
+    # checks them; the headless jobs above are unaffected.
+    name: Public API listing
+    runs-on: ubuntu-latest
+    env:
+      CARGO_TERM_COLOR: always
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install Rust
+        run: rustup toolchain install "$(sed -n 's/^channel = "\(.*\)"$/\1/p' rust-toolchain.toml)" --profile minimal
+      - name: Install cargo-public-api
+        run: cargo install --locked "cargo-public-api@$(sed -n 's/^TOOL_VERSION=//p' api/generate.sh)"
+      - run: api/generate.sh
+      - name: Check that the listings are current
+        run: |
+          if [ -n "$(git status --porcelain -- api/)" ]; then
+            git status --short -- api/
+            git diff --stat -- api/
+            echo "::error::The public API listings under api/ are out of date. Run api/generate.sh and commit api/."
+            exit 1
+          fi

@@ -1,0 +1,1081 @@
+pub mod pert_ui_core
+pub enum pert_ui_core::AnyParameterSnapshot
+pub pert_ui_core::AnyParameterSnapshot::Boolean
+pub pert_ui_core::AnyParameterSnapshot::Boolean::spec: pert_ui_core::ParameterSpec<bool>
+pub pert_ui_core::AnyParameterSnapshot::Boolean::state: pert_ui_core::ParameterSnapshot<bool>
+pub pert_ui_core::AnyParameterSnapshot::Choice
+pub pert_ui_core::AnyParameterSnapshot::Choice::spec: pert_ui_core::ParameterSpec<pert_ui_core::ChoiceId>
+pub pert_ui_core::AnyParameterSnapshot::Choice::state: pert_ui_core::ParameterSnapshot<pert_ui_core::ChoiceId>
+pub pert_ui_core::AnyParameterSnapshot::Continuous
+pub pert_ui_core::AnyParameterSnapshot::Continuous::spec: pert_ui_core::ParameterSpec<f32>
+pub pert_ui_core::AnyParameterSnapshot::Continuous::state: pert_ui_core::ParameterSnapshot<f32>
+pub pert_ui_core::AnyParameterSnapshot::Stepped
+pub pert_ui_core::AnyParameterSnapshot::Stepped::spec: pert_ui_core::ParameterSpec<i64>
+pub pert_ui_core::AnyParameterSnapshot::Stepped::state: pert_ui_core::ParameterSnapshot<i64>
+impl pert_ui_core::AnyParameterSnapshot
+pub fn pert_ui_core::AnyParameterSnapshot::available(&self) -> bool
+pub fn pert_ui_core::AnyParameterSnapshot::base(&self) -> pert_ui_core::AnyValue
+pub fn pert_ui_core::AnyParameterSnapshot::family(&self) -> pert_ui_core::ParameterFamily
+pub fn pert_ui_core::AnyParameterSnapshot::name(&self) -> &str
+pub fn pert_ui_core::AnyParameterSnapshot::new<T: pert_ui_core::ParameterValue>(pert_ui_core::ParameterSpec<T>, pert_ui_core::ParameterSnapshot<T>) -> Self
+pub fn pert_ui_core::AnyParameterSnapshot::revision(&self) -> pert_ui_core::Revision
+pub fn pert_ui_core::AnyParameterSnapshot::try_new<T: pert_ui_core::ParameterValue>(pert_ui_core::ParameterSpec<T>, pert_ui_core::ParameterSnapshot<T>) -> core::result::Result<Self, pert_ui_core::ParameterError>
+impl core::clone::Clone for pert_ui_core::AnyParameterSnapshot
+pub fn pert_ui_core::AnyParameterSnapshot::clone(&self) -> pert_ui_core::AnyParameterSnapshot
+impl core::cmp::PartialEq for pert_ui_core::AnyParameterSnapshot
+pub fn pert_ui_core::AnyParameterSnapshot::eq(&self, &pert_ui_core::AnyParameterSnapshot) -> bool
+impl core::fmt::Debug for pert_ui_core::AnyParameterSnapshot
+pub fn pert_ui_core::AnyParameterSnapshot::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_core::AnyParameterSnapshot
+impl serde_core::ser::Serialize for pert_ui_core::AnyParameterSnapshot
+pub fn pert_ui_core::AnyParameterSnapshot::serialize<__S>(&self, __S) -> core::result::Result<<__S as serde_core::ser::Serializer>::Ok, <__S as serde_core::ser::Serializer>::Error> where __S: serde_core::ser::Serializer
+impl<'de> serde_core::de::Deserialize<'de> for pert_ui_core::AnyParameterSnapshot
+pub fn pert_ui_core::AnyParameterSnapshot::deserialize<D: serde_core::de::Deserializer<'de>>(D) -> core::result::Result<Self, <D as serde_core::de::Deserializer>::Error>
+impl core::marker::Freeze for pert_ui_core::AnyParameterSnapshot
+impl core::marker::Send for pert_ui_core::AnyParameterSnapshot
+impl core::marker::Sync for pert_ui_core::AnyParameterSnapshot
+impl core::marker::Unpin for pert_ui_core::AnyParameterSnapshot
+impl core::marker::UnsafeUnpin for pert_ui_core::AnyParameterSnapshot
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::AnyParameterSnapshot
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_core::AnyParameterSnapshot
+pub enum pert_ui_core::AnySpec
+pub pert_ui_core::AnySpec::Boolean(pert_ui_core::ParameterSpec<bool>)
+pub pert_ui_core::AnySpec::Choice(pert_ui_core::ParameterSpec<pert_ui_core::ChoiceId>)
+pub pert_ui_core::AnySpec::Continuous(pert_ui_core::ParameterSpec<f32>)
+pub pert_ui_core::AnySpec::Stepped(pert_ui_core::ParameterSpec<i64>)
+impl pert_ui_core::AnySpec
+pub fn pert_ui_core::AnySpec::default_value(&self) -> pert_ui_core::AnyValue
+pub fn pert_ui_core::AnySpec::family(&self) -> pert_ui_core::ParameterFamily
+pub fn pert_ui_core::AnySpec::is_editable(&self) -> bool
+pub fn pert_ui_core::AnySpec::name(&self) -> &str
+impl core::clone::Clone for pert_ui_core::AnySpec
+pub fn pert_ui_core::AnySpec::clone(&self) -> pert_ui_core::AnySpec
+impl core::cmp::PartialEq for pert_ui_core::AnySpec
+pub fn pert_ui_core::AnySpec::eq(&self, &pert_ui_core::AnySpec) -> bool
+impl core::fmt::Debug for pert_ui_core::AnySpec
+pub fn pert_ui_core::AnySpec::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_core::AnySpec
+impl<T: pert_ui_core::ParameterValue> core::convert::From<pert_ui_core::ParameterSpec<T>> for pert_ui_core::AnySpec
+pub fn pert_ui_core::AnySpec::from(pert_ui_core::ParameterSpec<T>) -> Self
+impl<T: pert_ui_core::ParameterValue> core::convert::TryFrom<pert_ui_core::AnySpec> for pert_ui_core::ParameterSpec<T>
+pub type pert_ui_core::ParameterSpec<T>::Error = pert_ui_core::AnySpec
+pub fn pert_ui_core::ParameterSpec<T>::try_from(pert_ui_core::AnySpec) -> core::result::Result<Self, Self::Error>
+impl core::marker::Freeze for pert_ui_core::AnySpec
+impl core::marker::Send for pert_ui_core::AnySpec
+impl core::marker::Sync for pert_ui_core::AnySpec
+impl core::marker::Unpin for pert_ui_core::AnySpec
+impl core::marker::UnsafeUnpin for pert_ui_core::AnySpec
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::AnySpec
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_core::AnySpec
+pub enum pert_ui_core::AnyValue
+pub pert_ui_core::AnyValue::Boolean(bool)
+pub pert_ui_core::AnyValue::Choice(pert_ui_core::ChoiceId)
+pub pert_ui_core::AnyValue::Continuous(f32)
+pub pert_ui_core::AnyValue::Stepped(i64)
+impl pert_ui_core::AnyValue
+pub fn pert_ui_core::AnyValue::family(&self) -> pert_ui_core::ParameterFamily
+impl core::clone::Clone for pert_ui_core::AnyValue
+pub fn pert_ui_core::AnyValue::clone(&self) -> pert_ui_core::AnyValue
+impl core::cmp::PartialEq for pert_ui_core::AnyValue
+pub fn pert_ui_core::AnyValue::eq(&self, &pert_ui_core::AnyValue) -> bool
+impl core::convert::From<bool> for pert_ui_core::AnyValue
+pub fn pert_ui_core::AnyValue::from(bool) -> Self
+impl core::convert::From<f32> for pert_ui_core::AnyValue
+pub fn pert_ui_core::AnyValue::from(f32) -> Self
+impl core::convert::From<i64> for pert_ui_core::AnyValue
+pub fn pert_ui_core::AnyValue::from(i64) -> Self
+impl core::convert::From<pert_ui_core::ChoiceId> for pert_ui_core::AnyValue
+pub fn pert_ui_core::AnyValue::from(pert_ui_core::ChoiceId) -> Self
+impl core::convert::TryFrom<pert_ui_core::AnyValue> for bool
+pub type bool::Error = pert_ui_core::AnyValue
+pub fn bool::try_from(pert_ui_core::AnyValue) -> core::result::Result<Self, Self::Error>
+impl core::convert::TryFrom<pert_ui_core::AnyValue> for f32
+pub type f32::Error = pert_ui_core::AnyValue
+pub fn f32::try_from(pert_ui_core::AnyValue) -> core::result::Result<Self, Self::Error>
+impl core::convert::TryFrom<pert_ui_core::AnyValue> for i64
+pub type i64::Error = pert_ui_core::AnyValue
+pub fn i64::try_from(pert_ui_core::AnyValue) -> core::result::Result<Self, Self::Error>
+impl core::convert::TryFrom<pert_ui_core::AnyValue> for pert_ui_core::ChoiceId
+pub type pert_ui_core::ChoiceId::Error = pert_ui_core::AnyValue
+pub fn pert_ui_core::ChoiceId::try_from(pert_ui_core::AnyValue) -> core::result::Result<Self, Self::Error>
+impl core::fmt::Debug for pert_ui_core::AnyValue
+pub fn pert_ui_core::AnyValue::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_core::AnyValue
+impl core::marker::Freeze for pert_ui_core::AnyValue
+impl core::marker::Send for pert_ui_core::AnyValue
+impl core::marker::Sync for pert_ui_core::AnyValue
+impl core::marker::Unpin for pert_ui_core::AnyValue
+impl core::marker::UnsafeUnpin for pert_ui_core::AnyValue
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::AnyValue
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_core::AnyValue
+#[non_exhaustive] pub enum pert_ui_core::EditError
+pub pert_ui_core::EditError::Busy
+pub pert_ui_core::EditError::Capacity
+pub pert_ui_core::EditError::Conflict
+pub pert_ui_core::EditError::DeliveryFailed
+pub pert_ui_core::EditError::Exhausted
+pub pert_ui_core::EditError::Finished
+pub pert_ui_core::EditError::InvalidValue(pert_ui_core::ParameterError)
+pub pert_ui_core::EditError::Pending
+pub pert_ui_core::EditError::ReadOnly
+pub pert_ui_core::EditError::RejectedByHost
+pub pert_ui_core::EditError::StaleRevision
+pub pert_ui_core::EditError::StaleSequence
+pub pert_ui_core::EditError::Unavailable
+pub pert_ui_core::EditError::UnknownEdit
+impl core::clone::Clone for pert_ui_core::EditError
+pub fn pert_ui_core::EditError::clone(&self) -> pert_ui_core::EditError
+impl core::cmp::Eq for pert_ui_core::EditError
+impl core::cmp::PartialEq for pert_ui_core::EditError
+pub fn pert_ui_core::EditError::eq(&self, &pert_ui_core::EditError) -> bool
+impl core::convert::From<pert_ui_core::ParameterError> for pert_ui_core::EditError
+pub fn pert_ui_core::EditError::from(pert_ui_core::ParameterError) -> Self
+impl core::error::Error for pert_ui_core::EditError
+pub fn pert_ui_core::EditError::source(&self) -> core::option::Option<&(dyn core::error::Error + 'static)>
+impl core::fmt::Debug for pert_ui_core::EditError
+pub fn pert_ui_core::EditError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui_core::EditError
+pub fn pert_ui_core::EditError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_core::EditError
+impl core::marker::StructuralPartialEq for pert_ui_core::EditError
+impl core::marker::Freeze for pert_ui_core::EditError
+impl core::marker::Send for pert_ui_core::EditError
+impl core::marker::Sync for pert_ui_core::EditError
+impl core::marker::Unpin for pert_ui_core::EditError
+impl core::marker::UnsafeUnpin for pert_ui_core::EditError
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::EditError
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_core::EditError
+#[non_exhaustive] pub enum pert_ui_core::EditOutcome<T>
+pub pert_ui_core::EditOutcome::Cancelled
+pub pert_ui_core::EditOutcome::Committed
+pub pert_ui_core::EditOutcome::Committed::revision: pert_ui_core::Revision
+pub pert_ui_core::EditOutcome::Committed::value: T
+pub pert_ui_core::EditOutcome::Rejected(pert_ui_core::EditError)
+pub pert_ui_core::EditOutcome::Submitted
+pub pert_ui_core::EditOutcome::Submitted::value: T
+impl<T: core::clone::Clone> core::clone::Clone for pert_ui_core::EditOutcome<T>
+pub fn pert_ui_core::EditOutcome<T>::clone(&self) -> pert_ui_core::EditOutcome<T>
+impl<T: core::cmp::PartialEq> core::cmp::PartialEq for pert_ui_core::EditOutcome<T>
+pub fn pert_ui_core::EditOutcome<T>::eq(&self, &pert_ui_core::EditOutcome<T>) -> bool
+impl<T: core::cmp::PartialEq> core::marker::StructuralPartialEq for pert_ui_core::EditOutcome<T>
+impl<T: core::fmt::Debug> core::fmt::Debug for pert_ui_core::EditOutcome<T>
+pub fn pert_ui_core::EditOutcome<T>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl<T: core::marker::Copy> core::marker::Copy for pert_ui_core::EditOutcome<T>
+impl<T> core::marker::Freeze for pert_ui_core::EditOutcome<T> where T: core::marker::Freeze
+impl<T> core::marker::Send for pert_ui_core::EditOutcome<T> where T: core::marker::Send
+impl<T> core::marker::Sync for pert_ui_core::EditOutcome<T> where T: core::marker::Sync
+impl<T> core::marker::Unpin for pert_ui_core::EditOutcome<T> where T: core::marker::Unpin
+impl<T> core::marker::UnsafeUnpin for pert_ui_core::EditOutcome<T> where T: core::marker::UnsafeUnpin
+impl<T> core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::EditOutcome<T> where T: core::panic::unwind_safe::RefUnwindSafe
+impl<T> core::panic::unwind_safe::UnwindSafe for pert_ui_core::EditOutcome<T> where T: core::panic::unwind_safe::UnwindSafe
+#[non_exhaustive] pub enum pert_ui_core::LiveError
+pub pert_ui_core::LiveError::CapacityExceeded
+pub pert_ui_core::LiveError::Exhausted
+pub pert_ui_core::LiveError::ZeroCapacity
+impl core::clone::Clone for pert_ui_core::LiveError
+pub fn pert_ui_core::LiveError::clone(&self) -> pert_ui_core::LiveError
+impl core::cmp::Eq for pert_ui_core::LiveError
+impl core::cmp::PartialEq for pert_ui_core::LiveError
+pub fn pert_ui_core::LiveError::eq(&self, &pert_ui_core::LiveError) -> bool
+impl core::error::Error for pert_ui_core::LiveError
+impl core::fmt::Debug for pert_ui_core::LiveError
+pub fn pert_ui_core::LiveError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui_core::LiveError
+pub fn pert_ui_core::LiveError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_core::LiveError
+impl core::marker::StructuralPartialEq for pert_ui_core::LiveError
+impl core::marker::Freeze for pert_ui_core::LiveError
+impl core::marker::Send for pert_ui_core::LiveError
+impl core::marker::Sync for pert_ui_core::LiveError
+impl core::marker::Unpin for pert_ui_core::LiveError
+impl core::marker::UnsafeUnpin for pert_ui_core::LiveError
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::LiveError
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_core::LiveError
+#[non_exhaustive] pub enum pert_ui_core::NormalizedValueError
+pub pert_ui_core::NormalizedValueError::NonFinite
+pub pert_ui_core::NormalizedValueError::OutOfRange
+impl core::clone::Clone for pert_ui_core::NormalizedValueError
+pub fn pert_ui_core::NormalizedValueError::clone(&self) -> pert_ui_core::NormalizedValueError
+impl core::cmp::Eq for pert_ui_core::NormalizedValueError
+impl core::cmp::PartialEq for pert_ui_core::NormalizedValueError
+pub fn pert_ui_core::NormalizedValueError::eq(&self, &pert_ui_core::NormalizedValueError) -> bool
+impl core::error::Error for pert_ui_core::NormalizedValueError
+impl core::fmt::Debug for pert_ui_core::NormalizedValueError
+pub fn pert_ui_core::NormalizedValueError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui_core::NormalizedValueError
+pub fn pert_ui_core::NormalizedValueError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_core::NormalizedValueError
+impl core::marker::StructuralPartialEq for pert_ui_core::NormalizedValueError
+impl core::marker::Freeze for pert_ui_core::NormalizedValueError
+impl core::marker::Send for pert_ui_core::NormalizedValueError
+impl core::marker::Sync for pert_ui_core::NormalizedValueError
+impl core::marker::Unpin for pert_ui_core::NormalizedValueError
+impl core::marker::UnsafeUnpin for pert_ui_core::NormalizedValueError
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::NormalizedValueError
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_core::NormalizedValueError
+#[non_exhaustive] pub enum pert_ui_core::ParameterError
+pub pert_ui_core::ParameterError::DomainTooLarge
+pub pert_ui_core::ParameterError::DuplicateOption
+pub pert_ui_core::ParameterError::EmptyName
+pub pert_ui_core::ParameterError::EmptyOptions
+pub pert_ui_core::ParameterError::InvalidExponent
+pub pert_ui_core::ParameterError::InvalidRange
+pub pert_ui_core::ParameterError::InvalidStep
+pub pert_ui_core::ParameterError::MalformedChoiceId
+pub pert_ui_core::ParameterError::NonFinite
+pub pert_ui_core::ParameterError::NonPositiveLogDomain
+pub pert_ui_core::ParameterError::OffLattice
+pub pert_ui_core::ParameterError::OutOfRange
+pub pert_ui_core::ParameterError::UnknownOption
+impl core::clone::Clone for pert_ui_core::ParameterError
+pub fn pert_ui_core::ParameterError::clone(&self) -> pert_ui_core::ParameterError
+impl core::cmp::Eq for pert_ui_core::ParameterError
+impl core::cmp::PartialEq for pert_ui_core::ParameterError
+pub fn pert_ui_core::ParameterError::eq(&self, &pert_ui_core::ParameterError) -> bool
+impl core::convert::From<pert_ui_core::ParameterError> for pert_ui_core::EditError
+pub fn pert_ui_core::EditError::from(pert_ui_core::ParameterError) -> Self
+impl core::error::Error for pert_ui_core::ParameterError
+impl core::fmt::Debug for pert_ui_core::ParameterError
+pub fn pert_ui_core::ParameterError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui_core::ParameterError
+pub fn pert_ui_core::ParameterError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_core::ParameterError
+impl core::marker::StructuralPartialEq for pert_ui_core::ParameterError
+impl core::marker::Freeze for pert_ui_core::ParameterError
+impl core::marker::Send for pert_ui_core::ParameterError
+impl core::marker::Sync for pert_ui_core::ParameterError
+impl core::marker::Unpin for pert_ui_core::ParameterError
+impl core::marker::UnsafeUnpin for pert_ui_core::ParameterError
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::ParameterError
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_core::ParameterError
+pub enum pert_ui_core::ParameterFamily
+pub pert_ui_core::ParameterFamily::Boolean
+pub pert_ui_core::ParameterFamily::Choice
+pub pert_ui_core::ParameterFamily::Continuous
+pub pert_ui_core::ParameterFamily::Stepped
+impl core::clone::Clone for pert_ui_core::ParameterFamily
+pub fn pert_ui_core::ParameterFamily::clone(&self) -> pert_ui_core::ParameterFamily
+impl core::cmp::Eq for pert_ui_core::ParameterFamily
+impl core::cmp::PartialEq for pert_ui_core::ParameterFamily
+pub fn pert_ui_core::ParameterFamily::eq(&self, &pert_ui_core::ParameterFamily) -> bool
+impl core::fmt::Debug for pert_ui_core::ParameterFamily
+pub fn pert_ui_core::ParameterFamily::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui_core::ParameterFamily
+pub fn pert_ui_core::ParameterFamily::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_core::ParameterFamily
+pub fn pert_ui_core::ParameterFamily::hash<__H: core::hash::Hasher>(&self, &mut __H)
+impl core::marker::Copy for pert_ui_core::ParameterFamily
+impl core::marker::StructuralPartialEq for pert_ui_core::ParameterFamily
+impl core::marker::Freeze for pert_ui_core::ParameterFamily
+impl core::marker::Send for pert_ui_core::ParameterFamily
+impl core::marker::Sync for pert_ui_core::ParameterFamily
+impl core::marker::Unpin for pert_ui_core::ParameterFamily
+impl core::marker::UnsafeUnpin for pert_ui_core::ParameterFamily
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::ParameterFamily
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_core::ParameterFamily
+#[non_exhaustive] pub enum pert_ui_core::ParameterIdError
+pub pert_ui_core::ParameterIdError::EmptyKey
+pub pert_ui_core::ParameterIdError::IncarnationExhausted
+pub pert_ui_core::ParameterIdError::PaddedKey
+impl core::clone::Clone for pert_ui_core::ParameterIdError
+pub fn pert_ui_core::ParameterIdError::clone(&self) -> pert_ui_core::ParameterIdError
+impl core::cmp::Eq for pert_ui_core::ParameterIdError
+impl core::cmp::PartialEq for pert_ui_core::ParameterIdError
+pub fn pert_ui_core::ParameterIdError::eq(&self, &pert_ui_core::ParameterIdError) -> bool
+impl core::error::Error for pert_ui_core::ParameterIdError
+impl core::fmt::Debug for pert_ui_core::ParameterIdError
+pub fn pert_ui_core::ParameterIdError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui_core::ParameterIdError
+pub fn pert_ui_core::ParameterIdError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_core::ParameterIdError
+impl core::marker::StructuralPartialEq for pert_ui_core::ParameterIdError
+impl core::marker::Freeze for pert_ui_core::ParameterIdError
+impl core::marker::Send for pert_ui_core::ParameterIdError
+impl core::marker::Sync for pert_ui_core::ParameterIdError
+impl core::marker::Unpin for pert_ui_core::ParameterIdError
+impl core::marker::UnsafeUnpin for pert_ui_core::ParameterIdError
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::ParameterIdError
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_core::ParameterIdError
+#[non_exhaustive] pub enum pert_ui_core::ParameterMapping
+pub pert_ui_core::ParameterMapping::Linear
+pub pert_ui_core::ParameterMapping::Logarithmic
+pub pert_ui_core::ParameterMapping::Power(pert_ui_core::PowerExponent)
+impl core::clone::Clone for pert_ui_core::ParameterMapping
+pub fn pert_ui_core::ParameterMapping::clone(&self) -> pert_ui_core::ParameterMapping
+impl core::cmp::Eq for pert_ui_core::ParameterMapping
+impl core::cmp::PartialEq for pert_ui_core::ParameterMapping
+pub fn pert_ui_core::ParameterMapping::eq(&self, &pert_ui_core::ParameterMapping) -> bool
+impl core::default::Default for pert_ui_core::ParameterMapping
+pub fn pert_ui_core::ParameterMapping::default() -> pert_ui_core::ParameterMapping
+impl core::fmt::Debug for pert_ui_core::ParameterMapping
+pub fn pert_ui_core::ParameterMapping::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_core::ParameterMapping
+impl core::marker::StructuralPartialEq for pert_ui_core::ParameterMapping
+impl serde_core::ser::Serialize for pert_ui_core::ParameterMapping
+pub fn pert_ui_core::ParameterMapping::serialize<__S>(&self, __S) -> core::result::Result<<__S as serde_core::ser::Serializer>::Ok, <__S as serde_core::ser::Serializer>::Error> where __S: serde_core::ser::Serializer
+impl<'de> serde_core::de::Deserialize<'de> for pert_ui_core::ParameterMapping
+pub fn pert_ui_core::ParameterMapping::deserialize<__D>(__D) -> core::result::Result<Self, <__D as serde_core::de::Deserializer>::Error> where __D: serde_core::de::Deserializer<'de>
+impl core::marker::Freeze for pert_ui_core::ParameterMapping
+impl core::marker::Send for pert_ui_core::ParameterMapping
+impl core::marker::Sync for pert_ui_core::ParameterMapping
+impl core::marker::Unpin for pert_ui_core::ParameterMapping
+impl core::marker::UnsafeUnpin for pert_ui_core::ParameterMapping
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::ParameterMapping
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_core::ParameterMapping
+pub enum pert_ui_core::PreviewOutcome
+pub pert_ui_core::PreviewOutcome::Applied
+pub pert_ui_core::PreviewOutcome::Stale
+impl core::clone::Clone for pert_ui_core::PreviewOutcome
+pub fn pert_ui_core::PreviewOutcome::clone(&self) -> pert_ui_core::PreviewOutcome
+impl core::cmp::Eq for pert_ui_core::PreviewOutcome
+impl core::cmp::PartialEq for pert_ui_core::PreviewOutcome
+pub fn pert_ui_core::PreviewOutcome::eq(&self, &pert_ui_core::PreviewOutcome) -> bool
+impl core::fmt::Debug for pert_ui_core::PreviewOutcome
+pub fn pert_ui_core::PreviewOutcome::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_core::PreviewOutcome
+impl core::marker::StructuralPartialEq for pert_ui_core::PreviewOutcome
+impl core::marker::Freeze for pert_ui_core::PreviewOutcome
+impl core::marker::Send for pert_ui_core::PreviewOutcome
+impl core::marker::Sync for pert_ui_core::PreviewOutcome
+impl core::marker::Unpin for pert_ui_core::PreviewOutcome
+impl core::marker::UnsafeUnpin for pert_ui_core::PreviewOutcome
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::PreviewOutcome
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_core::PreviewOutcome
+#[non_exhaustive] pub enum pert_ui_core::PublishOutcome
+pub pert_ui_core::PublishOutcome::Accepted
+pub pert_ui_core::PublishOutcome::Closed
+pub pert_ui_core::PublishOutcome::Exhausted
+pub pert_ui_core::PublishOutcome::Invalid
+pub pert_ui_core::PublishOutcome::Overflowed
+impl core::clone::Clone for pert_ui_core::PublishOutcome
+pub fn pert_ui_core::PublishOutcome::clone(&self) -> pert_ui_core::PublishOutcome
+impl core::cmp::Eq for pert_ui_core::PublishOutcome
+impl core::cmp::PartialEq for pert_ui_core::PublishOutcome
+pub fn pert_ui_core::PublishOutcome::eq(&self, &pert_ui_core::PublishOutcome) -> bool
+impl core::fmt::Debug for pert_ui_core::PublishOutcome
+pub fn pert_ui_core::PublishOutcome::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_core::PublishOutcome
+pub fn pert_ui_core::PublishOutcome::hash<__H: core::hash::Hasher>(&self, &mut __H)
+impl core::marker::Copy for pert_ui_core::PublishOutcome
+impl core::marker::StructuralPartialEq for pert_ui_core::PublishOutcome
+impl core::marker::Freeze for pert_ui_core::PublishOutcome
+impl core::marker::Send for pert_ui_core::PublishOutcome
+impl core::marker::Sync for pert_ui_core::PublishOutcome
+impl core::marker::Unpin for pert_ui_core::PublishOutcome
+impl core::marker::UnsafeUnpin for pert_ui_core::PublishOutcome
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::PublishOutcome
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_core::PublishOutcome
+pub struct pert_ui_core::Capacity(_)
+impl pert_ui_core::Capacity
+pub const pert_ui_core::Capacity::MAX: Self
+pub const fn pert_ui_core::Capacity::get(self) -> usize
+pub const fn pert_ui_core::Capacity::new(usize) -> core::result::Result<Self, pert_ui_core::LiveError>
+impl core::clone::Clone for pert_ui_core::Capacity
+pub fn pert_ui_core::Capacity::clone(&self) -> pert_ui_core::Capacity
+impl core::cmp::Eq for pert_ui_core::Capacity
+impl core::cmp::PartialEq for pert_ui_core::Capacity
+pub fn pert_ui_core::Capacity::eq(&self, &pert_ui_core::Capacity) -> bool
+impl core::convert::TryFrom<usize> for pert_ui_core::Capacity
+pub type pert_ui_core::Capacity::Error = pert_ui_core::LiveError
+pub fn pert_ui_core::Capacity::try_from(usize) -> core::result::Result<Self, Self::Error>
+impl core::fmt::Debug for pert_ui_core::Capacity
+pub fn pert_ui_core::Capacity::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_core::Capacity
+pub fn pert_ui_core::Capacity::hash<__H: core::hash::Hasher>(&self, &mut __H)
+impl core::marker::Copy for pert_ui_core::Capacity
+impl core::marker::StructuralPartialEq for pert_ui_core::Capacity
+impl core::marker::Freeze for pert_ui_core::Capacity
+impl core::marker::Send for pert_ui_core::Capacity
+impl core::marker::Sync for pert_ui_core::Capacity
+impl core::marker::Unpin for pert_ui_core::Capacity
+impl core::marker::UnsafeUnpin for pert_ui_core::Capacity
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::Capacity
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_core::Capacity
+pub struct pert_ui_core::ChoiceId(_)
+impl pert_ui_core::ChoiceId
+pub fn pert_ui_core::ChoiceId::as_str(&self) -> &str
+pub fn pert_ui_core::ChoiceId::new(impl core::convert::Into<alloc::string::String>) -> core::result::Result<Self, pert_ui_core::ParameterError>
+impl core::clone::Clone for pert_ui_core::ChoiceId
+pub fn pert_ui_core::ChoiceId::clone(&self) -> pert_ui_core::ChoiceId
+impl core::cmp::Eq for pert_ui_core::ChoiceId
+impl core::cmp::Ord for pert_ui_core::ChoiceId
+pub fn pert_ui_core::ChoiceId::cmp(&self, &pert_ui_core::ChoiceId) -> core::cmp::Ordering
+impl core::cmp::PartialEq for pert_ui_core::ChoiceId
+pub fn pert_ui_core::ChoiceId::eq(&self, &pert_ui_core::ChoiceId) -> bool
+impl core::cmp::PartialOrd for pert_ui_core::ChoiceId
+pub fn pert_ui_core::ChoiceId::partial_cmp(&self, &pert_ui_core::ChoiceId) -> core::option::Option<core::cmp::Ordering>
+impl core::convert::From<pert_ui_core::ChoiceId> for pert_ui_core::AnyValue
+pub fn pert_ui_core::AnyValue::from(pert_ui_core::ChoiceId) -> Self
+impl core::convert::TryFrom<&str> for pert_ui_core::ChoiceId
+pub type pert_ui_core::ChoiceId::Error = pert_ui_core::ParameterError
+pub fn pert_ui_core::ChoiceId::try_from(&str) -> core::result::Result<Self, Self::Error>
+impl core::convert::TryFrom<alloc::string::String> for pert_ui_core::ChoiceId
+pub type pert_ui_core::ChoiceId::Error = pert_ui_core::ParameterError
+pub fn pert_ui_core::ChoiceId::try_from(alloc::string::String) -> core::result::Result<Self, Self::Error>
+impl core::convert::TryFrom<pert_ui_core::AnyValue> for pert_ui_core::ChoiceId
+pub type pert_ui_core::ChoiceId::Error = pert_ui_core::AnyValue
+pub fn pert_ui_core::ChoiceId::try_from(pert_ui_core::AnyValue) -> core::result::Result<Self, Self::Error>
+impl core::fmt::Debug for pert_ui_core::ChoiceId
+pub fn pert_ui_core::ChoiceId::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui_core::ChoiceId
+pub fn pert_ui_core::ChoiceId::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_core::ChoiceId
+pub fn pert_ui_core::ChoiceId::hash<__H: core::hash::Hasher>(&self, &mut __H)
+impl core::marker::StructuralPartialEq for pert_ui_core::ChoiceId
+impl pert_ui_core::ParameterValue for pert_ui_core::ChoiceId
+pub const pert_ui_core::ChoiceId::FAMILY: pert_ui_core::ParameterFamily
+pub fn pert_ui_core::ChoiceId::from_any(pert_ui_core::AnyValue) -> core::result::Result<Self, pert_ui_core::AnyValue>
+pub fn pert_ui_core::ChoiceId::into_any(self) -> pert_ui_core::AnyValue
+pub fn pert_ui_core::ChoiceId::snapshot_into_any(pert_ui_core::ParameterSpec<Self>, pert_ui_core::ParameterSnapshot<Self>) -> pert_ui_core::AnyParameterSnapshot
+pub fn pert_ui_core::ChoiceId::spec_from_any(pert_ui_core::AnySpec) -> core::result::Result<pert_ui_core::ParameterSpec<Self>, pert_ui_core::AnySpec>
+pub fn pert_ui_core::ChoiceId::spec_into_any(pert_ui_core::ParameterSpec<Self>) -> pert_ui_core::AnySpec
+impl serde_core::ser::Serialize for pert_ui_core::ChoiceId
+pub fn pert_ui_core::ChoiceId::serialize<S: serde_core::ser::Serializer>(&self, S) -> core::result::Result<<S as serde_core::ser::Serializer>::Ok, <S as serde_core::ser::Serializer>::Error>
+impl<'de> serde_core::de::Deserialize<'de> for pert_ui_core::ChoiceId
+pub fn pert_ui_core::ChoiceId::deserialize<D: serde_core::de::Deserializer<'de>>(D) -> core::result::Result<Self, <D as serde_core::de::Deserializer>::Error>
+impl core::marker::Freeze for pert_ui_core::ChoiceId
+impl core::marker::Send for pert_ui_core::ChoiceId
+impl core::marker::Sync for pert_ui_core::ChoiceId
+impl core::marker::Unpin for pert_ui_core::ChoiceId
+impl core::marker::UnsafeUnpin for pert_ui_core::ChoiceId
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::ChoiceId
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_core::ChoiceId
+pub struct pert_ui_core::ChoiceOption
+impl pert_ui_core::ChoiceOption
+pub fn pert_ui_core::ChoiceOption::id(&self) -> &pert_ui_core::ChoiceId
+pub fn pert_ui_core::ChoiceOption::label(&self) -> &str
+pub fn pert_ui_core::ChoiceOption::new(pert_ui_core::ChoiceId, impl core::convert::Into<alloc::string::String>) -> Self
+impl core::clone::Clone for pert_ui_core::ChoiceOption
+pub fn pert_ui_core::ChoiceOption::clone(&self) -> pert_ui_core::ChoiceOption
+impl core::cmp::Eq for pert_ui_core::ChoiceOption
+impl core::cmp::PartialEq for pert_ui_core::ChoiceOption
+pub fn pert_ui_core::ChoiceOption::eq(&self, &pert_ui_core::ChoiceOption) -> bool
+impl core::fmt::Debug for pert_ui_core::ChoiceOption
+pub fn pert_ui_core::ChoiceOption::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_core::ChoiceOption
+impl serde_core::ser::Serialize for pert_ui_core::ChoiceOption
+pub fn pert_ui_core::ChoiceOption::serialize<S: serde_core::ser::Serializer>(&self, S) -> core::result::Result<<S as serde_core::ser::Serializer>::Ok, <S as serde_core::ser::Serializer>::Error>
+impl<'de> serde_core::de::Deserialize<'de> for pert_ui_core::ChoiceOption
+pub fn pert_ui_core::ChoiceOption::deserialize<D: serde_core::de::Deserializer<'de>>(D) -> core::result::Result<Self, <D as serde_core::de::Deserializer>::Error>
+impl core::marker::Freeze for pert_ui_core::ChoiceOption
+impl core::marker::Send for pert_ui_core::ChoiceOption
+impl core::marker::Sync for pert_ui_core::ChoiceOption
+impl core::marker::Unpin for pert_ui_core::ChoiceOption
+impl core::marker::UnsafeUnpin for pert_ui_core::ChoiceOption
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::ChoiceOption
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_core::ChoiceOption
+#[non_exhaustive] pub struct pert_ui_core::DrainReport
+pub pert_ui_core::DrainReport::accepted: u64
+pub pert_ui_core::DrainReport::discarded: u64
+pub pert_ui_core::DrainReport::disconnected: bool
+pub pert_ui_core::DrainReport::dropped: u64
+pub pert_ui_core::DrainReport::exhausted: bool
+pub pert_ui_core::DrainReport::incarnation_changed: bool
+pub pert_ui_core::DrainReport::missing: u64
+pub pert_ui_core::DrainReport::rejected: u64
+impl core::clone::Clone for pert_ui_core::DrainReport
+pub fn pert_ui_core::DrainReport::clone(&self) -> pert_ui_core::DrainReport
+impl core::cmp::Eq for pert_ui_core::DrainReport
+impl core::cmp::PartialEq for pert_ui_core::DrainReport
+pub fn pert_ui_core::DrainReport::eq(&self, &pert_ui_core::DrainReport) -> bool
+impl core::default::Default for pert_ui_core::DrainReport
+pub fn pert_ui_core::DrainReport::default() -> pert_ui_core::DrainReport
+impl core::fmt::Debug for pert_ui_core::DrainReport
+pub fn pert_ui_core::DrainReport::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_core::DrainReport
+impl core::marker::StructuralPartialEq for pert_ui_core::DrainReport
+impl core::marker::Freeze for pert_ui_core::DrainReport
+impl core::marker::Send for pert_ui_core::DrainReport
+impl core::marker::Sync for pert_ui_core::DrainReport
+impl core::marker::Unpin for pert_ui_core::DrainReport
+impl core::marker::UnsafeUnpin for pert_ui_core::DrainReport
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::DrainReport
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_core::DrainReport
+pub struct pert_ui_core::EditSequence(_)
+impl pert_ui_core::EditSequence
+pub const fn pert_ui_core::EditSequence::get(self) -> u64
+pub const fn pert_ui_core::EditSequence::new(u64) -> Self
+impl core::clone::Clone for pert_ui_core::EditSequence
+pub fn pert_ui_core::EditSequence::clone(&self) -> pert_ui_core::EditSequence
+impl core::cmp::Eq for pert_ui_core::EditSequence
+impl core::cmp::Ord for pert_ui_core::EditSequence
+pub fn pert_ui_core::EditSequence::cmp(&self, &pert_ui_core::EditSequence) -> core::cmp::Ordering
+impl core::cmp::PartialEq for pert_ui_core::EditSequence
+pub fn pert_ui_core::EditSequence::eq(&self, &pert_ui_core::EditSequence) -> bool
+impl core::cmp::PartialOrd for pert_ui_core::EditSequence
+pub fn pert_ui_core::EditSequence::partial_cmp(&self, &pert_ui_core::EditSequence) -> core::option::Option<core::cmp::Ordering>
+impl core::fmt::Debug for pert_ui_core::EditSequence
+pub fn pert_ui_core::EditSequence::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_core::EditSequence
+impl core::marker::StructuralPartialEq for pert_ui_core::EditSequence
+impl core::marker::Freeze for pert_ui_core::EditSequence
+impl core::marker::Send for pert_ui_core::EditSequence
+impl core::marker::Sync for pert_ui_core::EditSequence
+impl core::marker::Unpin for pert_ui_core::EditSequence
+impl core::marker::UnsafeUnpin for pert_ui_core::EditSequence
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::EditSequence
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_core::EditSequence
+pub struct pert_ui_core::EditSource(_)
+impl pert_ui_core::EditSource
+pub const fn pert_ui_core::EditSource::get(self) -> u64
+pub const fn pert_ui_core::EditSource::new(u64) -> Self
+impl core::clone::Clone for pert_ui_core::EditSource
+pub fn pert_ui_core::EditSource::clone(&self) -> pert_ui_core::EditSource
+impl core::cmp::Eq for pert_ui_core::EditSource
+impl core::cmp::PartialEq for pert_ui_core::EditSource
+pub fn pert_ui_core::EditSource::eq(&self, &pert_ui_core::EditSource) -> bool
+impl core::fmt::Debug for pert_ui_core::EditSource
+pub fn pert_ui_core::EditSource::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_core::EditSource
+pub fn pert_ui_core::EditSource::hash<__H: core::hash::Hasher>(&self, &mut __H)
+impl core::marker::Copy for pert_ui_core::EditSource
+impl core::marker::StructuralPartialEq for pert_ui_core::EditSource
+impl serde_core::ser::Serialize for pert_ui_core::EditSource
+pub fn pert_ui_core::EditSource::serialize<__S>(&self, __S) -> core::result::Result<<__S as serde_core::ser::Serializer>::Ok, <__S as serde_core::ser::Serializer>::Error> where __S: serde_core::ser::Serializer
+impl<'de> serde_core::de::Deserialize<'de> for pert_ui_core::EditSource
+pub fn pert_ui_core::EditSource::deserialize<__D>(__D) -> core::result::Result<Self, <__D as serde_core::de::Deserializer>::Error> where __D: serde_core::de::Deserializer<'de>
+impl core::marker::Freeze for pert_ui_core::EditSource
+impl core::marker::Send for pert_ui_core::EditSource
+impl core::marker::Sync for pert_ui_core::EditSource
+impl core::marker::Unpin for pert_ui_core::EditSource
+impl core::marker::UnsafeUnpin for pert_ui_core::EditSource
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::EditSource
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_core::EditSource
+pub struct pert_ui_core::EditToken
+impl pert_ui_core::EditToken
+pub fn pert_ui_core::EditToken::source(&self) -> pert_ui_core::EditSource
+pub fn pert_ui_core::EditToken::target(&self) -> &pert_ui_core::ParameterId
+impl core::clone::Clone for pert_ui_core::EditToken
+pub fn pert_ui_core::EditToken::clone(&self) -> pert_ui_core::EditToken
+impl core::cmp::Eq for pert_ui_core::EditToken
+impl core::cmp::PartialEq for pert_ui_core::EditToken
+pub fn pert_ui_core::EditToken::eq(&self, &pert_ui_core::EditToken) -> bool
+impl core::fmt::Debug for pert_ui_core::EditToken
+pub fn pert_ui_core::EditToken::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_core::EditToken
+pub fn pert_ui_core::EditToken::hash<__H: core::hash::Hasher>(&self, &mut __H)
+impl core::marker::StructuralPartialEq for pert_ui_core::EditToken
+impl core::marker::Freeze for pert_ui_core::EditToken
+impl core::marker::Send for pert_ui_core::EditToken
+impl core::marker::Sync for pert_ui_core::EditToken
+impl core::marker::Unpin for pert_ui_core::EditToken
+impl core::marker::UnsafeUnpin for pert_ui_core::EditToken
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::EditToken
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_core::EditToken
+pub struct pert_ui_core::Incarnation(_)
+impl pert_ui_core::Incarnation
+pub const pert_ui_core::Incarnation::FIRST: Self
+pub const fn pert_ui_core::Incarnation::get(self) -> u64
+impl core::clone::Clone for pert_ui_core::Incarnation
+pub fn pert_ui_core::Incarnation::clone(&self) -> pert_ui_core::Incarnation
+impl core::cmp::Eq for pert_ui_core::Incarnation
+impl core::cmp::Ord for pert_ui_core::Incarnation
+pub fn pert_ui_core::Incarnation::cmp(&self, &pert_ui_core::Incarnation) -> core::cmp::Ordering
+impl core::cmp::PartialEq for pert_ui_core::Incarnation
+pub fn pert_ui_core::Incarnation::eq(&self, &pert_ui_core::Incarnation) -> bool
+impl core::cmp::PartialOrd for pert_ui_core::Incarnation
+pub fn pert_ui_core::Incarnation::partial_cmp(&self, &pert_ui_core::Incarnation) -> core::option::Option<core::cmp::Ordering>
+impl core::fmt::Debug for pert_ui_core::Incarnation
+pub fn pert_ui_core::Incarnation::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_core::Incarnation
+pub fn pert_ui_core::Incarnation::hash<__H: core::hash::Hasher>(&self, &mut __H)
+impl core::marker::Copy for pert_ui_core::Incarnation
+impl core::marker::StructuralPartialEq for pert_ui_core::Incarnation
+impl core::marker::Freeze for pert_ui_core::Incarnation
+impl core::marker::Send for pert_ui_core::Incarnation
+impl core::marker::Sync for pert_ui_core::Incarnation
+impl core::marker::Unpin for pert_ui_core::Incarnation
+impl core::marker::UnsafeUnpin for pert_ui_core::Incarnation
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::Incarnation
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_core::Incarnation
+pub struct pert_ui_core::NormalizedValue(_)
+impl pert_ui_core::NormalizedValue
+pub const pert_ui_core::NormalizedValue::MAX: Self
+pub const pert_ui_core::NormalizedValue::MIN: Self
+pub const fn pert_ui_core::NormalizedValue::get(self) -> f32
+impl core::clone::Clone for pert_ui_core::NormalizedValue
+pub fn pert_ui_core::NormalizedValue::clone(&self) -> pert_ui_core::NormalizedValue
+impl core::cmp::Eq for pert_ui_core::NormalizedValue
+impl core::cmp::Ord for pert_ui_core::NormalizedValue
+pub fn pert_ui_core::NormalizedValue::cmp(&self, &Self) -> core::cmp::Ordering
+impl core::cmp::PartialEq for pert_ui_core::NormalizedValue
+pub fn pert_ui_core::NormalizedValue::eq(&self, &pert_ui_core::NormalizedValue) -> bool
+impl core::cmp::PartialOrd for pert_ui_core::NormalizedValue
+pub fn pert_ui_core::NormalizedValue::partial_cmp(&self, &Self) -> core::option::Option<core::cmp::Ordering>
+impl core::convert::TryFrom<f32> for pert_ui_core::NormalizedValue
+pub type pert_ui_core::NormalizedValue::Error = pert_ui_core::NormalizedValueError
+pub fn pert_ui_core::NormalizedValue::try_from(f32) -> core::result::Result<Self, Self::Error>
+impl core::fmt::Debug for pert_ui_core::NormalizedValue
+pub fn pert_ui_core::NormalizedValue::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_core::NormalizedValue
+pub fn pert_ui_core::NormalizedValue::hash<H: core::hash::Hasher>(&self, &mut H)
+impl core::marker::Copy for pert_ui_core::NormalizedValue
+impl core::marker::StructuralPartialEq for pert_ui_core::NormalizedValue
+impl serde_core::ser::Serialize for pert_ui_core::NormalizedValue
+pub fn pert_ui_core::NormalizedValue::serialize<S: serde_core::ser::Serializer>(&self, S) -> core::result::Result<<S as serde_core::ser::Serializer>::Ok, <S as serde_core::ser::Serializer>::Error>
+impl<'de> serde_core::de::Deserialize<'de> for pert_ui_core::NormalizedValue
+pub fn pert_ui_core::NormalizedValue::deserialize<D: serde_core::de::Deserializer<'de>>(D) -> core::result::Result<Self, <D as serde_core::de::Deserializer>::Error>
+impl core::marker::Freeze for pert_ui_core::NormalizedValue
+impl core::marker::Send for pert_ui_core::NormalizedValue
+impl core::marker::Sync for pert_ui_core::NormalizedValue
+impl core::marker::Unpin for pert_ui_core::NormalizedValue
+impl core::marker::UnsafeUnpin for pert_ui_core::NormalizedValue
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::NormalizedValue
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_core::NormalizedValue
+pub struct pert_ui_core::ParameterId
+impl pert_ui_core::ParameterId
+pub const fn pert_ui_core::ParameterId::incarnation(&self) -> u64
+pub fn pert_ui_core::ParameterId::key(&self) -> &str
+pub fn pert_ui_core::ParameterId::new(u128, u128, impl core::convert::Into<alloc::string::String>) -> core::result::Result<Self, pert_ui_core::ParameterIdError>
+pub fn pert_ui_core::ParameterId::next_incarnation(&self) -> core::result::Result<Self, pert_ui_core::ParameterIdError>
+pub const fn pert_ui_core::ParameterId::object(&self) -> u128
+pub const fn pert_ui_core::ParameterId::session(&self) -> u128
+impl core::clone::Clone for pert_ui_core::ParameterId
+pub fn pert_ui_core::ParameterId::clone(&self) -> pert_ui_core::ParameterId
+impl core::cmp::Eq for pert_ui_core::ParameterId
+impl core::cmp::PartialEq for pert_ui_core::ParameterId
+pub fn pert_ui_core::ParameterId::eq(&self, &pert_ui_core::ParameterId) -> bool
+impl core::fmt::Debug for pert_ui_core::ParameterId
+pub fn pert_ui_core::ParameterId::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_core::ParameterId
+pub fn pert_ui_core::ParameterId::hash<__H: core::hash::Hasher>(&self, &mut __H)
+impl core::marker::StructuralPartialEq for pert_ui_core::ParameterId
+impl serde_core::ser::Serialize for pert_ui_core::ParameterId
+pub fn pert_ui_core::ParameterId::serialize<S: serde_core::ser::Serializer>(&self, S) -> core::result::Result<<S as serde_core::ser::Serializer>::Ok, <S as serde_core::ser::Serializer>::Error>
+impl<'de> serde_core::de::Deserialize<'de> for pert_ui_core::ParameterId
+pub fn pert_ui_core::ParameterId::deserialize<D: serde_core::de::Deserializer<'de>>(D) -> core::result::Result<Self, <D as serde_core::de::Deserializer>::Error>
+impl core::marker::Freeze for pert_ui_core::ParameterId
+impl core::marker::Send for pert_ui_core::ParameterId
+impl core::marker::Sync for pert_ui_core::ParameterId
+impl core::marker::Unpin for pert_ui_core::ParameterId
+impl core::marker::UnsafeUnpin for pert_ui_core::ParameterId
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::ParameterId
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_core::ParameterId
+pub struct pert_ui_core::ParameterSnapshot<T>
+pub pert_ui_core::ParameterSnapshot::available: bool
+pub pert_ui_core::ParameterSnapshot::base: T
+pub pert_ui_core::ParameterSnapshot::edit_source: core::option::Option<pert_ui_core::EditSource>
+pub pert_ui_core::ParameterSnapshot::effective: T
+pub pert_ui_core::ParameterSnapshot::preview: core::option::Option<T>
+pub pert_ui_core::ParameterSnapshot::revision: pert_ui_core::Revision
+impl<'de, T> serde_core::de::Deserialize<'de> for pert_ui_core::ParameterSnapshot<T> where T: pert_ui_core::ParameterValue + serde_core::de::Deserialize<'de>
+pub fn pert_ui_core::ParameterSnapshot<T>::deserialize<D: serde_core::de::Deserializer<'de>>(D) -> core::result::Result<Self, <D as serde_core::de::Deserializer>::Error>
+impl<T: core::clone::Clone> core::clone::Clone for pert_ui_core::ParameterSnapshot<T>
+pub fn pert_ui_core::ParameterSnapshot<T>::clone(&self) -> pert_ui_core::ParameterSnapshot<T>
+impl<T: core::cmp::PartialEq> core::cmp::PartialEq for pert_ui_core::ParameterSnapshot<T>
+pub fn pert_ui_core::ParameterSnapshot<T>::eq(&self, &pert_ui_core::ParameterSnapshot<T>) -> bool
+impl<T: core::cmp::PartialEq> core::marker::StructuralPartialEq for pert_ui_core::ParameterSnapshot<T>
+impl<T: core::fmt::Debug> core::fmt::Debug for pert_ui_core::ParameterSnapshot<T>
+pub fn pert_ui_core::ParameterSnapshot<T>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl<T: core::marker::Copy> core::marker::Copy for pert_ui_core::ParameterSnapshot<T>
+impl<T> serde_core::ser::Serialize for pert_ui_core::ParameterSnapshot<T> where T: serde_core::ser::Serialize
+pub fn pert_ui_core::ParameterSnapshot<T>::serialize<__S>(&self, __S) -> core::result::Result<<__S as serde_core::ser::Serializer>::Ok, <__S as serde_core::ser::Serializer>::Error> where __S: serde_core::ser::Serializer
+impl<T> core::marker::Freeze for pert_ui_core::ParameterSnapshot<T> where T: core::marker::Freeze
+impl<T> core::marker::Send for pert_ui_core::ParameterSnapshot<T> where T: core::marker::Send
+impl<T> core::marker::Sync for pert_ui_core::ParameterSnapshot<T> where T: core::marker::Sync
+impl<T> core::marker::Unpin for pert_ui_core::ParameterSnapshot<T> where T: core::marker::Unpin
+impl<T> core::marker::UnsafeUnpin for pert_ui_core::ParameterSnapshot<T> where T: core::marker::UnsafeUnpin
+impl<T> core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::ParameterSnapshot<T> where T: core::panic::unwind_safe::RefUnwindSafe
+impl<T> core::panic::unwind_safe::UnwindSafe for pert_ui_core::ParameterSnapshot<T> where T: core::panic::unwind_safe::UnwindSafe
+pub struct pert_ui_core::ParameterSpec<T: pert_ui_core::ParameterValue>
+impl pert_ui_core::ParameterSpec<bool>
+pub fn pert_ui_core::ParameterSpec<bool>::boolean(impl core::convert::Into<alloc::string::String>, bool) -> core::result::Result<Self, pert_ui_core::ParameterError>
+impl pert_ui_core::ParameterSpec<f32>
+pub fn pert_ui_core::ParameterSpec<f32>::mapping(&self) -> pert_ui_core::ParameterMapping
+pub fn pert_ui_core::ParameterSpec<f32>::maximum(&self) -> f32
+pub fn pert_ui_core::ParameterSpec<f32>::minimum(&self) -> f32
+pub fn pert_ui_core::ParameterSpec<f32>::new(impl core::convert::Into<alloc::string::String>, f32, f32, f32) -> core::result::Result<Self, pert_ui_core::ParameterError>
+pub fn pert_ui_core::ParameterSpec<f32>::with_mapping(self, pert_ui_core::ParameterMapping) -> core::result::Result<Self, pert_ui_core::ParameterError>
+impl pert_ui_core::ParameterSpec<i64>
+pub fn pert_ui_core::ParameterSpec<i64>::intervals(&self) -> u64
+pub fn pert_ui_core::ParameterSpec<i64>::maximum(&self) -> i64
+pub fn pert_ui_core::ParameterSpec<i64>::minimum(&self) -> i64
+pub fn pert_ui_core::ParameterSpec<i64>::offset(&self, i64, i64) -> core::result::Result<i64, pert_ui_core::ParameterError>
+pub fn pert_ui_core::ParameterSpec<i64>::step(&self) -> core::num::nonzero::NonZeroU64
+pub fn pert_ui_core::ParameterSpec<i64>::stepped(impl core::convert::Into<alloc::string::String>, i64, i64, i64) -> core::result::Result<Self, pert_ui_core::ParameterError>
+pub fn pert_ui_core::ParameterSpec<i64>::with_step(self, core::num::nonzero::NonZeroU64) -> core::result::Result<Self, pert_ui_core::ParameterError>
+impl pert_ui_core::ParameterSpec<pert_ui_core::ChoiceId>
+pub fn pert_ui_core::ParameterSpec<pert_ui_core::ChoiceId>::choices(impl core::convert::Into<alloc::string::String>, impl core::iter::traits::collect::IntoIterator<Item = pert_ui_core::ChoiceOption>, pert_ui_core::ChoiceId) -> core::result::Result<Self, pert_ui_core::ParameterError>
+pub fn pert_ui_core::ParameterSpec<pert_ui_core::ChoiceId>::index_of(&self, &pert_ui_core::ChoiceId) -> core::option::Option<usize>
+pub fn pert_ui_core::ParameterSpec<pert_ui_core::ChoiceId>::option(&self, &pert_ui_core::ChoiceId) -> core::option::Option<&pert_ui_core::ChoiceOption>
+pub fn pert_ui_core::ParameterSpec<pert_ui_core::ChoiceId>::options(&self) -> &[pert_ui_core::ChoiceOption]
+impl<T: pert_ui_core::ParameterValue> pert_ui_core::ParameterSpec<T>
+pub fn pert_ui_core::ParameterSpec<T>::default_value(&self) -> T
+pub fn pert_ui_core::ParameterSpec<T>::denormalize(&self, pert_ui_core::NormalizedValue) -> T
+pub fn pert_ui_core::ParameterSpec<T>::family(&self) -> pert_ui_core::ParameterFamily
+pub fn pert_ui_core::ParameterSpec<T>::is_editable(&self) -> bool
+pub fn pert_ui_core::ParameterSpec<T>::name(&self) -> &str
+pub fn pert_ui_core::ParameterSpec<T>::normalize(&self, &T) -> core::result::Result<pert_ui_core::NormalizedValue, pert_ui_core::ParameterError>
+pub fn pert_ui_core::ParameterSpec<T>::read_only(self) -> Self
+pub fn pert_ui_core::ParameterSpec<T>::validate(&self, &T) -> core::result::Result<(), pert_ui_core::ParameterError>
+pub fn pert_ui_core::ParameterSpec<T>::validate_effective(&self, &T) -> core::result::Result<(), pert_ui_core::ParameterError>
+impl serde_core::ser::Serialize for pert_ui_core::ParameterSpec<bool>
+pub fn pert_ui_core::ParameterSpec<bool>::serialize<S: serde_core::ser::Serializer>(&self, S) -> core::result::Result<<S as serde_core::ser::Serializer>::Ok, <S as serde_core::ser::Serializer>::Error>
+impl serde_core::ser::Serialize for pert_ui_core::ParameterSpec<f32>
+pub fn pert_ui_core::ParameterSpec<f32>::serialize<S: serde_core::ser::Serializer>(&self, S) -> core::result::Result<<S as serde_core::ser::Serializer>::Ok, <S as serde_core::ser::Serializer>::Error>
+impl serde_core::ser::Serialize for pert_ui_core::ParameterSpec<i64>
+pub fn pert_ui_core::ParameterSpec<i64>::serialize<S: serde_core::ser::Serializer>(&self, S) -> core::result::Result<<S as serde_core::ser::Serializer>::Ok, <S as serde_core::ser::Serializer>::Error>
+impl serde_core::ser::Serialize for pert_ui_core::ParameterSpec<pert_ui_core::ChoiceId>
+pub fn pert_ui_core::ParameterSpec<pert_ui_core::ChoiceId>::serialize<S: serde_core::ser::Serializer>(&self, S) -> core::result::Result<<S as serde_core::ser::Serializer>::Ok, <S as serde_core::ser::Serializer>::Error>
+impl<'de> serde_core::de::Deserialize<'de> for pert_ui_core::ParameterSpec<bool>
+pub fn pert_ui_core::ParameterSpec<bool>::deserialize<D: serde_core::de::Deserializer<'de>>(D) -> core::result::Result<Self, <D as serde_core::de::Deserializer>::Error>
+impl<'de> serde_core::de::Deserialize<'de> for pert_ui_core::ParameterSpec<f32>
+pub fn pert_ui_core::ParameterSpec<f32>::deserialize<D: serde_core::de::Deserializer<'de>>(D) -> core::result::Result<Self, <D as serde_core::de::Deserializer>::Error>
+impl<'de> serde_core::de::Deserialize<'de> for pert_ui_core::ParameterSpec<i64>
+pub fn pert_ui_core::ParameterSpec<i64>::deserialize<D: serde_core::de::Deserializer<'de>>(D) -> core::result::Result<Self, <D as serde_core::de::Deserializer>::Error>
+impl<'de> serde_core::de::Deserialize<'de> for pert_ui_core::ParameterSpec<pert_ui_core::ChoiceId>
+pub fn pert_ui_core::ParameterSpec<pert_ui_core::ChoiceId>::deserialize<D: serde_core::de::Deserializer<'de>>(D) -> core::result::Result<Self, <D as serde_core::de::Deserializer>::Error>
+impl<T: pert_ui_core::ParameterValue> core::clone::Clone for pert_ui_core::ParameterSpec<T>
+pub fn pert_ui_core::ParameterSpec<T>::clone(&self) -> Self
+impl<T: pert_ui_core::ParameterValue> core::cmp::PartialEq for pert_ui_core::ParameterSpec<T>
+pub fn pert_ui_core::ParameterSpec<T>::eq(&self, &Self) -> bool
+impl<T: pert_ui_core::ParameterValue> core::convert::From<pert_ui_core::ParameterSpec<T>> for pert_ui_core::AnySpec
+pub fn pert_ui_core::AnySpec::from(pert_ui_core::ParameterSpec<T>) -> Self
+impl<T: pert_ui_core::ParameterValue> core::convert::TryFrom<pert_ui_core::AnySpec> for pert_ui_core::ParameterSpec<T>
+pub type pert_ui_core::ParameterSpec<T>::Error = pert_ui_core::AnySpec
+pub fn pert_ui_core::ParameterSpec<T>::try_from(pert_ui_core::AnySpec) -> core::result::Result<Self, Self::Error>
+impl<T: pert_ui_core::ParameterValue> core::fmt::Debug for pert_ui_core::ParameterSpec<T>
+pub fn pert_ui_core::ParameterSpec<T>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl<T> core::marker::Freeze for pert_ui_core::ParameterSpec<T> where T: core::marker::Freeze, <T as pert_ui_core::family::sealed::Sealed>::Domain: core::marker::Freeze
+impl<T> core::marker::Send for pert_ui_core::ParameterSpec<T>
+impl<T> core::marker::Sync for pert_ui_core::ParameterSpec<T>
+impl<T> core::marker::Unpin for pert_ui_core::ParameterSpec<T> where T: core::marker::Unpin, <T as pert_ui_core::family::sealed::Sealed>::Domain: core::marker::Unpin
+impl<T> core::marker::UnsafeUnpin for pert_ui_core::ParameterSpec<T> where T: core::marker::UnsafeUnpin, <T as pert_ui_core::family::sealed::Sealed>::Domain: core::marker::UnsafeUnpin
+impl<T> core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::ParameterSpec<T> where T: core::panic::unwind_safe::RefUnwindSafe, <T as pert_ui_core::family::sealed::Sealed>::Domain: core::panic::unwind_safe::RefUnwindSafe
+impl<T> core::panic::unwind_safe::UnwindSafe for pert_ui_core::ParameterSpec<T> where T: core::panic::unwind_safe::UnwindSafe, <T as pert_ui_core::family::sealed::Sealed>::Domain: core::panic::unwind_safe::UnwindSafe
+pub struct pert_ui_core::ParameterState<T: pert_ui_core::ParameterValue>
+impl<T: pert_ui_core::ParameterValue> pert_ui_core::ParameterState<T>
+pub const pert_ui_core::ParameterState<T>::MAX_TERMINAL_RECEIPTS: usize
+pub fn pert_ui_core::ParameterState<T>::acknowledge(&mut self, &pert_ui_core::EditToken) -> core::result::Result<(), pert_ui_core::EditError>
+pub fn pert_ui_core::ParameterState<T>::begin(&mut self, pert_ui_core::Revision, pert_ui_core::EditSource) -> core::result::Result<pert_ui_core::EditToken, pert_ui_core::EditError>
+pub fn pert_ui_core::ParameterState<T>::cancel(&mut self, &pert_ui_core::EditToken) -> core::result::Result<pert_ui_core::EditOutcome<T>, pert_ui_core::EditError>
+pub fn pert_ui_core::ParameterState<T>::commit(&mut self, &pert_ui_core::EditToken, pert_ui_core::EditSequence, T) -> core::result::Result<pert_ui_core::EditOutcome<T>, pert_ui_core::EditError>
+pub fn pert_ui_core::ParameterState<T>::id(&self) -> &pert_ui_core::ParameterId
+pub fn pert_ui_core::ParameterState<T>::new(pert_ui_core::ParameterId, pert_ui_core::ParameterSpec<T>) -> Self
+pub fn pert_ui_core::ParameterState<T>::outcome(&self, &pert_ui_core::EditToken) -> core::result::Result<core::option::Option<pert_ui_core::EditOutcome<T>>, pert_ui_core::EditError>
+pub fn pert_ui_core::ParameterState<T>::preview_sequence(&self, &pert_ui_core::EditToken) -> core::result::Result<core::option::Option<pert_ui_core::EditSequence>, pert_ui_core::EditError>
+pub fn pert_ui_core::ParameterState<T>::reject_authority(&mut self, &pert_ui_core::EditToken) -> core::result::Result<pert_ui_core::EditOutcome<T>, pert_ui_core::EditError>
+pub fn pert_ui_core::ParameterState<T>::reject_delivery(&mut self, &pert_ui_core::EditToken) -> core::result::Result<pert_ui_core::EditOutcome<T>, pert_ui_core::EditError>
+pub fn pert_ui_core::ParameterState<T>::remove(&mut self)
+pub fn pert_ui_core::ParameterState<T>::replace_spec(&mut self, pert_ui_core::ParameterSpec<T>) -> core::result::Result<(), pert_ui_core::EditError>
+pub fn pert_ui_core::ParameterState<T>::set_effective(&mut self, core::option::Option<T>) -> core::result::Result<(), pert_ui_core::EditError>
+pub fn pert_ui_core::ParameterState<T>::snapshot(&self) -> pert_ui_core::ParameterSnapshot<T>
+pub fn pert_ui_core::ParameterState<T>::spec(&self) -> &pert_ui_core::ParameterSpec<T>
+pub fn pert_ui_core::ParameterState<T>::update(&mut self, &pert_ui_core::EditToken, pert_ui_core::EditSequence, T) -> core::result::Result<pert_ui_core::PreviewOutcome, pert_ui_core::EditError>
+pub fn pert_ui_core::ParameterState<T>::write_base(&mut self, T) -> core::result::Result<(), pert_ui_core::EditError>
+impl<T: pert_ui_core::ParameterValue> core::fmt::Debug for pert_ui_core::ParameterState<T>
+pub fn pert_ui_core::ParameterState<T>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl<T> core::marker::Freeze for pert_ui_core::ParameterState<T> where T: core::marker::Freeze, <T as pert_ui_core::family::sealed::Sealed>::Domain: core::marker::Freeze
+impl<T> core::marker::Send for pert_ui_core::ParameterState<T>
+impl<T> core::marker::Sync for pert_ui_core::ParameterState<T>
+impl<T> core::marker::Unpin for pert_ui_core::ParameterState<T> where T: core::marker::Unpin, <T as pert_ui_core::family::sealed::Sealed>::Domain: core::marker::Unpin
+impl<T> core::marker::UnsafeUnpin for pert_ui_core::ParameterState<T> where T: core::marker::UnsafeUnpin, <T as pert_ui_core::family::sealed::Sealed>::Domain: core::marker::UnsafeUnpin
+impl<T> core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::ParameterState<T> where T: core::panic::unwind_safe::RefUnwindSafe, <T as pert_ui_core::family::sealed::Sealed>::Domain: core::panic::unwind_safe::RefUnwindSafe
+impl<T> core::panic::unwind_safe::UnwindSafe for pert_ui_core::ParameterState<T> where T: core::panic::unwind_safe::UnwindSafe + core::panic::unwind_safe::RefUnwindSafe, <T as pert_ui_core::family::sealed::Sealed>::Domain: core::panic::unwind_safe::UnwindSafe
+pub struct pert_ui_core::PowerExponent(_)
+impl pert_ui_core::PowerExponent
+pub const pert_ui_core::PowerExponent::MAX: f32
+pub const pert_ui_core::PowerExponent::MIN: f32
+pub const fn pert_ui_core::PowerExponent::get(self) -> f32
+pub fn pert_ui_core::PowerExponent::new(f32) -> core::result::Result<Self, pert_ui_core::ParameterError>
+impl core::clone::Clone for pert_ui_core::PowerExponent
+pub fn pert_ui_core::PowerExponent::clone(&self) -> pert_ui_core::PowerExponent
+impl core::cmp::Eq for pert_ui_core::PowerExponent
+impl core::cmp::PartialEq for pert_ui_core::PowerExponent
+pub fn pert_ui_core::PowerExponent::eq(&self, &pert_ui_core::PowerExponent) -> bool
+impl core::cmp::PartialOrd for pert_ui_core::PowerExponent
+pub fn pert_ui_core::PowerExponent::partial_cmp(&self, &pert_ui_core::PowerExponent) -> core::option::Option<core::cmp::Ordering>
+impl core::convert::From<pert_ui_core::PowerExponent> for f32
+pub fn f32::from(pert_ui_core::PowerExponent) -> Self
+impl core::convert::TryFrom<f32> for pert_ui_core::PowerExponent
+pub type pert_ui_core::PowerExponent::Error = pert_ui_core::ParameterError
+pub fn pert_ui_core::PowerExponent::try_from(f32) -> core::result::Result<Self, Self::Error>
+impl core::fmt::Debug for pert_ui_core::PowerExponent
+pub fn pert_ui_core::PowerExponent::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_core::PowerExponent
+impl core::marker::StructuralPartialEq for pert_ui_core::PowerExponent
+impl serde_core::ser::Serialize for pert_ui_core::PowerExponent
+pub fn pert_ui_core::PowerExponent::serialize<__S>(&self, __S) -> core::result::Result<<__S as serde_core::ser::Serializer>::Ok, <__S as serde_core::ser::Serializer>::Error> where __S: serde_core::ser::Serializer
+impl<'de> serde_core::de::Deserialize<'de> for pert_ui_core::PowerExponent
+pub fn pert_ui_core::PowerExponent::deserialize<__D>(__D) -> core::result::Result<Self, <__D as serde_core::de::Deserializer>::Error> where __D: serde_core::de::Deserializer<'de>
+impl core::marker::Freeze for pert_ui_core::PowerExponent
+impl core::marker::Send for pert_ui_core::PowerExponent
+impl core::marker::Sync for pert_ui_core::PowerExponent
+impl core::marker::Unpin for pert_ui_core::PowerExponent
+impl core::marker::UnsafeUnpin for pert_ui_core::PowerExponent
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::PowerExponent
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_core::PowerExponent
+pub struct pert_ui_core::Revision(_)
+impl pert_ui_core::Revision
+pub const pert_ui_core::Revision::INITIAL: Self
+pub const fn pert_ui_core::Revision::get(self) -> u64
+impl core::clone::Clone for pert_ui_core::Revision
+pub fn pert_ui_core::Revision::clone(&self) -> pert_ui_core::Revision
+impl core::cmp::Eq for pert_ui_core::Revision
+impl core::cmp::Ord for pert_ui_core::Revision
+pub fn pert_ui_core::Revision::cmp(&self, &pert_ui_core::Revision) -> core::cmp::Ordering
+impl core::cmp::PartialEq for pert_ui_core::Revision
+pub fn pert_ui_core::Revision::eq(&self, &pert_ui_core::Revision) -> bool
+impl core::cmp::PartialOrd for pert_ui_core::Revision
+pub fn pert_ui_core::Revision::partial_cmp(&self, &pert_ui_core::Revision) -> core::option::Option<core::cmp::Ordering>
+impl core::default::Default for pert_ui_core::Revision
+pub fn pert_ui_core::Revision::default() -> pert_ui_core::Revision
+impl core::fmt::Debug for pert_ui_core::Revision
+pub fn pert_ui_core::Revision::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_core::Revision
+impl core::marker::StructuralPartialEq for pert_ui_core::Revision
+impl serde_core::ser::Serialize for pert_ui_core::Revision
+pub fn pert_ui_core::Revision::serialize<__S>(&self, __S) -> core::result::Result<<__S as serde_core::ser::Serializer>::Ok, <__S as serde_core::ser::Serializer>::Error> where __S: serde_core::ser::Serializer
+impl<'de> serde_core::de::Deserialize<'de> for pert_ui_core::Revision
+pub fn pert_ui_core::Revision::deserialize<__D>(__D) -> core::result::Result<Self, <__D as serde_core::de::Deserializer>::Error> where __D: serde_core::de::Deserializer<'de>
+impl core::marker::Freeze for pert_ui_core::Revision
+impl core::marker::Send for pert_ui_core::Revision
+impl core::marker::Sync for pert_ui_core::Revision
+impl core::marker::Unpin for pert_ui_core::Revision
+impl core::marker::UnsafeUnpin for pert_ui_core::Revision
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::Revision
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_core::Revision
+pub struct pert_ui_core::Sample<T>
+pub pert_ui_core::Sample::incarnation: pert_ui_core::Incarnation
+pub pert_ui_core::Sample::sequence: pert_ui_core::Sequence
+pub pert_ui_core::Sample::timestamp: pert_ui_core::Timestamp
+pub pert_ui_core::Sample::value: T
+impl<T: core::clone::Clone> core::clone::Clone for pert_ui_core::Sample<T>
+pub fn pert_ui_core::Sample<T>::clone(&self) -> pert_ui_core::Sample<T>
+impl<T: core::cmp::PartialEq> core::cmp::PartialEq for pert_ui_core::Sample<T>
+pub fn pert_ui_core::Sample<T>::eq(&self, &pert_ui_core::Sample<T>) -> bool
+impl<T: core::cmp::PartialEq> core::marker::StructuralPartialEq for pert_ui_core::Sample<T>
+impl<T: core::fmt::Debug> core::fmt::Debug for pert_ui_core::Sample<T>
+pub fn pert_ui_core::Sample<T>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl<T: core::marker::Copy> core::marker::Copy for pert_ui_core::Sample<T>
+impl<T> core::marker::Freeze for pert_ui_core::Sample<T> where T: core::marker::Freeze
+impl<T> core::marker::Send for pert_ui_core::Sample<T> where T: core::marker::Send
+impl<T> core::marker::Sync for pert_ui_core::Sample<T> where T: core::marker::Sync
+impl<T> core::marker::Unpin for pert_ui_core::Sample<T> where T: core::marker::Unpin
+impl<T> core::marker::UnsafeUnpin for pert_ui_core::Sample<T> where T: core::marker::UnsafeUnpin
+impl<T> core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::Sample<T> where T: core::panic::unwind_safe::RefUnwindSafe
+impl<T> core::panic::unwind_safe::UnwindSafe for pert_ui_core::Sample<T> where T: core::panic::unwind_safe::UnwindSafe
+pub struct pert_ui_core::SampleWindow<T>
+impl<T: pert_ui_core::LiveItem> pert_ui_core::SampleWindow<T>
+pub const fn pert_ui_core::SampleWindow<T>::capacity(&self) -> usize
+pub fn pert_ui_core::SampleWindow<T>::is_empty(&self) -> bool
+pub fn pert_ui_core::SampleWindow<T>::iter(&self) -> impl core::iter::traits::double_ended::DoubleEndedIterator<Item = &pert_ui_core::SampleWindowEntry<T>> + core::iter::traits::exact_size::ExactSizeIterator + '_
+pub fn pert_ui_core::SampleWindow<T>::latest(&self) -> core::option::Option<&pert_ui_core::SampleWindowEntry<T>>
+pub fn pert_ui_core::SampleWindow<T>::len(&self) -> usize
+impl<T: core::clone::Clone> core::clone::Clone for pert_ui_core::SampleWindow<T>
+pub fn pert_ui_core::SampleWindow<T>::clone(&self) -> pert_ui_core::SampleWindow<T>
+impl<T: core::cmp::PartialEq> core::cmp::PartialEq for pert_ui_core::SampleWindow<T>
+pub fn pert_ui_core::SampleWindow<T>::eq(&self, &pert_ui_core::SampleWindow<T>) -> bool
+impl<T: core::cmp::PartialEq> core::marker::StructuralPartialEq for pert_ui_core::SampleWindow<T>
+impl<T: core::fmt::Debug> core::fmt::Debug for pert_ui_core::SampleWindow<T>
+pub fn pert_ui_core::SampleWindow<T>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl<T> core::marker::Freeze for pert_ui_core::SampleWindow<T>
+impl<T> core::marker::Send for pert_ui_core::SampleWindow<T> where T: core::marker::Send
+impl<T> core::marker::Sync for pert_ui_core::SampleWindow<T> where T: core::marker::Sync
+impl<T> core::marker::Unpin for pert_ui_core::SampleWindow<T> where T: core::marker::Unpin
+impl<T> core::marker::UnsafeUnpin for pert_ui_core::SampleWindow<T>
+impl<T> core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::SampleWindow<T> where T: core::panic::unwind_safe::RefUnwindSafe
+impl<T> core::panic::unwind_safe::UnwindSafe for pert_ui_core::SampleWindow<T> where T: core::panic::unwind_safe::UnwindSafe
+pub struct pert_ui_core::SampleWindowEntry<T>
+pub pert_ui_core::SampleWindowEntry::discontinuity_before: bool
+pub pert_ui_core::SampleWindowEntry::sample: pert_ui_core::Sample<T>
+impl<T: core::clone::Clone> core::clone::Clone for pert_ui_core::SampleWindowEntry<T>
+pub fn pert_ui_core::SampleWindowEntry<T>::clone(&self) -> pert_ui_core::SampleWindowEntry<T>
+impl<T: core::cmp::PartialEq> core::cmp::PartialEq for pert_ui_core::SampleWindowEntry<T>
+pub fn pert_ui_core::SampleWindowEntry<T>::eq(&self, &pert_ui_core::SampleWindowEntry<T>) -> bool
+impl<T: core::cmp::PartialEq> core::marker::StructuralPartialEq for pert_ui_core::SampleWindowEntry<T>
+impl<T: core::fmt::Debug> core::fmt::Debug for pert_ui_core::SampleWindowEntry<T>
+pub fn pert_ui_core::SampleWindowEntry<T>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl<T: core::marker::Copy> core::marker::Copy for pert_ui_core::SampleWindowEntry<T>
+impl<T> core::marker::Freeze for pert_ui_core::SampleWindowEntry<T> where T: core::marker::Freeze
+impl<T> core::marker::Send for pert_ui_core::SampleWindowEntry<T> where T: core::marker::Send
+impl<T> core::marker::Sync for pert_ui_core::SampleWindowEntry<T> where T: core::marker::Sync
+impl<T> core::marker::Unpin for pert_ui_core::SampleWindowEntry<T> where T: core::marker::Unpin
+impl<T> core::marker::UnsafeUnpin for pert_ui_core::SampleWindowEntry<T> where T: core::marker::UnsafeUnpin
+impl<T> core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::SampleWindowEntry<T> where T: core::panic::unwind_safe::RefUnwindSafe
+impl<T> core::panic::unwind_safe::UnwindSafe for pert_ui_core::SampleWindowEntry<T> where T: core::panic::unwind_safe::UnwindSafe
+pub struct pert_ui_core::Sequence(_)
+impl pert_ui_core::Sequence
+pub const pert_ui_core::Sequence::FIRST: Self
+pub const fn pert_ui_core::Sequence::get(self) -> u64
+pub const fn pert_ui_core::Sequence::new(u64) -> core::option::Option<Self>
+impl core::clone::Clone for pert_ui_core::Sequence
+pub fn pert_ui_core::Sequence::clone(&self) -> pert_ui_core::Sequence
+impl core::cmp::Eq for pert_ui_core::Sequence
+impl core::cmp::Ord for pert_ui_core::Sequence
+pub fn pert_ui_core::Sequence::cmp(&self, &pert_ui_core::Sequence) -> core::cmp::Ordering
+impl core::cmp::PartialEq for pert_ui_core::Sequence
+pub fn pert_ui_core::Sequence::eq(&self, &pert_ui_core::Sequence) -> bool
+impl core::cmp::PartialOrd for pert_ui_core::Sequence
+pub fn pert_ui_core::Sequence::partial_cmp(&self, &pert_ui_core::Sequence) -> core::option::Option<core::cmp::Ordering>
+impl core::fmt::Debug for pert_ui_core::Sequence
+pub fn pert_ui_core::Sequence::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_core::Sequence
+pub fn pert_ui_core::Sequence::hash<__H: core::hash::Hasher>(&self, &mut __H)
+impl core::marker::Copy for pert_ui_core::Sequence
+impl core::marker::StructuralPartialEq for pert_ui_core::Sequence
+impl core::marker::Freeze for pert_ui_core::Sequence
+impl core::marker::Send for pert_ui_core::Sequence
+impl core::marker::Sync for pert_ui_core::Sequence
+impl core::marker::Unpin for pert_ui_core::Sequence
+impl core::marker::UnsafeUnpin for pert_ui_core::Sequence
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::Sequence
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_core::Sequence
+pub struct pert_ui_core::SeriesConfig
+impl pert_ui_core::SeriesConfig
+pub const fn pert_ui_core::SeriesConfig::new(pert_ui_core::Capacity) -> Self
+pub const fn pert_ui_core::SeriesConfig::ring_capacity(&self) -> pert_ui_core::Capacity
+pub const fn pert_ui_core::SeriesConfig::window_capacity(&self) -> pert_ui_core::Capacity
+pub const fn pert_ui_core::SeriesConfig::with_ring_capacity(self, pert_ui_core::Capacity) -> Self
+impl core::clone::Clone for pert_ui_core::SeriesConfig
+pub fn pert_ui_core::SeriesConfig::clone(&self) -> pert_ui_core::SeriesConfig
+impl core::cmp::Eq for pert_ui_core::SeriesConfig
+impl core::cmp::PartialEq for pert_ui_core::SeriesConfig
+pub fn pert_ui_core::SeriesConfig::eq(&self, &pert_ui_core::SeriesConfig) -> bool
+impl core::fmt::Debug for pert_ui_core::SeriesConfig
+pub fn pert_ui_core::SeriesConfig::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_core::SeriesConfig
+pub fn pert_ui_core::SeriesConfig::hash<__H: core::hash::Hasher>(&self, &mut __H)
+impl core::marker::Copy for pert_ui_core::SeriesConfig
+impl core::marker::StructuralPartialEq for pert_ui_core::SeriesConfig
+impl core::marker::Freeze for pert_ui_core::SeriesConfig
+impl core::marker::Send for pert_ui_core::SeriesConfig
+impl core::marker::Sync for pert_ui_core::SeriesConfig
+impl core::marker::Unpin for pert_ui_core::SeriesConfig
+impl core::marker::UnsafeUnpin for pert_ui_core::SeriesConfig
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::SeriesConfig
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_core::SeriesConfig
+pub struct pert_ui_core::SeriesConsumer<T>
+impl<T: pert_ui_core::LiveItem> pert_ui_core::SeriesConsumer<T>
+pub const fn pert_ui_core::SeriesConsumer<T>::config(&self) -> &pert_ui_core::SeriesConfig
+pub fn pert_ui_core::SeriesConsumer<T>::drain(&mut self) -> &pert_ui_core::DrainReport
+pub fn pert_ui_core::SeriesConsumer<T>::dropped_total(&self) -> u64
+pub fn pert_ui_core::SeriesConsumer<T>::fill(&self) -> u64
+pub const fn pert_ui_core::SeriesConsumer<T>::incarnation(&self) -> pert_ui_core::Incarnation
+pub const fn pert_ui_core::SeriesConsumer<T>::is_disconnected(&self) -> bool
+pub const fn pert_ui_core::SeriesConsumer<T>::is_exhausted(&self) -> bool
+pub fn pert_ui_core::SeriesConsumer<T>::rejected_total(&self) -> u64
+pub const fn pert_ui_core::SeriesConsumer<T>::report(&self) -> &pert_ui_core::DrainReport
+pub fn pert_ui_core::SeriesConsumer<T>::resume(&mut self) -> &pert_ui_core::DrainReport
+pub const fn pert_ui_core::SeriesConsumer<T>::window(&self) -> &pert_ui_core::SampleWindow<T>
+impl<T: pert_ui_core::LiveItem> core::fmt::Debug for pert_ui_core::SeriesConsumer<T>
+pub fn pert_ui_core::SeriesConsumer<T>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl<T> core::ops::drop::Drop for pert_ui_core::SeriesConsumer<T>
+pub fn pert_ui_core::SeriesConsumer<T>::drop(&mut self)
+impl<T> core::marker::Freeze for pert_ui_core::SeriesConsumer<T>
+impl<T> core::marker::Send for pert_ui_core::SeriesConsumer<T> where T: core::marker::Send
+impl<T> core::marker::Sync for pert_ui_core::SeriesConsumer<T> where T: core::marker::Sync
+impl<T> core::marker::Unpin for pert_ui_core::SeriesConsumer<T> where T: core::marker::Unpin
+impl<T> core::marker::UnsafeUnpin for pert_ui_core::SeriesConsumer<T>
+impl<T> core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::SeriesConsumer<T> where T: core::panic::unwind_safe::RefUnwindSafe
+impl<T> core::panic::unwind_safe::UnwindSafe for pert_ui_core::SeriesConsumer<T> where T: core::panic::unwind_safe::UnwindSafe
+pub struct pert_ui_core::SeriesEndpoint<T>
+impl<T: pert_ui_core::LiveItem> pert_ui_core::SeriesEndpoint<T>
+pub const fn pert_ui_core::SeriesEndpoint<T>::incarnation(&self) -> pert_ui_core::Incarnation
+pub const fn pert_ui_core::SeriesEndpoint<T>::last_sequence(&self) -> core::option::Option<pert_ui_core::Sequence>
+pub fn pert_ui_core::SeriesEndpoint<T>::publish(&mut self, T, pert_ui_core::Timestamp) -> pert_ui_core::PublishOutcome
+pub fn pert_ui_core::SeriesEndpoint<T>::restart(&mut self) -> core::result::Result<pert_ui_core::Incarnation, pert_ui_core::LiveError>
+impl<T> core::fmt::Debug for pert_ui_core::SeriesEndpoint<T>
+pub fn pert_ui_core::SeriesEndpoint<T>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl<T> core::ops::drop::Drop for pert_ui_core::SeriesEndpoint<T>
+pub fn pert_ui_core::SeriesEndpoint<T>::drop(&mut self)
+impl<T> core::marker::Freeze for pert_ui_core::SeriesEndpoint<T>
+impl<T> core::marker::Send for pert_ui_core::SeriesEndpoint<T> where T: core::marker::Send
+impl<T> !core::marker::Sync for pert_ui_core::SeriesEndpoint<T>
+impl<T> core::marker::Unpin for pert_ui_core::SeriesEndpoint<T> where T: core::marker::Unpin
+impl<T> core::marker::UnsafeUnpin for pert_ui_core::SeriesEndpoint<T>
+impl<T> !core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::SeriesEndpoint<T>
+impl<T> core::panic::unwind_safe::UnwindSafe for pert_ui_core::SeriesEndpoint<T> where T: core::panic::unwind_safe::UnwindSafe
+pub struct pert_ui_core::Timestamp(_)
+impl pert_ui_core::Timestamp
+pub const fn pert_ui_core::Timestamp::get(self) -> u64
+pub const fn pert_ui_core::Timestamp::new(u64) -> Self
+impl core::clone::Clone for pert_ui_core::Timestamp
+pub fn pert_ui_core::Timestamp::clone(&self) -> pert_ui_core::Timestamp
+impl core::cmp::Eq for pert_ui_core::Timestamp
+impl core::cmp::Ord for pert_ui_core::Timestamp
+pub fn pert_ui_core::Timestamp::cmp(&self, &pert_ui_core::Timestamp) -> core::cmp::Ordering
+impl core::cmp::PartialEq for pert_ui_core::Timestamp
+pub fn pert_ui_core::Timestamp::eq(&self, &pert_ui_core::Timestamp) -> bool
+impl core::cmp::PartialOrd for pert_ui_core::Timestamp
+pub fn pert_ui_core::Timestamp::partial_cmp(&self, &pert_ui_core::Timestamp) -> core::option::Option<core::cmp::Ordering>
+impl core::default::Default for pert_ui_core::Timestamp
+pub fn pert_ui_core::Timestamp::default() -> pert_ui_core::Timestamp
+impl core::fmt::Debug for pert_ui_core::Timestamp
+pub fn pert_ui_core::Timestamp::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_core::Timestamp
+pub fn pert_ui_core::Timestamp::hash<__H: core::hash::Hasher>(&self, &mut __H)
+impl core::marker::Copy for pert_ui_core::Timestamp
+impl core::marker::StructuralPartialEq for pert_ui_core::Timestamp
+impl core::marker::Freeze for pert_ui_core::Timestamp
+impl core::marker::Send for pert_ui_core::Timestamp
+impl core::marker::Sync for pert_ui_core::Timestamp
+impl core::marker::Unpin for pert_ui_core::Timestamp
+impl core::marker::UnsafeUnpin for pert_ui_core::Timestamp
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::Timestamp
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_core::Timestamp
+pub struct pert_ui_core::WakeFlag
+impl pert_ui_core::WakeFlag
+pub fn pert_ui_core::WakeFlag::is_pending(&self) -> bool
+pub fn pert_ui_core::WakeFlag::new() -> Self
+pub fn pert_ui_core::WakeFlag::request(&self) -> bool
+pub fn pert_ui_core::WakeFlag::reset(&self) -> bool
+impl core::default::Default for pert_ui_core::WakeFlag
+pub fn pert_ui_core::WakeFlag::default() -> pert_ui_core::WakeFlag
+impl core::fmt::Debug for pert_ui_core::WakeFlag
+pub fn pert_ui_core::WakeFlag::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl !core::marker::Freeze for pert_ui_core::WakeFlag
+impl core::marker::Send for pert_ui_core::WakeFlag
+impl core::marker::Sync for pert_ui_core::WakeFlag
+impl core::marker::Unpin for pert_ui_core::WakeFlag
+impl core::marker::UnsafeUnpin for pert_ui_core::WakeFlag
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::WakeFlag
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_core::WakeFlag
+pub trait pert_ui_core::HostValue: core::marker::Sized
+pub type pert_ui_core::HostValue::Canonical: pert_ui_core::ParameterValue
+pub type pert_ui_core::HostValue::Error: core::error::Error + 'static
+pub fn pert_ui_core::HostValue::from_canonical(Self::Canonical) -> core::result::Result<Self, Self::Error>
+pub fn pert_ui_core::HostValue::to_canonical(&self) -> core::result::Result<Self::Canonical, Self::Error>
+pub trait pert_ui_core::LiveItem: pert_ui_core::live::item::sealed::Sealed + core::marker::Copy + core::cmp::PartialOrd + core::marker::Send + core::marker::Sync + core::fmt::Debug + 'static
+impl pert_ui_core::LiveItem for f32
+impl pert_ui_core::LiveItem for f64
+impl pert_ui_core::LiveItem for i32
+impl pert_ui_core::LiveItem for i64
+impl pert_ui_core::LiveItem for u32
+impl pert_ui_core::LiveItem for u64
+pub trait pert_ui_core::ParameterValue: pert_ui_core::family::sealed::Sealed + core::clone::Clone + core::cmp::PartialEq + core::fmt::Debug + core::marker::Send + core::marker::Sync + 'static
+pub const pert_ui_core::ParameterValue::FAMILY: pert_ui_core::ParameterFamily
+pub fn pert_ui_core::ParameterValue::from_any(pert_ui_core::AnyValue) -> core::result::Result<Self, pert_ui_core::AnyValue>
+pub fn pert_ui_core::ParameterValue::into_any(self) -> pert_ui_core::AnyValue
+pub fn pert_ui_core::ParameterValue::snapshot_into_any(pert_ui_core::ParameterSpec<Self>, pert_ui_core::ParameterSnapshot<Self>) -> pert_ui_core::AnyParameterSnapshot
+pub fn pert_ui_core::ParameterValue::spec_from_any(pert_ui_core::AnySpec) -> core::result::Result<pert_ui_core::ParameterSpec<Self>, pert_ui_core::AnySpec>
+pub fn pert_ui_core::ParameterValue::spec_into_any(pert_ui_core::ParameterSpec<Self>) -> pert_ui_core::AnySpec
+impl pert_ui_core::ParameterValue for bool
+pub const bool::FAMILY: pert_ui_core::ParameterFamily
+pub fn bool::from_any(pert_ui_core::AnyValue) -> core::result::Result<Self, pert_ui_core::AnyValue>
+pub fn bool::into_any(self) -> pert_ui_core::AnyValue
+pub fn bool::snapshot_into_any(pert_ui_core::ParameterSpec<Self>, pert_ui_core::ParameterSnapshot<Self>) -> pert_ui_core::AnyParameterSnapshot
+pub fn bool::spec_from_any(pert_ui_core::AnySpec) -> core::result::Result<pert_ui_core::ParameterSpec<Self>, pert_ui_core::AnySpec>
+pub fn bool::spec_into_any(pert_ui_core::ParameterSpec<Self>) -> pert_ui_core::AnySpec
+impl pert_ui_core::ParameterValue for f32
+pub const f32::FAMILY: pert_ui_core::ParameterFamily
+pub fn f32::from_any(pert_ui_core::AnyValue) -> core::result::Result<Self, pert_ui_core::AnyValue>
+pub fn f32::into_any(self) -> pert_ui_core::AnyValue
+pub fn f32::snapshot_into_any(pert_ui_core::ParameterSpec<Self>, pert_ui_core::ParameterSnapshot<Self>) -> pert_ui_core::AnyParameterSnapshot
+pub fn f32::spec_from_any(pert_ui_core::AnySpec) -> core::result::Result<pert_ui_core::ParameterSpec<Self>, pert_ui_core::AnySpec>
+pub fn f32::spec_into_any(pert_ui_core::ParameterSpec<Self>) -> pert_ui_core::AnySpec
+impl pert_ui_core::ParameterValue for i64
+pub const i64::FAMILY: pert_ui_core::ParameterFamily
+pub fn i64::from_any(pert_ui_core::AnyValue) -> core::result::Result<Self, pert_ui_core::AnyValue>
+pub fn i64::into_any(self) -> pert_ui_core::AnyValue
+pub fn i64::snapshot_into_any(pert_ui_core::ParameterSpec<Self>, pert_ui_core::ParameterSnapshot<Self>) -> pert_ui_core::AnyParameterSnapshot
+pub fn i64::spec_from_any(pert_ui_core::AnySpec) -> core::result::Result<pert_ui_core::ParameterSpec<Self>, pert_ui_core::AnySpec>
+pub fn i64::spec_into_any(pert_ui_core::ParameterSpec<Self>) -> pert_ui_core::AnySpec
+impl pert_ui_core::ParameterValue for pert_ui_core::ChoiceId
+pub const pert_ui_core::ChoiceId::FAMILY: pert_ui_core::ParameterFamily
+pub fn pert_ui_core::ChoiceId::from_any(pert_ui_core::AnyValue) -> core::result::Result<Self, pert_ui_core::AnyValue>
+pub fn pert_ui_core::ChoiceId::into_any(self) -> pert_ui_core::AnyValue
+pub fn pert_ui_core::ChoiceId::snapshot_into_any(pert_ui_core::ParameterSpec<Self>, pert_ui_core::ParameterSnapshot<Self>) -> pert_ui_core::AnyParameterSnapshot
+pub fn pert_ui_core::ChoiceId::spec_from_any(pert_ui_core::AnySpec) -> core::result::Result<pert_ui_core::ParameterSpec<Self>, pert_ui_core::AnySpec>
+pub fn pert_ui_core::ChoiceId::spec_into_any(pert_ui_core::ParameterSpec<Self>) -> pert_ui_core::AnySpec
+pub fn pert_ui_core::series_bridge<T: pert_ui_core::LiveItem>(pert_ui_core::SeriesConfig) -> (pert_ui_core::SeriesEndpoint<T>, pert_ui_core::SeriesConsumer<T>)
