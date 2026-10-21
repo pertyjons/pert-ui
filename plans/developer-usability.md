@@ -8,7 +8,8 @@ their 90-minute budget. Slice 1 is done: the API listings are under
 `api/` with their CI job, on Rust 1.99.1 (0.3.52); its CI run waits for
 an authorized push. Slice 2 is done: round 1's eight runs are recorded in
 `plans/usability/runs/`. Slice 3 is done: 36 findings are ranked in the
-round 1 findings table. Slice 4, the API consistency audit, is next. Every tool, file and check named below as new is a
+round 1 findings table. Slice 4, the API consistency audit, is in
+progress: the rubric is approved and the audit runs. Every tool, file and check named below as new is a
 proposal until a slice implements it.
 
 ## Background
@@ -506,8 +507,8 @@ Checkpoint proposal (2026-10-21): [the rubric](usability/api-audit/rubric.md),
 with its sources, the inventory method, two independent auditors with
 cross-verification, the rubric items (construction, builders and
 callbacks, names, types, discovery) and the survey procedures. Codex
-reviewed it and approved it after two rechecks; it waits for the
-maintainer's approval.
+reviewed it and approved it after two rechecks, and the maintainer
+approved it on 2026-10-21.
 
 Two surveys complete the audit:
 
