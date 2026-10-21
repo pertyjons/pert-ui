@@ -1,9 +1,10 @@
 # Plan: blind developer tests and public API review
 
 Status: proposed 2026-10-21 and revised after a Codex review. Slice 0's
-kit and design checkpoint are on branch `developer-usability` and wait for
-the maintainer's approval and for the tester probes and pilot, which the
-maintainer starts. Every tool, file and check named below as new is a
+kit and design checkpoint are on branch `developer-usability`; both tester
+probes passed and both pilots were accepted (the kit's README has the
+evidence). Slice 0 waits for the maintainer's approval of the checkpoint
+and decision on the tasks' size and budget. Every tool, file and check named below as new is a
 proposal until a slice implements it.
 
 ## Background

@@ -219,8 +219,23 @@ harness, bubblewrap sandbox:
   less than its 90-minute budget; whether the tasks or the budget change is
   a kit decision for after the Codex pilot.
 
-Not yet run: both tester probes again after these changes, and the Codex
-pilot.
+- Both tester probes passed again on the hardened probe (2026-10-21,
+  harness 3f2577c): the shell checks from the probe script and the host,
+  no apps or disallowed tool, no MCP server, and the Codex session reported
+  no web tools.
+- The Codex pilot on task 2 (2026-10-21, harness 3f2577c, apps and the
+  other features off) ended after 5.1 minutes; its submission builds
+  without warnings, its single headless session test passes, and the author
+  recorded every acceptance item as met. It built its own row component
+  around `DraftEditor` instead of the library's list, selection and filter
+  components; that and its friction log go to slice 3. Its friction log's
+  times were invented, because the template did not say where to take
+  them; the template now asks for `date +%H:%M`, which needs a newly
+  prepared kit.
+
+Both pilots finished task 2 in a small part of its 90-minute budget. Before
+round 1 the maintainer decides whether the tasks or the budget change; the
+kit is then prepared again from the final harness.
 Starting a tester session from the author's Claude Code session was refused
 by its auto-mode permission classifier, also after the maintainer asked for
 it, so the maintainer starts those runs.
