@@ -476,6 +476,16 @@ def collect(c, config, rows):
             if tn is None:
                 methods += [m for m in ii["items"] if c.item(m) and "function" in c.item(m)["inner"]
                             and c.item(m)["visibility"] == "public"]
+                for k in ii["items"]:
+                    ac = c.item(k)
+                    if ac and "assoc_const" in ac["inner"] and ac["visibility"] == "public":
+                        detail = f"{render(ac['inner']['assoc_const']['type'])}"
+                        value = ac["inner"]["assoc_const"].get("value")
+                        if value:
+                            detail += f" = {value}"
+                        note("members", f"const {ac['name']}", f"    const {ac['name']}: {detail}")
+                        add("constants", (tpath, ac["name"]),
+                            f"{tpath}::{ac['name']}: {detail}\t{c.span(k)}")
                 continue
             cond = render_generics(ii["generics"])
             trait = ("!" if ii["is_negative"] else "") + render_path(ii["trait"])
@@ -487,6 +497,20 @@ def collect(c, config, rows):
                 # rustdoc also lists an impl under a type its trait arguments
                 # name, such as `From<ChoiceId> for AnyValue` under ChoiceId.
                 note("traits", f"(for another type) {full}")
+                # Fallible conversions into foreign types (TryFrom<AnyValue>
+                # for f32) have no public type of their own to list them under.
+                if tn in {"TryFrom", "FromStr"} and target is None:
+                    for m in ii["items"]:
+                        f = c.item(m)
+                        if not f or "function" not in f["inner"]:
+                            continue
+                        err = result_error(c, f["inner"]["function"]["sig"].get("output"))
+                        if err is not None:
+                            sig = fn_sig(c, m, f"<{render(ii['for'])} as {trait}>")
+                            docs = f.get("docs") or ""
+                            add("errors", (render(err), sig),
+                                f"{render(err)}\t# Errors: {'yes' if '# Errors' in docs else 'NO'}"
+                                f"\t{sig}\t(trait impl)\t{c.span(m)}")
                 continue
             label = trait + (f" [{cond}]" if cond else "")
             note("autos" if ii["is_synthetic"] or tn in AUTO_TRAITS else "traits", label)
@@ -641,14 +665,25 @@ def fn_candidates(c, add, owner_id, owner, f, sig, fattrs, loc, owner_kind):
         add("callbacks", key, f"[{'on_' if name.startswith('on_') else 'closure'}] {row}")
     inputs = fn["sig"]["inputs"]
     bools = [n for n, t in inputs if t == {"primitive": "bool"}]
-    nums = [f"{n}: {t['primitive']}" for n, t in inputs if t.get("primitive") in NUMERIC]
+    def numeric(t):
+        """The numeric primitive of t or of Option<t>, else None."""
+        if t.get("primitive") in NUMERIC:
+            return t["primitive"]
+        rp = t.get("resolved_path")
+        if rp and rp["path"].split("::")[-1] == "Option" and rp.get("args"):
+            args = rp["args"].get("angle_bracketed", {}).get("args", [])
+            if len(args) == 1 and args[0].get("type", {}).get("primitive") in NUMERIC:
+                return f"Option<{args[0]['type']['primitive']}>"
+        return None
+
+    nums = [f"{n}: {numeric(t)}" for n, t in inputs if numeric(t)]
     out = fn["sig"].get("output") or {}
-    ret = out.get("primitive")
+    ret = numeric(out) if out else None
     builder = recv == "Self" and out == {"generic": "Self"}
     if bools:
         add("bool-params", key, f"bools={len(bools)} builder={'yes' if builder else 'no'}\t{row}")
-    if nums or ret in NUMERIC:
-        add("numeric", key, f"params[{', '.join(nums)}] returns {ret if ret in NUMERIC else '-'}\t{row}")
+    if nums or ret:
+        add("numeric", key, f"params[{', '.join(nums)}] returns {ret or '-'}\t{row}")
     if name == "get" or name.startswith("get_"):
         add("getters", key, row)
     if re.match(r"(as_|to_|into_)", name) or name in {"iter", "iter_mut", "into_iter"} \
@@ -661,7 +696,7 @@ def fn_candidates(c, add, owner_id, owner, f, sig, fattrs, loc, owner_kind):
             f"{render(err)}\t# Errors: {'yes' if '# Errors' in docs else 'NO'}\t{row}")
 
 
-def write_lists(rows, all_configs):
+def write_lists(rows, all_configs, reexported):
     cand = OUT / "candidates"
     sem = OUT / "semantic"
     for d in (cand, sem):
@@ -690,7 +725,9 @@ def write_lists(rows, all_configs):
                      "with its closure bounds.",
         "bool-params": "Functions with bool parameters; builder = takes self and returns Self "
                        "(a mechanical mark: an operation computing a new value also matches).",
-        "numeric": "Functions with bare numeric parameters or return values.",
+        "numeric": "Functions with bare numeric parameters or return values, "
+                   "including Option<number>.",
+        "constants": "Every public associated constant, with its type and value.",
         "getters": "Functions named get or get_*.",
         "conversion-methods": "as_*, to_*, into_* and iter* methods with their receivers.",
         "conversion-traits": "From, TryFrom, AsRef, AsMut and FromStr implementations "
@@ -722,7 +759,11 @@ def write_lists(rows, all_configs):
                                    for k, v in sorted(t["traits"].items())) or "-"
                 autos = ", ".join(f"{k}{marker(v[1], t['configs']).replace(chr(9), ' ')}"
                                   for k, v in sorted(t["autos"].items())) or "-"
-                fh.write(f"{t['head']}\ttraits: {traits}\tauto: {autos}"
+                head = t["head"]
+                via = reexported.get(tpath.rsplit("::", 1)[-1])
+                if via and via[0] != package:
+                    head = head.replace("prelude: no", f"prelude: yes (via {via[1]})")
+                fh.write(f"{head}\ttraits: {traits}\tauto: {autos}"
                          f"{marker(t['configs'], configs)}\n")
         with (sem / f"{package}.txt").open("w") as fh:
             fh.write(f"# {package}: every public type with its public fields, its "
@@ -781,6 +822,7 @@ def main():
     }
     rows = defaultdict(lambda: defaultdict(dict))
     all_configs = defaultdict(list)
+    reexported = {}
     failures = []
     for package, config, features in configs:
         if not args.skip_build:
@@ -812,12 +854,19 @@ def main():
         })
         all_configs[package].append(config)
         collect(c, config, rows[package])
+        # Items another package's prelude re-exports by name, such as the
+        # core types in pert-ui-runtime's prelude.
+        # The source path may be `crate::Name`, so the item is matched by name
+        # in the other packages.
+        for module, source, glob in c.external:
+            if module.endswith("::prelude") and not glob:
+                reexported[source.rsplit("::", 1)[-1]] = (package, module)
         print(f"{package}/{config}: {len(found)} paths", file=sys.stderr)
     if failures:
         sys.exit("inventory.py: the inputs do not match the listings:\n" + "\n".join(failures))
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "provenance.json").write_text(json.dumps(provenance, indent=2) + "\n")
-    write_lists(rows, all_configs)
+    write_lists(rows, all_configs, reexported)
 
 
 if __name__ == "__main__":
