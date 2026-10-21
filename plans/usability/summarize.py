@@ -7,7 +7,7 @@ Reads <run-dir>/conditions.env, the optional <run-dir>/acceptance.env
 author), <run-dir>/log/builds.jsonl with the per-build output files, the
 transcript and the tester's sources under <run-dir>/work. Writes
 <run-dir>/summary.md and <run-dir>/diagnostics.md (the full text of every
-distinct error, and of warnings that mention pert-ui).
+distinct error and warning the summary counts).
 
 Counts are descriptive observations of how the tester worked, not a usability
 score: they depend on how often the tester chose to build. The imported-items
@@ -166,16 +166,17 @@ for level, code, message, text in occurrences:
         warnings[code or lint_of.get(message) or message[:60]] += 1
     location = re.search(r"--> (\S+)", text)
     key = (level, code, message, location[1] if location else "")
-    if (level == "error" or "pert_ui" in text) and key not in diagnostics:
+    if key not in diagnostics:
         diagnostics[key] = text
 
 sessions = [b for b in compiling if b.get("status") == 0 and executes_session(b["argv"])]
 first_session = min(sessions, key=lambda b: b["end"]) if sessions else None
 if first_session is not None:
     stdout = output(first_session, "stdout") + output(first_session, "stderr")
-    tests_ran = re.search(r"test result: ok\. (\d+) passed", stdout)
+    # One result line per test binary and doctest run; their sum is the count.
+    passed = [int(n) for n in re.findall(r"test result: ok\. (\d+) passed", stdout)]
     first_session_note = (f"`cargo {' '.join(first_session['argv'])}`"
-                          + (f", {tests_ran[1]} tests passed" if tests_ran else ""))
+                          + (f", {sum(passed)} tests passed" if passed else ""))
 
 
 def strip_comments_and_strings(text):
@@ -288,8 +289,8 @@ lines = [
     *(f"- `{k}`: {v}" for k, v in audit.most_common()),
     "",
 ]
-(run / "summary.md").write_text("\n".join(lines))
+(run / "summary.md").write_text("\n".join(lines).rstrip("\n") + "\n")
 (run / "diagnostics.md").write_text(
-    "# Distinct diagnostics\n\n"
-    + "\n\n".join(f"```text\n{t}\n```" for t in diagnostics.values()) + "\n")
+    ("# Distinct diagnostics\n\n"
+     + ("\n\n".join(f"```text\n{t}\n```" for t in diagnostics.values()) or "None.")).rstrip("\n") + "\n")
 print((run / "summary.md").read_text())

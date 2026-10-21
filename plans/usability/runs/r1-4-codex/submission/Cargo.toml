@@ -1,0 +1,11 @@
+[package]
+name = "bookmarks"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+pert-ui = { version = "0.3.52", features = ["cpu"] }
+
+# Not a member of any enclosing workspace.
+[workspace]

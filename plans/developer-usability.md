@@ -6,7 +6,8 @@ pilots were accepted (the kit's README has the evidence), and the
 maintainer approved the checkpoint on 2026-10-21, keeping the tasks and
 their 90-minute budget. Slice 1 is done: the API listings are under
 `api/` with their CI job, on Rust 1.99.1 (0.3.52); its CI run waits for
-an authorized push. Slice 2 is next. Every tool, file and check named below as new is a
+an authorized push. Slice 2 is done: round 1's eight runs are recorded in
+`plans/usability/runs/`. Slice 3, the triage, is next. Every tool, file and check named below as new is a
 proposal until a slice implements it.
 
 ## Background
@@ -563,3 +564,14 @@ take precedence over every other source, and AGENTS.md lists the API
 listing gate's commands and names it in the two gate-table rows. A recheck
 confirmed both. The workspace gate passed on the same code at bebb411 with
 Rust 1.99.1; slice 1 changes no Rust source.
+
+Slice 2: Codex reviewed the round 1 records, including the acceptance of
+its own runs, which the record notes. It found warnings counted in the
+summaries without their full text, a close refusal in r1-1-claude that an
+uncommitted typed change bypasses, an unrecorded reading of moves under a
+filter in r1-2-codex and a stale source pointer. The summarizer now keeps
+every counted diagnostic; an author probe confirmed the close defect and
+r1-1-claude became partly met; a second probe and an explicit reading were
+recorded for r1-2-codex, whose verdict stays met; the pointer was fixed. A
+recheck found a false README attribution in that reading, which was
+removed.

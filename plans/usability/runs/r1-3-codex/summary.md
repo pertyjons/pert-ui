@@ -1,0 +1,26 @@
+# Run summary: r1-3-codex
+
+Exploratory evidence from one AI tester run. Counts describe how this tester worked; they are not a usability score.
+
+- Tester: codex (codex-cli 0.163.0), requested model gpt-6.1-sol, effective model not in the transcript, effort medium
+- Task: 3-custom-control.md; budget 90 min; session outcome ended (exit 0)
+- Kit: commit 359122e38ec7, version 0.3.52, rustc 1.99.1 (58cf8f9c3 2026-10-13), third-party cache none
+- Brief to end of session: 3.8 min
+- Brief to accepted completion: 3.8 min
+- Acceptance: met
+- Time to first build: 1.6 min
+- Builds: 4; failed 1; killed or unfinished 0; total build time 0.7 min
+- First successful run or test (candidate; the author checks it exercised the app): `cargo test --offline`, 1 tests passed, build 3, 3.1 min after the brief
+
+## Errors by code (occurrences across builds)
+
+- `E0308`: 1
+
+## Warnings by code or lint (occurrences across builds)
+
+
+## pert_ui paths used (candidate inventory, verify against the source)
+
+`*`, `App::new`, `cpu::CpuRenderer::new`
+
+## Proxy and model-host mentions in the transcript (read each)
