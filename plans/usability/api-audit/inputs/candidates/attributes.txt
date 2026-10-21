@@ -93,8 +93,8 @@ pert_ui_runtime::AnyParameter::family(&self) -> ParameterFamily	function	#[must_
 pert_ui_runtime::AnyParameterHost::family(&self) -> ParameterFamily	function	#[must_use]	crates/pert-ui-runtime/src/parameter_binding/erased.rs:279
 pert_ui_runtime::AnyTerminalEvent::begin_value(&self) -> AnyValue	function	#[must_use]	crates/pert-ui-runtime/src/parameter_binding/erased.rs:133
 pert_ui_runtime::AnyTerminalEvent::outcome(&self) -> EditOutcome<AnyValue>	function	#[must_use]	crates/pert-ui-runtime/src/parameter_binding/erased.rs:174
-pert_ui_runtime::ApplicationError::downcast_ref<T: Error + 'static>(&self) -> Option<&T>	function	#[must_use]	crates/pert-ui-runtime/src/error.rs:60
-pert_ui_runtime::ApplicationError::get(&self) -> &dyn Error + Send + Sync + 'static	function	#[must_use]	crates/pert-ui-runtime/src/error.rs:55
+pert_ui_runtime::ApplicationError::downcast_ref<T: core::error::Error + 'static>(&self) -> Option<&T>	function	#[must_use]	crates/pert-ui-runtime/src/error.rs:60
+pert_ui_runtime::ApplicationError::get(&self) -> &dyn core::error::Error + Send + Sync + 'static	function	#[must_use]	crates/pert-ui-runtime/src/error.rs:55
 pert_ui_runtime::ArcOrigin	enum	#[non_exhaustive]	crates/pert-ui-runtime/src/numeric_controls.rs:36
 pert_ui_runtime::ArrangeContext::is_empty(&self) -> bool	function	#[must_use]	crates/pert-ui-runtime/src/layout.rs:986
 pert_ui_runtime::ArrangeContext::len(&self) -> usize	function	#[must_use]	crates/pert-ui-runtime/src/layout.rs:981

@@ -1,0 +1,42 @@
+# Every public item that is not a type or a method: free functions, constants, statics and modules, with whether the prelude holds it.
+# A trailing [configs: ...] means the entry exists only in those configurations.
+
+## pert-ui-core
+pert_ui_core	module	-	crates/pert-ui-core/src/lib.rs:1	prelude: no
+pert_ui_core::series_bridge	function	pert_ui_core::series_bridge<T: LiveItem>(config: super::SeriesConfig) -> (SeriesEndpoint<T>, SeriesConsumer<T>)	crates/pert-ui-core/src/live/series.rs:73	prelude: no
+
+## pert-ui-runtime
+pert_ui_runtime	module	-	crates/pert-ui-runtime/src/lib.rs:1	prelude: no
+pert_ui_runtime::DRAG_THRESHOLD	constant	f32	crates/pert-ui-runtime/src/drag.rs:15	prelude: no
+pert_ui_runtime::check_redescription	function	pert_ui_runtime::check_redescription(ui: &mut crate::Runtime, before: crate::Element, after: crate::Element, fresh: crate::Element) -> Result<Redescribed, RedescriptionError>	crates/pert-ui-runtime/src/conformance.rs:209	prelude: no
+pert_ui_runtime::list_directory	function	pert_ui_runtime::list_directory(directory: &std::path::Path) -> Result<Vec<DirectoryEntry>, ListingError>	crates/pert-ui-runtime/src/file_browser.rs:296	prelude: no
+pert_ui_runtime::prelude	module	-	crates/pert-ui-runtime/src/lib.rs:328	prelude: no
+pert_ui_runtime::redescribe	function	pert_ui_runtime::redescribe(ui: &mut crate::Runtime, before: crate::Element, after: crate::Element) -> Result<Redescribed, RedescriptionError>	crates/pert-ui-runtime/src/conformance.rs:145	prelude: no
+
+## pert-ui-cpu
+pert_ui_cpu	module	-	crates/pert-ui-cpu/src/lib.rs:1	prelude: no
+
+## pert-ui-wgpu
+pert_ui_wgpu	module	-	crates/pert-ui-wgpu/src/lib.rs:1	prelude: no
+
+## pert-ui
+pert_ui	module	-	crates/pert-ui/src/lib.rs:4	prelude: no
+pert_ui::cpu	module	-	crates/pert-ui/src/cpu.rs:1	prelude: no	[configs: cpu, no-default-desktop-cpu]
+pert_ui::guide	module	-	crates/pert-ui/src/guide.rs:1	prelude: no
+pert_ui::guide::appearance	module	-	crates/pert-ui/src/guide.rs:125	prelude: no
+pert_ui::guide::controls	module	-	crates/pert-ui/src/guide.rs:92	prelude: no
+pert_ui::guide::custom_widgets	module	-	crates/pert-ui/src/guide.rs:158	prelude: no
+pert_ui::guide::diagnostics	module	-	crates/pert-ui/src/guide.rs:141	prelude: no
+pert_ui::guide::getting_started	module	-	crates/pert-ui/src/guide.rs:36	prelude: no
+pert_ui::guide::layout	module	-	crates/pert-ui/src/guide.rs:75	prelude: no
+pert_ui::guide::state	module	-	crates/pert-ui/src/guide.rs:58	prelude: no
+pert_ui::guide::surfaces	module	-	crates/pert-ui/src/guide.rs:109	prelude: no
+pert_ui::images	module	-	crates/pert-ui/src/images.rs:1	prelude: no	[configs: image-formats, images, no-default-png]
+pert_ui::images::decode	function	pert_ui::images::decode(bytes: &[u8]) -> Result<crate::RasterImage, ImageError>	crates/pert-ui/src/images.rs:262	prelude: no	[configs: image-formats, images, no-default-png]
+pert_ui::images::load	function	pert_ui::images::load(path: impl AsRef<std::path::Path>) -> Result<crate::RasterImage, ImageError>	crates/pert-ui/src/images.rs:304	prelude: no	[configs: image-formats, images, no-default-png]
+pert_ui::prelude	module	-	crates/pert-ui/src/lib.rs:65	prelude: no
+pert_ui::svg	module	-	crates/pert-ui/src/svg.rs:1	prelude: no	[configs: no-default-svg, svg]
+pert_ui::svg::MAX_NESTING	constant	usize	crates/pert-ui/src/svg.rs:92	prelude: no	[configs: no-default-svg, svg]
+pert_ui::svg::intrinsic_size	function	pert_ui::svg::intrinsic_size(source: &[u8]) -> Result<pert_ui_runtime::Size, SvgError>	crates/pert-ui/src/svg.rs:238	prelude: no	[configs: no-default-svg, svg]
+pert_ui::svg::rasterize	function	pert_ui::svg::rasterize(source: &[u8], width: u32, height: u32) -> Result<pert_ui_runtime::RasterImage, SvgError>	crates/pert-ui/src/svg.rs:295	prelude: no	[configs: no-default-svg, svg]
+pert_ui::svg::rasterize_mask	function	pert_ui::svg::rasterize_mask(source: &[u8], width: u32, height: u32) -> Result<pert_ui_runtime::MaskImage, SvgError>	crates/pert-ui/src/svg.rs:310	prelude: no	[configs: no-default-svg, svg]

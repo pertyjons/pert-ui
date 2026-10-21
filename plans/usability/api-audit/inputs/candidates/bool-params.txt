@@ -1,4 +1,4 @@
-# Functions with bool parameters; builder = takes self, returns Self.
+# Functions with bool parameters; builder = takes self and returns Self (a mechanical mark: an operation computing a new value also matches).
 # A trailing [configs: ...] means the entry exists only in those configurations.
 
 ## pert-ui-core

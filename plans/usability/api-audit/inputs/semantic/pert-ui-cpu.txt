@@ -1,9 +1,17 @@
-# pert-ui-cpu: every public type with its inherent and trait-declared methods.
-# Classify each type's role with a source reference, or write 'unresolved'.
+# pert-ui-cpu: every public type with its public fields, its variants and their payloads,
+# its inherent methods, its trait-declared methods and the methods of its hand-written
+# trait implementations. Classify each type's role with a source reference,
+# or write 'unresolved'.
 
-## pert-ui-cpu
+## {package}
 pert_ui_cpu::CpuRenderError	enum	role: 	crates/pert-ui-cpu/src/lib.rs:16
+    variant Drawing(pert_ui_runtime::DrawError)
+    variant EmptyViewport
+    variant InvalidReference
+    variant TooLarge { width: u32, height: u32 }
+    variant Unsupported
 pert_ui_cpu::CpuRenderer	struct	role: 	crates/pert-ui-cpu/src/lib.rs:108
+    <pert_ui_cpu::CpuRenderer as Debug>::fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result	(trait impl)	crates/pert-ui-cpu/src/lib.rs:114
     pert_ui_cpu::CpuRenderer::new() -> Self	#[must_use]	crates/pert-ui-cpu/src/lib.rs:131
     pert_ui_cpu::CpuRenderer::render(&mut self, scene: &DisplayList) -> Result<FrameImage, CpuRenderError>	-	crates/pert-ui-cpu/src/lib.rs:145
     pert_ui_cpu::CpuRenderer::render_opaque(&mut self, scene: &DisplayList) -> Result<FrameImage, CpuRenderError>	-	crates/pert-ui-cpu/src/lib.rs:166

@@ -1,9 +1,18 @@
-# Error types of public Results (first column) with # Errors coverage, and every std::error::Error implementation.
+# Error types of public Results (first column) with # Errors coverage, including hand-written trait implementations such as TryFrom and FromStr, and every std::error::Error implementation.
 # A trailing [configs: ...] means the entry exists only in those configurations.
 
 ## pert-ui-core
+AnySpec	# Errors: NO	<pert_ui_core::ChoiceId as ParameterValue>::spec_from_any(spec: AnySpec) -> Result<ParameterSpec<Self>, AnySpec>	(trait impl)	crates/pert-ui-core/src/family.rs:437
 AnySpec	# Errors: yes	pert_ui_core::ParameterValue::spec_from_any(spec: AnySpec) -> Result<ParameterSpec<Self>, AnySpec>	-	crates/pert-ui-core/src/family.rs:71
+AnyValue	# Errors: NO	<pert_ui_core::ChoiceId as ParameterValue>::from_any(value: AnyValue) -> Result<Self, AnyValue>	(trait impl)	crates/pert-ui-core/src/family.rs:437
 AnyValue	# Errors: yes	pert_ui_core::ParameterValue::from_any(value: AnyValue) -> Result<Self, AnyValue>	-	crates/pert-ui-core/src/family.rs:61
+D::Error	# Errors: NO	<pert_ui_core::AnyParameterSnapshot as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-core/src/erased.rs:353	[configs: serde]
+D::Error	# Errors: NO	<pert_ui_core::ChoiceId as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-core/src/choice.rs:116	[configs: serde]
+D::Error	# Errors: NO	<pert_ui_core::ChoiceOption as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-core/src/choice.rs:139	[configs: serde]
+D::Error	# Errors: NO	<pert_ui_core::NormalizedValue as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-core/src/normalized.rs:218	[configs: serde]
+D::Error	# Errors: NO	<pert_ui_core::ParameterId as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-core/src/parameter_id.rs:210	[configs: serde]
+D::Error	# Errors: NO	<pert_ui_core::ParameterSnapshot as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-core/src/edit.rs:676	[configs: serde]
+D::Error	# Errors: NO	<pert_ui_core::ParameterSpec as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-core/src/parameter.rs:653	[configs: serde]
 EditError	# Errors: yes	pert_ui_core::ParameterState::acknowledge(&mut self, token: &EditToken) -> Result<(), EditError>	-	crates/pert-ui-core/src/edit.rs:568
 EditError	# Errors: yes	pert_ui_core::ParameterState::begin(&mut self, expected: Revision, source: EditSource) -> Result<EditToken, EditError>	-	crates/pert-ui-core/src/edit.rs:367
 EditError	# Errors: yes	pert_ui_core::ParameterState::cancel(&mut self, token: &EditToken) -> Result<EditOutcome<T>, EditError>	-	crates/pert-ui-core/src/edit.rs:521
@@ -32,6 +41,18 @@ ParameterError	# Errors: yes	pert_ui_core::ParameterSpec::with_step(self, step: 
 ParameterError	# Errors: yes	pert_ui_core::PowerExponent::new(exponent: f32) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:76
 ParameterIdError	# Errors: yes	pert_ui_core::ParameterId::new(session: u128, object: u128, key: impl Into<String>) -> Result<Self, ParameterIdError>	-	crates/pert-ui-core/src/parameter_id.rs:66
 ParameterIdError	# Errors: yes	pert_ui_core::ParameterId::next_incarnation(&self) -> Result<Self, ParameterIdError>	-	crates/pert-ui-core/src/parameter_id.rs:117
+S::Error	# Errors: NO	<pert_ui_core::ChoiceId as Serialize>::serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>	(trait impl)	crates/pert-ui-core/src/choice.rs:110	[configs: serde]
+S::Error	# Errors: NO	<pert_ui_core::ChoiceOption as Serialize>::serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>	(trait impl)	crates/pert-ui-core/src/choice.rs:129	[configs: serde]
+S::Error	# Errors: NO	<pert_ui_core::NormalizedValue as Serialize>::serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>	(trait impl)	crates/pert-ui-core/src/normalized.rs:212	[configs: serde]
+S::Error	# Errors: NO	<pert_ui_core::ParameterId as Serialize>::serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>	(trait impl)	crates/pert-ui-core/src/parameter_id.rs:198	[configs: serde]
+S::Error	# Errors: NO	<pert_ui_core::ParameterSpec as Serialize>::serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>	(trait impl)	crates/pert-ui-core/src/parameter.rs:637	[configs: serde]
+Self::Error	# Errors: NO	<pert_ui_core::Capacity as TryFrom<usize>>::try_from(items: usize) -> Result<Self, Self::Error>	(trait impl)	crates/pert-ui-core/src/live/mod.rs:214
+Self::Error	# Errors: NO	<pert_ui_core::ChoiceId as TryFrom<&str>>::try_from(id: &str) -> Result<Self, Self::Error>	(trait impl)	crates/pert-ui-core/src/choice.rs:64
+Self::Error	# Errors: NO	<pert_ui_core::ChoiceId as TryFrom<AnyValue>>::try_from(value: AnyValue) -> Result<Self, Self::Error>	(trait impl)	crates/pert-ui-core/src/erased.rs:156
+Self::Error	# Errors: NO	<pert_ui_core::ChoiceId as TryFrom<String>>::try_from(id: String) -> Result<Self, Self::Error>	(trait impl)	crates/pert-ui-core/src/choice.rs:72
+Self::Error	# Errors: yes	<pert_ui_core::NormalizedValue as TryFrom<f32>>::try_from(value: f32) -> Result<Self, Self::Error>	(trait impl)	crates/pert-ui-core/src/normalized.rs:97
+Self::Error	# Errors: NO	<pert_ui_core::ParameterSpec as TryFrom<AnySpec>>::try_from(spec: AnySpec) -> Result<Self, Self::Error>	(trait impl)	crates/pert-ui-core/src/erased.rs:90
+Self::Error	# Errors: NO	<pert_ui_core::PowerExponent as TryFrom<f32>>::try_from(exponent: f32) -> Result<Self, Self::Error>	(trait impl)	crates/pert-ui-core/src/parameter.rs:92
 Self::Error	# Errors: yes	pert_ui_core::HostValue::from_canonical(value: Self::Canonical) -> Result<Self, Self::Error>	-	crates/pert-ui-core/src/erased.rs:424
 Self::Error	# Errors: yes	pert_ui_core::HostValue::to_canonical(&self) -> Result<Self::Canonical, Self::Error>	-	crates/pert-ui-core/src/erased.rs:418
 crate::ParameterError	# Errors: yes	pert_ui_core::AnyParameterSnapshot::try_new<T: ParameterValue>(spec: ParameterSpec<T>, state: ParameterSnapshot<T>) -> Result<Self, crate::ParameterError>	-	crates/pert-ui-core/src/erased.rs:239
@@ -63,6 +84,13 @@ ContentSearchError	# Errors: yes	pert_ui_runtime::ContentQuery::budget(self, bud
 ContentSearchError	# Errors: yes	pert_ui_runtime::ContentQuery::limit(self, limit: usize) -> Result<Self, ContentSearchError>	-	crates/pert-ui-runtime/src/content_search.rs:76
 ContentSearchError	# Errors: yes	pert_ui_runtime::ContentQuery::new(text: impl AsRef<str>) -> Result<Self, ContentSearchError>	-	crates/pert-ui-runtime/src/content_search.rs:45
 ContentSearchError	# Errors: yes	pert_ui_runtime::ContentSearch::step(&mut self, ui: &crate::Runtime) -> Result<ContentStep, ContentSearchError>	-	crates/pert-ui-runtime/src/content_search.rs:331
+D::Error	# Errors: NO	<pert_ui_runtime::DropOperations as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-runtime/src/drag.rs:395	[configs: serde]
+D::Error	# Errors: NO	<pert_ui_runtime::UiZoom as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-runtime/src/runtime/settings.rs:101	[configs: serde]
+D::Error	# Errors: NO	<pert_ui_runtime::ViewState as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-runtime/src/workspace.rs:1626	[configs: serde]
+D::Error	# Errors: NO	<pert_ui_runtime::Viewport as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-runtime/src/drawing.rs:1683	[configs: serde]
+D::Error	# Errors: NO	<pert_ui_runtime::Workspace as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-runtime/src/workspace.rs:1670	[configs: serde]
+D::Error	# Errors: NO	<pert_ui_runtime::WorkspacePath as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-runtime/src/workspace.rs:1596	[configs: serde]
+D::Error	# Errors: NO	<pert_ui_runtime::WorkspaceValue as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-runtime/src/workspace.rs:1582	[configs: serde]
 DrawError	# Errors: yes	pert_ui_runtime::Color::from_srgb(red: f32, green: f32, blue: f32, alpha: f32) -> Result<Self, DrawError>	-	crates/pert-ui-runtime/src/drawing.rs:327
 DrawError	# Errors: yes	pert_ui_runtime::Color::mix(self, other: Self, t: f32) -> Result<Self, DrawError>	-	crates/pert-ui-runtime/src/drawing.rs:564
 DrawError	# Errors: yes	pert_ui_runtime::Color::rgba(red: f32, green: f32, blue: f32, alpha: f32) -> Result<Self, DrawError>	-	crates/pert-ui-runtime/src/drawing.rs:258
@@ -482,6 +510,19 @@ RuntimeError	# Errors: yes	pert_ui_runtime::WindowController::set_size(&self, si
 RuntimeError	# Errors: yes	pert_ui_runtime::ZoomController::fit(&self) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/zoom_view.rs:180
 RuntimeError	# Errors: yes	pert_ui_runtime::ZoomController::set(&self, view: ViewTransform) -> Result<(), RuntimeError>	-	crates/pert-ui-runtime/src/zoom_view.rs:159
 RuntimeError	# Errors: yes	pert_ui_runtime::ZoomController::set_changed(&self, view: ViewTransform) -> Result<bool, RuntimeError>	-	crates/pert-ui-runtime/src/zoom_view.rs:167
+S::Error	# Errors: NO	<pert_ui_runtime::DropOperations as Serialize>::serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>	(trait impl)	crates/pert-ui-runtime/src/drag.rs:381	[configs: serde]
+S::Error	# Errors: NO	<pert_ui_runtime::UiZoom as Serialize>::serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>	(trait impl)	crates/pert-ui-runtime/src/runtime/settings.rs:95	[configs: serde]
+S::Error	# Errors: NO	<pert_ui_runtime::ViewState as Serialize>::serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>	(trait impl)	crates/pert-ui-runtime/src/workspace.rs:1616	[configs: serde]
+S::Error	# Errors: NO	<pert_ui_runtime::Viewport as Serialize>::serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>	(trait impl)	crates/pert-ui-runtime/src/drawing.rs:1671	[configs: serde]
+S::Error	# Errors: NO	<pert_ui_runtime::Workspace as Serialize>::serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>	(trait impl)	crates/pert-ui-runtime/src/workspace.rs:1652	[configs: serde]
+S::Error	# Errors: NO	<pert_ui_runtime::WorkspacePath as Serialize>::serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>	(trait impl)	crates/pert-ui-runtime/src/workspace.rs:1590	[configs: serde]
+Self::Err	# Errors: NO	<pert_ui_runtime::Color as FromStr>::from_str(text: &str) -> Result<Self, Self::Err>	(trait impl)	crates/pert-ui-runtime/src/drawing.rs:747
+Self::Error	# Errors: NO	<pert_ui_runtime::Length as TryFrom<f32>>::try_from(value: f32) -> Result<Self, Self::Error>	(trait impl)	crates/pert-ui-runtime/src/containers.rs:41
+Self::Error	# Errors: NO	<pert_ui_runtime::Magnification as TryFrom<f32>>::try_from(factor: f32) -> Result<Self, Self::Error>	(trait impl)	crates/pert-ui-runtime/src/pointer.rs:134
+Self::Error	# Errors: yes	<pert_ui_runtime::OpaqueColor as TryFrom<Color>>::try_from(color: Color) -> Result<Self, Self::Error>	(trait impl)	crates/pert-ui-runtime/src/drawing.rs:723
+Self::Error	# Errors: NO	<pert_ui_runtime::PresentationRate as TryFrom<f64>>::try_from(hertz: f64) -> Result<Self, Self::Error>	(trait impl)	crates/pert-ui-runtime/src/runtime/presentation.rs:34
+Self::Error	# Errors: NO	<pert_ui_runtime::UiZoom as TryFrom<f64>>::try_from(value: f64) -> Result<Self, Self::Error>	(trait impl)	crates/pert-ui-runtime/src/runtime/settings.rs:77
+Self::Error	# Errors: NO	<pert_ui_runtime::ViewScale as TryFrom<f32>>::try_from(factor: f32) -> Result<Self, Self::Error>	(trait impl)	crates/pert-ui-runtime/src/transform.rs:309
 SendError<T>	# Errors: yes	pert_ui_runtime::UiSender::send(&self, value: T) -> Result<(), SendError<T>>	-	crates/pert-ui-runtime/src/mailbox.rs:121
 TextEditError	# Errors: yes	pert_ui_runtime::TextArea::check(text: &str) -> Result<(), TextEditError>	-	crates/pert-ui-runtime/src/text_fields.rs:769
 TextEditError	# Errors: yes	pert_ui_runtime::TextField::check(text: &str) -> Result<(), TextEditError>	-	crates/pert-ui-runtime/src/text_fields.rs:768

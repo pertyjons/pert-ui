@@ -1,210 +1,164 @@
-# From, TryFrom, AsRef, AsMut and FromStr implementations (Into/TryInto when written by hand).
+# From, TryFrom, AsRef, AsMut and FromStr implementations (Into/TryInto when written by hand), as impl Trait for Target.
 # A trailing [configs: ...] means the entry exists only in those configurations.
 
 ## pert-ui-core
-pert_ui_core::AnySpec	impl From<ParameterSpec<T>> [<T: ParameterValue>]	crates/pert-ui-core/src/erased.rs:80
-pert_ui_core::AnySpec	impl TryFrom<AnySpec> [<T: ParameterValue>]	crates/pert-ui-core/src/erased.rs:86
-pert_ui_core::AnyValue	impl From<ChoiceId>	crates/pert-ui-core/src/erased.rs:156
-pert_ui_core::AnyValue	impl From<bool>	crates/pert-ui-core/src/erased.rs:155
-pert_ui_core::AnyValue	impl From<f32>	crates/pert-ui-core/src/erased.rs:153
-pert_ui_core::AnyValue	impl From<i64>	crates/pert-ui-core/src/erased.rs:154
-pert_ui_core::AnyValue	impl TryFrom<AnyValue>	crates/pert-ui-core/src/erased.rs:153
-pert_ui_core::Capacity	impl TryFrom<usize>	crates/pert-ui-core/src/live/mod.rs:211
-pert_ui_core::ChoiceId	impl From<ChoiceId>	crates/pert-ui-core/src/erased.rs:156
-pert_ui_core::ChoiceId	impl TryFrom<&str>	crates/pert-ui-core/src/choice.rs:61
-pert_ui_core::ChoiceId	impl TryFrom<AnyValue>	crates/pert-ui-core/src/erased.rs:156
-pert_ui_core::ChoiceId	impl TryFrom<String>	crates/pert-ui-core/src/choice.rs:69
-pert_ui_core::EditError	impl From<ParameterError>	crates/pert-ui-core/src/edit.rs:223
-pert_ui_core::NormalizedValue	impl TryFrom<f32>	crates/pert-ui-core/src/normalized.rs:88
-pert_ui_core::ParameterError	impl From<ParameterError>	crates/pert-ui-core/src/edit.rs:223
-pert_ui_core::ParameterSpec	impl From<ParameterSpec<T>> [<T: ParameterValue>]	crates/pert-ui-core/src/erased.rs:80
-pert_ui_core::ParameterSpec	impl TryFrom<AnySpec> [<T: ParameterValue>]	crates/pert-ui-core/src/erased.rs:86
-pert_ui_core::PowerExponent	impl From<PowerExponent>	crates/pert-ui-core/src/parameter.rs:96
-pert_ui_core::PowerExponent	impl TryFrom<f32>	crates/pert-ui-core/src/parameter.rs:89
+impl From<ChoiceId> for AnyValue	crates/pert-ui-core/src/erased.rs:156
+impl From<ParameterError> for EditError	crates/pert-ui-core/src/edit.rs:223
+impl From<ParameterSpec<T>> for AnySpec [<T: ParameterValue>]	crates/pert-ui-core/src/erased.rs:80
+impl From<PowerExponent> for f32	crates/pert-ui-core/src/parameter.rs:96
+impl From<bool> for AnyValue	crates/pert-ui-core/src/erased.rs:155
+impl From<f32> for AnyValue	crates/pert-ui-core/src/erased.rs:153
+impl From<i64> for AnyValue	crates/pert-ui-core/src/erased.rs:154
+impl TryFrom<&str> for ChoiceId	crates/pert-ui-core/src/choice.rs:61
+impl TryFrom<AnySpec> for crate::ParameterSpec<T> [<T: ParameterValue>]	crates/pert-ui-core/src/erased.rs:86
+impl TryFrom<AnyValue> for bool	crates/pert-ui-core/src/erased.rs:155
+impl TryFrom<AnyValue> for crate::ChoiceId	crates/pert-ui-core/src/erased.rs:156
+impl TryFrom<AnyValue> for f32	crates/pert-ui-core/src/erased.rs:153
+impl TryFrom<AnyValue> for i64	crates/pert-ui-core/src/erased.rs:154
+impl TryFrom<String> for ChoiceId	crates/pert-ui-core/src/choice.rs:69
+impl TryFrom<f32> for NormalizedValue	crates/pert-ui-core/src/normalized.rs:88
+impl TryFrom<f32> for PowerExponent	crates/pert-ui-core/src/parameter.rs:89
+impl TryFrom<usize> for Capacity	crates/pert-ui-core/src/live/mod.rs:211
 
 ## pert-ui-runtime
-pert_ui_runtime::ApplicationError	impl From<&str>	crates/pert-ui-runtime/src/error.rs:72
-pert_ui_runtime::ApplicationError	impl From<ApplicationError>	crates/pert-ui-runtime/src/workspace.rs:654
-pert_ui_runtime::ApplicationError	impl From<Box<dyn Error + Send + Sync>>	crates/pert-ui-runtime/src/error.rs:79
-pert_ui_runtime::ApplicationError	impl From<String>	crates/pert-ui-runtime/src/error.rs:65
-pert_ui_runtime::BindingError	impl From<BindingError>	crates/pert-ui-runtime/src/workspace.rs:654
-pert_ui_runtime::BindingError	impl From<DeliveryError>	crates/pert-ui-runtime/src/parameter_binding.rs:79
-pert_ui_runtime::BindingError	impl From<EditError>	crates/pert-ui-runtime/src/parameter_binding.rs:65
-pert_ui_runtime::CaptureError	impl From<CaptureError>	crates/pert-ui-runtime/src/capture.rs:270
-pert_ui_runtime::CaptureError	impl From<DrawError>	crates/pert-ui-runtime/src/capture.rs:291
-pert_ui_runtime::CaptureError	impl From<FrameError>	crates/pert-ui-runtime/src/capture.rs:285
-pert_ui_runtime::CaptureError	impl From<RuntimeError>	crates/pert-ui-runtime/src/capture.rs:199
-pert_ui_runtime::ChoiceError	impl From<ChoiceError>	crates/pert-ui-runtime/src/workspace.rs:654
-pert_ui_runtime::ClipboardError	impl From<ClipboardError>	crates/pert-ui-runtime/src/workspace.rs:654
-pert_ui_runtime::Color	impl From<OpaqueColor>	crates/pert-ui-runtime/src/drawing.rs:732
-pert_ui_runtime::Color	impl FromStr	crates/pert-ui-runtime/src/drawing.rs:744
-pert_ui_runtime::Color	impl TryFrom<Color>	crates/pert-ui-runtime/src/drawing.rs:716
-pert_ui_runtime::CommandPaletteStatus	impl From<PickStatus>	crates/pert-ui-runtime/src/command_palette.rs:134
-pert_ui_runtime::ContentSearchError	impl From<RuntimeError>	crates/pert-ui-runtime/src/content_search.rs:452
-pert_ui_runtime::DeliveryError	impl From<DeliveryError>	crates/pert-ui-runtime/src/workspace.rs:654
-pert_ui_runtime::DrawError	impl From<ApplicationError>	crates/pert-ui-runtime/src/drawing.rs:49
-pert_ui_runtime::DrawError	impl From<BindingError>	crates/pert-ui-runtime/src/drawing.rs:49
-pert_ui_runtime::DrawError	impl From<ChoiceError>	crates/pert-ui-runtime/src/drawing.rs:49
-pert_ui_runtime::DrawError	impl From<ClipboardError>	crates/pert-ui-runtime/src/drawing.rs:49
-pert_ui_runtime::DrawError	impl From<DeliveryError>	crates/pert-ui-runtime/src/drawing.rs:49
-pert_ui_runtime::DrawError	impl From<DrawError>	crates/pert-ui-runtime/src/capture.rs:291
-pert_ui_runtime::DrawError	impl From<EditError>	crates/pert-ui-runtime/src/drawing.rs:49
-pert_ui_runtime::DrawError	impl From<FontError>	crates/pert-ui-runtime/src/drawing.rs:49
-pert_ui_runtime::DrawError	impl From<GeometryError>	crates/pert-ui-runtime/src/drawing.rs:49
-pert_ui_runtime::DrawError	impl From<LayoutError>	crates/pert-ui-runtime/src/drawing.rs:49
-pert_ui_runtime::DrawError	impl From<LiveError>	crates/pert-ui-runtime/src/drawing.rs:49
-pert_ui_runtime::DrawError	impl From<NormalizedValueError>	crates/pert-ui-runtime/src/drawing.rs:49
-pert_ui_runtime::DrawError	impl From<NumberInputError>	crates/pert-ui-runtime/src/drawing.rs:49
-pert_ui_runtime::DrawError	impl From<ParameterError>	crates/pert-ui-runtime/src/drawing.rs:49
-pert_ui_runtime::DrawError	impl From<ParameterIdError>	crates/pert-ui-runtime/src/drawing.rs:49
-pert_ui_runtime::DrawError	impl From<PathError>	crates/pert-ui-runtime/src/drawing.rs:34
-pert_ui_runtime::DrawError	impl From<RuntimeError>	crates/pert-ui-runtime/src/drawing.rs:47
-pert_ui_runtime::DrawError	impl From<TextEditError>	crates/pert-ui-runtime/src/drawing.rs:49
-pert_ui_runtime::DrawError	impl From<TextError>	crates/pert-ui-runtime/src/drawing.rs:49
-pert_ui_runtime::DropOperation	impl From<DropOperation>	crates/pert-ui-runtime/src/drag.rs:175
-pert_ui_runtime::DropOperations	impl From<DropOperation>	crates/pert-ui-runtime/src/drag.rs:175
-pert_ui_runtime::FileBrowserError	impl From<RuntimeError>	crates/pert-ui-runtime/src/file_browser.rs:270
-pert_ui_runtime::FilterTarget	impl From<ListFilter>	crates/pert-ui-runtime/src/collection_filter.rs:362
-pert_ui_runtime::FilterTarget	impl From<TableController>	crates/pert-ui-runtime/src/collection_filter.rs:367
-pert_ui_runtime::FilterTarget	impl From<TreeController>	crates/pert-ui-runtime/src/collection_filter.rs:372
-pert_ui_runtime::FontError	impl From<FontError>	crates/pert-ui-runtime/src/workspace.rs:654
-pert_ui_runtime::FrameError	impl From<FrameError>	crates/pert-ui-runtime/src/capture.rs:285
-pert_ui_runtime::GeometryError	impl From<GeometryError>	crates/pert-ui-runtime/src/workspace.rs:654
-pert_ui_runtime::Icon	impl From<Icon>	crates/pert-ui-runtime/src/text/icons.rs:243
-pert_ui_runtime::IconGlyph	impl From<IconGlyph>	crates/pert-ui-runtime/src/text/icons.rs:248
-pert_ui_runtime::IconSource	impl From<Icon>	crates/pert-ui-runtime/src/text/icons.rs:243
-pert_ui_runtime::IconSource	impl From<IconGlyph>	crates/pert-ui-runtime/src/text/icons.rs:248
-pert_ui_runtime::LayoutError	impl From<LayoutError>	crates/pert-ui-runtime/src/workspace.rs:654
-pert_ui_runtime::Length	impl From<Length>	crates/pert-ui-runtime/src/runtime/theme.rs:327
-pert_ui_runtime::Length	impl From<u16>	crates/pert-ui-runtime/src/containers.rs:13
-pert_ui_runtime::Length	impl TryFrom<f32>	crates/pert-ui-runtime/src/containers.rs:38
-pert_ui_runtime::ListFilter	impl From<ListFilter>	crates/pert-ui-runtime/src/collection_filter.rs:362
-pert_ui_runtime::ListingError	impl From<Error>	crates/pert-ui-runtime/src/file_browser.rs:100
-pert_ui_runtime::Magnification	impl TryFrom<f32>	crates/pert-ui-runtime/src/pointer.rs:132
-pert_ui_runtime::MetricRole	impl From<MetricRole>	crates/pert-ui-runtime/src/runtime/theme.rs:332
-pert_ui_runtime::NumberInputError	impl From<NumberInputError>	crates/pert-ui-runtime/src/workspace.rs:654
-pert_ui_runtime::OpaqueColor	impl From<OpaqueColor>	crates/pert-ui-runtime/src/drawing.rs:732
-pert_ui_runtime::OpaqueColor	impl TryFrom<Color>	crates/pert-ui-runtime/src/drawing.rs:716
-pert_ui_runtime::PathError	impl From<PathError>	crates/pert-ui-runtime/src/drawing.rs:34
-pert_ui_runtime::Permission	impl From<&ReadSignal<bool>>	crates/pert-ui-runtime/src/permission.rs:246
-pert_ui_runtime::Permission	impl From<&Signal<bool>>	crates/pert-ui-runtime/src/permission.rs:260
-pert_ui_runtime::Permission	impl From<ReadSignal<bool>>	crates/pert-ui-runtime/src/permission.rs:236
-pert_ui_runtime::Permission	impl From<Signal<bool>>	crates/pert-ui-runtime/src/permission.rs:253
-pert_ui_runtime::Permission	impl From<bool>	crates/pert-ui-runtime/src/permission.rs:225
-pert_ui_runtime::PickStatus	impl From<PickStatus>	crates/pert-ui-runtime/src/command_palette.rs:134
-pert_ui_runtime::PresentationRate	impl TryFrom<f64>	crates/pert-ui-runtime/src/runtime/presentation.rs:31
-pert_ui_runtime::ReadSignal	impl From<&ReadSignal<RichText>>	crates/pert-ui-runtime/src/text_source.rs:230
-pert_ui_runtime::ReadSignal	impl From<&ReadSignal<String>>	crates/pert-ui-runtime/src/text_source.rs:224
-pert_ui_runtime::ReadSignal	impl From<&ReadSignal<T>> [<T>]	crates/pert-ui-runtime/src/signal.rs:253
-pert_ui_runtime::ReadSignal	impl From<&ReadSignal<bool>>	crates/pert-ui-runtime/src/permission.rs:246
-pert_ui_runtime::ReadSignal	impl From<&Signal<T>> [<T>]	crates/pert-ui-runtime/src/signal.rs:245
-pert_ui_runtime::ReadSignal	impl From<ReadSignal<RichText>>	crates/pert-ui-runtime/src/text_source.rs:195
-pert_ui_runtime::ReadSignal	impl From<ReadSignal<String>>	crates/pert-ui-runtime/src/text_source.rs:190
-pert_ui_runtime::ReadSignal	impl From<ReadSignal<bool>>	crates/pert-ui-runtime/src/permission.rs:236
-pert_ui_runtime::ReadSignal	impl From<Signal<T>> [<T>]	crates/pert-ui-runtime/src/signal.rs:238
-pert_ui_runtime::RedescriptionError	impl From<RuntimeError>	crates/pert-ui-runtime/src/conformance.rs:37
-pert_ui_runtime::RichText	impl From<&str>	crates/pert-ui-runtime/src/text/rich.rs:203
-pert_ui_runtime::RichText	impl From<RichText>	crates/pert-ui-runtime/src/text_source.rs:185
-pert_ui_runtime::RichText	impl From<String>	crates/pert-ui-runtime/src/text/rich.rs:198
-pert_ui_runtime::RuntimeError	impl From<ApplicationError>	crates/pert-ui-runtime/src/runtime.rs:195
-pert_ui_runtime::RuntimeError	impl From<BindingError>	crates/pert-ui-runtime/src/runtime.rs:191
-pert_ui_runtime::RuntimeError	impl From<CaptureError>	crates/pert-ui-runtime/src/capture.rs:270
-pert_ui_runtime::RuntimeError	impl From<ChoiceError>	crates/pert-ui-runtime/src/runtime.rs:297
-pert_ui_runtime::RuntimeError	impl From<ClipboardError>	crates/pert-ui-runtime/src/runtime.rs:281
-pert_ui_runtime::RuntimeError	impl From<DeliveryError>	crates/pert-ui-runtime/src/runtime.rs:396
-pert_ui_runtime::RuntimeError	impl From<EditError>	crates/pert-ui-runtime/src/runtime.rs:390
-pert_ui_runtime::RuntimeError	impl From<FontError>	crates/pert-ui-runtime/src/runtime.rs:372
-pert_ui_runtime::RuntimeError	impl From<GeometryError>	crates/pert-ui-runtime/src/runtime.rs:300
-pert_ui_runtime::RuntimeError	impl From<LayoutError>	crates/pert-ui-runtime/src/runtime.rs:363
-pert_ui_runtime::RuntimeError	impl From<LiveError>	crates/pert-ui-runtime/src/runtime.rs:293
-pert_ui_runtime::RuntimeError	impl From<NormalizedValueError>	crates/pert-ui-runtime/src/runtime.rs:290
-pert_ui_runtime::RuntimeError	impl From<NumberInputError>	crates/pert-ui-runtime/src/runtime.rs:275
-pert_ui_runtime::RuntimeError	impl From<ParameterError>	crates/pert-ui-runtime/src/runtime.rs:284
-pert_ui_runtime::RuntimeError	impl From<ParameterIdError>	crates/pert-ui-runtime/src/runtime.rs:287
-pert_ui_runtime::RuntimeError	impl From<RuntimeError>	crates/pert-ui-runtime/src/conformance.rs:37
-pert_ui_runtime::RuntimeError	impl From<TextEditError>	crates/pert-ui-runtime/src/runtime.rs:278
-pert_ui_runtime::RuntimeError	impl From<TextError>	crates/pert-ui-runtime/src/runtime.rs:369
-pert_ui_runtime::RuntimeError	impl From<WindowError>	crates/pert-ui-runtime/src/runtime/native_windows.rs:891
-pert_ui_runtime::RuntimeError	impl From<WorkspaceError>	crates/pert-ui-runtime/src/workspace.rs:656
-pert_ui_runtime::Signal	impl From<&Signal<RichText>>	crates/pert-ui-runtime/src/text_source.rs:206
-pert_ui_runtime::Signal	impl From<&Signal<String>>	crates/pert-ui-runtime/src/text_source.rs:200
-pert_ui_runtime::Signal	impl From<&Signal<T>> [<T>]	crates/pert-ui-runtime/src/signal.rs:231
-pert_ui_runtime::Signal	impl From<&Signal<bool>>	crates/pert-ui-runtime/src/permission.rs:260
-pert_ui_runtime::Signal	impl From<Signal<RichText>>	crates/pert-ui-runtime/src/text_source.rs:218
-pert_ui_runtime::Signal	impl From<Signal<String>>	crates/pert-ui-runtime/src/text_source.rs:212
-pert_ui_runtime::Signal	impl From<Signal<T>> [<T>]	crates/pert-ui-runtime/src/signal.rs:238
-pert_ui_runtime::Signal	impl From<Signal<bool>>	crates/pert-ui-runtime/src/permission.rs:253
-pert_ui_runtime::Size	impl From<[u16; 2]>	crates/pert-ui-runtime/src/layout.rs:123
-pert_ui_runtime::Spacing	impl From<Length>	crates/pert-ui-runtime/src/runtime/theme.rs:327
-pert_ui_runtime::Spacing	impl From<MetricRole>	crates/pert-ui-runtime/src/runtime/theme.rs:332
-pert_ui_runtime::StringRole	impl From<StringRole>	crates/pert-ui-runtime/src/text_source.rs:179
-pert_ui_runtime::TableController	impl From<TableController>	crates/pert-ui-runtime/src/collection_filter.rs:367
-pert_ui_runtime::TextEditError	impl From<TextEditError>	crates/pert-ui-runtime/src/workspace.rs:654
-pert_ui_runtime::TextError	impl From<TextError>	crates/pert-ui-runtime/src/workspace.rs:654
-pert_ui_runtime::TextSource	impl From<&ReadSignal<RichText>>	crates/pert-ui-runtime/src/text_source.rs:230
-pert_ui_runtime::TextSource	impl From<&ReadSignal<String>>	crates/pert-ui-runtime/src/text_source.rs:224
-pert_ui_runtime::TextSource	impl From<&Signal<RichText>>	crates/pert-ui-runtime/src/text_source.rs:206
-pert_ui_runtime::TextSource	impl From<&Signal<String>>	crates/pert-ui-runtime/src/text_source.rs:200
-pert_ui_runtime::TextSource	impl From<&String>	crates/pert-ui-runtime/src/text_source.rs:174
-pert_ui_runtime::TextSource	impl From<&str>	crates/pert-ui-runtime/src/text_source.rs:164
-pert_ui_runtime::TextSource	impl From<ReadSignal<RichText>>	crates/pert-ui-runtime/src/text_source.rs:195
-pert_ui_runtime::TextSource	impl From<ReadSignal<String>>	crates/pert-ui-runtime/src/text_source.rs:190
-pert_ui_runtime::TextSource	impl From<RichText>	crates/pert-ui-runtime/src/text_source.rs:185
-pert_ui_runtime::TextSource	impl From<Signal<RichText>>	crates/pert-ui-runtime/src/text_source.rs:218
-pert_ui_runtime::TextSource	impl From<Signal<String>>	crates/pert-ui-runtime/src/text_source.rs:212
-pert_ui_runtime::TextSource	impl From<String>	crates/pert-ui-runtime/src/text_source.rs:169
-pert_ui_runtime::TextSource	impl From<StringRole>	crates/pert-ui-runtime/src/text_source.rs:179
-pert_ui_runtime::TreeController	impl From<TreeController>	crates/pert-ui-runtime/src/collection_filter.rs:372
-pert_ui_runtime::UiZoom	impl From<UiZoom>	crates/pert-ui-runtime/src/runtime/settings.rs:81
-pert_ui_runtime::UiZoom	impl TryFrom<f64>	crates/pert-ui-runtime/src/runtime/settings.rs:75
-pert_ui_runtime::ViewScale	impl TryFrom<f32>	crates/pert-ui-runtime/src/transform.rs:307
-pert_ui_runtime::WindowError	impl From<ApplicationError>	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
-pert_ui_runtime::WindowError	impl From<BindingError>	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
-pert_ui_runtime::WindowError	impl From<ChoiceError>	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
-pert_ui_runtime::WindowError	impl From<ClipboardError>	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
-pert_ui_runtime::WindowError	impl From<DeliveryError>	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
-pert_ui_runtime::WindowError	impl From<DrawError>	crates/pert-ui-runtime/src/runtime/native_windows.rs:906
-pert_ui_runtime::WindowError	impl From<EditError>	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
-pert_ui_runtime::WindowError	impl From<FontError>	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
-pert_ui_runtime::WindowError	impl From<GeometryError>	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
-pert_ui_runtime::WindowError	impl From<LayoutError>	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
-pert_ui_runtime::WindowError	impl From<LiveError>	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
-pert_ui_runtime::WindowError	impl From<NormalizedValueError>	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
-pert_ui_runtime::WindowError	impl From<NumberInputError>	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
-pert_ui_runtime::WindowError	impl From<ParameterError>	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
-pert_ui_runtime::WindowError	impl From<ParameterIdError>	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
-pert_ui_runtime::WindowError	impl From<RuntimeError>	crates/pert-ui-runtime/src/runtime/native_windows.rs:881
-pert_ui_runtime::WindowError	impl From<TextEditError>	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
-pert_ui_runtime::WindowError	impl From<TextError>	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
-pert_ui_runtime::WindowError	impl From<WindowError>	crates/pert-ui-runtime/src/runtime/native_windows.rs:891
-pert_ui_runtime::WorkspaceError	impl From<ApplicationError>	crates/pert-ui-runtime/src/workspace.rs:654
-pert_ui_runtime::WorkspaceError	impl From<BindingError>	crates/pert-ui-runtime/src/workspace.rs:654
-pert_ui_runtime::WorkspaceError	impl From<ChoiceError>	crates/pert-ui-runtime/src/workspace.rs:654
-pert_ui_runtime::WorkspaceError	impl From<ClipboardError>	crates/pert-ui-runtime/src/workspace.rs:654
-pert_ui_runtime::WorkspaceError	impl From<DeliveryError>	crates/pert-ui-runtime/src/workspace.rs:654
-pert_ui_runtime::WorkspaceError	impl From<EditError>	crates/pert-ui-runtime/src/workspace.rs:654
-pert_ui_runtime::WorkspaceError	impl From<FontError>	crates/pert-ui-runtime/src/workspace.rs:654
-pert_ui_runtime::WorkspaceError	impl From<GeometryError>	crates/pert-ui-runtime/src/workspace.rs:654
-pert_ui_runtime::WorkspaceError	impl From<LayoutError>	crates/pert-ui-runtime/src/workspace.rs:654
-pert_ui_runtime::WorkspaceError	impl From<LiveError>	crates/pert-ui-runtime/src/workspace.rs:654
-pert_ui_runtime::WorkspaceError	impl From<NormalizedValueError>	crates/pert-ui-runtime/src/workspace.rs:654
-pert_ui_runtime::WorkspaceError	impl From<NumberInputError>	crates/pert-ui-runtime/src/workspace.rs:654
-pert_ui_runtime::WorkspaceError	impl From<ParameterError>	crates/pert-ui-runtime/src/workspace.rs:654
-pert_ui_runtime::WorkspaceError	impl From<ParameterIdError>	crates/pert-ui-runtime/src/workspace.rs:654
-pert_ui_runtime::WorkspaceError	impl From<RuntimeError>	crates/pert-ui-runtime/src/workspace.rs:633
-pert_ui_runtime::WorkspaceError	impl From<TextEditError>	crates/pert-ui-runtime/src/workspace.rs:654
-pert_ui_runtime::WorkspaceError	impl From<TextError>	crates/pert-ui-runtime/src/workspace.rs:654
-pert_ui_runtime::WorkspaceError	impl From<WorkspaceError>	crates/pert-ui-runtime/src/workspace.rs:656
+impl From<&ReadSignal<RichText>> for TextSource	crates/pert-ui-runtime/src/text_source.rs:230
+impl From<&ReadSignal<String>> for TextSource	crates/pert-ui-runtime/src/text_source.rs:224
+impl From<&ReadSignal<T>> for ReadSignal<T> [<T>]	crates/pert-ui-runtime/src/signal.rs:253
+impl From<&ReadSignal<bool>> for Permission	crates/pert-ui-runtime/src/permission.rs:246
+impl From<&Signal<RichText>> for TextSource	crates/pert-ui-runtime/src/text_source.rs:206
+impl From<&Signal<String>> for TextSource	crates/pert-ui-runtime/src/text_source.rs:200
+impl From<&Signal<T>> for ReadSignal<T> [<T>]	crates/pert-ui-runtime/src/signal.rs:245
+impl From<&Signal<T>> for Signal<T> [<T>]	crates/pert-ui-runtime/src/signal.rs:231
+impl From<&Signal<bool>> for Permission	crates/pert-ui-runtime/src/permission.rs:260
+impl From<&String> for TextSource	crates/pert-ui-runtime/src/text_source.rs:174
+impl From<&str> for ApplicationError	crates/pert-ui-runtime/src/error.rs:72
+impl From<&str> for RichText	crates/pert-ui-runtime/src/text/rich.rs:203
+impl From<&str> for TextSource	crates/pert-ui-runtime/src/text_source.rs:164
+impl From<ApplicationError> for DrawError	crates/pert-ui-runtime/src/drawing.rs:49
+impl From<ApplicationError> for RuntimeError	crates/pert-ui-runtime/src/runtime.rs:195
+impl From<ApplicationError> for WindowError	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
+impl From<ApplicationError> for WorkspaceError	crates/pert-ui-runtime/src/workspace.rs:654
+impl From<BindingError> for DrawError	crates/pert-ui-runtime/src/drawing.rs:49
+impl From<BindingError> for RuntimeError	crates/pert-ui-runtime/src/runtime.rs:191
+impl From<BindingError> for WindowError	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
+impl From<BindingError> for WorkspaceError	crates/pert-ui-runtime/src/workspace.rs:654
+impl From<Box<dyn core::error::Error + Send + Sync>> for ApplicationError	crates/pert-ui-runtime/src/error.rs:79
+impl From<CaptureError> for crate::RuntimeError	crates/pert-ui-runtime/src/capture.rs:270
+impl From<ChoiceError> for DrawError	crates/pert-ui-runtime/src/drawing.rs:49
+impl From<ChoiceError> for RuntimeError	crates/pert-ui-runtime/src/runtime.rs:297
+impl From<ChoiceError> for WindowError	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
+impl From<ChoiceError> for WorkspaceError	crates/pert-ui-runtime/src/workspace.rs:654
+impl From<ClipboardError> for DrawError	crates/pert-ui-runtime/src/drawing.rs:49
+impl From<ClipboardError> for RuntimeError	crates/pert-ui-runtime/src/runtime.rs:281
+impl From<ClipboardError> for WindowError	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
+impl From<ClipboardError> for WorkspaceError	crates/pert-ui-runtime/src/workspace.rs:654
+impl From<DeliveryError> for BindingError	crates/pert-ui-runtime/src/parameter_binding.rs:79
+impl From<DeliveryError> for DrawError	crates/pert-ui-runtime/src/drawing.rs:49
+impl From<DeliveryError> for RuntimeError	crates/pert-ui-runtime/src/runtime.rs:396
+impl From<DeliveryError> for WindowError	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
+impl From<DeliveryError> for WorkspaceError	crates/pert-ui-runtime/src/workspace.rs:654
+impl From<DrawError> for CaptureError	crates/pert-ui-runtime/src/capture.rs:291
+impl From<DrawError> for WindowError	crates/pert-ui-runtime/src/runtime/native_windows.rs:906
+impl From<DropOperation> for DropOperations	crates/pert-ui-runtime/src/drag.rs:175
+impl From<EditError> for BindingError	crates/pert-ui-runtime/src/parameter_binding.rs:65
+impl From<EditError> for DrawError	crates/pert-ui-runtime/src/drawing.rs:49
+impl From<EditError> for RuntimeError	crates/pert-ui-runtime/src/runtime.rs:390
+impl From<EditError> for WindowError	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
+impl From<EditError> for WorkspaceError	crates/pert-ui-runtime/src/workspace.rs:654
+impl From<FontError> for DrawError	crates/pert-ui-runtime/src/drawing.rs:49
+impl From<FontError> for RuntimeError	crates/pert-ui-runtime/src/runtime.rs:372
+impl From<FontError> for WindowError	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
+impl From<FontError> for WorkspaceError	crates/pert-ui-runtime/src/workspace.rs:654
+impl From<FrameError> for CaptureError	crates/pert-ui-runtime/src/capture.rs:285
+impl From<GeometryError> for DrawError	crates/pert-ui-runtime/src/drawing.rs:49
+impl From<GeometryError> for RuntimeError	crates/pert-ui-runtime/src/runtime.rs:300
+impl From<GeometryError> for WindowError	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
+impl From<GeometryError> for WorkspaceError	crates/pert-ui-runtime/src/workspace.rs:654
+impl From<Icon> for IconSource	crates/pert-ui-runtime/src/text/icons.rs:243
+impl From<IconGlyph> for IconSource	crates/pert-ui-runtime/src/text/icons.rs:248
+impl From<LayoutError> for DrawError	crates/pert-ui-runtime/src/drawing.rs:49
+impl From<LayoutError> for RuntimeError	crates/pert-ui-runtime/src/runtime.rs:363
+impl From<LayoutError> for WindowError	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
+impl From<LayoutError> for WorkspaceError	crates/pert-ui-runtime/src/workspace.rs:654
+impl From<Length> for Spacing	crates/pert-ui-runtime/src/runtime/theme.rs:327
+impl From<ListFilter> for FilterTarget	crates/pert-ui-runtime/src/collection_filter.rs:362
+impl From<LiveError> for DrawError	crates/pert-ui-runtime/src/drawing.rs:49
+impl From<LiveError> for RuntimeError	crates/pert-ui-runtime/src/runtime.rs:293
+impl From<LiveError> for WindowError	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
+impl From<LiveError> for WorkspaceError	crates/pert-ui-runtime/src/workspace.rs:654
+impl From<MetricRole> for Spacing	crates/pert-ui-runtime/src/runtime/theme.rs:332
+impl From<NormalizedValueError> for DrawError	crates/pert-ui-runtime/src/drawing.rs:49
+impl From<NormalizedValueError> for RuntimeError	crates/pert-ui-runtime/src/runtime.rs:290
+impl From<NormalizedValueError> for WindowError	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
+impl From<NormalizedValueError> for WorkspaceError	crates/pert-ui-runtime/src/workspace.rs:654
+impl From<NumberInputError> for DrawError	crates/pert-ui-runtime/src/drawing.rs:49
+impl From<NumberInputError> for RuntimeError	crates/pert-ui-runtime/src/runtime.rs:275
+impl From<NumberInputError> for WindowError	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
+impl From<NumberInputError> for WorkspaceError	crates/pert-ui-runtime/src/workspace.rs:654
+impl From<OpaqueColor> for Color	crates/pert-ui-runtime/src/drawing.rs:732
+impl From<ParameterError> for DrawError	crates/pert-ui-runtime/src/drawing.rs:49
+impl From<ParameterError> for RuntimeError	crates/pert-ui-runtime/src/runtime.rs:284
+impl From<ParameterError> for WindowError	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
+impl From<ParameterError> for WorkspaceError	crates/pert-ui-runtime/src/workspace.rs:654
+impl From<ParameterIdError> for DrawError	crates/pert-ui-runtime/src/drawing.rs:49
+impl From<ParameterIdError> for RuntimeError	crates/pert-ui-runtime/src/runtime.rs:287
+impl From<ParameterIdError> for WindowError	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
+impl From<ParameterIdError> for WorkspaceError	crates/pert-ui-runtime/src/workspace.rs:654
+impl From<PathError> for DrawError	crates/pert-ui-runtime/src/drawing.rs:34
+impl From<PickStatus> for CommandPaletteStatus	crates/pert-ui-runtime/src/command_palette.rs:134
+impl From<ReadSignal<RichText>> for TextSource	crates/pert-ui-runtime/src/text_source.rs:195
+impl From<ReadSignal<String>> for TextSource	crates/pert-ui-runtime/src/text_source.rs:190
+impl From<ReadSignal<bool>> for Permission	crates/pert-ui-runtime/src/permission.rs:236
+impl From<RichText> for TextSource	crates/pert-ui-runtime/src/text_source.rs:185
+impl From<RuntimeError> for CaptureError	crates/pert-ui-runtime/src/capture.rs:199
+impl From<RuntimeError> for ContentSearchError	crates/pert-ui-runtime/src/content_search.rs:452
+impl From<RuntimeError> for DrawError	crates/pert-ui-runtime/src/drawing.rs:47
+impl From<RuntimeError> for FileBrowserError	crates/pert-ui-runtime/src/file_browser.rs:270
+impl From<RuntimeError> for RedescriptionError	crates/pert-ui-runtime/src/conformance.rs:37
+impl From<RuntimeError> for WindowError	crates/pert-ui-runtime/src/runtime/native_windows.rs:881
+impl From<RuntimeError> for WorkspaceError	crates/pert-ui-runtime/src/workspace.rs:633
+impl From<Signal<RichText>> for TextSource	crates/pert-ui-runtime/src/text_source.rs:218
+impl From<Signal<String>> for TextSource	crates/pert-ui-runtime/src/text_source.rs:212
+impl From<Signal<T>> for ReadSignal<T> [<T>]	crates/pert-ui-runtime/src/signal.rs:238
+impl From<Signal<bool>> for Permission	crates/pert-ui-runtime/src/permission.rs:253
+impl From<String> for ApplicationError	crates/pert-ui-runtime/src/error.rs:65
+impl From<String> for RichText	crates/pert-ui-runtime/src/text/rich.rs:198
+impl From<String> for TextSource	crates/pert-ui-runtime/src/text_source.rs:169
+impl From<StringRole> for TextSource	crates/pert-ui-runtime/src/text_source.rs:179
+impl From<TableController> for FilterTarget	crates/pert-ui-runtime/src/collection_filter.rs:367
+impl From<TextEditError> for DrawError	crates/pert-ui-runtime/src/drawing.rs:49
+impl From<TextEditError> for RuntimeError	crates/pert-ui-runtime/src/runtime.rs:278
+impl From<TextEditError> for WindowError	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
+impl From<TextEditError> for WorkspaceError	crates/pert-ui-runtime/src/workspace.rs:654
+impl From<TextError> for DrawError	crates/pert-ui-runtime/src/drawing.rs:49
+impl From<TextError> for RuntimeError	crates/pert-ui-runtime/src/runtime.rs:369
+impl From<TextError> for WindowError	crates/pert-ui-runtime/src/runtime/native_windows.rs:916
+impl From<TextError> for WorkspaceError	crates/pert-ui-runtime/src/workspace.rs:654
+impl From<TreeController> for FilterTarget	crates/pert-ui-runtime/src/collection_filter.rs:372
+impl From<UiZoom> for f64	crates/pert-ui-runtime/src/runtime/settings.rs:81
+impl From<WindowError> for crate::RuntimeError	crates/pert-ui-runtime/src/runtime/native_windows.rs:891
+impl From<WorkspaceError> for crate::RuntimeError	crates/pert-ui-runtime/src/workspace.rs:656
+impl From<[u16; 2]> for Size	crates/pert-ui-runtime/src/layout.rs:123
+impl From<bool> for Permission	crates/pert-ui-runtime/src/permission.rs:225
+impl From<core::io::error::Error> for ListingError	crates/pert-ui-runtime/src/file_browser.rs:100
+impl From<u16> for Length	crates/pert-ui-runtime/src/containers.rs:13
+impl FromStr for Color	crates/pert-ui-runtime/src/drawing.rs:744
+impl TryFrom<Color> for OpaqueColor	crates/pert-ui-runtime/src/drawing.rs:716
+impl TryFrom<f32> for Length	crates/pert-ui-runtime/src/containers.rs:38
+impl TryFrom<f32> for Magnification	crates/pert-ui-runtime/src/pointer.rs:132
+impl TryFrom<f32> for ViewScale	crates/pert-ui-runtime/src/transform.rs:307
+impl TryFrom<f64> for PresentationRate	crates/pert-ui-runtime/src/runtime/presentation.rs:31
+impl TryFrom<f64> for UiZoom	crates/pert-ui-runtime/src/runtime/settings.rs:75
 
 ## pert-ui-cpu
-pert_ui_cpu::CpuRenderError	impl From<CpuRenderError>	crates/pert-ui-cpu/src/lib.rs:42
-pert_ui_cpu::CpuRenderError	impl From<DrawError>	crates/pert-ui-cpu/src/lib.rs:20
+impl From<CpuRenderError> for pert_ui_runtime::CaptureError	crates/pert-ui-cpu/src/lib.rs:42
+impl From<DrawError> for CpuRenderError	crates/pert-ui-cpu/src/lib.rs:20
 
 ## pert-ui-wgpu
-pert_ui_wgpu::RenderError	impl From<DrawError>	crates/pert-ui-wgpu/src/lib.rs:49
-pert_ui_wgpu::RenderError	impl From<LimitError>	crates/pert-ui-wgpu/src/lib.rs:55
+impl From<DrawError> for RenderError	crates/pert-ui-wgpu/src/lib.rs:49
+impl From<LimitError> for RenderError	crates/pert-ui-wgpu/src/lib.rs:55
 
 ## pert-ui
-pert_ui::AppError	impl From<E> [<E> where crate::DrawError: From<E>]	crates/pert-ui/src/app.rs:167	[configs: cpu, default, image-formats, images, no-default-desktop-cpu, serde, svg]
-pert_ui::images::ImageError	impl From<Error>	crates/pert-ui/src/images.rs:244	[configs: image-formats, images, no-default-png]
-pert_ui::svg::SvgError	impl From<DrawError>	crates/pert-ui/src/svg.rs:79	[configs: no-default-svg, svg]
+impl From<DrawError> for SvgError	crates/pert-ui/src/svg.rs:79	[configs: no-default-svg, svg]
+impl From<E> for AppError [<E> where crate::DrawError: From<E>]	crates/pert-ui/src/app.rs:167	[configs: cpu, default, image-formats, images, no-default-desktop-cpu, serde, svg]
+impl From<core::io::error::Error> for ImageError	crates/pert-ui/src/images.rs:244	[configs: image-formats, images, no-default-png]

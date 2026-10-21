@@ -13,7 +13,7 @@ pert_ui_core::Sequence::get(self) -> u64	#[must_use]	crates/pert-ui-core/src/liv
 pert_ui_core::Timestamp::get(self) -> u64	#[must_use]	crates/pert-ui-core/src/live/mod.rs:130
 
 ## pert-ui-runtime
-pert_ui_runtime::ApplicationError::get(&self) -> &dyn Error + Send + Sync + 'static	#[must_use]	crates/pert-ui-runtime/src/error.rs:55
+pert_ui_runtime::ApplicationError::get(&self) -> &dyn core::error::Error + Send + Sync + 'static	#[must_use]	crates/pert-ui-runtime/src/error.rs:55
 pert_ui_runtime::DragPayload::get<T: 'static>(&self) -> Option<&T>	#[must_use]	crates/pert-ui-runtime/src/drag.rs:53
 pert_ui_runtime::HistoryEntryId::get(self) -> u64	#[must_use]	crates/pert-ui-runtime/src/navigation_history.rs:21
 pert_ui_runtime::HistorySnapshot::get(&self, id: HistoryEntryId) -> Option<&HistoryEntry<T>>	#[must_use]	crates/pert-ui-runtime/src/navigation_history.rs:106

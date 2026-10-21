@@ -25,7 +25,6 @@
 
 ## pert-ui-runtime
 [bound] returns Self	pert_ui_runtime::ColorSwatch::bound(color: impl Into<ReadSignal<Color>>) -> Self	-	crates/pert-ui-runtime/src/color_swatch.rs:126
-[bound] returns Self	pert_ui_runtime::Constraints::bounded(size: Size) -> Self	#[must_use]	crates/pert-ui-runtime/src/layout.rs:274
 [bound] returns Self	pert_ui_runtime::Image::bound(source: impl Into<ReadSignal<Option<RasterImage>>>) -> Self	-	crates/pert-ui-runtime/src/image.rs:93
 [bound] returns Self	pert_ui_runtime::InlineChoice::bound(value: impl Into<Signal<T>>, choices: impl Into<ReadSignal<Vec<Choice<T>>>>) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:1604
 [bound] returns Self	pert_ui_runtime::InlineSelect::bound(ui: &impl crate::StateOwner, value: impl Into<Signal<T>>, options: impl Into<ReadSignal<Vec<Choice<T>>>>) -> Self	-	crates/pert-ui-runtime/src/select.rs:1787
@@ -55,7 +54,7 @@
 [from_] returns Self	pert_ui_runtime::Rect::from_origin_size(origin: crate::Point, size: crate::Size) -> Self	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:101
 [from_] returns Self	pert_ui_runtime::Rect::from_size(size: crate::Size) -> Self	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:85
 [from_] returns Result<Self>	pert_ui_runtime::Viewport::from_physical(extent: PhysicalExtent, scale: f64) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/drawing.rs:932
-[new] returns Self	pert_ui_runtime::ApplicationError::new(error: impl Error + Send + Sync + 'static) -> Self	-	crates/pert-ui-runtime/src/error.rs:50
+[new] returns Self	pert_ui_runtime::ApplicationError::new(error: impl core::error::Error + Send + Sync + 'static) -> Self	-	crates/pert-ui-runtime/src/error.rs:50
 [new] returns Result<Self>	pert_ui_runtime::Breadcrumb::new(segments: impl IntoIterator<Item = BreadcrumbSegment>, on_activate: impl FnMut(&mut EventContext, &str) -> Result<(), RuntimeError> + 'static) -> Result<Self, LayoutError>	-	crates/pert-ui-runtime/src/breadcrumb.rs:180
 [new] returns Self	pert_ui_runtime::Button::new(text: impl Into<TextSource>, action: impl FnMut(&mut EventContext) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/controls.rs:473
 [new] returns Self	pert_ui_runtime::CommandMatcher::new(score: impl Fn(&str, &CommandEntry) -> Option<u32> + 'static) -> Self	-	crates/pert-ui-runtime/src/command_palette.rs:46
@@ -233,6 +232,7 @@
 [other] returns Self	pert_ui_runtime::Choice::icon(value: T, icon: impl Into<IconSource>, name: impl Into<String>) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:31
 [other] returns Result<Self>	pert_ui_runtime::Color::rgba(red: f32, green: f32, blue: f32, alpha: f32) -> Result<Self, DrawError>	-	crates/pert-ui-runtime/src/drawing.rs:258
 [other] returns Self	pert_ui_runtime::CommandMatcher::fuzzy() -> Self	-	crates/pert-ui-runtime/src/command_palette.rs:51
+[other] returns Self	pert_ui_runtime::Constraints::bounded(size: Size) -> Self	#[must_use]	crates/pert-ui-runtime/src/layout.rs:274
 [other] returns Self	pert_ui_runtime::ContentQuery::everything() -> Self	#[must_use]	crates/pert-ui-runtime/src/content_search.rs:62
 [other] returns Self	pert_ui_runtime::DirectoryEntry::unreadable(path: impl Into<PathBuf>, error: ListingError) -> Self	-	crates/pert-ui-runtime/src/file_browser.rs:142
 [other] returns Self	pert_ui_runtime::DragPreview::element(element: crate::Element) -> Self	-	crates/pert-ui-runtime/src/drag.rs:206
