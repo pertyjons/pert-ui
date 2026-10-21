@@ -254,6 +254,8 @@ pert_ui_runtime::ChoiceError	enum	role: 	crates/pert-ui-runtime/src/choice_contr
     variant DuplicateValue
     variant EmptyValue
 pert_ui_runtime::ClickCounter	struct	role: 	crates/pert-ui-runtime/src/click.rs:66
+    const DEFAULT_DISTANCE: Length = _
+    const DEFAULT_INTERVAL: Duration = _
     <pert_ui_runtime::ClickCounter as Default>::default() -> Self	(trait impl)	crates/pert-ui-runtime/src/click.rs:74
     pert_ui_runtime::ClickCounter::count(&self) -> u32	#[must_use]	crates/pert-ui-runtime/src/click.rs:153
     pert_ui_runtime::ClickCounter::new() -> Self	#[must_use]	crates/pert-ui-runtime/src/click.rs:88
@@ -288,6 +290,17 @@ pert_ui_runtime::CollectionFilter	struct	role: 	crates/pert-ui-runtime/src/colle
     pert_ui_runtime::CollectionFilter::query(&self) -> Signal<String>	#[must_use]	crates/pert-ui-runtime/src/collection_filter.rs:628
     pert_ui_runtime::CollectionFilter::with_query(query: impl Into<Signal<String>>, target: impl Into<FilterTarget>, collection: Element) -> Self	-	crates/pert-ui-runtime/src/collection_filter.rs:538
 pert_ui_runtime::Color	struct	role: 	crates/pert-ui-runtime/src/drawing.rs:210
+    const ACCENT: Self = _
+    const BACKGROUND: Self = _
+    const BUTTON: Self = _
+    const BUTTON_HOVER: Self = _
+    const MUTED: Self = _
+    const SURFACE: Self = _
+    const SURFACE_HOVER: Self = _
+    const TAB: Self = _
+    const TAB_SELECTED: Self = _
+    const TEXT: Self = _
+    const WHITE: Self = _
     <pert_ui_runtime::Color as From<OpaqueColor>>::from(color: OpaqueColor) -> Self	(trait impl)	crates/pert-ui-runtime/src/drawing.rs:733
     <pert_ui_runtime::Color as FromStr>::from_str(text: &str) -> Result<Self, Self::Err>	(trait impl)	crates/pert-ui-runtime/src/drawing.rs:747
     pert_ui_runtime::Color::alpha(self) -> f32	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:293
@@ -424,6 +437,8 @@ pert_ui_runtime::CommandOutcome	enum	role: 	crates/pert-ui-runtime/src/runtime/c
     variant Invoked
     variant RepeatSuppressed
 pert_ui_runtime::CommandPalette	struct	role: 	crates/pert-ui-runtime/src/command_palette.rs:505
+    const DEFAULT_WIDTH: f32 = QuickPick::DEFAULT_WIDTH
+    const VISIBLE_ROWS: usize = QuickPick::VISIBLE_ROWS
     pert_ui_runtime::CommandPalette::empty_text(self, text: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/command_palette.rs:569
     pert_ui_runtime::CommandPalette::matcher(self, matcher: CommandMatcher) -> Self	-	crates/pert-ui-runtime/src/command_palette.rs:546
     pert_ui_runtime::CommandPalette::new(controller: CommandPaletteController, anchor: Element) -> Self	-	crates/pert-ui-runtime/src/command_palette.rs:520
@@ -580,6 +595,8 @@ pert_ui_runtime::ContentJump	enum	role: 	crates/pert-ui-runtime/src/content_sear
     variant Reveal(crate::RevealOutcome)
     variant Row(crate::ListRevealStatus)
 pert_ui_runtime::ContentQuery	struct	role: 	crates/pert-ui-runtime/src/content_search.rs:22
+    const DEFAULT_BUDGET: usize = 10_000
+    const DEFAULT_LIMIT: usize = 50
     pert_ui_runtime::ContentQuery::budget(self, budget: usize) -> Result<Self, ContentSearchError>	-	crates/pert-ui-runtime/src/content_search.rs:90
     pert_ui_runtime::ContentQuery::everything() -> Self	#[must_use]	crates/pert-ui-runtime/src/content_search.rs:62
     pert_ui_runtime::ContentQuery::hidden(self, include: bool) -> Self	#[must_use]	crates/pert-ui-runtime/src/content_search.rs:100
@@ -872,6 +889,11 @@ pert_ui_runtime::DropOperation	enum	role: 	crates/pert-ui-runtime/src/drag.rs:74
     variant Link
     variant Move
 pert_ui_runtime::DropOperations	struct	role: 	crates/pert-ui-runtime/src/drag.rs:112
+    const ALL: Self = _
+    const COPY: Self = _
+    const LINK: Self = _
+    const MOVE: Self = _
+    const NONE: Self = _
     <pert_ui_runtime::DropOperations as BitOr>::bitor(self, other: Self) -> Self	(trait impl)	crates/pert-ui-runtime/src/drag.rs:170
     <pert_ui_runtime::DropOperations as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-runtime/src/drag.rs:395	[configs: serde]
     <pert_ui_runtime::DropOperations as From<DropOperation>>::from(operation: DropOperation) -> Self	(trait impl)	crates/pert-ui-runtime/src/drag.rs:176
@@ -1047,6 +1069,7 @@ pert_ui_runtime::EventRecord	struct	role: 	crates/pert-ui-runtime/src/diagnostic
     field sequence: u64
     field status: EventStatus
 pert_ui_runtime::EventStatus	enum	role: 	crates/pert-ui-runtime/src/diagnostics.rs:795
+    const MAX_MESSAGE_CHARS: usize = 512
     variant Cancelled
     variant Dispatched
     variant Failed(String)
@@ -1165,6 +1188,7 @@ pert_ui_runtime::FlushReport	struct	role: 	crates/pert-ui-runtime/src/runtime.rs
     field components_updated: usize
     field next_deadline: Option<std::time::Duration>
 pert_ui_runtime::FontData	struct	role: 	crates/pert-ui-runtime/src/text/fonts.rs:44
+    const MAX_BYTES: usize = _
     <pert_ui_runtime::FontData as Debug>::fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result	(trait impl)	crates/pert-ui-runtime/src/text/fonts.rs:69
     pert_ui_runtime::FontData::bundled(role: FontRole) -> Self	-	crates/pert-ui-runtime/src/text/fonts.rs:57
     pert_ui_runtime::FontData::from_owned(bytes: Vec<u8>) -> Self	-	crates/pert-ui-runtime/src/text/fonts.rs:64
@@ -1179,6 +1203,8 @@ pert_ui_runtime::FontError	enum	role: 	crates/pert-ui-runtime/src/text/fonts.rs:
 pert_ui_runtime::FontId	struct	role: 	crates/pert-ui-runtime/src/text/fonts.rs:86
     <pert_ui_runtime::FontId as PartialEq>::eq(&self, other: &Self) -> bool	(trait impl)	crates/pert-ui-runtime/src/text/fonts.rs:91
 pert_ui_runtime::FontManager	struct	role: 	crates/pert-ui-runtime/src/runtime/fonts.rs:38
+    const MAX_CUSTOM_FONTS: usize = 256
+    const MAX_TOTAL_BYTES: usize = _
     pert_ui_runtime::FontManager::default_font(&self, role: FontRole) -> Result<FontId, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/fonts.rs:75
     pert_ui_runtime::FontManager::icon_glyph(&self, font: FontId, character: char) -> Result<IconGlyph, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/fonts.rs:149
     pert_ui_runtime::FontManager::material_icon(&self, name: &str) -> Result<IconGlyph, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/fonts.rs:122
@@ -1207,6 +1233,7 @@ pert_ui_runtime::FrameError	enum	role: 	crates/pert-ui-runtime/src/capture.rs:22
     variant ExtentMismatch { frame_width: u32, frame_height: u32, window_width: u32, window_height: u32 }
     variant PixelCount { width: u32, height: u32, expected: u64, actual: u64 }
 pert_ui_runtime::FrameImage	struct	role: 	crates/pert-ui-runtime/src/capture.rs:317
+    const MAX_BYTES: usize = _
     pert_ui_runtime::FrameImage::crop(&self, x: u32, y: u32, width: u32, height: u32) -> Result<Self, CaptureError>	-	crates/pert-ui-runtime/src/capture.rs:409
     pert_ui_runtime::FrameImage::encode_png(&self) -> Vec<u8>	#[must_use]	crates/pert-ui-runtime/src/capture.rs:452
     pert_ui_runtime::FrameImage::height(&self) -> u32	#[must_use]	crates/pert-ui-runtime/src/capture.rs:392
@@ -1272,6 +1299,7 @@ pert_ui_runtime::HistorySnapshot	struct	role: 	crates/pert-ui-runtime/src/naviga
     pert_ui_runtime::HistorySnapshot::next(&self) -> Option<&HistoryEntry<T>>	#[must_use]	crates/pert-ui-runtime/src/navigation_history.rs:101
     pert_ui_runtime::HistorySnapshot::previous(&self) -> Option<&HistoryEntry<T>>	#[must_use]	crates/pert-ui-runtime/src/navigation_history.rs:94
 pert_ui_runtime::Icon	enum	role: 	crates/pert-ui-runtime/src/text/icons.rs:9
+    const ALL: &'static [Self] = _
     variant Add
     variant Back
     variant Check
@@ -1497,6 +1525,8 @@ pert_ui_runtime::InspectionService	struct	role: 	crates/pert-ui-runtime/src/insp
     pert_ui_runtime::InspectionService::pending(&self) -> usize	-	crates/pert-ui-runtime/src/inspection.rs:1118
     pert_ui_runtime::InspectionService::set_application(&self, provider: impl Fn() -> BTreeMap<String, InspectValue> + 'static)	-	crates/pert-ui-runtime/src/inspection.rs:1099
 pert_ui_runtime::InspectionSnapshot	struct	role: 	crates/pert-ui-runtime/src/diagnostics.rs:849
+    const MAX_EVENTS: usize = 256
+    const SCHEMA_VERSION: u32 = 14
     field application: std::collections::BTreeMap<String, InspectValue>
     field at: std::time::Duration
     field components: Vec<ComponentInspection>
@@ -1839,6 +1869,7 @@ pert_ui_runtime::Mailbox	struct	role: 	crates/pert-ui-runtime/src/mailbox.rs:249
 pert_ui_runtime::MaskId	struct	role: 	crates/pert-ui-runtime/src/drawing.rs:1096
     pert_ui_runtime::MaskId::index(self) -> usize	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:1101
 pert_ui_runtime::MaskImage	struct	role: 	crates/pert-ui-runtime/src/drawing.rs:1115
+    const MAX_PIXELS: usize = _
     <pert_ui_runtime::MaskImage as PartialEq>::eq(&self, other: &Self) -> bool	(trait impl)	crates/pert-ui-runtime/src/drawing.rs:1122
     pert_ui_runtime::MaskImage::content_key(&self) -> u64	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:1180
     pert_ui_runtime::MaskImage::height(&self) -> u32	#[must_use]	crates/pert-ui-runtime/src/drawing.rs:1163
@@ -1920,6 +1951,7 @@ pert_ui_runtime::MetricRole	enum	role: 	crates/pert-ui-runtime/src/runtime/theme
     variant TabGap
     variant TabHeight
 pert_ui_runtime::Modifiers	struct	role: 	crates/pert-ui-runtime/src/input.rs:285
+    const PRIMARY: Self = _
     field alt: bool
     field control: bool
     field shift: bool
@@ -1954,6 +1986,7 @@ pert_ui_runtime::NativeWindowOptions	struct	role: 	crates/pert-ui-runtime/src/ru
     pert_ui_runtime::NativeWindowOptions::size(self, size: crate::Size) -> Result<Self, RuntimeError>	-	crates/pert-ui-runtime/src/runtime/native_windows.rs:222
     pert_ui_runtime::NativeWindowOptions::title(&self) -> &str	-	crates/pert-ui-runtime/src/runtime/native_windows.rs:230
 pert_ui_runtime::NavigationHistory	struct	role: 	crates/pert-ui-runtime/src/navigation_history.rs:194
+    const DEFAULT_CAPACITY: NonZeroUsize = _
     <pert_ui_runtime::NavigationHistory as Clone>::clone(&self) -> Self	(trait impl)	crates/pert-ui-runtime/src/navigation_history.rs:210
     <pert_ui_runtime::NavigationHistory as Debug>::fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result	(trait impl)	crates/pert-ui-runtime/src/navigation_history.rs:225
     pert_ui_runtime::NavigationHistory::back(&self) -> Result<Option<HistoryEntry<T>>, RuntimeError>	-	crates/pert-ui-runtime/src/navigation_history.rs:347
@@ -1980,6 +2013,7 @@ pert_ui_runtime::NumberFormat	struct	role: 	crates/pert-ui-runtime/src/number_fo
     pert_ui_runtime::NumberFormat::new(width_hint: impl Into<String>, display: impl Fn(T) -> String + 'static, parse: impl Fn(&str) -> Result<T, NumberInputError> + 'static) -> Self	-	crates/pert-ui-runtime/src/number_format.rs:83
     pert_ui_runtime::NumberFormat::unit(self, unit: impl Fn(T) -> String + 'static) -> Self	-	crates/pert-ui-runtime/src/number_format.rs:121
 pert_ui_runtime::NumberInputError	enum	role: 	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:14
+    const MAX_PRECISION: u8 = 15
     variant InvalidNumber
     variant InvalidPrecision
     variant InvalidRange
@@ -2072,6 +2106,7 @@ pert_ui_runtime::ParameterInspection	struct	role: 	crates/pert-ui-runtime/src/di
     field id: crate::ParameterId
     field parameter: crate::AnyParameterSnapshot
 pert_ui_runtime::Path	struct	role: 	crates/pert-ui-runtime/src/geometry.rs:199
+    const MAX_POINTS: usize = 65_536
     pert_ui_runtime::Path::bounds(&self) -> Rect	#[must_use]	crates/pert-ui-runtime/src/geometry.rs:368
     pert_ui_runtime::Path::circle(center: Point, radius: Length) -> Result<Self, PathError>	-	crates/pert-ui-runtime/src/geometry.rs:270
     pert_ui_runtime::Path::elements(&self) -> &[PathElement]	-	crates/pert-ui-runtime/src/geometry.rs:206
@@ -2162,6 +2197,7 @@ pert_ui_runtime::PickStatus	enum	role: 	crates/pert-ui-runtime/src/quick_pick.rs
     variant Open
     variant Pending
 pert_ui_runtime::Point	struct	role: 	crates/pert-ui-runtime/src/pointer.rs:4
+    const ZERO: Self = _
     pert_ui_runtime::Point::new(x: f32, y: f32) -> Result<Self, crate::GeometryError>	-	crates/pert-ui-runtime/src/pointer.rs:17
     pert_ui_runtime::Point::x(self) -> f32	#[must_use]	crates/pert-ui-runtime/src/pointer.rs:25
     pert_ui_runtime::Point::y(self) -> f32	#[must_use]	crates/pert-ui-runtime/src/pointer.rs:30
@@ -2265,12 +2301,16 @@ pert_ui_runtime::ProfileSample	struct	role: 	crates/pert-ui-runtime/src/profilin
     field operation: ProfileOperation
     field self_time: std::time::Duration
 pert_ui_runtime::ProfileSnapshot	struct	role: 	crates/pert-ui-runtime/src/profiling.rs:137
+    const MAX_NESTING: usize = 256
+    const MAX_RECENT: usize = 256
+    const MAX_STATS: usize = 4096
     field dropped_samples: u64
     field dropped_scopes: u64
     field enabled: bool
     field recent: Vec<ProfileSample>
     field stats: Vec<ProfileStats>
 pert_ui_runtime::ProfileStats	struct	role: 	crates/pert-ui-runtime/src/profiling.rs:89
+    const MAX_KEY_CHARS: usize = 128
     field calls: u64
     field component: Option<u64>
     field key: String
@@ -2328,6 +2368,8 @@ pert_ui_runtime::QueryResult	struct	role: 	crates/pert-ui-runtime/src/inspection
     field validation: Option<crate::ValidationReport>
     field windows: Option<Vec<crate::WindowInspection>>
 pert_ui_runtime::QuickPick	struct	role: 	crates/pert-ui-runtime/src/quick_pick.rs:866
+    const DEFAULT_WIDTH: f32 = 520.0
+    const VISIBLE_ROWS: usize = 10
     pert_ui_runtime::QuickPick::empty_text(self, text: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/quick_pick.rs:946
     pert_ui_runtime::QuickPick::list_name(self, name: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/quick_pick.rs:963
     pert_ui_runtime::QuickPick::matcher(self, matcher: PickMatcher) -> Self	-	crates/pert-ui-runtime/src/quick_pick.rs:926
@@ -2350,6 +2392,7 @@ pert_ui_runtime::RadioGroup	struct	role: 	crates/pert-ui-runtime/src/choice_cont
     pert_ui_runtime::RadioGroup::new(value: impl Into<Signal<T>>, choices: impl IntoIterator<Item = Choice<T>>) -> Result<Self, ChoiceError>	-	crates/pert-ui-runtime/src/choice_controls.rs:727
     pert_ui_runtime::RadioGroup::on_change(self, handler: impl FnMut(&mut EventContext, &T) -> Result<(), RuntimeError> + 'static) -> Self	-	crates/pert-ui-runtime/src/choice_controls.rs:809
 pert_ui_runtime::RasterImage	struct	role: 	crates/pert-ui-runtime/src/resources.rs:147
+    const MAX_BYTES: usize = _
     <pert_ui_runtime::RasterImage as PartialEq>::eq(&self, other: &Self) -> bool	(trait impl)	crates/pert-ui-runtime/src/resources.rs:221
     pert_ui_runtime::RasterImage::content_key(&self) -> u64	#[must_use]	crates/pert-ui-runtime/src/resources.rs:216
     pert_ui_runtime::RasterImage::from_srgba8(width: u32, height: u32, pixels: Vec<u8>) -> Result<Self, DrawError>	-	crates/pert-ui-runtime/src/resources.rs:168
@@ -2486,6 +2529,7 @@ pert_ui_runtime::RevealStatus	enum	role: 	crates/pert-ui-runtime/src/runtime/rev
     variant Finished(Result<RevealOutcome, RuntimeError>)
     variant Pending
 pert_ui_runtime::RichText	struct	role: 	crates/pert-ui-runtime/src/text/rich.rs:87
+    const MAX_SEGMENTS: usize = 1024
     <pert_ui_runtime::RichText as From<&str>>::from(text: &str) -> Self	(trait impl)	crates/pert-ui-runtime/src/text/rich.rs:204
     <pert_ui_runtime::RichText as From<String>>::from(text: String) -> Self	(trait impl)	crates/pert-ui-runtime/src/text/rich.rs:199
     pert_ui_runtime::RichText::gap(self) -> Self	-	crates/pert-ui-runtime/src/text/rich.rs:123
@@ -2504,6 +2548,16 @@ pert_ui_runtime::Row	struct	role: 	crates/pert-ui-runtime/src/containers.rs:893
     pert_ui_runtime::Row::justify(self, justify: Justify) -> Self	-	crates/pert-ui-runtime/src/containers.rs:925
     pert_ui_runtime::Row::new(children: impl IntoIterator<Item = Element>) -> Self	-	crates/pert-ui-runtime/src/containers.rs:893
 pert_ui_runtime::Runtime	struct	role: 	crates/pert-ui-runtime/src/runtime.rs:3508
+    const MAX_BACKGROUND_TASKS: usize = 16
+    const MAX_FLUSH_WAVES: usize = 64
+    const MAX_INTERVALS: usize = 64
+    const MAX_OVERLAY_BOXES: usize = 1024
+    const MAX_OVERLAY_MARKERS: usize = 64
+    const MAX_PENDING_CAPTURES: usize = 16
+    const MAX_QUEUED_COMMANDS: usize = 64
+    const MAX_REVEAL_REQUESTS: usize = 16
+    const MAX_TASKS: usize = 64
+    const MAX_WINDOW_REQUESTS: usize = 64
     <pert_ui_runtime::Runtime as Default>::default() -> Self	(trait impl)	crates/pert-ui-runtime/src/runtime.rs:3561
     <pert_ui_runtime::Runtime as Drop>::drop(&mut self)	(trait impl)	crates/pert-ui-runtime/src/runtime.rs:6275
     <pert_ui_runtime::Runtime as StateOwner>::signal<T>(&self, value: T) -> Signal<T>	(trait impl)	crates/pert-ui-runtime/src/signal.rs:95
@@ -2711,6 +2765,7 @@ pert_ui_runtime::RuntimeError	enum	role: 	crates/pert-ui-runtime/src/runtime.rs:
     <pert_ui_runtime::RuntimeError as From<WindowError>>::from(error: WindowError) -> Self	(trait impl)	crates/pert-ui-runtime/src/runtime/native_windows.rs:899
     <pert_ui_runtime::RuntimeError as From<WorkspaceError>>::from(error: WorkspaceError) -> Self	(trait impl)	crates/pert-ui-runtime/src/workspace.rs:664
 pert_ui_runtime::ScaleLimits	struct	role: 	crates/pert-ui-runtime/src/zoom_view.rs:14
+    const DEFAULT: Self = _
     <pert_ui_runtime::ScaleLimits as Default>::default() -> Self	(trait impl)	crates/pert-ui-runtime/src/zoom_view.rs:20
     pert_ui_runtime::ScaleLimits::clamp(self, factor: f32) -> ViewScale	#[must_use]	crates/pert-ui-runtime/src/zoom_view.rs:53
     pert_ui_runtime::ScaleLimits::max(self) -> ViewScale	#[must_use]	crates/pert-ui-runtime/src/zoom_view.rs:47
@@ -2948,6 +3003,7 @@ pert_ui_runtime::SinkErrorKind	enum	role: 	crates/pert-ui-runtime/src/parameter_
     variant Other
     <pert_ui_runtime::SinkErrorKind as Display>::fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result	(trait impl)	crates/pert-ui-runtime/src/parameter_binding/delivery.rs:64
 pert_ui_runtime::Size	struct	role: 	crates/pert-ui-runtime/src/layout.rs:119
+    const ZERO: Self = _
     <pert_ui_runtime::Size as From<[u16; 2]>>::from([width, height]: [u16; 2]) -> Self	(trait impl)	crates/pert-ui-runtime/src/layout.rs:125
     pert_ui_runtime::Size::height(self) -> f32	#[must_use]	crates/pert-ui-runtime/src/layout.rs:159
     pert_ui_runtime::Size::new(width: f32, height: f32) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/layout.rs:143
@@ -3008,6 +3064,9 @@ pert_ui_runtime::SplitRule	enum	role: 	crates/pert-ui-runtime/src/split.rs:141
     variant Ratio(f32)
     variant Second(Length)
 pert_ui_runtime::SplitSizing	struct	role: 	crates/pert-ui-runtime/src/split.rs:76
+    const CONTENT_FIRST: Self = _
+    const CONTENT_SECOND: Self = _
+    const EQUAL: Self = _
     <pert_ui_runtime::SplitSizing as Default>::default() -> Self	(trait impl)	crates/pert-ui-runtime/src/split.rs:92
     pert_ui_runtime::SplitSizing::first(extent: Length) -> Self	#[must_use]	crates/pert-ui-runtime/src/split.rs:115
     pert_ui_runtime::SplitSizing::ratio(value: f32) -> Result<Self, LayoutError>	-	crates/pert-ui-runtime/src/split.rs:107
@@ -3017,6 +3076,7 @@ pert_ui_runtime::StateOwner	trait	role: 	crates/pert-ui-runtime/src/signal.rs:64
     pert_ui_runtime::StateOwner::signal<T>(&self, value: T) -> Signal<T>	-	crates/pert-ui-runtime/src/signal.rs:66
     pert_ui_runtime::StateOwner::ui_settings(&self) -> crate::UiSettings	-	crates/pert-ui-runtime/src/signal.rs:84
 pert_ui_runtime::StringRole	enum	role: 	crates/pert-ui-runtime/src/strings.rs:20
+    const ALL: &'static [Self] = _
     variant AtLeastCharacters
     variant AtMostCharacters
     variant BackTo
@@ -3161,6 +3221,7 @@ pert_ui_runtime::Table	struct	role: 	crates/pert-ui-runtime/src/table.rs:1329
     pert_ui_runtime::Table::reorder_permission(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/table.rs:1432
     pert_ui_runtime::Table::resize_permission(self, permission: impl Into<Permission>) -> Self	-	crates/pert-ui-runtime/src/table.rs:1421
 pert_ui_runtime::TableColumn	struct	role: 	crates/pert-ui-runtime/src/table.rs:34
+    const MIN_WIDTH: f32 = 40.0
     <pert_ui_runtime::TableColumn as PartialEq>::eq(&self, other: &Self) -> bool	(trait impl)	crates/pert-ui-runtime/src/table.rs:50
     pert_ui_runtime::TableColumn::editable(self, editable: bool) -> Self	-	crates/pert-ui-runtime/src/table.rs:139
     pert_ui_runtime::TableColumn::fixed_width(&self) -> Option<f32>	#[must_use]	crates/pert-ui-runtime/src/table.rs:169
@@ -3270,11 +3331,13 @@ pert_ui_runtime::TextCommandOutcome	enum	role: 	crates/pert-ui-runtime/src/text_
     variant NotAnEditor
     variant Unavailable
 pert_ui_runtime::TextEditError	enum	role: 	crates/pert-ui-runtime/src/text_input.rs:11
+    const MAX_TEXT_BYTES: usize = _
     variant InvalidComposition
     variant InvalidSelection
     variant InvalidText
     variant TooLarge
 pert_ui_runtime::TextError	enum	role: 	crates/pert-ui-runtime/src/text.rs:54
+    const MAX_FONT_PIXELS: u32 = 256
     variant Font
     variant Geometry
     variant TooLarge(TextLimit)
@@ -3317,6 +3380,7 @@ pert_ui_runtime::TextLayout	struct	role: 	crates/pert-ui-runtime/src/text.rs:176
     pert_ui_runtime::TextLayout::paint_turned(&self, painter: &mut Painter, x: f32, y: f32, turn: crate::QuarterTurn, color: Color) -> Result<(), DrawError>	-	crates/pert-ui-runtime/src/text.rs:284
     pert_ui_runtime::TextLayout::size(&self) -> Size	#[must_use]	crates/pert-ui-runtime/src/text.rs:195
 pert_ui_runtime::TextLimit	enum	role: 	crates/pert-ui-runtime/src/text.rs:94
+    const MAX_RASTER_SIDE: u32 = 8192
     variant Coverage
     variant RasterSide
     variant Segments
@@ -3419,6 +3483,8 @@ pert_ui_runtime::ToastHost	struct	role: 	crates/pert-ui-runtime/src/notification
     pert_ui_runtime::ToastHost::dismiss_label(self, label: impl Into<TextSource>) -> Self	-	crates/pert-ui-runtime/src/notifications.rs:441
     pert_ui_runtime::ToastHost::new(queue: ToastQueue, content: Element) -> Self	-	crates/pert-ui-runtime/src/notifications.rs:407
 pert_ui_runtime::ToastQueue	struct	role: 	crates/pert-ui-runtime/src/notifications.rs:262
+    const MAX_PENDING: usize = 16
+    const MAX_VISIBLE: usize = 3
     <pert_ui_runtime::ToastQueue as Debug>::fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result	(trait impl)	crates/pert-ui-runtime/src/notifications.rs:269
     pert_ui_runtime::ToastQueue::new(ui: &impl crate::StateOwner) -> Self	-	crates/pert-ui-runtime/src/notifications.rs:293
     pert_ui_runtime::ToastQueue::push(&self, toast: Toast) -> Result<ToastReceipt, RuntimeError>	-	crates/pert-ui-runtime/src/notifications.rs:318
@@ -3551,9 +3617,11 @@ pert_ui_runtime::Trace	struct	role: 	crates/pert-ui-runtime/src/live_widgets.rs:
     pert_ui_runtime::Trace::new(source: SeriesSource<f32>, scale: ParameterSpec<f32>) -> Self	-	crates/pert-ui-runtime/src/live_widgets.rs:493
     pert_ui_runtime::Trace::running_signal(self, running: impl Into<ReadSignal<bool>>) -> Self	-	crates/pert-ui-runtime/src/live_widgets.rs:510
 pert_ui_runtime::Track	struct	role: 	crates/pert-ui-runtime/src/containers.rs:944
+    const CONTENT: Self = _
     pert_ui_runtime::Track::fixed(length: Length) -> Self	#[must_use]	crates/pert-ui-runtime/src/containers.rs:961
     pert_ui_runtime::Track::weighted(weight: f32) -> Result<Self, LayoutError>	-	crates/pert-ui-runtime/src/containers.rs:968
 pert_ui_runtime::Transform2D	struct	role: 	crates/pert-ui-runtime/src/transform.rs:31
+    const IDENTITY: Self = _
     <pert_ui_runtime::Transform2D as Default>::default() -> Self	(trait impl)	crates/pert-ui-runtime/src/transform.rs:37
     pert_ui_runtime::Transform2D::about(self, center: Point) -> Result<Self, GeometryError>	-	crates/pert-ui-runtime/src/transform.rs:104
     pert_ui_runtime::Transform2D::apply(self, point: Point) -> Result<Point, GeometryError>	-	crates/pert-ui-runtime/src/transform.rs:148
@@ -3638,6 +3706,7 @@ pert_ui_runtime::UiStringError	enum	role: 	crates/pert-ui-runtime/src/strings.rs
     variant Placeholders(StringRole)
     variant TooLong(StringRole)
 pert_ui_runtime::UiStrings	struct	role: 	crates/pert-ui-runtime/src/strings.rs:558
+    const MAX_LENGTH: usize = 1024
     <pert_ui_runtime::UiStrings as Default>::default() -> Self	(trait impl)	crates/pert-ui-runtime/src/strings.rs:570
     <pert_ui_runtime::UiStrings as PartialEq>::eq(&self, other: &Self) -> bool	(trait impl)	crates/pert-ui-runtime/src/strings.rs:563
     pert_ui_runtime::UiStrings::english() -> Self	-	crates/pert-ui-runtime/src/strings.rs:580
@@ -3645,6 +3714,8 @@ pert_ui_runtime::UiStrings	struct	role: 	crates/pert-ui-runtime/src/strings.rs:5
     pert_ui_runtime::UiStrings::get(&self, role: StringRole) -> &str	#[must_use]	crates/pert-ui-runtime/src/strings.rs:625
     pert_ui_runtime::UiStrings::with(self, role: StringRole, text: impl Into<String>) -> Result<Self, UiStringError>	-	crates/pert-ui-runtime/src/strings.rs:601
 pert_ui_runtime::UiZoom	struct	role: 	crates/pert-ui-runtime/src/runtime/settings.rs:22
+    const MAX: Self = _
+    const MIN: Self = _
     <pert_ui_runtime::UiZoom as Default>::default() -> Self	(trait impl)	crates/pert-ui-runtime/src/runtime/settings.rs:24
     <pert_ui_runtime::UiZoom as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-runtime/src/runtime/settings.rs:101	[configs: serde]
     <pert_ui_runtime::UiZoom as Serialize>::serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>	(trait impl)	crates/pert-ui-runtime/src/runtime/settings.rs:95	[configs: serde]
@@ -3725,6 +3796,7 @@ pert_ui_runtime::VectorGeometry	struct	role: 	crates/pert-ui-runtime/src/vector_
 pert_ui_runtime::VectorId	struct	role: 	crates/pert-ui-runtime/src/vector_scene.rs:7
     pert_ui_runtime::VectorId::index(self) -> usize	-	crates/pert-ui-runtime/src/vector_scene.rs:10
 pert_ui_runtime::VectorRasterizer	struct	role: 	crates/pert-ui-runtime/src/vector_scene.rs:112
+    const MAX_COVERAGE_WORK: usize = _
     pert_ui_runtime::VectorRasterizer::prepare(&mut self, scene: &DisplayList) -> Result<DisplayList, DrawError>	-	crates/pert-ui-runtime/src/vector_scene.rs:149
 pert_ui_runtime::VectorStyle	enum	role: 	crates/pert-ui-runtime/src/vector_scene.rs:16
     variant Fill(FillRule)
@@ -3734,6 +3806,9 @@ pert_ui_runtime::View	struct	role: 	crates/pert-ui-runtime/src/views.rs:14
     pert_ui_runtime::View::new(content: Element) -> Self	-	crates/pert-ui-runtime/src/views.rs:22
     pert_ui_runtime::View::visible_signal(self, shown: impl Into<ReadSignal<bool>>) -> Self	-	crates/pert-ui-runtime/src/views.rs:59
 pert_ui_runtime::ViewScale	struct	role: 	crates/pert-ui-runtime/src/transform.rs:267
+    const MAX: Self = _
+    const MIN: Self = _
+    const ONE: Self = _
     <pert_ui_runtime::ViewScale as Default>::default() -> Self	(trait impl)	crates/pert-ui-runtime/src/transform.rs:270
     <pert_ui_runtime::ViewScale as TryFrom<f32>>::try_from(factor: f32) -> Result<Self, Self::Error>	(trait impl)	crates/pert-ui-runtime/src/transform.rs:309
     pert_ui_runtime::ViewScale::get(self) -> f32	#[must_use]	crates/pert-ui-runtime/src/transform.rs:302
@@ -3754,6 +3829,7 @@ pert_ui_runtime::ViewState	struct	role: 	crates/pert-ui-runtime/src/workspace.rs
     pert_ui_runtime::ViewState::text(&self, name: &str) -> Result<&str, RestoreRejection>	-	crates/pert-ui-runtime/src/workspace.rs:325
     pert_ui_runtime::ViewState::with(self, name: impl Into<String>, value: WorkspaceValue) -> Result<Self, WorkspaceError>	-	crates/pert-ui-runtime/src/workspace.rs:248
 pert_ui_runtime::ViewTransform	struct	role: 	crates/pert-ui-runtime/src/transform.rs:334
+    const IDENTITY: Self = _
     pert_ui_runtime::ViewTransform::apply(self, content: Point) -> Result<Point, GeometryError>	-	crates/pert-ui-runtime/src/transform.rs:369
     pert_ui_runtime::ViewTransform::invert(self, local: Point) -> Result<Point, GeometryError>	-	crates/pert-ui-runtime/src/transform.rs:382
     pert_ui_runtime::ViewTransform::is_identity(self) -> bool	#[must_use]	crates/pert-ui-runtime/src/transform.rs:362
@@ -3799,6 +3875,7 @@ pert_ui_runtime::VirtualAxis	struct	role: 	crates/pert-ui-runtime/src/virtual_ax
     pert_ui_runtime::VirtualAxis::with_count(self, count: usize) -> Self	-	crates/pert-ui-runtime/src/virtual_axis.rs:170
     pert_ui_runtime::VirtualAxis::with_lanes(self, lanes: usize) -> Result<Self, LayoutError>	-	crates/pert-ui-runtime/src/virtual_axis.rs:188
 pert_ui_runtime::VirtualList	struct	role: 	crates/pert-ui-runtime/src/virtual_list.rs:439
+    const DEFAULT_OVERSCAN: usize = 4
     pert_ui_runtime::VirtualList::active_outline(self, outline: bool) -> Self	-	crates/pert-ui-runtime/src/virtual_list.rs:770
     pert_ui_runtime::VirtualList::controller(self, controller: ListController) -> Self	-	crates/pert-ui-runtime/src/virtual_list.rs:745
     pert_ui_runtime::VirtualList::drag_operations(self, operations: DropOperations) -> Self	-	crates/pert-ui-runtime/src/virtual_list.rs:993
@@ -3880,6 +3957,11 @@ pert_ui_runtime::WindowStatus	enum	role: 	crates/pert-ui-runtime/src/windows.rs:
     variant Minimized
     variant Open
 pert_ui_runtime::Workspace	struct	role: 	crates/pert-ui-runtime/src/workspace.rs:488
+    const MAX_DOCUMENT_BYTES: usize = _
+    const MAX_ENTRIES: usize = 4096
+    const MAX_PATH_BYTES: usize = 512
+    const MAX_STRING_BYTES: usize = 256
+    const SCHEMA_VERSION: u32 = 1
     <pert_ui_runtime::Workspace as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-runtime/src/workspace.rs:1670	[configs: serde]
     <pert_ui_runtime::Workspace as Serialize>::serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>	(trait impl)	crates/pert-ui-runtime/src/workspace.rs:1652	[configs: serde]
     pert_ui_runtime::Workspace::decode(text: &str) -> Result<Self, WorkspaceError>	-	crates/pert-ui-runtime/src/workspace.rs:865

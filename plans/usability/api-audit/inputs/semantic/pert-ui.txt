@@ -57,6 +57,7 @@ pert_ui::images::ImageError	enum	role: 	crates/pert-ui/src/images.rs:215	[config
     variant TooLarge { width: u32, height: u32 }
     variant UnknownFormat
 pert_ui::images::ImageFormat	enum	role: 	crates/pert-ui/src/images.rs:87	[configs: image-formats, images, no-default-png]
+    const ALL: &'static [Self] = _
     variant Bmp
     variant Gif
     variant Ico

@@ -1,0 +1,103 @@
+# Every public associated constant, with its type and value.
+# A trailing [configs: ...] means the entry exists only in those configurations.
+
+## pert-ui-core
+pert_ui_core::Capacity::MAX: Self = _	crates/pert-ui-core/src/live/mod.rs:187
+pert_ui_core::Incarnation::FIRST: Self = _	crates/pert-ui-core/src/live/mod.rs:51
+pert_ui_core::NormalizedValue::MAX: Self = _	crates/pert-ui-core/src/normalized.rs:79
+pert_ui_core::NormalizedValue::MIN: Self = _	crates/pert-ui-core/src/normalized.rs:76
+pert_ui_core::ParameterState::MAX_TERMINAL_RECEIPTS: usize = 64	crates/pert-ui-core/src/edit.rs:307
+pert_ui_core::PowerExponent::MAX: f32 = 10.0	crates/pert-ui-core/src/parameter.rs:70
+pert_ui_core::PowerExponent::MIN: f32 = 0.1	crates/pert-ui-core/src/parameter.rs:68
+pert_ui_core::Revision::INITIAL: Self = _	crates/pert-ui-core/src/edit.rs:16
+pert_ui_core::Sequence::FIRST: Self = _	crates/pert-ui-core/src/live/mod.rs:87
+
+## pert-ui-runtime
+pert_ui_runtime::ClickCounter::DEFAULT_DISTANCE: Length = _	crates/pert-ui-runtime/src/click.rs:84
+pert_ui_runtime::ClickCounter::DEFAULT_INTERVAL: Duration = _	crates/pert-ui-runtime/src/click.rs:81
+pert_ui_runtime::Color::ACCENT: Self = _	crates/pert-ui-runtime/src/drawing.rs:250
+pert_ui_runtime::Color::BACKGROUND: Self = _	crates/pert-ui-runtime/src/drawing.rs:248
+pert_ui_runtime::Color::BUTTON: Self = _	crates/pert-ui-runtime/src/drawing.rs:240
+pert_ui_runtime::Color::BUTTON_HOVER: Self = _	crates/pert-ui-runtime/src/drawing.rs:242
+pert_ui_runtime::Color::MUTED: Self = _	crates/pert-ui-runtime/src/drawing.rs:234
+pert_ui_runtime::Color::SURFACE: Self = _	crates/pert-ui-runtime/src/drawing.rs:236
+pert_ui_runtime::Color::SURFACE_HOVER: Self = _	crates/pert-ui-runtime/src/drawing.rs:238
+pert_ui_runtime::Color::TAB: Self = _	crates/pert-ui-runtime/src/drawing.rs:244
+pert_ui_runtime::Color::TAB_SELECTED: Self = _	crates/pert-ui-runtime/src/drawing.rs:246
+pert_ui_runtime::Color::TEXT: Self = _	crates/pert-ui-runtime/src/drawing.rs:231
+pert_ui_runtime::Color::WHITE: Self = _	crates/pert-ui-runtime/src/drawing.rs:253
+pert_ui_runtime::CommandPalette::DEFAULT_WIDTH: f32 = QuickPick::DEFAULT_WIDTH	crates/pert-ui-runtime/src/command_palette.rs:513
+pert_ui_runtime::CommandPalette::VISIBLE_ROWS: usize = QuickPick::VISIBLE_ROWS	crates/pert-ui-runtime/src/command_palette.rs:516
+pert_ui_runtime::ContentQuery::DEFAULT_BUDGET: usize = 10_000	crates/pert-ui-runtime/src/content_search.rs:38
+pert_ui_runtime::ContentQuery::DEFAULT_LIMIT: usize = 50	crates/pert-ui-runtime/src/content_search.rs:34
+pert_ui_runtime::DropOperations::ALL: Self = _	crates/pert-ui-runtime/src/drag.rs:124
+pert_ui_runtime::DropOperations::COPY: Self = _	crates/pert-ui-runtime/src/drag.rs:120
+pert_ui_runtime::DropOperations::LINK: Self = _	crates/pert-ui-runtime/src/drag.rs:122
+pert_ui_runtime::DropOperations::MOVE: Self = _	crates/pert-ui-runtime/src/drag.rs:118
+pert_ui_runtime::DropOperations::NONE: Self = _	crates/pert-ui-runtime/src/drag.rs:116
+pert_ui_runtime::EventStatus::MAX_MESSAGE_CHARS: usize = 512	crates/pert-ui-runtime/src/diagnostics.rs:810
+pert_ui_runtime::FontData::MAX_BYTES: usize = _	crates/pert-ui-runtime/src/text/fonts.rs:49
+pert_ui_runtime::FontManager::MAX_CUSTOM_FONTS: usize = 256	crates/pert-ui-runtime/src/runtime/fonts.rs:44
+pert_ui_runtime::FontManager::MAX_TOTAL_BYTES: usize = _	crates/pert-ui-runtime/src/runtime/fonts.rs:48
+pert_ui_runtime::FrameImage::MAX_BYTES: usize = _	crates/pert-ui-runtime/src/capture.rs:353
+pert_ui_runtime::Icon::ALL: &'static [Self] = _	crates/pert-ui-runtime/src/text/icons.rs:173
+pert_ui_runtime::InspectionSnapshot::MAX_EVENTS: usize = 256	crates/pert-ui-runtime/src/diagnostics.rs:903
+pert_ui_runtime::InspectionSnapshot::SCHEMA_VERSION: u32 = 14	crates/pert-ui-runtime/src/diagnostics.rs:900
+pert_ui_runtime::MaskImage::MAX_PIXELS: usize = _	crates/pert-ui-runtime/src/drawing.rs:1137
+pert_ui_runtime::Modifiers::PRIMARY: Self = _	crates/pert-ui-runtime/src/input.rs:310
+pert_ui_runtime::NavigationHistory::DEFAULT_CAPACITY: NonZeroUsize = _	crates/pert-ui-runtime/src/navigation_history.rs:235
+pert_ui_runtime::NumberInputError::MAX_PRECISION: u8 = 15	crates/pert-ui-runtime/src/text_fields/number_inputs.rs:48
+pert_ui_runtime::Path::MAX_POINTS: usize = 65_536	crates/pert-ui-runtime/src/geometry.rs:212
+pert_ui_runtime::Point::ZERO: Self = _	crates/pert-ui-runtime/src/pointer.rs:10
+pert_ui_runtime::ProfileSnapshot::MAX_NESTING: usize = 256	crates/pert-ui-runtime/src/profiling.rs:160
+pert_ui_runtime::ProfileSnapshot::MAX_RECENT: usize = 256	crates/pert-ui-runtime/src/profiling.rs:157
+pert_ui_runtime::ProfileSnapshot::MAX_STATS: usize = 4096	crates/pert-ui-runtime/src/profiling.rs:154
+pert_ui_runtime::ProfileStats::MAX_KEY_CHARS: usize = 128	crates/pert-ui-runtime/src/profiling.rs:164
+pert_ui_runtime::QuickPick::DEFAULT_WIDTH: f32 = 520.0	crates/pert-ui-runtime/src/quick_pick.rs:879
+pert_ui_runtime::QuickPick::VISIBLE_ROWS: usize = 10	crates/pert-ui-runtime/src/quick_pick.rs:882
+pert_ui_runtime::RasterImage::MAX_BYTES: usize = _	crates/pert-ui-runtime/src/resources.rs:155
+pert_ui_runtime::RichText::MAX_SEGMENTS: usize = 1024	crates/pert-ui-runtime/src/text/rich.rs:97
+pert_ui_runtime::Runtime::MAX_BACKGROUND_TASKS: usize = 16	crates/pert-ui-runtime/src/runtime/application.rs:103
+pert_ui_runtime::Runtime::MAX_FLUSH_WAVES: usize = 64	crates/pert-ui-runtime/src/runtime.rs:3572
+pert_ui_runtime::Runtime::MAX_INTERVALS: usize = 64	crates/pert-ui-runtime/src/runtime/application.rs:106
+pert_ui_runtime::Runtime::MAX_OVERLAY_BOXES: usize = 1024	crates/pert-ui-runtime/src/runtime.rs:3779
+pert_ui_runtime::Runtime::MAX_OVERLAY_MARKERS: usize = 64	crates/pert-ui-runtime/src/runtime.rs:3775
+pert_ui_runtime::Runtime::MAX_PENDING_CAPTURES: usize = 16	crates/pert-ui-runtime/src/runtime/capture.rs:70
+pert_ui_runtime::Runtime::MAX_QUEUED_COMMANDS: usize = 64	crates/pert-ui-runtime/src/runtime/commands.rs:1777
+pert_ui_runtime::Runtime::MAX_REVEAL_REQUESTS: usize = 16	crates/pert-ui-runtime/src/runtime/reveal.rs:290
+pert_ui_runtime::Runtime::MAX_TASKS: usize = 64	crates/pert-ui-runtime/src/runtime/tasks.rs:202
+pert_ui_runtime::Runtime::MAX_WINDOW_REQUESTS: usize = 64	crates/pert-ui-runtime/src/runtime/native_windows.rs:1137
+pert_ui_runtime::ScaleLimits::DEFAULT: Self = _	crates/pert-ui-runtime/src/zoom_view.rs:27
+pert_ui_runtime::Size::ZERO: Self = _	crates/pert-ui-runtime/src/layout.rs:134
+pert_ui_runtime::SplitSizing::CONTENT_FIRST: Self = _	crates/pert-ui-runtime/src/split.rs:100
+pert_ui_runtime::SplitSizing::CONTENT_SECOND: Self = _	crates/pert-ui-runtime/src/split.rs:102
+pert_ui_runtime::SplitSizing::EQUAL: Self = _	crates/pert-ui-runtime/src/split.rs:98
+pert_ui_runtime::StringRole::ALL: &'static [Self] = _	crates/pert-ui-runtime/src/strings.rs:253
+pert_ui_runtime::TableColumn::MIN_WIDTH: f32 = 40.0	crates/pert-ui-runtime/src/table.rs:68
+pert_ui_runtime::TextEditError::MAX_TEXT_BYTES: usize = _	crates/pert-ui-runtime/src/text_input.rs:41
+pert_ui_runtime::TextError::MAX_FONT_PIXELS: u32 = 256	crates/pert-ui-runtime/src/text.rs:79
+pert_ui_runtime::TextLimit::MAX_RASTER_SIDE: u32 = 8192	crates/pert-ui-runtime/src/text.rs:107
+pert_ui_runtime::ToastQueue::MAX_PENDING: usize = 16	crates/pert-ui-runtime/src/notifications.rs:285
+pert_ui_runtime::ToastQueue::MAX_VISIBLE: usize = 3	crates/pert-ui-runtime/src/notifications.rs:283
+pert_ui_runtime::Track::CONTENT: Self = _	crates/pert-ui-runtime/src/containers.rs:956
+pert_ui_runtime::Transform2D::IDENTITY: Self = _	crates/pert-ui-runtime/src/transform.rs:44
+pert_ui_runtime::UiStrings::MAX_LENGTH: usize = 1024	crates/pert-ui-runtime/src/strings.rs:577
+pert_ui_runtime::UiZoom::MAX: Self = _	crates/pert-ui-runtime/src/runtime/settings.rs:32
+pert_ui_runtime::UiZoom::MIN: Self = _	crates/pert-ui-runtime/src/runtime/settings.rs:30
+pert_ui_runtime::VectorRasterizer::MAX_COVERAGE_WORK: usize = _	crates/pert-ui-runtime/src/vector_scene.rs:126
+pert_ui_runtime::ViewScale::MAX: Self = _	crates/pert-ui-runtime/src/transform.rs:279
+pert_ui_runtime::ViewScale::MIN: Self = _	crates/pert-ui-runtime/src/transform.rs:277
+pert_ui_runtime::ViewScale::ONE: Self = _	crates/pert-ui-runtime/src/transform.rs:281
+pert_ui_runtime::ViewTransform::IDENTITY: Self = _	crates/pert-ui-runtime/src/transform.rs:341
+pert_ui_runtime::VirtualList::DEFAULT_OVERSCAN: usize = 4	crates/pert-ui-runtime/src/virtual_list.rs:627
+pert_ui_runtime::Workspace::MAX_DOCUMENT_BYTES: usize = _	crates/pert-ui-runtime/src/workspace.rs:508
+pert_ui_runtime::Workspace::MAX_ENTRIES: usize = 4096	crates/pert-ui-runtime/src/workspace.rs:502
+pert_ui_runtime::Workspace::MAX_PATH_BYTES: usize = 512	crates/pert-ui-runtime/src/workspace.rs:504
+pert_ui_runtime::Workspace::MAX_STRING_BYTES: usize = 256	crates/pert-ui-runtime/src/workspace.rs:506
+pert_ui_runtime::Workspace::SCHEMA_VERSION: u32 = 1	crates/pert-ui-runtime/src/workspace.rs:500
+
+## pert-ui-wgpu
+pert_ui_wgpu::Renderer::READBACK_TIMEOUT: Duration = _	crates/pert-ui-wgpu/src/lib.rs:365
+
+## pert-ui
+pert_ui::images::ImageFormat::ALL: &'static [Self] = _	crates/pert-ui/src/images.rs:87	[configs: image-formats, images, no-default-png]

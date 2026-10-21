@@ -3,10 +3,14 @@
 **Version 1** was commit 6e39e18, built at d4ba108. Both auditors worked
 from it. Their reports name the inventory gaps they found.
 
-**Version 2** is this directory, built at 9e48cd1. The script was fixed for
-every gap, and the library source is unchanged since d4ba108. The
-cross-verification reviews what version 2 adds, so a shared omission in
-version 1 cannot hide a finding.
+**Version 2** was built at 9e48cd1. The script was fixed for every gap,
+and the library source is unchanged since d4ba108. The cross-verification
+reviewed what version 2 adds, so a shared omission in version 1 cannot
+hide a finding.
+
+**Version 3** is this directory, built at aacbdd3. It closes the gaps the
+cross-verification found in version 2. A separate delta review by both
+auditors covers what it adds.
 
 | Gap (reported by) | Fix | Entries version 2 adds or changes |
 |---|---|---|
@@ -22,6 +26,15 @@ version 1 cannot hide a finding.
 | Free functions, constants and modules in no list (claude G1, G5) | New `free-items.txt` | 30 |
 | Field and variant payload types missing from the semantic lists (claude G5) | The semantic lists show public fields and variants with their payloads | every struct with public fields and every enum |
 | A bare `Error` was ambiguous (claude G4) | Named by its full path | 4 |
+
+Version 3 adds:
+
+| Gap (reported by) | Fix | Entries version 3 adds or changes |
+|---|---|---|
+| Numbers wrapped in `Option` in no list (claude G3 verification) | `numeric.txt` includes `Option<number>` parameters and returns | 41 |
+| Associated constants in no list (claude G3 verification) | New `constants.txt`; the semantic lists show them with their types | 93 |
+| Fallible conversions into foreign types missing from `errors.txt`, such as `TryFrom<AnyValue> for f32` (claude G4 verification) | They join `errors.txt` | 8 |
+| The prelude column was per package, so core types in pert-ui-runtime's prelude read "no" (claude G5 verification) | They read "yes (via pert_ui_runtime::prelude)" | 6 |
 
 A gap the script cannot close is recorded instead. The `builder` mark in
 `bool-params.txt` is mechanical, so a `Copy` value's `self -> Self`

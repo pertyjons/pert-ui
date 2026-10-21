@@ -38,6 +38,7 @@ pert_ui_core::AnyValue	enum	role: 	crates/pert-ui-core/src/erased.rs:112
     <pert_ui_core::AnyValue as From<i64>>::from(value: i64) -> Self	(trait impl)	crates/pert-ui-core/src/erased.rs:154
     pert_ui_core::AnyValue::family(&self) -> ParameterFamily	#[must_use]	crates/pert-ui-core/src/erased.rs:126
 pert_ui_core::Capacity	struct	role: 	crates/pert-ui-core/src/live/mod.rs:183
+    const MAX: Self = _
     <pert_ui_core::Capacity as TryFrom<usize>>::try_from(items: usize) -> Result<Self, Self::Error>	(trait impl)	crates/pert-ui-core/src/live/mod.rs:214
     pert_ui_core::Capacity::get(self) -> usize	#[must_use]	crates/pert-ui-core/src/live/mod.rs:206
     pert_ui_core::Capacity::new(items: usize) -> Result<Self, LiveError>	-	crates/pert-ui-core/src/live/mod.rs:194
@@ -103,6 +104,7 @@ pert_ui_core::HostValue	trait	role: 	crates/pert-ui-core/src/erased.rs:408
     pert_ui_core::HostValue::from_canonical(value: Self::Canonical) -> Result<Self, Self::Error>	-	crates/pert-ui-core/src/erased.rs:424
     pert_ui_core::HostValue::to_canonical(&self) -> Result<Self::Canonical, Self::Error>	-	crates/pert-ui-core/src/erased.rs:418
 pert_ui_core::Incarnation	struct	role: 	crates/pert-ui-core/src/live/mod.rs:47
+    const FIRST: Self = _
     pert_ui_core::Incarnation::get(self) -> u64	#[must_use]	crates/pert-ui-core/src/live/mod.rs:55
 pert_ui_core::LiveError	enum	role: 	crates/pert-ui-core/src/live/mod.rs:163
     variant CapacityExceeded
@@ -110,6 +112,8 @@ pert_ui_core::LiveError	enum	role: 	crates/pert-ui-core/src/live/mod.rs:163
     variant ZeroCapacity
 pert_ui_core::LiveItem	trait	role: 	crates/pert-ui-core/src/live/item.rs:36
 pert_ui_core::NormalizedValue	struct	role: 	crates/pert-ui-core/src/normalized.rs:47
+    const MAX: Self = _
+    const MIN: Self = _
     <pert_ui_core::NormalizedValue as Deserialize<'de>>::deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>	(trait impl)	crates/pert-ui-core/src/normalized.rs:218	[configs: serde]
     <pert_ui_core::NormalizedValue as Hash>::hash<H: std::hash::Hasher>(&self, state: &mut H)	(trait impl)	crates/pert-ui-core/src/normalized.rs:69
     <pert_ui_core::NormalizedValue as Ord>::cmp(&self, other: &Self) -> std::cmp::Ordering	(trait impl)	crates/pert-ui-core/src/normalized.rs:61
@@ -199,6 +203,7 @@ pert_ui_core::ParameterSpec	struct	role: 	crates/pert-ui-core/src/parameter.rs:1
     pert_ui_core::ParameterSpec::with_mapping(self, mapping: ParameterMapping) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:342
     pert_ui_core::ParameterSpec::with_step(self, step: NonZeroU64) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:413
 pert_ui_core::ParameterState	struct	role: 	crates/pert-ui-core/src/edit.rs:272
+    const MAX_TERMINAL_RECEIPTS: usize = 64
     <pert_ui_core::ParameterState as Debug>::fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result	(trait impl)	crates/pert-ui-core/src/edit.rs:289
     pert_ui_core::ParameterState::acknowledge(&mut self, token: &EditToken) -> Result<(), EditError>	-	crates/pert-ui-core/src/edit.rs:568
     pert_ui_core::ParameterState::begin(&mut self, expected: Revision, source: EditSource) -> Result<EditToken, EditError>	-	crates/pert-ui-core/src/edit.rs:367
@@ -224,6 +229,8 @@ pert_ui_core::ParameterValue	trait	role: 	crates/pert-ui-core/src/family.rs:47
     pert_ui_core::ParameterValue::spec_from_any(spec: AnySpec) -> Result<ParameterSpec<Self>, AnySpec>	-	crates/pert-ui-core/src/family.rs:71
     pert_ui_core::ParameterValue::spec_into_any(spec: ParameterSpec<Self>) -> AnySpec	-	crates/pert-ui-core/src/family.rs:64
 pert_ui_core::PowerExponent	struct	role: 	crates/pert-ui-core/src/parameter.rs:63
+    const MAX: f32 = 10.0
+    const MIN: f32 = 0.1
     <pert_ui_core::PowerExponent as TryFrom<f32>>::try_from(exponent: f32) -> Result<Self, Self::Error>	(trait impl)	crates/pert-ui-core/src/parameter.rs:92
     pert_ui_core::PowerExponent::get(self) -> f32	#[must_use]	crates/pert-ui-core/src/parameter.rs:85
     pert_ui_core::PowerExponent::new(exponent: f32) -> Result<Self, ParameterError>	-	crates/pert-ui-core/src/parameter.rs:76
@@ -237,6 +244,7 @@ pert_ui_core::PublishOutcome	enum	role: 	crates/pert-ui-core/src/live/mod.rs:143
     variant Invalid
     variant Overflowed
 pert_ui_core::Revision	struct	role: 	crates/pert-ui-core/src/edit.rs:12
+    const INITIAL: Self = _
     pert_ui_core::Revision::get(self) -> u64	#[must_use]	crates/pert-ui-core/src/edit.rs:20
 pert_ui_core::Sample	struct	role: 	crates/pert-ui-core/src/live/mod.rs:286
     field incarnation: Incarnation
@@ -253,6 +261,7 @@ pert_ui_core::SampleWindowEntry	struct	role: 	crates/pert-ui-core/src/live/mod.r
     field discontinuity_before: bool
     field sample: Sample<T>
 pert_ui_core::Sequence	struct	role: 	crates/pert-ui-core/src/live/mod.rs:83
+    const FIRST: Self = _
     pert_ui_core::Sequence::get(self) -> u64	#[must_use]	crates/pert-ui-core/src/live/mod.rs:91
     pert_ui_core::Sequence::new(number: u64) -> Option<Self>	#[must_use]	crates/pert-ui-core/src/live/mod.rs:97
 pert_ui_core::SeriesConfig	struct	role: 	crates/pert-ui-core/src/live/mod.rs:244
