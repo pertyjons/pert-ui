@@ -156,12 +156,14 @@ Design checkpoint first. It decides and records:
 Checkpoint outcome, recorded with its evidence in the
 [kit's README](usability/README.md#checkpoint-decisions-slice-0): a
 bubblewrap sandbox per run with a cleared environment and only loopback,
-and a host-side proxy that admits the model and authentication hosts only.
+and a host-side proxy that admits the model and authentication hosts only,
+reached through a loopback bridge whose socket the tester cannot open.
 Two decisions narrow the bullets above. Tool commands are kept off the
-network by Codex's own sandbox, which stays on inside the outer one; Claude
-Code's own sandbox is not available on the maintainer's machine, so
-Claude's tool commands can reach the model hosts (and only those) through
-the proxy, and the transcripts are audited for it. Instead of canary
+network by each CLI's own sandbox, which stays on inside the outer one:
+Codex's `workspace-write` sandbox and Claude Code's sandbox in strict mode
+with an empty domain allowlist. Claude's file tools run outside its
+sandbox and are confined by the outer one only; the transcripts are
+audited for proxy and model-host use. Instead of canary
 instructions in the maintainer's user-level files, which the maintainer's
 own sessions load, the probe shows that those files do not exist in the
 sandbox and that its environment holds only the run's variables.
@@ -443,8 +445,10 @@ structured build classification; bounded diagnostics with JSON support;
 the import list marked as a candidate inventory; acceptance-based
 completion with recorded model and effort; acceptance initialization; and
 the plan text aligned. The proxy finding (any sandbox process can reach
-the allowed hosts) was resolved by keeping Codex's own sandbox on and by
-narrowing the guarantee for Claude, recorded in the checkpoint outcome.
+the allowed hosts) was first resolved by keeping Codex's own sandbox on and
+narrowing the guarantee for Claude; once `socat` was installed, Claude
+Code's own sandbox was turned on as well, recorded in the checkpoint
+outcome.
 A first recheck found credential write-back, probe exit handling, session
 classification, effective-model recording, task 4's application visible to
 all tasks, a broken-pipe hang in the wrapper and an undocumented public type
@@ -452,4 +456,9 @@ in the application; these were fixed. A second recheck confirmed them and
 found three remaining points (the probe accepting `cargo build --help`, a
 kit from an earlier script keeping task 4's application, and interruption
 causes), which were fixed; Codex's effective model stays unrecorded, as the
-kit's README says.
+kit's README says. Codex reviewed turning on Claude Code's own sandbox and
+found that the proxy socket was open to the tester's processes and that the
+probe's network and write checks could pass on the session's prose or on a
+skipped command; the socket was hidden in a nested namespace and the checks
+now read the exact commands' recorded results. Two rechecks confirmed the
+fixes.

@@ -10,6 +10,8 @@ directory; they get a prepared kit, the brief and one task.
 | `proxy.py`, `bridge.py` | The only network path out of the sandbox: a host-side CONNECT proxy for the model hosts and the in-sandbox bridge to it |
 | `cargo-wrapper.py` | The tester's `cargo`, logging every command with timing, status and its stdout and stderr separately |
 | `summarize.py` | A run's summary and distinct diagnostics |
+| `claude-settings.json` | Claude Code's own sandbox settings for the Claude tester |
+| `check-probe.py` | The tester probe's shell network and write checks, read from the transcript |
 | `tester-brief.md`, `friction-log.md` | Given to every tester |
 | `tasks/` | Tasks 1 to 4, given one per run through the prompt |
 | `reserved/` | Task 5, unused until round 2 |
@@ -63,16 +65,25 @@ kit and run paths are resolved physically before they are checked against
 the checkout, so a symlink cannot alias it. The network namespace has only
 loopback: `bridge.py` forwards `127.0.0.1:3128` to a Unix socket where
 `proxy.py` admits `CONNECT` to the model and authentication hosts on port
-443 only, and logs every request with its decision.
+443 only, and logs every request with its decision. The tester's command
+runs in a nested mount namespace with an empty `/run`, so only the bridge
+holds the socket and nothing the tester starts can open it directly.
 
 **What the proxy does not cover.** The proxy restricts destinations, not
-processes. For Codex, its own `workspace-write` sandbox stays on inside
-ours and denies tool commands any socket, so only the CLI reaches the proxy;
-`/log` and the Cargo home are added as writable directories. Claude Code's
-own Linux sandbox needs `socat` beside bubblewrap; `socat` is not installed
-here and that sandbox was not tried. Until it is, Claude's tool commands can
-reach the model hosts through the proxy (with the run's copy of the
-credentials). They cannot reach GitHub, docs.rs or any other host.
+processes, so each CLI's own sandbox stays on inside ours and keeps tool
+commands off the network; only the CLI itself reaches the proxy. For Codex
+that is its `workspace-write` sandbox, which denies tool commands any
+socket; `/log` and the Cargo home are added as writable directories. For
+Claude it is Claude Code's Linux sandbox (bubblewrap and `socat`), set by
+[`claude-settings.json`](claude-settings.json), which is mounted read-only
+and passed with `--settings`: sandboxing on and failing closed if it cannot
+start, no unsandboxed retries, strict mode with an empty domain allowlist,
+and `/log` and the Cargo home writable beside `/work`. Claude Code's
+sandbox covers shell commands only; its file tools run outside it and are
+confined by the outer sandbox, which has nothing of the maintainer's to
+read. The tester probe checks, from the commands' recorded results rather
+than the session's prose, that a shell command gets no HTTP response from a
+model host and cannot write to the tester's home.
 Claude runs with WebFetch and WebSearch disallowed and Codex with
 `web_search = "disabled"`; `summarize.py` lists every mention of the proxy
 or a model host in the transcript for the author to read, and a tester
@@ -143,9 +154,20 @@ harness, bubblewrap sandbox:
 - Task 4's application builds offline in the kit with Clippy clean, and a
   throwaway headless test drove all its listed behaviors and a CPU capture
   through the public API.
+- After `socat` was installed: bubblewrap nests inside ours, and `claude
+  --settings /opt/claude-settings.json sandbox status` inside ours (without
+  credentials) reports the sandbox supported and enabled in strict mode;
+  without the settings it reports it off. With the proxy socket hidden by
+  the nested namespace, a direct connection to it fails, the bridge still
+  reaches the model host, and Codex's sandbox (one level deeper) still
+  denies a tool command its socket. Before that change a plain process
+  could open the socket and get `200 Connection established`; Codex's
+  sandbox already refused it.
 
 Not yet run: `probe` with the Claude and Codex testers (the sessions' own
-file, shell and web tools, what they report having loaded, and Codex's
-`--add-dir` for `/log` and the Cargo home), and the pilot. Starting a
+file, shell and web tools, what they report having loaded, Claude's
+sandbox and Codex's `--add-dir` for `/log` and the Cargo home in a real
+session), and the pilot. Starting a
 tester session from the author's Claude Code session was refused by its
-auto-mode permission classifier, so the maintainer starts those runs.
+auto-mode permission classifier, also after the maintainer asked for it,
+so the maintainer starts those runs.
