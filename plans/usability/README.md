@@ -11,7 +11,7 @@ directory; they get a prepared kit, the brief and one task.
 | `cargo-wrapper.py` | The tester's `cargo`, logging every command with timing, status and its stdout and stderr separately |
 | `summarize.py` | A run's summary and distinct diagnostics |
 | `claude-settings.json` | Claude Code's own sandbox settings for the Claude tester |
-| `check-probe.py` | The tester probe's shell network and write checks, read from the transcript |
+| `check-probe.py` | The tester probe's shell network and write checks, read from the log of the script the session runs, and its tool checks |
 | `tester-brief.md`, `friction-log.md` | Given to every tester |
 | `tasks/` | Tasks 1 to 4, given one per run through the prompt |
 | `reserved/` | Task 5, unused until round 2 |
@@ -81,21 +81,32 @@ start, no unsandboxed retries, strict mode with an empty domain allowlist,
 and `/log` and the Cargo home writable beside `/work`. Claude Code's
 sandbox covers shell commands only; its file tools run outside it and are
 confined by the outer sandbox, which has nothing of the maintainer's to
-read. The tester probe checks, from the commands' recorded results rather
-than the session's prose, that a shell command gets no HTTP response from a
-model host and cannot write to the tester's home.
+read. The tester probe has the session run a read-only
+`/opt/sandbox-probe.sh`, which requests a host nothing else uses and
+touches a file in the tester's home. The host's proxy log must not show
+that host and the file must not exist; both are outside what the tester
+can write. The script's own log in `/log` shows that it ran and what each
+command reported, on the assumption that the tester does not forge it.
+(Codex runs some commands through a script tool that its `--json` output
+leaves out, so the transcript is not a complete record of commands.)
 Claude runs with `--strict-mcp-config` and the account's claude.ai
 connectors turned off, and without the web tools or the tools that reach
 cloud sessions, other sessions or schedules (`CLAUDE_DISALLOWED` in
 `run.sh`); the probe checks the session's tool list and fails if the proxy
-log shows a connector attempt. Codex runs with `web_search = "disabled"`; `summarize.py` lists every mention of the proxy
+log shows a connector attempt. Codex runs with `web_search = "disabled"`
+and with its apps and plugins, browser and computer use, image generation
+and skill dependency installation turned off (`CODEX_DISABLED` in `run.sh`):
+its apps server offers a web tool that runs on OpenAI's side, which no
+local sandbox stops. The probe checks those features off with `codex
+features list` and fails on any apps tool call in the session record.
+`summarize.py` lists every mention of the proxy
 or a model host in the transcript for the author to read, and a tester
 command that uses them is a protocol violation recorded with the run.
 
 **Clean context.** The tester's home is new for every run and holds only the
 Cargo source configuration, the CLI's credential copy and, for Codex, a
-config with the maintainer's model, reasoning effort and `web_search =
-"disabled"`. The plan proposed canary instructions in the maintainer's
+config with the maintainer's model, reasoning effort, `web_search =
+"disabled"` and the features above turned off. The plan proposed canary instructions in the maintainer's
 user-level files; that would change files the maintainer's own sessions
 load. Instead the probe shows that those files and Codex's memory database
 do not exist inside the sandbox and that the environment holds only the
@@ -177,10 +188,22 @@ harness, bubblewrap sandbox:
   proxy (refused) and the cloud and scheduling tools present, which are now
   turned off and checked; and the probe printed no final verdict line,
   which it now does.
+- The maintainer's first Codex tester probe (2026-10-21) found a leak:
+  with `web_search = "disabled"`, Codex still had its apps server's web
+  tool and used it to open the project's GitHub page and search the web.
+  The shell refused the network (`failed to open socket`) and the write
+  (`Read-only file system`), no instruction file was loaded, the build was
+  logged and the image's color named. The curl and touch ran through
+  Codex's script tool and were missing from the `--json` output, so the
+  transcript-based check reported them as never run; and a concurrent
+  Claude probe removed the shared canary file, so the canary check matched
+  an empty string. The apps and the other features are now off and
+  checked, the shell checks rest on the proxy log and the tester's home
+  with the probe script's log as evidence that it ran, every probe has
+  its own canary, and the sandboxed command now waits until the bridge
+  listens (a command started at once could find no listener).
 
-Not yet run: the Codex tester probe (its tools, what it reports having
-loaded and `--add-dir` for `/log` and the Cargo home in a real session),
-the Claude probe again after the connector and tool changes, and the pilot.
+Not yet run: both tester probes again after these changes, and the pilot.
 Starting a tester session from the author's Claude Code session was refused
 by its auto-mode permission classifier, also after the maintainer asked for
 it, so the maintainer starts those runs.

@@ -161,7 +161,11 @@ reached through a loopback bridge whose socket the tester cannot open.
 Two decisions narrow the bullets above. Tool commands are kept off the
 network by each CLI's own sandbox, which stays on inside the outer one:
 Codex's `workspace-write` sandbox and Claude Code's sandbox in strict mode
-with an empty domain allowlist. Claude's file tools run outside its
+with an empty domain allowlist. Tools that reach the web, cloud sessions
+or other services from the provider's side are turned off and the probe
+checks for them: Claude's web, cloud and scheduling tools and the account's
+claude.ai connectors, and Codex's apps, plugins, browser and computer use.
+Claude's file tools run outside its
 sandbox and are confined by the outer one only; the transcripts are
 audited for proxy and model-host use. Instead of canary
 instructions in the maintainer's user-level files, which the maintainer's
@@ -466,4 +470,13 @@ checks but showed the account's claude.ai connectors being tried and the
 cloud and scheduling tools present; turning them off and checking for them
 was reviewed by Codex, whose two findings in the new check (a tool list
 that could default to empty and a missing init event passing) were fixed
-and confirmed.
+and confirmed. The first Codex tester probe found that `web_search =
+"disabled"` leaves Codex's apps server with a server-side web tool, which
+the session used to open the project's GitHub page; the apps and related
+features are now off and checked, and the probe's shell checks rest on
+host-side evidence (the proxy log and the tester's home) and the log of a
+read-only script the session runs, since Codex's `--json` output omits
+commands run through its script tool. Codex's review of that change found
+the canary's content in its file name, incomplete or repeated script logs
+passing, prose counted as an apps tool call and a tester-writable script
+and log; all were fixed, the last by moving the verdict to the host.
