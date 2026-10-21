@@ -60,3 +60,17 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   through `ToolWindowController`, which requests the detach. Request the
   detach for an expanded window-mode description at mount (or after the
   first layout), and add a mount-time regression test.
+- [ ] 2026-10-21 `NOW.md` — Reporting deviations and improvements: the
+  handoff file was last updated 2026-10-15 and is stale. It gives the
+  version as 0.2.96 (the workspace is at 0.3.51) and says the
+  `app-author-improvements` branch is not merged, while 116ab0c and later
+  commits merged it and the probe and audit plans that followed. Rewrite
+  it for the current `main` and open plans, or remove it if
+  `plans/` and the CHANGELOG are enough as the handoff.
+- [ ] 2026-10-21 `docs/verification.md` "Workspace gate" — Verification and
+  review: the command block presented as the workspace gate omits the
+  packaged examples' headless sessions (`cargo run --locked -p pert-ui
+  --features png,svg,cpu --example ...`) that AGENTS.md and
+  `.github/workflows/ci.yml` include, so a reader following it runs less
+  than CI. Replace the block with a reference to the AGENTS.md gate, or
+  copy the full list and keep it in step with the other two.
