@@ -28,7 +28,8 @@ in order:
 - **breaking:** slice 6, with a changelog entry giving the replacement
   usage.
 
-**Status:** recommendations, waiting for the maintainer. The "Decision"
+**Status:** recommendations, approved by Codex after two rechecks, waiting
+for the maintainer. The "Decision"
 column is filled in when the maintainer decides.
 
 ## Summary

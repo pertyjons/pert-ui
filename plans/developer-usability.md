@@ -9,8 +9,8 @@ their 90-minute budget. Slice 1 is done: the API listings are under
 an authorized push. Slice 2 is done: round 1's eight runs are recorded in
 `plans/usability/runs/`. Slice 3 is done: 36 findings are ranked in the
 round 1 findings table. Slice 4 is done: the API audit's 127 findings and
-two surveys are recorded, and the joint checkpoint with the maintainer is
-next. Every tool, file and check named below as new is a
+two surveys are recorded. The joint checkpoint with the maintainer is
+next, with the [recommended policy decisions](usability/api-audit/decisions.md). Every tool, file and check named below as new is a
 proposal until a slice implements it.
 
 ## Background
