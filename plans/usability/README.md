@@ -233,9 +233,11 @@ harness, bubblewrap sandbox:
   them; the template now asks for `date +%H:%M`, which needs a newly
   prepared kit.
 
-Both pilots finished task 2 in a small part of its 90-minute budget. Before
-round 1 the maintainer decides whether the tasks or the budget change; the
-kit is then prepared again from the final harness.
+Both pilots finished task 2 in a small part of its 90-minute budget. The
+maintainer kept the tasks and the budget (2026-10-21): the budget is a
+ceiling, the time to accepted completion is still measured, and the
+friction logs were informative. Round 1 prepares a new kit from the final
+harness.
 Starting a tester session from the author's Claude Code session was refused
 by its auto-mode permission classifier, also after the maintainer asked for
 it, so the maintainer starts those runs.

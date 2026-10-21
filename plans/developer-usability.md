@@ -1,10 +1,10 @@
 # Plan: blind developer tests and public API review
 
-Status: proposed 2026-10-21 and revised after a Codex review. Slice 0's
-kit and design checkpoint are on branch `developer-usability`; both tester
-probes passed and both pilots were accepted (the kit's README has the
-evidence). Slice 0 waits for the maintainer's approval of the checkpoint
-and decision on the tasks' size and budget. Every tool, file and check named below as new is a
+Status: proposed 2026-10-21 and revised after a Codex review. Slice 0 is
+done on branch `developer-usability`: both tester probes passed, both
+pilots were accepted (the kit's README has the evidence), and the
+maintainer approved the checkpoint on 2026-10-21, keeping the tasks and
+their 90-minute budget. Slice 1 is next. Every tool, file and check named below as new is a
 proposal until a slice implements it.
 
 ## Background
@@ -154,7 +154,8 @@ Design checkpoint first. It decides and records:
 - **Budget.** A wall-time limit per run. An unfinished task is a result,
   recorded with how far the tester got.
 
-Checkpoint outcome, recorded with its evidence in the
+Checkpoint outcome, approved by the maintainer on 2026-10-21 and recorded
+with its evidence in the
 [kit's README](usability/README.md#checkpoint-decisions-slice-0): a
 bubblewrap sandbox per run with a cleared environment and only loopback,
 and a host-side proxy that admits the model and authentication hosts only,
