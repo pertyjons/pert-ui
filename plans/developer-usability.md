@@ -502,6 +502,13 @@ independently, Codex and a fresh Claude agent, as the
 [plan audit](plan-audit-repairs.md#background) did; findings only one
 reports are verified by the other.
 
+Checkpoint proposal (2026-10-21): [the rubric](usability/api-audit/rubric.md),
+with its sources, the inventory method, two independent auditors with
+cross-verification, the rubric items (construction, builders and
+callbacks, names, types, discovery) and the survey procedures. Codex
+reviewed it and approved it after two rechecks; it waits for the
+maintainer's approval.
+
 Two surveys complete the audit:
 
 - **Lints.** Run candidate lints as warnings across the workspace and count
@@ -686,3 +693,22 @@ own runs' findings (F4's count and F7's split) were checked by a fresh
 Claude agent, which agreed and corrected r1-1-codex's acceptance note about
 its in-view close. A recheck confirmed the fixes and found two remaining
 routing and wording points in the slice 9 inputs, which were fixed.
+
+Slice 4's checkpoint: Codex's review of the rubric found fourteen points,
+among them:
+- behavior excluded although several rules state behavior;
+- rustdoc JSON overwritten per configuration;
+- inventories promising roles that only a reader can classify;
+- candidate filters missing the departures they should find;
+- callback, choice and permission rules transcribed incompletely;
+- guideline codes misapplied;
+- a root-only discovery rule;
+- surveys without the plan's minimum lint and diagnostics sets;
+- an underspecified dispute process.
+
+The rubric was rewritten: rules are labelled as project rule, guideline or
+consistency proposal; inputs are frozen per configuration with provenance;
+mechanical candidates are kept apart from semantic review; and policy
+disputes go to the maintainer. Two rechecks found five remaining points
+(cross-family callback names, composite observation timing, C-ITER, T6's
+attribution, C3's owner order), which were fixed, and approved it.
