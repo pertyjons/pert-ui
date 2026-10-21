@@ -202,6 +202,11 @@ harness, bubblewrap sandbox:
   with the probe script's log as evidence that it ran, every probe has
   its own canary, and the sandboxed command now waits until the bridge
   listens (a command started at once could find no listener).
+- `run.sh` was edited while the maintainer's Claude pilot was running.
+  Bash reads a script as it goes, so after that run finished it read on
+  into the edited file at its old offset. The run's records are written
+  before that point; the dispatch is now one function whose call and
+  `exit` are parsed before anything runs, so later edits cannot do this.
 
 Not yet run: both tester probes again after these changes, and the pilot.
 Starting a tester session from the author's Claude Code session was refused

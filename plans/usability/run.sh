@@ -576,12 +576,17 @@ shell() {
     in_sandbox none bash -i
 }
 
-cmd="${1:-}"; shift || true
-case "$cmd" in
-    prepare) [ $# = 1 ] || die "usage: run.sh prepare <kit-dir>"; prepare "$@" ;;
-    launch) [ $# -ge 4 ] || die "usage: run.sh launch <kit> <run> <tester> <task> [minutes]"; launch "$@" ;;
-    probe) [ $# = 3 ] || die "usage: run.sh probe <kit> <run> <tester>"; probe "$@" ;;
-    exec) [ $# -ge 3 ] || die "usage: run.sh exec <kit> <run> <command...>"; exec_in "$@" ;;
-    shell) [ $# = 2 ] || die "usage: run.sh shell <kit> <run>"; shell "$@" ;;
-    *) die "usage: run.sh prepare|launch|probe|exec|shell ..." ;;
-esac
+# The dispatch and the exit are parsed before anything runs, so editing this
+# file while a run is active cannot make bash read on into the new text.
+main() {
+    cmd="${1:-}"; shift || true
+    case "$cmd" in
+        prepare) [ $# = 1 ] || die "usage: run.sh prepare <kit-dir>"; prepare "$@" ;;
+        launch) [ $# -ge 4 ] || die "usage: run.sh launch <kit> <run> <tester> <task> [minutes]"; launch "$@" ;;
+        probe) [ $# = 3 ] || die "usage: run.sh probe <kit> <run> <tester>"; probe "$@" ;;
+        exec) [ $# -ge 3 ] || die "usage: run.sh exec <kit> <run> <command...>"; exec_in "$@" ;;
+        shell) [ $# = 2 ] || die "usage: run.sh shell <kit> <run>"; shell "$@" ;;
+        *) die "usage: run.sh prepare|launch|probe|exec|shell ..." ;;
+    esac
+}
+main "$@"; exit
