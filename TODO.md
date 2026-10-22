@@ -84,3 +84,10 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   pure-Rust one such as `miniz_oxide`, already in the lockfile through
   `png`) would make captures practical to attach and commit; keep the
   output deterministic and test it against a decoder.
+- [ ] 2026-10-22 `crates/pert-ui-runtime/src/runtime.rs`
+  `Runtime::focus_with_reveal` — Rust and data invariants ("do not discard
+  failures"): when `reveal_focus(id)?` fails while a `focus_lost` or
+  `focus_within_changed` error is held in `focus_result`, the held error is
+  neither returned nor queued in `focus_errors`. Queue it before returning the
+  reveal error and add a regression test. Planned as `N:focus-reveal` in part
+  6d2 of `plans/usability/api-audit/fix-plan.md`.

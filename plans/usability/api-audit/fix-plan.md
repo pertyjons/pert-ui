@@ -78,6 +78,8 @@ and anything left to a later part.
     `cancel_input`. The text now says an earlier consumer skips only the
     focused component's ordinary cleanup, while its own lifecycle cleans up
     as usual. The second recheck approved 5b.
+  - **Left to a later part:** tracing `Runtime::focus` found a dropped error,
+    added to 6d2 as `N:focus-reveal`.
 - **5c (0.3.55), done 2026-10-22:** c03e6eb and its review fix.
   - **Checks run, after the review fix:**
     - `cargo fmt --all --check`;
@@ -108,7 +110,7 @@ and anything left to a later part.
       and the CHANGELOG were corrected.
 
     The recheck approved 5c.
-- **5d (0.3.56):** the item examples of pert-ui-runtime, pert-ui-core and
+- **5d (0.3.56), done 2026-10-22:** 3c2e63a and its record fix. The item examples of pert-ui-runtime, pert-ui-core and
   pert-ui-cpu import `pert_ui::…` through hidden alias lines, so the
   facade's rendered pages show the facade's paths.
   - **Checks run after the last edit:**
@@ -127,8 +129,14 @@ and anything left to a later part.
       module that mirrors the facade's `cpu` path;
     - the three crate READMEs say item examples are written with the
       facade's paths and give the direct spelling.
-  - **Left to a later part:** tracing `Runtime::focus` found a dropped error,
-    added to 6d2 as `N:focus-reveal`.
+  - **Review:** Codex found no implementation defect. Reversing the alias
+    and path substitutions reproduces the previous sources exactly. It found
+    three record defects:
+    - this entry had swallowed 5b's deferred item;
+    - the dropped `Runtime::focus` error had no TODO.md entry;
+    - the commit and review were unrecorded.
+
+    All three were fixed.
 
 ## Rules for every part
 
