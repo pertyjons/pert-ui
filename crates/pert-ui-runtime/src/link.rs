@@ -84,6 +84,7 @@ pub struct Link {
     input: ActivationState,
     prepared: RefCell<Option<TextLayout>>,
 }
+description_debug!(Link);
 impl Link {
     /// Creates an enabled link showing `text`, whose callback expresses the
     /// navigation.

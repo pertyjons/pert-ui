@@ -1373,6 +1373,7 @@ pub struct Select<T> {
     anchor: Option<SelectAnchor<T>>,
     list: Option<OptionList<T>>,
 }
+description_debug!(Select<T>);
 impl<T: Clone + Eq + 'static> Select<T> {
     /// Creates a closed dropdown. `ui` supplies
     /// internal UI-local open state; the selection must belong to the same runtime.
@@ -1749,6 +1750,7 @@ impl<T: Clone + Eq + 'static> Component for Select<T> {
 /// Re-describing the dropdown under the same key follows [`Select`].
 #[must_use]
 pub struct InlineSelect<T>(Select<T>);
+description_debug!(InlineSelect<T>);
 impl<T: Clone + Eq + 'static> InlineSelect<T> {
     /// Creates a closed inline dropdown.
     ///

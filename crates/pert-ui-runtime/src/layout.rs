@@ -356,6 +356,18 @@ pub struct Element {
     pub(crate) kind: std::any::TypeId,
     pub(crate) children: Vec<Self>,
 }
+/// Shows the key, the fixed label and the children, so a described tree
+/// formats as its keys. The component, a bound label and the callbacks are
+/// not formatted.
+impl std::fmt::Debug for Element {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Element")
+            .field("key", &self.key)
+            .field("label", &self.label)
+            .field("children", &self.children)
+            .finish_non_exhaustive()
+    }
+}
 pub(crate) type Reconcile =
     fn(&mut dyn Component, Box<dyn Component>) -> Option<crate::Invalidation>;
 

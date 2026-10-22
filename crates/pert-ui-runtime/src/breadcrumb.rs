@@ -163,6 +163,7 @@ pub struct Breadcrumb {
     /// The string table the overflow menu and name were last taken from.
     strings: crate::UiStrings,
 }
+description_debug!(Breadcrumb);
 impl Breadcrumb {
     /// Creates a breadcrumb over `segments`, outermost first, that reports the
     /// key of an activated segment or chosen overflow row to `on_activate`.

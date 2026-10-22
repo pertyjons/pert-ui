@@ -16,6 +16,7 @@ pub struct Tab {
     /// tab becomes an element.
     leading: Option<IconSource>,
 }
+description_debug!(Tab, key = |tab| tab.element.key.as_str());
 impl Tab {
     /// Creates a tab with automatic two-axis content scrolling and no close button.
     /// The key must not be blank and must be unique in its strip, and the
@@ -339,6 +340,7 @@ pub struct Tabs {
     /// Why the described tabs are invalid, reported from `check_description`.
     invalid: Option<LayoutError>,
 }
+description_debug!(Tabs);
 impl Tabs {
     /// Collects tabs; the first tab is initially selected unless
     /// [`Self::selected`] names another, with all view state retained.

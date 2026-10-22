@@ -123,6 +123,7 @@ pub struct HistoryNavigator<T> {
     /// The string table the parts were last described with.
     strings: crate::UiStrings,
 }
+description_debug!(HistoryNavigator<T>);
 
 impl<T: Clone + Eq + 'static> HistoryNavigator<T> {
     /// Creates the control over `history`; `restore` shows the entry the user
@@ -497,6 +498,7 @@ pub struct HistoryButtons<T> {
     /// Whether a new description replaced the history since the last update.
     handoff: bool,
 }
+description_debug!(HistoryButtons<T>);
 
 impl<T: Clone + Eq + 'static> HistoryButtons<T> {
     /// Wraps `content`; side-button presses over it move `history` and call

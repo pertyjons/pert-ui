@@ -641,6 +641,7 @@ pub struct MenuBar {
     content: bool,
     row: Cell<f32>,
 }
+description_debug!(MenuBar);
 /// Phase-local indices of the bar's currently visible generated children.
 #[derive(Default)]
 struct BarLayout {

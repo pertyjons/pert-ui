@@ -228,6 +228,7 @@ pub struct SplitPane {
     /// The preference last reported through `on_resize` and a change waiting.
     report: crate::geometry_report::GeometryReport<SplitSizing>,
 }
+description_debug!(SplitPane);
 
 type ResizeHandler =
     Box<dyn FnMut(&mut EventContext, SplitSizing, ChangeOrigin) -> Result<(), RuntimeError>>;

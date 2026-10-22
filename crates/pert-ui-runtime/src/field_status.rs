@@ -470,6 +470,7 @@ pub struct Field {
     prepared: RefCell<Prepared>,
     painted: Cell<bool>,
 }
+description_debug!(Field);
 use crate::progress::{DOTS as SPINNER_DOTS, STEP as SPINNER_STEP};
 impl Field {
     /// Wraps one control, with no label, no help text and a normal status.

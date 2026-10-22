@@ -1,5 +1,36 @@
 #![doc = include_str!("../README.md")]
 
+/// Implements `Debug` for a description, showing its type name and, for a
+/// keyed item description, its key.
+///
+/// A description's content may be bound to signals, which formatting must not
+/// read inside a runtime phase, and its callbacks cannot be formatted, so
+/// neither is shown. Nothing bounds the description's type parameter.
+macro_rules! description_debug {
+    ($name:ident $(<$param:ident>)?) => {
+        /// Shows only the type. A description's content, bindings and
+        /// callbacks are not formatted; its identity is the key of the
+        /// [`Element`](crate::Element) it becomes, whose `Debug` shows it.
+        impl$(<$param>)? ::std::fmt::Debug for $name$(<$param>)? {
+            fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+                f.debug_struct(stringify!($name)).finish_non_exhaustive()
+            }
+        }
+    };
+    ($name:ident, key = $key:expr) => {
+        /// Shows the item's key. Its content, bindings and callbacks are not
+        /// formatted.
+        impl ::std::fmt::Debug for $name {
+            fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+                let key: fn(&Self) -> &str = $key;
+                f.debug_struct(stringify!($name))
+                    .field("key", &key(self))
+                    .finish_non_exhaustive()
+            }
+        }
+    };
+}
+
 mod error;
 pub use error::ApplicationError;
 mod resize_grip;

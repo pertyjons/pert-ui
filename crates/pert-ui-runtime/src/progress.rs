@@ -152,6 +152,7 @@ pub struct ProgressBar {
     /// The motion preference was reduced at the last update.
     still: bool,
 }
+description_debug!(ProgressBar);
 impl ProgressBar {
     /// Follows an application-owned status binding.
     pub fn new(status: impl Into<ReadSignal<ProgressStatus>>) -> Self {
@@ -358,6 +359,7 @@ pub struct Spinner {
     /// The motion preference was reduced at the last update.
     still: bool,
 }
+description_debug!(Spinner);
 impl Spinner {
     /// Follows an application-owned binding: true spins, false rests invisibly.
     pub fn new(busy: impl Into<ReadSignal<bool>>) -> Self {

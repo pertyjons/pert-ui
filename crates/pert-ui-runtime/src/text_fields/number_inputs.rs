@@ -169,6 +169,7 @@ impl NumberInputError {
 /// or focus loss, share keyboard-step undo and can be canceled with Escape.
 #[must_use]
 pub struct IntegerInput(NumberEditor<i64>);
+description_debug!(IntegerInput);
 
 /// A single-line decimal editor bound to a UI-local `Signal<f64>`.
 ///
@@ -207,6 +208,7 @@ pub struct IntegerInput(NumberEditor<i64>);
 /// [`Self::for_parameter`] binds an authoritative `Parameter<f32>` instead of
 /// a local signal; that constructor documents conversion and cancellation.
 pub struct DecimalInput(NumberEditor<f64>);
+description_debug!(DecimalInput);
 
 /// A one-line integer row with a caption, a draggable editable value and a unit,
 /// bound to a UI-local `Signal<i64>`, or to a stepped [`Parameter<i64>`] with
@@ -252,6 +254,7 @@ pub struct DecimalInput(NumberEditor<f64>);
 /// ```
 #[must_use]
 pub struct InlineInteger(NumberEditor<i64>);
+description_debug!(InlineInteger);
 
 /// A one-line decimal row with a caption, a draggable editable value and a unit,
 /// bound to a UI-local `Signal<f64>`.
@@ -280,6 +283,7 @@ pub struct InlineInteger(NumberEditor<i64>);
 /// [`Self::for_parameter`] also supports authoritative `Parameter<f32>` values,
 /// with its documented conversion and focus-loss cancellation.
 pub struct InlineDecimal(NumberEditor<f64>);
+description_debug!(InlineDecimal);
 
 trait Number: Copy + PartialEq + PartialOrd + std::fmt::Display + 'static {
     const MIN: Self;

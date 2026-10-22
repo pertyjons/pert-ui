@@ -511,6 +511,7 @@ pub struct CommandPalette {
     controller: CommandPaletteController,
     outcome: Rc<RefCell<OutcomeText>>,
 }
+description_debug!(CommandPalette);
 impl CommandPalette {
     /// The preferred width of the panel, 520 logical pixels like
     /// [`QuickPick::DEFAULT_WIDTH`], narrowed to the window; [`Self::width`]

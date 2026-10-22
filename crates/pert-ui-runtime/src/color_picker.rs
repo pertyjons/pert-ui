@@ -392,6 +392,7 @@ pub struct ColorPicker {
     shown_name: Option<String>,
     described: bool,
 }
+description_debug!(ColorPicker);
 impl ColorPicker {
     /// Creates a picker editing `color`, without an alpha strip and with
     /// text entry. The binding belongs to the mounting runtime's UI thread.

@@ -328,6 +328,7 @@ pub struct ZoomView {
     retargeted: bool,
     focused: bool,
 }
+description_debug!(ZoomView);
 
 impl ZoomView {
     /// A view of components placed at content-space origins. Keys must be

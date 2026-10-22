@@ -53,6 +53,7 @@ pub struct RegionLayout {
     /// with the dividers this description generates.
     on_resize: Rc<RefCell<Option<RegionHandler>>>,
 }
+description_debug!(RegionLayout);
 
 /// One of the four edge regions of a [`RegionLayout`], as
 /// [`RegionLayout::on_resize`] names the edge whose divider changed.

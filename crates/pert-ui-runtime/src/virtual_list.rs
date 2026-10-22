@@ -542,6 +542,7 @@ pub struct VirtualList {
     /// even when the pointer does not move.
     hovered_point: Option<Point>,
 }
+description_debug!(VirtualList);
 
 type Activate = Box<dyn FnMut(&mut EventContext, &str) -> Result<(), RuntimeError>>;
 type OnText = Box<dyn FnMut(&mut EventContext, &str) -> Result<(), RuntimeError>>;

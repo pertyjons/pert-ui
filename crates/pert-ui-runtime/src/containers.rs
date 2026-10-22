@@ -82,6 +82,7 @@ pub struct Container {
     limits: crate::SizeLimits,
     cursor: Option<crate::CursorIcon>,
 }
+description_debug!(Container);
 impl Container {
     /// Wraps a child without changing its appearance or intrinsic size.
     pub fn new(child: Element) -> Self {
@@ -810,6 +811,7 @@ macro_rules! flow_component {
             justify: Justify,
             align: Option<Align>,
         }
+        description_debug!($name);
         impl $name {
             /// Collects ordered children; sibling keys must be unique at mounting.
             pub fn new(children: impl IntoIterator<Item = Element>) -> Self {
@@ -1037,6 +1039,7 @@ pub struct Grid {
     tracks: Vec<Track>,
     children: Vec<Element>,
 }
+description_debug!(Grid);
 impl Grid {
     /// Creates a grid.
     ///

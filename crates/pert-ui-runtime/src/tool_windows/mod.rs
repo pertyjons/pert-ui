@@ -318,6 +318,7 @@ pub struct ToolWindow {
     content: Element,
     actions: Option<Element>,
 }
+description_debug!(ToolWindow, key = |tool| tool.window.key.as_str());
 impl ToolWindow {
     /// Creates a collapsed tool window on the left edge's start group.
     ///
@@ -772,6 +773,7 @@ pub struct ToolWindowLayout {
     invalid: Option<LayoutError>,
     build_error: Option<RuntimeError>,
 }
+description_debug!(ToolWindowLayout);
 impl ToolWindowLayout {
     /// Creates a layout around `center`, with every edge empty
     /// ([`EdgeMode::None`]), persistence on, names hidden and every

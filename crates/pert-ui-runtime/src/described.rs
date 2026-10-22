@@ -185,6 +185,7 @@ macro_rules! described_component {
 /// ```
 #[must_use]
 pub struct Dynamic<T>(Described<T>);
+description_debug!(Dynamic<T>);
 
 impl<T: Clone + 'static> Dynamic<T> {
     /// Describes one child from `source`'s value with `build`.
@@ -231,6 +232,7 @@ described_component!(Dynamic<T>);
 /// ```
 #[must_use]
 pub struct Show(Described<bool>);
+description_debug!(Show);
 
 impl Show {
     /// Describes a child with `build` while `when` reads true.
@@ -312,6 +314,7 @@ pub struct Each<T> {
     items: ReadSignal<Vec<T>>,
     item: BuildItem<T>,
 }
+description_debug!(Each<T>);
 
 impl<T: Clone + 'static> Each<T> {
     /// Describes one element per item of `items`, keyed by `key`, in a

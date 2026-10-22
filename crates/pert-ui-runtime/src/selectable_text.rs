@@ -129,6 +129,7 @@ pub struct SelectableText {
     /// Built by the first update, which can create its signals.
     menu: Option<FieldMenu>,
 }
+description_debug!(SelectableText);
 
 struct Shown {
     text: String,

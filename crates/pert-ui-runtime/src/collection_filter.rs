@@ -550,6 +550,7 @@ pub struct CollectionFilter {
     counts: Cell<FilterCounts>,
     notifier: Option<crate::Notifier>,
 }
+description_debug!(CollectionFilter);
 impl CollectionFilter {
     /// Creates a filter field over `collection`, with a query binding of its
     /// own created from `ui`, any [`StateOwner`](crate::StateOwner).

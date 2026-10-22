@@ -232,6 +232,7 @@ pub struct MenuItem {
     shortcut: Option<Shortcut>,
     mark: Option<Mark>,
 }
+description_debug!(MenuItem, key = |item| item.key.as_str());
 impl MenuItem {
     fn with_action(
         key: impl Into<String>,
@@ -687,6 +688,7 @@ pub struct Menu {
     external_open: bool,
     chain: MenuChain,
 }
+description_debug!(Menu);
 impl Menu {
     /// Creates a closed action menu opened by a button showing `label`, a
     /// [`TextSource`]: fixed plain or rich content, or a binding the trigger
@@ -1275,6 +1277,7 @@ pub struct ContextMenu {
     /// reach; a reconciled description points its slot at the mounted one.
     opener: Slot<OpenerLink>,
 }
+description_debug!(ContextMenu);
 
 /// What a controller asked for: where to open, and the context the rows run in.
 #[derive(Clone)]

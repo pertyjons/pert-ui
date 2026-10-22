@@ -108,6 +108,7 @@ pub struct ColorSwatch {
     enabled: bool,
     input: ActivationState,
 }
+description_debug!(ColorSwatch);
 impl ColorSwatch {
     /// Creates a static swatch of a constant color.
     pub fn new(color: Color) -> Self {

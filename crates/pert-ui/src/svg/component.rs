@@ -69,6 +69,19 @@ pub struct Svg {
     _ui_thread: PhantomData<Rc<()>>,
 }
 
+/// Shows the drawing's intrinsic size, the requested size, the tint and the
+/// description, not the parsed tree, its source or a prepared raster.
+impl std::fmt::Debug for Svg {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Svg")
+            .field("intrinsic", &self.intrinsic)
+            .field("size", &self.size)
+            .field("tint", &self.tint)
+            .field("description", &self.description)
+            .finish_non_exhaustive()
+    }
+}
+
 struct Raster {
     width: u32,
     height: u32,

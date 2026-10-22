@@ -1,6 +1,7 @@
 //! Standard traits and conversions of public values: hashing and ordering that
-//! agree with equality, `Display` for colors, and the `From`/`AsRef`
-//! conversions beside the named constructors and accessors.
+//! agree with equality, `Display` for colors, `Debug` that formats no
+//! application value, and the `From`/`AsRef` conversions beside the named
+//! constructors and accessors.
 
 use std::collections::{BTreeSet, HashSet};
 use std::hash::Hash;
@@ -267,5 +268,138 @@ fn application_state_derives_debug_without_debug_values() -> TestResult {
         "{text}"
     );
     assert!(text.contains(r#"NumberFormat { hint: "0 ms""#), "{text}");
+    Ok(())
+}
+
+/// An application value with no `Debug`.
+#[derive(Clone)]
+struct Unformattable;
+
+#[test]
+fn descriptions_implement_debug() {
+    debug::<Breadcrumb>();
+    debug::<Chip>();
+    debug::<Checkbox>();
+    debug::<Toggle>();
+    debug::<RadioGroup<Unformattable>>();
+    debug::<SegmentedControl<Unformattable>>();
+    debug::<InlineChoice<Unformattable>>();
+    debug::<Collapsible>();
+    debug::<Section>();
+    debug::<Accordion>();
+    debug::<CollectionFilter>();
+    debug::<ColorPicker>();
+    debug::<ColorSwatch>();
+    debug::<CommandPalette>();
+    debug::<Container>();
+    debug::<Row>();
+    debug::<Column>();
+    debug::<Wrap>();
+    debug::<Grid>();
+    debug::<Label>();
+    debug::<Button>();
+    debug::<Dynamic<Unformattable>>();
+    debug::<Show>();
+    debug::<Each<Unformattable>>();
+    debug::<Dialog>();
+    debug::<AlertDialog>();
+    debug::<DragPreview>();
+    debug::<Field>();
+    debug::<FileBrowser>();
+    debug::<Form>();
+    debug::<HistoryNavigator<Unformattable>>();
+    debug::<HistoryButtons<Unformattable>>();
+    debug::<Image>();
+    debug::<InlineToggle>();
+    debug::<InlineReadout>();
+    debug::<Element>();
+    debug::<Link>();
+    debug::<LevelMeter>();
+    debug::<Trace>();
+    debug::<MenuItem>();
+    debug::<Menu>();
+    debug::<ContextMenu>();
+    debug::<MenuBar>();
+    debug::<MultiSelect<Unformattable>>();
+    debug::<Banner>();
+    debug::<Toast>();
+    debug::<ToastHost>();
+    debug::<Slider>();
+    debug::<InlineSlider>();
+    debug::<Knob>();
+    debug::<Popover>();
+    debug::<Tooltip>();
+    debug::<ProgressBar>();
+    debug::<Spinner>();
+    debug::<Property>();
+    debug::<PropertyGrid>();
+    debug::<QuickPick>();
+    debug::<RegionLayout>();
+    debug::<Select<Unformattable>>();
+    debug::<InlineSelect<Unformattable>>();
+    debug::<SelectableText>();
+    debug::<SplitPane>();
+    debug::<Table>();
+    debug::<Tab>();
+    debug::<Tabs>();
+    debug::<TextField>();
+    debug::<TextArea>();
+    debug::<InlineText>();
+    debug::<IntegerInput>();
+    debug::<DecimalInput>();
+    debug::<InlineInteger>();
+    debug::<InlineDecimal>();
+    debug::<SearchField>();
+    debug::<ToolWindow>();
+    debug::<ToolWindowLayout>();
+    debug::<ToolGroup>();
+    debug::<Toolbar>();
+    debug::<Tree>();
+    debug::<View>();
+    debug::<Group>();
+    debug::<ScrollArea>();
+    debug::<Divider>();
+    debug::<VirtualList>();
+    debug::<FloatingWindow>();
+    debug::<WindowLayer>();
+    debug::<ZoomView>();
+    #[cfg(feature = "svg")]
+    debug::<Svg>();
+}
+
+#[test]
+fn described_trees_format_as_keys_without_bound_values() -> TestResult {
+    let ui = Runtime::new();
+    let rows = ui.signal(vec![Unformattable]);
+    let tree = Column::new([
+        Label::new("Title").key("title"),
+        Each::new(
+            &rows,
+            |_| "row".to_owned(),
+            |_, _| Label::new("Row").key("row"),
+        )
+        .key("rows"),
+    ])
+    .key("content");
+    let text = format!("{tree:?}");
+    assert!(
+        text.starts_with(
+            r#"Element { key: "content", label: None, children: [Element { key: "title""#
+        ),
+        "{text}"
+    );
+    assert!(text.contains(r#"Element { key: "rows""#), "{text}");
+    assert_eq!(format!("{:?}", Label::new("Title")), "Label { .. }");
+    assert_eq!(
+        format!("{:?}", MenuItem::new("refresh", "Refresh", |_| Ok(()))),
+        r#"MenuItem { key: "refresh", .. }"#
+    );
+    assert_eq!(
+        format!(
+            "{:?}",
+            Tab::new("files", "Files", Label::new("Files").key("body"))
+        ),
+        r#"Tab { key: "files", .. }"#
+    );
     Ok(())
 }

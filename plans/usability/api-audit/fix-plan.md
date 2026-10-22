@@ -286,6 +286,25 @@ and anything left to a later part.
     return, and overrides `IconManager` cannot read. All four were
     corrected; the correction is verified in 6b3's review. The review also
     verified 6b1's correction.
+- **6b3 (0.3.62):** `Debug` for the remaining 87 descriptions (86 runtime
+  types and `pert_ui::Svg`), completing G4-1's 113 with 6b2's.
+  `missing_debug_implementations` is denied and listed in AGENTS.md.
+  - A crate-private `description_debug!` macro writes the
+    `finish_non_exhaustive` form.
+  - Keyed items show their key. `Element` shows key, fixed label and
+    children, and `Svg` shows its sizes, tint and description.
+  - No impl reads a signal, borrows shared state, formats a callback or
+    bounds a parameter by `Debug`.
+  - **Checks run after the last edit:**
+    - `cargo fmt --all --check`;
+    - workspace Clippy, and Clippy in every CI feature configuration;
+    - `cargo test --locked --workspace`, including the new
+      `standard_traits` description tests and the `svg` Debug test;
+    - the five headless example sessions;
+    - `cargo test --locked --workspace --doc`;
+    - warning-free workspace rustdoc;
+    - `api/generate.sh`, whose diff is the plan's expected `Debug` lines;
+    - `git diff --check`.
 
 ## Rules for every part
 

@@ -74,6 +74,7 @@ pub struct InlineToggle {
     help: HelpTimer,
     prepared: RefCell<Option<TextLayout>>,
 }
+description_debug!(InlineToggle);
 /// The first `count` grapheme clusters of `text`, so an emoji or a letter
 /// with combining marks stays whole.
 fn leading_clusters(text: &str, count: usize) -> String {
@@ -590,6 +591,7 @@ pub struct InlineReadout {
     style: Option<TextStyle>,
     focused: bool,
 }
+description_debug!(InlineReadout);
 impl InlineReadout {
     fn with_reader(reader: Reader) -> Self {
         let mut field = InlineField::new(true);

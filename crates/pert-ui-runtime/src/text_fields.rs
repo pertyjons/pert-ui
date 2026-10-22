@@ -154,6 +154,7 @@ type RefusalReport =
 /// ```
 #[must_use]
 pub struct TextField(Editor);
+description_debug!(TextField);
 
 /// A multiline local text editor with monospace typography by default.
 ///
@@ -204,6 +205,7 @@ pub struct TextField(Editor);
 /// ```
 #[must_use]
 pub struct TextArea(Editor);
+description_debug!(TextArea);
 
 macro_rules! editor_api {
     ($name:ident, $multi:expr) => {

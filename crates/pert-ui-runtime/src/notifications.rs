@@ -29,6 +29,7 @@ pub struct Banner {
     visible: Option<ReadSignal<bool>>,
     shown: bool,
 }
+description_debug!(Banner);
 impl Banner {
     /// Creates informational feedback with a message and optional ordinary actions.
     /// Use an empty iterator for a message without actions.
@@ -145,6 +146,7 @@ pub struct Toast {
     message: TextSource,
     action: Option<(TextSource, ToastAction)>,
 }
+description_debug!(Toast);
 impl Toast {
     /// Creates a message with the default five-second presentation lifetime.
     pub fn new(message: impl Into<TextSource>) -> Self {
@@ -401,6 +403,7 @@ pub struct ToastHost {
     /// The application's dismiss label, or `None` for the string table's.
     dismiss: Option<TextSource>,
 }
+description_debug!(ToastHost);
 impl ToastHost {
     /// Describes the single presentation owner of `controller`'s queue around
     /// `content`. The queue is claimed when the host mounts.

@@ -1,5 +1,46 @@
 # Changelog
 
+## 0.3.62 (2026-10-22)
+
+`Debug` for descriptions; the lint denied (API audit fix plan, part 6b3).
+With part 6b2 every public type implements `Debug`, and the workspace now
+denies `missing_debug_implementations`, so a new public type without it fails
+the build. Each new impl is written by hand and ends with `..`. A description
+shows only its type, or the key of a keyed item; it formats no content,
+binding or callback, reads no signal and puts no `Debug` bound on its type
+parameter. Not breaking.
+
+- Added: `impl Debug` for `Element`, showing its key, its fixed label (`None`
+  for a bound one) and its children, so a described tree formats as its keys.
+- Added: `impl Debug` for the keyed item descriptions `Tab`, `Section`,
+  `MenuItem`, `Property`, `ToolGroup`, `ToolWindow` and `FloatingWindow`,
+  showing their key.
+- Added: `impl Debug`, showing only the type, for the widget and container
+  descriptions `Accordion`, `AlertDialog`, `Banner`, `Breadcrumb`, `Button`,
+  `Checkbox`, `Chip`, `Collapsible`, `CollectionFilter`, `ColorPicker`,
+  `ColorSwatch`, `Column`, `CommandPalette`, `Container`, `ContextMenu`,
+  `DecimalInput`, `Dialog`, `Divider`, `DragPreview`, `Field`, `FileBrowser`,
+  `Form`, `Grid`, `Group`, `Image`, `InlineDecimal`, `InlineInteger`,
+  `InlineReadout`, `InlineSlider`, `InlineText`, `InlineToggle`,
+  `IntegerInput`, `Knob`, `Label`, `LevelMeter`, `Link`, `Menu`, `MenuBar`,
+  `Popover`, `ProgressBar`, `PropertyGrid`, `QuickPick`, `RegionLayout`,
+  `Row`, `ScrollArea`, `SearchField`, `SelectableText`, `Show`, `Slider`,
+  `Spinner`, `SplitPane`, `Table`, `Tabs`, `TextArea`, `TextField`, `Toast`,
+  `ToastHost`, `Toolbar`, `Tooltip`, `ToolWindowLayout`, `Trace`, `Tree`,
+  `View`, `VirtualList`, `WindowLayer`, `Wrap` and `ZoomView`, and for every
+  `T` of `Dynamic<T>`, `Each<T>`, `HistoryButtons<T>`, `HistoryNavigator<T>`,
+  `InlineChoice<T>`, `InlineSelect<T>`, `MultiSelect<T>`, `RadioGroup<T>`,
+  `SegmentedControl<T>` and `Select<T>`.
+- Added: `impl Debug` for `pert_ui::Svg` (`svg` feature), showing its
+  intrinsic size, requested size, tint and description, not the parsed
+  drawing or a prepared raster.
+- Changed: the workspace denies `missing_debug_implementations`, and
+  AGENTS.md's lint sentence names it.
+- Added: contract tests in the facade's `foundation` binary check that the
+  descriptions implement `Debug`, also over a type parameter without it, and
+  how an element tree and keyed items format; the `presentation` binary checks
+  `Svg`'s.
+
 ## 0.3.61 (2026-10-22)
 
 `Debug` for state owners, handles, contexts and backends (API audit fix plan,

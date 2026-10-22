@@ -1218,6 +1218,7 @@ pub struct MultiSelect<T> {
     shown: bool,
     permission_notification_pending: bool,
 }
+description_debug!(MultiSelect<T>);
 impl<T: Clone + Eq + Hash + 'static> MultiSelect<T> {
     /// Creates a closed chooser over fixed options. `ui` supplies the
     /// chooser's UI-local state; `value` must belong to the same runtime.

@@ -212,6 +212,7 @@ pub struct FloatingWindow {
     minimize_label: Option<TextSource>,
     close_label: Option<TextSource>,
 }
+description_debug!(FloatingWindow, key = |window| window.key.as_str());
 impl FloatingWindow {
     /// Creates one UI-local window with ordinary content and standard decorations.
     /// `ui` supplies bindings only; no window/GPU is opened. Last declared window
@@ -672,6 +673,7 @@ impl From<FloatingWindow> for Element {
 pub struct WindowLayer {
     children: Vec<Element>,
 }
+description_debug!(WindowLayer);
 impl WindowLayer {
     /// Creates a layer with default presentation from window descriptions.
     pub fn new(windows: impl IntoIterator<Item = FloatingWindow>) -> Self {

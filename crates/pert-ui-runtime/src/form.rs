@@ -55,6 +55,7 @@ pub struct Form {
     children: Vec<Element>,
     columns: Cell<Option<usize>>,
 }
+description_debug!(Form);
 
 impl Form {
     /// Collects fields in reading and keyboard traversal order.

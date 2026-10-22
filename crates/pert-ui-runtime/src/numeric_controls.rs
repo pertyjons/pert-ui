@@ -1307,6 +1307,7 @@ macro_rules! numeric_widget {
         /// outcome, before binding the new one; other properties apply in place.
         #[must_use]
         pub struct $name(NumericControl);
+        description_debug!($name);
         impl $name {
             /// Creates an enabled control sharing the parameter and its edit protocol.
             /// Keep the separate host alive for as long as editing is available.

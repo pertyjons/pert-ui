@@ -82,6 +82,7 @@ pub struct Image {
     size: Option<Size>,
     description: String,
 }
+description_debug!(Image);
 impl Image {
     /// Presents a fixed image.
     pub fn new(image: RasterImage) -> Self {

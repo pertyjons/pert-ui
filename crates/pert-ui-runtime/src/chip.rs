@@ -85,6 +85,7 @@ pub struct Chip {
     focused: bool,
     prepared: RefCell<Option<Prepared>>,
 }
+description_debug!(Chip);
 impl Chip {
     /// Creates a static chip: a label with chip styling and no Tab stop.
     ///

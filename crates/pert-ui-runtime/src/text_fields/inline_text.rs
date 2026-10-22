@@ -90,6 +90,7 @@ pub struct InlineText {
     area: Cell<Option<Rect>>,
     clicks: crate::ClickCounter,
 }
+description_debug!(InlineText);
 impl InlineText {
     /// Creates an enabled editable label. The binding is validated and
     /// subscribed on the first update; bound text the editor does not accept

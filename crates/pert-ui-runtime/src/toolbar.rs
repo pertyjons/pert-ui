@@ -52,6 +52,7 @@ pub struct ToolGroup {
     collapse_first: bool,
     shown: Option<ReadSignal<bool>>,
 }
+description_debug!(ToolGroup, key = |group| group.key.as_str());
 impl ToolGroup {
     /// Creates a group from its controls. They follow the inline family
     /// contract: preferred height is ControlHeight and each control owns its own
@@ -339,6 +340,7 @@ pub struct Toolbar {
     oversized: Cell<usize>,
     lines: Cell<usize>,
 }
+description_debug!(Toolbar);
 impl Toolbar {
     /// Creates a toolbar from ordered groups. `ui` supplies the internal
     /// open-state signal of the overflow surface.

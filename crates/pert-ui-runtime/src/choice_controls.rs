@@ -520,6 +520,7 @@ macro_rules! boolean_widget {
         )]
         #[must_use]
         pub struct $name(BooleanControl);
+        description_debug!($name);
         impl $name {
             /// Creates a labeled control sharing the supplied local value.
             ///
@@ -722,6 +723,7 @@ pub struct RadioGroup<T> {
     row_height: Cell<f32>,
     texts: RefCell<Vec<TextLayout>>,
 }
+description_debug!(RadioGroup<T>);
 impl<T: Clone + Eq + 'static> RadioGroup<T> {
     /// Creates an enabled group.
     ///
@@ -1450,6 +1452,7 @@ impl<T: Clone + Eq + 'static> RadioGroup<T> {
 /// Re-describing the control under the same key follows [`RadioGroup`].
 #[must_use]
 pub struct SegmentedControl<T>(RadioGroup<T>);
+description_debug!(SegmentedControl<T>);
 impl<T: Clone + Eq + 'static> SegmentedControl<T> {
     /// Creates an enabled group.
     ///
@@ -1595,6 +1598,7 @@ impl<T: Clone + Eq + 'static> Component for SegmentedControl<T> {
 /// Re-describing the group under the same key follows [`RadioGroup`].
 #[must_use]
 pub struct InlineChoice<T>(RadioGroup<T>);
+description_debug!(InlineChoice<T>);
 impl<T: Clone + Eq + 'static> InlineChoice<T> {
     /// Creates an enabled inline group.
     ///

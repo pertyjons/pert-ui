@@ -144,6 +144,7 @@ pub struct LevelMeter {
     folded_through: Option<u64>,
     available: bool,
 }
+description_debug!(LevelMeter);
 impl LevelMeter {
     /// Shows `source` on `scale`, horizontally, in the Primary role.
     pub fn new(source: SeriesSource<f32>, scale: ParameterSpec<f32>) -> Self {
@@ -490,6 +491,7 @@ pub struct Trace {
     points: Vec<(f32, bool)>,
     connected: bool,
 }
+description_debug!(Trace);
 impl Trace {
     /// Draws `source` on `scale` in the Primary role.
     pub fn new(source: SeriesSource<f32>, scale: ParameterSpec<f32>) -> Self {

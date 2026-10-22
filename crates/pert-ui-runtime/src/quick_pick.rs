@@ -878,6 +878,7 @@ pub struct QuickPick {
     shown: bool,
     status: PickStatus,
 }
+description_debug!(QuickPick);
 impl QuickPick {
     /// The preferred width of the panel, 520 logical pixels, narrowed to the
     /// window; [`Self::width`] changes it.

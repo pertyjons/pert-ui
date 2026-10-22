@@ -130,6 +130,7 @@ pub struct SearchField {
     clear: Cell<Option<Rect>>,
     clear_hover: bool,
 }
+description_debug!(SearchField);
 
 impl SearchField {
     /// Creates an enabled search field that writes every committed edit to

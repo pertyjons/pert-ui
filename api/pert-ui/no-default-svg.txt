@@ -18,6 +18,8 @@ pub const fn pert_ui::Svg::intrinsic_size(&self) -> pert_ui_runtime::layout::Siz
 pub fn pert_ui::Svg::new(&[u8]) -> core::result::Result<Self, pert_ui::svg::SvgError>
 pub const fn pert_ui::Svg::size(self, pert_ui_runtime::layout::Size) -> Self
 pub fn pert_ui::Svg::tinted(&[u8], pert_ui_runtime::runtime::theme::ColorRole) -> core::result::Result<Self, pert_ui::svg::SvgError>
+impl core::fmt::Debug for pert_ui::Svg
+pub fn pert_ui::Svg::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl pert_ui_runtime::runtime::Component for pert_ui::Svg
 pub fn pert_ui::Svg::arrange(&self, &mut pert_ui_runtime::layout::ArrangeContext<'_>, pert_ui_runtime::layout::Size) -> core::result::Result<(), pert_ui_runtime::runtime::RuntimeError>
 pub fn pert_ui::Svg::inspect(&self) -> pert_ui_runtime::diagnostics::ComponentDetails
@@ -72,6 +74,8 @@ pub const fn pert_ui::Svg::intrinsic_size(&self) -> pert_ui_runtime::layout::Siz
 pub fn pert_ui::Svg::new(&[u8]) -> core::result::Result<Self, pert_ui::svg::SvgError>
 pub const fn pert_ui::Svg::size(self, pert_ui_runtime::layout::Size) -> Self
 pub fn pert_ui::Svg::tinted(&[u8], pert_ui_runtime::runtime::theme::ColorRole) -> core::result::Result<Self, pert_ui::svg::SvgError>
+impl core::fmt::Debug for pert_ui::Svg
+pub fn pert_ui::Svg::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl pert_ui_runtime::runtime::Component for pert_ui::Svg
 pub fn pert_ui::Svg::arrange(&self, &mut pert_ui_runtime::layout::ArrangeContext<'_>, pert_ui_runtime::layout::Size) -> core::result::Result<(), pert_ui_runtime::runtime::RuntimeError>
 pub fn pert_ui::Svg::inspect(&self) -> pert_ui_runtime::diagnostics::ComponentDetails

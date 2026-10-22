@@ -77,6 +77,7 @@ pub struct FileBrowser {
     /// A construction failure is propagated by description admission.
     parts_error: Option<RuntimeError>,
 }
+description_debug!(FileBrowser);
 impl FileBrowser {
     /// Creates a browser over `controller` whose tree and list rows are
     /// `row_height` logical pixels tall.

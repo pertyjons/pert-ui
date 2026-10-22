@@ -17,6 +17,7 @@ pub struct View {
     visible: bool,
     fixed: bool,
 }
+description_debug!(View);
 impl View {
     /// Creates a visible view around one content element.
     pub fn new(content: Element) -> Self {
@@ -140,6 +141,7 @@ pub struct Group {
     framed: bool,
     background: Cell<Option<Color>>,
 }
+description_debug!(Group);
 impl Group {
     /// Creates an untitled group.
     pub fn new(content: Element) -> Self {
@@ -341,6 +343,7 @@ pub struct ScrollArea {
     /// draggable.
     bar_hover: Option<bool>,
 }
+description_debug!(ScrollArea);
 impl ScrollArea {
     /// Wraps one child in a vertical viewport.
     pub fn new(content: Element) -> Self {
@@ -922,6 +925,7 @@ pub struct Divider {
     /// Keeps the description on the UI thread whatever its fields are.
     _ui_thread: std::marker::PhantomData<std::rc::Rc<()>>,
 }
+description_debug!(Divider);
 impl Default for Divider {
     fn default() -> Self {
         Self::new()

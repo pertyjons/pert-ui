@@ -928,6 +928,7 @@ pub struct Tree {
     /// placement that turns a pointer into a drop position.
     step: Rc<Cell<f32>>,
 }
+description_debug!(Tree);
 impl Tree {
     /// Creates a tree over a controller with a fixed logical row height.
     ///

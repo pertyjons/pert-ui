@@ -194,6 +194,7 @@ pub struct DragPreview {
     pub(crate) element: Option<crate::Element>,
     pub(crate) hot_spot: crate::Point,
 }
+description_debug!(DragPreview);
 
 impl DragPreview {
     /// No preview.

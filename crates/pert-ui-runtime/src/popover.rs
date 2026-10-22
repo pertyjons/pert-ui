@@ -202,6 +202,7 @@ pub struct Popover {
     picker_changed: Option<crate::color_picker::ChangeSlot>,
     on_dismiss: Option<DismissHandler>,
 }
+description_debug!(Popover);
 impl Popover {
     pub(crate) fn empty(open: Signal<bool>) -> Self {
         Self {
@@ -406,6 +407,7 @@ pub struct Tooltip {
     children: Vec<Element>,
     timer: HelpTimer,
 }
+description_debug!(Tooltip);
 impl Tooltip {
     /// Wraps an anchor with default-styled help text and a 500 ms show delay.
     /// The text is a [`TextSource`]: fixed plain or rich content, or a binding

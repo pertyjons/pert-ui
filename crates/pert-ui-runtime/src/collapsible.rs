@@ -474,6 +474,7 @@ pub struct Collapsible {
     /// composition, which [`Self::sync_title`] keeps current.
     title: Caption,
 }
+description_debug!(Collapsible);
 impl Collapsible {
     /// Creates a collapsed, enabled, persisted section titled `title` around
     /// `content`, whose element key identifies the content.
@@ -815,6 +816,7 @@ pub struct Section {
     /// section becomes an element.
     leading: Option<IconSource>,
 }
+description_debug!(Section, key = |section| section.element.key.as_str());
 impl Section {
     /// Creates a section. The key must not be blank and must be unique in its
     /// accordion, and the title must not be blank; [`Accordion`] checks both
@@ -970,6 +972,7 @@ pub struct Accordion {
     /// Why the described sections are invalid, reported from `check_description`.
     invalid: Option<LayoutError>,
 }
+description_debug!(Accordion);
 /// Called with the open section keys, in display order, after they change.
 type AccordionHandler =
     Box<dyn FnMut(&mut EventContext, &ExpansionChange) -> Result<(), RuntimeError>>;

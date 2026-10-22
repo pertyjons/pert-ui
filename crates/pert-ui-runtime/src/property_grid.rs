@@ -38,6 +38,7 @@ pub struct Property {
     label: TextSource,
     field: Field,
 }
+description_debug!(Property, key = |row| row.key.as_str());
 impl Property {
     /// Creates a row. The key must not be blank and must be unique among the
     /// grid's rows, and the label must not be blank; [`PropertyGrid`] checks
@@ -262,6 +263,7 @@ pub struct PropertyGrid {
     /// The preference last reported through `on_resize` and a change waiting.
     report: crate::geometry_report::GeometryReport<Option<Length>>,
 }
+description_debug!(PropertyGrid);
 
 type LabelWidthHandler =
     Box<dyn FnMut(&mut EventContext, Option<Length>, ChangeOrigin) -> Result<(), RuntimeError>>;

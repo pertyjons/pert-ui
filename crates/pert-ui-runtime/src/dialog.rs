@@ -189,6 +189,7 @@ pub struct Dialog {
     described: SurfaceKind,
     escape: bool,
 }
+description_debug!(Dialog);
 impl Dialog {
     /// Describes one owner using `controller` and arbitrary content. The
     /// controller is claimed when the dialog mounts, not here.
@@ -502,6 +503,7 @@ pub struct AlertDialog {
     /// The application's cancel label, or `None` for the string table's.
     cancel_label: Option<TextSource>,
 }
+description_debug!(AlertDialog);
 impl AlertDialog {
     /// Describes a default-styled heading, message, Cancel and affirmation
     /// buttons. `accept_label` describes the host action, for example "Delete".

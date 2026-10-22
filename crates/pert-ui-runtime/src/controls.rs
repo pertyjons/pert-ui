@@ -82,6 +82,7 @@ pub struct Label {
     clears_refused: bool,
     help: HelpTimer,
 }
+description_debug!(Label);
 impl Label {
     /// Creates a label showing `text`: fixed plain or rich content, or a
     /// `ReadSignal<String>` or `ReadSignal<RichText>` it follows (see
@@ -462,6 +463,7 @@ pub struct Button {
     prepared: RefCell<Option<TextLayout>>,
     frameless: bool,
 }
+description_debug!(Button);
 impl Button {
     /// Creates an enabled button showing `text`; the callback expresses
     /// application intent.

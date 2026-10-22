@@ -638,3 +638,16 @@ fn promoting_svg_to_a_surface_resets_density_and_demoting_restores_it() {
         assert_eq!(ui.next_deadline(), None);
     }
 }
+
+#[test]
+fn debug_shows_the_description_not_the_drawing() -> Result<(), SvgError> {
+    let icon = Svg::tinted(CHECK, ColorRole::OnPrimary)?.description("Done");
+    let text = format!("{icon:?}");
+    assert!(text.starts_with("Svg { intrinsic: "), "{text}");
+    assert!(text.contains("tint: Some(OnPrimary)"), "{text}");
+    assert!(
+        text.contains(r#"description: Some("Done"), .. }"#),
+        "{text}"
+    );
+    Ok(())
+}

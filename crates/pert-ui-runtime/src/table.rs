@@ -1413,6 +1413,7 @@ pub struct Table {
     /// edge: negative towards the first column.
     autoscroll: f32,
 }
+description_debug!(Table);
 
 /// The payload of a column drag: the column's key. Private, so only a table
 /// claims it, and only the table that started it.
