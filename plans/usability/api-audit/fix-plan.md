@@ -601,12 +601,13 @@ The diagnostics survey's recommendations, which carry no finding ID:
   (`F/app.rs:167`), with the accepted error types listed in `AppError`'s
   rustdoc (F11).
 - A `compile_fail` doctest proving `StateOwner` cannot be implemented.
-- `#[doc(alias)]` on `Modifiers` (`S:m06`) and its rustdoc example.
+- Field aliases on `Modifiers` and its rustdoc example (`S:m06`), with no
+  alias on `PRIMARY`.
 - A new `publish = false` workspace member, `tests/diagnostics` (package
   `pert-ui-diagnostics`, `[lints] workspace = true`), whose only
   dev-dependency is `trybuild`. It holds one test function with the
   snapshot cases whose message pert-ui shapes: c01, c06, i03, l01, l05, t01,
-  b01, r01, k01, s01, s02, m03/m04 and m06, each a `ui/*.rs` file with a
+  b01, r01, k01, s01, s02 and m03/m04, each a `ui/*.rs` file with a
   committed `.stderr`.
 - **How ordinary runs exclude it:** the test function is
   `#[ignore = "compiler wording; run by the diagnostics job on the pinned
@@ -654,7 +655,7 @@ Round 1 findings:
 
 Survey cases:
 
-- **S:m06:** `#[doc(alias("CONTROL", "CTRL", "COMMAND", "CMD"))]` on `Modifiers::PRIMARY` (the measured rustc suggestion) and `CONTROL`/`CTRL`, `ALT`, `SHIFT`, `SUPER` aliases on the matching fields; `PRIMARY` says it is Command on macOS; a rustdoc example builds `Modifiers` from its fields; trybuild case m06.
+- **S:m06:** no alias on `Modifiers::PRIMARY`, because routing `CONTROL` to it would mislead on macOS, where it means Command (survey.md:463); rustdoc-search aliases (`CONTROL`/`CTRL`, `ALT`/`OPTION`, `SUPER`/`META`/`WINDOWS`) on the matching fields; `Modifiers`' rustdoc says there are no per-key constants, shows `Modifiers { control: true, ..Modifiers::default() }`, and says `PRIMARY` is Control on Windows and Linux and Command on macOS; no trybuild case, since rustc's message does not change.
 
 ### 6d1 Redescription and reconciliation
 
@@ -851,9 +852,11 @@ Round 1 findings:
 F16's controlled `Checkbox` and `InlineText`. A design checkpoint comes
 first, reviewed by Codex and approved by the maintainer: contracts.md
 specifies refusal, optimistic presentation and callback timing before any
-code, and the controlled forms take their own constructor path, as the
-choice-source convention requires (`new` fixed, `bound` reactive; a
-controlled source is a third, exclusive constructor).
+code, and the controlled forms take a separate exclusive constructor (for
+example `controlled`). The existing `Checkbox::new` and `InlineText::new`,
+which take bindings, stay as they are, so the part is additive; the
+`new`/`bound`/`for_parameter` vocabulary stays limited to choice-option
+ownership.
 
 - **Gate:** the public-API row.
 - **`api/` diff:** the controlled constructors and callbacks of `Checkbox`
@@ -938,8 +941,8 @@ Not placed, because no decision or finding asks for them:
 - `clippy::must_use_candidate` (79 getters): a getter policy the survey
   leaves to the maintainer.
 - New `Modifiers::SHIFT`/`CONTROL`/`ALT`/`SUPER` constants, which triage
-  suggested for follow-ups: `S:m06` routes those guesses through
-  `#[doc(alias)]` and an example instead.
+  suggested for follow-ups: `S:m06` answers those guesses with field
+  aliases and an example instead.
 - Proposals inside rows the plan does not adopt: `Borrow<str>` for
   `ChoiceId` (G4-27), a `previous` field in `ExpansionChange` (G2-16), and a
   two-dimensional `SemanticValue` variant (F24), which would raise
@@ -1167,7 +1170,7 @@ diagnostics-survey cases.
 | G5-31 | 5b | The facade prelude says its native members come with `native`, enabled by `desktop` and `desktop-cpu` (`F/lib.rs:50-51`, `:59`). |
 | G5-32 | 6e | `ApplicationError` joins the runtime prelude under the constructed-error sentence; testing names wait for 6f1's module. |
 | S:l06 | 5c | `VirtualList::new` rustdoc and the guide's "Large collections" show the existing route: wrap the `ListItems` value in `ListSource::new`; no new API. |
-| S:m06 | 6c2 | `#[doc(alias("CONTROL", "CTRL", "COMMAND", "CMD"))]` on `Modifiers::PRIMARY` (the measured rustc suggestion) and `CONTROL`/`CTRL`, `ALT`, `SHIFT`, `SUPER` aliases on the matching fields; `PRIMARY` says it is Command on macOS; a rustdoc example builds `Modifiers` from its fields; trybuild case m06. |
+| S:m06 | 6c2 | no alias on `Modifiers::PRIMARY`, because routing `CONTROL` to it would mislead on macOS, where it means Command (survey.md:463); rustdoc-search aliases (`CONTROL`/`CTRL`, `ALT`/`OPTION`, `SUPER`/`META`/`WINDOWS`) on the matching fields; `Modifiers`' rustdoc says there are no per-key constants, shows `Modifiers { control: true, ..Modifiers::default() }`, and says `PRIMARY` is Control on Windows and Linux and Command on macOS; no trybuild case, since rustc's message does not change. |
 | V3-1 | 6d2 | `TableColumn::MIN_WIDTH` states the saturated-coordinate exception, `table_columns.rs:577` asserts it, the comment at `table.rs:332` corrected. |
 | V3-2 | 6d2 | Workspace restore rejects a stored column width below `MIN_WIDTH` (`table.rs:2028`, `:2075`) with the restore path's out-of-range error; rejection test. |
 | V3-3 | 5b | `TextField`/`TextArea::{min_length, max_length}` take a parameter named `graphemes` and say the unit first (`text_fields.rs:450-458`). |
