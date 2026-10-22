@@ -235,7 +235,7 @@ and anything left to a later part.
     and `AsRef<str>`), and to complete this record. Both were done; the
     implementation otherwise matched 6a3.
     The recheck approved 6a3.
-- **6b1 (0.3.60):** `missing_panics_doc`, `return_self_not_must_use` and
+- **6b1 (0.3.60), done 2026-10-22:** 9f755b6 and its review fix. `missing_panics_doc`, `return_self_not_must_use` and
   `fn_params_excessive_bools` are denied, with one `#[expect]` on
   `ThemeMetrics::for_density`. `#[must_use]` now follows the receipt rule:
   - `CommandId`, `HeldInputId` and `ToastReceipt` lose it;
@@ -261,6 +261,9 @@ and anything left to a later part.
   - **Left to a later part:** the round 2 fixture's `let _ =
     ui.register_command` (`plans/usability/task4-app`) waits for the kit
     fixes before round 2, which also update its version.
+  - **Review:** Codex found one CHANGELOG error: a toast action's failure
+    propagates from the input call that activated it, not from a flush. It
+    was corrected; the implementation matched 6b1.
 
 ## Rules for every part
 

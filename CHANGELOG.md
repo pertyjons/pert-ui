@@ -23,7 +23,8 @@ discards a signal, a parameter host or a series source now sees an
   needs no `let _ =`; the shortcut example in the guide's diagnostics chapter
   compiles without a warning.
 - Changed: `ToastReceipt` is no longer `#[must_use]`: a failing toast action
-  propagates through the flush, and expiry or dismissal is presentation. The
+  propagates from the input call that activated it, and expiry or dismissal
+  is presentation. The
   guide's notification example, the runtime README, the
   `ToastHost::dismiss_label` example and the gallery's surfaces page push
   toasts as plain statements.
