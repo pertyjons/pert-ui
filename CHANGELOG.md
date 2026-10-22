@@ -20,11 +20,14 @@ behavior changes; the `api/` listings are unchanged.
   `ListSource`, a `ListFilter` with a `CollectionFilter` field, a
   `VirtualList` with a `ListSelection`, `on_activate` and `reorderable`, a
   per-row checkbox binding and a retained title row whose draft survives
-  changes to other records. "Children from values" points to it.
+  scrolling and changes to other records. "Children from values" points to
+  it.
 - **Per-row bindings:** `ListItems::build`, `TableItems::cell` and
   `Signal::sibling` describe the per-row binding made with `sibling`, its cost
-  (a new binding for every mounted row on each source replacement, which ends
-  a text draft) and the retained row component as the alternative.
+  (a new binding for every mounted row each time the collection describes its
+  rows, on a source replacement and on a scroll or resize that changes the
+  mounted rows, which ends a text draft) and the retained row component as
+  the alternative.
 - **Hidden selection:** `CollectionFilter`'s "Selection and focus" and the
   recipe show how to tell that the selected row is hidden, from
   `ListFilter::items`, `ListItems::index_of` and `ListSelection::active`

@@ -318,10 +318,12 @@ impl<T> Signal<T> {
     /// since [`ListItems::build`](crate::ListItems::build) and
     /// [`TableItems::cell`](crate::TableItems::cell) get no state owner:
     /// call it there on a signal the rows hold, with the record's value, and
-    /// write changes back to the records from the control's callback. Creating a signal is not a write, so any phase may. The cost
-    /// is a new binding for every mounted row each time the source is
-    /// replaced, which ends an open text draft; `ListItems::build` describes
-    /// the retained alternative.
+    /// write changes back to the records from the control's callback.
+    /// Creating a signal is not a write, so any phase may. The cost is a new
+    /// binding for every mounted row each time the collection describes its
+    /// rows again: when the source is replaced, and when a scroll or resize
+    /// changes which rows are mounted. A new binding ends an open text draft;
+    /// `ListItems::build` describes the retained alternative.
     ///
     /// ```
     /// use pert_ui_runtime::Runtime;

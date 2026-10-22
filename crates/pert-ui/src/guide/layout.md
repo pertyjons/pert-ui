@@ -502,17 +502,20 @@ owner, so a row makes its binding in one of two ways:
 
 - **Per-row bindings.** `build` creates a binding with [`Signal::sibling`]
   holding the record's value, and the control's callback writes the change
-  back to the records. Every change of the records replaces the source, which
-  describes the mounted rows again, so each of them receives a new binding.
-  That suits a control without a draft, such as the checkbox below. A text
-  editor ends its open draft when its binding changes, so a per-row binding
-  would discard the user's typing whenever any record changes.
+  back to the records. The list describes all its mounted rows again, so each
+  of them receives a new binding, whenever a change of the records replaces
+  the source, and also whenever a scroll or resize mounts or unmounts another
+  row. That suits a control without a draft, such as the checkbox below. A
+  text editor ends its open draft when its binding changes, so a per-row
+  binding would discard the user's typing whenever any record changes or the
+  list scrolls another row into view.
 - **Retained rows.** A row component makes its binding once, in its first
   update, and keeps it while the row stays mounted. A new description brings
   the record's current value, which [`Component::reconcile`] keeps and, after
   a [`Notifier`] request, [`Component::deliver_notifications`] writes to the
-  binding, since neither an update nor a reconciliation may write. The title below works this way, so
-  its draft survives changes to other records.
+  binding, since neither an update nor a reconciliation may write. The title
+  below works this way, so its draft survives scrolling and changes to other
+  records.
 
 ```rust
 use std::{mem, time::Duration};

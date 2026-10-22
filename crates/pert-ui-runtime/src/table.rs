@@ -250,9 +250,10 @@ pub trait TableItems {
     /// for an empty cell, which the table draws as its padding alone.
     ///
     /// Like [`ListItems::build`], it is called again for every mounted row
-    /// when the source is replaced and gets no state owner, so a control in a
-    /// cell binds a signal per row or from a retained cell component, with the
-    /// costs `build` describes. Text in an [editable](TableColumn::editable)
+    /// each time the table describes its rows, on a source replacement and
+    /// when a scroll or resize changes which rows are mounted, and it gets no
+    /// state owner. A control in a cell therefore binds a signal per row or
+    /// from a retained cell component, with the costs `build` describes. Text in an [editable](TableColumn::editable)
     /// column is edited by the table's own editor instead.
     fn cell(&self, index: usize, column: &str) -> Option<Element>;
     /// Position of the row with `key`. The default scans every position.

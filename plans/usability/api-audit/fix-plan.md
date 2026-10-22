@@ -78,6 +78,34 @@ and anything left to a later part.
     `cancel_input`. The text now says an earlier consumer skips only the
     focused component's ordinary cleanup, while its own lifecycle cleans up
     as usual. The second recheck approved 5b.
+- **5c (0.3.55), done 2026-10-22:** c03e6eb and its review fix.
+  - **Checks run, after the review fix:**
+    - `cargo fmt --all --check`;
+    - `cargo clippy --locked -p pert-ui --all-targets -- -D warnings`;
+    - every facade doctest, plus the guide's with `--features
+      png,svg,cpu` for the CPU screenshot example;
+    - runtime doctests of virtual_list, signal and table;
+    - `cargo test --locked -p pert-ui --test foundation readme`, with the
+      new tests for the getting-started requirement, the Rust version and
+      every guide dependency line;
+    - `RUSTDOCFLAGS="-D warnings" cargo doc --locked --workspace --no-deps`
+      and `-p pert-ui --features serde`;
+    - the `inventory` and `log_explorer` headless sessions;
+    - `git diff --check`.
+
+    `api/generate.sh` showed no difference before the review fix, which
+    changed only doc comments and Markdown.
+  - **Beyond the plan's lines:**
+    - the appearance and diagnostics guides' `version = "…"` placeholders,
+      the same defect as F1, were fixed here;
+    - the recipe states `InlineText`'s current press behavior, which 6f2's
+      list-row mode (F27) must update.
+  - **Review:** Codex found that the per-row binding cost omitted scrolling.
+    - The list rebuilds every mounted row whenever the mounted rows or their
+      positions change (`virtual_list.rs:1839`).
+    - A probe confirmed that a reveal discarded a per-row draft.
+    - `ListItems::build`, `Signal::sibling`, `TableItems::cell`, the recipe
+      and the CHANGELOG were corrected.
   - **Left to a later part:** tracing `Runtime::focus` found a dropped error,
     added to 6d2 as `N:focus-reveal`.
 
