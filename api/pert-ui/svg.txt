@@ -89,6 +89,8 @@ pub fn pert_ui::App::on_window_error(self, impl core::ops::function::FnMut(&mut 
 pub fn pert_ui::App::resizable(self, bool) -> Self
 pub fn pert_ui::App::run(self) -> core::result::Result<(), pert_ui::AppError>
 pub fn pert_ui::App::size(self, pert_ui_runtime::layout::Size) -> core::result::Result<Self, pert_ui_runtime::runtime::RuntimeError>
+impl core::fmt::Debug for pert_ui::App
+pub fn pert_ui::App::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl !core::marker::Freeze for pert_ui::App
 impl !core::marker::Send for pert_ui::App
 impl !core::marker::Sync for pert_ui::App
@@ -246,6 +248,8 @@ pub fn pert_ui::App::on_window_error(self, impl core::ops::function::FnMut(&mut 
 pub fn pert_ui::App::resizable(self, bool) -> Self
 pub fn pert_ui::App::run(self) -> core::result::Result<(), pert_ui::AppError>
 pub fn pert_ui::App::size(self, pert_ui_runtime::layout::Size) -> core::result::Result<Self, pert_ui_runtime::runtime::RuntimeError>
+impl core::fmt::Debug for pert_ui::App
+pub fn pert_ui::App::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl !core::marker::Freeze for pert_ui::App
 impl !core::marker::Send for pert_ui::App
 impl !core::marker::Sync for pert_ui::App

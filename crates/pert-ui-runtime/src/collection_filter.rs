@@ -268,6 +268,15 @@ struct ListFilterInner {
     applied: RefCell<(String, FilterMatcher)>,
     selection: RefCell<Option<ListSelection>>,
 }
+
+/// Shows neither the rows nor the query: formatting must not read a signal
+/// inside a runtime phase. Read them with [`ListFilter::items`] and
+/// [`ListFilter::counts`].
+impl std::fmt::Debug for ListFilter {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ListFilter").finish_non_exhaustive()
+    }
+}
 impl ListFilter {
     /// Creates a filter over `source` that shows every row.
     ///
@@ -358,7 +367,7 @@ impl ListFilter {
 }
 
 /// The collection a [`CollectionFilter`] filters.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[non_exhaustive]
 pub enum FilterTarget {
     /// A [`VirtualList`](crate::VirtualList) bound to [`ListFilter::items`].

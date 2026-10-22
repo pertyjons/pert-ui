@@ -570,6 +570,16 @@ struct StateInner {
 #[derive(Clone)]
 #[must_use]
 pub struct TableController(Rc<StateInner>);
+
+/// Shows the selection's mode, not the rows, sort or filter: formatting must
+/// not read a signal inside a runtime phase.
+impl std::fmt::Debug for TableController {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("TableController")
+            .field("selection", &self.0.selection)
+            .finish_non_exhaustive()
+    }
+}
 impl TableController {
     /// Creates a controller with no sort indication.
     ///

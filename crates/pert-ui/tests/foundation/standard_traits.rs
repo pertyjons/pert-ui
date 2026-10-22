@@ -193,3 +193,79 @@ fn keyed_descriptions_convert_into_elements() -> TestResult {
     assert_eq!(window.key(), "tools");
     Ok(())
 }
+
+/// Requires `Debug`, so the call fails to compile for a type without it.
+fn debug<T: std::fmt::Debug>() {}
+
+#[test]
+fn state_owners_handles_contexts_and_backends_implement_debug() {
+    debug::<ListSelection>();
+    debug::<ListController>();
+    debug::<ListFilter>();
+    debug::<TableController>();
+    debug::<TreeController>();
+    debug::<FieldHandle>();
+    debug::<FormFields>();
+    debug::<ContextMenuController>();
+    debug::<ThemeManager>();
+    debug::<FontManager>();
+    debug::<IconManager>();
+    debug::<UiSettings>();
+    debug::<FilterTarget>();
+    debug::<ChildInfo>();
+    debug::<Runtime>();
+    debug::<EventContext>();
+    debug::<UpdateContext>();
+    debug::<MeasureContext<'static>>();
+    debug::<ArrangeContext<'static>>();
+    debug::<DescribeContext<'static>>();
+    debug::<CellEdit<'static>>();
+    debug::<Painter>();
+    debug::<VectorRasterizer>();
+    #[cfg(feature = "native")]
+    debug::<App>();
+}
+
+#[test]
+fn application_state_derives_debug_without_debug_values() -> TestResult {
+    /// A value with no `Debug`, as application data often is.
+    #[derive(Clone)]
+    struct Milliseconds;
+
+    #[derive(Debug)]
+    #[expect(dead_code, reason = "the fields exist to be formatted")]
+    struct Settings {
+        selection: ListSelection,
+        form: FormFields,
+        name: FieldHandle,
+        theme: ThemeManager,
+        delay: NumberFormat<Milliseconds>,
+        runtime: Runtime,
+    }
+
+    let ui = Runtime::new();
+    let form = FormFields::new(&ui);
+    let settings = Settings {
+        selection: ListSelection::new(&ui, SelectionMode::Single),
+        name: form.field("name")?,
+        form,
+        theme: ui.theme(),
+        delay: NumberFormat::new(
+            "0 ms",
+            |_: Milliseconds| "0".to_owned(),
+            |_| Ok(Milliseconds),
+        ),
+        runtime: ui,
+    };
+    let text = format!("{settings:?}");
+    assert!(
+        text.contains("ListSelection { mode: Single, .. }"),
+        "{text}"
+    );
+    assert!(
+        text.contains(r#"FieldHandle { key: "name", .. }"#),
+        "{text}"
+    );
+    assert!(text.contains(r#"NumberFormat { hint: "0 ms""#), "{text}");
+    Ok(())
+}

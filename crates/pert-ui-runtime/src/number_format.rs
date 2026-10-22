@@ -44,6 +44,17 @@ pub struct NumberFormat<T> {
     pub(crate) unit: Option<Format<T>>,
     pub(crate) edit_unit: Option<String>,
 }
+
+/// Shows the hint and the edit unit, not the format and parse callbacks, so
+/// `T` needs no `Debug`.
+impl<T> std::fmt::Debug for NumberFormat<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("NumberFormat")
+            .field("hint", &self.hint)
+            .field("edit_unit", &self.edit_unit)
+            .finish_non_exhaustive()
+    }
+}
 impl<T> Clone for NumberFormat<T> {
     fn clone(&self) -> Self {
         Self {

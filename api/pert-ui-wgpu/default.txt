@@ -77,6 +77,8 @@ pub fn pert_ui_wgpu::Renderer::render_offscreen(&mut self, pert_ui_runtime::draw
 pub fn pert_ui_wgpu::Renderer::resize(&mut self, pert_ui_runtime::drawing::PhysicalExtent) -> core::result::Result<(), pert_ui_wgpu::RenderError>
 impl pert_ui_wgpu::Renderer
 pub fn pert_ui_wgpu::Renderer::new_surface(&self, impl core::convert::Into<wgpu::api::surface::SurfaceTarget<'static>>, pert_ui_runtime::drawing::PhysicalExtent) -> core::result::Result<Self, pert_ui_wgpu::RenderError>
+impl core::fmt::Debug for pert_ui_wgpu::Renderer
+pub fn pert_ui_wgpu::Renderer::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl !core::marker::Freeze for pert_ui_wgpu::Renderer
 impl !core::marker::Send for pert_ui_wgpu::Renderer
 impl !core::marker::Sync for pert_ui_wgpu::Renderer

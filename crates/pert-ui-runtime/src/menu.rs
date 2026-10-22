@@ -1309,6 +1309,14 @@ struct OpenerLink {
 pub struct ContextMenuController {
     link: Slot<OpenerLink>,
 }
+
+/// Shows nothing of the menu it reaches, which may not be mounted yet.
+impl std::fmt::Debug for ContextMenuController {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ContextMenuController")
+            .finish_non_exhaustive()
+    }
+}
 impl ContextMenuController {
     /// Opens the menu at `position`, in the owner content's local coordinates
     /// as a secondary press is, or below the content for `None`, as the Menu

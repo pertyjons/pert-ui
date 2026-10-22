@@ -1378,6 +1378,18 @@ pub struct Painter {
     pub(crate) clip: Option<Rect>,
     pub(crate) list: DisplayList,
 }
+
+/// Shows the component's size and clip and how many commands it has recorded,
+/// not the commands or the caches.
+impl std::fmt::Debug for Painter {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Painter")
+            .field("size", &self.size)
+            .field("clip", &self.clip)
+            .field("commands", &self.list.len())
+            .finish_non_exhaustive()
+    }
+}
 impl Painter {
     /// Prepares text for presentation inside geometry already reserved in layout.
     /// Use `MeasureContext::text` when content affects preferred size. This method

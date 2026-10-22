@@ -265,6 +265,21 @@ and anything left to a later part.
     propagates from the input call that activated it, not from a flush. It
     was corrected; the implementation matched 6b1. The correction is
     verified in 6b2's review.
+- **6b2 (0.3.61):** hand-written `Debug`, ending in `finish_non_exhaustive`,
+  for the state owners, handles, contexts and backends. None reads a
+  signal, borrows shared state, formats a callback or bounds application
+  values by `Debug`. `FilterTarget` derives it.
+  - **Checks run after the last edit:**
+    - `cargo fmt --all --check`;
+    - workspace Clippy, and Clippy in every CI feature configuration;
+    - `cargo test --locked --workspace`, including the new
+      `foundation::standard_traits` Debug tests and wgpu's
+      `renderer_implements_debug`;
+    - the five headless example sessions;
+    - `cargo test --locked --workspace --doc`;
+    - warning-free workspace rustdoc;
+    - `api/generate.sh`, whose diff is the plan's expected `Debug` lines;
+    - `git diff --check`.
 
 ## Rules for every part
 

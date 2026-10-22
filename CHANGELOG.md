@@ -1,5 +1,36 @@
 # Changelog
 
+## 0.3.61 (2026-10-22)
+
+`Debug` for state owners, handles, contexts and backends (API audit fix plan,
+part 6b2). An application struct that holds one of these can now derive
+`Debug`. Each impl is written by hand and ends with `..`: it shows cheap
+identifying fields, never reads a signal or borrows shared state (which could
+conflict inside a runtime phase), never formats a callback, and puts no
+`Debug` bound on application values. Not breaking.
+
+- Added: `impl Debug` for the state owners and handles `ListSelection` (its
+  mode), `ListController`, `ListFilter`, `TableController` and
+  `TreeController` (their selection's mode), `FieldHandle` (its key),
+  `FormFields`, `ContextMenuController`, `ThemeManager`, `FontManager`,
+  `IconManager`, `UiSettings`, `NumberFormat<T>` for every `T` (its width hint
+  and edit unit, not its callbacks), `ChildInfo` (key, identity, visibility,
+  focus and pointer capture) and `Runtime` (its primary window).
+  `FilterTarget` derives `Debug` from its now-formattable variants.
+- Added: `impl Debug` for the callback contexts `EventContext`,
+  `UpdateContext` and `MeasureContext` (the last two with their child
+  counts), `ArrangeContext` (child count and placements so far),
+  `DescribeContext`, `CellEdit` (row, column and how the edit began) and
+  `Painter` (size, clip and the number of recorded commands).
+- Added: `impl Debug` for the backends `VectorRasterizer`,
+  `pert_ui_wgpu::Renderer` (its configured surface extent) and `pert_ui::App`
+  (title, main-window geometry and software presentation, not the runtime or
+  the handlers).
+- Added: contract tests in the facade's `foundation` binary check that these
+  types implement `Debug` and that an application struct holding them,
+  including a `NumberFormat` over a value without `Debug`, derives it;
+  `pert-ui-wgpu`'s unit tests check `Renderer`.
+
 ## 0.3.60 (2026-10-22)
 
 Lints and `#[must_use]` (API audit fix plan, part 6b1). The workspace denies

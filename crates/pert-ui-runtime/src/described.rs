@@ -25,6 +25,13 @@ use std::rc::Rc;
 /// callback.
 pub struct DescribeContext<'a>(&'a UpdateContext);
 
+/// Shows nothing of the component being described.
+impl std::fmt::Debug for DescribeContext<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("DescribeContext").finish_non_exhaustive()
+    }
+}
+
 impl crate::signal::sealed::Sealed for DescribeContext<'_> {}
 impl StateOwner for DescribeContext<'_> {
     fn signal<T>(&self, value: T) -> Signal<T> {

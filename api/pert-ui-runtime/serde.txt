@@ -2675,6 +2675,8 @@ pub fn pert_ui_runtime::ArrangeContext<'_>::measurement(&self) -> &pert_ui_runti
 pub fn pert_ui_runtime::ArrangeContext<'_>::place(&mut self, usize, pert_ui_runtime::Rect) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::ArrangeContext<'_>::place_clipped(&mut self, usize, pert_ui_runtime::Rect, pert_ui_runtime::Rect) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::ArrangeContext<'_>::request_update(&self)
+impl core::fmt::Debug for pert_ui_runtime::ArrangeContext<'_>
+pub fn pert_ui_runtime::ArrangeContext<'_>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl<'a> core::marker::Freeze for pert_ui_runtime::ArrangeContext<'a>
 impl<'a> !core::marker::Send for pert_ui_runtime::ArrangeContext<'a>
 impl<'a> !core::marker::Sync for pert_ui_runtime::ArrangeContext<'a>
@@ -2939,6 +2941,8 @@ pub fn pert_ui_runtime::CellEdit<'_>::owner(&mut self) -> &mut pert_ui_runtime::
 pub fn pert_ui_runtime::CellEdit<'_>::row(&self) -> &str
 pub fn pert_ui_runtime::CellEdit<'_>::session(&self) -> &pert_ui_runtime::EditorSession
 pub fn pert_ui_runtime::CellEdit<'_>::start(&self) -> &pert_ui_runtime::EditorStart
+impl core::fmt::Debug for pert_ui_runtime::CellEdit<'_>
+pub fn pert_ui_runtime::CellEdit<'_>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl<'a> core::marker::Freeze for pert_ui_runtime::CellEdit<'a>
 impl<'a> !core::marker::Send for pert_ui_runtime::CellEdit<'a>
 impl<'a> !core::marker::Sync for pert_ui_runtime::CellEdit<'a>
@@ -3042,6 +3046,8 @@ impl pert_ui_runtime::ChildInfo
 pub fn pert_ui_runtime::ChildInfo::detached_window(&self) -> core::option::Option<pert_ui_runtime::NativeWindowId>
 impl core::clone::Clone for pert_ui_runtime::ChildInfo
 pub fn pert_ui_runtime::ChildInfo::clone(&self) -> pert_ui_runtime::ChildInfo
+impl core::fmt::Debug for pert_ui_runtime::ChildInfo
+pub fn pert_ui_runtime::ChildInfo::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Freeze for pert_ui_runtime::ChildInfo
 impl !core::marker::Send for pert_ui_runtime::ChildInfo
 impl !core::marker::Sync for pert_ui_runtime::ChildInfo
@@ -3970,6 +3976,8 @@ impl pert_ui_runtime::ContextMenuController
 pub fn pert_ui_runtime::ContextMenuController::open(&self, core::option::Option<pert_ui_runtime::Point>, &pert_ui_runtime::CommandContext) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
 impl core::clone::Clone for pert_ui_runtime::ContextMenuController
 pub fn pert_ui_runtime::ContextMenuController::clone(&self) -> pert_ui_runtime::ContextMenuController
+impl core::fmt::Debug for pert_ui_runtime::ContextMenuController
+pub fn pert_ui_runtime::ContextMenuController::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Freeze for pert_ui_runtime::ContextMenuController
 impl !core::marker::Send for pert_ui_runtime::ContextMenuController
 impl !core::marker::Sync for pert_ui_runtime::ContextMenuController
@@ -4072,6 +4080,8 @@ impl core::marker::UnsafeUnpin for pert_ui_runtime::DecimalInput
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::DecimalInput
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::DecimalInput
 pub struct pert_ui_runtime::prelude::DescribeContext<'a>(_)
+impl core::fmt::Debug for pert_ui_runtime::DescribeContext<'_>
+pub fn pert_ui_runtime::DescribeContext<'_>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl pert_ui_runtime::StateOwner for pert_ui_runtime::DescribeContext<'_>
 pub fn pert_ui_runtime::DescribeContext<'_>::signal<T>(&self, T) -> pert_ui_runtime::Signal<T>
 pub fn pert_ui_runtime::DescribeContext<'_>::ui_settings(&self) -> pert_ui_runtime::UiSettings
@@ -4786,6 +4796,8 @@ pub fn pert_ui_runtime::EventContext::request_reveal_and_focus(&self, &pert_ui_r
 impl pert_ui_runtime::EventContext
 pub fn pert_ui_runtime::EventContext::strings(&self) -> pert_ui_runtime::UiStrings
 pub fn pert_ui_runtime::EventContext::ui_settings(&self) -> pert_ui_runtime::UiSettings
+impl core::fmt::Debug for pert_ui_runtime::EventContext
+pub fn pert_ui_runtime::EventContext::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl pert_ui_runtime::StateOwner for pert_ui_runtime::EventContext
 pub fn pert_ui_runtime::EventContext::signal<T>(&self, T) -> pert_ui_runtime::Signal<T>
 pub fn pert_ui_runtime::EventContext::ui_settings(&self) -> pert_ui_runtime::UiSettings
@@ -4887,6 +4899,8 @@ pub fn pert_ui_runtime::FieldHandle::set_modified(&self, bool) -> core::result::
 pub fn pert_ui_runtime::FieldHandle::status(&self) -> pert_ui_runtime::ReadSignal<pert_ui_runtime::FieldStatus>
 impl core::clone::Clone for pert_ui_runtime::FieldHandle
 pub fn pert_ui_runtime::FieldHandle::clone(&self) -> pert_ui_runtime::FieldHandle
+impl core::fmt::Debug for pert_ui_runtime::FieldHandle
+pub fn pert_ui_runtime::FieldHandle::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Freeze for pert_ui_runtime::FieldHandle
 impl !core::marker::Send for pert_ui_runtime::FieldHandle
 impl !core::marker::Sync for pert_ui_runtime::FieldHandle
@@ -5164,6 +5178,8 @@ pub fn pert_ui_runtime::FormFields::new(&impl pert_ui_runtime::StateOwner) -> Se
 pub fn pert_ui_runtime::FormFields::summary(&self) -> pert_ui_runtime::ReadSignal<pert_ui_runtime::FormSummary>
 impl core::clone::Clone for pert_ui_runtime::FormFields
 pub fn pert_ui_runtime::FormFields::clone(&self) -> pert_ui_runtime::FormFields
+impl core::fmt::Debug for pert_ui_runtime::FormFields
+pub fn pert_ui_runtime::FormFields::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Freeze for pert_ui_runtime::FormFields
 impl !core::marker::Send for pert_ui_runtime::FormFields
 impl !core::marker::Sync for pert_ui_runtime::FormFields
@@ -6759,6 +6775,8 @@ pub fn pert_ui_runtime::ListController::new(&impl pert_ui_runtime::StateOwner) -
 pub fn pert_ui_runtime::ListController::reveal(&self, impl core::convert::Into<alloc::string::String>) -> core::result::Result<pert_ui_runtime::ListRevealReceipt, pert_ui_runtime::RuntimeError>
 impl core::clone::Clone for pert_ui_runtime::ListController
 pub fn pert_ui_runtime::ListController::clone(&self) -> pert_ui_runtime::ListController
+impl core::fmt::Debug for pert_ui_runtime::ListController
+pub fn pert_ui_runtime::ListController::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Freeze for pert_ui_runtime::ListController
 impl !core::marker::Send for pert_ui_runtime::ListController
 impl !core::marker::Sync for pert_ui_runtime::ListController
@@ -6779,6 +6797,8 @@ impl core::clone::Clone for pert_ui_runtime::ListFilter
 pub fn pert_ui_runtime::ListFilter::clone(&self) -> pert_ui_runtime::ListFilter
 impl core::convert::From<pert_ui_runtime::ListFilter> for pert_ui_runtime::FilterTarget
 pub fn pert_ui_runtime::FilterTarget::from(pert_ui_runtime::ListFilter) -> Self
+impl core::fmt::Debug for pert_ui_runtime::ListFilter
+pub fn pert_ui_runtime::ListFilter::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Freeze for pert_ui_runtime::ListFilter
 impl !core::marker::Send for pert_ui_runtime::ListFilter
 impl !core::marker::Sync for pert_ui_runtime::ListFilter
@@ -6816,6 +6836,8 @@ pub fn pert_ui_runtime::ListSelection::selected(&self) -> pert_ui_runtime::ReadS
 pub fn pert_ui_runtime::ListSelection::set_active(&self, core::option::Option<alloc::string::String>) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 impl core::clone::Clone for pert_ui_runtime::ListSelection
 pub fn pert_ui_runtime::ListSelection::clone(&self) -> pert_ui_runtime::ListSelection
+impl core::fmt::Debug for pert_ui_runtime::ListSelection
+pub fn pert_ui_runtime::ListSelection::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Freeze for pert_ui_runtime::ListSelection
 impl !core::marker::Send for pert_ui_runtime::ListSelection
 impl !core::marker::Sync for pert_ui_runtime::ListSelection
@@ -6934,6 +6956,8 @@ pub fn pert_ui_runtime::MeasureContext<'_>::raster_scale(&self) -> f64
 pub fn pert_ui_runtime::MeasureContext<'_>::rich_text(&self, &pert_ui_runtime::RichText, core::option::Option<f32>, pert_ui_runtime::TextStyle) -> core::result::Result<pert_ui_runtime::TextLayout, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::MeasureContext<'_>::text(&self, &str, core::option::Option<f32>, pert_ui_runtime::TextStyle) -> core::result::Result<pert_ui_runtime::TextLayout, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::MeasureContext<'_>::viewport(&self) -> pert_ui_runtime::Viewport
+impl core::fmt::Debug for pert_ui_runtime::MeasureContext<'_>
+pub fn pert_ui_runtime::MeasureContext<'_>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl<'a> core::marker::Freeze for pert_ui_runtime::MeasureContext<'a>
 impl<'a> !core::marker::Send for pert_ui_runtime::MeasureContext<'a>
 impl<'a> !core::marker::Sync for pert_ui_runtime::MeasureContext<'a>
@@ -7252,6 +7276,8 @@ pub fn pert_ui_runtime::NumberFormat<T>::new(impl core::convert::Into<alloc::str
 pub fn pert_ui_runtime::NumberFormat<T>::unit(self, impl core::ops::function::Fn(T) -> alloc::string::String + 'static) -> Self
 impl<T> core::clone::Clone for pert_ui_runtime::NumberFormat<T>
 pub fn pert_ui_runtime::NumberFormat<T>::clone(&self) -> Self
+impl<T> core::fmt::Debug for pert_ui_runtime::NumberFormat<T>
+pub fn pert_ui_runtime::NumberFormat<T>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl<T> core::marker::Freeze for pert_ui_runtime::NumberFormat<T>
 impl<T> !core::marker::Send for pert_ui_runtime::NumberFormat<T>
 impl<T> !core::marker::Sync for pert_ui_runtime::NumberFormat<T>
@@ -7316,6 +7342,8 @@ pub fn pert_ui_runtime::Painter::fill_shape(&mut self, pert_ui_runtime::Rect, pe
 pub fn pert_ui_runtime::Painter::fill_triangle(&mut self, [pert_ui_runtime::Point; 3], pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Painter::stroke_arc(&mut self, pert_ui_runtime::Point, pert_ui_runtime::Length, f32, f32, pert_ui_runtime::Length, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Painter::stroke_shape(&mut self, pert_ui_runtime::Rect, pert_ui_runtime::Shape, pert_ui_runtime::Length, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
+impl core::fmt::Debug for pert_ui_runtime::Painter
+pub fn pert_ui_runtime::Painter::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl !core::marker::Freeze for pert_ui_runtime::Painter
 impl !core::marker::Send for pert_ui_runtime::Painter
 impl !core::marker::Sync for pert_ui_runtime::Painter
@@ -8513,6 +8541,8 @@ pub fn pert_ui_runtime::Runtime::ui_settings(&self) -> pert_ui_runtime::UiSettin
 pub fn pert_ui_runtime::Runtime::viewport(&self) -> pert_ui_runtime::Viewport
 impl core::default::Default for pert_ui_runtime::Runtime
 pub fn pert_ui_runtime::Runtime::default() -> Self
+impl core::fmt::Debug for pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::Runtime::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::ops::drop::Drop for pert_ui_runtime::Runtime
 pub fn pert_ui_runtime::Runtime::drop(&mut self)
 impl pert_ui_runtime::StateOwner for pert_ui_runtime::Runtime
@@ -9584,6 +9614,8 @@ impl core::clone::Clone for pert_ui_runtime::TableController
 pub fn pert_ui_runtime::TableController::clone(&self) -> pert_ui_runtime::TableController
 impl core::convert::From<pert_ui_runtime::TableController> for pert_ui_runtime::FilterTarget
 pub fn pert_ui_runtime::FilterTarget::from(pert_ui_runtime::TableController) -> Self
+impl core::fmt::Debug for pert_ui_runtime::TableController
+pub fn pert_ui_runtime::TableController::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Freeze for pert_ui_runtime::TableController
 impl !core::marker::Send for pert_ui_runtime::TableController
 impl !core::marker::Sync for pert_ui_runtime::TableController
@@ -10014,6 +10046,8 @@ pub fn pert_ui_runtime::ThemeManager::set_mode(&self, pert_ui_runtime::ThemeMode
 pub fn pert_ui_runtime::ThemeManager::set_palette(&self, pert_ui_runtime::ThemeMode, pert_ui_runtime::Palette) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
 impl core::clone::Clone for pert_ui_runtime::ThemeManager
 pub fn pert_ui_runtime::ThemeManager::clone(&self) -> pert_ui_runtime::ThemeManager
+impl core::fmt::Debug for pert_ui_runtime::ThemeManager
+pub fn pert_ui_runtime::ThemeManager::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Freeze for pert_ui_runtime::ThemeManager
 impl !core::marker::Send for pert_ui_runtime::ThemeManager
 impl !core::marker::Sync for pert_ui_runtime::ThemeManager
@@ -10705,6 +10739,8 @@ impl core::clone::Clone for pert_ui_runtime::TreeController
 pub fn pert_ui_runtime::TreeController::clone(&self) -> pert_ui_runtime::TreeController
 impl core::convert::From<pert_ui_runtime::TreeController> for pert_ui_runtime::FilterTarget
 pub fn pert_ui_runtime::FilterTarget::from(pert_ui_runtime::TreeController) -> Self
+impl core::fmt::Debug for pert_ui_runtime::TreeController
+pub fn pert_ui_runtime::TreeController::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Freeze for pert_ui_runtime::TreeController
 impl !core::marker::Send for pert_ui_runtime::TreeController
 impl !core::marker::Sync for pert_ui_runtime::TreeController
@@ -10745,6 +10781,8 @@ pub fn pert_ui_runtime::UiSettings::zoom(&self) -> core::result::Result<pert_ui_
 pub fn pert_ui_runtime::UiSettings::zoom_binding(&self) -> core::result::Result<pert_ui_runtime::ReadSignal<pert_ui_runtime::UiZoom>, pert_ui_runtime::RuntimeError>
 impl core::clone::Clone for pert_ui_runtime::UiSettings
 pub fn pert_ui_runtime::UiSettings::clone(&self) -> pert_ui_runtime::UiSettings
+impl core::fmt::Debug for pert_ui_runtime::UiSettings
+pub fn pert_ui_runtime::UiSettings::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Freeze for pert_ui_runtime::UiSettings
 impl !core::marker::Send for pert_ui_runtime::UiSettings
 impl !core::marker::Sync for pert_ui_runtime::UiSettings
@@ -10844,6 +10882,8 @@ pub fn pert_ui_runtime::UpdateContext::motion(&self) -> pert_ui_runtime::MotionP
 pub fn pert_ui_runtime::UpdateContext::strings(&mut self) -> core::result::Result<pert_ui_runtime::UiStrings, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::UpdateContext::ui_settings(&self) -> pert_ui_runtime::UiSettings
 pub fn pert_ui_runtime::UpdateContext::ui_zoom(&self) -> pert_ui_runtime::UiZoom
+impl core::fmt::Debug for pert_ui_runtime::UpdateContext
+pub fn pert_ui_runtime::UpdateContext::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl pert_ui_runtime::StateOwner for pert_ui_runtime::UpdateContext
 pub fn pert_ui_runtime::UpdateContext::signal<T>(&self, T) -> pert_ui_runtime::Signal<T>
 pub fn pert_ui_runtime::UpdateContext::ui_settings(&self) -> pert_ui_runtime::UiSettings
@@ -18237,6 +18277,8 @@ impl core::convert::From<pert_ui_runtime::TableController> for pert_ui_runtime::
 pub fn pert_ui_runtime::FilterTarget::from(pert_ui_runtime::TableController) -> Self
 impl core::convert::From<pert_ui_runtime::TreeController> for pert_ui_runtime::FilterTarget
 pub fn pert_ui_runtime::FilterTarget::from(pert_ui_runtime::TreeController) -> Self
+impl core::fmt::Debug for pert_ui_runtime::FilterTarget
+pub fn pert_ui_runtime::FilterTarget::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Freeze for pert_ui_runtime::FilterTarget
 impl !core::marker::Send for pert_ui_runtime::FilterTarget
 impl !core::marker::Sync for pert_ui_runtime::FilterTarget
@@ -21759,6 +21801,8 @@ pub fn pert_ui_runtime::ArrangeContext<'_>::measurement(&self) -> &pert_ui_runti
 pub fn pert_ui_runtime::ArrangeContext<'_>::place(&mut self, usize, pert_ui_runtime::Rect) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::ArrangeContext<'_>::place_clipped(&mut self, usize, pert_ui_runtime::Rect, pert_ui_runtime::Rect) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::ArrangeContext<'_>::request_update(&self)
+impl core::fmt::Debug for pert_ui_runtime::ArrangeContext<'_>
+pub fn pert_ui_runtime::ArrangeContext<'_>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl<'a> core::marker::Freeze for pert_ui_runtime::ArrangeContext<'a>
 impl<'a> !core::marker::Send for pert_ui_runtime::ArrangeContext<'a>
 impl<'a> !core::marker::Sync for pert_ui_runtime::ArrangeContext<'a>
@@ -22202,6 +22246,8 @@ pub fn pert_ui_runtime::CellEdit<'_>::owner(&mut self) -> &mut pert_ui_runtime::
 pub fn pert_ui_runtime::CellEdit<'_>::row(&self) -> &str
 pub fn pert_ui_runtime::CellEdit<'_>::session(&self) -> &pert_ui_runtime::EditorSession
 pub fn pert_ui_runtime::CellEdit<'_>::start(&self) -> &pert_ui_runtime::EditorStart
+impl core::fmt::Debug for pert_ui_runtime::CellEdit<'_>
+pub fn pert_ui_runtime::CellEdit<'_>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl<'a> core::marker::Freeze for pert_ui_runtime::CellEdit<'a>
 impl<'a> !core::marker::Send for pert_ui_runtime::CellEdit<'a>
 impl<'a> !core::marker::Sync for pert_ui_runtime::CellEdit<'a>
@@ -22305,6 +22351,8 @@ impl pert_ui_runtime::ChildInfo
 pub fn pert_ui_runtime::ChildInfo::detached_window(&self) -> core::option::Option<pert_ui_runtime::NativeWindowId>
 impl core::clone::Clone for pert_ui_runtime::ChildInfo
 pub fn pert_ui_runtime::ChildInfo::clone(&self) -> pert_ui_runtime::ChildInfo
+impl core::fmt::Debug for pert_ui_runtime::ChildInfo
+pub fn pert_ui_runtime::ChildInfo::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Freeze for pert_ui_runtime::ChildInfo
 impl !core::marker::Send for pert_ui_runtime::ChildInfo
 impl !core::marker::Sync for pert_ui_runtime::ChildInfo
@@ -23470,6 +23518,8 @@ impl pert_ui_runtime::ContextMenuController
 pub fn pert_ui_runtime::ContextMenuController::open(&self, core::option::Option<pert_ui_runtime::Point>, &pert_ui_runtime::CommandContext) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
 impl core::clone::Clone for pert_ui_runtime::ContextMenuController
 pub fn pert_ui_runtime::ContextMenuController::clone(&self) -> pert_ui_runtime::ContextMenuController
+impl core::fmt::Debug for pert_ui_runtime::ContextMenuController
+pub fn pert_ui_runtime::ContextMenuController::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Freeze for pert_ui_runtime::ContextMenuController
 impl !core::marker::Send for pert_ui_runtime::ContextMenuController
 impl !core::marker::Sync for pert_ui_runtime::ContextMenuController
@@ -23609,6 +23659,8 @@ impl<T> core::marker::UnsafeUnpin for pert_ui_runtime::DeliverySnapshot<T> where
 impl<T> core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::DeliverySnapshot<T> where T: core::panic::unwind_safe::RefUnwindSafe
 impl<T> core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::DeliverySnapshot<T> where T: core::panic::unwind_safe::UnwindSafe
 pub struct pert_ui_runtime::DescribeContext<'a>(_)
+impl core::fmt::Debug for pert_ui_runtime::DescribeContext<'_>
+pub fn pert_ui_runtime::DescribeContext<'_>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl pert_ui_runtime::StateOwner for pert_ui_runtime::DescribeContext<'_>
 pub fn pert_ui_runtime::DescribeContext<'_>::signal<T>(&self, T) -> pert_ui_runtime::Signal<T>
 pub fn pert_ui_runtime::DescribeContext<'_>::ui_settings(&self) -> pert_ui_runtime::UiSettings
@@ -24416,6 +24468,8 @@ pub fn pert_ui_runtime::EventContext::request_reveal_and_focus(&self, &pert_ui_r
 impl pert_ui_runtime::EventContext
 pub fn pert_ui_runtime::EventContext::strings(&self) -> pert_ui_runtime::UiStrings
 pub fn pert_ui_runtime::EventContext::ui_settings(&self) -> pert_ui_runtime::UiSettings
+impl core::fmt::Debug for pert_ui_runtime::EventContext
+pub fn pert_ui_runtime::EventContext::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl pert_ui_runtime::StateOwner for pert_ui_runtime::EventContext
 pub fn pert_ui_runtime::EventContext::signal<T>(&self, T) -> pert_ui_runtime::Signal<T>
 pub fn pert_ui_runtime::EventContext::ui_settings(&self) -> pert_ui_runtime::UiSettings
@@ -24606,6 +24660,8 @@ pub fn pert_ui_runtime::FieldHandle::set_modified(&self, bool) -> core::result::
 pub fn pert_ui_runtime::FieldHandle::status(&self) -> pert_ui_runtime::ReadSignal<pert_ui_runtime::FieldStatus>
 impl core::clone::Clone for pert_ui_runtime::FieldHandle
 pub fn pert_ui_runtime::FieldHandle::clone(&self) -> pert_ui_runtime::FieldHandle
+impl core::fmt::Debug for pert_ui_runtime::FieldHandle
+pub fn pert_ui_runtime::FieldHandle::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Freeze for pert_ui_runtime::FieldHandle
 impl !core::marker::Send for pert_ui_runtime::FieldHandle
 impl !core::marker::Sync for pert_ui_runtime::FieldHandle
@@ -24888,6 +24944,8 @@ pub fn pert_ui_runtime::FontManager::reset_default(&self, pert_ui_runtime::FontR
 pub fn pert_ui_runtime::FontManager::set_default(&self, pert_ui_runtime::FontRole, pert_ui_runtime::FontId) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 impl core::clone::Clone for pert_ui_runtime::FontManager
 pub fn pert_ui_runtime::FontManager::clone(&self) -> pert_ui_runtime::FontManager
+impl core::fmt::Debug for pert_ui_runtime::FontManager
+pub fn pert_ui_runtime::FontManager::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Freeze for pert_ui_runtime::FontManager
 impl !core::marker::Send for pert_ui_runtime::FontManager
 impl !core::marker::Sync for pert_ui_runtime::FontManager
@@ -24979,6 +25037,8 @@ pub fn pert_ui_runtime::FormFields::new(&impl pert_ui_runtime::StateOwner) -> Se
 pub fn pert_ui_runtime::FormFields::summary(&self) -> pert_ui_runtime::ReadSignal<pert_ui_runtime::FormSummary>
 impl core::clone::Clone for pert_ui_runtime::FormFields
 pub fn pert_ui_runtime::FormFields::clone(&self) -> pert_ui_runtime::FormFields
+impl core::fmt::Debug for pert_ui_runtime::FormFields
+pub fn pert_ui_runtime::FormFields::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Freeze for pert_ui_runtime::FormFields
 impl !core::marker::Send for pert_ui_runtime::FormFields
 impl !core::marker::Sync for pert_ui_runtime::FormFields
@@ -25454,6 +25514,8 @@ pub fn pert_ui_runtime::IconManager::set(&self, pert_ui_runtime::Icon, pert_ui_r
 pub fn pert_ui_runtime::IconManager::set_overrides(&self, impl core::iter::traits::collect::IntoIterator<Item = (pert_ui_runtime::Icon, pert_ui_runtime::IconGlyph)>) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 impl core::clone::Clone for pert_ui_runtime::IconManager
 pub fn pert_ui_runtime::IconManager::clone(&self) -> pert_ui_runtime::IconManager
+impl core::fmt::Debug for pert_ui_runtime::IconManager
+pub fn pert_ui_runtime::IconManager::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Freeze for pert_ui_runtime::IconManager
 impl !core::marker::Send for pert_ui_runtime::IconManager
 impl !core::marker::Sync for pert_ui_runtime::IconManager
@@ -26956,6 +27018,8 @@ pub fn pert_ui_runtime::ListController::new(&impl pert_ui_runtime::StateOwner) -
 pub fn pert_ui_runtime::ListController::reveal(&self, impl core::convert::Into<alloc::string::String>) -> core::result::Result<pert_ui_runtime::ListRevealReceipt, pert_ui_runtime::RuntimeError>
 impl core::clone::Clone for pert_ui_runtime::ListController
 pub fn pert_ui_runtime::ListController::clone(&self) -> pert_ui_runtime::ListController
+impl core::fmt::Debug for pert_ui_runtime::ListController
+pub fn pert_ui_runtime::ListController::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Freeze for pert_ui_runtime::ListController
 impl !core::marker::Send for pert_ui_runtime::ListController
 impl !core::marker::Sync for pert_ui_runtime::ListController
@@ -27049,6 +27113,8 @@ impl core::clone::Clone for pert_ui_runtime::ListFilter
 pub fn pert_ui_runtime::ListFilter::clone(&self) -> pert_ui_runtime::ListFilter
 impl core::convert::From<pert_ui_runtime::ListFilter> for pert_ui_runtime::FilterTarget
 pub fn pert_ui_runtime::FilterTarget::from(pert_ui_runtime::ListFilter) -> Self
+impl core::fmt::Debug for pert_ui_runtime::ListFilter
+pub fn pert_ui_runtime::ListFilter::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Freeze for pert_ui_runtime::ListFilter
 impl !core::marker::Send for pert_ui_runtime::ListFilter
 impl !core::marker::Sync for pert_ui_runtime::ListFilter
@@ -27086,6 +27152,8 @@ pub fn pert_ui_runtime::ListSelection::selected(&self) -> pert_ui_runtime::ReadS
 pub fn pert_ui_runtime::ListSelection::set_active(&self, core::option::Option<alloc::string::String>) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 impl core::clone::Clone for pert_ui_runtime::ListSelection
 pub fn pert_ui_runtime::ListSelection::clone(&self) -> pert_ui_runtime::ListSelection
+impl core::fmt::Debug for pert_ui_runtime::ListSelection
+pub fn pert_ui_runtime::ListSelection::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Freeze for pert_ui_runtime::ListSelection
 impl !core::marker::Send for pert_ui_runtime::ListSelection
 impl !core::marker::Sync for pert_ui_runtime::ListSelection
@@ -27280,6 +27348,8 @@ pub fn pert_ui_runtime::MeasureContext<'_>::raster_scale(&self) -> f64
 pub fn pert_ui_runtime::MeasureContext<'_>::rich_text(&self, &pert_ui_runtime::RichText, core::option::Option<f32>, pert_ui_runtime::TextStyle) -> core::result::Result<pert_ui_runtime::TextLayout, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::MeasureContext<'_>::text(&self, &str, core::option::Option<f32>, pert_ui_runtime::TextStyle) -> core::result::Result<pert_ui_runtime::TextLayout, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::MeasureContext<'_>::viewport(&self) -> pert_ui_runtime::Viewport
+impl core::fmt::Debug for pert_ui_runtime::MeasureContext<'_>
+pub fn pert_ui_runtime::MeasureContext<'_>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl<'a> core::marker::Freeze for pert_ui_runtime::MeasureContext<'a>
 impl<'a> !core::marker::Send for pert_ui_runtime::MeasureContext<'a>
 impl<'a> !core::marker::Sync for pert_ui_runtime::MeasureContext<'a>
@@ -27671,6 +27741,8 @@ pub fn pert_ui_runtime::NumberFormat<T>::new(impl core::convert::Into<alloc::str
 pub fn pert_ui_runtime::NumberFormat<T>::unit(self, impl core::ops::function::Fn(T) -> alloc::string::String + 'static) -> Self
 impl<T> core::clone::Clone for pert_ui_runtime::NumberFormat<T>
 pub fn pert_ui_runtime::NumberFormat<T>::clone(&self) -> Self
+impl<T> core::fmt::Debug for pert_ui_runtime::NumberFormat<T>
+pub fn pert_ui_runtime::NumberFormat<T>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl<T> core::marker::Freeze for pert_ui_runtime::NumberFormat<T>
 impl<T> !core::marker::Send for pert_ui_runtime::NumberFormat<T>
 impl<T> !core::marker::Sync for pert_ui_runtime::NumberFormat<T>
@@ -27759,6 +27831,8 @@ pub fn pert_ui_runtime::Painter::fill_shape(&mut self, pert_ui_runtime::Rect, pe
 pub fn pert_ui_runtime::Painter::fill_triangle(&mut self, [pert_ui_runtime::Point; 3], pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Painter::stroke_arc(&mut self, pert_ui_runtime::Point, pert_ui_runtime::Length, f32, f32, pert_ui_runtime::Length, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Painter::stroke_shape(&mut self, pert_ui_runtime::Rect, pert_ui_runtime::Shape, pert_ui_runtime::Length, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
+impl core::fmt::Debug for pert_ui_runtime::Painter
+pub fn pert_ui_runtime::Painter::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl !core::marker::Freeze for pert_ui_runtime::Painter
 impl !core::marker::Send for pert_ui_runtime::Painter
 impl !core::marker::Sync for pert_ui_runtime::Painter
@@ -29333,6 +29407,8 @@ pub fn pert_ui_runtime::Runtime::ui_settings(&self) -> pert_ui_runtime::UiSettin
 pub fn pert_ui_runtime::Runtime::viewport(&self) -> pert_ui_runtime::Viewport
 impl core::default::Default for pert_ui_runtime::Runtime
 pub fn pert_ui_runtime::Runtime::default() -> Self
+impl core::fmt::Debug for pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::Runtime::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::ops::drop::Drop for pert_ui_runtime::Runtime
 pub fn pert_ui_runtime::Runtime::drop(&mut self)
 impl pert_ui_runtime::StateOwner for pert_ui_runtime::Runtime
@@ -30586,6 +30662,8 @@ impl core::clone::Clone for pert_ui_runtime::TableController
 pub fn pert_ui_runtime::TableController::clone(&self) -> pert_ui_runtime::TableController
 impl core::convert::From<pert_ui_runtime::TableController> for pert_ui_runtime::FilterTarget
 pub fn pert_ui_runtime::FilterTarget::from(pert_ui_runtime::TableController) -> Self
+impl core::fmt::Debug for pert_ui_runtime::TableController
+pub fn pert_ui_runtime::TableController::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Freeze for pert_ui_runtime::TableController
 impl !core::marker::Send for pert_ui_runtime::TableController
 impl !core::marker::Sync for pert_ui_runtime::TableController
@@ -31123,6 +31201,8 @@ pub fn pert_ui_runtime::ThemeManager::set_mode(&self, pert_ui_runtime::ThemeMode
 pub fn pert_ui_runtime::ThemeManager::set_palette(&self, pert_ui_runtime::ThemeMode, pert_ui_runtime::Palette) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
 impl core::clone::Clone for pert_ui_runtime::ThemeManager
 pub fn pert_ui_runtime::ThemeManager::clone(&self) -> pert_ui_runtime::ThemeManager
+impl core::fmt::Debug for pert_ui_runtime::ThemeManager
+pub fn pert_ui_runtime::ThemeManager::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Freeze for pert_ui_runtime::ThemeManager
 impl !core::marker::Send for pert_ui_runtime::ThemeManager
 impl !core::marker::Sync for pert_ui_runtime::ThemeManager
@@ -31939,6 +32019,8 @@ impl core::clone::Clone for pert_ui_runtime::TreeController
 pub fn pert_ui_runtime::TreeController::clone(&self) -> pert_ui_runtime::TreeController
 impl core::convert::From<pert_ui_runtime::TreeController> for pert_ui_runtime::FilterTarget
 pub fn pert_ui_runtime::FilterTarget::from(pert_ui_runtime::TreeController) -> Self
+impl core::fmt::Debug for pert_ui_runtime::TreeController
+pub fn pert_ui_runtime::TreeController::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Freeze for pert_ui_runtime::TreeController
 impl !core::marker::Send for pert_ui_runtime::TreeController
 impl !core::marker::Sync for pert_ui_runtime::TreeController
@@ -31994,6 +32076,8 @@ pub fn pert_ui_runtime::UiSettings::zoom(&self) -> core::result::Result<pert_ui_
 pub fn pert_ui_runtime::UiSettings::zoom_binding(&self) -> core::result::Result<pert_ui_runtime::ReadSignal<pert_ui_runtime::UiZoom>, pert_ui_runtime::RuntimeError>
 impl core::clone::Clone for pert_ui_runtime::UiSettings
 pub fn pert_ui_runtime::UiSettings::clone(&self) -> pert_ui_runtime::UiSettings
+impl core::fmt::Debug for pert_ui_runtime::UiSettings
+pub fn pert_ui_runtime::UiSettings::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Freeze for pert_ui_runtime::UiSettings
 impl !core::marker::Send for pert_ui_runtime::UiSettings
 impl !core::marker::Sync for pert_ui_runtime::UiSettings
@@ -32093,6 +32177,8 @@ pub fn pert_ui_runtime::UpdateContext::motion(&self) -> pert_ui_runtime::MotionP
 pub fn pert_ui_runtime::UpdateContext::strings(&mut self) -> core::result::Result<pert_ui_runtime::UiStrings, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::UpdateContext::ui_settings(&self) -> pert_ui_runtime::UiSettings
 pub fn pert_ui_runtime::UpdateContext::ui_zoom(&self) -> pert_ui_runtime::UiZoom
+impl core::fmt::Debug for pert_ui_runtime::UpdateContext
+pub fn pert_ui_runtime::UpdateContext::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl pert_ui_runtime::StateOwner for pert_ui_runtime::UpdateContext
 pub fn pert_ui_runtime::UpdateContext::signal<T>(&self, T) -> pert_ui_runtime::Signal<T>
 pub fn pert_ui_runtime::UpdateContext::ui_settings(&self) -> pert_ui_runtime::UiSettings
@@ -32248,6 +32334,8 @@ pub const pert_ui_runtime::VectorRasterizer::MAX_STROKE_EDGES: usize
 pub fn pert_ui_runtime::VectorRasterizer::prepare(&mut self, &pert_ui_runtime::DisplayList) -> core::result::Result<pert_ui_runtime::DisplayList, pert_ui_runtime::DrawError>
 impl core::default::Default for pert_ui_runtime::VectorRasterizer
 pub fn pert_ui_runtime::VectorRasterizer::default() -> pert_ui_runtime::VectorRasterizer
+impl core::fmt::Debug for pert_ui_runtime::VectorRasterizer
+pub fn pert_ui_runtime::VectorRasterizer::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Freeze for pert_ui_runtime::VectorRasterizer
 impl core::marker::Send for pert_ui_runtime::VectorRasterizer
 impl core::marker::Sync for pert_ui_runtime::VectorRasterizer

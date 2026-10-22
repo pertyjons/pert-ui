@@ -33,6 +33,17 @@ pub struct CellEdit<'a> {
     session: &'a EditorSession,
     owner: &'a mut UpdateContext,
 }
+
+/// Shows the cell and how the edit began, not the session or the state owner.
+impl std::fmt::Debug for CellEdit<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("CellEdit")
+            .field("row", &self.row)
+            .field("column", &self.column)
+            .field("start", self.start)
+            .finish_non_exhaustive()
+    }
+}
 impl CellEdit<'_> {
     /// The edited row's key.
     #[must_use]

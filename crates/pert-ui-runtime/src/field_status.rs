@@ -215,6 +215,14 @@ impl FormInner {
 #[derive(Clone)]
 #[must_use]
 pub struct FormFields(Rc<FormInner>);
+
+/// Shows neither the fields nor the summary: formatting must not read a signal
+/// inside a runtime phase. Read the summary with [`FormFields::summary`].
+impl std::fmt::Debug for FormFields {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("FormFields").finish_non_exhaustive()
+    }
+}
 impl FormFields {
     /// Creates an empty form on this runtime; its summary starts clear.
     ///
@@ -308,6 +316,16 @@ pub struct FieldHandle {
     status: Signal<FieldStatus>,
     modified: Rc<Cell<bool>>,
     control: Rc<RefCell<Option<WidgetId>>>,
+}
+
+/// Shows the key, not the status: formatting must not read a signal inside a
+/// runtime phase.
+impl std::fmt::Debug for FieldHandle {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("FieldHandle")
+            .field("key", &self.key)
+            .finish_non_exhaustive()
+    }
 }
 impl FieldHandle {
     /// The key this field was registered under.

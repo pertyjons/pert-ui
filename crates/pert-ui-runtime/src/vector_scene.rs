@@ -113,6 +113,13 @@ type Coverage = Option<(MaskImage, Rect)>;
 pub struct VectorRasterizer {
     cache: std::collections::HashMap<u64, Vec<(Key, Coverage)>>,
 }
+
+/// Shows the rasterizer without its cached coverage.
+impl std::fmt::Debug for VectorRasterizer {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("VectorRasterizer").finish_non_exhaustive()
+    }
+}
 impl VectorRasterizer {
     /// The most points flattening may generate for one vector, subpath starts
     /// included: 1,048,576 (2^20). A vector whose curves need more at the

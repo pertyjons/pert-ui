@@ -73,6 +73,16 @@ pub struct ListSelection {
     last: Rc<Cell<ChangeOrigin>>,
 }
 
+/// Shows the mode, not the selected keys: formatting must not read a signal
+/// inside a runtime phase. Read them with [`ListSelection::selected`].
+impl std::fmt::Debug for ListSelection {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ListSelection")
+            .field("mode", &self.mode)
+            .finish_non_exhaustive()
+    }
+}
+
 /// A change of a [`ListSelection`] that a collection reports through
 /// [`VirtualList::on_selection_change`](crate::VirtualList::on_selection_change),
 /// [`Tree::on_selection_change`](crate::Tree::on_selection_change) or

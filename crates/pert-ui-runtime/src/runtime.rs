@@ -2544,6 +2544,19 @@ pub struct ChildInfo {
     focus_within: bool,
     captures_pointer: bool,
 }
+
+/// Shows the child's identity and state, not its labels or detach permission.
+impl std::fmt::Debug for ChildInfo {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ChildInfo")
+            .field("key", &self.key)
+            .field("id", &self.id)
+            .field("visible", &self.visible)
+            .field("focus_within", &self.focus_within)
+            .field("captures_pointer", &self.captures_pointer)
+            .finish_non_exhaustive()
+    }
+}
 impl ChildInfo {
     /// Whether keyboard focus is on this child or inside it when captured.
     /// A container that mounts and unmounts children by position keeps
@@ -2609,6 +2622,16 @@ pub struct UpdateContext {
     kind: Invalidation,
     subscriptions: Vec<Subscription>,
     deadline: Option<Duration>,
+}
+
+/// Shows the number of children it describes, not the component or its
+/// subscriptions.
+impl std::fmt::Debug for UpdateContext {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("UpdateContext")
+            .field("children", &self.children.len())
+            .finish_non_exhaustive()
+    }
 }
 
 impl UpdateContext {
@@ -2953,6 +2976,13 @@ impl UpdateContext {
 /// focus loss, hiding, unmount or runtime drop, even if a gesture handle survives.
 pub struct EventContext {
     pub(crate) node: Rc<Node>,
+}
+
+/// Shows nothing of the component it is scoped to.
+impl std::fmt::Debug for EventContext {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("EventContext").finish_non_exhaustive()
+    }
 }
 
 impl EventContext {
@@ -3633,6 +3663,16 @@ pub struct Runtime {
     interval_serial: u64,
     /// Timers whose tick runs now, out of `intervals` but still counted.
     intervals_ticking: usize,
+}
+
+/// Shows the primary window, not the component tree or the application's
+/// state. Inspect the tree with [`Runtime::inspect`].
+impl std::fmt::Debug for Runtime {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Runtime")
+            .field("primary_window", &self.primary_window)
+            .finish_non_exhaustive()
+    }
 }
 
 impl Default for Runtime {

@@ -259,6 +259,16 @@ fn search(source: &TreeSource, query: Option<(&str, &crate::FilterMatcher)>) -> 
 #[derive(Clone)]
 #[must_use]
 pub struct TreeController(Rc<StateInner>);
+
+/// Shows the selection's mode, not the nodes, expansion or filter: formatting
+/// must not read a signal inside a runtime phase.
+impl std::fmt::Debug for TreeController {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("TreeController")
+            .field("selection", &self.0.selection)
+            .finish_non_exhaustive()
+    }
+}
 impl TreeController {
     /// Creates a controller with every node collapsed.
     ///

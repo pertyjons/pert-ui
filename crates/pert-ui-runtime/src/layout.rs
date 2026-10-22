@@ -743,6 +743,15 @@ pub struct MeasureContext<'a> {
     pub(crate) runtime: &'a Runtime,
     pub(crate) children: &'a [u64],
 }
+
+/// Shows the number of visible children, not their measurements.
+impl std::fmt::Debug for MeasureContext<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("MeasureContext")
+            .field("children", &self.children.len())
+            .finish_non_exhaustive()
+    }
+}
 impl MeasureContext<'_> {
     /// Current logical window bounds for anchored surface sizing. Native resize
     /// and UI zoom invalidate layout before this value is consumed again.
@@ -1004,6 +1013,16 @@ pub struct ArrangeContext<'a> {
     pub(crate) measure: MeasureContext<'a>,
     pub(crate) placements: Vec<Option<Rect>>,
     pub(crate) clips: Vec<Option<Rect>>,
+}
+
+/// Shows the number of visible children and the rectangles placed so far.
+impl std::fmt::Debug for ArrangeContext<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ArrangeContext")
+            .field("children", &self.measure.children.len())
+            .field("placements", &self.placements)
+            .finish_non_exhaustive()
+    }
 }
 impl ArrangeContext<'_> {
     /// Borrows child measurement access, for algorithms shared with `measure`.

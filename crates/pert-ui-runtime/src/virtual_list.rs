@@ -209,6 +209,13 @@ pub struct ListController {
     reveal: Signal<Option<RevealRequest>>,
 }
 
+/// Shows no pending request; a reveal reports through its receipt.
+impl std::fmt::Debug for ListController {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ListController").finish_non_exhaustive()
+    }
+}
+
 /// One keyed reveal request with the receipt it completes.
 #[derive(Clone)]
 struct RevealRequest {

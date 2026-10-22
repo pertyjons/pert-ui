@@ -294,6 +294,18 @@ pub struct App {
     close_handler: Option<CloseHandler>,
     window_error_handler: Option<WindowErrorHandler>,
 }
+
+/// Shows the title, the main window's geometry and whether presentation is
+/// software, not the runtime or the callbacks.
+impl std::fmt::Debug for App {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("App")
+            .field("title", &self.title)
+            .field("window", &self.window)
+            .field("software", &self.software)
+            .finish_non_exhaustive()
+    }
+}
 impl App {
     /// Defines content once using the public runtime, with no backend configuration.
     ///

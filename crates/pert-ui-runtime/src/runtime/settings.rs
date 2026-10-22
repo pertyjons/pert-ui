@@ -234,6 +234,14 @@ pub(crate) struct SettingsSignals {
 pub struct UiSettings {
     shared: Rc<Shared>,
 }
+
+/// Shows no settings: they are read through the handle, which fails after
+/// shutdown.
+impl std::fmt::Debug for UiSettings {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("UiSettings").finish_non_exhaustive()
+    }
+}
 impl UiSettings {
     /// Returns the current text coverage strategy, initially
     /// [`TextRenderingMode::LineMask`]. The choice belongs to this runtime and

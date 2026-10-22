@@ -252,6 +252,16 @@ pub struct Renderer {
     encoded: RetainedGeometry,
 }
 
+/// Shows the configured surface extent, not the device, surface or retained
+/// geometry.
+impl std::fmt::Debug for Renderer {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Renderer")
+            .field("extent", &self.extent)
+            .finish_non_exhaustive()
+    }
+}
+
 // The backend each supported platform enables; the crate root rejects other
 // targets at compile time.
 fn backend() -> wgpu::Backends {
@@ -955,6 +965,12 @@ fn vertices(scene: &DisplayList) -> Result<Vec<u8>, RenderError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn renderer_implements_debug() {
+        fn debug<T: std::fmt::Debug>() {}
+        debug::<Renderer>();
+    }
 
     #[test]
     fn surface_alpha_prefers_opaque_and_rejects_undefined_policies() {

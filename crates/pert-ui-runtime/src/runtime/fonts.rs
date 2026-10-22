@@ -38,6 +38,14 @@ impl FontSubscribers {
 pub struct FontManager {
     shared: Weak<Shared>,
 }
+
+/// Shows no registered fonts: they are read through the manager, which fails
+/// after shutdown.
+impl std::fmt::Debug for FontManager {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("FontManager").finish_non_exhaustive()
+    }
+}
 impl FontManager {
     /// The most custom fonts one runtime admits: 256. Bundled fonts do not count;
     /// registrations are never removed, so the budget lasts until shutdown.
@@ -161,6 +169,14 @@ impl FontManager {
 #[must_use]
 pub struct IconManager {
     shared: Weak<Shared>,
+}
+
+/// Shows no glyph overrides: they are read through the manager, which fails
+/// after shutdown.
+impl std::fmt::Debug for IconManager {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("IconManager").finish_non_exhaustive()
+    }
 }
 impl IconManager {
     /// Replaces one role's glyph. Different icon fonts need explicit codepoint mappings.

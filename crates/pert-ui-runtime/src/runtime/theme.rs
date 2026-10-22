@@ -1023,6 +1023,14 @@ impl State {
 pub struct ThemeManager {
     shared: Rc<Shared>,
 }
+
+/// Shows no theme values: they are read through the manager, which fails after
+/// shutdown.
+impl std::fmt::Debug for ThemeManager {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ThemeManager").finish_non_exhaustive()
+    }
+}
 impl ThemeManager {
     /// Current density, independent of dark/light.
     ///
