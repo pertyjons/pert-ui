@@ -286,7 +286,7 @@ and anything left to a later part.
     return, and overrides `IconManager` cannot read. All four were
     corrected; the correction is verified in 6b3's review. The review also
     verified 6b1's correction.
-- **6b3 (0.3.62):** `Debug` for the remaining 87 descriptions (86 runtime
+- **6b3 (0.3.62), done 2026-10-22:** 94d661b and its review fix. `Debug` for the remaining 87 descriptions (86 runtime
   types and `pert_ui::Svg`), completing G4-1's 113 with 6b2's.
   `missing_debug_implementations` is denied and listed in AGENTS.md.
   - A crate-private `description_debug!` macro writes the
@@ -305,6 +305,11 @@ and anything left to a later part.
     - warning-free workspace rustdoc;
     - `api/generate.sh`, whose diff is the plan's expected `Debug` lines;
     - `git diff --check`.
+  - **Review:** Codex found no implementation defect. It found one
+    wrong sentence: the shared rustdoc said every description becomes an
+    `Element`, which `Toast` and `DragPreview` do not. The sentence was
+    qualified and rustdoc rebuilt warning-free; the fix is verified in
+    6c1's review. The review verified 6b2's four corrections.
 
 ## Rules for every part
 

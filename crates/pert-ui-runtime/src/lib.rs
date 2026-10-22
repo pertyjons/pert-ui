@@ -9,8 +9,8 @@
 macro_rules! description_debug {
     ($name:ident $(<$param:ident>)?) => {
         /// Shows only the type. A description's content, bindings and
-        /// callbacks are not formatted; its identity is the key of the
-        /// [`Element`](crate::Element) it becomes, whose `Debug` shows it.
+        /// callbacks are not formatted; where the description is mounted as an
+        /// [`Element`](crate::Element), that element's `Debug` shows its key.
         impl$(<$param>)? ::std::fmt::Debug for $name$(<$param>)? {
             fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
                 f.debug_struct(stringify!($name)).finish_non_exhaustive()
