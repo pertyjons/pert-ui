@@ -2361,8 +2361,9 @@ pub trait Component: std::any::Any {
     /// here using ordinary signals. Always release local input/composition even
     /// when returning an error.
     /// Hiding, removal, shutdown and other cancellation use `cancel_input`
-    /// instead and must not implicitly save drafts; Escape calls neither (see
-    /// [`Runtime::key_input`]). No host edit is committed by
+    /// instead and must not implicitly save drafts. Escape's ordinary delivery
+    /// calls neither; a surface it closes hides what it showed, which calls
+    /// `cancel_input` (see [`Runtime::key_input`]). No host edit is committed by
     /// default. This UI-thread callback must not recursively dispatch runtime work.
     ///
     /// # Errors
@@ -2436,11 +2437,12 @@ pub trait Component: std::any::Any {
     ///
     /// Runtime calls this on focus/context loss, hiding, removal and shutdown,
     /// and also while the component keeps focus, for example after a failed key
-    /// operation or when it stops being focusable. Escape never calls it: an
-    /// Escape press that reaches the focused component's ordinary delivery
+    /// operation or when it stops being focusable. Escape's ordinary delivery
+    /// never calls it: an Escape press that reaches the focused component
     /// first ends its pointer capture, timer and edit sessions and then
-    /// arrives as an ordinary key, and one an earlier consumer takes (a drag,
-    /// delayed help, an editor, an open surface) leaves them in place (see
+    /// arrives as an ordinary key. An earlier consumer of Escape skips that
+    /// cleanup, but closing a surface hides or removes what it showed, and
+    /// that hiding or removal calls this method as it always does (see
     /// [`Runtime::key_input`]).
     /// Default invokes [`Self::input_reset`] and invalidates paint.
     ///
@@ -3388,11 +3390,13 @@ impl EventContext {
     /// and the host wakes at [`Runtime::next_deadline`]. The timer is cancelled
     /// with this component's input context, so focus loss, hiding, unmounting,
     /// presentation movement and `Runtime::cancel_input` all stop it. An Escape
-    /// press stops it silently, without [`Component::cancel_input`], when the
-    /// press reaches the focused component's ordinary delivery; a drag, delayed
-    /// help, an editor or an open surface that takes Escape first leaves it
-    /// running (see [`Runtime::key_input`]). A hidden or removed component
-    /// never receives the call.
+    /// press that reaches the focused component's ordinary delivery stops it
+    /// silently, without [`Component::cancel_input`]. An earlier consumer of
+    /// Escape (a drag, delayed help, an editor, an open surface; see
+    /// [`Runtime::key_input`]) skips that step, so the timer keeps running
+    /// unless the consumer's own lifecycle stops it, as closing a surface does
+    /// for the components it hides. A hidden or removed component never
+    /// receives the call.
     ///
     /// ```
     /// use pert_ui_runtime::{Component, Element, EventContext, InputOutcome, KeyAction,
@@ -4577,10 +4581,18 @@ impl Runtime {
     ///    Escape as an ordinary key, bubbling as any key does. With nothing
     ///    focused it goes to the unfocused-key recipient with no such cleanup.
     ///
-    /// Where an earlier step takes Escape, the focused component's capture,
-    /// timer and edit sessions are left as they were; a nonfocused component's
-    /// capture is never affected. Released keys never automatically commit a
-    /// generic gesture: a control chooses its own confirmation key/action.
+    /// Where an earlier step takes Escape, step 5's cleanup of the focused
+    /// component does not run. The consumer's own lifecycle still cleans up as
+    /// it always does: cancelling a drag releases the source's pointer capture
+    /// and reports [`DragOutcome::Cancelled`](crate::DragOutcome::Cancelled) to
+    /// its [`Component::drag_finished`]; closing delayed help or a surface hides
+    /// or removes what it showed, and each component hidden or removed that way
+    /// loses its capture, timer and edit sessions and receives
+    /// [`Component::cancel_input`], as hiding with [`Self::set_visible`] does,
+    /// with focus that was inside moving elsewhere. A component the consumer
+    /// does not touch keeps its capture, timer and edit sessions. Released keys
+    /// never automatically commit a generic gesture: a control chooses its own
+    /// confirmation key/action.
     ///
     /// This is the headless entry point: it routes neither command bindings nor
     /// [`Runtime::register_held_input`] registrations, which only

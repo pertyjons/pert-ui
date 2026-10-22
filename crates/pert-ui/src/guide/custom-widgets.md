@@ -88,14 +88,17 @@ A gesture belongs to the button that started it: end it on that button's
 release, not any release. Cancel it in [`Component::cancel_input`], which the
 runtime calls when the widget loses its input context (hiding, removal, window
 focus loss, a modal surface, [`Runtime::cancel_input`]), and on
-[`Component::focus_lost`] where the gesture should not outlive focus. Escape
-never calls `cancel_input`. When no drag session, delayed help, editor or open
-surface takes it first ([`Runtime::key_input`] has the order), the runtime
-ends the focused widget's pointer capture, timer, drag and parameter edit
-sessions and then delivers Escape to [`Component::keyboard_event`] as an
-ordinary key; when one of them takes it, the widget's capture and timer stay
-as they were. A widget whose gesture Escape should cancel cancels it in
-`keyboard_event`, as [`ColorPicker`] does.
+[`Component::focus_lost`] where the gesture should not outlive focus. Escape's
+ordinary delivery never calls `cancel_input`: when no drag session, delayed
+help, editor or open surface takes it first ([`Runtime::key_input`] has the
+order), the runtime ends the focused widget's pointer capture, timer, drag and
+parameter edit sessions and then delivers Escape to
+[`Component::keyboard_event`] as an ordinary key. When one of them takes it,
+that cleanup is skipped, and only the consumer's own lifecycle cleans up:
+cancelling a drag releases its source's capture and reports the cancellation
+to [`Component::drag_finished`], and closing a surface hides what it showed,
+which calls `cancel_input` on each hidden widget. A widget whose gesture
+Escape should cancel cancels it in `keyboard_event`, as [`ColorPicker`] does.
 
 # Clicks and double clicks
 

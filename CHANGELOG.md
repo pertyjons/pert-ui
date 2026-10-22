@@ -57,9 +57,11 @@ listings omit and callers do not see.
   an Escape press is taken: a drag session, delayed help, the focused editors
   while a surface is open, the topmost surface, and only then the focused
   component, whose capture, timer, drag and edit sessions end before it
-  receives Escape as an ordinary key. Escape never calls
-  `Component::cancel_input`, and an earlier consumer leaves the focused
-  component's timer and capture in place, as `EventContext::set_timer`,
+  receives Escape as an ordinary key. Escape's ordinary delivery never calls
+  `Component::cancel_input`; an earlier consumer skips that cleanup and
+  cleans up only through its own lifecycle (a cancelled drag releases its
+  source's capture; a closed surface hides its contents, which calls
+  `cancel_input`), as `EventContext::set_timer`,
   `Component::{cancel_input, focus_lost}` and the controls and custom-widget
   guides now say. `Component::cancel_input` runs outside the evaluation
   phases, may restore the component's own bindings, must not run application

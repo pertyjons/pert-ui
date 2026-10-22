@@ -9,12 +9,14 @@ Default labels wrap to allocated width. Buttons supply themed padding, a default
 minimum, visible focus, pointer capture and matched-release Space/Enter activation.
 Ignored input bubbles through logical ancestors; Tab traverses visible focus targets.
 Escape or context loss cancels activation. Window focus loss also releases
-pointer capture owned by nonfocusable custom components; Escape does not, since
-it acts only on the focused component: unless a drag session, delayed help, an
-editor or an open surface takes it first (see [`Runtime::key_input`]), the
-runtime ends that component's pointer capture, timer and edit sessions, then
-delivers Escape to it as an ordinary key. Native repeats remain repeats after
-window focus loss.
+pointer capture owned by nonfocusable custom components. Escape's ordinary
+delivery acts only on the focused component: unless a drag session, delayed
+help, an editor or an open surface takes it first (see [`Runtime::key_input`]),
+the runtime ends that component's pointer capture, timer and edit sessions,
+then delivers Escape to it as an ordinary key. An earlier consumer skips that
+step and cleans up only through its own lifecycle: a cancelled drag releases
+its source's capture, and a closed surface cancels the components it hides.
+Native repeats remain repeats after window focus loss.
 
 ```rust
 use pert_ui::{Button, Column, Element, Label, Runtime, RuntimeError, Viewport};
