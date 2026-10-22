@@ -400,7 +400,8 @@ impl Runtime {
     /// Native creation failure can simply drop the token.
     ///
     /// ```
-    /// use pert_ui_runtime::{Runtime, Element, Label, NativeWindowOptions};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Runtime, Element, Label, NativeWindowOptions};
     /// let mut ui = Runtime::new();
     /// let view = ui.mount_tree(Element::new("editor", Label::new("Retained")))?;
     /// let original = ui.window_of(&view)?;
@@ -411,7 +412,7 @@ impl Runtime {
     /// assert_eq!(ui.window_of(&view)?, detached);
     /// ui.redock(&detached)?;
     /// assert_eq!(ui.window_of(&view)?, original);
-    /// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+    /// # Ok::<(), pert_ui::RuntimeError>(())
     /// ```
     ///
     /// # Errors

@@ -244,7 +244,8 @@ impl RichText {
     /// grapheme cluster; nothing is built then.
     ///
     /// ```
-    /// use pert_ui_runtime::{HighlightError, RichText};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{HighlightError, RichText};
     ///
     /// let text = RichText::highlighted("Reverb send", [0..3, 7..11])?;
     /// assert_eq!(text.plain_text(), "Reverb send");

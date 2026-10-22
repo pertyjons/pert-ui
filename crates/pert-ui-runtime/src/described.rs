@@ -127,7 +127,8 @@ macro_rules! described_component {
 /// previous child until a later value or description is valid.
 ///
 /// ```
-/// use pert_ui_runtime::{Button, Dynamic, IntoElement, Label, Runtime};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Button, Dynamic, IntoElement, Label, Runtime};
 /// use std::time::Duration;
 /// let mut ui = Runtime::new();
 /// let signed_in = ui.signal(false);
@@ -146,14 +147,15 @@ macro_rules! described_component {
 /// signed_in.set(true)?;
 /// ui.flush(Duration::ZERO)?;
 /// assert!(ui.find(&root, &["greeting"])?.is_some());
-/// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+/// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
 ///
 /// A description that depends on two values combines them into one binding,
 /// so a change of either describes the child again:
 ///
 /// ```
-/// use pert_ui_runtime::{Dynamic, IntoElement, Label, Runtime};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Dynamic, IntoElement, Label, Runtime};
 /// use std::time::Duration;
 /// let mut ui = Runtime::new();
 /// let (name, unread) = (ui.signal("Ada".to_owned()), ui.signal(2));
@@ -172,7 +174,7 @@ macro_rules! described_component {
 /// unread.set(0)?;
 /// ui.flush(Duration::ZERO)?;
 /// assert!(ui.find(&root, &["plain"])?.is_some());
-/// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+/// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
 #[must_use]
 pub struct Dynamic<T>(Described<T>);
@@ -204,7 +206,8 @@ described_component!(Dynamic<T>);
 /// rules of [`Dynamic`].
 ///
 /// ```
-/// use pert_ui_runtime::{IntoElement, Label, Runtime, Show};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{IntoElement, Label, Runtime, Show};
 /// use std::time::Duration;
 /// let mut ui = Runtime::new();
 /// let details = ui.signal(false);
@@ -217,7 +220,7 @@ described_component!(Dynamic<T>);
 /// details.toggle()?;
 /// ui.flush(Duration::ZERO)?;
 /// assert_eq!(ui.children(&root)?.len(), 1);
-/// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+/// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
 #[must_use]
 pub struct Show(Described<bool>);
@@ -259,7 +262,8 @@ type BuildItem<T> = Rc<dyn Fn(&DescribeContext<'_>, &T) -> Element>;
 /// `Each` element goes through `items`:
 ///
 /// ```
-/// use pert_ui_runtime::{Each, IntoElement, Label, Runtime};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Each, IntoElement, Label, Runtime};
 /// use std::time::Duration;
 /// let mut ui = Runtime::new();
 /// let tasks = ui.signal(vec!["write".to_owned(), "ship".to_owned()]);
@@ -271,13 +275,14 @@ type BuildItem<T> = Rc<dyn Fn(&DescribeContext<'_>, &T) -> Element>;
 /// assert!(ui.find(&root, &["items", "ship"])?.is_some());
 /// // The element's own key, "task", was replaced by the item's key.
 /// assert!(ui.find(&root, &["items", "task"])?.is_none());
-/// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+/// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
 ///
 /// [`Self::within`] replaces the container, and its key replaces `items`:
 ///
 /// ```
-/// use pert_ui_runtime::{Each, IntoElement, Label, Runtime, Wrap};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Each, IntoElement, Label, Runtime, Wrap};
 /// use std::time::Duration;
 /// let mut ui = Runtime::new();
 /// let tags = ui.signal(vec!["red".to_owned(), "green".to_owned()]);
@@ -292,7 +297,7 @@ type BuildItem<T> = Rc<dyn Fn(&DescribeContext<'_>, &T) -> Element>;
 /// ui.flush(Duration::ZERO)?;
 /// assert_eq!(ui.find(&root, &["tags", "red"])?, red);
 /// assert!(ui.find(&root, &["tags", "blue"])?.is_some());
-/// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+/// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
 #[must_use]
 pub struct Each<T> {

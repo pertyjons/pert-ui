@@ -211,7 +211,8 @@ impl Painter {
     /// backend types are exposed.
     ///
     /// ```
-    /// use pert_ui_runtime::{ColorRole, Component, DrawError, Element, Length,
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{ColorRole, Component, DrawError, Element, Length,
     ///     Painter, Point, Runtime, RuntimeError, UpdateContext, Viewport};
     /// struct ArcWidget;
     /// impl Component for ArcWidget {

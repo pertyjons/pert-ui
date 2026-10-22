@@ -167,8 +167,9 @@ impl core::fmt::Debug for ListSource {
 /// why collections keep this keyed request instead of taking a `WidgetId`.
 ///
 /// ```
-/// use pert_ui_runtime::prelude::*;
-/// use pert_ui_runtime::{ListController, ListItems, ListRevealStatus, ListSource, VirtualList};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::prelude::*;
+/// use pert_ui::{ListController, ListItems, ListRevealStatus, ListSource, VirtualList};
 /// use std::time::Duration;
 ///
 /// struct Rows;
@@ -425,7 +426,8 @@ impl ListController {
 /// inside the same flush; nothing is scheduled once the range settles.
 ///
 /// ```
-/// use pert_ui_runtime::{Element, Label, ListItems, ListSource, Runtime, VirtualList};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Element, Label, ListItems, ListSource, Runtime, VirtualList};
 ///
 /// struct Numbers(usize);
 /// impl ListItems for Numbers {
@@ -444,7 +446,7 @@ impl ListController {
 /// }
 ///
 /// let mut ui = Runtime::new();
-/// ui.set_viewport(pert_ui_runtime::Viewport::new(300.0, 200.0, 1.0)?)?;
+/// ui.set_viewport(pert_ui::Viewport::new(300.0, 200.0, 1.0)?)?;
 /// let items = ui.signal(ListSource::new(Numbers(100_000)));
 /// let list = ui.mount_tree(Element::new(
 ///     "list",
@@ -885,7 +887,8 @@ impl VirtualList {
     /// first description of a mounted list.
     ///
     /// ```
-    /// use pert_ui_runtime::*;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::*;
     /// use std::{cell::RefCell, rc::Rc, time::Duration};
     /// struct Fruit;
     /// impl ListItems for Fruit {
@@ -1059,7 +1062,8 @@ impl VirtualList {
     /// building rows.
     ///
     /// ```
-    /// use pert_ui_runtime::*;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::*;
     /// struct Groups;
     /// impl ListItems for Groups {
     ///     fn len(&self) -> usize { 2 }

@@ -74,7 +74,8 @@ pub enum SearchKey {
 /// `pending` (a debounced edit not yet written) and `placeholder`.
 ///
 /// ```
-/// use pert_ui_runtime::{Element, KeyAction, KeyCode, Runtime, SearchField, SearchKey};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Element, KeyAction, KeyCode, Runtime, SearchField, SearchKey};
 /// use std::{cell::RefCell, rc::Rc};
 /// let mut ui = Runtime::new();
 /// let query = ui.signal(String::new());
@@ -96,7 +97,7 @@ pub enum SearchKey {
 /// assert_eq!(*keys.borrow(), [SearchKey::Down]);
 /// ui.key_input(KeyCode::Escape, KeyAction::Press)?;
 /// assert_eq!(query.get()?, "");
-/// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+/// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
 ///
 /// Re-describing the field under the same key applies its binding, editor
@@ -211,7 +212,8 @@ impl SearchField {
     /// field again with the same source keeps the text already read.
     ///
     /// ```
-    /// use pert_ui_runtime::{Element, Runtime, SearchField, StringRole, UiStrings};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Element, Runtime, SearchField, StringRole, UiStrings};
     /// use std::time::Duration;
     /// let mut ui = Runtime::new();
     /// let query = ui.signal(String::new());
@@ -223,7 +225,7 @@ impl SearchField {
     /// ui.flush(Duration::ZERO)?;
     /// let details = ui.inspect().components.into_iter()
     ///     .find(|c| c.key == "find").unwrap().details;
-    /// assert_eq!(details.properties["placeholder"], pert_ui_runtime::InspectValue::Text("Sök".into()));
+    /// assert_eq!(details.properties["placeholder"], pert_ui::InspectValue::Text("Sök".into()));
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     pub fn placeholder(mut self, text: impl Into<TextSource>) -> Self {

@@ -152,7 +152,8 @@ impl<T> HistorySnapshot<T> {
 /// is not persisted. Cloning it shares the same history.
 ///
 /// ```
-/// use pert_ui_runtime::*;
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::*;
 /// use std::time::Duration;
 ///
 /// fn tab(key: &str) -> Tab {

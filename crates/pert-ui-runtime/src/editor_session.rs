@@ -119,8 +119,9 @@ struct SessionInner {
 /// UI-thread only; clones share the session.
 ///
 /// ```
-/// use pert_ui_runtime::{EditorOutcome, EditorSession, EditorStart, EditorTrigger};
-/// # use pert_ui_runtime::*;
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{EditorOutcome, EditorSession, EditorStart, EditorTrigger};
+/// # use pert_ui::*;
 /// # use std::{cell::RefCell, rc::Rc, time::Duration};
 /// # struct Host(Option<EditorSession>, Rc<RefCell<Vec<EditorTrigger>>>);
 /// # impl Component for Host {

@@ -147,7 +147,8 @@ impl EventContext {
     /// nested flushes and capacity match [`Self::defer`].
     ///
     /// ```
-    /// use pert_ui_runtime::{
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{
     ///     Element, KeyAction, KeyCode, Label, PickChoice, PickItem, PickPending, PickStatus,
     ///     QuickPick, QuickPickController, Runtime, Viewport,
     /// };

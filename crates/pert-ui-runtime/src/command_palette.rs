@@ -16,12 +16,13 @@ use std::{cell::RefCell, rc::Rc};
 /// with [`Self::fuzzy_score`].
 ///
 /// ```
-/// use pert_ui_runtime::{CommandMatcher, CommandScope, Runtime};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{CommandMatcher, CommandScope, Runtime};
 /// let mut ui = Runtime::new();
 /// for name in ["Save", "Save As…", "Show Sidebar"] {
 ///     ui.register_command(name, CommandScope::Application, Vec::new(), |_, _| Ok(()))?;
 /// }
-/// let context = ui.command_context(pert_ui_runtime::CommandSource::Programmatic);
+/// let context = ui.command_context(pert_ui::CommandSource::Programmatic);
 /// let entries = ui.commands_for(&context)?;
 /// let names = |order: Vec<usize>| -> Vec<String> {
 ///     order.into_iter().map(|index| entries[index].name.clone()).collect()
@@ -33,7 +34,7 @@ use std::{cell::RefCell, rc::Rc};
 ///     entry.name.to_lowercase().starts_with(&query.to_lowercase()).then_some(1)
 /// });
 /// assert_eq!(names(prefix.rank("sh", &entries)), ["Show Sidebar"]);
-/// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+/// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
 #[derive(Clone)]
 #[must_use]
@@ -88,7 +89,8 @@ impl CommandMatcher {
     /// shared with every [`QuickPick`].
     ///
     /// ```
-    /// use pert_ui_runtime::CommandMatcher;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::CommandMatcher;
     /// assert_eq!(CommandMatcher::fuzzy_score("", "Anything"), Some(0));
     /// assert_eq!(CommandMatcher::fuzzy_score("xyz", "Save"), None);
     /// let word = CommandMatcher::fuzzy_score("ss", "Show Sidebar").unwrap();
@@ -237,13 +239,14 @@ impl CommandPaletteController {
     /// and opens the palette over them, as [`Self::open_with`] does.
     ///
     /// ```
-    /// use pert_ui_runtime::{
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{
     ///     Column, CommandPalette, CommandPaletteController, CommandPaletteStatus, CommandScope,
     ///     CommandSource, Element, KeyChord, Label, Runtime,
     /// };
     /// use std::time::Duration;
     /// let mut ui = Runtime::new();
-    /// ui.set_viewport(pert_ui_runtime::Viewport::new(800.0, 600.0, 1.0)?)?;
+    /// ui.set_viewport(pert_ui::Viewport::new(800.0, 600.0, 1.0)?)?;
     /// let palette = CommandPaletteController::new(&ui);
     /// let opener = palette.clone();
     /// // The application binds its own shortcut to a command that opens it.
@@ -468,7 +471,8 @@ fn command_item(strings: &crate::UiStrings, index: usize, entry: &CommandEntry) 
 /// disabled state.
 ///
 /// ```
-/// use pert_ui_runtime::{
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{
 ///     CommandPalette, CommandPaletteController, CommandPaletteStatus, CommandReceipt,
 ///     CommandScope, CommandSource, CommandStatus, CommandOutcome, Element, KeyAction,
 ///     KeyCode, Label, Runtime,
@@ -482,7 +486,7 @@ fn command_item(strings: &crate::UiStrings, index: usize, entry: &CommandEntry) 
 ///     Ok(())
 /// })?;
 /// ui.register_command("Show sidebar", CommandScope::Application, Vec::new(), |_, _| Ok(()))?;
-/// ui.set_viewport(pert_ui_runtime::Viewport::new(800.0, 600.0, 1.0)?)?;
+/// ui.set_viewport(pert_ui::Viewport::new(800.0, 600.0, 1.0)?)?;
 /// let palette = CommandPaletteController::new(&ui);
 /// ui.mount_tree(Element::new(
 ///     "app",
@@ -591,7 +595,8 @@ impl CommandPalette {
     /// finite width greater than zero is valid.
     ///
     /// ```
-    /// use pert_ui_runtime::{
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{
     ///     CommandPalette, CommandPaletteController, Element, GeometryError, Label, Runtime,
     /// };
     /// let ui = Runtime::new();

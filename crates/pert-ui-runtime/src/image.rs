@@ -49,7 +49,8 @@ pub enum ImageFit {
 /// pixel dimensions and fit as properties.
 ///
 /// ```
-/// use pert_ui_runtime::{DrawCommand, Element, Image, ImageFit, RasterImage, Runtime, Viewport};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{DrawCommand, Element, Image, ImageFit, RasterImage, Runtime, Viewport};
 /// let mut ui = Runtime::new();
 /// ui.set_viewport(Viewport::new(100.0, 100.0, 1.0)?)?;
 /// // A 4x2 opaque gray image. As the root it is allocated the whole 100x100

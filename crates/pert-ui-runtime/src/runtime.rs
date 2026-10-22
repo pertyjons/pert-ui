@@ -171,7 +171,8 @@ impl std::fmt::Debug for WidgetId {
 /// error policy.
 ///
 /// ```
-/// use pert_ui_runtime::{Choice, ChoiceError, RadioGroup, Runtime, RuntimeError};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Choice, ChoiceError, RadioGroup, Runtime, RuntimeError};
 /// fn group(ui: &Runtime) -> Result<RadioGroup<u8>, RuntimeError> {
 ///     let value = ui.signal(1);
 ///     Ok(RadioGroup::new(value, [Choice::new(1, "One"), Choice::new(1, "Also one")])?)
@@ -1176,7 +1177,8 @@ pub trait Component: std::any::Any {
     /// during sorting, so keep them cheap. Nonstacking parents avoid this work.
     ///
     /// ```
-    /// use pert_ui_runtime::*;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::*;
     /// use std::time::Duration;
     /// struct Layers(Vec<Element>);
     /// impl Component for Layers {
@@ -1254,7 +1256,8 @@ pub trait Component: std::any::Any {
     /// rectangle at the window's own scale. `docs/rendering-platform.md` has the contract.
     ///
     /// ```
-    /// use pert_ui_runtime::*;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::*;
     /// struct Magnifier(ViewTransform, Vec<Element>);
     /// impl Component for Magnifier {
     ///     fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> { Ok(()) }
@@ -1459,7 +1462,8 @@ pub trait Component: std::any::Any {
     /// [`RuntimeError::UpdateLimit`].
     ///
     /// ```
-    /// use pert_ui_runtime::*;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::*;
     /// use std::time::Duration;
     /// struct Board { item: Vec<Element>, at: (f32, f32), drag: Option<(Point, (f32, f32))> }
     /// impl Component for Board {
@@ -1682,7 +1686,8 @@ pub trait Component: std::any::Any {
     /// [`MeasureContext::fills_row_height`](crate::MeasureContext::fills_row_height).
     ///
     /// ```
-    /// use pert_ui_runtime::{Component, Constraints, Container, Element, MeasureContext,
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Component, Constraints, Container, Element, MeasureContext,
     ///     Row, Runtime, RuntimeError, Size, UpdateContext, Viewport};
     /// use std::time::Duration;
     /// struct Separator;
@@ -1750,7 +1755,8 @@ pub trait Component: std::any::Any {
     /// to reject incoming descendants during ancestor redescription.
     ///
     /// ```
-    /// use pert_ui_runtime::{Column, Component, Element, Label, Runtime,
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Column, Component, Element, Label, Runtime,
     ///     RuntimeError, UpdateContext};
     /// struct OwnedParts(Vec<Element>);
     /// impl Component for OwnedParts {
@@ -1878,7 +1884,8 @@ pub trait Component: std::any::Any {
     /// or leave the component out of persistence.
     ///
     /// ```
-    /// use pert_ui_runtime::{
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{
     ///     Component, Element, Invalidation, RestoreRejection, Runtime, RuntimeError,
     ///     UpdateContext, ViewState, WorkspaceError, WorkspaceValue,
     /// };
@@ -1982,7 +1989,8 @@ pub trait Component: std::any::Any {
     /// As [`Self::restore_workspace_state`]. A rejection leaves local state unchanged.
     ///
     /// ```
-    /// use pert_ui_runtime::{
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{
     ///     ChildInfo, Component, Element, Invalidation, RestoreRejection, Runtime,
     ///     Label, RuntimeError, UpdateContext, ViewState, WorkspaceError, WorkspaceValue,
     /// };
@@ -2087,7 +2095,8 @@ pub trait Component: std::any::Any {
     /// Inspection must not evaluate dirty bindings, mutate state or perform I/O.
     ///
     /// ```
-    /// use pert_ui_runtime::{Component, Element, ListItems, ListSource, Runtime, VirtualList};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Component, Element, ListItems, ListSource, Runtime, VirtualList};
     /// struct EmptyRows;
     /// impl ListItems for EmptyRows {
     ///     fn len(&self) -> usize { 0 }
@@ -2099,7 +2108,7 @@ pub trait Component: std::any::Any {
     /// let list = VirtualList::new(source.read_only(), 24.0)?;
     /// let rows = list.try_content_rows()?.expect("a list offers its source");
     /// assert!(rows.is_empty());
-    /// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+    /// # Ok::<(), pert_ui::RuntimeError>(())
     /// ```
     ///
     /// # Errors
@@ -2151,7 +2160,8 @@ pub trait Component: std::any::Any {
     /// work or mutate retained state. Use current arranged local geometry.
     ///
     /// ```
-    /// use pert_ui_runtime::*;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::*;
     /// struct Hollow;
     /// impl Component for Hollow {
     ///     fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
@@ -2182,7 +2192,8 @@ pub trait Component: std::any::Any {
     /// read-only, without signal writes, scheduling or changes to retained state.
     ///
     /// ```
-    /// use pert_ui_runtime::*;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::*;
     /// struct Overlay;
     /// impl Component for Overlay {
     ///     fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
@@ -2610,7 +2621,8 @@ impl UpdateContext {
     /// [`Runtime::signal`]: the handle is UI-thread local.
     ///
     /// ```
-    /// use pert_ui_runtime::{Component, Element, Label, Runtime, RuntimeError, Signal, UpdateContext};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Component, Element, Label, Runtime, RuntimeError, Signal, UpdateContext};
     ///
     /// /// Describes its child once, with state created during that update.
     /// #[derive(Default)]
@@ -2988,7 +3000,8 @@ impl EventContext {
     /// double click and two presses in one instant are.
     ///
     /// ```
-    /// use pert_ui_runtime::*;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::*;
     /// use std::{cell::Cell, rc::Rc, time::Duration};
     /// struct Clicks { last: Option<Duration>, doubles: Rc<Cell<u32>> }
     /// impl Component for Clicks {
@@ -3044,7 +3057,8 @@ impl EventContext {
     /// rather than in every widget that handles a pointer:
     ///
     /// ```
-    /// # use pert_ui_runtime::*;
+    /// # use pert_ui_runtime as pert_ui;
+    /// # use pert_ui::*;
     /// # struct W;
     /// # impl Component for W {
     /// # fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> { Ok(()) }
@@ -3399,7 +3413,8 @@ impl EventContext {
     /// receives the call.
     ///
     /// ```
-    /// use pert_ui_runtime::{Component, Element, EventContext, InputOutcome, KeyAction,
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Component, Element, EventContext, InputOutcome, KeyAction,
     ///     KeyCode, KeyEvent, KeyTransition, KeyboardState, Runtime, RuntimeError, Signal,
     ///     UpdateContext};
     /// use std::time::Duration;
@@ -3443,7 +3458,7 @@ impl EventContext {
     /// ui.flush(Duration::from_secs(1))?;
     /// assert_eq!(steps.get()?, 2);
     /// assert_eq!(ui.next_deadline(), None);
-    /// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+    /// # Ok::<(), pert_ui::RuntimeError>(())
     /// ```
     ///
     /// # Errors
@@ -3553,7 +3568,8 @@ pub struct FlushReport {
 /// `BorrowConflict`, and a refused call changes nothing.
 ///
 /// ```compile_fail
-/// let runtime = pert_ui_runtime::Runtime::new();
+/// # use pert_ui_runtime as pert_ui;
+/// let runtime = pert_ui::Runtime::new();
 /// std::thread::spawn(move || drop(runtime)); // UI ownership cannot cross threads.
 /// ```
 pub struct Runtime {
@@ -4115,7 +4131,8 @@ impl Runtime {
     /// The endpoint half goes to the producer thread.
     ///
     /// ```
-    /// use pert_ui_runtime::{Capacity, Delivery, Runtime, SeriesConfig, Timestamp, series_bridge};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Capacity, Delivery, Runtime, SeriesConfig, Timestamp, series_bridge};
     ///
     /// let runtime = Runtime::new();
     /// let config = SeriesConfig::new(Capacity::new(256)?);
@@ -4849,7 +4866,8 @@ impl Runtime {
     /// a "Copy" command that copies the application's own data uses this.
     ///
     /// ```
-    /// use pert_ui_runtime::*;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::*;
     /// struct Memory(std::rc::Rc<std::cell::RefCell<String>>);
     /// impl Clipboard for Memory {
     ///     fn read_text(&mut self) -> Result<String, ClipboardError> { Ok(self.0.borrow().clone()) }
@@ -4980,7 +4998,8 @@ impl Runtime {
     /// Pending updates and diagnostic errors remain available for repair and retry.
     ///
     /// ```
-    /// use pert_ui_runtime::{Element, IntegerInput, Runtime};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Element, IntegerInput, Runtime};
     /// let mut ui = Runtime::new();
     /// let value = ui.signal(1_i64);
     /// let field = ui.mount_tree(Element::new("number", IntegerInput::new(value.clone())))?;
@@ -4989,7 +5008,7 @@ impl Runtime {
     /// ui.cancel_input()?;
     /// assert_eq!(value.get()?, 1);
     /// assert_eq!(ui.focused(), Some(field));
-    /// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+    /// # Ok::<(), pert_ui::RuntimeError>(())
     /// ```
     ///
     /// # Errors
@@ -6346,7 +6365,8 @@ impl Runtime {
     /// dropping the runtime; dropping it releases any undrained errors.
     ///
     /// ```
-    /// use pert_ui_runtime::*;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::*;
     /// struct Source;
     /// impl Component for Source {
     ///     fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> { Ok(()) }

@@ -45,7 +45,8 @@ use crate::layout::{centered, rect};
 /// never rewritten.
 ///
 /// ```
-/// use pert_ui_runtime::{Element, InlineText, KeyAction, KeyCode, Runtime};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Element, InlineText, KeyAction, KeyCode, Runtime};
 /// let mut ui = Runtime::new();
 /// let name = ui.signal(String::from("Draft"));
 /// let field = ui.mount_tree(Element::new("name",
@@ -56,7 +57,7 @@ use crate::layout::{centered, rect};
 /// assert_eq!(name.get()?, "Draft"); // still a draft
 /// ui.key_input(KeyCode::Enter, KeyAction::Press)?;
 /// assert_eq!(name.get()?, "Final");
-/// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+/// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
 ///
 /// Re-describing the field under the same key applies its binding, enablement,
@@ -169,7 +170,8 @@ impl InlineText {
     /// describes. Installing another normalizer replaces this one.
     ///
     /// ```
-    /// use pert_ui_runtime::{Element, InlineText, InputRejection, KeyAction, KeyCode, Runtime};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Element, InlineText, InputRejection, KeyAction, KeyCode, Runtime};
     /// let mut ui = Runtime::new();
     /// let name = ui.signal(String::from("Draft"));
     /// let field = ui.mount_tree(Element::new("name", InlineText::new(name.clone())
@@ -186,7 +188,7 @@ impl InlineText {
     /// ui.text_input(" Final ")?;
     /// ui.key_input(KeyCode::Enter, KeyAction::Press)?;
     /// assert_eq!(name.get()?, "Final");
-    /// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+    /// # Ok::<(), pert_ui::RuntimeError>(())
     /// ```
     pub fn normalize(
         mut self,

@@ -80,7 +80,8 @@ pub enum LineJoin {
 /// hairline.
 ///
 /// ```
-/// use pert_ui_runtime::{Length, LineCap, LineJoin, StrokeStyle};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Length, LineCap, LineJoin, StrokeStyle};
 /// let style = StrokeStyle::new(Length::new(2.0)?)
 ///     .with_cap(LineCap::Round)
 ///     .with_join(LineJoin::Bevel);
@@ -184,7 +185,8 @@ use PathElement as Verb;
 /// [`Path::transformed`] maps the geometry itself.
 ///
 /// ```
-/// use pert_ui_runtime::{Path, PathBuilder, Point};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Path, PathBuilder, Point};
 /// let wedge = PathBuilder::new()
 ///     .move_to(Point::new(0.0, 0.0)?)
 ///     .line_to(Point::new(16.0, 0.0)?)
@@ -326,7 +328,8 @@ impl Path {
     /// each frame it is shown.
     ///
     /// ```
-    /// use pert_ui_runtime::{Path, Point, Rect, Transform2D};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Path, Point, Rect, Transform2D};
     /// let bar = Path::polygon([
     ///     Point::new(0.0, 0.0)?, Point::new(10.0, 0.0)?,
     ///     Point::new(10.0, 2.0)?, Point::new(0.0, 2.0)?,
@@ -628,7 +631,8 @@ impl Painter {
     /// when active coverage exceeds [`crate::VectorRasterizer::MAX_COVERAGE_WORK`].
     ///
     /// ```
-    /// use pert_ui_runtime::*;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::*;
     /// struct Badge;
     /// impl Component for Badge {
     ///     fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
@@ -733,7 +737,8 @@ impl Painter {
     /// limit, otherwise as for [`Self::stroke_path`].
     ///
     /// ```
-    /// use pert_ui_runtime::*;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::*;
     /// struct Trace(Vec<Point>);
     /// impl Component for Trace {
     ///     fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {

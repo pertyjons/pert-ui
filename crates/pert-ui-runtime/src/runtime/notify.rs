@@ -211,7 +211,8 @@ impl SelectionChange {
 /// a removed component are ignored. UI-thread only.
 ///
 /// ```
-/// use pert_ui_runtime::*;
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::*;
 /// use std::{cell::RefCell, rc::Rc, time::Duration};
 ///
 /// /// Reports each update to the application from an event phase.

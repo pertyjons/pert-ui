@@ -87,7 +87,8 @@ impl WorkspaceValue {
     /// coerced.
     ///
     /// ```
-    /// use pert_ui_runtime::{WorkspaceError, WorkspaceValue};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{WorkspaceError, WorkspaceValue};
     /// assert!(WorkspaceValue::number(0.25).is_ok());
     /// assert_eq!(WorkspaceValue::number(f64::NAN), Err(WorkspaceError::NotFinite));
     /// ```
@@ -212,11 +213,12 @@ impl WorkspaceValue {
 /// proportion applied to a tab strip.
 ///
 /// ```
-/// use pert_ui_runtime::{ViewState, WorkspaceValue};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{ViewState, WorkspaceValue};
 /// let state = ViewState::new("tabs")?.with("selected", WorkspaceValue::text("scope")?)?;
 /// assert_eq!(state.kind(), "tabs");
 /// assert_eq!(state.text("selected"), Ok("scope"));
-/// # Ok::<(), pert_ui_runtime::WorkspaceError>(())
+/// # Ok::<(), pert_ui::WorkspaceError>(())
 /// ```
 ///
 /// # Serialization
@@ -474,12 +476,13 @@ impl WorkspaceSettings {
 /// document in version control produces no spurious differences.
 ///
 /// ```
-/// use pert_ui_runtime::Workspace;
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::Workspace;
 /// let text = "pert-ui-workspace 1\nentry \"main/split\" split ratio=0.25\n";
 /// let workspace = Workspace::decode(text)?;
 /// assert_eq!(workspace.len(), 1);
 /// assert_eq!(workspace.encode(), text);
-/// # Ok::<(), pert_ui_runtime::WorkspaceError>(())
+/// # Ok::<(), pert_ui::WorkspaceError>(())
 /// ```
 ///
 /// # Serialization
@@ -878,7 +881,8 @@ impl Workspace {
     /// that fails here.
     ///
     /// ```
-    /// use pert_ui_runtime::{Workspace, WorkspaceError};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Workspace, WorkspaceError};
     /// let newer = "pert-ui-workspace 9\n";
     /// assert_eq!(
     ///     Workspace::decode(newer),

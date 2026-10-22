@@ -578,7 +578,8 @@ impl ColorRole {
     /// depend on any palette's overrides.
     ///
     /// ```
-    /// use pert_ui_runtime::ColorRole;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::ColorRole;
     ///
     /// assert_eq!(ColorRole::ButtonPressed.follows(), Some(ColorRole::Primary));
     /// assert_eq!(ColorRole::FocusRing.follows(), None);
@@ -721,7 +722,8 @@ const COLOR_SOURCES: [Source; COLOR_ROLE_COUNT] = {
 /// that resolve alike.
 ///
 /// ```
-/// use pert_ui_runtime::{Color, ColorRole, Palette};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Color, ColorRole, Palette};
 ///
 /// let brand = Color::rgba(0.6, 0.1, 0.4, 1.0)?;
 /// let palette = Palette::dark().with_color(ColorRole::Primary, brand);
@@ -804,7 +806,8 @@ impl Palette {
     /// palette. The manager stores the two modes separately, so seed both.
     ///
     /// ```
-    /// use pert_ui_runtime::{Color, ColorRole, OpaqueColor, Palette, Runtime, ThemeMode};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Color, ColorRole, OpaqueColor, Palette, Runtime, ThemeMode};
     ///
     /// let brand = OpaqueColor::try_from(Color::rgba(0.55, 0.05, 0.40, 1.0)?)?;
     /// let ui = Runtime::new();
@@ -1006,7 +1009,8 @@ impl State {
 /// Editing an inactive palette schedules no presentation work.
 ///
 /// ```compile_fail
-/// let theme = pert_ui_runtime::Runtime::new().theme();
+/// # use pert_ui_runtime as pert_ui;
+/// let theme = pert_ui::Runtime::new().theme();
 /// std::thread::spawn(move || drop(theme));
 /// ```
 #[derive(Clone)]

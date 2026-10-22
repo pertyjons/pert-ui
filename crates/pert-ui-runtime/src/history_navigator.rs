@@ -76,7 +76,8 @@ impl<T: Clone + Eq + 'static> Shared<T> {
 /// `buttons` and `list` properties.
 ///
 /// ```
-/// use pert_ui_runtime::{
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{
 ///     Element, HistoryNavigator, NavigationHistory, PointerButton, PointerEvent, PointerKind,
 ///     Point, Runtime, Viewport,
 /// };
@@ -454,7 +455,8 @@ impl<T: Clone + Eq + 'static> Component for HistoryNavigator<T> {
 /// history.
 ///
 /// ```
-/// use pert_ui_runtime::{
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{
 ///     Element, HistoryButtons, Label, NavigationHistory, Point, PointerButton, PointerEvent,
 ///     PointerKind, Runtime, Viewport,
 /// };

@@ -28,7 +28,8 @@ pub const DRAG_THRESHOLD: f32 = 4.0;
 /// row index, a display order or a [`WidgetId`](crate::WidgetId).
 ///
 /// ```
-/// use pert_ui_runtime::DragPayload;
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::DragPayload;
 /// struct Items(Vec<String>);
 /// let payload = DragPayload::new(Items(vec!["report".into()]));
 /// assert_eq!(payload.get::<Items>().map(|items| items.0.len()), Some(1));
@@ -95,7 +96,8 @@ impl DropOperation {
 /// The set of operations a source permits.
 ///
 /// ```
-/// use pert_ui_runtime::{DropOperation, DropOperations, Modifiers};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{DropOperation, DropOperations, Modifiers};
 /// let permitted = DropOperations::MOVE | DropOperations::COPY;
 /// assert!(permitted.contains(DropOperation::Copy));
 /// assert!(!permitted.contains(DropOperation::Link));

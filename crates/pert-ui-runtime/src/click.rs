@@ -45,7 +45,8 @@ struct Press {
 /// platform setting.
 ///
 /// ```
-/// use pert_ui_runtime::*;
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::*;
 /// use std::time::Duration;
 ///
 /// let mut clicks = ClickCounter::new();

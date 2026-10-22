@@ -68,8 +68,9 @@ pub(crate) fn paint_checkerboard(painter: &mut Painter, rect: Rect) -> Result<()
 /// swatch is disabled, and only its outline turns muted.
 ///
 /// ```
-/// use pert_ui_runtime::prelude::*;
-/// use pert_ui_runtime::{KeyAction, KeyCode};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::prelude::*;
+/// use pert_ui::{KeyAction, KeyCode};
 /// use std::time::Duration;
 ///
 /// let mut ui = Runtime::new();

@@ -581,7 +581,8 @@ impl Component for MenuTitle {
 /// retained identities, and showing them again restores their ordinary position.
 ///
 /// ```
-/// use pert_ui_runtime::{
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{
 ///     Button, Column, CommandScope, Element, KeyAction, KeyChord, KeyCode, MenuBar,
 ///     MenuItem, Runtime, Viewport,
 /// };
@@ -748,7 +749,8 @@ impl MenuBar {
     /// reconciliation keeps its state by key like any child.
     ///
     /// ```
-    /// use pert_ui_runtime::{Button, Element, MenuBar, MenuItem, Runtime, Viewport};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Button, Element, MenuBar, MenuItem, Runtime, Viewport};
     /// use std::time::Duration;
     /// let mut ui = Runtime::new();
     /// ui.set_viewport(Viewport::new(640.0, 480.0, 1.0)?)?;

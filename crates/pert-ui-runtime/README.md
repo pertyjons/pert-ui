@@ -8,7 +8,9 @@ services.
 Normal standalone applications use the `pert-ui` facade, which re-exports every
 public item of this crate at its root and shows this documentation on its pages;
 an application that depends on `pert-ui` writes `pert_ui::` wherever an example
-here writes `pert_ui_runtime::`. Custom hosts and graphics
+on this page writes `pert_ui_runtime::`. The examples on the item pages are
+written for the facade and import `pert_ui::…`; code that depends on this crate
+directly writes `pert_ui_runtime::` in their place. Custom hosts and graphics
 integrations can use this crate directly, supplying events and elapsed time and
 consuming its owned `DisplayList`. Retained layout, standard controls, text/numeric editing, dialogs, menus,
 notifications and a separately versioned `Workspace` document for the

@@ -125,7 +125,8 @@ pub enum EdgeMode {
 /// panel stays at its edge but slides over the center.
 ///
 /// ```
-/// use pert_ui_runtime::*;
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::*;
 /// use std::time::Duration;
 ///
 /// let mut ui = Runtime::new();
@@ -721,7 +722,8 @@ fn floating_frame(frame: Option<Rect>, size: Size) -> Result<Rect, RuntimeError>
 /// combined layout/item permissions fails; the mounted layout is preserved.
 ///
 /// ```
-/// use pert_ui_runtime::*;
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::*;
 /// use std::time::Duration;
 ///
 /// let mut ui = Runtime::new();

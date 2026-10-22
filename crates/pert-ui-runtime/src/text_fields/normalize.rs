@@ -14,7 +14,8 @@ use super::*;
 /// it as the field's [`FieldStatus`](crate::FieldStatus).
 ///
 /// ```
-/// use pert_ui_runtime::InputRejection;
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::InputRejection;
 /// let rejection = InputRejection::new("Name must not be empty");
 /// assert_eq!(rejection.message(), "Name must not be empty");
 /// assert_eq!(rejection.to_string(), "Name must not be empty");

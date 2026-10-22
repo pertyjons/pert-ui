@@ -104,7 +104,8 @@ struct Arranged {
 /// one-owner rule describes for reveal requests.
 ///
 /// ```
-/// use pert_ui_runtime::*;
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::*;
 /// let mut ui = Runtime::new();
 /// ui.set_viewport(Viewport::new(400.0, 300.0, 1.0)?)?;
 /// let zoom = ZoomController::new(&ui);
@@ -289,7 +290,8 @@ struct Pan {
 /// old gesture's offset into the new controller.
 ///
 /// ```
-/// use pert_ui_runtime::*;
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::*;
 /// let mut ui = Runtime::new();
 /// ui.set_viewport(Viewport::new(400.0, 300.0, 1.0)?)?;
 /// let at = |x, y| Point::new(x, y);

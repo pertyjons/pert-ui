@@ -504,7 +504,8 @@ impl<P: Copy + PartialEq + 'static> DraftEditorController<P> {
 /// cancels on Escape:
 ///
 /// ```
-/// use pert_ui_runtime::prelude::*;
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::prelude::*;
 ///
 /// struct Row {
 ///     value: Signal<String>,

@@ -85,14 +85,16 @@ pub enum TicketStatus {
 /// `Send` when their key is, so the host can carry them to a worker:
 ///
 /// ```compile_fail
-/// use pert_ui_runtime::RequestTracker;
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::RequestTracker;
 ///
 /// let tracker = RequestTracker::<String>::new();
 /// std::thread::spawn(move || tracker.issue("songs".into()));
 /// ```
 ///
 /// ```
-/// use pert_ui_runtime::{RequestTracker, TicketStatus};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{RequestTracker, TicketStatus};
 ///
 /// let tracker = RequestTracker::new();
 /// let first = tracker.issue("songs")?;
@@ -102,7 +104,7 @@ pub enum TicketStatus {
 /// // ...apply the second result, then:
 /// assert!(tracker.complete(&second));
 /// assert_eq!(tracker.status(&second), TicketStatus::Settled);
-/// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+/// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
 #[derive(Debug)]
 pub struct RequestTracker<K> {

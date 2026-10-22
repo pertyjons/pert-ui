@@ -233,8 +233,9 @@ impl UiSettings {
     /// scrolling.
     ///
     /// ```
-    /// use pert_ui_runtime::{Runtime, TextRenderingMode};
-    /// # fn main() -> Result<(), pert_ui_runtime::RuntimeError> {
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Runtime, TextRenderingMode};
+    /// # fn main() -> Result<(), pert_ui::RuntimeError> {
     /// let ui = Runtime::new();
     /// let settings = ui.ui_settings();
     /// assert_eq!(settings.text_rendering()?, TextRenderingMode::LineMask);

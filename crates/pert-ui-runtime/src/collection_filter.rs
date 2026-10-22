@@ -31,7 +31,8 @@ use crate::{
 /// by the rows filtered is the cost of a query.
 ///
 /// ```
-/// use pert_ui_runtime::FilterMatcher;
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::FilterMatcher;
 /// assert!(FilterMatcher::substring().matches("ver", "Reverb"));
 /// assert!(!FilterMatcher::substring().matches("rvb", "Reverb"));
 /// assert!(FilterMatcher::fuzzy().matches("rvb", "Reverb"));
@@ -230,8 +231,9 @@ pub(crate) fn nearest(before: &dyn ListItems, after: &dyn ListItems, key: &str) 
 /// selected and hidden, and is drawn again when the filter clears.
 ///
 /// ```
-/// use pert_ui_runtime::prelude::*;
-/// use pert_ui_runtime::{FilterMatcher, ListFilter, ListItems, ListSource, VirtualList};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::prelude::*;
+/// use pert_ui::{FilterMatcher, ListFilter, ListItems, ListSource, VirtualList};
 ///
 /// struct Fruit;
 /// const NAMES: [&str; 4] = ["Apple", "Banana", "Cherry", "Grape"];
@@ -474,8 +476,9 @@ struct Parts {
 /// when it mounts.
 ///
 /// ```
-/// use pert_ui_runtime::prelude::*;
-/// use pert_ui_runtime::{CollectionFilter, ListFilter, ListItems, ListSource, VirtualList};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::prelude::*;
+/// use pert_ui::{CollectionFilter, ListFilter, ListItems, ListSource, VirtualList};
 /// use std::time::Duration;
 ///
 /// struct Fruit;

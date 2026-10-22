@@ -44,7 +44,8 @@ impl Tab {
     /// The default from [`Self::new`] remains automatic two-axis scrolling.
     ///
     /// ```
-    /// use pert_ui_runtime::{Element, Label, ScrollArea, Tab, Tabs};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Element, Label, ScrollArea, Tab, Tabs};
     /// let tabs = Tabs::new([Tab::new(
     ///     "items", "Items",
     ///     Element::new("items-scroll", ScrollArea::new(
@@ -69,7 +70,8 @@ impl Tab {
     /// the current value when asked.
     ///
     /// ```
-    /// use pert_ui_runtime::{Element, Label, Tab, Tabs};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Element, Label, Tab, Tabs};
     /// let tabs = Tabs::new([
     ///     Tab::new("editor", "Editor", Element::new("a", Label::new("Editable"))),
     ///     Tab::new("log", "Log", Element::new("b", Label::new("Stays docked")))
@@ -86,7 +88,8 @@ impl Tab {
     /// existing title as its human-readable name.
     ///
     /// ```
-    /// use pert_ui_runtime::{Element, Icon, Label, RichText, Tab};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Element, Icon, Label, RichText, Tab};
     /// let tab = Tab::new("settings", "Settings", Element::new("body", Label::new("Options")))
     ///     .rich_title(RichText::new().icon(Icon::Settings)).into_element();
     /// assert_eq!(tab.label(), Some("Settings"));
@@ -102,7 +105,8 @@ impl Tab {
     /// rich title when more than one is wanted.
     ///
     /// ```
-    /// use pert_ui_runtime::{Element, Icon, Label, RichText, Tab};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Element, Icon, Label, RichText, Tab};
     /// let tab = Tab::new("mix", "Mix", Element::new("body", Label::new("Mixer")))
     ///     .leading_icon(Icon::Settings)
     ///     .leading_icon(Icon::Folder)
@@ -392,7 +396,8 @@ impl Tabs {
     /// selection that no longer exists would.
     ///
     /// ```
-    /// use pert_ui_runtime::*;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::*;
     /// use std::time::Duration;
     /// fn tab(key: &str) -> Tab {
     ///     Tab::new(key, key, Element::new("body", Label::new(key)))
@@ -490,7 +495,8 @@ impl Tabs {
     /// [`EventContext::defer`] describes the tabs again once the event is over:
     ///
     /// ```
-    /// use pert_ui_runtime::*;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::*;
     /// use std::{cell::RefCell, rc::Rc, time::Duration};
     /// fn tab(key: &str) -> Tab {
     ///     Tab::new(key, key, Element::new("body", Label::new(key)))
@@ -583,7 +589,8 @@ impl Tabs {
     /// discards them.
     ///
     /// ```
-    /// use pert_ui_runtime::*;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::*;
     /// use std::{cell::RefCell, rc::Rc, time::Duration};
     /// fn tab(key: &str) -> Tab {
     ///     Tab::new(key, key, Element::new("body", Label::new(key)))

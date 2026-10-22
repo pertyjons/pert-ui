@@ -342,7 +342,8 @@ pub enum SemanticAction {
 /// reports none and lets the children describe themselves.
 ///
 /// ```
-/// use pert_ui_runtime::{SemanticAction, SemanticItem, SemanticRole, Semantics};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{SemanticAction, SemanticItem, SemanticRole, Semantics};
 /// let semantics = Semantics::new(SemanticRole::Menu).items([
 ///     SemanticItem::new("Copy").action(SemanticAction::Activate),
 ///     SemanticItem::new("Paste").disabled(true).action(SemanticAction::Activate),
@@ -447,7 +448,8 @@ impl SemanticItem {
 /// [`Component::inspect`](crate::Component::inspect):
 ///
 /// ```
-/// use pert_ui_runtime::{ComponentDetails, SemanticAction, SemanticRole, SemanticValue, Semantics};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{ComponentDetails, SemanticAction, SemanticRole, SemanticValue, Semantics};
 /// let details = ComponentDetails {
 ///     semantics: Some(
 ///         Semantics::new(SemanticRole::Switch)

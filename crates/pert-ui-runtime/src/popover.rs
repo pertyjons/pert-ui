@@ -256,7 +256,8 @@ impl Popover {
     /// reports nothing either.
     ///
     /// ```
-    /// use pert_ui_runtime::{
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{
     ///     Element, KeyAction, KeyCode, Label, Popover, Runtime, SurfaceDismissal, Viewport,
     /// };
     /// let mut ui = Runtime::new();
@@ -270,7 +271,7 @@ impl Popover {
     ///     Element::new("content", Label::new("Content")),
     /// )
     /// .on_dismiss(move |_, why| report.set(Some(why)));
-    /// ui.mount_tree(Element::new("root", pert_ui_runtime::Column::new([
+    /// ui.mount_tree(Element::new("root", pert_ui::Column::new([
     ///     Element::new("popover", popover),
     /// ])))?;
     /// ui.flush(std::time::Duration::ZERO)?;

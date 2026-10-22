@@ -226,7 +226,8 @@ impl<T> Deliverable for Inbox<T> {
 /// that started the work. The mailbox is UI-local and not `Send`.
 ///
 /// ```
-/// use pert_ui_runtime::{Capacity, Runtime};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Capacity, Runtime};
 /// let mut ui = Runtime::new();
 /// let result = ui.signal(0_u64);
 /// let target = result.clone();

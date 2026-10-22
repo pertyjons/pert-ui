@@ -81,7 +81,8 @@ const MENU: [(TextCommand, &str, StringRole); 2] = [
 /// no place for secrets.
 ///
 /// ```
-/// use pert_ui_runtime::*;
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::*;
 /// use std::{cell::RefCell, rc::Rc, time::Duration};
 /// struct Memory(Rc<RefCell<String>>);
 /// impl Clipboard for Memory {

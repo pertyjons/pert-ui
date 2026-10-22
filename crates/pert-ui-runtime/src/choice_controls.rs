@@ -503,7 +503,8 @@ macro_rules! boolean_widget {
         ///
         #[doc = concat!(
             "```\n",
-            "use pert_ui_runtime::{", stringify!($name), ", Element, KeyAction, KeyCode, Runtime};\n",
+            "# use pert_ui_runtime as pert_ui;\n",
+            "use pert_ui::{", stringify!($name), ", Element, KeyAction, KeyCode, Runtime};\n",
             "let mut ui = Runtime::new();\n",
             "let enabled = ui.signal(false);\n",
             "let control = ui.mount_tree(Element::new(\"enabled\", ",
@@ -672,7 +673,8 @@ boolean_widget!(
 /// Escape is consumed only while it cancels an armed activation.
 ///
 /// ```
-/// use pert_ui_runtime::{Choice, Element, KeyAction, KeyCode, RadioGroup, Runtime};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Choice, Element, KeyAction, KeyCode, RadioGroup, Runtime};
 /// use std::{cell::Cell, rc::Rc};
 /// let mut ui = Runtime::new();
 /// let size = ui.signal("m");
@@ -768,13 +770,14 @@ impl<T: Clone + Eq + 'static> RadioGroup<T> {
     /// Re-describing the same key replaces the binding and choice source.
     ///
     /// ```
-    /// use pert_ui_runtime::{Choice, Element, RadioGroup, Runtime};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Choice, Element, RadioGroup, Runtime};
     /// let mut ui = Runtime::new();
     /// let value = ui.signal(1);
     /// let choices = ui.signal(vec![Choice::new(1, "One")]);
     /// ui.mount_tree(Element::new("choice", RadioGroup::bound(value, choices.read_only())))?;
     /// ui.flush(std::time::Duration::ZERO)?;
-    /// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+    /// # Ok::<(), pert_ui::RuntimeError>(())
     /// ```
     pub fn bound(
         value: impl Into<Signal<T>>,
@@ -893,7 +896,8 @@ impl RadioGroup<ChoiceId> {
     /// for an application-owned dynamic list.
     ///
     /// ```compile_fail
-    /// use pert_ui_runtime::{Choice, ChoiceId, Parameter, RadioGroup, ReadSignal};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Choice, ChoiceId, Parameter, RadioGroup, ReadSignal};
     /// fn conflicting(parameter: Parameter<ChoiceId>, options: ReadSignal<Vec<Choice<ChoiceId>>>) {
     ///     let _ = RadioGroup::for_parameter(parameter).choices(options);
     /// }
@@ -1424,7 +1428,8 @@ impl<T: Clone + Eq + 'static> RadioGroup<T> {
 /// no polling or timers are added. Handles and callbacks stay on the UI thread.
 ///
 /// ```
-/// use pert_ui_runtime::{Choice, Element, KeyAction, KeyCode, Runtime, SegmentedControl};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Choice, Element, KeyAction, KeyCode, Runtime, SegmentedControl};
 /// let mut ui = Runtime::new();
 /// let mode = ui.signal("dark");
 /// let group = ui.mount_tree(Element::new("mode", SegmentedControl::new(
@@ -1564,7 +1569,8 @@ impl<T: Clone + Eq + 'static> Component for SegmentedControl<T> {
 /// and external-write rules follow [`SegmentedControl`].
 ///
 /// ```
-/// use pert_ui_runtime::{Choice, Element, Icon, InlineChoice, KeyAction, KeyCode, Runtime};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Choice, Element, Icon, InlineChoice, KeyAction, KeyCode, Runtime};
 /// let mut ui = Runtime::new();
 /// let tool = ui.signal("select");
 /// let group = ui.mount_tree(Element::new("tools", InlineChoice::new(

@@ -23,7 +23,8 @@ use crate::{ReadSignal, RuntimeError, UpdateContext};
 /// component.
 ///
 /// ```
-/// use pert_ui_runtime::{Permission, Runtime};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Permission, Runtime};
 ///
 /// let ui = Runtime::new();
 /// let editing = ui.signal(true);
@@ -37,7 +38,7 @@ use crate::{ReadSignal, RuntimeError, UpdateContext};
 /// assert!(open.get()?);
 /// editing.set(false)?;
 /// assert!(!open.get()?);
-/// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+/// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
 #[derive(Clone, Debug)]
 pub struct Permission {
@@ -182,7 +183,8 @@ impl Permission {
     /// while every bound condition does and follows them without polling.
     ///
     /// ```
-    /// use pert_ui_runtime::{Permission, Runtime};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Permission, Runtime};
     ///
     /// let ui = Runtime::new();
     /// let (a, b) = (ui.signal(true), ui.signal(true));
@@ -192,7 +194,7 @@ impl Permission {
     /// b.set(false)?;
     /// assert!(!enabled.get()?);
     /// assert!(Permission::from(false).signal()?.is_none());
-    /// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+    /// # Ok::<(), pert_ui::RuntimeError>(())
     /// ```
     ///
     /// # Errors

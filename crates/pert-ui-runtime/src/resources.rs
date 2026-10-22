@@ -133,7 +133,8 @@ pub enum ImageSampling {
 /// belong outside time-critical callbacks.
 ///
 /// ```
-/// # use pert_ui_runtime::RasterImage;
+/// # use pert_ui_runtime as pert_ui;
+/// # use pert_ui::RasterImage;
 /// // A 2x1 image: opaque red, then half-transparent white.
 /// let image = RasterImage::from_srgba8(2, 1, vec![255, 0, 0, 255, 255, 255, 255, 128])?;
 /// assert_eq!((image.width(), image.height()), (2, 1));
@@ -141,7 +142,7 @@ pub enum ImageSampling {
 /// assert_eq!(&image.pixels()[..4], &[255, 0, 0, 255]);
 /// assert!(image.pixels()[4] < 255);
 /// assert_eq!(image.pixels()[7], 128);
-/// # Ok::<(), pert_ui_runtime::DrawError>(())
+/// # Ok::<(), pert_ui::DrawError>(())
 /// ```
 #[derive(Clone, Debug)]
 pub struct RasterImage {

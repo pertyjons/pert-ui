@@ -102,7 +102,8 @@ impl NumberInputError {
 /// validated and saved:
 ///
 /// ```
-/// use pert_ui_runtime::{DecimalInput, Element, KeyAction, KeyCode, Runtime};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{DecimalInput, Element, KeyAction, KeyCode, Runtime};
 /// let mut ui = Runtime::new();
 /// let gain = ui.signal(0.0_f64);
 /// let field = ui.mount_tree(Element::new("gain", DecimalInput::new(gain.clone())
@@ -136,7 +137,8 @@ impl NumberInputError {
 /// values.
 ///
 /// ```
-/// use pert_ui_runtime::{Element, IntegerInput, KeyAction, KeyCode, Runtime};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Element, IntegerInput, KeyAction, KeyCode, Runtime};
 /// let mut ui = Runtime::new();
 /// let count = ui.signal(0_i64);
 /// let field = ui.mount_tree(Element::new("count",
@@ -149,7 +151,7 @@ impl NumberInputError {
 /// ui.key_input(KeyCode::ArrowUp, KeyAction::Press)?;
 /// ui.key_input(KeyCode::Enter, KeyAction::Press)?;
 /// assert_eq!(count.get()?, 5);
-/// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+/// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
 ///
 /// While focused and editable, each nonzero vertical wheel event over the field
@@ -183,7 +185,8 @@ pub struct IntegerInput(NumberEditor<i64>);
 /// cancellation, validation, ownership and scheduling rules follow [`IntegerInput`].
 ///
 /// ```
-/// use pert_ui_runtime::{DecimalInput, Element, KeyAction, KeyCode, Runtime};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{DecimalInput, Element, KeyAction, KeyCode, Runtime};
 /// let mut ui = Runtime::new();
 /// let amount = ui.signal(1.234567_f64);
 /// let field = ui.mount_tree(Element::new("amount",
@@ -194,7 +197,7 @@ pub struct IntegerInput(NumberEditor<i64>);
 /// ui.key_input(KeyCode::ArrowUp, KeyAction::Press)?;
 /// ui.clear_focus(); // saves the stepped draft
 /// assert!((amount.get()? - 1.334567).abs() < 1e-12);
-/// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+/// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
 #[must_use]
 ///
@@ -229,7 +232,8 @@ pub struct DecimalInput(NumberEditor<f64>);
 /// [`IntegerInput`].
 ///
 /// ```
-/// use pert_ui_runtime::{Element, InlineInteger, KeyAction, KeyCode, Runtime};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Element, InlineInteger, KeyAction, KeyCode, Runtime};
 /// let mut ui = Runtime::new();
 /// let count = ui.signal(8_i64);
 /// let field = ui.mount_tree(Element::new("count",
@@ -241,7 +245,7 @@ pub struct DecimalInput(NumberEditor<f64>);
 /// ui.text_input("42")?;
 /// ui.key_input(KeyCode::Enter, KeyAction::Press)?;
 /// assert_eq!(count.get()?, 42);
-/// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+/// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
 #[must_use]
 pub struct InlineInteger(NumberEditor<i64>);
@@ -256,7 +260,8 @@ pub struct InlineInteger(NumberEditor<i64>);
 /// stored value.
 ///
 /// ```
-/// use pert_ui_runtime::{Element, InlineDecimal, KeyAction, KeyCode, Runtime};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Element, InlineDecimal, KeyAction, KeyCode, Runtime};
 /// let mut ui = Runtime::new();
 /// let seconds = ui.signal(0.25_f64);
 /// let field = ui.mount_tree(Element::new("attack",
@@ -265,7 +270,7 @@ pub struct InlineInteger(NumberEditor<i64>);
 /// ui.focus(&field)?;
 /// ui.key_input(KeyCode::ArrowUp, KeyAction::Press)?;
 /// assert!((seconds.get()? - 0.3).abs() < 1e-12);
-/// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+/// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
 #[must_use]
 ///
@@ -2459,7 +2464,8 @@ impl IntegerInput {
     /// rules above. Keep the `ParameterHost` alive while editing is available.
     ///
     /// ```
-    /// use pert_ui_runtime::{
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{
     ///     Element, IntegerInput, KeyAction, KeyCode, ParameterId, ParameterSpec, Runtime,
     /// };
     /// let mut ui = Runtime::new();
@@ -2507,7 +2513,8 @@ impl DecimalInput {
     /// `ParameterHost` alive while editing is available.
     ///
     /// ```
-    /// use pert_ui_runtime::{
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{
     ///     DecimalInput, Element, KeyAction, KeyCode, ParameterId, ParameterSpec, Runtime,
     /// };
     /// let mut ui = Runtime::new();

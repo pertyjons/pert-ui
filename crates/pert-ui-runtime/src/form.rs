@@ -30,7 +30,8 @@ use std::cell::Cell;
 /// child inside its cell. Inspection exposes `columns` after arrangement.
 ///
 /// ```
-/// use pert_ui_runtime::{Element, Field, Form, Runtime, ScrollArea, ScrollAxes, TextField};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Element, Field, Form, Runtime, ScrollArea, ScrollAxes, TextField};
 /// let mut ui = Runtime::new();
 /// let name = ui.signal(String::new());
 /// let city = ui.signal(String::new());
@@ -43,7 +44,7 @@ use std::cell::Cell;
 ///             .label("City")),
 ///     ]),
 /// )).axes(ScrollAxes::Both)))?;
-/// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+/// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
 ///
 /// Re-describing the form reconciles its fields by key; the form has no other

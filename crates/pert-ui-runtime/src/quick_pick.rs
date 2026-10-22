@@ -20,7 +20,8 @@ use std::{
 /// disabled.
 ///
 /// ```
-/// use pert_ui_runtime::PickItem;
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::PickItem;
 /// let item = PickItem::new("page/colors", "Colors").detail("Controls").kind("Page");
 /// assert_eq!(item.key, "page/colors");
 /// assert_eq!(item.label, "Colors");
@@ -95,7 +96,8 @@ impl PickItem {
 /// with [`Self::fuzzy_score`].
 ///
 /// ```
-/// use pert_ui_runtime::{PickItem, PickMatcher};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{PickItem, PickMatcher};
 /// let items = [
 ///     PickItem::new("a", "Save"),
 ///     PickItem::new("b", "Save As…"),
@@ -162,7 +164,8 @@ impl PickMatcher {
     /// the search for the contiguous run.
     ///
     /// ```
-    /// use pert_ui_runtime::PickMatcher;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::PickMatcher;
     /// assert_eq!(PickMatcher::fuzzy_score("", "Anything"), Some(0));
     /// assert_eq!(PickMatcher::fuzzy_score("xyz", "Save"), None);
     /// let word = PickMatcher::fuzzy_score("ss", "Show Sidebar").unwrap();
@@ -301,7 +304,8 @@ pub enum PickStatus {
 /// showing `message`). It must be pure and bounded.
 ///
 /// ```
-/// use pert_ui_runtime::{PickPending, Runtime};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{PickPending, Runtime};
 /// let ui = Runtime::new();
 /// let done = ui.signal(None::<bool>);
 /// let pending = PickPending::new(done.read_only(), |value| match value {
@@ -312,7 +316,7 @@ pub enum PickStatus {
 /// assert_eq!(pending.result()?, None);
 /// done.set(Some(false))?;
 /// assert_eq!(pending.result()?, Some(Err("It did not work.".to_owned())));
-/// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+/// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
 #[derive(Clone)]
 #[must_use]
@@ -827,13 +831,14 @@ impl Shared {
 /// disabled state.
 ///
 /// ```
-/// use pert_ui_runtime::{
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{
 ///     Element, KeyAction, KeyCode, Label, PickChoice, PickItem, PickStatus, QuickPick,
 ///     QuickPickController, Runtime,
 /// };
 /// use std::{cell::RefCell, rc::Rc, time::Duration};
 /// let mut ui = Runtime::new();
-/// ui.set_viewport(pert_ui_runtime::Viewport::new(800.0, 600.0, 1.0)?)?;
+/// ui.set_viewport(pert_ui::Viewport::new(800.0, 600.0, 1.0)?)?;
 /// let picker = QuickPickController::new(&ui);
 /// let chosen = Rc::new(RefCell::new(None));
 /// let record = chosen.clone();

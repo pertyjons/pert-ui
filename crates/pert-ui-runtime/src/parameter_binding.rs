@@ -41,7 +41,8 @@ use crate::{
 /// the component.
 ///
 /// ```
-/// use pert_ui_runtime::{
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{
 ///     AnySpec, AnyValue, BindingError, ParameterFamily, ParameterId, ParameterSpec, Runtime,
 ///     RuntimeError,
 /// };
@@ -281,7 +282,8 @@ impl<T: ParameterValue> Inner<T> {
 /// compile:
 ///
 /// ```compile_fail
-/// use pert_ui_runtime::{ParameterId, ParameterSpec, Runtime};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{ParameterId, ParameterSpec, Runtime};
 /// let runtime = Runtime::new();
 /// let (parameter, _host) = runtime
 ///     .parameter(ParameterId::new(1, 1, "gain").unwrap(), ParameterSpec::new("Gain", 0.0, 1.0, 0.5).unwrap())
@@ -467,8 +469,9 @@ impl<T: ParameterValue> Parameter<T> {
 /// editing control:
 ///
 /// ```
+/// # use pert_ui_runtime as pert_ui;
 /// use std::{cell::RefCell, rc::Rc};
-/// use pert_ui_runtime::{
+/// use pert_ui::{
 ///     EditOutcome, Element, KeyAction, KeyCode, ParameterId, ParameterSpec, Runtime, Toggle,
 /// };
 ///
@@ -503,8 +506,9 @@ impl<T: ParameterValue> Parameter<T> {
 /// The host side stays on the UI thread as well:
 ///
 /// ```compile_fail
+/// # use pert_ui_runtime as pert_ui;
 /// fn send<T: Send>() {}
-/// send::<pert_ui_runtime::ParameterHost<f32>>();
+/// send::<pert_ui::ParameterHost<f32>>();
 /// ```
 pub struct ParameterHost<T: ParameterValue> {
     inner: Rc<Inner<T>>,
@@ -582,7 +586,8 @@ impl<T: ParameterValue> ParameterHost<T> {
     /// or writing the overlay back.
     ///
     /// ```
-    /// use pert_ui_runtime::{Element, InlineReadout, ParameterId, ParameterSpec, Runtime};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Element, InlineReadout, ParameterId, ParameterSpec, Runtime};
     /// let mut ui = Runtime::new();
     /// let spec = ParameterSpec::new("Amount", 0.0, 1.0, 0.25)?;
     /// let (parameter, host) = ui.parameter(ParameterId::new(1, 1, "amount")?, spec.clone())?;
@@ -723,8 +728,9 @@ impl<T: ParameterValue> ContextLoss for Gesture<T> {
 /// explicit gesture methods are still rejected in that phase.
 ///
 /// ```compile_fail
+/// # use pert_ui_runtime as pert_ui;
 /// fn send<T: Send>() {}
-/// send::<pert_ui_runtime::EditSession<f32>>();
+/// send::<pert_ui::EditSession<f32>>();
 /// ```
 #[must_use = "dropping an edit session cancels unfinished work"]
 pub struct EditSession<T: ParameterValue> {
@@ -970,7 +976,8 @@ impl Runtime {
     /// work.
     ///
     /// ```
-    /// use pert_ui_runtime::{Element, ParameterId, ParameterSpec, Runtime, Slider};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Element, ParameterId, ParameterSpec, Runtime, Slider};
     /// let mut ui = Runtime::new();
     /// let (amount, host) = ui.parameter(
     ///     ParameterId::new(1, 1, "amount")?,

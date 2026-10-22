@@ -17,7 +17,8 @@ use crate::ParameterError;
 /// and outcomes does not copy the text. The type is `Send` and `Sync`.
 ///
 /// ```
-/// use pert_ui_core::{ChoiceId, ParameterError};
+/// # use pert_ui_core as pert_ui;
+/// use pert_ui::{ChoiceId, ParameterError};
 /// let id = ChoiceId::new("low pass")?;
 /// assert_eq!(id.as_str(), "low pass");
 /// assert_eq!(ChoiceId::new(" padded"), Err(ParameterError::MalformedChoiceId));
@@ -84,11 +85,12 @@ impl TryFrom<String> for ChoiceId {
 /// positions; it is not an identity either.
 ///
 /// ```
-/// use pert_ui_core::{ChoiceId, ChoiceOption};
+/// # use pert_ui_core as pert_ui;
+/// use pert_ui::{ChoiceId, ChoiceOption};
 /// let option = ChoiceOption::new(ChoiceId::new("lp")?, "Low pass");
 /// assert_eq!(option.id().as_str(), "lp");
 /// assert_eq!(option.label(), "Low pass");
-/// # Ok::<(), pert_ui_core::ParameterError>(())
+/// # Ok::<(), pert_ui::ParameterError>(())
 /// ```
 ///
 /// # Serialization

@@ -43,7 +43,8 @@ use crate::{
 /// is an empty result, not an error and not a nearby component.
 ///
 /// ```
-/// use pert_ui_runtime::{SemanticRole, Selector};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{SemanticRole, Selector};
 /// let save = Selector::within(
 ///     Selector::path(["toolbar"]),
 ///     Selector::semantic(SemanticRole::Button, Some("Save")),
@@ -182,7 +183,8 @@ pub enum Detail {
 /// selector returns no components.
 ///
 /// ```
-/// use pert_ui_runtime::{Depth, Detail, InspectionQuery, Selector};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Depth, Detail, InspectionQuery, Selector};
 /// let query = InspectionQuery::components(Selector::path(["mixer", "channel-3"]))
 ///     .depth(Depth::Children)
 ///     .detail(Detail::Semantics)
@@ -1004,7 +1006,8 @@ pub(crate) fn answer(
 /// wait again.
 ///
 /// ```
-/// use pert_ui_runtime::{
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{
 ///     Capacity, DebugOverlay, Depth, Detail, DiagnosticCommand, Element, InspectionQuery, Label,
 ///     Runtime, Selector, WaitError,
 /// };

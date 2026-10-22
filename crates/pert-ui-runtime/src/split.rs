@@ -287,7 +287,8 @@ impl SplitPane {
     /// change not yet delivered.
     ///
     /// ```
-    /// use pert_ui_runtime::*;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::*;
     /// use std::{cell::RefCell, rc::Rc, time::Duration};
     ///
     /// let mut ui = Runtime::new();

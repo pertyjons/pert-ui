@@ -25,7 +25,8 @@ use crate::runtime::{Invalidation, Node, RuntimeError, Shared};
 /// without breaking applications.
 ///
 /// ```
-/// use pert_ui_runtime::{
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{
 ///     Choice, Component, ContextMenu, Element, Label, MenuItem, Runtime, RuntimeError, Select,
 ///     UpdateContext,
 /// };
@@ -73,13 +74,14 @@ pub trait StateOwner: sealed::Sealed {
     /// The handle can outlive the owner; getters return `Closed` after shutdown.
     ///
     /// ```
-    /// use pert_ui_runtime::{Runtime, StateOwner, UiStrings};
-    /// fn initial_strings(owner: &impl StateOwner) -> Result<UiStrings, pert_ui_runtime::RuntimeError> {
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Runtime, StateOwner, UiStrings};
+    /// fn initial_strings(owner: &impl StateOwner) -> Result<UiStrings, pert_ui::RuntimeError> {
     ///     owner.ui_settings().strings()
     /// }
     /// let ui = Runtime::new();
     /// assert_eq!(initial_strings(&ui)?, UiStrings::english());
-    /// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+    /// # Ok::<(), pert_ui::RuntimeError>(())
     /// ```
     fn ui_settings(&self) -> crate::UiSettings;
 }
@@ -157,7 +159,8 @@ struct Inner<T> {
 /// converts to a [`ReadSignal`] where only reading is needed.
 ///
 /// ```
-/// use pert_ui_runtime::Runtime;
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::Runtime;
 /// let ui = Runtime::new();
 /// let count = ui.signal(2);
 /// let caption = count.map(|n| format!("{n} items"))?;
@@ -166,11 +169,12 @@ struct Inner<T> {
 /// let enabled = ui.signal(false);
 /// enabled.toggle()?;
 /// assert!(enabled.get()?);
-/// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+/// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
 ///
 /// ```compile_fail
-/// let runtime = pert_ui_runtime::Runtime::new();
+/// # use pert_ui_runtime as pert_ui;
+/// let runtime = pert_ui::Runtime::new();
 /// let signal = runtime.signal(0);
 /// std::thread::spawn(move || drop(signal));
 /// ```
@@ -185,7 +189,8 @@ pub struct Signal<T> {
 /// is an untracked read for event/application code. It clones only this value.
 ///
 /// ```compile_fail
-/// let runtime = pert_ui_runtime::Runtime::new();
+/// # use pert_ui_runtime as pert_ui;
+/// let runtime = pert_ui::Runtime::new();
 /// let read = runtime.signal(0).read_only();
 /// read.set(1); // no write capability
 /// ```
@@ -326,14 +331,15 @@ impl<T> Signal<T> {
     /// `ListItems::build` describes the retained alternative.
     ///
     /// ```
-    /// use pert_ui_runtime::Runtime;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::Runtime;
     /// let ui = Runtime::new();
     /// let color = ui.signal(0_u32);
     /// let open = color.sibling(false);
     /// open.set(true)?;
     /// assert!(open.get()?);
     /// assert_eq!(color.get()?, 0);
-    /// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+    /// # Ok::<(), pert_ui::RuntimeError>(())
     /// ```
     pub fn sibling<U>(&self, value: U) -> Signal<U> {
         Signal::new(self.inner.shared.clone(), value)
@@ -373,7 +379,8 @@ impl<T> Signal<T> {
     /// draft. It is untracked: reading it subscribes nothing.
     ///
     /// ```
-    /// use pert_ui_runtime::Runtime;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::Runtime;
     /// let ui = Runtime::new();
     /// let value = ui.signal(1);
     /// let before = value.revision();
@@ -383,7 +390,7 @@ impl<T> Signal<T> {
     /// assert_ne!(value.revision(), before);
     /// value.set(1)?; // unchanged: no new revision
     /// assert_eq!(value.revision(), before.wrapping_add(2));
-    /// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+    /// # Ok::<(), pert_ui::RuntimeError>(())
     /// ```
     #[must_use]
     pub fn revision(&self) -> u64 {
@@ -691,13 +698,14 @@ impl<T: Clone + 'static> ReadSignal<T> {
     /// `WriteDuringUpdate`. Cyclic reentrant reads return `BorrowConflict`.
     ///
     /// ```
-    /// use pert_ui_runtime::Runtime;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::Runtime;
     /// let ui = Runtime::new();
     /// let count = ui.signal(2);
     /// let caption = count.map(|n| format!("{n} items"))?;
     /// count.set(3)?;
     /// assert_eq!(caption.get()?, "3 items");
-    /// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+    /// # Ok::<(), pert_ui::RuntimeError>(())
     /// ```
     pub fn map<U: Clone + PartialEq + 'static>(
         &self,

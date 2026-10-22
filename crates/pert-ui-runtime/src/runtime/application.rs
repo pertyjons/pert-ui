@@ -120,7 +120,8 @@ impl Runtime {
     /// goes first. After shutdown a value is dropped at once.
     ///
     /// ```
-    /// use pert_ui_runtime::{Capacity, Runtime};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Capacity, Runtime};
     /// let mut ui = Runtime::new();
     /// let saved = ui.signal(false);
     /// let done = saved.clone();
@@ -169,7 +170,8 @@ impl Runtime {
     /// for running work.
     ///
     /// ```
-    /// use pert_ui_runtime::Runtime;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::Runtime;
     /// use std::time::Duration;
     /// let mut ui = Runtime::new();
     /// let status = ui.signal("Reading".to_owned());
@@ -188,7 +190,7 @@ impl Runtime {
     ///     ui.flush(Duration::ZERO)?;
     /// }
     /// assert_eq!(status.get()?, "Read 42");
-    /// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+    /// # Ok::<(), pert_ui::RuntimeError>(())
     /// ```
     ///
     /// # Errors
@@ -281,7 +283,8 @@ impl Runtime {
     /// application's next deadline set, so use it only for work that needs it.
     ///
     /// ```
-    /// use pert_ui_runtime::Runtime;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::Runtime;
     /// use std::time::Duration;
     /// let mut ui = Runtime::new();
     /// let saves = ui.signal(0);
@@ -294,7 +297,7 @@ impl Runtime {
     /// timer.cancel();
     /// ui.flush(Duration::from_secs(90))?;
     /// assert_eq!(saves.get()?, 1);
-    /// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+    /// # Ok::<(), pert_ui::RuntimeError>(())
     /// ```
     ///
     /// # Errors
@@ -449,7 +452,8 @@ impl Runtime {
     /// in place.
     ///
     /// ```
-    /// use pert_ui_runtime::{Column, Component, FailurePhase, IntoElement, LayoutError,
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Column, Component, FailurePhase, IntoElement, LayoutError,
     ///     Runtime, RuntimeError, UpdateContext};
     /// struct Broken;
     /// impl Component for Broken {

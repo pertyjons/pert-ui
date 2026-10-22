@@ -538,7 +538,8 @@ pub enum UiStringError {
 /// theme; it is not part of the workspace document.
 ///
 /// ```
-/// use pert_ui_runtime::{Runtime, StringRole, UiMessage, UiStrings};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Runtime, StringRole, UiMessage, UiStrings};
 /// let ui = Runtime::new();
 /// let swedish = UiStrings::english()
 ///     .with(StringRole::TextCopy, "Kopiera")?

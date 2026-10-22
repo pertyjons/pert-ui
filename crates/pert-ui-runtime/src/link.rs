@@ -48,7 +48,8 @@ pub enum LinkUnderline {
 /// [`SemanticAction::Activate`] while enabled.
 ///
 /// ```
-/// use pert_ui_runtime::{Element, Link, LinkUnderline, Runtime, SemanticRole};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Element, Link, LinkUnderline, Runtime, SemanticRole};
 ///
 /// let mut ui = Runtime::new();
 /// let opened = ui.signal(false);

@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.3.56 (2026-10-22)
+
+Documentation: the facade's spelling in examples (API audit fix plan, part
+5d). No public item, signature or behavior changes; the `api/` listings are
+unchanged.
+
+- **Item examples import `pert_ui::…`:** every rustdoc example in
+  `pert-ui-runtime` and `pert-ui-core` that named its own crate now imports
+  `pert_ui::…` through a hidden alias line (`# use pert_ui_runtime as
+  pert_ui;`, or `pert_ui_core` in the core crate), so the item pages the
+  facade inlines show what an application writes, and the examples still
+  build as the defining crate's doctests. The runtime's own pages show the
+  same spelling; the facade root page, the runtime README and the core README
+  say so and name the defining crate's spelling for code that depends on it
+  directly. The crate READMEs' own examples keep their crate's name.
+- **`CpuRenderer` examples:** the `pert-ui-cpu` examples the facade's
+  `cpu::CpuRenderer` page inlines import `pert_ui::cpu::CpuRenderer` and
+  `pert_ui::…` through a hidden module that mirrors the facade's paths; the
+  `pert-ui-cpu` README says so and names the direct spelling.
+
 ## 0.3.55 (2026-10-22)
 
 Documentation: guide chapters and recipes of the API audit (API audit fix

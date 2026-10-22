@@ -110,7 +110,8 @@ pub struct Redescribed {
 /// application side effects from callbacks are not rolled back.
 ///
 /// ```
-/// use pert_ui_runtime::{
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{
 ///     redescribe, Component, Element, Invalidation, MeasureContext, Constraints, Painter,
 ///     DrawError, Runtime, RuntimeError, Size, UpdateContext,
 /// };
@@ -197,10 +198,11 @@ pub fn redescribe(
 /// incarnation identity, independently of workspace addressing metadata.
 ///
 /// ```
-/// use pert_ui_runtime::{check_redescription, Element, Label, Runtime};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{check_redescription, Element, Label, Runtime};
 /// let mut ui = Runtime::new();
 /// let (before, after) = (ui.signal("Before".to_owned()), ui.signal("After".to_owned()));
-/// let label = |text: &pert_ui_runtime::Signal<String>| {
+/// let label = |text: &pert_ui::Signal<String>| {
 ///     Element::new("caption", Label::new(text.read_only()))
 /// };
 /// check_redescription(&mut ui, label(&before), label(&after), label(&after))?;

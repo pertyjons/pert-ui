@@ -22,7 +22,9 @@ through `NumberFormat` belong to the runtime and public `pert-ui` facade.
 Unit presets may later compose these general APIs; application meaning and
 transport integrations remain the host's responsibility.
 
-Applications normally import these types through `pert-ui`.
+Applications normally import these types through `pert-ui`. The examples on
+the item pages are written for the facade and import `pert_ui::…`; code that
+depends on this crate directly writes `pert_ui_core::` in their place.
 
 ```rust
 use pert_ui_core::{NormalizedValue, NormalizedValueError};

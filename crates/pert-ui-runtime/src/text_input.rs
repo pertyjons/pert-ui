@@ -57,7 +57,8 @@ impl TextPreedit {
     /// is a caret with no selection.
     ///
     /// ```
-    /// # use pert_ui_runtime::{TextEditError, TextPreedit};
+    /// # use pert_ui_runtime as pert_ui;
+    /// # use pert_ui::{TextEditError, TextPreedit};
     /// let preedit = TextPreedit::new("åä", Some(2..4))?;
     /// assert_eq!(preedit.cursor(), Some(2..4));
     /// // Byte 1 is inside `å`, and a reversed range is not ordered.

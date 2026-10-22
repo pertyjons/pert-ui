@@ -28,7 +28,8 @@ use std::{error::Error, fmt, sync::Arc};
 /// equate unrelated failures.
 ///
 /// ```
-/// use pert_ui_runtime::{ApplicationError, RuntimeError};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{ApplicationError, RuntimeError};
 ///
 /// fn load() -> Result<u32, RuntimeError> {
 ///     let text = "not a number";

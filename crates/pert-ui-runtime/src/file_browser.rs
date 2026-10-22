@@ -281,13 +281,14 @@ pub enum FileBrowserError {
 /// once. The order is the operating system's; the browser sorts what it shows.
 ///
 /// ```no_run
-/// use pert_ui_runtime::list_directory;
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::list_directory;
 ///
 /// let entries = list_directory(std::path::Path::new("."))?;
 /// for entry in &entries {
 ///     println!("{} {:?}", entry.name().to_string_lossy(), entry.kind());
 /// }
-/// # Ok::<(), pert_ui_runtime::ListingError>(())
+/// # Ok::<(), pert_ui::ListingError>(())
 /// ```
 ///
 /// # Errors

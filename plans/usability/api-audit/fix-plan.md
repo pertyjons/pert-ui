@@ -108,6 +108,25 @@ and anything left to a later part.
       and the CHANGELOG were corrected.
 
     The recheck approved 5c.
+- **5d (0.3.56):** the item examples of pert-ui-runtime, pert-ui-core and
+  pert-ui-cpu import `pert_ui::…` through hidden alias lines, so the
+  facade's rendered pages show the facade's paths.
+  - **Checks run after the last edit:**
+    - `cargo fmt --all --check`;
+    - `cargo test --locked --workspace --doc`;
+    - `RUSTDOCFLAGS="-D warnings" cargo doc --locked --workspace --no-deps`;
+    - the twelve `compile_fail` blocks, switched temporarily to `no_run`,
+      which failed only for their intended reason;
+    - a script over every rendered example on the facade's pages, which
+      found no `pert_ui_runtime::`, `pert_ui_core::` or `pert_ui_cpu::` and
+      no rendered hidden line;
+    - `api/generate.sh`, with no difference;
+    - `git diff --check`.
+  - **Beyond the plan's lines:**
+    - the three `CpuRenderer` examples, the same defect, use a hidden
+      module that mirrors the facade's `cpu` path;
+    - the three crate READMEs say item examples are written with the
+      facade's paths and give the direct spelling.
   - **Left to a later part:** tracing `Runtime::focus` found a dropped error,
     added to 6d2 as `N:focus-reveal`.
 

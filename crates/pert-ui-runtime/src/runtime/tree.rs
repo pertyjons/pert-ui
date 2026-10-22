@@ -167,7 +167,8 @@ impl Runtime {
     /// `Ok(None)`, not an error.
     ///
     /// ```
-    /// use pert_ui_runtime::prelude::*;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
     ///
     /// let mut ui = Runtime::new();
     /// let root = ui.mount_tree(Element::new("root", Column::new([Element::new(
@@ -230,7 +231,8 @@ impl Runtime {
     /// matching descendant is `Ok(None)`, not an error.
     ///
     /// ```
-    /// use pert_ui_runtime::prelude::*;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
     ///
     /// let mut ui = Runtime::new();
     /// let root = ui.mount_tree(Element::new("root", Column::new([
@@ -319,7 +321,8 @@ impl Runtime {
     /// address. An address that does not resolve is `Ok(None)`, not an error.
     ///
     /// ```
-    /// use pert_ui_runtime::prelude::*;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
     ///
     /// let mut ui = Runtime::new();
     /// let root = ui.mount_tree(Element::new("root", Column::new([
@@ -417,7 +420,8 @@ impl Runtime {
     /// unmounted one.
     ///
     /// ```
-    /// use pert_ui_runtime::{Button, Column, Element, Runtime};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Button, Column, Element, Runtime};
     /// let mut ui = Runtime::new();
     /// let root = ui.mount_tree(Element::new("root", Column::new([
     ///     Element::new("save", Button::new("Save", |_| Ok(()))),
@@ -685,7 +689,8 @@ impl Runtime {
     /// unmounted takes the moved children it holds with it.
     ///
     /// ```
-    /// use pert_ui_runtime::{Column, Element, Label, Runtime};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Column, Element, Label, Runtime};
     /// let mut ui = Runtime::new();
     /// let root = ui.mount_tree(Element::new("root", Column::new([
     ///     Element::new("strip", Column::new([Element::new("tools", Label::new("Tools"))])),
@@ -699,7 +704,7 @@ impl Runtime {
     /// assert!(ui.children(&strip)?.is_empty());
     /// ui.reparent(&tools, &strip, 0)?; // the same subtree returns
     /// assert_eq!(ui.children(&strip)?, [tools]);
-    /// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+    /// # Ok::<(), pert_ui::RuntimeError>(())
     /// ```
     ///
     /// # Errors

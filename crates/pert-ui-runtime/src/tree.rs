@@ -867,7 +867,8 @@ impl Component for TreeRow {
 /// [`Runtime::icons`](crate::Runtime::icons) to change their glyphs throughout the UI.
 ///
 /// ```
-/// use pert_ui_runtime::{Element, Label, ListSelection, Runtime, SelectionMode, Tree,
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Element, Label, ListSelection, Runtime, SelectionMode, Tree,
 ///     TreeItems, TreeSource, TreeController, Viewport};
 /// struct Files;
 /// impl TreeItems for Files {
@@ -972,7 +973,8 @@ impl Tree {
     /// when that sibling [can take it](TreeItems::can_drop_into).
     ///
     /// ```
-    /// use pert_ui_runtime::*;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::*;
     /// use std::{cell::RefCell, collections::BTreeMap, rc::Rc, time::Duration};
     /// // Children per parent; "" holds the top level.
     /// type Model = Rc<RefCell<BTreeMap<String, Vec<String>>>>;

@@ -141,7 +141,8 @@ impl AnyTerminalEvent {
     /// An undo stack for parameters of every family, without a match over them:
     ///
     /// ```
-    /// use pert_ui_runtime::{
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{
     ///     AnyParameter, AnySpec, AnyValue, EditOutcome, Element, KeyAction, KeyCode,
     ///     ParameterId, ParameterSpec, Runtime, Toggle,
     /// };

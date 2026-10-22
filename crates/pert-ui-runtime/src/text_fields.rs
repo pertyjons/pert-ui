@@ -127,7 +127,8 @@ type RefusalReport =
 /// so a later focus loss has nothing to save.
 ///
 /// ```
-/// use pert_ui_runtime::{Element, KeyAction, KeyCode, Runtime, TextField};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Element, KeyAction, KeyCode, Runtime, TextField};
 /// let mut ui = Runtime::new();
 /// let tag = ui.signal(String::new());
 /// let field = ui.mount_tree(Element::new("tag",
@@ -137,18 +138,19 @@ type RefusalReport =
 /// assert_eq!(tag.get()?, ""); // still a draft
 /// ui.key_input(KeyCode::Enter, KeyAction::Press)?;
 /// assert_eq!(tag.get()?, "reports");
-/// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+/// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
 ///
 /// ```
-/// use pert_ui_runtime::{Element, Runtime, TextField};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Element, Runtime, TextField};
 /// let mut ui = Runtime::new();
 /// let name = ui.signal(String::from("Example"));
 /// let field = ui.mount_tree(Element::new("name", TextField::new(name.clone())))?;
 /// ui.focus(&field)?;
 /// ui.text_input("New ")?;
 /// assert_eq!(name.get()?, "New Example");
-/// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+/// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
 #[must_use]
 pub struct TextField(Editor);
@@ -193,11 +195,12 @@ pub struct TextField(Editor);
 /// focus loss saves the draft.
 ///
 /// ```
-/// use pert_ui_runtime::{Element, Runtime, TextArea};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Element, Runtime, TextArea};
 /// let mut ui = Runtime::new();
 /// let notes = ui.signal(String::from("First line\nSecond line"));
 /// ui.mount_tree(Element::new("notes", TextArea::new(notes)))?;
-/// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+/// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
 #[must_use]
 pub struct TextArea(Editor);
@@ -324,7 +327,8 @@ macro_rules! editor_api {
             /// save or Escape. Replaces an earlier callback.
             ///
             /// ```
-            /// use pert_ui_runtime::{
+            /// # use pert_ui_runtime as pert_ui;
+            /// use pert_ui::{
             ///     Element, Field, FieldStatus, FormStatus, InputRejection, KeyAction, KeyCode,
             ///     Runtime, TextField,
             /// };
@@ -346,7 +350,7 @@ macro_rules! editor_api {
             ///     Field::new(Element::new("input", field)).label("Name").form(&handle)))?;
             /// let input = ui.find_descendant(&root, "input")?.expect("the field's control");
             /// ui.focus(&input)?;
-            /// let enter = |ui: &mut Runtime| -> Result<(), pert_ui_runtime::RuntimeError> {
+            /// let enter = |ui: &mut Runtime| -> Result<(), pert_ui::RuntimeError> {
             ///     ui.key_input(KeyCode::Enter, KeyAction::Press)?;
             ///     ui.key_input(KeyCode::Enter, KeyAction::Release).map(|_| ())
             /// };
@@ -500,7 +504,8 @@ macro_rules! editor_api {
             /// returned from the flush or input call that delivered it.
             ///
             /// ```
-            /// use pert_ui_runtime::*;
+            /// # use pert_ui_runtime as pert_ui;
+            /// use pert_ui::*;
             /// let mut ui = Runtime::new();
             /// let form = FormStatus::new(&ui);
             /// let handle = form.field("name")?;
@@ -555,7 +560,8 @@ macro_rules! editor_api {
             /// value reports that refusal.
             ///
             /// ```
-            /// use pert_ui_runtime::{IntoElement, Runtime, TextArea, TextEditError, TextField};
+            /// # use pert_ui_runtime as pert_ui;
+            /// use pert_ui::{IntoElement, Runtime, TextArea, TextEditError, TextField};
             /// use std::time::Duration;
             /// let mut ui = Runtime::new();
             /// let body = ui.signal(String::new());
@@ -571,7 +577,7 @@ macro_rules! editor_api {
             /// body.set("short".to_owned())?;
             /// ui.flush(Duration::ZERO)?;
             /// assert_eq!(problem.get()?, None);
-            /// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+            /// # Ok::<(), pert_ui::RuntimeError>(())
             /// ```
             pub fn on_binding_refusal(
                 mut self,
@@ -830,7 +836,8 @@ impl TextField {
     /// concealment on or off on a mounted field moves the caret to the start.
     ///
     /// ```
-    /// use pert_ui_runtime::{Element, Runtime, TextField};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Element, Runtime, TextField};
     /// let mut ui = Runtime::new();
     /// let password = ui.signal(String::new());
     /// let field = ui.mount_tree(Element::new("password",
@@ -842,7 +849,7 @@ impl TextField {
     ///     .find(|c| c.key == "password").unwrap().details;
     /// assert!(details.semantics.unwrap().protected);
     /// assert!(!details.properties.contains_key("text"));
-    /// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+    /// # Ok::<(), pert_ui::RuntimeError>(())
     /// ```
     pub fn concealed(mut self, concealed: bool) -> Self {
         self.0.concealed = concealed;
@@ -873,15 +880,16 @@ impl TextField {
     /// reports `clear_shown`. Default: no button.
     ///
     /// ```
-    /// use pert_ui_runtime::{Element, Runtime, TextField};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Element, Runtime, TextField};
     /// let mut ui = Runtime::new();
     /// let query = ui.signal("draft".to_owned());
     /// ui.mount_tree(Element::new("name", TextField::new(query.clone()).clearable(true)))?;
     /// ui.flush(std::time::Duration::ZERO)?;
     /// let details = ui.inspect().components.into_iter()
     ///     .find(|c| c.key == "name").unwrap().details;
-    /// assert_eq!(details.properties["clear_shown"], pert_ui_runtime::InspectValue::Bool(true));
-    /// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+    /// assert_eq!(details.properties["clear_shown"], pert_ui::InspectValue::Bool(true));
+    /// # Ok::<(), pert_ui::RuntimeError>(())
     /// ```
     pub fn clearable(mut self, clearable: bool) -> Self {
         self.0.clearable = clearable;

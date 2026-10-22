@@ -79,8 +79,9 @@ impl From<CpuRenderError> for CaptureError {
 /// whole working storage, besides the vector masks the rasterizer bounds.
 ///
 /// ```
-/// use pert_ui_cpu::CpuRenderer;
-/// use pert_ui_runtime::{Color, Component, DrawError, Element, Painter, Rect, Runtime,
+/// # mod pert_ui { pub use pert_ui_runtime::*; pub mod cpu { pub use pert_ui_cpu::CpuRenderer; } }
+/// use pert_ui::cpu::CpuRenderer;
+/// use pert_ui::{Color, Component, DrawError, Element, Painter, Rect, Runtime,
 ///     RuntimeError, UpdateContext, Viewport};
 /// use std::time::Duration;
 ///
@@ -152,8 +153,9 @@ impl CpuRenderer {
     /// window presents; [`Self::render`] is what a capture keeps.
     ///
     /// ```
-    /// use pert_ui_cpu::CpuRenderer;
-    /// use pert_ui_runtime::{Runtime, Viewport};
+    /// # mod pert_ui { pub use pert_ui_runtime::*; pub mod cpu { pub use pert_ui_cpu::CpuRenderer; } }
+    /// use pert_ui::cpu::CpuRenderer;
+    /// use pert_ui::{Runtime, Viewport};
     /// let mut ui = Runtime::new();
     /// ui.set_viewport(Viewport::new(4.0, 4.0, 1.0)?)?;
     /// let frame = CpuRenderer::new().render_opaque(&ui.paint()?)?;
@@ -230,8 +232,9 @@ impl CpuRenderer {
     /// another thread, are answered with real pixels and no display or GPU.
     ///
     /// ```
-    /// use pert_ui_cpu::CpuRenderer;
-    /// use pert_ui_runtime::{CaptureRequest, CaptureTarget, Element, Label, Runtime, Viewport};
+    /// # mod pert_ui { pub use pert_ui_runtime::*; pub mod cpu { pub use pert_ui_cpu::CpuRenderer; } }
+    /// use pert_ui::cpu::CpuRenderer;
+    /// use pert_ui::{CaptureRequest, CaptureTarget, Element, Label, Runtime, Viewport};
     /// use std::time::Duration;
     ///
     /// let mut ui = Runtime::new();

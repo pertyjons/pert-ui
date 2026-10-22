@@ -1188,7 +1188,8 @@ impl<T: Clone + Eq + Hash + 'static> Component for Trigger<T> {
 /// written to the new one.
 ///
 /// ```
-/// use pert_ui_runtime::{Choice, Column, Element, MultiSelect, Runtime};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Choice, Column, Element, MultiSelect, Runtime};
 /// use std::time::Duration;
 ///
 /// let mut ui = Runtime::new();
@@ -1202,7 +1203,7 @@ impl<T: Clone + Eq + Hash + 'static> Component for Trigger<T> {
 /// ui.flush(Duration::ZERO)?;
 /// let trigger = ui.inspect().components.into_iter().find(|c| c.key == "anchor")
 ///     .and_then(|c| c.details.properties.get("text").cloned());
-/// assert_eq!(trigger, Some(pert_ui_runtime::InspectValue::Text("Mix".into())));
+/// assert_eq!(trigger, Some(pert_ui::InspectValue::Text("Mix".into())));
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 #[must_use]
@@ -1330,7 +1331,8 @@ impl<T: Clone + Eq + Hash + 'static> MultiSelect<T> {
     /// discarding its draft.
     ///
     /// ```
-    /// use pert_ui_runtime::{Choice, MultiSelect, Runtime};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Choice, MultiSelect, Runtime};
     /// let ui = Runtime::new();
     /// let tags = ui.signal(vec!["mix"]);
     /// let submitted = ui.signal(Vec::new());
@@ -1387,7 +1389,8 @@ impl<T: Clone + Eq + Hash + 'static> MultiSelect<T> {
     /// and the rule can also read the option's value:
     ///
     /// ```
-    /// use pert_ui_runtime::{Choice, FilterMatcher, MultiSelect, Runtime};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Choice, FilterMatcher, MultiSelect, Runtime};
     /// let ui = Runtime::new();
     /// let effects = ui.signal(vec!["reverb"]);
     /// let options = [Choice::new("reverb", "Reverb"), Choice::new("delay", "Delay")];

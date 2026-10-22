@@ -41,10 +41,10 @@ including what a custom [`Component`] that lays out, draws and handles input
 names, and its page lists the root names other code most often adds.
 
 Most items are re-exported from the backend-independent `pert-ui-runtime`
-crate, which documents them, so their examples are written against that crate
-and import `pert_ui_runtime::…`. An application depends on `pert-ui` alone and
-writes `pert_ui::` in their place: every such item is at this crate's root, and
-`pert_ui::prelude` is `pert_ui_runtime::prelude` plus native startup.
+crate, which documents them. Their examples import `pert_ui::…`, as an
+application writes them: an application depends on `pert-ui` alone, every such
+item is at this crate's root, and `pert_ui::prelude` is
+`pert_ui_runtime::prelude` plus native startup.
 
 # Map of the library
 

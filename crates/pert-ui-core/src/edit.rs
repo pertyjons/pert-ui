@@ -256,7 +256,8 @@ struct Active<T> {
 /// The host must keep exactly one state per complete parameter incarnation.
 ///
 /// ```
-/// use pert_ui_core::*;
+/// # use pert_ui_core as pert_ui;
+/// use pert_ui::*;
 /// let mut state = ParameterState::new(
 ///     ParameterId::new(1, 2, "amount")?, ParameterSpec::new("Amount", 0.0, 10.0, 2.0)?,
 /// );

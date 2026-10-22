@@ -89,7 +89,8 @@ impl Label {
     /// label again. No font or style configuration is required.
     ///
     /// ```
-    /// use pert_ui_runtime::{Icon, Label, RichText, Runtime};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Icon, Label, RichText, Runtime};
     /// let ui = Runtime::new();
     /// let fixed = Label::new("Gain");
     /// let rich = Label::new(RichText::from("Gain").leading_icon(Icon::Info));
@@ -138,7 +139,8 @@ impl Label {
     /// takes focus, so keyboard users read the full text from the name.
     ///
     /// ```
-    /// use pert_ui_runtime::{Element, Label, Runtime, TextOverflow, Viewport, Wrap};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Element, Label, Runtime, TextOverflow, Viewport, Wrap};
     /// use std::time::Duration;
     ///
     /// let mut ui = Runtime::new();
@@ -425,7 +427,8 @@ type ActivateFn = Box<dyn FnMut(&mut EventContext) -> Result<(), RuntimeError>>;
 /// propagate.
 ///
 /// ```
-/// use pert_ui_runtime::{Button, Element, KeyAction, KeyCode, Runtime};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Button, Element, KeyAction, KeyCode, Runtime};
 /// let mut ui = Runtime::new();
 /// let saved = ui.signal(0);
 /// let count = saved.clone();
@@ -469,7 +472,8 @@ impl Button {
     /// caption changes; icons inside rich content are part of the caption.
     ///
     /// ```
-    /// use pert_ui_runtime::{Button, Icon, RichText, Runtime};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Button, Icon, RichText, Runtime};
     /// let ui = Runtime::new();
     /// let caption = ui.signal(String::from("Save"));
     /// let save = Button::new(caption.read_only(), |_| Ok(())).leading_icon(Icon::Check);
@@ -540,7 +544,8 @@ impl Button {
     /// `StaleCommand` if the command is no longer registered.
     ///
     /// ```
-    /// use pert_ui_runtime::{Button, CommandScope, Element, KeyChord, KeyCode, Runtime};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Button, CommandScope, Element, KeyChord, KeyCode, Runtime};
     /// let mut ui = Runtime::new();
     /// let play = ui.register_command("Play", CommandScope::Application,
     ///     vec![KeyChord::named(KeyCode::Space)], |_, _| Ok(()))?;
@@ -579,7 +584,8 @@ impl Button {
     /// `StaleCommand` if the command is no longer registered.
     ///
     /// ```
-    /// use pert_ui_runtime::{Button, CommandScope, Element, Icon, KeyChord, Runtime, Tooltip};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Button, CommandScope, Element, Icon, KeyChord, Runtime, Tooltip};
     /// let mut ui = Runtime::new();
     /// let undo = ui.register_command("Undo", CommandScope::Application,
     ///     vec![KeyChord::primary('z')], |_, _| Ok(()))?;

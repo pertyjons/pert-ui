@@ -10,7 +10,8 @@
 /// are failures only drawing has.
 ///
 /// ```
-/// use pert_ui_runtime::{DrawError, GeometryError, Rect, RuntimeError};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{DrawError, GeometryError, Rect, RuntimeError};
 /// fn bar() -> Result<Rect, DrawError> {
 ///     Ok(Rect::new(0.0, 0.0, -1.0, 4.0)?)
 /// }
@@ -76,10 +77,11 @@ impl Rect {
     /// and nonnegative, so no geometry can be rejected here.
     ///
     /// ```
-    /// # use pert_ui_runtime::{Rect, Size};
+    /// # use pert_ui_runtime as pert_ui;
+    /// # use pert_ui::{Rect, Size};
     /// let size = Size::new(80.0, 24.0)?;
     /// assert_eq!(Rect::from_size(size).values(), [0.0, 0.0, 80.0, 24.0]);
-    /// # Ok::<(), pert_ui_runtime::GeometryError>(())
+    /// # Ok::<(), pert_ui::GeometryError>(())
     /// ```
     #[must_use]
     pub const fn from_size(size: crate::Size) -> Self {
@@ -92,10 +94,11 @@ impl Rect {
     /// permitted, as in [`Rect::new`].
     ///
     /// ```
-    /// # use pert_ui_runtime::{Point, Rect, Size};
+    /// # use pert_ui_runtime as pert_ui;
+    /// # use pert_ui::{Point, Rect, Size};
     /// let rect = Rect::from_origin_size(Point::new(-4.0, 8.0)?, Size::new(80.0, 24.0)?);
     /// assert_eq!(rect.values(), [-4.0, 8.0, 80.0, 24.0]);
-    /// # Ok::<(), pert_ui_runtime::GeometryError>(())
+    /// # Ok::<(), pert_ui::GeometryError>(())
     /// ```
     #[must_use]
     pub const fn from_origin_size(origin: crate::Point, size: crate::Size) -> Self {
@@ -116,7 +119,8 @@ impl Rect {
     /// [`EventContext::to_local`](crate::EventContext::to_local) first.
     ///
     /// ```
-    /// # use pert_ui_runtime::{Point, Rect};
+    /// # use pert_ui_runtime as pert_ui;
+    /// # use pert_ui::{Point, Rect};
     /// let rect = Rect::new(10.0, 10.0, 20.0, 20.0)?;
     /// assert!(rect.contains(Point::new(10.0, 10.0)?));
     /// assert!(!rect.contains(Point::new(30.0, 20.0)?));
@@ -137,11 +141,12 @@ impl Rect {
     /// disjoint rectangles, which makes this the test for "the clip removed it".
     ///
     /// ```
-    /// # use pert_ui_runtime::Rect;
+    /// # use pert_ui_runtime as pert_ui;
+    /// # use pert_ui::Rect;
     /// let visible = Rect::new(0.0, 0.0, 10.0, 10.0)?;
     /// assert!(!visible.is_empty());
     /// assert!(visible.intersection(Rect::new(20.0, 0.0, 10.0, 10.0)?).is_empty());
-    /// # Ok::<(), pert_ui_runtime::DrawError>(())
+    /// # Ok::<(), pert_ui::DrawError>(())
     /// ```
     #[must_use]
     pub const fn is_empty(self) -> bool {
@@ -165,11 +170,12 @@ impl Rect {
     /// Horizontal position of the left edge in logical pixels; may be negative.
     ///
     /// ```
-    /// # use pert_ui_runtime::Rect;
+    /// # use pert_ui_runtime as pert_ui;
+    /// # use pert_ui::Rect;
     /// let rect = Rect::new(-4.0, 8.0, 80.0, 24.0)?;
     /// assert_eq!((rect.x(), rect.y()), (-4.0, 8.0));
     /// assert_eq!((rect.width(), rect.height()), (80.0, 24.0));
-    /// # Ok::<(), pert_ui_runtime::DrawError>(())
+    /// # Ok::<(), pert_ui::DrawError>(())
     /// ```
     #[must_use]
     pub const fn x(self) -> f32 {
@@ -269,11 +275,12 @@ impl Color {
     /// Linear red channel within `0..=1`.
     ///
     /// ```
-    /// # use pert_ui_runtime::Color;
+    /// # use pert_ui_runtime as pert_ui;
+    /// # use pert_ui::Color;
     /// let color = Color::rgba(0.25, 0.5, 0.75, 1.0)?;
     /// assert_eq!((color.red(), color.green(), color.blue()), (0.25, 0.5, 0.75));
     /// assert_eq!(color.alpha(), 1.0);
-    /// # Ok::<(), pert_ui_runtime::DrawError>(())
+    /// # Ok::<(), pert_ui::DrawError>(())
     /// ```
     #[must_use]
     pub const fn red(self) -> f32 {
@@ -314,12 +321,13 @@ impl Color {
     /// gamma-encoded.
     ///
     /// ```
-    /// # use pert_ui_runtime::Color;
+    /// # use pert_ui_runtime as pert_ui;
+    /// # use pert_ui::Color;
     /// let gray = Color::from_srgb(0.5, 0.5, 0.5, 1.0)?;
     /// // Mid-gray in sRGB is about 21% linear light.
     /// assert!((gray.red() - 0.214).abs() < 0.001);
     /// assert_eq!(gray.to_srgb()[3], 1.0);
-    /// # Ok::<(), pert_ui_runtime::DrawError>(())
+    /// # Ok::<(), pert_ui::DrawError>(())
     /// ```
     ///
     /// # Errors
@@ -350,7 +358,8 @@ impl Color {
     /// [`Color::to_srgb8`] returns the same bytes.
     ///
     /// ```
-    /// # use pert_ui_runtime::Color;
+    /// # use pert_ui_runtime as pert_ui;
+    /// # use pert_ui::Color;
     /// let teal = Color::from_srgb8(0x20, 0x90, 0xa0, 0xff);
     /// assert_eq!(teal.to_srgb8(), [0x20, 0x90, 0xa0, 0xff]);
     /// assert_eq!(teal.alpha(), 1.0);
@@ -417,7 +426,8 @@ impl Color {
     /// with this grammar.
     ///
     /// ```
-    /// # use pert_ui_runtime::{Color, HexColorError};
+    /// # use pert_ui_runtime as pert_ui;
+    /// # use pert_ui::{Color, HexColorError};
     /// let orange = Color::from_hex("#FF8800")?;
     /// assert_eq!(orange, Color::from_hex("f80")?);
     /// assert_eq!(orange.to_srgb8(), [0xff, 0x88, 0x00, 0xff]);
@@ -472,7 +482,8 @@ impl Color {
     /// same way, and [`Color::from_hex`] reads it back to the same bytes.
     ///
     /// ```
-    /// # use pert_ui_runtime::Color;
+    /// # use pert_ui_runtime as pert_ui;
+    /// # use pert_ui::Color;
     /// assert_eq!(Color::from_srgb8(255, 136, 0, 255).to_hex(), "#ff8800");
     /// assert_eq!(Color::from_srgb8(255, 136, 0, 128).to_hex(), "#ff880080");
     /// ```
@@ -493,10 +504,11 @@ impl Color {
     /// translucency it already has, such as a theme role's.
     ///
     /// ```
-    /// # use pert_ui_runtime::Color;
+    /// # use pert_ui_runtime as pert_ui;
+    /// # use pert_ui::Color;
     /// let veil = Color::WHITE.with_alpha(0.25)?;
     /// assert_eq!(veil.channels(), [1.0, 1.0, 1.0, 0.25]);
-    /// # Ok::<(), pert_ui_runtime::DrawError>(())
+    /// # Ok::<(), pert_ui::DrawError>(())
     /// ```
     ///
     /// # Errors
@@ -516,11 +528,12 @@ impl Color {
     /// application chose.
     ///
     /// ```
-    /// # use pert_ui_runtime::Color;
+    /// # use pert_ui_runtime as pert_ui;
+    /// # use pert_ui::Color;
     /// let thumb = Color::rgba(0.6, 0.7, 0.8, 0.5)?;
     /// assert_eq!(thumb.scale_alpha(0.5)?.alpha(), 0.25);
     /// assert!(thumb.scale_alpha(2.0).is_err());
-    /// # Ok::<(), pert_ui_runtime::DrawError>(())
+    /// # Ok::<(), pert_ui::DrawError>(())
     /// ```
     ///
     /// # Errors
@@ -551,13 +564,14 @@ impl Color {
     /// bit, unless it is fully transparent.
     ///
     /// ```
-    /// # use pert_ui_runtime::Color;
+    /// # use pert_ui_runtime as pert_ui;
+    /// # use pert_ui::Color;
     /// let red = Color::rgba(1.0, 0.0, 0.0, 1.0)?;
     /// let clear = Color::rgba(0.0, 0.0, 0.0, 0.0)?;
     /// // Fading keeps the hue: no black is mixed into the red.
     /// assert_eq!(red.mix(clear, 0.5)?.channels(), [1.0, 0.0, 0.0, 0.5]);
     /// assert_eq!(red.mix(clear, 0.0)?, red);
-    /// # Ok::<(), pert_ui_runtime::DrawError>(())
+    /// # Ok::<(), pert_ui::DrawError>(())
     /// ```
     ///
     /// # Errors
@@ -607,7 +621,8 @@ impl Color {
     /// itself, both unchanged.
     ///
     /// ```
-    /// # use pert_ui_runtime::{Color, OpaqueColor};
+    /// # use pert_ui_runtime as pert_ui;
+    /// # use pert_ui::{Color, OpaqueColor};
     /// let black = OpaqueColor::try_from(Color::rgba(0.0, 0.0, 0.0, 1.0)?)?;
     /// let veil = Color::WHITE.with_alpha(0.5)?;
     /// assert_eq!(Color::from(veil.over(black)).channels(), [0.5, 0.5, 0.5, 1.0]);
@@ -644,7 +659,8 @@ impl Color {
 /// refuse or correct a palette that falls below a contrast minimum.
 ///
 /// ```
-/// # use pert_ui_runtime::{Color, OpaqueColor, Palette, ColorRole};
+/// # use pert_ui_runtime as pert_ui;
+/// # use pert_ui::{Color, OpaqueColor, Palette, ColorRole};
 /// let palette = Palette::dark();
 /// let text = OpaqueColor::try_from(palette.color(ColorRole::OnSurface))?;
 /// let surface = OpaqueColor::try_from(palette.color(ColorRole::Surface))?;
@@ -661,7 +677,8 @@ impl Color {
 /// Contrast is not defined on [`Color`] itself:
 ///
 /// ```compile_fail
-/// # use pert_ui_runtime::Color;
+/// # use pert_ui_runtime as pert_ui;
+/// # use pert_ui::Color;
 /// let _ = Color::WHITE.contrast_ratio(Color::TEXT);
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -676,7 +693,8 @@ impl OpaqueColor {
     /// 0.03928 threshold can differ in the last digits for very dark channels.
     ///
     /// ```
-    /// # use pert_ui_runtime::{Color, OpaqueColor};
+    /// # use pert_ui_runtime as pert_ui;
+    /// # use pert_ui::{Color, OpaqueColor};
     /// let gray = OpaqueColor::try_from(Color::rgba(0.5, 0.5, 0.5, 1.0)?)?;
     /// assert!((gray.relative_luminance() - 0.5).abs() < 1e-6);
     /// # Ok::<(), Box<dyn std::error::Error>>(())
@@ -697,7 +715,8 @@ impl OpaqueColor {
     /// focus indicators against their adjacent colors.
     ///
     /// ```
-    /// # use pert_ui_runtime::{Color, OpaqueColor};
+    /// # use pert_ui_runtime as pert_ui;
+    /// # use pert_ui::{Color, OpaqueColor};
     /// let white = OpaqueColor::try_from(Color::WHITE)?;
     /// let black = OpaqueColor::try_from(Color::from_hex("#000")?)?;
     /// assert_eq!(white.contrast_ratio(black), 21.0);
@@ -921,11 +940,12 @@ impl Viewport {
     /// requires of a host. A zero extent is a valid suspended viewport.
     ///
     /// ```
-    /// # use pert_ui_runtime::{PhysicalExtent, Viewport};
+    /// # use pert_ui_runtime as pert_ui;
+    /// # use pert_ui::{PhysicalExtent, Viewport};
     /// let viewport = Viewport::from_physical(PhysicalExtent::new(1001, 601), 1.5)?;
     /// assert_eq!(viewport.width(), (1001.0_f64 / 1.5) as f32);
     /// assert_eq!(viewport.physical(), Some(PhysicalExtent::new(1001, 601)));
-    /// # Ok::<(), pert_ui_runtime::GeometryError>(())
+    /// # Ok::<(), pert_ui::GeometryError>(())
     /// ```
     ///
     /// # Errors
@@ -949,11 +969,12 @@ impl Viewport {
     /// cropped from it agree.
     ///
     /// ```
-    /// # use pert_ui_runtime::{PhysicalExtent, Viewport};
+    /// # use pert_ui_runtime as pert_ui;
+    /// # use pert_ui::{PhysicalExtent, Viewport};
     /// assert_eq!(Viewport::new(100.0, 50.0, 1.5)?.frame_extent(), PhysicalExtent::new(150, 75));
     /// let native = Viewport::from_physical(PhysicalExtent::new(1001, 601), 1.5)?;
     /// assert_eq!(native.frame_extent(), PhysicalExtent::new(1001, 601));
-    /// # Ok::<(), pert_ui_runtime::GeometryError>(())
+    /// # Ok::<(), pert_ui::GeometryError>(())
     /// ```
     #[must_use]
     pub fn frame_extent(self) -> PhysicalExtent {
@@ -1523,7 +1544,8 @@ impl Painter {
     /// share one entry in the scene.
     ///
     /// ```
-    /// # use pert_ui_runtime::*;
+    /// # use pert_ui_runtime as pert_ui;
+    /// # use pert_ui::*;
     /// struct Swatch(RasterImage);
     /// impl Component for Swatch {
     ///     fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {

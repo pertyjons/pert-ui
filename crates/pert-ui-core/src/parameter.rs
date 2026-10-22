@@ -46,7 +46,8 @@ pub enum ParameterMapping {
 /// exponents are equal when their values are.
 ///
 /// ```
-/// use pert_ui_core::{ParameterMapping, ParameterSpec, PowerExponent};
+/// # use pert_ui_core as pert_ui;
+/// use pert_ui::{ParameterMapping, ParameterSpec, PowerExponent};
 /// let fader = ParameterSpec::new("Gain", -60.0, 12.0, 0.0)?
 ///     .with_mapping(ParameterMapping::Power(PowerExponent::new(2.0)?))?;
 /// let halfway = fader.normalize(&-42.0)?;
@@ -125,7 +126,8 @@ impl From<PowerExponent> for f32 {
 /// metadata guides presentation; it does not enforce host authorization.
 ///
 /// ```
-/// use pert_ui_core::{ChoiceId, ChoiceOption, NormalizedValue, ParameterSpec};
+/// # use pert_ui_core as pert_ui;
+/// use pert_ui::{ChoiceId, ChoiceOption, NormalizedValue, ParameterSpec};
 /// let amount = ParameterSpec::new("Amount", -100.0, 100.0, 0.0)?;
 /// assert_eq!(amount.denormalize(NormalizedValue::try_from(0.75)?), 50.0);
 ///
@@ -457,8 +459,9 @@ impl ParameterSpec<i64> {
     /// count can overflow.
     ///
     /// ```
+    /// # use pert_ui_core as pert_ui;
     /// use std::num::NonZeroU64;
-    /// use pert_ui_core::ParameterSpec;
+    /// use pert_ui::ParameterSpec;
     /// let spec = ParameterSpec::stepped("Octave", -3, 5, -1)?
     ///     .with_step(NonZeroU64::new(2).ok_or("zero")?)?;
     /// assert_eq!(spec.offset(-1, 2)?, 3);

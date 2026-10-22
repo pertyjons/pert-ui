@@ -444,7 +444,8 @@ pub(super) struct Inner {
 /// same state.
 ///
 /// ```
-/// use pert_ui_runtime::{
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{
 ///     DirectoryEntry, EntryKind, Element, FileBrowser, FileBrowserController, ListSelection,
 ///     ListingDelivery, Runtime, SelectionMode,
 /// };

@@ -203,7 +203,8 @@ impl LeafAction {
 /// has a mark, so labels stay aligned.
 ///
 /// ```
-/// use pert_ui_runtime::{Column, Element, KeyChord, Menu, MenuItem, Runtime};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Column, Element, KeyChord, Menu, MenuItem, Runtime};
 /// let mut ui = Runtime::new();
 /// let grid = ui.signal(true);
 /// let zoom = ui.signal(100u32);
@@ -386,7 +387,8 @@ impl MenuItem {
     /// `StaleCommand` if the command is no longer registered.
     ///
     /// ```
-    /// use pert_ui_runtime::{Column, CommandScope, Element, KeyChord, Menu, MenuItem, Runtime};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Column, CommandScope, Element, KeyChord, Menu, MenuItem, Runtime};
     /// let mut ui = Runtime::new();
     /// let save = ui.register_command("Save", CommandScope::Application,
     ///     vec![KeyChord::primary('s')], |_, _| Ok(()))?;
@@ -438,7 +440,8 @@ impl MenuItem {
     /// Replaces an earlier handler.
     ///
     /// ```
-    /// use pert_ui_runtime::{
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{
     ///     Column, Element, KeyAction, KeyCode, Menu, MenuItem, Runtime, Viewport,
     /// };
     /// use std::time::Duration;
@@ -524,7 +527,8 @@ impl MenuItem {
     /// menu. This replaces any earlier mark.
     ///
     /// ```
-    /// use pert_ui_runtime::{Column, Element, Menu, MenuItem, Runtime};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Column, Element, Menu, MenuItem, Runtime};
     /// let mut ui = Runtime::new();
     /// // A selection held by the application, not by the menu.
     /// let fast = ui.signal(true);
@@ -725,7 +729,8 @@ impl Menu {
     /// Keys, errors and lifecycle match [`Self::new`].
     ///
     /// ```
-    /// use pert_ui_runtime::{
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{
     ///     Component, Element, Menu, MenuItem, Runtime, RuntimeError, Signal, UpdateContext,
     /// };
     ///
@@ -1217,7 +1222,8 @@ impl Component for MenuBranch {
 /// run on the owning UI thread. No native OS menu is created.
 ///
 /// ```
-/// use pert_ui_runtime::{
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{
 ///     ContextMenu, Element, KeyAction, KeyCode, Label, MenuItem, Point, PointerButton,
 ///     PointerEvent, PointerKind, Runtime, Viewport,
 /// };
@@ -1323,7 +1329,8 @@ impl ContextMenuOpener {
     /// when it mounts.
     ///
     /// ```
-    /// use pert_ui_runtime::{
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{
     ///     CommandSource, ContextMenu, Element, KeyAction, KeyCode, Label, MenuItem, Point,
     ///     Runtime, Viewport,
     /// };

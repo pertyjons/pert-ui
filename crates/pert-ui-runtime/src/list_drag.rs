@@ -11,7 +11,8 @@ use crate::DropOperation;
 /// payload, and a custom source may offer it to a list.
 ///
 /// ```
-/// use pert_ui_runtime::{DragPayload, ListDragItems};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{DragPayload, ListDragItems};
 /// let payload = DragPayload::new(ListDragItems::new(["kick".into(), "snare".into()]));
 /// let items = payload.get::<ListDragItems>().expect("list items");
 /// assert_eq!(items.keys(), ["kick", "snare"]);

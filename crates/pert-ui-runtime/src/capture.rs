@@ -81,7 +81,8 @@ impl CaptureTarget {
     /// unrelated window of this one.
     ///
     /// ```
-    /// use pert_ui_runtime::{CaptureTarget, Runtime};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{CaptureTarget, Runtime};
     /// let ui = Runtime::new();
     /// let main = ui.primary_window();
     /// assert_eq!(CaptureTarget::window(&main), CaptureTarget::Window(main.id()));
@@ -107,7 +108,8 @@ impl CaptureTarget {
 /// A request for a screenshot.
 ///
 /// ```
-/// use pert_ui_runtime::{CaptureRequest, CaptureTarget};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{CaptureRequest, CaptureTarget};
 /// let request = CaptureRequest::new(CaptureTarget::Path(vec!["mixer".into()])).include_overlay(true);
 /// assert!(request.overlay_included());
 /// ```

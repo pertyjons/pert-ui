@@ -79,7 +79,8 @@ impl std::fmt::Display for SinkErrorKind {
 /// recovery; external proposals remain retained by their authority owner.
 ///
 /// ```
-/// use pert_ui_runtime::{SinkError, SinkErrorKind};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{SinkError, SinkErrorKind};
 /// let error = SinkError::new(SinkErrorKind::Full, "engine queue full");
 /// assert_eq!(error.kind(), SinkErrorKind::Full);
 /// assert_eq!(error.to_string(), "downstream queue is full: engine queue full");

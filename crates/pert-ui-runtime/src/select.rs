@@ -1474,7 +1474,8 @@ impl<T: Clone + Eq + 'static> Select<T> {
     /// for deferred application work that must survive the list becoming hidden.
     ///
     /// ```
-    /// use pert_ui_runtime::{Choice, Select, Runtime};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Choice, Select, Runtime};
     /// let ui = Runtime::new();
     /// let chosen = ui.signal("a");
     /// let submitted = ui.signal("a");
@@ -1533,13 +1534,14 @@ impl<T: Clone + Eq + 'static> Select<T> {
     /// the value binding and option source, with the usual dropdown lifecycle.
     ///
     /// ```
-    /// use pert_ui_runtime::{Choice, Element, Runtime, Select};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Choice, Element, Runtime, Select};
     /// let mut ui = Runtime::new();
     /// let value = ui.signal(1);
     /// let options = ui.signal(vec![Choice::new(1, "One")]);
     /// ui.mount_tree(Element::new("choice", Select::bound(&ui, value, options.read_only())))?;
     /// ui.flush(std::time::Duration::ZERO)?;
-    /// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+    /// # Ok::<(), pert_ui::RuntimeError>(())
     /// ```
     pub fn bound(
         ui: &impl crate::StateOwner,
@@ -1602,7 +1604,8 @@ impl<T: Clone + Eq + 'static> Select<T> {
     /// with the same source keeps the text already read.
     ///
     /// ```
-    /// use pert_ui_runtime::{Choice, Column, Element, Runtime, Select};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Choice, Column, Element, Runtime, Select};
     /// use std::time::Duration;
     /// let mut ui = Runtime::new();
     /// let unit = ui.signal("none");
@@ -1612,7 +1615,7 @@ impl<T: Clone + Eq + 'static> Select<T> {
     /// ui.flush(Duration::ZERO)?;
     /// let text = ui.inspect().components.into_iter().find(|c| c.key == "select")
     ///     .and_then(|c| c.details.properties.get("text").cloned());
-    /// assert_eq!(text, Some(pert_ui_runtime::InspectValue::Text("Välj…".into())));
+    /// assert_eq!(text, Some(pert_ui::InspectValue::Text("Välj…".into())));
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     pub fn placeholder(mut self, placeholder: impl Into<TextSource>) -> Self {
@@ -1723,7 +1726,8 @@ impl<T: Clone + Eq + 'static> Component for Select<T> {
 /// disabled entries and unknown-value placeholders follow [`Select`].
 ///
 /// ```
-/// use pert_ui_runtime::{Choice, Element, InlineSelect, KeyAction, KeyCode, Runtime};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Choice, Element, InlineSelect, KeyAction, KeyCode, Runtime};
 /// let mut ui = Runtime::new();
 /// let snap = ui.signal("1/4");
 /// let select = InlineSelect::new(&ui, snap.clone(),

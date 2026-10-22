@@ -342,7 +342,8 @@ impl<T: ParameterValue> RemoteState<T> {
 /// back onto the UI thread with a mailbox; the host starts no worker itself.
 ///
 /// ```
-/// use pert_ui_runtime::{
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{
 ///     ApplicationError, AuthorityResponse, AuthorityStatus, EditOutcome, Element, Label,
 ///     ParameterId, ParameterSpec, ResponseDisposition, Runtime, SinkError, SinkErrorKind,
 ///     SubmissionDelivery,

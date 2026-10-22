@@ -438,7 +438,8 @@ fn visible_index(cx: &MeasureContext<'_>, key: &str) -> Result<Option<usize>, Ru
 /// and `persist` properties.
 ///
 /// ```
-/// use pert_ui_runtime::*;
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::*;
 /// use std::time::Duration;
 /// let mut ui = Runtime::new();
 /// ui.set_viewport(Viewport::new(320.0, 240.0, 1.0)?)?;
@@ -915,7 +916,8 @@ impl Section {
 /// enabled, and the `mode`, `persist` and `active` properties.
 ///
 /// ```
-/// use pert_ui_runtime::*;
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::*;
 /// use std::time::Duration;
 /// let mut ui = Runtime::new();
 /// ui.set_viewport(Viewport::new(320.0, 400.0, 1.0)?)?;
@@ -1032,7 +1034,8 @@ impl Accordion {
     /// Removing the component prevents delivery. By default there is no handler.
     ///
     /// ```
-    /// use pert_ui_runtime::{Accordion, Element, Label, Runtime, Section};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Accordion, Element, Label, Runtime, Section};
     /// let mut ui = Runtime::new();
     /// let open = ui.signal(Vec::<String>::new());
     /// let seen = open.clone();

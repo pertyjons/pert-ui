@@ -98,7 +98,8 @@ fn leaf(cx: &ArrangeContext<'_>) -> Result<(), RuntimeError> {
 /// number on the scale.
 ///
 /// ```
-/// use pert_ui_runtime::{
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{
 ///     Capacity, Delivery, Element, LevelMeter, ParameterSpec, Runtime, SeriesConfig,
 ///     Timestamp, Viewport, series_bridge,
 /// };
@@ -120,7 +121,7 @@ fn leaf(cx: &ArrangeContext<'_>) -> Result<(), RuntimeError> {
 /// let next = ui.next_deadline().expect("a visible reader keeps the source polled");
 /// ui.flush(next)?;
 /// let level = ui.inspect().components[0].details.properties["level"].clone();
-/// assert_eq!(level, pert_ui_runtime::InspectValue::Number(0.75));
+/// assert_eq!(level, pert_ui::InspectValue::Number(0.75));
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 ///
@@ -451,7 +452,8 @@ impl Component for LevelMeter {
 /// [`SemanticRole::Image`] role and the number of retained points.
 ///
 /// ```
-/// use pert_ui_runtime::{
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{
 ///     Capacity, Delivery, Element, ParameterSpec, Runtime, SeriesConfig, Timestamp, Trace,
 ///     Viewport, series_bridge,
 /// };

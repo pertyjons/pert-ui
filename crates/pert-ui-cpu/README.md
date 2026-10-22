@@ -17,6 +17,12 @@ Uses:
   thread, so tooling can capture part of a view, a whole window or a single
   component headlessly.
 
+Applications normally use this crate through the `pert-ui` facade's `cpu`
+feature, as `pert_ui::cpu::CpuRenderer`. The examples on the item pages are
+written for the facade and import `pert_ui::…`; code that depends on this crate
+directly writes `pert_ui_cpu::CpuRenderer` and `pert_ui_runtime::…` in their
+place.
+
 Native presentation from CPU pixels and browser rendering are not part of this
 crate. The rendering contract and its tolerances against the GPU renderer are
 recorded in the repository's `docs/rendering-platform.md`.

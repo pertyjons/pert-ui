@@ -22,7 +22,8 @@ type Parse<T> = Rc<dyn Fn(&str) -> Result<T, NumberInputError>>;
 /// the callback happens to return the same text.
 ///
 /// ```
-/// use pert_ui_runtime::{Element, InlineDecimal, NumberFormat, NumberInputError, Runtime};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Element, InlineDecimal, NumberFormat, NumberInputError, Runtime};
 /// let mut ui = Runtime::new();
 /// let seconds = ui.signal(0.125_f64);
 /// let milliseconds = NumberFormat::new("9999.0 ms",
@@ -32,7 +33,7 @@ type Parse<T> = Rc<dyn Fn(&str) -> Result<T, NumberInputError>>;
 ///     .edit_text(|v| (v * 1000.0).to_string());
 /// ui.mount_tree(Element::new("time", InlineDecimal::new(seconds)
 ///     .range(0.0, 9.0)?.label("Time").unit("ms").format(milliseconds)))?;
-/// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+/// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
 #[must_use]
 pub struct NumberFormat<T> {
@@ -107,7 +108,8 @@ impl<T> NumberFormat<T> {
     /// suffix changes scale, such as seconds/milliseconds. Pair it with `edit_unit`.
     ///
     /// ```
-    /// use pert_ui_runtime::{Element, InlineDecimal, NumberFormat, NumberInputError, Runtime};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Element, InlineDecimal, NumberFormat, NumberInputError, Runtime};
     /// let mut ui = Runtime::new();
     /// let seconds = ui.signal(0.25_f64);
     /// let format = NumberFormat::new("9999 ms",
@@ -116,7 +118,7 @@ impl<T> NumberFormat<T> {
     ///     .unit(|v| if v < 1.0 { "ms".into() } else { "s".into() })
     ///     .edit_text(|v| v.to_string()).edit_unit("s");
     /// ui.mount_tree(Element::new("time", InlineDecimal::new(seconds).format(format)))?;
-    /// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+    /// # Ok::<(), pert_ui::RuntimeError>(())
     /// ```
     pub fn unit(mut self, unit: impl Fn(T) -> String + 'static) -> Self {
         self.unit = Some(Rc::new(unit));
@@ -178,14 +180,15 @@ pub enum NumberLocaleError {
 /// character are refused with [`NumberInputError::InvalidNumber`].
 ///
 /// ```
-/// use pert_ui_runtime::{NumberFormat, NumberInputError, NumberLocale};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{NumberFormat, NumberInputError, NumberLocale};
 /// let swedish = NumberLocale::new(',', Some('\u{a0}'))?;
 /// assert_eq!(swedish.format_decimal(-1234567.25, Some(2)), "-1\u{a0}234\u{a0}567,25");
 /// assert_eq!(swedish.parse_decimal("1 234,5"), Ok(1234.5));
 /// assert_eq!(swedish.parse_decimal("12 34,5"), Err(NumberInputError::InvalidNumber));
 /// let format: NumberFormat<f64> = NumberFormat::localized_decimal(swedish, Some(2), "-9 999,99");
 /// # let _ = format;
-/// # Ok::<(), pert_ui_runtime::NumberLocaleError>(())
+/// # Ok::<(), pert_ui::NumberLocaleError>(())
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct NumberLocale {

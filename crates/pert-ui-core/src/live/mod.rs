@@ -224,7 +224,8 @@ impl TryFrom<usize> for Capacity {
 /// that must see every item needs; [`Self::with_ring_capacity`] overrides it.
 ///
 /// ```
-/// use pert_ui_core::{Capacity, SeriesConfig};
+/// # use pert_ui_core as pert_ui;
+/// use pert_ui::{Capacity, SeriesConfig};
 ///
 /// // A trace, and a meter whose widget reduces every item it is given: the
 /// // ring is at most the window, so one drain never overruns what is kept.
@@ -237,7 +238,7 @@ impl TryFrom<usize> for Capacity {
 /// let newest = SeriesConfig::new(Capacity::new(8)?).with_ring_capacity(Capacity::new(64)?);
 /// assert_eq!(newest.window_capacity().get(), 8);
 /// assert_eq!(newest.ring_capacity().get(), 64);
-/// # Ok::<(), pert_ui_core::LiveError>(())
+/// # Ok::<(), pert_ui::LiveError>(())
 /// ```
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 #[must_use]
@@ -413,7 +414,8 @@ impl<T: LiveItem> SampleWindow<T> {
     /// them without visiting the rest.
     ///
     /// ```
-    /// use pert_ui_core::{Capacity, SeriesConfig, Timestamp, series_bridge};
+    /// # use pert_ui_core as pert_ui;
+    /// use pert_ui::{Capacity, SeriesConfig, Timestamp, series_bridge};
     ///
     /// let (mut endpoint, mut consumer) =
     ///     series_bridge::<u64>(SeriesConfig::new(Capacity::new(8)?));
@@ -430,7 +432,7 @@ impl<T: LiveItem> SampleWindow<T> {
     ///     .collect();
     /// assert_eq!(newest, [50, 40]);
     /// assert_eq!(consumer.window().latest().map(|entry| entry.sample.value), Some(50));
-    /// # Ok::<(), pert_ui_core::LiveError>(())
+    /// # Ok::<(), pert_ui::LiveError>(())
     /// ```
     pub fn iter(
         &self,

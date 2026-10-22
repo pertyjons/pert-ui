@@ -49,7 +49,8 @@ impl ProgressStatus {
     /// an error.
     ///
     /// ```
-    /// # use pert_ui_runtime::{NormalizedValue, ProgressStatus};
+    /// # use pert_ui_runtime as pert_ui;
+    /// # use pert_ui::{NormalizedValue, ProgressStatus};
     /// let half = NormalizedValue::try_from(0.5)?;
     /// assert_eq!(ProgressStatus::of(5, 10), ProgressStatus::Determinate(half));
     /// assert_eq!(ProgressStatus::of(12, 10), ProgressStatus::Determinate(NormalizedValue::MAX));
@@ -128,7 +129,8 @@ const SEGMENT: f32 = 0.3;
 /// phase comes from the runtime clock rather than from the binding.
 ///
 /// ```
-/// use pert_ui_runtime::{Element, ProgressBar, ProgressStatus, Runtime, Viewport};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Element, ProgressBar, ProgressStatus, Runtime, Viewport};
 /// use std::time::Duration;
 /// let mut ui = Runtime::new();
 /// ui.set_viewport(Viewport::new(320.0, 80.0, 1.0)?)?;
@@ -333,7 +335,8 @@ const STILL_ALPHA: f32 = 0.6;
 /// step comes from the runtime clock rather than from the binding.
 ///
 /// ```
-/// use pert_ui_runtime::{Element, Runtime, Spinner, Viewport};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Element, Runtime, Spinner, Viewport};
 /// use std::time::Duration;
 /// let mut ui = Runtime::new();
 /// ui.set_viewport(Viewport::new(100.0, 100.0, 1.0)?)?;

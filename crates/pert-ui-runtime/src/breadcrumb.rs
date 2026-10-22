@@ -60,7 +60,8 @@ impl BreadcrumbSegment {
     /// replaces the icon rather than adding one, as for `Tab` and `Choice`.
     ///
     /// ```
-    /// use pert_ui_runtime::{BreadcrumbSegment, Icon, RichText};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{BreadcrumbSegment, Icon, RichText};
     /// let segment = BreadcrumbSegment::new("/home", "Home")
     ///     .leading_icon(Icon::Settings)
     ///     .leading_icon(Icon::Folder);
@@ -123,7 +124,8 @@ impl BreadcrumbSegment {
 /// [`SemanticAction::Activate`] and the current one [`SemanticRole::Label`].
 ///
 /// ```
-/// use pert_ui_runtime::{Breadcrumb, BreadcrumbSegment, Element, Runtime};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Breadcrumb, BreadcrumbSegment, Element, Runtime};
 ///
 /// let mut ui = Runtime::new();
 /// let location = ui.signal("/home/projects".to_owned());

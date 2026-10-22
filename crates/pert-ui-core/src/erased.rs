@@ -12,12 +12,13 @@ use crate::{
 /// [`ParameterFamily`], so exhaustive matches on it are supported.
 ///
 /// ```
-/// use pert_ui_core::{AnySpec, ParameterFamily, ParameterSpec};
+/// # use pert_ui_core as pert_ui;
+/// use pert_ui::{AnySpec, ParameterFamily, ParameterSpec};
 /// let spec = AnySpec::from(ParameterSpec::boolean("Bypass", false)?);
 /// assert_eq!(spec.family(), ParameterFamily::Boolean);
 /// assert!(ParameterSpec::<i64>::try_from(spec.clone()).is_err());
 /// assert!(ParameterSpec::<bool>::try_from(spec).is_ok());
-/// # Ok::<(), pert_ui_core::ParameterError>(())
+/// # Ok::<(), pert_ui::ParameterError>(())
 /// ```
 #[derive(Clone, Debug, PartialEq)]
 #[must_use]
@@ -102,7 +103,8 @@ impl<T: ParameterValue> TryFrom<AnySpec> for ParameterSpec<T> {
 /// [`ParameterFamily`], so exhaustive matches on it are supported.
 ///
 /// ```
-/// use pert_ui_core::{AnyValue, ParameterFamily};
+/// # use pert_ui_core as pert_ui;
+/// use pert_ui::{AnyValue, ParameterFamily};
 /// let value = AnyValue::from(12_i64);
 /// assert_eq!(value.family(), ParameterFamily::Stepped);
 /// assert_eq!(i64::try_from(value.clone()), Ok(12));
@@ -227,14 +229,15 @@ impl AnyParameterSnapshot {
     /// effective value, in that order.
     ///
     /// ```
-    /// use pert_ui_core::{AnyParameterSnapshot, ParameterId, ParameterSpec, ParameterState};
+    /// # use pert_ui_core as pert_ui;
+    /// use pert_ui::{AnyParameterSnapshot, ParameterId, ParameterSpec, ParameterState};
     /// let spec = ParameterSpec::new("Gain", 0.0, 1.0, 0.5)?;
     /// let state = ParameterState::new(ParameterId::new(1, 1, "gain").unwrap(), spec.clone());
     /// let mut snapshot = state.snapshot();
     /// assert!(AnyParameterSnapshot::try_new(spec.clone(), snapshot.clone()).is_ok());
     /// snapshot.base = 2.0;
     /// assert!(AnyParameterSnapshot::try_new(spec, snapshot).is_err());
-    /// # Ok::<(), pert_ui_core::ParameterError>(())
+    /// # Ok::<(), pert_ui::ParameterError>(())
     /// ```
     pub fn try_new<T: ParameterValue>(
         spec: ParameterSpec<T>,
@@ -378,7 +381,8 @@ mod serde_impls {
 /// an edit is an adapter contract failure, not permission to discard the edit.
 ///
 /// ```
-/// use pert_ui_core::HostValue;
+/// # use pert_ui_core as pert_ui;
+/// use pert_ui::HostValue;
 ///
 /// /// An adapter-owned wrapper around an application's percentage.
 /// #[derive(Debug, PartialEq)]

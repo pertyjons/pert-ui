@@ -11,7 +11,8 @@ use crate::{ListRevealReceipt, ListRevealStatus, RevealOutcome, RuntimeError, Se
 /// an application lists content for a picker that ranks it itself.
 ///
 /// ```
-/// use pert_ui_runtime::{ContentQuery, ContentSearchError};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{ContentQuery, ContentSearchError};
 /// let query = ContentQuery::new("gain")?.limit(10)?.budget(500)?;
 /// assert_eq!(query.text(), Some("gain"));
 /// assert_eq!(query.result_limit(), 10);

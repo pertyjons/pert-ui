@@ -393,7 +393,6 @@ Inputs from later plans and the 2026-10-20 audit:
     task 1 testers had to invent or work around.
   - **Per-row state (F16):** how per-row controls bind to an application's
     own `Vec`; an optional controlled-control API stays in follow-ups.
-  - **Facade examples (F20)** import `pert_ui_runtime`.
   Those findings may instead be fixed in that plan's slices 5 and 6 if its
   joint checkpoint chooses them.
 

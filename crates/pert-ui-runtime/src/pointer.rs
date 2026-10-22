@@ -96,11 +96,12 @@ pub enum PointerKind {
 /// changes nothing, 1.1 grows by a tenth and 0.9 shrinks by a tenth.
 ///
 /// ```
-/// use pert_ui_runtime::Magnification;
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::Magnification;
 /// assert_eq!(Magnification::new(1.25)?.get(), 1.25);
 /// assert!(Magnification::new(0.0).is_err());
 /// assert!(Magnification::new(f32::NAN).is_err());
-/// # Ok::<(), pert_ui_runtime::GeometryError>(())
+/// # Ok::<(), pert_ui::GeometryError>(())
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
 pub struct Magnification(f32);

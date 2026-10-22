@@ -8,7 +8,8 @@
 /// do not allocate or interact with UI state or a scheduler.
 ///
 /// ```
-/// use pert_ui_core::{NormalizedValue, NormalizedValueError};
+/// # use pert_ui_core as pert_ui;
+/// use pert_ui::{NormalizedValue, NormalizedValueError};
 ///
 /// let midpoint = NormalizedValue::try_from(0.5)?;
 /// assert!(midpoint > NormalizedValue::MIN);
@@ -25,7 +26,8 @@
 /// their `f32` values are.
 ///
 /// ```
-/// use pert_ui_core::{NormalizedValue, NormalizedValueError};
+/// # use pert_ui_core as pert_ui;
+/// use pert_ui::{NormalizedValue, NormalizedValueError};
 ///
 /// let mut positions = [0.75, 0.25, 1.0, 0.25]
 ///     .into_iter()

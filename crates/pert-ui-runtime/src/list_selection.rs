@@ -46,7 +46,8 @@ pub(crate) enum Gesture {
 /// Clones share the same state. Nothing here schedules work.
 ///
 /// ```
-/// use pert_ui_runtime::{ListSelection, Runtime, SelectionMode};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{ListSelection, Runtime, SelectionMode};
 /// let ui = Runtime::new();
 /// let selection = ListSelection::new(&ui, SelectionMode::Multiple);
 /// selection.select(["a".to_owned(), "c".to_owned()])?;
@@ -55,7 +56,7 @@ pub(crate) enum Gesture {
 /// assert_eq!(selection.active().get()?.as_deref(), Some("c"));
 /// selection.clear()?;
 /// assert!(selection.selected().get()?.is_empty());
-/// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+/// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
 #[derive(Clone)]
 #[must_use]

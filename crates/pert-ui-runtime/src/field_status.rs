@@ -186,7 +186,8 @@ impl FormInner {
 /// written or removed.
 ///
 /// ```
-/// use pert_ui_runtime::{Column, Element, Field, FieldStatus, FormStatus, Runtime, TextField};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Column, Element, Field, FieldStatus, FormStatus, Runtime, TextField};
 /// let mut ui = Runtime::new();
 /// let form = FormStatus::new(&ui);
 /// let name = ui.signal(String::new());
@@ -209,7 +210,7 @@ impl FormInner {
 /// assert_eq!(form.summary().get()?.first_error(), Some("name"));
 /// name_status.clear()?;
 /// assert_eq!(form.summary().get()?.errors(), 0);
-/// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+/// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
 #[derive(Clone)]
 #[must_use]

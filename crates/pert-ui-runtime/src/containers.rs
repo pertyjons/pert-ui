@@ -125,7 +125,8 @@ impl Container {
     /// that update with [`RuntimeError::ForeignRuntime`].
     ///
     /// ```
-    /// use pert_ui_runtime::{ColorRole, Container, Element, Label, Runtime, Viewport};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{ColorRole, Container, Element, Label, Runtime, Viewport};
     /// use std::time::Duration;
     /// let mut ui = Runtime::new();
     /// ui.set_viewport(Viewport::new(200.0, 100.0, 1.0)?)?;
@@ -993,7 +994,8 @@ impl Track {
 /// keep their retained identities and return to their logical positions when shown.
 ///
 /// ```
-/// use pert_ui_runtime::{Element, Grid, Label, Length, Runtime, Track, Viewport};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Element, Grid, Label, Length, Runtime, Track, Viewport};
 /// use std::time::Duration;
 /// let mut ui = Runtime::new();
 /// ui.set_viewport(Viewport::new(320.0, 160.0, 1.0)?)?;

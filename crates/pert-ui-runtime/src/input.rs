@@ -256,7 +256,8 @@ impl KeyEvent {
     /// fresh [`KeyTransition::Pressed`].
     ///
     /// ```
-    /// use pert_ui_runtime::{KeyCode, KeyEvent, KeyTransition, Modifiers};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{KeyCode, KeyEvent, KeyTransition, Modifiers};
     ///
     /// let key = |code| KeyEvent { code, transition: KeyTransition::Pressed };
     /// let shift = Modifiers { shift: true, ..Modifiers::default() };
@@ -302,7 +303,8 @@ impl Modifiers {
     /// key that produces them, so one rule decides the primary modifier.
     ///
     /// ```
-    /// use pert_ui_runtime::Modifiers;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::Modifiers;
     ///
     /// assert!(Modifiers::PRIMARY.primary());
     /// assert!(!Modifiers::PRIMARY.shift && !Modifiers::PRIMARY.alt);
@@ -324,7 +326,8 @@ impl Modifiers {
     /// combination.
     ///
     /// ```
-    /// use pert_ui_runtime::Modifiers;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::Modifiers;
     ///
     /// let control = Modifiers { control: true, ..Modifiers::default() };
     /// assert_eq!(control.primary(), !cfg!(target_os = "macos"));
@@ -375,7 +378,8 @@ impl KeyboardState {
     /// press/release cycle. Unmapped events fall back to their physical code.
     ///
     /// ```
-    /// use pert_ui_runtime::{CommandKey, CommandKeyInput, KeyAction, KeyCode, Runtime};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{CommandKey, CommandKeyInput, KeyAction, KeyCode, Runtime};
     /// let mut ui = Runtime::new();
     /// // A synthetic opaque key for this example; real adapters own native codes.
     /// let physical = KeyCode::Native(42);
@@ -391,7 +395,7 @@ impl KeyboardState {
     /// assert!(ui.keyboard().is_pressed(physical));
     /// assert!(!ui.keyboard().is_pressed(KeyCode::ArrowLeft));
     /// assert_eq!(ui.keyboard().control_key(dispatch.event), KeyCode::ArrowLeft);
-    /// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+    /// # Ok::<(), pert_ui::RuntimeError>(())
     /// ```
     #[must_use]
     pub fn control_key(&self, event: KeyEvent) -> KeyCode {
@@ -437,14 +441,15 @@ impl KeyboardState {
     /// example, still reads the current [`Self::modifiers`].
     ///
     /// ```
-    /// use pert_ui_runtime::{KeyAction, KeyCode, Modifiers, Runtime};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{KeyAction, KeyCode, Modifiers, Runtime};
     /// let mut ui = Runtime::new();
     /// ui.key_input(KeyCode::ArrowDown, KeyAction::Press)?;
     /// ui.native_modifiers(Modifiers::PRIMARY)?;
     /// let repeat = ui.key_input(KeyCode::ArrowDown, KeyAction::Repeat)?;
     /// assert_eq!(ui.keyboard().chord_modifiers(repeat), Modifiers::default());
     /// assert_eq!(ui.keyboard().modifiers(), Modifiers::PRIMARY);
-    /// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+    /// # Ok::<(), pert_ui::RuntimeError>(())
     /// ```
     #[must_use]
     pub fn chord_modifiers(&self, event: KeyEvent) -> Modifiers {

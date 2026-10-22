@@ -52,7 +52,8 @@ struct Shared {
 /// [`SeriesEndpoint`] and [`SeriesConsumer`].
 ///
 /// ```
-/// use pert_ui_core::{Capacity, SeriesConfig, Timestamp, series_bridge};
+/// # use pert_ui_core as pert_ui;
+/// use pert_ui::{Capacity, SeriesConfig, Timestamp, series_bridge};
 ///
 /// let config = SeriesConfig::new(Capacity::new(64)?);
 /// let (mut endpoint, mut consumer) = series_bridge::<f32>(config);
@@ -68,7 +69,7 @@ struct Shared {
 /// assert_eq!(report.missing, 0);
 /// let values: Vec<f32> = consumer.window().iter().map(|entry| entry.sample.value).collect();
 /// assert_eq!(values, [0.5, 1.0, 1.5]);
-/// # Ok::<(), pert_ui_core::LiveError>(())
+/// # Ok::<(), pert_ui::LiveError>(())
 /// ```
 pub fn series_bridge<T: LiveItem>(config: SeriesConfig) -> (SeriesEndpoint<T>, SeriesConsumer<T>) {
     let capacity = config.ring_capacity().get();

@@ -18,7 +18,8 @@ use crate::GeometryError;
 /// `f32` for drawing after leaving out what lies outside the view.
 ///
 /// ```
-/// use pert_ui_runtime::AxisMapping;
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::AxisMapping;
 /// // Ten seconds from 60 s, over 500 pixels.
 /// let time = AxisMapping::new(60.0, 50.0)?;
 /// assert_eq!(time.pixel(62.0), 100.0);
@@ -31,7 +32,7 @@ use crate::GeometryError;
 /// let marks: Vec<f64> = zoomed.ticks(500.0, 40.0).collect();
 /// assert_eq!(marks.first(), Some(&61.0));
 /// assert_eq!(marks[1], 61.5);
-/// # Ok::<(), pert_ui_runtime::GeometryError>(())
+/// # Ok::<(), pert_ui::GeometryError>(())
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct AxisMapping {

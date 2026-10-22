@@ -529,7 +529,8 @@ impl AlertDialog {
     /// [`TextSource`], so a binding keeps it current.
     ///
     /// ```
-    /// use pert_ui_runtime::{AlertDialog, Button, DialogController, Element, Runtime};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{AlertDialog, Button, DialogController, Element, Runtime};
     /// use std::time::Duration;
     /// let mut ui = Runtime::new();
     /// let state = DialogController::new(&ui);
@@ -545,7 +546,7 @@ impl AlertDialog {
     /// ui.flush(Duration::ZERO)?;
     /// let cancel = ui.inspect().components.into_iter().find(|c| c.key == "cancel")
     ///     .and_then(|c| c.details.properties.get("text").cloned());
-    /// assert_eq!(cancel, Some(pert_ui_runtime::InspectValue::Text("Avbryt".into())));
+    /// assert_eq!(cancel, Some(pert_ui::InspectValue::Text("Avbryt".into())));
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     pub fn cancel_label(mut self, label: impl Into<TextSource>) -> Self {

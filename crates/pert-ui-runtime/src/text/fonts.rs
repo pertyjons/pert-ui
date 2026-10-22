@@ -77,7 +77,8 @@ impl fmt::Debug for FontData {
 /// or used in another runtime. Holding an ID does not retain the runtime or font bytes.
 ///
 /// ```compile_fail
-/// use pert_ui_runtime::FontId;
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::FontId;
 /// fn needs_send<T: Send>() {}
 /// needs_send::<FontId>();
 /// ```

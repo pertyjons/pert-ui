@@ -380,7 +380,8 @@ impl FloatingWindow {
     /// returned from the flush, the placement stays and nothing is replayed.
     ///
     /// ```
-    /// use pert_ui_runtime::{
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{
     ///     ChangeOrigin, Element, FloatingWindow, Label, Point, Runtime, WindowLayer,
     /// };
     /// use std::{cell::RefCell, rc::Rc, time::Duration};
@@ -471,7 +472,8 @@ impl FloatingWindow {
     /// only its plain text is used.
     ///
     /// ```
-    /// use pert_ui_runtime::{Element, FloatingWindow, Label, Runtime, WindowLayer};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Element, FloatingWindow, Label, Runtime, WindowLayer};
     /// use std::time::Duration;
     /// let mut ui = Runtime::new();
     /// let window = FloatingWindow::new(&ui, "mixer", "Mixer", Element::new("body", Label::new("Kanaler")))
@@ -484,7 +486,7 @@ impl FloatingWindow {
     ///     .filter(|c| c.key == "button")
     ///     .filter_map(|c| c.details.properties.get("text").cloned())
     ///     .collect();
-    /// assert!(names.contains(&pert_ui_runtime::InspectValue::Text("Stäng fönstret".into())));
+    /// assert!(names.contains(&pert_ui::InspectValue::Text("Stäng fönstret".into())));
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     pub fn close_label(mut self, label: impl Into<TextSource>) -> Self {

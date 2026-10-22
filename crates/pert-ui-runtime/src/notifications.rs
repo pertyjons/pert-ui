@@ -425,7 +425,8 @@ impl ToastHost {
     /// it as the stack's `dismiss_label` property.
     ///
     /// ```
-    /// use pert_ui_runtime::{Element, Label, Runtime, Toast, ToastHost, ToastQueue};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Element, Label, Runtime, Toast, ToastHost, ToastQueue};
     /// use std::time::Duration;
     /// let mut ui = Runtime::new();
     /// let queue = ToastQueue::new(&ui);
@@ -436,7 +437,7 @@ impl ToastHost {
     /// ui.flush(Duration::ZERO)?;
     /// let label = ui.inspect().components.into_iter().find(|c| c.key == "toasts")
     ///     .and_then(|c| c.details.properties.get("dismiss_label").cloned());
-    /// assert_eq!(label, Some(pert_ui_runtime::InspectValue::Text("Stäng".into())));
+    /// assert_eq!(label, Some(pert_ui::InspectValue::Text("Stäng".into())));
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     pub fn dismiss_label(mut self, label: impl Into<TextSource>) -> Self {

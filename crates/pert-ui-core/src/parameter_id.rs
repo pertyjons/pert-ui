@@ -16,7 +16,8 @@
 /// advancing allocates a key copy; do this outside time-critical callbacks.
 ///
 /// ```
-/// use pert_ui_core::{ParameterId, ParameterIdError};
+/// # use pert_ui_core as pert_ui;
+/// use pert_ui::{ParameterId, ParameterIdError};
 /// let threshold = ParameterId::new(1, 42, "threshold")?;
 /// let replacement = threshold.next_incarnation()?;
 /// assert_eq!(threshold.key(), replacement.key());

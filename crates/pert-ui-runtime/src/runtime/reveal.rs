@@ -221,8 +221,9 @@ impl EventContext {
     /// reveal ran, or `Cancelled` at shutdown.
     ///
     /// ```
-    /// use pert_ui_runtime::prelude::*;
-    /// use pert_ui_runtime::{Tab, Tabs};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::{Tab, Tabs};
     /// use std::time::Duration;
     ///
     /// let mut ui = Runtime::new();
@@ -313,8 +314,9 @@ impl Runtime {
     /// the walk; the target's window is then selected.
     ///
     /// ```
-    /// use pert_ui_runtime::prelude::*;
-    /// use pert_ui_runtime::{RevealOutcome, Tab, Tabs};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::{RevealOutcome, Tab, Tabs};
     ///
     /// let mut ui = Runtime::new();
     /// ui.set_viewport(Viewport::new(400.0, 300.0, 1.0)?)?;
@@ -362,8 +364,9 @@ impl Runtime {
     /// [`Runtime::commands_for`].
     ///
     /// ```
-    /// use pert_ui_runtime::prelude::*;
-    /// use pert_ui_runtime::{CommandOutcome, CommandScope, CommandSource, Tab, Tabs};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::{CommandOutcome, CommandScope, CommandSource, Tab, Tabs};
     /// use std::time::Duration;
     ///
     /// let mut ui = Runtime::new();
@@ -409,8 +412,9 @@ impl Runtime {
     /// the container. Focus does not move.
     ///
     /// ```
-    /// use pert_ui_runtime::prelude::*;
-    /// use pert_ui_runtime::{Tab, Tabs};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::{Tab, Tabs};
     ///
     /// let mut ui = Runtime::new();
     /// ui.set_viewport(Viewport::new(400.0, 300.0, 1.0)?)?;

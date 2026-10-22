@@ -43,7 +43,8 @@ impl KeyChord {
     /// Modifiers::default())`.
     ///
     /// ```
-    /// use pert_ui_runtime::{CommandKey, KeyChord, KeyCode, Modifiers};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{CommandKey, KeyChord, KeyCode, Modifiers};
     /// assert_eq!(
     ///     KeyChord::named(KeyCode::Space),
     ///     KeyChord::named(KeyCode::Space),
@@ -67,7 +68,8 @@ impl KeyChord {
     /// [`HistoryNavigator`](crate::HistoryNavigator).
     ///
     /// ```
-    /// use pert_ui_runtime::{CommandKey, KeyChord, KeyCode};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{CommandKey, KeyChord, KeyCode};
     /// let back = KeyChord::navigate_back();
     /// if cfg!(target_os = "macos") {
     ///     assert_eq!(back.key(), CommandKey::Character('['));
@@ -154,7 +156,8 @@ impl KeyChord {
 /// bundled fonts do not carry those glyphs. The physical fallback is not shown.
 ///
 /// ```
-/// use pert_ui_runtime::{CommandKey, KeyChord, KeyCode, Modifiers};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{CommandKey, KeyChord, KeyCode, Modifiers};
 /// let chord = KeyChord::named(KeyCode::F5);
 /// assert_eq!(chord.to_string(), "F5");
 /// let shifted = KeyChord::new(CommandKey::Character('z'), Modifiers::default()).shifted();
@@ -514,7 +517,8 @@ impl Runtime {
     /// An empty chord list supports menu/button-only commands. Repeats default off.
     ///
     /// ```
-    /// use pert_ui_runtime::{Runtime, CommandScope, CommandSource, KeyChord, CommandOutcome};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Runtime, CommandScope, CommandSource, KeyChord, CommandOutcome};
     /// let mut ui = Runtime::new();
     /// let playing = ui.signal(false);
     /// let state = playing.clone();
@@ -527,7 +531,7 @@ impl Runtime {
     /// assert_eq!(ui.invoke_command(&play, context)?, CommandOutcome::Invoked);
     /// assert!(playing.get()?);
     /// ui.unregister_command(&play)?;
-    /// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+    /// # Ok::<(), pert_ui::RuntimeError>(())
     /// ```
     ///
     /// # Errors
@@ -886,7 +890,8 @@ impl Runtime {
     /// row's id, which revalidates it.
     ///
     /// ```
-    /// use pert_ui_runtime::{CommandScope, CommandSource, KeyChord, Runtime};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{CommandScope, CommandSource, KeyChord, Runtime};
     /// let mut ui = Runtime::new();
     /// let save = ui.register_command("Save", CommandScope::Application,
     ///     vec![KeyChord::primary('s')], |_, _| Ok(()))?;
@@ -900,7 +905,7 @@ impl Runtime {
     /// assert_eq!(names, [("Export", Ok(false)), ("Save", Ok(true))]);
     /// assert_eq!(rows[1].id, save);
     /// assert_eq!(rows[1].shortcuts, [KeyChord::primary('s')]);
-    /// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+    /// # Ok::<(), pert_ui::RuntimeError>(())
     /// ```
     ///
     /// Mounted surface declarations are inspected once for the entire listing,

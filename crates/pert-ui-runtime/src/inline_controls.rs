@@ -39,7 +39,8 @@ use std::rc::Rc;
 /// as `glyph`.
 ///
 /// ```
-/// use pert_ui_runtime::{Element, Icon, InlineToggle, KeyAction, KeyCode, Runtime};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Element, Icon, InlineToggle, KeyAction, KeyCode, Runtime};
 /// let mut ui = Runtime::new();
 /// let muted = ui.signal(false);
 /// let toggle = ui.mount_tree(Element::new("mute",
@@ -48,7 +49,7 @@ use std::rc::Rc;
 /// ui.key_input(KeyCode::Space, KeyAction::Press)?;
 /// ui.key_input(KeyCode::Space, KeyAction::Release)?;
 /// assert!(muted.get()?);
-/// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+/// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
 #[must_use]
 pub struct InlineToggle {
@@ -557,19 +558,20 @@ type Reader = Box<dyn FnMut(&mut UpdateContext) -> Result<(String, Option<String
 /// not a text editor. Resting focus schedules no caret work.
 ///
 /// ```
-/// use pert_ui_runtime::{Element, InlineReadout, NumberFormat, NumberInputError, Runtime};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Element, InlineReadout, NumberFormat, NumberInputError, Runtime};
 /// let mut ui = Runtime::new();
 /// let position = ui.signal(String::from("001:01:000"));
 /// let load = ui.signal(0.42_f64);
 /// let percent = NumberFormat::new("100",
 ///     |v: f64| format!("{:.0}", v * 100.0),
 ///     |_| Err(NumberInputError::InvalidNumber)).unit(|_| "%".into());
-/// ui.mount_tree(Element::new("status", pert_ui_runtime::Row::new([
+/// ui.mount_tree(Element::new("status", pert_ui::Row::new([
 ///     Element::new("position", InlineReadout::new(position.read_only())
 ///         .label("Pos").width_hint("000:00:000")),
 ///     Element::new("load", InlineReadout::formatted(load.read_only(), percent).label("CPU")),
 /// ])))?;
-/// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+/// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
 ///
 /// Re-describing the readout under the same key adopts its reader, hint, style,

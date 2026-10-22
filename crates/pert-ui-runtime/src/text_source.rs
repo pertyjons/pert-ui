@@ -35,7 +35,8 @@ use crate::{IconSource, ReadSignal, RichText, RuntimeError, Signal, StringRole, 
 ///   [`RuntimeError::ForeignRuntime`].
 ///
 /// ```
-/// use pert_ui_runtime::{Element, Label, Runtime, TextSource};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Element, Label, Runtime, TextSource};
 /// use std::time::Duration;
 ///
 /// let mut ui = Runtime::new();
@@ -51,7 +52,7 @@ use crate::{IconSource, ReadSignal, RichText, RuntimeError, Signal, StringRole, 
 /// // of the string table.
 /// let fixed = TextSource::from("Mixer");
 /// assert_eq!(fixed.fixed().map(|text| text.plain_text()).as_deref(), Some("Mixer"));
-/// let library = TextSource::from(pert_ui_runtime::StringRole::SearchPlaceholder);
+/// let library = TextSource::from(pert_ui::StringRole::SearchPlaceholder);
 /// assert!(library.fixed().is_none());
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```

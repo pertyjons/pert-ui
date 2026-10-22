@@ -359,7 +359,8 @@ enum Part {
 /// description.
 ///
 /// ```
-/// use pert_ui_runtime::{Color, ColorPicker, Column, Element, KeyAction, KeyCode, Runtime, Viewport};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Color, ColorPicker, Column, Element, KeyAction, KeyCode, Runtime, Viewport};
 /// use std::time::Duration;
 ///
 /// let mut ui = Runtime::new();
@@ -514,7 +515,8 @@ impl ColorPicker {
     /// of the popover's new description. Replaces an earlier handler.
     ///
     /// ```
-    /// use pert_ui_runtime::{Color, ColorPicker, Element, KeyAction, KeyCode, Runtime, Viewport};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Color, ColorPicker, Element, KeyAction, KeyCode, Runtime, Viewport};
     /// use std::{cell::RefCell, rc::Rc, time::Duration};
     ///
     /// let mut ui = Runtime::new();
@@ -560,7 +562,8 @@ impl ColorPicker {
     /// switch to an ordinary externally controlled [`Popover::new`] surface.
     ///
     /// ```
-    /// use pert_ui_runtime::{Color, ColorPicker, Column, Element, KeyAction, KeyCode, Runtime, Viewport};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Color, ColorPicker, Column, Element, KeyAction, KeyCode, Runtime, Viewport};
     /// use std::time::Duration;
     ///
     /// let mut ui = Runtime::new();

@@ -40,8 +40,9 @@ impl Runtime {
     /// presentation catches up; searching does not update or mount them.
     ///
     /// ```
-    /// use pert_ui_runtime::prelude::*;
-    /// use pert_ui_runtime::{ContentQuery, ContentTarget, RevealOutcome, ContentJump};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::{ContentQuery, ContentTarget, RevealOutcome, ContentJump};
     ///
     /// let mut ui = Runtime::new();
     /// ui.set_viewport(Viewport::new(400.0, 300.0, 1.0)?)?;

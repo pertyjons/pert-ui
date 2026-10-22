@@ -18,7 +18,8 @@ use crate::{GeometryError, Point, Rect};
 /// Compose with [`Self::then`]:
 ///
 /// ```
-/// use pert_ui_runtime::{Point, Transform2D};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Point, Transform2D};
 /// let center = Point::new(10.0, 10.0)?;
 /// let quarter = Transform2D::rotation_degrees(90.0)?.about(center)?;
 /// let moved = quarter.apply(Point::new(20.0, 10.0)?)?;
@@ -206,7 +207,8 @@ impl QuarterTurn {
     /// each part there with this turn reproduces the whole picture turned.
     ///
     /// ```
-    /// use pert_ui_runtime::{QuarterTurn, Rect, Size};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{QuarterTurn, Rect, Size};
     /// let upright = Size::new(100.0, 20.0)?;
     /// let first_glyph = Rect::new(0.0, 0.0, 10.0, 20.0)?;
     /// // Read upwards, the start of the line is at the bottom.
@@ -323,7 +325,8 @@ impl TryFrom<f32> for ViewScale {
 /// rectangles. The default is the identity.
 ///
 /// ```
-/// use pert_ui_runtime::{Point, ViewScale, ViewTransform};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Point, ViewScale, ViewTransform};
 /// let view = ViewTransform::new(ViewScale::new(2.0)?, Point::new(10.0, 0.0)?);
 /// let shown = view.apply(Point::new(3.0, 4.0)?)?;
 /// assert_eq!((shown.x(), shown.y()), (16.0, 8.0));

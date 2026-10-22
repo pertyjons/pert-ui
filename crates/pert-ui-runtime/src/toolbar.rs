@@ -304,7 +304,8 @@ fn more_button(shared: &Rc<Shared>, configured: Option<TextSource>) -> Element {
 /// the creating runtime's UI thread.
 ///
 /// ```
-/// use pert_ui_runtime::{Button, Element, Icon, Runtime, ToolGroup, Toolbar};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Button, Element, Icon, Runtime, ToolGroup, Toolbar};
 /// let mut ui = Runtime::new();
 /// let toolbar = Toolbar::new(&ui, [
 ///     ToolGroup::new("transport", [
@@ -457,7 +458,8 @@ impl Toolbar {
     /// role keeps the text already read.
     ///
     /// ```
-    /// use pert_ui_runtime::{Button, Element, Icon, Runtime, ToolGroup, Toolbar};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Button, Element, Icon, Runtime, ToolGroup, Toolbar};
     /// let mut ui = Runtime::new();
     /// let toolbar = Toolbar::new(&ui, [ToolGroup::new("edit", [Element::new(
     ///     "undo",

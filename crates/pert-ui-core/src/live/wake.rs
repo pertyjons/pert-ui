@@ -24,7 +24,8 @@ use super::sync::{AtomicBool, Ordering};
 /// nothing and is the model-checked half of the notified protocol.
 ///
 /// ```
-/// use pert_ui_core::WakeFlag;
+/// # use pert_ui_core as pert_ui;
+/// use pert_ui::WakeFlag;
 ///
 /// let flag = WakeFlag::new();
 /// assert!(flag.request(), "the first request delivers the wake");

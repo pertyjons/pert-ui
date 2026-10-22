@@ -83,7 +83,8 @@ impl EventContext {
     /// the window it started in.
     ///
     /// ```
-    /// use pert_ui_runtime::*;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::*;
     /// struct Chip { key: String, armed: Option<Point> }
     /// struct ChipKey(String);
     /// impl Component for Chip {

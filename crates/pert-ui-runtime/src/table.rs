@@ -792,7 +792,8 @@ impl TableController {
     /// restored workspace entry replaces the width like any other.
     ///
     /// ```
-    /// use pert_ui_runtime::{Element, Length, ListSelection, Runtime, SelectionMode,
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Element, Length, ListSelection, Runtime, SelectionMode,
     ///     Table, TableColumn, TableItems, TableSource, TableController, Viewport};
     /// struct Empty;
     /// impl TableItems for Empty {
@@ -1210,7 +1211,8 @@ enum HeaderGesture {
 /// [`Table::cell_tab_stops`] turns those off.
 ///
 /// ```
-/// use pert_ui_runtime::{Element, Label, ListSelection, Runtime, SelectionMode, Table,
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Element, Label, ListSelection, Runtime, SelectionMode, Table,
 ///     TableColumn, TableItems, TableSource, TableController, Viewport};
 /// struct Squares(usize);
 /// impl TableItems for Squares {
@@ -1298,7 +1300,8 @@ enum HeaderGesture {
 /// with few editable rows pays for the rows it passes.
 ///
 /// ```
-/// use pert_ui_runtime::*;
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::*;
 /// use std::rc::Rc;
 /// struct Items(Rc<Vec<Signal<String>>>);
 /// impl TableItems for Items {
@@ -1415,7 +1418,8 @@ impl Table {
     /// signal or use a new table key to replace the restriction.
     ///
     /// ```
-    /// use pert_ui_runtime::{Element, Label, ListSelection, Runtime, SelectionMode,
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Element, Label, ListSelection, Runtime, SelectionMode,
     ///     Table, TableColumn, TableController, TableItems, TableSource, Viewport};
     /// struct Rows;
     /// impl TableItems for Rows {

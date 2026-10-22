@@ -44,7 +44,8 @@ impl Runtime {
     /// failed.
     ///
     /// ```
-    /// use pert_ui_runtime::{Element, Runtime, RuntimeError, SplitAxis, SplitPane, Label};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Element, Runtime, RuntimeError, SplitAxis, SplitPane, Label};
     /// let mut ui = Runtime::new();
     /// ui.mount_tree(Element::new(
     ///     "main",
@@ -58,7 +59,7 @@ impl Runtime {
     /// assert_eq!(workspace.len(), 1);
     /// let text = workspace.encode();
     /// assert!(text.starts_with("pert-ui-workspace 1\n"));
-    /// # Ok::<(), pert_ui_runtime::WorkspaceError>(())
+    /// # Ok::<(), pert_ui::WorkspaceError>(())
     /// ```
     pub fn capture_workspace(&self) -> Result<Workspace, crate::WorkspaceError> {
         self.shared.readable()?;

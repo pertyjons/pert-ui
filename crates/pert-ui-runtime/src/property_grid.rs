@@ -22,7 +22,8 @@ use std::{
 /// label.
 ///
 /// ```
-/// use pert_ui_runtime::*;
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::*;
 /// let mut ui = Runtime::new();
 /// let name = ui.signal(String::from("Channel 1"));
 /// let row = Property::new("name", "Name", Element::new("input", TextField::new(name)))
@@ -198,7 +199,8 @@ enum Session {
 /// `resizable`, `shared` and `persist` properties.
 ///
 /// ```
-/// use pert_ui_runtime::*;
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::*;
 /// use std::time::Duration;
 /// let mut ui = Runtime::new();
 /// ui.set_viewport(Viewport::new(480.0, 320.0, 1.0)?)?;

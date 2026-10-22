@@ -99,7 +99,8 @@ impl Measured {
 /// stops content from jumping as estimates are replaced while scrolling upwards.
 ///
 /// ```
-/// use pert_ui_runtime::VirtualAxis;
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::VirtualAxis;
 /// // 1,000 items, 24 pixels each, three to a line.
 /// let axis = VirtualAxis::new(24.0)?.with_count(1_000).with_lanes(3)?;
 /// assert_eq!(axis.lines(), 334);

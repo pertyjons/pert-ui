@@ -46,7 +46,8 @@ struct Prepared {
 /// complete label and removal name even when the text cannot fit.
 ///
 /// ```
-/// use pert_ui_runtime::{Chip, Element, Icon, Runtime, Wrap};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Chip, Element, Icon, Runtime, Wrap};
 ///
 /// let mut ui = Runtime::new();
 /// let tags = ui.signal(vec!["red".to_owned(), "green".to_owned()]);

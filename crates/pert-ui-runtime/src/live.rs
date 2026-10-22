@@ -616,12 +616,13 @@ impl<T: LiveItem> Drainable for SeriesInner<T> {
 /// [`Freshness::Stale`]. A new incarnation clears the window regardless of loss.
 ///
 /// ```compile_fail
-/// let runtime = pert_ui_runtime::Runtime::new();
-/// let config = pert_ui_runtime::SeriesConfig::new(
-///     pert_ui_runtime::Capacity::new(8).unwrap(),
+/// # use pert_ui_runtime as pert_ui;
+/// let runtime = pert_ui::Runtime::new();
+/// let config = pert_ui::SeriesConfig::new(
+///     pert_ui::Capacity::new(8).unwrap(),
 /// );
-/// let (_endpoint, consumer) = pert_ui_runtime::series_bridge::<f32>(config);
-/// let source = runtime.series_source(consumer, pert_ui_runtime::Delivery::Polled);
+/// let (_endpoint, consumer) = pert_ui::series_bridge::<f32>(config);
+/// let source = runtime.series_source(consumer, pert_ui::Delivery::Polled);
 /// std::thread::spawn(move || drop(source)); // UI-thread-local
 /// ```
 pub struct SeriesSource<T: LiveItem> {

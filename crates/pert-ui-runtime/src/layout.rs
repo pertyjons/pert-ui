@@ -67,7 +67,8 @@ pub enum LayoutError {
 /// works in every callback.
 ///
 /// ```
-/// use pert_ui_runtime::{GeometryError, Rect, UiZoom, ViewScale};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{GeometryError, Rect, UiZoom, ViewScale};
 /// assert_eq!(Rect::new(0.0, 0.0, -1.0, 4.0), Err(GeometryError::Negative));
 /// assert_eq!(ViewScale::new(64.0), Err(GeometryError::ViewScaleOutOfRange));
 /// assert_eq!(
@@ -234,11 +235,12 @@ impl SizeLimits {
     /// a valid [`Size`].
     ///
     /// ```
-    /// # use pert_ui_runtime::{Constraints, Size, SizeLimits};
+    /// # use pert_ui_runtime as pert_ui;
+    /// # use pert_ui::{Constraints, Size, SizeLimits};
     /// let limits = SizeLimits::new(Size::new(40.0, 20.0)?, Constraints::new(Some(80.0), None)?)?;
     /// let size = limits.constrain(Size::new(120.0, 10.0)?);
     /// assert_eq!((size.width(), size.height()), (80.0, 20.0));
-    /// # Ok::<(), pert_ui_runtime::GeometryError>(())
+    /// # Ok::<(), pert_ui::GeometryError>(())
     /// ```
     #[must_use]
     pub fn constrain(self, size: Size) -> Size {
@@ -351,7 +353,8 @@ impl Component for Spacer {
 /// blanket implementation; implementing the trait yourself is never needed.
 ///
 /// ```
-/// use pert_ui_runtime::{Button, Column, IntoElement, Label, Runtime};
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Button, Column, IntoElement, Label, Runtime};
 /// let mut ui = Runtime::new();
 /// let saved = ui.signal(false);
 /// let save = saved.clone();
@@ -362,7 +365,7 @@ impl Component for Spacer {
 ///     ])
 ///     .key("content"),
 /// )?;
-/// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+/// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
 pub trait IntoElement: Component + Sized + 'static {
     /// Describes this component under `key`, as [`Element::new`] does.
@@ -422,7 +425,8 @@ impl Element {
     /// itself always wins, and a blank label names nothing.
     ///
     /// ```
-    /// use pert_ui_runtime::{Element, Runtime, RuntimeError, SearchField};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Element, Runtime, RuntimeError, SearchField};
     /// let mut ui = Runtime::new();
     /// let query = ui.signal(String::new());
     /// ui.mount_tree(Element::new("search", SearchField::new(query)).with_label("Find pages"))?;
@@ -488,7 +492,8 @@ impl Element {
     /// `Tab::detachable` sets it for a tab.
     ///
     /// ```
-    /// use pert_ui_runtime::{Element, Label, NativeWindowOptions, Runtime, RuntimeError};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Element, Label, NativeWindowOptions, Runtime, RuntimeError};
     /// let mut ui = Runtime::new();
     /// let view = ui.mount_tree(
     ///     Element::new("readout", Label::new("Stays here")).with_detachable(false),
@@ -525,8 +530,9 @@ impl Element {
     /// updates it without remounting.
     ///
     /// ```
-    /// use pert_ui_runtime::prelude::*;
-    /// use pert_ui_runtime::ContentQuery;
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::ContentQuery;
     ///
     /// let mut ui = Runtime::new();
     /// ui.mount_tree(Element::new("root", Column::new([
@@ -567,7 +573,8 @@ impl Element {
     /// remounting.
     ///
     /// ```
-    /// use pert_ui_runtime::{Column, IntoElement, Label, Runtime, TextArea, Viewport};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Column, IntoElement, Label, Runtime, TextArea, Viewport};
     /// use std::time::Duration;
     /// let mut ui = Runtime::new();
     /// ui.set_viewport(Viewport::new(400.0, 300.0, 1.0)?)?;
@@ -599,7 +606,8 @@ impl Element {
     /// weight 1, pushing the elements after it to the far end.
     ///
     /// ```
-    /// use pert_ui_runtime::{Element, IntoElement, Label, Row};
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Element, IntoElement, Label, Row};
     /// let status = Row::new([
     ///     Label::new("Saved").key("message"),
     ///     Element::spacer("gap"),
@@ -810,7 +818,8 @@ impl MeasureContext<'_> {
     /// [`TextError::Geometry`](crate::TextError::Geometry).
     ///
     /// ```
-    /// use pert_ui_runtime::{
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{
     ///     Component, Constraints, Element, MeasureContext, Runtime, RuntimeError, Size,
     ///     TextOverflow, TextStyle, UpdateContext, Viewport,
     /// };
