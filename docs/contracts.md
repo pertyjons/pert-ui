@@ -1202,11 +1202,11 @@ builder for an ordinary boolean property takes a `bool`; the binding variant
 adds `_signal` and takes a `ReadSignal<bool>`. A no-argument builder moves
 one fixed option of a description away from its default and has no way back
 (`disabled()`, `read_only()`, `frameless()`, `nonmodal()`). An option the
-application decides from data takes a `bool`, and so do data descriptions,
-which report state rather than restrict a capability
-(`Semantics::disabled(bool)`, `PickItem::disabled(bool)`); the `disabled()`
-and `read_only()` shortcuts belong to component builders whose availability
-is a `Permission`.
+application decides from data takes a `bool`, and so do the state-reporting
+setters of data descriptions (`Semantics::disabled(bool)`,
+`PickItem::disabled(bool)`), which report state rather than restrict a
+capability. A fixed metadata shortcut on a specification stays
+no-argument (`ParameterSpec::read_only()`).
 
 Ordinary property builders replace earlier values. An element builder
 appends one element to a described collection (a layout's tool windows, a
@@ -1221,8 +1221,9 @@ A consuming `self.with_x(…)` returning `Self` or `Result<Self, _>` is a
 builder on a value or data type (`Color::with_alpha`, `Element::with_grow`);
 it needs no readback getter, but a getter, where one exists, takes the bare
 name (`Element::grow`). A borrowing `with_x(closure)` gives scoped access and
-returns the closure's result (`Painter::with_clip`,
-`SeriesSource::with_window`). Component descriptions use bare builder names.
+returns the closure's result (`Painter::with_clip`), or wraps it in a
+`Result` when the access itself can fail before the closure runs
+(`SeriesSource::with_window`). Component descriptions use bare builder names.
 
 Cloneable UI-thread handles that drive a widget are `*Controller`. `*State`
 names a value its owner holds directly, never a shared handle: captured

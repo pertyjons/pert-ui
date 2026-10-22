@@ -25,6 +25,25 @@ Path prefixes: `R/` = `crates/pert-ui-runtime/src/`, `C/` (or `core/`) =
 `R/`. Line numbers are those the audit and the triage cite; `crates/` has not
 changed since the audited commit d4ba108.
 
+## Progress
+
+One entry per part when it closes: its commits, the checks run, the review
+and anything left to a later part.
+
+- **5a (0.3.53), done 2026-10-22:** 5ee6eb6 and its review fix.
+  - **Checks run:** `git diff --check`; links in contracts.md, AGENTS.md and
+    manual.md; `RUSTDOCFLAGS="-D warnings" cargo doc --locked --workspace
+    --no-deps` and `-p pert-ui --features serde`; the targeted runtime and
+    core doctests of every item whose rustdoc changed; `api/generate.sh`,
+    with no difference.
+  - **Review:** Codex found the no-argument rule too broad
+    (`ParameterSpec::read_only()`), the scoped-access rule missing
+    `SeriesSource::with_window`'s `Result`, and no outcome record. All three
+    were fixed and the recheck approved them.
+  - **Left to a later part:** the clamp rule's two known departures,
+    `TextSelection::new` (G1-11) and the table width restore (V3-2), are
+    fixed in 6d2.
+
 ## Rules for every part
 
 - **One review unit per part.** Each part is one commit (plus review-fix
