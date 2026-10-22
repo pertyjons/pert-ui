@@ -234,6 +234,7 @@ and anything left to a later part.
     implied identities read only through `get()` (`ChoiceId` has `as_str()`
     and `AsRef<str>`), and to complete this record. Both were done; the
     implementation otherwise matched 6a3.
+    The recheck approved 6a3.
 
 ## Rules for every part
 
