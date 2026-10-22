@@ -209,7 +209,7 @@ and anything left to a later part.
     The clipboard native check stays an explicit gap: it takes over the
     session clipboard.
     The recheck approved 6a2.
-- **6a3 (0.3.59):** `Hash`, `Eq`, `Ord`, `Display`, `From` and `AsRef`
+- **6a3 (0.3.59), done 2026-10-22:** fec105d and its review fix. `Hash`, `Eq`, `Ord`, `Display`, `From` and `AsRef`
   impls, `#[non_exhaustive]` on the twelve runtime-built types, and `!Send`
   for `Divider` and `Svg`.
   - **Checks run after the last edit (the public-API row plus loom):**
@@ -226,10 +226,14 @@ and anything left to a later part.
     - `api/generate.sh`, whose diff is the plan's expected list;
     - `git diff --check`.
   - **Deviations:**
-    - the contracts' `From` sentence covers validated quantities only:
-      identities and counters read with `get()` and convert with nothing;
+    - the contracts' `From` sentence covers validated quantities only;
+      numeric identities and counters have no raw-number `From`;
     - `PartialOrd` is written by hand where `Ord` is added, so the two
       agree.
+  - **Review:** Codex asked to narrow the identity sentence, which wrongly
+    implied identities read only through `get()` (`ChoiceId` has `as_str()`
+    and `AsRef<str>`), and to complete this record. Both were done; the
+    implementation otherwise matched 6a3.
 
 ## Rules for every part
 

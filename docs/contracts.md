@@ -1194,7 +1194,7 @@ with `as_str()`) unless the unit itself is the point of the type. A
 validated quantity (a position, extent, factor, rate or capacity, such as
 `NormalizedValue`, `Length`, `UiZoom` or `Capacity`) also converts into its
 raw number with `From` (`f32::from(value)`), as std's `NonZero*` types do;
-identities and counters read only through `get()`. Types with
+numeric identities and counters (`Revision`, `Sequence`) have no such `From`. Types with
 several components expose named component accessors and a whole-value
 accessor named for its content (`channels`, `values`, `entries`). Limits the
 library chooses are associated `MIN_*` or `MAX_*` constants of the type they
