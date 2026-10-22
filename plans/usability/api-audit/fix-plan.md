@@ -157,7 +157,7 @@ and anything left to a later part.
   - **Review:** Codex found no implementation defect across the part's
     eleven audit findings, F33 and six decisions, and only this record
     incomplete, which this entry completes.
-- **6a2 (0.3.58):** role names (`ContextMenuController`, `ToastController`,
+- **6a2 (0.3.58), done 2026-10-22:** 010e475 and its review fix. Role names (`ContextMenuController`, `ToastController`,
   `FormFields`, `ListDropPosition`), the owned-versus-reactive read rule and
   its renames, unit-bearing names and types (`PhysicalExtent` for the wgpu
   renderer, `Point` origins, `*_byte` offsets, `Length` widths), enums for
@@ -180,12 +180,34 @@ and anything left to a later part.
       with Mesa 26.2.4 on Vulkan), without the clipboard check, recorded in
       `docs/verification.md`. Windows and macOS evidence is missing;
     - `git diff --check`;
-    - library packaging, run after the commit (it refuses a dirty tree).
+    - library packaging after the commit;
+    - the packaged-consumer check, which had five parts:
+      - extract the five 0.3.58 archives outside the checkout and patch them
+        in for each other;
+      - check each `cargo package --list` against its archive, including
+        fonts, shaders, licenses and guides;
+      - run the extracted facade's doctests, including the getting-started
+        parameter, persistence and custom-widget examples;
+      - build its native `getting_started` example;
+      - build a copy of the round 2 fixture `task4-app` and a consumer with
+        a custom widget, whose two tests pass.
+
+      It is local packaged-consumer evidence, not a crates.io dry run.
   - **Beyond the plan's lines:** `ContextMenu::opener()` became
     `controller()`, as `FloatingWindow::controller` is named, and
     `ToastHost::new`'s parameter is `controller`.
   - **Left to a later part:** 6e considers `FocusDirection`, which a custom
     `tab_navigation` names, for the prelude.
+  - **Review:** Codex found three points, all fixed:
+    - the length rule overstated the code, and was reworded to separate
+      property inputs, validated geometry constructors and reported
+      geometry;
+    - the `opener()` accessor rename lay beyond the plan's lines, and was
+      recorded under G3-13 for the maintainer;
+    - the packaged-consumer check and this record were missing.
+
+    The clipboard native check stays an explicit gap: it takes over the
+    session clipboard.
 
 ## Rules for every part
 
@@ -570,7 +592,7 @@ Audit findings:
 - **G3-10:** `ResourceKind::scene_budget` to `scene_budget_bytes`, `TextSelection::{anchor, focus, range}` to `{anchor_byte, focus_byte, byte_range}`, `TextPreedit::cursor` to `cursor_byte_range`; byte-named parameters on their constructors and `RichText::highlighted`.
 - **G3-11:** New `FocusDirection` for `Runtime::focus_next`, `Component::tab_navigation(cx, direction, transition: KeyTransition)` and `EditorTrigger::Tab`; `EventContext::request_reveal_and_focus`; enums for `TextSelection::{moved, at_point}`'s extension and `ToolWindowChange::new`'s expansion.
 - **G3-12:** `DropPosition` renamed `ListDropPosition` (`list_drag.rs:47`); `PickStatus` stays.
-- **G3-13:** `ContextMenuOpener` renamed `ContextMenuController`, `ToastQueue` renamed `ToastController`; `FieldHandle` stays under G3-19.
+- **G3-13:** `ContextMenuOpener` renamed `ContextMenuController`, `ToastQueue` renamed `ToastController`; `FieldHandle` stays under G3-19. The accessor follows the type, `ContextMenu::opener()` becoming `controller()` as `FloatingWindow::controller` is named (added during 6a2; the maintainer is told).
 - **G3-14:** `FormStatus` (a cloneable handle, `field_status.rs:214`) renamed to a non-controller `Form…` name, proposed `FormFields`.
 - **G3-15:** `PendingJump` keeps its name as a continuation; its forwarders become `receipt(&self) -> &ListRevealReceipt` (`content_search.rs:416-428`).
 - **G3-19:** Naming rules: application-owned coordinators (`ListSelection`, the renamed `FormStatus` and its `FieldHandle`s) are named for what they hold; `*Controller` means widget-owned state.
@@ -1266,7 +1288,7 @@ diagnostics-survey cases.
 | G3-10 | 6a2 | `ResourceKind::scene_budget` to `scene_budget_bytes`, `TextSelection::{anchor, focus, range}` to `{anchor_byte, focus_byte, byte_range}`, `TextPreedit::cursor` to `cursor_byte_range`; byte-named parameters on their constructors and `RichText::highlighted`. |
 | G3-11 | 6a2 | New `FocusDirection` for `Runtime::focus_next`, `Component::tab_navigation(cx, direction, transition: KeyTransition)` and `EditorTrigger::Tab`; `EventContext::request_reveal_and_focus`; enums for `TextSelection::{moved, at_point}`'s extension and `ToolWindowChange::new`'s expansion. |
 | G3-12 | 6a2 | `DropPosition` renamed `ListDropPosition` (`list_drag.rs:47`); `PickStatus` stays. |
-| G3-13 | 6a2 | `ContextMenuOpener` renamed `ContextMenuController`, `ToastQueue` renamed `ToastController`; `FieldHandle` stays under G3-19. |
+| G3-13 | 6a2 | `ContextMenuOpener` renamed `ContextMenuController`, `ToastQueue` renamed `ToastController`; `FieldHandle` stays under G3-19. The accessor follows the type, `ContextMenu::opener()` becoming `controller()` as `FloatingWindow::controller` is named (added during 6a2; the maintainer is told). |
 | G3-14 | 6a2 | `FormStatus` (a cloneable handle, `field_status.rs:214`) renamed to a non-controller `Form…` name, proposed `FormFields`. |
 | G3-15 | 6a2 | `PendingJump` keeps its name as a continuation; its forwarders become `receipt(&self) -> &ListRevealReceipt` (`content_search.rs:416-428`). |
 | G3-16 | 5a | Naming rules: `*State` names a value its owner holds directly, never a shared handle (`ViewState`, `ParameterState`). |

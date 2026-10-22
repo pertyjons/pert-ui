@@ -1245,11 +1245,16 @@ so code that needs a point-in-time value keeps the result of `get()`, as
 owned.
 
 Geometry is in logical pixels unless its name says physical
-(`PhysicalExtent`). A length given to the library and stored is a `Length`
-(`TableColumn::width`, `QuickPick::width`). A constructor whose argument must
-be positive may take `f32` and return `GeometryError` (`VirtualList::new`'s
-row height). Lengths read back for arithmetic are `f32` logical pixels
-(`TableColumn::fixed_width`, `Painter::metric`).
+(`PhysicalExtent`). A length a component property takes and stores is a
+`Length` (`TableColumn::width`, `QuickPick::width`). Geometry values are
+validated by their own constructors over bare finite `f32` logical pixels:
+`Point::new` and `Rect::new`'s origin accept any finite value, `Size::new` and
+`Rect::new`'s extent any finite nonnegative one, zero included. A constructor
+whose argument must be positive may take `f32` and return `GeometryError`
+(`VirtualList::new`'s row height). Geometry the library reports, or that is
+read back for arithmetic, is bare `f32` logical pixels
+(`TableColumn::fixed_width`, `Painter::metric`, and `ToolWindowChange::extent`,
+which `ToolWindowChange::with_geometry` sets).
 
 Ordinary property builders replace earlier values. An element builder
 appends one element to a described collection (a layout's tool windows, a

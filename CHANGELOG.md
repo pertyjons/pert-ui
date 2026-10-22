@@ -106,10 +106,13 @@ migrated. Breaking changes, with their replacements:
   `Some(false)` did. The `diagram_editor` example no longer needs a comment to
   say which is which.
 - The naming rules in `docs/contracts.md` state the length convention:
-  geometry is in logical pixels unless its name says physical, a length given
-  to the library and stored is a `Length`, a constructor whose argument must
-  be positive may take `f32` and return `GeometryError`, and lengths read back
-  for arithmetic are `f32` logical pixels. `Painter::rich_text`,
+  geometry is in logical pixels unless its name says physical; a length a
+  component property takes and stores is a `Length`; the geometry value
+  constructors (`Point::new`, `Size::new`, `Rect::new`) validate bare finite
+  `f32` logical pixels, with zero sizes allowed; a constructor whose argument
+  must be positive may take `f32` and return `GeometryError`; and geometry the
+  library reports or reads back for arithmetic, such as
+  `ToolWindowChange::extent`, is bare `f32` logical pixels. `Painter::rich_text`,
   `MeasureContext::rich_text` and `ToolWindowChange::with_geometry` now say
   their widths and extents are logical pixels.
 
