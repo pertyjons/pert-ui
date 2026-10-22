@@ -106,6 +106,8 @@ and anything left to a later part.
     - A probe confirmed that a reveal discarded a per-row draft.
     - `ListItems::build`, `Signal::sibling`, `TableItems::cell`, the recipe
       and the CHANGELOG were corrected.
+
+    The recheck approved 5c.
   - **Left to a later part:** tracing `Runtime::focus` found a dropped error,
     added to 6d2 as `N:focus-reveal`.
 
