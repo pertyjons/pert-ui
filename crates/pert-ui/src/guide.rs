@@ -7,8 +7,8 @@
 //! - [State and parameters](state): signals, retained components, parameter
 //!   gestures and host notifications, worker results, live data and recovery.
 //! - [Layout and views](layout): region layouts, splits, tabs, floating and
-//!   native windows, workspaces, large collections, zoomable content and drag
-//!   and drop.
+//!   native windows, workspaces, large collections, an editable list of
+//!   records, zoomable content and drag and drop.
 //! - [Controls](controls): buttons, boolean and choice controls, sliders, text
 //!   and numeric editors, progress, inline controls and toolbars.
 //! - [Surfaces](surfaces): selects, popovers, tooltips, menus, dialogs and

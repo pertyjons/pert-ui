@@ -255,6 +255,27 @@ type BuildItem<T> = Rc<dyn Fn(&DescribeContext<'_>, &T) -> Element>;
 /// `key`, `build` and the container follow the rules of [`Dynamic`]'s `build`.
 /// For collections too large to describe in full, use a [`VirtualList`].
 ///
+/// The default container adds its key to an item's path, so a lookup from the
+/// `Each` element goes through `items`:
+///
+/// ```
+/// use pert_ui_runtime::{Each, IntoElement, Label, Runtime};
+/// use std::time::Duration;
+/// let mut ui = Runtime::new();
+/// let tasks = ui.signal(vec!["write".to_owned(), "ship".to_owned()]);
+/// let root = ui.mount_tree(
+///     Each::new(&tasks, |task| task.clone(), |_, task| Label::new(task.as_str()).key("task"))
+///         .key("tasks"),
+/// )?;
+/// ui.flush(Duration::ZERO)?;
+/// assert!(ui.find(&root, &["items", "ship"])?.is_some());
+/// // The element's own key, "task", was replaced by the item's key.
+/// assert!(ui.find(&root, &["items", "task"])?.is_none());
+/// # Ok::<(), pert_ui_runtime::RuntimeError>(())
+/// ```
+///
+/// [`Self::within`] replaces the container, and its key replaces `items`:
+///
 /// ```
 /// use pert_ui_runtime::{Each, IntoElement, Label, Runtime, Wrap};
 /// use std::time::Duration;

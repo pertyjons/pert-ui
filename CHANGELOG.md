@@ -1,5 +1,44 @@
 # Changelog
 
+## 0.3.55 (2026-10-22)
+
+Documentation: guide chapters and recipes of the API audit (API audit fix
+plan, part 5c), describing the API as it is. No public item, signature or
+behavior changes; the `api/` listings are unchanged.
+
+- **Getting started:** the chapter leads with the registry dependency
+  `pert-ui = { version = "0.3" }`, gives a checkout as the alternative before
+  the first release or for unreleased changes, names the minimum Rust version
+  and says that `cargo run -p pert-ui --example …` needs a checkout. The
+  appearance guide's image formats and the diagnostics guide's serialization
+  give the same requirement, `version = "0.3"`, with their features instead
+  of a placeholder. New tests in the facade's foundation tests keep every
+  dependency line of the guide and the Rust version in step with the
+  package, and check that `status.md` names the same Rust version.
+- **Editable list recipe:** the layout guide has "An editable list of
+  records": application records in a `Signal<Vec<_>>` mapped to a
+  `ListSource`, a `ListFilter` with a `CollectionFilter` field, a
+  `VirtualList` with a `ListSelection`, `on_activate` and `reorderable`, a
+  per-row checkbox binding and a retained title row whose draft survives
+  changes to other records. "Children from values" points to it.
+- **Per-row bindings:** `ListItems::build`, `TableItems::cell` and
+  `Signal::sibling` describe the per-row binding made with `sibling`, its cost
+  (a new binding for every mounted row on each source replacement, which ends
+  a text draft) and the retained row component as the alternative.
+- **Hidden selection:** `CollectionFilter`'s "Selection and focus" and the
+  recipe show how to tell that the selected row is hidden, from
+  `ListFilter::items`, `ListItems::index_of` and `ListSelection::active`
+  through `ReadSignal::combine`.
+- **Background work:** `EventContext::defer` and `Runtime::spawn` link each
+  other, and the state guide's "Worker results and live data" has a complete
+  button that defers a spawn and shows its result.
+- **Smaller additions:** `Each` has an example of a lookup through its default
+  `items` segment; `VirtualList::new` and the guide's "Large collections" say
+  that a list binds a `ListSource` wrapping the `ListItems` value; the
+  diagnostics guide shows `CaptureTarget::window(&ui.primary_window())` and
+  captures the whole window in its CPU example; the state guide says signal
+  values need `PartialEq` to be written and `Clone` to be read.
+
 ## 0.3.54 (2026-10-22)
 
 Documentation: item rustdoc of the API audit (API audit fix plan, part 5b),

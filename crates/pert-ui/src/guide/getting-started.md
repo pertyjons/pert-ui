@@ -6,17 +6,26 @@ outstanding. Platform accessibility adapters and plugin hosting remain deferred.
 
 ## Run your first window
 
-Until a registry release exists, use a local checkout. In your application's
-`Cargo.toml`, point to the facade inside **your** checkout:
+Add the facade to your application's `Cargo.toml`:
+
+```toml
+[dependencies]
+pert-ui = { version = "0.3" }
+```
+
+Before the first registry release, or to follow unreleased changes, depend on a
+checkout of the repository instead, pointing to the facade inside **your**
+checkout:
 
 ```toml
 [dependencies]
 pert-ui = { path = "../pert-ui/crates/pert-ui" }
 ```
 
-The workspace pins its supported Rust toolchain in `rust-toolchain.toml`; use
-that toolchain when trying the checkout. This dependency uses the default
-`desktop` feature. A headless consumer can add `default-features = false`.
+pert-ui requires Rust 1.99.1 or later. Either dependency uses the default
+`desktop` feature; a headless consumer adds `default-features = false`. The
+package includes the sources of its examples, but `cargo run -p pert-ui
+--example …`, as the guide runs them, works only in a checkout.
 
 This complete program opens a profile form. Editing writes the local signals;
 Reset changes the same bindings, so only their dependents refresh. Resize the

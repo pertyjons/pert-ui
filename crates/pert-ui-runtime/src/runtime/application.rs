@@ -155,6 +155,12 @@ impl Runtime {
     /// here is safe for time-critical producers, which use the live-data
     /// endpoints instead.
     ///
+    /// A component's or control's callback receives an
+    /// [`EventContext`](crate::EventContext), not the runtime: it starts the
+    /// work by queuing this call with
+    /// [`EventContext::defer`](crate::EventContext::defer), whose operation
+    /// runs at the start of the next flush with the runtime.
+    ///
     /// The returned handle can [`cancel`](BackgroundTask::cancel) the
     /// delivery; dropping it does not. If `work` panics, nothing is delivered
     /// and the flush that receives the outcome returns

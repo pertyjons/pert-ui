@@ -448,7 +448,14 @@ struct Parts {
 /// focus, the active item moves to the nearest remaining row (in
 /// [`SelectionMode::Single`](crate::SelectionMode::Single) the selection
 /// follows, since it is the active item); when no row remains, focus moves to
-/// the field. Without focus in the collection nothing moves. Down in the field
+/// the field. Without focus in the collection nothing moves, so the selected
+/// row stays hidden while the user types in the field. To tell whether it is
+/// shown, for example to enable an action on it, derive from the shown rows
+/// and the active key, which for a list are [`ListFilter::items`] and
+/// [`ListSelection::active`]:
+/// `filter.items().combine(&selection.active(), |rows, active|
+/// active.as_deref().is_some_and(|key| rows.index_of(key).is_some()))`
+/// ([`ReadSignal::combine`], [`ListItems::index_of`]). Down in the field
 /// moves focus into the collection; Escape clears the query first, as the
 /// search field documents.
 ///

@@ -314,6 +314,15 @@ impl<T> Signal<T> {
     /// runtime creates a signal whose writes fail with
     /// [`RuntimeError::Closed`], like the original's.
     ///
+    /// It is also how a row of a collection gets a binding for a control,
+    /// since [`ListItems::build`](crate::ListItems::build) and
+    /// [`TableItems::cell`](crate::TableItems::cell) get no state owner:
+    /// call it there on a signal the rows hold, with the record's value, and
+    /// write changes back to the records from the control's callback. Creating a signal is not a write, so any phase may. The cost
+    /// is a new binding for every mounted row each time the source is
+    /// replaced, which ends an open text draft; `ListItems::build` describes
+    /// the retained alternative.
+    ///
     /// ```
     /// use pert_ui_runtime::Runtime;
     /// let ui = Runtime::new();

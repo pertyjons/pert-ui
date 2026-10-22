@@ -402,6 +402,11 @@ assert!(ui.find(&root, &["tasks", "items", "Ship it"])?.is_some());
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
 
+`Each` describes every item and offers no selection, keyboard navigation or
+filtering. For a list the user selects, filters, reorders or edits in place,
+use a [`VirtualList`], as [an editable list of
+records](#an-editable-list-of-records) shows.
+
 # Large collections
 
 [`VirtualList`] mounts only the items near its viewport, from a [`ListSource`]
@@ -416,6 +421,12 @@ controller fixes widths from code as a drag does. [`Tree`] shows a
 [`TreeSource`] of nested rows whose expansion lives in a [`TreeController`]. All three
 share [`ListSelection`] for single or multiple selection, and lists and trees can
 be made reorderable by dragging.
+
+A list takes a binding of a [`ListSource`], not the [`ListItems`] value itself:
+wrap the rows with [`ListSource::new`] and hold the result in a signal,
+`ui.signal(ListSource::new(rows))`, then pass that signal to
+[`VirtualList::new`], or pass a derived binding such as [`ListFilter::items`].
+Writing a new `ListSource` to the signal is how the content changes.
 
 A collection mounts the rows inside the height it is allocated, so it needs a
 bounded one. A window or detached view, a [`SplitPane`] pane, a [`Container`] or
@@ -461,6 +472,240 @@ that detaches, copying per table and selectable detail text. Its headless
 session reports mounted counts and flush times and checks that the counts
 stay bounded: `cargo run -p pert-ui --example log_explorer --no-default-features`,
 or open it with `cargo run -p pert-ui --example log_explorer -- --window`.
+
+# An editable list of records
+
+The application keeps its records in its own value, here a
+`Signal<Vec<Task>>`, and the list shows them through a [`ListItems`]
+implementation over a copy of that value. Each piece then has one job:
+
+- **Source.** [`ReadSignal::map`] wraps the records in a new [`ListSource`]
+  whenever they change, keyed by each record's identity, never its position,
+  and offering its title as [`ListItems::text`] for the filter.
+- **Filter.** A [`ListFilter`] over that source, shown by a
+  [`CollectionFilter`] field, publishes the rows that match in
+  [`ListFilter::items`], which the list binds instead of the source.
+- **Selection and actions.** A [`ListSelection`] makes the list one Tab stop
+  that the arrows navigate; [`VirtualList::on_activate`] runs on Enter, and
+  [`VirtualList::reorderable`] receives drags and Alt with an arrow as one
+  [`ListDrop`] whose position names keys, which the callback applies to the
+  records.
+- **Hidden selection.** A filter never prunes the selection, and moves the
+  active row off a hidden row only while the list has focus, so a selected
+  row can be hidden while the user types in the field. Deriving
+  `ListFilter::items()` with [`ListSelection::active`] through
+  [`ReadSignal::combine`] and [`ListItems::index_of`] tells whether it is
+  shown; the Delete button below is enabled only then.
+
+A control in a row binds a signal, and [`ListItems::build`] has no state
+owner, so a row makes its binding in one of two ways:
+
+- **Per-row bindings.** `build` creates a binding with [`Signal::sibling`]
+  holding the record's value, and the control's callback writes the change
+  back to the records. Every change of the records replaces the source, which
+  describes the mounted rows again, so each of them receives a new binding.
+  That suits a control without a draft, such as the checkbox below. A text
+  editor ends its open draft when its binding changes, so a per-row binding
+  would discard the user's typing whenever any record changes.
+- **Retained rows.** A row component makes its binding once, in its first
+  update, and keeps it while the row stays mounted. A new description brings
+  the record's current value, which [`Component::reconcile`] keeps and, after
+  a [`Notifier`] request, [`Component::deliver_notifications`] writes to the
+  binding, since neither an update nor a reconciliation may write. The title below works this way, so
+  its draft survives changes to other records.
+
+```rust
+use std::{mem, time::Duration};
+use pert_ui::prelude::*;
+use pert_ui::{DropPosition, ListDrop};
+
+// Signal values are compared when written and cloned when read.
+#[derive(Clone, PartialEq)]
+struct Task { id: u64, title: String, done: bool }
+
+/// The records as rows: a copy for reading, and the signal to write back to.
+struct Rows { tasks: Vec<Task>, store: Signal<Vec<Task>> }
+impl ListItems for Rows {
+    fn len(&self) -> usize { self.tasks.len() }
+    fn key(&self, index: usize) -> Option<String> {
+        Some(self.tasks.get(index)?.id.to_string())
+    }
+    fn build(&self, index: usize) -> Option<Element> {
+        let task = self.tasks.get(index)?;
+        // Per-row binding: a new signal each time the row is described.
+        let done = self.store.sibling(task.done);
+        let (store, id) = (self.store.clone(), task.id);
+        let check = Checkbox::new("Done", done).on_change(move |_, done| {
+            edit(&store, id, |task| task.done = done)
+        });
+        let title = Title {
+            id, title: task.title.clone(), store: self.store.clone(),
+            shown: None, notifier: None, stale: false,
+        };
+        // The list keys the row with the task's key, replacing "row".
+        Some(Row::new([check.key("done"), Element::new("title", title).with_grow(1)]).key("row"))
+    }
+    fn text(&self, index: usize) -> Option<String> {
+        Some(self.tasks.get(index)?.title.clone())
+    }
+}
+
+fn edit(store: &Signal<Vec<Task>>, id: u64, change: impl FnOnce(&mut Task)) -> Result<(), RuntimeError> {
+    store.update(|tasks| {
+        if let Some(task) = tasks.iter_mut().find(|task| task.id == id) {
+            change(task);
+        }
+    })
+}
+
+/// A retained row part: it makes its title binding once, so describing the
+/// rows again leaves an open draft alone.
+struct Title {
+    id: u64,
+    title: String,
+    store: Signal<Vec<Task>>,
+    shown: Option<Signal<String>>,
+    notifier: Option<Notifier>,
+    stale: bool,
+}
+impl Component for Title {
+    fn reconcile(&mut self, next: Self) -> Option<Invalidation> {
+        if next.title == self.title {
+            return None;
+        }
+        self.title = next.title;
+        self.stale = true;
+        Some(Invalidation::Paint)
+    }
+    fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
+        let notifier = self.notifier.get_or_insert_with(|| cx.notifier());
+        if self.shown.is_none() {
+            let shown = cx.signal(self.title.clone());
+            let (store, id) = (self.store.clone(), self.id);
+            cx.request_children(vec![Element::new(
+                "editor",
+                InlineText::new(&shown).on_save(move |_, title| {
+                    edit(&store, id, |task| task.title = title.to_owned())
+                }),
+            )]);
+            self.shown = Some(shown);
+        } else if self.stale {
+            notifier.request(); // the write waits for the event phase
+        }
+        Ok(())
+    }
+    fn deliver_notifications(&mut self, _: &mut EventContext) -> Result<(), RuntimeError> {
+        if let (true, Some(shown)) = (mem::take(&mut self.stale), &self.shown) {
+            shown.set_changed(self.title.clone())?;
+        }
+        Ok(())
+    }
+}
+
+/// Applies a drop to the records: the dropped tasks move, in their order, to
+/// the position, which names a key of the rows shown.
+fn reorder(store: &Signal<Vec<Task>>, drop: &ListDrop<'_>) -> Result<bool, RuntimeError> {
+    let (mut moved, mut rest): (Vec<Task>, Vec<Task>) = store
+        .get()?
+        .into_iter()
+        .partition(|task| drop.items().contains(&task.id.to_string()));
+    let at = |key: &str| rest.iter().position(|task| task.id.to_string() == key);
+    let index = match drop.position() {
+        DropPosition::Before(key) => at(key),
+        DropPosition::After(key) => at(key).map(|index| index + 1),
+        DropPosition::End => Some(rest.len()),
+        _ => None,
+    };
+    let Some(index) = index else { return Ok(false) }; // refused
+    rest.splice(index..index, mem::take(&mut moved));
+    store.set(rest)?;
+    Ok(true)
+}
+
+let mut ui = Runtime::new();
+ui.set_viewport(Viewport::new(400.0, 300.0, 1.0)?)?;
+let task = |id, title: &str| Task { id, title: title.to_owned(), done: false };
+let tasks = ui.signal(vec![task(1, "Buy milk"), task(2, "Write the plan"), task(3, "Ship it")]);
+let store = tasks.clone();
+let source = tasks.map(move |all| {
+    ListSource::new(Rows { tasks: all.clone(), store: store.clone() })
+})?;
+let selection = ListSelection::new(&ui, SelectionMode::Single);
+let filter = ListFilter::new(&ui, source)?.selection(selection.clone());
+let selected_shown = filter.items().combine(&selection.active(), |rows, active| {
+    active.as_deref().is_some_and(|key| rows.index_of(key).is_some())
+})?;
+let opened = ui.signal(None::<String>);
+let (open, order, remove, active) =
+    (opened.clone(), tasks.clone(), tasks.clone(), selection.active());
+let list = VirtualList::new(filter.items(), 32.0)?
+    .selection(selection.clone())
+    .on_activate(move |_, key| open.set(Some(key.to_owned())))
+    .reorderable(move |_, drop| reorder(&order, drop));
+let delete = Button::new("Delete", move |_| {
+    let Some(key) = active.get()? else { return Ok(()) };
+    remove.update(|tasks| tasks.retain(|task| task.id.to_string() != key))
+})
+.enabled(&selected_shown);
+let root = ui.mount_tree(Column::new([
+    CollectionFilter::new(&ui, filter.clone(), Element::new("list", list))
+        .key("tasks")
+        .with_grow(1),
+    delete.key("delete"),
+]).key("app"))?;
+ui.flush(Duration::ZERO)?;
+let press = |ui: &mut Runtime, key| -> Result<(), RuntimeError> {
+    ui.key_input(key, KeyAction::Press)?;
+    ui.key_input(key, KeyAction::Release)?;
+    Ok(())
+};
+let ids = |tasks: &Signal<Vec<Task>>| -> Result<Vec<u64>, RuntimeError> {
+    Ok(tasks.get()?.iter().map(|task| task.id).collect())
+};
+
+// Select the first row, move it down with Alt+Down and open it with Enter.
+let list = ui.find(&root, &["tasks", "list"])?.ok_or("the list")?;
+ui.focus(&list)?;
+press(&mut ui, KeyCode::ArrowDown)?;
+ui.key_input(KeyCode::AltLeft, KeyAction::Press)?;
+press(&mut ui, KeyCode::ArrowDown)?;
+ui.key_input(KeyCode::AltLeft, KeyAction::Release)?;
+assert_eq!(ids(&tasks)?, [2, 1, 3]);
+press(&mut ui, KeyCode::Enter)?;
+assert_eq!(opened.get()?.as_deref(), Some("1"));
+
+// The per-row checkbox writes the record.
+let check = ui.find(&root, &["tasks", "list", "1", "done"])?.ok_or("a checkbox")?;
+ui.focus(&check)?;
+press(&mut ui, KeyCode::Space)?;
+assert!(tasks.get()?[1].done);
+
+// A title draft survives a change to another record.
+let title = ui.find(&root, &["tasks", "list", "2", "title", "editor"])?.ok_or("a title")?;
+ui.focus(&title)?;
+press(&mut ui, KeyCode::F2)?;
+ui.text_input("Write the whole plan")?;
+edit(&tasks, 3, |task| task.done = true)?;
+ui.flush(Duration::ZERO)?;
+press(&mut ui, KeyCode::Enter)?;
+assert_eq!(tasks.get()?[0].title, "Write the whole plan");
+
+// Typing in the field hides the selected row, which disables Delete.
+let field = ui.find(&root, &["tasks", "filter"])?.ok_or("the field")?;
+ui.focus(&field)?;
+ui.text_input("ship")?;
+ui.flush(Duration::ZERO)?;
+assert_eq!(filter.counts().get()?.shown, 1);
+assert_eq!(selection.active().get()?.as_deref(), Some("1"));
+assert!(!selected_shown.get()?);
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
+A press on the title focuses the title rather than selecting its row; Enter
+or F2 on the focused title, or a double click, starts editing. The [inventory
+example](https://github.com/pertyjons/pert-ui/blob/main/crates/pert-ui/examples/inventory/main.rs)
+applies the retained form to a table's checkbox column, and a
+[`Table`] edits text cells in place through its own editor instead.
 
 # Zoomable content
 

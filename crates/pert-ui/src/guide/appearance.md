@@ -501,7 +501,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```
 
 Enable the feature in the application's manifest, for example
-`pert-ui = { version = "…", features = ["png", "jpeg"] }`.
+`pert-ui = { version = "0.3", features = ["png", "jpeg"] }`.
 
 # SVG graphics
 

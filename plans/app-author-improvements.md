@@ -393,12 +393,7 @@ Inputs from later plans and the 2026-10-20 audit:
     task 1 testers had to invent or work around.
   - **Per-row state (F16):** how per-row controls bind to an application's
     own `Vec`; an optional controlled-control API stays in follow-ups.
-  - **Editable-list recipe (F14):** an editable, selectable, filterable
-    list of application records was the most common shape testers wanted.
-  - **Getting started (F1)** should lead with the registry dependency once
-    a release exists.
-  - **Facade examples (F20)** import `pert_ui_runtime`, and **`Each`'s
-    `items` segment (F9)** needs an example of the default path.
+  - **Facade examples (F20)** import `pert_ui_runtime`.
   Those findings may instead be fixed in that plan's slices 5 and 6 if its
   joint checkpoint chooses them.
 

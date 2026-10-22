@@ -97,6 +97,9 @@ impl EventContext {
     /// Queues an application operation with mutable runtime access for the next
     /// flush, before component evaluation. Use it to create document parameters,
     /// register commands or change a tree in response to ordinary button input.
+    /// It is also how a callback starts background work: the operation calls
+    /// [`Runtime::spawn`], which needs the runtime that an event callback does
+    /// not have.
     ///
     /// The callback runs once in the originating window if its widget is still
     /// mounted and logically visible. Otherwise its receipt becomes `Cancelled`.

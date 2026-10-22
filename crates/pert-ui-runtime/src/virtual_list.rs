@@ -51,6 +51,27 @@ pub trait ListItems {
     fn key(&self, index: usize) -> Option<String>;
     /// The row at `index`, or `None` past the end. The list keys it with
     /// `key(index)`; its own key is replaced.
+    ///
+    /// The list calls it when a row mounts and again for every mounted row
+    /// when the source is replaced, and the new description is applied to the
+    /// row's retained components. `build` gets no state owner, so a control in
+    /// the row that binds a signal gets it in one of two ways:
+    ///
+    /// - **Per row.** Create the binding here with [`Signal::sibling`] from a
+    ///   signal the source holds, and write changes back to the application's
+    ///   records from the control's callback. Creating a signal is not a write,
+    ///   so it is allowed here. Each replacement of the source gives every
+    ///   mounted row a new binding, which suits a control without a draft, such
+    ///   as a checkbox; a text editor ends its open draft when its binding
+    ///   changes.
+    /// - **Retained.** Return a row component that creates its binding once,
+    ///   in its first update, and requests the control as its child with
+    ///   [`UpdateContext::request_children`]. It keeps the record's value from each new description in
+    ///   [`Component::reconcile`] and, after a [`Notifier`](crate::Notifier)
+    ///   request, writes it to its binding in
+    ///   [`Component::deliver_notifications`], since neither an update nor a
+    ///   reconciliation may write. A draft then survives changes to other
+    ///   rows.
     fn build(&self, index: usize) -> Option<Element>;
     /// Position of the row with `key`, or `None` when no row has it. The default
     /// scans every position.
@@ -634,6 +655,11 @@ impl VirtualList {
 
     /// Creates a vertical single-lane list over a binding of rows with a fixed
     /// logical row height.
+    ///
+    /// `items` is a binding of a [`ListSource`], not the [`ListItems`] value:
+    /// wrap the rows with [`ListSource::new`] in a signal and pass the signal,
+    /// or pass a derived binding such as
+    /// [`ListFilter::items`](crate::ListFilter::items).
     ///
     /// # Errors
     /// Returns [`GeometryError::NonFinite`](crate::GeometryError::NonFinite)

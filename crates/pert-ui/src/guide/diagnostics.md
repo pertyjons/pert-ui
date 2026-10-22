@@ -126,10 +126,11 @@ visible region as an RGBA [`FrameImage`] at physical scale, which
 window ([`CaptureTarget::Window`]), a rectangle of one
 ([`CaptureTarget::Region`]), a component ([`CaptureTarget::Component`]) or a
 key path ([`CaptureTarget::Path`]). On the UI thread,
-[`CaptureTarget::window`] builds a window target from a [`NativeWindowId`],
-such as the main window, [`Runtime::primary_window`], and
-[`Runtime::request_capture`] asks for the same capture; never wait for its reply
-there, since the frame is rendered between flushes. The [`App`] renders the frame
+[`CaptureTarget::window`] builds a window target from a borrowed
+[`NativeWindowId`], so the main window is
+`CaptureTarget::window(&ui.primary_window())` ([`Runtime::primary_window`]),
+and [`Runtime::request_capture`] asks for the same capture; never wait for its
+reply there, since the frame is rendered between flushes. The [`App`] renders the frame
 offscreen with the same renderer that presents; a headless runtime answers
 [`CaptureError::Unsupported`] unless a host declares that it renders captures
 with [`Runtime::set_capture_support`] and completes the jobs
@@ -158,6 +159,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     CpuRenderer::new().serve_captures(&mut ui);
     let capture = pending.wait()?.value?;
     std::fs::write(std::env::temp_dir().join("title.png"), capture.image.encode_png())?;
+    // The whole main window.
+    let pending = ui.request_capture(CaptureRequest::new(CaptureTarget::window(
+        &ui.primary_window(),
+    )));
+    ui.flush(Duration::ZERO)?;
+    CpuRenderer::new().serve_captures(&mut ui);
+    let window = pending.wait()?.value?;
+    assert_eq!((window.image.width(), window.image.height()), (300, 200));
     Ok(())
 }
 # #[cfg(not(feature = "cpu"))]
@@ -171,7 +180,7 @@ snapshot, the profile, the validation report and the workspace document, and to
 everything they carry. The application chooses the format and the transport;
 deserialization validates through the same constructors as the ordinary API,
 and a non-finite diagnostic number is written as `"NaN"`, `"inf"` or `"-inf"`
-rather than lost. Enable it with `pert-ui = { version = "…", features = ["serde"] }`;
+rather than lost. Enable it with `pert-ui = { version = "0.3", features = ["serde"] }`;
 the [feature table](crate#cargo-features) lists every feature.
 
 ```

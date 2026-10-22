@@ -38,6 +38,10 @@ runtime.unmount(&id)?;
 # Ok::<(), RuntimeError>(())
 ```
 
+A signal's value type needs [`PartialEq`] to be written, since a write that
+leaves the value equal notifies nobody, and [`Clone`] to be read, since
+[`ReadSignal::get`] returns a copy. Creating a signal needs neither.
+
 This example drives runtime directly. The default native [`App`] supplies elapsed
 time and waits for work/deadlines automatically. Custom hosts drive the same API. Components retain their own presentation
 data. Every update recollects all dependencies; ordinary reads invalidate layout
@@ -271,7 +275,55 @@ responses. Neither disposition alone proves a duplicate or external refusal.
 
 # Worker results and live data
 
-A worker thread hands owned results to the UI thread through a
+Occasional work that must not block the interface, such as reading or writing
+a file, runs through [`Runtime::spawn`]: the work runs on a new thread and its
+result reaches a delivery callback on the UI thread, where it may write
+bindings. A button or component callback receives an [`EventContext`], not the
+runtime, so it queues the spawn with [`EventContext::defer`], whose operation
+runs with the runtime at the start of the next flush.
+
+```rust
+use std::time::Duration;
+use pert_ui::prelude::*;
+use pert_ui::{KeyAction, KeyCode};
+
+let mut ui = Runtime::new();
+let status = ui.signal("Ready".to_owned());
+let shown = status.clone();
+let load = Button::new("Count words", move |cx| {
+    shown.set("Counting".to_owned())?;
+    let shown = shown.clone();
+    let _receipt = cx.defer(move |ui| {
+        // Real work would read a file; the result carries any failure.
+        let text = String::from("one two three");
+        let _task = ui.spawn(
+            move || text.split_whitespace().count(),
+            move |words| shown.set(format!("{words} words")),
+        )?;
+        Ok(())
+    })?;
+    Ok(())
+});
+let button = ui.mount_tree(load.key("load"))?;
+ui.flush(Duration::ZERO)?;
+ui.focus(&button)?;
+ui.key_input(KeyCode::Space, KeyAction::Press)?;
+ui.key_input(KeyCode::Space, KeyAction::Release)?;
+// A native host flushes when the result wakes it; a headless one polls.
+while status.get()? == "Counting" {
+    std::thread::sleep(Duration::from_millis(1));
+    ui.flush(Duration::ZERO)?;
+}
+assert_eq!(status.get()?, "3 words");
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
+The work receives no UI handles. The deferred operation runs only while the
+button is mounted and shown; [`EventContext::defer_detached`] queues one that
+outlives it. [`Runtime::spawn`] lists the limits and what happens to a result
+after cancellation or shutdown.
+
+A long-lived worker thread hands owned results to the UI thread through a
 [`Runtime::mailbox`]: its [`UiSender`] is [`Send`], a full or closed mailbox returns
 the undelivered value in [`SendError`], and the handler runs on the UI thread,
 where it may write bindings. Mailboxes take locks and can wake the event loop, so
