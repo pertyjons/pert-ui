@@ -43,6 +43,37 @@ and anything left to a later part.
   - **Left to a later part:** the clamp rule's two known departures,
     `TextSelection::new` (G1-11) and the table width restore (V3-2), are
     fixed in 6d2.
+- **5b (0.3.54), done 2026-10-22:** 9942634 and its review fix.
+  - **Checks run:** `cargo fmt --all --check`; `cargo clippy --locked -p
+    pert-ui-runtime --all-targets -- -D warnings`; every doctest of
+    pert-ui-core, pert-ui-runtime, pert-ui and pert-ui-wgpu (including
+    `MultiSelect::filter`'s new one); `RUSTDOCFLAGS="-D warnings" cargo doc
+    --locked --workspace --no-deps` and `-p pert-ui --features serde`;
+    `api/generate.sh`, with no difference; `git diff --check`.
+  - **F32's probe:** rerun in a throwaway crate built into
+    `target/triage-probes`. A signal write inside `cancel_input` returned
+    `Ok` for `set_visible(false)`, a `View::visible_signal` hide inside a
+    flush, `unmount`, `Show` removal inside a flush and `shutdown`;
+    `ColorPicker::cancel_input`'s comment was corrected to match.
+  - **Beyond the plan's lines:**
+    - the same category-only `# Errors` wording, found during the part on
+      `ContextMenuOpener::open`, `ToolWindowController::{expand,
+      set_names, is_expanded}` and `RemoteHost::retry_submission`, was fixed
+      here;
+    - `Component::focus_lost`'s Escape sentence was corrected with F18;
+    - `Runtime::set_viewport` also names `Geometry(NonFinite)`.
+  - **Review:** Codex found five points:
+    - Escape's routing was overstated: a drag, shown help, editor text and
+      surfaces take it before the context cleanup;
+    - `Runtime::focus` omitted forwarded `focus_within_changed` and
+      `reveal` failures;
+    - the prelude pages made a general compiler claim;
+    - no outcome record;
+    - a parameter-rename count in the CHANGELOG.
+
+    All five were fixed.
+  - **Left to a later part:** tracing `Runtime::focus` found a dropped error,
+    added to 6d2 as `N:focus-reveal`.
 
 ## Rules for every part
 
@@ -722,6 +753,15 @@ Behavior fixes with regression tests, and the signature changes they need.
 - **Version:** 0.3.66.
 
 Closes 7 audit findings, 7 round 1 findings and 1 decision.
+
+Found during 5b, not from the audit or round 1:
+
+- **N:focus-reveal:** `Runtime::focus_with_reveal` (`runtime.rs`) returns a
+  failing `reveal_focus` with `?` while a `focus_lost` or
+  `focus_within_changed` error may be held in `focus_result`, and so drops
+  that error, neither returned nor queued in `focus_errors`. Queue the held
+  error before returning the reveal error, update `Runtime::focus`'s
+  `# Errors` ("in place of"), and add a regression test.
 
 Audit findings:
 

@@ -4,7 +4,7 @@
 
 Documentation: item rustdoc of the API audit (API audit fix plan, part 5b),
 describing the API as it is. No public item, signature or behavior changes;
-the `api/` listings are unchanged. Four parameter names change, which the
+the `api/` listings are unchanged. Some parameter names change, which the
 listings omit and callers do not see.
 
 - **Parameter names:** `ListController::new` and `ZoomController::new` name
@@ -43,15 +43,23 @@ listings omit and callers do not see.
     `ContextMenuOpener::open`, `ToolWindowController::{expand, set_names,
     is_expanded}` (`collapse` and `toggle` refer to `expand`) and
     `RemoteHost::retry_submission`.
+  - `Runtime::focus` documents the failures it forwards after the transfer
+    (`Component::focus_lost`, `Component::focus_within_changed`,
+    `Component::reveal` and the settling flush) and their timing;
+    `Runtime::event` and `Runtime::reveal_and_focus` follow it.
   - One-line forwarding on `ChoiceId`'s `TryFrom<&str>` and `TryFrom<String>`
     and on `TryFrom` for `Magnification`, `UiZoom` and `ViewScale`.
 - **Errors across layers:** `Runtime::paint` and the diagnostics guide say a
   helper that paints returns `Result<_, DrawError>`, or `AppError` with
   `native`; `ApplicationError::new` and `RuntimeError::Application` point to
   `ApplicationError::from` for a boxed `dyn Error + Send + Sync`.
-- **Escape and cancellation:** Escape ends the focused component's capture,
-  timer, drag and edit sessions and then arrives as an ordinary key, without
-  `Component::cancel_input`, as `Runtime::key_input`, `EventContext::set_timer`,
+- **Escape and cancellation:** `Runtime::key_input` lists the order in which
+  an Escape press is taken: a drag session, delayed help, the focused editors
+  while a surface is open, the topmost surface, and only then the focused
+  component, whose capture, timer, drag and edit sessions end before it
+  receives Escape as an ordinary key. Escape never calls
+  `Component::cancel_input`, and an earlier consumer leaves the focused
+  component's timer and capture in place, as `EventContext::set_timer`,
   `Component::{cancel_input, focus_lost}` and the controls and custom-widget
   guides now say. `Component::cancel_input` runs outside the evaluation
   phases, may restore the component's own bindings, must not run application

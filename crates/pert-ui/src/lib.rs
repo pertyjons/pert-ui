@@ -67,8 +67,7 @@ pub use svg::component::Svg;
 ///
 /// # Root names to add
 ///
-/// rustc suggests no import for a name outside the prelude, so these are the
-/// crate-root names code most often adds to the glob:
+/// These are the crate-root names code most often adds to the glob:
 ///
 /// - keyboard shortcuts and commands: [`Modifiers`], [`KeyChord`],
 ///   [`CommandKey`], [`CommandScope`], [`CommandId`] and [`CommandContext`];

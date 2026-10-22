@@ -388,9 +388,10 @@ impl Runtime {
     /// ```
     ///
     /// # Errors
-    /// The errors of [`Self::reveal`], and a previous recipient's
-    /// `Component::focus_lost` error, returned after the transfer completes, as
-    /// from [`Self::focus`].
+    /// The errors of [`Self::reveal`], and the callback errors [`Self::focus`]
+    /// forwards after a transfer, from `Component::focus_lost` and
+    /// `Component::focus_within_changed` (the first returned, later ones
+    /// queued), returned after the transfer completes.
     pub fn reveal_and_focus(&mut self, target: &WidgetId) -> Result<RevealOutcome, RuntimeError> {
         let origin = self.current_window();
         self.reveal_target(target, true, &origin)

@@ -2361,8 +2361,8 @@ pub trait Component: std::any::Any {
     /// here using ordinary signals. Always release local input/composition even
     /// when returning an error.
     /// Hiding, removal, shutdown and other cancellation use `cancel_input`
-    /// instead and must not implicitly save drafts; Escape reaches the
-    /// component as an ordinary key. No host edit is committed by
+    /// instead and must not implicitly save drafts; Escape calls neither (see
+    /// [`Runtime::key_input`]). No host edit is committed by
     /// default. This UI-thread callback must not recursively dispatch runtime work.
     ///
     /// # Errors
@@ -2436,9 +2436,12 @@ pub trait Component: std::any::Any {
     ///
     /// Runtime calls this on focus/context loss, hiding, removal and shutdown,
     /// and also while the component keeps focus, for example after a failed key
-    /// operation or when it stops being focusable. Escape is not among them:
-    /// it ends the focused component's pointer capture, timer and edit sessions
-    /// and then arrives as an ordinary key (see [`Runtime::key_input`]).
+    /// operation or when it stops being focusable. Escape never calls it: an
+    /// Escape press that reaches the focused component's ordinary delivery
+    /// first ends its pointer capture, timer and edit sessions and then
+    /// arrives as an ordinary key, and one an earlier consumer takes (a drag,
+    /// delayed help, an editor, an open surface) leaves them in place (see
+    /// [`Runtime::key_input`]).
     /// Default invokes [`Self::input_reset`] and invalidates paint.
     ///
     /// It runs outside the evaluation phases, so an override may restore the
@@ -3384,10 +3387,12 @@ impl EventContext {
     /// time, decides eligibility: no OS timer or background executor is started,
     /// and the host wakes at [`Runtime::next_deadline`]. The timer is cancelled
     /// with this component's input context, so focus loss, hiding, unmounting,
-    /// presentation movement, `Runtime::cancel_input` and an Escape press while
-    /// the component is focused all stop it, Escape silently: it calls no
-    /// [`Component::cancel_input`], so a component that must react handles the
-    /// key itself. A hidden or removed component never receives the call.
+    /// presentation movement and `Runtime::cancel_input` all stop it. An Escape
+    /// press stops it silently, without [`Component::cancel_input`], when the
+    /// press reaches the focused component's ordinary delivery; a drag, delayed
+    /// help, an editor or an open surface that takes Escape first leaves it
+    /// running (see [`Runtime::key_input`]). A hidden or removed component
+    /// never receives the call.
     ///
     /// ```
     /// use pert_ui_runtime::{Component, Element, EventContext, InputOutcome, KeyAction,
@@ -4295,9 +4300,11 @@ impl Runtime {
     /// [`RuntimeError::ForeignRuntime`], [`RuntimeError::Unmounted`],
     /// [`RuntimeError::Hidden`] or [`RuntimeError::ModalBlocked`]) come before
     /// executing user code, leaving focus and the selected window unchanged.
-    /// Other errors of the focus transfer, as from the previous recipient's
-    /// `Component::focus_lost` or a revealing flush, are returned after focus
-    /// has moved to the target, without running the closure.
+    /// The errors [`Self::focus`] forwards after the transfer, from
+    /// [`Component::focus_lost`], [`Component::focus_within_changed`],
+    /// [`Component::reveal`] or the flush that settles a scrolled ancestor,
+    /// are returned after focus has moved to the target, without running the
+    /// closure.
     pub fn event<R>(
         &mut self,
         id: &WidgetId,
@@ -4345,9 +4352,17 @@ impl Runtime {
     /// [`RuntimeError::ForeignRuntime`] for an ID of another runtime;
     /// [`RuntimeError::Unmounted`] for an unmounted one;
     /// [`RuntimeError::Hidden`] for a hidden component; and
-    /// [`RuntimeError::ModalBlocked`] for one a modal surface blocks. A previous
-    /// recipient's `Component::focus_lost` error, or an error of the flush that
-    /// settles a scrolled ancestor, is returned after completing the transfer.
+    /// [`RuntimeError::ModalBlocked`] for one a modal surface blocks.
+    ///
+    /// After the transfer has completed, with focus on the target, the
+    /// callbacks' errors are forwarded. The first error of the previous
+    /// recipient's [`Component::focus_lost`] and of
+    /// [`Component::focus_within_changed`] on the ancestors focus leaves and
+    /// then enters is returned, and later ones are queued for later
+    /// [`Self::flush`] calls. Revealing the target then forwards an error of
+    /// an ancestor's [`Component::reveal`] or of the flush that settles a
+    /// scrolled ancestor; such an error is returned in place of a callback
+    /// error.
     pub fn focus(&mut self, id: &WidgetId) -> Result<(), RuntimeError> {
         let previous = self.current_window();
         self.select_window(&self.window_of(id)?)?;
@@ -4543,19 +4558,29 @@ impl Runtime {
     /// is not held (for example one pressed before focus arrived), never
     /// establishes a press: it is returned as `Repeated` without reaching any
     /// component, and the key's later release is `UnmatchedRelease`, as through
-    /// [`Runtime::command_key_input`]. While a popup, menu or dialog is open, a
-    /// fresh Escape is first offered to the focused editors as the native
-    /// path's text phase offers it (see [`Component::text_key_event`]), so an
-    /// editor that answers it, such as a search field with a query, keeps the
-    /// surface open; otherwise the topmost surface closes. Escape's initial
-    /// press ends the focused component's pointer capture, timer, drag and
-    /// parameter edit sessions (begun with
-    /// [`Parameter::begin_edit`](crate::Parameter::begin_edit)) before
-    /// delivery, without calling [`Component::cancel_input`]; the component
-    /// then receives Escape as an ordinary key and cancels its own gesture
-    /// there. A nonfocused component's capture is not affected. Released keys
-    /// never automatically commit a generic gesture: a control chooses its own
-    /// confirmation key/action.
+    /// [`Runtime::command_key_input`].
+    ///
+    /// An Escape press (not a repeat or a release) goes to the first of these
+    /// that takes it:
+    ///
+    /// 1. During a drag session it cancels the drag and reaches no component.
+    /// 2. Without modifiers, shown delayed help takes it and closes.
+    /// 3. While a popup, menu or dialog is open, it is offered to the focused
+    ///    editors as the native path's text phase offers it (see
+    ///    [`Component::text_key_event`]), so an editor that answers it, such
+    ///    as a search field with a query, keeps the surface open.
+    /// 4. Otherwise the topmost interactive surface it may dismiss closes.
+    /// 5. Only then, when a component is focused, its pointer capture, its
+    ///    timer, a drag it started and its parameter edit sessions (begun with
+    ///    [`Parameter::begin_edit`](crate::Parameter::begin_edit)) end, without
+    ///    calling [`Component::cancel_input`], and the component receives
+    ///    Escape as an ordinary key, bubbling as any key does. With nothing
+    ///    focused it goes to the unfocused-key recipient with no such cleanup.
+    ///
+    /// Where an earlier step takes Escape, the focused component's capture,
+    /// timer and edit sessions are left as they were; a nonfocused component's
+    /// capture is never affected. Released keys never automatically commit a
+    /// generic gesture: a control chooses its own confirmation key/action.
     ///
     /// This is the headless entry point: it routes neither command bindings nor
     /// [`Runtime::register_held_input`] registrations, which only
