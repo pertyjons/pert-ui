@@ -531,7 +531,7 @@ impl FileBrowserController {
         // another table relabels them without rebuilding a source.
         let text = |role: crate::StringRole| {
             crate::runtime::settings::string_signal(listings.shared(), role).unwrap_or_else(|| {
-                ui.signal(listings.shared().strings.borrow().get(role).to_owned())
+                ui.signal(listings.shared().strings.borrow().text(role).to_owned())
                     .read_only()
             })
         };

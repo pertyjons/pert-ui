@@ -564,7 +564,7 @@ impl CollectionFilter {
             .shared()
             .strings
             .borrow()
-            .get(crate::StringRole::FilterName)
+            .text(crate::StringRole::FilterName)
             .to_owned();
         Self {
             target: target.into(),

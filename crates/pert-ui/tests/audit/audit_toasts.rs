@@ -36,13 +36,13 @@ struct Stage {
     presses: Rc<Cell<usize>>,
     wheels: Rc<Cell<usize>>,
     stack: WidgetId,
-    queue: ToastQueue,
+    queue: ToastController,
 }
 fn fixture(count: usize) -> Stage {
     let mut ui = Runtime::new();
     ui.set_viewport(Viewport::new(800.0, 600.0, 1.0).unwrap())
         .unwrap();
-    let queue = ToastQueue::new(&ui);
+    let queue = ToastController::new(&ui);
     let chosen = Rc::new(Cell::new(usize::MAX));
     let receipts = (0..count)
         .map(|index| {
@@ -91,13 +91,13 @@ fn key(ui: &mut Runtime, code: KeyCode) {
 fn dismiss(ui: &mut Runtime, stack: &WidgetId, count: usize, index: usize) {
     let bounds = ui.bounds(stack).unwrap().unwrap();
     let metrics = ui.theme().metrics(ui.theme().density().unwrap()).unwrap();
-    let gap = metrics.get(MetricRole::GroupPadding);
+    let gap = metrics.metric(MetricRole::GroupPadding);
     let height = (bounds.height() - gap * count.saturating_sub(1) as f32) / count as f32;
     let point = Point::new(
-        bounds.x() + bounds.width() - metrics.get(MetricRole::ControlPaddingX) - 10.0,
+        bounds.x() + bounds.width() - metrics.metric(MetricRole::ControlPaddingX) - 10.0,
         bounds.y() + index as f32 * (height + gap) + height
-            - metrics.get(MetricRole::ControlPaddingX)
-            - metrics.get(MetricRole::ControlHeight) / 2.0,
+            - metrics.metric(MetricRole::ControlPaddingX)
+            - metrics.metric(MetricRole::ControlHeight) / 2.0,
     )
     .unwrap();
     for kind in [
@@ -210,7 +210,7 @@ fn transparent_toast_gap_delivers_press_and_wheel_to_the_backdrop() {
         .theme()
         .metrics(ui.theme().density().unwrap())
         .unwrap()
-        .get(MetricRole::GroupPadding);
+        .metric(MetricRole::GroupPadding);
     let point = Point::new(
         bounds.x() + bounds.width() / 2.0,
         bounds.y() + bounds.height() / 2.0,

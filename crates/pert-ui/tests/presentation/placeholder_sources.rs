@@ -28,7 +28,7 @@ fn property(ui: &Runtime, key: &str, name: &str) -> Option<String> {
 
 fn install(ui: &Runtime, role: StringRole, text: &str) -> TestResult {
     ui.ui_settings()
-        .set_strings(UiStrings::english().with(role, text)?)?;
+        .set_strings(UiStrings::english().with_text(role, text)?)?;
     Ok(())
 }
 

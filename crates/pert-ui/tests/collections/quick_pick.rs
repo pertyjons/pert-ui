@@ -518,7 +518,7 @@ fn next_picker(s: &Setup) -> QuickPick {
     .matcher(PickMatcher::new(|_, item| {
         Some(if item.key == "page/knobs" { 100 } else { 0 })
     }))
-    .width(420.0)
+    .width(Length::new(420.0).unwrap())
     .unwrap()
     .nonmodal()
 }
@@ -533,7 +533,7 @@ fn picker_description_configuration_waits_for_the_next_session() {
             .placeholder("Old search")
             .list_name("Old results")
             .empty_text("Old empty")
-            .width(280.0)
+            .width(Length::new(280.0).unwrap())
             .unwrap()
     });
     s.open();
@@ -579,7 +579,11 @@ fn picker_description_configuration_waits_for_the_next_session() {
 }
 #[test]
 fn failed_pending_result_reopens_the_same_configuration_snapshot() {
-    let mut s = setup(|p| p.name("Old picker").width(280.0).unwrap());
+    let mut s = setup(|p| {
+        p.name("Old picker")
+            .width(Length::new(280.0).unwrap())
+            .unwrap()
+    });
     let result = s.ui.signal(None::<Result<(), String>>);
     let binding = result.read_only();
     s.answer(move |_| {
@@ -627,7 +631,11 @@ fn equivalent_picker_description_does_not_invalidate_layout() {
 
 #[test]
 fn latest_picker_description_can_reset_pending_configuration_to_defaults() {
-    let mut s = setup(|p| p.name("Old picker").width(280.0).unwrap());
+    let mut s = setup(|p| {
+        p.name("Old picker")
+            .width(Length::new(280.0).unwrap())
+            .unwrap()
+    });
     s.open();
     let next = next_picker(&s);
     s.ui.reconcile_children(&s.root, vec![Element::new("picker", next)])
@@ -645,7 +653,7 @@ fn latest_picker_description_can_reset_pending_configuration_to_defaults() {
     assert_eq!(s.semantics("picker").name.as_deref(), Some("Quick pick"));
     assert_eq!(s.semantics("picker").role, SemanticRole::Dialog);
     assert_eq!(s.rows().first().map(String::as_str), Some("Colors"));
-    assert_eq!(panel_width(&s), QuickPick::DEFAULT_WIDTH);
+    assert_eq!(panel_width(&s), QuickPick::DEFAULT_WIDTH.get());
 }
 
 #[test]
@@ -683,9 +691,9 @@ fn picker_mount_adopts_an_already_open_controller_and_keeps_role_localization_li
     ui.ui_settings()
         .set_strings(
             UiStrings::english()
-                .with(StringRole::PickerName, "Translated picker")
+                .with_text(StringRole::PickerName, "Translated picker")
                 .unwrap()
-                .with(StringRole::SearchPlaceholder, "Translated search")
+                .with_text(StringRole::SearchPlaceholder, "Translated search")
                 .unwrap(),
         )
         .unwrap();

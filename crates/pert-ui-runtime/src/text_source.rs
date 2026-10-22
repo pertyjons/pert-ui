@@ -140,7 +140,7 @@ impl TextSource {
             Source::Fixed(content) => Ok(content.clone()),
             Source::Plain(source) => Ok(RichText::from(cx.read(source)?)),
             Source::Rich(source) => cx.read(source),
-            Source::Role(role, _) => Ok(RichText::from(cx.strings()?.get(*role))),
+            Source::Role(role, _) => Ok(RichText::from(cx.strings()?.text(*role))),
         }
     }
     /// Reads text whose changes leave the component's geometry unchanged,
@@ -157,7 +157,7 @@ impl TextSource {
             Source::Rich(source) => cx.read_paint(source),
             // The string table subscribes for layout; a role's text is short
             // and rarely changes.
-            Source::Role(role, _) => Ok(RichText::from(cx.strings()?.get(*role))),
+            Source::Role(role, _) => Ok(RichText::from(cx.strings()?.text(*role))),
         }
     }
 }

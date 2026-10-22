@@ -62,13 +62,13 @@ fn assert_near(actual: f32, expected: f32) {
 }
 
 fn travel() -> f32 {
-    ThemeMetrics::default().get(MetricRole::KnobTravel)
+    ThemeMetrics::default().metric(MetricRole::KnobTravel)
 }
 
 #[test]
 fn default_size_is_the_themed_diameter_and_grows_for_the_readout() {
     let plain = setup(Knob::new);
-    let diameter = ThemeMetrics::default().get(MetricRole::KnobDiameter);
+    let diameter = ThemeMetrics::default().metric(MetricRole::KnobDiameter);
     let bounds = plain.ui.bounds(&plain.knob).unwrap().unwrap();
     assert_eq!((bounds.width(), bounds.height()), (diameter, diameter));
     let readout = setup(|p| Knob::new(p).show_value(true));

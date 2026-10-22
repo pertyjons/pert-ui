@@ -504,7 +504,7 @@ const fn bytes_equal(text: &[u8], start: usize, end: usize, name: &[u8]) -> bool
     true
 }
 
-/// A refused replacement string for [`UiStrings::with`].
+/// A refused replacement string for [`UiStrings::with_text`].
 #[derive(Clone, Debug, Eq, PartialEq, thiserror::Error)]
 #[non_exhaustive]
 pub enum UiStringError {
@@ -512,8 +512,8 @@ pub enum UiStringError {
     /// it needs words.
     #[error("the text for {0:?} is blank")]
     Blank(StringRole),
-    /// The text is longer than [`UiStrings::MAX_LENGTH`] bytes.
-    #[error("the text for {0:?} is longer than {max} bytes", max = UiStrings::MAX_LENGTH)]
+    /// The text is longer than [`UiStrings::MAX_TEXT_BYTES`] bytes.
+    #[error("the text for {0:?} is longer than {max} bytes", max = UiStrings::MAX_TEXT_BYTES)]
     TooLong(StringRole),
     /// The text contains a control character, such as a line break.
     #[error("the text for {0:?} contains a control character")]
@@ -527,7 +527,7 @@ pub enum UiStringError {
 /// The complete table of library strings, one validated text per
 /// [`StringRole`], with English defaults.
 ///
-/// Build a replacement from [`Self::english`] with [`Self::with`] and install
+/// Build a replacement from [`Self::english`] with [`Self::with_text`] and install
 /// it with [`UiSettings::set_strings`](crate::UiSettings::set_strings); every
 /// built-in component that shows one of these strings reads the table in its
 /// update, so installing a table invalidates exactly those components and
@@ -542,16 +542,16 @@ pub enum UiStringError {
 /// use pert_ui::{Runtime, StringRole, UiMessage, UiStrings};
 /// let ui = Runtime::new();
 /// let swedish = UiStrings::english()
-///     .with(StringRole::TextCopy, "Kopiera")?
-///     .with(StringRole::BackTo, "Tillbaka till {place}")?;
+///     .with_text(StringRole::TextCopy, "Kopiera")?
+///     .with_text(StringRole::BackTo, "Tillbaka till {place}")?;
 /// ui.ui_settings().set_strings(swedish.clone())?;
-/// assert_eq!(ui.ui_settings().strings()?.get(StringRole::TextCopy), "Kopiera");
+/// assert_eq!(ui.ui_settings().strings()?.text(StringRole::TextCopy), "Kopiera");
 /// assert_eq!(
 ///     swedish.format(UiMessage::BackTo { place: "Färger" }),
 ///     "Tillbaka till Färger"
 /// );
 /// // A template must keep its role's placeholders.
-/// assert!(UiStrings::english().with(StringRole::BackTo, "Tillbaka").is_err());
+/// assert!(UiStrings::english().with_text(StringRole::BackTo, "Tillbaka").is_err());
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 #[derive(Clone, Debug)]
@@ -574,8 +574,9 @@ impl Default for UiStrings {
 }
 
 impl UiStrings {
-    /// The longest text a role accepts, in bytes.
-    pub const MAX_LENGTH: usize = 1024;
+    /// The longest text a role accepts, in UTF-8 bytes, not characters: a
+    /// non-ASCII translation reaches it with fewer characters.
+    pub const MAX_TEXT_BYTES: usize = 1024;
 
     /// The built-in English table.
     pub fn english() -> Self {
@@ -592,19 +593,23 @@ impl UiStrings {
     ///
     /// # Errors
     /// [`UiStringError::Blank`] for empty or whitespace text,
-    /// [`UiStringError::TooLong`] beyond [`Self::MAX_LENGTH`] bytes,
+    /// [`UiStringError::TooLong`] beyond [`Self::MAX_TEXT_BYTES`] bytes,
     /// [`UiStringError::ControlCharacter`] for line breaks and other control
     /// characters, and [`UiStringError::Placeholders`] for a template whose
     /// placeholders differ from [`StringRole::placeholders`]. This consumes the
     /// table on success and on error. Clone it before calling when the original
     /// must remain available after a rejected replacement; clones share storage
     /// until a successful replacement creates a new table.
-    pub fn with(self, role: StringRole, text: impl Into<String>) -> Result<Self, UiStringError> {
+    pub fn with_text(
+        self,
+        role: StringRole,
+        text: impl Into<String>,
+    ) -> Result<Self, UiStringError> {
         let text = text.into();
         if text.trim().is_empty() {
             return Err(UiStringError::Blank(role));
         }
-        if text.len() > Self::MAX_LENGTH {
+        if text.len() > Self::MAX_TEXT_BYTES {
             return Err(UiStringError::TooLong(role));
         }
         if text.chars().any(char::is_control) {
@@ -623,7 +628,7 @@ impl UiStrings {
     /// The text for `role`. For a role with placeholders this is the template
     /// itself; use [`Self::format`] to fill it in.
     #[must_use]
-    pub fn get(&self, role: StringRole) -> &str {
+    pub fn text(&self, role: StringRole) -> &str {
         &self.texts[role as usize]
     }
 
@@ -632,7 +637,7 @@ impl UiStrings {
     pub fn format(&self, message: UiMessage<'_>) -> String {
         let role = message.role();
         let mut out = String::new();
-        let template = self.get(role);
+        let template = self.text(role);
         let mut rest = template;
         while let Some(position) = rest.find(['{', '}']) {
             out.push_str(&rest[..position]);

@@ -72,7 +72,7 @@ pub use svg::component::Svg;
 /// - keyboard shortcuts and commands: [`Modifiers`], [`KeyChord`],
 ///   [`CommandKey`], [`CommandScope`], [`CommandId`] and [`CommandContext`];
 ///   held keys: [`HeldInputId`] and [`HeldCancellation`];
-/// - reordering a list, tabs or a tree: [`ListDrop`], [`DropPosition`],
+/// - reordering a list, tabs or a tree: [`ListDrop`], [`ListDropPosition`],
 ///   [`ListDropPoint`], [`ListDropPlacement`] and [`ListDropMark`];
 /// - live data: [`LevelMeter`], [`Trace`], [`MeterAxis`], [`SeriesSource`],
 ///   [`series_bridge`], [`SeriesConfig`] and [`Timestamp`]; a parameter edit's

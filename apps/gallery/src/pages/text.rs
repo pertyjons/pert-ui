@@ -6,7 +6,7 @@ pub(crate) fn text_rendering_page(ui: &Runtime) -> Result<Element, AppError> {
     let settings = ui.ui_settings();
     let line = settings.clone();
     let recomposed = settings.clone();
-    let active = settings.text_rendering_signal()?;
+    let active = settings.text_rendering_binding()?;
     let scrolling = Column::new((0..24).map(|index| {
         Element::new(
             format!("sample-{index}"),
@@ -390,7 +390,7 @@ pub(crate) fn text_editing(ui: &Runtime) -> Result<Element, RuntimeError> {
 // fields, length limits with a counter, a concealed password with a reveal
 // button, and a pending check the application finishes later.
 fn sign_in_example(ui: &Runtime) -> Result<Element, RuntimeError> {
-    let form = FormStatus::new(ui);
+    let form = FormFields::new(ui);
     let user = form.field("user")?;
     let password = form.field("password")?;
     let user_name = ui.signal(String::new());

@@ -422,7 +422,7 @@ layout, just like the built-in label:
 ```rust
 use pert_ui::{ArrangeContext, Component, Constraints, DrawError, Element, Icon,
     MeasureContext, Painter, RichText, Runtime, RuntimeError, Size, TextLayout,
-    TextStyle, UpdateContext, Viewport, ColorRole};
+    TextStyle, UpdateContext, Viewport, ColorRole, Point};
 use std::{cell::RefCell, time::Duration};
 
 struct Caption {
@@ -442,7 +442,7 @@ impl Component for Caption {
     }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
         if let Some(layout) = self.layout.borrow().as_ref() {
-            layout.paint(painter, 0.0, 0.0, painter.color(ColorRole::OnSurface))?;
+            layout.paint(painter, Point::ZERO, painter.color(ColorRole::OnSurface))?;
         }
         Ok(())
     }

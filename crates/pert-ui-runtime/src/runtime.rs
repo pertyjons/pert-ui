@@ -1374,9 +1374,10 @@ pub trait Component: std::any::Any {
     fn descendant_tab_stops(&self) -> bool {
         true
     }
-    /// Offered an unmodified Tab (`reverse` false) or Shift+Tab press or
-    /// repeat that has reached default keyboard traversal, before the runtime
-    /// moves focus. Return [`InputOutcome::Handled`](crate::InputOutcome::Handled) to claim it: traversal
+    /// Offered an unmodified Tab ([`FocusDirection::Forward`](crate::FocusDirection::Forward))
+    /// or Shift+Tab ([`FocusDirection::Backward`](crate::FocusDirection::Backward))
+    /// press or repeat that has reached default keyboard traversal, before the
+    /// runtime moves focus. Return [`InputOutcome::Handled`](crate::InputOutcome::Handled) to claim it: traversal
     /// does not run, and the component moves focus itself if it wants to, for
     /// example to the next cell of a table it is editing. Default `Ignored`.
     ///
@@ -1389,7 +1390,9 @@ pub trait Component: std::any::Any {
     /// registrations all come first; [`Runtime::key_input`] offers the key
     /// where it would traverse. Claiming does not take the key's release,
     /// which is dispatched as before to the component focused when it
-    /// arrives. `repeat` is true for an operating-system repeat.
+    /// arrives. `transition` is [`KeyTransition::Pressed`](crate::KeyTransition::Pressed)
+    /// for a press and [`KeyTransition::Repeated`](crate::KeyTransition::Repeated)
+    /// for an operating-system repeat; a release is never offered.
     ///
     /// # Errors
     /// An implementation returns an error when handling the key fails. It
@@ -1403,8 +1406,8 @@ pub trait Component: std::any::Any {
     fn tab_navigation(
         &mut self,
         _cx: &mut EventContext,
-        _reverse: bool,
-        _repeat: bool,
+        _direction: crate::FocusDirection,
+        _transition: crate::KeyTransition,
     ) -> Result<crate::InputOutcome, RuntimeError> {
         Ok(crate::InputOutcome::Ignored)
     }
@@ -1600,8 +1603,8 @@ pub trait Component: std::any::Any {
     }
     /// Opens the way to the immediate, mounted child `key` that
     /// [`Self::child_visible`] currently hides, for [`Runtime::reveal`],
-    /// [`Runtime::reveal_and_focus`], [`EventContext::request_reveal`] and
-    /// [`Runtime::reveal_child`].
+    /// [`Runtime::reveal_and_focus`], [`EventContext::request_reveal`],
+    /// [`EventContext::request_reveal_and_focus`] and [`Runtime::reveal_child`].
     ///
     /// The runtime calls it in an event phase, never during update or layout, and
     /// only for a child this component hides. A container that hides children in
@@ -2290,7 +2293,7 @@ pub trait Component: std::any::Any {
     /// [`DragPhase`](crate::DragPhase) for the four phases and
     /// [`DragRole`](crate::DragRole) for ancestors that are only told.
     ///
-    /// - Read the payload with [`DragPayload::get`](crate::DragPayload::get) and
+    /// - Read the payload with [`DragPayload::downcast_ref`](crate::DragPayload::downcast_ref) and
     ///   reject a type you do not recognize.
     /// - Accept with [`DragEvent::preferred`](crate::DragEvent::preferred) unless
     ///   the target has its own rule; an operation the source does not permit is
@@ -2986,7 +2989,7 @@ impl EventContext {
             .theme
             .borrow()
             .active_metrics()
-            .get(style.metric());
+            .metric(style.metric());
         self.node.shared.text.prepare(
             text,
             crate::text::TextRequest::new(style, size, &Cell::new(0))
@@ -3693,7 +3696,7 @@ impl Runtime {
     pub(crate) fn metric(&self, node: &Rc<Node>, role: crate::MetricRole) -> f32 {
         let mut theme = self.shared.theme.borrow_mut();
         theme.track_metrics(node);
-        theme.active_metrics().get(role)
+        theme.active_metrics().metric(role)
     }
     /// Prepares plain text at `node`'s raster scale, replacing the request's.
     pub(crate) fn prepare_text(
@@ -4806,7 +4809,7 @@ impl Runtime {
                 input.dispatched.set(true);
             }
             if !self.offer_tab(event, Some(recipients))? {
-                self.focus_next(self.keyboard.modifiers().shift)?;
+                self.focus_next(self.tab_direction())?;
             }
         } else if let Some(id) = self.window.focus.clone() {
             if event.code == crate::KeyCode::Escape
@@ -6131,7 +6134,7 @@ impl Runtime {
                     return self.focus(&WidgetId(node));
                 }
             }
-            self.focus_next(false)?;
+            self.focus_next(crate::FocusDirection::Forward)?;
         }
         Ok(())
     }

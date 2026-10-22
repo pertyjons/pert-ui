@@ -7,7 +7,7 @@ pub enum TaskStatus {
     /// The callback has not run.
     Pending,
     /// The callback returned successfully.
-    Completed,
+    Succeeded,
     /// The owner disappeared or the runtime shut down before delivery.
     Cancelled,
     /// The callback failed; it is never replayed automatically.
@@ -278,7 +278,7 @@ impl Runtime {
                 self.select_window(&previous)?;
             }
             let status = match &result {
-                Ok(()) => TaskStatus::Completed,
+                Ok(()) => TaskStatus::Succeeded,
                 Err(e) => TaskStatus::Failed(e.clone()),
             };
             task.receipt.0.set(status);

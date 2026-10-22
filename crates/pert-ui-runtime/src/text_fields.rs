@@ -329,11 +329,11 @@ macro_rules! editor_api {
             /// ```
             /// # use pert_ui_runtime as pert_ui;
             /// use pert_ui::{
-            ///     Element, Field, FieldStatus, FormStatus, InputRejection, KeyAction, KeyCode,
+            ///     Element, Field, FieldStatus, FormFields, InputRejection, KeyAction, KeyCode,
             ///     Runtime, TextField,
             /// };
             /// let mut ui = Runtime::new();
-            /// let form = FormStatus::new(&ui);
+            /// let form = FormFields::new(&ui);
             /// let handle = form.field("name")?;
             /// let status = handle.clone();
             /// let name = ui.signal(String::new());
@@ -499,7 +499,7 @@ macro_rules! editor_api {
             /// the same flush; each change is delivered once and in order. The
             /// callback may write signals, for example
             /// [`FieldHandle::set_modified`](crate::FieldHandle::set_modified)
-            /// so a [`FormStatus`](crate::FormStatus) counts unsaved fields.
+            /// so a [`FormFields`](crate::FormFields) counts unsaved fields.
             /// Only an editor in draft mode ever reports `true`. Its error is
             /// returned from the flush or input call that delivered it.
             ///
@@ -507,7 +507,7 @@ macro_rules! editor_api {
             /// # use pert_ui_runtime as pert_ui;
             /// use pert_ui::*;
             /// let mut ui = Runtime::new();
-            /// let form = FormStatus::new(&ui);
+            /// let form = FormFields::new(&ui);
             /// let handle = form.field("name")?;
             /// let name = ui.signal(String::new());
             /// let report = handle.clone();
@@ -733,10 +733,10 @@ macro_rules! editor_api {
             fn tab_navigation(
                 &mut self,
                 cx: &mut EventContext,
-                reverse: bool,
-                repeat: bool,
+                direction: crate::FocusDirection,
+                transition: crate::KeyTransition,
             ) -> Result<InputOutcome, RuntimeError> {
-                let outcome = self.0.session_tab(cx, reverse, repeat);
+                let outcome = self.0.session_tab(cx, direction, transition);
                 self.0.note_modified();
                 outcome
             }
@@ -1007,7 +1007,7 @@ impl FieldMenu {
             let target = target.clone();
             // The rows follow the installed string table while the menu is
             // retained; the current text is the fallback.
-            let label = TextSource::library(role, strings.get(role).to_owned());
+            let label = TextSource::library(role, strings.text(role).to_owned());
             let item = MenuItem::new(key, label, move |cx: &mut EventContext| {
                 // The action names its editor explicitly; the runtime delivers
                 // it in this flush's event phase, so focus is never moved.
@@ -1397,7 +1397,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
     }
     /// The selection, which lives in the shown text, as a range of `self.text`.
     fn real_range(&self) -> Range<usize> {
-        let range = self.selection.get().range();
+        let range = self.selection.get().byte_range();
         if self.masked() {
             revealed_offset(&self.text, range.start)..revealed_offset(&self.text, range.end)
         } else {
@@ -1451,7 +1451,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
                 offset
             }
         };
-        let (anchor, focus) = (real(selection.anchor()), real(selection.focus()));
+        let (anchor, focus) = (real(selection.anchor_byte()), real(selection.focus_byte()));
         self.revealed = revealed;
         let layout = self.layout_of(cx, &self.text)?;
         self.selection.set(TextSelection::new(
@@ -1657,7 +1657,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
                 Ok(Some(InputOutcome::Handled))
             }
             KeyCode::Tab if !(m.control || m.alt || m.super_key) => self
-                .session_tab(cx, m.shift, e.transition == KeyTransition::Repeated)
+                .session_tab(cx, crate::FocusDirection::from_shift(m.shift), e.transition)
                 .map(Some),
             _ => Ok(None),
         }
@@ -1668,14 +1668,18 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
     fn session_tab(
         &mut self,
         cx: &mut EventContext,
-        reverse: bool,
-        repeat: bool,
+        direction: crate::FocusDirection,
+        transition: crate::KeyTransition,
     ) -> Result<InputOutcome, RuntimeError> {
         if self.session.is_none() || self.multi {
             return Ok(InputOutcome::Ignored);
         }
-        if !repeat && self.preedit.is_none() && !self.dragging && self.bar_drag.is_none() {
-            self.complete(cx, EditorTrigger::Tab { reverse })?;
+        if transition == crate::KeyTransition::Pressed
+            && self.preedit.is_none()
+            && !self.dragging
+            && self.bar_drag.is_none()
+        {
+            self.complete(cx, EditorTrigger::Tab { direction })?;
         }
         Ok(InputOutcome::Handled)
     }
@@ -2112,8 +2116,8 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             // Concealed text never reaches the clipboard, and a spaced paste
             // would place text by word boundaries the dots do not show.
             C::Copy | C::Cut | C::PasteBefore | C::PasteAfter if self.concealed => false,
-            C::Copy => !self.selection.get().range().is_empty(),
-            C::Cut => !self.locked() && !self.selection.get().range().is_empty(),
+            C::Copy => !self.selection.get().byte_range().is_empty(),
+            C::Cut => !self.locked() && !self.selection.get().byte_range().is_empty(),
             C::Paste | C::PasteBefore | C::PasteAfter => !self.locked() && clipboard,
             C::SelectAll => !self.text.is_empty(),
         }
@@ -2207,7 +2211,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             }
             C::Copy | C::Cut => {
                 let cut = command == C::Cut;
-                let range = self.selection.get().range();
+                let range = self.selection.get().byte_range();
                 if range.is_empty() || (cut && self.locked()) {
                     return Ok(R::Unavailable);
                 }
@@ -2249,7 +2253,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
                 let normalized = self.paste_text(&text);
                 let Some((at, insert, keep)) = spaced_paste::resolve(
                     &self.text,
-                    self.selection.get().range(),
+                    self.selection.get().byte_range(),
                     &normalized,
                     command == C::PasteAfter,
                 ) else {
@@ -2315,7 +2319,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             // Read through the table so another installed table relabels it.
             self.modified_text = cx
                 .strings()?
-                .get(crate::StringRole::TextModified)
+                .text(crate::StringRole::TextModified)
                 .to_owned();
         }
         self.note_modified();
@@ -2419,7 +2423,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
     }
     fn display_selection(&self, layout: &TextLayout) -> TextSelection {
         if let Some((preedit, range)) = &self.preedit {
-            let cursor = preedit.cursor().unwrap_or(0..0);
+            let cursor = preedit.cursor_byte_range().unwrap_or(0..0);
             TextSelection::new(layout, range.start + cursor.start, range.start + cursor.end)
         } else {
             self.selection.get()
@@ -2570,7 +2574,11 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             let text = p.text(&self.suffix, None, self.style)?;
             let [x, y, _, h] = area.values();
             p.with_clip(area, |p| {
-                text.paint(p, x, y + (h - text.size().height()).max(0.0) / 2.0, muted)
+                text.paint(
+                    p,
+                    crate::Point::new(x, y + (h - text.size().height()).max(0.0) / 2.0)?,
+                    muted,
+                )
             })?;
         }
         if self.clear_shown()
@@ -2803,7 +2811,11 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
                     self.multi.then_some(w.max(1.0)),
                     self.style,
                 )?;
-                hint.paint(p, origin[0], origin[1], p.color(ColorRole::Muted))?;
+                hint.paint(
+                    p,
+                    crate::Point::new(origin[0], origin[1])?,
+                    p.color(ColorRole::Muted),
+                )?;
             }
             let selection_rects = selection.rectangles(&layout)?;
             for r in &selection_rects {
@@ -2811,8 +2823,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             }
             layout.paint(
                 p,
-                origin[0],
-                origin[1],
+                crate::Point::new(origin[0], origin[1])?,
                 p.color(if self.enabled {
                     ColorRole::OnSurface
                 } else {
@@ -2821,7 +2832,11 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             )?;
             for r in selection_rects {
                 p.with_clip(offset(r, origin)?, |p| {
-                    layout.paint(p, origin[0], origin[1], p.color(ColorRole::OnTextSelection))
+                    layout.paint(
+                        p,
+                        crate::Point::new(origin[0], origin[1])?,
+                        p.color(ColorRole::OnTextSelection),
+                    )
                 })?;
             }
             if let Some(range) = composition {
@@ -2839,7 +2854,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
                 && self
                     .preedit
                     .as_ref()
-                    .is_none_or(|(t, _)| t.cursor().is_some())
+                    .is_none_or(|(t, _)| t.cursor_byte_range().is_some())
             {
                 p.fill_rect(offset(caret, origin)?, p.color(ColorRole::OnSurface));
             }
@@ -2864,8 +2879,10 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             p.with_clip(area, |p| {
                 count.paint(
                     p,
-                    x + cw - count.size().width(),
-                    y + (ch - count.size().height()).max(0.0) / 2.0,
+                    crate::Point::new(
+                        x + cw - count.size().width(),
+                        y + (ch - count.size().height()).max(0.0) / 2.0,
+                    )?,
                     p.color(role),
                 )
             })?;
@@ -3009,7 +3026,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
         let range = self
             .preedit
             .as_ref()
-            .map_or_else(|| self.selection.get().range(), |(_, r)| r.clone());
+            .map_or_else(|| self.selection.get().byte_range(), |(_, r)| r.clone());
         let mut candidate = self.text.clone();
         candidate.replace_range(range.clone(), text.text());
         if candidate.len() > crate::TextEditError::MAX_TEXT_BYTES {
@@ -3052,8 +3069,8 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
                 };
                 TextSelection::new(
                     &layout,
-                    convert(snapshot.selection.anchor()),
-                    convert(snapshot.selection.focus()),
+                    convert(snapshot.selection.anchor_byte()),
+                    convert(snapshot.selection.focus_byte()),
                 )
             };
             let old = Snapshot {
@@ -3113,7 +3130,10 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
                 cx.invalidate(Invalidation::Paint);
                 return Ok(InputOutcome::Handled);
             }
-            if self.preedit.is_none() && !self.dragging && self.selection.get().range().is_empty() {
+            if self.preedit.is_none()
+                && !self.dragging
+                && self.selection.get().byte_range().is_empty()
+            {
                 if !self.dirty() && self.rejection.is_none() {
                     // A refusal whose draft an application write discarded
                     // ends here; Escape still bubbles to the owner.
@@ -3128,7 +3148,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             if self.preedit.is_some() {
                 self.cancel_composition();
             } else {
-                let caret = self.selection.get().focus();
+                let caret = self.selection.get().focus_byte();
                 let layout = self.layout(cx)?;
                 self.selection
                     .set(TextSelection::new(&layout, caret, caret));
@@ -3187,8 +3207,11 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             return Ok(InputOutcome::Handled);
         }
         if let Some(movement) = key_movement(e.code, m) {
-            self.selection
-                .set(self.selection.get().moved(&layout, movement, m.shift));
+            self.selection.set(self.selection.get().moved(
+                &layout,
+                movement,
+                crate::SelectionExtension::from_shift(m.shift),
+            ));
             self.changed(cx);
             return Ok(InputOutcome::Handled);
         }
@@ -3396,17 +3419,21 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
                 2 if self.concealed => TextSelection::new(&layout, 0, usize::MAX),
                 2 => TextSelection::word_at_point(&layout, point),
                 3 => TextSelection::new(&layout, 0, usize::MAX),
-                _ => self
-                    .selection
-                    .get()
-                    .at_point(&layout, point, cx.modifiers().shift),
+                _ => self.selection.get().at_point(
+                    &layout,
+                    point,
+                    crate::SelectionExtension::from_shift(cx.modifiers().shift),
+                ),
             };
             self.selection.set(selected);
             self.dragging = true;
             cx.capture_pointer()?;
         } else if self.clicks != 3 {
-            self.selection
-                .set(self.selection.get().at_point(&layout, point, true));
+            self.selection.set(self.selection.get().at_point(
+                &layout,
+                point,
+                crate::SelectionExtension::Extend,
+            ));
         }
         self.changed(cx);
         Ok(InputOutcome::Handled)
@@ -3500,8 +3527,8 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
                 "selection".into(),
                 InspectValue::Text(format!(
                     "{}..{}",
-                    self.selection.get().anchor(),
-                    self.selection.get().focus()
+                    self.selection.get().anchor_byte(),
+                    self.selection.get().focus_byte()
                 )),
             );
         }

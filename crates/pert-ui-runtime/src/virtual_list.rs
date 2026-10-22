@@ -7,12 +7,12 @@ use std::{
 
 use crate::{
     ArrangeContext, ColorRole, ComponentDetails, Constraints, DragEvent, DragOutcome, DragPayload,
-    DragPhase, DragPreview, DragRole, DrawError, DropOperation, DropOperations, DropPosition,
-    DropResponse, Element, EventContext, InputOutcome, InspectValue, Invalidation, KeyCode,
-    KeyEvent, KeyTransition, KeyboardState, Label, LayoutError, Length, ListDragItems, ListDrop,
-    ListSelection, MeasureContext, MetricRole, Orientation, Painter, Permission, Point,
-    PointerButton, PointerEvent, PointerKind, Rect, SemanticAction, SemanticRole, SemanticValue,
-    Semantics, Shape, Size, UpdateContext, VirtualAxis,
+    DragPhase, DragPreview, DragRole, DrawError, DropOperation, DropOperations, DropResponse,
+    Element, EventContext, InputOutcome, InspectValue, Invalidation, KeyCode, KeyEvent,
+    KeyTransition, KeyboardState, Label, LayoutError, Length, ListDragItems, ListDrop,
+    ListDropPosition, ListSelection, MeasureContext, MetricRole, Orientation, Painter, Permission,
+    Point, PointerButton, PointerEvent, PointerKind, Rect, SemanticAction, SemanticRole,
+    SemanticValue, Semantics, Shape, Size, UpdateContext, VirtualAxis,
     list_selection::Gesture,
     runtime::{Component, RuntimeError},
     scrollbar,
@@ -593,20 +593,20 @@ impl ListDropPoint {
 /// [placement rule](VirtualList::placement) answers.
 #[derive(Clone, Debug, PartialEq)]
 pub struct ListDropPlacement {
-    position: DropPosition,
+    position: ListDropPosition,
     mark: ListDropMark,
 }
 
 impl ListDropPlacement {
     /// A drop at `position`, shown with `mark`.
     #[must_use]
-    pub const fn new(position: DropPosition, mark: ListDropMark) -> Self {
+    pub const fn new(position: ListDropPosition, mark: ListDropMark) -> Self {
         Self { position, mark }
     }
     /// Where the drop goes; the reorder callback receives it in its
     /// [`ListDrop`].
     #[must_use]
-    pub const fn position(&self) -> &DropPosition {
+    pub const fn position(&self) -> &ListDropPosition {
         &self.position
     }
     /// How the list shows it.
@@ -1079,13 +1079,13 @@ impl VirtualList {
     /// let items = ui.signal(ListSource::new(Groups));
     /// // Every drop goes into the group under the pointer, never between.
     /// let list = VirtualList::new(items.read_only(), 24.0)?
-    ///     .reorderable(|_, drop| Ok(matches!(drop.position(), DropPosition::Into(_))))
+    ///     .reorderable(|_, drop| Ok(matches!(drop.position(), ListDropPosition::Into(_))))
     ///     .placement(|_keys, at| {
     ///         let (Some(index), Some(key)) = (at.index(), at.key()) else {
     ///             return None;
     ///         };
     ///         Some(ListDropPlacement::new(
-    ///             DropPosition::Into(key.to_owned()),
+    ///             ListDropPosition::Into(key.to_owned()),
     ///             ListDropMark::Into(index),
     ///         ))
     ///     });
@@ -1112,7 +1112,7 @@ impl VirtualList {
         &mut self,
         cx: &mut EventContext,
         keys: &[String],
-        position: DropPosition,
+        position: ListDropPosition,
     ) -> Result<bool, RuntimeError> {
         if !self.reorder_allowed {
             return Ok(false);
@@ -1196,15 +1196,15 @@ impl VirtualList {
         index + usize::from(after)
     }
 
-    fn position_for(&self, boundary: usize) -> DropPosition {
+    fn position_for(&self, boundary: usize) -> ListDropPosition {
         let Some(items) = &self.snapshot else {
-            return DropPosition::End;
+            return ListDropPosition::End;
         };
         match items.key(boundary) {
-            Some(key) => DropPosition::Before(key),
+            Some(key) => ListDropPosition::Before(key),
             None => match boundary.checked_sub(1).and_then(|last| items.key(last)) {
-                Some(key) => DropPosition::After(key),
-                None => DropPosition::End,
+                Some(key) => ListDropPosition::After(key),
+                None => ListDropPosition::End,
             },
         }
     }
@@ -1354,7 +1354,7 @@ impl VirtualList {
         };
         let position = if forward {
             match items.key(last + 1) {
-                Some(key) => DropPosition::After(key),
+                Some(key) => ListDropPosition::After(key),
                 None => return Ok(false),
             }
         } else {
@@ -1362,7 +1362,7 @@ impl VirtualList {
                 .checked_sub(1)
                 .and_then(|previous| items.key(previous))
             {
-                Some(key) => DropPosition::Before(key),
+                Some(key) => ListDropPosition::Before(key),
                 None => return Ok(false),
             }
         };
@@ -2291,7 +2291,7 @@ impl Component for VirtualList {
         cx: &mut EventContext,
         event: &DragEvent<'_>,
     ) -> Result<DropResponse, RuntimeError> {
-        let Some(items) = event.payload().get::<ListDragItems>() else {
+        let Some(items) = event.payload().downcast_ref::<ListDragItems>() else {
             return Ok(DropResponse::Rejected);
         };
         if !self.reorder_allowed || self.reorder.is_none() || event.phase() == DragPhase::Leave {

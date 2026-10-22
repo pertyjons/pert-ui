@@ -27,15 +27,15 @@ fn reported(ui: &Runtime) -> Vec<String> {
 
 fn swedish() -> UiStrings {
     UiStrings::english()
-        .with(StringRole::SelectPlaceholder, "Välj…")
-        .and_then(|s| s.with(StringRole::BreadcrumbName, "Sökväg"))
-        .and_then(|s| s.with(StringRole::RemoveItem, "Ta bort {item}"))
-        .and_then(|s| s.with(StringRole::ToastDismiss, "Stäng"))
-        .and_then(|s| s.with(StringRole::HistoryName, "Historik"))
-        .and_then(|s| s.with(StringRole::HistoryBack, "Bakåt"))
-        .and_then(|s| s.with(StringRole::BackTo, "Tillbaka till {place}"))
-        .and_then(|s| s.with(StringRole::WindowClose, "Stäng fönstret"))
-        .and_then(|s| s.with(StringRole::AtLeastCharacters, "Minst {count} tecken"))
+        .with_text(StringRole::SelectPlaceholder, "Välj…")
+        .and_then(|s| s.with_text(StringRole::BreadcrumbName, "Sökväg"))
+        .and_then(|s| s.with_text(StringRole::RemoveItem, "Ta bort {item}"))
+        .and_then(|s| s.with_text(StringRole::ToastDismiss, "Stäng"))
+        .and_then(|s| s.with_text(StringRole::HistoryName, "Historik"))
+        .and_then(|s| s.with_text(StringRole::HistoryBack, "Bakåt"))
+        .and_then(|s| s.with_text(StringRole::BackTo, "Tillbaka till {place}"))
+        .and_then(|s| s.with_text(StringRole::WindowClose, "Stäng fönstret"))
+        .and_then(|s| s.with_text(StringRole::AtLeastCharacters, "Minst {count} tecken"))
         .unwrap()
 }
 
@@ -45,7 +45,7 @@ fn installing_a_table_relabels_built_in_components_without_polling() {
     ui.set_viewport(Viewport::new(900.0, 700.0, 1.0).unwrap())
         .unwrap();
     let unit = ui.signal("none");
-    let queue = ToastQueue::new(&ui);
+    let queue = ToastController::new(&ui);
     let history = NavigationHistory::new(&ui).unwrap();
     history.visit("a", "Alfa").unwrap();
     history.visit("b", "Beta").unwrap();
@@ -208,38 +208,41 @@ fn length_refusals_and_menu_rows_follow_the_table() {
 #[test]
 fn replacements_are_validated_against_their_role() {
     let english = UiStrings::english();
-    assert_eq!(english.get(StringRole::TextCopy), "Copy");
+    assert_eq!(english.text(StringRole::TextCopy), "Copy");
     assert_eq!(
         english.format(UiMessage::AtMostCharacters { count: 8 }),
         "Character count must be at most 8"
     );
     assert_eq!(
-        UiStrings::english().with(StringRole::TextCopy, "  "),
+        UiStrings::english().with_text(StringRole::TextCopy, "  "),
         Err(UiStringError::Blank(StringRole::TextCopy))
     );
     assert_eq!(
-        UiStrings::english().with(StringRole::TextCopy, "Ko\npiera"),
+        UiStrings::english().with_text(StringRole::TextCopy, "Ko\npiera"),
         Err(UiStringError::ControlCharacter(StringRole::TextCopy))
     );
     assert_eq!(
-        UiStrings::english().with(StringRole::BackTo, "Tillbaka"),
+        UiStrings::english().with_text(StringRole::BackTo, "Tillbaka"),
         Err(UiStringError::Placeholders(StringRole::BackTo))
     );
     assert_eq!(
-        UiStrings::english().with(StringRole::BackTo, "Till {where}"),
+        UiStrings::english().with_text(StringRole::BackTo, "Till {where}"),
         Err(UiStringError::Placeholders(StringRole::BackTo))
     );
     assert_eq!(
-        UiStrings::english().with(StringRole::TextCopy, "x".repeat(UiStrings::MAX_LENGTH + 1)),
+        UiStrings::english().with_text(
+            StringRole::TextCopy,
+            "x".repeat(UiStrings::MAX_TEXT_BYTES + 1)
+        ),
         Err(UiStringError::TooLong(StringRole::TextCopy))
     );
     let braces = UiStrings::english()
-        .with(StringRole::BackTo, "{{{place}}}")
+        .with_text(StringRole::BackTo, "{{{place}}}")
         .unwrap();
     assert_eq!(braces.format(UiMessage::BackTo { place: "x" }), "{x}");
     // Every role has a default and lists its placeholders.
     for role in StringRole::ALL {
-        assert!(!english.get(*role).trim().is_empty(), "{role:?}");
+        assert!(!english.text(*role).trim().is_empty(), "{role:?}");
     }
 }
 
@@ -316,7 +319,7 @@ fn an_open_picker_follows_a_new_table() {
     let before = placeholders(&ui);
     assert!(before.iter().any(|text| text == "Search"), "{before:?}");
     let table = UiStrings::english()
-        .with(StringRole::SearchPlaceholder, "Sök")
+        .with_text(StringRole::SearchPlaceholder, "Sök")
         .unwrap();
     ui.ui_settings().set_strings(table).unwrap();
     settle(&mut ui);
@@ -362,10 +365,10 @@ fn tool_windows_and_filters_follow_a_new_table() {
         assert!(names.iter().any(|name| name == text), "{text} in {names:?}");
     }
     let table = UiStrings::english()
-        .with(StringRole::ToolWindowHide, "Dölj {title}")
-        .and_then(|t| t.with(StringRole::ToolWindowOptions, "Alternativ för {title}"))
-        .and_then(|t| t.with(StringRole::ToolWindowStripeLeft, "Vänster"))
-        .and_then(|t| t.with(StringRole::FilterName, "Filtrera"))
+        .with_text(StringRole::ToolWindowHide, "Dölj {title}")
+        .and_then(|t| t.with_text(StringRole::ToolWindowOptions, "Alternativ för {title}"))
+        .and_then(|t| t.with_text(StringRole::ToolWindowStripeLeft, "Vänster"))
+        .and_then(|t| t.with_text(StringRole::FilterName, "Filtrera"))
         .unwrap();
     ui.ui_settings().set_strings(table).unwrap();
     settle(&mut ui);
@@ -421,7 +424,7 @@ fn a_color_picker_swatch_without_a_name_follows_a_new_table() {
     };
     assert_eq!(swatch_names(&ui), ["Color", "Track color"]);
     let table = UiStrings::english()
-        .with(StringRole::ColorName, "Färg")
+        .with_text(StringRole::ColorName, "Färg")
         .unwrap();
     ui.ui_settings().set_strings(table).unwrap();
     settle(&mut ui);
@@ -443,9 +446,9 @@ fn default_length_refusals_are_count_neutral_and_replacements_keep_the_count() {
         );
     }
     let translated = english
-        .with(StringRole::AtLeastCharacters, "Minst {count} tecken")
+        .with_text(StringRole::AtLeastCharacters, "Minst {count} tecken")
         .unwrap()
-        .with(StringRole::AtMostCharacters, "Högst {count} tecken")
+        .with_text(StringRole::AtMostCharacters, "Högst {count} tecken")
         .unwrap();
     for count in [1, 2] {
         assert_eq!(

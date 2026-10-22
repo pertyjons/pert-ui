@@ -31,7 +31,7 @@ impl Text {
     }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
         if let Some(text) = self.prepared.borrow().as_ref() {
-            text.paint(painter, 0.0, 0.0, painter.color(ColorRole::OnSurface))?;
+            text.paint(painter, Point::ZERO, painter.color(ColorRole::OnSurface))?;
         }
         Ok(())
     }

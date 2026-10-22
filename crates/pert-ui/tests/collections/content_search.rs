@@ -992,7 +992,7 @@ fn a_jump_to_a_row_mounted_later_keeps_its_completion_and_focuses_it() {
     let ContentJump::Pending(pending) = ui.jump_to_content(&hit.target).unwrap() else {
         panic!("the hidden list cannot mount the row yet");
     };
-    assert_eq!(pending.status(), ListRevealStatus::Pending);
+    assert_eq!(pending.receipt().status(), ListRevealStatus::Pending);
     // Still pending: resuming returns the pending jump again.
     assert!(matches!(
         ui.resume_content_jump(&pending).unwrap(),
@@ -1000,7 +1000,10 @@ fn a_jump_to_a_row_mounted_later_keeps_its_completion_and_focuses_it() {
     ));
     shown.set(true).unwrap();
     settle(&mut ui);
-    assert!(matches!(pending.status(), ListRevealStatus::Mounted(_)));
+    assert!(matches!(
+        pending.receipt().status(),
+        ListRevealStatus::Mounted(_)
+    ));
     let jump = ui.resume_content_jump(&pending).unwrap();
     assert!(
         matches!(

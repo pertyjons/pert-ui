@@ -796,7 +796,7 @@ fn the_default_name_uses_the_installed_table_before_the_first_update()
 -> Result<(), Box<dyn std::error::Error>> {
     let mut ui = Runtime::new();
     ui.ui_settings()
-        .set_strings(UiStrings::english().with(StringRole::FilterName, "Filtern")?)?;
+        .set_strings(UiStrings::english().with_text(StringRole::FilterName, "Filtern")?)?;
     let source = ui.signal(ListSource::new(Fruit));
     let filter = ListFilter::new(&ui, source.read_only())?;
     let list = VirtualList::new(filter.items(), ROW)?;

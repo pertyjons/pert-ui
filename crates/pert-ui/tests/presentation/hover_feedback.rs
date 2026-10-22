@@ -104,7 +104,7 @@ fn text_and_inline_number_fields_share_neutral_hover_feedback() {
 #[test]
 fn toast_buttons_use_action_hover_color() {
     let mut ui = runtime();
-    let queue = ToastQueue::new(&ui);
+    let queue = ToastController::new(&ui);
     ui.mount_tree(Element::new(
         "host",
         ToastHost::new(

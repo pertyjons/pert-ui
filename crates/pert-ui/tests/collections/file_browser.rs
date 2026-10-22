@@ -1011,7 +1011,7 @@ fn redescribed_browser_parts_keep_the_mounted_controller() {
         .collect();
     assert_eq!(paths, [PathBuf::from("/r/alpha")]);
     let localized = UiStrings::english()
-        .with(StringRole::FileBrowserFilter, "Find entries")
+        .with_text(StringRole::FileBrowserFilter, "Find entries")
         .unwrap();
     ui.ui_settings().set_strings(localized).unwrap();
     settle(&mut ui);
@@ -1085,9 +1085,9 @@ fn hidden_browser_initializes_from_its_retained_controller_and_current_strings()
     ui.ui_settings()
         .set_strings(
             UiStrings::english()
-                .with(StringRole::FileBrowserFilter, "Initial entries")
+                .with_text(StringRole::FileBrowserFilter, "Initial entries")
                 .unwrap()
-                .with(StringRole::FileBrowserName, "Initial browser")
+                .with_text(StringRole::FileBrowserName, "Initial browser")
                 .unwrap(),
         )
         .unwrap();
@@ -1132,7 +1132,7 @@ fn hidden_browser_initializes_from_its_retained_controller_and_current_strings()
     ui.ui_settings()
         .set_strings(
             UiStrings::english()
-                .with(StringRole::FileBrowserFilter, "Find entries")
+                .with_text(StringRole::FileBrowserFilter, "Find entries")
                 .unwrap(),
         )
         .unwrap();
@@ -1338,7 +1338,7 @@ fn whitespace_failed_entry_names_remain_visible_after_localization() {
         .ui_settings()
         .set_strings(
             UiStrings::english()
-                .with(StringRole::EntryFailed, "Cannot read {name}: {reason}")
+                .with_text(StringRole::EntryFailed, "Cannot read {name}: {reason}")
                 .unwrap(),
         )
         .unwrap();

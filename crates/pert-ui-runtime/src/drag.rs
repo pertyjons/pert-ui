@@ -17,7 +17,7 @@ pub const DRAG_THRESHOLD: f32 = 4.0;
 /// The application-typed value a drag carries, owned by the session.
 ///
 /// One value of any `'static` type. Targets read it by reference with
-/// [`Self::get`] and reject what they do not recognize, which is the whole
+/// [`Self::downcast_ref`] and reject what they do not recognize, which is the whole
 /// compatibility protocol: inside one application an `enum` expresses
 /// alternatives and the compiler checks it. The payload never leaves the UI
 /// thread, is never serialized, and never enters inspection or event history.
@@ -32,8 +32,8 @@ pub const DRAG_THRESHOLD: f32 = 4.0;
 /// use pert_ui::DragPayload;
 /// struct Items(Vec<String>);
 /// let payload = DragPayload::new(Items(vec!["report".into()]));
-/// assert_eq!(payload.get::<Items>().map(|items| items.0.len()), Some(1));
-/// assert!(payload.get::<u32>().is_none());
+/// assert_eq!(payload.downcast_ref::<Items>().map(|items| items.0.len()), Some(1));
+/// assert!(payload.downcast_ref::<u32>().is_none());
 /// ```
 #[derive(Clone)]
 pub struct DragPayload {
@@ -51,7 +51,7 @@ impl DragPayload {
     }
     /// The value, when it is a `T`.
     #[must_use]
-    pub fn get<T: 'static>(&self) -> Option<&T> {
+    pub fn downcast_ref<T: 'static>(&self) -> Option<&T> {
         self.value.downcast_ref()
     }
     /// The payload's Rust type name, for diagnostics only; not a stable identity.

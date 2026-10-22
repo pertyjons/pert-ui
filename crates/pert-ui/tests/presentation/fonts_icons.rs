@@ -63,7 +63,7 @@ impl Component for Probe {
         } else {
             self.layout.borrow().as_ref().unwrap().clone()
         };
-        layout.paint(p, 0.0, 0.0, p.color(ColorRole::OnSurface))
+        layout.paint(p, Point::ZERO, p.color(ColorRole::OnSurface))
     }
 }
 fn probe(content: RichText, fixed: bool) -> (Probe, Rc<Cell<usize>>, Rc<Cell<usize>>) {

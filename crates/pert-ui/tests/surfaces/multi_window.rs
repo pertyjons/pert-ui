@@ -161,7 +161,7 @@ fn detached_tasks_run_in_their_window_and_cancel_when_it_closes() -> TestResult 
     })??;
     ui.select_window(&primary)?;
     ui.flush(Duration::ZERO)?;
-    assert_eq!(task.status(), TaskStatus::Completed);
+    assert_eq!(task.status(), TaskStatus::Succeeded);
     assert_eq!(seen.borrow().as_ref(), Some(&detached));
     assert_eq!(ui.current_window(), primary);
     // Retiring the window cancels an operation queued in it.
@@ -824,7 +824,7 @@ fn deferred_redock_during_flush_skips_the_retired_root() -> TestResult {
     ui.select_window(&ui.primary_window())?;
     let receipt = ui.defer(move |ui| ui.redock(&detached))?;
     ui.flush_windows(Duration::ZERO)?;
-    assert_eq!(receipt.status(), TaskStatus::Completed);
+    assert_eq!(receipt.status(), TaskStatus::Succeeded);
     assert_eq!(ui.window_of(&view)?, ui.primary_window());
     Ok(())
 }

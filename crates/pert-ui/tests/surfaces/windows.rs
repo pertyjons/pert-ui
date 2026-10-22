@@ -413,7 +413,7 @@ fn child_consumed_click_raises_window_without_changing_logical_order_or_clickthr
     // Stable traversal reaches both windows despite activation changing paint order.
     let mut seen = Vec::new();
     for _ in 0..20 {
-        ui.focus_next(false).unwrap();
+        ui.focus_next(FocusDirection::Forward).unwrap();
         settle(&mut ui);
         seen.push(ui.focused().unwrap());
     }

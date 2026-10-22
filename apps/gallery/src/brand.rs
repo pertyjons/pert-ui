@@ -33,7 +33,7 @@ impl BrandMark {
                 .description("pert-ui");
             Ok(Element::new(key, svg))
         };
-        let mode = ui.theme().mode_signal()?;
+        let mode = ui.theme().mode_binding()?;
         Ok(Self {
             children: vec![mark("light", ICON_LIGHT)?, mark("dark", ICON_DARK)?],
             dark: mode.get()? == ThemeMode::Dark,

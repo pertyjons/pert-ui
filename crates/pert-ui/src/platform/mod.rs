@@ -968,7 +968,7 @@ impl NativeState {
         if focused {
             if let Some(id) = self.restore_focus.take() {
                 if runtime.window_of(&id).ok().as_ref() != Some(&self.root) {
-                    runtime.focus_next(false)?;
+                    runtime.focus_next(crate::FocusDirection::Forward)?;
                     return Ok(());
                 }
                 match runtime.focus(&id) {
@@ -976,7 +976,7 @@ impl NativeState {
                     Err(
                         RuntimeError::Hidden | RuntimeError::Unmounted | RuntimeError::ModalBlocked,
                     ) => {
-                        runtime.focus_next(false)?;
+                        runtime.focus_next(crate::FocusDirection::Forward)?;
                     }
                     Err(error) => return Err(error.into()),
                 }

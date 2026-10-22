@@ -4,7 +4,7 @@ use crate::*;
 pub(super) struct TransientSmoke {
     root: WidgetId,
     dialog: DialogController,
-    queue: ToastQueue,
+    queue: ToastController,
     count: Signal<u32>,
     banner: Signal<bool>,
     receipt: Option<ToastReceipt>,
@@ -27,7 +27,7 @@ impl TransientSmoke {
     }
     pub(super) fn new(ui: &mut Runtime) -> Result<Self, RuntimeError> {
         let dialog = DialogController::new(ui);
-        let queue = ToastQueue::new(ui);
+        let queue = ToastController::new(ui);
         let count = ui.signal(0);
         let c = count.clone();
         let banner = ui.signal(true);

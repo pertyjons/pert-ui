@@ -42,9 +42,9 @@ impl TreeItems for Outline {
 fn apply(model: &mut Model, drop: &ListDrop<'_>) {
     let items = drop.items().to_vec();
     let named = match drop.position() {
-        DropPosition::Before(key) | DropPosition::After(key) | DropPosition::Into(key) => {
-            Some(key.clone())
-        }
+        ListDropPosition::Before(key)
+        | ListDropPosition::After(key)
+        | ListDropPosition::Into(key) => Some(key.clone()),
         _ => None,
     };
     // A position beside a dragged node leaves everything where it is.
@@ -62,14 +62,14 @@ fn apply(model: &mut Model, drop: &ListDrop<'_>) {
             .unwrap_or_default()
     };
     match drop.position() {
-        DropPosition::Before(key) | DropPosition::After(key) => {
+        ListDropPosition::Before(key) | ListDropPosition::After(key) => {
             let parent = parent_of(model, key);
             let siblings = model.entry(parent).or_default();
             let at = siblings.iter().position(|sibling| sibling == key).unwrap()
-                + usize::from(matches!(drop.position(), DropPosition::After(_)));
+                + usize::from(matches!(drop.position(), ListDropPosition::After(_)));
             siblings.splice(at..at, items);
         }
-        DropPosition::Into(key) => model.entry(key.clone()).or_default().extend(items),
+        ListDropPosition::Into(key) => model.entry(key.clone()).or_default().extend(items),
         _ => model.entry(String::new()).or_default().extend(items),
     }
 }

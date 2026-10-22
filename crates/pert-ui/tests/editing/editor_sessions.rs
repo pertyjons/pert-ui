@@ -340,7 +340,12 @@ fn tab_confirms_and_keeps_focus_for_the_host_to_move() {
             assert_eq!(s.focused().as_deref(), Some("editor"), "native {native}");
             assert_eq!(
                 s.log(),
-                [(EditorTrigger::Tab { reverse }, EditorOutcome::Saved)],
+                [(
+                    EditorTrigger::Tab {
+                        direction: direction(reverse),
+                    },
+                    EditorOutcome::Saved
+                )],
                 "native {native}, reverse {reverse}"
             );
         }
@@ -453,7 +458,12 @@ fn number_fields_report_through_the_session() {
             s.log(),
             [
                 (EditorTrigger::Enter, EditorOutcome::Refused),
-                (EditorTrigger::Tab { reverse: false }, EditorOutcome::Saved)
+                (
+                    EditorTrigger::Tab {
+                        direction: FocusDirection::Forward
+                    },
+                    EditorOutcome::Saved
+                )
             ],
             "native {native}"
         );
@@ -482,8 +492,8 @@ fn steps_edit_the_draft_while_a_session_is_open() {
     let [x, y, w, h] = s.ui.bounds(&editor).unwrap().unwrap().values();
     let metrics = s.ui.theme().metrics(Density::Standard).unwrap();
     let (pad, side) = (
-        metrics.get(MetricRole::ControlPaddingX),
-        metrics.get(MetricRole::IconSize),
+        metrics.metric(MetricRole::ControlPaddingX),
+        metrics.metric(MetricRole::IconSize),
     );
     let point = Point::new(x + w - pad - side / 2.0, y + h / 2.0).unwrap();
     s.ui.pointer_input(PointerEvent::new(
@@ -565,7 +575,9 @@ fn a_dropdown_reports_choices_cancellation_and_tab() {
         assert_eq!(
             s.log(),
             [(
-                EditorTrigger::Tab { reverse: true },
+                EditorTrigger::Tab {
+                    direction: FocusDirection::Backward
+                },
                 EditorOutcome::Unchanged
             )],
             "native {native}"
@@ -988,8 +1000,8 @@ impl Component for RowList {
                 .push((row, done.trigger, done.outcome));
             match (done.trigger, done.outcome) {
                 (_, EditorOutcome::Refused) => {}
-                (EditorTrigger::Tab { reverse }, _) => {
-                    let next = if reverse {
+                (EditorTrigger::Tab { direction }, _) => {
+                    let next = if direction == FocusDirection::Backward {
                         row.checked_sub(1)
                     } else {
                         Some(row + 1).filter(|next| *next < self.rows.len())
@@ -1154,11 +1166,35 @@ fn a_consumer_list_moves_its_edit_between_rows_and_keeps_a_refused_one_open() {
         assert_eq!(
             s.log(),
             [
-                (0, EditorTrigger::Tab { reverse: false }, Saved),
-                (1, EditorTrigger::Tab { reverse: false }, Refused),
-                (1, EditorTrigger::Tab { reverse: true }, Saved),
+                (
+                    0,
+                    EditorTrigger::Tab {
+                        direction: FocusDirection::Forward
+                    },
+                    Saved
+                ),
+                (
+                    1,
+                    EditorTrigger::Tab {
+                        direction: FocusDirection::Forward
+                    },
+                    Refused
+                ),
+                (
+                    1,
+                    EditorTrigger::Tab {
+                        direction: FocusDirection::Backward
+                    },
+                    Saved
+                ),
                 (0, EditorTrigger::Enter, Unchanged),
-                (2, EditorTrigger::Tab { reverse: false }, Unchanged),
+                (
+                    2,
+                    EditorTrigger::Tab {
+                        direction: FocusDirection::Forward
+                    },
+                    Unchanged
+                ),
             ],
             "native {native}"
         );
@@ -1189,7 +1225,9 @@ fn a_normalization_equivalent_draft_completes_unchanged() {
             let trigger = if code == KeyCode::Enter {
                 EditorTrigger::Enter
             } else {
-                EditorTrigger::Tab { reverse: false }
+                EditorTrigger::Tab {
+                    direction: FocusDirection::Forward,
+                }
             };
             assert_eq!(
                 s.log(),
@@ -1228,7 +1266,12 @@ fn a_refused_tab_keeps_the_draft_and_focus_for_a_retry() {
             assert_eq!(s.text(), InspectValue::Text("   ".into()));
             assert_eq!(
                 s.log(),
-                [(EditorTrigger::Tab { reverse }, EditorOutcome::Refused)],
+                [(
+                    EditorTrigger::Tab {
+                        direction: direction(reverse),
+                    },
+                    EditorOutcome::Refused
+                )],
                 "native {native}, reverse {reverse}"
             );
             // The edit stayed open: a corrected draft completes it.
@@ -1238,7 +1281,12 @@ fn a_refused_tab_keeps_the_draft_and_focus_for_a_retry() {
             assert_eq!(*saves.borrow(), 1);
             assert_eq!(
                 s.log()[1..],
-                [(EditorTrigger::Tab { reverse }, EditorOutcome::Saved)]
+                [(
+                    EditorTrigger::Tab {
+                        direction: direction(reverse),
+                    },
+                    EditorOutcome::Saved
+                )]
             );
         }
     }
@@ -1347,7 +1395,9 @@ fn revoking_editing_refuses_a_dirty_draft_and_keeps_the_edit_open() {
             [
                 (EditorTrigger::Enter, EditorOutcome::Refused),
                 (
-                    EditorTrigger::Tab { reverse: false },
+                    EditorTrigger::Tab {
+                        direction: FocusDirection::Forward
+                    },
                     EditorOutcome::Refused
                 ),
                 (EditorTrigger::Enter, EditorOutcome::Saved),
@@ -1582,7 +1632,9 @@ fn decimal_fields_report_through_the_session() {
         assert_eq!(
             s.log(),
             [(
-                EditorTrigger::Tab { reverse: false },
+                EditorTrigger::Tab {
+                    direction: FocusDirection::Forward
+                },
                 EditorOutcome::Unchanged
             )],
             "native {native}"
@@ -1610,7 +1662,12 @@ fn decimal_fields_report_through_the_session() {
         assert_eq!(
             s.log(),
             [
-                (EditorTrigger::Tab { reverse: true }, EditorOutcome::Refused),
+                (
+                    EditorTrigger::Tab {
+                        direction: FocusDirection::Backward
+                    },
+                    EditorOutcome::Refused
+                ),
                 (EditorTrigger::Escape, EditorOutcome::Cancelled)
             ],
             "native {native}"
@@ -1799,5 +1856,14 @@ fn parameter_number_fields_ignore_the_session() {
                 "{case}: {step}"
             );
         }
+    }
+}
+
+/// The traversal direction of a Tab press with Shift held (`reverse`) or not.
+fn direction(reverse: bool) -> FocusDirection {
+    if reverse {
+        FocusDirection::Backward
+    } else {
+        FocusDirection::Forward
     }
 }

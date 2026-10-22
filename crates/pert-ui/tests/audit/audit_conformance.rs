@@ -189,7 +189,7 @@ impl Component for FreshRemover {
     fn deliver_notifications(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
         let retained = self.saved.borrow().as_ref().unwrap().clone();
         let _task = cx.defer(move |ui| ui.unmount(&retained))?;
-        let _reveal = cx.request_reveal(&cx.id(), false)?;
+        let _reveal = cx.request_reveal(&cx.id())?;
         Ok(())
     }
     fn measure(&self, _: &MeasureContext<'_>, _: Constraints) -> Result<Size, RuntimeError> {

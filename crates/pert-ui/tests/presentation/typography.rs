@@ -167,7 +167,7 @@ impl Component for PaintedReadout {
     }
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
         let text = p.text(&self.text, None, TextStyle::MonospaceCaption)?;
-        text.paint(p, 0.0, 0.0, p.color(ColorRole::OnSurface))
+        text.paint(p, Point::ZERO, p.color(ColorRole::OnSurface))
     }
 }
 #[test]

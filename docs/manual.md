@@ -249,8 +249,9 @@ result and leaves it pending when applying fails, so a retry can apply it.
 To send the user to a target that may be hidden, in an unselected tab, a
 collapsed section, a custom container that opts in or a scrolled-away row, call
 `ui.reveal(&id)` or `ui.reveal_and_focus(&id)`, or queue it from a component
-with `cx.request_reveal(&id, focus)` and observe the receipt. The outcome says
-whether the target was revealed, focused or refused, and where. Select a tab by
+with `cx.request_reveal(&id)` or `cx.request_reveal_and_focus(&id)` and
+observe the receipt. The outcome says whether the target was revealed, focused
+or refused, and where. Select a tab by
 key with `ui.reveal_child(&tabs, key)`, and follow the selection with
 `Tabs::on_select`, which reports each change with its `ChangeOrigin`, so a
 navigation history can record what the user opened and skip what the
@@ -327,7 +328,7 @@ Parameter construction has no independent option-list builder.
 | `MultiSelect` | `MultiSelect::new(&ui, vec_signal, choices)?` | Several values from one option set, shown as removable chips. The popup filters its list with a search field; Up/Down move the highlight and Enter or a click toggles. `commit(MultiSelectCommit::OnClose)` writes a draft when the popup closes instead of on every toggle; Escape discards it. |
 | `Menu` | `Menu::new(&ui, title, items)?` with `MenuItem::new(key, label, action)` rows | An anchored action list and submenus. `MenuItem::toggle` and `radio` rows write a binding; their `on_change` reports each choice the user makes. |
 | `Breadcrumb` | `Breadcrumb::new([BreadcrumbSegment::new(key, label), ...], on_activate)?` | A path of keyed segments; activating one reports its key. The last segment is the current location. At narrow widths the middle segments collapse into a menu. |
-| `ContextMenu` | `ContextMenu::new(&ui, content, items)?`; `.opener()` opens it from application code | A menu opened from content by secondary press, its keyboard shortcut or an opener with a captured command context. |
+| `ContextMenu` | `ContextMenu::new(&ui, content, items)?`; `.controller()` opens it from application code | A menu opened from content by secondary press, its keyboard shortcut or its controller with a captured command context. |
 | `MenuBar` | `MenuBar::new(&ui, menus)?.content(content)` | A top-level menu strip and its owned content; `leading` and `trailing` add content before the titles and at the row's right edge. |
 | `Toolbar` / `ToolGroup` | `Toolbar::new(&ui, [ToolGroup::new(key, controls), ...])?` | Adaptive action strips and overflow. |
 | `ColorSwatch` | `ColorSwatch::new(color)` or `ColorSwatch::bound(read_signal)`, optionally `.on_activate(callback)` | A color sample, with a checkerboard under translucent colors; activatable like a button, for example to open a color editor. |
@@ -421,9 +422,9 @@ text out of the clipboard, the IME, inspection and event history. A
 `TextField` can carry a clear button, a leading icon and suffix text, all
 inside its single Tab stop. An editor in draft mode reports when its draft
 starts or stops differing from the saved value through `on_modified`, and
-`FieldHandle::set_modified` lets a `FormStatus` count unsaved fields in
+`FieldHandle::set_modified` lets a `FormFields` count unsaved fields in
 `FormSummary::modified`. `FieldStatus` (normal, warning, error or a pending
-check) and `FormStatus` can present and navigate application-supplied statuses
+check) and `FormFields` can present and navigate application-supplied statuses
 without giving any one control special ownership of validation.
 
 Remote parameters use `Runtime::remote_parameter` and retain a submitted proposal
@@ -475,7 +476,7 @@ a mapped snapshot.
 | `ProgressBar` | `ProgressBar::new(status.read_only())` | Determinate or indeterminate progress. |
 | `Spinner` | `Spinner::new(busy.read_only())` | Activity while a task is active. |
 | `Banner` | `Banner::new(message, actions)` | Persistent in-view feedback. |
-| `ToastHost` | `ToastHost::new(queue, content)` with `ToastQueue::new(&ui)` | Bounded transient notifications; enqueue `Toast::new(message)` through the queue. |
+| `ToastHost` | `ToastHost::new(controller, content)` with `ToastController::new(&ui)` | Bounded transient notifications; enqueue `Toast::new(message)` through the controller. |
 | `Tooltip` | `Tooltip::new(anchor, text)` | Delayed, noninteractive help. |
 | `Popover` | `Popover::new(open_signal, anchor, content)`; `.on_dismiss(handler)` reports the framework's closes | Anchored, interactive nonmodal content. |
 | `QuickPick` | Create `QuickPickController::new(&ui)`, wrap content in `QuickPick::new(controller, content, choose)` and open it with `controller.open(items)` from an event or command action | Choosing one of the application's own items (pages, history entries, search results, named values) from a searchable list. Each `PickItem` has a key, label, optional detail and kind; the `choose` callback answers `Done`, `Refused(message)` or `Pending` for a result that finishes later. Modal by default; `nonmodal()` closes when focus leaves. |

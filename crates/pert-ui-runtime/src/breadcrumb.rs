@@ -264,7 +264,7 @@ impl Breadcrumb {
                 }
             })
             .collect();
-        let name = self.strings.get(crate::StringRole::BreadcrumbOverflow);
+        let name = self.strings.text(crate::StringRole::BreadcrumbOverflow);
         Menu::icon_with_state(open, Icon::MoreHorizontal, name, rows)
             .map_err(|_| LayoutError::InvalidChild.into())
     }
@@ -457,8 +457,7 @@ impl Component for Breadcrumb {
             for x in self.separators.borrow().iter() {
                 chevron.paint(
                     painter,
-                    *x,
-                    centered(size.height(), chevron.size().height()),
+                    crate::Point::new(*x, centered(size.height(), chevron.size().height()))?,
                     color,
                 )?;
             }
@@ -473,7 +472,7 @@ impl Component for Breadcrumb {
         );
         details.semantics = Some(
             Semantics::new(SemanticRole::Group)
-                .name(self.strings.get(crate::StringRole::BreadcrumbName)),
+                .name(self.strings.text(crate::StringRole::BreadcrumbName)),
         );
         details
     }

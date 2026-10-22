@@ -285,7 +285,7 @@ fn custom_stacking_priorities_keep_recency_and_logical_identity_independent() {
     click(&mut ui, point);
     assert_eq!(hits.borrow().last(), Some(&"base"));
     assert_eq!(ui.children(&root).unwrap(), logical);
-    ui.focus_next(false).unwrap();
+    ui.focus_next(FocusDirection::Forward).unwrap();
     assert_eq!(ui.focused(), Some(front));
 }
 #[test]

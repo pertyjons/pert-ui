@@ -448,8 +448,10 @@ impl Component for BooleanControl {
         if let Some(text) = self.text.borrow().as_ref() {
             text.paint(
                 p,
-                x + width + p.metric(MetricRole::IconGap),
-                centered(size.height(), text.size().height()),
+                crate::Point::new(
+                    x + width + p.metric(MetricRole::IconGap),
+                    centered(size.height(), text.size().height()),
+                )?,
                 p.color(if enabled {
                     ColorRole::OnSurface
                 } else {
@@ -1285,8 +1287,10 @@ impl<T: Clone + Eq + 'static> Component for RadioGroup<T> {
             }
             text.paint(
                 p,
-                x + side + p.metric(MetricRole::IconGap),
-                top + centered(h, text.size().height()),
+                crate::Point::new(
+                    x + side + p.metric(MetricRole::IconGap),
+                    top + centered(h, text.size().height()),
+                )?,
                 p.color(if enabled {
                     ColorRole::OnSurface
                 } else {
@@ -1390,8 +1394,10 @@ impl<T: Clone + Eq + 'static> RadioGroup<T> {
                 }
                 text.paint(
                     p,
-                    x + centered(width, text.size().width()),
-                    centered(height, text.size().height()),
+                    crate::Point::new(
+                        x + centered(width, text.size().width()),
+                        centered(height, text.size().height()),
+                    )?,
                     p.color(if enabled {
                         ColorRole::OnTab
                     } else {

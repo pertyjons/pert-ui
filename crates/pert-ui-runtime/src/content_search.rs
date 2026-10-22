@@ -405,14 +405,14 @@ pub enum ContentJump {
     /// pending jump to
     /// [`Runtime::resume_content_jump`](crate::Runtime::resume_content_jump)
     /// after the collection has mounted the row, which its
-    /// [status binding](PendingJump::status_binding) reports, to reveal and
-    /// focus it.
+    /// [receipt](PendingJump::receipt) reports, to reveal and focus it.
     Pending(PendingJump),
 }
 
 /// A content jump waiting for its row to mount; see [`ContentJump::Pending`].
 ///
-/// It holds the collection's reveal receipt, so the row's outcome is never
+/// It is a continuation, not a receipt: it holds the collection's reveal
+/// receipt, which [`Self::receipt`] lends, so the row's outcome is never
 /// lost: it reaches `Mounted`, `NotFound`, `Superseded` or `Cancelled`, and
 /// [`Runtime::resume_content_jump`](crate::Runtime::resume_content_jump)
 /// turns that into the jump's final outcome.
@@ -421,16 +421,14 @@ pub struct PendingJump {
     pub(crate) receipt: ListRevealReceipt,
 }
 impl PendingJump {
-    /// The row's reveal status; `Pending` until the collection settles it.
+    /// The collection's receipt for the row's reveal. Its
+    /// [`status`](ListRevealReceipt::status) is `Pending` until the collection
+    /// settles it, and its
+    /// [`status_binding`](ListRevealReceipt::status_binding) lets a component
+    /// observe the row mounting without polling.
     #[must_use]
-    pub fn status(&self) -> ListRevealStatus {
-        self.receipt.status()
-    }
-    /// The row's reveal status as a binding, so a component observes the row
-    /// mounting without polling.
-    #[must_use]
-    pub fn status_binding(&self) -> crate::ReadSignal<ListRevealStatus> {
-        self.receipt.status_binding()
+    pub fn receipt(&self) -> &ListRevealReceipt {
+        &self.receipt
     }
 }
 

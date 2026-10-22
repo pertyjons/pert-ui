@@ -212,6 +212,16 @@ pub enum ToolWindowChangeKind {
     Geometry,
 }
 
+/// Whether a tool window is expanded or collapsed, as
+/// [`ToolWindowChange::new`] takes it.
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum Expansion {
+    /// Collapsed: its content is not shown.
+    Collapsed,
+    /// Expanded: its content is shown where its mode presents it.
+    Expanded,
+}
+
 /// A change of a tool window, reported after it took effect, with the tool
 /// window's state after it.
 #[derive(Clone, Debug, PartialEq)]
@@ -242,14 +252,14 @@ pub struct ToolWindowChange {
     pub origin: ChangeOrigin,
 }
 impl ToolWindowChange {
-    /// Describes an expansion change of `key` to `expanded`, on the left
+    /// Describes an expansion change of `key` to `expansion`, on the left
     /// edge's start group, docked; the `with_*` methods set the rest.
     #[must_use]
-    pub fn new(key: String, expanded: bool, origin: ChangeOrigin) -> Self {
+    pub fn new(key: String, expansion: Expansion, origin: ChangeOrigin) -> Self {
         Self {
             key,
             kind: ToolWindowChangeKind::Expansion,
-            expanded,
+            expanded: expansion == Expansion::Expanded,
             edge: ToolEdge::Left,
             group: StripeGroup::Start,
             overlay: false,
@@ -284,7 +294,9 @@ impl ToolWindowChange {
         self.mode = mode;
         self
     }
-    /// Sets the docked panel extent and the floating frame.
+    /// Sets the docked panel extent across its edge, in logical pixels, and the
+    /// floating frame, as the fields [`Self::extent`] and [`Self::floating`]
+    /// describe them.
     #[must_use]
     pub fn with_geometry(mut self, extent: Option<f32>, floating: Option<Rect>) -> Self {
         self.extent = extent;

@@ -370,10 +370,10 @@ impl Component for Label {
                 Some(size) if clipped => {
                     let bounds = Rect::new(0.0, 0.0, size.width(), size.height())?;
                     painter.with_clip(bounds, |painter| {
-                        text.paint_turned(painter, 0.0, 0.0, self.turn, color)
+                        text.paint_turned(painter, crate::Point::ZERO, self.turn, color)
                     })?;
                 }
-                _ => text.paint_turned(painter, 0.0, 0.0, self.turn, color)?,
+                _ => text.paint_turned(painter, crate::Point::ZERO, self.turn, color)?,
             }
         }
         Ok(())
@@ -804,8 +804,10 @@ impl Component for Button {
         if let Some(text) = self.prepared.borrow().as_ref() {
             text.paint(
                 painter,
-                centered(size.width(), text.size().width()),
-                centered(size.height(), text.size().height()),
+                crate::Point::new(
+                    centered(size.width(), text.size().width()),
+                    centered(size.height(), text.size().height()),
+                )?,
                 if self.enabled {
                     if self.input.pressed() {
                         painter.color(ColorRole::OnButtonPressed)

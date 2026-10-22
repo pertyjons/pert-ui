@@ -260,7 +260,7 @@ fn rebuilt_choice_controls_gain_a_third_choice() -> TestResult {
     redescribe(&mut ui, &root, &select, Element::new("picker", picker))?;
     assert_eq!(combo_items(&ui), Some(3));
     // The list offers the new choice too: open it, go to the end and choose.
-    ui.focus_next(false)?;
+    ui.focus_next(FocusDirection::Forward)?;
     key(&mut ui, KeyCode::ArrowDown);
     frame(&mut ui);
     key(&mut ui, KeyCode::End);

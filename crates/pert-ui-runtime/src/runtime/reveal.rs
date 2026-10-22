@@ -105,7 +105,8 @@ impl RevealOutcome {
 }
 
 /// Reactive completion of a reveal queued with
-/// [`EventContext::request_reveal`].
+/// [`EventContext::request_reveal`] or
+/// [`EventContext::request_reveal_and_focus`].
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum RevealStatus {
     /// The reveal runs after the next flush's updates and layout settle.
@@ -203,11 +204,11 @@ impl Drop for RevealDispatchGuard {
 }
 
 impl EventContext {
-    /// Queues a reveal of `target`, optionally focusing it, for the end of the
+    /// Queues a reveal of `target` without moving focus for the end of the
     /// next flush, and returns its receipt.
+    /// [`Self::request_reveal_and_focus`] also focuses the target.
     ///
-    /// The reveal runs as [`Runtime::reveal`] (`focus` false) or
-    /// [`Runtime::reveal_and_focus`] (`focus` true) after that flush's updates
+    /// The reveal runs as [`Runtime::reveal`] after that flush's updates
     /// and layout settle, so a surface this event closes, such as a modal
     /// palette that jumps elsewhere, no longer blocks the target. It runs even
     /// when the requesting component has been removed meanwhile. A native
@@ -242,7 +243,9 @@ impl EventContext {
     /// let target = name.clone();
     /// let link = ui.mount_tree(Element::new(
     ///     "edit-name",
-    ///     Button::new("Edit name", move |cx| cx.request_reveal(&target, true).map(|_| ())),
+    ///     Button::new("Edit name", move |cx| {
+    ///         cx.request_reveal_and_focus(&target).map(|_| ())
+    ///     }),
     /// ))?;
     /// ui.flush(Duration::ZERO)?;
     /// ui.focus(&link)?;
@@ -258,11 +261,27 @@ impl EventContext {
     /// [`RuntimeError::RevealQueueFull`] when [`Runtime::MAX_REVEAL_REQUESTS`]
     /// requests are waiting, or the runtime phase/shutdown error, without
     /// queueing the request.
-    pub fn request_reveal(
+    pub fn request_reveal(&self, target: &WidgetId) -> Result<RevealReceipt, RuntimeError> {
+        self.queue_reveal(target, false)
+    }
+
+    /// Queues a reveal of `target` that also focuses it, for the end of the
+    /// next flush, and returns its receipt.
+    ///
+    /// The reveal runs as [`Runtime::reveal_and_focus`]; queueing, ordering,
+    /// the receipt and window activation are those of
+    /// [`Self::request_reveal`].
+    ///
+    /// # Errors
+    /// As [`Self::request_reveal`].
+    pub fn request_reveal_and_focus(
         &self,
         target: &WidgetId,
-        focus: bool,
     ) -> Result<RevealReceipt, RuntimeError> {
+        self.queue_reveal(target, true)
+    }
+
+    fn queue_reveal(&self, target: &WidgetId, focus: bool) -> Result<RevealReceipt, RuntimeError> {
         let shared = &self.node.shared;
         shared.writable()?;
         if !Rc::ptr_eq(shared, &target.0.shared) {
@@ -286,7 +305,7 @@ impl EventContext {
 
 impl Runtime {
     /// Maximum number of reveals queued with [`EventContext::request_reveal`]
-    /// waiting for a flush. A request beyond it is refused with
+    /// and [`EventContext::request_reveal_and_focus`] waiting for a flush. A request beyond it is refused with
     /// [`RuntimeError::RevealQueueFull`].
     pub const MAX_REVEAL_REQUESTS: usize = 16;
 

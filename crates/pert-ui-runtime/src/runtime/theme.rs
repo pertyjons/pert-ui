@@ -276,7 +276,7 @@ impl ThemeMetrics {
         Self { values: resolved }
     }
     /// Returns a detached logical-pixel value without registering a dependency.
-    pub const fn get(&self, role: MetricRole) -> f32 {
+    pub const fn metric(&self, role: MetricRole) -> f32 {
         self.values[role as usize]
     }
     /// Overrides one measurement. Rejects zero text sizes; other roles accept zero.
@@ -931,7 +931,7 @@ impl State {
         let after = self.active_metrics();
         let changed = METRIC_ROLES
             .iter()
-            .filter(|role| before.get(**role) != after.get(**role))
+            .filter(|role| before.metric(**role) != after.metric(**role))
             .fold(0, |mask, role| mask | role.mask());
         if changed == 0 {
             return;
@@ -1070,7 +1070,7 @@ impl ThemeManager {
     ///
     /// # Errors
     /// Returns `Closed` after shutdown.
-    pub fn density_signal(&self) -> Result<ReadSignal<Density>, RuntimeError> {
+    pub fn density_binding(&self) -> Result<ReadSignal<Density>, RuntimeError> {
         self.shared.readable()?;
         let density = self.shared.theme.borrow().density;
         Ok(self
@@ -1144,11 +1144,11 @@ impl ThemeManager {
     /// Observes the selected color mode as a read-only signal that every
     /// change through [`Self::set_mode`], including one made by
     /// [`Runtime::restore_workspace`], updates. Sharing, cost and
-    /// invalidation follow [`Self::density_signal`].
+    /// invalidation follow [`Self::density_binding`].
     ///
     /// # Errors
     /// Returns `Closed` after shutdown.
-    pub fn mode_signal(&self) -> Result<ReadSignal<ThemeMode>, RuntimeError> {
+    pub fn mode_binding(&self) -> Result<ReadSignal<ThemeMode>, RuntimeError> {
         self.shared.readable()?;
         let mode = self.shared.theme.borrow().mode;
         Ok(self

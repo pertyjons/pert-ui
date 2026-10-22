@@ -127,7 +127,7 @@ impl Component for Banner {
 type ToastAction = Box<dyn FnMut(&mut EventContext) -> Result<(), RuntimeError>>;
 /// One transient plain-text notification, optionally with a user action.
 ///
-/// Posted through [`ToastQueue::push`]. Each toast expires after five seconds of
+/// Posted through [`ToastController::push`]. Each toast expires after five seconds of
 /// unpaused elapsed runtime time after first presentation. It can always be dismissed. Callbacks run only
 /// on explicit activation, after removal; failure propagates without replay.
 ///
@@ -260,15 +260,15 @@ impl Drop for Queue {
 /// queue and publishes `OwnerRemoved` to surviving receipts, without callbacks.
 #[derive(Clone)]
 #[must_use]
-pub struct ToastQueue {
+pub struct ToastController {
     queue: Rc<RefCell<Queue>>,
     revision: Signal<u64>,
 }
 /// Shows how many toasts the queue retains, whether a host owns it and whether
 /// the host's removal closed it. A queue borrowed by its host reports only that.
-impl std::fmt::Debug for ToastQueue {
+impl std::fmt::Debug for ToastController {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut out = f.debug_struct("ToastQueue");
+        let mut out = f.debug_struct("ToastController");
         match self.queue.try_borrow() {
             Ok(queue) => out
                 .field("retained", &queue.entries.len())
@@ -279,7 +279,7 @@ impl std::fmt::Debug for ToastQueue {
         out.finish()
     }
 }
-impl ToastQueue {
+impl ToastController {
     /// Maximum simultaneous visible notifications.
     pub const MAX_VISIBLE: usize = 3;
     /// Maximum additional notifications waiting for presentation.
@@ -397,17 +397,17 @@ impl ToastQueue {
 /// queue, as for any host mounted with a closed queue.
 #[must_use]
 pub struct ToastHost {
-    queue: ToastQueue,
+    queue: ToastController,
     content: Option<Element>,
     /// The application's dismiss label, or `None` for the string table's.
     dismiss: Option<TextSource>,
 }
 impl ToastHost {
-    /// Describes the queue's single presentation owner around `content`. The
-    /// queue is claimed when the host mounts.
-    pub fn new(queue: ToastQueue, content: Element) -> Self {
+    /// Describes the single presentation owner of `controller`'s queue around
+    /// `content`. The queue is claimed when the host mounts.
+    pub fn new(controller: ToastController, content: Element) -> Self {
         Self {
-            queue,
+            queue: controller,
             content: Some(content),
             dismiss: None,
         }
@@ -426,10 +426,10 @@ impl ToastHost {
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
-    /// use pert_ui::{Element, Label, Runtime, Toast, ToastHost, ToastQueue};
+    /// use pert_ui::{Element, Label, Runtime, Toast, ToastHost, ToastController};
     /// use std::time::Duration;
     /// let mut ui = Runtime::new();
-    /// let queue = ToastQueue::new(&ui);
+    /// let queue = ToastController::new(&ui);
     /// let host = ToastHost::new(queue.clone(), Element::new("body", Label::new("Innehåll")))
     ///     .dismiss_label("Stäng");
     /// ui.mount_tree(Element::new("host", host))?;
@@ -536,7 +536,7 @@ struct PreparedToast {
     dismiss_rect: Rect,
 }
 struct ToastStack {
-    queue: ToastQueue,
+    queue: ToastController,
     /// Identifies this mount as the queue's owner.
     token: Rc<()>,
     /// The application's dismiss label, or the string table's role.
@@ -615,7 +615,7 @@ impl ToastStack {
                 .borrow_mut()
                 .entries
                 .iter_mut()
-                .take(ToastQueue::MAX_VISIBLE)
+                .take(ToastController::MAX_VISIBLE)
             {
                 if entry.receipt.status() == ToastStatus::Visible {
                     entry.remaining = entry.remaining.saturating_sub(elapsed);
@@ -864,7 +864,7 @@ impl Component for ToastStack {
         }
         let mut items = Vec::new();
         let mut oversized = false;
-        for e in q.entries.iter_mut().take(ToastQueue::MAX_VISIBLE) {
+        for e in q.entries.iter_mut().take(ToastController::MAX_VISIBLE) {
             e.receipt.0.set(ToastStatus::Visible);
             if !paused {
                 cx.wake_after(e.remaining)?;
@@ -1151,8 +1151,11 @@ impl Component for ToastStack {
             let pad = p
                 .metric(MetricRole::ControlPaddingX)
                 .min(t.rect.width() / 2.0);
-            t.text
-                .paint(p, pad, y + pad, p.color(ColorRole::OnSurface))?;
+            t.text.paint(
+                p,
+                crate::Point::new(pad, y + pad)?,
+                p.color(ColorRole::OnSurface),
+            )?;
             for (text, rect, visible, action) in [
                 (&t.action, t.action_rect, item.action.is_some(), true),
                 (&t.dismiss, t.dismiss_rect, true, false),
@@ -1171,8 +1174,10 @@ impl Component for ToastStack {
                     p.with_clip(rect, |p| {
                         text.paint(
                             p,
-                            x + (w - text.size().width()).max(0.0) / 2.0,
-                            y + (h - text.size().height()).max(0.0) / 2.0,
+                            crate::Point::new(
+                                x + (w - text.size().width()).max(0.0) / 2.0,
+                                y + (h - text.size().height()).max(0.0) / 2.0,
+                            )?,
                             p.color(ColorRole::OnButton),
                         )
                     })?;

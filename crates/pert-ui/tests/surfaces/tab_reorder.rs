@@ -24,8 +24,8 @@ impl Model {
             .push(format!("{:?} -> {:?}", drop.items(), drop.position()));
         let moved = drop.items().to_vec();
         let boundary = match drop.position() {
-            DropPosition::Before(key) => self.order.iter().position(|k| k == key),
-            DropPosition::After(key) => self.order.iter().position(|k| k == key).map(|i| i + 1),
+            ListDropPosition::Before(key) => self.order.iter().position(|k| k == key),
+            ListDropPosition::After(key) => self.order.iter().position(|k| k == key).map(|i| i + 1),
             _ => None,
         }
         .unwrap_or(self.order.len());

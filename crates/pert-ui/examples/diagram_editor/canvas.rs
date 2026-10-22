@@ -936,8 +936,10 @@ impl Component for NodeView {
         painter.with_clip(rect, |painter| {
             text.paint(
                 painter,
-                (size.width() - shown.width()) / 2.0,
-                (size.height() - shown.height()) / 2.0,
+                Point::new(
+                    (size.width() - shown.width()) / 2.0,
+                    (size.height() - shown.height()) / 2.0,
+                )?,
                 ink,
             )
         })

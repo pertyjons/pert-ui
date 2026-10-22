@@ -32,7 +32,7 @@ struct Driver {
     running: Signal<bool>,
     /// Invocations of the Space command.
     toggles: Rc<Cell<u32>>,
-    close_decision: Signal<Option<bool>>,
+    close_decision: Signal<Option<WindowCloseAction>>,
     receipts: Vec<PresentationReceipt>,
     /// A retitle of the first detached window through the native host.
     title: Option<PresentationReceipt>,
@@ -183,7 +183,7 @@ impl Driver {
                 "deferred main close preserves every window"
             );
             assert_eq!(self.receipts[2].status(), PresentationStatus::Pending);
-            self.close_decision.set(Some(false))?;
+            self.close_decision.set(Some(WindowCloseAction::KeepOpen))?;
             let window = match self.receipts[0].status() {
                 PresentationStatus::Presented(window) => window,
                 status => panic!("the detach receipt is {status:?}, not presented"),

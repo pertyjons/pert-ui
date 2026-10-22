@@ -932,7 +932,7 @@ fn older_notification_reveal_successors_do_not_adopt_current_key() {
     s.ui.flush(Duration::ZERO).unwrap();
     let hidden = s.ui.children(&root).unwrap().remove(0);
     *s.b.action.borrow_mut() = Some(Box::new(move |cx| {
-        let _receipt = cx.request_reveal(&hidden, false)?;
+        let _receipt = cx.request_reveal(&hidden)?;
         Ok(())
     }));
     s.ui.focus(&s.a_id).unwrap();
@@ -991,7 +991,7 @@ fn caught_task_flush_error_does_not_suppress_later_update_failure_cleanup() {
     assert_eq!(s.a.cancelled.get(), 1);
     assert_eq!(
         receipt.borrow().as_ref().unwrap().status(),
-        TaskStatus::Completed
+        TaskStatus::Succeeded
     );
 }
 
@@ -1066,7 +1066,7 @@ fn own_notification_error_precedes_an_older_reveal_successor_error() {
     s.ui.flush(Duration::ZERO).unwrap();
     let hidden = s.ui.children(&root).unwrap().remove(0);
     *s.b.action.borrow_mut() = Some(Box::new(move |cx| {
-        let _receipt = cx.request_reveal(&hidden, false)?;
+        let _receipt = cx.request_reveal(&hidden)?;
         Ok(())
     }));
     *s.a.action.borrow_mut() = Some(Box::new(|_| Err(RuntimeError::EmptyKey)));
@@ -1147,7 +1147,7 @@ fn pending_reveal_cannot_restart_exhausted_notification_wave_budget() {
     let receipt = reveal_receipt.clone();
     *s.a.action.borrow_mut() = Some(Box::new(move |cx| {
         if !queued.replace(true) {
-            *receipt.borrow_mut() = Some(cx.request_reveal(&root, false)?);
+            *receipt.borrow_mut() = Some(cx.request_reveal(&root)?);
         }
         value.set(value.get()? + 1)?;
         notifier.request();
@@ -1195,7 +1195,7 @@ fn first_callback_error_cannot_mask_exhausted_notification_wave_budget() {
     let receipt = reveal_receipt.clone();
     *s.a.action.borrow_mut() = Some(Box::new(move |cx| {
         if !queued.replace(true) {
-            *receipt.borrow_mut() = Some(cx.request_reveal(&root, false)?);
+            *receipt.borrow_mut() = Some(cx.request_reveal(&root)?);
         }
         state.child_feedback.set(true);
         value.set(value.get()? + 1)?;
@@ -1272,7 +1272,7 @@ fn a_full_reveal_queue_opens_deep_independent_paths_without_false_feedback() {
     let saved = receipts.clone();
     *s.a.action.borrow_mut() = Some(Box::new(move |cx| {
         for target in &targets {
-            saved.borrow_mut().push(cx.request_reveal(target, false)?);
+            saved.borrow_mut().push(cx.request_reveal(target)?);
         }
         Ok(())
     }));

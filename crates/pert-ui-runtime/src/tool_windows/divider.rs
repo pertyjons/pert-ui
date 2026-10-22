@@ -45,7 +45,7 @@ impl EdgeDivider {
             keys: BTreeSet::new(),
             key_origin: None,
             size: Cell::new(Size::ZERO),
-            name: UiStrings::english().get(edge.resize_role()).to_owned(),
+            name: UiStrings::english().text(edge.resize_role()).to_owned(),
         }
     }
     fn original(&self) -> Original {
@@ -178,7 +178,7 @@ impl Component for EdgeDivider {
         self.keys.clear();
     }
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
-        self.name = cx.strings()?.get(self.edge.resize_role()).to_owned();
+        self.name = cx.strings()?.text(self.edge.resize_role()).to_owned();
         let model = self.link.model();
         let permission = model.borrow().resize_permission(self.edge);
         let revision = model::revision(&model, cx);

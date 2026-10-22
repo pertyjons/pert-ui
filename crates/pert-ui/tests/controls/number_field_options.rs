@@ -23,7 +23,7 @@ fn property(ui: &Runtime, name: &str) -> InspectValue {
         .clone()
 }
 fn metric(ui: &Runtime, role: MetricRole) -> f32 {
-    ui.theme().metrics(Density::Standard).unwrap().get(role)
+    ui.theme().metrics(Density::Standard).unwrap().metric(role)
 }
 fn mount(ui: &mut Runtime, field: impl Component + 'static) -> (WidgetId, WidgetId) {
     ui.set_viewport(Viewport::new(400.0, 200.0, 1.0).unwrap())

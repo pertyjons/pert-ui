@@ -93,7 +93,7 @@ fn fixed_denial_survives_bound_permission_and_redescription_can_replace_it() -> 
         ))?;
         ui.flush(Duration::ZERO)?;
         let target = ui.children(&root)?[0].clone();
-        ui.focus_next(false)?;
+        ui.focus_next(FocusDirection::Forward)?;
         assert_ne!(ui.focused(), Some(target.clone()), "{kind:?}");
         // Explicit focus can target non-tab-stops; prove input is refused there too.
         ui.focus(&target)?;
@@ -220,7 +220,7 @@ fn replacement_unsubscribes_old_permissions_and_hidden_controls_refresh_on_revea
         assert_eq!(ui.flush(Duration::ZERO)?.components_updated, 0, "{kind:?}");
         ui.set_visible(&root, true)?;
         ui.flush(Duration::ZERO)?;
-        ui.focus_next(false)?;
+        ui.focus_next(FocusDirection::Forward)?;
         assert_ne!(ui.focused(), Some(target.clone()), "{kind:?}");
         next.set(true)?;
         ui.flush(Duration::ZERO)?;
@@ -257,7 +257,7 @@ fn application_permission_cannot_override_parameter_read_only() -> TestResult {
         };
         let target = ui.mount_tree(element)?;
         ui.flush(Duration::ZERO)?;
-        ui.focus_next(false)?;
+        ui.focus_next(FocusDirection::Forward)?;
         assert_ne!(ui.focused(), Some(target.clone()));
         ui.focus(&target)?;
         activate(&mut ui, kind)?;
@@ -314,7 +314,7 @@ fn redescribed_fixed_denials_skip_controls_without_an_explicit_flush() -> TestRe
             .find(|entry| entry.key == "control")
             .unwrap();
         assert!(!entry.details.validation.interactive, "{kind:?}");
-        ui.focus_next(false)?;
+        ui.focus_next(FocusDirection::Forward)?;
         assert!(ui.focused().is_none(), "{kind:?}");
     }
     Ok(())

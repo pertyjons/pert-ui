@@ -53,7 +53,7 @@ fn band(ui: &Runtime) -> f32 {
     ui.theme()
         .metrics(Density::Standard)
         .unwrap()
-        .get(MetricRole::ControlHeight)
+        .metric(MetricRole::ControlHeight)
 }
 
 #[test]
@@ -112,7 +112,7 @@ fn disabled_inline_toggle_shows_state_without_input() {
     click(&mut ui, point);
     assert!(armed.get().unwrap());
     assert_eq!(property(&ui, "field", "checked"), InspectValue::Bool(true));
-    ui.focus_next(false).unwrap();
+    ui.focus_next(FocusDirection::Forward).unwrap();
     assert_ne!(
         ui.inspect()
             .components
@@ -497,7 +497,7 @@ fn read_only_text_mode_claims_typed_keys_like_a_read_only_text_field() {
 }
 
 fn metric(ui: &Runtime, role: MetricRole) -> f32 {
-    ui.theme().metrics(Density::Standard).unwrap().get(role)
+    ui.theme().metrics(Density::Standard).unwrap().metric(role)
 }
 
 #[test]

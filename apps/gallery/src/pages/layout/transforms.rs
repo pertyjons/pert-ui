@@ -233,7 +233,7 @@ impl Component for Timeline {
                 outline,
             );
             let text = painter.text(&seconds(mark), None, TextStyle::Caption)?;
-            text.paint(painter, x + 4.0, 2.0, ink)?;
+            text.paint(painter, Point::new(x + 4.0, 2.0)?, ink)?;
         }
         // The signal sampled every two pixels across the view; the stroke keeps
         // its width at every zoom because only positions are mapped.
@@ -264,8 +264,7 @@ impl Component for Timeline {
                 let y = clips_top + (Self::CLIPS - text.size().height()) / 2.0;
                 text.paint(
                     painter,
-                    left.max(0.0) + 4.0,
-                    y,
+                    Point::new(left.max(0.0) + 4.0, y)?,
                     painter.color(ColorRole::OnPrimaryContainer),
                 )?;
             }

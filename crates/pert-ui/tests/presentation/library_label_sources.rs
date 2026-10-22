@@ -26,7 +26,7 @@ fn component(ui: &Runtime, key: &str) -> ComponentInspection {
 
 /// A table that renames `role` to `text`.
 fn table(role: StringRole, text: &str) -> Result<UiStrings, Box<dyn std::error::Error>> {
-    Ok(UiStrings::english().with(role, text)?)
+    Ok(UiStrings::english().with_text(role, text)?)
 }
 
 // ToastHost::dismiss_label
@@ -42,7 +42,7 @@ fn dismiss_label(ui: &Runtime) -> String {
     }
 }
 
-fn host(queue: &ToastQueue, label: Option<TextSource>) -> Element {
+fn host(queue: &ToastController, label: Option<TextSource>) -> Element {
     let host = ToastHost::new(queue.clone(), Element::new("body", Label::new("Body")));
     Element::new(
         "host",
@@ -56,7 +56,7 @@ fn host(queue: &ToastQueue, label: Option<TextSource>) -> Element {
 #[test]
 fn a_toast_dismiss_label_takes_fixed_bound_role_and_default_text() -> TestResult {
     let mut ui = runtime()?;
-    let queue = ToastQueue::new(&ui);
+    let queue = ToastController::new(&ui);
     let bound = ui.signal("Stäng".to_owned());
     let root = ui.mount_tree(Element::new(
         "root",

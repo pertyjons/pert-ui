@@ -221,7 +221,7 @@ impl SearchField {
     ///     "find",
     ///     SearchField::new(query).placeholder(StringRole::SearchPlaceholder),
     /// ))?;
-    /// ui.ui_settings().set_strings(UiStrings::english().with(StringRole::SearchPlaceholder, "Sök")?)?;
+    /// ui.ui_settings().set_strings(UiStrings::english().with_text(StringRole::SearchPlaceholder, "Sök")?)?;
     /// ui.flush(Duration::ZERO)?;
     /// let details = ui.inspect().components.into_iter()
     ///     .find(|c| c.key == "find").unwrap().details;
@@ -570,7 +570,11 @@ impl Component for SearchField {
             let layout = p.rich_text(&self.placeholder.display(), None, self.editor.style)?;
             let [x, y, _, h] = area.values();
             p.with_clip(area, |p| {
-                layout.paint(p, x, y + (h - layout.size().height()).max(0.0) / 2.0, muted)
+                layout.paint(
+                    p,
+                    crate::Point::new(x, y + (h - layout.size().height()).max(0.0) / 2.0)?,
+                    muted,
+                )
             })?;
         }
         if self.clear_shown()

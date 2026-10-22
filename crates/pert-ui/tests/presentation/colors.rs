@@ -546,7 +546,7 @@ fn a_disabled_static_swatch_mutes_its_outline_like_a_disabled_action() {
 fn role_named_swatch_preserves_resolved_name_across_identical_description() {
     let (mut ui, root) = swatch_ui(ColorSwatch::new(Color::WHITE).name(StringRole::ColorName));
     let table = UiStrings::english()
-        .with(StringRole::ColorName, "Track tint")
+        .with_text(StringRole::ColorName, "Track tint")
         .unwrap();
     ui.ui_settings().set_strings(table).unwrap();
     settle(&mut ui);
@@ -571,7 +571,7 @@ fn role_named_swatch_preserves_resolved_name_across_identical_description() {
         Some("Track tint")
     );
     let table = UiStrings::english()
-        .with(StringRole::ColorName, "Updated tint")
+        .with_text(StringRole::ColorName, "Updated tint")
         .unwrap();
     ui.ui_settings().set_strings(table).unwrap();
     settle(&mut ui);
@@ -593,7 +593,7 @@ fn role_named_swatch_preserves_resolved_name_across_identical_description() {
     settle(&mut ui);
     assert_eq!(
         inspection(&ui).details.semantics.unwrap().name.as_deref(),
-        Some(UiStrings::english().get(StringRole::ColorPickerName))
+        Some(UiStrings::english().text(StringRole::ColorPickerName))
     );
 }
 

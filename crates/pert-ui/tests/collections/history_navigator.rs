@@ -390,7 +390,7 @@ fn localized_children_survive_ancestor_redescription_with_retained_identity() {
     let mut s = setup(|nav| nav);
     let before = widget(&s.ui, &s.root, "back");
     let strings = UiStrings::english()
-        .with(StringRole::HistoryBack, "Bakåt")
+        .with_text(StringRole::HistoryBack, "Bakåt")
         .unwrap();
     s.ui.ui_settings().set_strings(strings).unwrap();
     settle(&mut s.ui);

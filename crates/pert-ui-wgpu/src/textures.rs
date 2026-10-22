@@ -358,7 +358,7 @@ impl<T: Pixels> Textures<T> {
         check_table(
             kind,
             device.limits().max_texture_dimension_2d,
-            kind.scene_budget(),
+            kind.scene_budget_bytes(),
             table,
         )?;
         let shared = &self.shared;
@@ -485,8 +485,8 @@ mod tests {
 
     #[test]
     fn the_documented_budgets_hold() {
-        assert_eq!(ResourceKind::Mask.scene_budget(), 64 << 20);
-        assert_eq!(ResourceKind::Image.scene_budget(), 256 << 20);
+        assert_eq!(ResourceKind::Mask.scene_budget_bytes(), 64 << 20);
+        assert_eq!(ResourceKind::Image.scene_budget_bytes(), 256 << 20);
         assert_eq!(MASKS.resource, ResourceKind::Mask);
         assert_eq!(IMAGES.resource, ResourceKind::Image);
     }

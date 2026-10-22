@@ -425,7 +425,7 @@ fn absent_region_layout_regions_never_create_resize_handles() {
         let root = ui.mount_tree(Element::new("shell", region_layout)).unwrap();
         ui.flush(Duration::ZERO).unwrap();
         assert_eq!(count_splits(&ui, &root), 0);
-        ui.focus_next(false).unwrap();
+        ui.focus_next(FocusDirection::Forward).unwrap();
         assert!(ui.focused().is_none());
     }
     let mut ui = ui(408.0);

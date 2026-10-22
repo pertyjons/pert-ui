@@ -399,8 +399,10 @@ fn build(ui: &mut Runtime) -> Result<(Rc<Mixer>, WidgetId), RuntimeError> {
             let _ = sender.send(());
             sent
         })?;
-        slot.borrow_mut()
-            .push((gain_monitor.observe(), mute_monitor.observe()));
+        slot.borrow_mut().push((
+            gain_monitor.snapshot_binding(),
+            mute_monitor.snapshot_binding(),
+        ));
         channels.push(Channel {
             gain,
             gain_host,

@@ -8,7 +8,7 @@ pub use windows::{
     FloatingWindow, WindowCloseAction, WindowController, WindowLayer, WindowPlacement, WindowStatus,
 };
 mod notifications;
-pub use notifications::{Banner, Toast, ToastHost, ToastQueue, ToastReceipt, ToastStatus};
+pub use notifications::{Banner, Toast, ToastController, ToastHost, ToastReceipt, ToastStatus};
 mod dialog;
 pub use dialog::{AlertDialog, Dialog, DialogController, DialogOutcome, DialogStatus};
 mod tabs;
@@ -25,7 +25,7 @@ pub use workspace::{
 mod region_layout;
 pub use region_layout::{RegionEdge, RegionLayout};
 mod list_drag;
-pub use list_drag::{DropPosition, ListDragItems, ListDrop};
+pub use list_drag::{ListDragItems, ListDrop, ListDropPosition};
 mod history_navigator;
 mod list_selection;
 mod navigation_history;
@@ -85,7 +85,7 @@ mod containers;
 mod control_binding;
 mod controls;
 mod field_status;
-pub use field_status::{Field, FieldHandle, FieldStatus, FormStatus, FormSummary};
+pub use field_status::{Field, FieldHandle, FieldStatus, FormFields, FormSummary};
 mod inline_controls;
 mod live_widgets;
 mod popover;
@@ -114,7 +114,7 @@ pub use quick_pick::{
 mod link;
 pub use inline_controls::{InlineReadout, InlineToggle};
 pub use link::{Link, LinkUnderline};
-pub use menu::{ContextMenu, ContextMenuOpener, Menu, MenuItem};
+pub use menu::{ContextMenu, ContextMenuController, Menu, MenuItem};
 pub use menu_bar::MenuBar;
 pub use multi_select::{MultiSelect, MultiSelectCommit};
 pub use popover::{Popover, SurfaceDismissal, SurfaceKind, Tooltip};
@@ -141,7 +141,7 @@ pub use text_input::{
     Clipboard, ClipboardError, TextCommand, TextCommandOutcome, TextEditError, TextInputState,
     TextPreedit,
 };
-pub use text_selection::{TextMovement, TextSelection};
+pub use text_selection::{SelectionExtension, TextMovement, TextSelection};
 mod form;
 mod layout;
 pub use containers::{Align, Column, Container, Grid, Justify, Length, Row, Track, Wrap};
@@ -154,7 +154,7 @@ pub use layout::{
 };
 pub use property_grid::{Property, PropertyGrid};
 pub use tool_windows::{
-    EdgeMode, StripeGroup, ToolEdge, ToolWindow, ToolWindowChange, ToolWindowChangeKind,
+    EdgeMode, Expansion, StripeGroup, ToolEdge, ToolWindow, ToolWindowChange, ToolWindowChangeKind,
     ToolWindowController, ToolWindowLayout, ToolWindowMode,
 };
 mod geometry;
@@ -265,7 +265,9 @@ pub use diagnostics::{
     ParameterInspection, SemanticAction, SemanticItem, SemanticRole, SemanticValue, Semantics,
     WindowInspection,
 };
-pub use input::{KeyAction, KeyCode, KeyEvent, KeyTransition, KeyboardState, Modifiers};
+pub use input::{
+    FocusDirection, KeyAction, KeyCode, KeyEvent, KeyTransition, KeyboardState, Modifiers,
+};
 pub use live::{
     Delivery, Freshness, LiveWaker, SeriesSource, SourceInspection, Telemetry, WakeError,
 };
@@ -335,7 +337,7 @@ pub use pert_ui_core::{
 /// - keyboard shortcuts and commands: [`Modifiers`], [`KeyChord`],
 ///   [`CommandKey`], [`CommandScope`], [`CommandId`] and [`CommandContext`];
 ///   held keys: [`HeldInputId`] and [`HeldCancellation`];
-/// - reordering a list, tabs or a tree: [`ListDrop`], [`DropPosition`],
+/// - reordering a list, tabs or a tree: [`ListDrop`], [`ListDropPosition`],
 ///   [`ListDropPoint`], [`ListDropPlacement`] and [`ListDropMark`];
 /// - live data: [`LevelMeter`], [`Trace`], [`MeterAxis`], [`SeriesSource`],
 ///   [`series_bridge`], [`SeriesConfig`] and [`Timestamp`]; a parameter edit's
@@ -367,10 +369,10 @@ pub mod prelude {
         ViewTransform, WidgetId,
     };
     #[doc(no_inline)]
-    pub use crate::{Banner, Toast, ToastHost, ToastQueue, ToastReceipt, ToastStatus};
+    pub use crate::{Banner, Toast, ToastController, ToastHost, ToastReceipt, ToastStatus};
     #[doc(no_inline)]
     pub use crate::{
-        Breadcrumb, BreadcrumbSegment, ContextMenu, ContextMenuOpener, Menu, MenuBar, MenuItem,
+        Breadcrumb, BreadcrumbSegment, ContextMenu, ContextMenuController, Menu, MenuBar, MenuItem,
         MultiSelect, MultiSelectCommit, Select,
     };
     #[doc(no_inline)]
@@ -444,7 +446,7 @@ pub mod prelude {
     pub use crate::{EditSession, Parameter, ParameterHost};
     #[doc(no_inline)]
     pub use crate::{
-        Field, FieldHandle, FieldStatus, Form, FormStatus, FormSummary, Property, PropertyGrid,
+        Field, FieldHandle, FieldStatus, Form, FormFields, FormSummary, Property, PropertyGrid,
     };
     #[doc(no_inline)]
     pub use crate::{FillRule, LineCap, LineJoin, Path, PathBuilder, StrokeStyle};

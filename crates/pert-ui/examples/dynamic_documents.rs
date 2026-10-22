@@ -102,7 +102,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // The response mailbox also owns a host reference; release it on close.
     drop(mailbox);
     ui.flush(Duration::ZERO)?;
-    assert_eq!(closed.status(), TaskStatus::Completed);
+    assert_eq!(closed.status(), TaskStatus::Succeeded);
     assert!(!parameter.snapshot().get()?.available);
     Ok(())
 }

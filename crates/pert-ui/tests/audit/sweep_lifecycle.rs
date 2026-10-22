@@ -196,13 +196,13 @@ fn role_count(ui: &mut Runtime, role: ColorRole) -> usize {
 fn a_replaced_toast_queue_forgets_the_hovered_control() {
     let mut ui = runtime();
     ui.theme().set_mode(ThemeMode::Dark).unwrap();
-    let host = |queue: &ToastQueue| {
+    let host = |queue: &ToastController| {
         ToastHost::new(
             queue.clone(),
             Element::new("content", Label::new("Content")),
         )
     };
-    let first = ToastQueue::new(&ui);
+    let first = ToastController::new(&ui);
     let _shown = first
         .push(Toast::new("Saved").action("Apply", |_| Ok(())))
         .unwrap();
@@ -230,7 +230,7 @@ fn a_replaced_toast_queue_forgets_the_hovered_control() {
     }
     let (px, py) = over.expect("a toast control takes hover");
     // The replacement's toast keeps local ID 1 but has a different layout.
-    let second = ToastQueue::new(&ui);
+    let second = ToastController::new(&ui);
     let _replacement = second
         .push(
             Toast::new("A much longer message that wraps onto several lines in the stack")

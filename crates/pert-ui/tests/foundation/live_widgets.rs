@@ -89,8 +89,8 @@ fn the_meter_shows_the_peak_of_what_arrived_and_holds_it_when_nothing_does() {
     rig.publish(&[0.25, 0.75, 0.5]);
     assert_eq!(rig.frame(), 1);
     assert_eq!(rig.property("meter", "level"), InspectValue::Number(0.75));
-    let width = 3.0 * ThemeMetrics::default().get(MetricRole::ControlWidth);
-    let thickness = ThemeMetrics::default().get(MetricRole::MeterThickness);
+    let width = 3.0 * ThemeMetrics::default().metric(MetricRole::ControlWidth);
+    let thickness = ThemeMetrics::default().metric(MetricRole::MeterThickness);
     assert_eq!(
         rig.rects(ColorRole::Primary),
         [[0.0, 0.0, width * 0.75, thickness]]
@@ -125,7 +125,7 @@ fn partial_meter_levels_leave_a_visible_gap_and_track_in_both_axes_and_themes() 
             } else {
                 size.height()
             };
-            let thickness = ThemeMetrics::default().get(MetricRole::MeterThickness);
+            let thickness = ThemeMetrics::default().metric(MetricRole::MeterThickness);
 
             for level in [0.0, 0.5, 1.0 - thickness / (2.0 * length), 1.0] {
                 rig.publish(&[level]);
@@ -175,7 +175,7 @@ fn values_outside_the_scale_rest_at_its_ends_and_non_finite_values_are_ignored()
     });
     rig.publish(&[12.0]);
     rig.frame();
-    let width = 3.0 * ThemeMetrics::default().get(MetricRole::ControlWidth);
+    let width = 3.0 * ThemeMetrics::default().metric(MetricRole::ControlWidth);
     assert_eq!(rig.rects(ColorRole::Primary)[0][2], width);
     rig.publish(&[f32::NAN, f32::INFINITY]);
     rig.frame();
@@ -215,7 +215,7 @@ fn a_logarithmic_scale_places_the_level_by_ratio() {
     });
     rig.publish(&[10.0]);
     rig.frame();
-    let width = 3.0 * ThemeMetrics::default().get(MetricRole::ControlWidth);
+    let width = 3.0 * ThemeMetrics::default().metric(MetricRole::ControlWidth);
     let drawn = rig.rects(ColorRole::Primary)[0][2];
     assert!((drawn - width / 2.0).abs() < 1e-3, "{drawn}");
 }
@@ -317,8 +317,8 @@ fn the_trace_draws_one_span_per_column_and_breaks_at_gaps() {
         Element::new("trace", Trace::new(source, scale))
     });
     assert!(rig.rects(ColorRole::Primary).is_empty(), "no data, no line");
-    let width = 3.0 * ThemeMetrics::default().get(MetricRole::ControlWidth);
-    let height = 8.0 * ThemeMetrics::default().get(MetricRole::MeterThickness);
+    let width = 3.0 * ThemeMetrics::default().metric(MetricRole::ControlWidth);
+    let height = 8.0 * ThemeMetrics::default().metric(MetricRole::MeterThickness);
 
     // Four points across the full width: a rising ramp, joined column to column.
     rig.publish(&[-1.0, 0.0, 0.0, 1.0]);

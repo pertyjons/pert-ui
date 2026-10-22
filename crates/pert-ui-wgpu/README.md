@@ -17,10 +17,10 @@ in device-wide caches shared by every surface made from one renderer, whatever
 their surface formats; they are found by the resources' content keys, confirmed by
 equality, so equal content from different allocations or windows on one device is
 uploaded once. A scene's unique coverage is limited to 64 MiB, its unique image
-data to 256 MiB (`ResourceKind::scene_budget`), and each resource and surface to
-the hardware adapter's own texture dimension. Exceeding a budget or device limit
-is a typed `RenderError::Limit`, distinct from capability and GPU failures, and
-leaves the renderer usable. Images sample linearly or by nearest pixel,
+data to 256 MiB (`ResourceKind::scene_budget_bytes`), and each resource and
+surface to the hardware adapter's own texture dimension. Exceeding a budget or
+device limit is a typed `RenderError::Limit`, distinct from capability and GPU
+failures, and leaves the renderer usable. Images sample linearly or by nearest pixel,
 clamped at their edges, from an sRGB texture that decodes to linear light before
 filtering. Failed preparation invalidates
 the scene cache so a previous scene can be retried safely. A renderer without a

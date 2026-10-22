@@ -312,7 +312,7 @@ fn escape_reaches_commands_unless_a_focused_control_cancels_something() -> Resul
         escape(&mut ui)?;
         assert_eq!(hits.get(), 1, "{name}: nothing focused");
 
-        ui.focus_next(false)?;
+        ui.focus_next(FocusDirection::Forward)?;
         assert!(ui.focused().is_some(), "{name} takes focus");
         escape(&mut ui)?;
         assert_eq!(hits.get(), 2, "{name}: an idle control lets Escape through");

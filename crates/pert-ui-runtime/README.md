@@ -463,7 +463,9 @@ Escape/context loss cancels activation, including capture owned by nonfocusable
 custom components. Native repeats remain repeats after window focus loss.
 
 ```rust
-use pert_ui_runtime::{Button, Column, Element, Label, Runtime, RuntimeError, Viewport};
+use pert_ui_runtime::{
+    Button, Column, Element, FocusDirection, Label, Runtime, RuntimeError, Viewport,
+};
 use std::time::Duration;
 let mut ui = Runtime::new();
 ui.set_viewport(Viewport::new(400.0, 200.0, 1.0)?)?;
@@ -474,7 +476,7 @@ ui.mount_tree(Element::new("content", Column::new([
     Element::new("apply", Button::new("Apply", move |_| action.set("Applied".to_owned()))),
 ])))?;
 ui.flush(Duration::ZERO)?;
-ui.focus_next(false)?;
+ui.focus_next(FocusDirection::Forward)?;
 ui.flush(Duration::ZERO)?;
 let scene = ui.paint()?;
 assert!(!scene.masks().is_empty());
@@ -1150,7 +1152,7 @@ let root = ui.mount_tree(Element::new("window", Column::new([Element::new("bar",
 ui.flush(Duration::ZERO)?;
 
 // Focus the document, then F10, Down and Enter choose File › Save.
-ui.focus_next(false)?;
+ui.focus_next(FocusDirection::Forward)?;
 for key in [KeyCode::F10, KeyCode::ArrowDown, KeyCode::Enter] {
     ui.key_input(key, KeyAction::Press)?;
     ui.key_input(key, KeyAction::Release)?;
@@ -1184,7 +1186,7 @@ let mut ui = Runtime::new();
 ui.set_viewport(Viewport::new(640.0, 480.0, 1.0)?)?;
 let banner_visible = ui.signal(true);
 let hide_banner = banner_visible.clone();
-let queue = ToastQueue::new(&ui);
+let queue = ToastController::new(&ui);
 let post = queue.clone();
 let root = ui.mount_tree(Element::new("notifications", ToastHost::new(
     queue.clone(),
@@ -1455,7 +1457,7 @@ layout, just like the built-in label:
 ```rust
 use pert_ui_runtime::{ArrangeContext, Component, Constraints, DrawError, Element, Icon,
     MeasureContext, Painter, RichText, Runtime, RuntimeError, Size, TextLayout,
-    TextStyle, UpdateContext, Viewport, ColorRole};
+    TextStyle, UpdateContext, Viewport, ColorRole, Point};
 use std::{cell::RefCell, time::Duration};
 
 struct Caption {
@@ -1475,7 +1477,7 @@ impl Component for Caption {
     }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
         if let Some(layout) = self.layout.borrow().as_ref() {
-            layout.paint(painter, 0.0, 0.0, painter.color(ColorRole::OnSurface))?;
+            layout.paint(painter, Point::ZERO, painter.color(ColorRole::OnSurface))?;
         }
         Ok(())
     }

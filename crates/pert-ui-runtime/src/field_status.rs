@@ -95,7 +95,7 @@ impl FieldStatus {
 
 /// The statuses of a form's fields, counted in registration order.
 ///
-/// Read it from [`FormStatus::summary`], for example to enable a submit button
+/// Read it from [`FormFields::summary`], for example to enable a submit button
 /// only while [`FormSummary::errors`] is zero.
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct FormSummary {
@@ -187,9 +187,9 @@ impl FormInner {
 ///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
-/// use pert_ui::{Column, Element, Field, FieldStatus, FormStatus, Runtime, TextField};
+/// use pert_ui::{Column, Element, Field, FieldStatus, FormFields, Runtime, TextField};
 /// let mut ui = Runtime::new();
-/// let form = FormStatus::new(&ui);
+/// let form = FormFields::new(&ui);
 /// let name = ui.signal(String::new());
 /// let name_status = form.field("name")?;
 /// ui.mount_tree(Element::new(
@@ -214,8 +214,8 @@ impl FormInner {
 /// ```
 #[derive(Clone)]
 #[must_use]
-pub struct FormStatus(Rc<FormInner>);
-impl FormStatus {
+pub struct FormFields(Rc<FormInner>);
+impl FormFields {
     /// Creates an empty form on this runtime; its summary starts clear.
     ///
     /// `ui` is any [`StateOwner`](crate::StateOwner): the
@@ -296,7 +296,7 @@ impl FormStatus {
     }
 }
 
-/// The application's write access to one registered field of a [`FormStatus`].
+/// The application's write access to one registered field of a [`FormFields`].
 ///
 /// Clones share the same field. Give it to [`Field::form`] so the field follows
 /// the status and the form can focus its control.
@@ -367,7 +367,7 @@ impl FieldHandle {
     }
     /// Removes this field from its form, for a form that removes a repeatable
     /// row. The field no longer counts in the summary, which is brought up to
-    /// date, [`FormStatus::focus_first_error`] no longer reaches its control,
+    /// date, [`FormFields::focus_first_error`] no longer reaches its control,
     /// and its key can be registered again; a new registration is a different
     /// field, which this handle never reaches. Returns whether the field was
     /// still registered: removing it again, or through a clone, does nothing.
@@ -433,7 +433,7 @@ struct Prepared {
 /// is hidden. A [required](Field::required) field shows " *" after its label.
 ///
 /// Bind the status with [`Field::status`], or with [`Field::form`] when a
-/// [`FormStatus`] coordinates several fields; see [`FormStatus`] for a complete
+/// [`FormFields`] coordinates several fields; see [`FormFields`] for a complete
 /// example. Inspection reports `label`, `help`, `status`, `message` and
 /// `required`.
 #[must_use]
@@ -517,7 +517,7 @@ impl Field {
         self.target = None;
         self
     }
-    /// Follows a form's field, and lets [`FormStatus::focus_first_error`] reach
+    /// Follows a form's field, and lets [`FormFields::focus_first_error`] reach
     /// this field's control while it is mounted. Replaces an earlier binding.
     pub fn form(mut self, handle: &FieldHandle) -> Self {
         self.source = Some(handle.status());
@@ -719,7 +719,11 @@ impl Component for Field {
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
         let prepared = self.prepared.borrow();
         if let Some(label) = &prepared.label {
-            label.paint(painter, 0.0, 0.0, painter.color(ColorRole::OnSurface))?;
+            label.paint(
+                painter,
+                crate::Point::ZERO,
+                painter.color(ColorRole::OnSurface),
+            )?;
         }
         if let (Some(message), Some(control)) = (&prepared.message, prepared.control) {
             let role = self
@@ -733,8 +737,7 @@ impl Component for Field {
             });
             message.paint(
                 painter,
-                indent,
-                control.y() + control.height() + gap,
+                crate::Point::new(indent, control.y() + control.height() + gap)?,
                 painter.color(role),
             )?;
         }

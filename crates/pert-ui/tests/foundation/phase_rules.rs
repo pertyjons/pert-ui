@@ -53,7 +53,7 @@ fn a_deferred_task_may_reveal_focus_and_flush() {
         })
         .unwrap();
     ui.flush(Duration::ZERO).unwrap();
-    assert_eq!(receipt.status(), TaskStatus::Completed);
+    assert_eq!(receipt.status(), TaskStatus::Succeeded);
     assert_eq!(
         *log.borrow(),
         ["Changed", "RevealedAndFocused { activation: None }"]
@@ -90,12 +90,12 @@ fn a_flush_nested_in_a_task_leaves_newly_queued_tasks_for_the_next_flush() {
             })
             .unwrap();
         ui.flush(Duration::ZERO).unwrap();
-        assert_eq!(receipt.status(), TaskStatus::Completed, "{settle}");
+        assert_eq!(receipt.status(), TaskStatus::Succeeded, "{settle}");
         assert_eq!(*log.borrow(), ["outer done"], "{settle}");
         let inner = inner_receipt.borrow_mut().take().unwrap();
         assert_eq!(inner.status(), TaskStatus::Pending, "{settle}");
         ui.flush(Duration::ZERO).unwrap();
-        assert_eq!(inner.status(), TaskStatus::Completed, "{settle}");
+        assert_eq!(inner.status(), TaskStatus::Succeeded, "{settle}");
         assert_eq!(*log.borrow(), ["outer done", "inner"], "{settle}");
     }
 }
@@ -121,8 +121,8 @@ fn tasks_queued_before_a_nested_flush_still_run_in_order() {
         .unwrap();
     ui.flush(Duration::ZERO).unwrap();
     assert_eq!(*log.borrow(), ["first", "second"]);
-    assert_eq!(one.status(), TaskStatus::Completed);
-    assert_eq!(two.status(), TaskStatus::Completed);
+    assert_eq!(one.status(), TaskStatus::Succeeded);
+    assert_eq!(two.status(), TaskStatus::Succeeded);
 }
 
 #[test]
@@ -169,6 +169,6 @@ fn a_task_queued_with_every_root_hidden_is_delivered_rather_than_due_forever() {
     assert_eq!(ui.application_deadline(), Some(ui.now()));
     let report = ui.flush_windows(ui.now()).unwrap();
     assert!(*ran.borrow(), "the task did not run");
-    assert_eq!(receipt.status(), TaskStatus::Completed);
+    assert_eq!(receipt.status(), TaskStatus::Succeeded);
     assert_eq!(report.next_deadline, None);
 }

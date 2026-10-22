@@ -213,7 +213,7 @@ fn hiding_only_the_control_collapses_its_field_without_a_layout_error() {
 #[test]
 fn a_form_summarizes_in_registration_order_and_rejects_bad_keys() {
     let ui = ui();
-    let form = FormStatus::new(&ui);
+    let form = FormFields::new(&ui);
     let first = form.field("first").unwrap();
     let second = form.field("second").unwrap();
     assert_eq!(form.field("first").err(), Some(RuntimeError::DuplicateKey));
@@ -243,8 +243,8 @@ fn a_form_summarizes_in_registration_order_and_rejects_bad_keys() {
     assert_eq!(second.status().get().unwrap(), FieldStatus::Normal);
 }
 
-fn form_tree(ui: &mut Runtime) -> (WidgetId, FormStatus, FieldHandle, FieldHandle) {
-    let form = FormStatus::new(ui);
+fn form_tree(ui: &mut Runtime) -> (WidgetId, FormFields, FieldHandle, FieldHandle) {
+    let form = FormFields::new(ui);
     let (first, second) = (form.field("first").unwrap(), form.field("second").unwrap());
     let (a, b) = (ui.signal(String::new()), ui.signal(String::new()));
     let submit = form.clone();

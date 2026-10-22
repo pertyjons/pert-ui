@@ -1,5 +1,118 @@
 # Changelog
 
+## 0.3.58 (2026-10-22)
+
+Names and roles (API audit fix plan, part 6a2). Reads, roles, units and
+families get consistent names, boolean operation flags become enums, and the
+wgpu renderer takes a typed physical extent. Every repository consumer is
+migrated. Breaking changes, with their replacements:
+
+- Breaking: reactive reads that also have an owned form are named
+  `x_binding()`. `UiSettings::{zoom_signal, text_rendering_signal,
+  motion_signal, strings_signal, debug_overlay_signal}` are
+  `UiSettings::{zoom_binding, text_rendering_binding, motion_binding,
+  strings_binding, debug_overlay_binding}`, `ThemeManager::{density_signal,
+  mode_signal}` are `ThemeManager::{density_binding, mode_binding}`, and
+  `DeliveryMonitor::observe` is `DeliveryMonitor::snapshot_binding`; the
+  arguments and return types are unchanged. The naming rules in
+  `docs/contracts.md` state the convention: `_signal` names a method that
+  takes a one-way `ReadSignal`, the bare name is the owned read where both
+  exist, and a type with only a reactive read keeps the bare name. The rules
+  record that a retained `ReadSignal` reads the current value at each `get()`;
+  `Parameter::snapshot`'s rustdoc says its signal is live and
+  `AnyParameter::snapshot`'s that its result is an owned copy.
+- Breaking: the role-keyed tables use noun accessors like the context readers.
+  `ThemeMetrics::get(role)` is `ThemeMetrics::metric(role)`,
+  `UiStrings::get(role)` is `UiStrings::text(role)`, and
+  `UiStrings::with(role, text)` is `UiStrings::with_text(role, text)`.
+  Validation and fallback are unchanged.
+- Breaking: `UiStrings::MAX_LENGTH` is renamed `UiStrings::MAX_TEXT_BYTES`
+  (still 1024), naming its unit: UTF-8 bytes, not characters.
+- Breaking: `DragPayload::get::<T>()` is `DragPayload::downcast_ref::<T>()`,
+  the std name for a typed downcast.
+- Breaking: `EditorSession::is_open` is `EditorSession::is_active`, the word
+  `DraftEditorController::is_active` uses for the same begun, unended edit.
+- Breaking: `pert_ui_wgpu::Renderer::new(target, width, height, notify)`,
+  `Renderer::new_surface(target, width, height)` and
+  `Renderer::resize(width, height)` take a `PhysicalExtent` in place of the two
+  `u32`s: `Renderer::new(target, PhysicalExtent::new(width, height), notify)`,
+  `renderer.new_surface(target, extent)` and `renderer.resize(extent)`. An
+  empty extent unconfigures the renderer as a zero width or height did. The
+  facade's platform code uses the new signatures.
+- Breaking: `QuickPick::width` and `CommandPalette::width` take a `Length`
+  instead of an `f32`, like `TableColumn::width`; zero is still
+  `GeometryError::Empty`, and `Length::new` rejects non-finite and negative
+  values before the call. Replace `.width(640.0)?` with
+  `.width(Length::new(640.0)?)?`.
+  `QuickPick::DEFAULT_WIDTH` and `CommandPalette::DEFAULT_WIDTH` have type
+  `Length` (520 logical pixels); read the number with `.get()`.
+- Breaking: `TextLayout::paint(painter, x, y, color)` and
+  `TextLayout::paint_turned(painter, x, y, turn, color)` take a `Point` origin:
+  `layout.paint(painter, Point::new(x, y)?, color)`, or `Point::ZERO` for the
+  local origin.
+- Breaking: byte offsets are named for their unit. `TextSelection::{anchor,
+  focus, range}` are `TextSelection::{anchor_byte, focus_byte, byte_range}`,
+  `TextPreedit::cursor` is `TextPreedit::cursor_byte_range`, and
+  `ResourceKind::scene_budget` is `ResourceKind::scene_budget_bytes`. The
+  parameters of `TextSelection::new` (`anchor_byte`, `focus_byte`),
+  `TextPreedit::new` (`cursor_byte_range`) and `RichText::highlighted`
+  (`byte_ranges`) are renamed to match.
+- Breaking: boolean operation flags become enums.
+  - The new `FocusDirection` (`Forward`, `Backward`) replaces the `reverse`
+    flag: `Runtime::focus_next(false)` is
+    `Runtime::focus_next(FocusDirection::Forward)` and `focus_next(true)` is
+    `focus_next(FocusDirection::Backward)`; `EditorTrigger::Tab { reverse }` is
+    `EditorTrigger::Tab { direction }`.
+  - `Component::tab_navigation(cx, reverse: bool, repeat: bool)` is
+    `tab_navigation(cx, direction: FocusDirection, transition: KeyTransition)`;
+    the transition is `KeyTransition::Pressed` for a press and
+    `KeyTransition::Repeated` for an operating-system repeat. An implementation
+    replaces `reverse` with `direction == FocusDirection::Backward` and
+    `repeat` with `transition == KeyTransition::Repeated`.
+  - `EventContext::request_reveal(target, focus)` is split:
+    `request_reveal(target)` reveals without moving focus and the new
+    `request_reveal_and_focus(target)` also focuses, mirroring
+    `Runtime::reveal` and `Runtime::reveal_and_focus`.
+  - The new `SelectionExtension` (`Collapse`, `Extend`) replaces the `extend`
+    flag of `TextSelection::moved` and `TextSelection::at_point`: `false` is
+    `SelectionExtension::Collapse`, `true` is `SelectionExtension::Extend`.
+  - The new `Expansion` (`Collapsed`, `Expanded`) replaces the `expanded` flag
+    of `ToolWindowChange::new`; the `expanded` field stays a `bool`.
+- Breaking: `DropPosition` is renamed `ListDropPosition`, the prefix of the
+  `ListDrop` family it belongs to; its variants are unchanged.
+- Breaking: cloneable handles to state a mounted widget owns are
+  `*Controller`. `ContextMenuOpener` is renamed `ContextMenuController`, and
+  `ContextMenu::opener()` is renamed `ContextMenu::controller()`, the accessor
+  name `FloatingWindow::controller` uses: replace `menu.opener()` with
+  `menu.controller()`. `ToastQueue` is renamed `ToastController`;
+  `ToastHost::new`'s first parameter is named `controller`.
+- Breaking: `FormStatus` is renamed `FormFields`. It is application-owned, so
+  it is named for what it holds rather than as a controller; the naming rules
+  in `docs/contracts.md` now say that application-owned state widgets follow
+  through handles the application keeps (`ListSelection`, `FormFields` and its
+  `FieldHandle`s) is named for what it holds and that `*Controller` is reserved
+  for state a mounted widget owns.
+- Breaking: `PendingJump::status` and `PendingJump::status_binding` are
+  replaced by `PendingJump::receipt`, which lends the held
+  `ListRevealReceipt`: `pending.receipt().status()` and
+  `pending.receipt().status_binding()`. `PendingJump` keeps its name as the
+  continuation `Runtime::resume_content_jump` takes.
+- Breaking: `TaskStatus::Completed` is renamed `TaskStatus::Succeeded`, the
+  word `ProgressStatus` and `EventStatus` use.
+- Breaking: `NativeCloseAction::Defer` carries a
+  `ReadSignal<Option<WindowCloseAction>>` instead of a
+  `ReadSignal<Option<bool>>`: `Some(WindowCloseAction::Close)` closes and
+  `Some(WindowCloseAction::KeepOpen)` keeps the window, where `Some(true)` and
+  `Some(false)` did. The `diagram_editor` example no longer needs a comment to
+  say which is which.
+- The naming rules in `docs/contracts.md` state the length convention:
+  geometry is in logical pixels unless its name says physical, a length given
+  to the library and stored is a `Length`, a constructor whose argument must
+  be positive may take `f32` and return `GeometryError`, and lengths read back
+  for arithmetic are `f32` logical pixels. `Painter::rich_text`,
+  `MeasureContext::rich_text` and `ToolWindowChange::with_geometry` now say
+  their widths and extents are logical pixels.
+
 ## 0.3.57 (2026-10-22)
 
 Construction and builders (API audit fix plan, part 6a1). Constructor order,

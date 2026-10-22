@@ -18,7 +18,7 @@ impl ResourceKind {
     /// Content deduplicated by the scene's resource tables counts once, however
     /// often it is drawn.
     #[must_use]
-    pub const fn scene_budget(self) -> usize {
+    pub const fn scene_budget_bytes(self) -> usize {
         match self {
             Self::Mask => 64 * 1024 * 1024,
             Self::Image => 256 * 1024 * 1024,
@@ -77,8 +77,8 @@ pub enum LimitError {
         max: u32,
     },
     /// A scene's unique resources of one kind exceed
-    /// [`ResourceKind::scene_budget`].
-    #[error("scene {kind} data exceeds its {} MiB budget", kind.scene_budget() / (1024 * 1024))]
+    /// [`ResourceKind::scene_budget_bytes`].
+    #[error("scene {kind} data exceeds its {} MiB budget", kind.scene_budget_bytes() / (1024 * 1024))]
     SceneBudget {
         /// The resource kind whose budget is exceeded.
         kind: ResourceKind,

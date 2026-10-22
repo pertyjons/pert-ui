@@ -219,7 +219,7 @@ fn step_button<T: Clone + Eq + 'static>(
     } else {
         ("forward", Icon::Forward, crate::StringRole::HistoryForward)
     };
-    let name = strings.get(role).to_owned();
+    let name = strings.text(role).to_owned();
     let acting = shared.clone();
     let button = Button::icon(icon, name.clone(), move |cx| {
         let shared = &acting;
@@ -268,10 +268,10 @@ fn history_list<T: Clone + Eq + 'static>(
 ) -> Result<Element, RuntimeError> {
     let opening = shared.clone();
     let (kind, current_text) = (
-        strings.get(crate::StringRole::HistoryKind).to_owned(),
-        strings.get(crate::StringRole::HistoryCurrent).to_owned(),
+        strings.text(crate::StringRole::HistoryKind).to_owned(),
+        strings.text(crate::StringRole::HistoryCurrent).to_owned(),
     );
-    let title = strings.get(crate::StringRole::HistoryList).to_owned();
+    let title = strings.text(crate::StringRole::HistoryList).to_owned();
     let button = Button::icon(Icon::History, title.clone(), move |_| {
         let opening = &opening;
         let state = opening.history.state().get()?;
@@ -302,7 +302,7 @@ fn history_list<T: Clone + Eq + 'static>(
     .frameless()
     .enabled(history.state().map(|state| !state.entries().is_empty())?);
     let choosing = shared.clone();
-    let gone = strings.get(crate::StringRole::HistoryEntryGone).to_owned();
+    let gone = strings.text(crate::StringRole::HistoryEntryGone).to_owned();
     let pick = QuickPick::new(
         shared.picker.clone(),
         Element::new(

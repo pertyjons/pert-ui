@@ -295,7 +295,7 @@ fn a_modal_that_closes_in_the_same_event_no_longer_blocks_a_queued_reveal() -> T
     // A palette row: it closes its modal surface and asks for the destination.
     let receipt = ui.event(&jump, |cx| {
         state.cancel()?;
-        cx.request_reveal(&target, true)
+        cx.request_reveal_and_focus(&target)
     })??;
     flush(&mut ui);
     assert_eq!(receipt.status(), RevealStatus::Finished(Ok(FOCUSED)));
@@ -571,7 +571,7 @@ fn a_queued_reveal_reaches_its_receipt_after_the_flush() -> TestResult {
     flush(&mut ui);
     let requester = find(&ui, &root, "requester");
     let target = find(&ui, &root, "b-button");
-    let receipt = ui.event(&requester, |cx| cx.request_reveal(&target, true))??;
+    let receipt = ui.event(&requester, |cx| cx.request_reveal_and_focus(&target))??;
     assert_eq!(receipt.status(), RevealStatus::Pending);
     assert!(ui.next_deadline().is_some(), "a queued reveal is due work");
     flush(&mut ui);
@@ -591,7 +591,7 @@ fn a_queued_reveal_of_a_removed_target_finishes_with_an_error() -> TestResult {
     flush(&mut ui);
     let requester = find(&ui, &root, "requester");
     let target = find(&ui, &root, "target");
-    let receipt = ui.event(&requester, |cx| cx.request_reveal(&target, false))??;
+    let receipt = ui.event(&requester, |cx| cx.request_reveal(&target))??;
     ui.unmount(&target)?;
     flush(&mut ui);
     assert_eq!(
@@ -614,10 +614,10 @@ fn the_reveal_queue_is_bounded_and_shutdown_cancels_it() -> TestResult {
     let receipts = ui.event(&requester, |cx| {
         let mut receipts = Vec::new();
         for _ in 0..Runtime::MAX_REVEAL_REQUESTS {
-            receipts.push(cx.request_reveal(&target, false)?);
+            receipts.push(cx.request_reveal(&target)?);
         }
         assert_eq!(
-            cx.request_reveal(&target, false),
+            cx.request_reveal(&target),
             Err(RuntimeError::RevealQueueFull)
         );
         Ok::<_, RuntimeError>(receipts)
@@ -641,9 +641,7 @@ fn a_request_for_another_runtime_is_refused() {
         .unwrap();
     flush(&mut ui);
     let result = ui
-        .event(&requester, |cx| {
-            cx.request_reveal(&foreign, false).map(|_| ())
-        })
+        .event(&requester, |cx| cx.request_reveal(&foreign).map(|_| ()))
         .unwrap();
     assert_eq!(result, Err(RuntimeError::ForeignRuntime));
     assert_eq!(ui.reveal(&foreign), Err(RuntimeError::ForeignRuntime));
@@ -975,7 +973,7 @@ impl Component for Chaining {
     ) -> Result<ChildReveal, RuntimeError> {
         self.open = true;
         if let Some(next) = self.next.borrow_mut().take() {
-            *self.receipt.borrow_mut() = Some(cx.request_reveal(&next, false)?);
+            *self.receipt.borrow_mut() = Some(cx.request_reveal(&next)?);
         }
         cx.invalidate(Invalidation::Layout);
         Ok(ChildReveal::Changed)
@@ -1007,7 +1005,7 @@ fn a_reveal_queued_during_dispatch_is_due_for_the_application() -> TestResult {
     *next.borrow_mut() = Some(find(&ui, &root, "other"));
     let requester = find(&ui, &root, "requester");
     let target = find(&ui, &root, "inside");
-    let first = ui.event(&requester, |cx| cx.request_reveal(&target, false))??;
+    let first = ui.event(&requester, |cx| cx.request_reveal(&target))??;
     flush(&mut ui);
     assert_eq!(first.status(), RevealStatus::Finished(Ok(REVEALED)));
     let second = receipt.borrow().clone().expect("the hook queued a reveal");

@@ -1453,8 +1453,10 @@ impl Component for WindowTitle {
         if let Some(text) = self.prepared.borrow().as_ref() {
             text.paint(
                 p,
-                p.metric(MetricRole::ControlPaddingX),
-                centered(self.size.get().height(), text.size().height()),
+                crate::Point::new(
+                    p.metric(MetricRole::ControlPaddingX),
+                    centered(self.size.get().height(), text.size().height()),
+                )?,
                 p.color(ColorRole::OnButton),
             )?;
         }

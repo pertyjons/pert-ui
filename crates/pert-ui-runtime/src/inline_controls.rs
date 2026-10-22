@@ -443,8 +443,10 @@ impl Component for InlineToggle {
             });
             text.paint(
                 p,
-                centered(size.width(), text.size().width()),
-                centered(size.height(), text.size().height()),
+                crate::Point::new(
+                    centered(size.width(), text.size().width()),
+                    centered(size.height(), text.size().height()),
+                )?,
                 color,
             )?;
         }
@@ -509,7 +511,7 @@ impl Component for SharedText {
     }
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
         if let Some(text) = self.prepared.borrow().as_ref() {
-            text.paint(p, 0.0, 0.0, p.color(ColorRole::OnSurface))?;
+            text.paint(p, crate::Point::ZERO, p.color(ColorRole::OnSurface))?;
         }
         Ok(())
     }

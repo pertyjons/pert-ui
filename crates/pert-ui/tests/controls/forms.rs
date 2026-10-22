@@ -114,7 +114,7 @@ fn reflow_preserves_focus_numeric_draft_and_tab_order() {
     ui.key_input(KeyCode::Enter, KeyAction::Press).unwrap();
     ui.key_input(KeyCode::Enter, KeyAction::Release).unwrap();
     assert_eq!(value.get().unwrap(), 42);
-    ui.focus_next(false).unwrap();
+    ui.focus_next(FocusDirection::Forward).unwrap();
     assert_eq!(ui.focused(), Some(next));
 }
 

@@ -349,7 +349,7 @@ pub(crate) fn paint_link(
     });
     let x = crate::layout::centered(size.width(), text.size().width());
     let y = crate::layout::centered(size.height(), text.size().height());
-    text.paint(painter, x, y, color)?;
+    text.paint(painter, crate::Point::new(x, y)?, color)?;
     if let LinkPaint::Enabled {
         underline: true, ..
     } = state

@@ -19,7 +19,9 @@ its source's capture, and a closed surface cancels the components it hides.
 Native repeats remain repeats after window focus loss.
 
 ```rust
-use pert_ui::{Button, Column, Element, Label, Runtime, RuntimeError, Viewport};
+use pert_ui::{
+    Button, Column, Element, FocusDirection, Label, Runtime, RuntimeError, Viewport,
+};
 use std::time::Duration;
 let mut ui = Runtime::new();
 ui.set_viewport(Viewport::new(400.0, 200.0, 1.0)?)?;
@@ -30,7 +32,7 @@ ui.mount_tree(Element::new("content", Column::new([
     Element::new("apply", Button::new("Apply", move |_| action.set("Applied".to_owned()))),
 ])))?;
 ui.flush(Duration::ZERO)?;
-ui.focus_next(false)?;
+ui.focus_next(FocusDirection::Forward)?;
 ui.flush(Duration::ZERO)?;
 let scene = ui.paint()?;
 assert!(!scene.masks().is_empty());
@@ -306,7 +308,7 @@ impl Component for Readout {
     }
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
         let text = p.text(&self.text, None, TextStyle::MonospaceCaption)?;
-        text.paint(p, 0.0, 0.0, p.color(ColorRole::OnSurface))
+        text.paint(p, Point::ZERO, p.color(ColorRole::OnSurface))
     }
 }
 let mut ui = Runtime::new();

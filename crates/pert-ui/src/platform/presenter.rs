@@ -87,7 +87,9 @@ impl Presenter {
         let _ = software;
         #[cfg(feature = "gpu")]
         return Ok(Self::Gpu(Box::new(Renderer::new(
-            window, width, height, notify,
+            window,
+            crate::PhysicalExtent::new(width, height),
+            notify,
         )?)));
         // Without the GPU renderer every window presents on the CPU.
         #[cfg(not(feature = "gpu"))]
@@ -110,7 +112,7 @@ impl Presenter {
         match self {
             #[cfg(feature = "gpu")]
             Self::Gpu(renderer) => Ok(Self::Gpu(Box::new(
-                renderer.new_surface(window, width, height)?,
+                renderer.new_surface(window, crate::PhysicalExtent::new(width, height))?,
             ))),
             #[cfg(feature = "cpu")]
             Self::Software(_) => Ok(Self::Software(Box::new(software::Software::new(
@@ -123,7 +125,7 @@ impl Presenter {
     pub(super) fn resize(&mut self, width: u32, height: u32) -> Result<(), RenderError> {
         match self {
             #[cfg(feature = "gpu")]
-            Self::Gpu(renderer) => renderer.resize(width, height),
+            Self::Gpu(renderer) => renderer.resize(crate::PhysicalExtent::new(width, height)),
             #[cfg(feature = "cpu")]
             Self::Software(software) => software.resize(width, height),
         }

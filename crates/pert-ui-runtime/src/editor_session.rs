@@ -29,11 +29,13 @@ pub enum EditorStart {
 pub enum EditorTrigger {
     /// Enter confirmed the edit.
     Enter,
-    /// Tab (`reverse` false) or Shift+Tab confirmed the edit; a host moves to
-    /// the next or previous editable place.
+    /// Tab or Shift+Tab confirmed the edit; a host moves to the next or
+    /// previous editable place.
     Tab {
+        /// [`FocusDirection::Forward`](crate::FocusDirection::Forward) for Tab,
+        /// [`FocusDirection::Backward`](crate::FocusDirection::Backward) for
         /// Shift+Tab.
-        reverse: bool,
+        direction: crate::FocusDirection,
     },
     /// Escape cancelled the edit.
     Escape,
@@ -54,7 +56,7 @@ pub enum EditorOutcome {
     /// it, or an application write had replaced the draft.
     Unchanged,
     /// The editor refused the draft, kept it for correction and wrote
-    /// nothing. The edit stays open; a later completion may follow.
+    /// nothing. The edit stays active; a later completion may follow.
     Refused,
     /// The edit was cancelled and the draft discarded.
     Cancelled,
@@ -82,8 +84,8 @@ struct SessionInner {
     notifier: Notifier,
     /// The current edit's number; 0 before the first `begin`.
     edit: Cell<u64>,
-    /// Whether the current edit is open.
-    open: Cell<bool>,
+    /// Whether the current edit is active.
+    active: Cell<bool>,
     start: RefCell<Option<EditorStart>>,
     completions: RefCell<VecDeque<EditorCompletion>>,
 }
@@ -155,41 +157,41 @@ impl EditorSession {
     /// A session reporting to the host that owns `notifier`, obtained from
     /// [`UpdateContext::notifier`](crate::UpdateContext::notifier) or
     /// [`EventContext::notifier`](crate::EventContext::notifier). No edit is
-    /// open until [`Self::begin`].
+    /// active until [`Self::begin`].
     #[must_use]
     pub fn new(notifier: Notifier) -> Self {
         Self(Rc::new(SessionInner {
             notifier,
             edit: Cell::new(0),
-            open: Cell::new(false),
+            active: Cell::new(false),
             start: RefCell::new(None),
             completions: RefCell::new(VecDeque::new()),
         }))
     }
-    /// Opens a new edit that starts as `start`, ending any open one: reports
+    /// Begins a new edit that starts as `start`, ending any active one: reports
     /// from editors attached to an earlier edit are dropped from now on.
     /// Completions of earlier edits not yet taken are discarded too. Call it
-    /// before building the editor, which attaches to the edit open at that
+    /// before building the editor, which attaches to the edit active at that
     /// moment.
     pub fn begin(&self, start: EditorStart) {
         self.0.edit.set(self.0.edit.get() + 1);
-        self.0.open.set(true);
+        self.0.active.set(true);
         *self.0.start.borrow_mut() = Some(start);
         self.0.completions.borrow_mut().clear();
     }
-    /// Ends the open edit without a completion, for example when the host
+    /// Ends the active edit without a completion, for example when the host
     /// itself closes the editor; later reports for it are dropped.
     pub fn end(&self) {
-        self.0.open.set(false);
+        self.0.active.set(false);
         self.0.start.borrow_mut().take();
     }
-    /// Whether an edit is open: begun and not yet ended by a terminal report
+    /// Whether an edit is active: begun and not yet ended by a terminal report
     /// or [`Self::end`].
     #[must_use]
-    pub fn is_open(&self) -> bool {
-        self.0.open.get()
+    pub fn is_active(&self) -> bool {
+        self.0.active.get()
     }
-    /// Binds an editor to the edit open now. Built-in editors call this from
+    /// Binds an editor to the edit active now. Built-in editors call this from
     /// their `session` builder; a custom editor calls it when it is built.
     #[must_use]
     pub fn attach(&self) -> EditorAttachment {
@@ -208,7 +210,7 @@ impl core::fmt::Debug for EditorSession {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("EditorSession")
             .field("edit", &self.0.edit.get())
-            .field("open", &self.0.open.get())
+            .field("active", &self.0.active.get())
             .finish_non_exhaustive()
     }
 }
@@ -222,10 +224,10 @@ pub struct EditorAttachment {
     edit: u64,
 }
 impl EditorAttachment {
-    /// Whether this attachment's edit is still open, so reports are kept.
+    /// Whether this attachment's edit is still active, so reports are kept.
     #[must_use]
     pub fn is_current(&self) -> bool {
-        self.session.0.open.get() && self.session.0.edit.get() == self.edit
+        self.session.0.active.get() && self.session.0.edit.get() == self.edit
     }
     /// Takes the edit's pending start, once, while the edit is current.
     #[must_use]
@@ -248,7 +250,7 @@ impl EditorAttachment {
             return;
         }
         if outcome.is_terminal() {
-            self.session.0.open.set(false);
+            self.session.0.active.set(false);
             self.session.0.start.borrow_mut().take();
         }
         self.session

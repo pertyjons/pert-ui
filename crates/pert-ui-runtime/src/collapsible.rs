@@ -233,8 +233,10 @@ impl Headers {
             }
             placed.text.paint(
                 p,
-                x + metrics.lead(),
-                y + ((h - placed.text.size().height()) / 2.0).max(0.0),
+                crate::Point::new(
+                    x + metrics.lead(),
+                    y + ((h - placed.text.size().height()) / 2.0).max(0.0),
+                )?,
                 p.color(if self.enabled {
                     ColorRole::OnSurface
                 } else {

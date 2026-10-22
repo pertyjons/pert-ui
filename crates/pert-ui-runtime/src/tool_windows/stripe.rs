@@ -112,7 +112,7 @@ impl Stripe {
             autoscroll: 0.0,
             reveal_active: Cell::new(true),
             geometry: None,
-            name: UiStrings::english().get(edge.stripe_role()).to_owned(),
+            name: UiStrings::english().text(edge.stripe_role()).to_owned(),
         }
     }
     /// The edge's buttons, start group first, each in description order.
@@ -506,7 +506,7 @@ impl Component for Stripe {
         }
     }
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
-        self.name = cx.strings()?.get(self.edge.stripe_role()).to_owned();
+        self.name = cx.strings()?.text(self.edge.stripe_role()).to_owned();
         let model = self.link.model();
         let edge = self.edge;
         // The buttons compare their titles below, which relayouts on change.
@@ -751,7 +751,7 @@ impl Component for Stripe {
                 p.icon(icon.clone(), *rect, color)?;
             }
             if let Some((text, point)) = &placed.name {
-                text.paint(p, point.x(), point.y(), color)?;
+                text.paint(p, *point, color)?;
             }
             if self.focused && self.active.as_ref() == Some(&placed.key) {
                 p.focus_ring(placed.rect, Shape::Rounded(radius))?;
@@ -884,7 +884,7 @@ impl Component for Stripe {
         let model = self.link.model();
         let Some(drag) = event
             .payload()
-            .get::<ButtonDrag>()
+            .downcast_ref::<ButtonDrag>()
             .filter(|drag| std::ptr::eq(drag.layout, Rc::as_ptr(&model)))
         else {
             return Ok(DropResponse::Rejected);

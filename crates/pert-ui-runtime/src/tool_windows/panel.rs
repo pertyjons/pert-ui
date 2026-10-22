@@ -660,8 +660,10 @@ impl Component for Panel {
             p.with_clip(room, |p| {
                 text.paint(
                     p,
-                    header.title_x,
-                    ((header.height - text.size().height()) / 2.0).max(0.0),
+                    crate::Point::new(
+                        header.title_x,
+                        ((header.height - text.size().height()) / 2.0).max(0.0),
+                    )?,
                     p.color(ColorRole::OnSurface),
                 )
             })?;

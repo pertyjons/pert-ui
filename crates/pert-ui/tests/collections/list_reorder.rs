@@ -52,8 +52,10 @@ impl Model {
         // Resolved before removal: the position may name a dragged row.
         let list = &self.lists[target];
         let boundary = match drop.position() {
-            DropPosition::Before(key) => list.iter().position(|k| k == key).unwrap_or(list.len()),
-            DropPosition::After(key) => list
+            ListDropPosition::Before(key) => {
+                list.iter().position(|k| k == key).unwrap_or(list.len())
+            }
+            ListDropPosition::After(key) => list
                 .iter()
                 .position(|k| k == key)
                 .map_or(list.len(), |index| index + 1),

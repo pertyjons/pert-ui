@@ -294,7 +294,7 @@ fn custom_container_demo(
                         "reveal-drawer",
                         Link::new("Reveal and focus the drawer's setting", move |cx| {
                             let target = reveal_targets.get(NavigationTargets::DRAWER_SETTING)?;
-                            let started = cx.request_reveal(&target, true)?;
+                            let started = cx.request_reveal_and_focus(&target)?;
                             reveal_receipt.set(Some(started))
                         }),
                     ),
@@ -397,14 +397,19 @@ pub(crate) fn navigation(
     let reveal = |text: &str, target: &'static str, focus: bool| {
         let (targets, receipt) = (targets.clone(), receipt.clone());
         Link::new(text, move |cx| {
-            let started = cx.request_reveal(&targets.get(target)?, focus)?;
+            let target = targets.get(target)?;
+            let started = if focus {
+                cx.request_reveal_and_focus(&target)?
+            } else {
+                cx.request_reveal(&target)?
+            };
             receipt.set(Some(started))
         })
     };
     let rich_reveal = |content: RichText, target: &'static str| {
         let (targets, receipt) = (targets.clone(), receipt.clone());
         Link::new(content, move |cx| {
-            let started = cx.request_reveal(&targets.get(target)?, true)?;
+            let started = cx.request_reveal_and_focus(&targets.get(target)?)?;
             receipt.set(Some(started))
         })
     };

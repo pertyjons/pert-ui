@@ -247,7 +247,7 @@ fn press(ui: &mut Runtime, code: KeyCode, what: &str) {
 /// Mounts `element` and focuses its first Tab stop.
 fn mount_focused(ui: &mut Runtime, element: Element) -> WidgetId {
     let id = mount(ui, element);
-    ui.focus_next(false).unwrap();
+    ui.focus_next(FocusDirection::Forward).unwrap();
     ui.flush(Duration::ZERO).unwrap();
     id
 }
@@ -457,7 +457,7 @@ fn containers_show_tab_selection_resizing_scrolling_and_zoom() {
             ScrollArea::new(Element::new("rows", Column::new(rows))),
         ),
     );
-    ui.focus_next(false).unwrap();
+    ui.focus_next(FocusDirection::Forward).unwrap();
     // The focused row leaves pages to its viewport.
     press(&mut ui, KeyCode::PageDown, "ScrollArea page");
     let label = |key: &str| Element::new(key, Label::new(key.to_owned()));
@@ -544,7 +544,7 @@ fn escape_ends_a_scrollbar_drag_visibly() {
         &mut ui,
         Element::new("scroll", ScrollArea::new(Element::new("content", content))),
     );
-    ui.focus_next(false).unwrap();
+    ui.focus_next(FocusDirection::Forward).unwrap();
     drag_then_escape(&mut ui, Point::new(196.0, 5.0).unwrap(), "ScrollArea");
     let mut ui = runtime(200.0, 100.0);
     let items = ui.signal(ListSource::new(Rows(30)));
@@ -553,7 +553,7 @@ fn escape_ends_a_scrollbar_drag_visibly() {
         .unwrap()
         .selection(selection);
     mount_root(&mut ui, Element::new("list", list));
-    ui.focus_next(false).unwrap();
+    ui.focus_next(FocusDirection::Forward).unwrap();
     drag_then_escape(&mut ui, Point::new(196.0, 5.0).unwrap(), "VirtualList");
     let mut ui = runtime(200.0, 100.0);
     let text = (0..30)
@@ -561,12 +561,12 @@ fn escape_ends_a_scrollbar_drag_visibly() {
         .collect::<String>();
     let value = ui.signal(text);
     mount_root(&mut ui, Element::new("area", TextArea::new(value)));
-    ui.focus_next(false).unwrap();
+    ui.focus_next(FocusDirection::Forward).unwrap();
     // The editor's bar runs inside its padding.
     let metrics = ThemeMetrics::default();
     let lane = Point::new(
-        200.0 - metrics.get(MetricRole::ControlPaddingX) - 2.0,
-        metrics.get(MetricRole::ControlPaddingY) + 4.0,
+        200.0 - metrics.metric(MetricRole::ControlPaddingX) - 2.0,
+        metrics.metric(MetricRole::ControlPaddingY) + 4.0,
     );
     drag_then_escape(&mut ui, lane.unwrap(), "TextArea");
 }

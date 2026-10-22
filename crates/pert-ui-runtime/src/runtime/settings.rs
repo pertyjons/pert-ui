@@ -263,7 +263,7 @@ impl UiSettings {
     ///
     /// # Errors
     /// Returns [`RuntimeError::Closed`] after shutdown.
-    pub fn text_rendering_signal(&self) -> Result<ReadSignal<TextRenderingMode>, RuntimeError> {
+    pub fn text_rendering_binding(&self) -> Result<ReadSignal<TextRenderingMode>, RuntimeError> {
         self.shared.readable()?;
         Ok(self
             .shared
@@ -329,7 +329,7 @@ impl UiSettings {
     ///
     /// # Errors
     /// Returns `Closed` after shutdown.
-    pub fn zoom_signal(&self) -> Result<ReadSignal<UiZoom>, RuntimeError> {
+    pub fn zoom_binding(&self) -> Result<ReadSignal<UiZoom>, RuntimeError> {
         self.shared.readable()?;
         Ok(self
             .shared
@@ -382,11 +382,11 @@ impl UiSettings {
     /// [`Self::set_motion`] updates, for application chrome such as a settings
     /// row. Components that adapt their own animation read
     /// [`UpdateContext::motion`] instead. Sharing and cost follow
-    /// [`Self::zoom_signal`].
+    /// [`Self::zoom_binding`].
     ///
     /// # Errors
     /// Returns `Closed` after shutdown.
-    pub fn motion_signal(&self) -> Result<ReadSignal<MotionPreference>, RuntimeError> {
+    pub fn motion_binding(&self) -> Result<ReadSignal<MotionPreference>, RuntimeError> {
         self.shared.readable()?;
         Ok(self
             .shared
@@ -431,11 +431,11 @@ impl UiSettings {
     /// Observes the table of library strings as a read-only signal that
     /// [`Self::set_strings`] updates, for application chrome such as a language
     /// menu. Components read [`UpdateContext::strings`] instead. Sharing and
-    /// cost follow [`Self::zoom_signal`].
+    /// cost follow [`Self::zoom_binding`].
     ///
     /// # Errors
     /// Returns `Closed` after shutdown.
-    pub fn strings_signal(&self) -> Result<ReadSignal<crate::UiStrings>, RuntimeError> {
+    pub fn strings_binding(&self) -> Result<ReadSignal<crate::UiStrings>, RuntimeError> {
         self.shared.readable()?;
         let current = self.shared.strings.borrow().clone();
         Ok(self
@@ -471,11 +471,11 @@ impl UiSettings {
     /// Observes the development overlay as a read-only signal that this
     /// handle's [`Self::set_debug_overlay`] and
     /// [`Runtime::set_debug_overlay`] update. Sharing and cost follow
-    /// [`Self::zoom_signal`].
+    /// [`Self::zoom_binding`].
     ///
     /// # Errors
     /// Returns `Closed` after shutdown.
-    pub fn debug_overlay_signal(&self) -> Result<ReadSignal<crate::DebugOverlay>, RuntimeError> {
+    pub fn debug_overlay_binding(&self) -> Result<ReadSignal<crate::DebugOverlay>, RuntimeError> {
         self.shared.readable()?;
         Ok(self
             .shared
@@ -714,7 +714,7 @@ pub(crate) fn string_signal(
         .settings_signals
         .strings
         .read_cloned(shared, &current);
-    strings.map(move |table| table.get(role).to_owned()).ok()
+    strings.map(move |table| table.text(role).to_owned()).ok()
 }
 
 /// The application's `configured` text, or the library text for `role`,
@@ -726,6 +726,6 @@ pub(crate) fn library_text(
     role: crate::StringRole,
 ) -> crate::TextSource {
     configured.unwrap_or_else(|| {
-        crate::TextSource::library(role, shared.strings.borrow().get(role).to_owned())
+        crate::TextSource::library(role, shared.strings.borrow().text(role).to_owned())
     })
 }

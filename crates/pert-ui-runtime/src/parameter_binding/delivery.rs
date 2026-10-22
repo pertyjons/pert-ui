@@ -240,7 +240,7 @@ impl<T> DeliverySnapshot<T> {
 ///
 /// Holds report storage only, not the parameter or the sink closures, so keeping
 /// it alive keeps neither the runtime nor the application's captures alive.
-/// [`Self::snapshot`] works after the runtime closed; [`Self::observe`] binds
+/// [`Self::snapshot`] works after the runtime closed; [`Self::snapshot_binding`] binds
 /// the report in update contexts. Dropping the monitor does not detach the sinks;
 /// the host owns their lifetime. Check it before release at shutdown: discarding
 /// every handle abandons the in-memory report, which is not durable messaging.
@@ -282,7 +282,7 @@ impl<T: Clone> DeliveryMonitor<T> {
     }
     /// Returns the report as a read-only signal for update contexts.
     #[must_use]
-    pub fn observe(&self) -> ReadSignal<DeliverySnapshot<T>> {
+    pub fn snapshot_binding(&self) -> ReadSignal<DeliverySnapshot<T>> {
         self.signal.clone()
     }
 }

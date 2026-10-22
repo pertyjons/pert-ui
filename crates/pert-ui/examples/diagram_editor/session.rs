@@ -552,7 +552,7 @@ pub fn run(dir: PathBuf) -> Outcome {
     assert_eq!(decision.get()?, None);
     s.app.files.discard_dialog.cancel()?;
     s.flush()?;
-    assert_eq!(decision.get()?, Some(false));
+    assert_eq!(decision.get()?, Some(WindowCloseAction::KeepOpen));
     // So does a rename open on the canvas.
     s.ui.focus(&s.app.canvas)?;
     s.key(KeyCode::F2)?;
@@ -562,7 +562,7 @@ pub fn run(dir: PathBuf) -> Outcome {
     s.flush()?;
     s.app.files.discard_dialog.cancel()?;
     s.flush()?;
-    assert_eq!(decision.get()?, Some(false));
+    assert_eq!(decision.get()?, Some(WindowCloseAction::KeepOpen));
 
     s.assert_clean("at the end")?;
     assert_eq!(s.flush()?, 0, "nothing updates while nothing happens");

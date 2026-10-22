@@ -193,7 +193,7 @@ fn window_failure(error: &AppError) -> crate::WindowError {
 
 pub(super) struct PendingClose {
     window: crate::NativeWindowId,
-    decision: crate::ReadSignal<Option<bool>>,
+    decision: crate::ReadSignal<Option<crate::WindowCloseAction>>,
     requests: Vec<crate::PresentationRequest>,
 }
 impl Runner {
@@ -305,7 +305,7 @@ impl Runner {
                 self.closing.remove(index);
                 continue;
             }
-            let Some(accepted) = self
+            let Some(action) = self
                 .app
                 .runtime
                 .read_signal(&self.closing[index].decision)?
@@ -313,6 +313,7 @@ impl Runner {
                 index += 1;
                 continue;
             };
+            let accepted = action == crate::WindowCloseAction::Close;
             let pending = self.closing.remove(index);
             let result = self.apply_close(event_loop, &pending.window, accepted);
             Self::finish_close_requests(pending.requests, result)?;

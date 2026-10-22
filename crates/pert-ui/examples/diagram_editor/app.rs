@@ -39,7 +39,7 @@ pub struct Files {
     pub save_dialog: DialogController,
     pub discard_dialog: DialogController,
     pub save_name: Signal<String>,
-    pub toasts: ToastQueue,
+    pub toasts: ToastController,
     /// Delivers directory listings made on worker threads.
     _listings: Mailbox<DirectoryResponse>,
     /// Advances with every open, so only the latest one is applied.
@@ -577,7 +577,7 @@ fn files(
         save_dialog: DialogController::new(ui),
         discard_dialog: DialogController::new(ui),
         save_name: ui.signal("diagram.txt".to_owned()),
-        toasts: ToastQueue::new(ui),
+        toasts: ToastController::new(ui),
         _listings: listings,
         opening: std::cell::Cell::new(0),
         saving: std::cell::Cell::new(false),
@@ -887,12 +887,11 @@ fn mount(
 /// would resolve them: clearing focus saves the inspector field and the
 /// in-place rename being typed (a draft its field refuses stays unsaved and
 /// is lost with the window). The layout is saved, and with unsaved changes
-/// the user is asked before they are discarded; the returned decision reads
-/// `Some(true)` to close.
+/// the user is asked before they are discarded.
 pub fn close_requested(
     app: &DiagramApp,
     ui: &mut Runtime,
-) -> Result<Option<ReadSignal<Option<bool>>>, RuntimeError> {
+) -> Result<Option<ReadSignal<Option<WindowCloseAction>>>, RuntimeError> {
     ui.clear_focus();
     app.files.save_layout(ui)?;
     if !app.editor.dirty.get()? {
@@ -907,8 +906,8 @@ pub fn close_requested(
         .discard_dialog
         .status()
         .map(|status| match status {
-            DialogStatus::Finished(DialogOutcome::Accepted) => Some(true),
-            DialogStatus::Finished(_) => Some(false),
+            DialogStatus::Finished(DialogOutcome::Accepted) => Some(WindowCloseAction::Close),
+            DialogStatus::Finished(_) => Some(WindowCloseAction::KeepOpen),
             _ => None,
         })?;
     Ok(Some(decision))

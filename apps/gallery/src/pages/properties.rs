@@ -13,7 +13,7 @@ enum Mode {
 
 /// Builds the page. `level` identifies the knob's sample parameter.
 pub(crate) fn property_grid(ui: &mut Runtime, level: ParameterId) -> Result<Element, AppError> {
-    let form = FormStatus::new(ui);
+    let form = FormFields::new(ui);
     let name_status = form.field("name")?;
     let name = ui.signal(String::from("Channel 1"));
     let enabled = ui.signal(true);

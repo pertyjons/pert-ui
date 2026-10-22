@@ -637,8 +637,10 @@ impl<T: Clone + Eq + Hash + 'static> Component for ChoiceRow<T> {
         if let Some(text) = self.text.borrow().as_ref() {
             text.paint(
                 p,
-                pad + p.metric(MetricRole::IconSize) + p.metric(MetricRole::IconGap),
-                centered(size.height(), text.size().height()),
+                crate::Point::new(
+                    pad + p.metric(MetricRole::IconSize) + p.metric(MetricRole::IconGap),
+                    centered(size.height(), text.size().height()),
+                )?,
                 color,
             )?;
         }
@@ -701,7 +703,7 @@ impl<T: Clone + Eq + Hash + 'static> Component for Panel<T> {
             (desc.options.clone(), desc.search_placeholder.clone())
         };
         let strings = cx.strings()?;
-        let no_matches = strings.get(crate::StringRole::NoMatches);
+        let no_matches = strings.text(crate::StringRole::NoMatches);
         if self.no_matches != no_matches {
             self.no_matches = no_matches.to_owned();
             cx.request_layout();
@@ -817,8 +819,10 @@ impl<T: Clone + Eq + Hash + 'static> Component for Panel<T> {
         let row = p.metric(MetricRole::ControlHeight);
         text.paint(
             p,
-            p.metric(MetricRole::ControlPaddingX),
-            (size.height() - row + centered(row, text.size().height())).max(0.0),
+            crate::Point::new(
+                p.metric(MetricRole::ControlPaddingX),
+                (size.height() - row + centered(row, text.size().height())).max(0.0),
+            )?,
             p.color(ColorRole::Muted),
         )
     }
@@ -1060,15 +1064,16 @@ impl<T: Clone + Eq + Hash + 'static> Component for Trigger<T> {
                 let (lead, _, _) = Self::padding(|role| p.metric(role));
                 placeholder.paint(
                     p,
-                    lead,
-                    centered(s.height(), placeholder.size().height()),
+                    crate::Point::new(lead, centered(s.height(), placeholder.size().height()))?,
                     p.color(ColorRole::Muted),
                 )?;
             }
             chevron.paint(
                 p,
-                s.width() - p.metric(MetricRole::ControlPaddingX) - chevron.size().width(),
-                centered(s.height(), chevron.size().height()),
+                crate::Point::new(
+                    s.width() - p.metric(MetricRole::ControlPaddingX) - chevron.size().width(),
+                    centered(s.height(), chevron.size().height()),
+                )?,
                 text,
             )?;
         }

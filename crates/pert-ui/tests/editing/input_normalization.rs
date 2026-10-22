@@ -558,8 +558,8 @@ fn a_refused_step_button_keeps_a_typed_draft_unsaved() {
     replace(&mut ui, "2");
     let [x, y, w, h] = ui.bounds(&id).unwrap().unwrap().values();
     let metrics = ui.theme().metrics(Density::Standard).unwrap();
-    let pad = metrics.get(MetricRole::ControlPaddingX);
-    let side = metrics.get(MetricRole::IconSize);
+    let pad = metrics.metric(MetricRole::ControlPaddingX);
+    let side = metrics.metric(MetricRole::IconSize);
     let plus = Point::new(x + w - pad - side / 2.0, y + h / 2.0).unwrap();
     for kind in [
         PointerKind::Press(PointerButton::Primary),
@@ -809,7 +809,9 @@ fn a_refused_immediate_step_is_reported() {
     let [x, y, w, h] = ui.bounds(&id).unwrap().unwrap().values();
     let metrics = ui.theme().metrics(Density::Standard).unwrap();
     let plus = Point::new(
-        x + w - metrics.get(MetricRole::ControlPaddingX) - metrics.get(MetricRole::IconSize) / 2.0,
+        x + w
+            - metrics.metric(MetricRole::ControlPaddingX)
+            - metrics.metric(MetricRole::IconSize) / 2.0,
         y + h / 2.0,
     )
     .unwrap();

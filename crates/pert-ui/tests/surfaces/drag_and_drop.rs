@@ -279,7 +279,10 @@ impl Component for Target {
         cx: &mut EventContext,
         event: &DragEvent<'_>,
     ) -> Result<DropResponse, RuntimeError> {
-        let item = event.payload().get::<Item>().map_or("?", |item| item.0);
+        let item = event
+            .payload()
+            .downcast_ref::<Item>()
+            .map_or("?", |item| item.0);
         let local = cx.to_local(event.position()).unwrap();
         self.journal.push(format!(
             "{}: {:?} {:?} {item} at {},{} prefers {:?}",
@@ -290,7 +293,7 @@ impl Component for Target {
             local.y(),
             event.preferred()
         ));
-        if event.payload().get::<Item>().is_none() {
+        if event.payload().downcast_ref::<Item>().is_none() {
             return Ok(DropResponse::Rejected);
         }
         Ok(match (self.answer, event.phase()) {

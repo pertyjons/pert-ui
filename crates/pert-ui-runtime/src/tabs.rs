@@ -474,7 +474,7 @@ impl Tabs {
     /// The strip does not own its order: the application describes the tabs, so
     /// `on_reorder` performs the move in the application's model and describes
     /// the tabs again in the new order. It receives a [`ListDrop`] naming the
-    /// moved tab's key and a [`DropPosition`] against the current keys, never an
+    /// moved tab's key and a [`ListDropPosition`] against the current keys, never an
     /// index, and returns whether it made the edit. A position next to the moved
     /// tab itself leaves the order as it is, which the application is free to
     /// ignore. Tab keys, and with them each view's retained state, are unchanged
@@ -510,8 +510,8 @@ impl Tabs {
     ///         let from = order.iter().position(|key| *key == moved).ok_or(RuntimeError::Unmounted)?;
     ///         // Resolved before the removal: the position may name the moved tab.
     ///         let boundary = match drop.position() {
-    ///             DropPosition::Before(key) => order.iter().position(|k| k == key),
-    ///             DropPosition::After(key) => order.iter().position(|k| k == key).map(|i| i + 1),
+    ///             ListDropPosition::Before(key) => order.iter().position(|k| k == key),
+    ///             ListDropPosition::After(key) => order.iter().position(|k| k == key).map(|i| i + 1),
     ///             _ => None,
     ///         }
     ///         .unwrap_or(order.len());
@@ -648,15 +648,15 @@ impl Tabs {
             .position(|header| x < header.rect.x() + header.rect.width() / 2.0)
             .unwrap_or(headers.len())
     }
-    fn position_for(&self, boundary: usize) -> DropPosition {
+    fn position_for(&self, boundary: usize) -> ListDropPosition {
         match self.order.get(boundary) {
-            Some((key, _)) => DropPosition::Before(key.clone()),
+            Some((key, _)) => ListDropPosition::Before(key.clone()),
             None => match boundary
                 .checked_sub(1)
                 .and_then(|last| self.order.get(last))
             {
-                Some((key, _)) => DropPosition::After(key.clone()),
-                None => DropPosition::End,
+                Some((key, _)) => ListDropPosition::After(key.clone()),
+                None => ListDropPosition::End,
             },
         }
     }
@@ -693,7 +693,7 @@ impl Tabs {
         };
         let position = if forward {
             match self.order.get(index + 1) {
-                Some((key, _)) => DropPosition::After(key.clone()),
+                Some((key, _)) => ListDropPosition::After(key.clone()),
                 None => return Ok(()),
             }
         } else {
@@ -701,7 +701,7 @@ impl Tabs {
                 .checked_sub(1)
                 .and_then(|previous| self.order.get(previous))
             {
-                Some((key, _)) => DropPosition::Before(key.clone()),
+                Some((key, _)) => ListDropPosition::Before(key.clone()),
                 None => return Ok(()),
             }
         };
@@ -1489,7 +1489,7 @@ impl Component for Tabs {
             || event.source() != &cx.id()
             || event
                 .payload()
-                .get::<DraggedTab>()
+                .downcast_ref::<DraggedTab>()
                 .is_none_or(|tab| self.dragging.as_ref().map(|(key, _)| key) != Some(&tab.0))
         {
             return Ok(DropResponse::Rejected);
@@ -1670,8 +1670,11 @@ impl Component for Tabs {
                     let [x, _, w, _] = header.rect.values();
                     header.text.paint(
                         painter,
-                        x + self.padding.get(),
-                        ((self.height.get() - border - header.text.size().height()) / 2.0).max(0.0),
+                        crate::Point::new(
+                            x + self.padding.get(),
+                            ((self.height.get() - border - header.text.size().height()) / 2.0)
+                                .max(0.0),
+                        )?,
                         painter.color(if detached || leaving {
                             ColorRole::Muted
                         } else {

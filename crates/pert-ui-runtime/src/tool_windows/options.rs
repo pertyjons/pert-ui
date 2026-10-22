@@ -172,7 +172,7 @@ fn items(
         let (action_link, action_key) = (link.clone(), key.to_owned());
         let item = MenuItem::new(
             format!("move-{}", edge.name()),
-            builder.strings.get(edge.move_role()),
+            builder.strings.text(edge.move_role()),
             move |_| {
                 act(&action_link, &action_key, Model::move_permission, |model| {
                     let group = model
@@ -194,7 +194,7 @@ fn items(
         let (action_link, action_key) = (link.clone(), key.to_owned());
         let item = MenuItem::new(
             format!("group-{}", group.name()),
-            builder.strings.get(match group {
+            builder.strings.text(match group {
                 StripeGroup::Start => StringRole::ToolWindowMoveStartGroup,
                 StripeGroup::End => StringRole::ToolWindowMoveEndGroup,
             }),
@@ -216,7 +216,7 @@ fn items(
         ("later", StringRole::ToolWindowMoveLater, false),
     ] {
         let (action_link, action_key) = (link.clone(), key.to_owned());
-        let item = MenuItem::new(item_key, builder.strings.get(label), move |_| {
+        let item = MenuItem::new(item_key, builder.strings.text(label), move |_| {
             act(
                 &action_link,
                 &action_key,
@@ -258,7 +258,7 @@ fn items(
     let (action_link, action_key) = (link.clone(), key.to_owned());
     let mode = MenuItem::new(
         "overlay",
-        builder.strings.get(StringRole::ToolWindowOverlay),
+        builder.strings.text(StringRole::ToolWindowOverlay),
         move |_| {
             act(
                 &action_link,
@@ -289,7 +289,7 @@ fn items(
             StringRole::ToolWindowOpenWindow,
         ),
     ] {
-        items.push(mode_item(builder, target, item_key, strings.get(role))?);
+        items.push(mode_item(builder, target, item_key, strings.text(role))?);
     }
     Ok(items)
 }

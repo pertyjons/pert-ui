@@ -1,8 +1,8 @@
 //! An expandable hierarchy presented through the virtualized list.
 use crate::{
     ArrangeContext, ColorRole, Component, ComponentDetails, Constraints, DrawError, DropOperations,
-    DropPosition, Element, EventContext, Icon, InputOutcome, Invalidation, KeyCode, KeyEvent,
-    KeyTransition, KeyboardState, LayoutError, ListDrop, ListItems, ListSelection, ListSource,
+    Element, EventContext, Icon, InputOutcome, Invalidation, KeyCode, KeyEvent, KeyTransition,
+    KeyboardState, LayoutError, ListDrop, ListDropPosition, ListItems, ListSelection, ListSource,
     MeasureContext, MetricRole, Painter, Permission, Point, PointerButton, PointerEvent,
     PointerKind, ReadSignal, Rect, RuntimeError, SemanticAction, SemanticRole, Signal, Size,
     UpdateContext, VirtualList,
@@ -958,7 +958,7 @@ impl Tree {
     /// child, outlining the row. A position inside one of the dragged nodes'
     /// own subtrees is forbidden and shows the no-drop cursor.
     ///
-    /// `on_drop` receives a [`ListDrop`] whose [`DropPosition`] names the
+    /// `on_drop` receives a [`ListDrop`] whose [`ListDropPosition`] names the
     /// application's keys: `Before` and `After` a sibling, `Into` a node, or
     /// `End` of an empty tree. It performs the move as one edit in the
     /// application's model and publishes the hierarchy with
@@ -1005,7 +1005,7 @@ impl Tree {
     /// let (edited, published) = (model.clone(), state.clone());
     /// let tree = Tree::new(&state, 24.0)?.reorderable(move |_, drop| {
     ///     let mut model = edited.borrow_mut();
-    ///     let DropPosition::Into(parent) = drop.position() else {
+    ///     let ListDropPosition::Into(parent) = drop.position() else {
     ///         return Ok(false);
     ///     };
     ///     for siblings in model.values_mut() {
@@ -1149,21 +1149,23 @@ impl Tree {
         // Each position with the row whose subtree would receive the nodes.
         let (position, parent) = match code {
             KeyCode::ArrowUp => match previous {
-                Some(key) => (DropPosition::Before(key), row.parent),
+                Some(key) => (ListDropPosition::Before(key), row.parent),
                 None => return Ok(false),
             },
             KeyCode::ArrowDown => match siblings.get(at + 1) {
-                Some(key) => (DropPosition::After(key.clone()), row.parent),
+                Some(key) => (ListDropPosition::After(key.clone()), row.parent),
                 None => return Ok(false),
             },
             KeyCode::ArrowLeft => match (row.parent, parent_key) {
-                (Some(parent), Some(key)) => (DropPosition::After(key), flat.rows[parent].parent),
+                (Some(parent), Some(key)) => {
+                    (ListDropPosition::After(key), flat.rows[parent].parent)
+                }
                 _ => return Ok(false),
             },
             KeyCode::ArrowRight => match previous {
                 Some(key) if flat.source.0.can_drop_into(&key) => {
                     let parent = flat.index_of(&key);
-                    (DropPosition::Into(key), parent)
+                    (ListDropPosition::Into(key), parent)
                 }
                 _ => return Ok(false),
             },
@@ -1205,7 +1207,7 @@ fn place(
     let flat = state.flat();
     let (Some(shown), Some(key)) = (at.index(), at.key()) else {
         return Some(ListDropPlacement::new(
-            DropPosition::End,
+            ListDropPosition::End,
             DropMark::Line {
                 boundary: 0,
                 indent: 0.0,
@@ -1222,7 +1224,7 @@ fn place(
     let (placement, parent) = if at.fraction() < before {
         (
             ListDropPlacement::new(
-                DropPosition::Before(row.key.clone()),
+                ListDropPosition::Before(row.key.clone()),
                 DropMark::Line {
                     boundary: shown,
                     indent: indent(row.depth),
@@ -1232,7 +1234,10 @@ fn place(
         )
     } else if at.fraction() < after {
         (
-            ListDropPlacement::new(DropPosition::Into(row.key.clone()), DropMark::Into(shown)),
+            ListDropPlacement::new(
+                ListDropPosition::Into(row.key.clone()),
+                DropMark::Into(shown),
+            ),
             Some(index),
         )
     } else if let Some(child) = flat
@@ -1244,7 +1249,7 @@ fn place(
         // the start of its children rather than the end of its subtree.
         (
             ListDropPlacement::new(
-                DropPosition::Before(child.key.clone()),
+                ListDropPosition::Before(child.key.clone()),
                 DropMark::Line {
                     boundary: shown + 1,
                     indent: indent(child.depth),
@@ -1272,7 +1277,7 @@ fn place(
         let anchor = &flat.rows[anchor];
         (
             ListDropPlacement::new(
-                DropPosition::After(anchor.key.clone()),
+                ListDropPosition::After(anchor.key.clone()),
                 DropMark::Line {
                     boundary: shown + 1,
                     indent: indent(anchor.depth),

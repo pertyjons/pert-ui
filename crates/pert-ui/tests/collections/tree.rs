@@ -139,7 +139,7 @@ fn only_expanded_nodes_are_rows_and_only_they_are_asked_for_children() -> TestRe
     assert_eq!(before[4], after[5], "`b` moved down and stayed itself");
 
     // Each level is indented by one IconSize, after the expander slot.
-    let step = ThemeMetrics::default().get(MetricRole::IconSize);
+    let step = ThemeMetrics::default().metric(MetricRole::IconSize);
     let content = |f: &Fixture, row: usize| {
         let row = &f.ui.children(&f.tree).unwrap()[row];
         f.ui.bounds(&f.ui.children(row).unwrap()[0])

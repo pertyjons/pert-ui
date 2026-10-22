@@ -581,7 +581,7 @@ impl Component for InlineText {
             } else {
                 ColorRole::OnSurface
             });
-            p.with_clip(area, |p| text.paint(p, x, y, color))?;
+            p.with_clip(area, |p| text.paint(p, crate::Point::new(x, y)?, color))?;
         }
         if self.rejected.is_some() {
             p.stroke_shape(

@@ -914,7 +914,11 @@ impl<P: Copy + PartialEq + 'static> Component for DraftEditor<P> {
             .insert("text".into(), InspectValue::Text(editor.text.clone()));
         d.properties.insert(
             "selection".into(),
-            InspectValue::Text(format!("{}..{}", selection.anchor(), selection.focus())),
+            InspectValue::Text(format!(
+                "{}..{}",
+                selection.anchor_byte(),
+                selection.focus_byte()
+            )),
         );
         d.properties.insert(
             "typography".into(),

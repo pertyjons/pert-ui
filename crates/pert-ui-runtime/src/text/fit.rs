@@ -227,11 +227,11 @@ pub enum HighlightError {
 }
 
 impl RichText {
-    /// Builds text with `ranges` highlighted, for showing what a search or a
-    /// filter matched.
+    /// Builds text with `byte_ranges` highlighted, for showing what a search
+    /// or a filter matched.
     ///
-    /// Ranges are byte offsets into `text` and must lie on grapheme cluster
-    /// boundaries. They may come in any order and may overlap or touch; they
+    /// Ranges are UTF-8 byte offsets into `text` and must lie on grapheme
+    /// cluster boundaries. They may come in any order and may overlap or touch; they
     /// are merged, and empty ranges are ignored. Highlighted text follows the
     /// [`ColorRole::Highlight`] theme role, so a theme change only repaints;
     /// the rest inherits the containing label's color. The plain text of the
@@ -254,9 +254,9 @@ impl RichText {
     /// ```
     pub fn highlighted(
         text: &str,
-        ranges: impl IntoIterator<Item = Range<usize>>,
+        byte_ranges: impl IntoIterator<Item = Range<usize>>,
     ) -> Result<Self, HighlightError> {
-        let mut ranges: Vec<Range<usize>> = ranges.into_iter().collect();
+        let mut ranges: Vec<Range<usize>> = byte_ranges.into_iter().collect();
         for range in &ranges {
             if range.start > range.end || range.end > text.len() {
                 return Err(HighlightError::OutOfBounds {

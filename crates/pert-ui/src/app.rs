@@ -204,10 +204,11 @@ pub enum NativeCloseAction {
     Close,
     /// Keep every window available and abandon this close attempt.
     KeepOpen,
-    /// Await `Some(true)` to close or `Some(false)` to keep open. The signal must
-    /// belong to this runtime. Repeated native close requests reuse the pending
-    /// decision.
-    Defer(crate::ReadSignal<Option<bool>>),
+    /// Await `Some(WindowCloseAction::Close)` to close or
+    /// `Some(WindowCloseAction::KeepOpen)` to keep open; `None` keeps waiting.
+    /// The signal must belong to this runtime. Repeated native close requests
+    /// reuse the pending decision.
+    Defer(crate::ReadSignal<Option<crate::WindowCloseAction>>),
 }
 type CloseHandler =
     Box<dyn FnMut(&mut Runtime, &crate::NativeWindowId) -> Result<NativeCloseAction, RuntimeError>>;

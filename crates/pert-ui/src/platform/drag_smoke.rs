@@ -126,7 +126,7 @@ impl Component for Zone {
         _: &mut EventContext,
         event: &DragEvent<'_>,
     ) -> Result<DropResponse, RuntimeError> {
-        Ok(if event.payload().get::<Item>().is_some() {
+        Ok(if event.payload().downcast_ref::<Item>().is_some() {
             self.0
         } else {
             DropResponse::Rejected

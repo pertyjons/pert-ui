@@ -333,7 +333,8 @@ impl TableController {
         }
         match (done.trigger, done.outcome) {
             (EditorTrigger::FocusLeft, _) => {}
-            (EditorTrigger::Tab { reverse }, EditorOutcome::Saved | EditorOutcome::Unchanged) => {
+            (EditorTrigger::Tab { direction }, EditorOutcome::Saved | EditorOutcome::Unchanged) => {
+                let reverse = direction == crate::FocusDirection::Backward;
                 match self.next_cell(&row, &column, reverse)? {
                     Some((row, column)) => {
                         self.begin_edit(cx, &row, &column, EditorStart::SelectAll)?;

@@ -81,9 +81,11 @@ impl Component for Wrapper {
     fn tab_navigation(
         &mut self,
         _: &mut EventContext,
-        reverse: bool,
-        repeat: bool,
+        direction: FocusDirection,
+        transition: KeyTransition,
     ) -> Result<InputOutcome, RuntimeError> {
+        let reverse = direction == FocusDirection::Backward;
+        let repeat = transition == KeyTransition::Repeated;
         if let Some(offers) = &self.offers {
             offers.borrow_mut().push(repeat);
         }
@@ -217,9 +219,9 @@ fn focus_next_honors_the_scope_and_focus_inside_it_still_works() {
     frame(&mut ui);
     let before = ui.find_descendant(&root, "before").unwrap().unwrap();
     ui.focus(&before).unwrap();
-    ui.focus_next(false).unwrap();
+    ui.focus_next(FocusDirection::Forward).unwrap();
     assert_eq!(focused(&ui).as_deref(), Some("scope"));
-    ui.focus_next(false).unwrap();
+    ui.focus_next(FocusDirection::Forward).unwrap();
     assert_eq!(focused(&ui).as_deref(), Some("after"));
 
     // Explicit focus reaches the content; traversal continues from its place.

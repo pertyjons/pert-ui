@@ -487,8 +487,8 @@ fn constrained_chips_bound_label_and_remove_ink_and_keep_complete_semantics() {
                 );
                 let bounds = ui.bounds(&id).unwrap().unwrap();
                 let metrics = ui.theme().metrics(ui.theme().density().unwrap()).unwrap();
-                let target = metrics.get(MetricRole::IconSize).min(width).min(height);
-                let right = (width - metrics.get(MetricRole::ControlPaddingX) / 2.0).max(target);
+                let target = metrics.metric(MetricRole::IconSize).min(width).min(height);
+                let right = (width - metrics.metric(MetricRole::ControlPaddingX) / 2.0).max(target);
                 let point =
                     Point::new(bounds.x() + right - target / 2.0, bounds.y() + height / 2.0)
                         .unwrap();

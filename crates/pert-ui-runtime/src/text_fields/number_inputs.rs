@@ -925,7 +925,11 @@ impl<T: Number> NumberEditor<T> {
                 Ok(Some(InputOutcome::Handled))
             }
             KeyCode::Tab if !(chord.control || chord.alt || chord.super_key) => self
-                .session_tab(cx, cx.modifiers().shift, !pressed)
+                .session_tab(
+                    cx,
+                    crate::FocusDirection::from_shift(cx.modifiers().shift),
+                    event.transition,
+                )
                 .map(Some),
             _ => Ok(None),
         }
@@ -935,18 +939,18 @@ impl<T: Number> NumberEditor<T> {
     fn session_tab(
         &mut self,
         cx: &mut EventContext,
-        reverse: bool,
-        repeat: bool,
+        direction: crate::FocusDirection,
+        transition: crate::KeyTransition,
     ) -> Result<InputOutcome, RuntimeError> {
         if self.session().is_none() {
             return Ok(InputOutcome::Ignored);
         }
-        if !repeat
+        if transition == crate::KeyTransition::Pressed
             && self.field.editor.preedit.is_none()
             && !self.field.editor.dragging
             && !self.held()
         {
-            self.complete(cx, EditorTrigger::Tab { reverse })?;
+            self.complete(cx, EditorTrigger::Tab { direction })?;
         }
         Ok(InputOutcome::Handled)
     }
@@ -2182,10 +2186,10 @@ macro_rules! number_shared {
             fn tab_navigation(
                 &mut self,
                 cx: &mut EventContext,
-                reverse: bool,
-                repeat: bool,
+                direction: crate::FocusDirection,
+                transition: crate::KeyTransition,
             ) -> Result<InputOutcome, RuntimeError> {
-                self.0.session_tab(cx, reverse, repeat)
+                self.0.session_tab(cx, direction, transition)
             }
             fn measure(
                 &self,

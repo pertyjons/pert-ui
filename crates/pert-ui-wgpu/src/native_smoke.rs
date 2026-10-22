@@ -143,7 +143,7 @@ impl Renderer {
         }
         let old = self.extent.ok_or(RenderError::Unconfigured)?;
         let result = (|| -> Result<(), Box<dyn std::error::Error>> {
-            self.resize(64, 64)?;
+            self.resize(PhysicalExtent::new(64, 64))?;
             for alpha in [0.0, 0.5, 1.0] {
                 let mut ui = Runtime::new();
                 ui.set_viewport(Viewport::new(64.0, 64.0, 1.0)?)?;
@@ -177,7 +177,7 @@ impl Renderer {
             }
             Ok(())
         })();
-        self.resize(old.width(), old.height())?;
+        self.resize(old)?;
         result.map_err(|error| RenderError::Graphics(error.to_string()))
     }
 
@@ -1407,8 +1407,7 @@ impl ApplicationHandler<Notice> for Harness {
             let proxy = self.proxy.clone();
             self.renderer = Some(Renderer::new(
                 window.clone(),
-                size.width,
-                size.height,
+                PhysicalExtent::new(size.width, size.height),
                 move |event| {
                     let _ = proxy.send_event(event);
                 },
@@ -1665,7 +1664,7 @@ impl ApplicationHandler<Notice> for ZeroSize {
                         .with_inner_size(winit::dpi::PhysicalSize::new(48, 32)),
                 )?,
             );
-            let mut renderer = Renderer::new(window.clone(), 0, 0, |_| {})?;
+            let mut renderer = Renderer::new(window.clone(), PhysicalExtent::new(0, 0), |_| {})?;
             let adapter = renderer.adapter.limits().max_texture_dimension_2d;
             let device = renderer.device.limits().max_texture_dimension_2d;
             println!("Texture dimension limit: adapter {adapter}, device {device}");
@@ -1694,7 +1693,7 @@ impl ApplicationHandler<Notice> for ZeroSize {
                 Ok(())
             };
             unconfigured(&mut renderer)?;
-            renderer.resize(48, 32)?;
+            renderer.resize(PhysicalExtent::new(48, 32))?;
             if renderer.extent() != Some(PhysicalExtent::new(48, 32)) {
                 return Err("resize did not record the extent".into());
             }
@@ -1702,7 +1701,7 @@ impl ApplicationHandler<Notice> for ZeroSize {
             if (frame.width(), frame.height()) != (48, 32) {
                 return Err("the capture does not have the configured size".into());
             }
-            renderer.resize(0, 0)?;
+            renderer.resize(PhysicalExtent::new(0, 0))?;
             unconfigured(&mut renderer)?;
             Ok(())
         })();

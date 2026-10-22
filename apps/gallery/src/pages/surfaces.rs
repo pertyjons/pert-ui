@@ -172,7 +172,7 @@ pub(crate) fn transient_surfaces(ui: &Runtime) -> Result<Element, RuntimeError> 
     let nested = DialogController::new(ui);
     let local = DialogController::new(ui);
     let banner = ui.signal(true);
-    let queue = ToastQueue::new(ui);
+    let queue = ToastController::new(ui);
     let status = ui.signal("Try dialogs, nested menus and notifications.".to_owned());
     fn opener(key: &str, title: &str, state: &DialogController) -> Element {
         let state = state.clone();
@@ -338,7 +338,7 @@ pub(crate) fn transient_surfaces(ui: &Runtime) -> Result<Element, RuntimeError> 
                             })],
                         )],
                     )?;
-                    let opener = context_menu.opener();
+                    let opener = context_menu.controller();
                     Element::new(
                         "context-row",
                         Row::new([
@@ -403,8 +403,8 @@ pub(crate) fn transient_surfaces(ui: &Runtime) -> Result<Element, RuntimeError> 
                     "toast-help",
                     format!(
                         "Up to {} visible notifications; up to {} waiting. Tab/Up/Down navigate, Enter acts, Delete dismisses.",
-                        ToastQueue::MAX_VISIBLE,
-                        ToastQueue::MAX_PENDING,
+                        ToastController::MAX_VISIBLE,
+                        ToastController::MAX_PENDING,
                     ),
                 ),
             ],

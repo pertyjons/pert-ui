@@ -559,7 +559,7 @@ fn role_and_rich_sources_show_and_copy_their_plain_text() {
     ui.ui_settings()
         .set_strings(
             UiStrings::english()
-                .with(StringRole::TextCopy, "Kopiera")
+                .with_text(StringRole::TextCopy, "Kopiera")
                 .unwrap(),
         )
         .unwrap();

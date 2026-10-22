@@ -1394,6 +1394,7 @@ impl Painter {
     /// Prepares rich text for geometry already reserved in layout. Font/icon and
     /// size reads subscribe paint only. Prefer `MeasureContext::rich_text` when
     /// content affects preferred size. Span colors resolve when the layout is painted.
+    /// Width is optional logical wrapping space, as for [`Self::text`].
     ///
     /// # Errors
     /// Returns [`DrawError::Runtime`] holding the errors of
@@ -1486,7 +1487,7 @@ impl Painter {
     #[must_use]
     pub fn metric(&self, role: crate::MetricRole) -> f32 {
         self.metric_roles.set(self.metric_roles.get() | role.mask());
-        self.metrics.get(role)
+        self.metrics.metric(role)
     }
 
     /// Resolves a semantic color and tracks a paint dependency for this component.

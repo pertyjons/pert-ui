@@ -426,7 +426,7 @@ fn f10_and_arrows_navigate_titles_and_leaving_returns_focus() {
     let bar = bar(&mut ui);
 
     // Titles are not Tab stops at rest.
-    ui.focus_next(false).unwrap();
+    ui.focus_next(FocusDirection::Forward).unwrap();
     assert_eq!(focused_key(&ui).as_deref(), Some("control"));
 
     press(&mut ui, KeyCode::F10);
@@ -448,7 +448,7 @@ fn f10_and_arrows_navigate_titles_and_leaving_returns_focus() {
     // Escape on a title leaves the bar for the control that had focus.
     press(&mut ui, KeyCode::Escape);
     assert_eq!(focused_key(&ui).as_deref(), Some("control"));
-    ui.focus_next(false).unwrap();
+    ui.focus_next(FocusDirection::Forward).unwrap();
     assert_eq!(focused_key(&ui).as_deref(), Some("control"));
 
     // F10 toggles the bar.
@@ -476,7 +476,7 @@ fn tab_in_menu_mode_leaves_the_titles_and_ends_menu_mode() {
     ui.flush(Duration::ZERO).unwrap();
     assert_eq!(focused_key(&ui).as_deref(), Some("control"));
     // Menu mode ended, so the titles are not tab stops and F10 opens again.
-    ui.focus_next(false).unwrap();
+    ui.focus_next(FocusDirection::Forward).unwrap();
     assert_eq!(focused_key(&ui).as_deref(), Some("control"));
     press(&mut ui, KeyCode::F10);
     assert_eq!(focused_key(&ui).as_deref(), Some("title/file"));
@@ -526,7 +526,7 @@ fn keyboard_menus_move_sideways_close_by_level_and_return_focus_after_a_command(
     press(&mut ui, KeyCode::Enter);
     assert_eq!(bar.new.get().unwrap(), 1);
     assert_eq!(focused_key(&ui).as_deref(), Some("control"));
-    ui.focus_next(false).unwrap();
+    ui.focus_next(FocusDirection::Forward).unwrap();
     assert_eq!(focused_key(&ui).as_deref(), Some("control"));
 
     // F10 from inside an open menu leaves the bar as well.
@@ -549,7 +549,7 @@ fn focus_moving_into_the_content_ends_keyboard_mode() {
     click(&mut ui, cx, cy);
     assert_eq!(focused_key(&ui).as_deref(), Some("control"));
     // The titles are no longer Tab stops.
-    ui.focus_next(false).unwrap();
+    ui.focus_next(FocusDirection::Forward).unwrap();
     assert_eq!(focused_key(&ui).as_deref(), Some("control"));
 }
 
@@ -1254,11 +1254,11 @@ fn slots_are_tab_stops_that_f10_and_the_title_keys_skip() {
     let mut ui = ui();
     let root = mount_slotted(&mut ui, 600.0);
     // Tab order: leading, trailing, content; titles are not Tab stops.
-    ui.focus_next(false).unwrap();
+    ui.focus_next(FocusDirection::Forward).unwrap();
     assert_eq!(focused_key(&ui).as_deref(), Some("mark"));
-    ui.focus_next(false).unwrap();
+    ui.focus_next(FocusDirection::Forward).unwrap();
     assert_eq!(focused_key(&ui).as_deref(), Some("back"));
-    ui.focus_next(false).unwrap();
+    ui.focus_next(FocusDirection::Forward).unwrap();
     assert_eq!(focused_key(&ui).as_deref(), Some("control"));
     // Arrow keys on a slot do not move into the titles.
     let back = find(&ui, &root, "back").unwrap();
@@ -1981,7 +1981,7 @@ fn an_opener_opens_a_context_menu_from_application_code() {
         rows(&["a", "b"], &chosen),
     )
     .unwrap();
-    let opener = menu.opener();
+    let opener = menu.controller();
     let root = ui
         .mount_tree(Element::new(
             "root",
@@ -2029,7 +2029,7 @@ fn an_opener_opens_a_context_menu_from_application_code() {
         rows(&["c"], &chosen),
     )
     .unwrap();
-    let later_opener = later.opener();
+    let later_opener = later.controller();
     ui.reconcile_children(&root, vec![Element::new("context", later)])
         .unwrap();
     ui.flush(Duration::ZERO).unwrap();
@@ -2070,7 +2070,7 @@ fn an_opener_refuses_a_hidden_or_removed_owner() {
         rows(&["a"], &chosen),
     )
     .unwrap();
-    let opener = menu.opener();
+    let opener = menu.controller();
     let root = ui
         .mount_tree(Element::new(
             "root",

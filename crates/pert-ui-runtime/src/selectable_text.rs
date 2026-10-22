@@ -199,13 +199,13 @@ impl SelectableText {
             return true;
         }
         let selection = self.selection.get();
-        if selection.range().is_empty() {
+        if selection.byte_range().is_empty() {
             return false;
         }
         if let Some(layout) = self.layout() {
             self.select(
                 cx,
-                TextSelection::new(&layout, selection.focus(), selection.focus()),
+                TextSelection::new(&layout, selection.focus_byte(), selection.focus_byte()),
             );
         }
         true
@@ -243,7 +243,14 @@ impl SelectableText {
         if let Some(movement) = key_movement(e.code, m)
             && let Some(layout) = self.layout()
         {
-            self.select(cx, self.selection.get().moved(&layout, movement, m.shift));
+            self.select(
+                cx,
+                self.selection.get().moved(
+                    &layout,
+                    movement,
+                    crate::SelectionExtension::from_shift(m.shift),
+                ),
+            );
             return Ok(InputOutcome::Handled);
         }
         Ok(InputOutcome::Ignored)
@@ -256,7 +263,7 @@ impl SelectableText {
         let Some(menu) = &self.menu else {
             return Ok(InputOutcome::Ignored);
         };
-        let selected = !self.selection.get().range().is_empty();
+        let selected = !self.selection.get().byte_range().is_empty();
         let text = !self.caption.text().is_empty();
         for (command, available) in &menu.available {
             available.set(match command {
@@ -359,12 +366,13 @@ impl Component for SelectableText {
                 // Offsets that still lie inside the text are kept, snapped to
                 // its graphemes; the selection is recreated on every new
                 // layout so its geometry follows width and scale.
-                let kept = !replaced || (old.anchor() <= text.len() && old.focus() <= text.len());
+                let kept = !replaced
+                    || (old.anchor_byte() <= text.len() && old.focus_byte() <= text.len());
                 self.selection.set(if kept {
                     TextSelection::new(
                         &layout,
-                        boundary(text, old.anchor()),
-                        boundary(text, old.focus()),
+                        boundary(text, old.anchor_byte()),
+                        boundary(text, old.focus_byte()),
                     )
                 } else {
                     TextSelection::new(&layout, 0, 0)
@@ -392,10 +400,10 @@ impl Component for SelectableText {
             for r in &rectangles {
                 p.fill_rect(*r, p.color(ColorRole::TextSelection));
             }
-            layout.paint(p, 0.0, 0.0, p.color(ColorRole::OnSurface))?;
+            layout.paint(p, crate::Point::ZERO, p.color(ColorRole::OnSurface))?;
             for r in rectangles {
                 p.with_clip(r, |p| {
-                    layout.paint(p, 0.0, 0.0, p.color(ColorRole::OnTextSelection))
+                    layout.paint(p, crate::Point::ZERO, p.color(ColorRole::OnTextSelection))
                 })?;
             }
             Ok(())
@@ -450,10 +458,11 @@ impl Component for SelectableText {
                 let selected = match self.clicks {
                     2 => TextSelection::word_at_point(&layout, point),
                     3 => TextSelection::new(&layout, 0, usize::MAX),
-                    _ => self
-                        .selection
-                        .get()
-                        .at_point(&layout, point, cx.modifiers().shift),
+                    _ => self.selection.get().at_point(
+                        &layout,
+                        point,
+                        crate::SelectionExtension::from_shift(cx.modifiers().shift),
+                    ),
                 };
                 self.select(cx, selected);
                 self.dragging = true;
@@ -465,7 +474,14 @@ impl Component for SelectableText {
                     && let Some(layout) = self.layout()
                 {
                     let point = cx.to_local(e.position()).unwrap_or(e.position());
-                    self.select(cx, self.selection.get().at_point(&layout, point, true));
+                    self.select(
+                        cx,
+                        self.selection.get().at_point(
+                            &layout,
+                            point,
+                            crate::SelectionExtension::Extend,
+                        ),
+                    );
                 }
                 Ok(InputOutcome::Handled)
             }
@@ -518,7 +534,7 @@ impl Component for SelectableText {
     ) -> Result<TextCommandOutcome, RuntimeError> {
         match command {
             TextCommand::Copy => {
-                let range = self.selection.get().range();
+                let range = self.selection.get().byte_range();
                 let selected = self
                     .shown
                     .borrow()
@@ -552,7 +568,11 @@ impl Component for SelectableText {
         let selection = self.selection.get();
         details.properties.insert(
             "selection".into(),
-            InspectValue::Text(format!("{}..{}", selection.anchor(), selection.focus())),
+            InspectValue::Text(format!(
+                "{}..{}",
+                selection.anchor_byte(),
+                selection.focus_byte()
+            )),
         );
         let refusal = self.refusal.borrow();
         if let Some(refusal) = refusal.as_ref() {

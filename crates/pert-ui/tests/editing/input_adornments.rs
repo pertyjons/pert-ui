@@ -211,7 +211,7 @@ fn a_leading_icon_and_a_suffix_narrow_the_text_and_stay_out_of_the_value() {
 #[test]
 fn the_modified_state_is_reported_once_per_change_and_counted_by_the_form() {
     let mut ui = Runtime::new();
-    let form = FormStatus::new(&ui);
+    let form = FormFields::new(&ui);
     let handle = form.field("name").unwrap();
     let value = ui.signal(String::new());
     let log = Rc::new(RefCell::new(Vec::new()));
@@ -226,7 +226,7 @@ fn the_modified_state_is_reported_once_per_change_and_counted_by_the_form() {
                 report.set_modified(modified).map(|_| ())
             }),
     );
-    let modified = |form: &FormStatus| form.summary().get().unwrap().modified();
+    let modified = |form: &FormFields| form.summary().get().unwrap().modified();
     ui.text_input("Ad").unwrap();
     ui.text_input("a").unwrap();
     frame(&mut ui);
@@ -278,7 +278,7 @@ fn the_unsaved_description_follows_the_installed_string_table() {
     ui.text_input("draft").unwrap();
     frame(&mut ui);
     let table = UiStrings::english()
-        .with(StringRole::TextModified, "Ej sparat")
+        .with_text(StringRole::TextModified, "Ej sparat")
         .unwrap();
     ui.ui_settings().set_strings(table).unwrap();
     frame(&mut ui);

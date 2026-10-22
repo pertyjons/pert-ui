@@ -67,7 +67,7 @@ impl core::panic::unwind_safe::RefUnwindSafe for pert_ui::ErrorAction
 impl core::panic::unwind_safe::UnwindSafe for pert_ui::ErrorAction
 pub enum pert_ui::prelude::NativeCloseAction
 pub pert_ui::prelude::NativeCloseAction::Close
-pub pert_ui::prelude::NativeCloseAction::Defer(pert_ui_runtime::signal::ReadSignal<core::option::Option<bool>>)
+pub pert_ui::prelude::NativeCloseAction::Defer(pert_ui_runtime::signal::ReadSignal<core::option::Option<pert_ui_runtime::windows::WindowCloseAction>>)
 pub pert_ui::prelude::NativeCloseAction::KeepOpen
 impl core::fmt::Debug for pert_ui::NativeCloseAction
 pub fn pert_ui::NativeCloseAction::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
@@ -170,7 +170,7 @@ impl core::panic::unwind_safe::RefUnwindSafe for pert_ui::ErrorAction
 impl core::panic::unwind_safe::UnwindSafe for pert_ui::ErrorAction
 pub enum pert_ui::NativeCloseAction
 pub pert_ui::NativeCloseAction::Close
-pub pert_ui::NativeCloseAction::Defer(pert_ui_runtime::signal::ReadSignal<core::option::Option<bool>>)
+pub pert_ui::NativeCloseAction::Defer(pert_ui_runtime::signal::ReadSignal<core::option::Option<pert_ui_runtime::windows::WindowCloseAction>>)
 pub pert_ui::NativeCloseAction::KeepOpen
 impl core::fmt::Debug for pert_ui::NativeCloseAction
 pub fn pert_ui::NativeCloseAction::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result

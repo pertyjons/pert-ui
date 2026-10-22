@@ -115,8 +115,8 @@ fn wide_toolbar_shows_everything_and_aligns_after_the_spacer() {
         "trailing group hugs the trailing edge"
     );
     let metrics = ui.theme().metrics(Density::Standard).unwrap();
-    let band = metrics.get(MetricRole::ControlHeight);
-    let pad = metrics.get(MetricRole::ControlPaddingY);
+    let band = metrics.metric(MetricRole::ControlHeight);
+    let pad = metrics.metric(MetricRole::ControlPaddingY);
     assert_eq!(bh, band + 2.0 * pad);
     assert_eq!(
         property(&ui, "toolbar", "oversized"),
@@ -474,9 +474,9 @@ fn a_redescribed_toolbar_takes_added_removed_and_reordered_groups() {
     );
     assert_eq!(ui.focused(), Some(undo.clone()), "and their focus");
     assert!(left(&ui, &root, "edit") < left(&ui, &root, "tool"));
-    ui.focus_next(false).unwrap();
+    ui.focus_next(FocusDirection::Forward).unwrap();
     assert_eq!(focused_key(&ui).as_deref(), Some("redo"));
-    ui.focus_next(false).unwrap();
+    ui.focus_next(FocusDirection::Forward).unwrap();
     assert_eq!(focused_key(&ui).as_deref(), Some("brush"));
 
     // Reordering moves the retained groups; keyboard order follows.
@@ -488,7 +488,7 @@ fn a_redescribed_toolbar_takes_added_removed_and_reordered_groups() {
     );
     assert!(left(&ui, &root, "tool") < left(&ui, &root, "edit"));
     assert_eq!(find(&ui, &root, "undo"), Some(undo));
-    ui.focus_next(false).unwrap();
+    ui.focus_next(FocusDirection::Forward).unwrap();
     assert_eq!(focused_key(&ui).as_deref(), Some("undo"));
     assert_eq!(
         property(&ui, "toolbar", "collapsed"),
@@ -871,7 +871,7 @@ fn toolbar_overflow_reports_its_painted_frame_and_resets_inherited_cursor() {
         ui.theme()
             .metrics(Density::Standard)
             .unwrap()
-            .get(MetricRole::BorderWidth)
+            .metric(MetricRole::BorderWidth)
     );
     assert_eq!(
         border.color,

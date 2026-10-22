@@ -64,7 +64,7 @@ fn modified_activation_yields_and_armed_release_survives_modifier_changes() {
                         )]),
                     ),
                     4 => {
-                        let queue = ToastQueue::new(&ui);
+                        let queue = ToastController::new(&ui);
                         let _receipt = queue
                             .push(Toast::new("Message").action("Action", move |_| {
                                 hits.set(hits.get() + 1);
@@ -163,7 +163,7 @@ fn toast_modified_input_preserves_pointer_ownership_and_escape_cancels() {
         let mut ui = Runtime::new();
         ui.set_viewport(Viewport::new(120.0, 300.0, 1.0).unwrap())
             .unwrap();
-        let queue = ToastQueue::new(&ui);
+        let queue = ToastController::new(&ui);
         let hits = Rc::new(Cell::new(0));
         let counted = hits.clone();
         let receipt = queue

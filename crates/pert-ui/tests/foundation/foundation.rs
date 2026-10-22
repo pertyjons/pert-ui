@@ -232,7 +232,7 @@ fn an_input_action_can_open_and_close_a_document_with_new_parameters() -> Result
     ui.flush(Duration::ZERO)?;
     assert_eq!(
         receipt.borrow().as_ref().unwrap().status(),
-        TaskStatus::Completed
+        TaskStatus::Succeeded
     );
     let (root, parameter, host) = document.borrow_mut().take().unwrap();
     let close = ui.defer(move |ui| {
@@ -241,7 +241,7 @@ fn an_input_action_can_open_and_close_a_document_with_new_parameters() -> Result
         Ok(())
     })?;
     ui.flush(Duration::ZERO)?;
-    assert_eq!(close.status(), TaskStatus::Completed);
+    assert_eq!(close.status(), TaskStatus::Succeeded);
     assert!(!parameter.snapshot().get()?.available);
     Ok(())
 }
@@ -255,7 +255,7 @@ fn deferred_operations_are_bounded_cancelled_and_never_replayed() -> Result {
     assert_eq!(ui.flush(Duration::ZERO), Err(RuntimeError::EmptyKey));
     assert_eq!(task.status(), TaskStatus::Failed(RuntimeError::EmptyKey));
     ui.flush(Duration::ZERO)?;
-    assert_eq!(next.status(), TaskStatus::Completed);
+    assert_eq!(next.status(), TaskStatus::Succeeded);
     let mut tasks = Vec::new();
     for _ in 0..Runtime::MAX_TASKS {
         tasks.push(ui.defer(|_| Ok(()))?);
@@ -303,7 +303,7 @@ fn bound_button_caption_keeps_adornments_and_tasks_cancel_with_owner() -> Result
         Ok(())
     })?;
     ui.flush(Duration::ZERO)?;
-    assert_eq!(first.status(), TaskStatus::Completed);
+    assert_eq!(first.status(), TaskStatus::Succeeded);
     assert_eq!(
         later.borrow().as_ref().unwrap().status(),
         TaskStatus::Pending
@@ -311,7 +311,7 @@ fn bound_button_caption_keeps_adornments_and_tasks_cancel_with_owner() -> Result
     ui.flush(Duration::ZERO)?;
     assert_eq!(
         later.borrow().as_ref().unwrap().status(),
-        TaskStatus::Completed
+        TaskStatus::Succeeded
     );
     Ok(())
 }
@@ -335,7 +335,7 @@ fn detached_tasks_outlive_their_widget_but_not_shutdown() -> Result {
     ui.unmount(&id)?;
     ui.flush(Duration::ZERO)?;
     assert_eq!(bound.status(), TaskStatus::Cancelled);
-    assert_eq!(detached.status(), TaskStatus::Completed);
+    assert_eq!(detached.status(), TaskStatus::Succeeded);
     assert!(ran.get());
     let id = ui.mount_tree(Element::new("button", Button::new("Go", |_| Ok(()))))?;
     ui.flush(Duration::ZERO)?;

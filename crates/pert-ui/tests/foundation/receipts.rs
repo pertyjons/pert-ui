@@ -43,13 +43,13 @@ fn task_receipt_binding_follows_delivery_and_status_survives_shutdown() -> TestR
     assert_ne!(done, pending);
     assert_eq!(done.status_binding().get()?, TaskStatus::Pending);
     let updates = watch(&mut ui, "watch", done.status_binding())?;
-    assert_eq!(done.status(), TaskStatus::Completed);
-    assert_eq!(done.status_binding().get()?, TaskStatus::Completed);
+    assert_eq!(done.status(), TaskStatus::Succeeded);
+    assert_eq!(done.status_binding().get()?, TaskStatus::Succeeded);
     let late = ui.defer(|_| Ok(()))?;
     let seen = updates.get();
     ui.shutdown();
     assert_eq!(updates.get(), seen);
-    assert_eq!(done.status(), TaskStatus::Completed);
+    assert_eq!(done.status(), TaskStatus::Succeeded);
     assert_eq!(late.status(), TaskStatus::Cancelled);
     assert_eq!(late.status_binding().get(), Err(RuntimeError::Closed));
     Ok(())
@@ -87,7 +87,7 @@ fn presentation_receipt_binding_follows_completion_and_status_survives_shutdown(
 fn toast_receipt_binding_follows_presentation_and_status_survives_shutdown() -> TestResult {
     let mut ui = Runtime::new();
     ui.set_viewport(Viewport::new(400.0, 300.0, 1.0)?)?;
-    let queue = ToastQueue::new(&ui);
+    let queue = ToastController::new(&ui);
     ui.mount_tree(Element::new(
         "host",
         ToastHost::new(

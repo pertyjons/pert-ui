@@ -80,7 +80,7 @@ fn the_rendered_ring_has_no_inner_band_over_a_pressed_fill() -> Result {
         let bounds = pressed_focused_button(&mut ui)?;
         let palette = ui.theme().palette(mode)?;
         let metrics = ui.theme().metrics(Density::Standard)?;
-        let ring = metrics.get(MetricRole::FocusWidth);
+        let ring = metrics.metric(MetricRole::FocusWidth);
         let scene = ui.paint()?;
         if tagged_case {
             assert!(!uses(&scene, Color::from_srgb8(20, 230, 20, 255)));

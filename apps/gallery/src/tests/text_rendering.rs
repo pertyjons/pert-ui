@@ -22,7 +22,11 @@ impl Component for LiveText {
         painter.fill_rect(Rect::new(0.0, 0.0, 400.0, 70.0)?, Color::WHITE);
         painter
             .text("Hamburgefonts 0123456789 Il1 O0", None, TextStyle::Body)?
-            .paint(painter, 10.25, 10.25, Color::from_srgb8(0, 0, 0, 255))
+            .paint(
+                painter,
+                Point::new(10.25, 10.25)?,
+                Color::from_srgb8(0, 0, 0, 255),
+            )
     }
 }
 
@@ -37,7 +41,11 @@ impl Component for PhaseProbeText {
         painter.fill_rect(Rect::new(0.0, 0.0, 400.0, 70.0)?, Color::WHITE);
         painter
             .text("Hamburgefonts 0123456789 Il1 O0", None, TextStyle::Body)?
-            .paint(painter, 10.25, self.0, Color::from_srgb8(0, 0, 0, 255))
+            .paint(
+                painter,
+                Point::new(10.25, self.0)?,
+                Color::from_srgb8(0, 0, 0, 255),
+            )
     }
 }
 
@@ -59,7 +67,11 @@ impl Component for LongText {
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
         painter
             .text(&"H".repeat(self.0), None, TextStyle::Body)?
-            .paint(painter, 0.75, 0.75, Color::from_srgb8(0, 0, 0, 255))
+            .paint(
+                painter,
+                Point::new(0.75, 0.75)?,
+                Color::from_srgb8(0, 0, 0, 255),
+            )
     }
 }
 
@@ -109,8 +121,7 @@ impl Component for PaintCounter {
         self.0.set(self.0.get() + 1);
         painter.text("Moving text", None, TextStyle::Body)?.paint(
             painter,
-            0.0,
-            0.0,
+            Point::ZERO,
             Color::from_srgb8(0, 0, 0, 255),
         )
     }
@@ -178,8 +189,7 @@ impl Component for RichPhaseProbe {
         );
         painter.rich_text(&text, None, TextStyle::Body)?.paint(
             painter,
-            self.x,
-            self.y,
+            Point::new(self.x, self.y)?,
             Color::from_srgb8(0, 0, 0, 255),
         )
     }

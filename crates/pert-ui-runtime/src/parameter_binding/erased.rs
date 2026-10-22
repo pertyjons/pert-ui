@@ -94,6 +94,9 @@ impl AnyParameter {
     }
     /// Captures the specification and state together, tagged.
     ///
+    /// The result is an owned copy taken at this call; later edits do not change
+    /// it. [`Parameter::snapshot`] differs: it returns a live signal.
+    ///
     /// # Errors
     /// Returns `Closed` after runtime drop or `BorrowConflict` on reentrant reads.
     pub fn snapshot(&self) -> Result<AnyParameterSnapshot, RuntimeError> {

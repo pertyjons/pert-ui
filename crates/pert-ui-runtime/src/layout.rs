@@ -893,6 +893,7 @@ impl MeasureContext<'_> {
     /// Tracks font/icon roles and theme sizes for this layout callback. Exact fonts
     /// are immutable; role overrides invalidate only their readers. Span colors are
     /// resolved by `TextLayout::paint`, without reshaping on palette changes.
+    /// Width is optional logical wrapping space, as for [`Self::text`].
     /// Uses the same limits/cache as `text`, plus at most
     /// [`RichText::MAX_SEGMENTS`](crate::RichText::MAX_SEGMENTS) inline segments.
     ///

@@ -375,7 +375,12 @@ impl Model {
         let Some(window) = self.window(key) else {
             return;
         };
-        let change = ToolWindowChange::new(key.to_owned(), window.expanded, origin)
+        let expansion = if window.expanded {
+            super::Expansion::Expanded
+        } else {
+            super::Expansion::Collapsed
+        };
+        let change = ToolWindowChange::new(key.to_owned(), expansion, origin)
             .with_kind(kind)
             .with_placement(window.edge, window.group)
             .with_overlay(window.overlay)

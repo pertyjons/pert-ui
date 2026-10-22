@@ -1254,7 +1254,7 @@ pub(crate) fn adaptive_form(ui: &Runtime) -> Result<Element, RuntimeError> {
 }
 
 pub(crate) fn field_status(ui: &Runtime) -> Result<Element, RuntimeError> {
-    let form = FormStatus::new(ui);
+    let form = FormFields::new(ui);
     let name = ui.signal(String::new());
     let notes = ui.signal("Notes are optional.".to_owned());
     let name_status = form.field("name")?;

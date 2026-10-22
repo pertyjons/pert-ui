@@ -2379,8 +2379,10 @@ impl Component for Table {
                         |painter| {
                             title.paint(
                                 painter,
-                                left,
-                                ((header - title.size().height()) / 2.0).max(0.0),
+                                crate::Point::new(
+                                    left,
+                                    ((header - title.size().height()) / 2.0).max(0.0),
+                                )?,
                                 painter.color(ColorRole::OnSurface),
                             )
                         },
@@ -2603,7 +2605,7 @@ impl Component for Table {
             || event.source() != &cx.id()
             || event
                 .payload()
-                .get::<DraggedColumn>()
+                .downcast_ref::<DraggedColumn>()
                 .is_none_or(|column| self.dragging.as_ref() != Some(&column.0))
         {
             return Ok(DropResponse::Rejected);

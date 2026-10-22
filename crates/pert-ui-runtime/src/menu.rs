@@ -1216,7 +1216,7 @@ impl Component for MenuBranch {
 /// The wrapper itself takes no focus and is no Tab stop, so these keys reach it
 /// from focused content inside it; content without a focusable component offers
 /// the menu to the pointer only. Application code opens it through
-/// [`Self::opener`], for a toolbar button or a command that offers the same
+/// [`Self::controller`], for a toolbar button or a command that offers the same
 /// actions. Focus, dismissal, disabled actions and errors
 /// follow [`Menu`], and so does reconciling a new description. All callbacks
 /// run on the owning UI thread. No native OS menu is created.
@@ -1261,22 +1261,22 @@ pub struct ContextMenu {
     chain: MenuChain,
     position: Option<Point>,
     enabled: bool,
-    /// Whether any row can run, for openers; published from reconciliation
+    /// Whether any row can run, for controllers; published from reconciliation
     /// as library-owned state.
     enabled_signal: Signal<bool>,
-    /// The last request an opener made; the menu applies each once.
+    /// The last request a controller made; the menu applies each once.
     request: Signal<Option<OpenRequest>>,
     seen_request: u64,
-    /// Whether the menu is shown, for openers: true until a mount reports
+    /// Whether the menu is shown, for controllers: true until a mount reports
     /// hiding, false once removed, published from the lifecycle hooks as
     /// library-owned state.
     visible_signal: Signal<bool>,
-    /// The mounted menu's signals, which the openers of this description
+    /// The mounted menu's signals, which the controllers of this description
     /// reach; a reconciled description points its slot at the mounted one.
     opener: Slot<OpenerLink>,
 }
 
-/// What an opener asked for: where to open, and the context the rows run in.
+/// What a controller asked for: where to open, and the context the rows run in.
 #[derive(Clone)]
 struct OpenRequest {
     /// Distinguishes requests, since a context compares by nothing else.
@@ -1289,7 +1289,7 @@ impl PartialEq for OpenRequest {
         self.serial == other.serial
     }
 }
-/// The mounted menu's state an opener writes.
+/// The mounted menu's state a controller writes.
 #[derive(Clone)]
 struct OpenerLink {
     open: Signal<bool>,
@@ -1300,16 +1300,16 @@ struct OpenerLink {
 
 /// Opens a mounted [`ContextMenu`] from application code.
 ///
-/// Obtained with [`ContextMenu::opener`] before the menu is mounted, from any
-/// description of it: every opener of a mounted menu reaches the mounted
-/// menu, including openers taken from later descriptions of the same key.
-/// Clones share the menu.
+/// Obtained with [`ContextMenu::controller`] before the menu is mounted, from
+/// any description of it: every controller of a mounted menu reaches the
+/// mounted menu, including controllers taken from later descriptions of the
+/// same key. Clones share the menu.
 #[derive(Clone)]
 #[must_use]
-pub struct ContextMenuOpener {
+pub struct ContextMenuController {
     link: Slot<OpenerLink>,
 }
-impl ContextMenuOpener {
+impl ContextMenuController {
     /// Opens the menu at `position`, in the owner content's local coordinates
     /// as a secondary press is, or below the content for `None`, as the Menu
     /// key does. The rows run in `context`, captured by the caller with
@@ -1344,11 +1344,11 @@ impl ContextMenuOpener {
     ///     Element::new("text", Label::new("Content")),
     ///     vec![MenuItem::new("copy", "Copy", move |_| copy.set(true))],
     /// )?;
-    /// let opener = menu.opener();
+    /// let controller = menu.controller();
     /// ui.mount_tree(Element::new("area", menu))?;
     /// ui.flush(Duration::ZERO)?;
     /// let context = ui.command_context(CommandSource::Menu);
-    /// assert!(opener.open(Some(Point::new(10.0, 10.0)?), &context)?);
+    /// assert!(controller.open(Some(Point::new(10.0, 10.0)?), &context)?);
     /// ui.flush(Duration::ZERO)?;
     /// ui.key_input(KeyCode::Enter, KeyAction::Press)?;
     /// ui.key_input(KeyCode::Enter, KeyAction::Release)?;
@@ -1386,9 +1386,10 @@ impl ContextMenuOpener {
     }
 }
 impl ContextMenu {
-    /// An opener for application code; see [`ContextMenuOpener::open`].
-    pub fn opener(&self) -> ContextMenuOpener {
-        ContextMenuOpener {
+    /// Clones this description's controller, which opens the menu from
+    /// application code; see [`ContextMenuController::open`].
+    pub fn controller(&self) -> ContextMenuController {
+        ContextMenuController {
             link: self.opener.clone(),
         }
     }

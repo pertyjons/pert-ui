@@ -411,8 +411,10 @@ impl Component for Chip {
         painter.with_clip(prepared.label_clip, |painter| {
             label.paint(
                 painter,
-                prepared.label_clip.x(),
-                centered(size.height(), label.size().height()),
+                crate::Point::new(
+                    prepared.label_clip.x(),
+                    centered(size.height(), label.size().height()),
+                )?,
                 foreground,
             )
         })?;
@@ -438,8 +440,10 @@ impl Component for Chip {
             painter.with_clip(button, |painter| {
                 close.paint(
                     painter,
-                    button.x() + centered(button.width(), close.size().width()),
-                    button.y() + centered(button.height(), close.size().height()),
+                    crate::Point::new(
+                        button.x() + centered(button.width(), close.size().width()),
+                        button.y() + centered(button.height(), close.size().height()),
+                    )?,
                     color,
                 )
             })?;

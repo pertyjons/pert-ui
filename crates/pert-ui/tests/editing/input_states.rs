@@ -618,7 +618,7 @@ fn a_pending_status_shows_a_spinner_that_stops_when_hidden() {
     let mut ui = Runtime::new();
     ui.set_viewport(Viewport::new(320.0, 200.0, 1.0).unwrap())
         .unwrap();
-    let form = FormStatus::new(&ui);
+    let form = FormFields::new(&ui);
     let handle = form.field("name").unwrap();
     let name = ui.signal(String::new());
     let root = ui

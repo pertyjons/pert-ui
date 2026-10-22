@@ -14,7 +14,7 @@ use crate::DropOperation;
 /// # use pert_ui_runtime as pert_ui;
 /// use pert_ui::{DragPayload, ListDragItems};
 /// let payload = DragPayload::new(ListDragItems::new(["kick".into(), "snare".into()]));
-/// let items = payload.get::<ListDragItems>().expect("list items");
+/// let items = payload.downcast_ref::<ListDragItems>().expect("list items");
 /// assert_eq!(items.keys(), ["kick", "snare"]);
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -45,7 +45,7 @@ impl ListDragItems {
 /// whole subtree, and `Into` makes them children of the node.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 #[non_exhaustive]
-pub enum DropPosition {
+pub enum ListDropPosition {
     /// Immediately before the item with this key.
     Before(String),
     /// Immediately after the item with this key.
@@ -64,7 +64,7 @@ pub enum DropPosition {
 #[derive(Debug)]
 pub struct ListDrop<'a> {
     pub(crate) items: &'a [String],
-    pub(crate) position: DropPosition,
+    pub(crate) position: ListDropPosition,
     pub(crate) operation: DropOperation,
     pub(crate) internal: bool,
 }
@@ -79,7 +79,7 @@ impl ListDrop<'_> {
     }
     /// Where they go.
     #[must_use]
-    pub fn position(&self) -> &DropPosition {
+    pub fn position(&self) -> &ListDropPosition {
         &self.position
     }
     /// What the drop does with them. A move is **one** edit made by this

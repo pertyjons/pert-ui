@@ -47,7 +47,7 @@ fn runtime() -> Runtime {
 fn install(ui: &mut Runtime, replacements: &[(StringRole, &str)]) {
     let mut table = UiStrings::english();
     for (role, text) in replacements {
-        table = table.with(*role, *text).unwrap();
+        table = table.with_text(*role, *text).unwrap();
     }
     ui.ui_settings().set_strings(table).unwrap();
     settle(ui);
@@ -326,7 +326,7 @@ fn a_collection_filter_follows_its_name_and_placeholder_sources() {
 fn a_library_default_names_the_picker_before_the_first_update()
 -> Result<(), Box<dyn std::error::Error>> {
     let mut ui = Runtime::new();
-    let strings = UiStrings::english().with(StringRole::PickerName, "Befehle")?;
+    let strings = UiStrings::english().with_text(StringRole::PickerName, "Befehle")?;
     ui.ui_settings().set_strings(strings)?;
     let controller = QuickPickController::new(&ui);
     let picker = QuickPick::new(

@@ -228,6 +228,28 @@ pub enum KeyTransition {
     UnmatchedRelease,
 }
 
+/// The direction of keyboard focus traversal through Tab stops.
+///
+/// [`Runtime::focus_next`](crate::Runtime::focus_next) moves in it,
+/// [`Component::tab_navigation`](crate::Component::tab_navigation) is offered
+/// it, and [`EditorTrigger::Tab`](crate::EditorTrigger::Tab) reports it. Tab
+/// moves [`Forward`](Self::Forward) and Shift+Tab
+/// [`Backward`](Self::Backward).
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+pub enum FocusDirection {
+    /// To the next stop in navigation order, as Tab moves.
+    Forward,
+    /// To the previous stop in navigation order, as Shift+Tab moves.
+    Backward,
+}
+impl FocusDirection {
+    /// Shift+Tab moves backward; Tab forward.
+    pub(crate) fn from_shift(shift: bool) -> Self {
+        if shift { Self::Backward } else { Self::Forward }
+    }
+}
+
 /// Physical key event delivered to the focused component after state is updated.
 ///
 /// This is not a text insertion. OS repetition is identified through the pressed

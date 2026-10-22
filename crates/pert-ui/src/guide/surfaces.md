@@ -79,7 +79,7 @@ Left/Escape returns one level; Enter/Space or a leaf click closes the whole chai
 before its callback. Clicking an ancestor menu can directly select another item.
 Lists skip disabled entries and scroll. [`ContextMenu`] opens on secondary press
 at the pointer, or on the Menu key or Shift+F10 from focused content, and from
-application code through a [`ContextMenuOpener`] with a captured command
+application code through a [`ContextMenuController`] with a captured command
 context. Inputs consumed by a custom child do not bubble to its surrounding
 context menu. A [`Popover`] reports why the framework closed it through
 `on_dismiss`; closing it by writing its signal reports nothing.
@@ -148,7 +148,7 @@ let root = ui.mount_tree(Element::new("window", Column::new([Element::new("bar",
 ui.flush(Duration::ZERO)?;
 
 // Focus the document, then F10, Down and Enter choose File › Save.
-ui.focus_next(false)?;
+ui.focus_next(FocusDirection::Forward)?;
 for key in [KeyCode::F10, KeyCode::ArrowDown, KeyCode::Enter] {
     ui.key_input(key, KeyAction::Press)?;
     ui.key_input(key, KeyAction::Release)?;
@@ -177,7 +177,7 @@ use std::time::Duration;
 let mut ui = Runtime::new();
 ui.set_viewport(Viewport::new(640.0, 480.0, 1.0)?)?;
 let theme = ui.theme();
-let density = theme.density_signal()?;
+let density = theme.density_binding()?;
 let row = |key: &str, label: &str, choice: Density| -> Result<MenuItem, RuntimeError> {
     let theme = theme.clone();
     Ok(MenuItem::new(key, label, move |_| theme.set_density(choice).map(|_| ()))
@@ -302,7 +302,7 @@ let mut ui = Runtime::new();
 ui.set_viewport(Viewport::new(640.0, 480.0, 1.0)?)?;
 let banner_visible = ui.signal(true);
 let hide_banner = banner_visible.clone();
-let queue = ToastQueue::new(&ui);
+let queue = ToastController::new(&ui);
 let post = queue.clone();
 let root = ui.mount_tree(Element::new("notifications", ToastHost::new(
     queue.clone(),

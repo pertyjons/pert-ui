@@ -397,7 +397,7 @@ impl Runtime {
         &mut self,
         pending: &crate::PendingJump,
     ) -> Result<ContentJump, RuntimeError> {
-        match pending.status() {
+        match pending.receipt().status() {
             ListRevealStatus::Mounted(row) => self.reveal_and_focus(&row).map(ContentJump::Reveal),
             ListRevealStatus::Pending => Ok(ContentJump::Pending(pending.clone())),
             status => Ok(ContentJump::Row(status)),

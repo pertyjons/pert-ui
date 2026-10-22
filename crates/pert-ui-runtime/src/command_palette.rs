@@ -388,8 +388,8 @@ fn command_item(strings: &crate::UiStrings, index: usize, entry: &CommandEntry) 
     let mut detail = shortcut.clone().unwrap_or_default();
     let state = match &entry.enabled {
         Ok(true) => None,
-        Ok(false) => Some(strings.get(crate::StringRole::CommandDisabled)),
-        Err(_) => Some(strings.get(crate::StringRole::CommandUnavailable)),
+        Ok(false) => Some(strings.text(crate::StringRole::CommandDisabled)),
+        Err(_) => Some(strings.text(crate::StringRole::CommandUnavailable)),
     };
     if let Some(state) = state {
         if !detail.is_empty() {
@@ -512,9 +512,10 @@ pub struct CommandPalette {
     outcome: Rc<RefCell<OutcomeText>>,
 }
 impl CommandPalette {
-    /// The preferred width of the panel in logical pixels, narrowed to the
-    /// window; [`Self::width`] changes it.
-    pub const DEFAULT_WIDTH: f32 = QuickPick::DEFAULT_WIDTH;
+    /// The preferred width of the panel, 520 logical pixels like
+    /// [`QuickPick::DEFAULT_WIDTH`], narrowed to the window; [`Self::width`]
+    /// changes it.
+    pub const DEFAULT_WIDTH: Length = QuickPick::DEFAULT_WIDTH;
     /// The number of rows the list shows before it scrolls, and the distance
     /// Page Up and Page Down move the highlight.
     pub const VISIBLE_ROWS: usize = QuickPick::VISIBLE_ROWS;
@@ -590,30 +591,30 @@ impl CommandPalette {
         *self.outcome.borrow_mut() = Rc::new(move |_, name, result| text(name, result));
         self
     }
-    /// Sets the panel's preferred width in logical pixels,
-    /// [`Self::DEFAULT_WIDTH`] by default; it is narrowed to the window. Any
-    /// finite width greater than zero is valid.
+    /// Sets the panel's preferred width, [`Self::DEFAULT_WIDTH`] by default;
+    /// it is narrowed to the window. Any width greater than zero is valid;
+    /// [`Length`] already excludes non-finite and negative values.
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
     /// use pert_ui::{
-    ///     CommandPalette, CommandPaletteController, Element, GeometryError, Label, Runtime,
+    ///     CommandPalette, CommandPaletteController, Element, GeometryError, Label, Length,
+    ///     Runtime,
     /// };
     /// let ui = Runtime::new();
     /// let palette = || {
     ///     let content = Element::new("content", Label::new("Document"));
     ///     CommandPalette::new(CommandPaletteController::new(&ui), content)
     /// };
-    /// assert!(palette().width(640.0).is_ok());
-    /// assert!(matches!(palette().width(0.0), Err(GeometryError::Empty)));
-    /// assert!(matches!(palette().width(f32::NAN), Err(GeometryError::NonFinite)));
+    /// assert!(palette().width(Length::new(640.0)?).is_ok());
+    /// assert!(matches!(palette().width(Length::new(0.0)?), Err(GeometryError::Empty)));
+    /// assert!(matches!(Length::new(f32::NAN), Err(GeometryError::NonFinite)));
+    /// # Ok::<(), GeometryError>(())
     /// ```
     ///
     /// # Errors
-    /// Returns [`GeometryError::NonFinite`] for a NaN or infinite width,
-    /// [`GeometryError::Negative`] for a negative one and
-    /// [`GeometryError::Empty`] for zero.
-    pub fn width(mut self, width: f32) -> Result<Self, GeometryError> {
+    /// Returns [`GeometryError::Empty`] for zero.
+    pub fn width(mut self, width: Length) -> Result<Self, GeometryError> {
         self.inner = self.inner.width(width)?;
         Ok(self)
     }

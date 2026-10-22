@@ -96,10 +96,14 @@ impl Probe {
             );
             let size = native.inner_size();
             let proxy = self.proxy.clone();
-            let renderer = Renderer::new(native.clone(), size.width, size.height, move |notice| {
-                // The closed event loop owns no resources that need this notice.
-                let _ = proxy.send_event((index, notice));
-            })?;
+            let renderer = Renderer::new(
+                native.clone(),
+                PhysicalExtent::new(size.width, size.height),
+                move |notice| {
+                    // The closed event loop owns no resources that need this notice.
+                    let _ = proxy.send_event((index, notice));
+                },
+            )?;
             self.record(Some(index), format!(
                 "created native={:?} size={size:?} scale={} focus={} visible={:?} minimized={:?}",
                 native.id(), native.scale_factor(), native.has_focus(),
@@ -157,7 +161,9 @@ impl Probe {
                 if size.width == 0 || size.height == 0 {
                     return self.record(Some(index), "presentation-skipped-zero-size");
                 }
-                window.renderer.resize(size.width, size.height)?;
+                window
+                    .renderer
+                    .resize(PhysicalExtent::new(size.width, size.height))?;
                 let scale = window.native.scale_factor();
                 self.content.set_viewport(Viewport::from_physical(
                     PhysicalExtent::new(size.width, size.height),

@@ -197,7 +197,7 @@ fn tab_traversal_survives_a_reveal_that_removes_the_candidates() {
     ))
     .unwrap();
     ui.flush(Duration::ZERO).unwrap();
-    ui.focus_next(false).unwrap();
+    ui.focus_next(FocusDirection::Forward).unwrap();
     assert_eq!(count.get().unwrap(), 0, "the reveal removed every button");
     assert_eq!(ui.focused(), None);
 }

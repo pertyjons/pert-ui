@@ -126,7 +126,7 @@ fn read_only_unavailable_and_faulted_parameters_disable_the_control() -> TestRes
     )?;
     let toggle = mount(&mut ui, InlineToggle::for_parameter(solo.clone()))?;
     // Not focusable while read-only: Tab skips it to the neighbor.
-    ui.focus_next(false)?;
+    ui.focus_next(FocusDirection::Forward)?;
     assert_ne!(ui.focused().as_ref(), Some(&toggle));
     key(&mut ui, KeyCode::Space);
     assert!(!solo.snapshot().get()?.base);
@@ -245,7 +245,7 @@ fn select_commits_once_and_refuses_a_choice_overtaken_by_a_revision() -> TestRes
         Ok(())
     });
     mount(&mut ui, select)?;
-    ui.focus_next(false)?;
+    ui.focus_next(FocusDirection::Forward)?;
     ui.key_input(KeyCode::ArrowDown, KeyAction::Press)?; // opens the list
     frame(&mut ui);
     ui.key_input(KeyCode::ArrowDown, KeyAction::Press)?; // highlight only
@@ -256,8 +256,8 @@ fn select_commits_once_and_refuses_a_choice_overtaken_by_a_revision() -> TestRes
     assert_eq!(log.borrow().len(), 1);
 
     // Open, then an external write lands before the choice.
-    ui.focus_next(false)?;
-    ui.focus_next(true)?;
+    ui.focus_next(FocusDirection::Forward)?;
+    ui.focus_next(FocusDirection::Backward)?;
     ui.key_input(KeyCode::ArrowDown, KeyAction::Press)?;
     frame(&mut ui);
     host.write_base(id("sine")?)?;
@@ -446,8 +446,8 @@ fn parameter_stepper_escape_releases_the_session_and_draft() -> TestResult {
     let metrics = ui.theme().metrics(Density::Standard)?;
     let plus = Point::new(
         x + w
-            - metrics.get(MetricRole::ControlPaddingX) * 0.5
-            - metrics.get(MetricRole::IconSize) * 0.5,
+            - metrics.metric(MetricRole::ControlPaddingX) * 0.5
+            - metrics.metric(MetricRole::IconSize) * 0.5,
         y + h * 0.5,
     )?;
     ui.pointer_input(PointerEvent::new(
@@ -916,7 +916,7 @@ fn remote_select_disables_pending_anchor_and_an_open_list_without_admission() ->
         ui.remote_parameter(ParameterId::new(1, 1, "waveform")?, waveforms()?)?;
     let select = Select::for_parameter(&ui, parameter.clone());
     let control = mount(&mut ui, select)?;
-    ui.focus_next(false)?;
+    ui.focus_next(FocusDirection::Forward)?;
     key(&mut ui, KeyCode::ArrowDown);
     frame(&mut ui);
     key(&mut ui, KeyCode::ArrowDown);

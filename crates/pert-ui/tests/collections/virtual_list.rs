@@ -174,7 +174,7 @@ fn a_focused_row_stays_mounted_while_scrolled_away_and_traversal_reveals_the_nex
         "outside the viewport"
     );
     // Traversal moves to the next mounted focusable row and reveals it.
-    f.ui.focus_next(false)?;
+    f.ui.focus_next(FocusDirection::Forward)?;
     let focused = f.ui.focused().expect("focus moved");
     let [_, y, _, h] = f.ui.bounds(&focused)?.unwrap().values();
     assert!(y >= 0.0 && y + h <= 200.0, "revealed: {y}");

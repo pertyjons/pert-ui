@@ -453,7 +453,7 @@ fn readonly_copies_and_disabled_skips_automatic_focus() {
         ))
         .unwrap();
     frame(&mut ui);
-    ui.focus_next(false).unwrap();
+    ui.focus_next(FocusDirection::Forward).unwrap();
     frame(&mut ui);
     assert_eq!(ui.focused(), Some(ui.children(&root).unwrap()[1].clone()));
     command(&mut ui, KeyCode::KeyA);
@@ -657,8 +657,8 @@ fn multiline_scrollbar_appears_on_overflow_and_drags_without_moving_the_caret() 
     let [_, _, width, _] = ui.bounds(&id).unwrap().unwrap().values();
     let metrics = ThemeMetrics::default();
     // Inside the eight-pixel track strip along the text viewport's right edge.
-    let lane = width - metrics.get(MetricRole::ControlPaddingX) - 2.0;
-    let top = metrics.get(MetricRole::ControlPaddingY);
+    let lane = width - metrics.metric(MetricRole::ControlPaddingX) - 2.0;
+    let top = metrics.metric(MetricRole::ControlPaddingY);
     let send = |ui: &mut Runtime, y: f32, kind| {
         ui.pointer_input(PointerEvent::new(Point::new(lane, y).unwrap(), kind))
             .unwrap();
@@ -1360,8 +1360,8 @@ fn a_scrollbar_press_ends_a_click_series() {
     let [_, _, width, _] = ui.bounds(&id).unwrap().unwrap().values();
     let metrics = ThemeMetrics::default();
     // On the thumb, inside the track strip along the right edge.
-    let lane = width - metrics.get(MetricRole::ControlPaddingX) - 2.0;
-    let top = metrics.get(MetricRole::ControlPaddingY);
+    let lane = width - metrics.metric(MetricRole::ControlPaddingX) - 2.0;
+    let top = metrics.metric(MetricRole::ControlPaddingY);
     click(&mut ui, 25.0, 15.0, 1000);
     let caret = property(&ui, "selection");
     // A press on the bar moves no caret: it is the bar's, not the text's.

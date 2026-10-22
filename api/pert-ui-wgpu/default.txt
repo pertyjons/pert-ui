@@ -70,13 +70,13 @@ pub struct pert_ui_wgpu::Renderer
 impl pert_ui_wgpu::Renderer
 pub const pert_ui_wgpu::Renderer::READBACK_TIMEOUT: core::time::Duration
 pub fn pert_ui_wgpu::Renderer::extent(&self) -> core::option::Option<pert_ui_runtime::drawing::PhysicalExtent>
-pub fn pert_ui_wgpu::Renderer::new(impl core::convert::Into<wgpu::api::surface::SurfaceTarget<'static>>, u32, u32, impl core::ops::function::Fn(pert_ui_wgpu::Notice) + core::marker::Send + core::marker::Sync + 'static) -> core::result::Result<Self, pert_ui_wgpu::RenderError>
+pub fn pert_ui_wgpu::Renderer::new(impl core::convert::Into<wgpu::api::surface::SurfaceTarget<'static>>, pert_ui_runtime::drawing::PhysicalExtent, impl core::ops::function::Fn(pert_ui_wgpu::Notice) + core::marker::Send + core::marker::Sync + 'static) -> core::result::Result<Self, pert_ui_wgpu::RenderError>
 pub fn pert_ui_wgpu::Renderer::recreate(&mut self, impl core::convert::Into<wgpu::api::surface::SurfaceTarget<'static>>) -> core::result::Result<(), pert_ui_wgpu::RenderError>
 pub fn pert_ui_wgpu::Renderer::render(&mut self, pert_ui_runtime::drawing::DisplayList, impl core::ops::function::FnOnce()) -> core::result::Result<pert_ui_wgpu::Frame, pert_ui_wgpu::RenderError>
 pub fn pert_ui_wgpu::Renderer::render_offscreen(&mut self, pert_ui_runtime::drawing::DisplayList) -> core::result::Result<pert_ui_runtime::capture::FrameImage, pert_ui_wgpu::RenderError>
-pub fn pert_ui_wgpu::Renderer::resize(&mut self, u32, u32) -> core::result::Result<(), pert_ui_wgpu::RenderError>
+pub fn pert_ui_wgpu::Renderer::resize(&mut self, pert_ui_runtime::drawing::PhysicalExtent) -> core::result::Result<(), pert_ui_wgpu::RenderError>
 impl pert_ui_wgpu::Renderer
-pub fn pert_ui_wgpu::Renderer::new_surface(&self, impl core::convert::Into<wgpu::api::surface::SurfaceTarget<'static>>, u32, u32) -> core::result::Result<Self, pert_ui_wgpu::RenderError>
+pub fn pert_ui_wgpu::Renderer::new_surface(&self, impl core::convert::Into<wgpu::api::surface::SurfaceTarget<'static>>, pert_ui_runtime::drawing::PhysicalExtent) -> core::result::Result<Self, pert_ui_wgpu::RenderError>
 impl !core::marker::Freeze for pert_ui_wgpu::Renderer
 impl !core::marker::Send for pert_ui_wgpu::Renderer
 impl !core::marker::Sync for pert_ui_wgpu::Renderer

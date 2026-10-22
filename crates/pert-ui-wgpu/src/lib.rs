@@ -170,7 +170,7 @@ impl Shared {
 /// `Arc` of a winit window:
 ///
 /// ```no_run
-/// use pert_ui_runtime::DisplayList;
+/// use pert_ui_runtime::{DisplayList, PhysicalExtent};
 /// use pert_ui_wgpu::{Frame, Notice, RenderError, Renderer};
 /// use std::sync::mpsc::{Receiver, Sender};
 ///
@@ -188,14 +188,14 @@ impl Shared {
 ///     Stop(String),
 /// }
 ///
-/// fn create<W>(window: W, width: u32, height: u32, notices: Sender<Notice>)
+/// fn create<W>(window: W, extent: PhysicalExtent, notices: Sender<Notice>)
 ///     -> Result<Renderer, RenderError>
 /// where
 ///     W: Into<wgpu::SurfaceTarget<'static>>,
 /// {
 ///     // Runs on driver threads: only forward. A real host also wakes its
 ///     // event loop here, for example through an event-loop proxy.
-///     Renderer::new(window, width, height, move |notice| {
+///     Renderer::new(window, extent, move |notice| {
 ///         let _ = notices.send(notice);
 ///     })
 /// }
@@ -371,8 +371,9 @@ impl Renderer {
     /// callback must remain valid until GPU teardown; discard notifications after
     /// the owning event loop exits. No software or legacy backend fallback occurs.
     ///
-    /// A zero `width` or `height` leaves the surface unconfigured until a nonzero
-    /// [`resize`](Self::resize); meanwhile [`render`](Self::render) returns
+    /// `extent` is the surface's size in physical pixels, as the host's window
+    /// reports it. An [empty](PhysicalExtent::is_empty) extent leaves the surface
+    /// unconfigured until a nonzero [`resize`](Self::resize); meanwhile [`render`](Self::render) returns
     /// [`Frame::Occluded`] and [`render_offscreen`](Self::render_offscreen)
     /// fails with [`RenderError::Unconfigured`].
     ///
@@ -390,8 +391,7 @@ impl Renderer {
     /// premultiplied presentation scales background RGB by its alpha.
     pub fn new(
         target: impl Into<wgpu::SurfaceTarget<'static>>,
-        width: u32,
-        height: u32,
+        extent: PhysicalExtent,
         notify: impl Fn(Notice) + Send + Sync + 'static,
     ) -> Result<Self, RenderError> {
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
@@ -418,7 +418,7 @@ impl Renderer {
                 "no compatible integrated/discrete hardware adapter on the selected backend".into(),
             )
         })?;
-        let config = surface_configuration(&surface, &adapter, width, height)?;
+        let config = surface_configuration(&surface, &adapter, extent.width(), extent.height())?;
         let format = config.format;
         // Surfaces spanning several monitors and large images need the hardware's
         // texture dimension, not the portable 8192 default.
@@ -457,7 +457,7 @@ impl Renderer {
             rasterizer: Default::default(),
             encoded: Default::default(),
         };
-        renderer.resize(width, height)?;
+        renderer.resize(extent)?;
         Ok(renderer)
     }
 
@@ -471,8 +471,8 @@ impl Renderer {
 
     /// Configures the surface for a physical-pixel extent.
     ///
-    /// A zero `width` or `height` unconfigures the renderer rather than the
-    /// surface: until the next nonzero resize, [`render`](Self::render) returns
+    /// An [empty](PhysicalExtent::is_empty) extent unconfigures the renderer
+    /// rather than the surface: until the next nonzero resize, [`render`](Self::render) returns
     /// [`Frame::Occluded`] without acquiring a frame, and
     /// [`render_offscreen`](Self::render_offscreen) fails with
     /// [`RenderError::Unconfigured`].
@@ -482,16 +482,16 @@ impl Renderer {
     /// exceeds the device's texture dimension; the previous configuration stays.
     /// Asynchronous GPU failures are delivered to the startup notification
     /// callback.
-    pub fn resize(&mut self, width: u32, height: u32) -> Result<(), RenderError> {
-        if width == 0 || height == 0 {
+    pub fn resize(&mut self, extent: PhysicalExtent) -> Result<(), RenderError> {
+        if extent.is_empty() {
             self.extent = None;
             return Ok(());
         }
-        check_extent(&self.device, width, height)?;
-        self.config.width = width;
-        self.config.height = height;
+        check_extent(&self.device, extent.width(), extent.height())?;
+        self.config.width = extent.width();
+        self.config.height = extent.height();
         self.surface.configure(&self.device, &self.config);
-        self.extent = Some(PhysicalExtent::new(width, height));
+        self.extent = Some(extent);
         Ok(())
     }
 
@@ -595,7 +595,7 @@ impl Renderer {
     ///
     /// # Errors
     /// - [`RenderError::Limit`] when the scene exceeds a
-    ///   [`ResourceKind::scene_budget`], a resource exceeds the device texture
+    ///   [`ResourceKind::scene_budget_bytes`], a resource exceeds the device texture
     ///   dimension, or its vertices exceed the device buffer or a `u32` draw range.
     /// - [`RenderError::Drawing`] when the vector fallback cannot flatten or
     ///   rasterize a path.
@@ -1253,7 +1253,8 @@ impl Renderer {
     /// and the device-wide mask and image texture caches, so equal content drawn
     /// in several windows is uploaded once whatever their surface formats.
     /// Surface configuration, extent, scene and vertex buffer remain local.
-    /// A zero size leaves the new surface unconfigured, as for
+    /// `extent` is the new surface's size in physical pixels; an
+    /// [empty](PhysicalExtent::is_empty) extent leaves it unconfigured, as for
     /// [`new`](Self::new). Any renderer can outlive the one that created
     /// it. The original notification callback reports shared device errors/loss;
     /// the host must invalidate all related renderers on device loss.
@@ -1273,8 +1274,7 @@ impl Renderer {
     pub fn new_surface(
         &self,
         target: impl Into<wgpu::SurfaceTarget<'static>>,
-        width: u32,
-        height: u32,
+        extent: PhysicalExtent,
     ) -> Result<Self, RenderError> {
         let surface = self
             .instance
@@ -1285,7 +1285,8 @@ impl Renderer {
                 "selected adapter does not support the new surface".into(),
             ));
         }
-        let config = surface_configuration(&surface, &self.adapter, width, height)?;
+        let config =
+            surface_configuration(&surface, &self.adapter, extent.width(), extent.height())?;
         let format = config.format;
         let pipelines = self.shared.pipelines(&self.device, format)?;
         let mut renderer = Self {
@@ -1304,7 +1305,7 @@ impl Renderer {
             rasterizer: Default::default(),
             encoded: Default::default(),
         };
-        renderer.resize(width, height)?;
+        renderer.resize(extent)?;
         Ok(renderer)
     }
 }

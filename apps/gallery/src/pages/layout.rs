@@ -547,8 +547,8 @@ fn nested_tabs(ui: &Runtime) -> Result<Element, RuntimeError> {
                 // moved tab itself, which leaves the order as it is.
                 let place = |key: &str| index(key).and_then(|t| order.iter().position(|&i| i == t));
                 let boundary = match drop.position() {
-                    DropPosition::Before(key) => place(key),
-                    DropPosition::After(key) => place(key).map(|position| position + 1),
+                    ListDropPosition::Before(key) => place(key),
+                    ListDropPosition::After(key) => place(key).map(|position| position + 1),
                     _ => None,
                 }
                 .unwrap_or(order.len());

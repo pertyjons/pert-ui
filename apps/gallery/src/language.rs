@@ -105,7 +105,7 @@ pub(crate) fn swedish() -> Result<UiStrings, RuntimeError> {
     ];
     rows.into_iter()
         .try_fold(UiStrings::english(), |table, (role, text)| {
-            table.with(role, text)
+            table.with_text(role, text)
         })
         .map_err(|error| ApplicationError::new(error).into())
 }

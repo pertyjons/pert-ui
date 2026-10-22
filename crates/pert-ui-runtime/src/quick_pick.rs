@@ -674,7 +674,7 @@ impl Shared {
             source
                 .fixed()
                 .map(RichText::plain_text)
-                .or_else(|| source.role().map(|role| strings.get(role).to_owned()))
+                .or_else(|| source.role().map(|role| strings.text(role).to_owned()))
                 .unwrap_or_default()
         };
         let config = self.config.borrow();
@@ -879,9 +879,9 @@ pub struct QuickPick {
     status: PickStatus,
 }
 impl QuickPick {
-    /// The preferred width of the panel in logical pixels, narrowed to the
+    /// The preferred width of the panel, 520 logical pixels, narrowed to the
     /// window; [`Self::width`] changes it.
-    pub const DEFAULT_WIDTH: f32 = 520.0;
+    pub const DEFAULT_WIDTH: Length = Length::trusted(520.0);
     /// The number of rows the list shows before it scrolls, and the distance
     /// Page Up and Page Down move the highlight.
     pub const VISIBLE_ROWS: usize = 10;
@@ -904,7 +904,7 @@ impl QuickPick {
                     empty_text: crate::StringRole::NoMatches.into(),
                     name: crate::StringRole::PickerName.into(),
                     list_name: crate::StringRole::PickerResults.into(),
-                    width: Self::DEFAULT_WIDTH,
+                    width: Self::DEFAULT_WIDTH.get(),
                 }),
                 choose: Rc::new(RefCell::new(Box::new(choose))),
                 modal: Cell::new(true),
@@ -969,25 +969,17 @@ impl QuickPick {
         self.shared.config.borrow_mut().list_name = name.into();
         self
     }
-    /// Sets the panel's preferred width in logical pixels,
-    /// [`Self::DEFAULT_WIDTH`] by default; it is narrowed to the window. Any
-    /// finite width greater than zero is valid.
+    /// Sets the panel's preferred width, [`Self::DEFAULT_WIDTH`] by default;
+    /// it is narrowed to the window. Any width greater than zero is valid;
+    /// [`Length`] already excludes non-finite and negative values.
     ///
     /// # Errors
-    /// Returns [`GeometryError::NonFinite`] for a NaN or infinite width,
-    /// [`GeometryError::Negative`] for a negative one and
-    /// [`GeometryError::Empty`] for zero.
-    pub fn width(self, width: f32) -> Result<Self, GeometryError> {
-        if !width.is_finite() {
-            return Err(GeometryError::NonFinite);
-        }
-        if width < 0.0 {
-            return Err(GeometryError::Negative);
-        }
-        if width == 0.0 {
+    /// Returns [`GeometryError::Empty`] for zero.
+    pub fn width(self, width: Length) -> Result<Self, GeometryError> {
+        if width.get() == 0.0 {
             return Err(GeometryError::Empty);
         }
-        self.shared.config.borrow_mut().width = width;
+        self.shared.config.borrow_mut().width = width.get();
         Ok(self)
     }
     fn owns(&self) -> bool {
@@ -1443,7 +1435,7 @@ impl Component for PickContent {
     }
     fn measure(&self, cx: &MeasureContext<'_>, a: Constraints) -> Result<Size, RuntimeError> {
         let pad = cx.metric(MetricRole::ItemGap);
-        let width = a.width().unwrap_or(QuickPick::DEFAULT_WIDTH);
+        let width = a.width().unwrap_or(QuickPick::DEFAULT_WIDTH.get());
         let inner = (width - 2.0 * pad).max(0.0);
         let free = Constraints::new(Some(inner), None)?;
         let mut height = pad;

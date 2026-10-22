@@ -322,7 +322,7 @@ fn context_menu_pointer_and_keyboard_open_and_validate_nested_keys() {
 #[test]
 fn toast_capacity_expiry_pending_promotion_and_shutdown_are_observable() {
     let mut ui = ui();
-    let queue = ToastQueue::new(&ui);
+    let queue = ToastController::new(&ui);
     let root = ui
         .mount_tree(Element::new(
             "host",
@@ -359,7 +359,7 @@ fn toast_capacity_expiry_pending_promotion_and_shutdown_are_observable() {
 #[test]
 fn toast_controls_follow_their_labels_and_sit_at_the_trailing_edge() {
     let mut ui = ui();
-    let queue = ToastQueue::new(&ui);
+    let queue = ToastController::new(&ui);
     let _receipt = queue
         .push(Toast::new("A message long enough to wrap inside the stack").action("OK", |_| Ok(())))
         .unwrap();
@@ -408,9 +408,9 @@ fn toast_controls_follow_their_labels_and_sit_at_the_trailing_edge() {
         .unwrap()
         .unwrap();
     let metrics = theme.metrics(theme.density().unwrap()).unwrap();
-    let pad = metrics.get(MetricRole::ControlPaddingX);
-    let gap = metrics.get(MetricRole::ItemGap);
-    let minimum = metrics.get(MetricRole::ControlWidth);
+    let pad = metrics.metric(MetricRole::ControlPaddingX);
+    let gap = metrics.metric(MetricRole::ItemGap);
+    let minimum = metrics.metric(MetricRole::ControlWidth);
 
     // Each control follows its own label rather than half the stack.
     assert!(
@@ -443,7 +443,7 @@ fn narrow_toasts_stack_controls_and_clip_their_labels() {
     let mut ui = ui();
     ui.set_viewport(Viewport::new(120.0, 300.0, 1.0).unwrap())
         .unwrap();
-    let queue = ToastQueue::new(&ui);
+    let queue = ToastController::new(&ui);
     let _receipt = queue
         .push(Toast::new("Saved").action("Apply", |_| Ok(())))
         .unwrap();
@@ -485,7 +485,7 @@ fn narrow_toasts_stack_controls_and_clip_their_labels() {
 #[test]
 fn toast_focus_pauses_at_event_time_before_delayed_flush_and_action_failure_is_terminal() {
     let mut ui = ui();
-    let queue = ToastQueue::new(&ui);
+    let queue = ToastController::new(&ui);
     let receipt = queue
         .push(Toast::new("Try action").action("Fail", |_| Err(RuntimeError::BorrowConflict)))
         .unwrap();
@@ -674,7 +674,7 @@ fn submenu_parent_leaf_activates_with_one_pointer_click() {
 #[test]
 fn toast_hidden_elapsed_expiry_preserves_pending_lifetime_and_receipts_survive_shutdown() {
     let mut ui = ui();
-    let queue = ToastQueue::new(&ui);
+    let queue = ToastController::new(&ui);
     let mut receipts = Vec::new();
     for _ in 0..4 {
         receipts.push(queue.push(Toast::new("Timed")).unwrap());
@@ -701,7 +701,7 @@ fn toast_hidden_elapsed_expiry_preserves_pending_lifetime_and_receipts_survive_s
     drop(ui);
     assert_eq!(receipts[3].status(), ToastStatus::OwnerRemoved);
     let ui = Runtime::new();
-    let q = ToastQueue::new(&ui);
+    let q = ToastController::new(&ui);
     let receipt = q.push(Toast::new("No host yet")).unwrap();
     drop(ui);
     assert_eq!(receipt.status(), ToastStatus::OwnerRemoved);
@@ -709,7 +709,7 @@ fn toast_hidden_elapsed_expiry_preserves_pending_lifetime_and_receipts_survive_s
 #[test]
 fn toast_hover_pause_and_resume_account_event_time_even_when_flush_is_delayed() {
     let mut ui = ui();
-    let q = ToastQueue::new(&ui);
+    let q = ToastController::new(&ui);
     let receipt = q.push(Toast::new("Hover")).unwrap();
     let root = ui
         .mount_tree(Element::new(
@@ -734,7 +734,7 @@ fn toast_hover_pause_and_resume_account_event_time_even_when_flush_is_delayed() 
 #[test]
 fn toast_rejects_oversized_text_and_scrolls_long_content_with_keyboard() {
     let mut ui = ui();
-    let q = ToastQueue::new(&ui);
+    let q = ToastController::new(&ui);
     assert!(matches!(
         q.push(Toast::new("x".repeat(16 * 1024 + 1))),
         Err(RuntimeError::TextEdit(TextEditError::TooLarge))
@@ -769,7 +769,7 @@ fn toast_rejects_oversized_text_and_scrolls_long_content_with_keyboard() {
 #[test]
 fn toast_blur_resumes_at_event_time_and_action_can_enqueue_followup() {
     let mut ui = ui();
-    let q = ToastQueue::new(&ui);
+    let q = ToastController::new(&ui);
     let post = q.clone();
     let followup = std::rc::Rc::new(std::cell::RefCell::new(None));
     let observed = followup.clone();
@@ -810,7 +810,7 @@ fn toast_blur_resumes_at_event_time_and_action_can_enqueue_followup() {
 #[test]
 fn toast_navigation_cancels_armed_activation_instead_of_retargeting() {
     let mut ui = ui();
-    let q = ToastQueue::new(&ui);
+    let q = ToastController::new(&ui);
     let first = q.push(Toast::new("First")).unwrap();
     let second = q.push(Toast::new("Second")).unwrap();
     let root = ui
@@ -1182,9 +1182,9 @@ fn a_context_menu_wrapper_is_not_a_tab_stop() {
         .unwrap();
     ui.flush(Duration::ZERO).unwrap();
     let target = find(&ui, &root, "target").unwrap();
-    ui.focus_next(false).unwrap();
+    ui.focus_next(FocusDirection::Forward).unwrap();
     assert_eq!(ui.focused(), Some(target.clone()));
-    ui.focus_next(false).unwrap();
+    ui.focus_next(FocusDirection::Forward).unwrap();
     assert_eq!(ui.focused(), Some(target), "the content is the only stop");
     // Shift+F10 still reaches the wrapper from its focused content.
     ui.key_input(KeyCode::ShiftLeft, KeyAction::Press).unwrap();

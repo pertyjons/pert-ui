@@ -480,8 +480,10 @@ impl Component for MenuTitle {
         if let Some(text) = self.text.borrow().as_ref() {
             text.paint(
                 p,
-                p.metric(MetricRole::ControlPaddingX),
-                centered(size.height(), text.size().height()),
+                crate::Point::new(
+                    p.metric(MetricRole::ControlPaddingX),
+                    centered(size.height(), text.size().height()),
+                )?,
                 p.color(if !self.available {
                     ColorRole::Muted
                 } else if self.shown {
@@ -583,8 +585,8 @@ impl Component for MenuTitle {
 /// ```
 /// # use pert_ui_runtime as pert_ui;
 /// use pert_ui::{
-///     Button, Column, CommandScope, Element, KeyAction, KeyChord, KeyCode, MenuBar,
-///     MenuItem, Runtime, Viewport,
+///     Button, Column, CommandScope, Element, FocusDirection, KeyAction, KeyChord, KeyCode,
+///     MenuBar, MenuItem, Runtime, Viewport,
 /// };
 /// use std::time::Duration;
 /// let mut ui = Runtime::new();
@@ -606,7 +608,7 @@ impl Component for MenuTitle {
 /// ui.mount_tree(Element::new("window", Column::new([Element::new("bar", bar)])))?;
 /// ui.flush(Duration::ZERO)?;
 ///
-/// ui.focus_next(false)?; // the document: titles are not Tab stops
+/// ui.focus_next(FocusDirection::Forward)?; // the document: titles are not Tab stops
 /// let document = ui.focused();
 /// assert!(document.is_some());
 /// let press = |ui: &mut Runtime, key| -> Result<(), Box<dyn std::error::Error>> {
@@ -750,7 +752,7 @@ impl MenuBar {
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
-    /// use pert_ui::{Button, Element, MenuBar, MenuItem, Runtime, Viewport};
+    /// use pert_ui::{Button, Element, FocusDirection, MenuBar, MenuItem, Runtime, Viewport};
     /// use std::time::Duration;
     /// let mut ui = Runtime::new();
     /// ui.set_viewport(Viewport::new(640.0, 480.0, 1.0)?)?;
@@ -762,9 +764,9 @@ impl MenuBar {
     /// let root = ui.mount_tree(Element::new("bar", bar))?;
     /// ui.flush(Duration::ZERO)?;
     /// // Slots are Tab stops in visual order; the titles are not.
-    /// ui.focus_next(false)?;
+    /// ui.focus_next(FocusDirection::Forward)?;
     /// assert_eq!(ui.focused(), ui.find_descendant(&root, "mark")?);
-    /// ui.focus_next(false)?;
+    /// ui.focus_next(FocusDirection::Forward)?;
     /// assert_eq!(ui.focused(), ui.find_descendant(&root, "back")?);
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```

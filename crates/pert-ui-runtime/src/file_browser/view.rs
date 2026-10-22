@@ -128,13 +128,13 @@ impl FileBrowser {
                     controller.folder_filter(),
                     controller.tree().clone(),
                     Element::new("tree", tree)
-                        .with_label(strings.get(StringRole::FileBrowserFolders)),
+                        .with_label(strings.text(StringRole::FileBrowserFolders)),
                 )
-                .name(strings.get(StringRole::FileBrowserFolderFilter))
+                .name(strings.text(StringRole::FileBrowserFolderFilter))
                 .offered(offered.clone()),
             ),
             None => Element::new("folders", tree)
-                .with_label(strings.get(StringRole::FileBrowserFolders)),
+                .with_label(strings.text(StringRole::FileBrowserFolders)),
         };
         let activate = hooks.clone();
         let list = VirtualList::new(controller.entries(), row_height)?
@@ -145,14 +145,14 @@ impl FileBrowser {
             Element::new(
                 "filter",
                 SearchField::new(controller.filter())
-                    .placeholder(strings.get(StringRole::FileBrowserFilter)),
+                    .placeholder(strings.text(StringRole::FileBrowserFilter)),
             )
-            .with_label(strings.get(StringRole::FileBrowserFilter)),
+            .with_label(strings.text(StringRole::FileBrowserFilter)),
         ]);
         let panes = SplitPane::new(
             SplitAxis::LeftRight,
             folders,
-            Element::new("entries", list).with_label(strings.get(StringRole::FileBrowserEntries)),
+            Element::new("entries", list).with_label(strings.text(StringRole::FileBrowserEntries)),
         );
         let layout = RegionLayout::new()
             .fixed()
@@ -242,7 +242,7 @@ impl Component for FileBrowser {
         ComponentDetails {
             semantics: Some(
                 Semantics::new(SemanticRole::Group)
-                    .name(self.strings.get(crate::StringRole::FileBrowserName))
+                    .name(self.strings.text(crate::StringRole::FileBrowserName))
                     .value(SemanticValue::Text(self.current.clone())),
             ),
             ..ComponentDetails::default()

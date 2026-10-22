@@ -35,9 +35,9 @@ pub(crate) struct Extents {
 impl Extents {
     const fn of(metrics: &ThemeMetrics) -> Self {
         Self {
-            lane: metrics.get(MetricRole::ScrollbarLane),
-            thumb: metrics.get(MetricRole::ScrollbarThumb),
-            minimum_thumb: metrics.get(MetricRole::ScrollbarMinimumThumb),
+            lane: metrics.metric(MetricRole::ScrollbarLane),
+            thumb: metrics.metric(MetricRole::ScrollbarThumb),
+            minimum_thumb: metrics.metric(MetricRole::ScrollbarMinimumThumb),
         }
     }
     /// The Standard-density defaults, held until the first arrangement.

@@ -814,9 +814,10 @@ refuses. Visibility the application binds, explicit
 `Runtime::set_visible` hiding and modal blocking are typed refusals, and opening
 the path is not atomic: containers opened before a refusal stay open. A target
 the reveal unmounts is reported, never resolved again by key. A component
-queues a reveal with `EventContext::request_reveal`, whose receipt always
-reaches a terminal status, and a target in another native window gets a
-requested activation, not a guaranteed raised window. Collections reveal rows
+queues a reveal with `EventContext::request_reveal` or
+`request_reveal_and_focus`, whose receipt always reaches a terminal status, and
+a target in another native window gets a requested activation, not a
+guaranteed raised window. Collections reveal rows
 by key and report the mounted row's identity, since a row has none before it
 mounts. Search-and-jump uses one command per destination rather than a
 destination registry.
@@ -1219,9 +1220,10 @@ label)`, `TableController::new(ui, selection, columns, source)`).
 Capability restrictions take `impl Into<Permission>` and compose with `and`;
 they accept fixed booleans and read bindings without separate names. A
 builder for an ordinary boolean property takes a `bool`; the binding variant
-adds `_signal` and takes a `ReadSignal<bool>`. A builder that binds state the
-component also writes takes `impl Into<Signal<T>>` and is named
-`bind_<property>` (`Collapsible::bind_expanded`,
+adds `_signal` and takes a `ReadSignal<bool>`. `_signal` names a method that
+takes a one-way `ReadSignal` (`Runtime::command_enabled_signal`). A builder
+that binds state the component also writes takes `impl Into<Signal<T>>` and is
+named `bind_<property>` (`Collapsible::bind_expanded`,
 `PropertyGrid::bind_label_width`). A no-argument builder moves
 one fixed option of a description away from its default and has no way back
 (`disabled()`, `read_only()`, `frameless()`, `nonmodal()`). An option the
@@ -1230,6 +1232,24 @@ setters of data descriptions (`Semantics::disabled(bool)`,
 `PickItem::disabled(bool)`), which report state rather than restrict a
 capability. A fixed metadata shortcut on a specification stays
 no-argument (`ParameterSpec::read_only()`).
+
+When a type offers an owned and a reactive read of one value, the bare name
+is the owned read and `x_binding()` the reactive one, which returns a
+`ReadSignal` (`TaskReceipt::status` and `status_binding`,
+`UiSettings::zoom` and `zoom_binding`, `DeliveryMonitor::snapshot` and
+`snapshot_binding`). A type with only a reactive read uses the bare name
+(`Parameter::snapshot`, `DialogController::status`). A retained `ReadSignal`
+reads the value current at each `get()`, not the value when it was obtained,
+so code that needs a point-in-time value keeps the result of `get()`, as
+`Parameter::snapshot` documents beside `AnyParameter::snapshot`, which is
+owned.
+
+Geometry is in logical pixels unless its name says physical
+(`PhysicalExtent`). A length given to the library and stored is a `Length`
+(`TableColumn::width`, `QuickPick::width`). A constructor whose argument must
+be positive may take `f32` and return `GeometryError` (`VirtualList::new`'s
+row height). Lengths read back for arithmetic are `f32` logical pixels
+(`TableColumn::fixed_width`, `Painter::metric`).
 
 Ordinary property builders replace earlier values. An element builder
 appends one element to a described collection (a layout's tool windows, a
@@ -1255,8 +1275,12 @@ machine (`ParameterState`). An owned point-in-time copy of observable data
 is a `*Snapshot` (`ParameterSnapshot`, `InspectionSnapshot`); one inspection
 record is an `*Inspection`; the summary of a finished check or batch is a
 `*Report` (`ValidationReport`, `DrainReport`). Other passive data take a
-descriptive noun (`ChildInfo`, `CommandEntry`, `ProfileStats`). Collection
-selection remains application-owned and addressed by stable key.
+descriptive noun (`ChildInfo`, `CommandEntry`, `ProfileStats`).
+Application-owned state that widgets follow through handles the application
+keeps, such as collection selection (`ListSelection`) and form status
+(`FormFields` and its `FieldHandle`s), is named for what it holds.
+`*Controller` is reserved for handles to state that a mounted widget owns.
+Collection selection remains application-owned and addressed by stable key.
 
 A `*Receipt` reports one queued request through an owned `status()` and a
 `status_binding()` for reactive UI. A cross-thread reply that carries its

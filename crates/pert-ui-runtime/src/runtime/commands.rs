@@ -1504,7 +1504,7 @@ impl Runtime {
             && press
         {
             if !self.offer_tab(event, None)? {
-                self.focus_next(self.keyboard.modifiers().shift)?;
+                self.focus_next(self.tab_direction())?;
             }
             result.handled = true;
             return Ok(result);

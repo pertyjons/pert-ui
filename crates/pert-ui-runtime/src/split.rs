@@ -242,7 +242,7 @@ impl SplitPane {
             permission: Permission::allowed(),
             enabled: true,
             name: crate::UiStrings::english()
-                .get(crate::StringRole::SplitterName)
+                .text(crate::StringRole::SplitterName)
                 .to_owned(),
             focused: false,
             hovered: false,
@@ -632,7 +632,7 @@ impl Component for SplitPane {
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
         self.report.set_notifier(|| cx.notifier());
         cx.strings()?
-            .get(crate::StringRole::SplitterName)
+            .text(crate::StringRole::SplitterName)
             .clone_into(&mut self.name);
         self.enabled = self.permission.read(cx)?;
         self.eligible = cx.children().iter().filter(|child| child.visible()).count() == 2;

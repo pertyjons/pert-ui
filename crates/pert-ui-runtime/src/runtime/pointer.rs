@@ -140,7 +140,7 @@ impl Runtime {
         }
         false
     }
-    /// Moves focus in visible tree order, wrapping at either end. `reverse` moves backward.
+    /// Moves focus in visible tree order in `direction`, wrapping at either end.
     /// Hidden or fully clipped components and nonfocusable containers are skipped.
     /// Uses current layout.
     ///
@@ -150,7 +150,8 @@ impl Runtime {
     /// `WriteDuringDelivery` when called from inside that phase; forwards the errors of the
     /// [`Self::flush`] that runs first when layout is pending, of an ancestor's
     /// [`Component::reveal`](crate::Component::reveal), and of [`Self::focus`].
-    pub fn focus_next(&mut self, reverse: bool) -> Result<(), RuntimeError> {
+    pub fn focus_next(&mut self, direction: crate::FocusDirection) -> Result<(), RuntimeError> {
+        let reverse = direction == crate::FocusDirection::Backward;
         self.shared.writable()?;
         if self.window.shared.layout_pending.get() {
             self.flush(self.shared.now.get())?;
@@ -241,6 +242,11 @@ impl Runtime {
         }
     }
 
+    /// The traversal direction the held modifiers give Tab: Shift reverses it.
+    pub(super) fn tab_direction(&self) -> crate::FocusDirection {
+        crate::FocusDirection::from_shift(self.keyboard.modifiers().shift)
+    }
+
     /// Offers an unmodified Tab or Shift+Tab that reached default traversal to
     /// the focused component and the ancestors ordinary bubbling reaches,
     /// innermost first ([`Component::tab_navigation`]). Returns whether one
@@ -250,8 +256,7 @@ impl Runtime {
         event: crate::KeyEvent,
         mut recipients: Option<&mut Vec<WidgetId>>,
     ) -> Result<bool, RuntimeError> {
-        let reverse = self.keyboard.modifiers().shift;
-        let repeat = event.transition == crate::KeyTransition::Repeated;
+        let direction = self.tab_direction();
         let mut serial = match &self.window.focus {
             Some(id) => id.0.serial,
             None => return Ok(false),
@@ -271,8 +276,8 @@ impl Runtime {
                 &mut EventContext {
                     node: entry.node.clone(),
                 },
-                reverse,
-                repeat,
+                direction,
+                event.transition,
             )?;
             if outcome == InputOutcome::Handled {
                 return Ok(true);

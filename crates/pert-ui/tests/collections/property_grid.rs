@@ -614,7 +614,7 @@ fn a_grid_that_is_not_resizable_takes_no_focus_and_ignores_the_zone() -> TestRes
     ))?;
     flush(&mut ui);
     // Tab goes straight to the editor; the grid takes no Tab stop.
-    ui.focus_next(false)?;
+    ui.focus_next(FocusDirection::Forward)?;
     flush(&mut ui);
     assert_eq!(ui.focused(), Some(find(&ui, &root, "a-editor")));
     pointer(

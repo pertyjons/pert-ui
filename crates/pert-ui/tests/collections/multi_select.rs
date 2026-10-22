@@ -613,7 +613,7 @@ fn disabled_options_and_a_disabled_chooser_refuse_input() {
     });
     // Neither the trigger nor the muted chip is a Tab stop.
     let mut ui = disabled.ui;
-    ui.focus_next(false).unwrap();
+    ui.focus_next(FocusDirection::Forward).unwrap();
     assert_eq!(focused_key(&ui).as_deref(), Some("after"));
 }
 

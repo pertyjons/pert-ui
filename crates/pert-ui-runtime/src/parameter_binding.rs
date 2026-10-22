@@ -320,6 +320,12 @@ impl<T: ParameterValue> Parameter<T> {
 
     /// Returns a read-only observable snapshot of base, preview and effective values.
     ///
+    /// The returned signal is live: it is not a copy taken now. Each `get()` or
+    /// `with()` captures the snapshot current at that read, so a signal kept from
+    /// before an edit reads the value after it. Call `get()` at once to keep a
+    /// point-in-time [`ParameterSnapshot`]. [`AnyParameter::snapshot`] differs:
+    /// it returns an owned copy.
+    ///
     /// Metadata replacements advance its revision too. Read this binding through
     /// the update context to invalidate only dependent controls automatically.
     #[must_use]

@@ -354,7 +354,7 @@ fn a_missing_cell_is_drawn_empty_rather_than_failing_the_row() -> TestResult {
 #[test]
 fn rows_are_virtualized_under_a_header_that_does_not_scroll() -> TestResult {
     let mut f = fixture(100_000)?;
-    let header = ThemeMetrics::default().get(MetricRole::ControlHeight);
+    let header = ThemeMetrics::default().metric(MetricRole::ControlHeight);
     let bounds = f.ui.bounds(&body(&f))?.unwrap();
     assert_eq!((bounds.y(), bounds.height()), (header, 200.0 - header));
     assert!(
@@ -385,7 +385,7 @@ fn rows_are_virtualized_under_a_header_that_does_not_scroll() -> TestResult {
 #[test]
 fn the_controller_reveals_a_row_by_key_below_the_header() -> TestResult {
     let mut f = fixture(100_000)?;
-    let header = ThemeMetrics::default().get(MetricRole::ControlHeight);
+    let header = ThemeMetrics::default().metric(MetricRole::ControlHeight);
     let receipt = f.state.reveal("n77777")?;
     f.ui.flush(Duration::ZERO)?;
     let row =
@@ -500,11 +500,11 @@ fn a_narrow_sorted_header_clips_its_title_before_the_indicator() -> TestResult {
     let palette = theme.palette(theme.mode()?)?;
     let title_color = palette.color(ColorRole::OnSurface);
     let metrics = theme.metrics(theme.density()?)?;
-    let header = metrics.get(MetricRole::ControlHeight);
+    let header = metrics.metric(MetricRole::ControlHeight);
     let title_end = 70.0
-        - metrics.get(MetricRole::IconSize)
-        - metrics.get(MetricRole::ControlPaddingX) / 2.0
-        - metrics.get(MetricRole::IconGap);
+        - metrics.metric(MetricRole::IconSize)
+        - metrics.metric(MetricRole::ControlPaddingX) / 2.0
+        - metrics.metric(MetricRole::IconGap);
     let scene = ui.paint()?;
     let title_clips: Vec<_> = scene
         .commands()
@@ -970,7 +970,7 @@ fn the_active_cell_moves_with_the_arrows_and_scrolls_its_column_into_view() -> T
         })
         .collect();
     assert!(!outlined.is_empty());
-    let header = ThemeMetrics::default().get(MetricRole::ControlHeight);
+    let header = ThemeMetrics::default().metric(MetricRole::ControlHeight);
     assert!(
         outlined.iter().all(|rect| rect.x() >= 100.0 - 0.01
             && rect.x() + rect.width() <= 250.0 + 0.01
@@ -984,7 +984,7 @@ fn the_active_cell_moves_with_the_arrows_and_scrolls_its_column_into_view() -> T
 #[test]
 fn a_press_names_the_cell_and_cells_are_described_by_their_column() -> TestResult {
     let (mut ui, state, _table, _) = wide()?;
-    let header = ThemeMetrics::default().get(MetricRole::ControlHeight);
+    let header = ThemeMetrics::default().metric(MetricRole::ControlHeight);
     // Row 3, column B (150..300).
     pointer(
         &mut ui,

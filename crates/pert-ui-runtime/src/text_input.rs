@@ -44,7 +44,8 @@ impl TextEditError {
 /// Temporary IME text, kept separate from the committed binding.
 ///
 /// The cursor is a UTF-8 byte range within this text, from the start of the
-/// composition's selection to its caret; `None` hides the composition caret. Empty text cancels preedit. Delivery never changes physical key state.
+/// composition's selection to its caret; `None` hides the composition caret.
+/// Empty text cancels preedit. Delivery never changes physical key state.
 #[derive(Clone, Debug, Eq, PartialEq)]
 #[must_use]
 pub struct TextPreedit {
@@ -52,15 +53,15 @@ pub struct TextPreedit {
     cursor: Option<std::ops::Range<usize>>,
 }
 impl TextPreedit {
-    /// Validates the 16 KiB limit and the optional cursor range, whose `start`
-    /// and `end` must be ordered UTF-8 boundaries within `text`. An empty range
-    /// is a caret with no selection.
+    /// Validates the 16 KiB limit and the optional cursor byte range, whose
+    /// `start` and `end` must be ordered UTF-8 boundaries within `text`. An
+    /// empty range is a caret with no selection.
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
     /// # use pert_ui::{TextEditError, TextPreedit};
     /// let preedit = TextPreedit::new("åä", Some(2..4))?;
-    /// assert_eq!(preedit.cursor(), Some(2..4));
+    /// assert_eq!(preedit.cursor_byte_range(), Some(2..4));
     /// // Byte 1 is inside `å`, and a reversed range is not ordered.
     /// assert_eq!(TextPreedit::new("å", Some(1..2)), Err(TextEditError::InvalidComposition));
     /// let reversed = std::ops::Range { start: 2, end: 1 };
@@ -74,8 +75,9 @@ impl TextPreedit {
     /// does not lie on character boundaries.
     pub fn new(
         text: impl Into<String>,
-        cursor: Option<std::ops::Range<usize>>,
+        cursor_byte_range: Option<std::ops::Range<usize>>,
     ) -> Result<Self, TextEditError> {
+        let cursor = cursor_byte_range;
         let text = text.into();
         if text.len() > crate::TextEditError::MAX_TEXT_BYTES {
             return Err(TextEditError::TooLarge);
@@ -93,9 +95,10 @@ impl TextPreedit {
     pub fn text(&self) -> &str {
         &self.text
     }
-    /// Optional selected byte range within preedit, whose `end` is the caret.
+    /// Optional selected UTF-8 byte range within preedit, whose `end` is the
+    /// caret.
     #[must_use]
-    pub fn cursor(&self) -> Option<std::ops::Range<usize>> {
+    pub fn cursor_byte_range(&self) -> Option<std::ops::Range<usize>> {
         self.cursor.clone()
     }
 }

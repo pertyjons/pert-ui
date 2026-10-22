@@ -45,7 +45,7 @@ fn shared_boolean_updates_cancelled_clicks_and_keyboard_repeats() {
     send(&mut ui, 10.0, PointerKind::Release(PointerButton::Primary));
     assert!(value.get().unwrap());
     ui.focus(&ids[1]).unwrap();
-    ui.focus_next(false).unwrap();
+    ui.focus_next(FocusDirection::Forward).unwrap();
     assert_eq!(ui.focused(), Some(ids[0].clone()));
     ui.key_input(KeyCode::Space, KeyAction::Press).unwrap();
     ui.set_visible(&root, false).unwrap();

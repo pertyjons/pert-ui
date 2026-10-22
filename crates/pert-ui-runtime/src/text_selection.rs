@@ -28,6 +28,25 @@ pub enum TextMovement {
     End,
 }
 
+/// Whether a caret movement or placement keeps the selection's anchor.
+///
+/// [`TextSelection::moved`] and [`TextSelection::at_point`] take it: a plain
+/// arrow key or click collapses the selection to the new caret, and the same
+/// gesture with Shift extends it.
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum SelectionExtension {
+    /// The anchor follows the caret, leaving a collapsed selection there.
+    Collapse,
+    /// The anchor stays, so the selection runs from it to the new caret.
+    Extend,
+}
+impl SelectionExtension {
+    /// Shift extends; otherwise the selection collapses.
+    pub(crate) fn from_shift(shift: bool) -> Self {
+        if shift { Self::Extend } else { Self::Collapse }
+    }
+}
+
 /// Retained selection with UTF-8 byte offsets and visual caret affinity.
 ///
 /// Create and operate on this with the layout for the current text. Recreate it
@@ -38,28 +57,35 @@ pub enum TextMovement {
 #[must_use]
 pub struct TextSelection(Selection);
 impl TextSelection {
-    /// Creates a selection, clamping out-of-range offsets to text end and snapping
-    /// offsets inside clusters to their start. Anchor is retained when extending.
-    pub fn new(layout: &TextLayout, anchor: usize, focus: usize) -> Self {
+    /// Creates a selection from UTF-8 byte offsets, clamping out-of-range
+    /// offsets to text end and snapping offsets inside clusters to their start.
+    /// Anchor is retained when extending.
+    pub fn new(layout: &TextLayout, anchor_byte: usize, focus_byte: usize) -> Self {
         Self(Selection::new(
-            Cursor::from_byte_index(&layout.shaped, anchor, parley::Affinity::Downstream),
-            Cursor::from_byte_index(&layout.shaped, focus, parley::Affinity::Downstream),
+            Cursor::from_byte_index(&layout.shaped, anchor_byte, parley::Affinity::Downstream),
+            Cursor::from_byte_index(&layout.shaped, focus_byte, parley::Affinity::Downstream),
         ))
     }
-    /// Byte offset of the fixed end of this selection.
-    pub fn anchor(self) -> usize {
+    /// UTF-8 byte offset of the fixed end of this selection.
+    pub fn anchor_byte(self) -> usize {
         self.0.anchor().index()
     }
-    /// Byte offset of the moving end (caret).
-    pub fn focus(self) -> usize {
+    /// UTF-8 byte offset of the moving end (caret).
+    pub fn focus_byte(self) -> usize {
         self.0.focus().index()
     }
-    /// Ordered byte range of selected text; empty for a collapsed caret.
-    pub fn range(self) -> std::ops::Range<usize> {
+    /// Ordered UTF-8 byte range of selected text; empty for a collapsed caret.
+    pub fn byte_range(self) -> std::ops::Range<usize> {
         self.0.text_range()
     }
-    /// Moves the caret, retaining the anchor when `extend` is true.
-    pub fn moved(self, layout: &TextLayout, movement: TextMovement, extend: bool) -> Self {
+    /// Moves the caret, keeping the anchor for [`SelectionExtension::Extend`].
+    pub fn moved(
+        self,
+        layout: &TextLayout,
+        movement: TextMovement,
+        extension: SelectionExtension,
+    ) -> Self {
+        let extend = extension == SelectionExtension::Extend;
         let s = self.0.refresh(&layout.shaped);
         let l = &layout.shaped;
         Self(match movement {
@@ -83,11 +109,17 @@ impl TextSelection {
         })
     }
     /// Places the caret at a logical point relative to the painted text origin.
-    /// Outside points snap to the nearest available caret; `extend` keeps anchor.
-    pub fn at_point(self, layout: &TextLayout, point: Point, extend: bool) -> Self {
+    /// Outside points snap to the nearest available caret;
+    /// [`SelectionExtension::Extend`] keeps the anchor.
+    pub fn at_point(
+        self,
+        layout: &TextLayout,
+        point: Point,
+        extension: SelectionExtension,
+    ) -> Self {
         let x = (point.x() - layout.origin[0]) * layout.scale;
         let y = (point.y() - layout.origin[1]) * layout.scale;
-        Self(if extend {
+        Self(if extension == SelectionExtension::Extend {
             self.0.extend_to_point(&layout.shaped, x, y)
         } else {
             Selection::from_point(&layout.shaped, x, y)
@@ -152,9 +184,11 @@ mod tests {
         for (value, inside) in [("e\u{301}x", 1), ("👩‍💻x", 4)] {
             let layout = text.prepare(value, None, 1.0, TextStyle::Body).unwrap();
             let selection = TextSelection::new(&layout, inside, inside);
-            assert_eq!(selection.range(), 0..0, "{value:?}");
+            assert_eq!(selection.byte_range(), 0..0, "{value:?}");
             assert_eq!(
-                selection.moved(&layout, TextMovement::Right, false).focus(),
+                selection
+                    .moved(&layout, TextMovement::Right, SelectionExtension::Collapse)
+                    .focus_byte(),
                 value.len() - 1,
                 "{value:?}"
             );

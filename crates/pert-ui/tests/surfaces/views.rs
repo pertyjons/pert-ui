@@ -45,7 +45,7 @@ fn scroll_focus_reveals_offscreen_button_and_wheel_reuses_identity() {
     assert_eq!(ui.children(&column).unwrap(), buttons);
     ui.focus(&buttons[0]).unwrap();
     for _ in 0..9 {
-        ui.focus_next(false).unwrap();
+        ui.focus_next(FocusDirection::Forward).unwrap();
     }
     assert_eq!(ui.focused(), Some(buttons[9].clone()));
     assert!(bounds(&ui, &buttons[9])[1] < 80.0);
@@ -306,7 +306,7 @@ fn unbounded_top_only_region_layout_has_intrinsic_width_and_clipped_focus_is_ski
     ui.flush(Duration::ZERO).unwrap();
     let column = ui.children(&scroll).unwrap()[0].clone();
     let expected = ui.children(&column).unwrap()[1].clone();
-    ui.focus_next(false).unwrap();
+    ui.focus_next(FocusDirection::Forward).unwrap();
     assert_eq!(ui.focused(), Some(expected));
 }
 

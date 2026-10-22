@@ -329,7 +329,7 @@ fn a_redescribed_banner_takes_its_message_and_visibility() -> TestResult {
     Ok(())
 }
 
-fn host(queue: &ToastQueue, dismiss: &str) -> ToastHost {
+fn host(queue: &ToastController, dismiss: &str) -> ToastHost {
     ToastHost::new(
         queue.clone(),
         Element::new("content", Label::new("Content")),
@@ -340,7 +340,7 @@ fn host(queue: &ToastQueue, dismiss: &str) -> ToastHost {
 #[test]
 fn a_toast_host_can_be_described_again_with_its_queue() -> TestResult {
     let mut ui = ui()?;
-    let queue = ToastQueue::new(&ui);
+    let queue = ToastController::new(&ui);
     let (root, owner) = mount(&mut ui, Element::new("host", host(&queue, "Dismiss")))?;
     let receipt = queue.push(Toast::new("Saved"))?;
     frame(&mut ui);
@@ -365,7 +365,7 @@ fn a_toast_host_can_be_described_again_with_its_queue() -> TestResult {
 #[test]
 fn a_second_toast_host_on_one_queue_fails_its_updates() -> TestResult {
     let mut ui = ui()?;
-    let queue = ToastQueue::new(&ui);
+    let queue = ToastController::new(&ui);
     let root = ui.mount_tree(Element::new(
         "root",
         Column::new([
@@ -385,8 +385,8 @@ fn a_second_toast_host_on_one_queue_fails_its_updates() -> TestResult {
 #[test]
 fn a_toast_host_described_with_another_queue_closes_the_old_one() -> TestResult {
     let mut ui = ui()?;
-    let old = ToastQueue::new(&ui);
-    let new = ToastQueue::new(&ui);
+    let old = ToastController::new(&ui);
+    let new = ToastController::new(&ui);
     let (root, owner) = mount(&mut ui, Element::new("host", host(&old, "Dismiss")))?;
     let receipt = old.push(Toast::new("Saved"))?;
     frame(&mut ui);
@@ -414,8 +414,8 @@ fn a_toast_host_described_with_another_queue_closes_the_old_one() -> TestResult 
 #[test]
 fn a_key_held_on_the_old_queue_does_not_activate_the_new_queue() -> TestResult {
     let mut ui = ui()?;
-    let old = ToastQueue::new(&ui);
-    let new = ToastQueue::new(&ui);
+    let old = ToastController::new(&ui);
+    let new = ToastController::new(&ui);
     let ran = std::rc::Rc::new(std::cell::Cell::new(false));
     let flag = ran.clone();
     let _ = old.push(Toast::new("Saved").action("Undo", |_| Ok(())))?;

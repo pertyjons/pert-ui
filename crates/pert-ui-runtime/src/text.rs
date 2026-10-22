@@ -260,23 +260,22 @@ impl TextLayout {
         })?;
         Ok(())
     }
-    /// Records this layout at a local logical origin. `color` supplies inherited
-    /// foreground; explicit span colors are preserved. Theme span colors subscribe
-    /// the painting component.
+    /// Records this layout with its top-left at the local logical `origin`.
+    /// `color` supplies inherited foreground; explicit span colors are
+    /// preserved. Theme span colors subscribe the painting component.
     ///
     /// # Errors
     /// As [`Self::paint_turned`].
     pub fn paint(
         &self,
         painter: &mut Painter,
-        x: f32,
-        y: f32,
+        origin: crate::Point,
         color: Color,
     ) -> Result<(), DrawError> {
-        self.paint_turned(painter, x, y, crate::QuarterTurn::None, color)
+        self.paint_turned(painter, origin, crate::QuarterTurn::None, color)
     }
     /// Records this layout turned by a quarter turn, with the turned text's
-    /// top-left at the local origin `(x, y)`.
+    /// top-left at the local logical `origin`.
     ///
     /// The turned text occupies [`QuarterTurn::turned`](crate::QuarterTurn::turned)
     /// of [`Self::size`], so a line turned [`Left`](crate::QuarterTurn::Left) is as
@@ -286,17 +285,17 @@ impl TextLayout {
     ///
     /// # Errors
     /// Returns [`DrawError::Runtime`] holding [`RuntimeError::Geometry`] with
-    /// [`GeometryError::NonFinite`](crate::GeometryError::NonFinite) for a non-finite
-    /// origin or a turned placement that is not finite.
+    /// [`GeometryError::NonFinite`](crate::GeometryError::NonFinite) for a turned
+    /// placement that is not finite; a [`Point`](crate::Point) origin is
+    /// already finite.
     pub fn paint_turned(
         &self,
         painter: &mut Painter,
-        x: f32,
-        y: f32,
+        origin: crate::Point,
         turn: crate::QuarterTurn,
         color: Color,
     ) -> Result<(), DrawError> {
-        Rect::new(x, y, self.size.width(), self.size.height())?;
+        let (x, y) = (origin.x(), origin.y());
         painter.text_drawn.set(true);
         let phase_parts = if turn == crate::QuarterTurn::None
             && painter.text_rendering != crate::TextRenderingMode::LineMask

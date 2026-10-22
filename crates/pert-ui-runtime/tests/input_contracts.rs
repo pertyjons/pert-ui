@@ -434,11 +434,11 @@ fn presentation_settings_are_observable_through_read_signals() -> TestResult {
     let mut ui = Runtime::new();
     let theme = ui.theme();
     let settings = ui.ui_settings();
-    let mode = theme.mode_signal()?;
-    let density = theme.density_signal()?;
-    let zoom = settings.zoom_signal()?;
-    let motion = settings.motion_signal()?;
-    let overlay = settings.debug_overlay_signal()?;
+    let mode = theme.mode_binding()?;
+    let density = theme.density_binding()?;
+    let zoom = settings.zoom_binding()?;
+    let motion = settings.motion_binding()?;
+    let overlay = settings.debug_overlay_binding()?;
     assert_eq!(mode.get()?, ThemeMode::Dark);
     assert_eq!(density.get()?, Density::Standard);
     assert_eq!(zoom.get()?, UiZoom::default());
@@ -484,6 +484,6 @@ fn presentation_settings_are_observable_through_read_signals() -> TestResult {
     assert_eq!(overlay.get()?, DebugOverlay::Issues);
     drop(overlay);
     ui.set_debug_overlay(DebugOverlay::Off);
-    assert_eq!(settings.debug_overlay_signal()?.get()?, DebugOverlay::Off);
+    assert_eq!(settings.debug_overlay_binding()?.get()?, DebugOverlay::Off);
     Ok(())
 }

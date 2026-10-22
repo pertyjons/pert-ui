@@ -102,7 +102,7 @@ fn text_mode_case(
         "text",
         Fixture(Box::new(|p| {
             p.text("Il1 O0", None, TextStyle::Body)?
-                .paint(p, 3.25, 7.25, Color::WHITE)
+                .paint(p, Point::new(3.25, 7.25)?, Color::WHITE)
         })),
     )?;
     ui.flush(std::time::Duration::ZERO)?;
@@ -128,8 +128,11 @@ fn rich_icon_case(name: &'static str, scale: f64) -> Result<Case, Box<dyn std::e
                 Icon::Settings,
                 TextColor::Literal(Color::from_srgb8(255, 0, 0, 255)),
             );
-            p.rich_text(&rich, None, TextStyle::Body)?
-                .paint(p, 3.25, 7.25, Color::WHITE)
+            p.rich_text(&rich, None, TextStyle::Body)?.paint(
+                p,
+                Point::new(3.25, 7.25)?,
+                Color::WHITE,
+            )
         })),
     )?;
     ui.flush(std::time::Duration::ZERO)?;
@@ -277,7 +280,8 @@ impl ApplicationHandler<Notice> for Parity {
                         .with_inner_size(winit::dpi::PhysicalSize::new(SIZE, SIZE)),
                 )?,
             );
-            let mut renderer = Renderer::new(window.clone(), SIZE, SIZE, |_| {})?;
+            let mut renderer =
+                Renderer::new(window.clone(), PhysicalExtent::new(SIZE, SIZE), |_| {})?;
             let info = renderer.adapter.get_info();
             println!("Parity adapter: {} ({:?})", info.name, info.backend);
             let mut cpu = pert_ui_cpu::CpuRenderer::new();
@@ -354,8 +358,7 @@ impl Component for MovingText {
                 )?
                 .paint(
                     painter,
-                    12.0 + self.current,
-                    12.0 + row as f32 * 22.0,
+                    Point::new(12.0 + self.current, 12.0 + row as f32 * 22.0)?,
                     Color::WHITE,
                 )?;
         }
@@ -382,7 +385,7 @@ impl ApplicationHandler<Notice> for TextModeProbe {
                         .with_inner_size(winit::dpi::PhysicalSize::new(800, 500)),
                 )?,
             );
-            let mut gpu = Renderer::new(window, 800, 500, |_| {})?;
+            let mut gpu = Renderer::new(window, PhysicalExtent::new(800, 500), |_| {})?;
             let mut cpu = pert_ui_cpu::CpuRenderer::new();
             println!(
                 "Text mode adapter: {} ({:?})",

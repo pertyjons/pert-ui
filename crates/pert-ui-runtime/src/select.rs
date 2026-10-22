@@ -731,7 +731,11 @@ impl<T: Clone + Eq + 'static> Component for OptionList<T> {
             } else {
                 ColorRole::OnSurface
             });
-            text.paint(p, pad + lead, top + (h - text.size().height()) / 2.0, color)?;
+            text.paint(
+                p,
+                crate::Point::new(pad + lead, top + (h - text.size().height()) / 2.0)?,
+                color,
+            )?;
             if let Some(extra) = self.menu.as_ref().and_then(|menu| menu.extras.get(i))
                 && extra.checked
                 && let Some(mark) = &extra.mark
@@ -756,8 +760,10 @@ impl<T: Clone + Eq + 'static> Component for OptionList<T> {
             if let Some(Some(shortcut)) = shortcuts.as_ref().and_then(|all| all.get(i)) {
                 shortcut.paint(
                     p,
-                    size.width() - pad - shortcut.size().width(),
-                    top + (h - shortcut.size().height()) / 2.0,
+                    crate::Point::new(
+                        size.width() - pad - shortcut.size().width(),
+                        top + (h - shortcut.size().height()) / 2.0,
+                    )?,
                     p.color(if active && self.editable && c.is_enabled() {
                         ColorRole::OnPrimary
                     } else {
@@ -921,7 +927,7 @@ impl<T: Clone + Eq + 'static> SelectAnchor<T> {
                 if pressed {
                     session.report(
                         EditorTrigger::Tab {
-                            reverse: modifiers.shift,
+                            direction: crate::FocusDirection::from_shift(modifiers.shift),
                         },
                         EditorOutcome::Unchanged,
                     );
@@ -1196,14 +1202,14 @@ impl<T: Clone + Eq + 'static> Component for SelectAnchor<T> {
     fn tab_navigation(
         &mut self,
         _: &mut EventContext,
-        reverse: bool,
-        repeat: bool,
+        direction: crate::FocusDirection,
+        transition: crate::KeyTransition,
     ) -> Result<InputOutcome, RuntimeError> {
         let Some(session) = self.target.session.borrow().clone() else {
             return Ok(InputOutcome::Ignored);
         };
-        if !repeat {
-            session.report(EditorTrigger::Tab { reverse }, EditorOutcome::Unchanged);
+        if transition == crate::KeyTransition::Pressed {
+            session.report(EditorTrigger::Tab { direction }, EditorOutcome::Unchanged);
         }
         Ok(InputOutcome::Handled)
     }
@@ -1237,8 +1243,7 @@ impl<T: Clone + Eq + 'static> Component for SelectAnchor<T> {
             if let Some(caption) = caption.as_ref() {
                 caption.paint(
                     p,
-                    x,
-                    baseline - caption.first_baseline().unwrap_or(0.0),
+                    crate::Point::new(x, baseline - caption.first_baseline().unwrap_or(0.0))?,
                     p.color(ColorRole::Muted),
                 )?;
                 x += caption.size().width() + p.metric(MetricRole::IconGap);
@@ -1251,7 +1256,7 @@ impl<T: Clone + Eq + 'static> Component for SelectAnchor<T> {
                 } else {
                     ColorRole::Muted
                 });
-                p.with_clip(area, |p| text.paint(p, x, y, color))?;
+                p.with_clip(area, |p| text.paint(p, crate::Point::new(x, y)?, color))?;
             }
             if self.input.focused {
                 focus_ring(p, rect)?;
@@ -1270,8 +1275,10 @@ impl<T: Clone + Eq + 'static> Component for SelectAnchor<T> {
         if let Some(text) = self.prepared.borrow().as_ref() {
             text.paint(
                 p,
-                p.metric(MetricRole::ControlPaddingX),
-                centered(s.height(), text.size().height()),
+                crate::Point::new(
+                    p.metric(MetricRole::ControlPaddingX),
+                    centered(s.height(), text.size().height()),
+                )?,
                 p.color(if self.focusable() {
                     ColorRole::OnButton
                 } else {
@@ -1727,13 +1734,13 @@ impl<T: Clone + Eq + 'static> Component for Select<T> {
 ///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
-/// use pert_ui::{Choice, Element, InlineSelect, KeyAction, KeyCode, Runtime};
+/// use pert_ui::{Choice, Element, FocusDirection, InlineSelect, KeyAction, KeyCode, Runtime};
 /// let mut ui = Runtime::new();
 /// let snap = ui.signal("1/4");
 /// let select = InlineSelect::new(&ui, snap.clone(),
 ///     [Choice::new("1/4", "1/4"), Choice::new("1/8", "1/8")])?.label("Snap");
 /// ui.mount_tree(Element::new("snap", select))?;
-/// ui.focus_next(false)?; // the anchor is the first Tab stop
+/// ui.focus_next(FocusDirection::Forward)?; // the anchor is the first Tab stop
 /// ui.key_input(KeyCode::ArrowDown, KeyAction::Press)?; // opens the list
 /// assert_eq!(snap.get()?, "1/4"); // nothing committed until chosen
 /// # Ok::<(), Box<dyn std::error::Error>>(())
@@ -1968,8 +1975,7 @@ mod inline_typography_tests {
         fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
             p.text("Snap", None, TextStyle::Caption)?.paint(
                 p,
-                0.0,
-                0.0,
+                crate::Point::ZERO,
                 p.color(ColorRole::Warning),
             )?;
             p.rich_text(
@@ -1977,7 +1983,7 @@ mod inline_typography_tests {
                 None,
                 TextStyle::Body,
             )?
-            .paint(p, 100.0, 0.0, p.color(ColorRole::Error))
+            .paint(p, crate::Point::new(100.0, 0.0)?, p.color(ColorRole::Error))
         }
     }
 

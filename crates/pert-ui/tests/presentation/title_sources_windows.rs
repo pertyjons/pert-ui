@@ -301,7 +301,7 @@ fn a_banner_message_follows_its_binding() -> TestResult {
     Ok(())
 }
 
-fn toast_host(ui: &mut Runtime, queue: &ToastQueue) -> Result<WidgetId, RuntimeError> {
+fn toast_host(ui: &mut Runtime, queue: &ToastController) -> Result<WidgetId, RuntimeError> {
     let root = ui.mount_tree(Element::new(
         "host",
         ToastHost::new(
@@ -316,7 +316,7 @@ fn toast_host(ui: &mut Runtime, queue: &ToastQueue) -> Result<WidgetId, RuntimeE
 #[test]
 fn a_bound_toast_shows_its_current_text_like_a_fixed_toast() -> TestResult {
     let mut bound = runtime()?;
-    let queue = ToastQueue::new(&bound);
+    let queue = ToastController::new(&bound);
     let message = bound.signal("Exporting 10%".to_owned());
     let label = bound.signal("Stop".to_owned());
     let receipt =
@@ -332,7 +332,7 @@ fn a_bound_toast_shows_its_current_text_like_a_fixed_toast() -> TestResult {
     );
 
     let mut fixed = runtime()?;
-    let reference = ToastQueue::new(&fixed);
+    let reference = ToastController::new(&fixed);
     let _receipt = reference.push(Toast::new("Exporting 90%").action("Halt", |_| Ok(())))?;
     toast_host(&mut fixed, &reference)?;
     assert_eq!(bound.paint()?, fixed.paint()?);
@@ -342,7 +342,7 @@ fn a_bound_toast_shows_its_current_text_like_a_fixed_toast() -> TestResult {
 #[test]
 fn toasts_with_one_bound_message_stay_separate_toasts() -> TestResult {
     let mut ui = runtime()?;
-    let queue = ToastQueue::new(&ui);
+    let queue = ToastController::new(&ui);
     let message = ui.signal("Saved".to_owned());
     let first = queue.push(Toast::new(message.read_only()))?;
     let second = queue.push(Toast::new(message.read_only()))?;
@@ -358,7 +358,7 @@ fn toasts_with_one_bound_message_stay_separate_toasts() -> TestResult {
 #[test]
 fn an_oversized_bound_toast_message_fails_the_host_until_it_fits() -> TestResult {
     let mut ui = runtime()?;
-    let queue = ToastQueue::new(&ui);
+    let queue = ToastController::new(&ui);
     let message = ui.signal("Saved".to_owned());
     let receipt = queue.push(Toast::new(message.read_only()))?;
     toast_host(&mut ui, &queue)?;
@@ -371,7 +371,7 @@ fn an_oversized_bound_toast_message_fails_the_host_until_it_fits() -> TestResult
     message.set("Exported".to_owned())?;
     ui.flush(Duration::ZERO)?;
     let mut fixed = runtime()?;
-    let reference = ToastQueue::new(&fixed);
+    let reference = ToastController::new(&fixed);
     let _receipt = reference.push(Toast::new("Exported"))?;
     toast_host(&mut fixed, &reference)?;
     assert_eq!(ui.paint()?, fixed.paint()?);
@@ -381,7 +381,7 @@ fn an_oversized_bound_toast_message_fails_the_host_until_it_fits() -> TestResult
 #[test]
 fn a_toast_text_change_keeps_an_armed_activation() -> TestResult {
     let mut ui = runtime()?;
-    let queue = ToastQueue::new(&ui);
+    let queue = ToastController::new(&ui);
     let message = ui.signal("Exporting 10%".to_owned());
     let stopped = std::rc::Rc::new(std::cell::Cell::new(false));
     let flag = stopped.clone();

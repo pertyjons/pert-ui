@@ -35,8 +35,8 @@ fn apply_drop(lists: &mut [Vec<String>], target: usize, drop: &ListDrop<'_>) {
     // one of the dragged rows: dropping a row beside itself changes nothing.
     let list = &lists[target];
     let boundary = match drop.position() {
-        DropPosition::Before(key) => list.iter().position(|k| k == key).unwrap_or(list.len()),
-        DropPosition::After(key) => list
+        ListDropPosition::Before(key) => list.iter().position(|k| k == key).unwrap_or(list.len()),
+        ListDropPosition::After(key) => list
             .iter()
             .position(|k| k == key)
             .map_or(list.len(), |index| index + 1),
@@ -167,9 +167,9 @@ fn apply_tree_drop(model: &mut BTreeMap<String, Vec<String>>, drop: &ListDrop<'_
         .cloned()
         .collect();
     let named = match drop.position() {
-        DropPosition::Before(key) | DropPosition::After(key) | DropPosition::Into(key) => {
-            Some(key.clone())
-        }
+        ListDropPosition::Before(key)
+        | ListDropPosition::After(key)
+        | ListDropPosition::Into(key) => Some(key.clone()),
         _ => None,
     };
     // Beside or into a dragged node itself, nothing moves.
@@ -180,18 +180,18 @@ fn apply_tree_drop(model: &mut BTreeMap<String, Vec<String>>, drop: &ListDrop<'_
         children.retain(|key| !moved.contains(key));
     }
     match drop.position() {
-        DropPosition::Before(key) | DropPosition::After(key) => {
+        ListDropPosition::Before(key) | ListDropPosition::After(key) => {
             let parent = parent_of(model, key).unwrap_or_default();
             let siblings = model.entry(parent).or_default();
             let at = siblings
                 .iter()
                 .position(|sibling| sibling == key)
                 .map_or(siblings.len(), |at| {
-                    at + usize::from(matches!(drop.position(), DropPosition::After(_)))
+                    at + usize::from(matches!(drop.position(), ListDropPosition::After(_)))
                 });
             siblings.splice(at..at, moved);
         }
-        DropPosition::Into(key) => model.entry(key.clone()).or_default().extend(moved),
+        ListDropPosition::Into(key) => model.entry(key.clone()).or_default().extend(moved),
         _ => model.entry(String::new()).or_default().extend(moved),
     }
 }
@@ -228,7 +228,7 @@ fn session_outline(ui: &Runtime, status: &Signal<String>) -> Result<Element, Run
         }
         apply_tree_drop(&mut model.borrow_mut(), drop);
         published.set_source(TreeSource::new(Session(model.borrow().clone())))?;
-        if let DropPosition::Into(folder) = drop.position() {
+        if let ListDropPosition::Into(folder) = drop.position() {
             published.set_expanded(folder, true)?;
         }
         status.set(format!(
@@ -390,7 +390,7 @@ impl Component for Bin {
         cx: &mut EventContext,
         event: &DragEvent<'_>,
     ) -> Result<DropResponse, RuntimeError> {
-        let Some(swatch) = event.payload().get::<Swatch>() else {
+        let Some(swatch) = event.payload().downcast_ref::<Swatch>() else {
             return Ok(DropResponse::Rejected);
         };
         let response = match event.phase() {

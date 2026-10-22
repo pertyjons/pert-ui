@@ -918,7 +918,7 @@ fn inspection_reports_the_painted_border_stroke_and_omits_an_unpainted_one() {
         .theme()
         .metrics(Density::Standard)
         .unwrap()
-        .get(MetricRole::BorderWidth);
+        .metric(MetricRole::BorderWidth);
     assert_eq!(
         painted.components[1].details.box_model.border,
         Some(BorderInspection {

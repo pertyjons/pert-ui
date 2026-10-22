@@ -46,8 +46,11 @@ fn each_status_draws_its_own_fill_and_only_a_known_fraction_has_a_value() {
     let (mut ui, status, root) = setup(ProgressStatus::Idle);
     let bounds = ui.bounds(&bar(&ui, &root)).unwrap().unwrap();
     let standard = ThemeMetrics::default();
-    assert_eq!(bounds.height(), standard.get(MetricRole::ProgressHeight));
-    assert_eq!(bounds.width(), 3.0 * standard.get(MetricRole::ControlWidth));
+    assert_eq!(bounds.height(), standard.metric(MetricRole::ProgressHeight));
+    assert_eq!(
+        bounds.width(),
+        3.0 * standard.metric(MetricRole::ControlWidth)
+    );
 
     // Idle is an empty track: the Outline track and nothing else.
     assert_eq!(
@@ -136,7 +139,7 @@ fn indeterminate_activity_is_the_only_status_that_schedules_work() {
 #[test]
 fn the_sweep_stays_inside_the_track_for_every_phase() {
     let (mut ui, _status, _root) = setup(ProgressStatus::Indeterminate);
-    let width = 3.0 * ThemeMetrics::default().get(MetricRole::ControlWidth);
+    let width = 3.0 * ThemeMetrics::default().metric(MetricRole::ControlWidth);
     for step in 0..=60 {
         ui.flush(Duration::from_millis(step * 25)).unwrap();
         if let Some((x, w)) = fill(&mut ui, ColorRole::Primary) {
@@ -523,7 +526,7 @@ fn pieces(ui: &mut Runtime, root: &WidgetId) -> Vec<(f32, f32, ColorRole)> {
 fn the_gap_beside_a_fill_narrows_near_either_end_so_some_track_remains() {
     let (mut ui, status, root) = setup(ProgressStatus::Idle);
     let width = ui.bounds(&bar(&ui, &root)).unwrap().unwrap().width();
-    let gap = ThemeMetrics::default().get(MetricRole::ProgressHeight) / 2.0;
+    let gap = ThemeMetrics::default().metric(MetricRole::ProgressHeight) / 2.0;
     let close = |found: Vec<(f32, f32, ColorRole)>, expected: &[(f32, f32, ColorRole)]| {
         assert_eq!(found.len(), expected.len(), "{found:?} vs {expected:?}");
         for (a, b) in found.iter().zip(expected) {

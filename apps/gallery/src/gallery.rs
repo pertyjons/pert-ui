@@ -430,7 +430,7 @@ impl Gallery {
         *guarded_view.borrow_mut() = Some(view_of(ui, &root, "guarded-view")?);
         navigation_targets.resolve(ui, &root)?;
         places.start(ui, &root)?;
-        ui.focus_next(false)?;
+        ui.focus_next(FocusDirection::Forward)?;
         Ok(root)
     }
 }
@@ -447,7 +447,7 @@ fn gallery_menu(
     let theme = ui.theme();
     let (mode_theme, density_theme) = (theme.clone(), theme.clone());
     let modes = setting_rows(
-        &theme.mode_signal()?,
+        &theme.mode_binding()?,
         &[
             ("dark", "Dark", ThemeMode::Dark),
             ("light", "Light", ThemeMode::Light),
@@ -455,7 +455,7 @@ fn gallery_menu(
         move |mode| mode_theme.set_mode(mode),
     )?;
     let densities = setting_rows(
-        &theme.density_signal()?,
+        &theme.density_binding()?,
         &[
             ("compact", "Compact", Density::Compact),
             ("standard", "Standard", Density::Standard),
@@ -465,7 +465,7 @@ fn gallery_menu(
     )?;
     let motion_settings = ui.ui_settings();
     let motions = setting_rows(
-        &motion_settings.motion_signal()?,
+        &motion_settings.motion_binding()?,
         &[
             ("full", "Full", MotionPreference::Full),
             ("reduced", "Reduced", MotionPreference::Reduced),
@@ -474,7 +474,7 @@ fn gallery_menu(
     )?;
     let text_settings = ui.ui_settings();
     let text_modes = setting_rows(
-        &text_settings.text_rendering_signal()?,
+        &text_settings.text_rendering_binding()?,
         &[
             (
                 "line-mask",
@@ -491,7 +491,7 @@ fn gallery_menu(
     )?;
     let language_settings = ui.ui_settings();
     let languages = setting_rows(
-        &language_settings.strings_signal()?,
+        &language_settings.strings_binding()?,
         &[
             ("english", "English", UiStrings::english()),
             ("swedish", "Svenska", crate::language::swedish()?),
@@ -500,7 +500,7 @@ fn gallery_menu(
     )?;
     let settings = ui.ui_settings();
     let overlays = setting_rows(
-        &settings.debug_overlay_signal()?,
+        &settings.debug_overlay_binding()?,
         &[
             ("off", "Off", DebugOverlay::Off),
             ("issues", "Validation issues", DebugOverlay::Issues),
@@ -595,7 +595,7 @@ fn zoom_controls(ui: &Runtime) -> Result<Vec<Element>, RuntimeError> {
     // The percentage follows the zoom setting's signal, whoever changes it.
     let percent = ui
         .ui_settings()
-        .zoom_signal()?
+        .zoom_binding()?
         .map(|zoom| format!("{:.0}%", zoom.get() * 100.0))?;
     controls.push(Element::new("zoom-value", Label::new(percent)));
     Ok(controls)

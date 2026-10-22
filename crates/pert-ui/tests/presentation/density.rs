@@ -209,18 +209,18 @@ fn the_overlay_scrollbar_follows_density_like_every_other_control_extent() {
         ui.theme().set_density(density).unwrap();
         let metrics = ThemeMetrics::for_density(density);
         let thumb = thumb(&mut ui);
-        assert_eq!(thumb.width(), metrics.get(MetricRole::ScrollbarThumb));
+        assert_eq!(thumb.width(), metrics.metric(MetricRole::ScrollbarThumb));
         assert_eq!(
             thumb.height(),
-            metrics.get(MetricRole::ScrollbarMinimumThumb)
+            metrics.metric(MetricRole::ScrollbarMinimumThumb)
         );
         assert_eq!(thumb.x() + thumb.width(), 200.0);
     }
     // Standard keeps the extents the bar had before it read the theme.
     let standard = ThemeMetrics::default();
-    assert_eq!(standard.get(MetricRole::ScrollbarLane), 8.0);
-    assert_eq!(standard.get(MetricRole::ScrollbarThumb), 4.0);
-    assert_eq!(standard.get(MetricRole::ScrollbarMinimumThumb), 12.0);
+    assert_eq!(standard.metric(MetricRole::ScrollbarLane), 8.0);
+    assert_eq!(standard.metric(MetricRole::ScrollbarThumb), 4.0);
+    assert_eq!(standard.metric(MetricRole::ScrollbarMinimumThumb), 12.0);
 }
 struct MetricProbeContent(Size);
 impl Component for MetricProbeContent {

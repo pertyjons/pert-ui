@@ -520,7 +520,7 @@ owner, so a row makes its binding in one of two ways:
 ```rust
 use std::{mem, time::Duration};
 use pert_ui::prelude::*;
-use pert_ui::{DropPosition, ListDrop};
+use pert_ui::{ListDrop, ListDropPosition};
 
 // Signal values are compared when written and cloned when read.
 #[derive(Clone, PartialEq)]
@@ -614,9 +614,9 @@ fn reorder(store: &Signal<Vec<Task>>, drop: &ListDrop<'_>) -> Result<bool, Runti
         .partition(|task| drop.items().contains(&task.id.to_string()));
     let at = |key: &str| rest.iter().position(|task| task.id.to_string() == key);
     let index = match drop.position() {
-        DropPosition::Before(key) => at(key),
-        DropPosition::After(key) => at(key).map(|index| index + 1),
-        DropPosition::End => Some(rest.len()),
+        ListDropPosition::Before(key) => at(key),
+        ListDropPosition::After(key) => at(key).map(|index| index + 1),
+        ListDropPosition::End => Some(rest.len()),
         _ => None,
     };
     let Some(index) = index else { return Ok(false) }; // refused

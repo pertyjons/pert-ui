@@ -121,7 +121,7 @@ fn dropdown_permissions_replace_unsubscribe_and_keep_fixed_denial() -> TestResul
             )]),
         ))?;
         ui.flush(Duration::ZERO)?;
-        ui.focus_next(false)?;
+        ui.focus_next(FocusDirection::Forward)?;
         assert!(ui.focused().is_none());
         ui.reconcile_children(
             &root,
@@ -223,7 +223,7 @@ fn application_permission_cannot_override_read_only_choice_parameters() -> TestR
         } else {
             find(&ui, &root, "select").unwrap()
         };
-        ui.focus_next(false)?;
+        ui.focus_next(FocusDirection::Forward)?;
         assert!(ui.focused().is_none());
         ui.focus(&target)?;
         press(&mut ui, KeyCode::ArrowDown);
@@ -323,7 +323,7 @@ fn multi_select_rejects_foreign_permission_but_fixed_denial_is_final() -> TestRe
         let result = ui.flush(Duration::ZERO);
         if locked {
             result?;
-            ui.focus_next(false)?;
+            ui.focus_next(FocusDirection::Forward)?;
             assert!(ui.focused().is_none());
         } else {
             assert_eq!(result, Err(RuntimeError::ForeignRuntime));

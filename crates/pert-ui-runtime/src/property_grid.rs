@@ -78,7 +78,7 @@ impl Property {
         self
     }
     /// Follows a form's field, as [`Field::form`], so
-    /// [`FormStatus::focus_first_error`] reaches this row's editor.
+    /// [`FormFields::focus_first_error`] reaches this row's editor.
     pub fn form(mut self, handle: &FieldHandle) -> Self {
         self.field = self.field.form(handle);
         self
@@ -707,12 +707,20 @@ impl Component for PropertyGrid {
                 // inside it.
                 Some(width) if placed.truncated.is_some() => {
                     let height = placed.text.size().height();
-                    painter
-                        .with_clip(Rect::new(placed.x, placed.y, width, height)?, |painter| {
-                            placed.text.paint(painter, placed.x, placed.y, color)
-                        })?;
+                    painter.with_clip(
+                        Rect::new(placed.x, placed.y, width, height)?,
+                        |painter| {
+                            placed.text.paint(
+                                painter,
+                                crate::Point::new(placed.x, placed.y)?,
+                                color,
+                            )
+                        },
+                    )?;
                 }
-                _ => placed.text.paint(painter, placed.x, placed.y, color)?,
+                _ => placed
+                    .text
+                    .paint(painter, crate::Point::new(placed.x, placed.y)?, color)?,
             }
         }
         Ok(())

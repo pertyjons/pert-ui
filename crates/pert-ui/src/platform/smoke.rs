@@ -566,9 +566,9 @@ impl Runner {
                         .values();
                     // Inside the eight-pixel scrollbar strip at the text's right edge.
                     let lane = bounds[0] + bounds[2]
-                        - metrics.get(crate::MetricRole::ControlPaddingX)
+                        - metrics.metric(crate::MetricRole::ControlPaddingX)
                         - 2.0;
-                    let top = bounds[1] + metrics.get(crate::MetricRole::ControlPaddingY);
+                    let top = bounds[1] + metrics.metric(crate::MetricRole::ControlPaddingY);
                     let at = |y: f32| -> Result<crate::Point, AppError> {
                         Ok(crate::Point::new(lane, y)?)
                     };

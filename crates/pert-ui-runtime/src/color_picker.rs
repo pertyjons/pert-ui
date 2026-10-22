@@ -211,7 +211,7 @@ struct Model {
 impl Model {
     /// The text for `role` in the table the picker last read.
     fn text(&self, role: crate::StringRole) -> String {
-        self.strings.borrow().get(role).to_owned()
+        self.strings.borrow().text(role).to_owned()
     }
     /// The state the parts present: the gesture's preview, or the committed
     /// state while it still produces the bound color, or the bound color with
@@ -634,7 +634,7 @@ fn entry_row(model: &Rc<Model>) -> Result<Column, RuntimeError> {
     let enabled = model.enabled.get();
     let hex_model = model.clone();
     let strings = model.strings.borrow().clone();
-    let no_alpha = strings.get(crate::StringRole::ColorNoAlpha).to_owned();
+    let no_alpha = strings.text(crate::StringRole::ColorNoAlpha).to_owned();
     let mut hex = TextField::new(entry.hex.clone())
         .normalize(move |text| {
             let color = Color::from_hex(text.trim()).map_err(|error| {

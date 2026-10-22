@@ -563,8 +563,10 @@ impl<T: Copy + PartialEq + 'static> InlineField<T> {
             p.with_clip(area, |p| {
                 text.paint(
                     p,
-                    x,
-                    self.baseline.get() - text.first_baseline().unwrap_or(0.0),
+                    crate::Point::new(
+                        x,
+                        self.baseline.get() - text.first_baseline().unwrap_or(0.0),
+                    )?,
                     p.color(ColorRole::Muted),
                 )
             })?;
@@ -589,8 +591,10 @@ impl<T: Copy + PartialEq + 'static> InlineField<T> {
             p.with_clip(slot, |p| {
                 suffix.paint(
                     p,
-                    x + (w - suffix.size().width()).max(0.0),
-                    self.baseline.get() - suffix.first_baseline().unwrap_or(0.0),
+                    crate::Point::new(
+                        x + (w - suffix.size().width()).max(0.0),
+                        self.baseline.get() - suffix.first_baseline().unwrap_or(0.0),
+                    )?,
                     color,
                 )
             })?;
@@ -603,7 +607,11 @@ impl<T: Copy + PartialEq + 'static> InlineField<T> {
         } else if let Some(area) = self.editor.area.get() {
             let [x, y, w, _] = area.values();
             p.with_clip(area, |p| {
-                display.paint(p, x + (w - display.size().width()).max(0.0), y, color)
+                display.paint(
+                    p,
+                    crate::Point::new(x + (w - display.size().width()).max(0.0), y)?,
+                    color,
+                )
             })?;
         }
         self.paint_buttons(p)
@@ -687,7 +695,11 @@ impl<T: Copy + PartialEq + 'static> InlineField<T> {
             ColorRole::Muted
         });
         p.with_clip(area, |p| {
-            layout.paint(p, x, y + (h - layout.size().height()).max(0.0) / 2.0, color)
+            layout.paint(
+                p,
+                crate::Point::new(x, y + (h - layout.size().height()).max(0.0) / 2.0)?,
+                color,
+            )
         })?;
         self.paint_buttons(p)
     }
@@ -834,7 +846,7 @@ mod tests {
                 .theme()
                 .metrics(density)
                 .unwrap()
-                .get(MetricRole::IconGap);
+                .metric(MetricRole::IconGap);
             field.editor_area(suffix, gap, 12.0, 9.0).unwrap();
             let area = field.editor.area.get().unwrap();
             assert_eq!(area.width(), 100.0 - 14.0 - gap);

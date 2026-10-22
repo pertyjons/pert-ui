@@ -508,7 +508,7 @@ impl NumericControl {
             } else {
                 x
             };
-            p.with_clip(rect, |p| text.paint(p, x, y, color))?;
+            p.with_clip(rect, |p| text.paint(p, crate::Point::new(x, y)?, color))?;
         }
         if self.focused {
             focus_ring(p, control)?;
@@ -1198,7 +1198,7 @@ impl Component for NumericControl {
             } else {
                 x
             };
-            p.with_clip(rect, |p| text.paint(p, x, y, color))?;
+            p.with_clip(rect, |p| text.paint(p, crate::Point::new(x, y)?, color))?;
         }
         let rect = Rect::from_size(size);
         if self.focused {

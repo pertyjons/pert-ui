@@ -218,7 +218,7 @@ fn ctrl_tab_bubbles_from_content_and_narrow_strip_reveals_selection() {
         .unwrap();
     ui.flush(Duration::ZERO).unwrap();
     ui.focus(&tabs).unwrap();
-    ui.focus_next(false).unwrap();
+    ui.focus_next(FocusDirection::Forward).unwrap();
     assert_ne!(ui.focused(), Some(tabs.clone()));
     ui.key_input(KeyCode::ControlLeft, KeyAction::Press)
         .unwrap();
@@ -313,7 +313,7 @@ fn ctrl_tab_restores_local_focus_with_an_earlier_toolbar() {
     ui.flush(Duration::ZERO).unwrap();
     let tabs = ui.children(&root).unwrap()[1].clone();
     ui.focus(&tabs).unwrap();
-    ui.focus_next(false).unwrap();
+    ui.focus_next(FocusDirection::Forward).unwrap();
     assert_ne!(ui.focused(), Some(tabs.clone()));
     ui.key_input(KeyCode::ControlLeft, KeyAction::Press)
         .unwrap();

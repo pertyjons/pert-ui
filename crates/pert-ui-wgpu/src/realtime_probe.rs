@@ -292,8 +292,7 @@ impl ApplicationHandler<Notice> for Harness {
             let proxy = self.proxy.clone();
             self.renderer = Some(Renderer::new(
                 window.clone(),
-                size.width,
-                size.height,
+                PhysicalExtent::new(size.width, size.height),
                 move |notice| {
                     let _ = proxy.send_event(notice);
                 },

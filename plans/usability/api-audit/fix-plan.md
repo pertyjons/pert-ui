@@ -157,6 +157,35 @@ and anything left to a later part.
   - **Review:** Codex found no implementation defect across the part's
     eleven audit findings, F33 and six decisions, and only this record
     incomplete, which this entry completes.
+- **6a2 (0.3.58):** role names (`ContextMenuController`, `ToastController`,
+  `FormFields`, `ListDropPosition`), the owned-versus-reactive read rule and
+  its renames, unit-bearing names and types (`PhysicalExtent` for the wgpu
+  renderer, `Point` origins, `*_byte` offsets, `Length` widths), enums for
+  boolean flags (`FocusDirection`, `SelectionExtension`, `Expansion`,
+  `WindowCloseAction` in `NativeCloseAction::Defer`), `TaskStatus::Succeeded`
+  and `PendingJump::receipt`. Every repository consumer was migrated.
+  - **Checks run after the last edit (the dependency, feature, platform and
+    release row):**
+    - `cargo fmt --all --check`;
+    - `cargo clippy --locked --workspace --all-targets -- -D warnings`;
+    - `cargo test --locked --workspace` and `--release`;
+    - the five headless example sessions and the headless gallery;
+    - `cargo test --locked --workspace --doc`;
+    - warning-free workspace rustdoc;
+    - Clippy, tests and rustdoc for every `pert-ui` feature configuration
+      CI checks, and `pert-ui-core --features serde`;
+    - every run on the pinned toolchain, which is the MSRV;
+    - `api/generate.sh`, whose diff is the plan's expected list;
+    - the native checks on Linux (Fedora 44, GNOME/Wayland, Intel UHD 770
+      with Mesa 26.2.4 on Vulkan), without the clipboard check, recorded in
+      `docs/verification.md`. Windows and macOS evidence is missing;
+    - `git diff --check`;
+    - library packaging, run after the commit (it refuses a dirty tree).
+  - **Beyond the plan's lines:** `ContextMenu::opener()` became
+    `controller()`, as `FloatingWindow::controller` is named, and
+    `ToastHost::new`'s parameter is `controller`.
+  - **Left to a later part:** 6e considers `FocusDirection`, which a custom
+    `tab_navigation` names, for the prelude.
 
 ## Rules for every part
 
