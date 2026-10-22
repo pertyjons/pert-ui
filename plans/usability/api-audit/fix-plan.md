@@ -77,7 +77,7 @@ and anything left to a later part.
     capture, and a closed surface hides what it showed, calling
     `cancel_input`. The text now says an earlier consumer skips only the
     focused component's ordinary cleanup, while its own lifecycle cleans up
-    as usual.
+    as usual. The second recheck approved 5b.
   - **Left to a later part:** tracing `Runtime::focus` found a dropped error,
     added to 6d2 as `N:focus-reveal`.
 
