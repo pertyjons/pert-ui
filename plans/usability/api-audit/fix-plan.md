@@ -137,7 +137,7 @@ and anything left to a later part.
     - the commit and review were unrecorded.
 
     All three were fixed, and the recheck approved 5d.
-- **6a1 (0.3.57):** constructor order, builder and callback shapes, limit
+- **6a1 (0.3.57), done 2026-10-22:** f66a143. Constructor order, builder and callback shapes, limit
   constants, `Color::from_linear`, `SplitRule::Ratio(NormalizedValue)`,
   `bind_<property>` and `SizeLimits::exact`. Every repository consumer was
   migrated.
@@ -154,6 +154,9 @@ and anything left to a later part.
     names the empty map key it also reports.
   - **Left to a later part:** the new `ExpansionChange` is at the crate root,
     and 6e adds it to the prelude beside `SelectionChange`.
+  - **Review:** Codex found no implementation defect across the part's
+    eleven audit findings, F33 and six decisions, and only this record
+    incomplete, which this entry completes.
 
 ## Rules for every part
 
