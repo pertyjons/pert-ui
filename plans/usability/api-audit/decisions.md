@@ -28,67 +28,66 @@ in order:
 - **breaking:** slice 6, with a changelog entry giving the replacement
   usage.
 
-**Status:** recommendations, approved by Codex after two rechecks, waiting
-for the maintainer. The "Decision"
-column is filled in when the maintainer decides.
+**Status:** decided. Codex approved the recommendations after two rechecks,
+and the maintainer approved all of them as recommended on 2026-10-22.
 
 ## Summary
 
 | IDs | Question | Recommended | Consequence | Decision |
 |---|---|---|---|---|
-| G1-3 | Order in keyed-item constructors | C: owner `ui`, key, bound state, the rest | breaking, 2 items | |
-| G1-5 | `ChoiceId::as_str` against `get()` | A: string exception (`as_str`) | doc-only | |
-| G1-6 | `get()` for compound values | A: single-value types only | doc-only | |
-| G1-9 | Where shared limits live, constant types | A: validation limits on the shared format's owner, else the reporting error; rendering caps on the error type of the operation they protect; `Self` for value limits | doc-only; `PowerExponent::MIN/MAX` to `Self` (breaking, tiny) | |
-| G1-10 | Constants for zero, one, nonnegative bounds | A: only chosen limits get constants | doc-only | |
-| G1-12 | May a documented convenience clamp | A: presentation mappings may saturate; scroll offsets and layout of valid saved sizes stay clamped; invalid explicit text offsets, identities and stored preferences are rejected | doc-only, edits an AGENTS.md rule | |
-| G1-13 | Meanings of `with_` | A: three meanings by receiver (constructor with a supplied part, consuming builder, scoped closure), documented | doc-only | |
-| G1-14 | `Color::rgba` takes linear values | B: rename to `Color::from_linear` | breaking, about 90 call sites | |
-| G1-15 | Parameter names `ui`, `controller` | B: rename in four constructors | rustdoc only | |
-| G1-16 | Collections and keyed containers under "Choice sources" | A: outside, one sentence | doc-only | |
-| G1-18 | `SplitRule::Ratio(f32)` | B: `NormalizedValue` (needs a const constructor or a non-const `rule`) | breaking, 1 variant | |
-| G2-1 | No-argument boolean shortcuts | A: widen the naming rule | doc-only | |
-| G2-2, G2-14 | Collections and redescription | B: adopt permissions and callbacks, including removal; controller, source and structure stay | breaking in behavior | |
-| G2-3 | `closable`, `minimizable`, `App::resizable` as `bool` | A: fixed window parts, documented | doc-only | |
-| G2-4 | `disabled(bool)` on data descriptions | A: data descriptions take `bool` | doc-only | |
-| G2-5 | Accumulating builders | A: "Adds/Offers" builders append, documented | doc-only | |
-| G2-6 | Two-way bindings | B: `bind_<property>` (author's correction of the draft's `_binding`) | breaking, 3 items | |
-| G2-8 | `#[must_use]` on receipts | C: only where dropping hides an otherwise unreported outcome (failure or cancellation); `ToastReceipt` loses it | not breaking | |
-| G2-13 | Reconciliation publishes a parameter snapshot | A: a narrow lifecycle exception, doc-only only if a test first shows dependents settle in the same flush (else a scheduling fix); `ContextMenu` gets private non-signal state | doc-only plus a private fix, or slice 6 scheduling | |
-| G2-17 | `on_select` against `on_selection_change` | A: keep both, document the difference | doc-only | |
-| G2-18 | `MultiSelect::filter` closure | C: keep it, add a doctest using `FilterMatcher` | doc-only | |
-| G2-19 | `set_wake_delivery` takes a `Box` | B: `impl Fn`; `Box` callers still compile | additive | |
-| G2-20 | Editor exceptions need contracts.md | B: yes; a contracts.md sentence that parse and range errors appear only in inspection. F6 stays a behavior decision; recommended route: report them through `on_rejection` | doc-only; F6's route changes when existing `on_rejection` handlers run (behavior) and adds `UiMessage`/`StringRole` variants (additive, both `#[non_exhaustive]`) | |
-| G3-16 | `ParameterState` and `*State` | A: `*State` by ownership | doc-only | |
-| G3-17 | `*Snapshot`, `*Inspection`, `*Report` | A: name these suffixes in the rule | doc-only | |
-| G3-18 | `*Outcome` and operation results | A: the rule goes one way only; continuations allowed | doc-only | |
-| G3-19 | `FormStatus` as a controller | A: application-owned, like `ListSelection` | doc-only | |
-| G3-21 | `Pending<T>` and receipts | A: a cross-thread reply is not a receipt | doc-only | |
-| G3-1 | Owned against reactive reads | C with one accepted residual risk (`Parameter::snapshot` stays a live signal, documented); 8 renames. D also renames `Parameter::snapshot` | breaking, about 20 call sites (D: about 340) | |
-| G3-2 | `reorderable`/`resizable` | A: document the rule the code follows | doc-only | |
-| G3-3 | Accessor pairs on role tables | C: `ThemeMetrics::metric`, `UiStrings::text`/`with_text` | breaking, 3 methods | |
-| G3-4 | `DragPayload::get::<T>` | B: `downcast_ref` | breaking, 1 method | |
-| G3-5 | `is_open` against `is_active` | B: `EditorSession::is_active` | breaking, 1 method, no call sites | |
-| G3-7 | `f32` against `Length` | C: given and stored lengths are `Length`; `QuickPick`/`CommandPalette::width` change | doc-only plus 2 breaking builders | |
-| G3-12 | Family prefixes | C: `DropPosition` to `ListDropPosition`; `PickStatus` stays | breaking, 1 type | |
-| G3-23 | `UiStrings::MAX_LENGTH` counts bytes | B: `MAX_TEXT_BYTES` | breaking, 1 constant | |
-| G3-24 | `Completed` against `Succeeded` | B: `TaskStatus::Succeeded` | breaking, 1 variant | |
-| G4-6 | Incidental `Send` on `Divider`, `Svg` | B: a private `!Send` marker on every description now | breaking in auto traits only | |
-| G4-7 | `RichText` not `Send` | A: document as UI-thread; sendable font key to follow-ups | doc-only | |
-| G4-8, G4-9 | `#[non_exhaustive]` on growing records | C: the records only the runtime builds (10 structs, `EventKind`, `ValidationCode`); records a component builds and status enums stay exhaustive | breaking, 6 test literals | |
-| G4-10 | `AnyValue`/`AnySpec` returned as errors | A: documented std-idiom exception | doc-only | |
-| G4-15 | Losing `Copy` to carry keys | C: identity payloads only; `LayoutError`, `ParameterError` lose `Copy` | breaking, with G4-14 | |
-| G4-19, G4-20 | Standard-trait impls and `# Errors` | A: one-line forwarding for `TryFrom`/`FromStr`; for serde the type's `# Serialization` section suffices (two types gain one) | doc-only | |
-| G4-21 | `DrawError` into `RuntimeError` | A: keep the exclusion; document `Result<_, DrawError>` for test helpers | doc-only | |
-| G4-22 | `From<Box<dyn Error + Send + Sync>>` for `RuntimeError` | A: no; doc pointers | doc-only | |
-| G4-23 | User text in `Display` | A: documented exception for application and OS text | doc-only | |
-| G4-4 | Proposal: more derives on records | A: not adopted | none | |
-| G4-30 | `From` back to the raw number | B: add it to the six other validated scalars | additive | |
-| G5-11 | `SeriesSource` in the prelude | A: stays at the root, one exclusion sentence | doc-only | |
-| G5-16 | Parameter host sink and monitor types | B: they are "hosts"; 7 names join the prelude | additive | |
-| G5-26, G5-27, G5-14 | How far the prelude rule reaches | D: names a consumer writes or keeps go to a new `pert_ui::component` module (about 26 names), not the prelude; `IgnoredEntry` joins the application prelude; follows slice 9's smaller prelude | additive | |
-| G5-30 | `WindowError` in the facade prelude | B: add it under `native` | additive | |
-| G5-32 | A testing prelude | A: none until it owns F2's helpers, root pointers instead; `ApplicationError` joins the prelude | doc-only, plus 1 additive name | |
+| G1-3 | Order in keyed-item constructors | C: owner `ui`, key, bound state, the rest | breaking, 2 items | approved |
+| G1-5 | `ChoiceId::as_str` against `get()` | A: string exception (`as_str`) | doc-only | approved |
+| G1-6 | `get()` for compound values | A: single-value types only | doc-only | approved |
+| G1-9 | Where shared limits live, constant types | A: validation limits on the shared format's owner, else the reporting error; rendering caps on the error type of the operation they protect; `Self` for value limits | doc-only; `PowerExponent::MIN/MAX` to `Self` (breaking, tiny) | approved |
+| G1-10 | Constants for zero, one, nonnegative bounds | A: only chosen limits get constants | doc-only | approved |
+| G1-12 | May a documented convenience clamp | A: presentation mappings may saturate; scroll offsets and layout of valid saved sizes stay clamped; invalid explicit text offsets, identities and stored preferences are rejected | doc-only, edits an AGENTS.md rule | approved |
+| G1-13 | Meanings of `with_` | A: three meanings by receiver (constructor with a supplied part, consuming builder, scoped closure), documented | doc-only | approved |
+| G1-14 | `Color::rgba` takes linear values | B: rename to `Color::from_linear` | breaking, about 90 call sites | approved |
+| G1-15 | Parameter names `ui`, `controller` | B: rename in four constructors | rustdoc only | approved |
+| G1-16 | Collections and keyed containers under "Choice sources" | A: outside, one sentence | doc-only | approved |
+| G1-18 | `SplitRule::Ratio(f32)` | B: `NormalizedValue` (needs a const constructor or a non-const `rule`) | breaking, 1 variant | approved |
+| G2-1 | No-argument boolean shortcuts | A: widen the naming rule | doc-only | approved |
+| G2-2, G2-14 | Collections and redescription | B: adopt permissions and callbacks, including removal; controller, source and structure stay | breaking in behavior | approved |
+| G2-3 | `closable`, `minimizable`, `App::resizable` as `bool` | A: fixed window parts, documented | doc-only | approved |
+| G2-4 | `disabled(bool)` on data descriptions | A: data descriptions take `bool` | doc-only | approved |
+| G2-5 | Accumulating builders | A: "Adds/Offers" builders append, documented | doc-only | approved |
+| G2-6 | Two-way bindings | B: `bind_<property>` (author's correction of the draft's `_binding`) | breaking, 3 items | approved |
+| G2-8 | `#[must_use]` on receipts | C: only where dropping hides an otherwise unreported outcome (failure or cancellation); `ToastReceipt` loses it | not breaking | approved |
+| G2-13 | Reconciliation publishes a parameter snapshot | A: a narrow lifecycle exception, doc-only only if a test first shows dependents settle in the same flush (else a scheduling fix); `ContextMenu` gets private non-signal state | doc-only plus a private fix, or slice 6 scheduling | approved |
+| G2-17 | `on_select` against `on_selection_change` | A: keep both, document the difference | doc-only | approved |
+| G2-18 | `MultiSelect::filter` closure | C: keep it, add a doctest using `FilterMatcher` | doc-only | approved |
+| G2-19 | `set_wake_delivery` takes a `Box` | B: `impl Fn`; `Box` callers still compile | additive | approved |
+| G2-20 | Editor exceptions need contracts.md | B: yes; a contracts.md sentence that parse and range errors appear only in inspection. F6 stays a behavior decision; recommended route: report them through `on_rejection` | doc-only; F6's route changes when existing `on_rejection` handlers run (behavior) and adds `UiMessage`/`StringRole` variants (additive, both `#[non_exhaustive]`) | approved |
+| G3-16 | `ParameterState` and `*State` | A: `*State` by ownership | doc-only | approved |
+| G3-17 | `*Snapshot`, `*Inspection`, `*Report` | A: name these suffixes in the rule | doc-only | approved |
+| G3-18 | `*Outcome` and operation results | A: the rule goes one way only; continuations allowed | doc-only | approved |
+| G3-19 | `FormStatus` as a controller | A: application-owned, like `ListSelection` | doc-only | approved |
+| G3-21 | `Pending<T>` and receipts | A: a cross-thread reply is not a receipt | doc-only | approved |
+| G3-1 | Owned against reactive reads | C with one accepted residual risk (`Parameter::snapshot` stays a live signal, documented); 8 renames. D also renames `Parameter::snapshot` | breaking, about 20 call sites (D: about 340) | approved |
+| G3-2 | `reorderable`/`resizable` | A: document the rule the code follows | doc-only | approved |
+| G3-3 | Accessor pairs on role tables | C: `ThemeMetrics::metric`, `UiStrings::text`/`with_text` | breaking, 3 methods | approved |
+| G3-4 | `DragPayload::get::<T>` | B: `downcast_ref` | breaking, 1 method | approved |
+| G3-5 | `is_open` against `is_active` | B: `EditorSession::is_active` | breaking, 1 method, no call sites | approved |
+| G3-7 | `f32` against `Length` | C: given and stored lengths are `Length`; `QuickPick`/`CommandPalette::width` change | doc-only plus 2 breaking builders | approved |
+| G3-12 | Family prefixes | C: `DropPosition` to `ListDropPosition`; `PickStatus` stays | breaking, 1 type | approved |
+| G3-23 | `UiStrings::MAX_LENGTH` counts bytes | B: `MAX_TEXT_BYTES` | breaking, 1 constant | approved |
+| G3-24 | `Completed` against `Succeeded` | B: `TaskStatus::Succeeded` | breaking, 1 variant | approved |
+| G4-6 | Incidental `Send` on `Divider`, `Svg` | B: a private `!Send` marker on every description now | breaking in auto traits only | approved |
+| G4-7 | `RichText` not `Send` | A: document as UI-thread; sendable font key to follow-ups | doc-only | approved |
+| G4-8, G4-9 | `#[non_exhaustive]` on growing records | C: the records only the runtime builds (10 structs, `EventKind`, `ValidationCode`); records a component builds and status enums stay exhaustive | breaking, 6 test literals | approved |
+| G4-10 | `AnyValue`/`AnySpec` returned as errors | A: documented std-idiom exception | doc-only | approved |
+| G4-15 | Losing `Copy` to carry keys | C: identity payloads only; `LayoutError`, `ParameterError` lose `Copy` | breaking, with G4-14 | approved |
+| G4-19, G4-20 | Standard-trait impls and `# Errors` | A: one-line forwarding for `TryFrom`/`FromStr`; for serde the type's `# Serialization` section suffices (two types gain one) | doc-only | approved |
+| G4-21 | `DrawError` into `RuntimeError` | A: keep the exclusion; document `Result<_, DrawError>` for test helpers | doc-only | approved |
+| G4-22 | `From<Box<dyn Error + Send + Sync>>` for `RuntimeError` | A: no; doc pointers | doc-only | approved |
+| G4-23 | User text in `Display` | A: documented exception for application and OS text | doc-only | approved |
+| G4-4 | Proposal: more derives on records | A: not adopted | none | approved |
+| G4-30 | `From` back to the raw number | B: add it to the six other validated scalars | additive | approved |
+| G5-11 | `SeriesSource` in the prelude | A: stays at the root, one exclusion sentence | doc-only | approved |
+| G5-16 | Parameter host sink and monitor types | B: they are "hosts"; 7 names join the prelude | additive | approved |
+| G5-26, G5-27, G5-14 | How far the prelude rule reaches | D: names a consumer writes or keeps go to a new `pert_ui::component` module (about 26 names), not the prelude; `IgnoredEntry` joins the application prelude; follows slice 9's smaller prelude | additive | approved |
+| G5-30 | `WindowError` in the facade prelude | B: add it under `native` | additive | approved |
+| G5-32 | A testing prelude | A: none until it owns F2's helpers, root pointers instead; `ApplicationError` joins the prelude | doc-only, plus 1 additive name | approved |
 
 ## G1
 
