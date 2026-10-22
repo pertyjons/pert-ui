@@ -9,10 +9,12 @@ including those whose destination was app-author slice 9 or the follow-ups.
 The [lint survey](lints/survey.md) and the [diagnostics
 survey](diagnostics/survey.md) recommendations are adopted.
 
-The plan closes 127 audit findings, 53 decisions and 36 round 1 findings.
-Each appears exactly once, as closed by one part; the [coverage
+The plan closes 127 audit findings, 53 decisions and 36 round 1 findings,
+and two diagnostics-survey cases that no finding carries (`S:m06`,
+`S:l06`). Each appears exactly once, as closed by one part; the [coverage
 table](#coverage) at the end lists them sorted by ID. A decision is written
-`D:` followed by the IDs of its heading in decisions.md. A finding a decision
+`D:` followed by the IDs of its heading in decisions.md; `S:` names a case
+of the diagnostics survey. A finding a decision
 answers follows the decision; a decision that is "not adopted" closes its
 finding with no change (G4-4). An F-number an audit finding already covers is
 closed in the same part, and its line says so.
@@ -29,10 +31,11 @@ changed since the audited commit d4ba108.
   commits) with an independent Codex review (`codex exec -s read-only`)
   before it is called done, as the plan's working rules require. A part
   builds on the previous one in the order below.
-- **Versions.** Slice 5 takes one workspace patch version for its four
-  parts: 5a bumps it and opens the CHANGELOG entry, 5b to 5d extend that
-  entry. Each slice 6 part takes its own patch version. A bump updates the
-  workspace version, the internal version requirements and `Cargo.lock`.
+- **Versions.** Every part changes a packaged file, so every part, slice
+  5's included, takes its own workspace patch version and its own CHANGELOG
+  entry. This refines the developer-usability plan's per-slice version rule
+  to one version per reviewed part. A bump updates the workspace version,
+  the internal version requirements and `Cargo.lock`.
 - **CHANGELOG.** Every entry names each item the part's `api/` diff adds,
   removes or changes. A breaking change is a `Breaking:` entry with its
   replacement usage, as the plan's working rules require; while the library
@@ -67,21 +70,23 @@ changed since the audited commit d4ba108.
 | Part | Content | Version | Breaking |
 |---|---|---|---|
 | 5a | Rules: contracts.md and AGENTS.md | 0.3.53 | no |
-| 5b | Item rustdoc | 0.3.53 | no |
-| 5c | Guide and recipes | 0.3.53 | no |
-| 5d | Facade spelling in examples | 0.3.53 | no |
-| 6a1 | Construction and builders | 0.3.54 | yes |
-| 6a2 | Names and roles | 0.3.55 | yes |
-| 6a3 | Types and traits | 0.3.56 | yes (`#[non_exhaustive]`, `!Send`) |
-| 6b1 | Lints and `#[must_use]` | 0.3.57 | no |
-| 6b2 | `Debug` everywhere | 0.3.58 | no |
-| 6c1 | Error values | 0.3.59 | yes |
-| 6c2 | Compiler diagnostics | 0.3.60 | no |
-| 6d1 | Redescription and reconciliation | 0.3.61 | yes (behavior) |
-| 6d2 | Editors, data and defects | 0.3.62 | yes |
-| 6e | Prelude and `component` module | 0.3.63 | no |
-| 6f1 | Testing and window close | 0.3.64 | yes (behavior, F4) |
-| 6f2 | Editing and collection capabilities | 0.3.65 | no |
+| 5b | Item rustdoc | 0.3.54 | no |
+| 5c | Guide and recipes | 0.3.55 | no |
+| 5d | Facade spelling in examples | 0.3.56 | no |
+| 6a1 | Construction and builders | 0.3.57 | yes |
+| 6a2 | Names and roles | 0.3.58 | yes |
+| 6a3 | Types and traits | 0.3.59 | yes (`#[non_exhaustive]`, `!Send`) |
+| 6b1 | Lints and `#[must_use]` | 0.3.60 | no |
+| 6b2 | `Debug` for state owners, handles, contexts and backends | 0.3.61 | no |
+| 6b3 | `Debug` for descriptions; the lint denied | 0.3.62 | no |
+| 6c1 | Error values | 0.3.63 | yes |
+| 6c2 | Compiler diagnostics | 0.3.64 | no |
+| 6d1 | Redescription and reconciliation | 0.3.65 | yes (behavior) |
+| 6d2 | Editors, data and defects | 0.3.66 | yes |
+| 6e | Prelude and `component` module | 0.3.67 | no |
+| 6f1 | Testing and window close | 0.3.68 | yes (behavior, F4) |
+| 6f2 | Editing and collection capabilities | 0.3.69 | no |
+| 6f3 | Controlled controls | 0.3.70 | no |
 
 Constraints:
 - **Renames before the text and re-exports that name them.** 6a renames
@@ -93,8 +98,12 @@ Constraints:
 - **G4-11 before G4-13:** 6a3 derives `Eq` on `CpuRenderError`, which 6c1
   then reshapes.
 - **G4-15 gates G4-14:** both in 6c1, the `Copy` rule first.
-- **6b2 before the later parts:** once `missing_debug_implementations` is
-  denied, every new type of 6c to 6f carries `Debug`.
+- **6b2 and 6b3 before the later parts:** once 6b3 denies
+  `missing_debug_implementations`, every new type of 6c to 6f carries
+  `Debug`.
+- **G4-14 after 6a3 and before 6d2:** 6a3's `Eq` on `CpuRenderError` and
+  6d2's use of `TextEditError::InvalidSelection` (G1-11) meet the variant
+  shapes 6c1 sets.
 - **6c2 after 6a and 6c1:** the seal rename and the trait names are final
   before the trybuild snapshots are taken. 6e and 6f regenerate a snapshot
   only if a new re-export changes a message's path, and the diff is reviewed
@@ -116,8 +125,10 @@ Constraints:
   to it. F4's regression test needs F5's headless close (both 6f1). F34
   needs F2's helpers. 6f2's `CollectionFilter` policy follows 6d1's
   collection redescription, and `InlineText::session` follows 6d2's editor
-  changes.
-- **Round 2** (slice 7) runs on the branch head after 6f2.
+  changes. 6f3's controlled `InlineText` builds on 6f2's session and
+  list-row mode.
+- **Round 2** (slice 7) waits until every part, 6f3 included, is closed,
+  and runs on that branch head.
 
 ## Slice 5: documentation
 
@@ -133,8 +144,8 @@ decision approved). It writes only rules the code already follows.
   warning-free rustdoc).
 - **`api/` diff:** none.
 - **Breaking:** no.
-- **CHANGELOG:** "Documentation", opening the 0.3.53 entry.
-- **Version:** 0.3.53 (bumped here).
+- **CHANGELOG:** its own "Documentation" entry.
+- **Version:** 0.3.53.
 
 Closes 21 audit findings, 0 round 1 findings and 19 decisions.
 
@@ -201,8 +212,8 @@ G3-8, V3-3) change no listing.
   change, and `api/generate.sh` showing no difference.
 - **`api/` diff:** none.
 - **Breaking:** no.
-- **CHANGELOG:** "Documentation" in the 0.3.53 entry.
-- **Version:** 0.3.53.
+- **CHANGELOG:** its own "Documentation" entry.
+- **Version:** 0.3.54.
 
 Closes 16 audit findings, 8 round 1 findings and 5 decisions.
 
@@ -247,17 +258,18 @@ Decisions:
 ### 5c Guide and recipes
 
 Guide chapters (`F/guide/`): getting started, the worker example, the
-editable-list recipe, screenshots and the state chapter.
+editable-list recipe, large collections, screenshots and the state chapter,
+with the one `VirtualList::new` rustdoc line `S:l06` needs.
 
 - **Gate:** the rustdoc row: the guide's doctests, warning-free rustdoc,
   and the headless sessions of examples the recipe draws on.
 - **`api/` diff:** none.
 - **Breaking:** no.
-- **CHANGELOG:** "Documentation" in the 0.3.53 entry; F1's entry notes the
-  version test.
-- **Version:** 0.3.53.
+- **CHANGELOG:** its own "Documentation" entry; it notes F1's version
+  test.
+- **Version:** 0.3.55.
 
-Closes 2 audit findings, 6 round 1 findings and 0 decisions.
+Closes 2 audit findings, 6 round 1 findings, 0 decisions and 1 survey case.
 
 Audit findings:
 
@@ -273,6 +285,10 @@ Round 1 findings:
 - **F14:** A guide recipe for an editable, selectable, filterable list of records (`Vec` to `ListSource`, `ListFilter`, `VirtualList` with `ListSelection`, `on_activate`, `reorderable`, per-row controls), linked from "Children from values".
 - **F28:** guide/state.md says signal values need `PartialEq` to be written and `Clone` to be read.
 
+Survey cases:
+
+- **S:l06:** `VirtualList::new` rustdoc and the guide's "Large collections" show the existing route: wrap the `ListItems` value in `ListSource::new`; no new API.
+
 ### 5d Facade spelling in examples
 
 A mechanical sweep of the runtime's and core's example blocks (276 of 310
@@ -285,10 +301,10 @@ and one doctest, then applies it.
   facade pages for remaining `pert_ui_runtime::` imports.
 - **`api/` diff:** none.
 - **Breaking:** no.
-- **CHANGELOG:** "Documentation" in the 0.3.53 entry.
-- **Version:** 0.3.53.
+- **CHANGELOG:** its own "Documentation" entry.
+- **Version:** 0.3.56.
 
-Closes 1 audit findings, 1 round 1 findings and 0 decisions.
+Closes 1 audit finding, 1 round 1 finding and 0 decisions.
 
 Audit findings:
 
@@ -323,9 +339,9 @@ different types, so an old call fails to compile rather than misbinding.
 - **Breaking:** yes.
 - **CHANGELOG:** `Breaking:` entries with replacement usage; "Added" for
   the constants and `SizeLimits::exact`.
-- **Version:** 0.3.54.
+- **Version:** 0.3.57.
 
-Closes 11 audit findings, 1 round 1 findings and 6 decisions.
+Closes 11 audit findings, 1 round 1 finding and 6 decisions.
 
 Audit findings:
 
@@ -359,9 +375,15 @@ Decisions:
 Renames for reads, roles, units and families, the typed flags of G3-11, and
 the wgpu renderer's extent.
 
-- **Gate:** the public-API row, plus a native GPU run on Linux
-  (`cargo run --locked -p pert-ui-native-checks`, platform recorded),
-  because G3-6 changes the renderer interop the native path uses.
+- **Gate:** the dependency, feature, platform and release row, because
+  G3-6 changes the renderer interop the native path uses: the workspace
+  gate, the release-profile tests, the MSRV, every supported feature
+  configuration AGENTS.md lists (no default features, the image, SVG,
+  serde, CPU and CPU-only desktop configurations, the headless gallery),
+  the API listing gate, library packaging and the packaged-consumer check,
+  and the native checks (`cargo run --locked -p pert-ui-native-checks`) on
+  Linux with the platform recorded. Windows and macOS evidence, not
+  available here, is recorded as missing in the native evidence record.
 - **`api/` diff:** every renamed item; `FocusDirection` and the two other
   new flag enums; the changed `tab_navigation`, `focus_next`,
   `request_reveal`, `TextSelection::{moved, at_point}`,
@@ -370,7 +392,7 @@ the wgpu renderer's extent.
   constants; `PendingJump::receipt`.
 - **Breaking:** yes.
 - **CHANGELOG:** `Breaking:` entries with replacement usage.
-- **Version:** 0.3.55.
+- **Version:** 0.3.58.
 
 Closes 18 audit findings, 0 round 1 findings and 9 decisions.
 
@@ -421,7 +443,7 @@ do not touch the protocols, but the part runs the loom models anyway.
   twelve types and for code sending `Divider` or `Svg`.
 - **CHANGELOG:** "Added" for the impls; `Breaking:` for
   `#[non_exhaustive]` and `!Send`.
-- **Version:** 0.3.56.
+- **Version:** 0.3.59.
 
 Closes 12 audit findings, 0 round 1 findings and 4 decisions.
 
@@ -462,9 +484,9 @@ the survey recommends.
 - **`api/` diff:** none expected; the listing does not show `#[must_use]`.
 - **Breaking:** no; consumers may see new `unused_must_use` warnings.
 - **CHANGELOG:** "Changed".
-- **Version:** 0.3.57.
+- **Version:** 0.3.60.
 
-Closes 5 audit findings, 1 round 1 findings and 1 decisions.
+Closes 5 audit findings, 1 round 1 finding and 1 decision.
 
 Audit findings:
 
@@ -482,13 +504,20 @@ Decisions:
 
 - **D:G2-8:** Applied: `#[must_use]` only where dropping hides an otherwise unreported outcome (G2-8).
 
-### 6b2 `Debug` everywhere
+### 6b2 `Debug` for state owners, handles, contexts and backends
 
-Hand-written `Debug` for the 108 types the lint reports and the rest of
-G4-1's list, then `missing_debug_implementations = "deny"` in
-`[workspace.lints.rust]` and in AGENTS.md's lint sentence. If the diff is
-too large for one sitting, it splits into state owners and handles, then
-descriptions and contexts, with the lint denied in the second.
+The first half of G4-1, the group the audit rated medium: the state owners
+and handles an application stores (`ListSelection`, `ListController`,
+`ListFilter`, `TableController`, `TreeController`, `FieldHandle`,
+`FormStatus` under its 6a2 name, `ContextMenuController`, `ThemeManager`,
+`FontManager`, `IconManager`, `UiSettings`, `NumberFormat<T>`,
+`FilterTarget`, `ChildInfo`, `Runtime`), the callback contexts
+(`EventContext`, `UpdateContext`, `MeasureContext`, `ArrangeContext`,
+`DescribeContext`, `CellEdit`, `Painter`) and the backends
+(`VectorRasterizer`, `pert_ui_wgpu::Renderer`, `pert_ui::App`). Each is a
+hand-written `finish_non_exhaustive` form that names callbacks without
+formatting them and puts no `Debug` bound on application values. G4-1
+closes in 6b3.
 
 - **Gate:** the public-API row, with Clippy in every CI feature
   configuration.
@@ -496,34 +525,59 @@ descriptions and contexts, with the lint denied in the second.
   listing that has the type.
 - **Breaking:** no.
 - **CHANGELOG:** "Added".
-- **Version:** 0.3.58.
+- **Version:** 0.3.61.
 
-Closes 1 audit findings, 0 round 1 findings and 0 decisions.
+Closes no ID.
+
+### 6b3 `Debug` for descriptions; the lint denied
+
+The rest of G4-1, then `missing_debug_implementations = "deny"` in
+`[workspace.lints.rust]` and in AGENTS.md's lint sentence.
+
+- **Gate:** the public-API row, with Clippy in every CI feature
+  configuration.
+- **`api/` diff:** an `impl core::fmt::Debug for …` line per type in every
+  listing that has the type.
+- **Breaking:** no.
+- **CHANGELOG:** "Added".
+- **Version:** 0.3.62.
+
+Closes 1 audit finding, 0 round 1 findings and 0 decisions.
 
 Audit findings:
 
-- **G4-1:** Hand-written `finish_non_exhaustive` `Debug` on the 113 types, state owners first, callbacks named and not formatted, no `Debug` bound on application values; `missing_debug_implementations` denied.
+- **G4-1:** Hand-written `finish_non_exhaustive` `Debug` on the remaining types (widget and container descriptions, `Dynamic`, `Each`, `Element`, `pert_ui::Svg`), completing the 113 with 6b2; `missing_debug_implementations` denied.
 
 ### 6c1 Error values
 
-Error payloads, sources and variant consolidation.
+Error payloads, sources and variant consolidation. G4-15's decision keeps
+only the argument variants it names unit (`GeometryError`'s,
+`LayoutError::{InvalidWeight, InvalidRatio}` and
+`ParameterError::{InvalidRange, OutOfRange, OffLattice}`); every other
+variant in G4-14's row carries the rejected value or identity. A
+floating-point payload removes `Eq` from its enum and from any enum that
+holds it, which the error policy permits ("where their data permits"); the
+CHANGELOG names each lost `Eq` and `Copy`. `LiveError` lives in
+`pert-ui-core`'s `live` module; its payload does not touch the protocols,
+but the part runs the loom models.
 
-- **Gate:** the public-API row.
+- **Gate:** the public-API row, plus the loom models.
 - **`api/` diff:** variant fields of the listed errors; `Copy` impls of
-  `LayoutError` and `ParameterError` removed; `LimitError::CaptureSize`
-  removed; `Limit` variants on `CpuRenderError` and `CaptureError`.
+  `LayoutError` and `ParameterError` removed, and any `Eq` impl a float
+  payload removes; `LimitError::CaptureSize` removed; `Limit` variants on
+  `CpuRenderError` and `CaptureError`.
 - **Breaking:** yes.
 - **CHANGELOG:** `Breaking:` entries with the new match patterns; the
   changed `Display` texts and `CaptureError`'s serde form noted.
-- **Version:** 0.3.59.
+- **Version:** 0.3.63.
 
-Closes 4 audit findings, 1 round 1 findings and 1 decisions.
+Closes 4 audit findings, 1 round 1 finding and 1 decision.
 
 Audit findings:
 
 - **G4-12:** `WorkspaceError::Participant` drops `{source}` from its message (`workspace.rs:643`); `RestoreRejection::{State, Runtime}` gain `#[source]` and drop `: {0}` (`:702`, `:712`).
 - **G4-13:** One variant for `FrameImage::MAX_BYTES`: `LimitError::FrameSize` absorbs `CaptureSize`; `CpuRenderError::TooLarge` and `CaptureError::TooLarge` become `Limit(LimitError)`; the CPU reservation failure gets its own variant; `LimitError`'s rustdoc corrected.
-- **G4-14:** Values carried and named in `Display` by `RuntimeError::{AmbiguousKey, DuplicateKey, ChildTypeChanged, ShortcutConflict}`, `LayoutError`'s key variants, `FontError::UnknownIcon`, `ParameterError::{DuplicateOption, UnknownOption}`, `ChoiceError::DuplicateValue`, `ImageError::Io` and `ListingError`; argument variants stay unit.
+- **G4-14:** Identity payloads named in `Display`: `RuntimeError::{AmbiguousKey, DuplicateKey, ChildTypeChanged, ShortcutConflict}`, `LayoutError`'s key variants, `FontError::UnknownIcon`, `ParameterError::{DuplicateOption, UnknownOption}`, `ChoiceError::DuplicateValue`, `ImageError::Io`/`ListingError` paths; rejected values in `LiveError::CapacityExceeded`, `NormalizedValueError::OutOfRange`, `NumberInputError::{InvalidRange, InvalidStep, InvalidPrecision, OutOfRange, OffStep}`, `DrawError::InvalidImage`, `PathError::InvalidParameter`, `FontError::MissingGlyph`, `NumberLocaleError::SameSeparators`, `TextEditError::{InvalidComposition, InvalidSelection}`; only the argument variants D:G4-15 names stay unit.
 - **G4-15:** `LayoutError` and `ParameterError` lose `Copy`, `GeometryError` and `ChoiceError` keep it; "Error policy" states the payload rule.
 
 Round 1 findings:
@@ -547,21 +601,42 @@ The diagnostics survey's recommendations, which carry no finding ID:
   (`F/app.rs:167`), with the accepted error types listed in `AppError`'s
   rustdoc (F11).
 - A `compile_fail` doctest proving `StateOwner` cannot be implemented.
-- A `publish = false` workspace member holding `trybuild` snapshot tests of
-  the cases whose message pert-ui shapes: c01, c06, i03, l01, l05, t01, b01,
-  r01, k01, s01, s02 and m03/m04. It runs in its own CI job on the pinned
-  toolchain on Linux only and is regenerated with `TRYBUILD=overwrite` at a
-  toolchain bump, reviewed like the `api/` listing.
-- AGENTS.md's gate table and commands, `ci.yml` and the packaging command
-  (which excludes the new member) change together; `docs/verification.md`
-  says that a `compile_fail` doctest does not check the error code on
-  stable.
+- `#[doc(alias)]` on `Modifiers` (`S:m06`) and its rustdoc example.
+- A new `publish = false` workspace member, `tests/diagnostics` (package
+  `pert-ui-diagnostics`, `[lints] workspace = true`), whose only
+  dev-dependency is `trybuild`. It holds one test function with the
+  snapshot cases whose message pert-ui shapes: c01, c06, i03, l01, l05, t01,
+  b01, r01, k01, s01, s02, m03/m04 and m06, each a `ui/*.rs` file with a
+  committed `.stderr`.
+- **How ordinary runs exclude it:** the test function is
+  `#[ignore = "compiler wording; run by the diagnostics job on the pinned
+  toolchain"]`. `cargo test --locked --workspace`, the release-profile
+  `cargo test --locked --release --workspace`, the stable matrix on Linux,
+  macOS and Windows and the MSRV job therefore compile it and skip it.
+  Clippy with `--all-targets` still lints it.
+- **The dedicated job:** a separate CI job on Linux with the toolchain
+  `rust-toolchain.toml` pins runs
+  `cargo test --locked -p pert-ui-diagnostics -- --ignored`. A toolchain
+  bump regenerates the snapshots with `TRYBUILD=overwrite` and the same
+  command, and the `.stderr` diff is reviewed like the `api/` listing.
+- **Kept in step in this commit:** `.github/workflows/ci.yml` (the new job,
+  and `--exclude pert-ui-diagnostics` in the packaging step); AGENTS.md's
+  gate table, the workspace-gate commands (the new command) and the
+  packaging command `cargo package --locked --workspace --exclude
+  pert-ui-gallery --exclude pert-ui-native-checks --exclude
+  pert-ui-diagnostics`; the kit's packaging command in
+  `plans/usability/run.sh:81`, which gains the same `--exclude`; and
+  `docs/verification.md`, which also says that a `compile_fail` doctest
+  does not check the error code on stable.
 
 Records for the part:
 
 - **Gate:** the dependency row (a new dev-dependency, a workspace member
-  and a CI job): workspace checks, MSRV, the supported feature
-  configurations, the API listing gate, and packaging and consumer checks.
+  and a CI job): the workspace gate, the release-profile tests, the MSRV,
+  every supported feature configuration AGENTS.md lists, the API listing
+  gate, library packaging with the new exclusion and the packaged-consumer
+  check, and the dedicated diagnostics command run locally on the pinned
+  toolchain.
   `trybuild` is not in the local registry cache, so fetching it needs
   network access.
 - **`api/` diff:** `StateOwner`'s supertrait path changes to the renamed
@@ -569,13 +644,17 @@ Records for the part:
 - **Breaking:** no; the seal is private.
 - **CHANGELOG:** "Changed" for the messages; the new check described under
   tooling.
-- **Version:** 0.3.60.
+- **Version:** 0.3.64.
 
-Closes 0 audit findings, 1 round 1 findings and 0 decisions.
+Closes 0 audit findings, 1 round 1 finding, 0 decisions and 1 survey case.
 
 Round 1 findings:
 
 - **F11:** Closed by `#[diagnostic::do_not_recommend]` on `impl<E> From<E> for AppError` (`F/app.rs:167`), the accepted error types listed in `AppError`'s rustdoc, and G4-21's `DrawError` route.
+
+Survey cases:
+
+- **S:m06:** `#[doc(alias("CONTROL", "CTRL", "COMMAND", "CMD"))]` on `Modifiers::PRIMARY` (the measured rustc suggestion) and `CONTROL`/`CTRL`, `ALT`, `SHIFT`, `SUPER` aliases on the matching fields; `PRIMARY` says it is Command on macOS; a rustdoc example builds `Modifiers` from its fields; trybuild case m06.
 
 ### 6d1 Redescription and reconciliation
 
@@ -589,7 +668,7 @@ Behavior of retained components under redescription.
   and callbacks.
 - **CHANGELOG:** `Breaking:` behavior entries saying what now follows a
   redescription; AGENTS.md's reconciliation sentence changes with G2-13.
-- **Version:** 0.3.61.
+- **Version:** 0.3.65.
 
 Closes 5 audit findings, 0 round 1 findings and 2 decisions.
 
@@ -620,9 +699,9 @@ Behavior fixes with regression tests, and the signature changes they need.
   `on_rejection` in new cases, F21's descriptions, F22's chords, F29's
   empty label height, F26's field address).
 - **CHANGELOG:** `Breaking:` entries; "Fixed" for the defects.
-- **Version:** 0.3.62.
+- **Version:** 0.3.66.
 
-Closes 7 audit findings, 7 round 1 findings and 1 decisions.
+Closes 7 audit findings, 7 round 1 findings and 1 decision.
 
 Audit findings:
 
@@ -661,9 +740,9 @@ make ambiguous. G5-6's prelude-page list drops the names that now join.
   in both preludes.
 - **Breaking:** no.
 - **CHANGELOG:** "Added", listing every name.
-- **Version:** 0.3.63.
+- **Version:** 0.3.67.
 
-Closes 24 audit findings, 1 round 1 findings and 5 decisions.
+Closes 24 audit findings, 1 round 1 finding and 5 decisions.
 
 Audit findings:
 
@@ -685,7 +764,7 @@ Audit findings:
 - **G5-22:** Prelude gains `ListingErrorKind`, `LinkTarget`.
 - **G5-23:** Prelude gains `WorkspaceSettings`, `WorkspaceValue`, `IgnoredEntry`.
 - **G5-24:** Prelude gains `WindowPlacement`.
-- **G5-25:** The three guarantee sentences (`R/lib.rs:324-326`, `F/lib.rs:53-55`, `F/root.md:39-40`) point to `component`; 5a narrowed them meanwhile.
+- **G5-25:** The three guarantee sentences (`R/lib.rs:324-326`, `F/lib.rs:53-55`, `F/root.md:39-40`) point to `component`; 5b narrowed them meanwhile.
 - **G5-26:** New `pert_ui_runtime::component` and `pert_ui::component` re-export modules: `Component`, the prelude's component names and the decision's 26 names, plus `EditorSession` and `EditorStart`.
 - **G5-27:** Its one-hop names join `component` by the rule (receipts, `TaskStatus`, `NativeWindowOptions`, `NativeWindowId`, `ShortcutBinding`, `ShortcutScope`); `FittedText` not required; `ProfileSnapshot` stays out.
 - **G5-28:** `NativeWindowId` in the facade prelude under `native` (`F/lib.rs:71`).
@@ -717,16 +796,21 @@ and a CPU capture. F2's doc sub-items are the `inspection_id` example
 (switched to `query`), `text_input("")` being a no-op, the caret position
 after `focus`, when input is settled, and a `pointer_input` example.
 
-- **Gate:** the public-API row, the packaged examples' headless sessions
-  (F34 changes them), and a native close check on Linux for F4, which
-  changes the platform close path (platform recorded).
+- **Gate:** the dependency, feature, platform and release row, because F4
+  changes the native close path: the workspace gate, the release-profile
+  tests, the MSRV, every supported feature configuration AGENTS.md lists,
+  the API listing gate, library packaging and the packaged-consumer check,
+  the packaged examples' headless sessions (F34 changes them), and the
+  native checks plus a hand check of closing a window with a focused draft
+  on Linux, with the platform recorded. Windows and macOS evidence, not
+  available here, is recorded as missing in the native evidence record.
 - **`api/` diff:** the `testing` module's items in the runtime and facade
   listings; `App`'s headless close entry.
 - **Breaking:** in behavior: a close request commits valid focused drafts
   before `App::on_close` runs.
 - **CHANGELOG:** "Added" for the module and entry; `Breaking:` for F4's
   behavior.
-- **Version:** 0.3.64.
+- **Version:** 0.3.68.
 
 Closes 0 audit findings, 4 round 1 findings and 0 decisions.
 
@@ -740,37 +824,56 @@ Round 1 findings:
 ### 6f2 Editing and collection capabilities
 
 Capabilities the round 1 testers had to build themselves. A design
-checkpoint comes first, as in 6f1. F16's controlled controls must specify
-refusal, optimistic presentation and callback timing in contracts.md before
-code, and use their own constructor path, as the choice-source convention
-requires. If the checkpoint shows F16 larger than one sitting, it becomes a
-part of its own after 6f2.
+checkpoint comes first, as in 6f1. `CollectionFilter`'s default keeps both
+documented branches (`collection_filter.rs:438-443`): with focus in the
+collection a hidden active item moves to the nearest remaining row, and
+without focus it stays hidden. The new policy applies only to the unfocused
+branch.
 
 - **Gate:** the public-API row.
 - **`api/` diff:** `InlineText::session` and the list-row mode builder;
-  `CollectionFilter`'s policy builder and its enum; the controlled
-  constructors and callbacks of `Checkbox` and `InlineText`;
-  `EventContext::spawn`.
+  `CollectionFilter`'s policy builder and its enum; `EventContext::spawn`.
 - **Breaking:** no.
 - **CHANGELOG:** "Added".
-- **Version:** 0.3.65.
+- **Version:** 0.3.69.
 
-Closes 0 audit findings, 5 round 1 findings and 0 decisions.
+Closes 0 audit findings, 4 round 1 findings and 0 decisions.
 
 Round 1 findings:
 
-- **F7b:** An opt-in hidden-selection policy on `CollectionFilter` (keep by default, move to `nearest_active`, or clear), with tests.
-- **F13:** `EventContext::spawn`, starting background work from a callback as `Runtime::spawn` does; 5b's guide example switches to it.
+- **F7b:** `CollectionFilter` gains an opt-in policy for a filter change that hides the active item while the collection lacks focus (default keeps today's rule: it stays hidden; options move it to `nearest_active` or clear it); the focused branch (`collection_filter.rs:438-443`) is unchanged; tests for focused and unfocused filtering under every policy.
+- **F13:** `EventContext::spawn`, starting background work from a callback as `Runtime::spawn` does; 5c's guide example switches to it.
 - **F15:** `InlineText::session(&EditorSession)` lets code begin a row's rename; `Runtime::key_input` says a synthesized press of a held key is a repeat.
-- **F16:** Controlled forms of `Checkbox` and `InlineText` (a value plus a change callback), with refusal, optimistic presentation and callback timing in contracts.md; `ListItems::build` points to them.
 - **F27:** An `InlineText` list-row mode: a single press reaches the row, a press on the selected row or a double-click edits; the default press behavior documented.
+
+### 6f3 Controlled controls
+
+F16's controlled `Checkbox` and `InlineText`. A design checkpoint comes
+first, reviewed by Codex and approved by the maintainer: contracts.md
+specifies refusal, optimistic presentation and callback timing before any
+code, and the controlled forms take their own constructor path, as the
+choice-source convention requires (`new` fixed, `bound` reactive; a
+controlled source is a third, exclusive constructor).
+
+- **Gate:** the public-API row.
+- **`api/` diff:** the controlled constructors and callbacks of `Checkbox`
+  and `InlineText`.
+- **Breaking:** no.
+- **CHANGELOG:** "Added".
+- **Version:** 0.3.70.
+
+Closes 0 audit findings, 1 round 1 finding and 0 decisions.
+
+Round 1 findings:
+
+- **F16:** Controlled forms of `Checkbox` and `InlineText` (a value plus a change callback) on their own constructor path, with refusal, optimistic presentation and callback timing specified in contracts.md first; `ListItems::build` points to them.
 
 ## Plans and records this plan changes
 
 - **App-author slice 9** (`plans/app-author-improvements.md`, slice 9 and
   its inputs). Each part that fixes an input removes it there:
   - F1 (5c), F9 (5c), F14 (5c), F20 (5d), F3 (6e), F2 (6f1), F13 (6f2) and
-    F16 (6f2) leave the input list.
+    F16 (6f3) leave the input list.
   - Slice 9's bullet "a chapter on headless testing and CPU captures" is
     met by 6f1.
   - The mixer-probe names: `CommandScope`, `KeyChord`, `CommandSource`,
@@ -784,8 +887,8 @@ Round 1 findings:
 - **Follow-ups** (`plans/follow-ups.md`):
   - "Sessions for more editors": 6f2 removes `InlineText` and the F15
     evidence; the other editors stay.
-  - "Controlled controls": 6f2 removes it, or narrows it to the controls F16
-    does not cover.
+  - "Controlled controls": 6f3 narrows it to the controls F16 does not
+    cover, or removes it if none remain.
   - 5b adds a sendable font key for styled text (G4-7).
   - Destinations that never became entries need nothing: F2's helper type,
     F5's driver, F7b's policy, F13's convenience, F27's row mode and F24's
@@ -797,6 +900,8 @@ Round 1 findings:
   - TOOL-01 (`tool_windows/mod.rs`) in 6a1 and 6a2;
   - the `docs/verification.md` gate-block entry in 6c2, which changes the
     gate;
+  - NATIVE-01 to NATIVE-05, beside which 6a2 and 6f1 record their missing
+    Windows and macOS evidence;
   - the `FrameImage::encode_png` entry in 6c1 and 6d2 (`capture.rs`).
 
   G4-22 asks to update F30's TODO.md entry, but none exists, so nothing is
@@ -819,23 +924,22 @@ chose, for the maintainer to confirm or change before the part starts:
 - **G3-14:** the new name for `FormStatus`; `FormFields` is a placeholder.
 - **G3-15:** `PendingJump` keeps its name and exposes its receipt.
 - **G4-13:** a `Limit(LimitError)` payload rather than a policy exception.
-- **G4-14:** argument-validation variants of every enum in the row stay unit
-  under G4-15's rule, not only those of the four enums the decision names.
 - **G4-25:** normalizing in `describe_component` rather than private
   fields.
 - **F18:** the documentation follows the runtime; Escape keeps not calling
   `cancel_input`.
 - **F21, F22, F29:** behavior changes rather than documentation only.
+- **F7b:** the policy applies only when the collection lacks focus; the
+  focused branch keeps moving the active item.
 - **F26 and F31:** the wrapper becomes a slot, rather than reserving the
   key `filter`.
 
 Not placed, because no decision or finding asks for them:
 - `clippy::must_use_candidate` (79 getters): a getter policy the survey
   leaves to the maintainer.
-- The diagnostics survey's m06 (`#[doc(alias)]` on `Modifiers::PRIMARY`, or
-  `Modifiers::SHIFT`/`CONTROL`/`ALT`/`SUPER` constants, which triage
-  suggested for follow-ups) and l06 (passing a `ListItems` value straight to
-  `VirtualList::new`), which the survey calls API questions.
+- New `Modifiers::SHIFT`/`CONTROL`/`ALT`/`SUPER` constants, which triage
+  suggested for follow-ups: `S:m06` routes those guesses through
+  `#[doc(alias)]` and an example instead.
 - Proposals inside rows the plan does not adopt: `Borrow<str>` for
   `ChoiceId` (G4-27), a `previous` field in `ExpansionChange` (G2-16), and a
   two-dimensional `SemanticValue` variant (F24), which would raise
@@ -845,7 +949,8 @@ Not placed, because no decision or finding asks for them:
 
 ## Coverage
 
-All 216 IDs, sorted by ID. `D:` rows are decisions.
+All 218 IDs, sorted by ID. `D:` rows are decisions; `S:` rows are
+diagnostics-survey cases.
 
 | ID | Part | Action |
 |---|---|---|
@@ -909,17 +1014,17 @@ All 216 IDs, sorted by ID. `D:` rows are decisions.
 | F5 | 6f1 | A headless entry that runs `App`'s `on_close` policy for a window and returns its decision; `Runtime::request_close` and `take_presentation_requests` say how a non-`App` host completes a close. |
 | F6 | 6d2 | Closed by G2-20's `on_rejection` route. |
 | F7a | 5c | `CollectionFilter` "Selection and focus" and F14's recipe show how to tell that the selected row is hidden (`ListFilter::items()`, `ListItems::index_of`, `ListSelection::active`). |
-| F7b | 6f2 | An opt-in hidden-selection policy on `CollectionFilter` (keep by default, move to `nearest_active`, or clear), with tests. |
+| F7b | 6f2 | `CollectionFilter` gains an opt-in policy for a filter change that hides the active item while the collection lacks focus (default keeps today's rule: it stays hidden; options move it to `nearest_active` or clear it); the focused branch (`collection_filter.rs:438-443`) is unchanged; tests for focused and unfocused filtering under every policy. |
 | F7c | 5b | `FilterMatcher`, `ListFilter::filter`, `TableController::filter` and `TreeController::filter` say a non-blank query is trimmed before the matcher sees it, and point to `ListFilter::items()`. |
 | F8 | 5b | `Semantics::value`, `SemanticValue::Text` and `Label` say static text is the name and the value is an editable or stateful control's content. |
 | F9 | 5c | `Each`'s example adds a lookup through the default `items` segment (`described.rs:245-266`). |
 | F10 | 5c | guide/diagnostics.md "Screenshots" shows `CaptureTarget::window(&ui.primary_window())`. |
 | F11 | 6c2 | Closed by `#[diagnostic::do_not_recommend]` on `impl<E> From<E> for AppError` (`F/app.rs:167`), the accepted error types listed in `AppError`'s rustdoc, and G4-21's `DrawError` route. |
 | F12 | 5b | `Component::cancel_input` states that it runs outside evaluation phases, may restore the widget's own bindings, must not activate actions, and that a failed restore is recorded and returned through a `Notifier`; guide "Who may write" lists it. |
-| F13 | 6f2 | `EventContext::spawn`, starting background work from a callback as `Runtime::spawn` does; 5b's guide example switches to it. |
+| F13 | 6f2 | `EventContext::spawn`, starting background work from a callback as `Runtime::spawn` does; 5c's guide example switches to it. |
 | F14 | 5c | A guide recipe for an editable, selectable, filterable list of records (`Vec` to `ListSource`, `ListFilter`, `VirtualList` with `ListSelection`, `on_activate`, `reorderable`, per-row controls), linked from "Children from values". |
 | F15 | 6f2 | `InlineText::session(&EditorSession)` lets code begin a row's rename; `Runtime::key_input` says a synthesized press of a held key is a repeat. |
-| F16 | 6f2 | Controlled forms of `Checkbox` and `InlineText` (a value plus a change callback), with refusal, optimistic presentation and callback timing in contracts.md; `ListItems::build` points to them. |
+| F16 | 6f3 | Controlled forms of `Checkbox` and `InlineText` (a value plus a change callback) on their own constructor path, with refusal, optimistic presentation and callback timing specified in contracts.md first; `ListItems::build` points to them. |
 | F17 | 5b | Owner-contract bullets: an owner described again returns `true` from `retain_initial_children` or reconciles controller and child together; `begin` runs the owner's `cancel_input`, so a draft ends in `focus_within_changed(false)`. |
 | F18 | 5b | guide/custom-widgets.md:86-89 and guide/controls.md:11 corrected to what Escape does (the focused component's capture, timer and edit sessions end, then the key arrives; no `cancel_input`); `Runtime::key_input` and `EventContext::set_timer` say so. |
 | F19 | 6b1 | Closed by G2-7. |
@@ -999,7 +1104,7 @@ All 216 IDs, sorted by ID. `D:` rows are decisions.
 | G3-23 | 6a2 | `UiStrings::MAX_LENGTH` renamed `MAX_TEXT_BYTES` (`strings.rs:576`). |
 | G3-24 | 6a2 | `TaskStatus::Completed` renamed `Succeeded`. |
 | G3-25 | 6a2 | `NativeCloseAction::Defer(ReadSignal<Option<WindowCloseAction>>)` (`F/app.rs:207-210`); `diagram_editor/app.rs:891`, `:910-911` lose their comment. |
-| G4-1 | 6b2 | Hand-written `finish_non_exhaustive` `Debug` on the 113 types, state owners first, callbacks named and not formatted, no `Debug` bound on application values; `missing_debug_implementations` denied. |
+| G4-1 | 6b3 | Hand-written `finish_non_exhaustive` `Debug` on the remaining types (widget and container descriptions, `Dynamic`, `Each`, `Element`, `pert_ui::Svg`), completing the 113 with 6b2; `missing_debug_implementations` denied. |
 | G4-2 | 6a3 | `Hash` on the identities, keys and tokens listed, consistent with their `Eq` (`RequestTicket<K>` when `K: Hash`); no `Ord` added. |
 | G4-3 | 6a3 | The missing `Eq`/`Ord`/`PartialOrd`/`Hash` on `Capacity`, `PowerExponent`, `Magnification`, `UiZoom`, `ViewScale`, `PresentationRate`, `MaskImage` and `RasterImage`, as `NormalizedValue` does. |
 | G4-4 | 6a3 | No change: not adopted (D:G4-4). |
@@ -1012,7 +1117,7 @@ All 216 IDs, sorted by ID. `D:` rows are decisions.
 | G4-11 | 6a3 | `Eq` on `pert_ui_cpu::CpuRenderError`, `Clone` and `PartialEq` on `RedescriptionError` (`conformance.rs:12`). |
 | G4-12 | 6c1 | `WorkspaceError::Participant` drops `{source}` from its message (`workspace.rs:643`); `RestoreRejection::{State, Runtime}` gain `#[source]` and drop `: {0}` (`:702`, `:712`). |
 | G4-13 | 6c1 | One variant for `FrameImage::MAX_BYTES`: `LimitError::FrameSize` absorbs `CaptureSize`; `CpuRenderError::TooLarge` and `CaptureError::TooLarge` become `Limit(LimitError)`; the CPU reservation failure gets its own variant; `LimitError`'s rustdoc corrected. |
-| G4-14 | 6c1 | Values carried and named in `Display` by `RuntimeError::{AmbiguousKey, DuplicateKey, ChildTypeChanged, ShortcutConflict}`, `LayoutError`'s key variants, `FontError::UnknownIcon`, `ParameterError::{DuplicateOption, UnknownOption}`, `ChoiceError::DuplicateValue`, `ImageError::Io` and `ListingError`; argument variants stay unit. |
+| G4-14 | 6c1 | Identity payloads named in `Display`: `RuntimeError::{AmbiguousKey, DuplicateKey, ChildTypeChanged, ShortcutConflict}`, `LayoutError`'s key variants, `FontError::UnknownIcon`, `ParameterError::{DuplicateOption, UnknownOption}`, `ChoiceError::DuplicateValue`, `ImageError::Io`/`ListingError` paths; rejected values in `LiveError::CapacityExceeded`, `NormalizedValueError::OutOfRange`, `NumberInputError::{InvalidRange, InvalidStep, InvalidPrecision, OutOfRange, OffStep}`, `DrawError::InvalidImage`, `PathError::InvalidParameter`, `FontError::MissingGlyph`, `NumberLocaleError::SameSeparators`, `TextEditError::{InvalidComposition, InvalidSelection}`; only the argument variants D:G4-15 names stay unit. |
 | G4-15 | 6c1 | `LayoutError` and `ParameterError` lose `Copy`, `GeometryError` and `ChoiceError` keep it; "Error policy" states the payload rule. |
 | G4-16 | 5b | `# Errors` sections of every item in the row list the reachable phase errors or link `Signal::set`'s list, per the author's resolutions D2-D4. |
 | G4-17 | 5b | `# Errors` sections of every item in the row name their variants, with a shared binding-family paragraph where many share them. |
@@ -1053,7 +1158,7 @@ All 216 IDs, sorted by ID. `D:` rows are decisions.
 | G5-22 | 6e | Prelude gains `ListingErrorKind`, `LinkTarget`. |
 | G5-23 | 6e | Prelude gains `WorkspaceSettings`, `WorkspaceValue`, `IgnoredEntry`. |
 | G5-24 | 6e | Prelude gains `WindowPlacement`. |
-| G5-25 | 6e | The three guarantee sentences (`R/lib.rs:324-326`, `F/lib.rs:53-55`, `F/root.md:39-40`) point to `component`; 5a narrowed them meanwhile. |
+| G5-25 | 6e | The three guarantee sentences (`R/lib.rs:324-326`, `F/lib.rs:53-55`, `F/root.md:39-40`) point to `component`; 5b narrowed them meanwhile. |
 | G5-26 | 6e | New `pert_ui_runtime::component` and `pert_ui::component` re-export modules: `Component`, the prelude's component names and the decision's 26 names, plus `EditorSession` and `EditorStart`. |
 | G5-27 | 6e | Its one-hop names join `component` by the rule (receipts, `TaskStatus`, `NativeWindowOptions`, `NativeWindowId`, `ShortcutBinding`, `ShortcutScope`); `FittedText` not required; `ProfileSnapshot` stays out. |
 | G5-28 | 6e | `NativeWindowId` in the facade prelude under `native` (`F/lib.rs:71`). |
@@ -1061,6 +1166,8 @@ All 216 IDs, sorted by ID. `D:` rows are decisions.
 | G5-30 | 6e | `WindowError` in the facade prelude under `native`; the sentence becomes "`App` and everything it reports, errors included". |
 | G5-31 | 5b | The facade prelude says its native members come with `native`, enabled by `desktop` and `desktop-cpu` (`F/lib.rs:50-51`, `:59`). |
 | G5-32 | 6e | `ApplicationError` joins the runtime prelude under the constructed-error sentence; testing names wait for 6f1's module. |
+| S:l06 | 5c | `VirtualList::new` rustdoc and the guide's "Large collections" show the existing route: wrap the `ListItems` value in `ListSource::new`; no new API. |
+| S:m06 | 6c2 | `#[doc(alias("CONTROL", "CTRL", "COMMAND", "CMD"))]` on `Modifiers::PRIMARY` (the measured rustc suggestion) and `CONTROL`/`CTRL`, `ALT`, `SHIFT`, `SUPER` aliases on the matching fields; `PRIMARY` says it is Command on macOS; a rustdoc example builds `Modifiers` from its fields; trybuild case m06. |
 | V3-1 | 6d2 | `TableColumn::MIN_WIDTH` states the saturated-coordinate exception, `table_columns.rs:577` asserts it, the comment at `table.rs:332` corrected. |
 | V3-2 | 6d2 | Workspace restore rejects a stored column width below `MIN_WIDTH` (`table.rs:2028`, `:2075`) with the restore path's out-of-range error; rejection test. |
 | V3-3 | 5b | `TextField`/`TextArea::{min_length, max_length}` take a parameter named `graphemes` and say the unit first (`text_fields.rs:450-458`). |
