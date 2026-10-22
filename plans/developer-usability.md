@@ -835,3 +835,12 @@ A recheck found three remaining points: an unpropagated correction in
 G4-30, the diagnostics survey's universal conclusion, and the policy
 index's claimed coverage. They were fixed, and the second recheck
 approved.
+
+The joint checkpoint (2026-10-22): Codex reviewed the recommended policy
+decisions and approved them after two rechecks, which corrected among other
+things G2-13's evidence gate, G4-8/9's boundary, G4-6's compatibility
+reasoning, G5-26's module scope and several call-site counts. The
+maintainer approved all decisions as recommended and chose to fix every
+audit finding and every round 1 finding. Codex reviewed the fix plan and
+approved it after two rechecks (per-part versions, platform gates, the
+trybuild exclusion, F7b's default, the survey cases m06 and l06).
