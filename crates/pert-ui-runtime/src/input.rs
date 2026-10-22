@@ -5,7 +5,7 @@ use std::collections::{BTreeMap, BTreeSet};
 /// Letter names describe conventional physical positions, not text input.
 /// A platform adapter translates native codes into these owned identifiers.
 /// Additional keys use an opaque platform-scoped native code; do not persist it.
-#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[non_exhaustive]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum KeyCode {
@@ -299,7 +299,7 @@ impl KeyEvent {
 
 /// Combined left/right modifier state. See [`KeyboardState::modifiers`] for
 /// its source.
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 #[cfg_attr(
     feature = "serde",
     derive(serde::Deserialize, serde::Serialize),

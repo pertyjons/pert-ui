@@ -641,6 +641,15 @@ impl FloatingWindow {
         }
     }
 }
+impl From<FloatingWindow> for Element {
+    /// Converts as [`FloatingWindow::into_element`] does, so a list of floating windows can be
+    /// collected into the `Vec<Element>` that
+    /// [`Runtime::reconcile_children`](crate::Runtime::reconcile_children)
+    /// takes with `.map(Element::from)` or `.map(Into::into)`.
+    fn from(window: FloatingWindow) -> Self {
+        window.into_element()
+    }
+}
 
 /// A clipped, nonmodal collection of independently positioned overlapping windows.
 ///

@@ -11,7 +11,7 @@ mod srgb;
 ///
 /// Every refusal happens before any pixel is written, so the renderer stays
 /// usable for the next scene.
-#[derive(Clone, Debug, PartialEq, thiserror::Error)]
+#[derive(Clone, Debug, Eq, PartialEq, thiserror::Error)]
 #[non_exhaustive]
 pub enum CpuRenderError {
     /// Preparing the scene's vectors failed, with the errors of

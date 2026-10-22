@@ -61,7 +61,7 @@ pub enum ParameterMapping {
 /// With the `serde` feature an exponent is its `f32`, validated by
 /// [`PowerExponent::new`] when read: a non-finite value or one outside
 /// [`Self::MIN`] to [`Self::MAX`] is rejected.
-#[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 #[cfg_attr(
     feature = "serde",
     derive(serde::Deserialize, serde::Serialize),
@@ -70,6 +70,24 @@ pub enum ParameterMapping {
 pub struct PowerExponent(f32);
 // A validated exponent is finite, so equality is total.
 impl Eq for PowerExponent {}
+impl PartialOrd for PowerExponent {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl Ord for PowerExponent {
+    /// Numeric order. `total_cmp` agrees with `<` and `==` here, because
+    /// an exponent is finite and at least `MIN`, so never NaN or zero.
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.0.total_cmp(&other.0)
+    }
+}
+impl std::hash::Hash for PowerExponent {
+    /// Hashes the bit pattern, which is unique per value because an exponent is finite and at least `MIN`, so never NaN or zero.
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.0.to_bits().hash(state);
+    }
+}
 impl PowerExponent {
     /// The smallest exponent, one tenth.
     pub const MIN: Self = Self(0.1);

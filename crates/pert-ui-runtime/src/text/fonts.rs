@@ -65,6 +65,19 @@ impl FontData {
         Self(Arc::new(bytes))
     }
 }
+impl From<Vec<u8>> for FontData {
+    /// Takes ownership of font bytes, as [`FontData::from_owned`] does.
+    fn from(bytes: Vec<u8>) -> Self {
+        Self::from_owned(bytes)
+    }
+}
+impl From<&'static [u8]> for FontData {
+    /// Borrows embedded bytes without copying them, as
+    /// [`FontData::from_static`] does.
+    fn from(bytes: &'static [u8]) -> Self {
+        Self::from_static(bytes)
+    }
+}
 impl fmt::Debug for FontData {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("FontData")
@@ -94,9 +107,17 @@ impl PartialEq for FontId {
     }
 }
 impl Eq for FontId {}
+impl std::hash::Hash for FontId {
+    /// Hashes the registry's identity and the index, the parts equality
+    /// compares.
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        Rc::as_ptr(&self.owner).hash(state);
+        self.index.hash(state);
+    }
+}
 
 /// Default font selection, separate from the size chosen by [`crate::TextStyle`].
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum FontRole {
     /// Body and caption text; initially bundled Noto Sans.
     Body,

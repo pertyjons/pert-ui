@@ -50,6 +50,15 @@ impl<K: PartialEq> PartialEq for RequestTicket<K> {
     }
 }
 impl<K: Eq> Eq for RequestTicket<K> {}
+impl<K: std::hash::Hash> std::hash::Hash for RequestTicket<K> {
+    /// Hashes the key, the generation and the issuing tracker's identity, the
+    /// parts equality compares, so a ticket can key a map when its key can.
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.key.hash(state);
+        self.generation.hash(state);
+        Arc::as_ptr(&self.owner).hash(state);
+    }
+}
 
 /// Whether a result for a [`RequestTicket`] may still be applied, from
 /// [`RequestTracker::status`].

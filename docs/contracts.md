@@ -67,7 +67,8 @@ take a `StateOwner` in their constructors (the `Runtime`, an `UpdateContext`
 or an `EventContext`), so a component can build them while it describes its
 children or reacts to input, without a privileged path. `MenuItem::command`
 still needs the `Runtime`, because it reads the command registry when it is
-built.
+built. Component descriptions are UI-thread values and are not `Send`; a
+worker returns plain data, and the UI thread builds the description from it.
 
 ### Text sources and labels
 
@@ -1128,6 +1129,10 @@ contract. Persisted formats carry their own version independently of the
 crate version. Backend changes are reviewed for observable facade and runtime
 effects. A growing public error enum is `#[non_exhaustive]`; a deliberately
 closed enum says so in rustdoc so a consumer can match it exhaustively.
+Inspection records that only the runtime builds are `#[non_exhaustive]` and
+grow with `SCHEMA_VERSION`. Records a component builds for
+`Component::inspect` are built from `Default`. Status and outcome enums are
+closed unless their rustdoc says they grow.
 
 ## Error policy
 
@@ -1185,7 +1190,11 @@ own recovery policy.
 
 Validated values use a fallible constructor and conventional `TryFrom` where
 appropriate. A single-value type's raw value is read with `get()` (a string
-with `as_str()`) unless the unit itself is the point of the type. Types with
+with `as_str()`) unless the unit itself is the point of the type. A
+validated quantity (a position, extent, factor, rate or capacity, such as
+`NormalizedValue`, `Length`, `UiZoom` or `Capacity`) also converts into its
+raw number with `From` (`f32::from(value)`), as std's `NonZero*` types do;
+identities and counters read only through `get()`. Types with
 several components expose named component accessors and a whole-value
 accessor named for its content (`channels`, `values`, `entries`). Limits the
 library chooses are associated `MIN_*` or `MAX_*` constants of the type they

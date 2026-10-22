@@ -42,6 +42,12 @@ impl TryFrom<f32> for Length {
         Self::new(value)
     }
 }
+impl From<Length> for f32 {
+    /// The extent in logical pixels, as [`Length::get`] returns it.
+    fn from(length: Length) -> Self {
+        length.0
+    }
+}
 
 /// A transparent single-child box with optional fill, border, padding and size limits.
 ///

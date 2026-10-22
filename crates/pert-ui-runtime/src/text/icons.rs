@@ -4,7 +4,7 @@ use super::fonts::IconGlyph;
 /// A library icon role. Defaults use bundled Material Icons Outlined.
 /// Override roles through [`crate::IconManager`]; controls and custom components
 /// resolve the same mapping. Roles express appearance, not application actions.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 pub enum Icon {
     /// Close or dismiss.

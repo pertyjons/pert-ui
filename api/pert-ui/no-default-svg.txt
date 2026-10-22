@@ -26,7 +26,7 @@ pub fn pert_ui::Svg::paint(&self, &mut pert_ui_runtime::drawing::Painter) -> cor
 pub fn pert_ui::Svg::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::runtime::Invalidation>
 pub fn pert_ui::Svg::update(&mut self, &mut pert_ui_runtime::runtime::UpdateContext) -> core::result::Result<(), pert_ui_runtime::runtime::RuntimeError>
 impl !core::marker::Freeze for pert_ui::Svg
-impl core::marker::Send for pert_ui::Svg
+impl !core::marker::Send for pert_ui::Svg
 impl !core::marker::Sync for pert_ui::Svg
 impl core::marker::Unpin for pert_ui::Svg
 impl core::marker::UnsafeUnpin for pert_ui::Svg
@@ -80,7 +80,7 @@ pub fn pert_ui::Svg::paint(&self, &mut pert_ui_runtime::drawing::Painter) -> cor
 pub fn pert_ui::Svg::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::runtime::Invalidation>
 pub fn pert_ui::Svg::update(&mut self, &mut pert_ui_runtime::runtime::UpdateContext) -> core::result::Result<(), pert_ui_runtime::runtime::RuntimeError>
 impl !core::marker::Freeze for pert_ui::Svg
-impl core::marker::Send for pert_ui::Svg
+impl !core::marker::Send for pert_ui::Svg
 impl !core::marker::Sync for pert_ui::Svg
 impl core::marker::Unpin for pert_ui::Svg
 impl core::marker::UnsafeUnpin for pert_ui::Svg

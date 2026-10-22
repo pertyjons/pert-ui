@@ -3,7 +3,7 @@ use super::*;
 use crate::{CommandContext, CommandSource, InputOutcome, KeyCode, KeyTransition, Modifiers};
 
 /// Stable sustained-input registration, removed explicitly or with its owner.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 #[must_use]
 pub struct HeldInputId(WidgetId, u64);
 /// Terminal cancellation of an admitted sustained press.

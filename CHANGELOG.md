@@ -1,5 +1,74 @@
 # Changelog
 
+## 0.3.59 (2026-10-22)
+
+Types and traits (API audit fix plan, part 6a3). Identities, keys and
+validated values implement the standard traits their equality supports,
+validated quantities convert into their raw numbers, and keyed descriptions
+convert into elements. Inspection records that only the runtime builds become
+`#[non_exhaustive]`, and every component description is now `!Send`.
+
+- Breaking: `InspectionSnapshot`, `WindowInspection`, `ComponentInspection`,
+  `ParameterInspection`, `SourceInspection`, `DragInspection`, `EventRecord`,
+  `ValidationReport`, `ValidationIssue` and `ValidationMarker` are
+  `#[non_exhaustive]`, and so are the enums `EventKind` and `ValidationCode`.
+  Only the runtime builds them (`Runtime::inspect`,
+  `Runtime::validation_report`), and they grow with
+  `InspectionSnapshot::SCHEMA_VERSION`. Code outside the library can no longer
+  build them with a struct expression or destructure them without `..`: read
+  their fields, or decode a stored record with serde, whose representation is
+  unchanged (the facade's serialization tests now decode JSON fixtures). A
+  `match` on `EventKind` or `ValidationCode` needs a wildcard arm. The records
+  a component builds for `Component::inspect` (`ComponentDetails`,
+  `ValidationHints`, `BoxModelInspection`) stay exhaustive; their rustdoc says
+  to build them from `Default` (`..ComponentDetails::default()`). The
+  compatibility policy in `docs/contracts.md` states the rule, and that status
+  and outcome enums are closed unless their rustdoc says they grow.
+- Breaking: `Divider` and `pert_ui::Svg` are no longer `Send`. They were the
+  only component descriptions that were, by accident of their fields (for
+  `Svg`, of a dependency's parsed tree). Code that moves either to another
+  thread, such as building an `Svg` in `std::thread::spawn` or a
+  `Runtime::spawn` worker and returning it, stops compiling: return the
+  source bytes, or the pixels of `pert_ui::svg::rasterize` or
+  `rasterize_mask`, and build the component on the UI thread. A `compile_fail`
+  example on each type checks this, and `docs/contracts.md` says component
+  descriptions are UI-thread values and not `Send`.
+- Added `Hash`, consistent with equality, on `CommandId`, `FontId`,
+  `HeldInputId`, `KeyCode`, `Modifiers`, `CommandKey`, `KeyChord`,
+  `PointerButton`, `WorkspacePath`, `ColorRole`, `MetricRole`, `FontRole`,
+  `Icon`, `Revision`, `EditSequence`, `ThemeMode`, `Density`, `TextStyle`,
+  `ProfileOperation`, `ValidationCode`, and `RequestTicket<K>` when `K:
+  Hash`. `CommandId`, `FontId` and `RequestTicket` hash the registry or
+  tracker identity their equality compares.
+- Added the traits validated values support, treated as `NormalizedValue`
+  is: `PartialOrd` and `Ord` on `Capacity`; `Ord` and `Hash` on
+  `PowerExponent`; `Eq`, `Ord` and `Hash` on `Magnification`, `UiZoom` and
+  `ViewScale`; `Eq`, `PartialOrd`, `Ord` and `Hash` on `PresentationRate`.
+  The floats order numerically and hash their bit pattern; their invariants
+  exclude NaN and negative zero. `PowerExponent`, `Magnification`, `UiZoom`
+  and `ViewScale` keep their order, now implemented by hand.
+- Added `Eq` and `Hash` on `RasterImage` and `MaskImage`, hashing the
+  content key computed at construction, so equal content from different
+  allocations hashes alike.
+- Added `impl Display for Color`, which writes `Color::to_hex`'s text:
+  quantized lowercase hexadecimal sRGB that `str::parse` reads back.
+- Added `From<NormalizedValue> for f32`, `From<Capacity> for usize`,
+  `From<Length> for f32`, `From<Magnification> for f32`,
+  `From<ViewScale> for f32` and `From<PresentationRate> for f64`, beside
+  `get()` and `hertz()`, as `PowerExponent` and `UiZoom` already had. The
+  naming rules in `docs/contracts.md` say a validated quantity converts into
+  its raw number with `From`.
+- Added `AsRef<str>` for `ChoiceId`, so an identity can be passed where
+  `impl AsRef<str>` is taken, such as `ContentQuery::new`.
+- Added `From<Vec<u8>>` and `From<&'static [u8]>` for `FontData`, beside
+  `FontData::from_owned` and `FontData::from_static`.
+- Added `From<Tab>`, `From<Section>`, `From<Property>` and
+  `From<FloatingWindow>` for `Element`, beside their `into_element` methods,
+  so `.map(Into::into)` collects them for `Runtime::reconcile_children`.
+- Added `Eq` on `pert_ui_cpu::CpuRenderError` (the facade's
+  `cpu::CpuRenderError`), and `Clone` and `PartialEq` on
+  `RedescriptionError`.
+
 ## 0.3.58 (2026-10-22)
 
 Names and roles (API audit fix plan, part 6a2). Reads, roles, units and

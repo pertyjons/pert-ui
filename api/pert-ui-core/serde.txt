@@ -373,8 +373,14 @@ pub const fn pert_ui_core::Capacity::new(usize) -> core::result::Result<Self, pe
 impl core::clone::Clone for pert_ui_core::Capacity
 pub fn pert_ui_core::Capacity::clone(&self) -> pert_ui_core::Capacity
 impl core::cmp::Eq for pert_ui_core::Capacity
+impl core::cmp::Ord for pert_ui_core::Capacity
+pub fn pert_ui_core::Capacity::cmp(&self, &pert_ui_core::Capacity) -> core::cmp::Ordering
 impl core::cmp::PartialEq for pert_ui_core::Capacity
 pub fn pert_ui_core::Capacity::eq(&self, &pert_ui_core::Capacity) -> bool
+impl core::cmp::PartialOrd for pert_ui_core::Capacity
+pub fn pert_ui_core::Capacity::partial_cmp(&self, &pert_ui_core::Capacity) -> core::option::Option<core::cmp::Ordering>
+impl core::convert::From<pert_ui_core::Capacity> for usize
+pub fn usize::from(pert_ui_core::Capacity) -> Self
 impl core::convert::TryFrom<usize> for pert_ui_core::Capacity
 pub type pert_ui_core::Capacity::Error = pert_ui_core::LiveError
 pub fn pert_ui_core::Capacity::try_from(usize) -> core::result::Result<Self, Self::Error>
@@ -404,6 +410,8 @@ impl core::cmp::PartialEq for pert_ui_core::ChoiceId
 pub fn pert_ui_core::ChoiceId::eq(&self, &pert_ui_core::ChoiceId) -> bool
 impl core::cmp::PartialOrd for pert_ui_core::ChoiceId
 pub fn pert_ui_core::ChoiceId::partial_cmp(&self, &pert_ui_core::ChoiceId) -> core::option::Option<core::cmp::Ordering>
+impl core::convert::AsRef<str> for pert_ui_core::ChoiceId
+pub fn pert_ui_core::ChoiceId::as_ref(&self) -> &str
 impl core::convert::From<pert_ui_core::ChoiceId> for pert_ui_core::AnyValue
 pub fn pert_ui_core::AnyValue::from(pert_ui_core::ChoiceId) -> Self
 impl core::convert::TryFrom<&str> for pert_ui_core::ChoiceId
@@ -506,6 +514,8 @@ impl core::cmp::PartialOrd for pert_ui_core::EditSequence
 pub fn pert_ui_core::EditSequence::partial_cmp(&self, &pert_ui_core::EditSequence) -> core::option::Option<core::cmp::Ordering>
 impl core::fmt::Debug for pert_ui_core::EditSequence
 pub fn pert_ui_core::EditSequence::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_core::EditSequence
+pub fn pert_ui_core::EditSequence::hash<__H: core::hash::Hasher>(&self, &mut __H)
 impl core::marker::Copy for pert_ui_core::EditSequence
 impl core::marker::StructuralPartialEq for pert_ui_core::EditSequence
 impl core::marker::Freeze for pert_ui_core::EditSequence
@@ -602,6 +612,8 @@ impl core::cmp::PartialEq for pert_ui_core::NormalizedValue
 pub fn pert_ui_core::NormalizedValue::eq(&self, &pert_ui_core::NormalizedValue) -> bool
 impl core::cmp::PartialOrd for pert_ui_core::NormalizedValue
 pub fn pert_ui_core::NormalizedValue::partial_cmp(&self, &Self) -> core::option::Option<core::cmp::Ordering>
+impl core::convert::From<pert_ui_core::NormalizedValue> for f32
+pub fn f32::from(pert_ui_core::NormalizedValue) -> Self
 impl core::convert::TryFrom<f32> for pert_ui_core::NormalizedValue
 pub type pert_ui_core::NormalizedValue::Error = pert_ui_core::NormalizedValueError
 pub fn pert_ui_core::NormalizedValue::try_from(f32) -> core::result::Result<Self, Self::Error>
@@ -781,10 +793,12 @@ pub fn pert_ui_core::PowerExponent::new(f32) -> core::result::Result<Self, pert_
 impl core::clone::Clone for pert_ui_core::PowerExponent
 pub fn pert_ui_core::PowerExponent::clone(&self) -> pert_ui_core::PowerExponent
 impl core::cmp::Eq for pert_ui_core::PowerExponent
+impl core::cmp::Ord for pert_ui_core::PowerExponent
+pub fn pert_ui_core::PowerExponent::cmp(&self, &Self) -> core::cmp::Ordering
 impl core::cmp::PartialEq for pert_ui_core::PowerExponent
 pub fn pert_ui_core::PowerExponent::eq(&self, &pert_ui_core::PowerExponent) -> bool
 impl core::cmp::PartialOrd for pert_ui_core::PowerExponent
-pub fn pert_ui_core::PowerExponent::partial_cmp(&self, &pert_ui_core::PowerExponent) -> core::option::Option<core::cmp::Ordering>
+pub fn pert_ui_core::PowerExponent::partial_cmp(&self, &Self) -> core::option::Option<core::cmp::Ordering>
 impl core::convert::From<pert_ui_core::PowerExponent> for f32
 pub fn f32::from(pert_ui_core::PowerExponent) -> Self
 impl core::convert::TryFrom<f32> for pert_ui_core::PowerExponent
@@ -792,6 +806,8 @@ pub type pert_ui_core::PowerExponent::Error = pert_ui_core::ParameterError
 pub fn pert_ui_core::PowerExponent::try_from(f32) -> core::result::Result<Self, Self::Error>
 impl core::fmt::Debug for pert_ui_core::PowerExponent
 pub fn pert_ui_core::PowerExponent::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_core::PowerExponent
+pub fn pert_ui_core::PowerExponent::hash<H: core::hash::Hasher>(&self, &mut H)
 impl core::marker::Copy for pert_ui_core::PowerExponent
 impl core::marker::StructuralPartialEq for pert_ui_core::PowerExponent
 impl serde_core::ser::Serialize for pert_ui_core::PowerExponent
@@ -822,6 +838,8 @@ impl core::default::Default for pert_ui_core::Revision
 pub fn pert_ui_core::Revision::default() -> pert_ui_core::Revision
 impl core::fmt::Debug for pert_ui_core::Revision
 pub fn pert_ui_core::Revision::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_core::Revision
+pub fn pert_ui_core::Revision::hash<__H: core::hash::Hasher>(&self, &mut __H)
 impl core::marker::Copy for pert_ui_core::Revision
 impl core::marker::StructuralPartialEq for pert_ui_core::Revision
 impl serde_core::ser::Serialize for pert_ui_core::Revision

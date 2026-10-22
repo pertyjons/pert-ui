@@ -80,6 +80,10 @@ impl ShortcutBinding {
 /// component that declares nothing is checked with the defaults, and nothing is
 /// inferred from its drawing or input handling. These observations remain inspectable in release builds,
 /// but the validation engine and its automatic collection are compiled out there.
+///
+/// A component builds it from [`Default`], with `..ValidationHints::default()`
+/// in a struct expression or by assigning fields of a default value, so a field
+/// added in a later version does not break it.
 #[derive(Clone, Debug, Default, PartialEq)]
 #[cfg_attr(
     feature = "serde",
@@ -109,7 +113,8 @@ pub struct ValidationHints {
 /// hit areas, collapsed parents, escaping children and overlaps) are reported
 /// only for windows laid out with a viewport that has area; see
 /// [`Runtime::validation_report`](crate::Runtime::validation_report).
-#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[non_exhaustive]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum ValidationCode {
     /// Updates/layout/focus/hover did not settle within the runtime's wave limit.
@@ -166,6 +171,7 @@ pub enum ValidationCode {
 
 /// One actionable development error, referring to every affected component.
 #[derive(Clone, Debug, Eq, PartialEq)]
+#[non_exhaustive]
 #[cfg_attr(
     feature = "serde",
     derive(serde::Deserialize, serde::Serialize),
@@ -183,6 +189,7 @@ pub struct ValidationIssue {
 /// Development error marker consumed by inspection and drawn by
 /// [`DebugOverlay::Issues`](crate::DebugOverlay::Issues).
 #[derive(Clone, Debug, PartialEq)]
+#[non_exhaustive]
 #[cfg_attr(
     feature = "serde",
     derive(serde::Deserialize, serde::Serialize),
@@ -212,6 +219,7 @@ pub struct ValidationMarker {
 /// development engine/logger/cache are absent from those builds. Runtime validity
 /// checks (for example rejecting duplicate mounts) still protect all builds.
 #[derive(Clone, Debug, Default, PartialEq)]
+#[non_exhaustive]
 #[cfg_attr(
     feature = "serde",
     derive(serde::Deserialize, serde::Serialize),

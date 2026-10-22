@@ -476,46 +476,59 @@ fn the_unbounded_collection_code_round_trips() -> TestResult {
     // Added with inspection schema 14.
     assert_eq!(InspectionSnapshot::SCHEMA_VERSION, 14);
     assert_eq!(Runtime::new().inspect().schema_version, 14);
-    let report = ValidationReport {
-        logging_error: None,
-        enabled: true,
-        pending: false,
-        issues: vec![ValidationIssue {
-            code: ValidationCode::UnboundedCollection,
-            components: vec![7],
-            message: "given its whole content extent".into(),
-        }],
-        markers: vec![ValidationMarker {
-            component: 7,
-            bounds: Some([0.0, 0.0, 300.0, 500.0]),
-            color: [1.0, 0.0, 0.0, 1.0],
-            codes: vec![ValidationCode::UnboundedCollection],
-        }],
-    };
+    // Only the runtime builds a report, so a tool reads it as JSON like this.
+    let report: ValidationReport = serde_json::from_str(
+        r#"{
+            "logging_error": null,
+            "enabled": true,
+            "pending": false,
+            "issues": [{
+                "code": "UnboundedCollection",
+                "components": [7],
+                "message": "given its whole content extent"
+            }],
+            "markers": [{
+                "component": 7,
+                "bounds": [0.0, 0.0, 300.0, 500.0],
+                "color": [1.0, 0.0, 0.0, 1.0],
+                "codes": ["UnboundedCollection"]
+            }]
+        }"#,
+    )?;
+    assert_eq!(report.issues[0].code, ValidationCode::UnboundedCollection);
+    assert_eq!(report.issues[0].components, [7]);
+    assert_eq!(
+        report.markers[0].codes,
+        [ValidationCode::UnboundedCollection]
+    );
+    assert_eq!(report.markers[0].bounds, Some([0.0, 0.0, 300.0, 500.0]));
     let text = serde_json::to_string(&report)?;
     assert!(text.contains(r#""code":"UnboundedCollection""#), "{text}");
-    assert_eq!(serde_json::from_str::<ValidationReport>(&text)?, report);
+    round_trip(&report)?;
     Ok(())
 }
 
 #[test]
 fn validation_reports_and_semantic_bounds_carry_non_finite_numbers() -> TestResult {
-    let report = ValidationReport {
-        logging_error: None,
-        enabled: true,
-        pending: false,
-        issues: vec![ValidationIssue {
-            code: ValidationCode::InvalidBounds,
-            components: vec![3],
-            message: "bounds contain NaN".into(),
-        }],
-        markers: vec![ValidationMarker {
-            component: 3,
-            bounds: Some([0.0, 0.0, f32::NAN, 4.0]),
-            color: [1.0, 0.0, 0.0, 1.0],
-            codes: vec![ValidationCode::InvalidBounds],
-        }],
-    };
+    let report: ValidationReport = serde_json::from_str(
+        r#"{
+            "logging_error": null,
+            "enabled": true,
+            "pending": false,
+            "issues": [{
+                "code": "InvalidBounds",
+                "components": [3],
+                "message": "bounds contain NaN"
+            }],
+            "markers": [{
+                "component": 3,
+                "bounds": [0.0, 0.0, "NaN", 4.0],
+                "color": [1.0, 0.0, 0.0, 1.0],
+                "codes": ["InvalidBounds"]
+            }]
+        }"#,
+    )?;
+    assert!(report.markers[0].bounds.unwrap()[2].is_nan());
     let text = serde_json::to_string(&report)?;
     assert!(text.contains(r#"[0.0,0.0,"NaN",4.0]"#), "{text}");
     let back: ValidationReport = serde_json::from_str(&text)?;

@@ -9,6 +9,7 @@ pub pert_ui_cpu::CpuRenderError::TooLarge::width: u32
 pub pert_ui_cpu::CpuRenderError::Unsupported
 impl core::clone::Clone for pert_ui_cpu::CpuRenderError
 pub fn pert_ui_cpu::CpuRenderError::clone(&self) -> pert_ui_cpu::CpuRenderError
+impl core::cmp::Eq for pert_ui_cpu::CpuRenderError
 impl core::cmp::PartialEq for pert_ui_cpu::CpuRenderError
 pub fn pert_ui_cpu::CpuRenderError::eq(&self, &pert_ui_cpu::CpuRenderError) -> bool
 impl core::convert::From<pert_ui_cpu::CpuRenderError> for pert_ui_runtime::capture::CaptureError

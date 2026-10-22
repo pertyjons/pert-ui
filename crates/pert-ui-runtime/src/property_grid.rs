@@ -90,6 +90,15 @@ impl Property {
         Element::new(self.key, self.field).with_label(self.label)
     }
 }
+impl From<Property> for Element {
+    /// Converts as [`Property::into_element`] does, so a list of properties can be
+    /// collected into the `Vec<Element>` that
+    /// [`Runtime::reconcile_children`](crate::Runtime::reconcile_children)
+    /// takes with `.map(Element::from)` or `.map(Into::into)`.
+    fn from(property: Property) -> Self {
+        property.into_element()
+    }
+}
 
 /// One row as the last update read it.
 struct Row {

@@ -867,6 +867,15 @@ impl Section {
         self.element
     }
 }
+impl From<Section> for Element {
+    /// Converts as [`Section::into_element`] does, so a list of sections can be
+    /// collected into the `Vec<Element>` that
+    /// [`Runtime::reconcile_children`](crate::Runtime::reconcile_children)
+    /// takes with `.map(Element::from)` or `.map(Into::into)`.
+    fn from(section: Section) -> Self {
+        section.into_element()
+    }
+}
 
 /// Several collapsible sections under one policy: one open at a time or any
 /// number, with the expansion owned by the accordion.

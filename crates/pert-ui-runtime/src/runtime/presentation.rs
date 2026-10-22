@@ -8,6 +8,26 @@ use super::*;
 /// rate. Unknown/adaptive rates may remain absent; the runtime then uses 60 Hz.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct PresentationRate(f64);
+// A validated rate is finite, so equality is total.
+impl Eq for PresentationRate {}
+impl PartialOrd for PresentationRate {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl Ord for PresentationRate {
+    /// Numeric order. `total_cmp` agrees with `<` and `==` here, because
+    /// a rate is finite and at least `MIN`, so never NaN or zero.
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.0.total_cmp(&other.0)
+    }
+}
+impl std::hash::Hash for PresentationRate {
+    /// Hashes the bit pattern, which is unique per value because a rate is finite and at least `MIN`, so never NaN or zero.
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.0.to_bits().hash(state);
+    }
+}
 impl PresentationRate {
     /// The lowest ceiling, 1 Hz.
     pub const MIN: Self = Self(1.0);
@@ -37,6 +57,12 @@ impl TryFrom<f64> for PresentationRate {
     /// Validates like [`PresentationRate::new`].
     fn try_from(hertz: f64) -> Result<Self, Self::Error> {
         Self::new(hertz)
+    }
+}
+impl From<PresentationRate> for f64 {
+    /// The ceiling in hertz, as [`PresentationRate::hertz`] returns it.
+    fn from(rate: PresentationRate) -> Self {
+        rate.0
     }
 }
 impl Runtime {

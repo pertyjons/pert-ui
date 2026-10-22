@@ -349,6 +349,7 @@ pub enum DragOutcome {
 /// Owned observations of the active drag session, captured on the UI thread.
 /// The payload itself is never included.
 #[derive(Clone, Debug, PartialEq)]
+#[non_exhaustive]
 #[cfg_attr(
     feature = "serde",
     derive(serde::Deserialize, serde::Serialize),

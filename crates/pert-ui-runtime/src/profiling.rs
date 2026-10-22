@@ -9,7 +9,7 @@ use std::{
 /// Measured UI work. Durations include preemption/waiting; they are not CPU usage
 /// percentages or GPU execution times. Nested work is included in total time and
 /// excluded from self time. Cache hits do not count as component callback work.
-#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum ProfileOperation {
     /// Pointer position delivery, including hit testing and pending layout.

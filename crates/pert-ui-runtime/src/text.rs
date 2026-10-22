@@ -126,7 +126,7 @@ impl std::fmt::Display for TextLimit {
 /// Semantic typography choices; ordinary labels use `Body`. ThemeMetrics owns
 /// their logical font sizes. All three densities share the same default sizes;
 /// DPI and UI zoom scale them together. Line spacing remains 1.4.
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 pub enum TextStyle {
     /// BodySize theme role, default 14 logical pixels.
     #[default]

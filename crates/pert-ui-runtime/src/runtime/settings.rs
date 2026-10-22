@@ -18,8 +18,28 @@ use super::*;
 ///
 /// With the `serde` feature a zoom is its factor, validated through
 /// [`UiZoom::new`] when read.
-#[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct UiZoom(f64);
+// A validated zoom is finite, so equality is total.
+impl Eq for UiZoom {}
+impl PartialOrd for UiZoom {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl Ord for UiZoom {
+    /// Numeric order. `total_cmp` agrees with `<` and `==` here, because
+    /// a zoom is finite and at least `MIN`, so never NaN or zero.
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.0.total_cmp(&other.0)
+    }
+}
+impl std::hash::Hash for UiZoom {
+    /// Hashes the bit pattern, which is unique per value because a zoom is finite and at least `MIN`, so never NaN or zero.
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.0.to_bits().hash(state);
+    }
+}
 impl Default for UiZoom {
     fn default() -> Self {
         Self(1.0)

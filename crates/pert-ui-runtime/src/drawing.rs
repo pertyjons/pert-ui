@@ -483,7 +483,8 @@ impl Color {
     /// `#rrggbb` when the alpha byte is 255 and `#rrggbbaa` otherwise.
     ///
     /// The digits are [`Color::to_srgb8`]'s bytes, so the text is lossy in the
-    /// same way, and [`Color::from_hex`] reads it back to the same bytes.
+    /// same way, and [`Color::from_hex`] reads it back to the same bytes. The
+    /// [`Display`](std::fmt::Display) implementation writes the same text.
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
@@ -493,12 +494,7 @@ impl Color {
     /// ```
     #[must_use]
     pub fn to_hex(self) -> String {
-        let [red, green, blue, alpha] = self.to_srgb8();
-        if alpha == u8::MAX {
-            format!("#{red:02x}{green:02x}{blue:02x}")
-        } else {
-            format!("#{red:02x}{green:02x}{blue:02x}{alpha:02x}")
-        }
+        self.to_string()
     }
 
     /// Returns this color with its straight alpha replaced and its linear RGB
@@ -770,6 +766,29 @@ impl std::str::FromStr for Color {
     /// Parses hexadecimal sRGB notation as [`Color::from_hex`] does.
     fn from_str(text: &str) -> Result<Self, Self::Err> {
         Self::from_hex(text)
+    }
+}
+
+impl std::fmt::Display for Color {
+    /// Writes the text of [`Color::to_hex`]: lowercase hexadecimal sRGB with a
+    /// leading `#`, quantized to [`Color::to_srgb8`]'s bytes, so the text
+    /// rounds the linear channels and parsing it back gives the quantized
+    /// color, not necessarily this one.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::Color;
+    /// let orange = Color::from_srgb8(255, 136, 0, 255);
+    /// assert_eq!(orange.to_string(), "#ff8800");
+    /// assert_eq!(format!("{orange}").parse::<Color>(), Ok(orange));
+    /// ```
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let [red, green, blue, alpha] = self.to_srgb8();
+        if alpha == u8::MAX {
+            write!(f, "#{red:02x}{green:02x}{blue:02x}")
+        } else {
+            write!(f, "#{red:02x}{green:02x}{blue:02x}{alpha:02x}")
+        }
     }
 }
 
@@ -1150,6 +1169,14 @@ impl PartialEq for MaskImage {
             && self.height == other.height
             && self.key == other.key
             && (std::sync::Arc::ptr_eq(&self.pixels, &other.pixels) || self.pixels == other.pixels)
+    }
+}
+impl Eq for MaskImage {}
+impl std::hash::Hash for MaskImage {
+    /// Hashes the content key computed at construction, in constant time.
+    /// Equal masks have equal keys, so the hash agrees with `==`.
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.key.hash(state);
     }
 }
 impl crate::resources::SceneResource for MaskImage {

@@ -53,6 +53,14 @@ impl ChoiceId {
     }
 }
 
+impl AsRef<str> for ChoiceId {
+    /// The identity text, as [`ChoiceId::as_str`] returns it, for APIs that
+    /// take `impl AsRef<str>`.
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}
+
 impl fmt::Display for ChoiceId {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(&self.0)

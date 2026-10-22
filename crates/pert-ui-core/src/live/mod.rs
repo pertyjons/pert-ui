@@ -178,7 +178,7 @@ pub enum LiveError {
 /// a display path may preallocate. A bridge has two capacities: the ring that
 /// carries items between threads bounds one drain, and the window the consumer
 /// keeps bounds what a trace can show. Neither grows.
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[must_use]
 pub struct Capacity(usize);
 
@@ -213,6 +213,13 @@ impl TryFrom<usize> for Capacity {
     /// Validates like [`Capacity::new`].
     fn try_from(items: usize) -> Result<Self, Self::Error> {
         Self::new(items)
+    }
+}
+
+impl From<Capacity> for usize {
+    /// The number of items, as [`Capacity::get`] returns it.
+    fn from(capacity: Capacity) -> Self {
+        capacity.0
     }
 }
 

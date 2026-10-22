@@ -9,7 +9,7 @@
 use crate::{Column, Element, RuntimeError, WidgetId};
 
 /// Why [`redescribe`] could not re-describe a component in place.
-#[derive(Debug, thiserror::Error)]
+#[derive(Clone, Debug, PartialEq, thiserror::Error)]
 #[non_exhaustive]
 pub enum RedescriptionError {
     /// The descriptions have different keys, so the runtime would remove the

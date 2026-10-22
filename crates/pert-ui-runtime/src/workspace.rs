@@ -363,7 +363,7 @@ impl ViewState {
 ///
 /// With the `serde` feature a path is its list of segments, root first, and
 /// reading one validates them through [`WorkspacePath::new`].
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct WorkspacePath(Vec<String>);
 
 impl WorkspacePath {

@@ -3,7 +3,7 @@ use super::*;
 use crate::{InputOutcome, KeyAction, KeyCode, KeyEvent, KeyTransition, Modifiers};
 
 /// Layout-aware command identity, independent of committed text.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum CommandKey {
     /// Modifier-free layout character. ASCII letters compare case-insensitively;
     /// punctuation and non-ASCII characters compare exactly.
@@ -22,7 +22,7 @@ impl CommandKey {
 /// Key and exact modifier requirements. Primary means Command on macOS and
 /// Control elsewhere. Physical fallback is explicit and only used when no logical
 /// identity is available; it never runs alongside a logical match.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 #[must_use]
 pub struct KeyChord {
     key: CommandKey,
@@ -390,6 +390,14 @@ impl PartialEq for CommandId {
     }
 }
 impl Eq for CommandId {}
+impl std::hash::Hash for CommandId {
+    /// Hashes the serial and the registry's identity, the parts equality
+    /// compares.
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.serial.hash(state);
+        Rc::as_ptr(&self.identity).hash(state);
+    }
+}
 /// Common command admission result. Disabled bindings reserve their chord.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum CommandOutcome {

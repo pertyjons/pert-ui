@@ -208,6 +208,28 @@ and anything left to a later part.
 
     The clipboard native check stays an explicit gap: it takes over the
     session clipboard.
+    The recheck approved 6a2.
+- **6a3 (0.3.59):** `Hash`, `Eq`, `Ord`, `Display`, `From` and `AsRef`
+  impls, `#[non_exhaustive]` on the twelve runtime-built types, and `!Send`
+  for `Divider` and `Svg`.
+  - **Checks run after the last edit (the public-API row plus loom):**
+    - `cargo fmt --all --check`;
+    - `cargo clippy --locked --workspace --all-targets -- -D warnings`;
+    - `cargo test --locked --workspace`, including the new
+      `foundation::standard_traits` contract tests and the serialization
+      tests with `--features serde`;
+    - the five headless example sessions;
+    - `cargo test --locked --workspace --doc`, with both new `compile_fail`
+      doctests checked for their intended error;
+    - warning-free workspace rustdoc;
+    - the loom models;
+    - `api/generate.sh`, whose diff is the plan's expected list;
+    - `git diff --check`.
+  - **Deviations:**
+    - the contracts' `From` sentence covers validated quantities only:
+      identities and counters read with `get()` and convert with nothing;
+    - `PartialOrd` is written by hand where `Ord` is added, so the two
+      agree.
 
 ## Rules for every part
 

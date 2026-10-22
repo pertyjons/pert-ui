@@ -226,6 +226,14 @@ impl PartialEq for RasterImage {
             && (Arc::ptr_eq(&self.pixels, &other.pixels) || self.pixels == other.pixels)
     }
 }
+impl Eq for RasterImage {}
+impl std::hash::Hash for RasterImage {
+    /// Hashes the [`content key`](Self::content_key), in constant time. Equal
+    /// images have equal keys, so the hash agrees with `==`.
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.key.hash(state);
+    }
+}
 impl SceneResource for RasterImage {
     fn content_key(&self) -> u64 {
         self.key

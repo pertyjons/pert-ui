@@ -273,6 +273,7 @@ fn lock_delivery<R>(
 /// One live-data source as captured by
 /// [`Runtime::inspect`](crate::Runtime::inspect).
 #[derive(Clone, Debug, PartialEq)]
+#[non_exhaustive]
 #[cfg_attr(
     feature = "serde",
     derive(serde::Deserialize, serde::Serialize),

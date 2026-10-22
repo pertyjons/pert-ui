@@ -87,6 +87,11 @@ pub enum InspectValue {
 /// Values must describe actual retained layout; absence means not measured, not
 /// zero. Runtime supplies composed allocations; components supply known style
 /// observations, using logical pixels and linear RGBA colors.
+///
+/// A component builds it from [`Default`], with
+/// `..BoxModelInspection::default()` in a struct expression or by assigning
+/// fields of a default value, so a field added in a later version does not
+/// break it.
 #[derive(Clone, Debug, Default, PartialEq)]
 #[cfg_attr(
     feature = "serde",
@@ -656,6 +661,10 @@ impl Semantics {
 }
 
 /// A component's explicit inspection contribution; empty by default.
+///
+/// A component builds it from [`Default`], with `..ComponentDetails::default()`
+/// in a struct expression or by assigning fields of a default value, so a field
+/// added in a later version does not break it.
 #[derive(Clone, Debug, Default, PartialEq)]
 #[cfg_attr(
     feature = "serde",
@@ -678,6 +687,7 @@ pub struct ComponentDetails {
 
 /// One retained component in the inspection tree/registry.
 #[derive(Clone, Debug, PartialEq)]
+#[non_exhaustive]
 #[cfg_attr(
     feature = "serde",
     derive(serde::Deserialize, serde::Serialize),
@@ -729,6 +739,7 @@ pub struct ComponentInspection {
 
 /// One still-owned local parameter, including availability after removal.
 #[derive(Clone, Debug, PartialEq)]
+#[non_exhaustive]
 #[cfg_attr(
     feature = "serde",
     derive(serde::Deserialize, serde::Serialize),
@@ -746,6 +757,7 @@ pub struct ParameterInspection {
 
 /// Recorded framework operation category, independent of any external transport.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[non_exhaustive]
 #[cfg_attr(
     feature = "serde",
     derive(serde::Deserialize, serde::Serialize),
@@ -831,6 +843,7 @@ impl EventStatus {
 
 /// One chronological diagnostic event in a bounded in-memory history.
 #[derive(Clone, Debug, Eq, PartialEq)]
+#[non_exhaustive]
 #[cfg_attr(
     feature = "serde",
     derive(serde::Deserialize, serde::Serialize),
@@ -860,6 +873,7 @@ pub struct EventRecord {
 /// The library starts no server, network listener or transport; an application
 /// that offers MCP or another protocol implements it on top of this snapshot.
 #[derive(Clone, Debug, PartialEq)]
+#[non_exhaustive]
 #[cfg_attr(
     feature = "serde",
     derive(serde::Deserialize, serde::Serialize),
@@ -972,6 +986,7 @@ impl History {
 
 /// Owned observations of one native presentation root, captured on the UI thread.
 #[derive(Clone, Debug, PartialEq)]
+#[non_exhaustive]
 #[cfg_attr(
     feature = "serde",
     derive(serde::Deserialize, serde::Serialize),

@@ -197,6 +197,8 @@ impl core::cmp::PartialEq for pert_ui_runtime::ColorRole
 pub fn pert_ui_runtime::ColorRole::eq(&self, &pert_ui_runtime::ColorRole) -> bool
 impl core::fmt::Debug for pert_ui_runtime::ColorRole
 pub fn pert_ui_runtime::ColorRole::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::ColorRole
+pub fn pert_ui_runtime::ColorRole::hash<__H: core::hash::Hasher>(&self, &mut __H)
 impl core::marker::Copy for pert_ui_runtime::ColorRole
 impl core::marker::StructuralPartialEq for pert_ui_runtime::ColorRole
 impl core::marker::Freeze for pert_ui_runtime::ColorRole
@@ -271,6 +273,8 @@ impl core::default::Default for pert_ui_runtime::Density
 pub fn pert_ui_runtime::Density::default() -> pert_ui_runtime::Density
 impl core::fmt::Debug for pert_ui_runtime::Density
 pub fn pert_ui_runtime::Density::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::Density
+pub fn pert_ui_runtime::Density::hash<__H: core::hash::Hasher>(&self, &mut __H)
 impl core::marker::Copy for pert_ui_runtime::Density
 impl core::marker::StructuralPartialEq for pert_ui_runtime::Density
 impl core::marker::Freeze for pert_ui_runtime::Density
@@ -714,6 +718,8 @@ impl core::cmp::PartialEq for pert_ui_runtime::FontRole
 pub fn pert_ui_runtime::FontRole::eq(&self, &pert_ui_runtime::FontRole) -> bool
 impl core::fmt::Debug for pert_ui_runtime::FontRole
 pub fn pert_ui_runtime::FontRole::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::FontRole
+pub fn pert_ui_runtime::FontRole::hash<__H: core::hash::Hasher>(&self, &mut __H)
 impl core::marker::Copy for pert_ui_runtime::FontRole
 impl core::marker::StructuralPartialEq for pert_ui_runtime::FontRole
 impl core::marker::Freeze for pert_ui_runtime::FontRole
@@ -809,6 +815,8 @@ impl core::convert::From<pert_ui_runtime::Icon> for pert_ui_runtime::IconSource
 pub fn pert_ui_runtime::IconSource::from(pert_ui_runtime::Icon) -> Self
 impl core::fmt::Debug for pert_ui_runtime::Icon
 pub fn pert_ui_runtime::Icon::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::Icon
+pub fn pert_ui_runtime::Icon::hash<__H: core::hash::Hasher>(&self, &mut __H)
 impl core::marker::Copy for pert_ui_runtime::Icon
 impl core::marker::StructuralPartialEq for pert_ui_runtime::Icon
 impl core::marker::Freeze for pert_ui_runtime::Icon
@@ -1074,6 +1082,8 @@ impl core::cmp::PartialOrd for pert_ui_runtime::KeyCode
 pub fn pert_ui_runtime::KeyCode::partial_cmp(&self, &pert_ui_runtime::KeyCode) -> core::option::Option<core::cmp::Ordering>
 impl core::fmt::Debug for pert_ui_runtime::KeyCode
 pub fn pert_ui_runtime::KeyCode::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::KeyCode
+pub fn pert_ui_runtime::KeyCode::hash<__H: core::hash::Hasher>(&self, &mut __H)
 impl core::marker::Copy for pert_ui_runtime::KeyCode
 impl core::marker::StructuralPartialEq for pert_ui_runtime::KeyCode
 impl core::marker::Freeze for pert_ui_runtime::KeyCode
@@ -1253,6 +1263,8 @@ impl core::convert::From<pert_ui_runtime::MetricRole> for pert_ui_runtime::Spaci
 pub fn pert_ui_runtime::Spacing::from(pert_ui_runtime::MetricRole) -> Self
 impl core::fmt::Debug for pert_ui_runtime::MetricRole
 pub fn pert_ui_runtime::MetricRole::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::MetricRole
+pub fn pert_ui_runtime::MetricRole::hash<__H: core::hash::Hasher>(&self, &mut __H)
 impl core::marker::Copy for pert_ui_runtime::MetricRole
 impl core::marker::StructuralPartialEq for pert_ui_runtime::MetricRole
 impl core::marker::Freeze for pert_ui_runtime::MetricRole
@@ -1382,6 +1394,8 @@ impl core::cmp::PartialOrd for pert_ui_runtime::PointerButton
 pub fn pert_ui_runtime::PointerButton::partial_cmp(&self, &pert_ui_runtime::PointerButton) -> core::option::Option<core::cmp::Ordering>
 impl core::fmt::Debug for pert_ui_runtime::PointerButton
 pub fn pert_ui_runtime::PointerButton::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::PointerButton
+pub fn pert_ui_runtime::PointerButton::hash<__H: core::hash::Hasher>(&self, &mut __H)
 impl core::marker::Copy for pert_ui_runtime::PointerButton
 impl core::marker::StructuralPartialEq for pert_ui_runtime::PointerButton
 impl core::marker::Freeze for pert_ui_runtime::PointerButton
@@ -2133,6 +2147,8 @@ impl core::default::Default for pert_ui_runtime::TextStyle
 pub fn pert_ui_runtime::TextStyle::default() -> pert_ui_runtime::TextStyle
 impl core::fmt::Debug for pert_ui_runtime::TextStyle
 pub fn pert_ui_runtime::TextStyle::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::TextStyle
+pub fn pert_ui_runtime::TextStyle::hash<__H: core::hash::Hasher>(&self, &mut __H)
 impl core::marker::Copy for pert_ui_runtime::TextStyle
 impl core::marker::StructuralPartialEq for pert_ui_runtime::TextStyle
 impl core::marker::Freeze for pert_ui_runtime::TextStyle
@@ -2154,6 +2170,8 @@ impl core::default::Default for pert_ui_runtime::ThemeMode
 pub fn pert_ui_runtime::ThemeMode::default() -> pert_ui_runtime::ThemeMode
 impl core::fmt::Debug for pert_ui_runtime::ThemeMode
 pub fn pert_ui_runtime::ThemeMode::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::ThemeMode
+pub fn pert_ui_runtime::ThemeMode::hash<__H: core::hash::Hasher>(&self, &mut __H)
 impl core::marker::Copy for pert_ui_runtime::ThemeMode
 impl core::marker::StructuralPartialEq for pert_ui_runtime::ThemeMode
 impl core::marker::Freeze for pert_ui_runtime::ThemeMode
@@ -3314,6 +3332,8 @@ pub type pert_ui_runtime::OpaqueColor::Error = pert_ui_runtime::TranslucentColor
 pub fn pert_ui_runtime::OpaqueColor::try_from(pert_ui_runtime::Color) -> core::result::Result<Self, Self::Error>
 impl core::fmt::Debug for pert_ui_runtime::Color
 pub fn pert_ui_runtime::Color::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui_runtime::Color
+pub fn pert_ui_runtime::Color::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Copy for pert_ui_runtime::Color
 impl core::marker::StructuralPartialEq for pert_ui_runtime::Color
 impl core::str::traits::FromStr for pert_ui_runtime::Color
@@ -4297,7 +4317,7 @@ pub fn pert_ui_runtime::Divider::visibility_changed(&mut self, bool)
 pub fn pert_ui_runtime::Divider::workspace_state(&self) -> core::result::Result<core::option::Option<pert_ui_runtime::ViewState>, pert_ui_runtime::WorkspaceError>
 pub fn pert_ui_runtime::Divider::workspace_state_with_children(&self, &[pert_ui_runtime::ChildInfo]) -> core::result::Result<core::option::Option<pert_ui_runtime::ViewState>, pert_ui_runtime::WorkspaceError>
 impl !core::marker::Freeze for pert_ui_runtime::Divider
-impl core::marker::Send for pert_ui_runtime::Divider
+impl !core::marker::Send for pert_ui_runtime::Divider
 impl !core::marker::Sync for pert_ui_runtime::Divider
 impl core::marker::Unpin for pert_ui_runtime::Divider
 impl core::marker::UnsafeUnpin for pert_ui_runtime::Divider
@@ -4663,6 +4683,14 @@ pub fn pert_ui_runtime::Element::with_grow(self, u16) -> Self
 pub fn pert_ui_runtime::Element::with_label(self, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
 pub fn pert_ui_runtime::Element::with_rich_label(self, pert_ui_runtime::RichText) -> Self
 pub fn pert_ui_runtime::Element::with_searchable(self, bool) -> Self
+impl core::convert::From<pert_ui_runtime::FloatingWindow> for pert_ui_runtime::Element
+pub fn pert_ui_runtime::Element::from(pert_ui_runtime::FloatingWindow) -> Self
+impl core::convert::From<pert_ui_runtime::Property> for pert_ui_runtime::Element
+pub fn pert_ui_runtime::Element::from(pert_ui_runtime::Property) -> Self
+impl core::convert::From<pert_ui_runtime::Section> for pert_ui_runtime::Element
+pub fn pert_ui_runtime::Element::from(pert_ui_runtime::Section) -> Self
+impl core::convert::From<pert_ui_runtime::Tab> for pert_ui_runtime::Element
+pub fn pert_ui_runtime::Element::from(pert_ui_runtime::Tab) -> Self
 impl core::marker::Freeze for pert_ui_runtime::Element
 impl !core::marker::Send for pert_ui_runtime::Element
 impl !core::marker::Sync for pert_ui_runtime::Element
@@ -4973,6 +5001,8 @@ pub fn pert_ui_runtime::FloatingWindow::position(self, pert_ui_runtime::Point) -
 pub fn pert_ui_runtime::FloatingWindow::resizable(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
 pub fn pert_ui_runtime::FloatingWindow::size_limits(self, pert_ui_runtime::SizeLimits) -> Self
 pub fn pert_ui_runtime::FloatingWindow::title_action(self, pert_ui_runtime::Element) -> Self
+impl core::convert::From<pert_ui_runtime::FloatingWindow> for pert_ui_runtime::Element
+pub fn pert_ui_runtime::Element::from(pert_ui_runtime::FloatingWindow) -> Self
 impl core::marker::Freeze for pert_ui_runtime::FloatingWindow
 impl !core::marker::Send for pert_ui_runtime::FloatingWindow
 impl !core::marker::Sync for pert_ui_runtime::FloatingWindow
@@ -4988,6 +5018,10 @@ pub fn pert_ui_runtime::FontData::from_owned(alloc::vec::Vec<u8>) -> Self
 pub fn pert_ui_runtime::FontData::from_static(&'static [u8]) -> Self
 impl core::clone::Clone for pert_ui_runtime::FontData
 pub fn pert_ui_runtime::FontData::clone(&self) -> pert_ui_runtime::FontData
+impl core::convert::From<&'static [u8]> for pert_ui_runtime::FontData
+pub fn pert_ui_runtime::FontData::from(&'static [u8]) -> Self
+impl core::convert::From<alloc::vec::Vec<u8>> for pert_ui_runtime::FontData
+pub fn pert_ui_runtime::FontData::from(alloc::vec::Vec<u8>) -> Self
 impl core::fmt::Debug for pert_ui_runtime::FontData
 pub fn pert_ui_runtime::FontData::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Freeze for pert_ui_runtime::FontData
@@ -5005,6 +5039,8 @@ impl core::cmp::PartialEq for pert_ui_runtime::FontId
 pub fn pert_ui_runtime::FontId::eq(&self, &Self) -> bool
 impl core::fmt::Debug for pert_ui_runtime::FontId
 pub fn pert_ui_runtime::FontId::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::FontId
+pub fn pert_ui_runtime::FontId::hash<H: core::hash::Hasher>(&self, &mut H)
 impl core::marker::Freeze for pert_ui_runtime::FontId
 impl !core::marker::Send for pert_ui_runtime::FontId
 impl !core::marker::Sync for pert_ui_runtime::FontId
@@ -6579,6 +6615,8 @@ impl core::clone::Clone for pert_ui_runtime::Length
 pub fn pert_ui_runtime::Length::clone(&self) -> pert_ui_runtime::Length
 impl core::cmp::PartialEq for pert_ui_runtime::Length
 pub fn pert_ui_runtime::Length::eq(&self, &pert_ui_runtime::Length) -> bool
+impl core::convert::From<pert_ui_runtime::Length> for f32
+pub fn f32::from(pert_ui_runtime::Length) -> Self
 impl core::convert::From<pert_ui_runtime::Length> for pert_ui_runtime::Spacing
 pub fn pert_ui_runtime::Spacing::from(pert_ui_runtime::Length) -> Self
 impl core::convert::From<u16> for pert_ui_runtime::Length
@@ -6819,15 +6857,22 @@ pub const fn pert_ui_runtime::Magnification::get(self) -> f32
 pub fn pert_ui_runtime::Magnification::new(f32) -> core::result::Result<Self, pert_ui_runtime::GeometryError>
 impl core::clone::Clone for pert_ui_runtime::Magnification
 pub fn pert_ui_runtime::Magnification::clone(&self) -> pert_ui_runtime::Magnification
+impl core::cmp::Eq for pert_ui_runtime::Magnification
+impl core::cmp::Ord for pert_ui_runtime::Magnification
+pub fn pert_ui_runtime::Magnification::cmp(&self, &Self) -> core::cmp::Ordering
 impl core::cmp::PartialEq for pert_ui_runtime::Magnification
 pub fn pert_ui_runtime::Magnification::eq(&self, &pert_ui_runtime::Magnification) -> bool
 impl core::cmp::PartialOrd for pert_ui_runtime::Magnification
-pub fn pert_ui_runtime::Magnification::partial_cmp(&self, &pert_ui_runtime::Magnification) -> core::option::Option<core::cmp::Ordering>
+pub fn pert_ui_runtime::Magnification::partial_cmp(&self, &Self) -> core::option::Option<core::cmp::Ordering>
+impl core::convert::From<pert_ui_runtime::Magnification> for f32
+pub fn f32::from(pert_ui_runtime::Magnification) -> Self
 impl core::convert::TryFrom<f32> for pert_ui_runtime::Magnification
 pub type pert_ui_runtime::Magnification::Error = pert_ui_runtime::GeometryError
 pub fn pert_ui_runtime::Magnification::try_from(f32) -> core::result::Result<Self, Self::Error>
 impl core::fmt::Debug for pert_ui_runtime::Magnification
 pub fn pert_ui_runtime::Magnification::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::Magnification
+pub fn pert_ui_runtime::Magnification::hash<H: core::hash::Hasher>(&self, &mut H)
 impl core::marker::Copy for pert_ui_runtime::Magnification
 impl core::marker::StructuralPartialEq for pert_ui_runtime::Magnification
 impl core::marker::Freeze for pert_ui_runtime::Magnification
@@ -7683,6 +7728,8 @@ pub fn pert_ui_runtime::Property::into_element(self) -> pert_ui_runtime::Element
 pub fn pert_ui_runtime::Property::new(impl core::convert::Into<alloc::string::String>, impl core::convert::Into<pert_ui_runtime::TextSource>, pert_ui_runtime::Element) -> Self
 pub fn pert_ui_runtime::Property::required(self, bool) -> Self
 pub fn pert_ui_runtime::Property::status(self, impl core::convert::Into<pert_ui_runtime::ReadSignal<pert_ui_runtime::FieldStatus>>) -> Self
+impl core::convert::From<pert_ui_runtime::Property> for pert_ui_runtime::Element
+pub fn pert_ui_runtime::Element::from(pert_ui_runtime::Property) -> Self
 impl !core::marker::Freeze for pert_ui_runtime::Property
 impl !core::marker::Send for pert_ui_runtime::Property
 impl !core::marker::Sync for pert_ui_runtime::Property
@@ -7961,10 +8008,13 @@ pub fn pert_ui_runtime::RasterImage::pixels(&self) -> &[u8]
 pub const fn pert_ui_runtime::RasterImage::width(&self) -> u32
 impl core::clone::Clone for pert_ui_runtime::RasterImage
 pub fn pert_ui_runtime::RasterImage::clone(&self) -> pert_ui_runtime::RasterImage
+impl core::cmp::Eq for pert_ui_runtime::RasterImage
 impl core::cmp::PartialEq for pert_ui_runtime::RasterImage
 pub fn pert_ui_runtime::RasterImage::eq(&self, &Self) -> bool
 impl core::fmt::Debug for pert_ui_runtime::RasterImage
 pub fn pert_ui_runtime::RasterImage::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::RasterImage
+pub fn pert_ui_runtime::RasterImage::hash<H: core::hash::Hasher>(&self, &mut H)
 impl core::marker::Freeze for pert_ui_runtime::RasterImage
 impl core::marker::Send for pert_ui_runtime::RasterImage
 impl core::marker::Sync for pert_ui_runtime::RasterImage
@@ -8623,6 +8673,8 @@ pub fn pert_ui_runtime::Section::into_element(self) -> pert_ui_runtime::Element
 pub fn pert_ui_runtime::Section::leading_icon(self, impl core::convert::Into<pert_ui_runtime::IconSource>) -> Self
 pub fn pert_ui_runtime::Section::new(impl core::convert::Into<alloc::string::String>, impl core::convert::Into<pert_ui_runtime::TextSource>, pert_ui_runtime::Element) -> Self
 pub fn pert_ui_runtime::Section::rich_title(self, pert_ui_runtime::RichText) -> Self
+impl core::convert::From<pert_ui_runtime::Section> for pert_ui_runtime::Element
+pub fn pert_ui_runtime::Element::from(pert_ui_runtime::Section) -> Self
 impl core::marker::Freeze for pert_ui_runtime::Section
 impl !core::marker::Send for pert_ui_runtime::Section
 impl !core::marker::Sync for pert_ui_runtime::Section
@@ -9353,6 +9405,8 @@ pub fn pert_ui_runtime::Tab::into_element(self) -> pert_ui_runtime::Element
 pub fn pert_ui_runtime::Tab::leading_icon(self, impl core::convert::Into<pert_ui_runtime::IconSource>) -> Self
 pub fn pert_ui_runtime::Tab::new(impl core::convert::Into<alloc::string::String>, impl core::convert::Into<pert_ui_runtime::TextSource>, pert_ui_runtime::Element) -> Self
 pub fn pert_ui_runtime::Tab::rich_title(self, pert_ui_runtime::RichText) -> Self
+impl core::convert::From<pert_ui_runtime::Tab> for pert_ui_runtime::Element
+pub fn pert_ui_runtime::Element::from(pert_ui_runtime::Tab) -> Self
 impl core::marker::Freeze for pert_ui_runtime::Tab
 impl !core::marker::Send for pert_ui_runtime::Tab
 impl !core::marker::Sync for pert_ui_runtime::Tab
@@ -10691,10 +10745,13 @@ pub fn pert_ui_runtime::UiZoom::increased(self) -> Self
 pub fn pert_ui_runtime::UiZoom::new(f64) -> core::result::Result<Self, pert_ui_runtime::GeometryError>
 impl core::clone::Clone for pert_ui_runtime::UiZoom
 pub fn pert_ui_runtime::UiZoom::clone(&self) -> pert_ui_runtime::UiZoom
+impl core::cmp::Eq for pert_ui_runtime::UiZoom
+impl core::cmp::Ord for pert_ui_runtime::UiZoom
+pub fn pert_ui_runtime::UiZoom::cmp(&self, &Self) -> core::cmp::Ordering
 impl core::cmp::PartialEq for pert_ui_runtime::UiZoom
 pub fn pert_ui_runtime::UiZoom::eq(&self, &pert_ui_runtime::UiZoom) -> bool
 impl core::cmp::PartialOrd for pert_ui_runtime::UiZoom
-pub fn pert_ui_runtime::UiZoom::partial_cmp(&self, &pert_ui_runtime::UiZoom) -> core::option::Option<core::cmp::Ordering>
+pub fn pert_ui_runtime::UiZoom::partial_cmp(&self, &Self) -> core::option::Option<core::cmp::Ordering>
 impl core::convert::From<pert_ui_runtime::UiZoom> for f64
 pub fn f64::from(pert_ui_runtime::UiZoom) -> Self
 impl core::convert::TryFrom<f64> for pert_ui_runtime::UiZoom
@@ -10704,6 +10761,8 @@ impl core::default::Default for pert_ui_runtime::UiZoom
 pub fn pert_ui_runtime::UiZoom::default() -> Self
 impl core::fmt::Debug for pert_ui_runtime::UiZoom
 pub fn pert_ui_runtime::UiZoom::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::UiZoom
+pub fn pert_ui_runtime::UiZoom::hash<H: core::hash::Hasher>(&self, &mut H)
 impl core::marker::Copy for pert_ui_runtime::UiZoom
 impl core::marker::StructuralPartialEq for pert_ui_runtime::UiZoom
 impl core::marker::Freeze for pert_ui_runtime::UiZoom
@@ -11198,6 +11257,8 @@ impl core::fmt::Debug for pert_ui_runtime::WorkspacePath
 pub fn pert_ui_runtime::WorkspacePath::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::fmt::Display for pert_ui_runtime::WorkspacePath
 pub fn pert_ui_runtime::WorkspacePath::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::WorkspacePath
+pub fn pert_ui_runtime::WorkspacePath::hash<__H: core::hash::Hasher>(&self, &mut __H)
 impl core::marker::StructuralPartialEq for pert_ui_runtime::WorkspacePath
 impl core::marker::Freeze for pert_ui_runtime::WorkspacePath
 impl core::marker::Send for pert_ui_runtime::WorkspacePath
@@ -16916,6 +16977,8 @@ impl core::cmp::PartialEq for pert_ui_runtime::ColorRole
 pub fn pert_ui_runtime::ColorRole::eq(&self, &pert_ui_runtime::ColorRole) -> bool
 impl core::fmt::Debug for pert_ui_runtime::ColorRole
 pub fn pert_ui_runtime::ColorRole::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::ColorRole
+pub fn pert_ui_runtime::ColorRole::hash<__H: core::hash::Hasher>(&self, &mut __H)
 impl core::marker::Copy for pert_ui_runtime::ColorRole
 impl core::marker::StructuralPartialEq for pert_ui_runtime::ColorRole
 impl core::marker::Freeze for pert_ui_runtime::ColorRole
@@ -16935,6 +16998,8 @@ impl core::cmp::PartialEq for pert_ui_runtime::CommandKey
 pub fn pert_ui_runtime::CommandKey::eq(&self, &pert_ui_runtime::CommandKey) -> bool
 impl core::fmt::Debug for pert_ui_runtime::CommandKey
 pub fn pert_ui_runtime::CommandKey::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::CommandKey
+pub fn pert_ui_runtime::CommandKey::hash<__H: core::hash::Hasher>(&self, &mut __H)
 impl core::marker::Copy for pert_ui_runtime::CommandKey
 impl core::marker::StructuralPartialEq for pert_ui_runtime::CommandKey
 impl core::marker::Freeze for pert_ui_runtime::CommandKey
@@ -17327,6 +17392,8 @@ impl core::default::Default for pert_ui_runtime::Density
 pub fn pert_ui_runtime::Density::default() -> pert_ui_runtime::Density
 impl core::fmt::Debug for pert_ui_runtime::Density
 pub fn pert_ui_runtime::Density::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::Density
+pub fn pert_ui_runtime::Density::hash<__H: core::hash::Hasher>(&self, &mut __H)
 impl core::marker::Copy for pert_ui_runtime::Density
 impl core::marker::StructuralPartialEq for pert_ui_runtime::Density
 impl core::marker::Freeze for pert_ui_runtime::Density
@@ -17843,7 +17910,7 @@ impl core::marker::Unpin for pert_ui_runtime::EntryKind
 impl core::marker::UnsafeUnpin for pert_ui_runtime::EntryKind
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::EntryKind
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::EntryKind
-pub enum pert_ui_runtime::EventKind
+#[non_exhaustive] pub enum pert_ui_runtime::EventKind
 pub pert_ui_runtime::EventKind::Application
 pub pert_ui_runtime::EventKind::Dispatch
 pub pert_ui_runtime::EventKind::DragEnd
@@ -18131,6 +18198,8 @@ impl core::cmp::PartialEq for pert_ui_runtime::FontRole
 pub fn pert_ui_runtime::FontRole::eq(&self, &pert_ui_runtime::FontRole) -> bool
 impl core::fmt::Debug for pert_ui_runtime::FontRole
 pub fn pert_ui_runtime::FontRole::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::FontRole
+pub fn pert_ui_runtime::FontRole::hash<__H: core::hash::Hasher>(&self, &mut __H)
 impl core::marker::Copy for pert_ui_runtime::FontRole
 impl core::marker::StructuralPartialEq for pert_ui_runtime::FontRole
 impl core::marker::Freeze for pert_ui_runtime::FontRole
@@ -18371,6 +18440,8 @@ impl core::convert::From<pert_ui_runtime::Icon> for pert_ui_runtime::IconSource
 pub fn pert_ui_runtime::IconSource::from(pert_ui_runtime::Icon) -> Self
 impl core::fmt::Debug for pert_ui_runtime::Icon
 pub fn pert_ui_runtime::Icon::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::Icon
+pub fn pert_ui_runtime::Icon::hash<__H: core::hash::Hasher>(&self, &mut __H)
 impl core::marker::Copy for pert_ui_runtime::Icon
 impl core::marker::StructuralPartialEq for pert_ui_runtime::Icon
 impl core::marker::Freeze for pert_ui_runtime::Icon
@@ -18677,6 +18748,8 @@ impl core::cmp::PartialOrd for pert_ui_runtime::KeyCode
 pub fn pert_ui_runtime::KeyCode::partial_cmp(&self, &pert_ui_runtime::KeyCode) -> core::option::Option<core::cmp::Ordering>
 impl core::fmt::Debug for pert_ui_runtime::KeyCode
 pub fn pert_ui_runtime::KeyCode::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::KeyCode
+pub fn pert_ui_runtime::KeyCode::hash<__H: core::hash::Hasher>(&self, &mut __H)
 impl core::marker::Copy for pert_ui_runtime::KeyCode
 impl core::marker::StructuralPartialEq for pert_ui_runtime::KeyCode
 impl core::marker::Freeze for pert_ui_runtime::KeyCode
@@ -19047,6 +19120,8 @@ impl core::convert::From<pert_ui_runtime::MetricRole> for pert_ui_runtime::Spaci
 pub fn pert_ui_runtime::Spacing::from(pert_ui_runtime::MetricRole) -> Self
 impl core::fmt::Debug for pert_ui_runtime::MetricRole
 pub fn pert_ui_runtime::MetricRole::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::MetricRole
+pub fn pert_ui_runtime::MetricRole::hash<__H: core::hash::Hasher>(&self, &mut __H)
 impl core::marker::Copy for pert_ui_runtime::MetricRole
 impl core::marker::StructuralPartialEq for pert_ui_runtime::MetricRole
 impl core::marker::Freeze for pert_ui_runtime::MetricRole
@@ -19304,6 +19379,8 @@ impl core::cmp::PartialOrd for pert_ui_runtime::PointerButton
 pub fn pert_ui_runtime::PointerButton::partial_cmp(&self, &pert_ui_runtime::PointerButton) -> core::option::Option<core::cmp::Ordering>
 impl core::fmt::Debug for pert_ui_runtime::PointerButton
 pub fn pert_ui_runtime::PointerButton::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::PointerButton
+pub fn pert_ui_runtime::PointerButton::hash<__H: core::hash::Hasher>(&self, &mut __H)
 impl core::marker::Copy for pert_ui_runtime::PointerButton
 impl core::marker::StructuralPartialEq for pert_ui_runtime::PointerButton
 impl core::marker::Freeze for pert_ui_runtime::PointerButton
@@ -19421,6 +19498,8 @@ impl core::cmp::PartialOrd for pert_ui_runtime::ProfileOperation
 pub fn pert_ui_runtime::ProfileOperation::partial_cmp(&self, &pert_ui_runtime::ProfileOperation) -> core::option::Option<core::cmp::Ordering>
 impl core::fmt::Debug for pert_ui_runtime::ProfileOperation
 pub fn pert_ui_runtime::ProfileOperation::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::ProfileOperation
+pub fn pert_ui_runtime::ProfileOperation::hash<__H: core::hash::Hasher>(&self, &mut __H)
 impl core::marker::Copy for pert_ui_runtime::ProfileOperation
 impl core::marker::StructuralPartialEq for pert_ui_runtime::ProfileOperation
 impl core::marker::Freeze for pert_ui_runtime::ProfileOperation
@@ -19505,6 +19584,10 @@ pub pert_ui_runtime::RedescriptionError::NotFound::key: alloc::string::String
 pub pert_ui_runtime::RedescriptionError::Remounted
 pub pert_ui_runtime::RedescriptionError::Remounted::key: alloc::string::String
 pub pert_ui_runtime::RedescriptionError::Runtime(pert_ui_runtime::RuntimeError)
+impl core::clone::Clone for pert_ui_runtime::RedescriptionError
+pub fn pert_ui_runtime::RedescriptionError::clone(&self) -> pert_ui_runtime::RedescriptionError
+impl core::cmp::PartialEq for pert_ui_runtime::RedescriptionError
+pub fn pert_ui_runtime::RedescriptionError::eq(&self, &pert_ui_runtime::RedescriptionError) -> bool
 impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::RedescriptionError
 pub fn pert_ui_runtime::RedescriptionError::from(pert_ui_runtime::RuntimeError) -> Self
 impl core::error::Error for pert_ui_runtime::RedescriptionError
@@ -19513,6 +19596,7 @@ impl core::fmt::Debug for pert_ui_runtime::RedescriptionError
 pub fn pert_ui_runtime::RedescriptionError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::fmt::Display for pert_ui_runtime::RedescriptionError
 pub fn pert_ui_runtime::RedescriptionError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::RedescriptionError
 impl core::marker::Freeze for pert_ui_runtime::RedescriptionError
 impl !core::marker::Send for pert_ui_runtime::RedescriptionError
 impl !core::marker::Sync for pert_ui_runtime::RedescriptionError
@@ -20750,6 +20834,8 @@ impl core::default::Default for pert_ui_runtime::TextStyle
 pub fn pert_ui_runtime::TextStyle::default() -> pert_ui_runtime::TextStyle
 impl core::fmt::Debug for pert_ui_runtime::TextStyle
 pub fn pert_ui_runtime::TextStyle::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::TextStyle
+pub fn pert_ui_runtime::TextStyle::hash<__H: core::hash::Hasher>(&self, &mut __H)
 impl core::marker::Copy for pert_ui_runtime::TextStyle
 impl core::marker::StructuralPartialEq for pert_ui_runtime::TextStyle
 impl core::marker::Freeze for pert_ui_runtime::TextStyle
@@ -20771,6 +20857,8 @@ impl core::default::Default for pert_ui_runtime::ThemeMode
 pub fn pert_ui_runtime::ThemeMode::default() -> pert_ui_runtime::ThemeMode
 impl core::fmt::Debug for pert_ui_runtime::ThemeMode
 pub fn pert_ui_runtime::ThemeMode::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::ThemeMode
+pub fn pert_ui_runtime::ThemeMode::hash<__H: core::hash::Hasher>(&self, &mut __H)
 impl core::marker::Copy for pert_ui_runtime::ThemeMode
 impl core::marker::StructuralPartialEq for pert_ui_runtime::ThemeMode
 impl core::marker::Freeze for pert_ui_runtime::ThemeMode
@@ -20993,7 +21081,7 @@ impl core::marker::Unpin for pert_ui_runtime::UiStringError
 impl core::marker::UnsafeUnpin for pert_ui_runtime::UiStringError
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::UiStringError
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::UiStringError
-pub enum pert_ui_runtime::ValidationCode
+#[non_exhaustive] pub enum pert_ui_runtime::ValidationCode
 pub pert_ui_runtime::ValidationCode::CollapsedParent
 pub pert_ui_runtime::ValidationCode::DuplicateKey
 pub pert_ui_runtime::ValidationCode::EmptyHitArea
@@ -21021,6 +21109,8 @@ impl core::cmp::PartialOrd for pert_ui_runtime::ValidationCode
 pub fn pert_ui_runtime::ValidationCode::partial_cmp(&self, &pert_ui_runtime::ValidationCode) -> core::option::Option<core::cmp::Ordering>
 impl core::fmt::Debug for pert_ui_runtime::ValidationCode
 pub fn pert_ui_runtime::ValidationCode::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::ValidationCode
+pub fn pert_ui_runtime::ValidationCode::hash<__H: core::hash::Hasher>(&self, &mut __H)
 impl core::marker::Copy for pert_ui_runtime::ValidationCode
 impl core::marker::StructuralPartialEq for pert_ui_runtime::ValidationCode
 impl core::marker::Freeze for pert_ui_runtime::ValidationCode
@@ -22364,6 +22454,8 @@ pub type pert_ui_runtime::OpaqueColor::Error = pert_ui_runtime::TranslucentColor
 pub fn pert_ui_runtime::OpaqueColor::try_from(pert_ui_runtime::Color) -> core::result::Result<Self, Self::Error>
 impl core::fmt::Debug for pert_ui_runtime::Color
 pub fn pert_ui_runtime::Color::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui_runtime::Color
+pub fn pert_ui_runtime::Color::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Copy for pert_ui_runtime::Color
 impl core::marker::StructuralPartialEq for pert_ui_runtime::Color
 impl core::str::traits::FromStr for pert_ui_runtime::Color
@@ -22662,6 +22754,8 @@ impl core::cmp::PartialEq for pert_ui_runtime::CommandId
 pub fn pert_ui_runtime::CommandId::eq(&self, &Self) -> bool
 impl core::fmt::Debug for pert_ui_runtime::CommandId
 pub fn pert_ui_runtime::CommandId::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::CommandId
+pub fn pert_ui_runtime::CommandId::hash<H: core::hash::Hasher>(&self, &mut H)
 impl core::marker::Freeze for pert_ui_runtime::CommandId
 impl !core::marker::Send for pert_ui_runtime::CommandId
 impl !core::marker::Sync for pert_ui_runtime::CommandId
@@ -22873,7 +22967,7 @@ impl core::marker::Unpin for pert_ui_runtime::ComponentDetails
 impl core::marker::UnsafeUnpin for pert_ui_runtime::ComponentDetails
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ComponentDetails
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ComponentDetails
-pub struct pert_ui_runtime::ComponentInspection
+#[non_exhaustive] pub struct pert_ui_runtime::ComponentInspection
 pub pert_ui_runtime::ComponentInspection::details: pert_ui_runtime::ComponentDetails
 pub pert_ui_runtime::ComponentInspection::dirty: core::option::Option<pert_ui_runtime::Invalidation>
 pub pert_ui_runtime::ComponentInspection::focused: bool
@@ -23588,7 +23682,7 @@ pub fn pert_ui_runtime::Divider::visibility_changed(&mut self, bool)
 pub fn pert_ui_runtime::Divider::workspace_state(&self) -> core::result::Result<core::option::Option<pert_ui_runtime::ViewState>, pert_ui_runtime::WorkspaceError>
 pub fn pert_ui_runtime::Divider::workspace_state_with_children(&self, &[pert_ui_runtime::ChildInfo]) -> core::result::Result<core::option::Option<pert_ui_runtime::ViewState>, pert_ui_runtime::WorkspaceError>
 impl !core::marker::Freeze for pert_ui_runtime::Divider
-impl core::marker::Send for pert_ui_runtime::Divider
+impl !core::marker::Send for pert_ui_runtime::Divider
 impl !core::marker::Sync for pert_ui_runtime::Divider
 impl core::marker::Unpin for pert_ui_runtime::Divider
 impl core::marker::UnsafeUnpin for pert_ui_runtime::Divider
@@ -23715,7 +23809,7 @@ impl<'a> core::marker::Unpin for pert_ui_runtime::DragEvent<'a>
 impl<'a> core::marker::UnsafeUnpin for pert_ui_runtime::DragEvent<'a>
 impl<'a> !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::DragEvent<'a>
 impl<'a> !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::DragEvent<'a>
-pub struct pert_ui_runtime::DragInspection
+#[non_exhaustive] pub struct pert_ui_runtime::DragInspection
 pub pert_ui_runtime::DragInspection::accepted: core::option::Option<pert_ui_runtime::DropOperation>
 pub pert_ui_runtime::DragInspection::payload_type: alloc::string::String
 pub pert_ui_runtime::DragInspection::permitted: pert_ui_runtime::DropOperations
@@ -24043,6 +24137,14 @@ pub fn pert_ui_runtime::Element::with_grow(self, u16) -> Self
 pub fn pert_ui_runtime::Element::with_label(self, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
 pub fn pert_ui_runtime::Element::with_rich_label(self, pert_ui_runtime::RichText) -> Self
 pub fn pert_ui_runtime::Element::with_searchable(self, bool) -> Self
+impl core::convert::From<pert_ui_runtime::FloatingWindow> for pert_ui_runtime::Element
+pub fn pert_ui_runtime::Element::from(pert_ui_runtime::FloatingWindow) -> Self
+impl core::convert::From<pert_ui_runtime::Property> for pert_ui_runtime::Element
+pub fn pert_ui_runtime::Element::from(pert_ui_runtime::Property) -> Self
+impl core::convert::From<pert_ui_runtime::Section> for pert_ui_runtime::Element
+pub fn pert_ui_runtime::Element::from(pert_ui_runtime::Section) -> Self
+impl core::convert::From<pert_ui_runtime::Tab> for pert_ui_runtime::Element
+pub fn pert_ui_runtime::Element::from(pert_ui_runtime::Tab) -> Self
 impl core::marker::Freeze for pert_ui_runtime::Element
 impl !core::marker::Send for pert_ui_runtime::Element
 impl !core::marker::Sync for pert_ui_runtime::Element
@@ -24134,7 +24236,7 @@ impl core::marker::Unpin for pert_ui_runtime::EventHistory
 impl core::marker::UnsafeUnpin for pert_ui_runtime::EventHistory
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::EventHistory
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::EventHistory
-pub struct pert_ui_runtime::EventRecord
+#[non_exhaustive] pub struct pert_ui_runtime::EventRecord
 pub pert_ui_runtime::EventRecord::at: core::time::Duration
 pub pert_ui_runtime::EventRecord::component: core::option::Option<u64>
 pub pert_ui_runtime::EventRecord::kind: pert_ui_runtime::EventKind
@@ -24492,6 +24594,8 @@ pub fn pert_ui_runtime::FloatingWindow::position(self, pert_ui_runtime::Point) -
 pub fn pert_ui_runtime::FloatingWindow::resizable(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
 pub fn pert_ui_runtime::FloatingWindow::size_limits(self, pert_ui_runtime::SizeLimits) -> Self
 pub fn pert_ui_runtime::FloatingWindow::title_action(self, pert_ui_runtime::Element) -> Self
+impl core::convert::From<pert_ui_runtime::FloatingWindow> for pert_ui_runtime::Element
+pub fn pert_ui_runtime::Element::from(pert_ui_runtime::FloatingWindow) -> Self
 impl core::marker::Freeze for pert_ui_runtime::FloatingWindow
 impl !core::marker::Send for pert_ui_runtime::FloatingWindow
 impl !core::marker::Sync for pert_ui_runtime::FloatingWindow
@@ -24526,6 +24630,10 @@ pub fn pert_ui_runtime::FontData::from_owned(alloc::vec::Vec<u8>) -> Self
 pub fn pert_ui_runtime::FontData::from_static(&'static [u8]) -> Self
 impl core::clone::Clone for pert_ui_runtime::FontData
 pub fn pert_ui_runtime::FontData::clone(&self) -> pert_ui_runtime::FontData
+impl core::convert::From<&'static [u8]> for pert_ui_runtime::FontData
+pub fn pert_ui_runtime::FontData::from(&'static [u8]) -> Self
+impl core::convert::From<alloc::vec::Vec<u8>> for pert_ui_runtime::FontData
+pub fn pert_ui_runtime::FontData::from(alloc::vec::Vec<u8>) -> Self
 impl core::fmt::Debug for pert_ui_runtime::FontData
 pub fn pert_ui_runtime::FontData::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Freeze for pert_ui_runtime::FontData
@@ -24543,6 +24651,8 @@ impl core::cmp::PartialEq for pert_ui_runtime::FontId
 pub fn pert_ui_runtime::FontId::eq(&self, &Self) -> bool
 impl core::fmt::Debug for pert_ui_runtime::FontId
 pub fn pert_ui_runtime::FontId::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::FontId
+pub fn pert_ui_runtime::FontId::hash<H: core::hash::Hasher>(&self, &mut H)
 impl core::marker::Freeze for pert_ui_runtime::FontId
 impl !core::marker::Send for pert_ui_runtime::FontId
 impl !core::marker::Sync for pert_ui_runtime::FontId
@@ -24868,6 +24978,8 @@ impl core::cmp::PartialEq for pert_ui_runtime::HeldInputId
 pub fn pert_ui_runtime::HeldInputId::eq(&self, &pert_ui_runtime::HeldInputId) -> bool
 impl core::fmt::Debug for pert_ui_runtime::HeldInputId
 pub fn pert_ui_runtime::HeldInputId::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::HeldInputId
+pub fn pert_ui_runtime::HeldInputId::hash<__H: core::hash::Hasher>(&self, &mut __H)
 impl core::marker::StructuralPartialEq for pert_ui_runtime::HeldInputId
 impl core::marker::Freeze for pert_ui_runtime::HeldInputId
 impl !core::marker::Send for pert_ui_runtime::HeldInputId
@@ -26018,7 +26130,7 @@ impl core::marker::Unpin for pert_ui_runtime::InspectionService
 impl core::marker::UnsafeUnpin for pert_ui_runtime::InspectionService
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::InspectionService
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::InspectionService
-pub struct pert_ui_runtime::InspectionSnapshot
+#[non_exhaustive] pub struct pert_ui_runtime::InspectionSnapshot
 pub pert_ui_runtime::InspectionSnapshot::application: alloc::collections::btree::map::BTreeMap<alloc::string::String, pert_ui_runtime::InspectValue>
 pub pert_ui_runtime::InspectionSnapshot::at: core::time::Duration
 pub pert_ui_runtime::InspectionSnapshot::components: alloc::vec::Vec<pert_ui_runtime::ComponentInspection>
@@ -26178,6 +26290,8 @@ impl core::fmt::Debug for pert_ui_runtime::KeyChord
 pub fn pert_ui_runtime::KeyChord::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::fmt::Display for pert_ui_runtime::KeyChord
 pub fn pert_ui_runtime::KeyChord::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::KeyChord
+pub fn pert_ui_runtime::KeyChord::hash<__H: core::hash::Hasher>(&self, &mut __H)
 impl core::marker::Copy for pert_ui_runtime::KeyChord
 impl core::marker::StructuralPartialEq for pert_ui_runtime::KeyChord
 impl core::marker::Freeze for pert_ui_runtime::KeyChord
@@ -26424,6 +26538,8 @@ impl core::clone::Clone for pert_ui_runtime::Length
 pub fn pert_ui_runtime::Length::clone(&self) -> pert_ui_runtime::Length
 impl core::cmp::PartialEq for pert_ui_runtime::Length
 pub fn pert_ui_runtime::Length::eq(&self, &pert_ui_runtime::Length) -> bool
+impl core::convert::From<pert_ui_runtime::Length> for f32
+pub fn f32::from(pert_ui_runtime::Length) -> Self
 impl core::convert::From<pert_ui_runtime::Length> for pert_ui_runtime::Spacing
 pub fn pert_ui_runtime::Spacing::from(pert_ui_runtime::Length) -> Self
 impl core::convert::From<u16> for pert_ui_runtime::Length
@@ -26829,15 +26945,22 @@ pub const fn pert_ui_runtime::Magnification::get(self) -> f32
 pub fn pert_ui_runtime::Magnification::new(f32) -> core::result::Result<Self, pert_ui_runtime::GeometryError>
 impl core::clone::Clone for pert_ui_runtime::Magnification
 pub fn pert_ui_runtime::Magnification::clone(&self) -> pert_ui_runtime::Magnification
+impl core::cmp::Eq for pert_ui_runtime::Magnification
+impl core::cmp::Ord for pert_ui_runtime::Magnification
+pub fn pert_ui_runtime::Magnification::cmp(&self, &Self) -> core::cmp::Ordering
 impl core::cmp::PartialEq for pert_ui_runtime::Magnification
 pub fn pert_ui_runtime::Magnification::eq(&self, &pert_ui_runtime::Magnification) -> bool
 impl core::cmp::PartialOrd for pert_ui_runtime::Magnification
-pub fn pert_ui_runtime::Magnification::partial_cmp(&self, &pert_ui_runtime::Magnification) -> core::option::Option<core::cmp::Ordering>
+pub fn pert_ui_runtime::Magnification::partial_cmp(&self, &Self) -> core::option::Option<core::cmp::Ordering>
+impl core::convert::From<pert_ui_runtime::Magnification> for f32
+pub fn f32::from(pert_ui_runtime::Magnification) -> Self
 impl core::convert::TryFrom<f32> for pert_ui_runtime::Magnification
 pub type pert_ui_runtime::Magnification::Error = pert_ui_runtime::GeometryError
 pub fn pert_ui_runtime::Magnification::try_from(f32) -> core::result::Result<Self, Self::Error>
 impl core::fmt::Debug for pert_ui_runtime::Magnification
 pub fn pert_ui_runtime::Magnification::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::Magnification
+pub fn pert_ui_runtime::Magnification::hash<H: core::hash::Hasher>(&self, &mut H)
 impl core::marker::Copy for pert_ui_runtime::Magnification
 impl core::marker::StructuralPartialEq for pert_ui_runtime::Magnification
 impl core::marker::Freeze for pert_ui_runtime::Magnification
@@ -26895,10 +27018,13 @@ pub fn pert_ui_runtime::MaskImage::pixels(&self) -> &[u8]
 pub const fn pert_ui_runtime::MaskImage::width(&self) -> u32
 impl core::clone::Clone for pert_ui_runtime::MaskImage
 pub fn pert_ui_runtime::MaskImage::clone(&self) -> pert_ui_runtime::MaskImage
+impl core::cmp::Eq for pert_ui_runtime::MaskImage
 impl core::cmp::PartialEq for pert_ui_runtime::MaskImage
 pub fn pert_ui_runtime::MaskImage::eq(&self, &Self) -> bool
 impl core::fmt::Debug for pert_ui_runtime::MaskImage
 pub fn pert_ui_runtime::MaskImage::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::MaskImage
+pub fn pert_ui_runtime::MaskImage::hash<H: core::hash::Hasher>(&self, &mut H)
 impl core::marker::Freeze for pert_ui_runtime::MaskImage
 impl core::marker::Send for pert_ui_runtime::MaskImage
 impl core::marker::Sync for pert_ui_runtime::MaskImage
@@ -27123,6 +27249,8 @@ impl core::default::Default for pert_ui_runtime::Modifiers
 pub fn pert_ui_runtime::Modifiers::default() -> pert_ui_runtime::Modifiers
 impl core::fmt::Debug for pert_ui_runtime::Modifiers
 pub fn pert_ui_runtime::Modifiers::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::Modifiers
+pub fn pert_ui_runtime::Modifiers::hash<__H: core::hash::Hasher>(&self, &mut __H)
 impl core::marker::Copy for pert_ui_runtime::Modifiers
 impl core::marker::StructuralPartialEq for pert_ui_runtime::Modifiers
 impl core::marker::Freeze for pert_ui_runtime::Modifiers
@@ -27471,7 +27599,7 @@ impl<T> core::marker::Unpin for pert_ui_runtime::ParameterHost<T>
 impl<T> core::marker::UnsafeUnpin for pert_ui_runtime::ParameterHost<T>
 impl<T> !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ParameterHost<T>
 impl<T> !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ParameterHost<T>
-pub struct pert_ui_runtime::ParameterInspection
+#[non_exhaustive] pub struct pert_ui_runtime::ParameterInspection
 pub pert_ui_runtime::ParameterInspection::delivery: pert_ui_runtime::DeliveryStatus
 pub pert_ui_runtime::ParameterInspection::id: pert_ui_core::parameter_id::ParameterId
 pub pert_ui_runtime::ParameterInspection::parameter: pert_ui_core::erased::AnyParameterSnapshot
@@ -27832,13 +27960,22 @@ pub const fn pert_ui_runtime::PresentationRate::hertz(self) -> f64
 pub fn pert_ui_runtime::PresentationRate::new(f64) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
 impl core::clone::Clone for pert_ui_runtime::PresentationRate
 pub fn pert_ui_runtime::PresentationRate::clone(&self) -> pert_ui_runtime::PresentationRate
+impl core::cmp::Eq for pert_ui_runtime::PresentationRate
+impl core::cmp::Ord for pert_ui_runtime::PresentationRate
+pub fn pert_ui_runtime::PresentationRate::cmp(&self, &Self) -> core::cmp::Ordering
 impl core::cmp::PartialEq for pert_ui_runtime::PresentationRate
 pub fn pert_ui_runtime::PresentationRate::eq(&self, &pert_ui_runtime::PresentationRate) -> bool
+impl core::cmp::PartialOrd for pert_ui_runtime::PresentationRate
+pub fn pert_ui_runtime::PresentationRate::partial_cmp(&self, &Self) -> core::option::Option<core::cmp::Ordering>
+impl core::convert::From<pert_ui_runtime::PresentationRate> for f64
+pub fn f64::from(pert_ui_runtime::PresentationRate) -> Self
 impl core::convert::TryFrom<f64> for pert_ui_runtime::PresentationRate
 pub type pert_ui_runtime::PresentationRate::Error = pert_ui_runtime::RuntimeError
 pub fn pert_ui_runtime::PresentationRate::try_from(f64) -> core::result::Result<Self, Self::Error>
 impl core::fmt::Debug for pert_ui_runtime::PresentationRate
 pub fn pert_ui_runtime::PresentationRate::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::PresentationRate
+pub fn pert_ui_runtime::PresentationRate::hash<H: core::hash::Hasher>(&self, &mut H)
 impl core::marker::Copy for pert_ui_runtime::PresentationRate
 impl core::marker::StructuralPartialEq for pert_ui_runtime::PresentationRate
 impl core::marker::Freeze for pert_ui_runtime::PresentationRate
@@ -28052,6 +28189,8 @@ pub fn pert_ui_runtime::Property::into_element(self) -> pert_ui_runtime::Element
 pub fn pert_ui_runtime::Property::new(impl core::convert::Into<alloc::string::String>, impl core::convert::Into<pert_ui_runtime::TextSource>, pert_ui_runtime::Element) -> Self
 pub fn pert_ui_runtime::Property::required(self, bool) -> Self
 pub fn pert_ui_runtime::Property::status(self, impl core::convert::Into<pert_ui_runtime::ReadSignal<pert_ui_runtime::FieldStatus>>) -> Self
+impl core::convert::From<pert_ui_runtime::Property> for pert_ui_runtime::Element
+pub fn pert_ui_runtime::Element::from(pert_ui_runtime::Property) -> Self
 impl !core::marker::Freeze for pert_ui_runtime::Property
 impl !core::marker::Send for pert_ui_runtime::Property
 impl !core::marker::Sync for pert_ui_runtime::Property
@@ -28356,10 +28495,13 @@ pub fn pert_ui_runtime::RasterImage::pixels(&self) -> &[u8]
 pub const fn pert_ui_runtime::RasterImage::width(&self) -> u32
 impl core::clone::Clone for pert_ui_runtime::RasterImage
 pub fn pert_ui_runtime::RasterImage::clone(&self) -> pert_ui_runtime::RasterImage
+impl core::cmp::Eq for pert_ui_runtime::RasterImage
 impl core::cmp::PartialEq for pert_ui_runtime::RasterImage
 pub fn pert_ui_runtime::RasterImage::eq(&self, &Self) -> bool
 impl core::fmt::Debug for pert_ui_runtime::RasterImage
 pub fn pert_ui_runtime::RasterImage::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::RasterImage
+pub fn pert_ui_runtime::RasterImage::hash<H: core::hash::Hasher>(&self, &mut H)
 impl core::marker::Freeze for pert_ui_runtime::RasterImage
 impl core::marker::Send for pert_ui_runtime::RasterImage
 impl core::marker::Sync for pert_ui_runtime::RasterImage
@@ -28590,6 +28732,8 @@ impl<K: core::cmp::PartialEq> core::cmp::PartialEq for pert_ui_runtime::RequestT
 pub fn pert_ui_runtime::RequestTicket<K>::eq(&self, &Self) -> bool
 impl<K: core::fmt::Debug> core::fmt::Debug for pert_ui_runtime::RequestTicket<K>
 pub fn pert_ui_runtime::RequestTicket<K>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl<K: core::hash::Hash> core::hash::Hash for pert_ui_runtime::RequestTicket<K>
+pub fn pert_ui_runtime::RequestTicket<K>::hash<H: core::hash::Hasher>(&self, &mut H)
 impl<K> core::marker::Freeze for pert_ui_runtime::RequestTicket<K> where K: core::marker::Freeze
 impl<K> core::marker::Send for pert_ui_runtime::RequestTicket<K> where K: core::marker::Send
 impl<K> core::marker::Sync for pert_ui_runtime::RequestTicket<K> where K: core::marker::Sync
@@ -29129,6 +29273,8 @@ pub fn pert_ui_runtime::Section::into_element(self) -> pert_ui_runtime::Element
 pub fn pert_ui_runtime::Section::leading_icon(self, impl core::convert::Into<pert_ui_runtime::IconSource>) -> Self
 pub fn pert_ui_runtime::Section::new(impl core::convert::Into<alloc::string::String>, impl core::convert::Into<pert_ui_runtime::TextSource>, pert_ui_runtime::Element) -> Self
 pub fn pert_ui_runtime::Section::rich_title(self, pert_ui_runtime::RichText) -> Self
+impl core::convert::From<pert_ui_runtime::Section> for pert_ui_runtime::Element
+pub fn pert_ui_runtime::Element::from(pert_ui_runtime::Section) -> Self
 impl core::marker::Freeze for pert_ui_runtime::Section
 impl !core::marker::Send for pert_ui_runtime::Section
 impl !core::marker::Sync for pert_ui_runtime::Section
@@ -29785,7 +29931,7 @@ impl core::marker::Unpin for pert_ui_runtime::Slider
 impl core::marker::UnsafeUnpin for pert_ui_runtime::Slider
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Slider
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Slider
-pub struct pert_ui_runtime::SourceInspection
+#[non_exhaustive] pub struct pert_ui_runtime::SourceInspection
 pub pert_ui_runtime::SourceInspection::delivery: pert_ui_runtime::Delivery
 pub pert_ui_runtime::SourceInspection::disconnected: bool
 pub pert_ui_runtime::SourceInspection::dropped_total: u64
@@ -30025,6 +30171,8 @@ pub fn pert_ui_runtime::Tab::into_element(self) -> pert_ui_runtime::Element
 pub fn pert_ui_runtime::Tab::leading_icon(self, impl core::convert::Into<pert_ui_runtime::IconSource>) -> Self
 pub fn pert_ui_runtime::Tab::new(impl core::convert::Into<alloc::string::String>, impl core::convert::Into<pert_ui_runtime::TextSource>, pert_ui_runtime::Element) -> Self
 pub fn pert_ui_runtime::Tab::rich_title(self, pert_ui_runtime::RichText) -> Self
+impl core::convert::From<pert_ui_runtime::Tab> for pert_ui_runtime::Element
+pub fn pert_ui_runtime::Element::from(pert_ui_runtime::Tab) -> Self
 impl core::marker::Freeze for pert_ui_runtime::Tab
 impl !core::marker::Send for pert_ui_runtime::Tab
 impl !core::marker::Sync for pert_ui_runtime::Tab
@@ -31610,10 +31758,13 @@ pub fn pert_ui_runtime::UiZoom::increased(self) -> Self
 pub fn pert_ui_runtime::UiZoom::new(f64) -> core::result::Result<Self, pert_ui_runtime::GeometryError>
 impl core::clone::Clone for pert_ui_runtime::UiZoom
 pub fn pert_ui_runtime::UiZoom::clone(&self) -> pert_ui_runtime::UiZoom
+impl core::cmp::Eq for pert_ui_runtime::UiZoom
+impl core::cmp::Ord for pert_ui_runtime::UiZoom
+pub fn pert_ui_runtime::UiZoom::cmp(&self, &Self) -> core::cmp::Ordering
 impl core::cmp::PartialEq for pert_ui_runtime::UiZoom
 pub fn pert_ui_runtime::UiZoom::eq(&self, &pert_ui_runtime::UiZoom) -> bool
 impl core::cmp::PartialOrd for pert_ui_runtime::UiZoom
-pub fn pert_ui_runtime::UiZoom::partial_cmp(&self, &pert_ui_runtime::UiZoom) -> core::option::Option<core::cmp::Ordering>
+pub fn pert_ui_runtime::UiZoom::partial_cmp(&self, &Self) -> core::option::Option<core::cmp::Ordering>
 impl core::convert::From<pert_ui_runtime::UiZoom> for f64
 pub fn f64::from(pert_ui_runtime::UiZoom) -> Self
 impl core::convert::TryFrom<f64> for pert_ui_runtime::UiZoom
@@ -31623,6 +31774,8 @@ impl core::default::Default for pert_ui_runtime::UiZoom
 pub fn pert_ui_runtime::UiZoom::default() -> Self
 impl core::fmt::Debug for pert_ui_runtime::UiZoom
 pub fn pert_ui_runtime::UiZoom::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::UiZoom
+pub fn pert_ui_runtime::UiZoom::hash<H: core::hash::Hasher>(&self, &mut H)
 impl core::marker::Copy for pert_ui_runtime::UiZoom
 impl core::marker::StructuralPartialEq for pert_ui_runtime::UiZoom
 impl core::marker::Freeze for pert_ui_runtime::UiZoom
@@ -31691,7 +31844,7 @@ impl core::marker::Unpin for pert_ui_runtime::ValidationHints
 impl core::marker::UnsafeUnpin for pert_ui_runtime::ValidationHints
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ValidationHints
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ValidationHints
-pub struct pert_ui_runtime::ValidationIssue
+#[non_exhaustive] pub struct pert_ui_runtime::ValidationIssue
 pub pert_ui_runtime::ValidationIssue::code: pert_ui_runtime::ValidationCode
 pub pert_ui_runtime::ValidationIssue::components: alloc::vec::Vec<u64>
 pub pert_ui_runtime::ValidationIssue::message: alloc::string::String
@@ -31710,7 +31863,7 @@ impl core::marker::Unpin for pert_ui_runtime::ValidationIssue
 impl core::marker::UnsafeUnpin for pert_ui_runtime::ValidationIssue
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ValidationIssue
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ValidationIssue
-pub struct pert_ui_runtime::ValidationMarker
+#[non_exhaustive] pub struct pert_ui_runtime::ValidationMarker
 pub pert_ui_runtime::ValidationMarker::bounds: core::option::Option<[f32; 4]>
 pub pert_ui_runtime::ValidationMarker::codes: alloc::vec::Vec<pert_ui_runtime::ValidationCode>
 pub pert_ui_runtime::ValidationMarker::color: [f32; 4]
@@ -31729,7 +31882,7 @@ impl core::marker::Unpin for pert_ui_runtime::ValidationMarker
 impl core::marker::UnsafeUnpin for pert_ui_runtime::ValidationMarker
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ValidationMarker
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ValidationMarker
-pub struct pert_ui_runtime::ValidationReport
+#[non_exhaustive] pub struct pert_ui_runtime::ValidationReport
 pub pert_ui_runtime::ValidationReport::enabled: bool
 pub pert_ui_runtime::ValidationReport::issues: alloc::vec::Vec<pert_ui_runtime::ValidationIssue>
 pub pert_ui_runtime::ValidationReport::logging_error: core::option::Option<alloc::string::String>
@@ -31891,10 +32044,15 @@ pub const fn pert_ui_runtime::ViewScale::get(self) -> f32
 pub fn pert_ui_runtime::ViewScale::new(f32) -> core::result::Result<Self, pert_ui_runtime::GeometryError>
 impl core::clone::Clone for pert_ui_runtime::ViewScale
 pub fn pert_ui_runtime::ViewScale::clone(&self) -> pert_ui_runtime::ViewScale
+impl core::cmp::Eq for pert_ui_runtime::ViewScale
+impl core::cmp::Ord for pert_ui_runtime::ViewScale
+pub fn pert_ui_runtime::ViewScale::cmp(&self, &Self) -> core::cmp::Ordering
 impl core::cmp::PartialEq for pert_ui_runtime::ViewScale
 pub fn pert_ui_runtime::ViewScale::eq(&self, &pert_ui_runtime::ViewScale) -> bool
 impl core::cmp::PartialOrd for pert_ui_runtime::ViewScale
-pub fn pert_ui_runtime::ViewScale::partial_cmp(&self, &pert_ui_runtime::ViewScale) -> core::option::Option<core::cmp::Ordering>
+pub fn pert_ui_runtime::ViewScale::partial_cmp(&self, &Self) -> core::option::Option<core::cmp::Ordering>
+impl core::convert::From<pert_ui_runtime::ViewScale> for f32
+pub fn f32::from(pert_ui_runtime::ViewScale) -> Self
 impl core::convert::TryFrom<f32> for pert_ui_runtime::ViewScale
 pub type pert_ui_runtime::ViewScale::Error = pert_ui_runtime::GeometryError
 pub fn pert_ui_runtime::ViewScale::try_from(f32) -> core::result::Result<Self, Self::Error>
@@ -31902,6 +32060,8 @@ impl core::default::Default for pert_ui_runtime::ViewScale
 pub fn pert_ui_runtime::ViewScale::default() -> Self
 impl core::fmt::Debug for pert_ui_runtime::ViewScale
 pub fn pert_ui_runtime::ViewScale::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::ViewScale
+pub fn pert_ui_runtime::ViewScale::hash<H: core::hash::Hasher>(&self, &mut H)
 impl core::marker::Copy for pert_ui_runtime::ViewScale
 impl core::marker::StructuralPartialEq for pert_ui_runtime::ViewScale
 impl core::marker::Freeze for pert_ui_runtime::ViewScale
@@ -32161,7 +32321,7 @@ impl core::marker::Unpin for pert_ui_runtime::WindowController
 impl core::marker::UnsafeUnpin for pert_ui_runtime::WindowController
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::WindowController
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::WindowController
-pub struct pert_ui_runtime::WindowInspection
+#[non_exhaustive] pub struct pert_ui_runtime::WindowInspection
 pub pert_ui_runtime::WindowInspection::command_target: core::option::Option<u64>
 pub pert_ui_runtime::WindowInspection::focused: core::option::Option<u64>
 pub pert_ui_runtime::WindowInspection::id: u64
@@ -32321,6 +32481,8 @@ impl core::fmt::Debug for pert_ui_runtime::WorkspacePath
 pub fn pert_ui_runtime::WorkspacePath::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::fmt::Display for pert_ui_runtime::WorkspacePath
 pub fn pert_ui_runtime::WorkspacePath::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::WorkspacePath
+pub fn pert_ui_runtime::WorkspacePath::hash<__H: core::hash::Hasher>(&self, &mut __H)
 impl core::marker::StructuralPartialEq for pert_ui_runtime::WorkspacePath
 impl core::marker::Freeze for pert_ui_runtime::WorkspacePath
 impl core::marker::Send for pert_ui_runtime::WorkspacePath

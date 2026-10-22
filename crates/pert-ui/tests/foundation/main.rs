@@ -44,6 +44,7 @@ mod semantics;
 mod serialization;
 mod signal_writes;
 mod sink_follow_ups;
+mod standard_traits;
 mod startup_viewport;
 mod state_owner;
 mod transforms;

@@ -147,6 +147,15 @@ impl Tab {
         self.element
     }
 }
+impl From<Tab> for Element {
+    /// Converts as [`Tab::into_element`] does, so a list of tabs can be
+    /// collected into the `Vec<Element>` that
+    /// [`Runtime::reconcile_children`](crate::Runtime::reconcile_children)
+    /// takes with `.map(Element::from)` or `.map(Into::into)`.
+    fn from(tab: Tab) -> Self {
+        tab.into_element()
+    }
+}
 /// Local logical pixels below the strip, over the top of its own content, that
 /// still count as the strip: a press does not become a drag-out there and a
 /// release there detaches nothing. It lies inside the strip's own bounds, so

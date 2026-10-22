@@ -9,7 +9,7 @@ use std::{
 mod seed;
 
 /// Explicit color scheme. Dark is the default; OS preference detection is not implicit.
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum ThemeMode {
     /// Dark backgrounds with light foregrounds.
@@ -20,7 +20,7 @@ pub enum ThemeMode {
 }
 
 /// Independent spacing preset. Standard is the default, in both color modes.
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum Density {
     /// Dense desktop controls with unchanged text size.
@@ -69,7 +69,7 @@ impl<T> PerDensity<T> {
 
 /// Semantic theme measurement in logical pixels, before DPI and user zoom.
 /// Read through `MeasureContext::metric` for layout or `Painter::metric` for paint.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 pub enum MetricRole {
     /// Gap between layout children.
@@ -352,7 +352,7 @@ impl From<MetricRole> for Spacing {
 /// color and never computes one: changing an accent does not generate shades and
 /// does not change roles with their own value, such as `OnPrimary` or
 /// `PrimaryContainer`; customize those when needed.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 pub enum ColorRole {
     /// Main accent and active action fill.

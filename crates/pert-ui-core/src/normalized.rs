@@ -107,6 +107,13 @@ impl TryFrom<f32> for NormalizedValue {
     }
 }
 
+impl From<NormalizedValue> for f32 {
+    /// The position, as [`NormalizedValue::get`] returns it.
+    fn from(value: NormalizedValue) -> Self {
+        value.0
+    }
+}
+
 /// Why a floating-point input could not become a [`NormalizedValue`].
 ///
 /// Validation checks finiteness before range. The error contains no host or

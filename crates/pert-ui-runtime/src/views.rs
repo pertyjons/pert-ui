@@ -903,12 +903,24 @@ impl Component for ScrollArea {
 ///
 /// Re-describing the divider under the same key applies its orientation and
 /// spacing.
+///
+/// Like every component description, a divider is a UI-thread value and is
+/// not `Send`:
+///
+/// ```compile_fail
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::Divider;
+/// fn needs_send<T: Send>() {}
+/// needs_send::<Divider>();
+/// ```
 #[must_use]
 pub struct Divider {
     vertical: bool,
     spacing: Spacing,
     inset: Cell<f32>,
     thickness: Cell<f32>,
+    /// Keeps the description on the UI thread whatever its fields are.
+    _ui_thread: std::marker::PhantomData<std::rc::Rc<()>>,
 }
 impl Default for Divider {
     fn default() -> Self {
@@ -923,6 +935,7 @@ impl Divider {
             spacing: Spacing::Theme(MetricRole::SectionGap),
             inset: Cell::new(0.0),
             thickness: Cell::new(0.0),
+            _ui_thread: std::marker::PhantomData,
         }
     }
     /// Selects a vertical separator for use in a row or explicitly sized container.
@@ -946,6 +959,7 @@ impl Component for Divider {
             spacing,
             inset: _,
             thickness: _,
+            _ui_thread: _,
         } = next;
         let changed = self.vertical != vertical || self.spacing != spacing;
         self.vertical = vertical;

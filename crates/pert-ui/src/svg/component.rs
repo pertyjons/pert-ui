@@ -6,6 +6,8 @@ use pert_ui_runtime::{
     Semantics, Size,
 };
 use std::cell::RefCell;
+use std::marker::PhantomData;
+use std::rc::Rc;
 
 /// A drawing placed in the ordinary layout and rasterized for the size it is
 /// given.
@@ -38,6 +40,18 @@ use std::cell::RefCell;
 /// and description; the same source keeps its parsed tree and prepared raster,
 /// and a changed source or a switch between tinted and full color prepares it
 /// again.
+///
+/// Like every component description, an `Svg` is a UI-thread value and is not
+/// `Send`. A worker thread that prepares a drawing returns its source bytes, or
+/// the pixels of [`rasterize`](crate::svg::rasterize) or
+/// [`rasterize_mask`](crate::svg::rasterize_mask), and the UI thread builds the
+/// component:
+///
+/// ```compile_fail
+/// use pert_ui::Svg;
+/// fn needs_send<T: Send>() {}
+/// needs_send::<Svg>();
+/// ```
 #[must_use]
 pub struct Svg {
     tree: resvg::usvg::Tree,
@@ -51,6 +65,8 @@ pub struct Svg {
     description: Option<String>,
     raster: RefCell<Option<Raster>>,
     failure: RefCell<Option<String>>,
+    /// Keeps the description on the UI thread whatever its fields are.
+    _ui_thread: PhantomData<Rc<()>>,
 }
 
 struct Raster {
@@ -88,6 +104,7 @@ impl Svg {
             description: None,
             raster: RefCell::new(None),
             failure: RefCell::new(None),
+            _ui_thread: PhantomData,
         })
     }
     /// Reads a drawing as a coverage mask that the theme's `role` colors.

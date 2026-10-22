@@ -35,7 +35,7 @@ impl Point {
 ///
 /// New buttons are named as platforms report them, so matches need a wildcard
 /// arm.
-#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[non_exhaustive]
 pub enum PointerButton {
     /// Primary activation/drag button.
@@ -103,8 +103,29 @@ pub enum PointerKind {
 /// assert!(Magnification::new(f32::NAN).is_err());
 /// # Ok::<(), pert_ui::GeometryError>(())
 /// ```
-#[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Magnification(f32);
+
+// A validated factor is finite, so equality is total.
+impl Eq for Magnification {}
+impl PartialOrd for Magnification {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl Ord for Magnification {
+    /// Numeric order. `total_cmp` agrees with `<` and `==` here, because
+    /// a factor is finite and positive, so never NaN or zero.
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.0.total_cmp(&other.0)
+    }
+}
+impl std::hash::Hash for Magnification {
+    /// Hashes the bit pattern, which is unique per value because a factor is finite and positive, so never NaN or zero.
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.0.to_bits().hash(state);
+    }
+}
 
 impl Magnification {
     /// Validates a factor.
@@ -135,6 +156,13 @@ impl TryFrom<f32> for Magnification {
     /// Validates like [`Magnification::new`].
     fn try_from(factor: f32) -> Result<Self, Self::Error> {
         Self::new(factor)
+    }
+}
+
+impl From<Magnification> for f32 {
+    /// The factor, as [`Magnification::get`] returns it.
+    fn from(factor: Magnification) -> Self {
+        factor.0
     }
 }
 /// Owned pointer event with a validated logical window-coordinate position.

@@ -265,8 +265,29 @@ impl QuarterTurn {
 ///
 /// Finite and within [`Self::MIN`]`..=`[`Self::MAX`]; anything else is rejected
 /// rather than clamped, like [`UiZoom`](crate::UiZoom). The default is 1.
-#[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct ViewScale(f32);
+
+// A validated scale is finite, so equality is total.
+impl Eq for ViewScale {}
+impl PartialOrd for ViewScale {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl Ord for ViewScale {
+    /// Numeric order. `total_cmp` agrees with `<` and `==` here, because
+    /// a scale is finite and at least `MIN`, so never NaN or zero.
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.0.total_cmp(&other.0)
+    }
+}
+impl std::hash::Hash for ViewScale {
+    /// Hashes the bit pattern, which is unique per value because a scale is finite and at least `MIN`, so never NaN or zero.
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.0.to_bits().hash(state);
+    }
+}
 
 impl Default for ViewScale {
     fn default() -> Self {
@@ -311,6 +332,13 @@ impl TryFrom<f32> for ViewScale {
     /// Validates like [`ViewScale::new`].
     fn try_from(factor: f32) -> Result<Self, Self::Error> {
         Self::new(factor)
+    }
+}
+
+impl From<ViewScale> for f32 {
+    /// The factor, as [`ViewScale::get`] returns it.
+    fn from(scale: ViewScale) -> Self {
+        scale.0
     }
 }
 

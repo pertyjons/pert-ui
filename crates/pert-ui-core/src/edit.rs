@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use crate::{ParameterError, ParameterId, ParameterSpec, ParameterValue};
 
 /// An authoritative parameter revision, scoped to one parameter incarnation.
-#[derive(Clone, Copy, Debug, Default, Eq, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(
     feature = "serde",
     derive(serde::Deserialize, serde::Serialize),
@@ -27,7 +27,7 @@ impl Revision {
 }
 
 /// Ordered message number within an edit. Updates and commit must increase it.
-#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct EditSequence(u64);
 
 impl EditSequence {
