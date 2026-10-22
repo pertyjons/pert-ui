@@ -270,8 +270,8 @@ struct ListFilterInner {
 }
 
 /// Shows neither the rows nor the query: formatting must not read a signal
-/// inside a runtime phase. Read them with [`ListFilter::items`] and
-/// [`ListFilter::counts`].
+/// inside a runtime phase. Read the rows with [`ListFilter::items`] and their
+/// counts with [`ListFilter::counts`].
 impl std::fmt::Debug for ListFilter {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("ListFilter").finish_non_exhaustive()

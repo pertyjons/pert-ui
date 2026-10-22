@@ -171,8 +171,7 @@ pub struct IconManager {
     shared: Weak<Shared>,
 }
 
-/// Shows no glyph overrides: they are read through the manager, which fails
-/// after shutdown.
+/// Shows no glyph overrides.
 impl std::fmt::Debug for IconManager {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("IconManager").finish_non_exhaustive()

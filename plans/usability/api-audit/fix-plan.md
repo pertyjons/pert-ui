@@ -265,10 +265,10 @@ and anything left to a later part.
     propagates from the input call that activated it, not from a flush. It
     was corrected; the implementation matched 6b1. The correction is
     verified in 6b2's review.
-- **6b2 (0.3.61):** hand-written `Debug`, ending in `finish_non_exhaustive`,
-  for the state owners, handles, contexts and backends. None reads a
-  signal, borrows shared state, formats a callback or bounds application
-  values by `Debug`. `FilterTarget` derives it.
+- **6b2 (0.3.61), done 2026-10-22:** 8af8628 and its review fix. hand-written `Debug`, ending in `finish_non_exhaustive`,
+  except `FilterTarget`, which derives it, for the state owners, handles,
+  contexts and backends. None reads a signal, borrows shared state, formats
+  a callback or bounds application values by `Debug`.
   - **Checks run after the last edit:**
     - `cargo fmt --all --check`;
     - workspace Clippy, and Clippy in every CI feature configuration;
@@ -280,6 +280,12 @@ and anything left to a later part.
     - warning-free workspace rustdoc;
     - `api/generate.sh`, whose diff is the plan's expected `Debug` lines;
     - `git diff --check`.
+  - **Review:** Codex found no implementation defect. Four wordings
+    claimed more than the code: the derived `FilterTarget`, the selection
+    mode of `ListController` and `ListFilter`, a query `ListFilter` cannot
+    return, and overrides `IconManager` cannot read. All four were
+    corrected; the correction is verified in 6b3's review. The review also
+    verified 6b1's correction.
 
 ## Rules for every part
 
