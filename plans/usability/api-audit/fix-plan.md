@@ -263,7 +263,8 @@ and anything left to a later part.
     fixes before round 2, which also update its version.
   - **Review:** Codex found one CHANGELOG error: a toast action's failure
     propagates from the input call that activated it, not from a flush. It
-    was corrected; the implementation matched 6b1.
+    was corrected; the implementation matched 6b1. The correction is
+    verified in 6b2's review.
 
 ## Rules for every part
 
