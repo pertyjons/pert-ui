@@ -270,8 +270,10 @@ impl FloatingWindow {
     /// Sets the initial logical origin.
     ///
     /// # Errors
-    /// Returns a runtime read/lifecycle error if this description's controller
-    /// is closed. This builder is valid during component update; it writes no
+    /// Returns [`RuntimeError::Unmounted`] once this description's controller
+    /// is closed or its window removed, [`RuntimeError::Closed`] after the
+    /// runtime shut down and `BorrowConflict` for a reentrant read of its
+    /// status. This builder is valid during component update; it writes no
     /// signal. A programmatic controller placement supersedes initial geometry.
     pub fn position(self, position: Point) -> Result<Self, RuntimeError> {
         self.state.live()?;
@@ -283,8 +285,10 @@ impl FloatingWindow {
     /// Sets the initial preferred outer size, including the title bar and grip.
     ///
     /// # Errors
-    /// Returns a runtime read/lifecycle error if this description's controller
-    /// is closed. Initial geometry writes no signal and is valid during update.
+    /// Returns [`RuntimeError::Unmounted`] once this description's controller
+    /// is closed or its window removed, [`RuntimeError::Closed`] after the
+    /// runtime shut down and `BorrowConflict` for a reentrant read of its
+    /// status. Initial geometry writes no signal and is valid during update.
     /// Programmatic controller placement supersedes initial geometry.
     pub fn initial_size(self, size: Size) -> Result<Self, RuntimeError> {
         self.state.live()?;
@@ -297,8 +301,10 @@ impl FloatingWindow {
     /// Chrome minima still apply; overflow content remains scrollable.
     ///
     /// # Errors
-    /// Returns a runtime read/lifecycle error if this description's controller
-    /// is closed. Initial geometry writes no signal and is valid during update.
+    /// Returns [`RuntimeError::Unmounted`] once this description's controller
+    /// is closed or its window removed, [`RuntimeError::Closed`] after the
+    /// runtime shut down and `BorrowConflict` for a reentrant read of its
+    /// status. Initial geometry writes no signal and is valid during update.
     /// Programmatic controller placement supersedes initial geometry.
     pub fn fixed_size(mut self, size: Size) -> Result<Self, RuntimeError> {
         self.state.live()?;

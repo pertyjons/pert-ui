@@ -190,14 +190,14 @@ pub struct Dialog {
     escape: bool,
 }
 impl Dialog {
-    /// Describes one owner using a controller and arbitrary content. The
+    /// Describes one owner using `controller` and arbitrary content. The
     /// controller is claimed when the dialog mounts, not here.
-    pub fn new(state: DialogController, anchor: Element, content: Element) -> Self {
-        Self::with_parts(state, anchor, Some(content))
+    pub fn new(controller: DialogController, anchor: Element, content: Element) -> Self {
+        Self::with_parts(controller, anchor, Some(content))
     }
-    fn with_parts(state: DialogController, anchor: Element, content: Option<Element>) -> Self {
+    fn with_parts(controller: DialogController, anchor: Element, content: Option<Element>) -> Self {
         Self {
-            state,
+            state: controller,
             token: Rc::new(()),
             alert: None,
             anchor: Some(anchor),
@@ -502,16 +502,16 @@ pub struct AlertDialog {
 impl AlertDialog {
     /// Describes a default-styled heading, message, Cancel and affirmation
     /// buttons. `accept_label` describes the host action, for example "Delete".
-    /// The controller is claimed when the confirmation mounts, as for [`Dialog::new`].
+    /// `controller` is claimed when the confirmation mounts, as for [`Dialog::new`].
     pub fn new(
-        state: DialogController,
+        controller: DialogController,
         anchor: Element,
         title: impl Into<TextSource>,
         message: impl Into<TextSource>,
         accept_label: impl Into<TextSource>,
     ) -> Self {
         let title = title.into();
-        let mut dialog = Dialog::with_parts(state, anchor, None);
+        let mut dialog = Dialog::with_parts(controller, anchor, None);
         dialog.alert = Some(Caption::new(title.clone()));
         Self {
             dialog,

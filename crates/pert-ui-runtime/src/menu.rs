@@ -1350,8 +1350,11 @@ impl ContextMenuOpener {
     /// ```
     ///
     /// # Errors
-    /// The signal write's failures: `WriteDuringUpdate` and the other
-    /// phase restrictions, or `Closed` after the runtime shut down.
+    /// The errors of the menu's signal reads and writes, those of
+    /// [`Signal::set`](crate::Signal::set): `Closed` after the runtime shut
+    /// down; `WriteDuringUpdate`, `WriteDuringLayout`, `WriteDuringPaint`,
+    /// `WriteDuringInspection` or `WriteDuringDelivery` from inside that phase;
+    /// or `BorrowConflict`. A refused call opens nothing.
     pub fn open(
         &self,
         position: Option<Point>,

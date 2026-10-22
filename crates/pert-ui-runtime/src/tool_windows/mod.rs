@@ -2333,9 +2333,13 @@ impl ToolWindowController {
     /// Returns whether anything changed.
     ///
     /// # Errors
-    /// Returns `Unmounted` when no mounted layout uses this controller, and
+    /// Returns [`RuntimeError::Unmounted`] when no mounted layout uses this
+    /// controller; the errors of [`Signal::set`](crate::Signal::set) for the
+    /// layout's state write: `Closed` after the runtime shut down,
+    /// `WriteDuringUpdate`, `WriteDuringLayout`, `WriteDuringPaint`,
+    /// `WriteDuringInspection` or `WriteDuringDelivery` from inside that phase,
+    /// or `BorrowConflict`; and [`RuntimeError::Layout`] with
     /// [`LayoutError::UnknownKey`] for a key the layout does not have.
-    /// Rejects writes during update, layout, paint, inspection or external delivery.
     pub fn expand(&self, key: &str) -> Result<bool, RuntimeError> {
         self.set(key, Some(true))
     }
@@ -2359,7 +2363,9 @@ impl ToolWindowController {
     /// Whether a tool window is expanded.
     ///
     /// # Errors
-    /// As [`Self::expand`].
+    /// Returns [`RuntimeError::Unmounted`] when no mounted layout uses this
+    /// controller and [`RuntimeError::Layout`] with [`LayoutError::UnknownKey`]
+    /// for a key the layout does not have.
     pub fn is_expanded(&self, key: &str) -> Result<bool, RuntimeError> {
         let model = self.model()?;
         let model = model.borrow();
@@ -2485,9 +2491,13 @@ impl ToolWindowController {
     /// anything changed.
     ///
     /// # Errors
-    /// Returns `Unmounted` when no mounted layout uses this controller, and a
-    /// bound signal's write errors. Rejects writes during update, layout, paint,
-    /// inspection or external delivery, including when names have no binding.
+    /// Returns [`RuntimeError::Unmounted`] when no mounted layout uses this
+    /// controller, and the errors of [`Signal::set`](crate::Signal::set), for
+    /// the layout's state write and the bound names signal alike: `Closed`
+    /// after the runtime shut down, `WriteDuringUpdate`, `WriteDuringLayout`,
+    /// `WriteDuringPaint`, `WriteDuringInspection` or `WriteDuringDelivery`
+    /// from inside that phase, or `BorrowConflict`, even when names have no
+    /// binding.
     pub fn set_names(&self, names: bool) -> Result<bool, RuntimeError> {
         let model = self.model()?;
         model::check_writable(&model)?;

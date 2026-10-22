@@ -82,31 +82,31 @@ impl AxisMapping {
     pub fn value(self, pixel: f64) -> f64 {
         self.start + pixel / self.pixels_per_unit
     }
-    /// The domain range shown by `extent` pixels from pixel zero, as start and
-    /// end.
+    /// The domain range shown by `extent_pixels` pixels from pixel zero, as
+    /// start and end.
     #[must_use]
-    pub fn visible(self, extent: f64) -> (f64, f64) {
-        (self.start, self.value(extent))
+    pub fn visible(self, extent_pixels: f64) -> (f64, f64) {
+        (self.start, self.value(extent_pixels))
     }
     /// The mapping at another scale that keeps the value under the pixel
-    /// `anchor` where it is: what zooming at the pointer needs.
+    /// `anchor_pixel` where it is: what zooming at the pointer needs.
     ///
-    /// The start moves by `anchor · (1/old − 1/new)`, computed without the
-    /// anchor's absolute value, so zooming far from zero loses no precision and
+    /// The start moves by `anchor_pixel · (1/old − 1/new)`, computed without
+    /// the anchor's absolute value, so zooming far from zero loses no precision and
     /// zooming to the same scale returns the mapping unchanged.
     ///
     /// # Errors
     /// As [`Self::new`] for the scale; [`GeometryError::NonFinite`] for a
     /// non-finite anchor or a start that overflows.
-    pub fn zoomed_at(self, pixels_per_unit: f64, anchor: f64) -> Result<Self, GeometryError> {
+    pub fn zoomed_at(self, pixels_per_unit: f64, anchor_pixel: f64) -> Result<Self, GeometryError> {
         let zoomed = Self::new(self.start, pixels_per_unit)?;
-        if !anchor.is_finite() {
+        if !anchor_pixel.is_finite() {
             return Err(GeometryError::NonFinite);
         }
         if pixels_per_unit == self.pixels_per_unit {
             return Ok(self);
         }
-        let shift = anchor * (self.pixels_per_unit.recip() - pixels_per_unit.recip());
+        let shift = anchor_pixel * (self.pixels_per_unit.recip() - pixels_per_unit.recip());
         Self::new(zoomed.start + shift, pixels_per_unit)
     }
     /// The mapping with the content moved by `pixels`, positive to move it
@@ -136,22 +136,22 @@ impl AxisMapping {
             .find(|step| *step >= raw)
             .filter(|step| step.is_finite() && *step > 0.0)
     }
-    /// The domain values of ruler marks inside the `extent` pixels from pixel
-    /// zero, at [`Self::tick_step`]`(min_pixels)`: finite, strictly increasing
+    /// The domain values of ruler marks inside the `extent_pixels` pixels from
+    /// pixel zero, at [`Self::tick_step`]`(min_pixels)`: finite, strictly increasing
     /// and within the visible range. Each is computed from its index, so marks
     /// do not accumulate rounding error. At most 10,000 marks are yielded.
     /// Nothing is yielded for an invalid spacing or extent, and marks stop where
     /// `f64` can no longer tell one from the next, as it cannot for fine marks
     /// far from zero.
-    pub fn ticks(self, extent: f64, min_pixels: f64) -> impl Iterator<Item = f64> {
+    pub fn ticks(self, extent_pixels: f64, min_pixels: f64) -> impl Iterator<Item = f64> {
         let step = self
             .tick_step(min_pixels)
-            .filter(|_| extent.is_finite() && extent >= 0.0);
+            .filter(|_| extent_pixels.is_finite() && extent_pixels >= 0.0);
         let (first, start, end, step) = match step {
             Some(step) => (
                 (self.start / step).ceil(),
                 self.start,
-                self.value(extent),
+                self.value(extent_pixels),
                 step,
             ),
             None => (f64::NAN, 0.0, 0.0, 1.0),

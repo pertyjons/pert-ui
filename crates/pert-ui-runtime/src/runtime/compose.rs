@@ -17,8 +17,18 @@ impl Runtime {
     /// without repainting it.
     ///
     /// # Errors
-    /// Rejects pending updates or an invalid runtime phase; propagates component
-    /// drawing errors. Failed or panicking callbacks keep their prior cache dirty.
+    /// Returns [`DrawError::Runtime`](crate::DrawError::Runtime) holding a
+    /// runtime phase error (see [`Runtime`]);
+    /// [`DrawError::PendingUpdates`](crate::DrawError::PendingUpdates) while
+    /// updates, layout or queued requests wait for a flush; and a component's
+    /// own drawing error as it returned it. Failed or panicking callbacks keep
+    /// their prior cache dirty.
+    ///
+    /// `DrawError` does not convert into [`RuntimeError`], so a helper that
+    /// flushes and paints, such as a test that inspects the scene, returns
+    /// `Result<_, DrawError>`: `RuntimeError` and every leaf error convert into
+    /// it with `?`. With the facade's `native` feature its `AppError` accepts
+    /// both as well.
     pub fn paint(&mut self) -> Result<crate::DisplayList, crate::DrawError> {
         self.paint_scene(true)
     }

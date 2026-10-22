@@ -36,6 +36,11 @@ pub(crate) fn adorned_content<'a>(
 /// inspection and, when it is within [`TextEditError::MAX_TEXT_BYTES`], shows
 /// as delayed help while the pointer rests on a truncated label.
 ///
+/// Inspection reports a [`SemanticRole::Label`] whose name is the label's
+/// text. Static text is a name, so the label reports no
+/// [`SemanticValue`](crate::SemanticValue): a value is the content of an
+/// editable or stateful control.
+///
 /// Text the label cannot prepare is refused without failing the flush: text
 /// longer than [`TextEditError::MAX_TEXT_BYTES`] that is wrapped or rich, a
 /// layout beyond a raster limit at the current width, style or scale, or rich

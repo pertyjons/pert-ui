@@ -265,9 +265,17 @@ impl<T: ParameterValue> Inner<T> {
 /// is no worker or callback-safe bridge.
 ///
 /// Operations of a binding, its host and its sessions return [`RuntimeError`].
-/// The edit, delivery and family refusals their `# Errors` sections name arrive
-/// as [`RuntimeError::Binding`], so a control can tell a refused edit, which it
-/// reports itself, from any other runtime failure.
+/// Each operation that changes state first checks the runtime; their `# Errors`
+/// sections call that check's failures *a runtime phase error*:
+/// [`RuntimeError::Closed`] after shutdown, or
+/// [`RuntimeError::WriteDuringUpdate`], `WriteDuringLayout`,
+/// `WriteDuringPaint`, `WriteDuringInspection` or `WriteDuringDelivery` from
+/// inside that phase, including `WriteDuringDelivery` inside any host sink.
+/// A phase error changes nothing. The edit, delivery and family refusals the
+/// sections name arrive as [`RuntimeError::Binding`]: an [`EditError`] as
+/// [`BindingError::Edit`], a [`DeliveryError`] as [`BindingError::Delivery`].
+/// A control can therefore tell a refused edit, which it reports itself, from
+/// any other runtime failure.
 ///
 /// The handle stays on the UI thread; moving it to another thread does not
 /// compile:
@@ -346,8 +354,14 @@ impl<T: ParameterValue> Parameter<T> {
     /// the next flush, which [`Runtime::next_deadline`] reports as due at once.
     ///
     /// # Errors
-    /// Rejects foreign runtime contexts, a retained delivery fault
-    /// ([`DeliveryError::Faulted`]) and normal edit admission failures.
+    /// Returns [`RuntimeError::ForeignRuntime`] for a context of another
+    /// runtime; a runtime phase error (see [`Parameter`]); [`EditError::Unavailable`] for a
+    /// removed parameter or a disconnected remote one;
+    /// [`DeliveryError::Faulted`] while a delivery fault is retained; and the
+    /// admission refusals of [`ParameterState::begin`]: [`EditError::ReadOnly`],
+    /// [`EditError::StaleRevision`] when `expected` is not the current
+    /// revision, [`EditError::Busy`], [`EditError::Capacity`] and
+    /// [`EditError::Exhausted`]. A refused begin changes nothing.
     pub fn begin_edit(
         &self,
         context: &mut EventContext,
@@ -524,7 +538,10 @@ impl<T: ParameterValue> ParameterHost<T> {
     /// would spuriously cancel a newer gesture.
     ///
     /// # Errors
-    /// Returns phase/closed errors or the core's atomic validation/revision failure.
+    /// Returns a runtime phase error (see [`Parameter`]), or the refusals of
+    /// [`ParameterState::write_base`]: [`EditError::Unavailable`] after
+    /// removal, [`EditError::InvalidValue`] and [`EditError::Exhausted`]. A
+    /// refused write changes nothing.
     pub fn write_base(&self, value: T) -> Result<(), RuntimeError> {
         let _timing = self
             .inner
@@ -539,7 +556,11 @@ impl<T: ParameterValue> ParameterHost<T> {
     /// and invalidates edits; see [`ParameterState::replace_spec`].
     ///
     /// # Errors
-    /// Returns phase/closed errors or the core's atomic metadata validation failure.
+    /// Returns a runtime phase error (see [`Parameter`]), or the refusals of
+    /// [`ParameterState::replace_spec`]: [`EditError::Unavailable`] after
+    /// removal, [`EditError::InvalidValue`] when the new specification rejects
+    /// the base or the overlay, and [`EditError::Exhausted`]. A refused
+    /// replacement changes nothing.
     pub fn replace_spec(&self, spec: ParameterSpec<T>) -> Result<(), RuntimeError> {
         let _timing = self
             .inner
@@ -586,7 +607,10 @@ impl<T: ParameterValue> ParameterHost<T> {
     /// ```
     ///
     /// # Errors
-    /// Returns phase/closed, unavailable or invalid-overlay errors.
+    /// Returns a runtime phase error (see [`Parameter`]), [`EditError::Unavailable`] after
+    /// removal, or [`EditError::InvalidValue`] for an overlay
+    /// [`ParameterSpec::validate_effective`] rejects. A refused overlay changes
+    /// nothing.
     pub fn set_effective(&self, value: Option<T>) -> Result<(), RuntimeError> {
         let _timing = self
             .inner
@@ -604,7 +628,7 @@ impl<T: ParameterValue> ParameterHost<T> {
     /// [`Self::resolve_delivery`].
     ///
     /// # Errors
-    /// Returns phase/closed errors. Repeated removal is harmless.
+    /// Returns only a runtime phase error (see [`Parameter`]). Repeated removal is harmless.
     pub fn remove(&self) -> Result<(), RuntimeError> {
         self.inner.shared.writable()?;
         if let Some(remote) = self.inner.remote.borrow().as_ref() {
@@ -738,8 +762,12 @@ impl<T: ParameterValue> EditSession<T> {
     /// has ended as `Rejected(DeliveryFailed)`; [`Self::outcome`] shows it.
     ///
     /// # Errors
-    /// Returns runtime-phase, finished-edit, invalid-value or counter errors.
-    /// Invalid candidates do not consume a sequence or terminate the gesture.
+    /// Returns a runtime phase error (see [`Parameter`]); [`EditError::Pending`] once a
+    /// remote binding has submitted this edit's proposal;
+    /// [`EditError::Finished`] after the edit ended; [`EditError::InvalidValue`]
+    /// for a candidate the specification rejects; and [`EditError::Exhausted`]
+    /// when the sequence cannot advance. Invalid candidates do not consume a
+    /// sequence or terminate the gesture.
     pub fn update(&self, value: T) -> Result<PreviewOutcome, RuntimeError> {
         self.gesture.parameter.shared.writable()?;
         let parameter = &self.gesture.parameter;
@@ -792,8 +820,11 @@ impl<T: ParameterValue> EditSession<T> {
     /// returns the original candidate and does not send a new mutation.
     ///
     /// # Errors
-    /// Returns runtime-phase or counter errors. Core commit validation failure is
-    /// a terminal [`EditOutcome::Rejected`] result, releasing the preview.
+    /// Returns a runtime phase error (see [`Parameter`]), [`EditError::Exhausted`] when the
+    /// sequence, or for a remote binding the revision its acceptance takes,
+    /// cannot advance, and for a remote binding [`EditError::Unavailable`]
+    /// while it is disconnected. Core commit validation failure is a terminal
+    /// [`EditOutcome::Rejected`] result, releasing the preview, not an error.
     pub fn commit(&self, value: T) -> Result<EditOutcome<T>, RuntimeError> {
         let parameter = &self.gesture.parameter;
         let _timing = parameter
@@ -864,7 +895,9 @@ impl<T: ParameterValue> EditSession<T> {
     /// and preserves its retained request/receipt for host reconciliation.
     ///
     /// # Errors
-    /// Returns a runtime phase/closed error; core errors indicate an invalid token.
+    /// Returns only a runtime phase error (see [`Parameter`]). The session's own token always
+    /// has a receipt, so [`EditError::UnknownEdit`] would indicate a
+    /// token-lifecycle defect.
     pub fn cancel(&self) -> Result<EditOutcome<T>, RuntimeError> {
         self.gesture.parameter.shared.writable()?;
         let parameter = &self.gesture.parameter;
@@ -950,7 +983,9 @@ impl Runtime {
     /// ```
     ///
     /// # Errors
-    /// Rejects a duplicate complete incarnation or an invalid runtime write phase.
+    /// Returns a runtime phase error (see [`Parameter`]), or [`BindingError::DuplicateParameter`]
+    /// for a complete incarnation this runtime registered before, even one
+    /// since removed.
     pub fn parameter<T: ParameterValue>(
         &mut self,
         id: ParameterId,

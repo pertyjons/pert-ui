@@ -361,9 +361,13 @@ impl<T: ParameterValue> ParameterState<T> {
     /// Admits one edit at an expected revision and reserves its terminal receipt.
     ///
     /// # Errors
-    /// Rejects unavailable/read-only targets, stale revisions, busy ownership,
-    /// full receipt capacity ([`Self::MAX_TERMINAL_RECEIPTS`] retained receipts)
-    /// or exhausted serials without changing state.
+    /// Each leaves the state unchanged: [`EditError::Unavailable`] after
+    /// [`Self::remove`], [`EditError::ReadOnly`] for a read-only specification,
+    /// [`EditError::StaleRevision`] when `expected` is not the current revision,
+    /// [`EditError::Busy`] while another edit is active,
+    /// [`EditError::Capacity`] when [`Self::MAX_TERMINAL_RECEIPTS`] receipts are
+    /// retained, and [`EditError::Exhausted`] when the edit serial cannot
+    /// advance.
     pub fn begin(
         &mut self,
         expected: Revision,
@@ -576,8 +580,11 @@ impl<T: ParameterValue> ParameterState<T> {
     /// Performs an authoritative write and rejects any active edit as a conflict.
     ///
     /// # Errors
-    /// Rejects unavailable state, invalid values or revision exhaustion atomically.
-    /// Even an equal external write advances revision and invalidates the edit.
+    /// Each leaves the state unchanged: [`EditError::Unavailable`] after
+    /// [`Self::remove`], [`EditError::InvalidValue`] for a value the
+    /// specification rejects and [`EditError::Exhausted`] when the revision
+    /// cannot advance. Even an equal external write advances revision and
+    /// invalidates the edit.
     pub fn write_base(&mut self, value: T) -> Result<(), EditError> {
         if !self.available {
             return Err(EditError::Unavailable);
@@ -602,7 +609,10 @@ impl<T: ParameterValue> ParameterState<T> {
     /// one.
     ///
     /// # Errors
-    /// Unavailable state, an incompatible base or overlay, or an exhausted revision.
+    /// [`EditError::Unavailable`] after [`Self::remove`],
+    /// [`EditError::InvalidValue`] when the new specification rejects the base
+    /// or the explicit effective overlay, and [`EditError::Exhausted`] when the
+    /// revision cannot advance.
     pub fn replace_spec(&mut self, spec: ParameterSpec<T>) -> Result<(), EditError> {
         if !self.available {
             return Err(EditError::Unavailable);

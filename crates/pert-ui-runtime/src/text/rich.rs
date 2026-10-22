@@ -20,6 +20,11 @@ pub(crate) enum FontChoice {
 
 /// One owned text segment. Unspecified properties inherit the surrounding text style.
 /// Adjacent segments form one Unicode paragraph; segment boundaries are not line breaks.
+///
+/// A span is a UI-thread value, neither `Send` nor `Sync`, because it can
+/// name a registered font ([`FontId`]), which belongs to its runtime's font
+/// registry. A worker returns plain text or its own data, and the UI thread
+/// builds the span.
 #[derive(Clone, Debug, PartialEq)]
 #[must_use]
 pub struct TextSpan {
@@ -82,6 +87,11 @@ pub(crate) enum Inline {
 /// [`TextEditError::MAX_TEXT_BYTES`](crate::TextEditError::MAX_TEXT_BYTES) of UTF-8
 /// and [`Self::MAX_SEGMENTS`] segments.
 /// Rich labels are display content; editable text fields continue to edit plain strings.
+///
+/// Rich text is a UI-thread value, neither `Send` nor `Sync`, because a span
+/// can name a registered font ([`FontId`]). A worker, for example the job of
+/// [`Runtime::spawn`](crate::Runtime::spawn), returns plain text or its own
+/// data, and the UI thread builds the `RichText`.
 #[derive(Clone, Debug, Default, PartialEq)]
 #[must_use]
 pub struct RichText {

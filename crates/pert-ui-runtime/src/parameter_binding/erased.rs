@@ -324,7 +324,8 @@ impl AnyParameterHost {
     /// Removes the incarnation; see [`ParameterHost::remove`].
     ///
     /// # Errors
-    /// Returns phase/closed errors.
+    /// Returns only a runtime phase error (see [`Parameter`](crate::Parameter)),
+    /// as [`ParameterHost::remove`] does.
     pub fn remove(&self) -> Result<(), RuntimeError> {
         each!(self, host => host.remove())
     }

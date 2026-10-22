@@ -20,7 +20,9 @@ binding: a write there fails with an error such as
 ([`Component::pointer_input`], [`Component::keyboard_event`]), command and
 button actions, mailbox handlers, [`Component::deliver_notifications`] and the
 work queued with [`EventContext::defer`] run in event phases, where writes
-are allowed.
+are allowed. [`Component::cancel_input`] also runs outside the evaluation
+phases: it may restore the widget's own bindings but must not run application
+actions, and its rustdoc says how a failed restore is reported.
 
 A widget that must react to a binding it does not own, for example to commit a
 value another control wrote, records what it saw in `update` and asks for an
@@ -84,9 +86,13 @@ component whose handling of the repeated move kept scheduling work.
 
 A gesture belongs to the button that started it: end it on that button's
 release, not any release. Cancel it in [`Component::cancel_input`], which the
-runtime calls when the widget loses its input context (Escape, hiding,
-removal, a modal surface), and on [`Component::focus_lost`] where the gesture
-should not outlive focus.
+runtime calls when the widget loses its input context (hiding, removal, window
+focus loss, a modal surface, [`Runtime::cancel_input`]), and on
+[`Component::focus_lost`] where the gesture should not outlive focus. Escape
+does not call `cancel_input`: the runtime ends the focused widget's pointer
+capture, timer, drag and parameter edit sessions, then delivers Escape to
+[`Component::keyboard_event`] as an ordinary key. A widget whose gesture
+Escape should cancel cancels it there, as [`ColorPicker`] does.
 
 # Clicks and double clicks
 
@@ -162,7 +168,11 @@ and closes the editor, moves to the next cell on Tab, or leaves it open after
 [`Component::inspect`] describes the widget to tooling: a [`Semantics`] role,
 name, value and state, and for a widget whose children are its own content,
 semantics for each of them. A control without a visible label gets a name from
-the application with [`Element::with_label`] or a [`Field`].
+the application with [`Element::with_label`] or a [`Field`]. Static text is a
+name; the value is an editable or stateful control's content. A value made of
+several numbers, such as a color, is [`SemanticValue::Text`] presenting the
+whole value plus one [`InspectValue::Number`] property per component, as
+[`ColorPicker`] reports its `hue`, `saturation`, `value` and `alpha`.
 
 # An inspector over an application document
 

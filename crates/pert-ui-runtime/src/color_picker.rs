@@ -1161,9 +1161,10 @@ impl Component for ColorPart {
         let previewing = self.gesture.is_some();
         self.input_reset();
         if previewing {
-            // Where writes are refused (hiding, removal) the notification
-            // fails; the parts then read the cleared preview when they are
-            // shown again, which updates them.
+            // Cancellation runs outside the evaluation phases, so the
+            // notification succeeds on the hiding and removal paths too.
+            // Cancellation cannot fail: were it refused, the parts would
+            // still read the cleared preview at their next update.
             let _ = self.model.notify();
         }
         cx.invalidate(Invalidation::Paint);

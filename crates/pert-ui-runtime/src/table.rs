@@ -234,6 +234,9 @@ pub struct TableSort {
 /// and column; the element's own key is free, since the table wraps each cell.
 /// A row exists when `key` answers for its index; its cells may be missing.
 /// The order of rows is the application's: the table never sorts them.
+/// An implementation is `'static`, as [`TableSource::new`] requires: it owns its
+/// rows or shares them through an `Rc`, never borrowing from a local or a
+/// component (see [`Component::content_rows`](crate::Component::content_rows)).
 pub trait TableItems {
     /// Number of rows.
     fn len(&self) -> usize;
@@ -637,7 +640,10 @@ impl TableController {
     /// Replaces the rows, keeping selection by key.
     ///
     /// # Errors
-    /// Rejects writes during update, paint or inspection, like any signal write.
+    /// The errors of [`Signal::set`](crate::Signal::set): `Closed` after the
+    /// runtime shut down; `WriteDuringUpdate`, `WriteDuringLayout`,
+    /// `WriteDuringPaint`, `WriteDuringInspection` or `WriteDuringDelivery`
+    /// from inside that phase; or `BorrowConflict`.
     pub fn set_source(&self, source: TableSource) -> Result<(), RuntimeError> {
         let before = self.0.items.get()?;
         self.publish(source.clone())?;
@@ -691,7 +697,10 @@ impl TableController {
     }
     /// Shows only the rows whose text matches `query` under `matcher`, and
     /// keeps applying it when the rows are replaced or a column moves; an empty
-    /// or whitespace query shows every row.
+    /// or whitespace query shows every row. Any other query is trimmed of
+    /// leading and trailing whitespace before `matcher` sees it, as for
+    /// [`ListFilter::filter`](crate::ListFilter::filter), so code that repeats
+    /// the match passes the trimmed query.
     ///
     /// A row's text is its cells' [`TableItems::text`] joined in column order
     /// with a space between them,
@@ -753,8 +762,11 @@ impl TableController {
     /// column into view the next time the user moves it; this call does not.
     ///
     /// # Errors
-    /// Returns [`LayoutError::UnknownKey`] for a key no column has, and rejects
-    /// writes during update, paint or inspection, like any signal write.
+    /// Returns [`LayoutError::UnknownKey`] for a key no column has, and the
+    /// errors of [`Signal::set`](crate::Signal::set): `Closed` after the
+    /// runtime shut down; `WriteDuringUpdate`, `WriteDuringLayout`,
+    /// `WriteDuringPaint`, `WriteDuringInspection` or `WriteDuringDelivery`
+    /// from inside that phase; or `BorrowConflict`.
     pub fn set_active_column(&self, column: Option<String>) -> Result<(), RuntimeError> {
         if let Some(key) = &column
             && self.0.shared.column_index(key).is_none()
@@ -850,8 +862,10 @@ impl TableController {
     /// owners do not arbitrate requests. See [`ListController`](crate::ListController).
     ///
     /// # Errors
-    /// The signal write's failures: `WriteDuringUpdate`, `Closed` or
-    /// `BorrowConflict`.
+    /// The errors of [`Signal::set`](crate::Signal::set): `Closed` after the
+    /// runtime shut down; `WriteDuringUpdate`, `WriteDuringLayout`,
+    /// `WriteDuringPaint`, `WriteDuringInspection` or `WriteDuringDelivery`
+    /// from inside that phase; or `BorrowConflict`.
     pub fn reveal(&self, key: impl Into<String>) -> Result<crate::ListRevealReceipt, RuntimeError> {
         self.0.reveal.reveal(key)
     }
@@ -1438,8 +1452,11 @@ impl Table {
     /// Creates a table over a controller with a fixed logical row height.
     ///
     /// # Errors
-    /// Returns a [`GeometryError`](crate::GeometryError) for a row height that
-    /// is not finite and positive.
+    /// Returns [`GeometryError::NonFinite`](crate::GeometryError::NonFinite)
+    /// for a row height that is not finite,
+    /// [`GeometryError::Negative`](crate::GeometryError::Negative) for a
+    /// negative one and [`GeometryError::Empty`](crate::GeometryError::Empty)
+    /// for zero.
     pub fn new(
         controller: &TableController,
         row_height: f32,

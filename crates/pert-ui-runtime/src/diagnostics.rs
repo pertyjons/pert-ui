@@ -241,11 +241,20 @@ pub enum SemanticRole {
     Image,
 }
 
-/// What a component currently presents, in a typed form a tool can compare.
+/// The content of an editable or stateful control, in a typed form a tool can
+/// compare.
 ///
-/// Text is what a reader sees, already formatted and localized by whoever
-/// supplied it. Numbers are canonical values in the component's own domain, not
-/// normalized positions and not display strings.
+/// Static text is not a value: a [`Label`](crate::Label) reports its text as
+/// its [`Semantics`] `name` and has no value. Text is what a reader sees,
+/// already formatted and localized by whoever supplied it. Numbers are
+/// canonical values in the component's own domain, not normalized positions
+/// and not display strings.
+///
+/// A value made of several numbers, such as a color or a point, has no variant
+/// of its own: report [`Self::Text`] presenting the whole value and one
+/// [`InspectValue::Number`] property per component in
+/// [`ComponentDetails::properties`], as [`ColorPicker`](crate::ColorPicker)
+/// reports its hex text with `hue`, `saturation`, `value` and `alpha`.
 #[derive(Clone, Debug, PartialEq)]
 #[non_exhaustive]
 #[cfg_attr(
@@ -254,7 +263,8 @@ pub enum SemanticRole {
     serde(deny_unknown_fields)
 )]
 pub enum SemanticValue {
-    /// Presented or edited text.
+    /// An editable control's text, or a stateful control's content presented
+    /// as text.
     Text(String),
     /// A two-state value.
     Bool(bool),
@@ -472,7 +482,10 @@ pub struct Semantics {
     pub name: Option<String>,
     /// Longer supporting text, such as help text or a status message.
     pub description: Option<String>,
-    /// What it currently presents.
+    /// The content of an editable or stateful control: a field's text, a
+    /// toggle's state, a slider's number, a chooser's selection. Static text,
+    /// such as a [`Label`](crate::Label)'s, is the `name` and leaves the value
+    /// absent.
     pub value: Option<SemanticValue>,
     /// What can currently be done to it, sorted and without duplicates.
     pub actions: Vec<SemanticAction>,
@@ -541,8 +554,9 @@ impl Semantics {
         self.description = Some(description.into()).filter(|text| !text.is_empty());
         self
     }
-    /// Sets the presented value; a [protected](Self::protected) value stays
-    /// absent.
+    /// Sets the `value` field, the content of an editable or stateful control;
+    /// static text is the name instead. A [protected](Self::protected) value
+    /// stays absent.
     #[must_use]
     pub fn value(mut self, value: SemanticValue) -> Self {
         if !self.protected {

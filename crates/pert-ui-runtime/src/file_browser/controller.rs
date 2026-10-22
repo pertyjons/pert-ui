@@ -653,7 +653,9 @@ impl FileBrowserController {
     /// have no path and are left out.
     ///
     /// # Errors
-    /// The selection signals' read failures.
+    /// The selection signals' read failures: [`RuntimeError::Closed`] after the
+    /// runtime shut down and [`RuntimeError::BorrowConflict`] for a reentrant
+    /// read.
     pub fn selected_paths(&self) -> Result<Vec<PathBuf>, RuntimeError> {
         let selection = &self.0.selection;
         let keys: Vec<String> = match selection.mode() {

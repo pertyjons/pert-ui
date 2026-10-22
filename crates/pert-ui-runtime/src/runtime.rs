@@ -193,7 +193,10 @@ pub enum RuntimeError {
     #[error(transparent)]
     Binding(#[from] crate::BindingError),
     /// An application's own failure, returned from a callback through the
-    /// library. The library never produces it.
+    /// library. The library never produces it. A boxed
+    /// `Box<dyn Error + Send + Sync>` becomes one with
+    /// [`ApplicationError::from`](crate::ApplicationError::from), which keeps
+    /// its source chain; `RuntimeError` has no conversion from the box itself.
     #[error(transparent)]
     Application(#[from] crate::ApplicationError),
     /// The bounded application operation queue is full; the operation was refused.
@@ -1019,6 +1022,11 @@ impl Node {
 /// passes; previous subscriptions are replaced. No state writes are permitted
 /// during evaluation. Errors preserve dirtiness for a later retry.
 /// Callbacks run on the runtime's owning thread. None is safe for time-critical producers.
+///
+/// A component is `'static`, as [`Any`](std::any::Any) requires: it owns its
+/// data or shares it through an `Rc`, and never borrows from a local or from
+/// the code that builds it. The same holds for the rows and services it hands
+/// to the runtime; [`Self::content_rows`] shows the pattern.
 pub trait Component: std::any::Any {
     /// Applies a new same-key, same-type description to this mounted component.
     ///
@@ -2059,6 +2067,12 @@ pub trait Component: std::any::Any {
     /// keep this optional hook for compatibility, returning `None` when rows
     /// cannot be read; use the fallible hook to distinguish that failure from
     /// a component that offers no rows.
+    ///
+    /// The returned rows are `'static`, like the component: they own their data
+    /// or share it through an `Rc` that the component also holds. Rows that
+    /// borrow from `&self` do not compile, and the `+ '_` bound rustc suggests
+    /// then does not match this signature. Keep the data in an
+    /// `Rc<RefCell<..>>` field and return rows holding a clone of that `Rc`.
     fn content_rows(&self) -> Option<Rc<dyn crate::ContentRows>> {
         None
     }
@@ -2346,8 +2360,9 @@ pub trait Component: std::any::Any {
     /// Default calls [`Self::cancel_input`]. Local editors may save a valid draft
     /// here using ordinary signals. Always release local input/composition even
     /// when returning an error.
-    /// Hiding, removal, shutdown, Escape and other cancellation use `cancel_input`
-    /// instead and must not implicitly save drafts. No host edit is committed by
+    /// Hiding, removal, shutdown and other cancellation use `cancel_input`
+    /// instead and must not implicitly save drafts; Escape reaches the
+    /// component as an ordinary key. No host edit is committed by
     /// default. This UI-thread callback must not recursively dispatch runtime work.
     ///
     /// # Errors
@@ -2421,8 +2436,20 @@ pub trait Component: std::any::Any {
     ///
     /// Runtime calls this on focus/context loss, hiding, removal and shutdown,
     /// and also while the component keeps focus, for example after a failed key
-    /// operation or when it stops being focusable. Default invokes
-    /// [`Self::input_reset`] and invalidates paint.
+    /// operation or when it stops being focusable. Escape is not among them:
+    /// it ends the focused component's pointer capture, timer and edit sessions
+    /// and then arrives as an ordinary key (see [`Runtime::key_input`]).
+    /// Default invokes [`Self::input_reset`] and invalidates paint.
+    ///
+    /// It runs outside the evaluation phases, so an override may restore the
+    /// component's own bindings here, such as a value it previewed during a
+    /// drag; this is the only restore that also runs when the component is
+    /// removed. It must not activate application actions: no callbacks,
+    /// commands or user-write notifications. It returns nothing, because
+    /// cancellation cannot be refused: a component whose restore write fails
+    /// records the error and requests a [`Notifier`](crate::Notifier), so its
+    /// [`Self::deliver_notifications`] returns the error from a later flush. A
+    /// removed component is not called there, so its failure is not reported.
     ///
     /// **An override replaces that default, so it must release held-key actions
     /// itself**, by calling `input_reset` or doing the equivalent: the runtime
@@ -3357,8 +3384,10 @@ impl EventContext {
     /// time, decides eligibility: no OS timer or background executor is started,
     /// and the host wakes at [`Runtime::next_deadline`]. The timer is cancelled
     /// with this component's input context, so focus loss, hiding, unmounting,
-    /// presentation movement and `Runtime::cancel_input` all stop it; a hidden or
-    /// removed component never receives the call.
+    /// presentation movement, `Runtime::cancel_input` and an Escape press while
+    /// the component is focused all stop it, Escape silently: it calls no
+    /// [`Component::cancel_input`], so a component that must react handles the
+    /// key itself. A hidden or removed component never receives the call.
     ///
     /// ```
     /// use pert_ui_runtime::{Component, Element, EventContext, InputOutcome, KeyAction,
@@ -3409,9 +3438,10 @@ impl EventContext {
     /// ```
     ///
     /// # Errors
-    /// Returns `ZeroDelay` for a zero delay, `Exhausted` when elapsed time cannot
-    /// represent the deadline, and the usual phase/closed errors when the runtime
-    /// cannot accept scheduling changes.
+    /// Returns a runtime phase error (see [`Runtime`]),
+    /// [`RuntimeError::ZeroDelay`] for a zero delay and
+    /// [`RuntimeError::Exhausted`] when elapsed time cannot represent the
+    /// deadline.
     pub fn set_timer(&self, delay: Duration) -> Result<(), RuntimeError> {
         self.node.shared.writable()?;
         if delay.is_zero() {
@@ -3503,6 +3533,15 @@ pub struct FlushReport {
 /// deadlines or native events. Custom hosts select a root before local input,
 /// flush and paint, and coordinate roots through application_deadline/flush_windows.
 /// This runtime records drawing without OS windows, GPUs or background threads.
+///
+/// Methods that change state first check the runtime. Their `# Errors`
+/// sections call that check's failures *a runtime phase error*:
+/// [`RuntimeError::Closed`] after [`Self::shutdown`], or
+/// [`RuntimeError::WriteDuringUpdate`], [`RuntimeError::WriteDuringLayout`],
+/// [`RuntimeError::WriteDuringPaint`], [`RuntimeError::WriteDuringInspection`]
+/// or [`RuntimeError::WriteDuringDelivery`] from inside that phase. These are
+/// the refusals of [`Signal::set`](crate::Signal::set) apart from its
+/// `BorrowConflict`, and a refused call changes nothing.
 ///
 /// ```compile_fail
 /// let runtime = pert_ui_runtime::Runtime::new();
@@ -3927,7 +3966,14 @@ impl Runtime {
     /// dirtiness.
     ///
     /// # Errors
-    /// Rejects writes during update, paint or inspection, or after shutdown.
+    /// Returns `Closed` after shutdown; `WriteDuringInspection` from a
+    /// [`command_enabled`](Self::command_enabled) predicate, which runs during
+    /// inspection;
+    /// `WriteDuringDelivery` from inside a parameter delivery callback; and
+    /// `Geometry(GeometryError::NonFinite)` when the viewport divided by the
+    /// UI zoom overflows. Update, layout and paint run inside the runtime's
+    /// own `&mut self` methods, so their phase errors cannot reach this
+    /// `&self` method.
     pub fn set_viewport(&self, viewport: crate::Viewport) -> Result<(), RuntimeError> {
         let _timing = self
             .shared
@@ -4110,7 +4156,10 @@ impl Runtime {
     /// for the next flush. The contract is in `docs/contracts.md`.
     ///
     /// # Errors
-    /// `Closed` after shutdown.
+    /// Returns `Closed` after shutdown, `WriteDuringInspection` from a
+    /// [`command_enabled`](Self::command_enabled) predicate and
+    /// `WriteDuringDelivery` from inside a parameter delivery callback. The other phase errors cannot reach this
+    /// `&self` method, as for [`Self::set_viewport`].
     pub fn mailbox<T: Send + 'static>(
         &self,
         capacity: crate::Capacity,
@@ -4136,7 +4185,10 @@ impl Runtime {
     /// the same delivery a [`UiSender`](crate::UiSender) uses.
     ///
     /// # Errors
-    /// Rejects writes during update, paint or inspection, or after shutdown.
+    /// Returns `Closed` after shutdown, `WriteDuringInspection` from a
+    /// [`command_enabled`](Self::command_enabled) predicate and
+    /// `WriteDuringDelivery` from inside a parameter delivery callback. The other phase errors cannot reach this
+    /// `&self` method, as for [`Self::set_viewport`].
     pub fn inspection_service(
         &self,
         capacity: crate::Capacity,
@@ -4162,7 +4214,9 @@ impl Runtime {
     /// inspection is refused.
     ///
     /// # Errors
-    /// Rejects an invalid runtime phase or a runtime that has shut down.
+    /// Returns a runtime phase error (see [`Runtime`]), or [`RuntimeError::BorrowConflict`]
+    /// when called during a flush or while inspection requests are being
+    /// answered.
     pub fn service_inspection(&mut self) -> Result<(), RuntimeError> {
         self.shared.writable()?;
         if self.flush_state.depth.get() > 0 || self.shared.answer_depth.get() > 0 {
@@ -4202,7 +4256,10 @@ impl Runtime {
     /// presentation order preserves identity; unmount/remount creates a new one.
     ///
     /// # Errors
-    /// Rejects empty/duplicate keys or exhausted IDs without replacing another mount.
+    /// Each leaves other mounts in place: a runtime phase error (see [`Runtime`]);
+    /// [`RuntimeError::EmptyKey`] for a key without a non-whitespace
+    /// character; [`RuntimeError::DuplicateKey`] for a key another root already
+    /// uses; or [`RuntimeError::Exhausted`] when no new identity remains.
     pub fn mount(
         &mut self,
         key: impl Into<String>,
@@ -4234,11 +4291,13 @@ impl Runtime {
     /// value is passed through; fallible closures therefore yield a nested result.
     ///
     /// # Errors
-    /// Rejects foreign, unmounted, hidden or modally blocked IDs before executing user code,
-    /// leaving focus and the selected window unchanged. Other errors of the
-    /// focus transfer, as from the previous recipient's `Component::focus_lost`
-    /// or a revealing flush, are returned after focus has moved to the target,
-    /// without running the closure. See [`Self::focus`].
+    /// The refusals of [`Self::focus`] (a runtime phase error,
+    /// [`RuntimeError::ForeignRuntime`], [`RuntimeError::Unmounted`],
+    /// [`RuntimeError::Hidden`] or [`RuntimeError::ModalBlocked`]) come before
+    /// executing user code, leaving focus and the selected window unchanged.
+    /// Other errors of the focus transfer, as from the previous recipient's
+    /// `Component::focus_lost` or a revealing flush, are returned after focus
+    /// has moved to the target, without running the closure.
     pub fn event<R>(
         &mut self,
         id: &WidgetId,
@@ -4282,8 +4341,13 @@ impl Runtime {
     /// target leaves the selected window and its focus unchanged.
     ///
     /// # Errors
-    /// Rejects foreign, unmounted, hidden or modally blocked components. A previous recipient's
-    /// `Component::focus_lost` error is returned after completing the transfer.
+    /// Before anything changes: a runtime phase error (see [`Runtime`]);
+    /// [`RuntimeError::ForeignRuntime`] for an ID of another runtime;
+    /// [`RuntimeError::Unmounted`] for an unmounted one;
+    /// [`RuntimeError::Hidden`] for a hidden component; and
+    /// [`RuntimeError::ModalBlocked`] for one a modal surface blocks. A previous
+    /// recipient's `Component::focus_lost` error, or an error of the flush that
+    /// settles a scrolled ancestor, is returned after completing the transfer.
     pub fn focus(&mut self, id: &WidgetId) -> Result<(), RuntimeError> {
         let previous = self.current_window();
         self.select_window(&self.window_of(id)?)?;
@@ -4484,8 +4548,14 @@ impl Runtime {
     /// path's text phase offers it (see [`Component::text_key_event`]), so an
     /// editor that answers it, such as a search field with a query, keeps the
     /// surface open; otherwise the topmost surface closes. Escape's initial
-    /// press cancels focused edit gestures before delivery. Released keys never automatically commit a
-    /// generic gesture: a control chooses its own confirmation key/action.
+    /// press ends the focused component's pointer capture, timer, drag and
+    /// parameter edit sessions (begun with
+    /// [`Parameter::begin_edit`](crate::Parameter::begin_edit)) before
+    /// delivery, without calling [`Component::cancel_input`]; the component
+    /// then receives Escape as an ordinary key and cancels its own gesture
+    /// there. A nonfocused component's capture is not affected. Released keys
+    /// never automatically commit a generic gesture: a control chooses its own
+    /// confirmation key/action.
     ///
     /// This is the headless entry point: it routes neither command bindings nor
     /// [`Runtime::register_held_input`] registrations, which only
@@ -4886,7 +4956,7 @@ impl Runtime {
     /// ```
     ///
     /// # Errors
-    /// Returns the usual phase/closed error before changing state.
+    /// Returns only a runtime phase error (see [`Runtime`]), before changing state.
     pub fn cancel_input(&mut self) -> Result<(), RuntimeError> {
         self.shared.writable()?;
         self.cancel_drag_infallibly();
@@ -5020,7 +5090,10 @@ impl Runtime {
     /// with current binding values; a component may then resume live scheduling.
     ///
     /// # Errors
-    /// Rejects foreign or unmounted IDs.
+    /// Returns `ForeignRuntime` for an ID of another runtime, `Unmounted` for an
+    /// unmounted ID, which every ID is after shutdown, and
+    /// `WriteDuringDelivery` from inside a parameter delivery callback, such as
+    /// a sink that holds the runtime in a shared cell.
     pub fn set_visible(&mut self, id: &WidgetId, visible: bool) -> Result<(), RuntimeError> {
         let previous = self.current_window();
         self.select_window(&self.window_of(id)?)?;
@@ -5062,8 +5135,10 @@ impl Runtime {
     /// inside the subtree and has to be restored, or a retained cleanup error.
     ///
     /// # Errors
-    /// Rejects foreign or already-unmounted IDs. Its old identity remains invalid
-    /// after another component is mounted using the same logical key.
+    /// Returns a runtime phase error (see [`Runtime`]), [`RuntimeError::ForeignRuntime`]
+    /// for an ID of another runtime or [`RuntimeError::Unmounted`] for an
+    /// already unmounted one. Its old identity remains invalid after another
+    /// component is mounted using the same logical key.
     pub fn unmount(&mut self, id: &WidgetId) -> Result<(), RuntimeError> {
         let _timing = self.profile_target(id, crate::ProfileOperation::Unmount);
         self.shared.writable()?;
@@ -5089,15 +5164,17 @@ impl Runtime {
     /// extension for events such as resizing. Hidden mounts only retain dirtiness.
     ///
     /// # Errors
-    /// Rejects foreign or unmounted IDs.
+    /// Returns [`RuntimeError::ForeignRuntime`] for an ID of another runtime and
+    /// [`RuntimeError::Unmounted`] for an unmounted one.
     pub fn invalidate(&self, id: &WidgetId, kind: Invalidation) -> Result<(), RuntimeError> {
         self.check(id)?;
         id.0.invalidate(kind);
         Ok(())
     }
 
-    /// Performs a clipboard action on one component's own selection, for hosts and
-    /// application chrome such as an Edit menu acting on the focused editor.
+    /// Performs a text command (clipboard or selection) on one component's own
+    /// selection, for hosts and application chrome such as an Edit menu acting
+    /// on the focused editor.
     ///
     /// Delivery is immediate and synchronous, unlike
     /// [`EventContext::request_text_command`], which a component uses to reach

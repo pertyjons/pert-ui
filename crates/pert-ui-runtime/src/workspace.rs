@@ -101,7 +101,8 @@ impl WorkspaceValue {
     /// Creates a text value.
     ///
     /// # Errors
-    /// Rejects control characters and text longer than
+    /// Returns [`WorkspaceError::ControlCharacter`] for text holding a control
+    /// character and [`WorkspaceError::TextTooLong`] for text longer than
     /// [`Workspace::MAX_STRING_BYTES`].
     pub fn text(value: impl Into<String>) -> Result<Self, WorkspaceError> {
         let value = value.into();
@@ -233,7 +234,8 @@ impl ViewState {
     /// Creates empty state for a component kind.
     ///
     /// # Errors
-    /// A kind tag is 1 to 64 bytes of ASCII letters, digits, `-` or `_`.
+    /// Returns [`WorkspaceError::InvalidName`] unless the kind tag is 1 to 64
+    /// bytes of ASCII letters, digits, `-` or `_`.
     pub fn new(kind: impl Into<String>) -> Result<Self, WorkspaceError> {
         let kind = kind.into();
         check_name(&kind)?;
@@ -245,7 +247,12 @@ impl ViewState {
     /// Adds a named value, replacing an existing one with the same name.
     ///
     /// # Errors
-    /// Rejects an invalid name or value. Names follow the same rule as kinds.
+    /// Returns [`WorkspaceError::InvalidName`] for a name outside the rule of
+    /// kinds, and for a value that fails its constructor's checks the error that
+    /// constructor returns: [`WorkspaceError::NotFinite`],
+    /// [`WorkspaceError::TextTooLong`], [`WorkspaceError::ControlCharacter`],
+    /// [`WorkspaceError::InvalidName`] for an empty map key or
+    /// [`WorkspaceError::NestedMap`].
     pub fn with(
         mut self,
         name: impl Into<String>,
@@ -359,9 +366,11 @@ impl WorkspacePath {
     /// Builds a path from ordered segments.
     ///
     /// # Errors
-    /// Rejects an empty path and an empty segment, a control character, a
-    /// segment longer than [`Workspace::MAX_STRING_BYTES`] and a path longer than
-    /// [`Workspace::MAX_PATH_BYTES`] once encoded.
+    /// Returns [`WorkspaceError::EmptyPath`] for an empty path or an empty
+    /// segment, [`WorkspaceError::ControlCharacter`] for a segment holding a
+    /// control character, [`WorkspaceError::TextTooLong`] for a segment longer
+    /// than [`Workspace::MAX_STRING_BYTES`] and [`WorkspaceError::PathTooLong`]
+    /// for a path longer than [`Workspace::MAX_PATH_BYTES`] once encoded.
     pub fn new(
         segments: impl IntoIterator<Item = impl Into<String>>,
     ) -> Result<Self, WorkspaceError> {
@@ -505,17 +514,20 @@ impl Workspace {
     pub const MAX_PATH_BYTES: usize = 512;
     /// The largest text value, map key or path segment, in bytes of UTF-8.
     pub const MAX_STRING_BYTES: usize = 256;
-    /// The largest encoded document, in bytes.
+    /// The largest encoded document, in bytes: 1 MiB (1,048,576 bytes).
     pub const MAX_DOCUMENT_BYTES: usize = 1 << 20;
 
     /// Builds a document from settings and entries, as a capture does.
     ///
     /// # Errors
-    /// Rejects an encoding exceeding [`Self::MAX_DOCUMENT_BYTES`], more than
-    /// [`Self::MAX_ENTRIES`] entries, a duplicate path and any
-    /// invalid value. A duplicate path means two components would be addressed
-    /// identically, which is a container declaring its slots incorrectly rather
-    /// than something to resolve by dropping one of them.
+    /// Returns [`WorkspaceError::TooManyEntries`] for more than
+    /// [`Self::MAX_ENTRIES`] entries, [`WorkspaceError::DuplicatePath`] for two
+    /// entries at one path, the error of an invalid value as
+    /// [`ViewState::with`] names them, and [`WorkspaceError::TooLarge`] for an
+    /// encoding longer than [`Self::MAX_DOCUMENT_BYTES`]. A duplicate path
+    /// means two components would be addressed identically, which is a
+    /// container declaring its slots incorrectly rather than something to
+    /// resolve by dropping one of them.
     pub fn new(
         settings: WorkspaceSettings,
         entries: impl IntoIterator<Item = (WorkspacePath, ViewState)>,
@@ -851,9 +863,19 @@ impl Workspace {
     /// produces the canonical text.
     ///
     /// # Errors
-    /// Returns a [`WorkspaceError`] for an unsupported revision, malformed text,
-    /// an unknown field, a non-finite or out-of-range value, a duplicate path or
-    /// an exceeded limit. Nothing is applied from a document that fails here.
+    /// Returns [`WorkspaceError::TooLarge`] for text longer than
+    /// [`Self::MAX_DOCUMENT_BYTES`]; [`WorkspaceError::UnsupportedVersion`] for
+    /// another schema revision; [`WorkspaceError::Malformed`] for text outside
+    /// the grammar, including an unknown line, setting or escape, a repeated
+    /// field or setting, a non-canonical number and a zoom outside its range;
+    /// [`WorkspaceError::TooManyEntries`]; [`WorkspaceError::PathTooLong`]; and
+    /// the errors of the constructors the document's parts pass through:
+    /// [`WorkspaceError::EmptyPath`], [`WorkspaceError::InvalidName`],
+    /// [`WorkspaceError::TextTooLong`], [`WorkspaceError::ControlCharacter`],
+    /// [`WorkspaceError::NotFinite`], [`WorkspaceError::NestedMap`],
+    /// [`WorkspaceError::DuplicateKey`] for a repeated map key and
+    /// [`WorkspaceError::DuplicatePath`]. Nothing is applied from a document
+    /// that fails here.
     ///
     /// ```
     /// use pert_ui_runtime::{Workspace, WorkspaceError};

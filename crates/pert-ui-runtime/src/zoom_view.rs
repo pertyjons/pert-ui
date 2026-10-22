@@ -129,17 +129,17 @@ pub struct ZoomController {
 }
 
 impl ZoomController {
-    /// Creates a controller on the given runtime, starting at the identity view.
+    /// Creates a controller belonging to `ui`, starting at the identity view.
     ///
-    /// `runtime` is any [`StateOwner`](crate::StateOwner): the
+    /// `ui` is any [`StateOwner`](crate::StateOwner): the
     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
     /// the [`UpdateContext`](crate::UpdateContext) or
     /// [`EventContext`](crate::EventContext) of a component that builds this
     /// while it describes its children.
     #[must_use]
-    pub fn new(runtime: &impl crate::StateOwner) -> Self {
+    pub fn new(ui: &impl crate::StateOwner) -> Self {
         Self {
-            view: runtime.signal(ViewTransform::IDENTITY),
+            view: ui.signal(ViewTransform::IDENTITY),
             arranged: Rc::new(Cell::new(None)),
         }
     }
@@ -154,8 +154,10 @@ impl ZoomController {
     /// [`Self::set_changed`] reports whether it changed.
     ///
     /// # Errors
-    /// The signal write's failures: `WriteDuringUpdate`, `Closed` or
-    /// `BorrowConflict`.
+    /// The errors of [`Signal::set`](crate::Signal::set): `Closed` after the
+    /// runtime shut down; `WriteDuringUpdate`, `WriteDuringLayout`,
+    /// `WriteDuringPaint`, `WriteDuringInspection` or `WriteDuringDelivery`
+    /// from inside that phase; or `BorrowConflict`.
     pub fn set(&self, view: ViewTransform) -> Result<(), RuntimeError> {
         self.view.set(view)
     }

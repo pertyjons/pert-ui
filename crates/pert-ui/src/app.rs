@@ -324,6 +324,7 @@ impl App {
     /// [`Self::min_size`] and [`Self::max_size`].
     ///
     /// # Errors
+    /// [`RuntimeError::Geometry`] holding
     /// [`GeometryError::Empty`](crate::GeometryError::Empty) for a zero width or
     /// height.
     ///
@@ -347,8 +348,9 @@ impl App {
     /// Unset by default, leaving the limit to the window system.
     ///
     /// # Errors
+    /// [`RuntimeError::Geometry`] holding
     /// [`GeometryError::Empty`](crate::GeometryError::Empty) for a zero width or
-    /// height, and [`GeometryError::InvertedBounds`](crate::GeometryError::InvertedBounds)
+    /// height, or [`GeometryError::InvertedBounds`](crate::GeometryError::InvertedBounds)
     /// for a dimension larger than a maximum set with [`Self::max_size`].
     pub fn min_size(mut self, size: crate::Size) -> Result<Self, RuntimeError> {
         let size = nonzero(size)?;
@@ -360,8 +362,9 @@ impl App {
     /// Unset by default.
     ///
     /// # Errors
+    /// [`RuntimeError::Geometry`] holding
     /// [`GeometryError::Empty`](crate::GeometryError::Empty) for a zero width or
-    /// height, and [`GeometryError::InvertedBounds`](crate::GeometryError::InvertedBounds)
+    /// height, or [`GeometryError::InvertedBounds`](crate::GeometryError::InvertedBounds)
     /// for a dimension smaller than a minimum set with [`Self::min_size`].
     pub fn max_size(mut self, size: crate::Size) -> Result<Self, RuntimeError> {
         let size = nonzero(size)?;

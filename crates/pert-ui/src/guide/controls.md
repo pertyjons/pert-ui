@@ -8,8 +8,11 @@ locally, and Escape, focus loss, hiding or unmounting cancels it.
 Default labels wrap to allocated width. Buttons supply themed padding, a default Standard 64×32 logical
 minimum, visible focus, pointer capture and matched-release Space/Enter activation.
 Ignored input bubbles through logical ancestors; Tab traverses visible focus targets.
-Escape/context loss cancels activation, including capture owned by nonfocusable
-custom components. Native repeats remain repeats after window focus loss.
+Escape or context loss cancels activation. Window focus loss also releases
+pointer capture owned by nonfocusable custom components; Escape does not, since
+it acts only on the focused component: the runtime ends that component's
+pointer capture, timer and edit sessions, then delivers Escape to it as an
+ordinary key. Native repeats remain repeats after window focus loss.
 
 ```rust
 use pert_ui::{Button, Column, Element, Label, Runtime, RuntimeError, Viewport};

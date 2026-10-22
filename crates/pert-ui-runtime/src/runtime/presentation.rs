@@ -45,7 +45,7 @@ impl Runtime {
     /// A polled source shared across windows follows its fastest presented subscriber. One-shot event timers are unaffected.
     ///
     /// # Errors
-    /// Returns the ordinary runtime phase/shutdown error.
+    /// Returns only a runtime phase error (see [`Runtime`]).
     pub fn set_presentation_rate(
         &self,
         rate: Option<PresentationRate>,

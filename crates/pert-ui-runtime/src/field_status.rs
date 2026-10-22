@@ -318,8 +318,10 @@ impl FieldHandle {
     /// status changes nothing; [`Self::set_changed`] reports whether it changed.
     ///
     /// # Errors
-    /// Rejects writes during update, paint or inspection, or after shutdown, like
-    /// any [`Signal::set`].
+    /// The errors of [`Signal::set`]: `Closed` after the runtime shut down;
+    /// `WriteDuringUpdate`, `WriteDuringLayout`, `WriteDuringPaint`,
+    /// `WriteDuringInspection` or `WriteDuringDelivery` from inside that phase;
+    /// or `BorrowConflict`.
     pub fn set(&self, status: FieldStatus) -> Result<(), RuntimeError> {
         self.set_changed(status).map(|_| ())
     }
@@ -373,9 +375,8 @@ impl FieldHandle {
     /// presenting its status, and writes change only that presentation.
     ///
     /// # Errors
-    /// Rejects the summary write during update, paint or inspection, or after
-    /// shutdown, like any [`Signal::set`]; the field is removed even then, and
-    /// the summary catches up with the next successful write.
+    /// The summary write's errors, those of [`Self::set`]; the field is removed
+    /// even then, and the summary catches up with the next successful write.
     pub fn remove(&self) -> Result<bool, RuntimeError> {
         let removed = {
             let mut entries = self.form.entries.borrow_mut();

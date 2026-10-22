@@ -113,7 +113,8 @@ pub struct VectorRasterizer {
     cache: std::collections::HashMap<u64, Vec<(Key, Coverage)>>,
 }
 impl VectorRasterizer {
-    /// The most sub-scanline steps covering one vector may take. Coverage is
+    /// The most sub-scanline steps covering one vector may take: 16,777,216
+    /// (2^24). Coverage is
     /// sampled on four sub-scanlines per physical pixel row, and each edge of
     /// a fill's outline, or each piece of a stroke of straight segments, costs
     /// one step for every sub-scanline it crosses inside the cropped mask. A

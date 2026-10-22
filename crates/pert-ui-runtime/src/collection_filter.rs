@@ -20,7 +20,11 @@ use crate::{
 /// ignoring case, the same rule content search uses. [`Self::fuzzy`] keeps
 /// rows whose text contains the query's characters in order, as the command
 /// palette does. [`Self::new`] takes any rule. A query that is empty or only
-/// whitespace never reaches the matcher: it shows every row.
+/// whitespace never reaches the matcher: it shows every row. A filter trims
+/// any other query of leading and trailing whitespace before the matcher sees
+/// it, while [`Self::matches`] takes the query exactly as given. To know which
+/// rows a list filter shows, read [`ListFilter::items`] instead of repeating
+/// the match; code that does repeat it passes the trimmed query.
 ///
 /// A matcher runs once per row on every query, on the UI thread, so it must be
 /// deterministic, free of side effects and I/O, and cheap; its cost multiplied
@@ -71,7 +75,8 @@ impl FilterMatcher {
     fn same(&self, other: &Self) -> bool {
         Rc::ptr_eq(&self.0, &other.0)
     }
-    /// Whether `text` matches `query` under this rule.
+    /// Whether `text` matches `query` under this rule. The query is used as
+    /// given; a filter passes it trimmed (see the [type](Self)).
     #[must_use]
     pub fn matches(&self, query: &str, text: &str) -> bool {
         (self.0)(query, text)
@@ -309,7 +314,10 @@ impl ListFilter {
         self.0.counts.read_only()
     }
     /// Applies `query` with `matcher` to the current source and publishes the
-    /// rows that match. An empty or whitespace query shows every row.
+    /// rows that match. An empty or whitespace query shows every row; any other
+    /// query is trimmed of leading and trailing whitespace before the matcher
+    /// sees it. [`Self::items`] holds the rows shown, so the application reads
+    /// them there rather than repeating the match.
     ///
     /// # Errors
     /// The source binding's read failures, and the signal writes' failures:

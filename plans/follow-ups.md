@@ -67,6 +67,13 @@ until then if one is being written.
   buttons, chips, links, menu rows and tab and window titles prepare their
   captions themselves and still fail on such text. Extend the refusal to
   them if a consumer binds data to those captions.
+- **A sendable font key for styled text.** From the
+  [API audit fix plan](usability/api-audit/fix-plan.md) part 5b (decision
+  G4-7): `RichText` and `TextSpan` are UI-thread values because a span can
+  name a runtime-local `FontId`, so a worker cannot build styled text for
+  `Runtime::spawn` to return. A sendable key would change `FontId` and
+  `FontManager` identity. No run has shown the need; the restriction is
+  documented on both types.
 
 ## Collections
 

@@ -74,6 +74,7 @@ impl UiZoom {
 }
 impl TryFrom<f64> for UiZoom {
     type Error = crate::GeometryError;
+    /// Validates like [`UiZoom::new`].
     fn try_from(value: f64) -> Result<Self, Self::Error> {
         Self::new(value)
     }
@@ -351,7 +352,9 @@ impl UiSettings {
     /// and one it resumes starts from the runtime's clock. No timer is installed.
     ///
     /// # Errors
-    /// Rejects writes during update, layout, paint or inspection, or after shutdown.
+    /// Returns `Closed` after shutdown, and `WriteDuringUpdate`,
+    /// `WriteDuringLayout`, `WriteDuringPaint`, `WriteDuringInspection` or
+    /// `WriteDuringDelivery` from inside that phase.
     pub fn set_motion(&self, motion: MotionPreference) -> Result<bool, RuntimeError> {
         self.shared.writable()?;
         if self.shared.motion.replace(motion) == motion {
@@ -452,7 +455,9 @@ impl UiSettings {
     /// of [`Runtime::set_debug_overlay`]. Returns false for a no-op.
     ///
     /// # Errors
-    /// Rejects writes during update, layout, paint or inspection, or after shutdown.
+    /// Returns `Closed` after shutdown, and `WriteDuringUpdate`,
+    /// `WriteDuringLayout`, `WriteDuringPaint`, `WriteDuringInspection` or
+    /// `WriteDuringDelivery` from inside that phase.
     pub fn set_debug_overlay(&self, overlay: crate::DebugOverlay) -> Result<bool, RuntimeError> {
         self.shared.writable()?;
         if self.shared.overlay.replace(overlay) == overlay {

@@ -1379,6 +1379,24 @@ impl<T: Clone + Eq + Hash + 'static> MultiSelect<T> {
     /// or the options change, during the runtime's settling of derived values,
     /// so it must be deterministic, cheap and free of side effects. The
     /// default lists the options whose label contains the query, ignoring case.
+    ///
+    /// Unlike the collection filters, which trim a query before their
+    /// [`FilterMatcher`](crate::FilterMatcher) sees it, this rule receives
+    /// surrounding whitespace too, so a rule that should ignore it trims the
+    /// query itself. The matcher presets apply to an option's label like this,
+    /// and the rule can also read the option's value:
+    ///
+    /// ```
+    /// use pert_ui_runtime::{Choice, FilterMatcher, MultiSelect, Runtime};
+    /// let ui = Runtime::new();
+    /// let effects = ui.signal(vec!["reverb"]);
+    /// let options = [Choice::new("reverb", "Reverb"), Choice::new("delay", "Delay")];
+    /// let matcher = FilterMatcher::fuzzy();
+    /// assert!(matcher.matches("rvb", "Reverb"));
+    /// let chooser = MultiSelect::new(&ui, effects, options)?
+    ///     .filter(move |query, choice| matcher.matches(query.trim(), choice.label()));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     pub fn filter(self, filter: impl Fn(&str, &Choice<T>) -> bool + 'static) -> Self {
         let filter: Filter<T> = Rc::new(filter);
         self.describe(|desc| desc.filter = Some(filter))

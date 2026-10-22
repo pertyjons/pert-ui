@@ -466,7 +466,18 @@ impl<P: Copy + PartialEq + 'static> DraftEditorController<P> {
 ///   [`Component::focus_within_changed`] with `false` and applies its own
 ///   policy there (save or cancel) with its own `&mut self` and context; it
 ///   must not take focus back. Hiding and removal cancel without that
-///   notification.
+///   notification. Beginning a session runs the owner's
+///   [`Component::cancel_input`], because the owner stops being focusable, so
+///   the owner must not end the draft there: a session that loses focus ends
+///   in `focus_within_changed(false)`.
+/// - **Redescription.** An owner its parent describes again, such as a row of
+///   a list whose source is replaced, keeps the controller and the mounted
+///   editor paired: it returns `true` from
+///   [`Component::retain_initial_children`], so the incoming editor is
+///   discarded and the mounted one stays, or it reconciles the controller and
+///   the editor child together. Otherwise ordinary reconciliation adopts the
+///   incoming editor, and the owner and the editor it shows can end up on
+///   different controllers.
 /// - **Naming.** The editor reports `TextInput` semantics without a name. An
 ///   owner that names it declares [`Semantics::names_children`].
 ///

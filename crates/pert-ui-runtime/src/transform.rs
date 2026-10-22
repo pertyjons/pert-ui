@@ -306,6 +306,7 @@ impl ViewScale {
 
 impl TryFrom<f32> for ViewScale {
     type Error = GeometryError;
+    /// Validates like [`ViewScale::new`].
     fn try_from(factor: f32) -> Result<Self, Self::Error> {
         Self::new(factor)
     }

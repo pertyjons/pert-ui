@@ -82,8 +82,11 @@ impl FileBrowser {
     /// `row_height` logical pixels tall.
     ///
     /// # Errors
-    /// Returns a [`GeometryError`](crate::GeometryError) for a row height that
-    /// is not finite and positive.
+    /// Returns [`GeometryError::NonFinite`](crate::GeometryError::NonFinite)
+    /// for a row height that is not finite,
+    /// [`GeometryError::Negative`](crate::GeometryError::Negative) for a
+    /// negative one and [`GeometryError::Empty`](crate::GeometryError::Empty)
+    /// for zero.
     pub fn new(
         controller: &FileBrowserController,
         row_height: f32,

@@ -22,6 +22,9 @@ use std::{
 /// produce children lazily. `build` returns the row content for a node, an
 /// element whose key equals the node's.
 /// Implementations are UI-local and read-only while the tree is flattened.
+/// An implementation is `'static`, as [`TreeSource::new`] requires: it owns its
+/// nodes or shares them through an `Rc`, never borrowing from a local or a
+/// component (see [`Component::content_rows`](crate::Component::content_rows)).
 pub trait TreeItems {
     /// The top-level nodes, in order.
     fn roots(&self) -> Vec<String>;
@@ -339,7 +342,10 @@ impl TreeController {
     /// so clearing the filter restores the user's expansion.
     ///
     /// # Errors
-    /// Rejects writes during update, paint or inspection, like any signal write.
+    /// The errors of [`Signal::set`](crate::Signal::set): `Closed` after the
+    /// runtime shut down; `WriteDuringUpdate`, `WriteDuringLayout`,
+    /// `WriteDuringPaint`, `WriteDuringInspection` or `WriteDuringDelivery`
+    /// from inside that phase; or `BorrowConflict`.
     pub fn set_expanded(&self, key: &str, expanded: bool) -> Result<bool, RuntimeError> {
         self.0.items.shared().writable()?;
         let layered = self.0.filter.borrow_mut().as_mut().map(|filter| {
@@ -444,7 +450,11 @@ impl TreeController {
     }
     /// Shows only the nodes whose [`TreeItems::text`] matches `query` under
     /// `matcher`, each with its ancestors, and keeps applying it when the
-    /// source is replaced; an empty or whitespace query clears the filter.
+    /// source is replaced; an empty or whitespace query clears the filter. Any
+    /// other query is trimmed of leading and trailing whitespace before
+    /// `matcher` sees it, as for
+    /// [`ListFilter::filter`](crate::ListFilter::filter), so code that repeats
+    /// the match passes the trimmed query.
     ///
     /// The filter walks every node the source already knows, through
     /// [`TreeItems::known_children`], collapsed or not, so its cost is that
@@ -536,8 +546,10 @@ impl TreeController {
     /// owners do not arbitrate requests. See [`ListController`](crate::ListController).
     ///
     /// # Errors
-    /// The signal write's failures: `WriteDuringUpdate`, `Closed` or
-    /// `BorrowConflict`.
+    /// The errors of [`Signal::set`](crate::Signal::set): `Closed` after the
+    /// runtime shut down; `WriteDuringUpdate`, `WriteDuringLayout`,
+    /// `WriteDuringPaint`, `WriteDuringInspection` or `WriteDuringDelivery`
+    /// from inside that phase; or `BorrowConflict`.
     pub fn reveal(&self, key: impl Into<String>) -> Result<crate::ListRevealReceipt, RuntimeError> {
         self.0.reveal.reveal(key)
     }
@@ -909,8 +921,11 @@ impl Tree {
     /// Creates a tree over a controller with a fixed logical row height.
     ///
     /// # Errors
-    /// Returns a [`GeometryError`](crate::GeometryError) for a row height that
-    /// is not finite and positive.
+    /// Returns [`GeometryError::NonFinite`](crate::GeometryError::NonFinite)
+    /// for a row height that is not finite,
+    /// [`GeometryError::Negative`](crate::GeometryError::Negative) for a
+    /// negative one and [`GeometryError::Empty`](crate::GeometryError::Empty)
+    /// for zero.
     pub fn new(controller: &TreeController, row_height: f32) -> Result<Self, crate::GeometryError> {
         Ok(Self {
             list: VirtualList::new(controller.items(), row_height)?

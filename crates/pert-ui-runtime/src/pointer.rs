@@ -131,6 +131,7 @@ impl Magnification {
 
 impl TryFrom<f32> for Magnification {
     type Error = crate::GeometryError;
+    /// Validates like [`Magnification::new`].
     fn try_from(factor: f32) -> Result<Self, Self::Error> {
         Self::new(factor)
     }

@@ -37,7 +37,8 @@ fn main() -> Result<(), pert_ui::AppError> {
 Continue with the [guide](crate::guide), starting at
 [getting started](crate::guide::getting_started). Everything the guide and this
 page name is exported from the crate root; [`prelude`] holds the common imports,
-including everything a custom [`Component`] names.
+including what a custom [`Component`] that lays out, draws and handles input
+names, and its page lists the root names other code most often adds.
 
 Most items are re-exported from the backend-independent `pert-ui-runtime`
 crate, which documents them, so their examples are written against that crate

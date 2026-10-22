@@ -49,6 +49,12 @@ pub struct ApplicationError(Arc<dyn Error + Send + Sync + 'static>);
 
 impl ApplicationError {
     /// Wraps an application error.
+    ///
+    /// A boxed `Box<dyn Error + Send + Sync>` is not itself an `Error`; it
+    /// converts with [`ApplicationError::from`], which keeps the boxed error
+    /// and its source chain, so `?` on such a result reads
+    /// `.map_err(ApplicationError::from)?`. A non-`Send` `Box<dyn Error>`
+    /// cannot be carried; wrap its message instead.
     pub fn new(error: impl Error + Send + Sync + 'static) -> Self {
         Self(Arc::new(error))
     }

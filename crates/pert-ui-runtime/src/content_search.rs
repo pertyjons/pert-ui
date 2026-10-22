@@ -346,7 +346,10 @@ impl ContentSearch {
 ///
 /// Implementations answer from data they already hold: deterministic, free
 /// of side effects and I/O, and never forcing a lazy source to load. The
-/// cost is the implementation owner's, once per row a search examines.
+/// cost is the implementation owner's, once per row a search examines. An
+/// implementation is `'static`: it owns its rows or shares them through an
+/// `Rc`, never borrowing from the component (see
+/// [`Component::content_rows`](crate::Component::content_rows)).
 pub trait ContentRows {
     /// Number of rows.
     fn len(&self) -> usize;

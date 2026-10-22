@@ -124,11 +124,12 @@ impl EventContext {
     /// ```
     ///
     /// # Errors
-    /// Returns `DragUnavailable` while another session is active or requested,
-    /// or for an empty set of operations; `CaptureUnavailable` without a held
-    /// button or while another component owns the capture; and the usual
-    /// phase/closed errors. Returns `Closed` during shutdown terminal callbacks,
-    /// which cannot admit a replacement drag.
+    /// Returns a runtime phase error (see [`Runtime`]), and
+    /// [`RuntimeError::Closed`] also during shutdown terminal callbacks, which
+    /// cannot admit a replacement drag; [`RuntimeError::DragUnavailable`] while
+    /// another session is active or requested, or for an empty set of
+    /// operations; and [`RuntimeError::CaptureUnavailable`] without a held
+    /// button or while another component owns the capture.
     pub fn start_drag(
         &self,
         payload: DragPayload,

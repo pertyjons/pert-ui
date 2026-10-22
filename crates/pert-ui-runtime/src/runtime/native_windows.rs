@@ -217,6 +217,7 @@ impl NativeWindowOptions {
     /// Sets a nonzero logical initial size. Native placement remains OS policy.
     ///
     /// # Errors
+    /// [`RuntimeError::Geometry`] holding
     /// [`GeometryError::Empty`](crate::GeometryError::Empty) for a zero width or
     /// height.
     pub fn size(mut self, size: crate::Size) -> Result<Self, RuntimeError> {

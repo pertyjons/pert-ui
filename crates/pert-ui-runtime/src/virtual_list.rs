@@ -36,6 +36,10 @@ use std::collections::BTreeSet;
 /// row at the top of its viewport in place by key across a replacement, when
 /// the new source still has it. Implement `index_of` in better than linear time
 /// when a host reveals rows by key in large collections.
+///
+/// An implementation is `'static`, as [`ListSource::new`] requires: it owns its
+/// rows or shares them through an `Rc`, never borrowing from a local or a
+/// component (see [`Component::content_rows`]).
 pub trait ListItems {
     /// Number of rows.
     fn len(&self) -> usize;
@@ -264,17 +268,17 @@ impl std::fmt::Debug for ListRevealReceipt {
 }
 
 impl ListController {
-    /// Creates a controller on the given runtime.
+    /// Creates a controller belonging to `ui`.
     ///
-    /// `runtime` is any [`StateOwner`](crate::StateOwner): the
+    /// `ui` is any [`StateOwner`](crate::StateOwner): the
     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
     /// the [`UpdateContext`](crate::UpdateContext) or
     /// [`EventContext`](crate::EventContext) of a component that builds this
     /// while it describes its children.
     #[must_use]
-    pub fn new(runtime: &impl crate::StateOwner) -> Self {
+    pub fn new(ui: &impl crate::StateOwner) -> Self {
         Self {
-            reveal: runtime.signal(None),
+            reveal: ui.signal(None),
         }
     }
 
@@ -287,8 +291,10 @@ impl ListController {
     /// controller supersedes an earlier one that has not completed.
     ///
     /// # Errors
-    /// The signal write's failures: `WriteDuringUpdate`, `Closed` or
-    /// `BorrowConflict`.
+    /// The errors of [`Signal::set`](crate::Signal::set): `Closed` after the
+    /// runtime shut down; `WriteDuringUpdate`, `WriteDuringLayout`,
+    /// `WriteDuringPaint`, `WriteDuringInspection` or `WriteDuringDelivery`
+    /// from inside that phase; or `BorrowConflict`.
     pub fn reveal(&self, key: impl Into<String>) -> Result<ListRevealReceipt, RuntimeError> {
         let previous = self.reveal.get()?;
         let serial = previous
@@ -630,8 +636,11 @@ impl VirtualList {
     /// logical row height.
     ///
     /// # Errors
-    /// Returns a [`GeometryError`](crate::GeometryError) for a row height that
-    /// is not finite and positive.
+    /// Returns [`GeometryError::NonFinite`](crate::GeometryError::NonFinite)
+    /// for a row height that is not finite,
+    /// [`GeometryError::Negative`](crate::GeometryError::Negative) for a
+    /// negative one and [`GeometryError::Empty`](crate::GeometryError::Empty)
+    /// for zero.
     pub fn new(
         items: impl Into<ReadSignal<ListSource>>,
         row_height: f32,
@@ -654,8 +663,11 @@ impl VirtualList {
     /// may cost one more update wave inside the same flush.
     ///
     /// # Errors
-    /// Returns a [`GeometryError`](crate::GeometryError) for an estimate that
-    /// is not finite and positive.
+    /// Returns [`GeometryError::NonFinite`](crate::GeometryError::NonFinite)
+    /// for an estimate that is not finite,
+    /// [`GeometryError::Negative`](crate::GeometryError::Negative) for a
+    /// negative one and [`GeometryError::Empty`](crate::GeometryError::Empty)
+    /// for zero.
     pub fn estimated(
         items: impl Into<ReadSignal<ListSource>>,
         estimate: f32,

@@ -160,8 +160,11 @@ impl ListSelection {
     /// becomes exactly `key`, or empty for `None`.
     ///
     /// # Errors
-    /// Rejects writes during update, paint or inspection, like any signal write;
-    /// a rejected call changes neither the signals nor the anchor.
+    /// The errors of [`Signal::set`](crate::Signal::set): `Closed` after the
+    /// runtime shut down; `WriteDuringUpdate`, `WriteDuringLayout`,
+    /// `WriteDuringPaint`, `WriteDuringInspection` or `WriteDuringDelivery`
+    /// from inside that phase; or `BorrowConflict`. A rejected call changes
+    /// neither the signals nor the anchor.
     pub fn set_active(&self, key: Option<String>) -> Result<(), RuntimeError> {
         if self.mode == SelectionMode::Single {
             self.selected.set(Rc::new(key.iter().cloned().collect()))?;

@@ -658,7 +658,9 @@ impl MenuBar {
     /// while it describes its children.
     ///
     /// # Errors
-    /// Rejects empty or whitespace keys and duplicate sibling keys at every level.
+    /// Returns [`ChoiceError::EmptyValue`] for an empty or whitespace key and
+    /// [`ChoiceError::DuplicateValue`] for duplicate sibling keys, at every
+    /// level.
     pub fn new(ui: &impl crate::StateOwner, menus: Vec<MenuItem>) -> Result<Self, ChoiceError> {
         validate_menu(&menus)?;
         let menus: Vec<_> = menus.into_iter().filter(|item| !item.separator).collect();

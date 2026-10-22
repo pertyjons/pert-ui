@@ -201,6 +201,11 @@ an interaction, then pause and capture completed scopes. Total includes nested
 work; self time excludes measured descendants. These are elapsed UI-thread times,
 including measurement overhead and waiting, not CPU percentages or GPU timings.
 
+[`Runtime::paint`] fails with a [`DrawError`], which does not convert into
+[`RuntimeError`]. A helper that flushes and paints, as a test of a scene does,
+returns `Result<_, DrawError>`, into which `RuntimeError` and every leaf error
+convert with `?`; with the `native` feature, [`AppError`] accepts both.
+
 ```rust
 use pert_ui::{Runtime, Element, Label, Viewport, ProfileOperation};
 use std::time::Duration;

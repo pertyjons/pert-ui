@@ -161,7 +161,8 @@ impl Size {
     }
 }
 
-/// Available measurement space, with an explicit unbounded value on each axis.
+/// Available measurement space in logical pixels, with an explicit unbounded
+/// value on each axis.
 ///
 /// This is available space, not permission to violate a child's intrinsic minimum.
 /// A component may report a larger extent, which its container clips or scrolls.
@@ -254,7 +255,8 @@ impl SizeLimits {
     }
 }
 impl Constraints {
-    /// Creates available space; `None` means unbounded.
+    /// Creates available space, each extent in logical pixels; `None` means
+    /// unbounded.
     ///
     /// # Errors
     /// [`GeometryError::NonFinite`] for NaN or an infinity (unbounded is `None`)
@@ -277,12 +279,12 @@ impl Constraints {
             height: Some(size.height),
         }
     }
-    /// Available width; `None` is unbounded.
+    /// Available width in logical pixels; `None` is unbounded.
     #[must_use]
     pub const fn width(self) -> Option<f32> {
         self.width
     }
-    /// Available height; `None` is unbounded.
+    /// Available height in logical pixels; `None` is unbounded.
     #[must_use]
     pub const fn height(self) -> Option<f32> {
         self.height

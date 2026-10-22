@@ -254,7 +254,8 @@ impl Color {
     /// Creates a linear color. RGB input is not interpreted as sRGB bytes.
     ///
     /// # Errors
-    /// Rejects non-finite channels or values outside `0..=1`.
+    /// Returns [`DrawError::InvalidColor`] for a non-finite channel or one
+    /// outside `0..=1`.
     pub fn rgba(red: f32, green: f32, blue: f32, alpha: f32) -> Result<Self, DrawError> {
         let values = [red, green, blue, alpha];
         if values

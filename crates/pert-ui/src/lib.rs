@@ -48,20 +48,42 @@ pub use svg::component::Svg;
 /// `use pert_ui::prelude::*`.
 ///
 /// This includes the runtime prelude and enabled feature widgets. With the
-/// `desktop` feature it also includes `App` and the types it reports. They
-/// follow one membership rule:
-/// the widgets with their configuration types; state, parameters and layout;
-/// and the [`Component`] trait with every type its method signatures name, so
-/// a custom widget needs no other import. It includes errors returned by
-/// [`Component`] method signatures: [`RuntimeError`], [`DrawError`],
-/// [`WorkspaceError`] and [`RestoreRejection`]. Widget configuration also brings
-/// [`HexColorError`], [`ListingError`] and [`InputRejection`] into the prelude,
-/// alongside `AppError` with `desktop`. Other errors, and the inspection, capture,
-/// live-data and host-integration types, stay at the crate root. Asset-loading
-/// errors such as `svg::SvgError` stay in their feature modules.
+/// `native` feature, which `desktop` and `desktop-cpu` enable, it also includes
+/// `App` and the types it reports. They follow one membership rule: the
+/// widgets with their configuration types; state, parameters and layout; and
+/// the [`Component`] trait with every type its method signatures name, so a
+/// custom widget that lays out, draws and handles input needs no other import.
+/// It includes errors returned by [`Component`] method signatures:
+/// [`RuntimeError`], [`DrawError`], [`WorkspaceError`] and
+/// [`RestoreRejection`]. Widget configuration also brings [`HexColorError`],
+/// [`ListingError`] and [`InputRejection`] into the prelude, alongside
+/// `AppError` and its shutdown payload `AppShutdownError` with `native`. Other
+/// errors, and the inspection, capture, live-data and host-integration types,
+/// stay at the crate root. Asset-loading errors such as `svg::SvgError` stay
+/// in their feature modules.
 ///
 /// The re-exports are `#[doc(no_inline)]`: each item is documented once, at
 /// the crate root.
+///
+/// # Root names to add
+///
+/// rustc suggests no import for a name outside the prelude, so these are the
+/// crate-root names code most often adds to the glob:
+///
+/// - keyboard shortcuts and commands: [`Modifiers`], [`KeyChord`],
+///   [`CommandKey`], [`CommandScope`], [`CommandId`] and [`CommandContext`];
+///   held keys: [`HeldInputId`] and [`HeldCancellation`];
+/// - reordering a list, tabs or a tree: [`ListDrop`], [`DropPosition`],
+///   [`ListDropPoint`], [`ListDropPlacement`] and [`ListDropMark`];
+/// - live data: [`LevelMeter`], [`Trace`], [`MeterAxis`], [`SeriesSource`],
+///   [`series_bridge`], [`SeriesConfig`] and [`Timestamp`]; a parameter edit's
+///   end: [`EditOutcome`];
+/// - a custom component that describes itself for inspection: [`Semantics`],
+///   [`SemanticRole`], [`SemanticValue`], [`SemanticAction`], [`SemanticItem`],
+///   [`InspectValue`], [`ValidationHints`] and [`BoxModelInspection`]; one that
+///   starts a drag: [`DragPreview`] and [`DRAG_THRESHOLD`]; one that presents
+///   in its own native window: [`NativeWindowOptions`], [`NativeWindowId`] and
+///   [`PresentationReceipt`].
 pub mod prelude {
     #[cfg(feature = "svg")]
     #[doc(no_inline)]

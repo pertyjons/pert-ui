@@ -448,8 +448,11 @@ impl<T: ParameterValue> RemoteHost<T> {
     /// callback-safe endpoint.
     ///
     /// # Errors
-    /// Returns phase/closed/unavailable errors, `AlreadyRegistered` for a second
-    /// callback, or `ActiveEdit` while a gesture or proposal is outstanding.
+    /// Returns a runtime phase error (see [`Parameter`](crate::Parameter));
+    /// [`EditError::Unavailable`] after removal;
+    /// [`DeliveryError::ActiveEdit`] while a gesture or proposal is
+    /// outstanding; or [`DeliveryError::AlreadyRegistered`] for a second
+    /// callback. A refusal registers nothing.
     pub fn on_submit(
         &self,
         sink: impl FnMut(&RemoteCommit<T>) -> Result<(), SinkError> + 'static,
@@ -474,7 +477,9 @@ impl<T: ParameterValue> RemoteHost<T> {
     /// last delivery report and independent authority receipts remain unchanged.
     ///
     /// # Errors
-    /// Returns phase/closed errors or `ActiveEdit` while a gesture/proposal remains.
+    /// Returns a runtime phase error (see [`Parameter`](crate::Parameter)), or
+    /// [`DeliveryError::ActiveEdit`] while a gesture or proposal remains. A
+    /// refusal keeps the callback.
     pub fn clear_submission_sink(&self) -> Result<(), RuntimeError> {
         self.host.inner.shared.writable()?;
         if self
@@ -500,9 +505,14 @@ impl<T: ParameterValue> RemoteHost<T> {
     /// Explicitly retries a still-pending proposal after transport backpressure.
     ///
     /// # Errors
-    /// Returns phase/closed/unavailable errors, `UnknownEdit` for a superseded
-    /// proposal, `AlreadyDelivered` after successful handoff, `NoSubmissionSink`
-    /// without a callback, or `SinkFailed` with its typed error retained.
+    /// Returns a runtime phase error (see [`Parameter`](crate::Parameter));
+    /// [`EditError::Unavailable`] while disconnected;
+    /// [`DeliveryError::UnknownEdit`] for a request that is not the pending
+    /// proposal, such as a superseded one; `BorrowConflict` for a reentrant read
+    /// of the delivery status; [`DeliveryError::AlreadyDelivered`] after a
+    /// successful handoff; [`DeliveryError::NoSubmissionSink`] without a
+    /// callback; or [`DeliveryError::SinkFailed`] when the callback fails, its
+    /// typed error retained in [`Self::submission_delivery`].
     pub fn retry_submission(&self, request: &RemoteCommit<T>) -> Result<(), RuntimeError> {
         self.host.inner.shared.writable()?;
         if !self.state.connected.get() {
@@ -559,8 +569,13 @@ impl<T: ParameterValue> RemoteHost<T> {
     /// so replies to its superseded submissions instead return `Stale`.
     ///
     /// # Errors
-    /// Returns phase/closed errors or value/revision validation errors. An invalid
-    /// corrected value leaves the proposal pending for explicit repair.
+    /// Returns a runtime phase error (see [`Parameter`](crate::Parameter));
+    /// [`EditError::InvalidValue`] for an accepted value the specification
+    /// rejects, which leaves the proposal pending for explicit repair; or
+    /// [`EditError::Exhausted`] when the edit's sequence cannot advance. A
+    /// response that no longer matches is not an error but
+    /// [`ResponseDisposition::Stale`] or
+    /// [`ResponseDisposition::AlreadyResolved`].
     pub fn respond(
         &self,
         request: &RemoteCommit<T>,
@@ -658,8 +673,11 @@ impl<T: ParameterValue> RemoteHost<T> {
     /// store before installing its baseline, regardless of the local receipt.
     ///
     /// # Errors
-    /// Returns phase, unavailable, invalid-value or counter-exhaustion errors
-    /// without reopening the connection.
+    /// Returns [`EditError::Exhausted`] when the connection generation or the
+    /// revision cannot advance, and the other refusals of
+    /// [`ParameterHost::write_base`](crate::ParameterHost::write_base): a
+    /// runtime phase error, [`EditError::Unavailable`] after removal and
+    /// [`EditError::InvalidValue`]. A refusal does not reopen the connection.
     pub fn resynchronize(&self, value: T) -> Result<(), RuntimeError> {
         let generation = self
             .state
@@ -697,7 +715,8 @@ impl Runtime {
     /// default; use `resynchronize` before exposing another initial value.
     ///
     /// # Errors
-    /// Same identity and phase checks as [`Runtime::parameter`].
+    /// The errors of [`Runtime::parameter`]: a runtime phase error or
+    /// [`BindingError::DuplicateParameter`](crate::BindingError::DuplicateParameter).
     pub fn remote_parameter<T: ParameterValue>(
         &mut self,
         id: ParameterId,

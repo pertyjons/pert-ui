@@ -430,8 +430,9 @@ macro_rules! editor_api {
                 self.0.required = required;
                 self
             }
-            /// Refuses a saved value with fewer than `count` grapheme clusters
-            /// (user-perceived characters), with an [`InputRejection`] that
+            /// Sets a minimum length in grapheme clusters (user-perceived
+            /// characters, not bytes or `char`s): refuses a saved value with
+            /// fewer than `graphemes` of them, with an [`InputRejection`] that
             /// uses [`StringRole::AtLeastCharacters`](crate::StringRole::AtLeastCharacters)
             /// from the installed string table (English default:
             /// "Character count must be at least `count`").
@@ -443,20 +444,21 @@ macro_rules! editor_api {
             /// field may stay empty. Typing is never stopped at a limit; the
             /// check happens when the draft is saved. Text the application
             /// writes is not checked. `None`, the default, sets no minimum.
-            pub fn min_length(mut self, count: Option<usize>) -> Self {
-                self.0.min_length = count;
+            pub fn min_length(mut self, graphemes: Option<usize>) -> Self {
+                self.0.min_length = graphemes;
                 self
             }
-            /// Refuses a saved value with more than `count` grapheme clusters,
-            /// with an [`InputRejection`] from
+            /// Sets a maximum length in grapheme clusters, as
+            /// [`Self::min_length`] counts them: refuses a saved value with more
+            /// than `graphemes` of them, with an [`InputRejection`] from
             /// [`StringRole::AtMostCharacters`](crate::StringRole::AtMostCharacters)
             /// in the installed string table (English default:
             /// "Character count must be at most `count`"). Draft mode and checking follow
             /// [`Self::min_length`]; typing past the limit is allowed and the
             /// [counter](Self::counter) shows it in the Error role. `None`, the
             /// default, sets no maximum.
-            pub fn max_length(mut self, count: Option<usize>) -> Self {
-                self.0.max_length = count;
+            pub fn max_length(mut self, graphemes: Option<usize>) -> Self {
+                self.0.max_length = graphemes;
                 self
             }
             /// Shows the draft's grapheme count against its limit inside the

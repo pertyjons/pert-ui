@@ -189,6 +189,10 @@ fn describe(description: &str) -> String {
 /// without a service. Implementations must return failures, retain ownership of
 /// copied data as required by their platform, and never access live widgets.
 /// Calls are synchronous ordinary UI operations, never safe for time-critical callbacks.
+/// An implementation is `'static`, as
+/// [`Runtime::set_clipboard`](crate::Runtime::set_clipboard) requires: it owns
+/// its storage or shares it through an `Rc`, such as a struct holding an
+/// `Rc<RefCell<String>>`, never borrowing from a local.
 pub trait Clipboard {
     /// Reads owned UTF-8 text.
     /// The service may allocate the complete clipboard payload; editor limits

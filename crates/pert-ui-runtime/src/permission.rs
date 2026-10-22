@@ -143,7 +143,12 @@ impl Permission {
     /// component's update.
     ///
     /// # Errors
-    /// Returns the runtime error of reading a bound signal.
+    /// The errors of [`ReadSignal::get`](crate::ReadSignal::get) for a bound
+    /// condition: [`RuntimeError::Closed`] after its runtime shut down,
+    /// [`RuntimeError::BorrowConflict`] for a reentrant read, and for a derived
+    /// condition not yet settled, `WriteDuringPaint`, `WriteDuringLayout`,
+    /// `WriteDuringInspection` or `WriteDuringDelivery` when read inside that
+    /// phase.
     pub fn get(&self) -> Result<bool, RuntimeError> {
         if !self.allowed {
             return Ok(false);

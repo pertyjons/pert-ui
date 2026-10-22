@@ -356,7 +356,7 @@ fn surface_alpha(
 
 impl Renderer {
     /// How long [`Renderer::render_offscreen`] waits for the GPU in total
-    /// before it reports a read-back timeout.
+    /// before it reports a read-back timeout: five seconds.
     ///
     /// The time starts when the capture's commands are submitted, so it bounds
     /// only the GPU work and the mapping of the read-back buffer. Preparing
@@ -500,8 +500,9 @@ impl Renderer {
     /// An unconfigured renderer stays unconfigured until a nonzero resize.
     ///
     /// # Errors
-    /// Reports target creation failure or loss of the selected format or alpha
-    /// capability. The prior surface and configuration remain owned on rejection.
+    /// Returns [`RenderError::Surface`] when the surface cannot be created from
+    /// `target` or no longer supports the selected format or alpha policy. The
+    /// prior surface and configuration remain owned on rejection.
     pub fn recreate(
         &mut self,
         target: impl Into<wgpu::SurfaceTarget<'static>>,

@@ -322,9 +322,31 @@ pub use pert_ui_core::{
 /// the crate root.
 ///
 /// The `pert-ui` facade's prelude re-exports this one and adds only its native
-/// startup types (`App` and what `App` reports), so a custom component can be
-/// written from `use pert_ui::prelude::*` alone. The re-exports are
-/// `#[doc(no_inline)]`: each item is documented once, at the crate root.
+/// startup types (`App` and what `App` reports). A custom component that lays
+/// out, draws and handles input can be written from `use pert_ui::prelude::*`
+/// alone; one that describes itself for inspection, starts a drag or presents
+/// in its own native window adds the root names listed below. The re-exports
+/// are `#[doc(no_inline)]`: each item is documented once, at the crate root.
+///
+/// # Root names to add
+///
+/// rustc suggests no import for a name outside the prelude, so these are the
+/// crate-root names code most often adds to the glob:
+///
+/// - keyboard shortcuts and commands: [`Modifiers`], [`KeyChord`],
+///   [`CommandKey`], [`CommandScope`], [`CommandId`] and [`CommandContext`];
+///   held keys: [`HeldInputId`] and [`HeldCancellation`];
+/// - reordering a list, tabs or a tree: [`ListDrop`], [`DropPosition`],
+///   [`ListDropPoint`], [`ListDropPlacement`] and [`ListDropMark`];
+/// - live data: [`LevelMeter`], [`Trace`], [`MeterAxis`], [`SeriesSource`],
+///   [`series_bridge`], [`SeriesConfig`] and [`Timestamp`]; a parameter edit's
+///   end: [`EditOutcome`];
+/// - a custom component that describes itself for inspection: [`Semantics`],
+///   [`SemanticRole`], [`SemanticValue`], [`SemanticAction`], [`SemanticItem`],
+///   [`InspectValue`], [`ValidationHints`] and [`BoxModelInspection`]; one that
+///   starts a drag: [`DragPreview`] and [`DRAG_THRESHOLD`]; one that presents
+///   in its own native window: [`NativeWindowOptions`], [`NativeWindowId`] and
+///   [`PresentationReceipt`].
 pub mod prelude {
     #[doc(no_inline)]
     pub use crate::NumberFormat;

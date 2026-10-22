@@ -1,5 +1,88 @@
 # Changelog
 
+## 0.3.54 (2026-10-22)
+
+Documentation: item rustdoc of the API audit (API audit fix plan, part 5b),
+describing the API as it is. No public item, signature or behavior changes;
+the `api/` listings are unchanged. Four parameter names change, which the
+listings omit and callers do not see.
+
+- **Parameter names:** `ListController::new` and `ZoomController::new` name
+  their state owner `ui`; `Dialog::new` and `AlertDialog::new` name their
+  controller `controller`; `AxisMapping::visible`, `ticks` and `zoomed_at`
+  take `extent_pixels` and `anchor_pixel`; `TextField` and `TextArea`
+  `min_length`/`max_length` take `graphemes` and name the unit first.
+- **`# Errors` sections:**
+  - `Runtime` and `Parameter` define a *runtime phase error* (`Closed` or a
+    `WriteDuring*` variant), which the binding, host, session and runtime
+    sections name.
+  - Complete phase variants on `ListSelection::{set_active, select, clear}`,
+    `TreeController::{set_expanded, toggle, set_source, filter, reveal}`,
+    `TableController::{set_source, set_sort, filter, set_active_column,
+    reveal}`, `ListController::reveal`, `ZoomController::{set, set_changed,
+    fit}`, `FieldHandle::{set, set_changed, set_modified, clear, remove}` and
+    `UiSettings::{set_motion, set_debug_overlay}`; the reachable ones on
+    `Runtime::{mailbox, set_viewport, inspection_service, set_visible}`.
+  - Named variants on `EditSession::{update, commit, cancel}` (with
+    `EditError::Pending`), `ParameterHost::{write_base, replace_spec,
+    set_effective, remove}`, `AnyParameterHost::remove`,
+    `RemoteHost::{on_submit, clear_submission_sink, respond, resynchronize}`,
+    `Parameter::begin_edit`, `ParameterState::{begin, replace_spec,
+    write_base}`, `Runtime::{parameter, remote_parameter, cancel_input,
+    set_presentation_rate, service_inspection, mount, mount_tree, children,
+    invalidate, unmount, focus, event, paint}`, `FloatingWindow::{position,
+    initial_size, fixed_size}`, `EventContext::{set_timer, start_drag}`,
+    `Permission::get`, `FileBrowserController::selected_paths`,
+    `Color::rgba`, `MenuBar::new`, `ViewState::{new, with}`,
+    `Workspace::{new, decode}`, `WorkspacePath::new`, `WorkspaceValue::text`,
+    `Renderer::recreate`, the row-height constructors of `FileBrowser`,
+    `Table`, `Tree` and `VirtualList` (and `VirtualList::estimated`), and
+    with their `RuntimeError::Geometry` wrapper on `App::{size, min_size,
+    max_size}` and `NativeWindowOptions::size`.
+  - Found during the part, with the same category wording: named variants on
+    `ContextMenuOpener::open`, `ToolWindowController::{expand, set_names,
+    is_expanded}` (`collapse` and `toggle` refer to `expand`) and
+    `RemoteHost::retry_submission`.
+  - One-line forwarding on `ChoiceId`'s `TryFrom<&str>` and `TryFrom<String>`
+    and on `TryFrom` for `Magnification`, `UiZoom` and `ViewScale`.
+- **Errors across layers:** `Runtime::paint` and the diagnostics guide say a
+  helper that paints returns `Result<_, DrawError>`, or `AppError` with
+  `native`; `ApplicationError::new` and `RuntimeError::Application` point to
+  `ApplicationError::from` for a boxed `dyn Error + Send + Sync`.
+- **Escape and cancellation:** Escape ends the focused component's capture,
+  timer, drag and edit sessions and then arrives as an ordinary key, without
+  `Component::cancel_input`, as `Runtime::key_input`, `EventContext::set_timer`,
+  `Component::{cancel_input, focus_lost}` and the controls and custom-widget
+  guides now say. `Component::cancel_input` runs outside the evaluation
+  phases, may restore the component's own bindings, must not run application
+  actions, and reports a failed restore through a `Notifier`.
+  `ColorPicker`'s cancellation comment matches the hide and removal paths.
+- **Owners and data:** `DraftEditor`'s owner contract names
+  `Component::retain_initial_children` for a redescribed owner and says that
+  beginning a session runs the owner's `cancel_input`. `Component`,
+  `ListItems`, `TreeItems`, `TableItems`, `ContentRows` and `Clipboard` state
+  their `'static` requirement, explained at `Component::content_rows`.
+  `RichText` and `TextSpan` are UI-thread values because a span can name a
+  `FontId`; a sendable font key is recorded in `plans/follow-ups.md`.
+- **Filters:** `FilterMatcher`, `ListFilter::filter`, `TableController::filter`
+  and `TreeController::filter` say a non-blank query is trimmed before the
+  matcher sees it and point to `ListFilter::items`; `MultiSelect::filter` has
+  a doctest reusing the `FilterMatcher` presets and says its query is not
+  trimmed.
+- **Inspection:** `Semantics::value`, `SemanticValue` and `Label` say static
+  text is the name and a value is an editable or stateful control's content;
+  `SemanticValue` and the custom-widget guide describe a multi-component value
+  as `Text` plus one `InspectValue::Number` property per component.
+- **Prelude pages:** both preludes list the crate-root names code most often
+  adds; the custom-component guarantee, here and on the crate page, is
+  narrowed to a component that lays out, draws and handles input; the facade
+  prelude names `AppShutdownError` and says its native members come with
+  `native`, which `desktop` and `desktop-cpu` enable.
+- **Smaller corrections:** `Runtime::text_command` performs "a text command
+  (clipboard or selection)"; `Constraints` states logical pixels;
+  `Workspace::MAX_DOCUMENT_BYTES`, `VectorRasterizer::MAX_COVERAGE_WORK` and
+  `Renderer::READBACK_TIMEOUT` state their values.
+
 ## 0.3.53 (2026-10-22)
 
 Documentation: the rules of the API audit's approved policy decisions

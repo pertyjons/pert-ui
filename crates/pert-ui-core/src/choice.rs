@@ -61,6 +61,7 @@ impl fmt::Display for ChoiceId {
 impl TryFrom<&str> for ChoiceId {
     type Error = ParameterError;
 
+    /// Validates like [`ChoiceId::new`].
     fn try_from(id: &str) -> Result<Self, Self::Error> {
         Self::new(id)
     }
@@ -69,6 +70,7 @@ impl TryFrom<&str> for ChoiceId {
 impl TryFrom<String> for ChoiceId {
     type Error = ParameterError;
 
+    /// Validates like [`ChoiceId::new`].
     fn try_from(id: String) -> Result<Self, Self::Error> {
         Self::new(id)
     }

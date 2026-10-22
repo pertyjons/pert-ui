@@ -84,7 +84,16 @@ impl Runtime {
     /// teardown. First update/layout is scheduled automatically.
     ///
     /// # Errors
-    /// Rejects invalid/duplicate keys, exhausted IDs or a forbidden runtime phase.
+    /// Nothing is mounted after an error: a runtime phase error (see
+    /// [`Runtime`]); [`RuntimeError::EmptyKey`] for a key without a
+    /// non-whitespace character anywhere in the tree;
+    /// [`RuntimeError::DuplicateKey`] for siblings sharing a key or a root key
+    /// already in use; the error a component's
+    /// [`Component::check_description`](crate::Component::check_description)
+    /// returns, conventionally [`RuntimeError::Layout`] with
+    /// [`LayoutError::InvalidChild`](crate::LayoutError::InvalidChild); or
+    /// [`RuntimeError::Exhausted`] when the tree needs more identities than
+    /// remain.
     pub fn mount_tree(&mut self, element: Element) -> Result<WidgetId, RuntimeError> {
         let _timing = self
             .shared
@@ -128,7 +137,8 @@ impl Runtime {
     /// Returns ordered immediate children, including locally or ancestrally hidden ones.
     ///
     /// # Errors
-    /// Rejects foreign or unmounted parents.
+    /// Returns [`RuntimeError::ForeignRuntime`] for a parent of another runtime
+    /// and [`RuntimeError::Unmounted`] for an unmounted one.
     pub fn children(&self, parent: &WidgetId) -> Result<Vec<WidgetId>, RuntimeError> {
         self.check(parent)?;
         Ok(self.entries[&parent.0.serial]
