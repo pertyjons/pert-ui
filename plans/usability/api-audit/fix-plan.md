@@ -235,6 +235,32 @@ and anything left to a later part.
     and `AsRef<str>`), and to complete this record. Both were done; the
     implementation otherwise matched 6a3.
     The recheck approved 6a3.
+- **6b1 (0.3.60):** `missing_panics_doc`, `return_self_not_must_use` and
+  `fn_params_excessive_bools` are denied, with one `#[expect]` on
+  `ThemeMetrics::for_density`. `#[must_use]` now follows the receipt rule:
+  - `CommandId`, `HeldInputId` and `ToastReceipt` lose it;
+  - owners whose drop tears down state gain it with reasons;
+  - the signal creators gain it;
+  - the remaining receipts carry reasons.
+  - **Checks run after the last edit:**
+    - `cargo fmt --all --check`;
+    - workspace Clippy and Clippy in every `pert-ui` feature configuration
+      CI checks, plus `pert-ui-core --features serde`;
+    - `cargo test --locked --workspace`;
+    - the five headless example sessions (diagram_editor rerun after the
+      follow-up);
+    - `cargo test --locked --workspace --doc`;
+    - warning-free workspace rustdoc;
+    - `api/generate.sh`, with no difference;
+    - `git diff --check`.
+  - **Beyond the plan's lines:**
+    - the `let _ =` workarounds the old `#[must_use]` forced, about fifty
+      across the examples, gallery and tests, are plain statements;
+    - `CommandReceipt`, `PresentationReceipt` and `RevealReceipt` carry
+      reasons that follow the receipt rule.
+  - **Left to a later part:** the round 2 fixture's `let _ =
+    ui.register_command` (`plans/usability/task4-app`) waits for the kit
+    fixes before round 2, which also update its version.
 
 ## Rules for every part
 

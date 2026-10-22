@@ -360,7 +360,7 @@ fn toast_capacity_expiry_pending_promotion_and_shutdown_are_observable() {
 fn toast_controls_follow_their_labels_and_sit_at_the_trailing_edge() {
     let mut ui = ui();
     let queue = ToastController::new(&ui);
-    let _receipt = queue
+    queue
         .push(Toast::new("A message long enough to wrap inside the stack").action("OK", |_| Ok(())))
         .unwrap();
     let root = ui
@@ -444,7 +444,7 @@ fn narrow_toasts_stack_controls_and_clip_their_labels() {
     ui.set_viewport(Viewport::new(120.0, 300.0, 1.0).unwrap())
         .unwrap();
     let queue = ToastController::new(&ui);
-    let _receipt = queue
+    queue
         .push(Toast::new("Saved").action("Apply", |_| Ok(())))
         .unwrap();
     let root = ui

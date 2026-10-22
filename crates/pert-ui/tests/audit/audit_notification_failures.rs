@@ -657,24 +657,23 @@ fn command_action_propagating_nested_delivery_error_is_an_explicit_command_failu
     s.ui.set_window_visible(false).unwrap();
     s.ui.select_window(&s.ui.primary_window()).unwrap();
     let b_window = s.b_window.clone();
-    let _command =
-        s.ui.register_command(
-            "Fail action",
-            CommandScope::Application,
-            vec![KeyChord::new(
-                CommandKey::Named(KeyCode::F1),
-                Modifiers::default(),
-            )],
-            move |ui, _| {
-                let previous = ui.current_window();
-                ui.select_window(&b_window)?;
-                ui.set_window_visible(true)?;
-                ui.select_window(&previous)?;
-                // Choosing to return this error explicitly fails the command action.
-                ui.flush(ui.now()).map(|_| ())
-            },
-        )
-        .unwrap();
+    s.ui.register_command(
+        "Fail action",
+        CommandScope::Application,
+        vec![KeyChord::new(
+            CommandKey::Named(KeyCode::F1),
+            Modifiers::default(),
+        )],
+        move |ui, _| {
+            let previous = ui.current_window();
+            ui.select_window(&b_window)?;
+            ui.set_window_visible(true)?;
+            ui.select_window(&previous)?;
+            // Choosing to return this error explicitly fails the command action.
+            ui.flush(ui.now()).map(|_| ())
+        },
+    )
+    .unwrap();
     assert_eq!(
         s.ui.command_key_input(CommandKeyInput::new(
             KeyCode::F1,
@@ -844,29 +843,28 @@ fn caught_action_flush_error_does_not_suppress_later_update_failure_cleanup() {
     s.ui.select_window(&s.ui.primary_window()).unwrap();
     let a = s.a.clone();
     let b_window = s.b_window.clone();
-    let _command =
-        s.ui.register_command(
-            "Catch then update",
-            CommandScope::Application,
-            vec![KeyChord::new(
-                CommandKey::Named(KeyCode::F1),
-                Modifiers::default(),
-            )],
-            move |ui, _| {
-                let previous = ui.current_window();
-                ui.select_window(&b_window)?;
-                ui.set_window_visible(true)?;
-                ui.select_window(&previous)?;
-                assert_eq!(
-                    ui.flush(ui.now()).unwrap_err(),
-                    RuntimeError::EmptyCommandName
-                );
-                a.fail_update.set(true)?;
-                a.request();
-                Ok(())
-            },
-        )
-        .unwrap();
+    s.ui.register_command(
+        "Catch then update",
+        CommandScope::Application,
+        vec![KeyChord::new(
+            CommandKey::Named(KeyCode::F1),
+            Modifiers::default(),
+        )],
+        move |ui, _| {
+            let previous = ui.current_window();
+            ui.select_window(&b_window)?;
+            ui.set_window_visible(true)?;
+            ui.select_window(&previous)?;
+            assert_eq!(
+                ui.flush(ui.now()).unwrap_err(),
+                RuntimeError::EmptyCommandName
+            );
+            a.fail_update.set(true)?;
+            a.request();
+            Ok(())
+        },
+    )
+    .unwrap();
     assert_eq!(
         s.ui.command_key_input(CommandKeyInput::new(
             KeyCode::F1,
@@ -1008,28 +1006,27 @@ fn caught_nested_command_failure_cannot_suppress_fresh_input_cleanup() {
         )
         .unwrap();
     let a = s.a.clone();
-    let _outer =
-        s.ui.register_command(
-            "Catch inner then begin",
-            CommandScope::Application,
-            vec![KeyChord::new(
-                CommandKey::Named(KeyCode::F1),
-                Modifiers::default(),
-            )],
-            move |ui, context| {
-                assert_eq!(
-                    ui.invoke_command(&inner, context.clone()),
-                    Err(RuntimeError::EmptyKey)
-                );
-                assert_eq!(a.cancelled.get(), 1);
-                ui.key_input(KeyCode::KeyA, KeyAction::Press)?;
-                assert!(a.held_action.get());
-                a.fail_callback.set(true);
-                a.request();
-                Ok(())
-            },
-        )
-        .unwrap();
+    s.ui.register_command(
+        "Catch inner then begin",
+        CommandScope::Application,
+        vec![KeyChord::new(
+            CommandKey::Named(KeyCode::F1),
+            Modifiers::default(),
+        )],
+        move |ui, context| {
+            assert_eq!(
+                ui.invoke_command(&inner, context.clone()),
+                Err(RuntimeError::EmptyKey)
+            );
+            assert_eq!(a.cancelled.get(), 1);
+            ui.key_input(KeyCode::KeyA, KeyAction::Press)?;
+            assert!(a.held_action.get());
+            a.fail_callback.set(true);
+            a.request();
+            Ok(())
+        },
+    )
+    .unwrap();
     assert_eq!(
         s.ui.command_key_input(CommandKeyInput::new(
             KeyCode::F1,

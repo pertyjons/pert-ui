@@ -1297,10 +1297,14 @@ keeps, such as collection selection (`ListSelection`) and form status
 Collection selection remains application-owned and addressed by stable key.
 
 A `*Receipt` reports one queued request through an owned `status()` and a
-`status_binding()` for reactive UI. A cross-thread reply that carries its
-answer and is consumed once, such as the `Pending<T>` an `InspectionClient`
-request returns, is not a receipt. A `*Outcome` is the non-error result of an
-interaction or operation, distinct from `Result` as an error carrier. A
+`status_binding()` for reactive UI. A receipt is `#[must_use]` when dropping
+it can hide an outcome that nothing else reports, a failure or a
+cancellation: `TaskReceipt` is the only report of a `Cancelled` operation,
+while a `ToastReceipt`'s failing action also propagates and its expiry or
+dismissal is presentation, so it carries no attribute. A cross-thread reply
+that carries its answer and is consumed once, such as the `Pending<T>` an
+`InspectionClient` request returns, is not a receipt. A `*Outcome` is the
+non-error result of an interaction or operation, distinct from `Result` as an error carrier. A
 result may instead be named for what it delivers (`Frame`, `ChildReveal`),
 and it may carry a continuation for unfinished work (`ContentJump::Pending`).
 An outcome of local processing does not report acceptance by the authority,

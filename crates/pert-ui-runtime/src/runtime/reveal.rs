@@ -129,7 +129,8 @@ pub enum RevealStatus {
 ///
 /// Receipts compare equal when they report the same request.
 #[derive(Clone)]
-#[must_use = "retain the receipt if the application needs the reveal's outcome"]
+#[must_use = "the receipt is the only report of the reveal's outcome, including an error \
+              that stopped it"]
 pub struct RevealReceipt(ReceiptStatus<RevealStatus>);
 impl RevealReceipt {
     /// Pending or the retained terminal result, readable after shutdown.

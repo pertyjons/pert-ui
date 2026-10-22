@@ -418,7 +418,7 @@ fn a_key_held_on_the_old_queue_does_not_activate_the_new_queue() -> TestResult {
     let new = ToastController::new(&ui);
     let ran = std::rc::Rc::new(std::cell::Cell::new(false));
     let flag = ran.clone();
-    let _ = old.push(Toast::new("Saved").action("Undo", |_| Ok(())))?;
+    old.push(Toast::new("Saved").action("Undo", |_| Ok(())))?;
     // The same message and label, and the same local ID in its own queue.
     let current = new.push(Toast::new("Saved").action("Undo", move |_| {
         flag.set(true);

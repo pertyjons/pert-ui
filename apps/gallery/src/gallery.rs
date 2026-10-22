@@ -201,7 +201,7 @@ impl Gallery {
         for (category, page, title) in GO_TO_PAGES {
             let (go_places, go_status) = (places.clone(), status.clone());
             // The gallery keeps its commands for its whole run.
-            let _ = ui.register_command(
+            ui.register_command(
                 format!("Go to: {title}"),
                 CommandScope::Application,
                 Vec::new(),
@@ -216,7 +216,7 @@ impl Gallery {
             ("Go forward", KeyChord::navigate_forward(), false),
         ] {
             let (step_places, step_status) = (places.clone(), status.clone());
-            let _ = ui.register_command(
+            ui.register_command(
                 name,
                 CommandScope::Application,
                 vec![chord],

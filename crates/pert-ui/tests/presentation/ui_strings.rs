@@ -83,7 +83,7 @@ fn installing_a_table_relabels_built_in_components_without_polling() {
         ToastHost::new(queue.clone(), Element::new("content", content)),
     ))
     .unwrap();
-    let _toast = queue.push(Toast::new("Sparat")).unwrap();
+    queue.push(Toast::new("Sparat")).unwrap();
     settle(&mut ui);
     let before = reported(&ui);
     for english in [

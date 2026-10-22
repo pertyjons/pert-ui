@@ -256,6 +256,7 @@ impl AnyDeliveryMonitor {
 /// domain exactly as the typed owner does. Not `Clone`; dropping it drops the
 /// typed owner inside. `Debug` shows the variant and identity only.
 #[derive(Debug)]
+#[must_use = "dropping the host removes the parameter and releases its sinks"]
 pub enum AnyParameterHost {
     /// A continuous owner.
     Continuous(ParameterHost<f32>),

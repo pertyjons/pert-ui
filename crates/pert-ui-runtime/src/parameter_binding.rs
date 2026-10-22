@@ -516,6 +516,7 @@ impl<T: ParameterValue> Parameter<T> {
 /// fn send<T: Send>() {}
 /// send::<pert_ui::ParameterHost<f32>>();
 /// ```
+#[must_use = "dropping the host removes the parameter and releases its sinks"]
 pub struct ParameterHost<T: ParameterValue> {
     inner: Rc<Inner<T>>,
 }

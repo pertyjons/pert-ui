@@ -333,7 +333,7 @@ fn a_bound_toast_shows_its_current_text_like_a_fixed_toast() -> TestResult {
 
     let mut fixed = runtime()?;
     let reference = ToastController::new(&fixed);
-    let _receipt = reference.push(Toast::new("Exporting 90%").action("Halt", |_| Ok(())))?;
+    reference.push(Toast::new("Exporting 90%").action("Halt", |_| Ok(())))?;
     toast_host(&mut fixed, &reference)?;
     assert_eq!(bound.paint()?, fixed.paint()?);
     Ok(())
@@ -372,7 +372,7 @@ fn an_oversized_bound_toast_message_fails_the_host_until_it_fits() -> TestResult
     ui.flush(Duration::ZERO)?;
     let mut fixed = runtime()?;
     let reference = ToastController::new(&fixed);
-    let _receipt = reference.push(Toast::new("Exported"))?;
+    reference.push(Toast::new("Exported"))?;
     toast_host(&mut fixed, &reference)?;
     assert_eq!(ui.paint()?, fixed.paint()?);
     Ok(())

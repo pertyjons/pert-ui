@@ -4,7 +4,6 @@ use crate::{CommandContext, CommandSource, InputOutcome, KeyCode, KeyTransition,
 
 /// Stable sustained-input registration, removed explicitly or with its owner.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
-#[must_use]
 pub struct HeldInputId(WidgetId, u64);
 /// Terminal cancellation of an admitted sustained press.
 ///
@@ -60,6 +59,7 @@ impl Runtime {
     /// These UI-thread callbacks are not safe for time-critical producers and must return promptly.
     /// Lifetime follows the mounted owner, including native presentation movement;
     /// movement cancels current presses while preserving the registration.
+    /// Dropping the returned [`HeldInputId`] keeps the registration.
     ///
     /// # Errors
     /// Returns [`RuntimeError::Closed`] after shutdown, and `WriteDuringUpdate`,

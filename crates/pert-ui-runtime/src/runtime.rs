@@ -2657,6 +2657,7 @@ impl UpdateContext {
     /// assert!(snapshot.components.iter().any(|item| item.key == "text"));
     /// # Ok::<(), RuntimeError>(())
     /// ```
+    #[must_use]
     pub fn signal<T>(&self, value: T) -> crate::Signal<T> {
         crate::Signal::new(self.node.shared.clone(), value)
     }
@@ -2962,6 +2963,7 @@ impl EventContext {
     /// create, with the same lifetime: the value lives as long as any clone of
     /// the handle, which is UI-thread local. Reads and writes after the runtime
     /// closes fail with [`RuntimeError::Closed`].
+    #[must_use]
     pub fn signal<T>(&self, value: T) -> crate::Signal<T> {
         crate::Signal::new(self.node.shared.clone(), value)
     }
@@ -4128,6 +4130,7 @@ impl Runtime {
     }
 
     /// Creates a signal owned by this runtime. Values may be general application data.
+    #[must_use]
     pub fn signal<T>(&self, value: T) -> Signal<T> {
         Signal::new(self.shared.clone(), value)
     }
@@ -4156,6 +4159,7 @@ impl Runtime {
     /// assert!(source.telemetry()?.latest.is_none());
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
+    #[must_use = "dropping the last clone of the source closes the bridge"]
     pub fn series_source<T: crate::LiveItem>(
         &self,
         consumer: crate::SeriesConsumer<T>,

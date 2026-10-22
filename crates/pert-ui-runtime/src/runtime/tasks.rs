@@ -24,7 +24,8 @@ pub enum TaskStatus {
 ///
 /// Receipts compare equal when they report the same operation.
 #[derive(Clone)]
-#[must_use = "retain the receipt if the application needs the operation's outcome"]
+#[must_use = "the receipt is the only report of a `Cancelled` operation; failures also \
+              propagate from flush"]
 pub struct TaskReceipt(ReceiptStatus<TaskStatus>);
 impl TaskReceipt {
     /// Current admission/delivery outcome, including cancellation after teardown.
@@ -102,14 +103,17 @@ impl EventContext {
     /// not have.
     ///
     /// The callback runs once in the originating window if its widget is still
-    /// mounted and logically visible. Otherwise its receipt becomes `Cancelled`.
-    /// Focus/capture are not transferred to replacement widgets. New operations
-    /// queued during delivery wait for the next flush. Errors propagate from
-    /// flush and remain in the receipt; partial application work is not rolled
-    /// back or replayed. A returned callback error is an explicit application
-    /// operation failure, including a nested runtime error it chooses to propagate;
-    /// a caught error does not classify subsequent runtime work. Callbacks must return promptly. This is UI-thread
-    /// work, never a callback-safe endpoint.
+    /// mounted and logically visible. Otherwise its receipt becomes
+    /// `Cancelled`. A dropped receipt still surfaces `Failed` through the
+    /// flush, but `Cancelled` only through the receipt, so keep it when a
+    /// skipped operation matters, such as a save. Focus/capture are not
+    /// transferred to replacement widgets. New operations queued during
+    /// delivery wait for the next flush. Errors propagate from flush and remain
+    /// in the receipt; partial application work is not rolled back or replayed.
+    /// A returned callback error is an explicit application operation failure,
+    /// including a nested runtime error it chooses to propagate; a caught error
+    /// does not classify subsequent runtime work. Callbacks must return
+    /// promptly. This is UI-thread work, never a callback-safe endpoint.
     ///
     /// The callback may call any runtime operation, including those that flush
     /// internally, such as [`Runtime::reveal_child`], [`Runtime::reveal`],

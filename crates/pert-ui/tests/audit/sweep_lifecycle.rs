@@ -144,20 +144,19 @@ fn escape_dismisses_a_shown_tooltip_and_passes_when_none_is_shown() {
     assert!(tooltip_open(&ui), "hover shows the help after the delay");
     let hits = std::rc::Rc::new(std::cell::Cell::new(0));
     let counted = hits.clone();
-    let _command = ui
-        .register_command(
-            "Back",
-            CommandScope::Application,
-            vec![KeyChord::new(
-                CommandKey::Named(KeyCode::Escape),
-                Modifiers::default(),
-            )],
-            move |_, _| {
-                counted.set(counted.get() + 1);
-                Ok(())
-            },
-        )
-        .unwrap();
+    ui.register_command(
+        "Back",
+        CommandScope::Application,
+        vec![KeyChord::new(
+            CommandKey::Named(KeyCode::Escape),
+            Modifiers::default(),
+        )],
+        move |_, _| {
+            counted.set(counted.get() + 1);
+            Ok(())
+        },
+    )
+    .unwrap();
     let escape = |ui: &mut Runtime| {
         for action in [KeyAction::Press, KeyAction::Release] {
             ui.command_key_input(CommandKeyInput::new(
@@ -203,7 +202,7 @@ fn a_replaced_toast_queue_forgets_the_hovered_control() {
         )
     };
     let first = ToastController::new(&ui);
-    let _shown = first
+    first
         .push(Toast::new("Saved").action("Apply", |_| Ok(())))
         .unwrap();
     let root = ui
@@ -231,7 +230,7 @@ fn a_replaced_toast_queue_forgets_the_hovered_control() {
     let (px, py) = over.expect("a toast control takes hover");
     // The replacement's toast keeps local ID 1 but has a different layout.
     let second = ToastController::new(&ui);
-    let _replacement = second
+    second
         .push(
             Toast::new("A much longer message that wraps onto several lines in the stack")
                 .action("Apply", |_| Ok(())),
@@ -302,20 +301,19 @@ fn a_modified_escape_leaves_shown_help_to_its_command() {
     assert!(tooltip_open(&ui));
     let hits = std::rc::Rc::new(std::cell::Cell::new(0));
     let counted = hits.clone();
-    let _command = ui
-        .register_command(
-            "Chord",
-            CommandScope::Application,
-            vec![KeyChord::new(
-                CommandKey::Named(KeyCode::Escape),
-                Modifiers::PRIMARY,
-            )],
-            move |_, _| {
-                counted.set(counted.get() + 1);
-                Ok(())
-            },
-        )
-        .unwrap();
+    ui.register_command(
+        "Chord",
+        CommandScope::Application,
+        vec![KeyChord::new(
+            CommandKey::Named(KeyCode::Escape),
+            Modifiers::PRIMARY,
+        )],
+        move |_, _| {
+            counted.set(counted.get() + 1);
+            Ok(())
+        },
+    )
+    .unwrap();
     ui.native_modifiers(Modifiers::PRIMARY).unwrap();
     for action in [KeyAction::Press, KeyAction::Release] {
         ui.command_key_input(CommandKeyInput::new(

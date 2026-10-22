@@ -34,17 +34,16 @@ fn modal_blocked_capture_bindings_yield_to_dialog_keys() {
         .unwrap();
         let blocked = Rc::new(Cell::new(0));
         let hit = blocked.clone();
-        let _command = ui
-            .register_command(
-                "Captured",
-                CommandScope::Capture,
-                vec![KeyChord::named(code)],
-                move |_, _| {
-                    hit.set(hit.get() + 1);
-                    Ok(())
-                },
-            )
-            .unwrap();
+        ui.register_command(
+            "Captured",
+            CommandScope::Capture,
+            vec![KeyChord::named(code)],
+            move |_, _| {
+                hit.set(hit.get() + 1);
+                Ok(())
+            },
+        )
+        .unwrap();
         dialog.open().unwrap();
         ui.flush(Duration::ZERO).unwrap();
         for action in [KeyAction::Press, KeyAction::Release] {

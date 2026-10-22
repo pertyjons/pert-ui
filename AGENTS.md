@@ -96,8 +96,9 @@ checks cover execution. `compile_fail` verifies actual type-level restrictions.
 Do not use `ignore` to conceal a broken or unfinished normal-use example.
 
 The root `[workspace.lints]` denies `missing_docs`, `unsafe_code`,
-`rustdoc::broken_intra_doc_links`, `rustdoc::private_intra_doc_links` and
-`clippy::missing_errors_doc`; every
+`rustdoc::broken_intra_doc_links`, `rustdoc::private_intra_doc_links`,
+`clippy::missing_errors_doc`, `clippy::missing_panics_doc`,
+`clippy::return_self_not_must_use` and `clippy::fn_params_excessive_bools`; every
 member inherits them with `[lints] workspace = true`. New packages must inherit
 them, and no module may relax them without discussing it with the user. Treat
 rustdoc warnings as errors in documentation builds. Lints detect missing

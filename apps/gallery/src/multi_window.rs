@@ -78,7 +78,7 @@ pub(super) fn run() -> Result<(), AppError> {
             move |_, _| play_state.set(!play_state.get()?),
         )?;
         let target_receipt = receipt.clone();
-        let _redock = ui.register_command(
+        ui.register_command(
             "Re-dock",
             CommandScope::Application,
             vec![KeyChord::primary('r')],
@@ -209,7 +209,7 @@ pub(super) fn run() -> Result<(), AppError> {
         }
         for (index, (view, dialog)) in views.iter().zip(&dialogs).enumerate() {
             let dialog = dialog.clone();
-            let _open = ui.register_command(
+            ui.register_command(
                 "Open",
                 CommandScope::View(view.clone()),
                 vec![KeyChord::primary('o')],
@@ -221,7 +221,7 @@ pub(super) fn run() -> Result<(), AppError> {
                 },
             )?;
             let message = message.clone();
-            let _delete = ui.register_command(
+            ui.register_command(
                 "Delete",
                 CommandScope::View(view.clone()),
                 vec![KeyChord::new(
@@ -232,7 +232,7 @@ pub(super) fn run() -> Result<(), AppError> {
             )?;
             let view = view.clone();
             let target_receipt = receipt.clone();
-            let _detach = ui.register_command(
+            ui.register_command(
                 "Detach",
                 CommandScope::View(view.clone()),
                 vec![KeyChord::primary('d')],
@@ -250,7 +250,7 @@ pub(super) fn run() -> Result<(), AppError> {
         let patterns = views
             .last()
             .ok_or_else(|| ApplicationError::from("the three-window fixture mounted no editor"))?;
-        let _held = ui.register_held_input(
+        ui.register_held_input(
             patterns,
             vec![KeyCode::KeyA],
             Modifiers::default(),

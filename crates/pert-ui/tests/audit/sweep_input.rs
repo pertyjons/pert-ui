@@ -228,20 +228,19 @@ fn a_key_command_that_shuts_down_keeps_its_own_error() {
     ui.mount_tree(Element::new("label", Label::new("Content")))
         .unwrap();
     ui.flush(Duration::ZERO).unwrap();
-    let _command = ui
-        .register_command(
-            "Quit",
-            CommandScope::Application,
-            vec![KeyChord::new(
-                CommandKey::Named(KeyCode::F9),
-                Modifiers::default(),
-            )],
-            |ui, _| {
-                ui.shutdown();
-                Err(ApplicationError::from("save failed").into())
-            },
-        )
-        .unwrap();
+    ui.register_command(
+        "Quit",
+        CommandScope::Application,
+        vec![KeyChord::new(
+            CommandKey::Named(KeyCode::F9),
+            Modifiers::default(),
+        )],
+        |ui, _| {
+            ui.shutdown();
+            Err(ApplicationError::from("save failed").into())
+        },
+    )
+    .unwrap();
     let error = ui
         .command_key_input(CommandKeyInput::new(
             KeyCode::F9,

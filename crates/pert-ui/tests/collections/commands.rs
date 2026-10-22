@@ -44,7 +44,7 @@ fn three_unfocused_windows_route_application_once_and_window_locally() -> Result
     let roots = windows(&mut ui)?;
     let opened = ui.signal(0);
     let written = opened.clone();
-    let _open = ui.register_command(
+    ui.register_command(
         "Open",
         CommandScope::Application,
         vec![KeyChord::primary('o')],
@@ -61,7 +61,7 @@ fn three_unfocused_windows_route_application_once_and_window_locally() -> Result
     let counts = ui.signal([0, 0, 0]);
     for (index, (window, _)) in roots.iter().enumerate() {
         let counts = counts.clone();
-        let _delete = ui.register_command(
+        ui.register_command(
             "Delete",
             CommandScope::Window(window.clone()),
             vec![KeyChord::new(
@@ -134,7 +134,7 @@ fn empty_text_undo_reserves_layout_chord_and_custom_text_phase_runs_once()
     ui.set_viewport(Viewport::new(600.0, 400.0, 1.0).unwrap())?;
     let text = ui.signal("Empty history".to_owned());
     let field = ui.mount_tree(Element::new("text", TextField::new(text)))?;
-    let _undo = ui.register_command(
+    ui.register_command(
         "Host undo",
         CommandScope::Application,
         vec![KeyChord::primary('z')],
@@ -149,7 +149,7 @@ fn empty_text_undo_reserves_layout_chord_and_custom_text_phase_runs_once()
 fn orphan_repeats_never_reestablish_pressed_state_or_trigger_new_command()
 -> Result<(), RuntimeError> {
     let mut ui = Runtime::new();
-    let _command = ui.register_command(
+    ui.register_command(
         "Preview",
         CommandScope::Application,
         vec![KeyChord::new(
@@ -180,7 +180,7 @@ fn removed_command_consumes_its_remaining_repeats_and_release() -> Result<(), Ru
     ui.command_repeats(&id, true)?;
     key(&mut ui, KeyCode::KeyA, 'a', KeyAction::Press)?;
     ui.unregister_command(&id)?;
-    let _replacement = ui.register_command(
+    ui.register_command(
         "Replacement",
         CommandScope::Application,
         vec![KeyChord::new(
@@ -269,7 +269,7 @@ fn held_release_removes_ownership_before_failing_callback() -> Result<(), Runtim
     let owner = ui.mount_tree(Element::new("view", Label::new("Owner")))?;
     let cancellations = ui.signal(0);
     let written = cancellations.clone();
-    let _registration = ui.register_held_input(
+    ui.register_held_input(
         &owner,
         vec![KeyCode::KeyA],
         Modifiers::default(),
@@ -493,7 +493,7 @@ fn held_modal_admission_and_initial_callback_failure_cancel_once() -> Result<(),
     ui.flush_windows(ui.now())?;
     ui.select_window(&window)?;
     let cancelled = cancellations.clone();
-    let _registration = ui.register_held_input(
+    ui.register_held_input(
         &owner,
         vec![KeyCode::KeyA],
         Modifiers::default(),
@@ -812,21 +812,21 @@ fn listing_follows_scope_eligibility_and_sorts_by_name() -> Result<(), RuntimeEr
     let mut ui = Runtime::new();
     let roots = windows(&mut ui)?;
     let app_b = ui.register_command("Beta", CommandScope::Application, vec![], |_, _| Ok(()))?;
-    let _app_a = ui.register_command("Alpha", CommandScope::Capture, vec![], |_, _| Ok(()))?;
+    ui.register_command("Alpha", CommandScope::Capture, vec![], |_, _| Ok(()))?;
     let twin = ui.register_command("Beta", CommandScope::Application, vec![], |_, _| Ok(()))?;
-    let _here = ui.register_command(
+    ui.register_command(
         "Window here",
         CommandScope::Window(roots[1].0.clone()),
         vec![],
         |_, _| Ok(()),
     )?;
-    let _there = ui.register_command(
+    ui.register_command(
         "Window there",
         CommandScope::Window(roots[2].0.clone()),
         vec![],
         |_, _| Ok(()),
     )?;
-    let _view = ui.register_command(
+    ui.register_command(
         "In view",
         CommandScope::View(roots[1].1.clone()),
         vec![],
@@ -992,7 +992,7 @@ fn listing_rejects_a_stale_context_and_rows_invoke_with_revalidation() -> Result
     let body = ui.children(&root)?[0].clone();
     let count = ui.signal(0);
     let written = count.clone();
-    let _id = ui.register_command(
+    ui.register_command(
         "Count",
         CommandScope::View(root.clone()),
         vec![],

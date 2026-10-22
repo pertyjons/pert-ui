@@ -310,17 +310,16 @@ fn a_capture_command_on_escape_waits_while_the_selection_collapses() {
     let Setup { mut ui, text, .. } = setup(TEXT);
     let ran = Rc::new(std::cell::Cell::new(0));
     let hit = ran.clone();
-    let _command = ui
-        .register_command(
-            "Escape",
-            CommandScope::Capture,
-            vec![KeyChord::named(KeyCode::Escape)],
-            move |_, _| {
-                hit.set(hit.get() + 1);
-                Ok(())
-            },
-        )
-        .unwrap();
+    ui.register_command(
+        "Escape",
+        CommandScope::Capture,
+        vec![KeyChord::named(KeyCode::Escape)],
+        move |_, _| {
+            hit.set(hit.get() + 1);
+            Ok(())
+        },
+    )
+    .unwrap();
     ui.focus(&text).unwrap();
     command(&mut ui, KeyCode::KeyA);
     native_escape(&mut ui);

@@ -757,20 +757,19 @@ fn inline_rows_in_text_mode_route_plain_keys_and_text_commands_to_the_draft() {
     let decimal = ui.signal(1.0_f64);
     let hits = std::rc::Rc::new(std::cell::Cell::new(0_u32));
     let counter = hits.clone();
-    let _command = ui
-        .register_command(
-            "Five",
-            CommandScope::Application,
-            vec![KeyChord::new(
-                CommandKey::Character('5'),
-                Modifiers::default(),
-            )],
-            move |_, _| {
-                counter.set(counter.get() + 1);
-                Ok(())
-            },
-        )
-        .unwrap();
+    ui.register_command(
+        "Five",
+        CommandScope::Application,
+        vec![KeyChord::new(
+            CommandKey::Character('5'),
+            Modifiers::default(),
+        )],
+        move |_, _| {
+            counter.set(counter.get() + 1);
+            Ok(())
+        },
+    )
+    .unwrap();
     let clipboard = Memory::default();
     ui.set_clipboard(clipboard.clone()).unwrap();
     let controls = [

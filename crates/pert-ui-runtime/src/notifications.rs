@@ -193,7 +193,6 @@ pub enum ToastStatus {
 ///
 /// Receipts compare equal when they report the same toast.
 #[derive(Clone)]
-#[must_use]
 pub struct ToastReceipt(ReceiptStatus<ToastStatus>);
 impl PartialEq for ToastReceipt {
     fn eq(&self, other: &Self) -> bool {
@@ -433,7 +432,7 @@ impl ToastHost {
     /// let host = ToastHost::new(queue.clone(), Element::new("body", Label::new("Innehåll")))
     ///     .dismiss_label("Stäng");
     /// ui.mount_tree(Element::new("host", host))?;
-    /// let _receipt = queue.push(Toast::new("Sparat"))?;
+    /// queue.push(Toast::new("Sparat"))?;
     /// ui.flush(Duration::ZERO)?;
     /// let label = ui.inspect().components.into_iter().find(|c| c.key == "toasts")
     ///     .and_then(|c| c.details.properties.get("dismiss_label").cloned());

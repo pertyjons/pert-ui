@@ -461,17 +461,16 @@ fn read_only_text_mode_claims_typed_keys_like_a_read_only_text_field() {
     frame(&mut ui);
     let runs = ui.signal(0);
     let written = runs.clone();
-    let _command = ui
-        .register_command(
-            "Plain key",
-            CommandScope::Application,
-            vec![KeyChord::new(
-                CommandKey::Character('x'),
-                Modifiers::default(),
-            )],
-            move |_, _| written.set(written.get()? + 1),
-        )
-        .unwrap();
+    ui.register_command(
+        "Plain key",
+        CommandScope::Application,
+        vec![KeyChord::new(
+            CommandKey::Character('x'),
+            Modifiers::default(),
+        )],
+        move |_, _| written.set(written.get()? + 1),
+    )
+    .unwrap();
     // A resting readout is not an editor: the command runs.
     let readout = find(&ui, &root, "field").unwrap();
     ui.focus(&readout).unwrap();

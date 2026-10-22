@@ -179,7 +179,7 @@ fn a_named_chord_routes_like_its_long_form() -> TestResult {
     );
     let ran = ui.signal(0u32);
     let count = ran.clone();
-    let _play = ui.register_command(
+    ui.register_command(
         "Play",
         CommandScope::Application,
         vec![KeyChord::named(KeyCode::F5)],

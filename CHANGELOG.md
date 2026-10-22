@@ -1,5 +1,60 @@
 # Changelog
 
+## 0.3.60 (2026-10-22)
+
+Lints and `#[must_use]` (API audit fix plan, part 6b1). The workspace denies
+three more Clippy lints, and `#[must_use]` follows one rule: an identity whose
+drop changes nothing carries none, an owner whose drop tears state down says
+so, and a receipt is `#[must_use]` only where dropping it hides an outcome that
+nothing else reports. No public item or signature changes; the `api/` listings,
+which do not show `#[must_use]`, are unchanged. Not breaking, but code that
+discards a signal, a parameter host or a series source now sees an
+`unused_must_use` warning.
+
+- Changed: the root `[workspace.lints.clippy]` denies
+  `clippy::missing_panics_doc`, `clippy::return_self_not_must_use` and
+  `clippy::fn_params_excessive_bools`, and AGENTS.md's lint sentence names
+  them. `ThemeMetrics::for_density` carries the one
+  `#[expect(clippy::missing_panics_doc)]`: its assertions check the fixed
+  default table, which is evaluated for every density at compile time.
+- Changed: `CommandId` and `HeldInputId` are no longer `#[must_use]`.
+  Dropping either keeps the registration, as `Runtime::register_command` and
+  `Runtime::register_held_input` now say, so an application-lifetime command
+  needs no `let _ =`; the shortcut example in the guide's diagnostics chapter
+  compiles without a warning.
+- Changed: `ToastReceipt` is no longer `#[must_use]`: a failing toast action
+  propagates through the flush, and expiry or dismissal is presentation. The
+  guide's notification example, the runtime README, the
+  `ToastHost::dismiss_label` example and the gallery's surfaces page push
+  toasts as plain statements.
+- Changed: `TaskReceipt`'s `#[must_use]` reason says the receipt is the only
+  report of a `Cancelled` operation, and `EventContext::defer` says a dropped
+  receipt still surfaces `Failed` through the flush but `Cancelled` only
+  through the receipt. The public naming rules in `docs/contracts.md` state
+  the receipt rule.
+- Changed: `ParameterHost`, `AnyParameterHost` and `SeriesSource` are
+  `#[must_use]` with a reason, and so is `Runtime::series_source`: dropping a
+  host removes its parameter and releases its sinks, and dropping the last
+  clone of a series source closes its bridge.
+- Changed: `Runtime::signal`, `UpdateContext::signal`, `EventContext::signal`,
+  `StateOwner::signal` and `Signal::sibling` are `#[must_use]`; a signal
+  created and discarded is dropped at once.
+- Changed: the bare `#[must_use]` on `PresentationRequest`, `PreparedDetach`,
+  `PresentationReceipt` and `CommandReceipt` gains a reason: dropping an
+  unfinished request cancels it, dropping a prepared detach leaves the
+  movement uncommitted, and the two receipts are the only report of their
+  request's result (for `PresentationReceipt`, unless the host reports window
+  errors itself).
+- Changed: `RevealReceipt`'s reason no longer reads as optional: the receipt
+  is the only report of the reveal's outcome, including an error that stopped
+  it, since the queued reveal's result is stored in it and not returned.
+- Changed: repository code that bound a `CommandId`, a `HeldInputId` or a
+  `ToastReceipt` only to silence the old warning (`let _ =` or an unused
+  `let _name =`) now calls the function as a plain statement: the
+  `diagram_editor` example's save and open failure toasts, the gallery's
+  commands and held input, the multi-window smoke check and the facade's
+  tests.
+
 ## 0.3.59 (2026-10-22)
 
 Types and traits (API audit fix plan, part 6a3). Identities, keys and

@@ -1056,20 +1056,19 @@ fn modified_part_keys_yield_to_application_commands() {
     };
     let hits = std::rc::Rc::new(std::cell::Cell::new(0));
     let counted = hits.clone();
-    let _command = ui
-        .register_command(
-            "Chord",
-            CommandScope::Application,
-            vec![KeyChord::new(
-                CommandKey::Named(KeyCode::ArrowRight),
-                modifiers,
-            )],
-            move |_, _| {
-                counted.set(counted.get() + 1);
-                Ok(())
-            },
-        )
-        .unwrap();
+    ui.register_command(
+        "Chord",
+        CommandScope::Application,
+        vec![KeyChord::new(
+            CommandKey::Named(KeyCode::ArrowRight),
+            modifiers,
+        )],
+        move |_, _| {
+            counted.set(counted.get() + 1);
+            Ok(())
+        },
+    )
+    .unwrap();
     ui.native_modifiers(modifiers).unwrap();
     for action in [KeyAction::Press, KeyAction::Release] {
         ui.command_key_input(CommandKeyInput::new(

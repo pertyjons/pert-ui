@@ -242,7 +242,7 @@ impl NativeWindowOptions {
 /// Dropping this token leaves the view unchanged. The native host prepares all
 /// resources before calling [`Runtime::commit_detach`], which revalidates identity
 /// and modality and applies focus-loss cleanup. Tokens are UI-local and single-use.
-#[must_use]
+#[must_use = "dropping the token leaves the movement uncommitted"]
 pub struct PreparedDetach {
     view: WidgetId,
     source: NativeWindowId,
@@ -948,7 +948,8 @@ pub enum PresentationStatus {
 /// same status. A signal holding the latest receipt therefore notifies its
 /// readers for every new request.
 #[derive(Clone)]
-#[must_use]
+#[must_use = "the receipt is the only report of the request's result unless the host reports \
+              window errors itself"]
 pub struct PresentationReceipt {
     status: ReceiptStatus<PresentationStatus>,
 }
@@ -1013,7 +1014,7 @@ pub enum PresentationAction {
 /// Queued operation for a native host. Dropping an unfinished request cancels it.
 /// Hosts must prepare resources before committing movement and report the actual
 /// result. The default App consumes these automatically on the UI thread.
-#[must_use]
+#[must_use = "dropping an unfinished request cancels it"]
 pub struct PresentationRequest {
     action: PresentationAction,
     state: Option<ReceiptStatus<PresentationStatus>>,

@@ -113,7 +113,7 @@ fn toast_buttons_use_action_hover_color() {
         ),
     ))
     .unwrap();
-    let _receipt = queue
+    queue
         .push(Toast::new("Saved").action("Undo", |_| Ok(())))
         .unwrap();
     ui.flush(Duration::ZERO).unwrap();

@@ -379,7 +379,6 @@ pub struct CommandContext {
 }
 /// Stable command incarnation. Unregistering never retargets an old identity.
 #[derive(Clone, Debug)]
-#[must_use]
 pub struct CommandId {
     serial: u64,
     identity: Rc<()>,
@@ -520,7 +519,8 @@ impl Runtime {
     /// Registers a named host action and its chord aliases in one scope.
     ///
     /// Lifetime is explicit: unregister it or remove its view/window scope to
-    /// release callbacks and bindings. Duplicate chords in the same scope, including
+    /// release callbacks and bindings. Dropping the returned [`CommandId`] keeps
+    /// the command registered. Duplicate chords in the same scope, including
     /// alias/fallback collisions, return `ShortcutConflict` in debug and release.
     /// An empty chord list supports menu/button-only commands. Repeats default off.
     ///
@@ -1616,7 +1616,8 @@ pub enum CommandStatus {
 /// receipt are equal, and two invocations are different even when they end in
 /// the same status.
 #[derive(Clone)]
-#[must_use]
+#[must_use = "the receipt is the only report of the invocation's result, including the \
+              action's own error"]
 pub struct CommandReceipt(ReceiptStatus<CommandStatus>);
 impl CommandReceipt {
     /// Pending or the retained terminal result, readable after shutdown.

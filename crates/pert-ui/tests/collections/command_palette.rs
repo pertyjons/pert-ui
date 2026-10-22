@@ -110,8 +110,7 @@ impl Setup {
 fn ranking_is_pure_deterministic_and_replaceable() {
     let mut ui = Runtime::new();
     for name in ["Toggle Sidebar", "Insert Text", "Save", "Save All", "Close"] {
-        let _ = ui
-            .register_command(name, CommandScope::Application, Vec::new(), |_, _| Ok(()))
+        ui.register_command(name, CommandScope::Application, Vec::new(), |_, _| Ok(()))
             .unwrap();
     }
     let context = ui.command_context(CommandSource::Programmatic);
@@ -200,18 +199,17 @@ fn enter_invokes_the_highlighted_command_after_the_modal_palette_closes() {
     let (_alpha_id, alpha) = counted(&mut s.ui, "Alpha");
     let target = Rc::new(RefCell::new(None));
     let seen = target.clone();
-    let _ =
-        s.ui.register_command(
-            "Beta",
-            CommandScope::Application,
-            Vec::new(),
-            move |ui, context| {
-                // The modal palette is gone and the opener has focus again.
-                *seen.borrow_mut() = Some((context.focused.clone(), context.source, ui.focused()));
-                Ok(())
-            },
-        )
-        .unwrap();
+    s.ui.register_command(
+        "Beta",
+        CommandScope::Application,
+        Vec::new(),
+        move |ui, context| {
+            // The modal palette is gone and the opener has focus again.
+            *seen.borrow_mut() = Some((context.focused.clone(), context.source, ui.focused()));
+            Ok(())
+        },
+    )
+    .unwrap();
     s.open();
     key(&mut s.ui, KeyCode::ArrowDown);
     key(&mut s.ui, KeyCode::Enter);
@@ -261,11 +259,10 @@ fn a_command_disabled_since_opening_reopens_the_palette_with_the_outcome() {
 #[test]
 fn stale_contexts_and_failing_actions_are_shown_not_skipped() {
     let mut s = setup(|p| p.outcome_text(|name, result| format!("{name}: {result:?}")));
-    let _ =
-        s.ui.register_command("Fail", CommandScope::Application, Vec::new(), |_, _| {
-            Err(ApplicationError::from("the engine is offline").into())
-        })
-        .unwrap();
+    s.ui.register_command("Fail", CommandScope::Application, Vec::new(), |_, _| {
+        Err(ApplicationError::from("the engine is offline").into())
+    })
+    .unwrap();
     s.open();
     key(&mut s.ui, KeyCode::Enter);
     settle(&mut s.ui);
@@ -277,14 +274,13 @@ fn stale_contexts_and_failing_actions_are_shown_not_skipped() {
     // A view-scoped command whose view is removed while the palette is open.
     let mut s = setup(|p| p);
     let view = widget(&s.ui, &s.root, "other");
-    let _ =
-        s.ui.register_command(
-            "Scoped",
-            CommandScope::View(view.clone()),
-            Vec::new(),
-            |_, _| Ok(()),
-        )
-        .unwrap();
+    s.ui.register_command(
+        "Scoped",
+        CommandScope::View(view.clone()),
+        Vec::new(),
+        |_, _| Ok(()),
+    )
+    .unwrap();
     s.ui.set_command_target(Some(&view)).unwrap();
     let context = s.ui.command_context(CommandSource::KeyBinding);
     s.palette.open(&mut s.ui, &context).unwrap();
@@ -345,21 +341,20 @@ fn a_destination_command_reveals_outside_the_closed_modal_palette() {
     settle(&mut ui);
     let fader = widget(&ui, &root, "fader");
     let target = fader.clone();
-    let _ = ui
-        .register_command(
-            "Go to: Mixer",
-            CommandScope::Application,
-            Vec::new(),
-            move |ui, _| {
-                let outcome = ui.reveal_and_focus(&target)?;
-                if outcome.is_revealed() {
-                    Ok(())
-                } else {
-                    Err(ApplicationError::from(format!("{outcome:?}")).into())
-                }
-            },
-        )
-        .unwrap();
+    ui.register_command(
+        "Go to: Mixer",
+        CommandScope::Application,
+        Vec::new(),
+        move |ui, _| {
+            let outcome = ui.reveal_and_focus(&target)?;
+            if outcome.is_revealed() {
+                Ok(())
+            } else {
+                Err(ApplicationError::from(format!("{outcome:?}")).into())
+            }
+        },
+    )
+    .unwrap();
     let context = ui.command_context(CommandSource::KeyBinding);
     palette.open(&mut ui, &context).unwrap();
     settle(&mut ui);
@@ -601,11 +596,10 @@ fn native_focus_loss_closes_modal_and_nonmodal_palette() {
 #[test]
 fn equivalent_inner_description_still_replaces_palette_outcome_formatter() {
     let mut s = setup(|p| p.outcome_text(|_, _| "Old outcome".into()));
-    let _command =
-        s.ui.register_command("Fail", CommandScope::Application, Vec::new(), |_, _| {
-            Err(ApplicationError::from("offline").into())
-        })
-        .unwrap();
+    s.ui.register_command("Fail", CommandScope::Application, Vec::new(), |_, _| {
+        Err(ApplicationError::from("offline").into())
+    })
+    .unwrap();
     s.open();
     let next = CommandPalette::new(
         s.palette.clone(),

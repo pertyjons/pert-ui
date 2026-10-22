@@ -293,7 +293,7 @@ fn escape_reaches_commands_unless_a_focused_control_cancels_something() -> Resul
         ui.set_viewport(Viewport::new(400.0, 200.0, 1.0)?)?;
         let hits = Rc::new(Cell::new(0));
         let counter = hits.clone();
-        let _leave = ui.register_command(
+        ui.register_command(
             "Leave",
             CommandScope::Application,
             vec![KeyChord::new(

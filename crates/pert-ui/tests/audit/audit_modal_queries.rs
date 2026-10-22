@@ -355,22 +355,20 @@ fn first_show_and_reshow_block_queries_before_surface_admission() {
 fn command_listing_reuses_one_modal_declaration_pass_for_all_rows() {
     let mut s = stage(SurfaceKind::Dialog);
     let context = context(&mut s.ui, &s.primary, Some(s.popup.clone()));
-    let _first =
-        s.ui.register_command("First", CommandScope::Application, vec![], |_, _| Ok(()))
-            .unwrap();
+    s.ui.register_command("First", CommandScope::Application, vec![], |_, _| Ok(()))
+        .unwrap();
     s.declarations.set(0);
     let first = s.ui.commands_for(&context).unwrap();
     let work = s.declarations.get();
     assert!(work > 0);
     for i in 0..32 {
-        let _another =
-            s.ui.register_command(
-                format!("Another {i}"),
-                CommandScope::Application,
-                vec![],
-                |_, _| Ok(()),
-            )
-            .unwrap();
+        s.ui.register_command(
+            format!("Another {i}"),
+            CommandScope::Application,
+            vec![],
+            |_, _| Ok(()),
+        )
+        .unwrap();
     }
     s.declarations.set(0);
     let more = s.ui.commands_for(&context).unwrap();

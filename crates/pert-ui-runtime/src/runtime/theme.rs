@@ -252,6 +252,11 @@ impl Default for ThemeMetrics {
 impl ThemeMetrics {
     /// Built-in measurements. Typography, border and focus widths do not shrink
     /// with density; all values are further scaled by DPI and UI zoom.
+    #[expect(
+        clippy::missing_panics_doc,
+        reason = "the assertions check the fixed default table, which `BUILT_IN_METRICS` \
+                  evaluates for every density at compile time, so no caller can reach them"
+    )]
     pub const fn for_density(density: Density) -> Self {
         let mut values = [None; METRIC_ROLE_COUNT];
         let mut index = 0;

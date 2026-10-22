@@ -65,7 +65,7 @@ fn modified_activation_yields_and_armed_release_survives_modifier_changes() {
                     ),
                     4 => {
                         let queue = ToastController::new(&ui);
-                        let _receipt = queue
+                        queue
                             .push(Toast::new("Message").action("Action", move |_| {
                                 hits.set(hits.get() + 1);
                                 Ok(())
@@ -110,7 +110,7 @@ fn modified_activation_yields_and_armed_release_survives_modifier_changes() {
                 ui.focus(&focus).unwrap();
                 let commands = Rc::new(Cell::new(0));
                 let hits = commands.clone();
-                let _command = ui
+                let command = ui
                     .register_command(
                         "Modified action",
                         CommandScope::Application,
@@ -121,7 +121,7 @@ fn modified_activation_yields_and_armed_release_survives_modifier_changes() {
                         },
                     )
                     .unwrap();
-                ui.command_repeats(&_command, true).unwrap();
+                ui.command_repeats(&command, true).unwrap();
                 ui.native_modifiers(modifiers).unwrap();
                 send(&mut ui, code, KeyAction::Press);
                 send(&mut ui, code, KeyAction::Release);

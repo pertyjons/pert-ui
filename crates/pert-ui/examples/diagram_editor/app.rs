@@ -79,7 +79,7 @@ impl Files {
                     Ok(()) => files.status(format!("Saved {}", path.display())),
                     Err(error) => {
                         // The status line keeps the message after the toast.
-                        let _receipt = files
+                        files
                             .toasts
                             .push(Toast::new(format!("Could not save: {error}")))?;
                         files.status(format!("Save failed: {error}"))
@@ -123,7 +123,7 @@ impl Files {
                         files.status(format!("Opened {}", path.display()))
                     }
                     Err(error) => {
-                        let _receipt = files
+                        files
                             .toasts
                             .push(Toast::new(format!("Could not open: {error}")))?;
                         files.status(format!("Open failed: {error}"))

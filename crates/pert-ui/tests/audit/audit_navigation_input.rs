@@ -50,17 +50,16 @@ fn modified_tab_navigation_yields_to_application_commands() {
             ui.focus(&root).unwrap();
             let hits = Rc::new(Cell::new(0));
             let counted = hits.clone();
-            let _command = ui
-                .register_command(
-                    "Navigation",
-                    CommandScope::Application,
-                    vec![KeyChord::new(CommandKey::Named(code), modifiers)],
-                    move |_, _| {
-                        counted.set(counted.get() + 1);
-                        Ok(())
-                    },
-                )
-                .unwrap();
+            ui.register_command(
+                "Navigation",
+                CommandScope::Application,
+                vec![KeyChord::new(CommandKey::Named(code), modifiers)],
+                move |_, _| {
+                    counted.set(counted.get() + 1);
+                    Ok(())
+                },
+            )
+            .unwrap();
             ui.native_modifiers(modifiers).unwrap();
             send(&mut ui, code, KeyAction::Press);
             send(&mut ui, code, KeyAction::Release);
@@ -292,20 +291,19 @@ fn tab_reorder_and_cycling_require_their_explicit_modifier_chords() {
             },
         ),
     ];
-    let _command = ui
-        .register_command(
-            "Mixed navigation",
-            CommandScope::Application,
-            chords
-                .iter()
-                .map(|(code, modifiers)| KeyChord::new(CommandKey::Named(*code), *modifiers))
-                .collect(),
-            move |_, _| {
-                counted.set(counted.get() + 1);
-                Ok(())
-            },
-        )
-        .unwrap();
+    ui.register_command(
+        "Mixed navigation",
+        CommandScope::Application,
+        chords
+            .iter()
+            .map(|(code, modifiers)| KeyChord::new(CommandKey::Named(*code), *modifiers))
+            .collect(),
+        move |_, _| {
+            counted.set(counted.get() + 1);
+            Ok(())
+        },
+    )
+    .unwrap();
     for (code, modifiers) in chords {
         ui.native_modifiers(modifiers).unwrap();
         send(&mut ui, code, KeyAction::Press);

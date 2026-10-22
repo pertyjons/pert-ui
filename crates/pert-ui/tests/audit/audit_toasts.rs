@@ -309,7 +309,7 @@ fn overflowing_toasts_clamp_both_wheel_boundaries_without_repeating_work() {
         stack,
         ..
     } = fixture(1);
-    let _long = queue
+    queue
         .push(Toast::new("Long feedback.\n".repeat(80)))
         .unwrap();
     ui.flush(Duration::ZERO).unwrap();
@@ -444,17 +444,16 @@ fn modified_toast_keys_yield_to_commands_and_held_arrows_keep_stepping() {
         };
         let hits = Rc::new(Cell::new(0));
         let counted = hits.clone();
-        let _command = ui
-            .register_command(
-                "Chord",
-                CommandScope::Application,
-                vec![KeyChord::new(CommandKey::Named(code), modifiers)],
-                move |_, _| {
-                    counted.set(counted.get() + 1);
-                    Ok(())
-                },
-            )
-            .unwrap();
+        ui.register_command(
+            "Chord",
+            CommandScope::Application,
+            vec![KeyChord::new(CommandKey::Named(code), modifiers)],
+            move |_, _| {
+                counted.set(counted.get() + 1);
+                Ok(())
+            },
+        )
+        .unwrap();
         ui.native_modifiers(modifiers).unwrap();
         for action in [KeyAction::Press, KeyAction::Release] {
             ui.command_key_input(CommandKeyInput::new(code, action, CommandKey::Named(code)))

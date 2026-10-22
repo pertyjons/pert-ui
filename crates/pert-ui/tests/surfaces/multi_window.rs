@@ -868,7 +868,7 @@ fn moving_a_view_leaves_input_owned_elsewhere_in_its_window_alone() -> TestResul
     let events = Rc::new(std::cell::RefCell::new(Vec::new()));
     let cancellations = Rc::new(std::cell::RefCell::new(Vec::new()));
     let (written, cancelled) = (events.clone(), cancellations.clone());
-    let _held = ui.register_held_input(
+    ui.register_held_input(
         &sibling,
         vec![KeyCode::KeyA],
         Modifiers::default(),

@@ -64,6 +64,7 @@ use crate::runtime::{Invalidation, Node, RuntimeError, Shared};
 /// ```
 pub trait StateOwner: sealed::Sealed {
     /// Creates a signal owned by this owner's runtime, holding `value`.
+    #[must_use]
     fn signal<T>(&self, value: T) -> Signal<T>;
     /// Shared UI-thread presentation settings for this owner's runtime.
     ///
@@ -341,6 +342,7 @@ impl<T> Signal<T> {
     /// assert_eq!(color.get()?, 0);
     /// # Ok::<(), pert_ui::RuntimeError>(())
     /// ```
+    #[must_use]
     pub fn sibling<U>(&self, value: U) -> Signal<U> {
         Signal::new(self.inner.shared.clone(), value)
     }

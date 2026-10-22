@@ -626,6 +626,7 @@ impl<T: LiveItem> Drainable for SeriesInner<T> {
 /// let source = runtime.series_source(consumer, pert_ui::Delivery::Polled);
 /// std::thread::spawn(move || drop(source)); // UI-thread-local
 /// ```
+#[must_use = "dropping the last clone of the source closes the bridge"]
 pub struct SeriesSource<T: LiveItem> {
     inner: Rc<SeriesInner<T>>,
 }

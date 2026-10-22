@@ -289,7 +289,7 @@ fn three_surfaces(software: bool) -> Result<(), AppError> {
     let state = running.clone();
     let toggles = Rc::new(Cell::new(0));
     let counted = toggles.clone();
-    let _command = app.runtime.register_command(
+    app.runtime.register_command(
         "Play",
         CommandScope::Application,
         vec![KeyChord::new(

@@ -698,17 +698,16 @@ fn escape_reaches_window_commands_through_idle_splits_and_region_layouts() {
     let mut ui = ui(408.0);
     let escapes = ui.signal(0);
     let written = escapes.clone();
-    let _close = ui
-        .register_command(
-            "Close panel",
-            CommandScope::Window(ui.primary_window()),
-            vec![KeyChord::new(
-                CommandKey::Named(KeyCode::Escape),
-                Modifiers::default(),
-            )],
-            move |_, _| written.set(written.get()? + 1),
-        )
-        .unwrap();
+    ui.register_command(
+        "Close panel",
+        CommandScope::Window(ui.primary_window()),
+        vec![KeyChord::new(
+            CommandKey::Named(KeyCode::Escape),
+            Modifiers::default(),
+        )],
+        move |_, _| written.set(written.get()? + 1),
+    )
+    .unwrap();
     let root = ui
         .mount_tree(Element::new(
             "root",

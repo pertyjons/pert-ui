@@ -380,7 +380,7 @@ pub(crate) fn transient_surfaces(ui: &Runtime) -> Result<Element, RuntimeError> 
                 Element::new(
                     "post-toast",
                     Button::new("Show notification", move |_| {
-                        let _receipt = toast_queue.push(Toast::new(
+                        toast_queue.push(Toast::new(
                             "A notification with five seconds of visible lifetime.",
                         ))?;
                         Ok(())
@@ -390,7 +390,7 @@ pub(crate) fn transient_surfaces(ui: &Runtime) -> Result<Element, RuntimeError> 
                     "post-action-toast",
                     Button::new("Show actionable notification", move |_| {
                         let status = toast_status.clone();
-                        let _receipt = action_queue.push(
+                        action_queue.push(
                             Toast::new("Hover or focus pauses expiry.")
                                 .action("Apply", move |_| {
                                     status.set("Notification action applied.".into())

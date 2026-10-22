@@ -396,14 +396,13 @@ fn a_capture_binding_on_tab_wins_over_the_offer() {
     let claims = Rc::new(RefCell::new(Vec::new()));
     let captured = ui.signal(0_u32);
     let count = captured.clone();
-    let _capture = ui
-        .register_command(
-            "Capture Tab",
-            CommandScope::Capture,
-            vec![KeyChord::named(KeyCode::Tab)],
-            move |_, _| count.update(|n| *n += 1),
-        )
-        .unwrap();
+    ui.register_command(
+        "Capture Tab",
+        CommandScope::Capture,
+        vec![KeyChord::named(KeyCode::Tab)],
+        move |_, _| count.update(|n| *n += 1),
+    )
+    .unwrap();
     let root = ui
         .mount_tree(Element::new(
             "root",
@@ -483,18 +482,17 @@ fn a_held_tab_registration_wins_over_the_offer() {
     frame(&mut ui);
     let field = ui.find_descendant(&root, "field").unwrap().unwrap();
     let count = held.clone();
-    let _registration = ui
-        .register_held_input(
-            &field,
-            vec![KeyCode::Tab],
-            Modifiers::default(),
-            move |_, _, _| {
-                count.set(count.get() + 1);
-                Ok(InputOutcome::Handled)
-            },
-            |_, _| {},
-        )
-        .unwrap();
+    ui.register_held_input(
+        &field,
+        vec![KeyCode::Tab],
+        Modifiers::default(),
+        move |_, _, _| {
+            count.set(count.get() + 1);
+            Ok(InputOutcome::Handled)
+        },
+        |_, _| {},
+    )
+    .unwrap();
     ui.focus(&field).unwrap();
     tab(&mut ui, false, true);
     assert!(held.get() > 0);

@@ -311,7 +311,7 @@ let root = ui.mount_tree(Element::new("notifications", ToastHost::new(
             Element::new("dismiss", Button::new("Dismiss", move |_| hide_banner.set(false))),
         ]).visible_signal(banner_visible.read_only())),
         Element::new("notify", Button::new("Notify", move |_| {
-            let _receipt = post.push(Toast::new("Saved").action("Show details", |_| Ok(())))?;
+            post.push(Toast::new("Saved").action("Show details", |_| Ok(())))?;
             Ok(())
         })),
     ])),
