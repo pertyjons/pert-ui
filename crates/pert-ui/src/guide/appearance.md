@@ -43,10 +43,10 @@ impl Component for Accent {
 }
 let mut ui = Runtime::new();
 let theme = ui.theme();
-// Color::rgba takes linear channels, not sRGB bytes.
+// Color::from_linear takes linear channels, not sRGB bytes.
 let light = Palette::light()
-    .with_color(ColorRole::Primary, Color::rgba(0.30, 0.04, 0.40, 1.0)?)
-    .with_color(ColorRole::OnPrimary, Color::rgba(1.0, 1.0, 1.0, 1.0)?);
+    .with_color(ColorRole::Primary, Color::from_linear(0.30, 0.04, 0.40, 1.0)?)
+    .with_color(ColorRole::OnPrimary, Color::from_linear(1.0, 1.0, 1.0, 1.0)?);
 theme.set_palette(ThemeMode::Light, light)?;
 theme.set_mode(ThemeMode::Light)?;
 let content = ui.mount_tree(Element::new("content", Row::new([
@@ -97,7 +97,7 @@ use pert_ui::{Color, ColorRole, OpaqueColor, Palette, Runtime, ThemeMode};
 
 let ui = Runtime::new();
 let theme = ui.theme();
-let brand = OpaqueColor::try_from(Color::rgba(0.05, 0.45, 0.30, 1.0)?)?;
+let brand = OpaqueColor::try_from(Color::from_linear(0.05, 0.45, 0.30, 1.0)?)?;
 for mode in [ThemeMode::Dark, ThemeMode::Light] {
     theme.set_palette(mode, Palette::from_seeds(mode, brand, None))?;
 }
@@ -105,7 +105,7 @@ for mode in [ThemeMode::Dark, ThemeMode::Light] {
 // this one is too light for the seeded white text, so it gets dark text.
 let light = theme.palette(ThemeMode::Light)?
     .with_color(ColorRole::Primary, Color::from(brand))
-    .with_color(ColorRole::OnPrimary, Color::rgba(0.0, 0.0, 0.0, 1.0)?);
+    .with_color(ColorRole::OnPrimary, Color::from_linear(0.0, 0.0, 0.0, 1.0)?);
 let fill = OpaqueColor::try_from(light.color(ColorRole::Primary))?;
 let text = OpaqueColor::try_from(light.color(ColorRole::OnPrimary))?;
 assert!(text.contrast_ratio(fill) >= 4.5);

@@ -1,5 +1,77 @@
 # Changelog
 
+## 0.3.57 (2026-10-22)
+
+Construction and builders (API audit fix plan, part 6a1). Constructor order,
+construction names, limit constants and builder signatures. Every reordered
+constructor's swapped arguments have different types, so an old call fails to
+compile rather than binding the wrong value. Breaking changes, with their
+replacements:
+
+- Breaking: bound state comes first after `ui`. `Checkbox::new(label, value)`
+  and `Toggle::new(label, value)` are `Checkbox::new(value, label)` and
+  `Toggle::new(value, label)`; `TableController::new(ui, columns, source,
+  selection)` is `TableController::new(ui, selection, columns, source)`;
+  `TreeController::new(ui, source, selection)` is `TreeController::new(ui,
+  selection, source)`; `FileBrowserController::new(ui, roots, selection,
+  request)` is `FileBrowserController::new(ui, selection, roots, request)`.
+- Breaking: a keyed item's key leads and its bound state follows.
+  `MenuItem::toggle(key, label, value)` is `MenuItem::toggle(key, value,
+  label)`, and `MenuItem::radio(key, label, selection, value)` is
+  `MenuItem::radio(key, selection, value, label)`. The naming rules in
+  `docs/contracts.md` state the order: the state owner (`ui`), the stable key
+  of a keyed item, the state the constructor binds, then content and options.
+- Breaking: `Color::rgba` is renamed `Color::from_linear`, completing the
+  `from_<space>` family beside `from_srgb` and `from_srgb8`; replace
+  `Color::rgba(r, g, b, a)` with `Color::from_linear(r, g, b, a)`. Its rustdoc
+  points normalized sRGB fractions to `from_srgb`, and `Color::channels` names
+  it as the constructor of the linear channels it returns.
+- Breaking: two-way bindings are named `bind_<property>`.
+  `Collapsible::bound(signal)` is `Collapsible::bind_expanded(signal)`,
+  `ToolWindowLayout::names(signal)` is `ToolWindowLayout::bind_show_names(signal)`
+  and `PropertyGrid::shared_label_width(signal)` is
+  `PropertyGrid::bind_label_width(signal)`. The naming rules state the
+  convention beside the one-way `_signal` builders.
+- Breaking: `Button::command`, `Button::command_icon` and `MenuItem::command`
+  take `FnMut(&mut EventContext, CommandReceipt)`, the context first like
+  every other component callback; replace `|receipt, cx| ..` with
+  `|cx, receipt| ..`.
+- Breaking: `Accordion::on_change` takes `FnMut(&mut EventContext,
+  &ExpansionChange)`. The new `ExpansionChange` carries the open keys in
+  display order (`expanded`) and the `ChangeOrigin` (`origin`), like
+  `SelectionChange` and `ToolWindowChange`, and has a `new` constructor;
+  replace `|cx, keys, origin| ..` with `|cx, change| ..` reading
+  `change.expanded` and `change.origin`.
+- Breaking: `SplitRule::Ratio` carries a `NormalizedValue` instead of an
+  `f32`; read the share with `.get()`. `SplitSizing::rule` is no longer a
+  `const fn`; `SplitSizing::ratio` still validates an `f32`.
+- Breaking: `PowerExponent::MIN` and `PowerExponent::MAX` have type `Self`
+  instead of `f32`, so they are valid exponents; replace
+  `PowerExponent::new(PowerExponent::MAX)?` with `PowerExponent::MAX` and
+  read the number with `PowerExponent::MAX.get()`.
+- `Runtime::set_wake_delivery` takes `impl Fn() -> bool + Send + Sync +
+  'static` instead of a `Box<dyn Fn() -> bool + Send + Sync>`. Callers may drop
+  `Box::new`; a boxed closure still compiles.
+- Added: `SizeLimits::exact(size)`, a `const`, infallible constructor for one
+  fixed outer size, the limits `SizeLimits::new(size,
+  Constraints::bounded(size))` returns.
+- Added: limit constants. `PresentationRate::MIN` and `MAX` (1 and 1000 Hz,
+  type `Self`), named by `PresentationRate::new`'s `# Errors` and by
+  `RuntimeError::InvalidPresentationRate`, whose message is built from them;
+  `ViewState::MAX_NAME_BYTES` (64), named by `ViewState::new` and
+  `WorkspaceError::InvalidName`; `VectorRasterizer::MAX_FLATTENED_POINTS` and
+  `VectorRasterizer::MAX_STROKE_EDGES` (1,048,576 each), the budgets its
+  rustdoc described, which the private rasterizer constant backs.
+- The naming rules in `docs/contracts.md` place limits: a constant bounding the
+  value itself has type `Self`, one bounding a measure has the measure's
+  integer type; a validation limit shared by several types lives on the owner
+  of the shared format, otherwise on the error type whose one variant reports
+  it; a rendering cap lives on the error type of the operation it keeps from
+  failing. `NumberInputError::MAX_PRECISION`, `TextError::MAX_FONT_PIXELS` and
+  `TextLimit::MAX_RASTER_SIDE` say why they live where they do.
+- `WorkspaceError::InvalidName`'s rustdoc also names the empty map key that
+  `WorkspaceValue::map` reports with it.
+
 ## 0.3.56 (2026-10-22)
 
 Documentation: the facade's spelling in examples (API audit fix plan, part

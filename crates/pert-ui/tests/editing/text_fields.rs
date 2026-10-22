@@ -1318,7 +1318,7 @@ fn selected_text_follows_an_on_surface_override() {
         property(&ui, "selection"),
         InspectValue::Text("0..5".into())
     );
-    let text = Color::rgba(0.9, 0.6, 0.2, 1.0).unwrap();
+    let text = Color::from_linear(0.9, 0.6, 0.2, 1.0).unwrap();
     ui.theme()
         .set_color(ThemeMode::Dark, ColorRole::OnSurface, text)
         .unwrap();

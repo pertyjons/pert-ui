@@ -35,8 +35,8 @@ fn mount_mixer(ui: &mut Runtime) -> TestResult<WidgetId> {
                         Element::new(
                             "strip",
                             Column::new([
-                                Element::new("mute-1", Checkbox::new("Mute", ui.signal(false))),
-                                Element::new("mute-2", Checkbox::new("Mute", ui.signal(true))),
+                                Element::new("mute-1", Checkbox::new(ui.signal(false), "Mute")),
+                                Element::new("mute-2", Checkbox::new(ui.signal(true), "Mute")),
                             ]),
                         ),
                     ),
@@ -352,7 +352,7 @@ fn a_tool_thread_asks_and_the_host_answers_after_its_flush() -> TestResult {
     let mut ui = ui()?;
     mount_mixer(&mut ui)?;
     let (wake, woken) = mpsc::channel();
-    ui.set_wake_delivery(Box::new(move || wake.send(()).is_ok()));
+    ui.set_wake_delivery(move || wake.send(()).is_ok());
     let service = ui.inspection_service(Capacity::new(4)?)?;
     service.set_application(|| BTreeMap::from([("app".to_owned(), InspectValue::Bool(true))]));
     let client = service.client();
@@ -401,7 +401,7 @@ fn a_tool_thread_asks_and_the_host_answers_after_its_flush() -> TestResult {
 fn a_full_service_refuses_without_waking_and_a_closed_one_cancels() -> TestResult {
     let mut ui = ui()?;
     let (wake, woken) = mpsc::channel();
-    ui.set_wake_delivery(Box::new(move || wake.send(()).is_ok()));
+    ui.set_wake_delivery(move || wake.send(()).is_ok());
     let service = ui.inspection_service(Capacity::new(1)?)?;
     let client = service.client();
     let first = client.profile()?;

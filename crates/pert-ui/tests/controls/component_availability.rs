@@ -47,8 +47,8 @@ fn control(kind: Kind, value: Signal<bool>, permission: Permission, locked: bool
         }
         Kind::Button => configure!(Button::new("Action", move |_| value.set(true))),
         Kind::Link => configure!(Link::new("Action", move |_| value.set(true))),
-        Kind::Checkbox => configure!(Checkbox::new("Value", value)),
-        Kind::Toggle => configure!(Toggle::new("Value", value)),
+        Kind::Checkbox => configure!(Checkbox::new(value, "Value")),
+        Kind::Toggle => configure!(Toggle::new(value, "Value")),
         Kind::InlineToggle => configure!(InlineToggle::new(value, "Value")),
         Kind::Chip => configure!(Chip::removable("Item", move |_| value
             .set(true)

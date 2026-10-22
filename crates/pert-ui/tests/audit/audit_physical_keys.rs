@@ -265,7 +265,7 @@ fn overlapping_native_resize_keys_keep_the_original_until_every_physical_release
                 "Value",
                 Element::new("editor", Label::new("Content")),
             )])
-            .shared_label_width(width.clone()),
+            .bind_label_width(width.clone()),
         ))
         .unwrap();
     ui.flush(Duration::ZERO).unwrap();

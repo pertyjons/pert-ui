@@ -105,8 +105,8 @@ fn stage(reorderable: bool) -> Stage {
     let selection = ListSelection::new(&ui, SelectionMode::Single);
     let state = TreeController::new(
         &ui,
-        TreeSource::new(Outline(model.borrow().clone())),
         selection,
+        TreeSource::new(Outline(model.borrow().clone())),
     )
     .unwrap();
     state.set_expanded("music/", true).unwrap();

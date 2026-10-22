@@ -63,7 +63,7 @@ fn overrides_survive_mode_switches_and_inactive_edits_do_no_work() -> Result {
     let theme = ui.theme();
     let (_, _, paints, _) = mount(&mut ui, "primary", ColorRole::Primary, false);
     draw(&mut ui);
-    let custom = Color::rgba(0.5, 0.1, 0.4, 1.0)?;
+    let custom = Color::from_linear(0.5, 0.1, 0.4, 1.0)?;
     assert_eq!(theme.mode()?, ThemeMode::Dark);
     assert!(theme.set_color(ThemeMode::Light, ColorRole::Primary, custom)?);
     assert!(!ui.needs_paint());
@@ -201,11 +201,11 @@ fn runtime_isolation_shutdown_and_validation() -> Result {
     theme.set_mode(ThemeMode::Light)?;
     assert_ne!(first.paint()?.background(), second.paint()?.background());
     assert_eq!(
-        Color::rgba(f32::NAN, 0.0, 0.0, 1.0),
+        Color::from_linear(f32::NAN, 0.0, 0.0, 1.0),
         Err(DrawError::InvalidColor)
     );
     assert_eq!(
-        Color::rgba(2.0, 0.0, 0.0, 1.0),
+        Color::from_linear(2.0, 0.0, 0.0, 1.0),
         Err(DrawError::InvalidColor)
     );
     drop(first);
@@ -511,7 +511,7 @@ fn followers_name_their_sources_and_match_them_in_built_in_palettes() {
 #[test]
 fn followers_track_source_overrides_until_overridden_themselves() -> Result {
     use ColorRole::*;
-    let custom = Color::rgba(0.5, 0.1, 0.4, 1.0)?;
+    let custom = Color::from_linear(0.5, 0.1, 0.4, 1.0)?;
     for defaults in [Palette::dark(), Palette::light()] {
         for (follower, source) in FOLLOWERS {
             let palette = defaults.with_color(source, custom);
@@ -566,7 +566,7 @@ fn a_source_override_repaints_only_the_readers_of_changed_followers() -> Result 
     let (_, _, focus, _) = mount(&mut ui, "focus", FocusRing, false);
     let (_, _, secondary, _) = mount(&mut ui, "secondary", Secondary, true);
     draw(&mut ui);
-    let accent = Color::rgba(0.5, 0.1, 0.4, 1.0)?;
+    let accent = Color::from_linear(0.5, 0.1, 0.4, 1.0)?;
     theme.set_color(ThemeMode::Dark, Primary, accent)?;
     assert_eq!(ui.flush(Duration::ZERO)?.components_updated, 1);
     ui.paint()?;
@@ -599,7 +599,7 @@ fn ordinary_text_follows_an_on_surface_override() -> Result {
     ui.set_viewport(Viewport::new(640.0, 400.0, 1.0)?)?;
     ui.mount_tree(Element::new("button", Button::new("Action", |_| Ok(()))))?;
     draw(&mut ui);
-    let text = Color::rgba(0.9, 0.6, 0.2, 1.0)?;
+    let text = Color::from_linear(0.9, 0.6, 0.2, 1.0)?;
     ui.theme()
         .set_color(ThemeMode::Dark, ColorRole::OnSurface, text)?;
     let scene = draw(&mut ui);
@@ -615,7 +615,9 @@ fn opaque(
     green: f32,
     blue: f32,
 ) -> std::result::Result<OpaqueColor, Box<dyn std::error::Error>> {
-    Ok(OpaqueColor::try_from(Color::rgba(red, green, blue, 1.0)?)?)
+    Ok(OpaqueColor::try_from(Color::from_linear(
+        red, green, blue, 1.0,
+    )?)?)
 }
 /// Seeds across the linear RGB cube, from black and white through grays to
 /// every saturated corner, with and without a secondary seed, keep every
@@ -685,7 +687,7 @@ fn overrides_and_followers_work_on_a_seeded_palette() -> Result {
     let seeded = Palette::from_seeds(ThemeMode::Light, opaque(0.05, 0.5, 0.2)?, None);
     assert_eq!(seeded.color(ButtonPressed), seeded.color(Primary));
     assert_eq!(seeded.color(OnSurfaceContainer), seeded.color(OnSurface));
-    let accent = Color::rgba(0.4, 0.1, 0.5, 1.0)?;
+    let accent = Color::from_linear(0.4, 0.1, 0.5, 1.0)?;
     let overridden = seeded.with_color(Primary, accent);
     assert_eq!(overridden.color(ButtonPressed), accent);
     assert_ne!(overridden, seeded);

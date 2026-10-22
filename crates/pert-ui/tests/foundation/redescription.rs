@@ -459,10 +459,10 @@ fn built_ins_present_a_new_description_like_a_fresh_mount() {
         Element::new("c", InlineDecimal::new(s.clone()).label("Gain"))
     });
     conforms(false, true, |s| {
-        Element::new("c", Checkbox::new("Loop", s.clone()))
+        Element::new("c", Checkbox::new(s.clone(), "Loop"))
     });
     conforms(false, true, |s| {
-        Element::new("c", Toggle::new("Mute", s.clone()))
+        Element::new("c", Toggle::new(s.clone(), "Mute"))
     });
     conforms(Color::ACCENT, Color::WHITE, |s| {
         Element::new("c", ColorSwatch::bound(s.read_only()))

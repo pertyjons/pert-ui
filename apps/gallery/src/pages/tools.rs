@@ -69,7 +69,7 @@ pub(crate) fn debug_overlay(ui: &Runtime) -> Element {
             ),
             Element::new(
                 "break",
-                Toggle::new("Arrange the sample wrongly", broken.clone()),
+                Toggle::new(broken.clone(), "Arrange the sample wrongly"),
             ),
             Element::new(
                 "sample",
@@ -289,8 +289,8 @@ pub(crate) fn themes(ui: &Runtime) -> Element {
                 use_secondary.set(false)?;
                 match seed {
                     Some([red, green, blue]) => {
-                        let seed =
-                            Color::rgba(red, green, blue, 1.0).map_err(ApplicationError::new)?;
+                        let seed = Color::from_linear(red, green, blue, 1.0)
+                            .map_err(ApplicationError::new)?;
                         primary.set(seed)?;
                         apply_seeds(&theme, seed, None)
                     }
@@ -329,7 +329,7 @@ pub(crate) fn themes(ui: &Runtime) -> Element {
         ),
         Element::new(
             "use-secondary",
-            Checkbox::new("Secondary seed", use_secondary.clone()),
+            Checkbox::new(use_secondary.clone(), "Secondary seed"),
         ),
         Element::new(
             "secondary-seed",

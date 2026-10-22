@@ -399,9 +399,9 @@ fn register(
 /// to the status line.
 fn report(
     editor: &Rc<Editor>,
-) -> impl FnMut(CommandReceipt, &mut EventContext) -> Result<(), RuntimeError> + 'static {
+) -> impl FnMut(&mut EventContext, CommandReceipt) -> Result<(), RuntimeError> + 'static {
     let editor = editor.clone();
-    move |receipt, _| {
+    move |_, receipt| {
         if let CommandStatus::Finished(Err(error)) = receipt.status() {
             editor.status.set(format!("Command failed: {error}"))?;
         }
@@ -550,8 +550,8 @@ fn files(
     let sender = listings.sender();
     let browser = FileBrowserController::new(
         ui,
-        [dir.clone()],
         ListSelection::new(ui, SelectionMode::Single),
+        [dir.clone()],
         move |request| {
             let sender = sender.clone();
             std::thread::spawn(move || {
@@ -667,10 +667,10 @@ fn mount(
     let item = |key: &str, id: &CommandId| MenuItem::command(ui, key, id, report(editor));
     let tools = |tool: &Signal<Tool>| {
         vec![
-            MenuItem::radio("select", "Select", tool, Tool::Select),
-            MenuItem::radio("box", "Box", tool, Tool::Box),
-            MenuItem::radio("ellipse", "Ellipse", tool, Tool::Ellipse),
-            MenuItem::radio("connect", "Connect", tool, Tool::Connect),
+            MenuItem::radio("select", tool, Tool::Select, "Select"),
+            MenuItem::radio("box", tool, Tool::Box, "Box"),
+            MenuItem::radio("ellipse", tool, Tool::Ellipse, "Ellipse"),
+            MenuItem::radio("connect", tool, Tool::Connect, "Connect"),
         ]
     };
     let menus = vec![

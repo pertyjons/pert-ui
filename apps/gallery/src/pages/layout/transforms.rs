@@ -285,7 +285,7 @@ fn card(ui: &Runtime, key: &str, title: &str, status: &Signal<String>) -> Elemen
             "rows",
             Column::new([
                 Element::new("title", Label::new(title).style(TextStyle::Heading)),
-                Element::new("enabled", Checkbox::new("Enabled", enabled)),
+                Element::new("enabled", Checkbox::new(enabled, "Enabled")),
                 Element::new("name", TextField::new(name)).with_label("Name"),
                 Element::new(
                     "press",

@@ -9,13 +9,17 @@ use super::*;
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct PresentationRate(f64);
 impl PresentationRate {
+    /// The lowest ceiling, 1 Hz.
+    pub const MIN: Self = Self(1.0);
+    /// The highest ceiling, 1000 Hz.
+    pub const MAX: Self = Self(1000.0);
     /// Validates finite hertz in the supported 1–1000 Hz interval.
     ///
     /// # Errors
     /// Returns [`RuntimeError::InvalidPresentationRate`] for a non-finite rate
-    /// or one outside that interval.
+    /// or one outside [`Self::MIN`]`..=`[`Self::MAX`].
     pub fn new(hertz: f64) -> Result<Self, RuntimeError> {
-        if !hertz.is_finite() || !(1.0..=1000.0).contains(&hertz) {
+        if !hertz.is_finite() || !(Self::MIN.0..=Self::MAX.0).contains(&hertz) {
             return Err(RuntimeError::InvalidPresentationRate);
         }
         Ok(Self(hertz))

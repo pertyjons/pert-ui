@@ -20,8 +20,8 @@ fn boolean(kind: usize, value: Signal<bool>, log: Rc<RefCell<Vec<bool>>>, fail: 
         }
     };
     match kind {
-        0 => Element::new("control", Checkbox::new("Value", value).on_change(handler)),
-        1 => Element::new("control", Toggle::new("Value", value).on_change(handler)),
+        0 => Element::new("control", Checkbox::new(value, "Value").on_change(handler)),
+        1 => Element::new("control", Toggle::new(value, "Value").on_change(handler)),
         _ => Element::new(
             "control",
             InlineToggle::new(value, "Value").on_change(handler),
@@ -289,7 +289,7 @@ fn removing_handlers_suppresses_later_user_notifications() {
             Column::new([
                 Element::new(
                     "boolean",
-                    Toggle::new("Toggle", boolean_value.clone())
+                    Toggle::new(boolean_value.clone(), "Toggle")
                         .on_change(|_, _| panic!("removed handler")),
                 ),
                 Element::new(
@@ -310,7 +310,7 @@ fn removing_handlers_suppresses_later_user_notifications() {
     ui.reconcile_children(
         &root,
         vec![
-            Element::new("boolean", Toggle::new("Toggle", boolean_value.clone())),
+            Element::new("boolean", Toggle::new(boolean_value.clone(), "Toggle")),
             Element::new(
                 "control",
                 Select::new(
@@ -385,7 +385,7 @@ fn removing_and_reinstalling_navigation_callbacks_preserves_global_order() {
                         Element::new(
                             owner,
                             if enabled {
-                                control.on_change(move |_, _, _| {
+                                control.on_change(move |_, _| {
                                     log.borrow_mut().push(owner);
                                     Ok(())
                                 })

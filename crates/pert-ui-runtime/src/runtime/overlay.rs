@@ -86,7 +86,7 @@ pub(super) fn issues<'a>(
         match marker.bounds {
             Some(bounds) if drawn < limit => {
                 let [r, g, b, a] = marker.color;
-                let color = Color::rgba(r, g, b, a).unwrap_or(ISSUE);
+                let color = Color::from_linear(r, g, b, a).unwrap_or(ISSUE);
                 outline(out, bounds, ISSUE_STROKE * pixel, color);
                 drawn += 1;
             }

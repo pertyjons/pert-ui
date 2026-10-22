@@ -225,6 +225,7 @@ fn a_table_header_follows_a_bound_title_and_still_sorts() -> TestResult {
     let title = ui.signal("Number".to_owned());
     let state = TableController::new(
         &ui,
+        ListSelection::new(&ui, SelectionMode::Single),
         [
             TableColumn::new("number", title.read_only())
                 .width(Length::new(120.0)?)
@@ -232,7 +233,6 @@ fn a_table_header_follows_a_bound_title_and_still_sorts() -> TestResult {
             TableColumn::new("other", "Other"),
         ],
         TableSource::new(Numbers((0..5).collect())),
-        ListSelection::new(&ui, SelectionMode::Single),
     )?;
     let sorts = Rc::new(RefCell::new(Vec::new()));
     let log = sorts.clone();

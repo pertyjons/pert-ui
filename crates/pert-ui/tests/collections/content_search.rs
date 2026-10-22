@@ -115,7 +115,7 @@ fn a_value_in_a_collapsed_section_is_found_and_the_jump_expands_it() {
                 Field::new(Element::new("input", TextField::new(text))).label("Name"),
             ),
         )
-        .bound(open.clone()),
+        .bind_expanded(open.clone()),
     ))
     .unwrap();
     settle(&mut ui);
@@ -144,9 +144,9 @@ fn table(ui: &mut Runtime, rows: usize) -> (TableController, WidgetId) {
         .unwrap();
     let state = TableController::new(
         &*ui,
+        ListSelection::new(&*ui, SelectionMode::Single),
         [TableColumn::new("n", "n"), TableColumn::new("square", "n²")],
         TableSource::new(Squares(rows)),
-        ListSelection::new(&*ui, SelectionMode::Single),
     )
     .unwrap();
     let table = ui
@@ -423,8 +423,8 @@ fn tree_rows_are_searched_when_shown_and_not_inside_collapsed_nodes() {
         .unwrap();
     let state = TreeController::new(
         &ui,
-        TreeSource::new(Folders),
         ListSelection::new(&ui, SelectionMode::Single),
+        TreeSource::new(Folders),
     )
     .unwrap();
     ui.mount_tree(Element::new("tree", Tree::new(&state, 24.0).unwrap()))
@@ -526,9 +526,9 @@ fn replacing_a_collection_the_search_has_finished_makes_it_stale() {
         .unwrap();
     let state = TableController::new(
         &ui,
+        ListSelection::new(&ui, SelectionMode::Single),
         [TableColumn::new("n", "n"), TableColumn::new("square", "n²")],
         TableSource::new(Squares(1_000)),
-        ListSelection::new(&ui, SelectionMode::Single),
     )
     .unwrap();
     // A split gives the table a bounded pane, so most of its rows stay
@@ -821,9 +821,9 @@ fn rows_of_a_collection_behind_a_modal_dialog_are_not_found() {
         .unwrap();
     let state = TableController::new(
         &ui,
+        ListSelection::new(&ui, SelectionMode::Single),
         [TableColumn::new("n", "n"), TableColumn::new("square", "n²")],
         TableSource::new(Squares(10_000)),
-        ListSelection::new(&ui, SelectionMode::Single),
     )
     .unwrap();
     let dialog = DialogController::new(&ui);

@@ -60,9 +60,9 @@ fn property(ui: &Runtime, key: &str, property: &str) -> InspectValue {
 fn table(ui: &Runtime, first: TableColumn) -> TableController {
     TableController::new(
         ui,
+        ListSelection::new(ui, SelectionMode::Single),
         [first, TableColumn::new("b", "B").movable(true)],
         TableSource::new(Rows),
-        ListSelection::new(ui, SelectionMode::Single),
     )
     .unwrap()
 }
@@ -254,7 +254,7 @@ fn list_and_tree_reordering_revocation_cancels_owned_drag_and_can_be_reenabled()
         let sink = calls.clone();
         let selection = ListSelection::new(&ui, SelectionMode::Single);
         let widget = if tree {
-            let controller = TreeController::new(&ui, TreeSource::new(Rows), selection).unwrap();
+            let controller = TreeController::new(&ui, selection, TreeSource::new(Rows)).unwrap();
             Element::new(
                 "collection",
                 Tree::new(&controller, 40.0)
@@ -368,7 +368,7 @@ fn fixed_list_and_tree_denial_cannot_be_lifted_and_selection_still_works() {
         let selection = ListSelection::new(&ui, SelectionMode::Single);
         let item = if tree {
             let controller =
-                TreeController::new(&ui, TreeSource::new(Rows), selection.clone()).unwrap();
+                TreeController::new(&ui, selection.clone(), TreeSource::new(Rows)).unwrap();
             Element::new(
                 "collection",
                 Tree::new(&controller, 40.0)
@@ -504,7 +504,7 @@ fn allowing_permissions_does_not_create_missing_structural_capabilities() {
         let mut ui = runtime();
         let selection = ListSelection::new(&ui, SelectionMode::Single);
         let element = if tree {
-            let state = TreeController::new(&ui, TreeSource::new(Rows), selection.clone()).unwrap();
+            let state = TreeController::new(&ui, selection.clone(), TreeSource::new(Rows)).unwrap();
             Element::new(
                 "collection",
                 Tree::new(&state, 40.0).unwrap().reorder_permission(true),
@@ -627,7 +627,7 @@ fn revoking_reorder_permission_does_not_cancel_an_active_scrollbar_drag() {
         let allowed = ui.signal(true);
         let selection = ListSelection::new(&ui, SelectionMode::Single);
         let element = if tree {
-            let state = TreeController::new(&ui, TreeSource::new(Rows), selection).unwrap();
+            let state = TreeController::new(&ui, selection, TreeSource::new(Rows)).unwrap();
             Element::new(
                 "collection",
                 Tree::new(&state, 40.0)
@@ -690,7 +690,7 @@ fn compatible_redescription_retains_collection_permission_bindings() {
         let selection = ListSelection::new(&ui, SelectionMode::Single);
         let table = table(&ui, TableColumn::new("a", "A").resizable(true));
         let rows = ui.signal(ListSource::new(Rows));
-        let tree = TreeController::new(&ui, TreeSource::new(Rows), selection.clone()).unwrap();
+        let tree = TreeController::new(&ui, selection.clone(), TreeSource::new(Rows)).unwrap();
         let describe = |binding: ReadSignal<bool>| match kind {
             0 => Element::new(
                 "collection",
@@ -749,7 +749,7 @@ fn list_and_tree_keyboard_reordering_obeys_live_permission_in_native_key_routing
         let calls = Rc::new(Cell::new(0));
         let sink = calls.clone();
         let element = if tree {
-            let state = TreeController::new(&ui, TreeSource::new(Rows), selection).unwrap();
+            let state = TreeController::new(&ui, selection, TreeSource::new(Rows)).unwrap();
             Element::new(
                 "collection",
                 Tree::new(&state, 40.0)

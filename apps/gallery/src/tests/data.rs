@@ -647,8 +647,8 @@ fn the_file_browser_page_keeps_a_response_its_full_mailbox_refuses() {
     let queue = requests.clone();
     let controller = FileBrowserController::new(
         &ui,
-        [ROOT],
         ListSelection::new(&ui, SelectionMode::Single),
+        [ROOT],
         move |request| queue.borrow_mut().push(request),
     )
     .unwrap();

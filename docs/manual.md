@@ -178,11 +178,11 @@ and `label` replaces it.
 | `ScrollArea` | `ScrollArea::new(child).axes(ScrollAxes::Both)`; `.on_scroll(callback)` reports the committed offset | Overflow and focus reveal. Vertical scrolling is the default. |
 | `Form` | `Form::new(fields)` | Responsive field columns. |
 | `Field` | `Field::new(control).label(...).help(...)` | Label, help and status around any control; `required(true)` marks the label, and a `FieldStatus::Pending` check shows a spinner. |
-| `PropertyGrid` / `Property` | `PropertyGrid::new([Property::new(key, label, editor), ...])`; `.shared_label_width(signal)` aligns several grids; `.on_resize(callback)` reports the committed label width | Labeled editors in two aligned columns with a resizable label column; group rows by placing one grid per accordion section. |
+| `PropertyGrid` / `Property` | `PropertyGrid::new([Property::new(key, label, editor), ...])`; `.bind_label_width(signal)` aligns several grids; `.on_resize(callback)` reports the committed label width | Labeled editors in two aligned columns with a resizable label column; group rows by placing one grid per accordion section. |
 | `RegionLayout` | `RegionLayout::new().top(...).left(...).center(...)`; `.on_resize(callback)` reports a committed edge | Window-like regions; nest another region layout when needed. |
 | `SplitPane` | `SplitPane::new(axis, first, second)`; `.on_resize(callback)` reports the committed preference | Two independently sized regions with a movable divider. |
 | `Tabs` / `Tab` | `Tabs::new([Tab::new(key, title, content), ...])`; `.selected(key)` chooses the first shown tab | Keyed views whose inactive content keeps state. Blank or duplicate keys and blank titles are refused before the strip mounts. |
-| `Collapsible` | `Collapsible::new(title, content)` with a fixed, rich or bound title; `.bound(signal)` hands the expansion to the application | A header that shows and hides its content, which keeps its state while collapsed. |
+| `Collapsible` | `Collapsible::new(title, content)` with a fixed, rich or bound title; `.bind_expanded(signal)` hands the expansion to the application | A header that shows and hides its content, which keeps its state while collapsed. |
 | `Accordion` / `Section` | `Accordion::new([Section::new(key, title, content), ...]).mode(ExpandMode::Single)` | Several collapsible sections, one or many open, as one Tab stop. |
 | `ToolWindowLayout` / `ToolWindow` | `ToolWindowLayout::new(center).edge(ToolEdge::Left, EdgeMode::Stripe).window(ToolWindow::new(key, title, content))`; `.locked()` fixes the arrangement; `ToolWindow::overlay(true)` slides a panel over the center; `ToolWindow::mode(ToolWindowMode::Floating)` or `ToolWindowMode::Window` floats it or opens it in its own native window; a `ToolWindowController` opens, moves, reorders and switches tool windows from commands | Tool windows docked at the edges of a main area and opened from stripes of buttons, as in IDEs. The user moves them between edges and groups and reorders them through a panel's options menu or by dragging stripe buttons, switches them to overlay panels that hide when focus leaves, floats them as frames over the layout, or opens them in their own native windows that return to the stripe when closed. Every edge, stripe and user capability is optional; collapsed tool windows keep their state and size. |
 | `FileBrowser` | `FileBrowser::new(&controller, row_height)?` over a `FileBrowserController` | Folder tree, path bar, filter and entry list over directory listings the host supplies; the browser never reads the disk. |
@@ -230,7 +230,7 @@ commands from the rows the action can reach:
 `FileBrowser` shows directory navigation and selection over a
 `FileBrowserController`: a path bar, a filter, a folder tree and the current
 folder's entries. The browser performs no filesystem I/O. Create the controller
-with `FileBrowserController::new(&ui, roots, selection, request)`; its `request`
+with `FileBrowserController::new(&ui, selection, roots, request)`; its `request`
 callback receives a `DirectoryRequest` whenever a folder must be listed. List it
 on your own worker thread, for example with `list_directory`, and hand
 `request.respond(listing)` back to `controller.deliver(response)` through a
@@ -320,7 +320,7 @@ Parameter construction has no independent option-list builder.
 | `Button` | `Button::new(label, callback)`, or `Button::command(&ui, &command, on_receipt)?` and `command_icon` for a registered command | An action callback; keyboard activation starts with unmodified Enter or Space. A command button shows the command's name (or an icon), follows its enabled binding and reports each invocation's receipt. |
 | `Link` | `Link::new(text, callback)`, optionally `.underline(LinkUnderline::Always)` | Navigation presented as text-sized link text, activated like a button by pointer or unmodified Enter or Space. The destination is the application's, typically a reveal through `EventContext::request_reveal`. |
 | `Chip` | `Chip::new(text)` or `Chip::removable(text, on_remove)` | A compact tag or chosen item. A static chip has no Tab stop; a removable one reports Delete, Backspace or its × button to the owner, which removes the item and describes its chips again. Focus moves on to the next chip. |
-| `Checkbox`, `Toggle` | `Checkbox::new(label, bool_signal)` / `Toggle::new(label, bool_signal)` | Two presentations of a local boolean. |
+| `Checkbox`, `Toggle` | `Checkbox::new(bool_signal, label)` / `Toggle::new(bool_signal, label)` | Two presentations of a local boolean. |
 | `RadioGroup` | `RadioGroup::new(signal, [Choice::new(value, label), ...])?` | One typed selection with arrow navigation. |
 | `SegmentedControl` | `SegmentedControl::new(signal, choices)?` | Joined, exclusive choices. |
 | `Select` | `Select::new(&ui, signal, choices)?` | A popup for one selection. |
@@ -591,8 +591,9 @@ slots that survive caption replacement. Use rich content for multiple icons.
 MenuItem `enabled` accepts a restrictive Permission; command and application
 restrictions combine.
 
-Accordion's `on_change` receives `(context, open_keys, origin)` after layout
-settles, including restore and redescription changes after initial preparation.
+Accordion's `on_change` receives `(context, &ExpansionChange)`, the open keys
+and their origin, after layout settles, including restore and redescription
+changes after initial preparation.
 FloatingWindow placement builders work from `UpdateContext`; controller placement
 supersedes initial geometry. A ListController addresses one mounted list, including
 when that list is hidden. It may be reused after the prior list is removed.

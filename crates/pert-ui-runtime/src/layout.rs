@@ -192,6 +192,29 @@ impl SizeLimits {
             },
         }
     }
+    /// Specifies one fixed outer size: `size` is both the minimum and the
+    /// maximum on each axis.
+    ///
+    /// Equal bounds cannot be inverted, so unlike [`SizeLimits::new`] this
+    /// cannot fail, and a fixed-size component can return it from
+    /// [`Component::size_limits`](crate::Component::size_limits) directly.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// # use pert_ui::{Constraints, Size, SizeLimits};
+    /// let size = Size::new(260.0, 260.0)?;
+    /// let fixed = SizeLimits::exact(size);
+    /// assert_eq!(fixed, SizeLimits::new(size, Constraints::bounded(size))?);
+    /// assert_eq!(fixed.constrain(Size::new(400.0, 10.0)?), size);
+    /// # Ok::<(), pert_ui::GeometryError>(())
+    /// ```
+    #[must_use]
+    pub const fn exact(size: Size) -> Self {
+        Self {
+            minimum: size,
+            maximum: Constraints::bounded(size),
+        }
+    }
     pub(crate) fn available(self, constraints: Constraints) -> Constraints {
         fn axis(value: Option<f32>, minimum: f32, maximum: Option<f32>) -> Option<f32> {
             match (value, maximum) {

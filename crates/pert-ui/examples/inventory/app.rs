@@ -135,7 +135,7 @@ impl Component for ActiveCell {
             let (inventory, id) = (self.inventory.clone(), self.id);
             cx.request_children(vec![Element::new(
                 "check",
-                Checkbox::new("", shown.clone()).on_change(move |_, active| {
+                Checkbox::new(shown.clone(), "").on_change(move |_, active| {
                     match inventory.upgrade() {
                         Some(inventory) => inventory.set(id, Field::Active, Value::Bool(active)),
                         None => Ok(()),
@@ -238,13 +238,13 @@ impl Inventory {
             })?;
         let table = TableController::new(
             ui,
+            selection,
             columns,
             TableSource::new(Rows {
                 inventory: Weak::new(),
                 order: Rc::from([]),
                 positions: Rc::default(),
             }),
-            selection,
         )?;
         let inventory = Rc::new_cyclic(|me| Self {
             me: me.clone(),

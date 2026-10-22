@@ -33,7 +33,7 @@ fn button(_: &Runtime) -> (Element, Box<dyn Fn() -> u32>) {
 }
 fn checkbox(ui: &Runtime) -> (Element, Box<dyn Fn() -> u32>) {
     let value = ui.signal(false);
-    let control = Checkbox::new("Enabled", value.clone());
+    let control = Checkbox::new(value.clone(), "Enabled");
     (
         Element::new("control", control),
         Box::new(move || u32::from(value.get().unwrap())),
@@ -41,7 +41,7 @@ fn checkbox(ui: &Runtime) -> (Element, Box<dyn Fn() -> u32>) {
 }
 fn toggle(ui: &Runtime) -> (Element, Box<dyn Fn() -> u32>) {
     let value = ui.signal(false);
-    let control = Toggle::new("Enabled", value.clone());
+    let control = Toggle::new(value.clone(), "Enabled");
     (
         Element::new("control", control),
         Box::new(move || u32::from(value.get().unwrap())),
@@ -183,7 +183,7 @@ const ESCAPE_CASES: [(&str, Make, KeyCode, CommandKey); 10] = [
         |ui, _| {
             Ok(Element::new(
                 "control",
-                Checkbox::new("On", ui.signal(false)),
+                Checkbox::new(ui.signal(false), "On"),
             ))
         },
         KeyCode::Space,
@@ -191,7 +191,7 @@ const ESCAPE_CASES: [(&str, Make, KeyCode, CommandKey); 10] = [
     ),
     (
         "Toggle",
-        |ui, _| Ok(Element::new("control", Toggle::new("On", ui.signal(false)))),
+        |ui, _| Ok(Element::new("control", Toggle::new(ui.signal(false), "On"))),
         KeyCode::Space,
         CommandKey::Character(' '),
     ),

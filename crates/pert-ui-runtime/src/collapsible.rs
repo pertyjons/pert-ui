@@ -411,7 +411,7 @@ fn visible_index(cx: &MeasureContext<'_>, key: &str) -> Result<Option<usize>, Ru
 /// drafts and scroll positions survive. Focus inside content that collapses
 /// moves to the header, by the runtime's ordinary rule for hidden focus.
 ///
-/// **Expansion** is the section's own state by default. [`Self::bound`] makes
+/// **Expansion** is the section's own state by default. [`Self::bind_expanded`] makes
 /// it the application's `Signal<bool>` instead: the section shows what the
 /// signal holds and writes it when the user toggles. A reveal
 /// ([`Runtime::reveal`], [`Runtime::reveal_and_focus`],
@@ -531,13 +531,13 @@ impl Collapsible {
     /// signal's value, and the header and reveals write it. The section then
     /// stays out of workspace persistence, since the signal is application
     /// state. [`Self::expanded`] is ignored for a bound section.
-    pub fn bound(mut self, expanded: impl Into<Signal<bool>>) -> Self {
+    pub fn bind_expanded(mut self, expanded: impl Into<Signal<bool>>) -> Self {
         let expanded: Signal<bool> = expanded.into();
         self.binding = Some(expanded);
         self
     }
     /// Takes part in workspace persistence (`true`, the default) or stays out
-    /// of it (`false`). Has no effect on a [bound](Self::bound) section, which
+    /// of it (`false`). Has no effect on a [bound](Self::bind_expanded) section, which
     /// never takes part.
     pub fn persist(mut self, persist: bool) -> Self {
         self.persist = persist;
@@ -552,7 +552,7 @@ impl Collapsible {
     /// Restricts header activation with a fixed or reactive permission;
     /// allowed by default. While denied the header takes no focus, pointer and
     /// keyboard toggling and reveals are refused, and the title is muted; the
-    /// content keeps its expansion, and a [bound](Self::bound) expansion still
+    /// content keeps its expansion, and a [bound](Self::bind_expanded) expansion still
     /// follows the application. Repeated calls combine restrictions; every
     /// condition must allow. Same-key redescription replaces the permission.
     /// Revoking a bound permission cancels an armed press at the next update
@@ -954,14 +954,35 @@ pub struct Accordion {
     mode: ExpandMode,
     persist: bool,
     on_change: Option<AccordionHandler>,
-    pending: std::collections::VecDeque<Option<(Vec<String>, crate::ChangeOrigin)>>,
+    pending: std::collections::VecDeque<Option<ExpansionChange>>,
     notifier: Option<crate::Notifier>,
     /// Why the described sections are invalid, reported from `check_description`.
     invalid: Option<LayoutError>,
 }
 /// Called with the open section keys, in display order, after they change.
 type AccordionHandler =
-    Box<dyn FnMut(&mut EventContext, &[String], crate::ChangeOrigin) -> Result<(), RuntimeError>>;
+    Box<dyn FnMut(&mut EventContext, &ExpansionChange) -> Result<(), RuntimeError>>;
+
+/// A change of an [`Accordion`]'s open sections, reported through
+/// [`Accordion::on_change`] after it took effect.
+///
+/// Keys identify sections, never positions or titles.
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[non_exhaustive]
+pub struct ExpansionChange {
+    /// The keys of the open sections after the change, in display order;
+    /// empty when every section is closed.
+    pub expanded: Vec<String>,
+    /// What caused the change.
+    pub origin: crate::ChangeOrigin,
+}
+impl ExpansionChange {
+    /// Describes a change that left the sections `expanded` open.
+    #[must_use]
+    pub fn new(expanded: Vec<String>, origin: crate::ChangeOrigin) -> Self {
+        Self { expanded, origin }
+    }
+}
 impl Accordion {
     /// Creates an accordion over `sections`, in order, all closed, in
     /// [`ExpandMode::Multiple`], enabled and persisted.
@@ -1023,8 +1044,9 @@ impl Accordion {
         self.headers.restrict(permission);
         self
     }
-    /// Calls a UI-thread handler with the open section keys, in display order,
-    /// after each change, with its [`ChangeOrigin`](crate::ChangeOrigin).
+    /// Calls a UI-thread handler with an [`ExpansionChange`] after each change:
+    /// the open section keys, in display order, and its
+    /// [`ChangeOrigin`](crate::ChangeOrigin).
     /// Changes from input, reveal, workspace restore and redescription are
     /// queued in order and delivered after layout settles, in the event phase.
     /// Initial expansion and restoration before the first successful update are
@@ -1043,7 +1065,7 @@ impl Accordion {
     ///     Section::new("a", "First", Element::new("a-body", Label::new("A"))),
     ///     Section::new("b", "Second", Element::new("b-body", Label::new("B"))),
     /// ])
-    /// .on_change(move |_, keys, _origin| seen.set(keys.to_vec()));
+    /// .on_change(move |_, change| seen.set(change.expanded.clone()));
     /// let root = ui.mount_tree(Element::new("accordion", accordion))?;
     /// ui.reveal_child(&root, "b")?;
     /// assert_eq!(open.get()?, ["b"]);
@@ -1051,12 +1073,7 @@ impl Accordion {
     /// ```
     pub fn on_change(
         mut self,
-        handler: impl FnMut(
-            &mut EventContext,
-            &[String],
-            crate::ChangeOrigin,
-        ) -> Result<(), RuntimeError>
-        + 'static,
+        handler: impl FnMut(&mut EventContext, &ExpansionChange) -> Result<(), RuntimeError> + 'static,
     ) -> Self {
         self.on_change = Some(Box::new(handler));
         self
@@ -1123,7 +1140,8 @@ impl Accordion {
                 .filter(|key| self.headers.open.contains(*key))
                 .cloned()
                 .collect();
-            self.pending.push_back(Some((open, origin)));
+            self.pending
+                .push_back(Some(ExpansionChange::new(open, origin)));
             notifier.request();
         }
     }
@@ -1246,10 +1264,10 @@ impl Component for Accordion {
         invalidation
     }
     fn deliver_notifications(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
-        if let Some(Some((keys, origin))) = self.pending.pop_front()
+        if let Some(Some(change)) = self.pending.pop_front()
             && let Some(handler) = &mut self.on_change
         {
-            handler(cx, &keys, origin)?;
+            handler(cx, &change)?;
         }
         Ok(())
     }

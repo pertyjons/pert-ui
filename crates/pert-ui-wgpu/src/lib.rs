@@ -971,7 +971,7 @@ mod tests {
 
     #[test]
     fn destination_clear_respects_compositor_alpha_and_capture_color() {
-        let color = Color::rgba(0.25, 0.5, 1.0, 0.5).expect("valid color");
+        let color = Color::from_linear(0.25, 0.5, 1.0, 0.5).expect("valid color");
         assert_eq!(
             Destination::Opaque.clear(color),
             wgpu::Color {
@@ -991,7 +991,8 @@ mod tests {
             }
         );
         assert_eq!(
-            Destination::Premultiplied.clear(Color::rgba(1.0, 1.0, 1.0, 0.0).expect("valid color")),
+            Destination::Premultiplied
+                .clear(Color::from_linear(1.0, 1.0, 1.0, 0.0).expect("valid color")),
             wgpu::Color::TRANSPARENT
         );
     }

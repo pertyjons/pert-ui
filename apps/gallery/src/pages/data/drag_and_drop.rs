@@ -214,8 +214,8 @@ fn session_outline(ui: &Runtime, status: &Signal<String>) -> Result<Element, Run
     let model = Rc::new(RefCell::new(model));
     let state = TreeController::new(
         ui,
-        TreeSource::new(Session(model.borrow().clone())),
         ListSelection::new(ui, SelectionMode::Multiple),
+        TreeSource::new(Session(model.borrow().clone())),
     )?;
     state.set_expanded("Drums/", true)?;
     state.set_expanded("Keys/", true)?;

@@ -34,7 +34,7 @@ fn stage(mode: SelectionMode) -> Stage {
     let requests = Rc::new(RefCell::new(Vec::new()));
     let queue = requests.clone();
     let controller =
-        FileBrowserController::new(&ui, ["/r"], ListSelection::new(&ui, mode), move |request| {
+        FileBrowserController::new(&ui, ListSelection::new(&ui, mode), ["/r"], move |request| {
             queue.borrow_mut().push(request)
         })
         .unwrap();
@@ -595,8 +595,8 @@ fn a_response_for_another_controller_or_a_root_given_twice_is_refused() {
     let queue = other_requests.clone();
     let _other = FileBrowserController::new(
         &ui,
-        ["/elsewhere"],
         ListSelection::new(&ui, SelectionMode::Single),
+        ["/elsewhere"],
         move |request| queue.borrow_mut().push(request),
     )
     .unwrap();
@@ -614,11 +614,11 @@ fn a_response_for_another_controller_or_a_root_given_twice_is_refused() {
     let none: [&str; 0] = [];
     let selection = ListSelection::new(&ui, SelectionMode::Single);
     assert_eq!(
-        FileBrowserController::new(&ui, none, selection.clone(), |_| ()).unwrap_err(),
+        FileBrowserController::new(&ui, selection.clone(), none, |_| ()).unwrap_err(),
         FileBrowserError::NoRoots
     );
     assert_eq!(
-        FileBrowserController::new(&ui, ["/a", "/a"], selection, |_| ()).unwrap_err(),
+        FileBrowserController::new(&ui, selection, ["/a", "/a"], |_| ()).unwrap_err(),
         FileBrowserError::DuplicateRoot(PathBuf::from("/a"))
     );
 }
@@ -632,8 +632,8 @@ fn a_foreign_response_with_a_matching_directory_and_generation_is_stale() {
     let queue = other_requests.clone();
     let _other = FileBrowserController::new(
         &stage.ui,
-        ["/r"],
         ListSelection::new(&stage.ui, SelectionMode::Single),
+        ["/r"],
         move |request| queue.borrow_mut().push(request),
     )
     .unwrap();
@@ -790,8 +790,8 @@ fn a_delivery_that_fails_keeps_its_request_pending_for_a_retry() {
     let queue = requests.clone();
     let controller = FileBrowserController::new(
         &ui,
-        ["/r"],
         ListSelection::new(&ui, SelectionMode::Single),
+        ["/r"],
         move |request: DirectoryRequest| queue.borrow_mut().push(request),
     )
     .unwrap();
@@ -959,15 +959,15 @@ fn redescribed_browser_parts_keep_the_mounted_controller() {
     let queue = requests.clone();
     let original = FileBrowserController::new(
         &ui,
-        ["/r"],
         ListSelection::new(&ui, SelectionMode::Single),
+        ["/r"],
         move |request| queue.borrow_mut().push(request),
     )
     .unwrap();
     let other = FileBrowserController::new(
         &ui,
-        ["/other"],
         ListSelection::new(&ui, SelectionMode::Single),
+        ["/other"],
         |_| {},
     )
     .unwrap();
@@ -1070,15 +1070,15 @@ fn hidden_browser_initializes_from_its_retained_controller_and_current_strings()
     let queue = requests.clone();
     let original = FileBrowserController::new(
         &ui,
-        ["/r"],
         ListSelection::new(&ui, SelectionMode::Single),
+        ["/r"],
         move |request| queue.borrow_mut().push(request),
     )
     .unwrap();
     let other = FileBrowserController::new(
         &ui,
-        ["/other"],
         ListSelection::new(&ui, SelectionMode::Single),
+        ["/other"],
         |_| {},
     )
     .unwrap();
@@ -1356,8 +1356,8 @@ fn folder_filter_permissions_preserve_a_fixed_denial() -> Result<(), Box<dyn std
     let allowed = ui.signal(true);
     let controller = FileBrowserController::new(
         &ui,
-        ["/r"],
         ListSelection::new(&ui, SelectionMode::Single),
+        ["/r"],
         |_| {},
     )?;
     ui.mount_tree(Element::new(

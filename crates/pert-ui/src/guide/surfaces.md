@@ -137,10 +137,10 @@ let bar = MenuBar::new(&ui, vec![
         MenuItem::new("close", "Close", |_| Ok(())),
     ]),
     MenuItem::submenu("view", "View", vec![
-        MenuItem::toggle("grid", "Show grid", grid.clone()),
+        MenuItem::toggle("grid", grid.clone(), "Show grid"),
         MenuItem::separator(),
-        MenuItem::radio("normal", "100%", zoom.clone(), 100),
-        MenuItem::radio("large", "200%", zoom.clone(), 200),
+        MenuItem::radio("normal", zoom.clone(), 100, "100%"),
+        MenuItem::radio("large", zoom.clone(), 200, "200%"),
     ]),
 ])?
 .content(Element::new("document", Button::new("Document", |_| Ok(()))));
@@ -191,7 +191,7 @@ let bar = MenuBar::new(&ui, vec![
         row("compact", "Compact", Density::Compact)?,
         row("standard", "Standard", Density::Standard)?,
         MenuItem::separator(),
-        MenuItem::toggle("loop", "Loop playback", looped.clone())
+        MenuItem::toggle("loop", looped.clone(), "Loop playback")
             .on_change(move |_, on| engine.set(Some(on))),
     ]),
 ])?;

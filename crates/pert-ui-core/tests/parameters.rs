@@ -107,9 +107,9 @@ fn extreme_and_adjacent_domains_preserve_bounds_and_monotonicity() -> TestResult
         for mapping in [
             ParameterMapping::Linear,
             ParameterMapping::Logarithmic,
-            ParameterMapping::Power(PowerExponent::new(PowerExponent::MIN)?),
+            ParameterMapping::Power(PowerExponent::MIN),
             ParameterMapping::Power(PowerExponent::new(2.0)?),
-            ParameterMapping::Power(PowerExponent::new(PowerExponent::MAX)?),
+            ParameterMapping::Power(PowerExponent::MAX),
         ] {
             if mapping == ParameterMapping::Logarithmic && min <= 0.0 {
                 continue;
@@ -235,7 +235,7 @@ fn power_exponents_are_validated() {
             Err(ParameterError::InvalidExponent)
         );
     }
-    for valid in [PowerExponent::MIN, 1.0, PowerExponent::MAX] {
+    for valid in [PowerExponent::MIN.get(), 1.0, PowerExponent::MAX.get()] {
         assert_eq!(PowerExponent::new(valid).map(PowerExponent::get), Ok(valid));
     }
 }
@@ -254,9 +254,8 @@ fn linear_and_logarithmic_positions_are_unchanged() -> TestResult {
 
 #[test]
 fn a_high_exponent_has_a_documented_plateau_at_the_lower_bound() -> TestResult {
-    let spec = ParameterSpec::new("X", -60.0, 12.0, 0.0)?.with_mapping(ParameterMapping::Power(
-        PowerExponent::new(PowerExponent::MAX)?,
-    ))?;
+    let spec = ParameterSpec::new("X", -60.0, 12.0, 0.0)?
+        .with_mapping(ParameterMapping::Power(PowerExponent::MAX))?;
     let early = NormalizedValue::try_from(0.125)?;
     assert_eq!(spec.denormalize(early), -60.0, "f32 cannot hold the offset");
     assert_eq!(

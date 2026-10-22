@@ -725,14 +725,14 @@ const COLOR_SOURCES: [Source; COLOR_ROLE_COUNT] = {
 /// # use pert_ui_runtime as pert_ui;
 /// use pert_ui::{Color, ColorRole, Palette};
 ///
-/// let brand = Color::rgba(0.6, 0.1, 0.4, 1.0)?;
+/// let brand = Color::from_linear(0.6, 0.1, 0.4, 1.0)?;
 /// let palette = Palette::dark().with_color(ColorRole::Primary, brand);
 /// // ButtonPressed follows Primary; FocusRing keeps its own value.
 /// assert_eq!(palette.color(ColorRole::ButtonPressed), brand);
 /// assert_eq!(palette.color(ColorRole::FocusRing), Palette::dark().color(ColorRole::FocusRing));
 ///
 /// // An override of the follower itself is kept, and removing it resumes following.
-/// let pressed = Color::rgba(0.3, 0.05, 0.2, 1.0)?;
+/// let pressed = Color::from_linear(0.3, 0.05, 0.2, 1.0)?;
 /// let palette = palette.with_color(ColorRole::ButtonPressed, pressed);
 /// assert_eq!(palette.color(ColorRole::ButtonPressed), pressed);
 /// let palette = palette.with_default_color(ColorRole::ButtonPressed);
@@ -809,7 +809,7 @@ impl Palette {
     /// # use pert_ui_runtime as pert_ui;
     /// use pert_ui::{Color, ColorRole, OpaqueColor, Palette, Runtime, ThemeMode};
     ///
-    /// let brand = OpaqueColor::try_from(Color::rgba(0.55, 0.05, 0.40, 1.0)?)?;
+    /// let brand = OpaqueColor::try_from(Color::from_linear(0.55, 0.05, 0.40, 1.0)?)?;
     /// let ui = Runtime::new();
     /// let theme = ui.theme();
     /// for mode in [ThemeMode::Dark, ThemeMode::Light] {
@@ -827,8 +827,8 @@ impl Palette {
     /// assert_eq!(exact.with_default_color(ColorRole::Primary), palette);
     ///
     /// // Seeds without hue give the same gray accent but compare unequal.
-    /// let black = OpaqueColor::try_from(Color::rgba(0.0, 0.0, 0.0, 1.0)?)?;
-    /// let gray = OpaqueColor::try_from(Color::rgba(0.2, 0.2, 0.2, 1.0)?)?;
+    /// let black = OpaqueColor::try_from(Color::from_linear(0.0, 0.0, 0.0, 1.0)?)?;
+    /// let gray = OpaqueColor::try_from(Color::from_linear(0.2, 0.2, 0.2, 1.0)?)?;
     /// let (black, gray) = (
     ///     Palette::from_seeds(ThemeMode::Dark, black, None),
     ///     Palette::from_seeds(ThemeMode::Dark, gray, None),

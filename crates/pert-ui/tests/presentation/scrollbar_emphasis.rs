@@ -171,12 +171,12 @@ fn a_table_thumb_is_emphasized_over_its_bar() {
         .unwrap();
     let state = TableController::new(
         &ui,
+        ListSelection::new(&ui, SelectionMode::Single),
         [
             TableColumn::new("a", "A").width(Length::new(120.0).unwrap()),
             TableColumn::new("b", "B").width(Length::new(120.0).unwrap()),
         ],
         TableSource::new(Numbers),
-        ListSelection::new(&ui, SelectionMode::Single),
     )
     .unwrap();
     ui.mount_tree(Element::new("table", Table::new(&state, 24.0).unwrap()))
@@ -297,12 +297,12 @@ fn escape_rechecks_a_table_thumb_hover() {
         .unwrap();
     let state = TableController::new(
         &ui,
+        ListSelection::new(&ui, SelectionMode::Single),
         [
             TableColumn::new("a", "A").width(Length::new(120.0).unwrap()),
             TableColumn::new("b", "B").width(Length::new(120.0).unwrap()),
         ],
         TableSource::new(Rows4),
-        ListSelection::new(&ui, SelectionMode::Single),
     )
     .unwrap();
     let table = ui

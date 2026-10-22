@@ -274,8 +274,8 @@ impl TreeController {
     /// or require an event phase.
     pub fn new(
         ui: &impl crate::StateOwner,
-        source: TreeSource,
         selection: ListSelection,
+        source: TreeSource,
     ) -> Result<Self, RuntimeError> {
         let expanded = ui.signal(BTreeSet::new());
         expanded.get()?;
@@ -885,7 +885,7 @@ impl Component for TreeRow {
 /// let mut ui = Runtime::new();
 /// ui.set_viewport(Viewport::new(300.0, 200.0, 1.0)?)?;
 /// let selection = ListSelection::new(&ui, SelectionMode::Single);
-/// let state = TreeController::new(&ui, TreeSource::new(Files), selection)?;
+/// let state = TreeController::new(&ui, selection, TreeSource::new(Files))?;
 /// let tree = ui.mount_tree(Element::new("files", Tree::new(&state, 24.0)?))?;
 /// ui.flush(std::time::Duration::ZERO)?;
 /// assert_eq!(ui.children(&tree)?.len(), 2, "only the roots are visible");
@@ -1001,7 +1001,7 @@ impl Tree {
     /// let mut ui = Runtime::new();
     /// ui.set_viewport(Viewport::new(300.0, 200.0, 1.0)?)?;
     /// let selection = ListSelection::new(&ui, SelectionMode::Single);
-    /// let state = TreeController::new(&ui, TreeSource::new(Outline(model.borrow().clone())), selection)?;
+    /// let state = TreeController::new(&ui, selection, TreeSource::new(Outline(model.borrow().clone())))?;
     /// let (edited, published) = (model.clone(), state.clone());
     /// let tree = Tree::new(&state, 24.0)?.reorderable(move |_, drop| {
     ///     let mut model = edited.borrow_mut();

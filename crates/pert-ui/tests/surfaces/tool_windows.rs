@@ -787,7 +787,9 @@ fn names_follow_the_controller_or_the_application_binding() -> TestResult {
     let controller = ToolWindowController::new();
     let root = ui.mount_tree(Element::new(
         "frame",
-        layout().names(names.clone()).controller(&controller),
+        layout()
+            .bind_show_names(names.clone())
+            .controller(&controller),
     ))?;
     flush(&mut ui);
     let narrow = rect(&ui, &root, "stripe-left").width();

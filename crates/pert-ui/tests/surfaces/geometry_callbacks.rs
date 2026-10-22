@@ -558,7 +558,7 @@ fn a_shared_width_written_by_the_application_is_not_reported() -> TestResult {
             "Name",
             Element::new("input", TextField::new(value)),
         )])
-        .shared_label_width(width.clone())
+        .bind_label_width(width.clone())
         .on_resize(move |_, width, origin| {
             seen.borrow_mut().push((width, origin));
             Ok(())

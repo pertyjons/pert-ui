@@ -7,8 +7,9 @@ mod union;
 
 // Largest deviation of flattened curves from the exact curve, in physical pixels.
 const TOLERANCE: f64 = 0.2;
-// Budget for flattened points and stroke outline edges of one recorded primitive.
-const MAX_EDGES: usize = 1 << 20;
+// Budget for flattened points and stroke outline edges of one recorded primitive,
+// published as `VectorRasterizer::MAX_FLATTENED_POINTS` and `MAX_STROKE_EDGES`.
+pub(crate) const MAX_EDGES: usize = 1 << 20;
 // Sub-scanlines per pixel row; each adds its span at this share of a pixel's height.
 const SCANLINES: u32 = 4;
 const SCANLINE_WEIGHT: f64 = 1.0 / SCANLINES as f64;

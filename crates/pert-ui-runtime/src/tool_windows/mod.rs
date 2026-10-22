@@ -541,7 +541,7 @@ fn floating_frame(frame: Option<Rect>, size: Size) -> Result<Rect, RuntimeError>
 /// most one expanded tool window, and expanding another collapses it. When
 /// both groups of an edge are expanded they share the edge equally. Stripe
 /// buttons show icons, or icons and names ([`Self::show_names`],
-/// [`Self::names`]); a tool window without an icon always shows its title.
+/// [`Self::bind_show_names`]); a tool window without an icon always shows its title.
 ///
 /// **Arrangement.** Stripes take the outer edges, left and right at full
 /// height. Inside them, left and right panels span the inner height and top
@@ -630,7 +630,7 @@ fn floating_frame(frame: Option<Rect>, size: Size) -> Result<Rect, RuntimeError>
 /// or a workspace restore still apply. Names on stripes are an application
 /// setting: the layout offers no built-in toggle, and the application shows
 /// one (such as a menu item) that calls [`ToolWindowController::set_names`]
-/// or writes the [`Self::names`] binding.
+/// or writes the [`Self::bind_show_names`] binding.
 ///
 /// Stripe start/end groups remain anchored while their buttons fit. Overflow
 /// uses one clipped, scrollable sequence in start-then-end order; wheel input
@@ -923,7 +923,7 @@ impl ToolWindowLayout {
     /// `Signal<bool>`: the layout shows what it holds, and
     /// [`ToolWindowController::set_names`] writes it. Bound names are not
     /// persisted by the layout.
-    pub fn names(mut self, names: impl Into<Signal<bool>>) -> Self {
+    pub fn bind_show_names(mut self, names: impl Into<Signal<bool>>) -> Self {
         let names: Signal<bool> = names.into();
         self.names_binding = Some(names);
         self
@@ -2489,7 +2489,7 @@ impl ToolWindowController {
             .ok_or_else(|| LayoutError::UnknownKey.into())
     }
     /// Sets whether stripe buttons show names beside their icons. With
-    /// [`ToolWindowLayout::names`] it writes that binding. Returns whether
+    /// [`ToolWindowLayout::bind_show_names`] it writes that binding. Returns whether
     /// anything changed.
     ///
     /// # Errors

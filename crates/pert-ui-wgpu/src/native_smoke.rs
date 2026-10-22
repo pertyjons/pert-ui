@@ -97,12 +97,12 @@ impl Renderer {
             fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
                 painter.fill_rect(
                     Rect::new(16.0, 0.0, 48.0, 64.0)?,
-                    Color::rgba(1.0, 0.0, 0.0, 0.5)?,
+                    Color::from_linear(1.0, 0.0, 0.0, 0.5)?,
                 );
                 painter.draw_mask(
                     &self.mask,
                     Rect::new(32.0, 0.0, 32.0, 64.0)?,
-                    Color::rgba(0.0, 1.0, 0.0, 0.5)?,
+                    Color::from_linear(0.0, 1.0, 0.0, 0.5)?,
                 );
                 painter.draw_image(
                     &self.image,
@@ -150,7 +150,7 @@ impl Renderer {
                 ui.theme().set_color(
                     ThemeMode::Dark,
                     ColorRole::Background,
-                    Color::rgba(1.0, 1.0, 1.0, alpha)?,
+                    Color::from_linear(1.0, 1.0, 1.0, alpha)?,
                 )?;
                 let background = [alpha, alpha, alpha, alpha];
                 let empty = self.render_offscreen(ui.paint()?)?;
@@ -356,9 +356,9 @@ impl Renderer {
                 painter.fill_rect(
                     Rect::new(x, 280.0, width, 32.0)?,
                     if self.state == 1 {
-                        Color::rgba(0.08, 0.32, 0.85, 0.5)?
+                        Color::from_linear(0.08, 0.32, 0.85, 0.5)?
                     } else {
-                        Color::rgba(1.0, 1.0, 1.0, 0.5)?
+                        Color::from_linear(1.0, 1.0, 1.0, 0.5)?
                     },
                 );
                 Ok(())
@@ -573,7 +573,10 @@ impl Renderer {
             }
             // Without a background fill, a scissored load pass does not restore
             // the scene clear color. This is true for either background alpha.
-            for background in [Color::BACKGROUND, Color::rgba(0.25, 0.35, 0.45, 0.5)?] {
+            for background in [
+                Color::BACKGROUND,
+                Color::from_linear(0.25, 0.35, 0.45, 0.5)?,
+            ] {
                 let mut bare = Runtime::new();
                 bare.set_viewport(Viewport::new(WIDTH as f32, HEIGHT as f32, 1.0)?)?;
                 let bare_signal = bare.signal(0_u8);
@@ -1041,7 +1044,7 @@ impl Renderer {
             let pixels = [230, 120, 20, 255, 255, 255, 255, 128].to_vec();
             let image = RasterImage::from_srgba8(2, 1, pixels.clone())?;
             let copy = RasterImage::from_srgba8(2, 1, pixels)?;
-            let faded = Color::rgba(1.0, 1.0, 1.0, 0.5)?;
+            let faded = Color::from_linear(1.0, 1.0, 1.0, 0.5)?;
             let mut ui = Runtime::new();
             ui.set_viewport(Viewport::new(8.0, 8.0, 1.0)?)?;
             ui.mount(
@@ -1061,7 +1064,7 @@ impl Renderer {
             let background = scene.background();
             self.prepare_scene(scene)?;
             assert_eq!(self.pipelines.images.live_uploads(), 1);
-            let orange = Color::rgba(
+            let orange = Color::from_linear(
                 srgb_to_linear(230),
                 srgb_to_linear(120),
                 srgb_to_linear(20),
@@ -1071,11 +1074,11 @@ impl Renderer {
             // Half-transparent white over the background, in linear light.
             let over = |a: f32, background: Color| {
                 let [r, g, b, _] = background.channels().map(|c| a + c * (1.0 - a));
-                Color::rgba(r, g, b, 1.0)
+                Color::from_linear(r, g, b, 1.0)
             };
             self.verify_pixel(6, 1, over(128.0 / 255.0, background)?)?;
             // A tint alpha of one half halves both.
-            let half_orange = Color::rgba(
+            let half_orange = Color::from_linear(
                 orange.red() * 0.5 + background.red() * 0.5,
                 orange.green() * 0.5 + background.green() * 0.5,
                 orange.blue() * 0.5 + background.blue() * 0.5,
@@ -1113,8 +1116,8 @@ impl Renderer {
             }
         }
         let result = (|| -> Result<(), Box<dyn std::error::Error>> {
-            let fill = Color::rgba(0.9, 0.3, 0.1, 1.0)?;
-            let stroke = Color::rgba(0.1, 0.7, 0.3, 1.0)?;
+            let fill = Color::from_linear(0.9, 0.3, 0.1, 1.0)?;
+            let stroke = Color::from_linear(0.1, 0.7, 0.3, 1.0)?;
             let mut ui = Runtime::new();
             ui.set_viewport(Viewport::new(8.0, 8.0, 1.0)?)?;
             ui.mount("geometry", Geometry(fill, stroke))?;
@@ -1163,7 +1166,7 @@ impl Renderer {
             }
         }
         let result = (|| -> Result<(), Box<dyn std::error::Error>> {
-            let ink = Color::rgba(0.9, 0.3, 0.1, 1.0)?;
+            let ink = Color::from_linear(0.9, 0.3, 0.1, 1.0)?;
             let mut ui = Runtime::new();
             ui.set_viewport(Viewport::new(8.0, 8.0, 1.0)?)?;
             ui.mount("turned", Turned(ink))?;
@@ -1219,8 +1222,8 @@ impl Renderer {
             }
         }
         let result = (|| -> Result<(), Box<dyn std::error::Error>> {
-            let fill = Color::rgba(0.9, 0.3, 0.1, 1.0)?;
-            let vector = Color::rgba(0.1, 0.7, 0.3, 1.0)?;
+            let fill = Color::from_linear(0.9, 0.3, 0.1, 1.0)?;
+            let vector = Color::from_linear(0.1, 0.7, 0.3, 1.0)?;
             let mut ui = Runtime::new();
             // Eight physical pixels at a native scale of 1.25.
             ui.set_viewport(Viewport::new(6.4, 6.4, 1.25)?)?;

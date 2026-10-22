@@ -71,7 +71,7 @@ mod tests {
     fn encoding_matches_the_color_conversion_of_the_runtime() {
         for step in 0..=1000 {
             let linear = step as f32 / 1000.0;
-            let color = pert_ui_runtime::Color::rgba(linear, 0.0, 0.0, 1.0).unwrap();
+            let color = pert_ui_runtime::Color::from_linear(linear, 0.0, 0.0, 1.0).unwrap();
             assert_eq!(encode(linear), color.to_srgb8()[0], "{linear}");
         }
     }

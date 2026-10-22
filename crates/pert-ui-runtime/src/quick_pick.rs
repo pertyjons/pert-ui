@@ -1276,7 +1276,10 @@ impl Component for PickPanel {
         if self.shared.modal.get()
             && let Some(size) = p.size()
         {
-            p.fill_rect(Rect::from_size(size), Color::rgba(0.0, 0.0, 0.0, 0.35)?);
+            p.fill_rect(
+                Rect::from_size(size),
+                Color::from_linear(0.0, 0.0, 0.0, 0.35)?,
+            );
         }
         Ok(())
     }

@@ -72,16 +72,16 @@ pub struct PowerExponent(f32);
 impl Eq for PowerExponent {}
 impl PowerExponent {
     /// The smallest exponent, one tenth.
-    pub const MIN: f32 = 0.1;
+    pub const MIN: Self = Self(0.1);
     /// The largest exponent, ten.
-    pub const MAX: f32 = 10.0;
+    pub const MAX: Self = Self(10.0);
     /// Validates an exponent.
     ///
     /// # Errors
     /// [`ParameterError::InvalidExponent`] for a non-finite value or one outside
     /// [`Self::MIN`] to [`Self::MAX`].
     pub fn new(exponent: f32) -> Result<Self, ParameterError> {
-        if exponent.is_finite() && (Self::MIN..=Self::MAX).contains(&exponent) {
+        if exponent.is_finite() && (Self::MIN.0..=Self::MAX.0).contains(&exponent) {
             Ok(Self(exponent))
         } else {
             Err(ParameterError::InvalidExponent)

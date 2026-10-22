@@ -17,7 +17,7 @@ fn ordinary_form_keeps_application_state_in_signals() -> TestResult {
                 "name",
                 Field::new(Element::new("editor", TextField::new(name.clone()))).label("Name"),
             ),
-            Element::new("subscribe", Checkbox::new("Subscribe", subscribed.clone())),
+            Element::new("subscribe", Checkbox::new(subscribed.clone(), "Subscribe")),
         ]),
     ))?;
     name.set("Grace".to_owned())?;

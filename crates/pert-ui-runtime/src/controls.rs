@@ -549,7 +549,7 @@ impl Button {
     /// let mut ui = Runtime::new();
     /// let play = ui.register_command("Play", CommandScope::Application,
     ///     vec![KeyChord::named(KeyCode::Space)], |_, _| Ok(()))?;
-    /// let button = Button::command(&ui, &play, |receipt, _| {
+    /// let button = Button::command(&ui, &play, |_, receipt| {
     ///     let _status = receipt.status(); // pending until the next flush
     ///     Ok(())
     /// })?;
@@ -559,14 +559,14 @@ impl Button {
     pub fn command(
         ui: &crate::Runtime,
         command: &crate::CommandId,
-        mut on_receipt: impl FnMut(crate::CommandReceipt, &mut EventContext) -> Result<(), RuntimeError>
+        mut on_receipt: impl FnMut(&mut EventContext, crate::CommandReceipt) -> Result<(), RuntimeError>
         + 'static,
     ) -> Result<Self, RuntimeError> {
         let id = command.clone();
         let mut button = Self::new(ui.command_name(command)?, move |cx| {
             let context = cx.command_context(crate::CommandSource::Button);
             let receipt = cx.invoke_command(&id, context)?;
-            on_receipt(receipt, cx)
+            on_receipt(cx, receipt)
         });
         if let Some(enabled) = ui.command_enabled_binding(command)? {
             button = button.enabled(enabled);
@@ -600,7 +600,7 @@ impl Button {
         ui: &crate::Runtime,
         command: &crate::CommandId,
         icon: impl Into<IconSource>,
-        on_receipt: impl FnMut(crate::CommandReceipt, &mut EventContext) -> Result<(), RuntimeError>
+        on_receipt: impl FnMut(&mut EventContext, crate::CommandReceipt) -> Result<(), RuntimeError>
         + 'static,
     ) -> Result<Self, RuntimeError> {
         Ok(Self {

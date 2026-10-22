@@ -1797,7 +1797,7 @@ impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::SplitAxis
 pub pert_ui_runtime::prelude::SplitRule::ContentFirst
 pub pert_ui_runtime::prelude::SplitRule::ContentSecond
 pub pert_ui_runtime::prelude::SplitRule::First(pert_ui_runtime::Length)
-pub pert_ui_runtime::prelude::SplitRule::Ratio(f32)
+pub pert_ui_runtime::prelude::SplitRule::Ratio(pert_ui_core::normalized::NormalizedValue)
 pub pert_ui_runtime::prelude::SplitRule::Second(pert_ui_runtime::Length)
 impl core::clone::Clone for pert_ui_runtime::SplitRule
 pub fn pert_ui_runtime::SplitRule::clone(&self) -> pert_ui_runtime::SplitRule
@@ -2498,7 +2498,7 @@ pub fn pert_ui_runtime::Accordion::enabled(self, impl core::convert::Into<pert_u
 pub fn pert_ui_runtime::Accordion::expanded(self, impl core::iter::traits::collect::IntoIterator<Item = impl core::convert::Into<alloc::string::String>>) -> Self
 pub fn pert_ui_runtime::Accordion::mode(self, pert_ui_runtime::ExpandMode) -> Self
 pub fn pert_ui_runtime::Accordion::new(impl core::iter::traits::collect::IntoIterator<Item = pert_ui_runtime::Section>) -> Self
-pub fn pert_ui_runtime::Accordion::on_change(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, &[alloc::string::String], pert_ui_runtime::ChangeOrigin) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
+pub fn pert_ui_runtime::Accordion::on_change(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, &pert_ui_runtime::ExpansionChange) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::Accordion::persist(self, bool) -> Self
 impl pert_ui_runtime::Component for pert_ui_runtime::Accordion
 pub fn pert_ui_runtime::Accordion::arrange(&self, &mut pert_ui_runtime::ArrangeContext<'_>, pert_ui_runtime::Size) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
@@ -2834,8 +2834,8 @@ impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::BreadcrumbSeg
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::BreadcrumbSegment
 pub struct pert_ui_runtime::prelude::Button
 impl pert_ui_runtime::Button
-pub fn pert_ui_runtime::Button::command(&pert_ui_runtime::Runtime, &pert_ui_runtime::CommandId, impl core::ops::function::FnMut(pert_ui_runtime::CommandReceipt, &mut pert_ui_runtime::EventContext) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Button::command_icon(&pert_ui_runtime::Runtime, &pert_ui_runtime::CommandId, impl core::convert::Into<pert_ui_runtime::IconSource>, impl core::ops::function::FnMut(pert_ui_runtime::CommandReceipt, &mut pert_ui_runtime::EventContext) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Button::command(&pert_ui_runtime::Runtime, &pert_ui_runtime::CommandId, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, pert_ui_runtime::CommandReceipt) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Button::command_icon(&pert_ui_runtime::Runtime, &pert_ui_runtime::CommandId, impl core::convert::Into<pert_ui_runtime::IconSource>, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, pert_ui_runtime::CommandReceipt) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Button::disabled(self) -> Self
 pub fn pert_ui_runtime::Button::enabled(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
 pub fn pert_ui_runtime::Button::frameless(self) -> Self
@@ -2935,7 +2935,7 @@ pub fn pert_ui_runtime::Checkbox::enabled(self, impl core::convert::Into<pert_ui
 pub fn pert_ui_runtime::Checkbox::for_parameter(pert_ui_runtime::Parameter<bool>) -> Self
 pub fn pert_ui_runtime::Checkbox::label(self, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
 pub fn pert_ui_runtime::Checkbox::leading_icon(self, impl core::convert::Into<pert_ui_runtime::IconSource>) -> Self
-pub fn pert_ui_runtime::Checkbox::new(impl core::convert::Into<pert_ui_runtime::TextSource>, impl core::convert::Into<pert_ui_runtime::Signal<bool>>) -> Self
+pub fn pert_ui_runtime::Checkbox::new(impl core::convert::Into<pert_ui_runtime::Signal<bool>>, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
 pub fn pert_ui_runtime::Checkbox::on_change(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::Checkbox::trailing_icon(self, impl core::convert::Into<pert_ui_runtime::IconSource>) -> Self
 impl pert_ui_runtime::Component for pert_ui_runtime::Checkbox
@@ -3139,7 +3139,7 @@ impl<T> core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Choice<T> w
 impl<T> core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Choice<T> where T: core::panic::unwind_safe::UnwindSafe
 pub struct pert_ui_runtime::prelude::Collapsible
 impl pert_ui_runtime::Collapsible
-pub fn pert_ui_runtime::Collapsible::bound(self, impl core::convert::Into<pert_ui_runtime::Signal<bool>>) -> Self
+pub fn pert_ui_runtime::Collapsible::bind_expanded(self, impl core::convert::Into<pert_ui_runtime::Signal<bool>>) -> Self
 pub fn pert_ui_runtime::Collapsible::disabled(self) -> Self
 pub fn pert_ui_runtime::Collapsible::enabled(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
 pub fn pert_ui_runtime::Collapsible::expanded(self, bool) -> Self
@@ -3315,13 +3315,13 @@ pub const fn pert_ui_runtime::Color::alpha(self) -> f32
 pub const fn pert_ui_runtime::Color::blue(self) -> f32
 pub const fn pert_ui_runtime::Color::channels(self) -> [f32; 4]
 pub fn pert_ui_runtime::Color::from_hex(&str) -> core::result::Result<Self, pert_ui_runtime::HexColorError>
+pub fn pert_ui_runtime::Color::from_linear(f32, f32, f32, f32) -> core::result::Result<Self, pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Color::from_srgb(f32, f32, f32, f32) -> core::result::Result<Self, pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Color::from_srgb8(u8, u8, u8, u8) -> Self
 pub const fn pert_ui_runtime::Color::green(self) -> f32
 pub fn pert_ui_runtime::Color::mix(self, Self, f32) -> core::result::Result<Self, pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Color::over(self, pert_ui_runtime::OpaqueColor) -> pert_ui_runtime::OpaqueColor
 pub const fn pert_ui_runtime::Color::red(self) -> f32
-pub fn pert_ui_runtime::Color::rgba(f32, f32, f32, f32) -> core::result::Result<Self, pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Color::scale_alpha(self, f32) -> core::result::Result<Self, pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Color::to_hex(self) -> alloc::string::String
 pub fn pert_ui_runtime::Color::to_srgb(self) -> [f32; 4]
@@ -4948,7 +4948,7 @@ pub fn pert_ui_runtime::FileBrowserController::filter(&self) -> pert_ui_runtime:
 pub fn pert_ui_runtime::FileBrowserController::folder_filter(&self) -> pert_ui_runtime::Signal<alloc::string::String>
 pub fn pert_ui_runtime::FileBrowserController::navigate(&self, impl core::convert::AsRef<std::path::Path>) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FileBrowserController::navigate_up(&self) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::FileBrowserController::new(&impl pert_ui_runtime::StateOwner, impl core::iter::traits::collect::IntoIterator<Item = impl core::convert::Into<std::path::PathBuf>>, pert_ui_runtime::ListSelection, impl core::ops::function::FnMut(pert_ui_runtime::DirectoryRequest) + 'static) -> core::result::Result<Self, pert_ui_runtime::FileBrowserError>
+pub fn pert_ui_runtime::FileBrowserController::new(&impl pert_ui_runtime::StateOwner, pert_ui_runtime::ListSelection, impl core::iter::traits::collect::IntoIterator<Item = impl core::convert::Into<std::path::PathBuf>>, impl core::ops::function::FnMut(pert_ui_runtime::DirectoryRequest) + 'static) -> core::result::Result<Self, pert_ui_runtime::FileBrowserError>
 pub fn pert_ui_runtime::FileBrowserController::on_open(&self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, &pert_ui_runtime::DirectoryEntry) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static)
 pub fn pert_ui_runtime::FileBrowserController::path_of(&self, &str) -> core::option::Option<std::path::PathBuf>
 pub fn pert_ui_runtime::FileBrowserController::refresh(&self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
@@ -7052,19 +7052,19 @@ impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::MenuBar
 pub struct pert_ui_runtime::prelude::MenuItem
 impl pert_ui_runtime::MenuItem
 pub fn pert_ui_runtime::MenuItem::checked_signal(self, impl core::convert::Into<pert_ui_runtime::ReadSignal<bool>>) -> Self
-pub fn pert_ui_runtime::MenuItem::command(&pert_ui_runtime::Runtime, impl core::convert::Into<alloc::string::String>, &pert_ui_runtime::CommandId, impl core::ops::function::FnMut(pert_ui_runtime::CommandReceipt, &mut pert_ui_runtime::EventContext) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::MenuItem::command(&pert_ui_runtime::Runtime, impl core::convert::Into<alloc::string::String>, &pert_ui_runtime::CommandId, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, pert_ui_runtime::CommandReceipt) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::MenuItem::disabled(self) -> Self
 pub fn pert_ui_runtime::MenuItem::enabled(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
 pub fn pert_ui_runtime::MenuItem::label(self, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
 pub fn pert_ui_runtime::MenuItem::leading_icon(self, impl core::convert::Into<pert_ui_runtime::IconSource>) -> Self
 pub fn pert_ui_runtime::MenuItem::new(impl core::convert::Into<alloc::string::String>, impl core::convert::Into<pert_ui_runtime::TextSource>, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::MenuItem::on_change(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
-pub fn pert_ui_runtime::MenuItem::radio<T: core::clone::Clone + core::cmp::PartialEq + 'static>(impl core::convert::Into<alloc::string::String>, impl core::convert::Into<pert_ui_runtime::TextSource>, impl core::convert::Into<pert_ui_runtime::Signal<T>>, T) -> Self
+pub fn pert_ui_runtime::MenuItem::radio<T: core::clone::Clone + core::cmp::PartialEq + 'static>(impl core::convert::Into<alloc::string::String>, impl core::convert::Into<pert_ui_runtime::Signal<T>>, T, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
 pub fn pert_ui_runtime::MenuItem::selected_signal(self, impl core::convert::Into<pert_ui_runtime::ReadSignal<bool>>) -> Self
 pub fn pert_ui_runtime::MenuItem::separator() -> Self
 pub fn pert_ui_runtime::MenuItem::shortcut(self, pert_ui_runtime::KeyChord) -> Self
 pub fn pert_ui_runtime::MenuItem::submenu(impl core::convert::Into<alloc::string::String>, impl core::convert::Into<pert_ui_runtime::TextSource>, alloc::vec::Vec<Self>) -> Self
-pub fn pert_ui_runtime::MenuItem::toggle(impl core::convert::Into<alloc::string::String>, impl core::convert::Into<pert_ui_runtime::TextSource>, impl core::convert::Into<pert_ui_runtime::Signal<bool>>) -> Self
+pub fn pert_ui_runtime::MenuItem::toggle(impl core::convert::Into<alloc::string::String>, impl core::convert::Into<pert_ui_runtime::Signal<bool>>, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
 impl core::marker::Freeze for pert_ui_runtime::MenuItem
 impl !core::marker::Send for pert_ui_runtime::MenuItem
 impl !core::marker::Sync for pert_ui_runtime::MenuItem
@@ -7731,13 +7731,13 @@ impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Property
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Property
 pub struct pert_ui_runtime::prelude::PropertyGrid
 impl pert_ui_runtime::PropertyGrid
+pub fn pert_ui_runtime::PropertyGrid::bind_label_width(self, impl core::convert::Into<pert_ui_runtime::Signal<pert_ui_runtime::Length>>) -> Self
 pub fn pert_ui_runtime::PropertyGrid::label_overflow(self, pert_ui_runtime::TextOverflow) -> Self
 pub fn pert_ui_runtime::PropertyGrid::label_width(self, pert_ui_runtime::Length) -> Self
 pub fn pert_ui_runtime::PropertyGrid::new(impl core::iter::traits::collect::IntoIterator<Item = pert_ui_runtime::Property>) -> Self
 pub fn pert_ui_runtime::PropertyGrid::on_resize(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, core::option::Option<pert_ui_runtime::Length>, pert_ui_runtime::ChangeOrigin) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::PropertyGrid::persist(self, bool) -> Self
 pub fn pert_ui_runtime::PropertyGrid::resizable(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
-pub fn pert_ui_runtime::PropertyGrid::shared_label_width(self, impl core::convert::Into<pert_ui_runtime::Signal<pert_ui_runtime::Length>>) -> Self
 impl pert_ui_runtime::Component for pert_ui_runtime::PropertyGrid
 pub fn pert_ui_runtime::PropertyGrid::arrange(&self, &mut pert_ui_runtime::ArrangeContext<'_>, pert_ui_runtime::Size) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::PropertyGrid::can_reveal(&self) -> bool
@@ -8328,7 +8328,7 @@ pub fn pert_ui_runtime::Runtime::set_debug_overlay(&self, pert_ui_runtime::Debug
 pub fn pert_ui_runtime::Runtime::set_profiling(&self, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::set_viewport(&self, pert_ui_runtime::Viewport) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::set_visible(&mut self, &pert_ui_runtime::WidgetId, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Runtime::set_wake_delivery(&self, alloc::boxed::Box<(dyn core::ops::function::Fn() -> bool + core::marker::Send + core::marker::Sync)>)
+pub fn pert_ui_runtime::Runtime::set_wake_delivery(&self, impl core::ops::function::Fn() -> bool + core::marker::Send + core::marker::Sync + 'static)
 pub fn pert_ui_runtime::Runtime::signal<T>(&self, T) -> pert_ui_runtime::Signal<T>
 pub fn pert_ui_runtime::Runtime::text_command(&mut self, &pert_ui_runtime::WidgetId, pert_ui_runtime::TextCommand) -> core::result::Result<pert_ui_runtime::TextCommandOutcome, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::text_input(&mut self, &str) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
@@ -9077,6 +9077,7 @@ pub struct pert_ui_runtime::prelude::SizeLimits
 impl pert_ui_runtime::SizeLimits
 pub const fn pert_ui_runtime::SizeLimits::at_least(pert_ui_runtime::Size) -> Self
 pub fn pert_ui_runtime::SizeLimits::constrain(self, pert_ui_runtime::Size) -> pert_ui_runtime::Size
+pub const fn pert_ui_runtime::SizeLimits::exact(pert_ui_runtime::Size) -> Self
 pub const fn pert_ui_runtime::SizeLimits::maximum(self) -> pert_ui_runtime::Constraints
 pub const fn pert_ui_runtime::SizeLimits::minimum(self) -> pert_ui_runtime::Size
 pub fn pert_ui_runtime::SizeLimits::new(pert_ui_runtime::Size, pert_ui_runtime::Constraints) -> core::result::Result<Self, pert_ui_runtime::GeometryError>
@@ -9339,7 +9340,7 @@ pub const pert_ui_runtime::SplitSizing::CONTENT_SECOND: Self
 pub const pert_ui_runtime::SplitSizing::EQUAL: Self
 pub const fn pert_ui_runtime::SplitSizing::first(pert_ui_runtime::Length) -> Self
 pub fn pert_ui_runtime::SplitSizing::ratio(f32) -> core::result::Result<Self, pert_ui_runtime::LayoutError>
-pub const fn pert_ui_runtime::SplitSizing::rule(self) -> pert_ui_runtime::SplitRule
+pub fn pert_ui_runtime::SplitSizing::rule(self) -> pert_ui_runtime::SplitRule
 pub const fn pert_ui_runtime::SplitSizing::second(pert_ui_runtime::Length) -> Self
 impl core::clone::Clone for pert_ui_runtime::SplitSizing
 pub fn pert_ui_runtime::SplitSizing::clone(&self) -> pert_ui_runtime::SplitSizing
@@ -9516,7 +9517,7 @@ pub fn pert_ui_runtime::TableController::active_column(&self) -> pert_ui_runtime
 pub fn pert_ui_runtime::TableController::columns(&self) -> alloc::vec::Vec<pert_ui_runtime::TableColumn>
 pub fn pert_ui_runtime::TableController::filter(&self, &str, &pert_ui_runtime::FilterMatcher) -> core::result::Result<pert_ui_runtime::FilterOutcome, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::TableController::filter_counts(&self) -> pert_ui_runtime::ReadSignal<pert_ui_runtime::FilterCounts>
-pub fn pert_ui_runtime::TableController::new(&impl pert_ui_runtime::StateOwner, impl core::iter::traits::collect::IntoIterator<Item = pert_ui_runtime::TableColumn>, pert_ui_runtime::TableSource, pert_ui_runtime::ListSelection) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::TableController::new(&impl pert_ui_runtime::StateOwner, pert_ui_runtime::ListSelection, impl core::iter::traits::collect::IntoIterator<Item = pert_ui_runtime::TableColumn>, pert_ui_runtime::TableSource) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::TableController::reveal(&self, impl core::convert::Into<alloc::string::String>) -> core::result::Result<pert_ui_runtime::ListRevealReceipt, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::TableController::selection(&self) -> pert_ui_runtime::ListSelection
 pub fn pert_ui_runtime::TableController::set_active_column(&self, core::option::Option<alloc::string::String>) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
@@ -10115,7 +10116,7 @@ pub fn pert_ui_runtime::Toggle::enabled(self, impl core::convert::Into<pert_ui_r
 pub fn pert_ui_runtime::Toggle::for_parameter(pert_ui_runtime::Parameter<bool>) -> Self
 pub fn pert_ui_runtime::Toggle::label(self, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
 pub fn pert_ui_runtime::Toggle::leading_icon(self, impl core::convert::Into<pert_ui_runtime::IconSource>) -> Self
-pub fn pert_ui_runtime::Toggle::new(impl core::convert::Into<pert_ui_runtime::TextSource>, impl core::convert::Into<pert_ui_runtime::Signal<bool>>) -> Self
+pub fn pert_ui_runtime::Toggle::new(impl core::convert::Into<pert_ui_runtime::Signal<bool>>, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
 pub fn pert_ui_runtime::Toggle::on_change(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::Toggle::trailing_icon(self, impl core::convert::Into<pert_ui_runtime::IconSource>) -> Self
 impl pert_ui_runtime::Component for pert_ui_runtime::Toggle
@@ -10293,6 +10294,7 @@ impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ToolWindowCon
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ToolWindowController
 pub struct pert_ui_runtime::prelude::ToolWindowLayout
 impl pert_ui_runtime::ToolWindowLayout
+pub fn pert_ui_runtime::ToolWindowLayout::bind_show_names(self, impl core::convert::Into<pert_ui_runtime::Signal<bool>>) -> Self
 pub fn pert_ui_runtime::ToolWindowLayout::controller(self, &pert_ui_runtime::ToolWindowController) -> Self
 pub fn pert_ui_runtime::ToolWindowLayout::detachable(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
 pub fn pert_ui_runtime::ToolWindowLayout::draggable(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
@@ -10300,7 +10302,6 @@ pub fn pert_ui_runtime::ToolWindowLayout::edge(self, pert_ui_runtime::ToolEdge, 
 pub fn pert_ui_runtime::ToolWindowLayout::floatable(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
 pub fn pert_ui_runtime::ToolWindowLayout::locked(self) -> Self
 pub fn pert_ui_runtime::ToolWindowLayout::movable(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
-pub fn pert_ui_runtime::ToolWindowLayout::names(self, impl core::convert::Into<pert_ui_runtime::Signal<bool>>) -> Self
 pub fn pert_ui_runtime::ToolWindowLayout::new(pert_ui_runtime::Element) -> Self
 pub fn pert_ui_runtime::ToolWindowLayout::on_change(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, &pert_ui_runtime::ToolWindowChange) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::ToolWindowLayout::overlayable(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
@@ -10639,7 +10640,7 @@ pub fn pert_ui_runtime::TreeController::expanded(&self) -> pert_ui_runtime::Read
 pub fn pert_ui_runtime::TreeController::filter(&self, &str, &pert_ui_runtime::FilterMatcher) -> core::result::Result<pert_ui_runtime::FilterOutcome, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::TreeController::filter_counts(&self) -> pert_ui_runtime::ReadSignal<pert_ui_runtime::FilterCounts>
 pub fn pert_ui_runtime::TreeController::is_expanded(&self, &str) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::TreeController::new(&impl pert_ui_runtime::StateOwner, pert_ui_runtime::TreeSource, pert_ui_runtime::ListSelection) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::TreeController::new(&impl pert_ui_runtime::StateOwner, pert_ui_runtime::ListSelection, pert_ui_runtime::TreeSource) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::TreeController::reveal(&self, impl core::convert::Into<alloc::string::String>) -> core::result::Result<pert_ui_runtime::ListRevealReceipt, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::TreeController::selection(&self) -> pert_ui_runtime::ListSelection
 pub fn pert_ui_runtime::TreeController::set_expanded(&self, &str, bool) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
@@ -10871,6 +10872,7 @@ impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::View
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::View
 pub struct pert_ui_runtime::prelude::ViewState
 impl pert_ui_runtime::ViewState
+pub const pert_ui_runtime::ViewState::MAX_NAME_BYTES: usize
 pub fn pert_ui_runtime::ViewState::expect_only(&self, &[&str]) -> core::result::Result<(), pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::ViewState::flag(&self, &str) -> core::result::Result<bool, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::ViewState::get(&self, &str) -> core::option::Option<&pert_ui_runtime::WorkspaceValue>
@@ -20333,7 +20335,7 @@ impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::SplitAxis
 pub pert_ui_runtime::SplitRule::ContentFirst
 pub pert_ui_runtime::SplitRule::ContentSecond
 pub pert_ui_runtime::SplitRule::First(pert_ui_runtime::Length)
-pub pert_ui_runtime::SplitRule::Ratio(f32)
+pub pert_ui_runtime::SplitRule::Ratio(pert_ui_core::normalized::NormalizedValue)
 pub pert_ui_runtime::SplitRule::Second(pert_ui_runtime::Length)
 impl core::clone::Clone for pert_ui_runtime::SplitRule
 pub fn pert_ui_runtime::SplitRule::clone(&self) -> pert_ui_runtime::SplitRule
@@ -21403,7 +21405,7 @@ pub fn pert_ui_runtime::Accordion::enabled(self, impl core::convert::Into<pert_u
 pub fn pert_ui_runtime::Accordion::expanded(self, impl core::iter::traits::collect::IntoIterator<Item = impl core::convert::Into<alloc::string::String>>) -> Self
 pub fn pert_ui_runtime::Accordion::mode(self, pert_ui_runtime::ExpandMode) -> Self
 pub fn pert_ui_runtime::Accordion::new(impl core::iter::traits::collect::IntoIterator<Item = pert_ui_runtime::Section>) -> Self
-pub fn pert_ui_runtime::Accordion::on_change(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, &[alloc::string::String], pert_ui_runtime::ChangeOrigin) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
+pub fn pert_ui_runtime::Accordion::on_change(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, &pert_ui_runtime::ExpansionChange) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::Accordion::persist(self, bool) -> Self
 impl pert_ui_runtime::Component for pert_ui_runtime::Accordion
 pub fn pert_ui_runtime::Accordion::arrange(&self, &mut pert_ui_runtime::ArrangeContext<'_>, pert_ui_runtime::Size) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
@@ -21884,8 +21886,8 @@ impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::BreadcrumbSeg
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::BreadcrumbSegment
 pub struct pert_ui_runtime::Button
 impl pert_ui_runtime::Button
-pub fn pert_ui_runtime::Button::command(&pert_ui_runtime::Runtime, &pert_ui_runtime::CommandId, impl core::ops::function::FnMut(pert_ui_runtime::CommandReceipt, &mut pert_ui_runtime::EventContext) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Button::command_icon(&pert_ui_runtime::Runtime, &pert_ui_runtime::CommandId, impl core::convert::Into<pert_ui_runtime::IconSource>, impl core::ops::function::FnMut(pert_ui_runtime::CommandReceipt, &mut pert_ui_runtime::EventContext) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Button::command(&pert_ui_runtime::Runtime, &pert_ui_runtime::CommandId, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, pert_ui_runtime::CommandReceipt) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Button::command_icon(&pert_ui_runtime::Runtime, &pert_ui_runtime::CommandId, impl core::convert::Into<pert_ui_runtime::IconSource>, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, pert_ui_runtime::CommandReceipt) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Button::disabled(self) -> Self
 pub fn pert_ui_runtime::Button::enabled(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
 pub fn pert_ui_runtime::Button::frameless(self) -> Self
@@ -22056,7 +22058,7 @@ pub fn pert_ui_runtime::Checkbox::enabled(self, impl core::convert::Into<pert_ui
 pub fn pert_ui_runtime::Checkbox::for_parameter(pert_ui_runtime::Parameter<bool>) -> Self
 pub fn pert_ui_runtime::Checkbox::label(self, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
 pub fn pert_ui_runtime::Checkbox::leading_icon(self, impl core::convert::Into<pert_ui_runtime::IconSource>) -> Self
-pub fn pert_ui_runtime::Checkbox::new(impl core::convert::Into<pert_ui_runtime::TextSource>, impl core::convert::Into<pert_ui_runtime::Signal<bool>>) -> Self
+pub fn pert_ui_runtime::Checkbox::new(impl core::convert::Into<pert_ui_runtime::Signal<bool>>, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
 pub fn pert_ui_runtime::Checkbox::on_change(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::Checkbox::trailing_icon(self, impl core::convert::Into<pert_ui_runtime::IconSource>) -> Self
 impl pert_ui_runtime::Component for pert_ui_runtime::Checkbox
@@ -22287,7 +22289,7 @@ impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ClickCounter
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ClickCounter
 pub struct pert_ui_runtime::Collapsible
 impl pert_ui_runtime::Collapsible
-pub fn pert_ui_runtime::Collapsible::bound(self, impl core::convert::Into<pert_ui_runtime::Signal<bool>>) -> Self
+pub fn pert_ui_runtime::Collapsible::bind_expanded(self, impl core::convert::Into<pert_ui_runtime::Signal<bool>>) -> Self
 pub fn pert_ui_runtime::Collapsible::disabled(self) -> Self
 pub fn pert_ui_runtime::Collapsible::enabled(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
 pub fn pert_ui_runtime::Collapsible::expanded(self, bool) -> Self
@@ -22463,13 +22465,13 @@ pub const fn pert_ui_runtime::Color::alpha(self) -> f32
 pub const fn pert_ui_runtime::Color::blue(self) -> f32
 pub const fn pert_ui_runtime::Color::channels(self) -> [f32; 4]
 pub fn pert_ui_runtime::Color::from_hex(&str) -> core::result::Result<Self, pert_ui_runtime::HexColorError>
+pub fn pert_ui_runtime::Color::from_linear(f32, f32, f32, f32) -> core::result::Result<Self, pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Color::from_srgb(f32, f32, f32, f32) -> core::result::Result<Self, pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Color::from_srgb8(u8, u8, u8, u8) -> Self
 pub const fn pert_ui_runtime::Color::green(self) -> f32
 pub fn pert_ui_runtime::Color::mix(self, Self, f32) -> core::result::Result<Self, pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Color::over(self, pert_ui_runtime::OpaqueColor) -> pert_ui_runtime::OpaqueColor
 pub const fn pert_ui_runtime::Color::red(self) -> f32
-pub fn pert_ui_runtime::Color::rgba(f32, f32, f32, f32) -> core::result::Result<Self, pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Color::scale_alpha(self, f32) -> core::result::Result<Self, pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Color::to_hex(self) -> alloc::string::String
 pub fn pert_ui_runtime::Color::to_srgb(self) -> [f32; 4]
@@ -24301,6 +24303,26 @@ impl core::marker::Unpin for pert_ui_runtime::EventRecord
 impl core::marker::UnsafeUnpin for pert_ui_runtime::EventRecord
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::EventRecord
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::EventRecord
+#[non_exhaustive] pub struct pert_ui_runtime::ExpansionChange
+pub pert_ui_runtime::ExpansionChange::expanded: alloc::vec::Vec<alloc::string::String>
+pub pert_ui_runtime::ExpansionChange::origin: pert_ui_runtime::ChangeOrigin
+impl pert_ui_runtime::ExpansionChange
+pub fn pert_ui_runtime::ExpansionChange::new(alloc::vec::Vec<alloc::string::String>, pert_ui_runtime::ChangeOrigin) -> Self
+impl core::clone::Clone for pert_ui_runtime::ExpansionChange
+pub fn pert_ui_runtime::ExpansionChange::clone(&self) -> pert_ui_runtime::ExpansionChange
+impl core::cmp::Eq for pert_ui_runtime::ExpansionChange
+impl core::cmp::PartialEq for pert_ui_runtime::ExpansionChange
+pub fn pert_ui_runtime::ExpansionChange::eq(&self, &pert_ui_runtime::ExpansionChange) -> bool
+impl core::fmt::Debug for pert_ui_runtime::ExpansionChange
+pub fn pert_ui_runtime::ExpansionChange::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::ExpansionChange
+impl core::marker::Freeze for pert_ui_runtime::ExpansionChange
+impl core::marker::Send for pert_ui_runtime::ExpansionChange
+impl core::marker::Sync for pert_ui_runtime::ExpansionChange
+impl core::marker::Unpin for pert_ui_runtime::ExpansionChange
+impl core::marker::UnsafeUnpin for pert_ui_runtime::ExpansionChange
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ExpansionChange
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ExpansionChange
 #[non_exhaustive] pub struct pert_ui_runtime::FailureSite
 pub pert_ui_runtime::FailureSite::description: alloc::vec::Vec<alloc::string::String>
 pub pert_ui_runtime::FailureSite::path: alloc::vec::Vec<alloc::string::String>
@@ -24503,7 +24525,7 @@ pub fn pert_ui_runtime::FileBrowserController::filter(&self) -> pert_ui_runtime:
 pub fn pert_ui_runtime::FileBrowserController::folder_filter(&self) -> pert_ui_runtime::Signal<alloc::string::String>
 pub fn pert_ui_runtime::FileBrowserController::navigate(&self, impl core::convert::AsRef<std::path::Path>) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FileBrowserController::navigate_up(&self) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::FileBrowserController::new(&impl pert_ui_runtime::StateOwner, impl core::iter::traits::collect::IntoIterator<Item = impl core::convert::Into<std::path::PathBuf>>, pert_ui_runtime::ListSelection, impl core::ops::function::FnMut(pert_ui_runtime::DirectoryRequest) + 'static) -> core::result::Result<Self, pert_ui_runtime::FileBrowserError>
+pub fn pert_ui_runtime::FileBrowserController::new(&impl pert_ui_runtime::StateOwner, pert_ui_runtime::ListSelection, impl core::iter::traits::collect::IntoIterator<Item = impl core::convert::Into<std::path::PathBuf>>, impl core::ops::function::FnMut(pert_ui_runtime::DirectoryRequest) + 'static) -> core::result::Result<Self, pert_ui_runtime::FileBrowserError>
 pub fn pert_ui_runtime::FileBrowserController::on_open(&self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, &pert_ui_runtime::DirectoryEntry) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static)
 pub fn pert_ui_runtime::FileBrowserController::path_of(&self, &str) -> core::option::Option<std::path::PathBuf>
 pub fn pert_ui_runtime::FileBrowserController::refresh(&self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
@@ -27227,19 +27249,19 @@ impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::MenuBar
 pub struct pert_ui_runtime::MenuItem
 impl pert_ui_runtime::MenuItem
 pub fn pert_ui_runtime::MenuItem::checked_signal(self, impl core::convert::Into<pert_ui_runtime::ReadSignal<bool>>) -> Self
-pub fn pert_ui_runtime::MenuItem::command(&pert_ui_runtime::Runtime, impl core::convert::Into<alloc::string::String>, &pert_ui_runtime::CommandId, impl core::ops::function::FnMut(pert_ui_runtime::CommandReceipt, &mut pert_ui_runtime::EventContext) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::MenuItem::command(&pert_ui_runtime::Runtime, impl core::convert::Into<alloc::string::String>, &pert_ui_runtime::CommandId, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, pert_ui_runtime::CommandReceipt) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::MenuItem::disabled(self) -> Self
 pub fn pert_ui_runtime::MenuItem::enabled(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
 pub fn pert_ui_runtime::MenuItem::label(self, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
 pub fn pert_ui_runtime::MenuItem::leading_icon(self, impl core::convert::Into<pert_ui_runtime::IconSource>) -> Self
 pub fn pert_ui_runtime::MenuItem::new(impl core::convert::Into<alloc::string::String>, impl core::convert::Into<pert_ui_runtime::TextSource>, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::MenuItem::on_change(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
-pub fn pert_ui_runtime::MenuItem::radio<T: core::clone::Clone + core::cmp::PartialEq + 'static>(impl core::convert::Into<alloc::string::String>, impl core::convert::Into<pert_ui_runtime::TextSource>, impl core::convert::Into<pert_ui_runtime::Signal<T>>, T) -> Self
+pub fn pert_ui_runtime::MenuItem::radio<T: core::clone::Clone + core::cmp::PartialEq + 'static>(impl core::convert::Into<alloc::string::String>, impl core::convert::Into<pert_ui_runtime::Signal<T>>, T, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
 pub fn pert_ui_runtime::MenuItem::selected_signal(self, impl core::convert::Into<pert_ui_runtime::ReadSignal<bool>>) -> Self
 pub fn pert_ui_runtime::MenuItem::separator() -> Self
 pub fn pert_ui_runtime::MenuItem::shortcut(self, pert_ui_runtime::KeyChord) -> Self
 pub fn pert_ui_runtime::MenuItem::submenu(impl core::convert::Into<alloc::string::String>, impl core::convert::Into<pert_ui_runtime::TextSource>, alloc::vec::Vec<Self>) -> Self
-pub fn pert_ui_runtime::MenuItem::toggle(impl core::convert::Into<alloc::string::String>, impl core::convert::Into<pert_ui_runtime::TextSource>, impl core::convert::Into<pert_ui_runtime::Signal<bool>>) -> Self
+pub fn pert_ui_runtime::MenuItem::toggle(impl core::convert::Into<alloc::string::String>, impl core::convert::Into<pert_ui_runtime::Signal<bool>>, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
 impl core::marker::Freeze for pert_ui_runtime::MenuItem
 impl !core::marker::Send for pert_ui_runtime::MenuItem
 impl !core::marker::Sync for pert_ui_runtime::MenuItem
@@ -27980,6 +28002,8 @@ impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::PreparedDetac
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::PreparedDetach
 pub struct pert_ui_runtime::PresentationRate(_)
 impl pert_ui_runtime::PresentationRate
+pub const pert_ui_runtime::PresentationRate::MAX: Self
+pub const pert_ui_runtime::PresentationRate::MIN: Self
 pub const fn pert_ui_runtime::PresentationRate::hertz(self) -> f64
 pub fn pert_ui_runtime::PresentationRate::new(f64) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
 impl core::clone::Clone for pert_ui_runtime::PresentationRate
@@ -28225,13 +28249,13 @@ impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Property
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Property
 pub struct pert_ui_runtime::PropertyGrid
 impl pert_ui_runtime::PropertyGrid
+pub fn pert_ui_runtime::PropertyGrid::bind_label_width(self, impl core::convert::Into<pert_ui_runtime::Signal<pert_ui_runtime::Length>>) -> Self
 pub fn pert_ui_runtime::PropertyGrid::label_overflow(self, pert_ui_runtime::TextOverflow) -> Self
 pub fn pert_ui_runtime::PropertyGrid::label_width(self, pert_ui_runtime::Length) -> Self
 pub fn pert_ui_runtime::PropertyGrid::new(impl core::iter::traits::collect::IntoIterator<Item = pert_ui_runtime::Property>) -> Self
 pub fn pert_ui_runtime::PropertyGrid::on_resize(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, core::option::Option<pert_ui_runtime::Length>, pert_ui_runtime::ChangeOrigin) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::PropertyGrid::persist(self, bool) -> Self
 pub fn pert_ui_runtime::PropertyGrid::resizable(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
-pub fn pert_ui_runtime::PropertyGrid::shared_label_width(self, impl core::convert::Into<pert_ui_runtime::Signal<pert_ui_runtime::Length>>) -> Self
 impl pert_ui_runtime::Component for pert_ui_runtime::PropertyGrid
 pub fn pert_ui_runtime::PropertyGrid::arrange(&self, &mut pert_ui_runtime::ArrangeContext<'_>, pert_ui_runtime::Size) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::PropertyGrid::can_reveal(&self) -> bool
@@ -28963,7 +28987,7 @@ pub fn pert_ui_runtime::Runtime::set_debug_overlay(&self, pert_ui_runtime::Debug
 pub fn pert_ui_runtime::Runtime::set_profiling(&self, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::set_viewport(&self, pert_ui_runtime::Viewport) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::set_visible(&mut self, &pert_ui_runtime::WidgetId, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Runtime::set_wake_delivery(&self, alloc::boxed::Box<(dyn core::ops::function::Fn() -> bool + core::marker::Send + core::marker::Sync)>)
+pub fn pert_ui_runtime::Runtime::set_wake_delivery(&self, impl core::ops::function::Fn() -> bool + core::marker::Send + core::marker::Sync + 'static)
 pub fn pert_ui_runtime::Runtime::signal<T>(&self, T) -> pert_ui_runtime::Signal<T>
 pub fn pert_ui_runtime::Runtime::text_command(&mut self, &pert_ui_runtime::WidgetId, pert_ui_runtime::TextCommand) -> core::result::Result<pert_ui_runtime::TextCommandOutcome, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::text_input(&mut self, &str) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
@@ -29861,6 +29885,7 @@ pub struct pert_ui_runtime::SizeLimits
 impl pert_ui_runtime::SizeLimits
 pub const fn pert_ui_runtime::SizeLimits::at_least(pert_ui_runtime::Size) -> Self
 pub fn pert_ui_runtime::SizeLimits::constrain(self, pert_ui_runtime::Size) -> pert_ui_runtime::Size
+pub const fn pert_ui_runtime::SizeLimits::exact(pert_ui_runtime::Size) -> Self
 pub const fn pert_ui_runtime::SizeLimits::maximum(self) -> pert_ui_runtime::Constraints
 pub const fn pert_ui_runtime::SizeLimits::minimum(self) -> pert_ui_runtime::Size
 pub fn pert_ui_runtime::SizeLimits::new(pert_ui_runtime::Size, pert_ui_runtime::Constraints) -> core::result::Result<Self, pert_ui_runtime::GeometryError>
@@ -30156,7 +30181,7 @@ pub const pert_ui_runtime::SplitSizing::CONTENT_SECOND: Self
 pub const pert_ui_runtime::SplitSizing::EQUAL: Self
 pub const fn pert_ui_runtime::SplitSizing::first(pert_ui_runtime::Length) -> Self
 pub fn pert_ui_runtime::SplitSizing::ratio(f32) -> core::result::Result<Self, pert_ui_runtime::LayoutError>
-pub const fn pert_ui_runtime::SplitSizing::rule(self) -> pert_ui_runtime::SplitRule
+pub fn pert_ui_runtime::SplitSizing::rule(self) -> pert_ui_runtime::SplitRule
 pub const fn pert_ui_runtime::SplitSizing::second(pert_ui_runtime::Length) -> Self
 impl core::clone::Clone for pert_ui_runtime::SplitSizing
 pub fn pert_ui_runtime::SplitSizing::clone(&self) -> pert_ui_runtime::SplitSizing
@@ -30333,7 +30358,7 @@ pub fn pert_ui_runtime::TableController::active_column(&self) -> pert_ui_runtime
 pub fn pert_ui_runtime::TableController::columns(&self) -> alloc::vec::Vec<pert_ui_runtime::TableColumn>
 pub fn pert_ui_runtime::TableController::filter(&self, &str, &pert_ui_runtime::FilterMatcher) -> core::result::Result<pert_ui_runtime::FilterOutcome, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::TableController::filter_counts(&self) -> pert_ui_runtime::ReadSignal<pert_ui_runtime::FilterCounts>
-pub fn pert_ui_runtime::TableController::new(&impl pert_ui_runtime::StateOwner, impl core::iter::traits::collect::IntoIterator<Item = pert_ui_runtime::TableColumn>, pert_ui_runtime::TableSource, pert_ui_runtime::ListSelection) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::TableController::new(&impl pert_ui_runtime::StateOwner, pert_ui_runtime::ListSelection, impl core::iter::traits::collect::IntoIterator<Item = pert_ui_runtime::TableColumn>, pert_ui_runtime::TableSource) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::TableController::reveal(&self, impl core::convert::Into<alloc::string::String>) -> core::result::Result<pert_ui_runtime::ListRevealReceipt, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::TableController::selection(&self) -> pert_ui_runtime::ListSelection
 pub fn pert_ui_runtime::TableController::set_active_column(&self, core::option::Option<alloc::string::String>) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
@@ -31039,7 +31064,7 @@ pub fn pert_ui_runtime::Toggle::enabled(self, impl core::convert::Into<pert_ui_r
 pub fn pert_ui_runtime::Toggle::for_parameter(pert_ui_runtime::Parameter<bool>) -> Self
 pub fn pert_ui_runtime::Toggle::label(self, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
 pub fn pert_ui_runtime::Toggle::leading_icon(self, impl core::convert::Into<pert_ui_runtime::IconSource>) -> Self
-pub fn pert_ui_runtime::Toggle::new(impl core::convert::Into<pert_ui_runtime::TextSource>, impl core::convert::Into<pert_ui_runtime::Signal<bool>>) -> Self
+pub fn pert_ui_runtime::Toggle::new(impl core::convert::Into<pert_ui_runtime::Signal<bool>>, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
 pub fn pert_ui_runtime::Toggle::on_change(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::Toggle::trailing_icon(self, impl core::convert::Into<pert_ui_runtime::IconSource>) -> Self
 impl pert_ui_runtime::Component for pert_ui_runtime::Toggle
@@ -31217,6 +31242,7 @@ impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ToolWindowCon
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ToolWindowController
 pub struct pert_ui_runtime::ToolWindowLayout
 impl pert_ui_runtime::ToolWindowLayout
+pub fn pert_ui_runtime::ToolWindowLayout::bind_show_names(self, impl core::convert::Into<pert_ui_runtime::Signal<bool>>) -> Self
 pub fn pert_ui_runtime::ToolWindowLayout::controller(self, &pert_ui_runtime::ToolWindowController) -> Self
 pub fn pert_ui_runtime::ToolWindowLayout::detachable(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
 pub fn pert_ui_runtime::ToolWindowLayout::draggable(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
@@ -31224,7 +31250,6 @@ pub fn pert_ui_runtime::ToolWindowLayout::edge(self, pert_ui_runtime::ToolEdge, 
 pub fn pert_ui_runtime::ToolWindowLayout::floatable(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
 pub fn pert_ui_runtime::ToolWindowLayout::locked(self) -> Self
 pub fn pert_ui_runtime::ToolWindowLayout::movable(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
-pub fn pert_ui_runtime::ToolWindowLayout::names(self, impl core::convert::Into<pert_ui_runtime::Signal<bool>>) -> Self
 pub fn pert_ui_runtime::ToolWindowLayout::new(pert_ui_runtime::Element) -> Self
 pub fn pert_ui_runtime::ToolWindowLayout::on_change(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, &pert_ui_runtime::ToolWindowChange) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::ToolWindowLayout::overlayable(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
@@ -31688,7 +31713,7 @@ pub fn pert_ui_runtime::TreeController::expanded(&self) -> pert_ui_runtime::Read
 pub fn pert_ui_runtime::TreeController::filter(&self, &str, &pert_ui_runtime::FilterMatcher) -> core::result::Result<pert_ui_runtime::FilterOutcome, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::TreeController::filter_counts(&self) -> pert_ui_runtime::ReadSignal<pert_ui_runtime::FilterCounts>
 pub fn pert_ui_runtime::TreeController::is_expanded(&self, &str) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::TreeController::new(&impl pert_ui_runtime::StateOwner, pert_ui_runtime::TreeSource, pert_ui_runtime::ListSelection) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::TreeController::new(&impl pert_ui_runtime::StateOwner, pert_ui_runtime::ListSelection, pert_ui_runtime::TreeSource) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::TreeController::reveal(&self, impl core::convert::Into<alloc::string::String>) -> core::result::Result<pert_ui_runtime::ListRevealReceipt, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::TreeController::selection(&self) -> pert_ui_runtime::ListSelection
 pub fn pert_ui_runtime::TreeController::set_expanded(&self, &str, bool) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
@@ -31997,6 +32022,8 @@ impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::VectorId
 pub struct pert_ui_runtime::VectorRasterizer
 impl pert_ui_runtime::VectorRasterizer
 pub const pert_ui_runtime::VectorRasterizer::MAX_COVERAGE_WORK: usize
+pub const pert_ui_runtime::VectorRasterizer::MAX_FLATTENED_POINTS: usize
+pub const pert_ui_runtime::VectorRasterizer::MAX_STROKE_EDGES: usize
 pub fn pert_ui_runtime::VectorRasterizer::prepare(&mut self, &pert_ui_runtime::DisplayList) -> core::result::Result<pert_ui_runtime::DisplayList, pert_ui_runtime::DrawError>
 impl core::default::Default for pert_ui_runtime::VectorRasterizer
 pub fn pert_ui_runtime::VectorRasterizer::default() -> pert_ui_runtime::VectorRasterizer
@@ -32114,6 +32141,7 @@ impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ViewScale
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ViewScale
 pub struct pert_ui_runtime::ViewState
 impl pert_ui_runtime::ViewState
+pub const pert_ui_runtime::ViewState::MAX_NAME_BYTES: usize
 pub fn pert_ui_runtime::ViewState::expect_only(&self, &[&str]) -> core::result::Result<(), pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::ViewState::flag(&self, &str) -> core::result::Result<bool, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::ViewState::get(&self, &str) -> core::option::Option<&pert_ui_runtime::WorkspaceValue>

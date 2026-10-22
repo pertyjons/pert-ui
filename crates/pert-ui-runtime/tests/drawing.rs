@@ -153,8 +153,8 @@ fn drawing_rejects_invalid_numeric_data() {
     assert!(Rect::new(0.0, 0.0, -1.0, 1.0).is_err());
     assert!(Rect::new(f32::NAN, 0.0, 1.0, 1.0).is_err());
     assert!(Rect::new(-1.0, -1.0, 0.0, 0.0).is_ok());
-    assert!(Color::rgba(f32::INFINITY, 0.0, 0.0, 1.0).is_err());
-    assert!(Color::rgba(0.0, 0.0, 0.0, 1.1).is_err());
+    assert!(Color::from_linear(f32::INFINITY, 0.0, 0.0, 1.0).is_err());
+    assert!(Color::from_linear(0.0, 0.0, 0.0, 1.1).is_err());
     assert!(Viewport::new(100.0, 100.0, 0.0).is_err());
     assert!(Viewport::new(100.0, 100.0, f64::NAN).is_err());
 }

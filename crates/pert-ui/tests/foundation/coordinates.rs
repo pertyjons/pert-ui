@@ -161,7 +161,7 @@ fn named_components_agree_with_the_destructured_arrays() {
         [rect.x(), rect.y(), rect.width(), rect.height()],
         rect.values()
     );
-    let color = Color::rgba(0.1, 0.2, 0.3, 0.4).unwrap();
+    let color = Color::from_linear(0.1, 0.2, 0.3, 0.4).unwrap();
     assert_eq!(
         [color.red(), color.green(), color.blue(), color.alpha()],
         color.channels()

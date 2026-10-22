@@ -37,7 +37,7 @@ pub(crate) fn property_grid(ui: &mut Runtime, level: ParameterId) -> Result<Elem
         Property::new(
             "enabled",
             "Enabled",
-            Element::new("enabled-input", Checkbox::new("Process audio", enabled)),
+            Element::new("enabled-input", Checkbox::new(enabled, "Process audio")),
         ),
         Property::new(
             "mode",
@@ -64,7 +64,7 @@ pub(crate) fn property_grid(ui: &mut Runtime, level: ParameterId) -> Result<Elem
             ),
         ),
     ])
-    .shared_label_width(width.clone());
+    .bind_label_width(width.clone());
     let appearance = PropertyGrid::new([
         Property::new(
             "offset",
@@ -93,10 +93,10 @@ pub(crate) fn property_grid(ui: &mut Runtime, level: ParameterId) -> Result<Elem
         Property::new(
             "visible",
             "Visible in the overview list of every open window",
-            Element::new("visible-input", Toggle::new("Visible", visible)),
+            Element::new("visible-input", Toggle::new(visible, "Visible")),
         ),
     ])
-    .shared_label_width(width.clone());
+    .bind_label_width(width.clone());
 
     let (check_name, check_status, check_form) = (name.clone(), name_status.clone(), form.clone());
     let check_outcome = outcome.clone();

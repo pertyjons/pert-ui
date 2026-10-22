@@ -85,7 +85,7 @@ fn activation_controls_show_the_pressed_key() {
     let value = ui.signal(false);
     let id = mount(
         &mut ui,
-        Element::new("check", Checkbox::new("On", value.clone())),
+        Element::new("check", Checkbox::new(value.clone(), "On")),
     );
     assert_repaints(
         &mut ui,
@@ -97,7 +97,7 @@ fn activation_controls_show_the_pressed_key() {
     let value = ui.signal(false);
     let id = mount(
         &mut ui,
-        Element::new("toggle", Toggle::new("On", value.clone())),
+        Element::new("toggle", Toggle::new(value.clone(), "On")),
     );
     assert_repaints(
         &mut ui,
@@ -384,7 +384,7 @@ fn collections_show_the_active_row_and_scrolling() -> TestResult {
     press(&mut ui, KeyCode::PageDown, "VirtualList page");
     let mut ui = runtime(300.0, 200.0);
     let selection = ListSelection::new(&ui, SelectionMode::Single);
-    let state = TreeController::new(&ui, TreeSource::new(Outline), selection)?;
+    let state = TreeController::new(&ui, selection, TreeSource::new(Outline))?;
     mount_focused(&mut ui, Element::new("tree", Tree::new(&state, 24.0)?));
     press(&mut ui, KeyCode::ArrowDown, "Tree active row");
     press(&mut ui, KeyCode::ArrowDown, "Tree next row");
@@ -396,12 +396,12 @@ fn collections_show_the_active_row_and_scrolling() -> TestResult {
     let mut ui = runtime(400.0, 200.0);
     let state = TableController::new(
         &ui,
+        ListSelection::new(&ui, SelectionMode::Single),
         [
             TableColumn::new("number", "Number").width(Length::new(100.0)?),
             TableColumn::new("square", "Square"),
         ],
         TableSource::new(Numbers),
-        ListSelection::new(&ui, SelectionMode::Single),
     )?;
     mount_focused(&mut ui, Element::new("table", Table::new(&state, 24.0)?));
     press(&mut ui, KeyCode::ArrowDown, "Table active row");

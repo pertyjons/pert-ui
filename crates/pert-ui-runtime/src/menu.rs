@@ -9,7 +9,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 pub(crate) type MenuAction = Box<dyn FnMut(&mut EventContext) -> Result<(), RuntimeError>>;
-type ReceiptSink = Box<dyn FnMut(CommandReceipt, &mut EventContext) -> Result<(), RuntimeError>>;
+type ReceiptSink = Box<dyn FnMut(&mut EventContext, CommandReceipt) -> Result<(), RuntimeError>>;
 /// A settings row's own write: the new checked state, or `None` when it wrote
 /// nothing (a radio row whose value was already selected).
 type SettingWrite = Box<dyn FnMut() -> Result<Option<bool>, RuntimeError>>;
@@ -181,7 +181,7 @@ impl LeafAction {
                 let captured = captured.borrow().clone();
                 let context = captured.unwrap_or_else(|| cx.command_context(CommandSource::Menu));
                 let issued = cx.invoke_command(id, context)?;
-                receipt(issued, cx)
+                receipt(cx, issued)
             }
         }
     }
@@ -211,10 +211,10 @@ impl LeafAction {
 /// let menu = Menu::new(&ui, "View", vec![
 ///     MenuItem::new("refresh", "Refresh", |_| Ok(())).shortcut(KeyChord::primary('r')),
 ///     MenuItem::separator(),
-///     MenuItem::toggle("grid", "Show grid", grid.clone()),
+///     MenuItem::toggle("grid", grid.clone(), "Show grid"),
 ///     MenuItem::separator(),
-///     MenuItem::radio("zoom-100", "100%", zoom.clone(), 100),
-///     MenuItem::radio("zoom-200", "200%", zoom.clone(), 200),
+///     MenuItem::radio("zoom-100", zoom.clone(), 100, "100%"),
+///     MenuItem::radio("zoom-200", zoom.clone(), 200, "200%"),
 /// ])?;
 /// ui.mount_tree(Element::new("root", Column::new([Element::new("view", menu)])))?;
 /// # Ok::<(), Box<dyn std::error::Error>>(())
@@ -299,8 +299,8 @@ impl MenuItem {
     /// menu.
     pub fn toggle(
         key: impl Into<String>,
-        label: impl Into<TextSource>,
         value: impl Into<Signal<bool>>,
+        label: impl Into<TextSource>,
     ) -> Self {
         let value: Signal<bool> = value.into();
         let read = value.read_only();
@@ -333,9 +333,9 @@ impl MenuItem {
     /// mounts the menu.
     pub fn radio<T: Clone + PartialEq + 'static>(
         key: impl Into<String>,
-        label: impl Into<TextSource>,
         selection: impl Into<Signal<T>>,
         value: T,
+        label: impl Into<TextSource>,
     ) -> Self {
         let selection: Signal<T> = selection.into();
         let read = selection.read_only();
@@ -395,7 +395,7 @@ impl MenuItem {
     /// let last = std::rc::Rc::new(std::cell::RefCell::new(None));
     /// let receipts = last.clone();
     /// let file = Menu::new(&ui, "File", vec![MenuItem::command(&ui, "save", &save,
-    ///     move |receipt, _| { *receipts.borrow_mut() = Some(receipt); Ok(()) })?])?;
+    ///     move |_, receipt| { *receipts.borrow_mut() = Some(receipt); Ok(()) })?])?;
     /// ui.mount_tree(Element::new("root", Column::new([Element::new("file", file)])))?;
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
@@ -403,7 +403,7 @@ impl MenuItem {
         ui: &Runtime,
         key: impl Into<String>,
         command: &CommandId,
-        on_receipt: impl FnMut(CommandReceipt, &mut EventContext) -> Result<(), RuntimeError> + 'static,
+        on_receipt: impl FnMut(&mut EventContext, CommandReceipt) -> Result<(), RuntimeError> + 'static,
     ) -> Result<Self, RuntimeError> {
         let mut item = Self::with_action(
             key,
@@ -451,7 +451,7 @@ impl MenuItem {
     /// let forwarded = ui.signal(None);
     /// let engine = forwarded.clone();
     /// let transport = Menu::new(&ui, "Transport", vec![
-    ///     MenuItem::toggle("play", "Play", playing.clone())
+    ///     MenuItem::toggle("play", playing.clone(), "Play")
     ///         // Forward the user's choice, for example to a producer thread.
     ///         .on_change(move |_, on| engine.set(Some(on))),
     /// ])?;

@@ -761,10 +761,10 @@ impl Component for Accent {
 }
 let mut ui = Runtime::new();
 let theme = ui.theme();
-// Color::rgba takes linear channels, not sRGB bytes.
+// Color::from_linear takes linear channels, not sRGB bytes.
 let light = Palette::light()
-    .with_color(ColorRole::Primary, Color::rgba(0.30, 0.04, 0.40, 1.0)?)
-    .with_color(ColorRole::OnPrimary, Color::rgba(1.0, 1.0, 1.0, 1.0)?);
+    .with_color(ColorRole::Primary, Color::from_linear(0.30, 0.04, 0.40, 1.0)?)
+    .with_color(ColorRole::OnPrimary, Color::from_linear(1.0, 1.0, 1.0, 1.0)?);
 theme.set_palette(ThemeMode::Light, light)?;
 theme.set_mode(ThemeMode::Light)?;
 ui.mount_tree(Element::new("content", Row::new([
@@ -1139,10 +1139,10 @@ let bar = MenuBar::new(&ui, vec![
         MenuItem::new("close", "Close", |_| Ok(())),
     ]),
     MenuItem::submenu("view", "View", vec![
-        MenuItem::toggle("grid", "Show grid", grid.clone()),
+        MenuItem::toggle("grid", grid.clone(), "Show grid"),
         MenuItem::separator(),
-        MenuItem::radio("normal", "100%", zoom.clone(), 100),
-        MenuItem::radio("large", "200%", zoom.clone(), 200),
+        MenuItem::radio("normal", zoom.clone(), 100, "100%"),
+        MenuItem::radio("large", zoom.clone(), 200, "200%"),
     ]),
 ])?
 .content(Element::new("document", Button::new("Document", |_| Ok(()))));

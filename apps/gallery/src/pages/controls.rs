@@ -893,11 +893,11 @@ pub(crate) fn controls(ui: &Runtime) -> Result<Element, RuntimeError> {
             "boolean",
             "Checkbox and toggle share one value",
             [
-                Element::new("checkbox", Checkbox::new("Enabled", enabled.clone())),
-                Element::new("toggle", Toggle::new("Enabled", enabled.clone())),
+                Element::new("checkbox", Checkbox::new(enabled.clone(), "Enabled")),
+                Element::new("toggle", Toggle::new(enabled.clone(), "Enabled")),
                 Element::new(
                     "disabled",
-                    Checkbox::new("Disabled presentation", enabled).disabled(),
+                    Checkbox::new(enabled, "Disabled presentation").disabled(),
                 ),
             ],
         ),
@@ -1088,7 +1088,7 @@ pub(crate) fn progress(ui: &Runtime) -> Element {
                     "spinner-row",
                     Row::new([
                         Element::new("spinner-demo", Spinner::new(always.read_only())),
-                        Element::new("spinner-toggle", Toggle::new("Busy", always.clone())),
+                        Element::new("spinner-toggle", Toggle::new(always.clone(), "Busy")),
                     ]),
                 ),
             ],

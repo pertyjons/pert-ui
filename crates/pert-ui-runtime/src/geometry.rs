@@ -3,7 +3,7 @@
 //! `raster` module.
 mod raster;
 use crate::{Color, DrawError, Length, Painter, Point, Rect};
-pub(crate) use raster::{coverage_bounds, rasterize_vector};
+pub(crate) use raster::{MAX_EDGES, coverage_bounds, rasterize_vector};
 use std::sync::Arc;
 
 /// Invalid vector path construction or stroke configuration.

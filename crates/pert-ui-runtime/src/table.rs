@@ -584,9 +584,9 @@ impl TableController {
     /// columns sharing one, and [`LayoutError::NoColumns`] for no columns at all.
     pub fn new(
         ui: &impl crate::StateOwner,
+        selection: ListSelection,
         columns: impl IntoIterator<Item = TableColumn>,
         source: TableSource,
-        selection: ListSelection,
     ) -> Result<Self, RuntimeError> {
         let columns: Vec<TableColumn> = columns.into_iter().collect();
         if columns.is_empty() {
@@ -805,9 +805,9 @@ impl TableController {
     /// ui.set_viewport(Viewport::new(320.0, 200.0, 1.0)?)?;
     /// let state = TableController::new(
     ///     &ui,
+    ///     ListSelection::new(&ui, SelectionMode::Single),
     ///     [TableColumn::new("name", "Name"), TableColumn::new("size", "Size")],
     ///     TableSource::new(Empty),
-    ///     ListSelection::new(&ui, SelectionMode::Single),
     /// )?;
     /// ui.mount_tree(Element::new("table", Table::new(&state, 24.0)?))?;
     /// ui.flush(std::time::Duration::ZERO)?;
@@ -1229,9 +1229,9 @@ enum HeaderGesture {
 /// ui.set_viewport(Viewport::new(320.0, 200.0, 1.0)?)?;
 /// let state = TableController::new(
 ///     &ui,
+///     ListSelection::new(&ui, SelectionMode::Single),
 ///     [TableColumn::new("n", "n"), TableColumn::new("square", "n²").sortable(true)],
 ///     TableSource::new(Squares(100_000)),
-///     ListSelection::new(&ui, SelectionMode::Single),
 /// )?;
 /// let table = ui.mount_tree(Element::new("squares", Table::new(&state, 24.0)?))?;
 /// ui.flush(std::time::Duration::ZERO)?;
@@ -1319,9 +1319,9 @@ enum HeaderGesture {
 /// let names = Rc::new(vec![ui.signal("Cable".to_owned()), ui.signal("Mouse".to_owned())]);
 /// let state = TableController::new(
 ///     &ui,
+///     ListSelection::new(&ui, SelectionMode::Single),
 ///     [TableColumn::new("name", "Name").editable(true)],
 ///     TableSource::new(Items(names.clone())),
-///     ListSelection::new(&ui, SelectionMode::Single),
 /// )?;
 /// let (rows, republish) = (names.clone(), state.clone());
 /// let table = Table::new(&state, 24.0)?.cell_editor(move |edit| {
@@ -1435,8 +1435,9 @@ impl Table {
     /// ui.set_viewport(Viewport::new(320.0, 160.0, 1.0)?)?;
     /// let can_resize = ui.signal(true);
     /// let state = TableController::new(&ui,
+    ///     ListSelection::new(&ui, SelectionMode::Single),
     ///     [TableColumn::new("value", "Value").resizable(true)],
-    ///     TableSource::new(Rows), ListSelection::new(&ui, SelectionMode::Single))?;
+    ///     TableSource::new(Rows))?;
     /// ui.mount_tree(Element::new("table", Table::new(&state, 24.0)?
     ///     .resize_permission(can_resize.read_only())))?;
     /// ui.flush(ui.now())?;

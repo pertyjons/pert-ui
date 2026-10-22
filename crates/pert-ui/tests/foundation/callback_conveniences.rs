@@ -204,9 +204,9 @@ type Receipts = Rc<RefCell<Vec<CommandReceipt>>>;
 
 fn recording(
     receipts: &Receipts,
-) -> impl FnMut(CommandReceipt, &mut EventContext) -> Result<(), RuntimeError> + 'static {
+) -> impl FnMut(&mut EventContext, CommandReceipt) -> Result<(), RuntimeError> + 'static {
     let receipts = receipts.clone();
-    move |receipt, _| {
+    move |_, receipt| {
         receipts.borrow_mut().push(receipt);
         Ok(())
     }
@@ -389,7 +389,7 @@ fn a_failing_receipt_handler_is_reported_once_and_a_new_description_replaces_it(
         let receipts = receipts.clone();
         Ok(vec![Element::new(
             "play",
-            Button::command(ui, &play, move |receipt, _| {
+            Button::command(ui, &play, move |_, receipt| {
                 if fail {
                     return Err(ApplicationError::from("the readout is gone").into());
                 }

@@ -403,11 +403,11 @@ fn grids_bound_to_one_signal_stay_aligned_and_are_not_persisted() -> TestResult 
         Column::new([
             Element::new(
                 "first",
-                PropertyGrid::new(rows(&["a"])).shared_label_width(width.clone()),
+                PropertyGrid::new(rows(&["a"])).bind_label_width(width.clone()),
             ),
             Element::new(
                 "second",
-                PropertyGrid::new(rows(&["b"])).shared_label_width(width.clone()),
+                PropertyGrid::new(rows(&["b"])).bind_label_width(width.clone()),
             ),
         ]),
     ))?;

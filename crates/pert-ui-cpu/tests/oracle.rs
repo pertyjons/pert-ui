@@ -83,7 +83,7 @@ fn thin_rounded_outline_keeps_all_sides_at_75_percent_zoom() -> TestResult {
 /// The stored bytes of a linear premultiplied color, as the oracle computes them.
 fn stored(linear: [f32; 4]) -> [u8; 4] {
     let encode = |value: f32| {
-        Color::rgba(value.clamp(0.0, 1.0), 0.0, 0.0, 1.0)
+        Color::from_linear(value.clamp(0.0, 1.0), 0.0, 0.0, 1.0)
             .unwrap()
             .to_srgb8()[0]
     };
@@ -139,7 +139,7 @@ fn the_frame_starts_as_the_premultiplied_background() -> TestResult {
 
 #[test]
 fn opaque_integer_fills_are_exact_and_cover_pixel_centers() -> TestResult {
-    let red = Color::rgba(1.0, 0.0, 0.0, 1.0)?;
+    let red = Color::from_linear(1.0, 0.0, 0.0, 1.0)?;
     let frame = render(&scene(4.0, 1.0, 1.0, move |p| {
         p.fill_rect(Rect::new(1.0, 0.0, 2.0, 1.0)?, red);
         Ok(())
@@ -182,8 +182,8 @@ fn logical_geometry_follows_the_physical_scale() -> TestResult {
 
 #[test]
 fn translucent_overlap_quantizes_after_each_command() -> TestResult {
-    let blue = Color::rgba(0.0, 0.2, 1.0, 0.5)?;
-    let orange = Color::rgba(1.0, 0.4, 0.0, 0.3)?;
+    let blue = Color::from_linear(0.0, 0.2, 1.0, 0.5)?;
+    let orange = Color::from_linear(1.0, 0.4, 0.0, 0.3)?;
     let frame = render(&scene(1.0, 1.0, 1.0, move |p| {
         let all = Rect::new(0.0, 0.0, 1.0, 1.0)?;
         p.fill_rect(all, blue);
@@ -295,7 +295,7 @@ fn images_are_decoded_to_linear_light_before_filtering() -> TestResult {
 #[test]
 fn a_tint_fades_and_colors_an_image() -> TestResult {
     let image = RasterImage::from_srgba8(1, 1, vec![255, 255, 255, 255])?;
-    let tint = Color::rgba(1.0, 0.0, 0.0, 0.5)?;
+    let tint = Color::from_linear(1.0, 0.0, 0.0, 0.5)?;
     let frame = render(&scene(1.0, 1.0, 1.0, move |p| {
         p.draw_image_tinted(
             &image,
@@ -545,14 +545,14 @@ fn an_opaque_frame_clears_with_the_background_at_full_alpha() -> TestResult {
     // presented frame shows its RGB opaque, as an opaque GPU surface does.
     let mut ui = Runtime::new();
     ui.set_viewport(Viewport::new(4.0, 2.0, 1.0)?)?;
-    let translucent = Color::rgba(1.0, 1.0, 1.0, 0.5)?;
+    let translucent = Color::from_linear(1.0, 1.0, 1.0, 0.5)?;
     ui.theme().set_color(
         pert_ui_runtime::ThemeMode::Dark,
         pert_ui_runtime::ColorRole::Background,
         translucent,
     )?;
     ui.theme().set_mode(pert_ui_runtime::ThemeMode::Dark)?;
-    let fill = Color::rgba(0.0, 0.0, 1.0, 0.5)?;
+    let fill = Color::from_linear(0.0, 0.0, 1.0, 0.5)?;
     ui.mount(
         "scene",
         Scene(Box::new(move |p| {

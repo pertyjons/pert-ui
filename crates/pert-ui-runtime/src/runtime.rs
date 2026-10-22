@@ -186,8 +186,14 @@ impl std::fmt::Debug for WidgetId {
 #[derive(Clone, Debug, Eq, PartialEq, thiserror::Error)]
 #[non_exhaustive]
 pub enum RuntimeError {
-    /// Presentation ceilings must be finite and between 1 and 1000 Hz.
-    #[error("presentation rate must be finite and between 1 and 1000 Hz")]
+    /// Presentation ceilings must be finite and between
+    /// [`PresentationRate::MIN`](crate::PresentationRate::MIN) and
+    /// [`PresentationRate::MAX`](crate::PresentationRate::MAX), 1 and 1000 Hz.
+    #[error(
+        "presentation rate must be finite and between {} and {} Hz",
+        crate::PresentationRate::MIN.hertz(),
+        crate::PresentationRate::MAX.hertz()
+    )]
     InvalidPresentationRate,
     /// A parameter binding, its edit protocol or its host delivery refused the
     /// operation.
@@ -4263,8 +4269,8 @@ impl Runtime {
     /// drain what a wake announces. A callback that panics unwinds out of
     /// that `notify`, leaving the wake pending for the next flush; later
     /// notifications still reach the callback.
-    pub fn set_wake_delivery(&self, deliver: Box<dyn Fn() -> bool + Send + Sync>) {
-        self.shared.wake.set_delivery(deliver);
+    pub fn set_wake_delivery(&self, deliver: impl Fn() -> bool + Send + Sync + 'static) {
+        self.shared.wake.set_delivery(Box::new(deliver));
     }
 
     /// Mounts an independent *legacy root*: one component with a nonempty

@@ -150,7 +150,7 @@ fn recolor(color: Color, transform: Transform, max_factor: f64) -> Option<Color>
     let lch = Lch::from_linear(rgb);
     let chroma = lch.chroma * transform.chroma.min(max_factor);
     let [red, green, blue] = solve(luminance(rgb), chroma, lch.hue + transform.rotation)?;
-    Color::rgba(red as f32, green as f32, blue as f32, alpha).ok()
+    Color::from_linear(red as f32, green as f32, blue as f32, alpha).ok()
 }
 
 /// The most saturated color, up to `chroma`, of hue `hue` and luminance

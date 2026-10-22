@@ -203,10 +203,10 @@ fn shutdown_closes_the_waker_permanently() -> TestResult {
     runtime.shutdown();
     assert_eq!(waker.notify(), Err(WakeError::Closed));
     let counter = Arc::clone(&delivered);
-    runtime.set_wake_delivery(Box::new(move || {
+    runtime.set_wake_delivery(move || {
         counter.fetch_add(1, Ordering::SeqCst);
         true
-    }));
+    });
     assert_eq!(waker.notify(), Err(WakeError::Closed));
     assert_eq!(runtime.live_waker().notify(), Err(WakeError::Closed));
     assert_eq!(
@@ -332,10 +332,10 @@ fn a_notified_source_drains_on_wakes_and_coalesces_them() -> TestResult {
     let mut runtime = Runtime::new();
     let delivered = Arc::new(AtomicUsize::new(0));
     let counter = Arc::clone(&delivered);
-    runtime.set_wake_delivery(Box::new(move || {
+    runtime.set_wake_delivery(move || {
         counter.fetch_add(1, Ordering::SeqCst);
         true
-    }));
+    });
     let (mut endpoint, _source, reader, seen) = series(&runtime, 4, Delivery::Notified)?;
     runtime.mount("meter", reader)?;
     settle(&mut runtime, Duration::ZERO)?;
@@ -375,7 +375,7 @@ fn a_notified_source_drains_on_wakes_and_coalesces_them() -> TestResult {
     assert_eq!(runtime.next_deadline(), None);
 
     // Delivery that fails closes the waker and clears the flag.
-    runtime.set_wake_delivery(Box::new(|| false));
+    runtime.set_wake_delivery(|| false);
     let waker = runtime.live_waker();
     assert_eq!(waker.notify(), Err(WakeError::Closed));
     assert_eq!(runtime.next_deadline(), None);
@@ -392,7 +392,7 @@ fn installing_delivery_reopens_a_waker_whose_delivery_failed() -> TestResult {
     // left after unlocking was a few instructions wide, which no test can hit
     // reliably without a hook in the production path.
     let runtime = Runtime::new();
-    runtime.set_wake_delivery(Box::new(|| false));
+    runtime.set_wake_delivery(|| false);
     let waker = runtime.live_waker();
     assert_eq!(waker.notify(), Err(WakeError::Closed));
     assert_eq!(
@@ -403,10 +403,10 @@ fn installing_delivery_reopens_a_waker_whose_delivery_failed() -> TestResult {
 
     let delivered = Arc::new(AtomicUsize::new(0));
     let counter = Arc::clone(&delivered);
-    runtime.set_wake_delivery(Box::new(move || {
+    runtime.set_wake_delivery(move || {
         counter.fetch_add(1, Ordering::SeqCst);
         true
-    }));
+    });
     assert_eq!(waker.notify(), Ok(()), "the replacement reopened the waker");
     assert_eq!(delivered.load(Ordering::SeqCst), 1);
     assert_eq!(runtime.next_deadline(), Some(runtime.now()));
@@ -530,7 +530,7 @@ fn subscribers_in_two_native_roots_see_one_drain_for_one_time() -> TestResult {
 #[test]
 fn a_notified_source_observes_a_restart_and_a_drop_that_no_publish_follows() -> TestResult {
     let mut runtime = Runtime::new();
-    runtime.set_wake_delivery(Box::new(|| true));
+    runtime.set_wake_delivery(|| true);
     let (mut endpoint, _source, reader, seen) = series(&runtime, 4, Delivery::Notified)?;
     runtime.mount("meter", reader)?;
     settle(&mut runtime, Duration::ZERO)?;
@@ -709,7 +709,7 @@ fn live_publication_does_not_update_a_clipped_subscriber_of_an_active_source() -
 #[test]
 fn a_wake_at_the_instant_of_the_last_drain_still_drains() -> TestResult {
     let mut runtime = Runtime::new();
-    runtime.set_wake_delivery(Box::new(|| true));
+    runtime.set_wake_delivery(|| true);
     let (mut endpoint, _source, reader, seen) = series(&runtime, 4, Delivery::Notified)?;
     runtime.mount("meter", reader)?;
     settle(&mut runtime, Duration::ZERO)?;
@@ -736,13 +736,13 @@ fn a_delivery_callback_that_panicked_does_not_swallow_later_wakes() -> TestResul
     let mut runtime = Runtime::new();
     let calls = Arc::new(AtomicUsize::new(0));
     let counter = Arc::clone(&calls);
-    runtime.set_wake_delivery(Box::new(move || {
+    runtime.set_wake_delivery(move || {
         assert!(
             counter.fetch_add(1, Ordering::SeqCst) > 0,
             "the first delivery panics"
         );
         true
-    }));
+    });
     let waker = runtime.live_waker();
     let panicked = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| waker.notify()));
     assert!(panicked.is_err(), "the host caught the delivery panic");
@@ -758,7 +758,7 @@ fn a_delivery_callback_that_panicked_does_not_swallow_later_wakes() -> TestResul
 #[test]
 fn a_wake_flushed_while_the_window_is_read_is_served_later() -> TestResult {
     let mut runtime = Runtime::new();
-    runtime.set_wake_delivery(Box::new(|| true));
+    runtime.set_wake_delivery(|| true);
     let (mut endpoint, source, reader, seen) = series(&runtime, 4, Delivery::Notified)?;
     runtime.mount("meter", reader)?;
     settle(&mut runtime, Duration::ZERO)?;

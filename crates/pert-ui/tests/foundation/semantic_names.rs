@@ -116,7 +116,7 @@ fn a_named_composite_that_reports_semantics_keeps_its_parts_own() -> TestResult 
             "field",
             Field::new(Element::new(
                 "check",
-                Checkbox::new("Process audio", checked),
+                Checkbox::new(checked, "Process audio"),
             ))
             .label("Enabled"),
         )]),

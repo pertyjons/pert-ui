@@ -136,7 +136,24 @@ and anything left to a later part.
     - the dropped `Runtime::focus` error had no TODO.md entry;
     - the commit and review were unrecorded.
 
-    All three were fixed.
+    All three were fixed, and the recheck approved 5d.
+- **6a1 (0.3.57):** constructor order, builder and callback shapes, limit
+  constants, `Color::from_linear`, `SplitRule::Ratio(NormalizedValue)`,
+  `bind_<property>` and `SizeLimits::exact`. Every repository consumer was
+  migrated.
+  - **Checks run after the last edit (the public-API row):**
+    - `cargo fmt --all --check`;
+    - `cargo clippy --locked --workspace --all-targets -- -D warnings`;
+    - `cargo test --locked --workspace`;
+    - the five headless example sessions;
+    - `cargo test --locked --workspace --doc`;
+    - `RUSTDOCFLAGS="-D warnings" cargo doc --locked --workspace --no-deps`;
+    - `api/generate.sh`, whose diff is the plan's expected list;
+    - `git diff --check`.
+  - **Beyond the plan's lines:** `WorkspaceError::InvalidName`'s rustdoc
+    names the empty map key it also reports.
+  - **Left to a later part:** the new `ExpansionChange` is at the crate root,
+    and 6e adds it to the prelude beside `SelectionChange`.
 
 ## Rules for every part
 

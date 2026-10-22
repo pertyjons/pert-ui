@@ -147,14 +147,14 @@ fn a_tree_controller_reports_closed_after_shutdown() {
     let mut ui = Runtime::new();
     let live = TreeController::new(
         &ui,
-        TreeSource::new(Pair),
         ListSelection::new(&ui, SelectionMode::Single),
+        TreeSource::new(Pair),
     )
     .unwrap();
     let selection = ListSelection::new(&ui, SelectionMode::Single);
     ui.shutdown();
     assert!(matches!(
-        TreeController::new(&ui, TreeSource::new(Pair), selection),
+        TreeController::new(&ui, selection, TreeSource::new(Pair)),
         Err(RuntimeError::Closed)
     ));
     assert!(matches!(

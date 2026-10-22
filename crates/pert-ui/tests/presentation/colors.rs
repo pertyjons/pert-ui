@@ -148,7 +148,7 @@ fn contrast_matches_wcag_reference_values() {
 
 #[test]
 fn only_an_exactly_opaque_color_is_measurable() {
-    let almost = Color::rgba(1.0, 1.0, 1.0, 0.999).unwrap();
+    let almost = Color::from_linear(1.0, 1.0, 1.0, 0.999).unwrap();
     assert_eq!(OpaqueColor::try_from(almost), Err(TranslucentColorError));
     assert!(!TranslucentColorError.to_string().is_empty());
     let opaque = OpaqueColor::try_from(Color::TEXT).unwrap();
@@ -158,7 +158,7 @@ fn only_an_exactly_opaque_color_is_measurable() {
 #[test]
 fn compositing_over_an_opaque_background_follows_source_over() {
     let back = opaque("#204060");
-    let source = Color::rgba(0.8, 0.6, 0.4, 0.25).unwrap();
+    let source = Color::from_linear(0.8, 0.6, 0.4, 0.25).unwrap();
     let [r, g, b, a] = Color::from(source.over(back)).channels();
     let [br, bg, bb, _] = Color::from(back).channels();
     for (value, expected) in [
@@ -171,7 +171,7 @@ fn compositing_over_an_opaque_background_follows_source_over() {
     assert_eq!(a, 1.0);
     // The alpha extremes reproduce one side bit for bit.
     let bits = |color: Color| color.channels().map(f32::to_bits);
-    let signed = Color::rgba(-0.0, 0.5, 0.25, 1.0).unwrap();
+    let signed = Color::from_linear(-0.0, 0.5, 0.25, 1.0).unwrap();
     let signed_back = OpaqueColor::try_from(signed).unwrap();
     assert_eq!(
         bits(source.with_alpha(0.0).unwrap().over(signed_back).into()),
@@ -181,7 +181,7 @@ fn compositing_over_an_opaque_background_follows_source_over() {
     // Channels stay valid at the extremes of every input.
     for value in [0.0, 1.0] {
         for alpha in [0.0, 0.3, 1.0] {
-            let source = Color::rgba(value, value, value, alpha).unwrap();
+            let source = Color::from_linear(value, value, value, alpha).unwrap();
             for back in ["#000", "#fff"] {
                 let out = Color::from(source.over(opaque(back)));
                 assert!(out.channels().iter().all(|c| (0.0..=1.0).contains(c)));
@@ -192,7 +192,7 @@ fn compositing_over_an_opaque_background_follows_source_over() {
 
 #[test]
 fn alpha_replacement_and_scaling_validate_their_inputs() {
-    let color = Color::rgba(0.2, 0.4, 0.6, 0.5).unwrap();
+    let color = Color::from_linear(0.2, 0.4, 0.6, 0.5).unwrap();
     assert_eq!(
         color.with_alpha(0.75).unwrap().channels(),
         [0.2, 0.4, 0.6, 0.75]
@@ -211,9 +211,9 @@ fn alpha_replacement_and_scaling_validate_their_inputs() {
 
 #[test]
 fn mixing_interpolates_premultiplied_channels() {
-    let red = Color::rgba(1.0, 0.0, 0.0, 1.0).unwrap();
-    let faint_blue = Color::rgba(0.0, 0.0, 1.0, 0.2).unwrap();
-    let clear = Color::rgba(0.0, 0.0, 0.0, 0.0).unwrap();
+    let red = Color::from_linear(1.0, 0.0, 0.0, 1.0).unwrap();
+    let faint_blue = Color::from_linear(0.0, 0.0, 1.0, 0.2).unwrap();
+    let clear = Color::from_linear(0.0, 0.0, 0.0, 0.0).unwrap();
     // Endpoints are exact.
     assert_eq!(red.mix(faint_blue, 0.0).unwrap(), red);
     assert_eq!(red.mix(faint_blue, 1.0).unwrap(), faint_blue);
@@ -229,17 +229,17 @@ fn mixing_interpolates_premultiplied_channels() {
         [1.0, 0.0, 0.0, 0.25]
     );
     // Zero alpha has no meaningful RGB and is canonical transparent black.
-    let invisible = Color::rgba(0.3, 0.6, 0.9, 0.0).unwrap();
+    let invisible = Color::from_linear(0.3, 0.6, 0.9, 0.0).unwrap();
     assert_eq!(invisible.mix(red, 0.0).unwrap(), clear);
     assert_eq!(invisible.mix(invisible, 0.5).unwrap(), clear);
     // A positive alpha that rounds to zero when narrowed is transparent black
     // too, not red at zero alpha.
-    let trace = Color::rgba(1.0, 0.0, 0.0, f32::from_bits(1)).unwrap();
+    let trace = Color::from_linear(1.0, 0.0, 0.0, f32::from_bits(1)).unwrap();
     let rounded = trace.mix(clear, 1.0 - f32::EPSILON / 2.0).unwrap();
     assert_eq!(rounded.channels().map(f32::to_bits), [0; 4]);
     // Endpoints are bitwise exact, including a negative zero channel, which
     // `assert_eq!` on floats alone would not distinguish.
-    let signed = Color::rgba(-0.0, 0.5, 0.25, 0.5).unwrap();
+    let signed = Color::from_linear(-0.0, 0.5, 0.25, 0.5).unwrap();
     let bits = |color: Color| color.channels().map(f32::to_bits);
     assert_eq!(bits(signed.mix(red, 0.0).unwrap()), bits(signed));
     assert_eq!(bits(red.mix(signed, 1.0).unwrap()), bits(signed));

@@ -37,6 +37,7 @@ fn fixture(count: u32) -> Result<Fixture, Box<dyn std::error::Error>> {
     ui.set_viewport(Viewport::new(400.0, 200.0, 1.0)?)?;
     let state = TableController::new(
         &ui,
+        ListSelection::new(&ui, SelectionMode::Single),
         [
             TableColumn::new("number", "Number")
                 .width(Length::new(100.0)?)
@@ -45,7 +46,6 @@ fn fixture(count: u32) -> Result<Fixture, Box<dyn std::error::Error>> {
             TableColumn::new("square", "Square"),
         ],
         TableSource::new(Numbers((0..count).collect())),
-        ListSelection::new(&ui, SelectionMode::Single),
     )?;
     let sorts = Rc::new(RefCell::new(Vec::new()));
     let (log, sorted) = (sorts.clone(), state.clone());
@@ -179,6 +179,7 @@ fn a_sized_column_whose_key_cannot_be_stored_fails_capture_by_path() -> TestResu
     let long = "c".repeat(Workspace::MAX_STRING_BYTES + 1);
     let state = TableController::new(
         &ui,
+        ListSelection::new(&ui, SelectionMode::Single),
         [
             TableColumn::new(&long, "Long")
                 .width(Length::new(100.0)?)
@@ -186,7 +187,6 @@ fn a_sized_column_whose_key_cannot_be_stored_fails_capture_by_path() -> TestResu
             TableColumn::new("square", "Square"),
         ],
         TableSource::new(Numbers((0..5).collect())),
-        ListSelection::new(&ui, SelectionMode::Single),
     )?;
     ui.mount_tree(Element::new("table", Table::new(&state, ROW)?))?;
     ui.flush(Duration::ZERO)?;
@@ -275,12 +275,12 @@ fn restoring_returns_a_dragged_flexible_column_to_its_share() -> TestResult {
     ui.set_viewport(Viewport::new(400.0, 200.0, 1.0)?)?;
     let state = TableController::new(
         &ui,
+        ListSelection::new(&ui, SelectionMode::Single),
         [
             TableColumn::new("square", "Square").resizable(true),
             TableColumn::new("number", "Number").width(Length::new(100.0)?),
         ],
         TableSource::new(Numbers((0..20).collect())),
-        ListSelection::new(&ui, SelectionMode::Single),
     )?;
     ui.mount_tree(Element::new("table", Table::new(&state, ROW)?))?;
     ui.flush(Duration::ZERO)?;
@@ -331,12 +331,12 @@ fn a_missing_cell_is_drawn_empty_rather_than_failing_the_row() -> TestResult {
     // `Numbers` has no content for the "notes" column.
     let state = TableController::new(
         &ui,
+        ListSelection::new(&ui, SelectionMode::Single),
         [
             TableColumn::new("number", "Number"),
             TableColumn::new("notes", "Notes"),
         ],
         TableSource::new(Numbers((0..3).collect())),
-        ListSelection::new(&ui, SelectionMode::Single),
     )?;
     let table = ui.mount_tree(Element::new("table", Table::new(&state, ROW)?))?;
     ui.flush(Duration::ZERO)?;
@@ -476,11 +476,11 @@ fn a_narrow_sorted_header_clips_its_title_before_the_indicator() -> TestResult {
     ui.set_viewport(Viewport::new(70.0, 100.0, 1.0)?)?;
     let state = TableController::new(
         &ui,
+        ListSelection::new(&ui, SelectionMode::Single),
         [TableColumn::new("number", "A very long number title")
             .width(Length::new(70.0)?)
             .sortable(true)],
         TableSource::new(Numbers(vec![1])),
-        ListSelection::new(&ui, SelectionMode::Single),
     )?;
     ui.mount_tree(Element::new(
         "table",
@@ -733,9 +733,9 @@ fn columns_are_validated() {
     let state = |columns: Vec<TableColumn>| {
         TableController::new(
             &ui,
+            ListSelection::new(&ui, SelectionMode::Single),
             columns,
             TableSource::new(Numbers(Vec::new())),
-            ListSelection::new(&ui, SelectionMode::Single),
         )
         .err()
     };
@@ -783,9 +783,9 @@ fn wide() -> Result<Wide, Box<dyn std::error::Error>> {
     });
     let state = TableController::new(
         &ui,
+        ListSelection::new(&ui, SelectionMode::Single),
         columns,
         TableSource::new(Wide),
-        ListSelection::new(&ui, SelectionMode::Single),
     )?;
     let activated = Rc::new(RefCell::new(Vec::new()));
     let log = activated.clone();

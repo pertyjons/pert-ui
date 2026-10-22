@@ -599,7 +599,7 @@ impl Component for MenuTitle {
 ///         MenuItem::new("quit", "Quit", |_| Ok(())),
 ///     ]),
 ///     MenuItem::submenu("view", "View", vec![
-///         MenuItem::toggle("wrap", "Wrap lines", wrap.clone()),
+///         MenuItem::toggle("wrap", wrap.clone(), "Wrap lines"),
 ///     ]),
 /// ])?
 /// .content(Element::new("document", Button::new("Document", |_| Ok(()))));

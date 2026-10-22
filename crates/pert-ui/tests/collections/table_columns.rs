@@ -51,9 +51,9 @@ fn fixture(width: f32, extra: &[&str]) -> Result<Fixture, Box<dyn std::error::Er
     columns.push(column("d"));
     let state = TableController::new(
         &ui,
+        ListSelection::new(&ui, SelectionMode::Single),
         columns,
         TableSource::new(Cells(20)),
-        ListSelection::new(&ui, SelectionMode::Single),
     )?;
     let sorts = Rc::new(RefCell::new(0));
     let counted = sorts.clone();
@@ -220,6 +220,7 @@ fn a_release_outside_the_table_moves_nothing() -> TestResult {
     ui.set_viewport(Viewport::new(600.0, 400.0, 1.0)?)?;
     let state = TableController::new(
         &ui,
+        ListSelection::new(&ui, SelectionMode::Single),
         [
             TableColumn::new("a", "A")
                 .width(Length::new(WIDTH)?)
@@ -229,7 +230,6 @@ fn a_release_outside_the_table_moves_nothing() -> TestResult {
                 .movable(true),
         ],
         TableSource::new(Cells(4)),
-        ListSelection::new(&ui, SelectionMode::Single),
     )?;
     let table = Container::new(Element::new("table", Table::new(&state, ROW)?))
         .padding(Length::new(0.0)?)
@@ -315,9 +315,9 @@ fn columns_are_not_movable_unless_asked() -> TestResult {
     ui.set_viewport(Viewport::new(400.0, 200.0, 1.0)?)?;
     let state = TableController::new(
         &ui,
+        ListSelection::new(&ui, SelectionMode::Single),
         [TableColumn::new("a", "A"), TableColumn::new("b", "B")],
         TableSource::new(Cells(4)),
-        ListSelection::new(&ui, SelectionMode::Single),
     )?;
     let table = ui.mount_tree(Element::new("table", Table::new(&state, ROW)?))?;
     ui.flush(Duration::ZERO)?;
@@ -545,9 +545,9 @@ fn finite_extreme_flex_weights_keep_layout_valid() -> TestResult {
             .collect::<Result<Vec<_>, _>>()?;
         let controller = TableController::new(
             &ui,
+            ListSelection::new(&ui, SelectionMode::Single),
             columns,
             TableSource::new(Cells(1)),
-            ListSelection::new(&ui, SelectionMode::Single),
         )?;
         ui.mount_tree(Element::new("table", Table::new(&controller, ROW)?))?;
         ui.flush(Duration::ZERO)?;
@@ -588,9 +588,9 @@ fn finite_extreme_fixed_widths_keep_layout_valid() -> TestResult {
             .collect::<Vec<_>>();
         let controller = TableController::new(
             &ui,
+            ListSelection::new(&ui, SelectionMode::Single),
             columns,
             TableSource::new(Cells(1)),
-            ListSelection::new(&ui, SelectionMode::Single),
         )?;
         ui.mount_tree(Element::new("table", Table::new(&controller, ROW)?))?;
         ui.flush(Duration::ZERO)?;
@@ -657,6 +657,7 @@ fn capability_fixture(columns: &[(&str, bool)]) -> Result<Fixture, Box<dyn std::
     ui.set_viewport(Viewport::new(columns.len() as f32 * WIDTH, 200.0, 1.0)?)?;
     let state = TableController::new(
         &ui,
+        ListSelection::new(&ui, SelectionMode::Single),
         columns.iter().map(|(key, movable)| {
             TableColumn::new(*key, *key)
                 .width(Length::new(WIDTH).unwrap())
@@ -664,7 +665,6 @@ fn capability_fixture(columns: &[(&str, bool)]) -> Result<Fixture, Box<dyn std::
                 .resizable(true)
         }),
         TableSource::new(Cells(4)),
-        ListSelection::new(&ui, SelectionMode::Single),
     )?;
     let table = ui.mount_tree(Element::new("table", Table::new(&state, ROW)?))?;
     ui.flush(Duration::ZERO)?;
@@ -897,12 +897,12 @@ fn direct_restore_after_shutdown_rejects_without_changing_columns() -> TestResul
         let mut ui = Runtime::new();
         let state = TableController::new(
             &ui,
+            ListSelection::new(&ui, SelectionMode::Single),
             [
                 TableColumn::new("a", "A").movable(true),
                 TableColumn::new("b", "B").movable(true),
             ],
             TableSource::new(Cells(1)),
-            ListSelection::new(&ui, SelectionMode::Single),
         )?;
         let mut table = Table::new(&state, ROW)?;
         let before = table.workspace_state()?;
@@ -943,12 +943,12 @@ fn direct_restore_during_update_preserves_columns_and_capture() -> TestResult {
         let mut ui = Runtime::new();
         let state = TableController::new(
             &ui,
+            ListSelection::new(&ui, SelectionMode::Single),
             [
                 TableColumn::new("a", "A").movable(true),
                 TableColumn::new("b", "B").movable(true),
             ],
             TableSource::new(Cells(1)),
-            ListSelection::new(&ui, SelectionMode::Single),
         )?;
         let columns = state.columns();
         let counts = state.filter_counts().get()?;
@@ -998,6 +998,7 @@ fn publication_failure_restores_existing_user_sized_columns() -> TestResult {
         let runtime = ui.borrow();
         TableController::new(
             &*runtime,
+            ListSelection::new(&*runtime, SelectionMode::Single),
             [
                 TableColumn::new("a", "A").movable(true),
                 TableColumn::new("b", "B").movable(true),
@@ -1006,7 +1007,6 @@ fn publication_failure_restores_existing_user_sized_columns() -> TestResult {
                 runtime: Rc::downgrade(&ui),
                 armed: armed.clone(),
             }),
-            ListSelection::new(&*runtime, SelectionMode::Single),
         )?
     };
     let mut table = Table::new(&state, ROW)?;

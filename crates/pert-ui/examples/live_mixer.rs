@@ -499,7 +499,7 @@ fn mount(
     let depth = mixer.depth.map(|depth| format!("Undo: {depth}"))?;
     // These commands report their own outcome in the status line; a refused
     // or failed invocation would also be in the receipt.
-    let report = |_: CommandReceipt, _: &mut EventContext| Ok(());
+    let report = |_: &mut EventContext, _: CommandReceipt| Ok(());
     let toolbar = Row::new([
         Element::new("undo", Button::command(ui, &undo, report)?),
         Element::new(

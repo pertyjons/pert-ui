@@ -45,6 +45,9 @@ impl NumberInputError {
     /// `decimal_places` on [`DecimalInput`], [`InlineDecimal`] and the
     /// numeric controls; a larger value
     /// is [`Self::InvalidPrecision`].
+    ///
+    /// It lives on this error because it bounds several editors, not one:
+    /// [`Self::InvalidPrecision`] is the one variant that reports it.
     pub const MAX_PRECISION: u8 = 15;
 }
 

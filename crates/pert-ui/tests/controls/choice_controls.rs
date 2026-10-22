@@ -19,11 +19,11 @@ fn shared_boolean_updates_cancelled_clicks_and_keyboard_repeats() {
         .mount_tree(Element::new(
             "root",
             Column::new([
-                Element::new("check", Checkbox::new("Enabled", value.clone())),
-                Element::new("toggle", Toggle::new("Enabled", value.clone())),
+                Element::new("check", Checkbox::new(value.clone(), "Enabled")),
+                Element::new("toggle", Toggle::new(value.clone(), "Enabled")),
                 Element::new(
                     "disabled",
-                    Checkbox::new("Disabled", value.clone()).disabled(),
+                    Checkbox::new(value.clone(), "Disabled").disabled(),
                 ),
             ]),
         ))
@@ -141,7 +141,7 @@ fn successful_clicks_escape_outside_and_unowned_buttons() {
     let id = ui
         .mount_tree(Element::new(
             "checkbox",
-            Checkbox::new("Enabled", value.clone()),
+            Checkbox::new(value.clone(), "Enabled"),
         ))
         .unwrap();
     ui.flush(Duration::ZERO).unwrap();
@@ -188,7 +188,7 @@ fn successful_clicks_escape_outside_and_unowned_buttons() {
     ui.unmount(&id).unwrap();
     ui.mount_tree(Element::new(
         "checkbox",
-        Checkbox::new("Replacement", value.clone()),
+        Checkbox::new(value.clone(), "Replacement"),
     ))
     .unwrap();
     ui.flush(Duration::ZERO).unwrap();

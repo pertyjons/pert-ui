@@ -74,8 +74,8 @@ fn tree(
     ui.set_viewport(Viewport::new(300.0, 200.0, 1.0)?)?;
     let state = TreeController::new(
         &ui,
-        TreeSource::new(Outline),
         ListSelection::new(&ui, SelectionMode::Single),
+        TreeSource::new(Outline),
     )?;
     state.set_expanded("parent", expanded)?;
     ui.mount_tree(Element::new("tree", Tree::new(&state, 24.0)?))?;

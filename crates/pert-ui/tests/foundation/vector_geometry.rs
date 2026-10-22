@@ -69,7 +69,7 @@ fn width(value: f32) -> Length {
 }
 
 fn color() -> Color {
-    Color::rgba(0.2, 0.4, 0.8, 1.0).expect("valid test color")
+    Color::from_linear(0.2, 0.4, 0.8, 1.0).expect("valid test color")
 }
 
 #[test]
@@ -475,7 +475,7 @@ fn a_self_overlapping_stroke_is_one_mask_so_translucency_never_doubles() -> Test
         p.stroke_polyline(
             &[pt(0.0, 8.0), pt(16.0, 8.0), pt(8.0, 0.0), pt(8.0, 16.0)],
             StrokeStyle::new(width(2.0)),
-            Color::rgba(1.0, 1.0, 1.0, 0.5)?,
+            Color::from_linear(1.0, 1.0, 1.0, 0.5)?,
         )
     })?;
     assert_eq!(list.len(), 1);

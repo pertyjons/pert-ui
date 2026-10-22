@@ -61,7 +61,7 @@ fn builders_replace_each_other_and_release_the_old_binding() -> TestResult {
     ui.set_viewport(Viewport::new(200.0, 100.0, 1.0)?)?;
     let role = ui.signal(ColorRole::Surface);
     let error = role_color(&ui, ColorRole::Error)?;
-    let literal = Color::rgba(0.25, 0.5, 0.75, 1.0)?;
+    let literal = Color::from_linear(0.25, 0.5, 0.75, 1.0)?;
     let root = ui.mount_tree(Element::new(
         "root",
         Column::new([strip(

@@ -389,7 +389,7 @@ fn spinner_animation_multiplies_the_configured_primary_alpha() {
                 .set_color(
                     ThemeMode::Dark,
                     ColorRole::Primary,
-                    Color::rgba(r, g, b, alpha).unwrap(),
+                    Color::from_linear(r, g, b, alpha).unwrap(),
                 )
                 .unwrap();
             ui.flush(ui.now()).unwrap();

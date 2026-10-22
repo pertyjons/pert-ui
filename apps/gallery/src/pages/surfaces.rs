@@ -50,7 +50,7 @@ pub(crate) fn menu_bar(ui: &mut Runtime) -> Result<Element, AppError> {
     // A refused or failed invocation is reported, never lost.
     let receipts = |status: &Signal<String>| {
         let status = status.clone();
-        move |receipt: CommandReceipt, _: &mut EventContext| {
+        move |_: &mut EventContext, receipt: CommandReceipt| {
             if let CommandStatus::Finished(Err(error)) = receipt.status() {
                 status.set(format!("Command failed: {error}"))?;
             }
@@ -103,7 +103,7 @@ pub(crate) fn menu_bar(ui: &mut Runtime) -> Result<Element, AppError> {
                 vec![
                     // `on_change` reports the user's own choice, never an
                     // application write.
-                    MenuItem::toggle("grid", "Show grid", grid.clone()).on_change({
+                    MenuItem::toggle("grid", grid.clone(), "Show grid").on_change({
                         let status = status.clone();
                         move |_, shown| {
                             status.set(format!(
@@ -113,11 +113,11 @@ pub(crate) fn menu_bar(ui: &mut Runtime) -> Result<Element, AppError> {
                         }
                     }),
                     MenuItem::separator(),
-                    MenuItem::radio("zoom-50", "50%", zoom.clone(), 50)
+                    MenuItem::radio("zoom-50", zoom.clone(), 50, "50%")
                         .on_change(chose(&status, "50%")),
-                    MenuItem::radio("zoom-100", "100%", zoom.clone(), 100)
+                    MenuItem::radio("zoom-100", zoom.clone(), 100, "100%")
                         .on_change(chose(&status, "100%")),
-                    MenuItem::radio("zoom-200", "200%", zoom.clone(), 200)
+                    MenuItem::radio("zoom-200", zoom.clone(), 200, "200%")
                         .on_change(chose(&status, "200%")),
                 ],
             ),
@@ -446,9 +446,9 @@ pub(crate) fn floating_windows(ui: &Runtime) -> Result<Element, AppError> {
                         Row::new([
                             Element::new(
                                 "output-enabled",
-                                Checkbox::new("Enabled", enabled.clone()),
+                                Checkbox::new(enabled.clone(), "Enabled"),
                             ),
-                            Element::new("output-muted", Toggle::new("Mute", ui.signal(false))),
+                            Element::new("output-muted", Toggle::new(ui.signal(false), "Mute")),
                         ]),
                     ),
                     Element::new(
@@ -536,7 +536,7 @@ pub(crate) fn floating_windows(ui: &Runtime) -> Result<Element, AppError> {
                                         ),
                                         Element::new(
                                             "properties-enabled",
-                                            Checkbox::new("Enabled", enabled),
+                                            Checkbox::new(enabled, "Enabled"),
                                         ),
                                         Element::new(
                                             "open-window-dialog",
@@ -634,7 +634,7 @@ pub(crate) fn floating_windows(ui: &Runtime) -> Result<Element, AppError> {
                             Row::new([
                                 Element::new(
                                     "window-resize-permission",
-                                    Checkbox::new("Allow Out-1 resizing", lock),
+                                    Checkbox::new(lock, "Allow Out-1 resizing"),
                                 ),
                                 Element::new(
                                     "restore-windows",

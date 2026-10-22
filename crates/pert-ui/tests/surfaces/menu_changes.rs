@@ -78,9 +78,9 @@ fn user_choices_report_the_new_checked_state_once() {
         &ui,
         "View",
         vec![
-            MenuItem::toggle("grid", "Show grid", grid.clone()).on_change(logging(&log, "grid")),
-            MenuItem::radio("small", "100%", zoom.clone(), 100).on_change(logging(&log, "small")),
-            MenuItem::radio("large", "200%", zoom.clone(), 200).on_change(logging(&log, "large")),
+            MenuItem::toggle("grid", grid.clone(), "Show grid").on_change(logging(&log, "grid")),
+            MenuItem::radio("small", zoom.clone(), 100, "100%").on_change(logging(&log, "small")),
+            MenuItem::radio("large", zoom.clone(), 200, "200%").on_change(logging(&log, "large")),
         ],
     )
     .unwrap();
@@ -116,7 +116,7 @@ fn a_failing_handler_keeps_the_write_and_is_not_replayed() {
         &ui,
         "View",
         vec![
-            MenuItem::toggle("grid", "Show grid", grid.clone()).on_change(move |_, _| {
+            MenuItem::toggle("grid", grid.clone(), "Show grid").on_change(move |_, _| {
                 *count.borrow_mut() += 1;
                 Err(ApplicationError::from("the setting could not be applied").into())
             }),
@@ -148,7 +148,7 @@ fn a_redescription_replaces_and_removes_the_handler() {
     let grid = ui.signal(false);
     let log = Log::default();
     let menu = |ui: &Runtime, name: Option<&'static str>| {
-        let mut row = MenuItem::toggle("grid", "Show grid", grid.clone());
+        let mut row = MenuItem::toggle("grid", grid.clone(), "Show grid");
         if let Some(name) = name {
             row = row.on_change(logging(&log, name));
         }
@@ -196,7 +196,7 @@ fn rows_without_a_write_of_their_own_ignore_it_and_disabled_rows_write_nothing()
         vec![
             MenuItem::new("plain", "Plain", move |_| count.set(count.get()? + 1))
                 .on_change(logging(&log, "plain")),
-            MenuItem::toggle("grid", "Show grid", grid.clone())
+            MenuItem::toggle("grid", grid.clone(), "Show grid")
                 .on_change(logging(&log, "grid"))
                 .disabled(),
         ],
@@ -224,7 +224,7 @@ fn context_menus_and_menu_bar_titles_report_too_and_detached_work_survives() {
         &ui,
         Element::new("target", Button::new("Target", |_| Ok(()))),
         vec![
-            MenuItem::toggle("wrap", "Wrap", wrap.clone()).on_change(move |cx, _| {
+            MenuItem::toggle("wrap", wrap.clone(), "Wrap").on_change(move |cx, _| {
                 let done = done.clone();
                 let _receipt = cx.defer_detached(move |_| done.set(true))?;
                 Ok(())
@@ -239,11 +239,11 @@ fn context_menus_and_menu_bar_titles_report_too_and_detached_work_survives() {
                 "view",
                 "View",
                 vec![
-                    MenuItem::toggle("grid", "Show grid", grid.clone())
+                    MenuItem::toggle("grid", grid.clone(), "Show grid")
                         .on_change(logging(&log, "grid")),
                 ],
             ),
-            MenuItem::toggle("ruler", "Ruler", ruler.clone()).on_change(logging(&log, "ruler")),
+            MenuItem::toggle("ruler", ruler.clone(), "Ruler").on_change(logging(&log, "ruler")),
         ],
     )
     .unwrap()
@@ -311,7 +311,7 @@ fn pointer_choices_in_nested_and_context_menus_report() {
     let context = ContextMenu::new(
         &ui,
         Element::new("target", Button::new("Target", |_| Ok(()))),
-        vec![MenuItem::toggle("wrap", "Wrap", wrap.clone()).on_change(logging(&log, "wrap"))],
+        vec![MenuItem::toggle("wrap", wrap.clone(), "Wrap").on_change(logging(&log, "wrap"))],
     )
     .unwrap();
     let menu = Menu::new(
@@ -321,7 +321,7 @@ fn pointer_choices_in_nested_and_context_menus_report() {
             "more",
             "More",
             vec![
-                MenuItem::toggle("nested", "Nested", nested.clone())
+                MenuItem::toggle("nested", nested.clone(), "Nested")
                     .on_change(logging(&log, "nested")),
             ],
         )],
@@ -353,7 +353,7 @@ fn a_direct_menu_bar_title_reports_when_chosen_by_keyboard() {
     let log = Log::default();
     let bar = MenuBar::new(
         &ui,
-        vec![MenuItem::toggle("ruler", "Ruler", ruler.clone()).on_change(logging(&log, "ruler"))],
+        vec![MenuItem::toggle("ruler", ruler.clone(), "Ruler").on_change(logging(&log, "ruler"))],
     )
     .unwrap()
     .content(Element::new("body", Label::new("Body")));

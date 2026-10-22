@@ -249,10 +249,10 @@ fn an_accepted_send_wakes_the_host_and_a_refused_one_does_not() {
     let mut ui = Runtime::new();
     let wakes = Arc::new(AtomicUsize::new(0));
     let counter = wakes.clone();
-    ui.set_wake_delivery(Box::new(move || {
+    ui.set_wake_delivery(move || {
         counter.fetch_add(1, Ordering::SeqCst);
         true
-    }));
+    });
     let mailbox = ui.mailbox(capacity(1), |_: u8| Ok(())).unwrap();
     let sender = mailbox.sender();
     sender.send(1).unwrap();

@@ -100,11 +100,12 @@ type Coverage = Option<(MaskImage, Rect)>;
 /// The cache is bounded by the current/previous scene, not its history.
 ///
 /// Curve subdivision targets a maximum chord deviation of 0.2 physical pixels.
-/// Flattening admits at most 1,048,576 generated points per vector, including
-/// subpath starts. If the requested subdivision cannot fit, preparation returns
-/// [`DrawError::Path`] holding [`PathError::TooLarge`](crate::PathError::TooLarge)
-/// instead of silently reducing the subdivision count. The stroke outline has
-/// a separate budget of 1,048,576 edges when expanded to filled polygons.
+/// Flattening admits at most [`Self::MAX_FLATTENED_POINTS`] generated points
+/// per vector, including subpath starts. If the requested subdivision cannot
+/// fit, preparation returns [`DrawError::Path`] holding
+/// [`PathError::TooLarge`](crate::PathError::TooLarge) instead of silently
+/// reducing the subdivision count. The stroke outline has a separate budget of
+/// [`Self::MAX_STROKE_EDGES`] edges when expanded to filled polygons.
 ///
 /// This is a fallback for vectors within a graphics backend, not a software
 /// window renderer. Backends can instead consume the original geometry directly.
@@ -113,6 +114,17 @@ pub struct VectorRasterizer {
     cache: std::collections::HashMap<u64, Vec<(Key, Coverage)>>,
 }
 impl VectorRasterizer {
+    /// The most points flattening may generate for one vector, subpath starts
+    /// included: 1,048,576 (2^20). A vector whose curves need more at the
+    /// 0.2-pixel tolerance is rejected with [`DrawError::Path`] holding
+    /// [`PathError::TooLarge`](crate::PathError::TooLarge) rather than
+    /// flattened more coarsely.
+    pub const MAX_FLATTENED_POINTS: usize = crate::geometry::MAX_EDGES;
+    /// The most edges one stroke's outline may expand to as filled polygons:
+    /// 1,048,576 (2^20), separate from [`Self::MAX_FLATTENED_POINTS`]. A
+    /// stroke over it is rejected with [`DrawError::Path`] holding
+    /// [`PathError::TooLarge`](crate::PathError::TooLarge).
+    pub const MAX_STROKE_EDGES: usize = crate::geometry::MAX_EDGES;
     /// The most sub-scanline steps covering one vector may take: 16,777,216
     /// (2^24). Coverage is
     /// sampled on four sub-scanlines per physical pixel row, and each edge of

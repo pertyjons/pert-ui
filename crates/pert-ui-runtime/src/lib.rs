@@ -102,7 +102,7 @@ pub use chip::Chip;
 pub use choice_controls::{
     Checkbox, Choice, ChoiceError, InlineChoice, RadioGroup, SegmentedControl, Toggle,
 };
-pub use collapsible::{Accordion, Collapsible, ExpandMode, Section};
+pub use collapsible::{Accordion, Collapsible, ExpandMode, ExpansionChange, Section};
 pub use command_palette::{
     CommandMatcher, CommandPalette, CommandPaletteController, CommandPaletteStatus,
 };

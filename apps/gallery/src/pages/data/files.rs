@@ -111,8 +111,8 @@ pub(crate) fn file_browser(ui: &mut Runtime) -> Result<Element, AppError> {
     let (sender, latency) = (mailbox.sender(), slow.clone());
     let controller = FileBrowserController::new(
         ui,
-        [ROOT],
         ListSelection::new(ui, SelectionMode::Multiple),
+        [ROOT],
         move |request| {
             let sender = sender.clone();
             // The callback must not block: a slow listing waits on a thread.

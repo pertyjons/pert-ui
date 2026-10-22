@@ -170,7 +170,7 @@ enum Session {
 /// resize and restore the width from before it. [`Self::resizable`]`(false)`
 /// removes the zone, the Tab stop and keyboard resizing.
 ///
-/// **Shared width and persistence.** [`Self::shared_label_width`] binds the
+/// **Shared width and persistence.** [`Self::bind_label_width`] binds the
 /// width to an application signal, so several grids, for example one per
 /// [`Accordion`] section, keep their columns aligned: a committed resize on
 /// any of them writes the signal, and every grid bound to it follows. A bound
@@ -211,9 +211,9 @@ enum Session {
 ///     "inspector",
 ///     PropertyGrid::new([
 ///         Property::new("name", "Name", Element::new("input", TextField::new(name))),
-///         Property::new("enabled", "Enabled", Element::new("check", Checkbox::new("", enabled))),
+///         Property::new("enabled", "Enabled", Element::new("check", Checkbox::new(enabled, ""))),
 ///     ])
-///     .shared_label_width(width.clone()),
+///     .bind_label_width(width.clone()),
 /// ))?;
 /// ui.flush(Duration::ZERO)?;
 /// let grid = ui.inspect().components.into_iter().find(|c| c.key == "inspector").unwrap();
@@ -289,7 +289,7 @@ impl PropertyGrid {
     /// Starts an unbound grid with this label column width instead of the
     /// labels' width. A resize or a workspace restore decides after that;
     /// describing the grid again does not change it. Ignored while
-    /// [`Self::shared_label_width`] binds the width.
+    /// [`Self::bind_label_width`] binds the width.
     pub fn label_width(mut self, width: Length) -> Self {
         self.preference = Some(width);
         self.report = crate::geometry_report::GeometryReport::new(Some(width));
@@ -307,7 +307,7 @@ impl PropertyGrid {
     /// keys are all released, and [`ChangeOrigin::Restore`] for
     /// [`Runtime::restore_workspace`]. A resize in progress is a preview and
     /// is not reported; Escape, focus loss and revoking [`Self::resizable`]
-    /// report nothing. With [`Self::shared_label_width`] the grid reports its
+    /// report nothing. With [`Self::bind_label_width`] the grid reports its
     /// own committed resizes, and a write to the signal by the application or
     /// another grid is the application's own state, not reported here. The
     /// callback may write bindings; its error propagates from the flush after
@@ -339,7 +339,7 @@ impl PropertyGrid {
     /// width is clamped to what each grid's allocation permits without
     /// writing the clamped value back. A bound grid stays out of workspace
     /// persistence.
-    pub fn shared_label_width(mut self, width: impl Into<Signal<Length>>) -> Self {
+    pub fn bind_label_width(mut self, width: impl Into<Signal<Length>>) -> Self {
         let width: Signal<Length> = width.into();
         self.shared = Some(width);
         self

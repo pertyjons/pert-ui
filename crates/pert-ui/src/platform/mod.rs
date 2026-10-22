@@ -79,9 +79,8 @@ pub(crate) fn run(mut app: App) -> Result<(), AppError> {
     // once delivery exists; a notification before this point only marks the
     // runtime due, which the first `about_to_wait` observes.
     let wake_proxy = event_loop.create_proxy();
-    app.runtime.set_wake_delivery(Box::new(move || {
-        wake_proxy.send_event(UserEvent::Wake).is_ok()
-    }));
+    app.runtime
+        .set_wake_delivery(move || wake_proxy.send_event(UserEvent::Wake).is_ok());
     let mut runner = Runner::new(app, event_loop.create_proxy());
     let event_loop_error = event_loop
         .run_app(&mut runner)

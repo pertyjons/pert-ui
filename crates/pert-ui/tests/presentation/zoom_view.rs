@@ -717,11 +717,11 @@ fn a_pinch_over_built_in_controls_reaches_the_view() {
         ),
         (
             "checkbox",
-            Element::new("checkbox", Checkbox::new("Check", ui.signal(false))),
+            Element::new("checkbox", Checkbox::new(ui.signal(false), "Check")),
         ),
         (
             "toggle",
-            Element::new("toggle", Toggle::new("Toggle", ui.signal(false))),
+            Element::new("toggle", Toggle::new(ui.signal(false), "Toggle")),
         ),
         (
             "segments",

@@ -317,12 +317,12 @@ fn a_table_filter_matches_any_cell_and_survives_a_new_source() -> TestResult {
     let selection = ListSelection::new(&ui, SelectionMode::Single);
     let table = TableController::new(
         &ui,
+        selection,
         [
             TableColumn::new("name", "Name"),
             TableColumn::new("light", "Light"),
         ],
         TableSource::new(Plants),
-        selection,
     )?;
     let query = ui.signal(String::new());
     let root = ui.mount_tree(Element::new(
@@ -402,11 +402,11 @@ fn a_tree_filter_shows_matches_with_ancestors_through_a_temporary_layer() -> Tes
     let asked = Rc::new(RefCell::new(Vec::new()));
     let tree = TreeController::new(
         &ui,
+        ListSelection::new(&ui, SelectionMode::Single),
         TreeSource::new(Library {
             asked: asked.clone(),
             lazy: false,
         }),
-        ListSelection::new(&ui, SelectionMode::Single),
     )?;
     let query = ui.signal(String::new());
     let root = ui.mount_tree(Element::new(
@@ -456,11 +456,11 @@ fn a_lazy_tree_is_filtered_only_over_what_it_listed() -> TestResult {
     let asked = Rc::new(RefCell::new(Vec::new()));
     let tree = TreeController::new(
         &ui,
+        ListSelection::new(&ui, SelectionMode::Single),
         TreeSource::new(Library {
             asked: asked.clone(),
             lazy: true,
         }),
-        ListSelection::new(&ui, SelectionMode::Single),
     )?;
     let query = ui.signal(String::new());
     let root = ui.mount_tree(Element::new(
@@ -488,11 +488,11 @@ fn a_lazy_tree_is_filtered_only_over_what_it_listed() -> TestResult {
 fn library_tree(ui: &Runtime, mode: SelectionMode) -> Result<TreeController, RuntimeError> {
     TreeController::new(
         ui,
+        ListSelection::new(ui, mode),
         TreeSource::new(Library {
             asked: Rc::new(RefCell::new(Vec::new())),
             lazy: false,
         }),
-        ListSelection::new(ui, mode),
     )
 }
 
@@ -591,12 +591,12 @@ fn a_new_table_source_moves_the_active_row_and_updates_the_counts() -> TestResul
     let selection = ListSelection::new(&ui, SelectionMode::Single);
     let table = TableController::new(
         &ui,
+        selection.clone(),
         [
             TableColumn::new("name", "Name"),
             TableColumn::new("light", "Light"),
         ],
         TableSource::new(Plants),
-        selection.clone(),
     )?;
     let query = ui.signal(String::new());
     let root = ui.mount_tree(Element::new(

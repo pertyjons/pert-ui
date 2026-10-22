@@ -790,7 +790,7 @@ fn a_tree_reveal_reports_rows_and_collapsed_nodes() -> TestResult {
     }
     let mut ui = ui();
     let selection = ListSelection::new(&ui, SelectionMode::Single);
-    let state = TreeController::new(&ui, TreeSource::new(Nodes), selection)?;
+    let state = TreeController::new(&ui, selection, TreeSource::new(Nodes))?;
     ui.mount_tree(Element::new("tree", Tree::new(&state, 24.0)?))?;
     flush(&mut ui);
     let collapsed = state.reveal("top/400")?;

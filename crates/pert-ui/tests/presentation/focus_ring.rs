@@ -136,7 +136,7 @@ fn a_focused_pressed_button_shows_its_ring_in_both_built_in_palettes() -> Result
 }
 
 fn accent_palette() -> std::result::Result<(Palette, Color), Box<dyn std::error::Error>> {
-    let accent = Color::rgba(0.7, 0.0, 0.7, 1.0)?;
+    let accent = Color::from_linear(0.7, 0.0, 0.7, 1.0)?;
     let palette = Palette::dark()
         .with_color(ColorRole::Primary, accent)
         .with_color(ColorRole::OnPrimary, Color::WHITE);
@@ -155,7 +155,7 @@ fn overriding_primary_moves_pressed_colors_and_leaves_focus_alone() -> Result {
     assert!(uses(&scene, defaults.color(ColorRole::FocusRing)));
     // An explicit pressed color is kept although Primary is overridden.
     let mut ui = runtime(1.0)?;
-    let pressed = Color::rgba(0.1, 0.5, 0.1, 1.0)?;
+    let pressed = Color::from_linear(0.1, 0.5, 0.1, 1.0)?;
     ui.theme().set_palette(
         ThemeMode::Dark,
         palette.with_color(ColorRole::ButtonPressed, pressed),

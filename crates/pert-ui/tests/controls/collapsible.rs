@@ -152,7 +152,7 @@ fn collapsed_content_keeps_its_state_and_focus_moves_to_the_header() -> TestResu
                 ]),
             ),
         )
-        .bound(open.clone()),
+        .bind_expanded(open.clone()),
     ))?;
     flush(&mut ui);
     let inner = find(&ui, &root, "inner");
@@ -178,7 +178,7 @@ fn a_bound_section_follows_and_writes_its_signal_and_is_not_persisted() -> TestR
         "section",
         Collapsible::new("Bound", label("body"))
             .expanded(true)
-            .bound(open.clone()),
+            .bind_expanded(open.clone()),
     ))?;
     flush(&mut ui);
     assert!(
@@ -241,7 +241,7 @@ fn a_bound_section_reveal_writes_the_signal_and_a_disabled_one_refuses() -> Test
         Column::new([
             Element::new(
                 "bound",
-                Collapsible::new("Bound", button("bound-target")).bound(open.clone()),
+                Collapsible::new("Bound", button("bound-target")).bind_expanded(open.clone()),
             ),
             Element::new(
                 "disabled",
@@ -910,7 +910,7 @@ fn expansion_binding_handoff_cancels_keyboard_and_pointer_activation() {
         let describe = |value| {
             vec![Element::new(
                 "section",
-                Collapsible::new("Title", label("body")).bound(value),
+                Collapsible::new("Title", label("body")).bind_expanded(value),
             )]
         };
         ui.reconcile_children(&root, describe(old.clone())).unwrap();
@@ -966,9 +966,10 @@ fn accordion_reports_origins_and_keeps_accepted_state_after_callback_failure() -
                 } else {
                     ExpandMode::Multiple
                 })
-                .on_change(move |_, keys, origin| {
-                    log.borrow_mut().push((keys.to_vec(), origin));
-                    mirror.set(keys.to_vec())?;
+                .on_change(move |_, change| {
+                    log.borrow_mut()
+                        .push((change.expanded.clone(), change.origin));
+                    mirror.set(change.expanded.clone())?;
                     if fail.get()? {
                         Err(RuntimeError::EmptyWindowTitle)
                     } else {
@@ -1018,7 +1019,7 @@ fn accordion_reports_origins_and_keeps_accepted_state_after_callback_failure() -
 fn accordion_initial_restore_is_silent_and_callback_removal_discards_notifications() -> TestResult {
     let mut ui = ui();
     let mut accordion = Accordion::new([section("a", label("body"))])
-        .on_change(|_, _, _| panic!("initial restore must be silent"));
+        .on_change(|_, _| panic!("initial restore must be silent"));
     let state = ViewState::new("accordion")?.with(
         "open",
         WorkspaceValue::map([("a".to_owned(), WorkspaceValue::flag(true))])?,

@@ -36,8 +36,8 @@ fn controls_report_role_name_value_and_the_actions_their_state_allows() {
             Element::new("title", Label::new("Transport")),
             Element::new("play", Button::new("Play", |_| Ok(()))),
             Element::new("stop", Button::new("Stop", |_| Ok(())).disabled()),
-            Element::new("arm", Checkbox::new("Arm", armed.clone())),
-            Element::new("loop", Toggle::new("Loop", ui.signal(true))),
+            Element::new("arm", Checkbox::new(armed.clone(), "Arm")),
+            Element::new("loop", Toggle::new(ui.signal(true), "Loop")),
             Element::new(
                 "mode",
                 RadioGroup::new(
@@ -161,7 +161,7 @@ fn a_field_names_describes_and_invalidates_the_control_it_wraps() {
                 "agree-field",
                 Field::new(Element::new(
                     "agree",
-                    Checkbox::new("I agree", ui.signal(false)),
+                    Checkbox::new(ui.signal(false), "I agree"),
                 ))
                 .label("Terms"),
             ),

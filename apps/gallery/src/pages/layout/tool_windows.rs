@@ -167,7 +167,7 @@ fn layout(
         .group(StripeGroup::End)
         .overlay(true),
     )
-    .names(names.clone())
+    .bind_show_names(names.clone())
     .controller(controller)
     .on_change(move |_, change| {
         let what = match change.kind {

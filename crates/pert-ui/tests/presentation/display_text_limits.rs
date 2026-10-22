@@ -73,9 +73,9 @@ fn a_long_line_in_an_ellipsis_cell_is_cut_and_keeps_its_full_name() {
     let line = long_line();
     let state = TableController::new(
         &ui,
+        ListSelection::new(&ui, SelectionMode::Single),
         [TableColumn::new("text", "Text")],
         TableSource::new(Lines(line.clone())),
-        ListSelection::new(&ui, SelectionMode::Single),
     )
     .unwrap();
     ui.mount_tree(Element::new("table", Table::new(&state, 24.0).unwrap()))

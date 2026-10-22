@@ -123,9 +123,13 @@ impl SplitSizing {
     /// The rule and its value, for an application that reads a preference
     /// [`SplitPane::on_resize`] reported.
     #[must_use]
-    pub const fn rule(self) -> SplitRule {
+    pub fn rule(self) -> SplitRule {
         match self.0 {
-            Sizing::Ratio(value) => SplitRule::Ratio(value),
+            // Every stored ratio passed `Self::ratio`'s check or is `EQUAL`'s
+            // 0.5, so the conversion cannot fail.
+            Sizing::Ratio(value) => {
+                SplitRule::Ratio(NormalizedValue::try_from(value).unwrap_or(NormalizedValue::MIN))
+            }
             Sizing::First(extent) => SplitRule::First(extent),
             Sizing::Second(extent) => SplitRule::Second(extent),
             Sizing::ContentFirst => SplitRule::ContentFirst,
@@ -139,9 +143,9 @@ impl SplitSizing {
 #[derive(Clone, Copy, Debug, PartialEq)]
 #[non_exhaustive]
 pub enum SplitRule {
-    /// The first child's share of the space after the divider, in `0..=1`
+    /// The first child's share of the space after the divider
     /// ([`SplitSizing::ratio`], [`SplitSizing::EQUAL`]).
-    Ratio(f32),
+    Ratio(NormalizedValue),
     /// The first child's extent ([`SplitSizing::first`]).
     First(Length),
     /// The second child's extent ([`SplitSizing::second`]).

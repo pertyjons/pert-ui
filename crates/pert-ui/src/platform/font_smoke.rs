@@ -55,7 +55,7 @@ impl FontSmoke {
                         ],
                     )?,
                 ),
-                Element::new("checkbox", Checkbox::new("Enabled", ui.signal(true))),
+                Element::new("checkbox", Checkbox::new(ui.signal(true), "Enabled")),
             ]),
         ))?;
         Ok(Self {

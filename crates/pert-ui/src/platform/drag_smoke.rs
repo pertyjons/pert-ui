@@ -24,7 +24,7 @@ const CHIP: [u16; 2] = [40, 24];
 /// The preview's color, found in the rendered frame: opaque magenta, which
 /// nothing else in the window draws.
 fn chip_color() -> Result<Color, DrawError> {
-    Color::rgba(1.0, 0.0, 1.0, 1.0)
+    Color::from_linear(1.0, 0.0, 1.0, 1.0)
 }
 
 /// The payload the zones recognize; the tab strip's own payload is private.
@@ -117,7 +117,7 @@ impl Component for Zone {
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
         p.fill_rect(
             Rect::new(4.0, 4.0, 112.0, 72.0)?,
-            Color::rgba(0.2, 0.2, 0.2, 1.0)?,
+            Color::from_linear(0.2, 0.2, 0.2, 1.0)?,
         );
         Ok(())
     }

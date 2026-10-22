@@ -380,8 +380,8 @@ fn native_focus_loss_closes_modal_and_nonmodal_picker() {
 #[test]
 fn highlighted_picker_labels_use_the_foreground_paired_with_the_fill() {
     let mut s = setup(|p| p);
-    let tab_text = Color::rgba(0.1, 0.9, 0.2, 1.0).unwrap();
-    let surface_text = Color::rgba(0.8, 0.1, 0.7, 1.0).unwrap();
+    let tab_text = Color::from_linear(0.1, 0.9, 0.2, 1.0).unwrap();
+    let surface_text = Color::from_linear(0.8, 0.1, 0.7, 1.0).unwrap();
     s.ui.theme()
         .set_color(ThemeMode::Dark, ColorRole::OnTab, tab_text)
         .unwrap();

@@ -1194,7 +1194,7 @@ impl Component for ColorPart {
         let ring = painter.metric(MetricRole::FocusWidth);
         let edge = painter.metric(MetricRole::BorderWidth);
         let light = Color::WHITE;
-        let dark = Color::rgba(0.0, 0.0, 0.0, 1.0)?;
+        let dark = Color::from_linear(0.0, 0.0, 0.0, 1.0)?;
         match self.part {
             Part::Area => {
                 let radius = painter.metric(MetricRole::ColorStripThickness) / 2.0;

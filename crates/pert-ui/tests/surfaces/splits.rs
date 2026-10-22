@@ -164,6 +164,20 @@ fn hard_limits_leave_trailing_space_and_preferences_restore_after_clamping() {
     assert!(SplitSizing::ratio(1.01).is_err());
 }
 #[test]
+fn a_ratio_rule_reports_a_normalized_share() {
+    let share = |value: f32| SplitRule::Ratio(NormalizedValue::try_from(value).unwrap());
+    assert_eq!(SplitSizing::EQUAL.rule(), share(0.5));
+    assert_eq!(SplitSizing::ratio(0.25).unwrap().rule(), share(0.25));
+    assert_eq!(
+        SplitSizing::ratio(-0.0).unwrap().rule(),
+        SplitRule::Ratio(NormalizedValue::MIN)
+    );
+    assert_eq!(
+        SplitSizing::ratio(1.0).unwrap().rule(),
+        SplitRule::Ratio(NormalizedValue::MAX)
+    );
+}
+#[test]
 fn child_removal_and_hiding_cancel_pending_resize() {
     let mut ui = ui(208.0);
     let split = ui

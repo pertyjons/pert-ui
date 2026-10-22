@@ -55,11 +55,11 @@ fn fixture() -> Result<Fixture, Box<dyn std::error::Error>> {
     let selection = ListSelection::new(&ui, SelectionMode::Single);
     let state = TreeController::new(
         &ui,
+        selection.clone(),
         TreeSource::new(Outline {
             asked: asked.clone(),
             _alive: alive,
         }),
-        selection.clone(),
     )?;
     let tree = ui.mount_tree(Element::new("tree", Tree::new(&state, ROW)?))?;
     ui.flush(Duration::ZERO)?;
@@ -259,7 +259,7 @@ fn collapsing_keeps_a_multiple_selection_and_moves_only_the_active_item() -> Tes
     ui.set_viewport(Viewport::new(300.0, 200.0, 1.0)?)?;
     let selection = ListSelection::new(&ui, SelectionMode::Multiple);
     let source = folders(&[("", &["a/", "c"]), ("a/", &["x", "y"])]);
-    let state = TreeController::new(&ui, TreeSource::new(source), selection.clone())?;
+    let state = TreeController::new(&ui, selection.clone(), TreeSource::new(source))?;
     let tree = ui.mount_tree(Element::new("tree", Tree::new(&state, ROW)?))?;
     state.set_expanded("a/", true)?;
     selection.select(["x".to_owned(), "c".to_owned()])?;
@@ -293,7 +293,7 @@ fn an_active_item_moved_into_a_collapsed_node_stays_active_and_selected() -> Tes
         ui.set_viewport(Viewport::new(300.0, 200.0, 1.0)?)?;
         let selection = ListSelection::new(&ui, mode);
         let before = folders(&[("", &["a/", "b/"]), ("a/", &["x", "y"]), ("b/", &[])]);
-        let state = TreeController::new(&ui, TreeSource::new(before), selection.clone())?;
+        let state = TreeController::new(&ui, selection.clone(), TreeSource::new(before))?;
         ui.mount_tree(Element::new("tree", Tree::new(&state, ROW)?))?;
         state.set_expanded("a/", true)?;
         selection.set_active(Some("x".into()))?;
@@ -403,7 +403,7 @@ fn the_controller_reveals_a_node_by_key_once_its_ancestors_are_expanded() -> Tes
     let mut ui = Runtime::new();
     ui.set_viewport(Viewport::new(300.0, 200.0, 1.0)?)?;
     let selection = ListSelection::new(&ui, SelectionMode::Single);
-    let state = TreeController::new(&ui, TreeSource::new(Big), selection.clone())?;
+    let state = TreeController::new(&ui, selection.clone(), TreeSource::new(Big))?;
     let tree = ui.mount_tree(Element::new("tree", Tree::new(&state, ROW)?))?;
     ui.flush(Duration::ZERO)?;
     let keys = |ui: &Runtime| -> Vec<String> {
@@ -447,11 +447,11 @@ impl Component for ConstructTreeInUpdate {
         if self.constructed.borrow().is_none() {
             let controller = TreeController::new(
                 cx,
+                ListSelection::new(cx, SelectionMode::Single),
                 TreeSource::new(Outline {
                     asked: Rc::new(RefCell::new(Vec::new())),
                     _alive: Rc::new(()),
                 }),
-                ListSelection::new(cx, SelectionMode::Single),
             )?;
             cx.request_children(vec![Element::new("tree", Tree::new(&controller, ROW)?)]);
             *self.constructed.borrow_mut() = Some(controller);
@@ -570,7 +570,7 @@ fn the_tree_keys_each_built_row_content_with_its_node() -> TestResult {
     let mut ui = Runtime::new();
     ui.set_viewport(Viewport::new(300.0, 200.0, 1.0)?)?;
     let selection = ListSelection::new(&ui, SelectionMode::Single);
-    let state = TreeController::new(&ui, TreeSource::new(SharedKeyNodes), selection)?;
+    let state = TreeController::new(&ui, selection, TreeSource::new(SharedKeyNodes))?;
     let tree = ui.mount_tree(Tree::new(&state, ROW)?.key("tree"))?;
     ui.flush(Duration::ZERO)?;
     for node in ["a", "b"] {

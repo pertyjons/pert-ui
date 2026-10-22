@@ -272,7 +272,7 @@ fn a_tree_reports_cross_keys_as_user_and_controller_writes_as_application() -> T
     let mut ui = Runtime::new();
     ui.set_viewport(Viewport::new(200.0, 200.0, 1.0)?)?;
     let selection = ListSelection::new(&ui, SelectionMode::Single);
-    let state = TreeController::new(&ui, TreeSource::new(Outline), selection.clone())?;
+    let state = TreeController::new(&ui, selection.clone(), TreeSource::new(Outline))?;
     let (log, record) = logging();
     let tree = ui.mount_tree(
         Tree::new(&state, ROW)?
@@ -320,9 +320,9 @@ fn a_table_reports_a_row_click_as_user() -> TestResult {
     let selection = ListSelection::new(&ui, SelectionMode::Single);
     let state = TableController::new(
         &ui,
+        selection,
         [TableColumn::new("number", "Number")],
         TableSource::new(Numbers),
-        selection,
     )?;
     let (log, record) = logging();
     let table = ui.mount_tree(

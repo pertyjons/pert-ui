@@ -340,11 +340,11 @@ impl Runner {
                             crate::Column::new([
                                 crate::Element::new(
                                     "checkbox",
-                                    crate::Checkbox::new("Checkbox", enabled.clone()),
+                                    crate::Checkbox::new(enabled.clone(), "Checkbox"),
                                 ),
                                 crate::Element::new(
                                     "toggle",
-                                    crate::Toggle::new("Toggle", enabled.clone()),
+                                    crate::Toggle::new(enabled.clone(), "Toggle"),
                                 ),
                                 crate::Element::new(
                                     "radio",

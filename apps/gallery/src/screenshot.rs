@@ -91,7 +91,7 @@ pub(crate) fn run(
     ui.set_viewport(Viewport::new(WINDOW.0, WINDOW.1, scale)?)?;
     if palette == ScreenshotPalette::Violet {
         let [red, green, blue] = crate::pages::tools::VIOLET_SEED;
-        let seed = OpaqueColor::try_from(Color::rgba(red, green, blue, 1.0)?)?;
+        let seed = OpaqueColor::try_from(Color::from_linear(red, green, blue, 1.0)?)?;
         ui.theme().set_palette(
             ThemeMode::Dark,
             Palette::from_seeds(ThemeMode::Dark, seed, None),

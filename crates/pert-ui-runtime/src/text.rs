@@ -76,6 +76,10 @@ impl TextError {
     /// the raster scale so the largest size in the text reaches exactly this
     /// value and the coverage is stretched where it is drawn, so the result is
     /// softer. [`TextLayout`] records the scale it used.
+    ///
+    /// It lives on this error because it is a rendering cap, not an input
+    /// limit: no variant reports it, and [`Self::TooLarge`] names it as the
+    /// case that is not an error. It bounds icon rasterization as well as text.
     pub const MAX_FONT_PIXELS: u32 = 256;
 }
 /// A preparation limit that [`TextError::TooLarge`] names.
@@ -104,6 +108,9 @@ pub enum TextLimit {
 impl TextLimit {
     /// The widest and tallest one prepared text may be, in physical pixels at
     /// its effective scale: 8192. Exceeding it is [`TextLimit::RasterSide`].
+    ///
+    /// It lives on this type because [`TextLimit::RasterSide`] is the one
+    /// variant that reports it, for every path that prepares text.
     pub const MAX_RASTER_SIDE: u32 = 8192;
 }
 impl std::fmt::Display for TextLimit {
@@ -2591,8 +2598,9 @@ mod rich_tests {
             .unwrap();
         service
             .prepare_rich(
-                &RichText::new()
-                    .span(TextSpan::new(text).color(Color::rgba(1.0, 0.0, 0.0, 1.0).unwrap())),
+                &RichText::new().span(
+                    TextSpan::new(text).color(Color::from_linear(1.0, 0.0, 0.0, 1.0).unwrap()),
+                ),
                 request,
             )
             .unwrap();

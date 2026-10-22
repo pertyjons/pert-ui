@@ -726,8 +726,8 @@ impl<T> core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::ParameterState
 impl<T> core::panic::unwind_safe::UnwindSafe for pert_ui_core::ParameterState<T> where T: core::panic::unwind_safe::UnwindSafe + core::panic::unwind_safe::RefUnwindSafe, <T as pert_ui_core::family::sealed::Sealed>::Domain: core::panic::unwind_safe::UnwindSafe
 pub struct pert_ui_core::PowerExponent(_)
 impl pert_ui_core::PowerExponent
-pub const pert_ui_core::PowerExponent::MAX: f32
-pub const pert_ui_core::PowerExponent::MIN: f32
+pub const pert_ui_core::PowerExponent::MAX: Self
+pub const pert_ui_core::PowerExponent::MIN: Self
 pub const fn pert_ui_core::PowerExponent::get(self) -> f32
 pub fn pert_ui_core::PowerExponent::new(f32) -> core::result::Result<Self, pert_ui_core::ParameterError>
 impl core::clone::Clone for pert_ui_core::PowerExponent

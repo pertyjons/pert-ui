@@ -42,7 +42,7 @@ impl TableItems for Rows {
             ),
             "quantity" => Element::new("text", Label::new(item.quantity.get().ok()?.to_string())),
             "kind" => Element::new("text", Label::new(item.kind.get().ok()?)),
-            "done" => Element::new("check", Checkbox::new("Done", item.done.clone())),
+            "done" => Element::new("check", Checkbox::new(item.done.clone(), "Done")),
             _ => return None,
         })
     }
@@ -84,6 +84,7 @@ fn make_items(ui: &Runtime, count: usize) -> Vec<Item> {
 fn controller(ui: &Runtime, items: &[Item]) -> TableController {
     TableController::new(
         ui,
+        ListSelection::new(&ui, SelectionMode::Single),
         [
             TableColumn::new("name", "Name").editable(true),
             TableColumn::new("quantity", "Quantity").editable(true),
@@ -92,7 +93,6 @@ fn controller(ui: &Runtime, items: &[Item]) -> TableController {
             TableColumn::new("note", "Note"),
         ],
         TableSource::new(Rows(items.to_vec())),
-        ListSelection::new(&ui, SelectionMode::Single),
     )
     .unwrap()
 }

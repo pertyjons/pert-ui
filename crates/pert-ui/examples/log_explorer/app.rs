@@ -164,9 +164,9 @@ impl View {
             kind,
             controller: TableController::new(
                 ui,
+                ListSelection::new(ui, mode),
                 columns()?,
                 TableSource::new(Rows::new(store, Rc::from([]))),
-                ListSelection::new(ui, mode),
             )?,
             sort: RefCell::new(None),
             order: RefCell::default(),
@@ -332,11 +332,11 @@ impl Explorer {
         let source_lines: Rc<RefCell<BTreeMap<Rc<str>, Vec<LineId>>>> = Rc::default();
         let tree = TreeController::new(
             ui,
+            ListSelection::new(ui, SelectionMode::Single),
             TreeSource::new(Sources {
                 store: store.clone(),
                 lines: source_lines.clone(),
             }),
-            ListSelection::new(ui, SelectionMode::Single),
         )?;
         // The handler needs the explorer, which needs the mailbox: they meet
         // through this slot, filled below.
@@ -871,7 +871,7 @@ pub fn build(ui: &mut Runtime, path: PathBuf) -> Result<(Rc<Explorer>, WidgetId)
         Ok(())
     });
     let following = explorer.clone();
-    let follow = Toggle::new("Follow", &explorer.follow).on_change(move |_, on| {
+    let follow = Toggle::new(&explorer.follow, "Follow").on_change(move |_, on| {
         following.set_tail(on)?;
         following.follow_last()
     });

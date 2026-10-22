@@ -369,7 +369,7 @@ impl Workload {
                         Page::Widgets,
                         Element::new(
                             "widgets-run",
-                            Toggle::new("Run", self.widgets_running.clone()),
+                            Toggle::new(self.widgets_running.clone(), "Run"),
                         ),
                     ),
                     Element::new(
@@ -425,7 +425,7 @@ impl Workload {
         let controls = self.controls.iter().enumerate().map(|(index, value)| {
             Element::new(
                 format!("static-{index:04}"),
-                Checkbox::new(format!("Control {:04}", index + 1), value.clone()),
+                Checkbox::new(value.clone(), format!("Control {:04}", index + 1)),
             )
         });
         Ok(Element::new(
@@ -445,12 +445,12 @@ impl Workload {
                                         Page::Visuals,
                                         Element::new(
                                             "run-live",
-                                            Toggle::new("Run", self.running.clone()),
+                                            Toggle::new(self.running.clone(), "Run"),
                                         ),
                                     ),
                                     Element::new(
                                         "show-live",
-                                        Checkbox::new("Show visuals", self.shown.clone()),
+                                        Checkbox::new(self.shown.clone(), "Show visuals"),
                                     ),
                                     Element::new(
                                         "clear-live-profile",

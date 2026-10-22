@@ -194,7 +194,7 @@ ui.set_viewport(Viewport::new(320.0, 100.0, 1.0)?)?;
 let editable = ui.signal(true);
 let selected = ui.signal(false);
 let control = ui.mount_tree(Element::new("selected",
-    Checkbox::new("Selected", selected).enabled(editable.read_only())))?;
+    Checkbox::new(selected, "Selected").enabled(editable.read_only())))?;
 ui.focus(&control)?;
 ui.key_input(KeyCode::Space, KeyAction::Press)?;
 editable.set(false)?;
@@ -219,8 +219,8 @@ let mut ui = Runtime::new();
 let enabled = ui.signal(true);
 let quality = ui.signal("balanced");
 ui.mount_tree(Element::new("settings", Column::new([
-    Element::new("checkbox", Checkbox::new("Enabled", enabled.clone())),
-    Element::new("switch", Toggle::new("Enabled", enabled)),
+    Element::new("checkbox", Checkbox::new(enabled.clone(), "Enabled")),
+    Element::new("switch", Toggle::new(enabled, "Enabled")),
     Element::new("quality", RadioGroup::new(quality, [
         Choice::new("balanced", "Balanced"),
         Choice::new("precise", "Precise"),

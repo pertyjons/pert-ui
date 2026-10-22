@@ -126,10 +126,10 @@ fn toggle_and_radio_rows_write_their_setting_and_follow_it() {
         &ui,
         "View",
         vec![
-            MenuItem::toggle("grid", "Show grid", grid.clone()),
+            MenuItem::toggle("grid", grid.clone(), "Show grid"),
             MenuItem::separator(),
-            MenuItem::radio("small", "100%", zoom.clone(), 100),
-            MenuItem::radio("large", "200%", zoom.clone(), 200),
+            MenuItem::radio("small", zoom.clone(), 100, "100%"),
+            MenuItem::radio("large", zoom.clone(), 200, "200%"),
             MenuItem::new("plain", "Reset", |_| Ok(())),
         ],
     )
@@ -230,7 +230,7 @@ fn shortcuts_are_presented_and_command_rows_follow_rebinding_and_enablement() {
         "File",
         vec![
             MenuItem::new("new", "New", |_| Ok(())).shortcut(ctrl('n')),
-            MenuItem::command(&ui, "open", &open, move |issued, _| {
+            MenuItem::command(&ui, "open", &open, move |_, issued| {
                 *sink.borrow_mut() = Some(issued);
                 Ok(())
             })

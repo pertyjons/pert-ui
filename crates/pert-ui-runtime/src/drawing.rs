@@ -215,7 +215,7 @@ impl Rect {
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Color([f32; 4]);
 impl Color {
-    // Internal literal palette defaults only; public callers use validated rgba.
+    // Internal literal palette defaults only; public callers use validated `from_linear`.
     pub(crate) const fn linear_rgb(red: f32, green: f32, blue: f32) -> Self {
         Self::linear_rgba(red, green, blue, 1.0)
     }
@@ -257,12 +257,15 @@ impl Color {
     /// Opaque white. As the tint of [`Painter::draw_image_tinted`] it leaves the
     /// image's pixels unchanged, which is what [`Painter::draw_image`] uses.
     pub const WHITE: Self = Self([1.0, 1.0, 1.0, 1.0]);
-    /// Creates a linear color. RGB input is not interpreted as sRGB bytes.
+    /// Creates a color from linear channels and straight alpha, the values
+    /// [`Color::channels`] returns. The channels are not sRGB: use
+    /// [`Color::from_srgb`] for normalized sRGB fractions, such as a design
+    /// tool's, and [`Color::from_srgb8`] for sRGB bytes.
     ///
     /// # Errors
     /// Returns [`DrawError::InvalidColor`] for a non-finite channel or one
     /// outside `0..=1`.
-    pub fn rgba(red: f32, green: f32, blue: f32, alpha: f32) -> Result<Self, DrawError> {
+    pub fn from_linear(red: f32, green: f32, blue: f32, alpha: f32) -> Result<Self, DrawError> {
         let values = [red, green, blue, alpha];
         if values
             .iter()
@@ -277,7 +280,7 @@ impl Color {
     /// ```
     /// # use pert_ui_runtime as pert_ui;
     /// # use pert_ui::Color;
-    /// let color = Color::rgba(0.25, 0.5, 0.75, 1.0)?;
+    /// let color = Color::from_linear(0.25, 0.5, 0.75, 1.0)?;
     /// assert_eq!((color.red(), color.green(), color.blue()), (0.25, 0.5, 0.75));
     /// assert_eq!(color.alpha(), 1.0);
     /// # Ok::<(), pert_ui::DrawError>(())
@@ -301,8 +304,9 @@ impl Color {
     pub const fn alpha(self) -> f32 {
         self.0[3]
     }
-    /// Returns straight-alpha linear `[red, green, blue, alpha]` channels, for
-    /// destructuring all four at once or uploading them to a backend.
+    /// Returns straight-alpha linear `[red, green, blue, alpha]` channels, the
+    /// values [`Color::from_linear`] takes, for destructuring all four at once
+    /// or uploading them to a backend.
     ///
     /// Read a single channel through [`Color::red`], [`Color::green`],
     /// [`Color::blue`] or [`Color::alpha`] instead of indexing this array.
@@ -515,7 +519,7 @@ impl Color {
     /// [`DrawError::InvalidColor`] for a non-finite `alpha` or one outside
     /// `0..=1`.
     pub fn with_alpha(self, alpha: f32) -> Result<Self, DrawError> {
-        Self::rgba(self.red(), self.green(), self.blue(), alpha)
+        Self::from_linear(self.red(), self.green(), self.blue(), alpha)
     }
 
     /// Returns this color with its straight alpha multiplied by `factor`, a
@@ -530,7 +534,7 @@ impl Color {
     /// ```
     /// # use pert_ui_runtime as pert_ui;
     /// # use pert_ui::Color;
-    /// let thumb = Color::rgba(0.6, 0.7, 0.8, 0.5)?;
+    /// let thumb = Color::from_linear(0.6, 0.7, 0.8, 0.5)?;
     /// assert_eq!(thumb.scale_alpha(0.5)?.alpha(), 0.25);
     /// assert!(thumb.scale_alpha(2.0).is_err());
     /// # Ok::<(), pert_ui::DrawError>(())
@@ -557,7 +561,7 @@ impl Color {
     ///
     /// Premultiplied interpolation matches how the renderer blends and keeps
     /// the RGB of a nearly transparent endpoint from bleeding into the result:
-    /// mixing toward [`Color::rgba`]`(0, 0, 0, 0)` fades a color without
+    /// mixing toward [`Color::from_linear`]`(0, 0, 0, 0)` fades a color without
     /// darkening it. A result whose alpha is zero has no meaningful RGB and is
     /// returned as transparent black, including when a tiny alpha rounds to
     /// zero. At `t = 0` and `t = 1` the endpoint is returned unchanged, bit for
@@ -566,8 +570,8 @@ impl Color {
     /// ```
     /// # use pert_ui_runtime as pert_ui;
     /// # use pert_ui::Color;
-    /// let red = Color::rgba(1.0, 0.0, 0.0, 1.0)?;
-    /// let clear = Color::rgba(0.0, 0.0, 0.0, 0.0)?;
+    /// let red = Color::from_linear(1.0, 0.0, 0.0, 1.0)?;
+    /// let clear = Color::from_linear(0.0, 0.0, 0.0, 0.0)?;
     /// // Fading keeps the hue: no black is mixed into the red.
     /// assert_eq!(red.mix(clear, 0.5)?.channels(), [1.0, 0.0, 0.0, 0.5]);
     /// assert_eq!(red.mix(clear, 0.0)?, red);
@@ -623,7 +627,7 @@ impl Color {
     /// ```
     /// # use pert_ui_runtime as pert_ui;
     /// # use pert_ui::{Color, OpaqueColor};
-    /// let black = OpaqueColor::try_from(Color::rgba(0.0, 0.0, 0.0, 1.0)?)?;
+    /// let black = OpaqueColor::try_from(Color::from_linear(0.0, 0.0, 0.0, 1.0)?)?;
     /// let veil = Color::WHITE.with_alpha(0.5)?;
     /// assert_eq!(Color::from(veil.over(black)).channels(), [0.5, 0.5, 0.5, 1.0]);
     /// # Ok::<(), Box<dyn std::error::Error>>(())
@@ -695,7 +699,7 @@ impl OpaqueColor {
     /// ```
     /// # use pert_ui_runtime as pert_ui;
     /// # use pert_ui::{Color, OpaqueColor};
-    /// let gray = OpaqueColor::try_from(Color::rgba(0.5, 0.5, 0.5, 1.0)?)?;
+    /// let gray = OpaqueColor::try_from(Color::from_linear(0.5, 0.5, 0.5, 1.0)?)?;
     /// assert!((gray.relative_luminance() - 0.5).abs() < 1e-6);
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
@@ -1581,7 +1585,7 @@ impl Painter {
     /// Records a color image multiplied by a straight-alpha linear tint.
     ///
     /// Each pixel's color is multiplied by the tint's color and its alpha by the
-    /// tint's alpha, so `Color::rgba(1.0, 1.0, 1.0, 0.5)` fades the image to half
+    /// tint's alpha, so `Color::from_linear(1.0, 1.0, 1.0, 0.5)` fades the image to half
     /// opacity and [`Color::WHITE`] leaves it unchanged. A fully transparent tint
     /// draws nothing. Placement and clipping are those of [`Self::draw_image`].
     pub fn draw_image_tinted(

@@ -20,8 +20,8 @@ impl Component for Load {
         Ok(())
     }
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
-        let panel = Color::rgba(0.2, 0.25, 0.3, 0.85)?;
-        let accent = Color::rgba(0.3, 0.6, 1.0, 1.0)?;
+        let panel = Color::from_linear(0.2, 0.25, 0.3, 0.85)?;
+        let accent = Color::from_linear(0.3, 0.6, 1.0, 1.0)?;
         let mask = MaskImage::new(8, 8, (0..64).map(|i| (i * 4) as u8).collect())?;
         let image = RasterImage::from_srgba8(
             2,

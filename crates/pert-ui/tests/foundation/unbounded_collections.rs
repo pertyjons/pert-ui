@@ -97,9 +97,9 @@ fn height(ui: &Runtime, root: &WidgetId, key: &str) -> Result<f32, Box<dyn std::
 fn table(ui: &Runtime, rows: usize) -> Result<Element, Box<dyn std::error::Error>> {
     let controller = TableController::new(
         ui,
+        ListSelection::new(ui, SelectionMode::Single),
         [TableColumn::new("a", "A")],
         TableSource::new(Cells(rows)),
-        ListSelection::new(ui, SelectionMode::Single),
     )?;
     Ok(Element::new("table", Table::new(&controller, 20.0)?))
 }
@@ -136,9 +136,9 @@ fn a_grown_table_below_a_toolbar_fills_the_rest_and_mounts_a_screenful() -> Test
     let table = {
         let controller = TableController::new(
             &ui,
+            ListSelection::new(&ui, SelectionMode::Single),
             [TableColumn::new("a", "A")],
             TableSource::new(Cells(5000)),
-            ListSelection::new(&ui, SelectionMode::Single),
         )?;
         Element::new("table", Table::new(&controller, 20.0)?)
     };

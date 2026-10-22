@@ -341,12 +341,13 @@ pub(crate) fn collections(ui: &Runtime) -> Result<Element, RuntimeError> {
     let pause = std::time::Duration::from_millis(200);
     let tree_state = TreeController::new(
         ui,
-        TreeSource::new(Folders),
         ListSelection::new(ui, SelectionMode::Single),
+        TreeSource::new(Folders),
     )?;
     let written = WrittenNotes::default();
     let table_state = TableController::new(
         ui,
+        ListSelection::new(ui, SelectionMode::Single),
         [
             TableColumn::new("sample", "Sample")
                 .width(Length::new(160.0)?)
@@ -377,7 +378,6 @@ pub(crate) fn collections(ui: &Runtime) -> Result<Element, RuntimeError> {
             descending: false,
             notes: written.clone(),
         }),
-        ListSelection::new(ui, SelectionMode::Single),
     )?;
     let sorted = table_state.clone();
     // The order the gallery shows, which a saved note keeps.

@@ -152,13 +152,13 @@ fn a_rebuilt_checkbox_takes_its_new_signal_label_and_enabled_state() -> TestResu
     let second = ui.signal(false);
     let (root, checkbox) = mount(
         &mut ui,
-        Element::new("check", Checkbox::new("First", first.clone())),
+        Element::new("check", Checkbox::new(first.clone(), "First")),
     )?;
     redescribe(
         &mut ui,
         &root,
         &checkbox,
-        Element::new("check", Checkbox::new("Second", second.clone())),
+        Element::new("check", Checkbox::new(second.clone(), "Second")),
     )?;
     assert_eq!(
         property(&ui, "check", "text")?,
@@ -173,7 +173,7 @@ fn a_rebuilt_checkbox_takes_its_new_signal_label_and_enabled_state() -> TestResu
         &mut ui,
         &root,
         &checkbox,
-        Element::new("check", Checkbox::new("Second", second.clone()).disabled()),
+        Element::new("check", Checkbox::new(second.clone(), "Second").disabled()),
     )?;
     assert_eq!(
         property(&ui, "check", "enabled")?,

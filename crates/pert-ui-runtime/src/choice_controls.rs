@@ -508,7 +508,7 @@ macro_rules! boolean_widget {
             "let mut ui = Runtime::new();\n",
             "let enabled = ui.signal(false);\n",
             "let control = ui.mount_tree(Element::new(\"enabled\", ",
-            stringify!($name), "::new(\"Enabled\", enabled.clone())))?;\n",
+            stringify!($name), "::new(enabled.clone(), \"Enabled\")))?;\n",
             "ui.focus(&control)?;\n",
             "ui.key_input(KeyCode::Space, KeyAction::Press)?;\n",
             "ui.key_input(KeyCode::Space, KeyAction::Release)?;\n",
@@ -523,7 +523,7 @@ macro_rules! boolean_widget {
             ///
             /// The label is a [`TextSource`]: fixed plain or rich content, or a
             /// binding the label follows, such as a translation.
-            pub fn new(label: impl Into<TextSource>, value: impl Into<Signal<bool>>) -> Self {
+            pub fn new(value: impl Into<Signal<bool>>, label: impl Into<TextSource>) -> Self {
                 let value: Signal<bool> = value.into();
                 Self(BooleanControl::new(label, Rc::new(value), $switch))
             }

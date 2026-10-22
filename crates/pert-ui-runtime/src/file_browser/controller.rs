@@ -457,8 +457,8 @@ pub(super) struct Inner {
 /// let queue = requests.clone();
 /// let controller = FileBrowserController::new(
 ///     &ui,
-///     ["/projects"],
 ///     ListSelection::new(&ui, SelectionMode::Single),
+///     ["/projects"],
 ///     move |request| queue.borrow_mut().push(request),
 /// )?;
 /// ui.mount_tree(Element::new("files", FileBrowser::new(&controller, 24.0)?))?;
@@ -509,8 +509,8 @@ impl FileBrowserController {
     /// runtime's refusal to create state as [`FileBrowserError::Runtime`].
     pub fn new(
         ui: &impl crate::StateOwner,
-        roots: impl IntoIterator<Item = impl Into<PathBuf>>,
         selection: ListSelection,
+        roots: impl IntoIterator<Item = impl Into<PathBuf>>,
         request: impl FnMut(DirectoryRequest) + 'static,
     ) -> Result<Self, FileBrowserError> {
         let roots: Vec<PathBuf> = roots.into_iter().map(Into::into).collect();
@@ -553,8 +553,8 @@ impl FileBrowserController {
         };
         let tree = TreeController::new(
             ui,
-            folders(Listings::default()),
             ListSelection::new(ui, SelectionMode::Single),
+            folders(Listings::default()),
         )?;
         let shown = current.combine(&listings.read_only(), |path, listings| {
             (path.clone(), listings.clone())
@@ -1012,8 +1012,8 @@ mod tests {
         let queue = requests.clone();
         let controller = FileBrowserController::new(
             &ui,
-            ["/r"],
             ListSelection::new(&ui, SelectionMode::Single),
+            ["/r"],
             move |request| queue.borrow_mut().push(request),
         )
         .unwrap();

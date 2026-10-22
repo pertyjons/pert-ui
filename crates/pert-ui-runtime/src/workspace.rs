@@ -233,11 +233,13 @@ pub struct ViewState {
 }
 
 impl ViewState {
+    /// The longest kind tag or value name, in bytes.
+    pub const MAX_NAME_BYTES: usize = 64;
     /// Creates empty state for a component kind.
     ///
     /// # Errors
-    /// Returns [`WorkspaceError::InvalidName`] unless the kind tag is 1 to 64
-    /// bytes of ASCII letters, digits, `-` or `_`.
+    /// Returns [`WorkspaceError::InvalidName`] unless the kind tag is 1 to
+    /// [`Self::MAX_NAME_BYTES`] bytes of ASCII letters, digits, `-` or `_`.
     pub fn new(kind: impl Into<String>) -> Result<Self, WorkspaceError> {
         let kind = kind.into();
         check_name(&kind)?;
@@ -625,7 +627,8 @@ pub enum WorkspaceError {
     /// A control character in text, a key or a path segment.
     #[error("workspace text contains a control character")]
     ControlCharacter,
-    /// A value name or kind tag outside 1 to 64 bytes of `A-Za-z0-9_-`.
+    /// A value name or kind tag outside 1 to [`ViewState::MAX_NAME_BYTES`]
+    /// bytes of `A-Za-z0-9_-`, or an empty map key.
     #[error("`{0}` is not a valid workspace name")]
     InvalidName(String),
     /// A map inside a map.
@@ -802,7 +805,7 @@ fn check_text(value: &str) -> Result<(), WorkspaceError> {
 
 fn check_name(value: &str) -> Result<(), WorkspaceError> {
     let valid = !value.is_empty()
-        && value.len() <= 64
+        && value.len() <= ViewState::MAX_NAME_BYTES
         && value
             .bytes()
             .all(|byte| byte.is_ascii_alphanumeric() || byte == b'-' || byte == b'_');

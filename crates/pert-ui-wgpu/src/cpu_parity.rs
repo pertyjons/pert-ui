@@ -159,9 +159,9 @@ fn corpus() -> Result<Vec<Case>, Box<dyn std::error::Error>> {
     let green = Color::from_srgb8(30, 180, 60, 255);
     // An arbitrary linear color, whose encoding graphics APIs may round
     // differently by one step.
-    let linear = Color::rgba(0.9, 0.1, 0.05, 1.0)?;
-    let translucent = Color::rgba(0.2, 0.4, 1.0, 0.45)?;
-    let orange = Color::rgba(1.0, 0.5, 0.0, 0.3)?;
+    let linear = Color::from_linear(0.9, 0.1, 0.05, 1.0)?;
+    let translucent = Color::from_linear(0.2, 0.4, 1.0, 0.45)?;
+    let orange = Color::from_linear(1.0, 0.5, 0.0, 0.3)?;
     Ok(vec![
         case("opaque clear", true, |_| Ok(()))?,
         case("opaque integer fills", true, move |p| {

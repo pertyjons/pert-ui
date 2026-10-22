@@ -1190,16 +1190,39 @@ accessor named for its content (`channels`, `values`, `entries`). Limits the
 library chooses are associated `MIN_*` or `MAX_*` constants of the type they
 bound; intrinsic bounds of a domain (nonzero, nonnegative, the unit interval)
 are documented on the constructor and its `# Errors` section without
-constants. A value is clamped only where the [data
+constants. A constant that bounds the value itself has type `Self`
+(`UiZoom::MAX`, `PowerExponent::MIN`), so it is a valid value and `get()`
+gives the raw number; a constant that bounds a measure of it (bytes, a
+count, a depth, digits) has that measure's integer type. A limit shared by
+several types is defined once, and its rustdoc says why it lives there:
+- a validation limit, which input fails, lives on the owner of the shared
+  format (`Workspace::MAX_STRING_BYTES` for its document, the `svg` module's
+  `MAX_NESTING` for SVG input), otherwise on the error type whose one
+  variant reports it (`TextEditError::MAX_TEXT_BYTES`); the bounded
+  constructors link to it from `# Errors`;
+- a rendering cap, at which output degrades instead of failing, has no
+  reporting variant, so it lives on the error type of the operation it keeps
+  from failing, and that type's rustdoc names it as the case that is not an
+  error (`TextError::MAX_FONT_PIXELS`).
+
+A value is clamped only where the [data
 invariants](../AGENTS.md#rust-and-data-invariants) allow it: a documented
 control or layout limit, or a documented presentation mapping that is total
 over its input; an invalid explicit text offset, identity or stored
 preference value is rejected, never coerced.
 
+Constructor parameters run: the state owner (`ui`), then the stable key of a
+keyed item, then the state the constructor binds, then content and options
+(`Checkbox::new(value, label)`, `MenuItem::radio(key, selection, value,
+label)`, `TableController::new(ui, selection, columns, source)`).
+
 Capability restrictions take `impl Into<Permission>` and compose with `and`;
 they accept fixed booleans and read bindings without separate names. A
 builder for an ordinary boolean property takes a `bool`; the binding variant
-adds `_signal` and takes a `ReadSignal<bool>`. A no-argument builder moves
+adds `_signal` and takes a `ReadSignal<bool>`. A builder that binds state the
+component also writes takes `impl Into<Signal<T>>` and is named
+`bind_<property>` (`Collapsible::bind_expanded`,
+`PropertyGrid::bind_label_width`). A no-argument builder moves
 one fixed option of a description away from its default and has no way back
 (`disabled()`, `read_only()`, `frameless()`, `nonmodal()`). An option the
 application decides from data takes a `bool`, and so do the state-reporting

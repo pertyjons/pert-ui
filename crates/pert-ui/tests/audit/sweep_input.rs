@@ -503,7 +503,7 @@ impl TableItems for Cells {
 fn modified_tree_and_table_cross_arrows_yield_to_commands() {
     let mut ui = runtime();
     let selection = ListSelection::new(&ui, SelectionMode::Single);
-    let state = TreeController::new(&ui, TreeSource::new(Outline), selection.clone()).unwrap();
+    let state = TreeController::new(&ui, selection.clone(), TreeSource::new(Outline)).unwrap();
     let tree = ui
         .mount_tree(Element::new("tree", Tree::new(&state, 24.0).unwrap()))
         .unwrap();
@@ -518,9 +518,9 @@ fn modified_tree_and_table_cross_arrows_yield_to_commands() {
     let selection = ListSelection::new(&ui, SelectionMode::Single);
     let controller = TableController::new(
         &ui,
+        selection.clone(),
         ["a", "b"].map(|key| TableColumn::new(key, key)),
         TableSource::new(Cells),
-        selection.clone(),
     )
     .unwrap();
     let table = ui
@@ -756,7 +756,7 @@ fn alt_reordering_takes_alt_alone() {
         let moved = Rc::new(Cell::new(0));
         let count = moved.clone();
         let selection = ListSelection::new(&ui, SelectionMode::Single);
-        let state = TreeController::new(&ui, TreeSource::new(Outline), selection.clone()).unwrap();
+        let state = TreeController::new(&ui, selection.clone(), TreeSource::new(Outline)).unwrap();
         let tree = ui
             .mount_tree(Element::new(
                 "tree",
@@ -775,9 +775,9 @@ fn alt_reordering_takes_alt_alone() {
         let selection = ListSelection::new(&ui, SelectionMode::Single);
         let controller = TableController::new(
             &ui,
+            selection.clone(),
             ["a", "b"].map(|key| TableColumn::new(key, key).movable(true)),
             TableSource::new(Cells),
-            selection.clone(),
         )
         .unwrap();
         let table = ui

@@ -73,7 +73,7 @@ pub(crate) fn sections(ui: &Runtime) -> Result<Element, RuntimeError> {
                         "Bound section",
                         label("bound-body", "The application's switch decides."),
                     )
-                    .bound(shown),
+                    .bind_expanded(shown),
                 ),
                 Element::new(
                     "disabled",

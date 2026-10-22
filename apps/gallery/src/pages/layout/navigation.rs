@@ -289,7 +289,7 @@ fn custom_container_demo(
             Element::new(
                 "custom-actions",
                 Wrap::new([
-                    Element::new("drawer-open", Toggle::new("Drawer open", open.clone())),
+                    Element::new("drawer-open", Toggle::new(open.clone(), "Drawer open")),
                     Element::new(
                         "reveal-drawer",
                         Link::new("Reveal and focus the drawer's setting", move |cx| {

@@ -538,7 +538,7 @@ impl ListItems for Rows {
         // Per-row binding: a new signal each time the row is described.
         let done = self.store.sibling(task.done);
         let (store, id) = (self.store.clone(), task.id);
-        let check = Checkbox::new("Done", done).on_change(move |_, done| {
+        let check = Checkbox::new(done, "Done").on_change(move |_, done| {
             edit(&store, id, |task| task.done = done)
         });
         let title = Title {
@@ -734,9 +734,9 @@ trees and tabs, and tab detachment, use the same public contract.
 
 ## Retained state notifications
 
-`Accordion::on_change` receives the open keys and a `ChangeOrigin`, after layout
-settles. User input, reveal, restoration and redescription can all change the
-open set. Initial expansion and restoration before first preparation are silent.
+`Accordion::on_change` receives an `ExpansionChange`, the open keys and their
+`ChangeOrigin`, after layout settles. User input, reveal, restoration and
+redescription can all change the open set. Initial expansion and restoration before first preparation are silent.
 A handler may write signals; failure is observable without rollback or replay.
 
 FloatingWindow placement builders store initial description data, so construction

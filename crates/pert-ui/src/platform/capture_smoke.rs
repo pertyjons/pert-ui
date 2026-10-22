@@ -231,7 +231,7 @@ fn capture_smoke(software: bool) -> Result<(), AppError> {
     app.runtime.theme().set_color(
         ThemeMode::Dark,
         ColorRole::Background,
-        Color::rgba(1.0, 1.0, 1.0, 0.5)?,
+        Color::from_linear(1.0, 1.0, 1.0, 0.5)?,
     )?;
     app.runtime.mount_tree(Element::new(
         "canvas",
