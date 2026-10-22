@@ -54,6 +54,12 @@ pub enum ParameterMapping {
 /// assert!(PowerExponent::new(0.0).is_err());
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
+///
+/// # Serialization
+///
+/// With the `serde` feature an exponent is its `f32`, validated by
+/// [`PowerExponent::new`] when read: a non-finite value or one outside
+/// [`Self::MIN`] to [`Self::MAX`] is rejected.
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
 #[cfg_attr(
     feature = "serde",

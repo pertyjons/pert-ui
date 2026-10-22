@@ -44,6 +44,9 @@ impl ProgressStatus {
     /// `completed` above `total` is a full track rather than an error, because a
     /// count that overshoots an estimate is ordinary; it never means
     /// [`ProgressStatus::Succeeded`], which only the application can declare.
+    /// This saturation is a presentation mapping that is total over its input:
+    /// every pair of counts presents as one documented status, so no input is
+    /// an error.
     ///
     /// ```
     /// # use pert_ui_runtime::{NormalizedValue, ProgressStatus};

@@ -157,8 +157,11 @@ impl std::fmt::Debug for WidgetId {
 /// [`WindowError`](crate::WindowError) and the facade's application error) wrap
 /// it; it never wraps them structurally. The one exception is at the callback
 /// boundary: `?` in an application callback converts a
-/// [`WorkspaceError`](crate::WorkspaceError), [`WindowError`](crate::WindowError)
-/// or [`CaptureError`](crate::CaptureError) from a runtime method into
+/// [`WorkspaceError`](crate::WorkspaceError) or
+/// [`CaptureError`](crate::CaptureError) returned by a runtime method, or the
+/// [`WindowError`](crate::WindowError) a
+/// [`PresentationReceipt`](crate::PresentationReceipt) reports in
+/// [`PresentationStatus::Failed`](crate::PresentationStatus::Failed), into
 /// [`Self::Application`], holding the whole error for downcasting, except that
 /// one holding a runtime failure in its `Runtime` variant becomes that failure.
 /// Through the facade such a callback failure is `AppError::Runtime`; code

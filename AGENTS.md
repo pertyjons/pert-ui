@@ -173,8 +173,11 @@ Subsequent ordinary fixes still follow the compatibility policy below.
   duplicates at compile time, for example with const evaluation plus an exhaustive
   match, so adding or reordering a variant cannot silently misassign values.
 - Reject invalid external values, including non-finite numbers where forbidden.
-  Use `TryFrom`/fallible constructors; clamp only for documented control-limit
-  behavior. Keep presentation formatting separate from canonical values.
+  Use `TryFrom`/fallible constructors; clamp only for documented control or
+  layout limits, or a documented presentation mapping that is total over its
+  input (`ProgressStatus::of`); reject, never coerce, an invalid explicit text
+  offset, identity or stored preference value. Keep presentation formatting
+  separate from canonical values.
 - Return typed errors, using `thiserror` where appropriate. Do not discard I/O,
   command, persistence or state-reconstruction failures. Avoid `unwrap`/`expect`
   in production paths. An explicit fallback must have defined semantics.

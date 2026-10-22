@@ -308,6 +308,14 @@ impl From<crate::DrawError> for CaptureError {
 /// Built by a host from its renderer's read-back and cropped by the runtime.
 /// [`FrameImage::encode_png`] encodes it without any dependency, converting to
 /// the straight alpha PNG stores.
+///
+/// # Serialization
+///
+/// With the `serde` feature an image is `{ width, height, rgba }`, `rgba`
+/// being the list of bytes [`FrameImage::pixels`] returns. Reading one rejects
+/// an unknown field and validates as [`FrameImage::new`] does: a zero
+/// dimension, a byte count other than `width * height * 4` and an image
+/// beyond [`FrameImage::MAX_BYTES`] are errors.
 #[derive(Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(
     feature = "serde",

@@ -831,10 +831,13 @@ impl VirtualList {
     /// change, and a list that is hidden reports a change made meanwhile when
     /// it is shown and updates again. Without a selection nothing is reported.
     ///
-    /// Changes are delivered as a [`Tabs::on_select`](crate::Tabs::on_select)
-    /// change is: in an event phase after the update and layout waves of the
-    /// flush have settled, one call per change, oldest first, and an input
-    /// entry point settles its flush before it returns. The callback may write
+    /// Unlike [`Tabs::on_select`](crate::Tabs::on_select), which reports each
+    /// settled tab change, this reports the bound selection as the list
+    /// observes it at its update, so the coalescing above is part of its
+    /// meaning. Changes are delivered in an event phase after the update and
+    /// layout waves of the flush have settled, one call per change, oldest
+    /// first, and an input entry point settles its flush before it returns,
+    /// as for every component notification. The callback may write
     /// bindings; an error does not undo the change, and the first error is
     /// returned from the flush. Like the other callbacks, it belongs to the
     /// first description of a mounted list.

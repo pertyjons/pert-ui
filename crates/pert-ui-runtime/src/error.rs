@@ -12,9 +12,11 @@ use std::{error::Error, fmt, sync::Arc};
 /// or a refused engine command, wrap it here instead of borrowing a library
 /// variant that means something else. [`RuntimeError::Application`](crate::RuntimeError::Application)
 /// carries it, and `?` converts it. It also carries a
-/// [`WorkspaceError`](crate::WorkspaceError), [`WindowError`](crate::WindowError)
-/// or [`CaptureError`](crate::CaptureError) that a callback propagates with
-/// `?` from a runtime method it called; [`Self::downcast_ref`] recovers it.
+/// [`WorkspaceError`](crate::WorkspaceError) or
+/// [`CaptureError`](crate::CaptureError) that a callback propagates with `?`
+/// from a runtime method it called, and a [`WindowError`](crate::WindowError)
+/// it propagates from a [`PresentationStatus::Failed`](crate::PresentationStatus::Failed)
+/// report; [`Self::downcast_ref`] recovers it.
 ///
 /// The value is shared, so cloning is cheap and the original error is kept
 /// whole, reachable through [`Self::get`] and [`Self::downcast_ref`]. It is

@@ -387,7 +387,8 @@ impl SemanticItem {
         self
     }
     /// Marks the row as unavailable, which withdraws its actions, including any
-    /// offered afterwards.
+    /// offered afterwards. A later `disabled(false)` does not restore the
+    /// withdrawn actions; only actions offered after it apply.
     #[must_use]
     pub fn disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
@@ -561,7 +562,8 @@ impl Semantics {
         }
         self
     }
-    /// Offers several actions while not disabled.
+    /// Offers several actions while not disabled, appending them to those
+    /// offered earlier as [`Self::action`] does.
     #[must_use]
     pub fn actions(self, actions: impl IntoIterator<Item = SemanticAction>) -> Self {
         actions.into_iter().fold(self, Self::action)
@@ -574,7 +576,8 @@ impl Semantics {
     }
     /// Marks interaction as unavailable when `disabled` is true, which also
     /// withdraws every action offered so far or later through
-    /// [`Semantics::enabled_actions`].
+    /// [`Semantics::enabled_actions`]. A later `disabled(false)` does not
+    /// restore the withdrawn actions; only actions offered after it apply.
     #[must_use]
     pub fn disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;

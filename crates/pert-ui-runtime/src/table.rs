@@ -92,7 +92,8 @@ impl TableColumn {
             editable: false,
         }
     }
-    /// Uses a fixed width, never below [`TableColumn::MIN_WIDTH`].
+    /// Uses a fixed width, never below [`TableColumn::MIN_WIDTH`]: a smaller
+    /// width is raised to that layout minimum rather than rejected.
     pub fn width(mut self, width: Length) -> Self {
         self.width = ColumnWidth::Fixed(width.get().max(self.minimum));
         self
@@ -763,10 +764,11 @@ impl TableController {
         self.0.shared.active_column.set(column)
     }
     /// Fixes a column's width from application code, as dragging its edge
-    /// does: the column becomes fixed at `width`, never below its
-    /// [`TableColumn::MIN_WIDTH`] floor, counts as sized by the user, so a
-    /// captured workspace keeps the width, and the mounted table and its rows
-    /// arrange again at the next flush. The column need not be
+    /// does: the column becomes fixed at `width`, counts as sized by the
+    /// user, so a captured workspace keeps the width, and the mounted table
+    /// and its rows arrange again at the next flush. A width below
+    /// [`TableColumn::MIN_WIDTH`] is raised to that layout minimum rather
+    /// than rejected, as a drag stops there. The column need not be
     /// [`TableColumn::resizable`], which only governs the header edge. A
     /// restored workspace entry replaces the width like any other.
     ///

@@ -47,6 +47,12 @@ presentation in place; the initial last-valid list is empty. MultiSelect applies
 replaced sources and filters to its retained list within the successful flush,
 keeping surviving row identities, query and draft; this does not commit the draft.
 
+This vocabulary governs controls whose options are values written into a
+selected-value binding. Collections whose rows are content (`VirtualList`,
+`Table`, `Tree`, `FileBrowser`) and keyed containers (`Tabs`,
+`ToolWindowLayout`) are outside it, and name their constructors by content or
+sizing.
+
 ### Element trees and identity
 
 Applications build an owned tree of `Element`s and mount it with `Runtime` or
@@ -300,6 +306,19 @@ active table resize restores its original fixed width or flex weight and user
 preference membership; ordinary Escape keeps the existing dragged-width policy.
 Selection, expansion, sorting and scrolling remain independently available.
 
+A capability the component provides itself is restricted by the adjective
+taking `impl Into<Permission>` (`SplitPane::resizable`,
+`ToolWindowLayout::reorderable`). Where an application callback or a per-item
+flag creates the capability (`VirtualList::reorderable`,
+`TableColumn::resizable`), the adjective creates it and the restriction is
+`*_permission` (`VirtualList::reorder_permission`, `Table::resize_permission`).
+The argument type tells the meanings apart.
+
+Which title-bar parts a `FloatingWindow` has (`decorated`, `closable`,
+`minimizable`) and `App::resizable`, an attribute of the native window, are
+ordinary `bool` properties. They choose parts rather than restrict a
+capability, and `WindowController` still closes and minimizes from code.
+
 Basic controls, choice controls and menu items use `enabled(impl Into<Permission>)` for
 activation/removal availability.
 `disabled()` adds a fixed denial; a later binding cannot lift it. Effective
@@ -532,7 +551,10 @@ selected keys: a collection observes its selection when it updates and reports
 the origin of the latest write, `User` for a click or a key on any collection
 sharing the selection and `Application` for a write through the selection or a
 controller, including a filter moving the active item off a hidden row, so writes between two updates of one collection
-arrive as one change. So does committed geometry:
+arrive as one change. The two names mark that difference: `on_select` reports
+each settled tab change; `on_selection_change` reports a collection's bound
+selection as observed at its update, coalescing writes between updates.
+Committed geometry is observable too:
 scroll offsets, split, region and label-column preferences and floating-frame
 placement report through `on_scroll`, `on_resize`, `on_frame` and
 `ToolWindowChangeKind::Geometry`, besides inspection and workspace capture.
@@ -1112,20 +1134,24 @@ Every public failure has a typed error, with the following common rules:
 
 - Library-owned errors derive `Clone`, `Debug`, `PartialEq` and `Eq` where
   their data permits; an error retaining an I/O source derives only `Debug`.
-- Display messages begin in lowercase and have no trailing period. A wrapped
-  error is transparent or exposed through `source()`, so a chain prints each
-  cause once. Foreign backend failures may become diagnostic strings; library
-  causes remain typed.
+- Display messages begin in lowercase and have no trailing period. An error
+  whose message is text supplied by the application or the operating system
+  (`InputRejection`, `ListingError`) displays it verbatim, as
+  `ApplicationError` does. A wrapped error is transparent or exposed through
+  `source()`, so a chain prints each cause once. Foreign backend failures may
+  become diagnostic strings; library causes remain typed.
 - An application callback returns its own failure through
   `RuntimeError::Application`, which retains the source for downcasting.
   Library variants do not stand in for unrelated host failures.
 - Conversions point upwards from focused leaf errors into `RuntimeError`, then
   into drawing, workspace, window or application errors as appropriate. A
   runtime failure has one normalized representation at each higher level.
-- One exception at the callback boundary: an application callback that calls
-  a runtime method returning `WorkspaceError`, `WindowError` or
-  `CaptureError` propagates it with `?` as `RuntimeError::Application`,
-  holding the whole error the method returned, downcastable to its type. An
+- One exception at the callback boundary: an application callback propagates
+  with `?` a `WorkspaceError` or `CaptureError` that a runtime method it
+  called returned, or the `WindowError` a `PresentationReceipt` reports in
+  `PresentationStatus::Failed`, as `RuntimeError::Application`, holding the
+  whole error, downcastable to its type. No public runtime method returns a
+  `WindowError`; a callback meets one in a receipt's status. An
   error whose `Runtime` variant holds a runtime failure becomes that failure
   itself, so it keeps one form. `RuntimeError` gains no variant for these,
   and `DrawError` has no such conversion, since drawing fails in paint and
@@ -1141,6 +1167,14 @@ Every public failure has a typed error, with the following common rules:
 - One limit has one reporting variant across paths that share the limit.
   Every public `Result` has an `# Errors` rustdoc section naming the variants
   and conditions, including forwarded failures.
+- A `TryFrom` or `FromStr` implementation states its failures in one line
+  linking the constructor that documents them. Serde implementations, derived
+  or hand-written, are documented at the type: a type whose deserialization
+  validates has a `# Serialization` section naming the format and every
+  rejection, and its impls carry no documentation of their own. They do not
+  invent variants for `D::Error`.
+- A conversion that only checks a value's kind may return its input unchanged
+  as the error, as std's array `TryFrom` does; its rustdoc says so.
 
 Errors do not silently discard failed I/O, edits, persistence or state
 reconstruction. A caller can inspect the typed source chain and decide its
@@ -1149,15 +1183,64 @@ own recovery policy.
 ## Public naming rules
 
 Validated values use a fallible constructor and conventional `TryFrom` where
-appropriate. Their raw value is read with `get()` unless the unit itself is
-the point of the type. Documented limits are associated `MIN_*` or `MAX_*`
-constants of the type they bound. Capability restrictions take
-`impl Into<Permission>` and compose with `and`; they accept fixed booleans and
-read bindings without separate names. A builder for an ordinary boolean property takes a
-`bool`; the binding variant adds `_signal` and takes a `ReadSignal<bool>`.
-`disabled()` and `read_only()` are no-argument shortcuts away from defaults.
-Cloneable UI-thread handles that drive a widget are `*Controller`; passive
-captured data are `*State`. Collection selection remains application-owned and
-addressed by stable key. A `*Receipt` reports one queued request through an
-owned `status()` and a `status_binding()` for reactive UI. A `*Outcome` names
-how an interaction ended, distinct from `Result` as an error carrier.
+appropriate. A single-value type's raw value is read with `get()` (a string
+with `as_str()`) unless the unit itself is the point of the type. Types with
+several components expose named component accessors and a whole-value
+accessor named for its content (`channels`, `values`, `entries`). Limits the
+library chooses are associated `MIN_*` or `MAX_*` constants of the type they
+bound; intrinsic bounds of a domain (nonzero, nonnegative, the unit interval)
+are documented on the constructor and its `# Errors` section without
+constants. A value is clamped only where the [data
+invariants](../AGENTS.md#rust-and-data-invariants) allow it: a documented
+control or layout limit, or a documented presentation mapping that is total
+over its input; an invalid explicit text offset, identity or stored
+preference value is rejected, never coerced.
+
+Capability restrictions take `impl Into<Permission>` and compose with `and`;
+they accept fixed booleans and read bindings without separate names. A
+builder for an ordinary boolean property takes a `bool`; the binding variant
+adds `_signal` and takes a `ReadSignal<bool>`. A no-argument builder moves
+one fixed option of a description away from its default and has no way back
+(`disabled()`, `read_only()`, `frameless()`, `nonmodal()`). An option the
+application decides from data takes a `bool`, and so do data descriptions,
+which report state rather than restrict a capability
+(`Semantics::disabled(bool)`, `PickItem::disabled(bool)`); the `disabled()`
+and `read_only()` shortcuts belong to component builders whose availability
+is a `Permission`.
+
+Ordinary property builders replace earlier values. An element builder
+appends one element to a described collection (a layout's tool windows, a
+title bar's actions, a description's semantic actions), and its plural form
+appends several. A builder that sets a whole list or one slot
+(`Semantics::items`, `ToolWindow::actions`, `Toast::action`) replaces.
+
+`with_` has three meanings, told apart by the receiver. An associated
+`Type::with_x(x, …)` is `new` with part `x` supplied by the caller, as
+`Vec::with_capacity` is (`Menu::with_state`, `CollectionFilter::with_query`).
+A consuming `self.with_x(…)` returning `Self` or `Result<Self, _>` is a
+builder on a value or data type (`Color::with_alpha`, `Element::with_grow`);
+it needs no readback getter, but a getter, where one exists, takes the bare
+name (`Element::grow`). A borrowing `with_x(closure)` gives scoped access and
+returns the closure's result (`Painter::with_clip`,
+`SeriesSource::with_window`). Component descriptions use bare builder names.
+
+Cloneable UI-thread handles that drive a widget are `*Controller`. `*State`
+names a value its owner holds directly, never a shared handle: captured
+component or device state (`ViewState`, `KeyboardState`) or an owned state
+machine (`ParameterState`). An owned point-in-time copy of observable data
+is a `*Snapshot` (`ParameterSnapshot`, `InspectionSnapshot`); one inspection
+record is an `*Inspection`; the summary of a finished check or batch is a
+`*Report` (`ValidationReport`, `DrainReport`). Other passive data take a
+descriptive noun (`ChildInfo`, `CommandEntry`, `ProfileStats`). Collection
+selection remains application-owned and addressed by stable key.
+
+A `*Receipt` reports one queued request through an owned `status()` and a
+`status_binding()` for reactive UI. A cross-thread reply that carries its
+answer and is consumed once, such as the `Pending<T>` an `InspectionClient`
+request returns, is not a receipt. A `*Outcome` is the non-error result of an
+interaction or operation, distinct from `Result` as an error carrier. A
+result may instead be named for what it delivers (`Frame`, `ChildReveal`),
+and it may carry a continuation for unfinished work (`ContentJump::Pending`).
+An outcome of local processing does not report acceptance by the authority,
+which stays a separate report, as for [user-write
+callbacks](#user-write-callbacks).

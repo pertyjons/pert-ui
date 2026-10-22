@@ -323,13 +323,18 @@ impl FloatingWindow {
         self
     }
     /// Enables/disables the standard close button (default true when decorated).
-    /// Programmatic closure remains available through [`WindowController::close`].
+    /// This is a fixed choice of title-bar part, not a [`Permission`]: it does
+    /// not compose with `and` or follow a binding, and a later call replaces
+    /// it. Programmatic closure remains available through
+    /// [`WindowController::close`].
     pub fn closable(mut self, closable: bool) -> Self {
         self.closable = closable;
         self
     }
     /// Adds a minimize/restore title button (default false). Content is hidden,
     /// not unmounted, while minimized; its latest bound data appears on restore.
+    /// This is a fixed choice of title-bar part, not a [`Permission`], and a
+    /// later call replaces it; [`WindowController::minimize`] works without it.
     pub fn minimizable(mut self, enabled: bool) -> Self {
         self.minimizable = enabled;
         self

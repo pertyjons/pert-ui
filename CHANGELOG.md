@@ -1,5 +1,60 @@
 # Changelog
 
+## 0.3.53 (2026-10-22)
+
+Documentation: the rules of the API audit's approved policy decisions
+(API audit fix plan, part 5a), written as the code already follows them.
+No public item, signature or behavior changes; the `api/` listings are
+unchanged.
+
+- **`docs/contracts.md`:**
+  - "Public naming rules": `get()` reads single-value types and a validated
+    string borrows its text with `as_str()`; compound values have component
+    accessors and a whole-value accessor named for its content; only limits
+    the library chooses are `MIN_*`/`MAX_*` constants, intrinsic bounds are
+    documented on the constructor; clamping follows AGENTS.md's data
+    invariants; a no-argument builder moves one fixed option from its
+    default, while options decided from data and data descriptions take a
+    `bool`; element builders append, whole-list and one-slot builders
+    replace; the three meanings of `with_` by receiver; `*State` by
+    ownership, with `*Snapshot`, `*Inspection`, `*Report` and descriptive
+    nouns for other passive data; a cross-thread reply such as `Pending<T>`
+    is not a receipt; `*Outcome` is the non-error result of an interaction
+    or operation, and a result may be named for what it delivers and carry
+    a continuation.
+  - "Choice sources": collections whose rows are content and keyed
+    containers are outside the `new`/`bound`/`for_parameter` vocabulary.
+  - "Permissions and availability": a capability the component provides
+    is restricted by the adjective taking a `Permission`, one a callback or
+    flag creates is restricted by `*_permission`; title-bar parts and
+    `App::resizable` are fixed `bool` part choices.
+  - "Component notifications": `on_select` reports each settled tab
+    change, `on_selection_change` a coalesced bound selection.
+  - "Error policy": application and OS text displays verbatim; one-line
+    `TryFrom`/`FromStr` forwarding and type-level `# Serialization`
+    sections for serde; a kind-only conversion may return its input as the
+    error; the callback-boundary exception names where an application meets
+    a `WindowError`, a `PresentationStatus::Failed` report, since no runtime
+    method returns one.
+- **AGENTS.md:** the clamp rule allows documented control or layout limits
+  and documented presentation mappings total over their input, and
+  requires rejecting an invalid explicit text offset, identity or stored
+  preference value.
+- **Rustdoc:**
+  - `ProgressStatus::of`, `TableColumn::width` and
+    `TableController::set_column_width` name the kind of clamp they apply;
+  - `FloatingWindow::closable` and `minimizable` are fixed part choices,
+    not Permissions;
+  - `SemanticItem::disabled` and `Semantics::disabled`: a later
+    `disabled(false)` does not restore withdrawn actions;
+  - `Semantics::actions` appends; `Toast::action` replaces;
+  - `VirtualList::on_selection_change` defines its timing without
+    reference to `Tabs::on_select`;
+  - `# Serialization` sections on `PowerExponent` and `FrameImage`;
+  - `RuntimeError`, `ApplicationError` and the manual correct the
+    callback-boundary rationale for `WindowError`, and
+    `WorkspaceValue::number` follows the clamp rule.
+
 ## 0.3.52 (2026-10-21)
 
 Toolchain:

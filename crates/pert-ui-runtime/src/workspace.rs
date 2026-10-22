@@ -83,7 +83,8 @@ impl WorkspaceValue {
     ///
     /// # Errors
     /// Returns [`WorkspaceError::NotFinite`] for an infinite or NaN value, which
-    /// is a rejection rather than a clamp: only a control limit clamps.
+    /// is a rejection rather than a clamp: a stored preference value is never
+    /// coerced.
     ///
     /// ```
     /// use pert_ui_runtime::{WorkspaceError, WorkspaceValue};

@@ -341,10 +341,11 @@ binding. `Runtime::commands_for(&context)` lists the commands a captured
 context can reach, with their names, shortcuts and enabled state, for a
 command palette or a shortcut list; `CommandPalette` presents that listing.
 `KeyChord::named(KeyCode::Space)` is a chord of one named key without
-modifiers. A command action may use `?` on the workspace, window and capture
-errors of the runtime methods it calls. They arrive as
-`RuntimeError::Application`, downcastable to the original error, except a
-`Runtime` variant, which becomes the runtime error it holds.
+modifiers. A command action may use `?` on the workspace and capture errors
+of the runtime methods it calls, and on the window error a presentation
+receipt reports as failed. They arrive as `RuntimeError::Application`,
+downcastable to the original error, except a `Runtime` variant, which becomes
+the runtime error it holds.
 A command that copies the application's own data, such as selected table rows,
 writes it with `Runtime::set_clipboard_text`, which needs no component and
 moves no focus; `Runtime::clipboard_text` reads it.

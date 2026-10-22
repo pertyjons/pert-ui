@@ -153,8 +153,9 @@ impl Toast {
             action: None,
         }
     }
-    /// Adds one explicit action. Use dialogs for authoritative task responses;
-    /// a toast can expire or disappear with its owner without invoking the action.
+    /// Sets the toast's one explicit action, replacing an earlier one. Use
+    /// dialogs for authoritative task responses; a toast can expire or
+    /// disappear with its owner without invoking the action.
     pub fn action(
         mut self,
         label: impl Into<TextSource>,
