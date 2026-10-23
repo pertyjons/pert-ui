@@ -22,9 +22,12 @@ use crate::{DrawError, Runtime, RuntimeError};
 /// [`ParameterError`](crate::ParameterError),
 /// [`ParameterIdError`](crate::ParameterIdError),
 /// [`NormalizedValueError`](crate::NormalizedValueError) and
-/// [`LiveError`](crate::LiveError). Any other error, such as a
-/// `std::io::Error`, is wrapped first with
-/// [`ApplicationError::new`](crate::ApplicationError::new). The compiler does
+/// [`LiveError`](crate::LiveError). Any other error is wrapped first as an
+/// [`ApplicationError`](crate::ApplicationError): a `Send + Sync` error such
+/// as `std::io::Error` with [`ApplicationError::new`](crate::ApplicationError::new),
+/// and a `Box<dyn Error + Send + Sync>` with `.map_err(ApplicationError::from)?`.
+/// An error that is not `Send` cannot be carried; wrap its message instead, as
+/// [`ApplicationError::new`](crate::ApplicationError::new) describes. The compiler does
 /// not list these types when a conversion fails, because the conversion is one
 /// blanket implementation that it is told not to recommend; it reports the
 /// missing `From` for `AppError` instead.

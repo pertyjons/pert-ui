@@ -361,7 +361,7 @@ and anything left to a later part.
     - `api/generate.sh`, with no further difference.
 
     The fixes are verified in 6c2's review.
-- **6c2 (0.3.64):** compiler diagnostics.
+- **6c2 (0.3.64), done 2026-10-23:** 12aea82 and its review fix. Compiler diagnostics.
   - `#[diagnostic::on_unimplemented]` on the consumer traits, `StateOwner`
     and its seal, renamed `StateOwnerSeal`.
   - `do_not_recommend` on `AppError`'s blanket `From` (F11), with the
@@ -385,8 +385,9 @@ and anything left to a later part.
     The feature configurations, release tests, example sessions and gallery
     ran before the follow-up below, which changed only seal names, rustdoc
     and two snapshot cases, and is covered by the workspace gate, loom and
-    the diagnostics suite rerun after it. Library packaging and the
-    packaged-consumer check run after the commit.
+    the diagnostics suite rerun after it. After the commit, library
+    packaging (excluding `pert-ui-diagnostics`) and the 0.3.64
+    packaged-consumer check passed.
   - **Beyond the plan's lines:**
     - the same similar-name defect in pert-ui-core's seals, renamed
       `ParameterValueSeal` and `LiveItemSeal` with their own messages and
@@ -397,6 +398,11 @@ and anything left to a later part.
       `trybuild` shares.
   - **Recorded in TODO.md:** `AppError`'s accepted-error list is unchecked,
     and the `Component` snapshots list rustc's first implementors.
+  - **Review:** Codex found that `AppError`'s fallback advice did not hold
+    for boxed or non-`Send` errors. It now gives the boxed route and says a
+    non-`Send` error's message is wrapped. The review also asked for the
+    packaging results here, and verified 6c1's fix. Doctests and rustdoc
+    were rerun after the fix, which 6d1's review verifies.
 
 ## Rules for every part
 
