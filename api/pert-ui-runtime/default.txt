@@ -247,6 +247,28 @@ impl core::marker::Unpin for pert_ui_runtime::CursorIcon
 impl core::marker::UnsafeUnpin for pert_ui_runtime::CursorIcon
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::CursorIcon
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::CursorIcon
+pub enum pert_ui_runtime::component::DetachedClosePolicy
+pub pert_ui_runtime::component::DetachedClosePolicy::KeepOpen
+pub pert_ui_runtime::component::DetachedClosePolicy::Redock
+pub pert_ui_runtime::component::DetachedClosePolicy::RemoveView
+impl core::clone::Clone for pert_ui_runtime::DetachedClosePolicy
+pub fn pert_ui_runtime::DetachedClosePolicy::clone(&self) -> pert_ui_runtime::DetachedClosePolicy
+impl core::cmp::Eq for pert_ui_runtime::DetachedClosePolicy
+impl core::cmp::PartialEq for pert_ui_runtime::DetachedClosePolicy
+pub fn pert_ui_runtime::DetachedClosePolicy::eq(&self, &pert_ui_runtime::DetachedClosePolicy) -> bool
+impl core::default::Default for pert_ui_runtime::DetachedClosePolicy
+pub fn pert_ui_runtime::DetachedClosePolicy::default() -> pert_ui_runtime::DetachedClosePolicy
+impl core::fmt::Debug for pert_ui_runtime::DetachedClosePolicy
+pub fn pert_ui_runtime::DetachedClosePolicy::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::DetachedClosePolicy
+impl core::marker::StructuralPartialEq for pert_ui_runtime::DetachedClosePolicy
+impl core::marker::Freeze for pert_ui_runtime::DetachedClosePolicy
+impl core::marker::Send for pert_ui_runtime::DetachedClosePolicy
+impl core::marker::Sync for pert_ui_runtime::DetachedClosePolicy
+impl core::marker::Unpin for pert_ui_runtime::DetachedClosePolicy
+impl core::marker::UnsafeUnpin for pert_ui_runtime::DetachedClosePolicy
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::DetachedClosePolicy
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::DetachedClosePolicy
 #[non_exhaustive] pub enum pert_ui_runtime::component::DragOutcome
 pub pert_ui_runtime::component::DragOutcome::Cancelled
 pub pert_ui_runtime::component::DragOutcome::Dropped(pert_ui_runtime::DropOperation)
@@ -1235,6 +1257,29 @@ impl core::marker::Unpin for pert_ui_runtime::RevealOutcome
 impl core::marker::UnsafeUnpin for pert_ui_runtime::RevealOutcome
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::RevealOutcome
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::RevealOutcome
+#[non_exhaustive] pub enum pert_ui_runtime::component::RevealRefusal
+pub pert_ui_runtime::component::RevealRefusal::AncestorRefused
+pub pert_ui_runtime::component::RevealRefusal::AncestorRefused::ancestor: pert_ui_runtime::WidgetId
+pub pert_ui_runtime::component::RevealRefusal::ApplicationControlled
+pub pert_ui_runtime::component::RevealRefusal::ApplicationControlled::ancestor: pert_ui_runtime::WidgetId
+pub pert_ui_runtime::component::RevealRefusal::Hidden
+pub pert_ui_runtime::component::RevealRefusal::Hidden::component: pert_ui_runtime::WidgetId
+pub pert_ui_runtime::component::RevealRefusal::ModalBlocked
+impl core::clone::Clone for pert_ui_runtime::RevealRefusal
+pub fn pert_ui_runtime::RevealRefusal::clone(&self) -> pert_ui_runtime::RevealRefusal
+impl core::cmp::Eq for pert_ui_runtime::RevealRefusal
+impl core::cmp::PartialEq for pert_ui_runtime::RevealRefusal
+pub fn pert_ui_runtime::RevealRefusal::eq(&self, &pert_ui_runtime::RevealRefusal) -> bool
+impl core::fmt::Debug for pert_ui_runtime::RevealRefusal
+pub fn pert_ui_runtime::RevealRefusal::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::RevealRefusal
+impl core::marker::Freeze for pert_ui_runtime::RevealRefusal
+impl !core::marker::Send for pert_ui_runtime::RevealRefusal
+impl !core::marker::Sync for pert_ui_runtime::RevealRefusal
+impl core::marker::Unpin for pert_ui_runtime::RevealRefusal
+impl core::marker::UnsafeUnpin for pert_ui_runtime::RevealRefusal
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::RevealRefusal
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::RevealRefusal
 pub enum pert_ui_runtime::component::RevealStatus
 pub pert_ui_runtime::component::RevealStatus::Cancelled
 pub pert_ui_runtime::component::RevealStatus::Finished(core::result::Result<pert_ui_runtime::RevealOutcome, pert_ui_runtime::RuntimeError>)

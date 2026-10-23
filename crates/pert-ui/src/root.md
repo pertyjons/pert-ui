@@ -47,7 +47,8 @@ Most items are re-exported from the backend-independent `pert-ui-runtime`
 crate, which documents them. Their examples import `pert_ui::…`, as an
 application writes them: an application depends on `pert-ui` alone, every such
 item is at this crate's root, `pert_ui::prelude` is
-`pert_ui_runtime::prelude` plus native startup, and `pert_ui::component` is
+`pert_ui_runtime::prelude` plus native startup and the facade's own
+feature widgets (`Svg` with `svg`), and `pert_ui::component` is
 `pert_ui_runtime::component`.
 
 # Map of the library

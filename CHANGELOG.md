@@ -92,8 +92,9 @@ writes. Not breaking: every change adds a re-export.
   - workspace state: `ViewState`, `WorkspaceValue`, `WorkspaceError` and
     `RestoreRejection`;
   - receipts and native windows: `TaskReceipt`, `TaskStatus`,
-    `RevealReceipt`, `RevealStatus`, `RevealOutcome`, `PresentationReceipt`,
-    `PresentationStatus`, `NativeWindowOptions` and `NativeWindowId`;
+    `RevealReceipt`, `RevealStatus`, `RevealOutcome`, `RevealRefusal`,
+    `PresentationReceipt`, `PresentationStatus`, `NativeWindowOptions`,
+    `DetachedClosePolicy` and `NativeWindowId`;
   - editor sessions: `EditorSession`, `EditorStart`, `EditorAttachment`,
     `EditorTrigger` and `EditorOutcome`.
 
@@ -124,8 +125,9 @@ writes. Not breaking: every change adds a re-export.
   `Component::tab_navigation`, a native-only test names what `App`
   reports, and a component written from `pert_ui::component::*` alone
   keeps a task receipt, starts a drag, claims Tab, describes itself for
-  inspection and saves its workspace state. Each module has a running
-  rustdoc example.
+  inspection, builds detached-window options and matches a reveal refusal,
+  and saves its workspace state; a second module imports each `component`
+  name on its own. Each module has a running rustdoc example.
 - The `api/` listings add `pub mod pert_ui_runtime::component` and
   `pub mod pert_ui::component` with their re-exports, the new prelude
   re-exports, and the facade prelude's `NativeWindowId` and `WindowError`

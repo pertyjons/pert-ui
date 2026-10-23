@@ -364,7 +364,8 @@ pub use pert_ui_core::{
 /// plumbing; the widgets and their builder types are in the prelude.
 ///
 /// The `pert-ui` facade's prelude re-exports this one and adds only its native
-/// startup types (`App` and everything it reports, errors included). A custom
+/// startup types (`App` and everything it reports, errors included) and the
+/// widgets its own features provide (`Svg` with `svg`). A custom
 /// component that lays out, draws and handles input can be written from
 /// `use pert_ui::prelude::*` alone. One that describes itself for inspection,
 /// starts a drag, keeps a receipt, presents in its own native window or hosts
@@ -725,16 +726,17 @@ pub mod component {
         DropOperation, DropOperations, DropResponse,
     };
     #[doc(no_inline)]
+    pub use crate::{
+        DetachedClosePolicy, NativeWindowId, NativeWindowOptions, PresentationReceipt,
+        PresentationStatus, RevealOutcome, RevealReceipt, RevealRefusal, RevealStatus, TaskReceipt,
+        TaskStatus,
+    };
+    #[doc(no_inline)]
     pub use crate::{DrawError, RuntimeError};
     #[doc(no_inline)]
     pub use crate::{EditorAttachment, EditorOutcome, EditorSession, EditorStart, EditorTrigger};
     #[doc(no_inline)]
     pub use crate::{Element, MotionPreference, ReadSignal, Signal};
-    #[doc(no_inline)]
-    pub use crate::{
-        NativeWindowId, NativeWindowOptions, PresentationReceipt, PresentationStatus,
-        RevealOutcome, RevealReceipt, RevealStatus, TaskReceipt, TaskStatus,
-    };
     #[doc(no_inline)]
     pub use crate::{RestoreRejection, ViewState, WorkspaceError, WorkspaceValue};
 }

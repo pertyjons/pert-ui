@@ -4,7 +4,8 @@
 //!
 //! The `widget` module must not import anything else from `pert_ui`: its
 //! compiling is the evidence that the module holds every name such a component
-//! writes. The test driving it is ordinary application code and globs the
+//! writes. `every_name` imports each promised name on its own, so a removed
+//! re-export fails even where the probe does not use it. The test driving it is ordinary application code and globs the
 //! prelude.
 use pert_ui::{ComponentInspection, OverlapPolicy, SemanticRole, prelude::*};
 use std::time::Duration;
@@ -19,6 +20,16 @@ mod widget {
         pub task: Option<TaskReceipt>,
         pub drags: Vec<DragOutcome>,
         pub tabs: Vec<FocusDirection>,
+    }
+
+    /// The options a component asks for when it presents in its own window.
+    pub fn own_window() -> Result<NativeWindowOptions, RuntimeError> {
+        Ok(NativeWindowOptions::new("Probe")?.close_policy(DetachedClosePolicy::RemoveView))
+    }
+
+    /// Whether a kept reveal ended refused by a modal surface.
+    pub fn modal_refused(outcome: &RevealOutcome) -> bool {
+        matches!(outcome, RevealOutcome::Refused(RevealRefusal::ModalBlocked))
     }
 
     impl Record {
@@ -142,6 +153,34 @@ mod widget {
     }
 }
 
+/// Each name the module promises, imported one by one, so removing any
+/// re-export fails to compile.
+#[allow(unused_imports)]
+mod every_name {
+    use pert_ui::component::{
+        ArrangeContext, BorderInspection, BoxModelInspection, ChildInfo, ChildReveal, Color,
+        ColorRole, CommandContext, CommandId, CommandKey, CommandKeyInput, CommandOutcome,
+        CommandReceipt, CommandSource, CommandStatus, Component, ComponentDetails, Constraints,
+        ContentRows, CursorIcon, DRAG_THRESHOLD, DetachedClosePolicy, DisplayList, DragEvent,
+        DragOutcome, DragPayload, DragPhase, DragPreview, DragRole, DrawCommand, DrawError,
+        DropOperation, DropOperations, DropResponse, EditorAttachment, EditorOutcome,
+        EditorSession, EditorStart, EditorTrigger, Element, EventContext, FillRule, FocusDirection,
+        Icon, IconSource, ImageId, ImageSampling, InputOutcome, InspectValue, Invalidation,
+        KeyAction, KeyCode, KeyEvent, KeyTransition, KeyboardState, Length, LineCap, LineJoin,
+        Magnification, MaskId, MaskImage, MeasureContext, MetricRole, Modifiers, MotionPreference,
+        NativeWindowId, NativeWindowOptions, Notifier, OverlapPolicy, Painter, Path, PathBuilder,
+        PathElement, Point, PointerButton, PointerEvent, PointerKind, PresentationReceipt,
+        PresentationStatus, QuarterTurn, RasterImage, ReadSignal, Rect, RestoreRejection,
+        RevealOutcome, RevealReceipt, RevealRefusal, RevealStatus, RichText, RuntimeError,
+        SemanticAction, SemanticItem, SemanticRole, SemanticValue, Semantics, Shape,
+        ShortcutBinding, ShortcutScope, Signal, Size, SizeLimits, StrokeStyle, SurfaceDismissal,
+        SurfaceKind, TaskReceipt, TaskStatus, TextCommand, TextCommandOutcome, TextInputState,
+        TextKeyOutcome, TextLayout, TextOverflow, TextPreedit, TextStyle, Transform2D,
+        UpdateContext, ValidationHints, VectorGeometry, VectorId, ViewScale, ViewState,
+        ViewTransform, Viewport, WidgetId, WorkspaceError, WorkspaceValue,
+    };
+}
+
 fn probe(ui: &Runtime) -> ComponentInspection {
     ui.inspect()
         .components
@@ -211,6 +250,15 @@ fn a_component_written_from_the_component_module_alone_runs_its_contracts()
         details.box_model.border.map(|border| border.width),
         Some(1.0)
     );
+
+    // Detachment options and a reveal refusal are written from the module.
+    assert_eq!(
+        widget::own_window()?.closing_policy(),
+        pert_ui::DetachedClosePolicy::RemoveView
+    );
+    assert!(widget::modal_refused(&pert_ui::RevealOutcome::Refused(
+        pert_ui::RevealRefusal::ModalBlocked
+    )));
 
     // The state saves and restores through the workspace document.
     let saved = ui.capture_workspace()?;

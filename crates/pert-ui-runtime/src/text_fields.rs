@@ -123,7 +123,13 @@ type RefusalReport =
 ///   movement, selection and clipboard chords: the caret moves, the
 ///   selection extends and Copy writes the clipboard. It also claims Cut,
 ///   Paste and the undo chords, which change no text there. It leaves
-///   Backspace, Delete and Enter to its ancestors and command bindings.
+///   Backspace and Delete to its ancestors and command bindings, and Enter
+///   too unless a session holds it (next item).
+/// - A `TextField` attached to an [`EditorSession`](crate::EditorSession)
+///   claims Enter and an unmodified Tab in every enabled state, read-only
+///   included, and Escape outside a composition or drag: each completes or
+///   cancels the session's edit and reports how, so none reaches an
+///   ancestor or a command.
 ///
 /// - On every platform: Left, Right, Up, Down, Home and End move the caret,
 ///   with any modifiers the lists below do not give another meaning;

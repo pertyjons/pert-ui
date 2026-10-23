@@ -518,7 +518,7 @@ and anything left to a later part.
     - each new regression checked to fail with its fix reverted.
 
     The fix is verified in 6e's review.
-- **6e (0.3.67):** prelude membership by the decided rule, and
+- **6e (0.3.67), done 2026-10-23:** 2032b93 and its review fix. Prelude membership by the decided rule, and
   `pert_ui::component` with `pert_ui_runtime::component`.
   - **Prelude:** 79 names join the runtime prelude:
     - the audit's lists;
@@ -528,7 +528,7 @@ and anything left to a later part.
     - `ExpansionChange`, `Expansion` and `FocusDirection` from 6a.
   - **Facade prelude:** it adds `NativeWindowId` and `WindowError` under
     `native`.
-  - **`component`:** holds 124 names a component author writes or keeps.
+  - **`component`:** holds 126 names a component author writes or keeps.
   - **Pages:** the guarantee sentences, `root.md` and a new "Imports"
     section in the custom-widgets guide point to `component`, and
     app-author slice 9's inputs are updated.
@@ -552,6 +552,26 @@ and anything left to a later part.
       `component`;
     - the erased host types join the prelude;
     - the remote-authority family joins it by G5-16's rule.
+  - **Review:** Codex found four points:
+    - `component` lacked `DetachedClosePolicy`, which
+      `NativeWindowOptions::close_policy` takes, and `RevealRefusal`, which
+      `RevealOutcome::Refused` carries; both joined it;
+    - the `component_module` test protected only the names its probe used;
+      an `every_name` module now imports each of the 126 on its own, and
+      the probe builds detached-window options and matches a refusal;
+    - 6d2's recheck text still had a read-only editor leave Enter to its
+      ancestors, which a `TextField` with an `EditorSession` claims in
+      every enabled state, as it does Tab and Escape; the key list says so;
+    - the prelude pages omitted the facade's `Svg` with `svg`.
+
+    The review verified 6d2's recheck fix otherwise: the locked-editor
+    routing and the capture lookup's rustdoc match the code.
+  - **After the fix:** the public-API gate: `cargo fmt --all --check`,
+    workspace Clippy, `cargo test --locked --workspace`, the doctests,
+    warning-free rustdoc, the diagnostics suite, `api/generate.sh`, whose
+    diff adds only the two names' blocks under `component` in the runtime
+    listings, and `git diff --check`; the five headless example sessions
+    on the final candidate. The fix is verified in 6f1's review.
 
 ## Rules for every part
 
