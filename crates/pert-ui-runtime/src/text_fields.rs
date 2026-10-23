@@ -132,10 +132,13 @@ type RefusalReport =
 ///   Backspace and Delete to its ancestors and command bindings, and Enter
 ///   too unless a session holds it (next item).
 /// - A `TextField` attached to an [`EditorSession`](crate::EditorSession)
-///   claims Enter and an unmodified Tab in every enabled state, read-only
-///   included, and Escape outside a composition or drag: each completes or
-///   cancels the session's edit and reports how, so none reaches an
-///   ancestor or a command.
+///   claims Enter, and Tab or Shift+Tab without Control, Alt or Super, in
+///   every enabled state, read-only included, and Escape outside a
+///   composition or drag, so none of them reaches an ancestor or a command.
+///   Claiming a key does not always report: during a composition or drag
+///   the key is kept without saving, an edit already ended reports nothing
+///   again, and a refused save reports while the edit stays open.
+///   [`Self::session`] lists what each key does and reports.
 ///
 /// - On every platform: Left, Right, Up, Down, Home and End move the caret,
 ///   with any modifiers the lists below do not give another meaning;

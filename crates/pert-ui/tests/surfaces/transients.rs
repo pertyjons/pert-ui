@@ -1198,3 +1198,64 @@ fn a_context_menu_wrapper_is_not_a_tab_stop() {
     press(&mut ui, KeyCode::Enter);
     assert_eq!(count.get().unwrap(), 2);
 }
+
+/// `Runtime::can_focus` answers for the state since the last flush and
+/// changes nothing: no reveal, no flush, no focus.
+#[test]
+fn can_focus_answers_without_changing_state() {
+    let mut ui = ui();
+    let state = DialogController::new(&ui);
+    let enabled = ui.signal(true);
+    let root = ui
+        .mount_tree(Element::new(
+            "root",
+            Column::new([
+                alert(&ui, &state, "alert"),
+                Element::new(
+                    "field",
+                    TextField::new(ui.signal(String::new())).enabled(&enabled),
+                ),
+                Element::new("label", Label::new("Not focusable")),
+            ]),
+        ))
+        .unwrap();
+    ui.flush(Duration::ZERO).unwrap();
+    let field = find(&ui, &root, "field").unwrap();
+    let label = find(&ui, &root, "label").unwrap();
+    assert_eq!(ui.can_focus(&field), Ok(true));
+    assert_eq!(ui.can_focus(&label), Ok(false));
+    assert_eq!(
+        Runtime::new().can_focus(&field),
+        Err(RuntimeError::ForeignRuntime)
+    );
+
+    // Disabling applies at the next flush; the query flushes nothing.
+    enabled.set(false).unwrap();
+    let now = ui.now();
+    assert_eq!(ui.can_focus(&field), Ok(true));
+    assert_eq!(ui.now(), now);
+    ui.flush(Duration::from_millis(16)).unwrap();
+    assert_eq!(ui.can_focus(&field), Ok(false));
+    enabled.set(true).unwrap();
+    ui.flush(Duration::from_millis(32)).unwrap();
+    assert_eq!(ui.can_focus(&field), Ok(true));
+    // Hidden, it answers false.
+    ui.set_visible(&field, false).unwrap();
+    assert_eq!(ui.can_focus(&field), Ok(false));
+    ui.set_visible(&field, true).unwrap();
+    ui.flush(Duration::from_millis(48)).unwrap();
+    assert_eq!(ui.can_focus(&field), Ok(true));
+
+    // A modal surface blocks the components outside it.
+    let trigger = find(&ui, &root, "open-alert").unwrap();
+    ui.focus(&trigger).unwrap();
+    press(&mut ui, KeyCode::Enter);
+    let cancel = find(&ui, &root, "cancel").unwrap();
+    assert_eq!(ui.can_focus(&field), Ok(false));
+    assert_eq!(ui.can_focus(&cancel), Ok(true));
+    assert_eq!(ui.focused(), Some(cancel));
+
+    // An unmounted component answers false, not an error.
+    ui.unmount(&root).unwrap();
+    assert_eq!(ui.can_focus(&field), Ok(false));
+}

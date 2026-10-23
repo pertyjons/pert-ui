@@ -4,7 +4,8 @@
 use pert_ui_runtime::testing::{Driver, TestError};
 use pert_ui_runtime::{
     ApplicationError, CommandKey, KeyEvent, KeyTransition, KeyboardState, NativeWindowOptions,
-    ReadSignal, RevealRefusal, SemanticValue, Tab, Tabs, prelude::*,
+    ReadSignal, RevealRefusal, SemanticValue, Show, Signal, Tab, Tabs, TextCommand,
+    TextCommandOutcome, prelude::*,
 };
 use std::{cell::Cell, cell::RefCell, rc::Rc, time::Duration};
 
@@ -74,6 +75,14 @@ impl Component for Recorder {
             return Err(ApplicationError::from(format!("release {:?}", event.code)).into());
         }
         Ok(InputOutcome::Ignored)
+    }
+    /// Answers every text command, so the driver treats it as an editor.
+    fn text_command(
+        &mut self,
+        _: &mut EventContext,
+        _: TextCommand,
+    ) -> Result<TextCommandOutcome, RuntimeError> {
+        Ok(TextCommandOutcome::Handled)
     }
 }
 
@@ -169,6 +178,38 @@ fn settle_and_advance_flush_once_at_a_later_clock() -> TestResult {
     );
     assert_eq!(length.get()?, 4);
     assert_eq!(format!("{driver:?}"), "Driver { .. }");
+    Ok(())
+}
+
+/// Updates once per wake and asks for another one frame later.
+struct Ticker(Rc<Cell<u32>>);
+impl Component for Ticker {
+    fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
+        self.0.set(self.0.get() + 1);
+        cx.wake_after(Driver::FRAME)
+    }
+}
+
+#[test]
+fn settle_ticks_one_frame_and_advance_is_one_deadline_jump() -> TestResult {
+    assert_eq!(Driver::FRAME, Duration::from_millis(16));
+    let mut ui = runtime()?;
+    let ticks = Rc::new(Cell::new(0));
+    let _ticker = ui.mount("ticker", Ticker(ticks.clone()))?;
+    let mut driver = Driver::new(&mut ui);
+    driver.settle()?;
+    assert_eq!(ticks.get(), 1);
+    for frame in 2..=4 {
+        let before = driver.runtime().now();
+        driver.settle()?;
+        assert_eq!(driver.runtime().now(), before + Duration::from_millis(16));
+        assert_eq!(ticks.get(), frame, "each settle is one tick");
+    }
+    // Twenty frames' worth of time in one jump: missed deadlines produce one
+    // update, not twenty.
+    driver.advance(Driver::FRAME * 20)?;
+    assert_eq!(ticks.get(), 5);
+    assert_eq!(driver.runtime().now(), Driver::FRAME * 24);
     Ok(())
 }
 
@@ -801,5 +842,86 @@ fn cleanup_goes_on_after_a_failed_release_and_reports_the_first() -> TestResult 
     let keyboard = driver.runtime().keyboard();
     assert!(keyboard.pressed().next().is_none());
     assert_eq!(keyboard.modifiers(), Modifiers::default());
+    Ok(())
+}
+
+/// Toggles `shown` when F6 or Control is released, the last key event of
+/// `Driver::key(F6)` and of a Control chord.
+struct ReleaseWriter(Signal<bool>);
+impl Component for ReleaseWriter {
+    fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+        Ok(())
+    }
+    fn focusable(&self) -> bool {
+        true
+    }
+    fn measure(&self, _: &MeasureContext<'_>, _: Constraints) -> Result<Size, RuntimeError> {
+        Ok(Size::new(40.0, 20.0)?)
+    }
+    fn keyboard_event(
+        &mut self,
+        _: &mut EventContext,
+        event: KeyEvent,
+        _: &KeyboardState,
+    ) -> Result<InputOutcome, RuntimeError> {
+        if event.transition == KeyTransition::Released
+            && matches!(event.code, KeyCode::F6 | KeyCode::ControlLeft)
+        {
+            self.0.set(!self.0.get()?)?;
+        }
+        Ok(InputOutcome::Ignored)
+    }
+}
+
+#[test]
+fn key_and_chord_settle_so_their_effect_is_shown() -> TestResult {
+    let mut ui = runtime()?;
+    let shown = ui.signal(false);
+    let root = ui.mount_tree(Element::new(
+        "root",
+        Column::new([
+            Element::new("writer", ReleaseWriter(shown.clone())),
+            Element::new(
+                "panel",
+                Show::new(&shown, |_| Element::new("note", Label::new("Shown"))),
+            ),
+        ]),
+    ))?;
+    ui.flush(Duration::ZERO)?;
+    let writer = ui.find(&root, &["writer"])?.ok_or("writer")?;
+    let panel = ui.find(&root, &["panel"])?.ok_or("panel")?;
+    ui.focus(&writer)?;
+    let mut driver = Driver::new(&mut ui);
+    // The binding is written by the last key event; only a flush after it
+    // mounts the child.
+    driver.key(KeyCode::F6)?;
+    assert_eq!(driver.runtime().children(&panel)?.len(), 1);
+    let control = KeyChord::new(
+        CommandKey::Character('h'),
+        Modifiers {
+            control: true,
+            ..Modifiers::default()
+        },
+    );
+    driver.chord(control, KeyCode::KeyH)?;
+    assert!(driver.runtime().children(&panel)?.is_empty());
+    Ok(())
+}
+
+#[test]
+fn an_empty_replacements_backspace_is_released_after_its_press_fails() -> TestResult {
+    let (mut ui, log) = failing_after(KeyCode::Backspace)?;
+    let recorder = ui.focused().ok_or("the recorder is focused")?;
+    let mut driver = Driver::new(&mut ui);
+    let error = driver.replace_text(&recorder, "").unwrap_err();
+    assert!(is_failure(&error, "update failed"), "{error:?}");
+    assert_eq!(
+        transitions(&log),
+        [
+            (KeyCode::Backspace, KeyTransition::Pressed),
+            (KeyCode::Backspace, KeyTransition::UnmatchedRelease)
+        ]
+    );
+    assert!(driver.runtime().keyboard().pressed().next().is_none());
     Ok(())
 }

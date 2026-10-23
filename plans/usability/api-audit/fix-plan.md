@@ -572,7 +572,7 @@ and anything left to a later part.
     diff adds only the two names' blocks under `component` in the runtime
     listings, and `git diff --check`; the five headless example sessions
     on the final candidate. The fix is verified in 6f1's review.
-- **6f1 (0.3.68):** the testing module, the headless application and the
+- **6f1 (0.3.68), done 2026-10-23:** 6795da9 and its review fix. The testing module, the headless application and the
   close order, by [design revision 4](design-6f1.md), which Codex reviewed
   three times and the maintainer approved on 2026-10-23. The maintainer also
   chose that a retired detached window's pending recovery error is kept for
@@ -628,9 +628,64 @@ and anything left to a later part.
       `Selector::id`;
     - the round 2 fixture's requirement is 0.3.68, after a copy built and
       tested against the workspace.
-  - **Not testable headlessly:** the wiring inside `begin_close`, the
-    `CloseRequested` path and `run` returning the retired error at exit;
-    the native checks cover the first two on Linux.
+  - **After the commit:** library packaging and the 0.3.68
+    packaged-consumer check passed:
+    - the five archives were extracted outside the checkout and patched
+      in;
+    - fonts, shaders, licenses and guides were checked in each package
+      list;
+    - the extracted facade's doctests ran, and its native
+      `getting_started` example built;
+    - a copy of the round 2 fixture and a consumer with a custom widget
+      built, and the consumer's two tests passed.
+
+    This is local packaged-consumer evidence, not a crates.io dry run.
+  - **Review:** Codex found seven points and an incomplete record:
+    - restoration through `Runtime::focus` could reveal and flush during
+      backoff, and focused a component the policy had disabled;
+    - the native checks queued `request_close` and never exercised
+      `WindowEvent::CloseRequested`, so this entry overstated their
+      coverage;
+    - several contracts testable headlessly had no tests: admission with
+      settlement disabled, a detached root's focus error aborting a
+      main-window close, `run`'s terminal error selection, `advance` as one
+      deadline jump, the exact `FRAME` step, settling after keys and
+      chords, and an empty replacement's Backspace cleanup;
+    - 6e's session-key bullet overstated what each claimed key reports;
+    - the guide's click timing dropped `Driver::click`'s qualifications;
+    - this entry lacked the packaging evidence.
+
+    **Maintainer decision (2026-10-23):** a public `Runtime::can_focus`
+    (mounted, visible, focusable and not modal-blocked; it reveals and
+    flushes nothing). Restoration needs it and runs only when admission was
+    allowed to settle, after a flush of the affected roots so the policy's
+    own changes count.
+
+    **The fix:**
+    - adds the tests listed above, each checked to fail with its change
+      reverted;
+    - extracts `run`'s error choice as `terminal_error`;
+    - adds a native check that hands `CloseRequested` for the real main
+      window to the runner's own event handler, asserting the saved draft
+      and the restored focus. The title-bar button itself stays the hand
+      check;
+    - qualifies the two wordings;
+    - records the packaging evidence above.
+  - **After the fix:**
+    - the workspace gate;
+    - `cargo test --locked --release --workspace`;
+    - Clippy, tests and rustdoc in every CI feature configuration;
+    - the headless gallery;
+    - `api/generate.sh`, whose diff adds only `Runtime::can_focus`;
+    - the native checks on Linux, 19 of 19;
+    - `git diff --check`;
+    - packaging and the packaged-consumer check, rerun after the fix's
+      commit.
+
+    Codex rechecks the fix before 6f2 starts.
+  - **Not testable headlessly:** the title-bar close button's path from
+    the window system into `window_event`, which the maintainer's hand
+    check covers.
   - **Open:** the maintainer's hand check of closing with a focused draft
     (the diagram editor, `--window`), on Linux, and on Windows and macOS
     when available.

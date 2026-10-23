@@ -34,6 +34,12 @@ examples' sessions use the driver (F34). Breaking in behavior: see F4 below.
     `InspectionQuery`, `Selector` and `Detail`, which stay at the crate root
     too; the facade's module adds `CpuRenderer` with `cpu` and
     `HeadlessApp` with `native`. The prelude pages point to `testing`.
+- Added: `Runtime::can_focus`, a query that answers whether a component is
+  mounted, visible, focusable by its own `Component::focusable` and not
+  blocked by a modal surface, without revealing, flushing or changing
+  anything; an unmounted or hidden component answers `false`, and only a
+  foreign ID is an error. Close admission uses it before focusing a released
+  editor again.
 - Added (F5): `App::headless`, which validates the title, sets the main
   window's configured size at scale 1 as the viewport, runs the initializer
   and lays the visible windows out, without an event loop, window or GPU,
@@ -53,10 +59,13 @@ examples' sessions use the driver (F34). Breaking in behavior: see F4 below.
   the application's state, and a parameter-bound draft is cancelled. When
   no window is in component-error backoff, those windows are then flushed,
   and a failed `focus_lost` aborts the close through `on_error`. On a
-  synchronous `KeepOpen` the released component is focused again when
-  nothing in its window holds focus after the callback; `Defer` and `Close`
-  restore nothing, and the native host forgets the affected windows'
-  reactivation records. Replacement usage: drop any `Runtime::clear_focus`
+  synchronous `KeepOpen` the affected windows are flushed again and the
+  released component is focused again when nothing in its window holds
+  focus after the callback and `Runtime::can_focus` admits it, so a
+  component the policy disabled stays unfocused; during backoff nothing is
+  restored, since that flush and focusing's reveal can retry a failing
+  update. `Defer` and `Close` restore nothing, and the native host forgets
+  the affected windows' reactivation records. Replacement usage: drop any `Runtime::clear_focus`
   workaround in `on_close`; the `diagram_editor` example's close policy
   drops its own. `App::on_close` and contracts.md ("Closing a window")
   state the order and the editor cases.
@@ -90,16 +99,26 @@ examples' sessions use the driver (F34). Breaking in behavior: see F4 below.
   cells and canvas keep their point-based helpers, with the canvas pause
   written as `Driver::advance`. The custom-widgets guide's close sentence
   points to admission and `HeadlessApp::admit_close`.
+- Changed: `TextField`'s key list says a session-attached field claims
+  Enter, Tab and Shift+Tab, and Escape outside a composition or drag, that a
+  claimed key does not always report, and points to `TextField::session`
+  for what each key reports.
 - Added: contract tests: the runtime's `tests/testing.rs` for each driver
-  action, each refusal and the cleanup rules; the facade's `surfaces`
-  binary's `window_close` module for headless start and close admission;
-  and unit tests of the native runner's backoff check, reactivation records
-  and retired-window error.
+  action, each refusal, the frame step, one deadline jump per `advance`,
+  the settle after keys and chords, and the cleanup rules; the facade's
+  `surfaces` binary's `window_close` module for headless start and close
+  admission, and a `can_focus` contract in its `transients` module; unit
+  tests of the shared admission without and with settling, of the native
+  runner's backoff check, reactivation records and retired-window error,
+  and of `run`'s terminal-error precedence, now a function of its own; and
+  a native check that delivers the window system's `CloseRequested` for a
+  real main window while an editor holds a draft.
 - The `api/` listings add `pub mod pert_ui_runtime::testing` and
   `pub mod pert_ui::testing` with their items and re-exports,
   `pub mod pert_ui::guide::testing`, `App::headless` and `HeadlessApp` with
-  `native`, and `pert_ui::testing::CpuRenderer` with `cpu`. The runtime
-  listings repeat each re-exported item's block under its `testing` path.
+  `native`, `pert_ui::testing::CpuRenderer` with `cpu`, and
+  `Runtime::can_focus`. The runtime listings repeat each re-exported item's
+  block under its `testing` path.
 
 ## 0.3.67 (2026-10-23)
 

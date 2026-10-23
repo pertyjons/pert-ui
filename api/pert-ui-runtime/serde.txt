@@ -18407,6 +18407,7 @@ impl pert_ui_runtime::Runtime
 pub const pert_ui_runtime::Runtime::MAX_FLUSH_WAVES: usize
 pub const pert_ui_runtime::Runtime::MAX_OVERLAY_BOXES: usize
 pub const pert_ui_runtime::Runtime::MAX_OVERLAY_MARKERS: usize
+pub fn pert_ui_runtime::Runtime::can_focus(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::cancel_input(&mut self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::clear_focus(&mut self)
 pub fn pert_ui_runtime::Runtime::clear_profile(&self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
@@ -40033,6 +40034,7 @@ impl pert_ui_runtime::Runtime
 pub const pert_ui_runtime::Runtime::MAX_FLUSH_WAVES: usize
 pub const pert_ui_runtime::Runtime::MAX_OVERLAY_BOXES: usize
 pub const pert_ui_runtime::Runtime::MAX_OVERLAY_MARKERS: usize
+pub fn pert_ui_runtime::Runtime::can_focus(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::cancel_input(&mut self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::clear_focus(&mut self)
 pub fn pert_ui_runtime::Runtime::clear_profile(&self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>

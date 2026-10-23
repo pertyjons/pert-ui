@@ -347,3 +347,129 @@ fn three_surfaces(software: bool) -> Result<(), AppError> {
         .result
         .ok_or_else(|| AppError::Graphics("native smoke exited before verification".into()))?
 }
+
+/// Delivers the window system's close request, `WindowEvent::CloseRequested`,
+/// for the real main window while an editor holds a draft, through the
+/// runner's own event handler.
+struct CloseRequestDriver {
+    runner: Runner,
+    field: WidgetId,
+    text: Signal<String>,
+    seen: Rc<std::cell::RefCell<Option<String>>>,
+    result: Option<Result<(), AppError>>,
+}
+impl CloseRequestDriver {
+    fn check(&mut self, event_loop: &ActiveEventLoop) -> Result<(), AppError> {
+        if self.result.is_some() || self.runner.start.elapsed() < Duration::from_secs(1) {
+            return Ok(());
+        }
+        let Some(id) = self
+            .runner
+            .current
+            .window
+            .as_ref()
+            .map(|window| window.id())
+        else {
+            return Ok(());
+        };
+        let ui = &mut self.runner.app.runtime;
+        ui.focus(&self.field)?;
+        ui.text_input("typed draft")?;
+        assert_eq!(self.text.get()?, "", "the field holds a draft");
+        self.runner
+            .window_event(event_loop, id, WindowEvent::CloseRequested);
+        assert!(
+            self.runner.error.is_none(),
+            "the close request failed: {:?}",
+            self.runner.error
+        );
+        assert_eq!(
+            self.seen.borrow().as_deref(),
+            Some("typed draft"),
+            "the close policy saw the draft admission saved"
+        );
+        assert_eq!(self.text.get()?, "typed draft");
+        assert_eq!(
+            self.runner.app.runtime.focused(),
+            Some(self.field.clone()),
+            "keeping the window open focused the editor again"
+        );
+        eprintln!(
+            "A native CloseRequested for the real main window saved the focused draft before on_close, and KeepOpen focused the editor again."
+        );
+        self.result = Some(Ok(()));
+        event_loop.exit();
+        Ok(())
+    }
+}
+impl ApplicationHandler<UserEvent> for CloseRequestDriver {
+    fn resumed(&mut self, event_loop: &ActiveEventLoop) {
+        self.runner.resumed(event_loop);
+    }
+    fn window_event(&mut self, event_loop: &ActiveEventLoop, id: WindowId, event: WindowEvent) {
+        // The window system's own close request would end the check early.
+        if !matches!(event, WindowEvent::CloseRequested) {
+            self.runner.window_event(event_loop, id, event);
+        }
+    }
+    fn user_event(&mut self, event_loop: &ActiveEventLoop, event: UserEvent) {
+        self.runner.user_event(event_loop, event);
+    }
+    fn exiting(&mut self, event_loop: &ActiveEventLoop) {
+        self.runner.exiting(event_loop);
+    }
+    fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
+        self.runner.about_to_wait(event_loop);
+        if let Err(error) = self.check(event_loop) {
+            self.result = Some(Err(error));
+            event_loop.exit();
+        }
+        if self.runner.error.is_some() || self.runner.start.elapsed() > Duration::from_secs(20) {
+            event_loop.exit();
+        }
+        let tick = Instant::now() + Duration::from_millis(100);
+        event_loop.set_control_flow(match event_loop.control_flow() {
+            ControlFlow::WaitUntil(existing) => ControlFlow::WaitUntil(existing.min(tick)),
+            _ => ControlFlow::WaitUntil(tick),
+        });
+    }
+}
+
+/// The window system's close request for a real window runs close
+/// admission: the focused editor's draft is saved before `App::on_close`.
+#[test]
+#[ignore = "requires a native desktop session and hardware GPU adapter"]
+fn a_native_close_request_saves_the_focused_draft_before_the_policy() -> Result<(), AppError> {
+    let mut app = App::new("pert-ui close request smoke", |_| Ok(()));
+    app.initialize.take();
+    let text = app.runtime.signal(String::new());
+    let field = app.runtime.mount_tree(Element::new(
+        "field",
+        TextField::new(text.clone()).max_length(Some(100)),
+    ))?;
+    let seen = Rc::new(std::cell::RefCell::new(None));
+    let record = seen.clone();
+    let read = text.clone();
+    app = app.on_close(move |_, _| {
+        *record.borrow_mut() = Some(read.get()?);
+        Ok(NativeCloseAction::KeepOpen)
+    });
+    let event_loop = native_test_event_loop()?;
+    let runner = Runner::new(app, event_loop.create_proxy());
+    let mut driver = CloseRequestDriver {
+        runner,
+        field,
+        text,
+        seen,
+        result: None,
+    };
+    event_loop
+        .run_app(&mut driver)
+        .map_err(|error| AppError::EventLoop(error.to_string()))?;
+    if let Some(error) = driver.runner.error {
+        return Err(error);
+    }
+    driver
+        .result
+        .ok_or_else(|| AppError::Graphics("native close smoke exited before verification".into()))?
+}

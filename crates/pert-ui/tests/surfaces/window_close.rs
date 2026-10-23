@@ -574,3 +574,92 @@ fn a_hidden_detached_window_is_not_flushed_by_its_admission() -> TestResult {
     app.shutdown()?;
     Ok(())
 }
+
+#[test]
+fn keep_open_leaves_focus_cleared_for_an_editor_the_policy_disabled() -> TestResult {
+    struct Disabling {
+        field: WidgetId,
+        text: Signal<String>,
+        enabled: Signal<bool>,
+    }
+    let (mut app, form) = start(
+        |ui| {
+            let text = ui.signal(String::new());
+            let enabled = ui.signal(true);
+            let field = ui.mount_tree(Element::new(
+                "field",
+                TextField::new(text.clone())
+                    .max_length(Some(100))
+                    .enabled(&enabled),
+            ))?;
+            Ok(Disabling {
+                field,
+                text,
+                enabled,
+            })
+        },
+        Box::new(|_, form: &Disabling| {
+            form.enabled.set(false)?;
+            Ok(NativeCloseAction::KeepOpen)
+        }),
+    )?;
+    Driver::new(app.runtime_mut()).replace_text(&form.field, "Saved first")?;
+    let main = app.main_window();
+    assert!(matches!(
+        app.admit_close(&main)?,
+        NativeCloseAction::KeepOpen
+    ));
+    assert_eq!(form.text.get()?, "Saved first");
+    assert_eq!(app.runtime().focused(), None);
+    assert!(!app.runtime().can_focus(&form.field)?);
+    app.shutdown()?;
+    Ok(())
+}
+
+#[test]
+fn a_detached_windows_failed_focus_loss_aborts_closing_the_main_window() -> TestResult {
+    struct Detached {
+        failing: WidgetId,
+        detached: NativeWindowId,
+    }
+    let calls = Rc::new(Cell::new(0));
+    let count = calls.clone();
+    let (mut app, built) = start(
+        |ui| {
+            let root = ui.mount_tree(Element::new(
+                "root",
+                Column::new([Element::new(
+                    "panel",
+                    View::new(Element::new("failing", FailingFocusLoss)),
+                )]),
+            ))?;
+            ui.flush(Duration::ZERO)?;
+            let panel = ui.find(&root, &["panel"])?.ok_or(RuntimeError::Unmounted)?;
+            let prepared = ui.prepare_detach(&panel, NativeWindowOptions::new("Panel")?)?;
+            let detached = ui.commit_detach(prepared)?;
+            ui.set_viewport(Viewport::new(200.0, 100.0, 1.0)?)?;
+            let failing = ui
+                .find(&root, &["panel", "failing"])?
+                .ok_or(RuntimeError::Unmounted)?;
+            Ok(Detached { failing, detached })
+        },
+        Box::new(move |_, _: &Detached| {
+            count.set(count.get() + 1);
+            Ok(NativeCloseAction::Close)
+        }),
+    )?;
+    let ui = app.runtime_mut();
+    ui.select_window(&built.detached)?;
+    ui.flush(ui.now())?;
+    ui.focus(&built.failing)?;
+    let main = ui.primary_window();
+    ui.select_window(&main)?;
+    let error = app.admit_close(&main).unwrap_err();
+    assert!(
+        matches!(&error, AppError::Runtime(RuntimeError::Application(inner)) if inner.to_string() == "focus loss failed"),
+        "{error:?}"
+    );
+    assert_eq!(calls.get(), 0, "the policy did not run");
+    app.shutdown()?;
+    Ok(())
+}

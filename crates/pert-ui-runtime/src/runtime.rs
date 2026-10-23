@@ -4472,6 +4472,56 @@ impl Runtime {
         }
         self.focus_with_reveal(id, true)
     }
+    /// Whether `id` can take focus now: the component is mounted, visible,
+    /// focusable by its own [`Component::focusable`] (a disabled built-in
+    /// control is not), and no modal surface of its window blocks it.
+    ///
+    /// [`Self::focus`] refuses only the hidden, unmounted and modal-blocked
+    /// cases and focuses a component whose `focusable` is false. A host that
+    /// gives focus back to a component it took focus from asks this first,
+    /// so a component disabled meanwhile stays unfocused. It is a query only:
+    /// it reveals nothing, flushes nothing and changes no state, so its
+    /// answer describes the state since the last flush.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
+    /// use std::time::Duration;
+    ///
+    /// let mut ui = Runtime::new();
+    /// ui.set_viewport(Viewport::new(300.0, 100.0, 1.0)?)?;
+    /// let root = ui.mount_tree(Element::new("form", Column::new([
+    ///     Element::new("name", TextField::new(ui.signal(String::new()))),
+    ///     Element::new("title", Label::new("Name")),
+    /// ])))?;
+    /// ui.flush(Duration::ZERO)?;
+    /// let name = ui.find(&root, &["name"])?.ok_or("not mounted")?;
+    /// let title = ui.find(&root, &["title"])?.ok_or("not mounted")?;
+    /// assert!(ui.can_focus(&name)?);
+    /// assert!(!ui.can_focus(&title)?); // a label takes no focus
+    /// ui.set_visible(&name, false)?;
+    /// assert!(!ui.can_focus(&name)?);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// # Errors
+    /// [`RuntimeError::ForeignRuntime`] for an ID of another runtime, and
+    /// nothing else: an unmounted or hidden component, including every
+    /// component after [`Self::shutdown`], answers `false`. Reading needs no
+    /// phase check, since it writes nothing.
+    pub fn can_focus(&self, id: &WidgetId) -> Result<bool, RuntimeError> {
+        match self.check(id) {
+            Ok(()) => {}
+            Err(RuntimeError::Unmounted) => return Ok(false),
+            Err(error) => return Err(error),
+        }
+        Ok(id.0.visible.get()
+            && self
+                .entries
+                .get(&id.0.serial)
+                .is_some_and(|entry| entry.component.focusable())
+            && self.modal_allows_in_own_window(id.0.serial))
+    }
     /// The refusals of a focus transfer, checked in the target's window before
     /// anything changes.
     fn admit_focus(&self, id: &WidgetId) -> Result<(), RuntimeError> {

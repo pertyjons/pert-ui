@@ -62,11 +62,13 @@ never laid out is [`TestError::NotLaidOut`](crate::testing::TestError::NotLaidOu
 Whether the press reaches the target is not checked: a surface covering it is a
 result to assert on.
 
-The clock moves only by the settle, so two clicks at one point are 16 ms apart,
-which a built-in control counts as a double click
-([`ClickCounter::DEFAULT_INTERVAL`] is 500 ms). Two separate single clicks put
-[`Driver::advance`](crate::testing::Driver::advance) beyond the interval between
-them:
+The clock moves only by the settle, so two clicks at one point are 16 ms apart.
+That is within [`ClickCounter::DEFAULT_INTERVAL`] (500 ms), so a built-in
+control counts them as a double click, unless a press series was already
+running at that point, which the two clicks then continue; a component with an
+interval of its own counts by that interval. Two separate single clicks put
+[`Driver::advance`](crate::testing::Driver::advance) beyond the component's
+interval between them:
 
 ```rust
 use pert_ui::prelude::*;

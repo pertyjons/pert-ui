@@ -923,9 +923,13 @@ ends. A detached window closed while it waits to retry keeps that error for
 
 The policy runs with the closing window selected. On a synchronous `KeepOpen`,
 each affected window whose focus admission released focuses that component
-again when nothing in the window holds focus after the callback and the runtime
-still admits it; a hidden, unmounted or modal-blocked component leaves focus
-cleared. `Defer` and `Close` restore nothing. Whatever the decision, the native
+again when nothing in the window holds focus after the callback and
+`Runtime::can_focus` still admits it; a hidden, unmounted, unfocusable (such as
+disabled) or modal-blocked component leaves focus cleared. The affected windows
+are flushed again first, so what the policy changed applies before that check;
+since that flush and focusing's reveal can retry a failing update, nothing is
+restored during backoff. `Defer` and
+`Close` restore nothing. Whatever the decision, the native
 host forgets the component an affected window recorded to focus on
 reactivation. `HeadlessApp::admit_close` runs the same admission without a
 window; coalescing repeated requests while a decision is deferred, the

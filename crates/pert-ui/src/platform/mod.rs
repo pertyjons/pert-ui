@@ -86,18 +86,36 @@ pub(crate) fn run(mut app: App) -> Result<(), AppError> {
         .run_app(&mut runner)
         .err()
         .map(|e| AppError::EventLoop(e.to_string()));
-    let error = event_loop_error
-        .or(runner.error.take())
-        .or(runner.current.component_recovery.error.take())
-        .or_else(|| {
-            runner
-                .parked
-                .values_mut()
-                .find_map(|window| window.component_recovery.error.take())
-        })
-        .or(runner.retired_error.take())
-        .map_or(Ok(()), Err);
+    let error = terminal_error(
+        event_loop_error,
+        runner.error.take(),
+        runner.current.component_recovery.error.take(),
+        runner
+            .parked
+            .values_mut()
+            .map(|window| window.component_recovery.error.take()),
+        runner.retired_error.take(),
+    )
+    .map_or(Ok(()), Err);
     finish_runtime(&mut runner.app.runtime, error)
+}
+
+/// The failure `run` returns, in [`App::run`]'s precedence: event-loop
+/// dispatch, then the runner's own failure, then the current window's pending
+/// recovery failure, then a parked window's (the first the iteration yields),
+/// then that of a detached window closed while it waited to retry.
+fn terminal_error(
+    event_loop: Option<AppError>,
+    runner: Option<AppError>,
+    current: Option<AppError>,
+    parked: impl IntoIterator<Item = Option<AppError>>,
+    retired: Option<AppError>,
+) -> Option<AppError> {
+    event_loop
+        .or(runner)
+        .or(current)
+        .or_else(|| parked.into_iter().flatten().next())
+        .or(retired)
 }
 
 // Finalize even when the event loop did not call exiting. Kept independent of
@@ -1036,6 +1054,43 @@ mod tests {
             winit::event::Ime::Enabled
         )));
         assert!(!flushes_motion_first(&WindowEvent::RedrawRequested));
+    }
+
+    /// `run` returns a closed window's pending error when nothing else
+    /// failed, and every other source takes precedence over it.
+    #[test]
+    fn the_terminal_error_follows_runs_precedence() {
+        let message = |error: Option<AppError>| error.map(|error| error.to_string());
+        let retired = || Some(AppError::Surface("retired".into()));
+        assert_eq!(
+            message(terminal_error(None, None, None, [None, None], retired())),
+            Some("presentation surface failed: retired".into())
+        );
+        assert_eq!(
+            terminal_error(None, None, None, [None], None).map(|_| ()),
+            None
+        );
+        let sources = |level: usize| {
+            let at = |index: usize, name: &str| {
+                (index >= level).then(|| AppError::Surface(name.to_owned()))
+            };
+            terminal_error(
+                at(0, "event loop"),
+                at(1, "runner"),
+                at(2, "current"),
+                [None, at(3, "parked")],
+                at(4, "retired"),
+            )
+        };
+        for (level, name) in ["event loop", "runner", "current", "parked", "retired"]
+            .into_iter()
+            .enumerate()
+        {
+            assert_eq!(
+                message(sources(level)),
+                Some(format!("presentation surface failed: {name}"))
+            );
+        }
     }
 
     #[test]

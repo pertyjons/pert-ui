@@ -563,9 +563,14 @@ impl App {
     /// 6. On a synchronous [`NativeCloseAction::KeepOpen`], in each affected
     ///    window, the component whose focus step 2 released is focused again
     ///    when nothing in that window holds focus after the callback, so a
-    ///    field the policy focused keeps focus, and when the runtime still
-    ///    admits it: a hidden, unmounted or modal-blocked component leaves
-    ///    focus cleared. On [`NativeCloseAction::Defer`] and
+    ///    field the policy focused keeps focus, and when
+    ///    [`Runtime::can_focus`] still admits it: a hidden, unmounted,
+    ///    unfocusable (such as disabled) or modal-blocked component leaves
+    ///    focus cleared. The affected windows are flushed first, as in step 4,
+    ///    so what the callback changed applies before that check. Flushing
+    ///    and focusing, which reveals the component, are why nothing is
+    ///    restored while a window is in component-error backoff. On
+    ///    [`NativeCloseAction::Defer`] and
     ///    [`NativeCloseAction::Close`] nothing is restored; when a deferred
     ///    decision keeps the window open, the policy or its confirmation
     ///    decides where focus goes. Whatever the decision, a component an
