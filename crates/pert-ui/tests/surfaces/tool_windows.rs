@@ -170,7 +170,7 @@ fn invalid_descriptions_are_rejected_before_mounting() {
             ToolWindowLayout::new(button("main"))
                 .edge(ToolEdge::Left, EdgeMode::Stripe)
                 .window(window("center", ToolEdge::Left)),
-            LayoutError::ReservedKey,
+            LayoutError::ReservedKey("center".into()),
         ),
         (
             // A blank key.
@@ -185,14 +185,14 @@ fn invalid_descriptions_are_rejected_before_mounting() {
                 .edge(ToolEdge::Left, EdgeMode::Stripe)
                 .window(window("files", ToolEdge::Left))
                 .window(window("files", ToolEdge::Left)),
-            LayoutError::DuplicateKey,
+            LayoutError::DuplicateKey("files".into()),
         ),
         (
             // Content keyed like the header.
             ToolWindowLayout::new(button("main"))
                 .edge(ToolEdge::Left, EdgeMode::Stripe)
                 .window(ToolWindow::new("files", "Files", button("hide"))),
-            LayoutError::ReservedKey,
+            LayoutError::ReservedKey("hide".into()),
         ),
     ] {
         let mut ui = ui();
@@ -302,7 +302,7 @@ fn each_group_shows_one_tool_window_and_two_groups_share_the_edge() -> TestResul
     assert!(!controller.toggle("c")?);
     assert!(matches!(
         controller.expand("unknown"),
-        Err(RuntimeError::Layout(LayoutError::UnknownKey))
+        Err(RuntimeError::Layout(LayoutError::UnknownKey(key))) if key == "unknown"
     ));
     Ok(())
 }

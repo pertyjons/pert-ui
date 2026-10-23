@@ -365,7 +365,7 @@ impl sealed::Sealed for ChoiceId {
         domain
             .index_of(value)
             .map(|_| ())
-            .ok_or(ParameterError::UnknownOption)
+            .ok_or_else(|| ParameterError::UnknownOption(value.clone()))
     }
 
     fn validate_effective(domain: &Self::Domain, value: &Self) -> Result<(), ParameterError> {
@@ -379,7 +379,7 @@ impl sealed::Sealed for ChoiceId {
     fn normalize(domain: &Self::Domain, value: &Self) -> Result<NormalizedValue, ParameterError> {
         let index = domain
             .index_of(value)
-            .ok_or(ParameterError::UnknownOption)?;
+            .ok_or_else(|| ParameterError::UnknownOption(value.clone()))?;
         let index = u64::try_from(index).map_err(|_| ParameterError::DomainTooLarge)?;
         Ok(rank_to_position(index, domain.intervals()))
     }

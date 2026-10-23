@@ -58,7 +58,7 @@ fn validate_traced(elements: &[Element], trail: &mut Vec<String>) -> Result<u64,
         }
         if !keys.insert(&element.key) {
             trail.push(element.key.clone());
-            return Err(RuntimeError::DuplicateKey);
+            return Err(RuntimeError::DuplicateKey(element.key.clone()));
         }
         element
             .component
@@ -246,7 +246,10 @@ impl Runtime {
     /// assert_eq!(ui.key(&reset)?, "reset");
     /// assert!(ui.find_descendant(&root, "missing")?.is_none());
     /// // Two descendants are keyed "apply": the lookup refuses to choose.
-    /// assert_eq!(ui.find_descendant(&root, "apply"), Err(RuntimeError::AmbiguousKey));
+    /// assert_eq!(
+    ///     ui.find_descendant(&root, "apply"),
+    ///     Err(RuntimeError::AmbiguousKey("apply".into()))
+    /// );
     /// let right = ui.find_descendant(&root, "right")?.ok_or("not mounted")?;
     /// assert!(ui.find_descendant(&right, "apply")?.is_some());
     /// # Ok::<(), Box<dyn std::error::Error>>(())
@@ -263,7 +266,7 @@ impl Runtime {
             let entry = &self.entries[&serial];
             if entry.key == key {
                 if found.is_some() {
-                    return Err(RuntimeError::AmbiguousKey);
+                    return Err(RuntimeError::AmbiguousKey(key.to_owned()));
                 }
                 found = Some(serial);
             }
@@ -374,7 +377,7 @@ impl Runtime {
             let hit = own.is_some_and(|segment| segment == segments[matched]);
             if hit && matched == last {
                 if found.is_some() {
-                    return Err(RuntimeError::AmbiguousKey);
+                    return Err(RuntimeError::AmbiguousKey(segments.join("/")));
                 }
                 found = Some(serial);
             }
@@ -770,11 +773,12 @@ impl Runtime {
                     .get(&(target, key.clone()))
                     .is_some_and(|moved| *moved != serial));
         if taken {
+            let error = RuntimeError::DuplicateKey(key.clone());
             self.shared
                 .record(crate::EventKind::Reparent, Some(serial), None, || {
-                    crate::EventStatus::Failed(RuntimeError::DuplicateKey.to_string())
+                    crate::EventStatus::Failed(error.to_string())
                 });
-            return Err(RuntimeError::DuplicateKey);
+            return Err(error);
         }
         // Focus/hover readers on the old path must repaint before the move, and
         // readers on the new path after it; both paths are otherwise unchanged.
@@ -1023,7 +1027,7 @@ impl Runtime {
     fn described_child(&self, parent: u64, key: &str) -> Result<Option<u64>, RuntimeError> {
         match self.keys.get(&(Some(parent), key.to_owned())) {
             Some(serial) if self.entries[serial].home == Some(parent) => Ok(Some(*serial)),
-            Some(_) => Err(RuntimeError::DuplicateKey),
+            Some(_) => Err(RuntimeError::DuplicateKey(key.to_owned())),
             None => Ok(self.homes.get(&(parent, key.to_owned())).copied()),
         }
     }
@@ -1065,7 +1069,7 @@ impl Runtime {
             if let Some(serial) = described {
                 if self.entries[&serial].kind != element.kind {
                     trail.push(element.key.clone());
-                    return Err(RuntimeError::ChildTypeChanged);
+                    return Err(RuntimeError::ChildTypeChanged(element.key.clone()));
                 }
                 self.validate_types(serial, &element.children, trail)
                     .inspect_err(|_| trail.push(element.key.clone()))?;
@@ -1167,10 +1171,11 @@ impl Runtime {
                 self.validator.duplicate(*_existing, &element.key);
                 self.refresh_validation();
             }
+            let error = RuntimeError::DuplicateKey(element.key.clone());
             self.shared.record(crate::EventKind::Mount, None, None, || {
-                crate::EventStatus::Failed(RuntimeError::DuplicateKey.to_string())
+                crate::EventStatus::Failed(error.to_string())
             });
-            return Err(RuntimeError::DuplicateKey);
+            return Err(error);
         }
         let serial = self.serial.checked_add(1).ok_or(RuntimeError::Exhausted)?;
         let parent_node = parent.map(|id| self.entries[&id].node.clone());

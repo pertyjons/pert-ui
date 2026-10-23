@@ -192,7 +192,9 @@ fn an_unknown_initial_selection_is_rejected_or_falls_back_for_raw_children() {
     .selected("missing");
     assert_eq!(
         ui.mount_tree(Element::new("tabs", described)).err(),
-        Some(RuntimeError::Layout(LayoutError::UnknownKey))
+        Some(RuntimeError::Layout(LayoutError::UnknownKey(
+            "missing".into()
+        )))
     );
     assert!(ui.inspect().components.is_empty());
     // Raw children cannot be checked when the strip is described: the key

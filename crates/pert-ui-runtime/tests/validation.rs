@@ -93,7 +93,7 @@ fn overlap_and_shortcut_markers_follow_fixes_visibility_and_scope() -> TestResul
     assert_eq!(runtime.next_deadline(), None);
     assert!(matches!(
         runtime.mount("a", Observed::default()),
-        Err(RuntimeError::DuplicateKey)
+        Err(RuntimeError::DuplicateKey(key)) if key == "a"
     ));
     assert_eq!(
         runtime.validation_report().issues[0].code,

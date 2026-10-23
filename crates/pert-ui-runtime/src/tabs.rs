@@ -179,7 +179,7 @@ pub(crate) fn check_labeled(children: &[Element]) -> Result<(), LayoutError> {
             return Err(LayoutError::BlankKey);
         }
         if !keys.insert(child.key()) {
-            return Err(LayoutError::DuplicateKey);
+            return Err(LayoutError::DuplicateKey(child.key().to_owned()));
         }
         // A bound label is checked when the container's update reads it.
         if child.label_source().is_none()
@@ -422,10 +422,10 @@ impl Tabs {
     /// ui.flush(Duration::ZERO)?;
     /// assert!(ui.find_descendant(&tabs, "edit")?.is_some());
     /// assert!(ui.inspect().components.iter().any(|c| c.key == "edit" && c.visible));
-    /// assert!(matches!(
+    /// assert_eq!(
     ///     ui.mount_tree(Element::new("other", Tabs::new([tab("mix")]).selected("log"))),
-    ///     Err(RuntimeError::Layout(LayoutError::UnknownKey))
-    /// ));
+    ///     Err(RuntimeError::Layout(LayoutError::UnknownKey("log".into())))
+    /// );
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     pub fn selected(mut self, key: impl Into<String>) -> Self {
@@ -932,14 +932,14 @@ impl Component for Tabs {
     fn check_description(&self) -> Result<(), RuntimeError> {
         // The children were taken when the element was built; the
         // constructor checked them and kept their keys.
-        if let Some(error) = self.invalid {
+        if let Some(error) = self.invalid.clone() {
             return Err(error.into());
         }
         if let Some(key) = &self.selected
             && !self.keys.is_empty()
             && !self.keys.contains(key)
         {
-            return Err(LayoutError::UnknownKey.into());
+            return Err(LayoutError::UnknownKey(key.clone()).into());
         }
         Ok(())
     }

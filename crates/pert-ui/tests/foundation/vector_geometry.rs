@@ -343,7 +343,7 @@ fn oversized_rasters_are_rejected_and_the_clip_bounds_the_work() -> TestResult {
         preserved.masks().is_empty(),
         "recording does not allocate pixels"
     );
-    assert_eq!(preserved.rasterized(), Err(DrawError::InvalidImage));
+    assert_eq!(preserved.rasterized(), Err(DrawError::CoverageTooLarge));
     // The same path clipped to a small group rasterizes only what is visible.
     let list = scene(1.0, move |p| {
         p.with_clip(Rect::new(10.0, 10.0, 20.0, 20.0)?, |p| {

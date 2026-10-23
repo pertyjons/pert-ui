@@ -216,7 +216,10 @@ fn a_form_summarizes_in_registration_order_and_rejects_bad_keys() {
     let form = FormFields::new(&ui);
     let first = form.field("first").unwrap();
     let second = form.field("second").unwrap();
-    assert_eq!(form.field("first").err(), Some(RuntimeError::DuplicateKey));
+    assert_eq!(
+        form.field("first").err(),
+        Some(RuntimeError::DuplicateKey("first".into()))
+    );
     assert_eq!(form.field("").err(), Some(RuntimeError::EmptyKey));
     assert_eq!(first.key(), "first");
     let summary = form.summary();

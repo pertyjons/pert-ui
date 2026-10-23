@@ -180,7 +180,7 @@ impl std::fmt::Debug for WidgetId {
 /// let ui = Runtime::new();
 /// assert_eq!(
 ///     group(&ui).err(),
-///     Some(RuntimeError::Choice(ChoiceError::DuplicateValue))
+///     Some(RuntimeError::Choice(ChoiceError::DuplicateValue { first: 0, second: 1 }))
 /// );
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq, thiserror::Error)]
@@ -228,9 +228,11 @@ pub enum RuntimeError {
     /// Command registration requires a nonblank human-readable name.
     #[error("command name is empty")]
     EmptyCommandName,
-    /// Two aliases/bindings match ambiguously in the same scope and phase.
-    #[error("ambiguous shortcut registration")]
-    ShortcutConflict,
+    /// Two aliases/bindings match ambiguously in the same scope and phase; the
+    /// chord is the one that conflicts. A held-key registration reports its
+    /// conflicting key with the registration's modifiers.
+    #[error("shortcut {0} is ambiguous in its scope")]
+    ShortcutConflict(crate::KeyChord),
     /// The view's description forbids moving it to its own presentation root.
     #[error("view is not detachable")]
     NotDetachable,
@@ -320,17 +322,19 @@ pub enum RuntimeError {
     /// The component is hidden and cannot receive an editing event.
     #[error("component is hidden")]
     Hidden,
-    /// A component key is already mounted under the same parent.
-    #[error("duplicate component key")]
-    DuplicateKey,
+    /// A component key, the one held here, is already mounted under the same
+    /// parent.
+    #[error("component key `{0}` is already in use")]
+    DuplicateKey(String),
     /// A key must contain a non-whitespace character.
     #[error("component key must not be empty")]
     EmptyKey,
     /// A key or address lookup below an ancestor matched more than one
     /// descendant, because keys are unique only among siblings; see
-    /// [`Runtime::find_descendant`] and [`Runtime::find`].
-    #[error("several descendants share the key")]
-    AmbiguousKey,
+    /// [`Runtime::find_descendant`] and [`Runtime::find`]. It holds the key, or
+    /// for an address lookup the address with its segments joined by `/`.
+    #[error("several descendants share the key `{0}`")]
+    AmbiguousKey(String),
     /// State writes during component evaluation are forbidden.
     #[error("state cannot be written during component update")]
     WriteDuringUpdate,
@@ -374,9 +378,10 @@ pub enum RuntimeError {
     /// Custom layout returned invalid geometry or child placement.
     #[error(transparent)]
     Layout(#[from] crate::LayoutError),
-    /// A surviving child key cannot change its concrete component type.
-    #[error("retained child key changed component type")]
-    ChildTypeChanged,
+    /// A surviving child key, the one held here, cannot change its concrete
+    /// component type.
+    #[error("retained child `{0}` changed its component type")]
+    ChildTypeChanged(String),
     /// Bundled-font text preparation failed.
     #[error(transparent)]
     Text(#[from] crate::TextError),

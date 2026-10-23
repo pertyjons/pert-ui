@@ -373,7 +373,10 @@ fn a_second_toast_host_on_one_queue_fails_its_updates() -> TestResult {
             Element::new("second", host(&queue, "Dismiss")),
         ]),
     ))?;
-    assert_eq!(ui.flush(ui.now()), Err(RuntimeError::DuplicateKey));
+    assert_eq!(
+        ui.flush(ui.now()),
+        Err(RuntimeError::DuplicateKey("toasts".into()))
+    );
     let receipt = queue.push(Toast::new("Saved"))?;
     // Removing the first host closes the queue, as removal always does.
     ui.reconcile_children(&root, vec![Element::new("second", host(&queue, "Dismiss"))])?;

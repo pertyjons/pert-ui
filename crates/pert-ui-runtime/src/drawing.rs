@@ -26,10 +26,35 @@ pub enum DrawError {
     /// Linear RGBA channels must be finite and within zero through one.
     #[error("color channels must be finite and within 0..=1")]
     InvalidColor,
-    /// A coverage mask or raster image has a zero dimension, a byte count that
-    /// does not match its dimensions, or more pixel data than its type admits.
-    #[error("invalid image: zero dimension, inconsistent byte length or over its size limit")]
-    InvalidImage,
+    /// A [`MaskImage`] or [`RasterImage`](crate::RasterImage) was given a zero
+    /// dimension, a byte count that does not match its dimensions, or more
+    /// pixel data than its type admits. The fields hold what was passed.
+    #[error(
+        "a {width}×{height} image with {bytes} bytes has a zero dimension, a mismatched byte count or too many pixels"
+    )]
+    InvalidImage {
+        /// The rejected width in pixels.
+        width: u32,
+        /// The rejected height in pixels.
+        height: u32,
+        /// The number of bytes supplied.
+        bytes: usize,
+    },
+    /// A coverage mask that drawing needs, for a shape, an arc or a vector at
+    /// its raster scale, would exceed [`MaskImage::MAX_PIXELS`] after
+    /// clipping. Draw it smaller or clip it.
+    #[error("a coverage mask would exceed its size limit")]
+    CoverageTooLarge,
+    /// A command refers to a vector its display list does not hold, as an ID
+    /// copied from another scene would.
+    #[error("a command refers to a vector missing from its scene")]
+    MissingVector(crate::VectorId),
+    /// A command refers to a coverage mask its display list does not hold.
+    #[error("a command refers to a mask missing from its scene")]
+    MissingMask(MaskId),
+    /// A command refers to an image its display list does not hold.
+    #[error("a command refers to an image missing from its scene")]
+    MissingImage(crate::ImageId),
     /// A vector path or stroke style was rejected.
     #[error(transparent)]
     Path(#[from] crate::PathError),
@@ -1192,12 +1217,17 @@ impl MaskImage {
     /// image limit.
     ///
     /// # Errors
-    /// Returns [`DrawError::InvalidImage`] for a zero dimension, a byte count
-    /// other than `width * height`, or more than [`MaskImage::MAX_PIXELS`].
+    /// Returns [`DrawError::InvalidImage`], holding the dimensions and byte
+    /// count, for a zero dimension, a byte count other than `width * height`,
+    /// or more than [`MaskImage::MAX_PIXELS`].
     pub fn new(width: u32, height: u32, pixels: Vec<u8>) -> Result<Self, DrawError> {
         let count = u64::from(width) * u64::from(height);
         if count == 0 || count > Self::MAX_PIXELS as u64 || count != pixels.len() as u64 {
-            return Err(DrawError::InvalidImage);
+            return Err(DrawError::InvalidImage {
+                width,
+                height,
+                bytes: pixels.len(),
+            });
         }
         Ok(Self {
             width,

@@ -69,7 +69,7 @@ fn a_child_with_another_key_replaces_the_old_one_and_a_type_change_is_refused() 
     mode.set(2)?;
     assert!(matches!(
         ui.flush(Duration::ZERO),
-        Err(RuntimeError::ChildTypeChanged)
+        Err(RuntimeError::ChildTypeChanged(_))
     ));
     assert_eq!(ui.find_path(&root, &["b"])?, Some(one.clone()));
     mode.set(3)?;

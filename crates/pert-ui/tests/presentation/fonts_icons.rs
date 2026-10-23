@@ -119,11 +119,13 @@ fn registration_is_local_atomic_and_does_not_schedule_unused_fonts() -> Result {
     );
     assert_eq!(
         fonts.icon_glyph(one, '\u{10ffff}'),
-        Err(RuntimeError::Font(FontError::MissingGlyph))
+        Err(RuntimeError::Font(FontError::MissingGlyph('\u{10ffff}')))
     );
     assert_eq!(
         fonts.material_icon("absent_name"),
-        Err(RuntimeError::Font(FontError::UnknownIcon))
+        Err(RuntimeError::Font(FontError::UnknownIcon(
+            "absent_name".into()
+        )))
     );
     let _glyph = fonts.material_icon("folder_open")?;
     let icons = ui.icons();

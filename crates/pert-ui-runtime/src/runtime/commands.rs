@@ -619,7 +619,7 @@ impl Runtime {
                     })
                     .any(|command| command.chords.iter().any(|other| overlaps(chord, other)))
             {
-                return Err(RuntimeError::ShortcutConflict);
+                return Err(RuntimeError::ShortcutConflict(*chord));
             }
         }
         Ok(())
@@ -1199,19 +1199,19 @@ impl Runtime {
         let matching: Vec<_> = self
             .commands
             .values()
-            .filter(|entry| {
-                entry.scope == *scope
-                    && entry
-                        .chords
-                        .iter()
-                        .any(|chord| chord.matches(input, self.shared.modifiers.get()))
+            .filter(|entry| entry.scope == *scope)
+            .filter_map(|entry| {
+                entry
+                    .chords
+                    .iter()
+                    .find(|chord| chord.matches(input, self.shared.modifiers.get()))
+                    .map(|chord| (entry.id.clone(), *chord))
             })
-            .map(|entry| entry.id.clone())
             .collect();
-        if matching.len() > 1 {
-            return Err(RuntimeError::ShortcutConflict);
+        if let [(_, chord), _, ..] = matching.as_slice() {
+            return Err(RuntimeError::ShortcutConflict(*chord));
         }
-        if let Some(id) = matching.first() {
+        if let Some((id, _)) = matching.first() {
             let outcome = self.invoke_command(id, context.clone())?;
             if outcome == CommandOutcome::Blocked {
                 return Ok(false);

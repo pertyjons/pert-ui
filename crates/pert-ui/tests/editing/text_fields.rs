@@ -356,11 +356,17 @@ fn combining_and_emoji_deletion_preserve_utf8() {
 fn invalid_edits_and_preedit_ranges_do_not_corrupt_binding() {
     assert_eq!(
         TextPreedit::new("å", Some(1..2)),
-        Err(TextEditError::InvalidComposition)
+        Err(TextEditError::InvalidComposition {
+            start_byte: 1,
+            end_byte: 2
+        })
     );
     assert_eq!(
         TextPreedit::new("ab", Some(std::ops::Range { start: 2, end: 1 })),
-        Err(TextEditError::InvalidComposition)
+        Err(TextEditError::InvalidComposition {
+            start_byte: 2,
+            end_byte: 1
+        })
     );
     let (mut ui, _, value) = setup("preserve", false);
     assert_eq!(

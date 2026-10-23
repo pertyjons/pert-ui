@@ -138,7 +138,7 @@ impl Registry {
             .ok_or(FontError::InvalidData)?;
         if character.is_control() || character.is_whitespace() || face.charmap().map(character) == 0
         {
-            return Err(FontError::MissingGlyph);
+            return Err(FontError::MissingGlyph(character));
         }
         Ok(IconGlyph {
             font: font.clone(),

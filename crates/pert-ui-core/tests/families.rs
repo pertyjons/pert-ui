@@ -142,11 +142,11 @@ fn choice_identities_are_validated_and_independent_of_labels_and_order() -> Test
     );
     assert_eq!(
         spec.validate(&id("notch")?),
-        Err(ParameterError::UnknownOption)
+        Err(ParameterError::UnknownOption(id("notch")?))
     );
     assert_eq!(
         spec.normalize(&id("notch")?),
-        Err(ParameterError::UnknownOption)
+        Err(ParameterError::UnknownOption(id("notch")?))
     );
 
     // Reordering keeps identities valid; only ranks move.
@@ -173,11 +173,11 @@ fn choice_identities_are_validated_and_independent_of_labels_and_order() -> Test
             ],
             id("lp")?
         ),
-        Err(ParameterError::DuplicateOption)
+        Err(ParameterError::DuplicateOption(id("lp")?))
     );
     assert_eq!(
         ParameterSpec::choices("Filter", options, id("notch")?),
-        Err(ParameterError::UnknownOption)
+        Err(ParameterError::UnknownOption(id("notch")?))
     );
     Ok(())
 }
@@ -391,7 +391,9 @@ fn replacement_validates_base_and_overlay_atomically() -> TestResult {
             options(&["a", "c"])?,
             id("a")?
         )?),
-        Err(EditError::InvalidValue(ParameterError::UnknownOption))
+        Err(EditError::InvalidValue(ParameterError::UnknownOption(id(
+            "b"
+        )?)))
     );
     assert_eq!(
         state.replace_spec(ParameterSpec::choices(
@@ -399,7 +401,9 @@ fn replacement_validates_base_and_overlay_atomically() -> TestResult {
             options(&["a", "b"])?,
             id("a")?
         )?),
-        Err(EditError::InvalidValue(ParameterError::UnknownOption))
+        Err(EditError::InvalidValue(ParameterError::UnknownOption(id(
+            "c"
+        )?)))
     );
     assert_eq!(state.outcome(&token)?, None);
     assert_eq!(state.snapshot().revision, revision);
@@ -428,7 +432,9 @@ fn replacement_validates_base_and_overlay_atomically() -> TestResult {
     )?)?;
     assert_eq!(
         state.set_effective(Some(id("b")?)),
-        Err(EditError::InvalidValue(ParameterError::UnknownOption))
+        Err(EditError::InvalidValue(ParameterError::UnknownOption(id(
+            "b"
+        )?)))
     );
     Ok(())
 }

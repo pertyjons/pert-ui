@@ -66,7 +66,7 @@ fn circular_arc_handles_empty_complete_invalid_and_oversized_geometry() {
     }
     assert!(matches!(
         arc(0.0, 90.0, 100000.0, 2.0, 1.0),
-        Err(DrawError::InvalidImage)
+        Err(DrawError::CoverageTooLarge)
     ));
     let ring = arc(0.0, 360.0, 24.0, 2.0, 1.0).unwrap();
     let mask = &ring.masks()[0];

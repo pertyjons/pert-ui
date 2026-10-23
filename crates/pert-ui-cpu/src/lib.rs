@@ -1,8 +1,8 @@
 #![doc = include_str!("../README.md")]
 
 use pert_ui_runtime::{
-    CaptureError, Color, DisplayList, DrawCommand, DrawError, FrameImage, ImageSampling, MaskImage,
-    QuarterTurn, RasterImage, Runtime, VectorRasterizer,
+    CaptureError, Color, DisplayList, DrawCommand, DrawError, FrameImage, ImageSampling,
+    LimitError, MaskImage, QuarterTurn, RasterImage, Runtime, VectorRasterizer,
 };
 
 mod srgb;
@@ -21,13 +21,17 @@ pub enum CpuRenderError {
     /// The viewport has no physical pixels, as a minimized window does.
     #[error("the viewport has no physical pixels")]
     EmptyViewport,
-    /// The frame would hold more than [`FrameImage::MAX_BYTES`].
-    #[error("a {width}×{height} frame exceeds the frame byte limit")]
-    TooLarge {
-        /// Frame width in physical pixels.
-        width: u32,
-        /// Frame height in physical pixels.
-        height: u32,
+    /// The frame would hold more than [`FrameImage::MAX_BYTES`]:
+    /// [`LimitError::FrameSize`] with the frame's dimensions, as every
+    /// renderer reports that limit.
+    #[error(transparent)]
+    Limit(LimitError),
+    /// The frame fits [`FrameImage::MAX_BYTES`], but the system could not
+    /// allocate its pixel buffer of the bytes held here.
+    #[error("the {bytes}-byte frame buffer could not be allocated")]
+    AllocationFailed {
+        /// The bytes the frame's pixels need.
+        bytes: u64,
     },
     /// A command names a mask or image that its scene does not hold, as an ID
     /// copied from another scene would.
@@ -41,12 +45,13 @@ pub enum CpuRenderError {
 
 impl From<CpuRenderError> for CaptureError {
     /// Drawing failures keep their typed cause, an oversized frame is
-    /// [`CaptureError::TooLarge`], an empty viewport has no surface to render
-    /// and the remaining renderer diagnostics are backend text.
+    /// [`CaptureError::Limit`] with the same limit, an empty viewport has no
+    /// surface to render and the remaining renderer diagnostics, a failed
+    /// allocation included, are backend text.
     fn from(error: CpuRenderError) -> Self {
         match error {
             CpuRenderError::Drawing(error) => error.into(),
-            CpuRenderError::TooLarge { .. } => Self::TooLarge,
+            CpuRenderError::Limit(limit) => Self::Limit(limit),
             CpuRenderError::EmptyViewport => Self::SurfaceUnavailable,
             error => Self::Backend(error.to_string()),
         }
@@ -137,7 +142,9 @@ impl CpuRenderer {
     ///
     /// # Errors
     /// [`CpuRenderError::EmptyViewport`] for a viewport without physical pixels,
-    /// [`CpuRenderError::TooLarge`] beyond [`FrameImage::MAX_BYTES`],
+    /// [`CpuRenderError::Limit`] with [`LimitError::FrameSize`] beyond
+    /// [`FrameImage::MAX_BYTES`], [`CpuRenderError::AllocationFailed`] when the
+    /// frame's pixel buffer cannot be allocated,
     /// [`CpuRenderError::Drawing`] when vector preparation fails,
     /// [`CpuRenderError::InvalidReference`] for a command naming a resource its
     /// scene lacks and [`CpuRenderError::Unsupported`] for a command or sampling
@@ -184,7 +191,10 @@ impl CpuRenderer {
             .checked_mul(u64::from(height))
             .and_then(|pixels| pixels.checked_mul(4))
             .filter(|bytes| *bytes <= FrameImage::MAX_BYTES as u64)
-            .ok_or(CpuRenderError::TooLarge { width, height })?;
+            .ok_or(CpuRenderError::Limit(LimitError::FrameSize {
+                width,
+                height,
+            }))?;
         // Validate every command before preparing or allocating anything.
         for command in scene.commands() {
             check(scene, command)?;
@@ -199,7 +209,7 @@ impl CpuRenderer {
         let mut pixels = Vec::new();
         pixels
             .try_reserve_exact(bytes as usize)
-            .map_err(|_| CpuRenderError::TooLarge { width, height })?;
+            .map_err(|_| CpuRenderError::AllocationFailed { bytes })?;
         for _ in 0..u64::from(width) * u64::from(height) {
             pixels.extend_from_slice(&clear);
         }
@@ -215,7 +225,7 @@ impl CpuRenderer {
             frame.draw(&scene, command)?;
         }
         FrameImage::new(width, height, frame.pixels).map_err(|error| match error {
-            CaptureError::TooLarge => CpuRenderError::TooLarge { width, height },
+            CaptureError::Limit(limit) => CpuRenderError::Limit(limit),
             // The buffer has exactly the size its dimensions need.
             _ => CpuRenderError::Unsupported,
         })

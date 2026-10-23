@@ -100,7 +100,10 @@ impl Runtime {
                     .values()
                     .any(|r| r.modifiers == modifiers && r.keys.contains(key))
             {
-                return Err(RuntimeError::ShortcutConflict);
+                return Err(RuntimeError::ShortcutConflict(crate::KeyChord::new(
+                    crate::CommandKey::Named(*key),
+                    modifiers,
+                )));
             }
         }
         self.held_serial = self

@@ -108,7 +108,10 @@ fn duplicate_values_are_errors_and_typed_values_need_no_float_encoding() {
                 Choice::new(Mode::One, "Other")
             ]
         ),
-        Err(ChoiceError::DuplicateValue)
+        Err(ChoiceError::DuplicateValue {
+            first: 0,
+            second: 1
+        })
     ));
     let source = ui.signal(vec![
         Choice::new(Mode::One, "One"),
@@ -128,7 +131,10 @@ fn duplicate_values_are_errors_and_typed_values_need_no_float_encoding() {
         .unwrap();
     assert_eq!(
         ui.flush(Duration::ZERO),
-        Err(RuntimeError::Choice(ChoiceError::DuplicateValue))
+        Err(RuntimeError::Choice(ChoiceError::DuplicateValue {
+            first: 0,
+            second: 1
+        }))
     );
     source.set(vec![]).unwrap();
     ui.flush(Duration::ZERO).unwrap();

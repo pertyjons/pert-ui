@@ -229,11 +229,11 @@ fn reconcile_preserves_ordered_state_and_rejects_stale_or_ambiguous_keys() {
     assert_eq!(ui.focused(), Some(old[0].clone()));
     assert_eq!(
         ui.reconcile_children(&root, vec![leaf("a"), leaf("a")]),
-        Err(RuntimeError::DuplicateKey)
+        Err(RuntimeError::DuplicateKey("a".into()))
     );
     assert_eq!(
         ui.reconcile_children(&root, vec![Element::new("a", CustomRow)]),
-        Err(RuntimeError::ChildTypeChanged)
+        Err(RuntimeError::ChildTypeChanged("a".into()))
     );
     ui.reconcile_children(&root, vec![leaf("b")]).unwrap();
     ui.reconcile_children(&root, vec![leaf("a"), leaf("b")])
@@ -1082,7 +1082,7 @@ fn reparenting_moves_retained_state_focus_and_navigation_order() {
     ui.flush(Duration::ZERO).unwrap();
     assert_eq!(
         ui.reparent(&item, &left, 0),
-        Err(RuntimeError::DuplicateKey),
+        Err(RuntimeError::DuplicateKey("item".into())),
         "the new owner already uses the key"
     );
     assert_eq!(
@@ -1150,7 +1150,7 @@ fn a_child_moved_inside_its_describing_parent_stays_described_by_it() {
     );
     assert_eq!(
         ui.reconcile_children(&inner, vec![leaf("fixed"), leaf("item")]),
-        Err(RuntimeError::DuplicateKey),
+        Err(RuntimeError::DuplicateKey("item".into())),
         "nor may the owner describe the same key"
     );
     assert_eq!(

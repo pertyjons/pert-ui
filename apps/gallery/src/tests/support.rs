@@ -30,7 +30,10 @@ pub(super) fn find(ui: &Runtime, root: &WidgetId, key: &str) -> WidgetId {
         .find_descendant(root, key)
         .unwrap_or_else(|error| panic!("looking up {key}: {error}"));
     match (own, below) {
-        (Some(_), Some(_)) => panic!("looking up {key}: {}", RuntimeError::AmbiguousKey),
+        (Some(_), Some(_)) => panic!(
+            "looking up {key}: {}",
+            RuntimeError::AmbiguousKey(key.to_owned())
+        ),
         (Some(id), None) | (None, Some(id)) => id,
         (None, None) => panic!("missing {key}"),
     }

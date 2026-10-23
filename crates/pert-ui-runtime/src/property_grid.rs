@@ -582,7 +582,9 @@ impl Component for PropertyGrid {
     fn check_description(&self) -> Result<(), RuntimeError> {
         // The rows were taken when the element was built; the constructor
         // checked them.
-        self.invalid.map_or(Ok(()), |error| Err(error.into()))
+        self.invalid
+            .clone()
+            .map_or(Ok(()), |error| Err(error.into()))
     }
     fn take_children(&mut self) -> Vec<Element> {
         std::mem::take(&mut self.children)

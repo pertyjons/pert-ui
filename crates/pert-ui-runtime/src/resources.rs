@@ -164,12 +164,17 @@ impl RasterImage {
     /// and encoded again.
     ///
     /// # Errors
-    /// Returns [`DrawError::InvalidImage`] for a zero dimension, a byte count
+    /// Returns [`DrawError::InvalidImage`], holding the dimensions and byte
+    /// count, for a zero dimension, a byte count
     /// other than `width * height * 4`, or more than [`RasterImage::MAX_BYTES`].
     pub fn from_srgba8(width: u32, height: u32, mut pixels: Vec<u8>) -> Result<Self, DrawError> {
         let count = u64::from(width) * u64::from(height);
         if count == 0 || count > MAX_RASTER_BYTES / 4 || count * 4 != pixels.len() as u64 {
-            return Err(DrawError::InvalidImage);
+            return Err(DrawError::InvalidImage {
+                width,
+                height,
+                bytes: pixels.len(),
+            });
         }
         for pixel in pixels.as_chunks_mut::<4>().0 {
             premultiply(pixel);

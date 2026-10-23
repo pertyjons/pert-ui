@@ -397,10 +397,17 @@ mod decoding {
         ));
         let fixtures = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures");
         assert_eq!(images::load(fixtures.join("rgba.png")).unwrap().width(), 3);
-        assert!(matches!(
-            images::load(fixtures.join("missing.png")),
-            Err(ImageError::Io(_))
-        ));
+        let missing = fixtures.join("missing.png");
+        match images::load(&missing) {
+            Err(ImageError::Io { path, source }) => {
+                assert_eq!(path, missing);
+                assert_eq!(source.kind(), std::io::ErrorKind::NotFound);
+            }
+            other => panic!("expected an I/O error, got {other:?}"),
+        }
+        let error = images::load(&missing).unwrap_err();
+        assert!(error.to_string().contains(&missing.display().to_string()));
+        assert!(std::error::Error::source(&error).is_some());
     }
 
     #[cfg(feature = "pnm")]

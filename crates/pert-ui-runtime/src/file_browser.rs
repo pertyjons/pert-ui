@@ -67,24 +67,42 @@ pub enum ListingErrorKind {
 }
 
 /// Why a directory, or one entry in it, could not be read: a kind for
-/// decisions and a message for people.
+/// decisions, a message for people and, when known, the path that failed.
 ///
 /// The browser shows it rather than discarding it: a failed directory listing
 /// becomes an error row under its folder and in the entry list, never an empty
-/// folder, and an unreadable entry stays in the list with its message.
-#[derive(Clone, Debug, PartialEq, Eq, thiserror::Error)]
-#[error("{message}")]
+/// folder, and an unreadable entry stays in the list with its message. The
+/// browser shows [`Self::message`], since the row already stands for the
+/// path; `Display` writes the path, when there is one, before the message,
+/// as `path: message`.
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ListingError {
     kind: ListingErrorKind,
     message: String,
+    path: Option<PathBuf>,
 }
 impl ListingError {
-    /// Creates an error with a kind and a user-visible message.
+    /// Creates an error with a kind and a user-visible message, naming no
+    /// path; add one with [`Self::with_path`].
     pub fn new(kind: ListingErrorKind, message: impl Into<String>) -> Self {
         Self {
             kind,
             message: message.into(),
+            path: None,
         }
+    }
+    /// Names the directory or entry that could not be read, replacing any
+    /// earlier path. [`list_directory`] names the path of every error it
+    /// returns.
+    #[must_use]
+    pub fn with_path(mut self, path: impl Into<PathBuf>) -> Self {
+        self.path = Some(path.into());
+        self
+    }
+    /// The path that could not be read, if the error names one.
+    #[must_use]
+    pub fn path(&self) -> Option<&Path> {
+        self.path.as_deref()
     }
     /// The broad reason.
     #[must_use]
@@ -97,7 +115,17 @@ impl ListingError {
         &self.message
     }
 }
+impl fmt::Display for ListingError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if let Some(path) = &self.path {
+            write!(f, "{}: ", path.display())?;
+        }
+        f.write_str(&self.message)
+    }
+}
+impl std::error::Error for ListingError {}
 impl From<std::io::Error> for ListingError {
+    /// The kind of the I/O error and its text, naming no path.
     fn from(error: std::io::Error) -> Self {
         let kind = match error.kind() {
             std::io::ErrorKind::NotFound => ListingErrorKind::NotFound,
@@ -293,11 +321,13 @@ pub enum FileBrowserError {
 ///
 /// # Errors
 /// Returns the [`ListingError`] of a directory that cannot be opened or read
-/// to the end.
+/// to the end, naming `directory` as its [`ListingError::path`]. An unreadable
+/// entry's error names the entry's path.
 pub fn list_directory(directory: &Path) -> Result<Vec<DirectoryEntry>, ListingError> {
+    let failed = |error: std::io::Error| ListingError::from(error).with_path(directory);
     let mut entries = Vec::new();
-    for entry in std::fs::read_dir(directory)? {
-        let entry = entry?;
+    for entry in std::fs::read_dir(directory).map_err(failed)? {
+        let entry = entry.map_err(failed)?;
         let path = entry.path();
         let kind = match entry.file_type() {
             Ok(kind) if kind.is_symlink() => EntryKind::Symlink(match std::fs::metadata(&path) {
@@ -310,7 +340,8 @@ pub fn list_directory(directory: &Path) -> Result<Vec<DirectoryEntry>, ListingEr
             Ok(kind) if kind.is_file() => EntryKind::File,
             Ok(_) => EntryKind::Other,
             Err(error) => {
-                entries.push(DirectoryEntry::unreadable(path, error.into()));
+                let error = ListingError::from(error).with_path(&path);
+                entries.push(DirectoryEntry::unreadable(path, error));
                 continue;
             }
         };

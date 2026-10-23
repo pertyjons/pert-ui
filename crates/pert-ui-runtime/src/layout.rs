@@ -5,7 +5,11 @@ use crate::{Component, Rect, Runtime, RuntimeError};
 ///
 /// Invalid sizes, points and rectangles are [`GeometryError`]s; this error is
 /// about how a container distributes space and treats its children.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, thiserror::Error)]
+///
+/// A key variant carries the key it rejects, so the error is `Clone` but not
+/// `Copy`; the argument variants stay unit, because the caller holds the
+/// weight or ratio it passed.
+#[derive(Clone, Debug, Eq, PartialEq, thiserror::Error)]
 #[non_exhaustive]
 pub enum LayoutError {
     /// A custom layout addressed a missing child or placed a child twice, or a
@@ -20,18 +24,19 @@ pub enum LayoutError {
     /// title, property label or breadcrumb segment, is empty or whitespace-only.
     #[error("item label is blank")]
     BlankLabel,
-    /// Two described items of one container share a key, so neither could be
-    /// addressed or retained unambiguously.
-    #[error("duplicate item key")]
-    DuplicateKey,
-    /// A described item uses a key the container reserves for a part it
-    /// generates itself, such as an overflow menu.
-    #[error("reserved item key")]
-    ReservedKey,
-    /// An operation addressed a key the container does not have, such as a
-    /// tool window or column that was never described or has been removed.
-    #[error("unknown item key")]
-    UnknownKey,
+    /// Two described items of one container share the key held here, so
+    /// neither could be addressed or retained unambiguously.
+    #[error("two items share the key `{0}`")]
+    DuplicateKey(String),
+    /// A described item uses the key held here, which the container reserves
+    /// for a part it generates itself, such as an overflow menu.
+    #[error("item key `{0}` is reserved")]
+    ReservedKey(String),
+    /// An operation addressed the key held here, which the container does not
+    /// have, such as a tool window or column that was never described or has
+    /// been removed.
+    #[error("no item has the key `{0}`")]
+    UnknownKey(String),
     /// An operation addressed a tool-window edge the layout does not offer.
     #[error("edge is not available in this layout")]
     UnavailableEdge,

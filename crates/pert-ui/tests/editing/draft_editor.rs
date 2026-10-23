@@ -366,9 +366,18 @@ fn begin_rejects_text_and_selections_the_editor_cannot_hold() -> TestResult {
         ];
         let expected = [
             TextEditError::InvalidText,
-            TextEditError::InvalidSelection,
-            TextEditError::InvalidSelection,
-            TextEditError::InvalidSelection,
+            TextEditError::InvalidSelection {
+                anchor_byte: 0,
+                focus_byte: 1,
+            },
+            TextEditError::InvalidSelection {
+                anchor_byte: 2,
+                focus_byte: 1,
+            },
+            TextEditError::InvalidSelection {
+                anchor_byte: 0,
+                focus_byte: 3,
+            },
             TextEditError::TooLarge,
         ];
         for ((text, selection), error) in cases.into_iter().zip(expected) {

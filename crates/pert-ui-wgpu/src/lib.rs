@@ -687,7 +687,7 @@ impl Renderer {
             .checked_mul(u64::from(height))
             .and_then(|pixels| pixels.checked_mul(4));
         if bytes.is_none_or(|bytes| bytes > pert_ui_runtime::FrameImage::MAX_BYTES as u64) {
-            return Err(LimitError::CaptureSize { width, height }.into());
+            return Err(LimitError::FrameSize { width, height }.into());
         }
         // `resize` checked the extent against this device's texture dimension
         // before configuring it, so it is not checked again here.

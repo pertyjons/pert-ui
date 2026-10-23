@@ -138,7 +138,7 @@ impl FontManager {
                     .then(|| u32::from_str_radix(code, 16).ok().and_then(char::from_u32))
                     .flatten()
             })
-            .ok_or(crate::FontError::UnknownIcon)?;
+            .ok_or_else(|| crate::FontError::UnknownIcon(name.to_owned()))?;
         shared
             .text
             .with_service(|s| Ok(s.registry.material_glyph(character)?))

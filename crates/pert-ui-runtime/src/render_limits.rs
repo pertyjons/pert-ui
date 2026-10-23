@@ -2,7 +2,11 @@
 //! renderer so applications and hosts handle them alike.
 
 /// The kind of scene resource a [`LimitError`] concerns.
+///
+/// With the `serde` feature it serializes as its variant name, as a
+/// [`LimitError`] carries it.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[non_exhaustive]
 pub enum ResourceKind {
     /// 8-bit coverage masks ([`MaskImage`](crate::MaskImage)): shaped text, shapes and the vector
@@ -38,10 +42,17 @@ impl std::fmt::Display for ResourceKind {
 ///
 /// These are fixable conditions, not device faults. Device limits are the
 /// hardware adapter's own texture dimensions and the GPU renderer's buffer
-/// limits; the CPU renderer reports the frame and capture sizes it cannot
-/// hold. Renderers report them, and the native application returns them as its
-/// limit error.
+/// limits. [`FrameImage::MAX_BYTES`](crate::FrameImage::MAX_BYTES) has the one
+/// variant [`Self::FrameSize`], whoever reports it: the GPU renderer for a
+/// capture, the CPU renderer through its error's `Limit` variant, and
+/// [`FrameImage::new`](crate::FrameImage::new) and capture requests through
+/// [`CaptureError::Limit`](crate::CaptureError::Limit). Renderers report them,
+/// and the native application returns them as its limit error.
+///
+/// With the `serde` feature it serializes in serde's externally tagged enum
+/// form, as [`CaptureError::Limit`](crate::CaptureError::Limit) carries it.
 #[derive(Clone, Debug, Eq, PartialEq, thiserror::Error)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[non_exhaustive]
 pub enum LimitError {
     /// A surface or capture extent exceeds the device's maximum 2D texture
@@ -54,15 +65,6 @@ pub enum LimitError {
         height: u32,
         /// The device's maximum 2D texture dimension.
         max: u32,
-    },
-    /// A capture's 8-bit RGBA pixels would exceed
-    /// [`FrameImage::MAX_BYTES`](crate::FrameImage::MAX_BYTES).
-    #[error("a {width}×{height} capture exceeds the frame image size limit")]
-    CaptureSize {
-        /// Capture width in physical pixels.
-        width: u32,
-        /// Capture height in physical pixels.
-        height: u32,
     },
     /// One scene resource exceeds the device's maximum 2D texture dimension.
     #[error("a {width}×{height} {kind} exceeds the device texture dimension {max}")]
@@ -94,11 +96,12 @@ pub enum LimitError {
     /// A scene has more vertices than a `u32` draw range can address.
     #[error("the scene has more vertices than a draw range can address")]
     VertexCount,
-    /// A software-presented window's 8-bit RGBA frame would exceed
-    /// [`FrameImage::MAX_BYTES`](crate::FrameImage::MAX_BYTES). Like
-    /// [`Self::SurfaceExtent`] for a GPU surface, the window stays unpresented
-    /// until a smaller size.
-    #[error("a {width}×{height} software frame exceeds the frame image size limit")]
+    /// A frame's 8-bit RGBA pixels would exceed
+    /// [`FrameImage::MAX_BYTES`](crate::FrameImage::MAX_BYTES): a capture, a
+    /// CPU-rendered scene or a software-presented window. Like
+    /// [`Self::SurfaceExtent`] for a GPU surface, a software-presented window
+    /// stays unpresented until a smaller size.
+    #[error("a {width}×{height} frame exceeds the frame image size limit")]
     FrameSize {
         /// Frame width in physical pixels.
         width: u32,

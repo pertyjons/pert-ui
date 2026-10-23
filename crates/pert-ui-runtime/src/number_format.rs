@@ -163,10 +163,17 @@ pub enum NumberLocaleError {
     /// separator, which would break a single-line value.
     #[error("{0:?} cannot separate digits")]
     InvalidSeparator(char),
-    /// The decimal separator and the digit-grouping separator are the same,
-    /// or both are spaces, which grouping treats as one class.
-    #[error("the decimal and grouping separators are the same")]
-    SameSeparators,
+    /// The decimal separator and the digit-grouping separator held here are
+    /// the same, or both are spaces, which grouping treats as one class.
+    #[error(
+        "decimal separator {decimal:?} and grouping separator {grouping:?} cannot be told apart"
+    )]
+    SameSeparators {
+        /// The rejected decimal separator.
+        decimal: char,
+        /// The rejected grouping separator.
+        grouping: char,
+    },
 }
 
 /// An application-chosen decimal separator and optional digit grouping, for
@@ -239,10 +246,10 @@ impl NumberLocale {
                 return Err(NumberLocaleError::InvalidSeparator(separator));
             }
         }
-        if grouping.is_some_and(|grouping| {
-            grouping == decimal || (is_space(grouping) && is_space(decimal))
-        }) {
-            return Err(NumberLocaleError::SameSeparators);
+        if let Some(grouping) = grouping
+            && (grouping == decimal || (is_space(grouping) && is_space(decimal)))
+        {
+            return Err(NumberLocaleError::SameSeparators { decimal, grouping });
         }
         Ok(Self { decimal, grouping })
     }
@@ -468,14 +475,17 @@ mod tests {
         assert_eq!(english.parse_decimal(" +1,234.5 "), Ok(1234.5));
         assert_eq!(
             NumberLocale::new(',', Some(',')),
-            Err(NumberLocaleError::SameSeparators)
+            Err(NumberLocaleError::SameSeparators {
+                decimal: ',',
+                grouping: ','
+            })
         );
         // Grouping accepts every space, so no space may separate decimals
         // beside a space grouping: "1 234" would mean 1.234 and 1234.
         for (decimal, grouping) in [(' ', '\u{a0}'), ('\u{202f}', ' '), ('\u{a0}', '\u{202f}')] {
             assert_eq!(
                 NumberLocale::new(decimal, Some(grouping)),
-                Err(NumberLocaleError::SameSeparators),
+                Err(NumberLocaleError::SameSeparators { decimal, grouping }),
                 "{decimal:?} {grouping:?}"
             );
         }

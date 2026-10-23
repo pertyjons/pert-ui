@@ -223,7 +223,7 @@ impl Runtime {
                         let local = entry
                             .vectors
                             .get(vector.0)
-                            .ok_or(crate::DrawError::InvalidImage)?;
+                            .ok_or(crate::DrawError::MissingVector(vector))?;
                         let vector = crate::VectorId(scene.vectors.intern(local));
                         let origin = crate::Point::new(
                             (origin.0 + f64::from(view) * f64::from(local_origin.x())) as f32,
@@ -265,11 +265,11 @@ impl Runtime {
                         }
                         let slot = masks
                             .get_mut(mask.0)
-                            .ok_or(crate::DrawError::InvalidImage)?;
+                            .ok_or(crate::DrawError::MissingMask(mask))?;
                         let local = entry
                             .masks
                             .get(mask.0)
-                            .ok_or(crate::DrawError::InvalidImage)?;
+                            .ok_or(crate::DrawError::MissingMask(mask))?;
                         let mask = *slot.get_or_insert_with(|| scene.masks.intern(local));
                         crate::DrawCommand::DrawMask {
                             rect,
@@ -300,11 +300,11 @@ impl Runtime {
                         }
                         let slot = images
                             .get_mut(image.0)
-                            .ok_or(crate::DrawError::InvalidImage)?;
+                            .ok_or(crate::DrawError::MissingImage(image))?;
                         let local = entry
                             .images
                             .get(image.0)
-                            .ok_or(crate::DrawError::InvalidImage)?;
+                            .ok_or(crate::DrawError::MissingImage(image))?;
                         let image = *slot.get_or_insert_with(|| scene.images.intern(local));
                         crate::DrawCommand::DrawImage {
                             rect,

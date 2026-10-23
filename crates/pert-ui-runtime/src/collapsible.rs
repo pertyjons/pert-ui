@@ -1243,7 +1243,9 @@ impl Component for Accordion {
     fn check_description(&self) -> Result<(), RuntimeError> {
         // The sections were taken when the element was built; the constructor
         // checked them.
-        self.invalid.map_or(Ok(()), |error| Err(error.into()))
+        self.invalid
+            .clone()
+            .map_or(Ok(()), |error| Err(error.into()))
     }
     fn reconcile(&mut self, next: Self) -> Option<Invalidation> {
         let mut invalidation = None;

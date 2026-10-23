@@ -271,7 +271,7 @@ fn rebinding_a_parameter_input_cancels_its_gesture() {
     let sink = outcomes.clone();
     let _monitor = host
         .on_outcome(move |event| {
-            sink.borrow_mut().push(event.outcome);
+            sink.borrow_mut().push(event.outcome.clone());
             Ok(())
         })
         .unwrap();

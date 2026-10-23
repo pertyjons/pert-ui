@@ -1140,10 +1140,24 @@ Every public failure has a typed error, with the following common rules:
 
 - Library-owned errors derive `Clone`, `Debug`, `PartialEq` and `Eq` where
   their data permits; an error retaining an I/O source derives only `Debug`.
+- A variant that rejects a key, identity, path or integer value carries it,
+  and its message names it (`RuntimeError::AmbiguousKey`,
+  `NumberInputError::InvalidPrecision`, `ImageError::Io`); a list's
+  duplicate values are named by position (`ChoiceError::DuplicateValue`),
+  since an application value need not be printable. A variant that validates
+  an argument the caller passed and still holds stays unit: `GeometryError`'s,
+  `LayoutError::{InvalidWeight, InvalidRatio}` and
+  `ParameterError::{InvalidRange, OutOfRange, OffLattice}`. By the
+  maintainer's decision of 2026-10-23, a variant that rejects a
+  floating-point value also stays unit in every error enum
+  (`NormalizedValueError::OutOfRange`, `PathError::InvalidParameter`,
+  `NumberInputError::OutOfRange`), so that errors keep `Eq`. An owned
+  identity may cost the enum `Copy`, which is not part of this policy.
 - Display messages begin in lowercase and have no trailing period. An error
   whose message is text supplied by the application or the operating system
   (`InputRejection`, `ListingError`) displays it verbatim, as
-  `ApplicationError` does. A wrapped error is transparent or exposed through
+  `ApplicationError` does; a `ListingError` that names a path writes it
+  first. A wrapped error is transparent or exposed through
   `source()`, so a chain prints each cause once. Foreign backend failures may
   become diagnostic strings; library causes remain typed.
 - An application callback returns its own failure through
@@ -1162,7 +1176,8 @@ Every public failure has a typed error, with the following common rules:
   itself, so it keeps one form. `RuntimeError` gains no variant for these,
   and `DrawError` has no such conversion, since drawing fails in paint and
   host paths that already return it.
-- Errors carry no location. `Runtime::last_failure` reports where the
+- Errors carry no location; a rejected key or value is the failure's data,
+  not where it happened. `Runtime::last_failure` reports where the
   latest flush, paint or interval service first failed in a component: its
   key path and the failing callback, or `FailurePhase::Reconcile` when the
   children it requested were rejected. A reconciliation site keeps two

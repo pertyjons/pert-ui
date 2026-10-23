@@ -32,7 +32,7 @@ fn capacity_rejects_invalid_values() -> TestResult {
     assert_eq!(Capacity::new(0), Err(LiveError::ZeroCapacity));
     assert_eq!(
         Capacity::new(Capacity::MAX.get() + 1),
-        Err(LiveError::CapacityExceeded)
+        Err(LiveError::CapacityExceeded(Capacity::MAX.get() + 1))
     );
     assert_eq!(Capacity::new(Capacity::MAX.get())?, Capacity::MAX);
     assert_eq!(Capacity::try_from(0), Err(LiveError::ZeroCapacity));

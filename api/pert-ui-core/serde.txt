@@ -136,7 +136,6 @@ impl core::fmt::Debug for pert_ui_core::EditError
 pub fn pert_ui_core::EditError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::fmt::Display for pert_ui_core::EditError
 pub fn pert_ui_core::EditError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
-impl core::marker::Copy for pert_ui_core::EditError
 impl core::marker::StructuralPartialEq for pert_ui_core::EditError
 impl core::marker::Freeze for pert_ui_core::EditError
 impl core::marker::Send for pert_ui_core::EditError
@@ -160,7 +159,6 @@ pub fn pert_ui_core::EditOutcome<T>::eq(&self, &pert_ui_core::EditOutcome<T>) ->
 impl<T: core::cmp::PartialEq> core::marker::StructuralPartialEq for pert_ui_core::EditOutcome<T>
 impl<T: core::fmt::Debug> core::fmt::Debug for pert_ui_core::EditOutcome<T>
 pub fn pert_ui_core::EditOutcome<T>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
-impl<T: core::marker::Copy> core::marker::Copy for pert_ui_core::EditOutcome<T>
 impl<T> core::marker::Freeze for pert_ui_core::EditOutcome<T> where T: core::marker::Freeze
 impl<T> core::marker::Send for pert_ui_core::EditOutcome<T> where T: core::marker::Send
 impl<T> core::marker::Sync for pert_ui_core::EditOutcome<T> where T: core::marker::Sync
@@ -169,7 +167,7 @@ impl<T> core::marker::UnsafeUnpin for pert_ui_core::EditOutcome<T> where T: core
 impl<T> core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::EditOutcome<T> where T: core::panic::unwind_safe::RefUnwindSafe
 impl<T> core::panic::unwind_safe::UnwindSafe for pert_ui_core::EditOutcome<T> where T: core::panic::unwind_safe::UnwindSafe
 #[non_exhaustive] pub enum pert_ui_core::LiveError
-pub pert_ui_core::LiveError::CapacityExceeded
+pub pert_ui_core::LiveError::CapacityExceeded(usize)
 pub pert_ui_core::LiveError::Exhausted
 pub pert_ui_core::LiveError::ZeroCapacity
 impl core::clone::Clone for pert_ui_core::LiveError
@@ -215,7 +213,7 @@ impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::NormalizedValueEr
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_core::NormalizedValueError
 #[non_exhaustive] pub enum pert_ui_core::ParameterError
 pub pert_ui_core::ParameterError::DomainTooLarge
-pub pert_ui_core::ParameterError::DuplicateOption
+pub pert_ui_core::ParameterError::DuplicateOption(pert_ui_core::ChoiceId)
 pub pert_ui_core::ParameterError::EmptyName
 pub pert_ui_core::ParameterError::EmptyOptions
 pub pert_ui_core::ParameterError::InvalidExponent
@@ -226,7 +224,7 @@ pub pert_ui_core::ParameterError::NonFinite
 pub pert_ui_core::ParameterError::NonPositiveLogDomain
 pub pert_ui_core::ParameterError::OffLattice
 pub pert_ui_core::ParameterError::OutOfRange
-pub pert_ui_core::ParameterError::UnknownOption
+pub pert_ui_core::ParameterError::UnknownOption(pert_ui_core::ChoiceId)
 impl core::clone::Clone for pert_ui_core::ParameterError
 pub fn pert_ui_core::ParameterError::clone(&self) -> pert_ui_core::ParameterError
 impl core::cmp::Eq for pert_ui_core::ParameterError
@@ -239,7 +237,6 @@ impl core::fmt::Debug for pert_ui_core::ParameterError
 pub fn pert_ui_core::ParameterError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::fmt::Display for pert_ui_core::ParameterError
 pub fn pert_ui_core::ParameterError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
-impl core::marker::Copy for pert_ui_core::ParameterError
 impl core::marker::StructuralPartialEq for pert_ui_core::ParameterError
 impl core::marker::Freeze for pert_ui_core::ParameterError
 impl core::marker::Send for pert_ui_core::ParameterError

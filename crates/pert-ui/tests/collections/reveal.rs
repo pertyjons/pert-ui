@@ -485,7 +485,9 @@ fn reveal_child_selects_a_tab_by_key() -> TestResult {
     assert_eq!(ui.reveal_child(&tabs, "b")?, ChildReveal::AlreadyVisible);
     assert_eq!(
         ui.reveal_child(&tabs, "missing"),
-        Err(RuntimeError::Layout(LayoutError::UnknownKey))
+        Err(RuntimeError::Layout(LayoutError::UnknownKey(
+            "missing".into()
+        )))
     );
     let document = ui.capture_workspace()?.encode();
     assert!(document.contains("selected=\"b\""), "{document}");

@@ -207,7 +207,10 @@ fn a_duplicated_key_from_each_names_the_owner_and_the_key() -> TestResult {
     let kept = ui.find_path(&root, &["each", "items", "dup"])?;
     assert!(kept.is_some());
     items.set(vec!["a".to_owned(), "b".to_owned()])?;
-    assert_eq!(ui.flush(Duration::ZERO), Err(RuntimeError::DuplicateKey));
+    assert_eq!(
+        ui.flush(Duration::ZERO),
+        Err(RuntimeError::DuplicateKey("dup".into()))
+    );
     let (path, description, text) = reconciliation(&ui)?;
     assert_eq!(path, ["root", "each"]);
     assert_eq!(description, ["items", "dup"]);
@@ -249,7 +252,7 @@ fn a_changed_type_under_a_kept_key_names_the_element_at_any_depth() -> TestResul
         label.set(false)?;
         assert_eq!(
             ui.flush(Duration::ZERO),
-            Err(RuntimeError::ChildTypeChanged)
+            Err(RuntimeError::ChildTypeChanged("leaf".into()))
         );
         let (path, description, _) = reconciliation(&ui)?;
         assert_eq!(path, ["dynamic"]);
@@ -373,7 +376,10 @@ fn successive_owners_are_each_named_and_a_removed_owners_request_is_dropped() ->
     ui.flush(Duration::ZERO)?;
     first.set(true)?;
     second.set(true)?;
-    assert_eq!(ui.flush(Duration::ZERO), Err(RuntimeError::DuplicateKey));
+    assert_eq!(
+        ui.flush(Duration::ZERO),
+        Err(RuntimeError::DuplicateKey("a".into()))
+    );
     assert_eq!(reconciliation(&ui)?.0, ["root", "first"]);
     // The second request waits; once its owner is gone it is dropped.
     first.set(false)?;
@@ -389,7 +395,10 @@ fn successive_owners_are_each_named_and_a_removed_owners_request_is_dropped() ->
     )?;
     ui.flush(Duration::ZERO)?;
     second.set(true)?;
-    assert_eq!(ui.flush(Duration::ZERO), Err(RuntimeError::DuplicateKey));
+    assert_eq!(
+        ui.flush(Duration::ZERO),
+        Err(RuntimeError::DuplicateKey("a".into()))
+    );
     assert_eq!(
         reconciliation(&ui)?,
         (
@@ -410,7 +419,7 @@ fn a_direct_reconciliation_records_no_site_and_keeps_an_earlier_one() -> TestRes
     let twice = || vec![Label::new("1").key("x"), Label::new("2").key("x")];
     assert_eq!(
         ui.reconcile_children(&root, twice()),
-        Err(RuntimeError::DuplicateKey)
+        Err(RuntimeError::DuplicateKey("x".into()))
     );
     assert_eq!(ui.last_failure(), None);
     let failing = Rc::new(Cell::new(true));
@@ -420,7 +429,7 @@ fn a_direct_reconciliation_records_no_site_and_keeps_an_earlier_one() -> TestRes
     assert!(earlier.is_some());
     assert_eq!(
         ui.reconcile_children(&root, twice()),
-        Err(RuntimeError::DuplicateKey)
+        Err(RuntimeError::DuplicateKey("x".into()))
     );
     assert_eq!(ui.last_failure(), earlier);
     Ok(())
@@ -451,7 +460,10 @@ fn a_key_taken_by_a_moved_child_names_the_colliding_description() -> TestResult 
     ui.reparent(&moved, &target, 0)?;
     ui.flush(Duration::ZERO)?;
     collide.set(true)?;
-    assert_eq!(ui.flush(Duration::ZERO), Err(RuntimeError::DuplicateKey));
+    assert_eq!(
+        ui.flush(Duration::ZERO),
+        Err(RuntimeError::DuplicateKey("moved".into()))
+    );
     let (path, description, _) = reconciliation(&ui)?;
     assert_eq!(path, ["requester"]);
     assert_eq!(description, ["box", "moved"]);
@@ -510,10 +522,16 @@ fn a_request_after_a_rejected_one_waits_for_the_next_flush() -> TestResult {
     ui.flush(Duration::ZERO)?;
     first.set(true)?;
     second.set(true)?;
-    assert_eq!(ui.flush(Duration::ZERO), Err(RuntimeError::DuplicateKey));
+    assert_eq!(
+        ui.flush(Duration::ZERO),
+        Err(RuntimeError::DuplicateKey("a".into()))
+    );
     assert_eq!(reconciliation(&ui)?.0, ["root", "first"]);
     // Nothing changed, yet the second owner's request is still queued.
-    assert_eq!(ui.flush(Duration::ZERO), Err(RuntimeError::DuplicateKey));
+    assert_eq!(
+        ui.flush(Duration::ZERO),
+        Err(RuntimeError::DuplicateKey("a".into()))
+    );
     assert_eq!(reconciliation(&ui)?.0, ["root", "second"]);
     // Both rejected requests are consumed.
     ui.flush(Duration::ZERO)?;
@@ -552,7 +570,10 @@ fn an_earlier_site_of_the_same_flush_stays_authoritative() -> TestResult {
         outer_dup.set(true)?;
         Ok(())
     })?;
-    assert_eq!(ui.flush(Duration::ZERO), Err(RuntimeError::DuplicateKey));
+    assert_eq!(
+        ui.flush(Duration::ZERO),
+        Err(RuntimeError::DuplicateKey("a".into()))
+    );
     let site = ui.last_failure().ok_or("a site")?;
     assert_eq!(site.phase, FailurePhase::Update);
     assert_eq!(site.path, ["root", "switch"]);

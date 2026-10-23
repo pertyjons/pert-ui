@@ -643,7 +643,7 @@ fn invalid_tabs_are_rejected_before_anything_mounts_or_changes() {
         (vec![Tab::new(" ", "A", content())], LayoutError::BlankKey),
         (
             vec![Tab::new("a", "A", content()), Tab::new("a", "B", content())],
-            LayoutError::DuplicateKey,
+            LayoutError::DuplicateKey("a".into()),
         ),
     ];
     for (tabs, expected) in cases {

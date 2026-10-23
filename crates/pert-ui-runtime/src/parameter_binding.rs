@@ -58,7 +58,9 @@ use crate::{
 /// );
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
-#[derive(Clone, Copy, Debug, Eq, PartialEq, thiserror::Error)]
+///
+/// It is `Clone` but not `Copy`: [`Self::Edit`] can carry a choice identity.
+#[derive(Clone, Debug, Eq, PartialEq, thiserror::Error)]
 #[non_exhaustive]
 pub enum BindingError {
     /// The parameter edit protocol rejected the operation.

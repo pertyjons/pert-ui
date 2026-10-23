@@ -181,7 +181,7 @@ fn invalid_rows_are_rejected_before_the_grid_mounts() {
                 Property::new("a", "First", button("a-editor")),
                 Property::new("a", "Second", button("b-editor")),
             ],
-            LayoutError::DuplicateKey,
+            LayoutError::DuplicateKey("a".into()),
         ),
     ];
     for (rows, expected) in cases {

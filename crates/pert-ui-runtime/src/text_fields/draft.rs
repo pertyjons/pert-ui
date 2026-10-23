@@ -229,7 +229,11 @@ impl<P: Copy + PartialEq + 'static> DraftEditorController<P> {
                     || !text.is_char_boundary(range.start)
                     || !text.is_char_boundary(range.end)
                 {
-                    return Err(TextEditError::InvalidSelection.into());
+                    return Err(TextEditError::InvalidSelection {
+                        anchor_byte: range.start,
+                        focus_byte: range.end,
+                    }
+                    .into());
                 }
                 (range.start, range.end)
             }

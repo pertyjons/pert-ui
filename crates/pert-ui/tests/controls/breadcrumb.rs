@@ -290,8 +290,11 @@ fn segments_keep_identity_and_focus_by_key_when_the_path_changes() {
 fn invalid_segment_keys_are_rejected() {
     for (keys, expected) in [
         (vec![" "], LayoutError::BlankKey),
-        (vec!["overflow"], LayoutError::ReservedKey),
-        (vec!["a", "a"], LayoutError::DuplicateKey),
+        (
+            vec!["overflow"],
+            LayoutError::ReservedKey("overflow".into()),
+        ),
+        (vec!["a", "a"], LayoutError::DuplicateKey("a".into())),
     ] {
         let segments = keys.iter().map(|key| BreadcrumbSegment::new(*key, "label"));
         assert_eq!(

@@ -196,7 +196,7 @@ fn terminal_failure_is_retained_blocks_edits_and_recovers_explicitly() -> TestRe
     let calls: Log<EditOutcome<f32>> = Rc::default();
     let (remaining, log) = (failures.clone(), calls.clone());
     let monitor = host.on_outcome(move |event| {
-        log.borrow_mut().push(event.outcome);
+        log.borrow_mut().push(event.outcome.clone());
         if *remaining.borrow() > 0 {
             *remaining.borrow_mut() -= 1;
             return Err(SinkError::new(SinkErrorKind::Full, "queue full"));
@@ -284,7 +284,7 @@ fn preview_failure_ends_the_edit_and_attempts_its_terminal_once() -> TestResult 
     let terminals: Log<EditOutcome<f32>> = Rc::default();
     let log = terminals.clone();
     let monitor = host.on_outcome(move |event| {
-        log.borrow_mut().push(event.outcome);
+        log.borrow_mut().push(event.outcome.clone());
         Ok(())
     })?;
     host.on_preview(|_| Err(SinkError::new(SinkErrorKind::Closed, "audition gone")))?;
@@ -294,8 +294,8 @@ fn preview_failure_ends_the_edit_and_attempts_its_terminal_once() -> TestResult 
     // Accepted locally, so `Applied`, but the session has ended.
     assert_eq!(edit.update(0.3)?, PreviewOutcome::Applied);
     let rejected = EditOutcome::Rejected(EditError::DeliveryFailed);
-    assert_eq!(edit.outcome()?, Some(rejected));
-    assert_eq!(edit.commit(0.4)?, rejected);
+    assert_eq!(edit.outcome()?, Some(rejected.clone()));
+    assert_eq!(edit.commit(0.4)?, rejected.clone());
     assert_eq!(terminals.borrow().as_slice(), [rejected]);
     let snapshot = amount.snapshot().get()?;
     assert_eq!(
@@ -340,7 +340,7 @@ fn lifecycle_cancellation_is_notified_at_the_next_safe_point() -> TestResult {
     let terminals: Log<EditOutcome<f32>> = Rc::default();
     let log = terminals.clone();
     let _monitor = host.on_outcome(move |event| {
-        log.borrow_mut().push(event.outcome);
+        log.borrow_mut().push(event.outcome.clone());
         Ok(())
     })?;
     ui.flush(Duration::ZERO)?;
@@ -410,14 +410,17 @@ fn host_drop_delivers_then_releases_and_shutdown_notifies_before_closing() -> Te
     let terminals: Log<EditOutcome<f32>> = Rc::default();
     let log = terminals.clone();
     let monitor = host.on_outcome(move |event| {
-        log.borrow_mut().push(event.outcome);
+        log.borrow_mut().push(event.outcome.clone());
         Ok(())
     })?;
     let id = widget(&mut ui, "control")?;
     let edit = ui.event(&id, |cx| amount.begin_edit(cx, Revision::INITIAL))??;
     drop(host);
     let unavailable = EditOutcome::Rejected(EditError::Unavailable);
-    assert_eq!(terminals.borrow().as_slice(), [unavailable]);
+    assert_eq!(
+        terminals.borrow().as_slice(),
+        std::slice::from_ref(&unavailable)
+    );
     assert!(!monitor.snapshot().registered);
     assert!(!monitor.snapshot().is_faulted());
     drop(edit);
@@ -432,7 +435,7 @@ fn host_drop_delivers_then_releases_and_shutdown_notifies_before_closing() -> Te
     let (log, reader, seen) = (terminals.clone(), gain.clone(), reads.clone());
     let gain_monitor = gain_host.on_outcome(move |event| {
         seen.borrow_mut().push(reader.snapshot().get().is_ok());
-        log.borrow_mut().push(event.outcome);
+        log.borrow_mut().push(event.outcome.clone());
         Ok(())
     })?;
     let edit = ui.event(&id, |cx| gain.begin_edit(cx, Revision::INITIAL))??;

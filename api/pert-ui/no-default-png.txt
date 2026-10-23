@@ -13,14 +13,14 @@ pub mod pert_ui::images
 #[non_exhaustive] pub enum pert_ui::images::ImageError
 pub pert_ui::images::ImageError::AllocationLimit
 pub pert_ui::images::ImageError::FormatDisabled(pert_ui::images::ImageFormat)
-pub pert_ui::images::ImageError::Io(core::io::error::Error)
+pub pert_ui::images::ImageError::Io
+pub pert_ui::images::ImageError::Io::path: std::path::PathBuf
+pub pert_ui::images::ImageError::Io::source: core::io::error::Error
 pub pert_ui::images::ImageError::Malformed(alloc::string::String)
 pub pert_ui::images::ImageError::TooLarge
 pub pert_ui::images::ImageError::TooLarge::height: u32
 pub pert_ui::images::ImageError::TooLarge::width: u32
 pub pert_ui::images::ImageError::UnknownFormat
-impl core::convert::From<core::io::error::Error> for pert_ui::images::ImageError
-pub fn pert_ui::images::ImageError::from(core::io::error::Error) -> Self
 impl core::error::Error for pert_ui::images::ImageError
 pub fn pert_ui::images::ImageError::source(&self) -> core::option::Option<&(dyn core::error::Error + 'static)>
 impl core::fmt::Debug for pert_ui::images::ImageError

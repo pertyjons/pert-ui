@@ -170,7 +170,7 @@ fn initial_owned_children_and_ordinary_descriptions_still_require_admission() {
     assert_eq!(ui.children(&owner).unwrap(), before);
     assert_eq!(
         ui.reconcile_children(&root, vec![Element::new("owner", Column::new([]))]),
-        Err(RuntimeError::ChildTypeChanged)
+        Err(RuntimeError::ChildTypeChanged("owner".into()))
     );
     assert_eq!(ui.children(&owner).unwrap(), before);
 }
@@ -225,7 +225,7 @@ fn nested_owned_parts_mount_under_hidden_parents_and_survive_recursive_redescrip
                 Column::new([Element::new("owner", Column::new([])),])
             )]
         ),
-        Err(RuntimeError::ChildTypeChanged)
+        Err(RuntimeError::ChildTypeChanged("owner".into()))
     );
     assert_eq!(ui.find_descendant(&root, "part").unwrap(), Some(part));
 }

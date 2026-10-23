@@ -607,7 +607,7 @@ impl TableController {
                 return Err(RuntimeError::EmptyKey);
             }
             if columns[..index].iter().any(|other| other.key == column.key) {
-                return Err(RuntimeError::DuplicateKey);
+                return Err(RuntimeError::DuplicateKey(column.key.clone()));
             }
         }
         let described = columns.iter().map(|column| column.key.clone()).collect();
@@ -788,7 +788,7 @@ impl TableController {
         if let Some(key) = &column
             && self.0.shared.column_index(key).is_none()
         {
-            return Err(LayoutError::UnknownKey.into());
+            return Err(LayoutError::UnknownKey(key.clone()).into());
         }
         self.0.shared.active_column.set(column)
     }
@@ -835,7 +835,9 @@ impl TableController {
     /// unchanged in every case.
     pub fn set_column_width(&self, key: &str, width: Length) -> Result<(), RuntimeError> {
         let shared = &self.0.shared;
-        let index = shared.column_index(key).ok_or(LayoutError::UnknownKey)?;
+        let index = shared
+            .column_index(key)
+            .ok_or_else(|| LayoutError::UnknownKey(key.to_owned()))?;
         if shared.resizing.get() {
             return Err(RuntimeError::GestureInProgress);
         }

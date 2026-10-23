@@ -1,11 +1,11 @@
 pub mod pert_ui_cpu
 #[non_exhaustive] pub enum pert_ui_cpu::CpuRenderError
+pub pert_ui_cpu::CpuRenderError::AllocationFailed
+pub pert_ui_cpu::CpuRenderError::AllocationFailed::bytes: u64
 pub pert_ui_cpu::CpuRenderError::Drawing(pert_ui_runtime::drawing::DrawError)
 pub pert_ui_cpu::CpuRenderError::EmptyViewport
 pub pert_ui_cpu::CpuRenderError::InvalidReference
-pub pert_ui_cpu::CpuRenderError::TooLarge
-pub pert_ui_cpu::CpuRenderError::TooLarge::height: u32
-pub pert_ui_cpu::CpuRenderError::TooLarge::width: u32
+pub pert_ui_cpu::CpuRenderError::Limit(pert_ui_runtime::render_limits::LimitError)
 pub pert_ui_cpu::CpuRenderError::Unsupported
 impl core::clone::Clone for pert_ui_cpu::CpuRenderError
 pub fn pert_ui_cpu::CpuRenderError::clone(&self) -> pert_ui_cpu::CpuRenderError

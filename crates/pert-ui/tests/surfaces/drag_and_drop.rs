@@ -1025,7 +1025,7 @@ fn a_request_that_cannot_become_a_session_still_tells_its_source() {
         .ui
         .pointer_input(PointerEvent::new(point(16.0, 10.0), PointerKind::Move))
         .unwrap_err();
-    assert_eq!(error, RuntimeError::DuplicateKey);
+    assert_eq!(error, RuntimeError::DuplicateKey("same".into()));
     assert!(!stage.ui.drag_active());
     assert_eq!(
         stage.journal.take(),

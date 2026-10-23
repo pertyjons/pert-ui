@@ -587,7 +587,13 @@ fn menu_bar_keys_are_validated_at_every_level() {
             MenuItem::submenu("file", "Again", vec![]),
         ],
     );
-    assert_eq!(duplicate.err(), Some(ChoiceError::DuplicateValue));
+    assert_eq!(
+        duplicate.err(),
+        Some(ChoiceError::DuplicateValue {
+            first: 0,
+            second: 1
+        })
+    );
     let nested = MenuBar::new(
         &ui,
         vec![MenuItem::submenu(

@@ -138,7 +138,10 @@ impl FontRole {
 }
 
 /// Registration or icon validation failure. Invalid changes preserve prior defaults.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, thiserror::Error)]
+///
+/// [`Self::UnknownIcon`] carries the name it rejects, so the error is `Clone`
+/// but not `Copy`.
+#[derive(Clone, Debug, Eq, PartialEq, thiserror::Error)]
 #[non_exhaustive]
 pub enum FontError {
     /// Bytes are not a readable single-face outline font.
@@ -153,12 +156,13 @@ pub enum FontError {
     /// The font or glyph belongs to another runtime.
     #[error("font belongs to another runtime")]
     ForeignFont,
-    /// The scalar has no glyph, is whitespace or is a control character.
-    #[error("icon character is missing from its font")]
-    MissingGlyph,
-    /// No bundled Material Icons Outlined entry has the supplied name.
-    #[error("unknown Material icon name")]
-    UnknownIcon,
+    /// The scalar held here has no glyph, is whitespace or is a control
+    /// character.
+    #[error("icon character {0:?} is missing from its font")]
+    MissingGlyph(char),
+    /// No bundled Material Icons Outlined entry has the name held here.
+    #[error("no Material icon is named `{0}`")]
+    UnknownIcon(String),
     /// A replacement set lists the same semantic icon more than once.
     #[error("duplicate icon override")]
     DuplicateIcon,

@@ -195,7 +195,7 @@ fn keys_and_handles_never_retarget_after_remount_or_across_runtimes() -> TestRes
     let (duplicate, _) = probe(&signal, false);
     assert_eq!(
         runtime.mount("same", duplicate),
-        Err(RuntimeError::DuplicateKey)
+        Err(RuntimeError::DuplicateKey("same".into()))
     );
     runtime.unmount(&old)?;
     let (component, _) = probe(&signal, false);

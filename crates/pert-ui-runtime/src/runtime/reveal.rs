@@ -485,7 +485,7 @@ impl Runtime {
         }
         let serial = container.0.serial;
         if !self.keys.contains_key(&(Some(serial), key.to_owned())) {
-            return Err(crate::LayoutError::UnknownKey.into());
+            return Err(crate::LayoutError::UnknownKey(key.to_owned()).into());
         }
         if self.entries[&serial].component.child_visible(key) {
             return Ok(ChildReveal::AlreadyVisible);

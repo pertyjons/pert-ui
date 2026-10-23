@@ -1,5 +1,104 @@
 # Changelog
 
+## 0.3.63 (2026-10-23)
+
+Error values (API audit fix plan, part 6c1). An error that rejects a key,
+identity, path or integer value now carries it and names it in its message,
+causes appear once in a source chain, and the frame image limit has one
+variant. Argument variants the caller still holds stay unit:
+`GeometryError`'s, `LayoutError::{InvalidWeight, InvalidRatio}` and
+`ParameterError::{InvalidRange, OutOfRange, OffLattice}`. By the
+maintainer's decision of 2026-10-23, a variant that rejects a floating-point
+value also stays unit, so every error keeps `Eq`:
+`NormalizedValueError::OutOfRange`, `PathError::InvalidParameter` and
+`NumberInputError::{InvalidRange, InvalidStep, OutOfRange, OffStep}` are
+unchanged. The error policy in `docs/contracts.md` states the rule. Breaking.
+
+- Breaking: `RuntimeError::AmbiguousKey`, `DuplicateKey` and
+  `ChildTypeChanged` hold the key as a `String`, and `ShortcutConflict` holds
+  the conflicting `KeyChord`. Match `RuntimeError::AmbiguousKey(key)` or
+  `RuntimeError::AmbiguousKey(_)`; `Runtime::find` reports an ambiguous
+  address with its segments joined by `/`. A held-key registration reports
+  its key with the registration's modifiers, and a second `ToastHost` on one
+  queue reports `DuplicateKey("toasts")`, the key of the part that shows the
+  toasts. The messages name the value (`several descendants share the key
+  `apply``).
+- Breaking: `LayoutError::DuplicateKey`, `ReservedKey` and `UnknownKey` hold
+  the key: match `LayoutError::UnknownKey(key)`. `LayoutError` is no longer
+  `Copy`; clone a stored one.
+- Breaking: `FontError::UnknownIcon` holds the name and `MissingGlyph` the
+  `char`: match `FontError::UnknownIcon(name)`. `FontError` is no longer
+  `Copy`.
+- Breaking: `ParameterError::DuplicateOption` and `UnknownOption` hold the
+  `ChoiceId`: match `ParameterError::UnknownOption(id)`. `ParameterError` is
+  no longer `Copy`, and neither are the types that hold it: `EditError`,
+  `BindingError` and `EditOutcome<T>` for every `T`. Clone an outcome read
+  through a reference, as `event.outcome.clone()` in an edit sink.
+- Breaking: `ChoiceError::DuplicateValue` is
+  `DuplicateValue { first, second }`, the zero-based positions of the two
+  equal options or sibling menu keys: match `DuplicateValue { .. }`.
+  `ChoiceError` stays `Copy`.
+- Breaking: `LiveError::CapacityExceeded` holds the requested item count:
+  match `LiveError::CapacityExceeded(_)`.
+- Breaking: `NumberInputError::InvalidPrecision` holds the rejected digit
+  count as a `u8`: match `NumberInputError::InvalidPrecision(_)`.
+- Breaking: `NumberLocaleError::SameSeparators` is
+  `SameSeparators { decimal, grouping }`, the rejected separators: match
+  `NumberLocaleError::SameSeparators { .. }`.
+- Breaking: `TextEditError::InvalidComposition` is
+  `InvalidComposition { start_byte, end_byte }` and `InvalidSelection` is
+  `InvalidSelection { anchor_byte, focus_byte }`, the rejected offsets: match
+  `TextEditError::InvalidSelection { .. }`.
+- Breaking: `pert_ui::images::ImageError::Io` is `Io { path, source }`,
+  naming the file `images::load` could not read, and
+  `From<std::io::Error> for ImageError` is removed; match
+  `ImageError::Io { .. }`.
+- Changed: `ListingError` names the path it could not read:
+  `ListingError::with_path` sets it, `ListingError::path` reads it, and
+  `list_directory` names the directory, or an unreadable entry's path, on
+  every error it returns. Its `Display` writes `path: message` when it has a
+  path; the browser still shows `ListingError::message`. `ListingError` is no
+  longer derived with `thiserror`; it implements `Display` and `Error` by
+  hand.
+- Breaking: `DrawError::InvalidImage` is split by cause.
+  `InvalidImage { width, height, bytes }` is now only the rejection by
+  `MaskImage::new` and `RasterImage::from_srgba8`, holding what was passed:
+  match `DrawError::InvalidImage { .. }`. A coverage mask that drawing needs
+  beyond `MaskImage::MAX_PIXELS` (a shape, an arc, a vector at its raster
+  scale) is the new unit `DrawError::CoverageTooLarge`. A command naming a
+  resource its display list does not hold, reported by
+  `VectorRasterizer::prepare` and composition, is the new
+  `DrawError::MissingVector(VectorId)`, `MissingMask(MaskId)` or
+  `MissingImage(ImageId)`. Code that matched `InvalidImage` for an oversized
+  stroke or arc matches `CoverageTooLarge`.
+- Changed: `WorkspaceError::Participant`'s message no longer repeats its
+  source (`workspace participant `main/table` could not build its state`),
+  and `RestoreRejection::State` and `RestoreRejection::Runtime` expose their
+  cause through `source()` (`RestoreRejection`'s `Error` impl now has one)
+  instead of appending it to the message, so a chain prints each cause once.
+- Breaking: `FrameImage::MAX_BYTES` has one variant, `LimitError::FrameSize`,
+  whose message is now `a W×H frame exceeds the frame image size limit`.
+  `LimitError::CaptureSize` is removed: match `LimitError::FrameSize`.
+  `CaptureError::TooLarge` is replaced by `CaptureError::Limit(LimitError)`:
+  match `CaptureError::Limit(LimitError::FrameSize { width, height })`.
+  `pert_ui_cpu::CpuRenderError::TooLarge { width, height }` is replaced by
+  `CpuRenderError::Limit(LimitError)`, and a frame buffer the system cannot
+  allocate is the new `CpuRenderError::AllocationFailed { bytes }` rather
+  than a size error. `LimitError`'s rustdoc names who reports the limit.
+- Changed: with the `serde` feature, `LimitError` and `ResourceKind`
+  implement `Serialize` and `Deserialize`, and `CaptureError`'s serialized
+  form changes: `"TooLarge"` becomes
+  `{"Limit":{"FrameSize":{"width":…,"height":…}}}`. This is a transport form
+  outside any versioned schema; `InspectionSnapshot::SCHEMA_VERSION` and
+  `Workspace::SCHEMA_VERSION` are unchanged.
+- Added: the runtime's `errors` contract tests check that a rejected key,
+  integer or limit is named in the message, a `vector_scene` unit test that a
+  missing reference names its ID, and that the new causes print once
+  in a source chain; the facade's `presentation` binary checks
+  `ImageError::Io`'s path and source, its `collections` binary
+  `list_directory`'s path, and its `foundation` binary `CaptureError::Limit`'s
+  serialized form.
+
 ## 0.3.62 (2026-10-22)
 
 `Debug` for descriptions; the lint denied (API audit fix plan, part 6b3).

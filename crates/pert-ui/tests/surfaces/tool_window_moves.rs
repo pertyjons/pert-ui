@@ -354,7 +354,9 @@ fn moving_an_expanded_tool_window_collapses_the_one_in_its_new_group() -> TestRe
         controller
             .move_to("missing", ToolEdge::Right, StripeGroup::Start)
             .err(),
-        Some(RuntimeError::Layout(LayoutError::UnknownKey))
+        Some(RuntimeError::Layout(LayoutError::UnknownKey(
+            "missing".into()
+        )))
     );
     assert!(!controller.move_to("files", ToolEdge::Right, StripeGroup::Start)?);
     assert!(controller.reorder("search", 9)?.eq(&false));

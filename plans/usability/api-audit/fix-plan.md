@@ -310,6 +310,38 @@ and anything left to a later part.
     `Element`, which `Toast` and `DragPreview` do not. The sentence was
     qualified and rustdoc rebuilt warning-free; the fix is verified in
     6c1's review. The review verified 6b2's four corrections.
+- **6c1 (0.3.63):** error values name what was rejected: keys, IDs,
+  characters, positions, byte offsets, paths and integer limits.
+  - **Maintainer decision (2026-10-23):** variants that validate a float
+    stay unit in every error enum, extending decision G4-15's rule, so every
+    error keeps `Eq` (recorded in contracts.md "Error policy").
+  - **`Copy`:** `LayoutError` and `ParameterError` lose it, as G4-15
+    accepted. `EditError`, `BindingError` and `EditOutcome<T>` lose it
+    because they hold a `ParameterError`, and `FontError` because of
+    `UnknownIcon(String)`.
+  - **Causes and limits:**
+    - workspace causes print once in a chain;
+    - one `LimitError::FrameSize` reports every frame limit, with
+      `CaptureError::Limit` and `CpuRenderError::Limit`, and
+      `CpuRenderError::AllocationFailed` for the allocation failure.
+  - **Author decision:** `DrawError::InvalidImage`, which reported three
+    failures, is split into:
+    - `InvalidImage { width, height, bytes }`;
+    - the unit `CoverageTooLarge`;
+    - `MissingVector`, `MissingMask` and `MissingImage`, each with its ID.
+  - **Checks run after the last edit (the public-API row plus loom):**
+    - `cargo fmt --all --check`;
+    - workspace Clippy;
+    - `cargo test --locked --workspace`, including the new message,
+      chain, path and serialized-form tests;
+    - the five headless example sessions;
+    - `cargo test --locked --workspace --doc`;
+    - warning-free workspace rustdoc;
+    - the loom models;
+    - `api/generate.sh`, which removes `Eq` from no type;
+    - `git diff --check`.
+  - **Beyond the plan's lines:** `DuplicateKey` from `FormFields::field`,
+    table columns and reparenting carries the key too.
 
 ## Rules for every part
 

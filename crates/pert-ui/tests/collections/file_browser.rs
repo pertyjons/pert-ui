@@ -906,6 +906,16 @@ fn list_directory_reports_every_entry_and_links() {
     );
     let missing = list_directory(&base.join("nope")).unwrap_err();
     assert_eq!(missing.kind(), ListingErrorKind::NotFound);
+    // The error names the directory it could not read; the browser's row
+    // text stays the message alone.
+    assert_eq!(missing.path(), Some(base.join("nope").as_path()));
+    assert_eq!(
+        missing.to_string(),
+        format!("{}: {}", base.join("nope").display(), missing.message())
+    );
+    let unnamed = ListingError::new(ListingErrorKind::Other, "offline");
+    assert_eq!(unnamed.path(), None);
+    assert_eq!(unnamed.to_string(), "offline");
     std::fs::remove_dir_all(&base).unwrap();
 }
 

@@ -212,7 +212,8 @@ fn a_host_write_during_a_gesture_ends_it_before_returning() -> TestResult {
     let events = Rc::new(RefCell::new(Vec::new()));
     let log = events.clone();
     let _monitor = host.on_outcome(move |event| {
-        log.borrow_mut().push((event.begin_value, event.outcome));
+        log.borrow_mut()
+            .push((event.begin_value, event.outcome.clone()));
         Ok(())
     })?;
     let fader = ui.mount_tree(Element::new("fader", Slider::new(gain.clone())))?;

@@ -9,6 +9,10 @@ use crate::choice_controls::rounded;
 /// failure. Inspection exposes that draft's error as `validation_error`. An
 /// invalid bound value written by the application is refused by the field and
 /// reported in inspection as `binding_error`, also without a runtime failure.
+///
+/// [`Self::InvalidPrecision`] carries the rejected digit count. The variants
+/// that reject a number stay unit, because a decimal editor's number is an
+/// `f64` and the error keeps `Eq`; the caller holds the argument it passed.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, thiserror::Error)]
 #[non_exhaustive]
 pub enum NumberInputError {
@@ -18,9 +22,13 @@ pub enum NumberInputError {
     /// The increment is not strictly positive and finite.
     #[error("numeric step must be positive and finite")]
     InvalidStep,
-    /// Fixed decimal precision exceeds [`Self::MAX_PRECISION`] fractional digits.
-    #[error("decimal precision must be between 0 and {}", Self::MAX_PRECISION)]
-    InvalidPrecision,
+    /// The fixed decimal precision held here exceeds [`Self::MAX_PRECISION`]
+    /// fractional digits.
+    #[error(
+        "decimal precision {0} must be between 0 and {max}",
+        max = Self::MAX_PRECISION
+    )]
+    InvalidPrecision(u8),
     /// Text is not a representable number of the required kind.
     #[error("enter a representable number")]
     InvalidNumber,
@@ -2447,7 +2455,7 @@ macro_rules! precision_api {
             /// [`NumberInputError::MAX_PRECISION`].
             pub fn decimal_places(mut self, digits: u8) -> Result<Self, NumberInputError> {
                 if digits > NumberInputError::MAX_PRECISION {
-                    return Err(NumberInputError::InvalidPrecision);
+                    return Err(NumberInputError::InvalidPrecision(digits));
                 }
                 self.0.precision = Some(digits);
                 Ok(self)

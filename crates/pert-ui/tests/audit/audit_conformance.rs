@@ -70,7 +70,7 @@ fn reconcile_and_different_type_rejections_release_owned_roots() {
             Element::new("c", Label::new("Old")),
             Element::new("c", Button::new("New", |_| Ok(())))
         ),
-        Err(RedescriptionError::Runtime(RuntimeError::ChildTypeChanged))
+        Err(RedescriptionError::Runtime(RuntimeError::ChildTypeChanged(key))) if key == "c"
     ));
     succeeds_again(&mut ui);
 }
@@ -122,7 +122,7 @@ fn duplicate_fixed_keys_preserve_unrelated_roots_and_release_only_owned_roots() 
         let item = || Element::new("c", Label::new("Ready"));
         assert!(matches!(
             check_redescription(&mut ui, item(), item(), item()),
-            Err(RedescriptionError::Runtime(RuntimeError::DuplicateKey))
+            Err(RedescriptionError::Runtime(RuntimeError::DuplicateKey(_)))
         ));
         assert_eq!(ui.key(&unrelated).unwrap(), key);
         ui.unmount(&unrelated).unwrap();

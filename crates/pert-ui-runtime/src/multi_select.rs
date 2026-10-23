@@ -194,12 +194,14 @@ impl<T: Clone + Eq + Hash> OptionKeys<T> {
 
 /// Rejects two options with equal values, in linear time.
 fn validate<T: Eq + Hash>(options: &[Choice<T>]) -> Result<(), ChoiceError> {
-    let mut values = HashSet::with_capacity(options.len());
-    if options.iter().all(|choice| values.insert(choice.value())) {
-        Ok(())
-    } else {
-        Err(ChoiceError::DuplicateValue)
+    let mut positions = HashMap::with_capacity(options.len());
+    for (second, choice) in options.iter().enumerate() {
+        if let Some(&first) = positions.get(choice.value()) {
+            return Err(ChoiceError::DuplicateValue { first, second });
+        }
+        positions.insert(choice.value(), second);
     }
+    Ok(())
 }
 
 impl<T: Clone + Eq + Hash + 'static> Shared<T> {

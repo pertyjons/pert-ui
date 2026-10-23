@@ -120,7 +120,7 @@ fn layout_identity_disabled_reservation_rebinding_and_conflicts() -> Result<(), 
             vec![KeyChord::primary('Z')],
             |_, _| Ok(())
         ),
-        Err(RuntimeError::ShortcutConflict)
+        Err(RuntimeError::ShortcutConflict(KeyChord::primary('Z')))
     );
     ui.rebind_command(&command, vec![KeyChord::primary('y')])?;
     key(&mut ui, KeyCode::KeyZ, 'y', KeyAction::Press)?;

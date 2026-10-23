@@ -806,9 +806,9 @@ fn capture_render_error(error: crate::platform::presenter::RenderError) -> crate
         crate::platform::presenter::RenderError::Unconfigured => {
             crate::CaptureError::SurfaceUnavailable
         }
-        crate::platform::presenter::RenderError::Limit(crate::LimitError::CaptureSize {
-            ..
-        }) => crate::CaptureError::TooLarge,
+        crate::platform::presenter::RenderError::Limit(
+            limit @ crate::LimitError::FrameSize { .. },
+        ) => crate::CaptureError::Limit(limit),
         error => crate::CaptureError::Backend(error.to_string()),
     }
 }
@@ -1049,11 +1049,14 @@ mod tests {
             crate::CaptureError::SurfaceUnavailable
         );
         assert_eq!(
-            capture_render_error(RenderError::Limit(crate::LimitError::CaptureSize {
+            capture_render_error(RenderError::Limit(crate::LimitError::FrameSize {
                 width: 10000,
                 height: 10000
             })),
-            crate::CaptureError::TooLarge
+            crate::CaptureError::Limit(crate::LimitError::FrameSize {
+                width: 10000,
+                height: 10000
+            })
         );
         for limit in [
             crate::LimitError::SurfaceExtent {

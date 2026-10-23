@@ -58,7 +58,7 @@ impl ShapeCache {
             || height < 1.0
             || width * height > MaskImage::MAX_PIXELS as f64
         {
-            return Err(DrawError::InvalidImage);
+            return Err(DrawError::CoverageTooLarge);
         }
         let (width, height) = (width as u32, height as u32);
         let mut pixels = vec![0; width as usize * height as usize];
@@ -235,7 +235,7 @@ impl Painter {
     /// [`PathError::InvalidParameter`](crate::PathError::InvalidParameter) for a non-finite
     /// angle or a sweep outside `0..=360`, [`DrawError::Runtime`] holding
     /// [`RuntimeError::Geometry`](crate::RuntimeError::Geometry) for unrepresentable
-    /// bounds, and [`DrawError::InvalidImage`] when the mask exceeds
+    /// bounds, and [`DrawError::CoverageTooLarge`] when the mask exceeds
     /// [`MaskImage::MAX_PIXELS`](crate::MaskImage::MAX_PIXELS).
     pub fn stroke_arc(
         &mut self,
@@ -285,7 +285,7 @@ impl Painter {
     /// # Errors
     /// Returns [`DrawError::Runtime`] holding
     /// [`RuntimeError::Geometry`](crate::RuntimeError::Geometry) for an unrepresentable
-    /// bounding rectangle and [`DrawError::InvalidImage`] when the bounding mask exceeds
+    /// bounding rectangle and [`DrawError::CoverageTooLarge`] when the bounding mask exceeds
     /// [`MaskImage::MAX_PIXELS`](crate::MaskImage::MAX_PIXELS).
     pub fn fill_triangle(&mut self, vertices: [Point; 3], color: Color) -> Result<(), DrawError> {
         let [a, b, c] = vertices;
@@ -323,7 +323,7 @@ impl Painter {
     /// larger than half the shorter side use full coverage, under the same limit.
     ///
     /// # Errors
-    /// Returns [`DrawError::InvalidImage`] when a corner or full-coverage mask exceeds
+    /// Returns [`DrawError::CoverageTooLarge`] when a corner or full-coverage mask exceeds
     /// [`MaskImage::MAX_PIXELS`](crate::MaskImage::MAX_PIXELS), and [`DrawError::Runtime`] holding
     /// [`RuntimeError::Geometry`](crate::RuntimeError::Geometry) for derived rectangles or
     /// corner sizes that are not valid geometry.

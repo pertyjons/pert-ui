@@ -3,8 +3,8 @@
 use pert_ui_cpu::{CpuRenderError, CpuRenderer};
 use pert_ui_runtime::{
     CaptureRequest, CaptureTarget, Color, Component, DisplayList, DrawError, Element, FillRule,
-    FrameImage, ImageSampling, Length, MaskImage, Painter, Path, Point, QuarterTurn, RasterImage,
-    Rect, Runtime, RuntimeError, Shape, UpdateContext, Viewport,
+    FrameImage, ImageSampling, Length, LimitError, MaskImage, Painter, Path, Point, QuarterTurn,
+    RasterImage, Rect, Runtime, RuntimeError, Shape, UpdateContext, Viewport,
 };
 use std::time::Duration;
 
@@ -333,10 +333,10 @@ fn refusals_happen_before_any_work() -> TestResult {
     let huge = scene(5000.0, 5000.0, 1.0, |_| Ok(()))?;
     assert_eq!(
         renderer.render(&huge),
-        Err(CpuRenderError::TooLarge {
+        Err(CpuRenderError::Limit(LimitError::FrameSize {
             width: 5000,
             height: 5000
-        })
+        }))
     );
     // The renderer stays usable.
     assert!(renderer.render(&scene(1.0, 1.0, 1.0, |_| Ok(()))?).is_ok());

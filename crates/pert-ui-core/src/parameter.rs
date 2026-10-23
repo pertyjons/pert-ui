@@ -534,8 +534,8 @@ impl ParameterSpec<ChoiceId> {
         u64::try_from(options.len()).map_err(|_| ParameterError::DomainTooLarge)?;
         let mut ids: Vec<&ChoiceId> = options.iter().map(ChoiceOption::id).collect();
         ids.sort_unstable();
-        if ids.windows(2).any(|pair| pair[0] == pair[1]) {
-            return Err(ParameterError::DuplicateOption);
+        if let Some(pair) = ids.windows(2).find(|pair| pair[0] == pair[1]) {
+            return Err(ParameterError::DuplicateOption(pair[0].clone()));
         }
         Self::build(name, default, ChoiceDomain { options })
     }
@@ -563,7 +563,10 @@ impl ParameterSpec<ChoiceId> {
 }
 
 /// A parameter metadata or domain-validation failure, without host state.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, thiserror::Error)]
+///
+/// A choice variant carries the identity it rejects; numeric argument
+/// variants stay unit, because the caller holds the argument it passed.
+#[derive(Clone, Debug, Eq, PartialEq, thiserror::Error)]
 #[non_exhaustive]
 pub enum ParameterError {
     /// The display name contains no non-whitespace character.
@@ -595,12 +598,13 @@ pub enum ParameterError {
     /// A choice domain has no options.
     #[error("choice parameter needs at least one option")]
     EmptyOptions,
-    /// Two options of a choice domain share an identity.
-    #[error("choice options must have distinct identities")]
-    DuplicateOption,
-    /// A choice default or candidate names no current option.
-    #[error("choice is not one of the current options")]
-    UnknownOption,
+    /// Two options of a choice domain share the identity it holds.
+    #[error("two choice options share the identity `{0}`")]
+    DuplicateOption(ChoiceId),
+    /// A choice default or candidate, the identity it holds, names no current
+    /// option.
+    #[error("choice `{0}` is not one of the current options")]
+    UnknownOption(ChoiceId),
     /// A choice identity is empty or has leading or trailing whitespace.
     #[error("choice identity must be nonempty without surrounding whitespace")]
     MalformedChoiceId,

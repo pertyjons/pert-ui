@@ -114,14 +114,25 @@ pub enum ChoiceError {
     /// A menu action key is empty or contains only whitespace.
     #[error("empty menu action key")]
     EmptyValue,
-    /// Two options have equal application values.
-    #[error("duplicate choice value")]
-    DuplicateValue,
+    /// Two options have equal application values, or two sibling menu items
+    /// share an action key. The positions are zero-based indices into the
+    /// list, or the sibling items, in their given order, so an application
+    /// value need not be printable to name the pair.
+    #[error("choices {first} and {second} have equal values")]
+    DuplicateValue {
+        /// The earlier option's position.
+        first: usize,
+        /// The later option's position, which repeats the earlier value.
+        second: usize,
+    },
 }
 pub(crate) fn validate<T: Eq>(choices: &[Choice<T>]) -> Result<(), ChoiceError> {
-    for (index, choice) in choices.iter().enumerate() {
-        if choices[..index].iter().any(|old| old.value == choice.value) {
-            return Err(ChoiceError::DuplicateValue);
+    for (second, choice) in choices.iter().enumerate() {
+        if let Some(first) = choices[..second]
+            .iter()
+            .position(|old| old.value == choice.value)
+        {
+            return Err(ChoiceError::DuplicateValue { first, second });
         }
     }
     Ok(())

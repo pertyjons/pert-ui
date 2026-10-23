@@ -167,7 +167,11 @@ fn raster_dimensions_are_rejected_before_byte_count_overflow() {
     ] {
         assert_eq!(
             RasterImage::from_srgba8(width, height, vec![0; bytes]),
-            Err(DrawError::InvalidImage)
+            Err(DrawError::InvalidImage {
+                width,
+                height,
+                bytes
+            })
         );
     }
 }

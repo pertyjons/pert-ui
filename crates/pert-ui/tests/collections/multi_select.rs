@@ -215,7 +215,13 @@ fn duplicate_option_values_are_rejected() {
         value,
         [Choice::new("a", "A"), Choice::new("a", "Again")],
     );
-    assert!(matches!(result, Err(ChoiceError::DuplicateValue)));
+    assert!(matches!(
+        result,
+        Err(ChoiceError::DuplicateValue {
+            first: 0,
+            second: 1
+        })
+    ));
 }
 
 #[test]
@@ -1068,7 +1074,10 @@ fn invalid_replacement_keeps_valid_rows_then_recovers_and_refreshes_after_reopen
     .unwrap();
     assert_eq!(
         s.ui.flush(s.ui.now()),
-        Err(RuntimeError::Choice(ChoiceError::DuplicateValue))
+        Err(RuntimeError::Choice(ChoiceError::DuplicateValue {
+            first: 0,
+            second: 1
+        }))
     );
     assert_eq!(rows(&s.ui), before);
     next.set(vec![Choice::new("new", "New")]).unwrap();

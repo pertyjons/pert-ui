@@ -251,7 +251,7 @@ impl FormFields {
             return Err(RuntimeError::EmptyKey);
         }
         if entries.iter().any(|entry| entry.key == key) {
-            return Err(RuntimeError::DuplicateKey);
+            return Err(RuntimeError::DuplicateKey(key));
         }
         let status = self.0.summary.sibling(FieldStatus::Normal);
         let control = Rc::new(RefCell::new(None));

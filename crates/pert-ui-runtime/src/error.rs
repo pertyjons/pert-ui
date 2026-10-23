@@ -206,7 +206,7 @@ mod tests {
             | RuntimeError::BackgroundPanicked
             | RuntimeError::IntervalsFull
             | RuntimeError::EmptyCommandName
-            | RuntimeError::ShortcutConflict
+            | RuntimeError::ShortcutConflict(_)
             | RuntimeError::NotDetachable
             | RuntimeError::StaleCommand
             | RuntimeError::StaleCommandTarget
@@ -225,9 +225,9 @@ mod tests {
             | RuntimeError::ForeignRuntime
             | RuntimeError::Unmounted
             | RuntimeError::Hidden
-            | RuntimeError::DuplicateKey
+            | RuntimeError::DuplicateKey(_)
             | RuntimeError::EmptyKey
-            | RuntimeError::AmbiguousKey
+            | RuntimeError::AmbiguousKey(_)
             | RuntimeError::WriteDuringUpdate
             | RuntimeError::WriteDuringPaint
             | RuntimeError::WriteDuringInspection
@@ -240,7 +240,7 @@ mod tests {
             | RuntimeError::ZeroDelay
             | RuntimeError::GestureInProgress
             | RuntimeError::WriteDuringLayout
-            | RuntimeError::ChildTypeChanged
+            | RuntimeError::ChildTypeChanged(_)
             | RuntimeError::CaptureUnavailable
             | RuntimeError::DragUnavailable
             | RuntimeError::DropNotPermitted

@@ -779,7 +779,7 @@ fn the_direct_filter_slot_reserves_filter_field_but_allows_filter_as_collection_
             CollectionFilter::new(&ui, filter, Element::new(collection_key, list)),
         ));
         if collection_key == "filter-field" {
-            assert!(matches!(result, Err(RuntimeError::DuplicateKey)));
+            assert!(matches!(result, Err(RuntimeError::DuplicateKey(_))));
         } else {
             let root = result?;
             settle(&mut ui);

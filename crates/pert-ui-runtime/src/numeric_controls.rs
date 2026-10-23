@@ -1328,7 +1328,7 @@ macro_rules! numeric_widget {
             /// above the limit.
             pub fn decimal_places(mut self, places: u8) -> Result<Self, crate::NumberInputError> {
                 if places > crate::NumberInputError::MAX_PRECISION {
-                    return Err(crate::NumberInputError::InvalidPrecision);
+                    return Err(crate::NumberInputError::InvalidPrecision(places));
                 }
                 self.0.decimal_places = places;
                 Ok(self)

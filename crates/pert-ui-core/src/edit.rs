@@ -153,12 +153,13 @@ pub enum PreviewOutcome {
 /// owns any undo recording; observe the first transition, not every replay.
 /// `Committed` means the synchronous local store accepted the value and advanced
 /// its revision; it does not mean an external engine received, applied, persisted
-/// or recorded it. `Copy` when the canonical type is.
+/// or recorded it. It is `Clone` but not `Copy`, because
+/// [`Self::Rejected`]'s [`EditError`] can carry a choice identity.
 ///
 /// The enum is `#[non_exhaustive]`: a later release may add a terminal kind.
 /// Match it with a wildcard arm and treat an unknown outcome as a terminal
 /// result that did not commit, as [`EditOutcome::Cancelled`] is.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 #[non_exhaustive]
 pub enum EditOutcome<T> {
     /// The UI submitted a value to an external authority; acceptance is pending.
@@ -184,7 +185,10 @@ pub enum EditOutcome<T> {
 }
 
 /// Admission, delivery or validation failure in the local edit protocol.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, thiserror::Error)]
+///
+/// It is `Clone` but not `Copy`: [`Self::InvalidValue`] holds a
+/// [`ParameterError`], which can carry a choice identity.
+#[derive(Clone, Debug, Eq, PartialEq, thiserror::Error)]
 #[non_exhaustive]
 pub enum EditError {
     /// The external authority refused the submitted candidate.

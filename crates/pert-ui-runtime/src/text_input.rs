@@ -17,13 +17,28 @@ pub enum TextEditError {
     /// control characters. Tabs and LF are accepted only in multiline bindings.
     #[error("text contains unsupported control characters or line breaks")]
     InvalidText,
-    /// Composition cursor offsets are not ordered UTF-8 boundaries within preedit.
-    #[error("invalid composition cursor range")]
-    InvalidComposition,
-    /// Selection offsets are not ordered UTF-8 character boundaries within the
-    /// text they select.
-    #[error("invalid selection range")]
-    InvalidSelection,
+    /// The composition cursor's UTF-8 byte offsets held here are not ordered
+    /// boundaries within the preedit text.
+    #[error(
+        "composition cursor {start_byte}..{end_byte} is not an ordered range of character boundaries"
+    )]
+    InvalidComposition {
+        /// The rejected range's start.
+        start_byte: usize,
+        /// The rejected range's end.
+        end_byte: usize,
+    },
+    /// The selection's UTF-8 byte offsets held here are not ordered character
+    /// boundaries within the text they select.
+    #[error(
+        "selection {anchor_byte}..{focus_byte} is not an ordered range of character boundaries"
+    )]
+    InvalidSelection {
+        /// The rejected offset where the selection starts.
+        anchor_byte: usize,
+        /// The rejected offset where the selection ends.
+        focus_byte: usize,
+    },
 }
 impl TextEditError {
     /// Maximum UTF-8 byte length of one prepared text or bound editor string (16 KiB).
@@ -63,9 +78,15 @@ impl TextPreedit {
     /// let preedit = TextPreedit::new("åä", Some(2..4))?;
     /// assert_eq!(preedit.cursor_byte_range(), Some(2..4));
     /// // Byte 1 is inside `å`, and a reversed range is not ordered.
-    /// assert_eq!(TextPreedit::new("å", Some(1..2)), Err(TextEditError::InvalidComposition));
+    /// assert_eq!(
+    ///     TextPreedit::new("å", Some(1..2)),
+    ///     Err(TextEditError::InvalidComposition { start_byte: 1, end_byte: 2 })
+    /// );
     /// let reversed = std::ops::Range { start: 2, end: 1 };
-    /// assert_eq!(TextPreedit::new("ab", Some(reversed)), Err(TextEditError::InvalidComposition));
+    /// assert_eq!(
+    ///     TextPreedit::new("ab", Some(reversed)),
+    ///     Err(TextEditError::InvalidComposition { start_byte: 2, end_byte: 1 })
+    /// );
     /// # Ok::<(), TextEditError>(())
     /// ```
     ///
@@ -82,12 +103,15 @@ impl TextPreedit {
         if text.len() > crate::TextEditError::MAX_TEXT_BYTES {
             return Err(TextEditError::TooLarge);
         }
-        if cursor.as_ref().is_some_and(|range| {
-            range.start > range.end
+        if let Some(range) = &cursor
+            && (range.start > range.end
                 || !text.is_char_boundary(range.start)
-                || !text.is_char_boundary(range.end)
-        }) {
-            return Err(TextEditError::InvalidComposition);
+                || !text.is_char_boundary(range.end))
+        {
+            return Err(TextEditError::InvalidComposition {
+                start_byte: range.start,
+                end_byte: range.end,
+            });
         }
         Ok(Self { text, cursor })
     }

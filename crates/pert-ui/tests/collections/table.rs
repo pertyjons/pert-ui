@@ -746,7 +746,7 @@ fn columns_are_validated() {
     );
     assert_eq!(
         state(vec![TableColumn::new("a", "x"), TableColumn::new("a", "y")]),
-        Some(RuntimeError::DuplicateKey)
+        Some(RuntimeError::DuplicateKey("a".into()))
     );
     for weight in [0.0, -1.0, f32::NAN] {
         assert_eq!(
@@ -1014,7 +1014,7 @@ fn a_press_names_the_cell_and_cells_are_described_by_their_column() -> TestResul
 
     assert_eq!(
         state.set_active_column(Some("nope".into())),
-        Err(LayoutError::UnknownKey.into())
+        Err(LayoutError::UnknownKey("nope".into()).into())
     );
     state.set_active_column(None)?;
     assert_eq!(state.active_column().get()?, None);
@@ -1125,7 +1125,7 @@ fn the_controller_fixes_a_column_width_like_a_drag_except_during_one() -> TestRe
     );
     assert_eq!(
         state.set_column_width("nope", Length::new(100.0)?),
-        Err(LayoutError::UnknownKey.into())
+        Err(LayoutError::UnknownKey("nope".into()).into())
     );
 
     // A held edge drag owns the widths until it ends.

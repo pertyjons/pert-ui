@@ -34,7 +34,18 @@ fn samples() -> Vec<Box<dyn Error>> {
             ParameterError::NonFinite,
         ))),
         RuntimeError::Binding(BindingError::Delivery(DeliveryError::Faulted)),
-        RuntimeError::Choice(ChoiceError::DuplicateValue),
+        RuntimeError::Choice(ChoiceError::DuplicateValue {
+            first: 0,
+            second: 2,
+        }),
+        RuntimeError::AmbiguousKey("apply".into()),
+        RuntimeError::DuplicateKey("apply".into()),
+        RuntimeError::ChildTypeChanged("apply".into()),
+        RuntimeError::ShortcutConflict(KeyChord::primary('s')),
+        RuntimeError::Layout(LayoutError::UnknownKey("files".into())),
+        RuntimeError::Font(FontError::UnknownIcon("folder_opne".into())),
+        RuntimeError::Font(FontError::MissingGlyph('q')),
+        RuntimeError::NumberInput(NumberInputError::InvalidPrecision(16)),
         RuntimeError::Application(application()),
         RuntimeError::Text(TextError::TooLarge(TextLimit::Segments)),
         RuntimeError::Text(TextError::TooLarge(TextLimit::RasterSide)),
@@ -43,7 +54,7 @@ fn samples() -> Vec<Box<dyn Error>> {
         RuntimeError::Clipboard(ClipboardError::Failed("X11 timeout".into())),
         RuntimeError::Clipboard(ClipboardError::Failed(String::new())),
         RuntimeError::Layout(LayoutError::NoLanes),
-        RuntimeError::Live(LiveError::CapacityExceeded),
+        RuntimeError::Live(LiveError::CapacityExceeded(2_000_000)),
         RuntimeError::ParameterId(ParameterIdError::EmptyKey),
         RuntimeError::NormalizedValue(NormalizedValueError::OutOfRange),
         RuntimeError::UpdateLimit,
@@ -58,12 +69,36 @@ fn samples() -> Vec<Box<dyn Error>> {
     samples.extend([
         Box::new(DrawError::Path(PathError::TooLarge)) as Box<dyn Error>,
         Box::new(WindowError::Creation("no display".into())),
-        Box::new(WindowError::Drawing(DrawError::InvalidImage)),
+        Box::new(WindowError::Drawing(DrawError::InvalidImage {
+            width: 0,
+            height: 4,
+            bytes: 0,
+        })),
+        Box::new(DrawError::CoverageTooLarge),
         Box::new(SinkError::new(SinkErrorKind::Full, "engine queue full")),
         Box::new(WorkspaceError::TooManyEntries),
         Box::new(CaptureError::Backend("device lost".into())),
         Box::new(FontError::TooLarge),
         Box::new(NumberInputError::OffStep),
+        Box::new(NumberLocaleError::SameSeparators {
+            decimal: ',',
+            grouping: ',',
+        }),
+        Box::new(TextEditError::InvalidSelection {
+            anchor_byte: 1,
+            focus_byte: 2,
+        }),
+        Box::new(WorkspaceError::Participant {
+            path: "main/table".into(),
+            source: Box::new(WorkspaceError::TextTooLong),
+        }),
+        Box::new(RestoreRejection::State(WorkspaceError::TextTooLong)),
+        Box::new(RestoreRejection::Runtime(RuntimeError::Closed)),
+        Box::new(CaptureError::Limit(LimitError::FrameSize {
+            width: 5000,
+            height: 5000,
+        })),
+        Box::new(ListingError::new(ListingErrorKind::NotFound, "not found").with_path("/missing")),
         Box::new(RequestError::Full),
         Box::new(WaitError::Timeout),
         Box::new(WakeError::Closed),
@@ -110,6 +145,76 @@ fn a_source_chain_prints_each_message_once() {
     assert_eq!(
         error.source().map(ToString::to_string).as_deref(),
         Some("disk full")
+    );
+}
+
+/// A rejected key, identity or value is named in the message, so a report
+/// says which one failed without the caller's own context.
+#[test]
+fn rejected_keys_and_values_are_named_in_the_message() {
+    let cases: [(Box<dyn Error>, &str); 8] = [
+        (
+            Box::new(RuntimeError::AmbiguousKey("apply".into())),
+            "several descendants share the key `apply`",
+        ),
+        (
+            Box::new(LayoutError::DuplicateKey("files".into())),
+            "two items share the key `files`",
+        ),
+        (
+            Box::new(ChoiceError::DuplicateValue {
+                first: 0,
+                second: 2,
+            }),
+            "choices 0 and 2 have equal values",
+        ),
+        (
+            Box::new(LiveError::CapacityExceeded(2_000_000)),
+            "live-data capacity of 2000000 items exceeds the maximum of 1048576 items",
+        ),
+        (
+            Box::new(NumberInputError::InvalidPrecision(16)),
+            "decimal precision 16 must be between 0 and 15",
+        ),
+        (
+            Box::new(FontError::UnknownIcon("folder_opne".into())),
+            "no Material icon is named `folder_opne`",
+        ),
+        (
+            Box::new(TextEditError::InvalidComposition {
+                start_byte: 2,
+                end_byte: 1,
+            }),
+            "composition cursor 2..1 is not an ordered range of character boundaries",
+        ),
+        (
+            Box::new(CaptureError::Limit(LimitError::FrameSize {
+                width: 5000,
+                height: 5000,
+            })),
+            "a 5000×5000 frame exceeds the frame image size limit",
+        ),
+    ];
+    for (error, message) in cases {
+        assert_eq!(error.to_string(), message);
+    }
+    // The participant's cause is its source, not part of its message.
+    let participant = WorkspaceError::Participant {
+        path: "main/table".into(),
+        source: Box::new(WorkspaceError::TextTooLong),
+    };
+    assert_eq!(
+        participant.to_string(),
+        "workspace participant `main/table` could not build its state"
+    );
+    assert_eq!(
+        participant.source().map(ToString::to_string),
+        Some(WorkspaceError::TextTooLong.to_string())
+    );
+    let rejection = RestoreRejection::Runtime(RuntimeError::Closed);
+    assert_eq!(
+        rejection.source().map(ToString::to_string),
+        Some(RuntimeError::Closed.to_string())
     );
 }
 

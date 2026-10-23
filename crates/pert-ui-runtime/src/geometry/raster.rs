@@ -497,7 +497,7 @@ impl RasterGrid {
         let remote = x0 > safe_offset || y0 > safe_offset;
         let (origin, offset, width, height) = if remote {
             let Some(clip) = clip else {
-                return Err(DrawError::InvalidImage);
+                return Err(DrawError::CoverageTooLarge);
             };
             let [cx, cy, cw, ch] = clip.values().map(f64::from);
             let low = (min.0.max(cx), min.1.max(cy));
@@ -537,7 +537,7 @@ impl RasterGrid {
             || height < 1.0
             || width * height > MaskImage::MAX_PIXELS as f64
         {
-            return Err(DrawError::InvalidImage);
+            return Err(DrawError::CoverageTooLarge);
         }
         Ok(Some(Self {
             width: width as usize,
@@ -1518,11 +1518,11 @@ mod tests {
         let subpaths = flatten(&path, TOLERANCE)?;
         assert!(matches!(
             union::rasterize(&subpaths, style, 1.0, None),
-            Err(DrawError::InvalidImage)
+            Err(DrawError::CoverageTooLarge)
         ));
         assert!(matches!(
             outlined(&subpaths, style, 1.0, None),
-            Err(DrawError::InvalidImage)
+            Err(DrawError::CoverageTooLarge)
         ));
         Ok(())
     }

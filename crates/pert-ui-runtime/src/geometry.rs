@@ -625,7 +625,7 @@ impl Painter {
     ///
     /// # Errors
     /// A validated path cannot fail recording. Backend preparation can fail with
-    /// `InvalidImage` when the cropped coverage exceeds
+    /// `CoverageTooLarge` when the cropped coverage exceeds
     /// [`MaskImage::MAX_PIXELS`](crate::MaskImage::MAX_PIXELS) or `Path(TooLarge)`
     /// when flattening exceeds its segment budget, or [`DrawError::TooComplex`]
     /// when active coverage exceeds [`crate::VectorRasterizer::MAX_COVERAGE_WORK`].

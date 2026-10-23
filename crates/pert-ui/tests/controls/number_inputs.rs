@@ -509,18 +509,18 @@ fn builders_reject_bad_bounds_steps_and_precision() {
         DecimalInput::new(ui.signal(0.0))
             .decimal_places(max + 1)
             .err(),
-        Some(NumberInputError::InvalidPrecision)
+        Some(NumberInputError::InvalidPrecision(max + 1))
     );
     assert_eq!(
         InlineDecimal::new(ui.signal(0.0))
             .decimal_places(max + 1)
             .err(),
-        Some(NumberInputError::InvalidPrecision)
+        Some(NumberInputError::InvalidPrecision(max + 1))
     );
     // The former name keeps its rules.
     #[allow(deprecated)]
     let renamed = DecimalInput::new(ui.signal(0.0)).precision(max + 1).err();
-    assert_eq!(renamed, Some(NumberInputError::InvalidPrecision));
+    assert_eq!(renamed, Some(NumberInputError::InvalidPrecision(max + 1)));
     // Sliders take the same setting under the same name and limit.
     let mut ui = ui;
     let (parameter, _host) = ui
@@ -532,7 +532,7 @@ fn builders_reject_bad_bounds_steps_and_precision() {
     assert!(Slider::new(parameter.clone()).decimal_places(max).is_ok());
     assert_eq!(
         Slider::new(parameter).decimal_places(max + 1).err(),
-        Some(NumberInputError::InvalidPrecision)
+        Some(NumberInputError::InvalidPrecision(max + 1))
     );
 }
 

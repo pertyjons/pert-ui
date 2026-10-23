@@ -981,21 +981,21 @@ impl ToolWindowLayout {
                 return Err(LayoutError::BlankKey);
             }
             if reserved(&window.key) {
-                return Err(LayoutError::ReservedKey);
+                return Err(LayoutError::ReservedKey(window.key.clone()));
             }
             if !keys.insert(window.key.as_str()) {
-                return Err(LayoutError::DuplicateKey);
+                return Err(LayoutError::DuplicateKey(window.key.clone()));
             }
             if *model.edges.get(window.edge) == EdgeMode::None {
                 return Err(LayoutError::UnavailableEdge);
             }
         }
-        if self
+        if let Some((_, content, _)) = self
             .contents
             .iter()
-            .any(|(_, content, _)| header_key(&content.key))
+            .find(|(_, content, _)| header_key(&content.key))
         {
-            return Err(LayoutError::ReservedKey);
+            return Err(LayoutError::ReservedKey(content.key.clone()));
         }
         Ok(())
     }
@@ -1155,7 +1155,7 @@ impl Component for ToolWindowLayout {
         // invalid description never removes a tool window it fails to list.
         if let Some(error) = &self.build_error {
             Err(error.clone())
-        } else if let Some(error) = self.invalid {
+        } else if let Some(error) = self.invalid.clone() {
             Err(error.into())
         } else {
             Ok(())
@@ -2153,7 +2153,7 @@ impl ToolWindowLayout {
         Ok(ChildReveal::Changed)
     }
     fn update_layout(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
-        if let Some(error) = self.invalid {
+        if let Some(error) = self.invalid.clone() {
             return Err(error.into());
         }
         let names = match &self.names_binding {
@@ -2342,7 +2342,7 @@ impl ToolWindowController {
         let current = model
             .window(key)
             .map(|window| window.expanded)
-            .ok_or(LayoutError::UnknownKey)?;
+            .ok_or_else(|| LayoutError::UnknownKey(key.to_owned()))?;
         Ok(model.set_expanded(key, expanded.unwrap_or(!current), ChangeOrigin::Application))
     }
     /// Expands a tool window, collapsing the one expanded in its edge group.
@@ -2388,7 +2388,7 @@ impl ToolWindowController {
         model
             .window(key)
             .map(|window| window.expanded)
-            .ok_or_else(|| LayoutError::UnknownKey.into())
+            .ok_or_else(|| LayoutError::UnknownKey(key.to_owned()).into())
     }
     /// Moves a tool window to the end of `group` on `edge`. An expanded tool
     /// window stays expanded and collapses the one expanded in its new
@@ -2409,7 +2409,7 @@ impl ToolWindowController {
         model::check_writable(&model)?;
         let mut model = model.borrow_mut();
         if model.window(key).is_none() {
-            return Err(LayoutError::UnknownKey.into());
+            return Err(LayoutError::UnknownKey(key.to_owned()).into());
         }
         if *model.edges.get(edge) == EdgeMode::None {
             return Err(LayoutError::UnavailableEdge.into());
@@ -2429,7 +2429,7 @@ impl ToolWindowController {
         let (edge, group) = model
             .window(key)
             .map(|window| (window.edge, window.group))
-            .ok_or(LayoutError::UnknownKey)?;
+            .ok_or_else(|| LayoutError::UnknownKey(key.to_owned()))?;
         Ok(model.move_window(key, edge, group, Some(position), ChangeOrigin::Application))
     }
     /// Presents a tool window docked, floating or in its own native window.
@@ -2444,7 +2444,7 @@ impl ToolWindowController {
         model::check_writable(&model)?;
         let mut model = model.borrow_mut();
         if model.window(key).is_none() {
-            return Err(LayoutError::UnknownKey.into());
+            return Err(LayoutError::UnknownKey(key.to_owned()).into());
         }
         Ok(model.set_mode(key, mode, ChangeOrigin::Application))
     }
@@ -2458,7 +2458,7 @@ impl ToolWindowController {
         model
             .window(key)
             .map(|window| window.mode)
-            .ok_or_else(|| LayoutError::UnknownKey.into())
+            .ok_or_else(|| LayoutError::UnknownKey(key.to_owned()).into())
     }
     /// Switches a tool window between docked (false) and overlay (true).
     /// Returns whether anything changed.
@@ -2470,7 +2470,7 @@ impl ToolWindowController {
         model::check_writable(&model)?;
         let mut model = model.borrow_mut();
         if model.window(key).is_none() {
-            return Err(LayoutError::UnknownKey.into());
+            return Err(LayoutError::UnknownKey(key.to_owned()).into());
         }
         Ok(model.set_overlay(key, overlay, ChangeOrigin::Application))
     }
@@ -2482,7 +2482,9 @@ impl ToolWindowController {
     pub fn placement(&self, key: &str) -> Result<(ToolEdge, StripeGroup, usize), RuntimeError> {
         let model = self.model()?;
         let model = model.borrow();
-        let window = model.window(key).ok_or(LayoutError::UnknownKey)?;
+        let window = model
+            .window(key)
+            .ok_or_else(|| LayoutError::UnknownKey(key.to_owned()))?;
         let position = model
             .group_keys(window.edge, window.group)
             .iter()
@@ -2500,7 +2502,7 @@ impl ToolWindowController {
         model
             .window(key)
             .map(|window| window.overlay)
-            .ok_or_else(|| LayoutError::UnknownKey.into())
+            .ok_or_else(|| LayoutError::UnknownKey(key.to_owned()).into())
     }
     /// Sets whether stripe buttons show names beside their icons. With
     /// [`ToolWindowLayout::bind_show_names`] it writes that binding. Returns whether

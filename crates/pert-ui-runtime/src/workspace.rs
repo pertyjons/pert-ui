@@ -659,7 +659,11 @@ pub enum WorkspaceError {
     /// fails, for example because a key the participant must record is too
     /// long for workspace text or holds a control character. Rename the key
     /// or turn the participant's persistence off where it has that option.
-    #[error("workspace participant `{path}` could not build its state: {source}")]
+    ///
+    /// The message names the path; the cause is the error's
+    /// [`source`](std::error::Error::source), so a report that walks the
+    /// chain prints it once.
+    #[error("workspace participant `{path}` could not build its state")]
     Participant {
         /// The participant's address, written as [`WorkspacePath`] displays
         /// it; segments that are not valid workspace text are written as they
@@ -718,8 +722,11 @@ pub enum RestoreRejection {
     /// [`Runtime::restore_workspace`](crate::Runtime::restore_workspace) as a
     /// whole; this rejection reports it for an entry that was retained and
     /// applied when its view mounted later.
-    #[error("the component could not build its current state: {0}")]
-    State(WorkspaceError),
+    ///
+    /// The cause is the error's [`source`](std::error::Error::source), not
+    /// part of its message.
+    #[error("the component could not build its current state")]
+    State(#[source] WorkspaceError),
     /// The component does not restore state, although something was addressed
     /// to it. A participant must override
     /// [`Component::restore_workspace_state`](crate::Component::restore_workspace_state).
@@ -728,8 +735,11 @@ pub enum RestoreRejection {
     /// Applying an already validated entry failed in the runtime, for example
     /// with `Closed` after shutdown or `BorrowConflict` for a reentrant read.
     /// The participant leaves its previous state in place.
-    #[error("the runtime refused the restored state: {0}")]
-    Runtime(crate::RuntimeError),
+    ///
+    /// The cause is the error's [`source`](std::error::Error::source), not
+    /// part of its message.
+    #[error("the runtime refused the restored state")]
+    Runtime(#[source] crate::RuntimeError),
 }
 
 /// Why an entry was not offered to a participant.

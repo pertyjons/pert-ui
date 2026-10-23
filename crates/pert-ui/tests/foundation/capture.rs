@@ -364,7 +364,13 @@ fn admission_is_bounded_and_refuses_frames_over_the_limit() -> TestResult {
     big.set_capture_support(true);
     let window = big.inspect().windows[0].id;
     let refused = big.request_capture(CaptureRequest::new(CaptureTarget::Window(window)));
-    assert_eq!(refused.try_reply()?.value, Err(CaptureError::TooLarge));
+    assert_eq!(
+        refused.try_reply()?.value,
+        Err(CaptureError::Limit(LimitError::FrameSize {
+            width: 5000,
+            height: 4000
+        }))
+    );
     Ok(())
 }
 
@@ -545,6 +551,13 @@ fn capture_serde_preserves_portable_outcomes_and_rejects_rust_causes() -> TestRe
         (
             CaptureError::Backend("lost".into()),
             "{\"Backend\":\"lost\"}",
+        ),
+        (
+            CaptureError::Limit(LimitError::FrameSize {
+                width: 5000,
+                height: 4000,
+            }),
+            "{\"Limit\":{\"FrameSize\":{\"width\":5000,\"height\":4000}}}",
         ),
     ] {
         assert_eq!(serde_json::to_string(&error)?, wire);

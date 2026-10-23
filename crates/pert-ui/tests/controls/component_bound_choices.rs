@@ -42,7 +42,10 @@ fn dynamic_construction_defers_validation_and_recovers_from_duplicate_lists() ->
         let id = ui.mount_tree(bound(kind, &ui, options.read_only()))?;
         assert_eq!(
             ui.flush(Duration::ZERO),
-            Err(RuntimeError::Choice(ChoiceError::DuplicateValue)),
+            Err(RuntimeError::Choice(ChoiceError::DuplicateValue {
+                first: 0,
+                second: 1
+            })),
             "{kind:?}"
         );
         options.set(vec![Choice::new(1, "One"), Choice::new(2, "Two")])?;
@@ -59,7 +62,10 @@ fn dynamic_construction_defers_validation_and_recovers_from_duplicate_lists() ->
         options.set(vec![Choice::new(2, "Two"), Choice::new(2, "Duplicate")])?;
         assert_eq!(
             ui.flush(Duration::ZERO),
-            Err(RuntimeError::Choice(ChoiceError::DuplicateValue)),
+            Err(RuntimeError::Choice(ChoiceError::DuplicateValue {
+                first: 0,
+                second: 1
+            })),
             "{kind:?}"
         );
         assert_eq!(

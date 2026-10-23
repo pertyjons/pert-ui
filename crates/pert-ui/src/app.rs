@@ -19,10 +19,10 @@ use crate::{DrawError, Runtime, RuntimeError};
 /// let parsed: Result<u8, _> = "x".parse::<u8>();
 /// let error = AppError::from(ApplicationError::new(parsed.unwrap_err()));
 /// assert!(matches!(error, AppError::Runtime(RuntimeError::Application(_))));
-/// let error = AppError::from(ChoiceError::DuplicateValue);
+/// let error = AppError::from(ChoiceError::DuplicateValue { first: 0, second: 1 });
 /// assert!(matches!(
 ///     error,
-///     AppError::Runtime(RuntimeError::Choice(ChoiceError::DuplicateValue))
+///     AppError::Runtime(RuntimeError::Choice(ChoiceError::DuplicateValue { .. }))
 /// ));
 /// ```
 #[derive(Debug, thiserror::Error)]

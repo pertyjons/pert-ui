@@ -101,7 +101,11 @@ impl Runtime {
             .checked_mul(u64::from(extent.height()))
             .and_then(|pixels| pixels.checked_mul(4));
         if bytes.is_none_or(|bytes| bytes > crate::FrameImage::MAX_BYTES as u64) {
-            handle.answer(Err(crate::CaptureError::TooLarge), flush_error);
+            let limit = crate::LimitError::FrameSize {
+                width: extent.width(),
+                height: extent.height(),
+            };
+            handle.answer(Err(crate::CaptureError::Limit(limit)), flush_error);
             return;
         }
         let id = self.shared.next_capture.get();

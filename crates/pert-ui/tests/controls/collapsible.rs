@@ -1072,7 +1072,7 @@ fn invalid_sections_are_rejected_before_the_accordion_mounts_or_changes() -> Tes
                 Section::new("a", "A", button("a-button")),
                 Section::new("a", "B", button("b-button")),
             ],
-            LayoutError::DuplicateKey,
+            LayoutError::DuplicateKey("a".into()),
         ),
     ];
     for (sections, expected) in cases {

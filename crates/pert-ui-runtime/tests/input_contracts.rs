@@ -248,7 +248,7 @@ fn find_descendant_skips_built_in_parts_and_refuses_ambiguity() -> TestResult {
     // Keys repeat across siblings' subtrees: the lookup refuses to choose.
     assert_eq!(
         ui.find_descendant(&root, "apply"),
-        Err(RuntimeError::AmbiguousKey)
+        Err(RuntimeError::AmbiguousKey("apply".into()))
     );
     let apply = ui.find_descendant(&left, "apply")?.ok_or("mounted")?;
     assert_eq!(ui.find_path(&form, &["apply"])?, Some(apply.clone()));
@@ -345,7 +345,7 @@ fn find_address_names_addressable_segments_and_refuses_ambiguity() -> TestResult
 
     assert_eq!(
         ui.find(&root, &["twins", "item"]),
-        Err(RuntimeError::AmbiguousKey)
+        Err(RuntimeError::AmbiguousKey("twins/item".into()))
     );
     assert_eq!(ui.find(&root, &["twins", "a", "item"])?, None);
     assert_eq!(ui.find(&root, &["left", "missing"])?, None);

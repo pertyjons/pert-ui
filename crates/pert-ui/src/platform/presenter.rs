@@ -208,9 +208,7 @@ mod software {
     fn presenting(error: CpuRenderError) -> RenderError {
         match error {
             CpuRenderError::Drawing(error) => RenderError::Drawing(error),
-            CpuRenderError::TooLarge { width, height } => {
-                RenderError::Limit(LimitError::FrameSize { width, height })
-            }
+            CpuRenderError::Limit(limit) => RenderError::Limit(limit),
             CpuRenderError::Unsupported => RenderError::UnsupportedGraphics(error.to_string()),
             error => RenderError::Graphics(error.to_string()),
         }
@@ -313,9 +311,6 @@ mod software {
             scene: &DisplayList,
         ) -> Result<FrameImage, RenderError> {
             self.renderer.render(scene).map_err(|error| match error {
-                CpuRenderError::TooLarge { width, height } => {
-                    RenderError::Limit(LimitError::CaptureSize { width, height })
-                }
                 CpuRenderError::EmptyViewport => RenderError::Unconfigured,
                 error => presenting(error),
             })

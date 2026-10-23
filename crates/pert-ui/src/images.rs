@@ -61,7 +61,10 @@
 //! ```
 use crate::RasterImage;
 use image::ImageDecoder as _;
-use std::{io::Cursor, path::Path};
+use std::{
+    io::Cursor,
+    path::{Path, PathBuf},
+};
 
 /// Declares [`ImageFormat`] and [`ImageFormat::ALL`] from one list of
 /// variants, so a format added to the enumeration cannot be left out of `ALL`
@@ -240,8 +243,14 @@ pub enum ImageError {
     #[error("malformed image: {0}")]
     Malformed(String),
     /// Reading the file failed.
-    #[error("reading the image failed")]
-    Io(#[from] std::io::Error),
+    #[error("reading the image {} failed", path.display())]
+    Io {
+        /// The file [`load`] was asked to read.
+        path: PathBuf,
+        /// Why it could not be read.
+        #[source]
+        source: std::io::Error,
+    },
 }
 
 /// Decodes an image file held in memory.
@@ -302,7 +311,12 @@ pub fn decode(bytes: &[u8]) -> Result<RasterImage, ImageError> {
 /// # Errors
 /// [`ImageError::Io`] when the file cannot be read, otherwise those of [`decode`].
 pub fn load(path: impl AsRef<Path>) -> Result<RasterImage, ImageError> {
-    decode(&std::fs::read(path)?)
+    let path = path.as_ref();
+    let bytes = std::fs::read(path).map_err(|source| ImageError::Io {
+        path: path.to_owned(),
+        source,
+    })?;
+    decode(&bytes)
 }
 
 /// What a decoder may allocate for one image, header and metadata included.

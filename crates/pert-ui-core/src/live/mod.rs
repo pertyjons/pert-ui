@@ -164,9 +164,12 @@ pub enum LiveError {
     /// A capacity of zero items.
     #[error("live-data capacity must be at least one item")]
     ZeroCapacity,
-    /// A capacity above [`Capacity::MAX`].
-    #[error("live-data capacity exceeds the documented maximum")]
-    CapacityExceeded,
+    /// A capacity above [`Capacity::MAX`]; the requested item count.
+    #[error(
+        "live-data capacity of {0} items exceeds the maximum of {max} items",
+        max = Capacity::MAX.get()
+    )]
+    CapacityExceeded(usize),
     /// A protocol counter could not advance; the endpoint is terminally closed.
     #[error("live-data counter exhausted")]
     Exhausted,
@@ -196,7 +199,7 @@ impl Capacity {
             return Err(LiveError::ZeroCapacity);
         }
         if items > Self::MAX.0 {
-            return Err(LiveError::CapacityExceeded);
+            return Err(LiveError::CapacityExceeded(items));
         }
         Ok(Self(items))
     }

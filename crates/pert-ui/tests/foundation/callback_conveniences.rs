@@ -132,7 +132,7 @@ fn find_takes_the_path_inspection_reports() -> TestResult {
     // Two faders: one key alone is ambiguous, an address is not.
     assert_eq!(
         ui.find_descendant(&root, "fader"),
-        Err(RuntimeError::AmbiguousKey)
+        Err(RuntimeError::AmbiguousKey("fader".into()))
     );
     Ok(())
 }

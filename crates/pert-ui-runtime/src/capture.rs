@@ -186,9 +186,12 @@ pub enum CaptureError {
     /// not yet created. Ask again once it presents.
     #[error("the window's surface is unavailable")]
     SurfaceUnavailable,
-    /// The image would exceed [`FrameImage::MAX_BYTES`].
-    #[error("the capture exceeds the image size limit")]
-    TooLarge,
+    /// The image would exceed [`FrameImage::MAX_BYTES`]:
+    /// [`LimitError::FrameSize`](crate::LimitError::FrameSize) with the
+    /// dimensions it would have. A host reports a renderer's frame limit the
+    /// same way.
+    #[error(transparent)]
+    Limit(crate::LimitError),
     /// [`Runtime::MAX_PENDING_CAPTURES`](crate::Runtime::MAX_PENDING_CAPTURES)
     /// captures are already waiting for the host; wait for one, then ask
     /// again.
@@ -365,18 +368,21 @@ impl FrameImage {
     /// Wraps read-back pixels: `width * height * 4` bytes, nonzero dimensions.
     ///
     /// # Errors
-    /// [`CaptureError::TooLarge`] beyond [`Self::MAX_BYTES`] and
+    /// [`CaptureError::Limit`] with
+    /// [`LimitError::FrameSize`](crate::LimitError::FrameSize) beyond
+    /// [`Self::MAX_BYTES`] and
     /// [`CaptureError::Frame`] with [`FrameError::PixelCount`] for a zero
     /// dimension or a byte count that does not match, which is a renderer's
     /// mistake rather than a size.
     pub fn new(width: u32, height: u32, rgba: Vec<u8>) -> Result<Self, CaptureError> {
-        let bytes = u64::from(width)
+        let too_large = CaptureError::Limit(crate::LimitError::FrameSize { width, height });
+        let Some(bytes) = u64::from(width)
             .checked_mul(u64::from(height))
             .and_then(|pixels| pixels.checked_mul(4))
-            .ok_or(CaptureError::TooLarge)?;
-        if bytes > Self::MAX_BYTES as u64 {
-            return Err(CaptureError::TooLarge);
-        }
+            .filter(|bytes| *bytes <= Self::MAX_BYTES as u64)
+        else {
+            return Err(too_large);
+        };
         if bytes == 0 || bytes != rgba.len() as u64 {
             return Err(FrameError::PixelCount {
                 width,
@@ -774,12 +780,18 @@ mod tests {
         );
         assert_eq!(
             FrameImage::new(4097, 4096, Vec::new()),
-            Err(CaptureError::TooLarge)
+            Err(CaptureError::Limit(crate::LimitError::FrameSize {
+                width: 4097,
+                height: 4096
+            }))
         );
         // Dimensions whose product overflows are too large, not wrapped.
         assert_eq!(
             FrameImage::new(2_147_529_989, 2_147_437_308, vec![0; 166_832]),
-            Err(CaptureError::TooLarge)
+            Err(CaptureError::Limit(crate::LimitError::FrameSize {
+                width: 2_147_529_989,
+                height: 2_147_437_308
+            }))
         );
         let pixels: Vec<u8> = (0..4 * 3 * 4).map(|i| i as u8).collect();
         let frame = FrameImage::new(4, 3, pixels.clone()).unwrap();

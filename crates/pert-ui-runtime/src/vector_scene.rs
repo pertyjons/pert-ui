@@ -154,8 +154,9 @@ impl VectorRasterizer {
     /// both the input and the last successful cache remain usable.
     ///
     /// # Errors
-    /// Returns [`DrawError::InvalidImage`] for a vector, mask or image reference that is
-    /// not in `scene`, or for cropped coverage above
+    /// Returns [`DrawError::MissingVector`], [`DrawError::MissingMask`] or
+    /// [`DrawError::MissingImage`] for a reference that is not in `scene`,
+    /// [`DrawError::CoverageTooLarge`] for cropped coverage above
     /// [`MaskImage::MAX_PIXELS`](crate::MaskImage::MAX_PIXELS); [`DrawError::Path`] with
     /// [`PathError::TooLarge`](crate::PathError::TooLarge) when flattening exceeds its
     /// segment budget; [`DrawError::TooComplex`] when covering a vector exceeds
@@ -184,7 +185,9 @@ impl VectorRasterizer {
                     color,
                     clip,
                 } => {
-                    let vector = scene.vector(vector).ok_or(DrawError::InvalidImage)?;
+                    let vector = scene
+                        .vector(vector)
+                        .ok_or(DrawError::MissingVector(vector))?;
                     let command_clip = clip;
                     let clip = clip.map_or(viewport, |c| c.intersection(viewport));
                     if clip.is_empty() || color.alpha() == 0.0 {
@@ -262,7 +265,7 @@ impl VectorRasterizer {
                     mask: MaskId(
                         result
                             .masks
-                            .intern(scene.mask(mask).ok_or(DrawError::InvalidImage)?),
+                            .intern(scene.mask(mask).ok_or(DrawError::MissingMask(mask))?),
                     ),
                     rect,
                     color,
@@ -280,7 +283,7 @@ impl VectorRasterizer {
                     image: ImageId(
                         result
                             .images
-                            .intern(scene.image(image).ok_or(DrawError::InvalidImage)?),
+                            .intern(scene.image(image).ok_or(DrawError::MissingImage(image))?),
                     ),
                     rect,
                     tint,
@@ -326,6 +329,31 @@ mod tests {
         scene
     }
     #[test]
+    fn a_reference_missing_from_its_scene_names_the_id() {
+        let mut cache = VectorRasterizer::default();
+        let mut foreign = scene(Color::WHITE, 16.0);
+        foreign.vectors = Default::default();
+        assert_eq!(
+            cache.prepare(&foreign),
+            Err(DrawError::MissingVector(VectorId(0)))
+        );
+        let mut masked = DisplayList {
+            viewport: Viewport::new(16.0, 16.0, 1.0).unwrap(),
+            ..Default::default()
+        };
+        masked.fills.push(DrawCommand::DrawMask {
+            rect: Rect::new(0.0, 0.0, 4.0, 4.0).unwrap(),
+            mask: MaskId(3),
+            color: Color::WHITE,
+            turn: crate::QuarterTurn::None,
+            clip: None,
+        });
+        assert_eq!(
+            cache.prepare(&masked),
+            Err(DrawError::MissingMask(MaskId(3)))
+        );
+    }
+    #[test]
     fn persistent_fallback_reuses_tinted_coverage_recovers_and_evicts() {
         let mut cache = VectorRasterizer::default();
         let first = cache.prepare(&scene(Color::WHITE, 16.0)).unwrap();
@@ -338,7 +366,7 @@ mod tests {
         );
         assert_eq!(
             cache.prepare(&scene(Color::WHITE, 5000.0)),
-            Err(DrawError::InvalidImage)
+            Err(DrawError::CoverageTooLarge)
         );
         let recovered = cache.prepare(&scene(Color::WHITE, 16.0)).unwrap();
         assert_eq!(first, recovered);

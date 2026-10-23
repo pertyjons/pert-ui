@@ -117,7 +117,10 @@ fn replacement_and_context_loss_cancel_segment_activation() {
         .unwrap();
     assert_eq!(
         ui.flush(Duration::ZERO),
-        Err(RuntimeError::Choice(ChoiceError::DuplicateValue))
+        Err(RuntimeError::Choice(ChoiceError::DuplicateValue {
+            first: 0,
+            second: 1
+        }))
     );
     choices.set(vec![]).unwrap();
     ui.flush(Duration::ZERO).unwrap();

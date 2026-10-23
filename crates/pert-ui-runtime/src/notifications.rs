@@ -393,7 +393,8 @@ impl ToastController {
 /// [`Self::dismiss_label`] takes effect. A description with a different queue
 /// closes the old one as a removal would and presents the new one. A second host
 /// mounted with the same queue shows nothing and fails its updates: with
-/// [`RuntimeError::DuplicateKey`] while the first host is mounted, and with
+/// [`RuntimeError::DuplicateKey`] holding `"toasts"`, the key of the part that
+/// shows a host's toasts, while the first host is mounted, and with
 /// [`RuntimeError::Unmounted`] once the first host's removal has closed the
 /// queue, as for any host mounted with a closed queue.
 #[must_use]
@@ -447,6 +448,9 @@ impl ToastHost {
         self
     }
 }
+/// The key of the part that shows a host's toasts.
+const TOAST_STACK_KEY: &str = "toasts";
+
 fn content_wrapper(content: Element) -> Container {
     Container::new(content)
 }
@@ -458,7 +462,7 @@ impl Component for ToastHost {
         vec![
             Element::new("content", content_wrapper(content)).structural(),
             Element::new(
-                "toasts",
+                TOAST_STACK_KEY,
                 ToastStack {
                     queue: self.queue.clone(),
                     token: Rc::new(()),
@@ -576,7 +580,8 @@ impl ToastStack {
             .map_err(|_| RuntimeError::BorrowConflict)?;
         match q.owner.upgrade() {
             Some(owner) if Rc::ptr_eq(&owner, &self.token) => Ok(()),
-            Some(_) => Err(RuntimeError::DuplicateKey),
+            // The second host's stack is keyed like the first's.
+            Some(_) => Err(RuntimeError::DuplicateKey(TOAST_STACK_KEY.to_owned())),
             None if q.closed => Err(RuntimeError::Unmounted),
             None => {
                 q.owner = Rc::downgrade(&self.token);

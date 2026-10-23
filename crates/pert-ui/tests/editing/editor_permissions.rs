@@ -188,7 +188,7 @@ fn revoking_a_parameter_number_input_mid_step_commits_nothing() -> TestResult {
     let outcomes = std::rc::Rc::new(std::cell::RefCell::new(Vec::new()));
     let log = outcomes.clone();
     let _monitor = host.on_outcome(move |event| {
-        log.borrow_mut().push(event.outcome);
+        log.borrow_mut().push(event.outcome.clone());
         Ok(())
     })?;
     let enabled = ui.signal(true);

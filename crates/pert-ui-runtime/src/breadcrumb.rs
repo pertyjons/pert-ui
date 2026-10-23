@@ -197,10 +197,10 @@ impl Breadcrumb {
                 return Err(LayoutError::BlankLabel);
             }
             if segment.key == OVERFLOW {
-                return Err(LayoutError::ReservedKey);
+                return Err(LayoutError::ReservedKey(segment.key.clone()));
             }
             if segments[..index].iter().any(|old| old.key == segment.key) {
-                return Err(LayoutError::DuplicateKey);
+                return Err(LayoutError::DuplicateKey(segment.key.clone()));
             }
         }
         Ok(Self {
