@@ -466,7 +466,8 @@ and anything left to a later part.
     F6).
   - **Data and inspection:**
     - `describe_component` normalizes semantics (G4-25);
-    - `CaptureJob` has private fields and is looked up by id (G4-26);
+    - `CaptureJob` has private fields and is looked up by its private
+      request identity (G4-26);
     - the table's saturated minimum width is documented (V3-1);
     - the reference tree no longer reports a false overlap (F25);
     - the filter field has its own `filter-field` slot (F26, F31);
@@ -503,7 +504,9 @@ and anything left to a later part.
     - caret stops were described with a wrong ligature claim;
     - the key list omitted composition and read-only routing.
 
-    All six were fixed. Capture jobs carry a private request identity, and
+    All six were fixed; the recheck then corrected two remaining
+    wordings, the read-only key list and the capture lookup's rustdoc.
+    Capture jobs carry a private request identity, and
     `Runtime::complete_capture` takes the job, so a foreign or stale job
     neither renders nor completes. The fix also covered completion by id,
     which had the same defect.

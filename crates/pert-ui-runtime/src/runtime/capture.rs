@@ -297,8 +297,10 @@ impl Runtime {
     /// window reselects it afterwards. Requires flushed updates, like
     /// [`paint`](Self::paint).
     ///
-    /// The job is looked up among this runtime's pending captures by its id,
-    /// and the pending request decides what is rendered.
+    /// The job is looked up among this runtime's pending captures by its
+    /// private request identity, so a stale job or one another runtime listed
+    /// is refused even when its id matches; the pending request decides what
+    /// is rendered.
     ///
     /// # Errors
     /// [`CaptureError::UnknownTarget`](crate::CaptureError::UnknownTarget) for

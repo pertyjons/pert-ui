@@ -120,9 +120,10 @@ type RefusalReport =
 /// - While an IME composition is active, the editor claims every key, so
 ///   the input method's keys never reach a command.
 /// - A read-only editor, or one refusing its bound value, still claims the
-///   movement, selection, clipboard and undo chords, which then change
-///   nothing, but leaves Backspace, Delete and Enter to its ancestors and
-///   command bindings.
+///   movement, selection and clipboard chords: the caret moves, the
+///   selection extends and Copy writes the clipboard. It also claims Cut,
+///   Paste and the undo chords, which change no text there. It leaves
+///   Backspace, Delete and Enter to its ancestors and command bindings.
 ///
 /// - On every platform: Left, Right, Up, Down, Home and End move the caret,
 ///   with any modifiers the lists below do not give another meaning;
