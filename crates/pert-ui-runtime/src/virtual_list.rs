@@ -471,16 +471,23 @@ impl ListController {
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 ///
-/// Describing a mounted list again keeps everything the first description
-/// gave it: source binding, axis, lanes, overscan, controller, selection and
-/// options, and also the [`on_activate`](Self::on_activate),
-/// [`reorderable`](Self::reorderable) and [`placement`](Self::placement)
-/// callbacks, the [`reorder_permission`](Self::reorder_permission) binding and
-/// the [`drag_operations`](Self::drag_operations). A later description's
-/// values are ignored; the list's data and state belong to the bindings, not
-/// to its description. Change rows through the source binding and the
-/// controller, make a callback read application state that changes, or give
-/// the list a new key to replace it.
+/// Describing a mounted list again keeps its retained state and structure:
+/// the source binding, axis, lanes, overscan, controller, selection,
+/// [`active_outline`](Self::active_outline),
+/// [`item_tab_stops`](Self::item_tab_stops) and
+/// [`keep_mounted`](Self::keep_mounted), which describe the rows it holds.
+/// Change rows through the source binding and the controller, or give the
+/// list a new key to replace them. Its callbacks and its permission follow
+/// the new description, including their removal:
+/// [`on_activate`](Self::on_activate), [`on_text_input`](Self::on_text_input),
+/// [`on_selection_change`](Self::on_selection_change),
+/// [`reorderable`](Self::reorderable), [`placement`](Self::placement),
+/// [`reorder_permission`](Self::reorder_permission) and
+/// [`drag_operations`](Self::drag_operations). A description without
+/// `reorderable`, or with a fixed denial, cancels an armed or active reorder at
+/// the update the re-description schedules, as revoking the permission does,
+/// and a removed `on_selection_change` discards the changes it has not yet
+/// delivered.
 #[must_use]
 pub struct VirtualList {
     items: ReadSignal<ListSource>,
@@ -494,12 +501,19 @@ pub struct VirtualList {
     on_selection: Option<OnSelection>,
     /// An owner's switch for observing the selection, for a callback it
     /// installs before it knows whether its own user asks for changes.
-    observe_gate: Option<Rc<Cell<bool>>>,
+    observe_gate: Option<Rc<SelectionGate>>,
+    /// The gate's removal count as this list last applied it.
+    gate_removals: u64,
+    /// The callbacks forward to an owner, which adopts a re-description of
+    /// them itself, so a re-description of this list keeps them.
+    owned_callbacks: bool,
     /// The selection as last reported, or as first seen; `None` before the
     /// first update with a callback.
     selection_seen: Option<(Option<String>, Rc<BTreeSet<String>>)>,
-    /// Changes recorded for [`Self::on_selection_change`] and not yet delivered.
-    selection_pending: Vec<crate::ListSelectionChange>,
+    /// Changes recorded for [`Self::on_selection_change`] and not yet
+    /// delivered, one per requested delivery. A removed callback empties the
+    /// slots but keeps them, so the requests already made stay matched.
+    selection_pending: Vec<Option<crate::ListSelectionChange>>,
     notifier: Option<crate::Notifier>,
     outline: bool,
     /// Whether interactive content inside items takes part in Tab traversal.
@@ -530,6 +544,8 @@ pub struct VirtualList {
     selected: Rc<BTreeSet<String>>,
     reorder: Option<Reorder>,
     reorder_permission: Permission,
+    /// Whether the permission allowed reordering at the last update while
+    /// the list had a reorder callback.
     reorder_allowed: bool,
     reordering: bool,
     drag_operations: DropOperations,
@@ -558,6 +574,28 @@ type Reorder = Box<dyn FnMut(&mut EventContext, &ListDrop<'_>) -> Result<bool, R
 /// A placement rule: the dragged keys and the pointer in, where a drop goes
 /// out, or `None` where the rule forbids one.
 type Placer = Box<dyn Fn(&[String], &ListDropPoint) -> Option<ListDropPlacement>>;
+
+/// An owner's switch for a selection callback it forwards through its list
+/// ([`VirtualList::on_selection_change_gated`]).
+#[derive(Debug, Default)]
+pub(crate) struct SelectionGate {
+    /// Whether the owner has a callback, so the list observes its selection.
+    observe: Cell<bool>,
+    /// How often the owner's callback was removed: a list that sees the count
+    /// change discards the changes it has not delivered, as a removed
+    /// callback of its own does.
+    removals: Cell<u64>,
+}
+
+impl SelectionGate {
+    /// Records whether the owner now has a callback; losing one counts as a
+    /// removal.
+    pub(crate) fn set(&self, observe: bool) {
+        if self.observe.replace(observe) && !observe {
+            self.removals.set(self.removals.get().wrapping_add(1));
+        }
+    }
+}
 
 /// The pointer over a [reorderable](VirtualList::reorderable) list during a
 /// drag, as a [placement rule](VirtualList::placement) sees it.
@@ -732,6 +770,8 @@ impl VirtualList {
             selection: None,
             on_selection: None,
             observe_gate: None,
+            gate_removals: 0,
+            owned_callbacks: false,
             selection_seen: None,
             selection_pending: Vec::new(),
             notifier: None,
@@ -862,8 +902,8 @@ impl VirtualList {
     /// text never reaches it while an item's content is focused. The list
     /// has no text input state, so an IME composes nothing over it. A table
     /// begins a cell edit from typed text this way. The handler runs in the
-    /// event phase; its error propagates from the text input call. Set at
-    /// construction; describing the list again keeps the first handler.
+    /// event phase; its error propagates from the text input call. Describing
+    /// the list again replaces or removes the handler.
     pub fn on_text_input(
         mut self,
         handler: impl FnMut(&mut EventContext, &str) -> Result<(), RuntimeError> + 'static,
@@ -897,8 +937,10 @@ impl VirtualList {
     /// first, and an input entry point settles its flush before it returns,
     /// as for every component notification. The callback may write
     /// bindings; an error does not undo the change, and the first error is
-    /// returned from the flush. Like the other callbacks, it belongs to the
-    /// first description of a mounted list.
+    /// returned from the flush. Describing the list again replaces the
+    /// callback, which receives the changes not yet delivered, or removes it,
+    /// which discards them; a callback installed by a re-description reports
+    /// changes from the selection it first sees.
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
@@ -944,23 +986,51 @@ impl VirtualList {
     }
 
     /// Like [`Self::on_selection_change`] for an owner that installs the
-    /// callback at construction: changes are observed only while `gate` reads
-    /// true, so an owner without a user callback costs nothing.
+    /// callback at construction: changes are observed only while `gate` is
+    /// set, so an owner without a user callback costs nothing.
     pub(crate) fn on_selection_change_gated(
         mut self,
-        gate: Rc<Cell<bool>>,
+        gate: Rc<SelectionGate>,
         on_change: impl FnMut(
             &mut EventContext,
             &crate::ListSelectionChange,
         ) -> Result<(), RuntimeError>
         + 'static,
     ) -> Self {
+        self.gate_removals = gate.removals.get();
         self.observe_gate = Some(gate);
         self.on_selection_change(on_change)
     }
+    /// Marks the callbacks as an owner's forwarding ones: the owner adopts a
+    /// re-description of them, so describing this list again keeps them.
+    pub(crate) fn owned_callbacks(mut self) -> Self {
+        self.owned_callbacks = true;
+        self
+    }
     /// Whether this list observes its selection for a callback.
     fn observes_selection(&self) -> bool {
-        self.on_selection.is_some() && self.observe_gate.as_ref().is_none_or(|gate| gate.get())
+        self.on_selection.is_some()
+            && self
+                .observe_gate
+                .as_ref()
+                .is_none_or(|gate| gate.observe.get())
+    }
+    /// Forgets the changes not yet delivered, for a removed callback: their
+    /// delivery requests stay, and find nothing. The next observation is a
+    /// first one again.
+    fn discard_selection_changes(&mut self) {
+        self.selection_pending.fill(None);
+        self.selection_seen = None;
+    }
+    /// Applies a removal of an owner's callback that the gate records.
+    fn apply_gate(&mut self) {
+        let Some(removals) = self.observe_gate.as_ref().map(|gate| gate.removals.get()) else {
+            return;
+        };
+        if removals != self.gate_removals {
+            self.gate_removals = removals;
+            self.discard_selection_changes();
+        }
     }
 
     /// Records a change of the observed selection for
@@ -980,13 +1050,14 @@ impl VirtualList {
         if previous_active != active
             || !(Rc::ptr_eq(&previous_selected, &selected) || previous_selected == selected)
         {
-            self.selection_pending.push(crate::ListSelectionChange {
-                previous_active,
-                active: active.clone(),
-                previous_selected,
-                selected: selected.clone(),
-                origin: selection.last_origin(),
-            });
+            self.selection_pending
+                .push(Some(crate::ListSelectionChange {
+                    previous_active,
+                    active: active.clone(),
+                    previous_selected,
+                    selected: selected.clone(),
+                    origin: selection.last_origin(),
+                }));
             if let Some(notifier) = &self.notifier {
                 notifier.request();
             }
@@ -1042,9 +1113,9 @@ impl VirtualList {
     /// Revocation clears an armed press/drop indication and cancels this list's
     /// active drag. Denied Alt-arrow reordering falls through to ordinary selection
     /// navigation. Selection, activation and scrolling remain available. Bound
-    /// changes are observed during update without polling. Compatible
-    /// redescription retains this descriptor and its bindings; change its bound
-    /// signal or use a new list key to replace the restriction.
+    /// changes are observed during update without polling. Describing the list
+    /// again replaces the restriction with the new description's; a fixed
+    /// denial there cancels like a revocation.
     pub fn reorder_permission(mut self, permission: impl Into<Permission>) -> Self {
         self.reorder_permission = self.reorder_permission.and(permission);
         self
@@ -1112,6 +1183,20 @@ impl VirtualList {
     ) -> Self {
         self.placer = Some(Box::new(rule));
         self
+    }
+
+    /// Sets the placement rule in place, as [`Self::placement`] does, for an
+    /// owner whose rule reads its own retained state.
+    pub(crate) fn set_placement(
+        &mut self,
+        rule: impl Fn(&[String], &ListDropPoint) -> Option<ListDropPlacement> + 'static,
+    ) {
+        self.placer = Some(Box::new(rule));
+    }
+
+    /// Whether the description has a reorder callback.
+    pub(crate) fn has_reorder(&self) -> bool {
+        self.reorder.is_some()
     }
 
     /// The active item's position, if it is in the current source.
@@ -1727,17 +1812,53 @@ impl Component for VirtualList {
     fn deliver_notifications(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
         // `observe_selection` requests one delivery per change, so each call
         // delivers the oldest change, in order with other components' changes.
+        self.apply_gate();
         if self.selection_pending.is_empty() {
             return Ok(());
         }
-        let change = self.selection_pending.remove(0);
-        match &mut self.on_selection {
-            Some(on_change) => on_change(cx, &change),
-            None => Ok(()),
+        match (self.selection_pending.remove(0), &mut self.on_selection) {
+            (Some(change), Some(on_change)) => on_change(cx, &change),
+            _ => Ok(()),
         }
     }
+    fn reconcile(&mut self, next: Self) -> Option<Invalidation> {
+        // The source binding, axis, lanes, overscan, controller, selection and
+        // owner options stay: they describe the retained rows and state.
+        if self.owned_callbacks {
+            // The owner adopted its new callbacks; a removal it recorded
+            // discards undelivered changes, and a callback it gained needs an
+            // update to see the selection it starts from.
+            self.apply_gate();
+            return (self.observes_selection() && self.selection_seen.is_none())
+                .then_some(Invalidation::Paint);
+        }
+        let observed = self.on_selection.is_some();
+        self.on_selection = next.on_selection;
+        if self.on_selection.is_none() {
+            self.discard_selection_changes();
+        }
+        // A new callback reports changes from the selection the update this
+        // schedules sees.
+        let mut update = !observed && self.on_selection.is_some();
+        self.activate = next.activate;
+        self.on_text = next.on_text;
+        // The update re-reads whether the list is reorderable and cancels an
+        // armed or active reorder that no longer is.
+        update |= self.reorder.is_some() != next.reorder.is_some();
+        self.reorder = next.reorder;
+        self.placer = next.placer;
+        self.drag_operations = next.drag_operations;
+        if !self.reorder_permission.same_as(&next.reorder_permission) {
+            self.reorder_permission = next.reorder_permission;
+            update = true;
+        }
+        update.then_some(Invalidation::Paint)
+    }
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
-        let allowed = self.reorder_permission.read_paint(cx)?;
+        self.apply_gate();
+        // Reordering needs both the callback and the permission; losing
+        // either ends an armed or active reorder.
+        let allowed = self.reorder_permission.read_paint(cx)? && self.reorder.is_some();
         if self.reorder_allowed && !allowed {
             if self.armed.is_some() || self.reordering {
                 cx.cancel_input();

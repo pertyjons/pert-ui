@@ -1263,9 +1263,10 @@ pub struct ContextMenu {
     chain: MenuChain,
     position: Option<Point>,
     enabled: bool,
-    /// Whether any row can run, for controllers; published from reconciliation
-    /// as library-owned state.
-    enabled_signal: Signal<bool>,
+    /// Whether any row can run, for controllers. Plain shared state, not a
+    /// signal: reconciliation updates it, and only an opener's event-time read
+    /// consults it, so nothing subscribes to it.
+    runnable: Rc<std::cell::Cell<bool>>,
     /// The last request a controller made; the menu applies each once.
     request: Signal<Option<OpenRequest>>,
     seen_request: u64,
@@ -1297,7 +1298,7 @@ impl PartialEq for OpenRequest {
 struct OpenerLink {
     open: Signal<bool>,
     request: Signal<Option<OpenRequest>>,
-    enabled: Signal<bool>,
+    runnable: Rc<std::cell::Cell<bool>>,
     visible: Signal<bool>,
 }
 
@@ -1379,7 +1380,7 @@ impl ContextMenuController {
         context: &CommandContext,
     ) -> Result<bool, RuntimeError> {
         let link = self.link.get();
-        if !link.enabled.get()? || !link.visible.get()? {
+        if !link.runnable.get() || !link.visible.get()? {
             return Ok(false);
         }
         let serial = link
@@ -1430,7 +1431,7 @@ impl ContextMenu {
         let branch = MenuBranch::new(&open, items, chain.clone(), None)?;
         let mut popover = Popover::empty(open.clone());
         popover.set_list_content(content, Element::new("actions", branch).structural());
-        let enabled_signal = ui.signal(enabled);
+        let runnable = Rc::new(std::cell::Cell::new(enabled));
         let request = ui.signal(None);
         // Openers refuse while the mounted menu is hidden or once it is
         // removed; the lifecycle hooks publish both.
@@ -1438,7 +1439,7 @@ impl ContextMenu {
         let opener = Slot::new(OpenerLink {
             open: open.clone(),
             request: request.clone(),
-            enabled: enabled_signal.clone(),
+            runnable: runnable.clone(),
             visible: visible_signal.clone(),
         });
         Ok(Self {
@@ -1448,7 +1449,7 @@ impl ContextMenu {
             chain,
             position: None,
             enabled,
-            enabled_signal,
+            runnable,
             request,
             seen_request: 0,
             visible_signal,
@@ -1479,7 +1480,7 @@ impl Component for ContextMenu {
             chain,
             position: _,
             enabled,
-            enabled_signal: _,
+            runnable: _,
             request: _,
             seen_request: _,
             visible_signal: _,
@@ -1488,10 +1489,10 @@ impl Component for ContextMenu {
         self.chain.adopt(chain, &surface, &self.open);
         self.surface = surface;
         // Whether any row can run only gates opening; the wrapper draws
-        // nothing of its own, so a change needs no invalidation. The signal is
-        // library-owned, so openers read the new value without a user write.
+        // nothing of its own, so a change needs no invalidation. Openers read
+        // the shared value when they run, so nothing is published.
         self.enabled = enabled;
-        self.enabled_signal.publish_trusted(enabled);
+        self.runnable.set(enabled);
         // Openers taken from the new description reach this mounted menu.
         opener.set(self.opener.get());
         None

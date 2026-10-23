@@ -57,7 +57,11 @@ use std::rc::Rc;
 ///
 /// Describing a mounted browser again keeps its controller and row height:
 /// its folders, selection and requests belong to the controller. Give the
-/// browser a new key to replace it. Its generated parts mount even while hidden,
+/// browser a new key to replace it. Whether the tree has its filter field is
+/// part of the browser's structure, fixed when it mounts; a browser mounted
+/// with [`Self::folder_filter`] follows the permission of each later
+/// description, and one without `folder_filter` denies it, hiding the field.
+/// Its generated parts mount even while hidden,
 /// so content search and workspace capture include them before first reveal.
 /// Breadcrumbs, list rows and tree rows quote or escape names consisting only
 /// of whitespace,
@@ -74,6 +78,8 @@ pub struct FileBrowser {
     current: String,
     /// The string table the parts were last described with.
     strings: crate::UiStrings,
+    /// A re-description changed what the parts are described with.
+    redescribed: bool,
     /// A construction failure is propagated by description admission.
     parts_error: Option<RuntimeError>,
 }
@@ -100,6 +106,7 @@ impl FileBrowser {
             folder_filter: None,
             current: String::new(),
             strings: crate::UiStrings::english(),
+            redescribed: false,
             parts_error: None,
         })
     }
@@ -107,7 +114,9 @@ impl FileBrowser {
     /// binding; not offered by default. The field edits
     /// [`FileBrowserController::folder_filter`] and shows the folders whose
     /// names match with the folders above them, searching only folders already
-    /// listed. Fixed when the browser mounts.
+    /// listed. Whether the field exists is fixed when the browser mounts; on a
+    /// browser mounted with it, a later description's permission replaces this
+    /// one, and a description without it hides the field.
     /// Repeated calls combine restrictions; a fixed denial cannot be lifted
     /// by a later permission on the same description.
     pub fn folder_filter(mut self, offered: impl Into<crate::Permission>) -> Self {
@@ -195,11 +204,25 @@ impl Component for FileBrowser {
             None => Ok(()),
         }
     }
+    fn reconcile(&mut self, next: Self) -> Option<Invalidation> {
+        // The controller and row height stay, and so does whether the parts
+        // hold the folder filter field. Where they do, its offer follows the
+        // description, and a description without one denies it.
+        let mine = self.folder_filter.as_ref()?;
+        let offered = next.folder_filter.unwrap_or_else(crate::Permission::denied);
+        if mine.same_as(&offered) {
+            return None;
+        }
+        self.folder_filter = Some(offered);
+        self.redescribed = true;
+        Some(Invalidation::Paint)
+    }
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
         let strings = cx.strings()?;
-        if strings != self.strings {
+        if strings != self.strings || self.redescribed {
             cx.request_children(vec![self.parts(&strings)?]);
             self.strings = strings;
+            self.redescribed = false;
         }
         // Expanding a folder in the tree records it as wanted while the tree
         // flattens; this update follows and asks the host for it.

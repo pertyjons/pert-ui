@@ -1,5 +1,81 @@
 # Changelog
 
+## 0.3.65 (2026-10-23)
+
+Redescription and reconciliation (API audit fix plan, part 6d1). Describing
+a mounted collection again now applies its new callbacks and permissions, as
+every other component does; the controller, source binding and structural
+options stay. Reconciliation publishes no signal except one documented
+parameter lifecycle cleanup, and three smaller redescription defects are
+fixed. Breaking in behavior; no signature changes.
+
+- Breaking (G2-2, G2-14): `VirtualList`, `Tree` and `Table` adopt a
+  compatible redescription's callbacks and permissions, including their
+  removal, where they kept the first description's: `VirtualList`'s
+  `on_activate`, `on_text_input`, `on_selection_change`, `reorderable`,
+  `placement`, `reorder_permission` and `drag_operations`; `Tree`'s
+  `on_activate`, `on_selection_change`, `reorderable`, `reorder_permission`
+  and `drag_operations`; `Table`'s `on_activate`, `on_selection_change`,
+  `on_sort`, `cell_editor`, `resize_permission` and `reorder_permission`.
+  The controller, source binding and structural options (a list's axis,
+  lanes, overscan, selection, `active_outline`, `item_tab_stops` and
+  `keep_mounted`, a table's row height and `cell_tab_stops`) stay. A
+  description without `reorderable`, or with a fixed denial, cancels an armed
+  or active reorder, column move or resize at the update the redescription
+  schedules, as a revocation does; a removed `on_selection_change` discards
+  the changes it has not delivered, and a reinstalled one reports from the
+  selection it first sees; a table's new `cell_editor` builds the edits that
+  begin afterwards, while an open edit keeps its editor. Code that relied on
+  the first description's callbacks surviving now describes them every time,
+  for example `VirtualList::new(&items, 24.0)?.on_activate(open)` in each
+  description rather than only in the first; code that redescribed a
+  collection to change its restriction no longer needs to bind it to a signal
+  first, and `reorder_permission(false)` in a later description now locks a
+  mounted list.
+- Breaking (G2-2): `FileBrowser::folder_filter` follows a redescription on a
+  browser mounted with it: a later description's permission replaces it, and
+  a description without `folder_filter` denies it, hiding the field. Whether
+  the tree has the field stays fixed at mount, since it is part of the
+  browser's documented child structure; mount the browser with
+  `folder_filter(false)` to be able to offer it later.
+- Changed (G2-13): a test shows that when reconciliation cancels a parameter
+  gesture, a component and a derived binding reading the parameter's
+  snapshot both settle in the reconciling flush, so the immediate
+  publication is documented as the one lifecycle exception: `docs/contracts.md`
+  "Component redescription" and the number inputs' reconciliation comment say a
+  rebind or a fixed denial cancels the gesture during reconciliation and
+  publishes the snapshot at once, with the terminal event at the next safe
+  point, and AGENTS.md's reconciliation rule refers to that exception.
+  `ContextMenu` keeps whether any row can run as plain shared state instead of
+  a private signal its reconciliation published; its controllers behave as
+  before.
+- Fixed (G1-1): `RadioGroup`, `SegmentedControl` and `InlineChoice` keep their
+  name and selection when a redescription changes their value binding, until
+  the new binding's option list validates, so an invalid list leaves the last
+  valid presentation; input aimed at the old binding is still cancelled.
+- Fixed (G2-12): `RegionLayout` gives its dividers a forwarding `on_resize`
+  only while it has a callback, so a description without one drops the
+  changes they recorded, and a callback installed again before delivery no
+  longer receives a change recorded earlier.
+- Changed: `docs/contracts.md` "Component redescription" narrows the
+  controller exception to the controller, source binding and structural
+  options, and the rustdoc of `VirtualList`, `Tree`, `Table`, `FileBrowser`
+  and their affected builders describes what follows a redescription.
+  `AppError`'s rustdoc says an error that is not `Send + Sync`, rather than
+  not `Send`, cannot be carried.
+- Changed: the `api/` listings of `pert-ui-runtime` show
+  `Component::reconcile` overridden for `VirtualList`, `Table`, `Tree` and
+  `FileBrowser`: their `reconcile` lines lose the default method's
+  `where Self: Sized`. No signature changes.
+- Added: tests for the replaced and removed callbacks of the three
+  collections (`collections` binary), a removed-then-reinstalled selection
+  callback before delivery, adopted permission bindings and fixed denials
+  that cancel list, tree and column gestures (`audit`), the file browser's
+  folder filter, the choice controls' rebinding with an invalid list
+  (`controls`), a region callback removed and reinstalled before delivery
+  (`surfaces`), and G2-13's dependency test for number inputs and sliders
+  (`foundation`).
+
 ## 0.3.64 (2026-10-23)
 
 Compiler diagnostics (API audit fix plan, part 6c2). The compiler messages

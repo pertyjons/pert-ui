@@ -9,6 +9,7 @@
 mod support;
 
 mod collection_filter;
+mod collection_redescription;
 mod command_palette;
 mod commands;
 mod content_search;

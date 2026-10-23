@@ -910,14 +910,17 @@ impl Component for TreeRow {
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 ///
-/// Describing a mounted tree again keeps everything the first description
-/// gave it: the controller, row height and options, and also the
-/// [`on_activate`](Self::on_activate) and [`reorderable`](Self::reorderable)
-/// callbacks, the [`reorder_permission`](Self::reorder_permission) binding and
-/// the [`drag_operations`](Self::drag_operations). A later description's values
-/// are ignored; the tree's data, expansion and selection belong to the
-/// controller. Change them through it, make a callback read application state
-/// that changes, or give the tree a new key to replace it.
+/// Describing a mounted tree again keeps its controller and row height: the
+/// tree's data, expansion and selection belong to the controller, so change
+/// them through it, or give the tree a new key to replace them. Its callbacks
+/// and permission follow the new description, including their removal:
+/// [`on_activate`](Self::on_activate),
+/// [`on_selection_change`](Self::on_selection_change),
+/// [`reorderable`](Self::reorderable),
+/// [`reorder_permission`](Self::reorder_permission) and
+/// [`drag_operations`](Self::drag_operations). A description without
+/// `reorderable`, or with a fixed denial, cancels an armed or active reorder at
+/// the update the re-description schedules, as revoking the permission does.
 ///
 /// Like a [`VirtualList`](crate::VirtualList), the tree mounts the rows inside
 /// the height it is allocated and needs a bounded one; see [the list's
@@ -1050,12 +1053,17 @@ impl Tree {
         mut self,
         on_drop: impl FnMut(&mut EventContext, &ListDrop<'_>) -> Result<bool, RuntimeError> + 'static,
     ) -> Self {
-        let (state, step) = (self.state.clone(), self.step.clone());
-        self.list = self
-            .list
-            .reorderable(on_drop)
-            .placement(move |keys, at| place(&state, step.get(), keys, at));
+        self.list = self.list.reorderable(on_drop);
+        self.list.set_placement(self.placement());
         self
+    }
+    /// The placement rule of this tree's levels, over its own controller and
+    /// indent.
+    fn placement(
+        &self,
+    ) -> impl Fn(&[String], &ListDropPoint) -> Option<ListDropPlacement> + 'static {
+        let (state, step) = (self.state.clone(), self.step.clone());
+        move |keys, at| place(&state, step.get(), keys, at)
     }
     /// Restricts pointer and keyboard reordering through the retained list.
     /// Default allowed; [`Self::reorderable`] is still required. Repeated
@@ -1064,8 +1072,8 @@ impl Tree {
     /// changing selection or expansion. The same restriction applies to accepting
     /// drops from another list or tree. Denied Alt-arrow reordering falls through
     /// to ordinary tree navigation. Bound changes are observed on update.
-    /// Compatible redescription retains this descriptor and its bindings; change
-    /// its bound signal or use a new tree key to replace the restriction.
+    /// Describing the tree again replaces the restriction with the new
+    /// description's; a fixed denial there cancels like a revocation.
     pub fn reorder_permission(mut self, permission: impl Into<Permission>) -> Self {
         self.list = self.list.reorder_permission(permission);
         self
@@ -1082,8 +1090,8 @@ impl Tree {
     /// [`ChangeOrigin::User`](crate::ChangeOrigin::User), and a write through
     /// the selection or the [`TreeController`] is
     /// [`ChangeOrigin::Application`](crate::ChangeOrigin::Application). The
-    /// callback runs on the tree, and like the other callbacks it belongs to
-    /// the first description of a mounted tree.
+    /// callback runs on the tree. Describing the tree again replaces or
+    /// removes it, as for a list.
     pub fn on_selection_change(
         mut self,
         on_change: impl FnMut(
@@ -1308,6 +1316,17 @@ fn place(
 // `Component` method the list overrides. `forwarding::every_list_override_is_forwarded`
 // fails when the list gains an override this block does not pass on.
 impl Component for Tree {
+    fn reconcile(&mut self, next: Self) -> Option<Invalidation> {
+        // The controller and row height stay; the list adopts the callbacks
+        // and the permission. Its placement rule reads this tree's controller
+        // and indent rather than the description's.
+        let reorderable = next.list.has_reorder();
+        let invalidation = self.list.reconcile(next.list);
+        if reorderable {
+            self.list.set_placement(self.placement());
+        }
+        invalidation
+    }
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
         self.list.update(cx)
     }

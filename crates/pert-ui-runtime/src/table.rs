@@ -1257,11 +1257,18 @@ enum HeaderGesture {
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 ///
-/// Describing a mounted table again keeps its controller, columns, callbacks
-/// and permission descriptors, including their signal bindings. The table's
-/// data and state belong to its controller. Change permissions through the
-/// mounted descriptor's bound signals and data through the controller, or give
-/// the table a new key to replace its retained options.
+/// Describing a mounted table again keeps its controller, row height and
+/// [`cell_tab_stops`](Self::cell_tab_stops): the table's data, columns and
+/// state belong to its controller, so change them through it, or give the
+/// table a new key to replace them. Its callbacks and permissions follow the
+/// new description, including their removal: [`on_sort`](Self::on_sort),
+/// [`on_activate`](Self::on_activate),
+/// [`on_selection_change`](Self::on_selection_change),
+/// [`cell_editor`](Self::cell_editor),
+/// [`resize_permission`](Self::resize_permission) and
+/// [`reorder_permission`](Self::reorder_permission). A fixed denial in the new
+/// description cancels a resize or column move at the update the
+/// re-description schedules, as revoking the permission does.
 ///
 /// Like a [`VirtualList`], the table mounts the rows inside the height it is
 /// allocated and needs a bounded one; see [the list's bounded
@@ -1404,7 +1411,7 @@ pub struct Table {
     /// The body list forwards its selection changes here, observing them only
     /// once a callback is installed.
     on_selection: Rc<RefCell<Option<SelectionHandler>>>,
-    observe_selection: Rc<Cell<bool>>,
+    observe_selection: Rc<crate::virtual_list::SelectionGate>,
     /// The pointer rests over the scrollbar, presented as draggable.
     bar_hover: bool,
     /// Local pointer position; horizontal scrolling can move another header
@@ -1431,9 +1438,9 @@ impl Table {
     /// Revocation cancels an active resize and restores its original fixed width
     /// or flex weight, including whether the width was a user preference. Ordinary
     /// Escape retains the dragged width as before. Bound changes are observed
-    /// during update without polling; restoration invalidates layout. Compatible
-    /// redescription retains this descriptor and its bindings; change the bound
-    /// signal or use a new table key to replace the restriction.
+    /// during update without polling; restoration invalidates layout. Describing
+    /// the table again replaces the restriction with the new description's; a
+    /// fixed denial there cancels like a revocation.
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
@@ -1472,9 +1479,9 @@ impl Table {
     /// immovable column movable. Default allowed; repeated restrictions combine
     /// through [`Permission::and`]. Revocation cancels an armed or active move
     /// before the order changes. Denied Alt-arrow column movement is ignored.
-    /// Sorting and scrolling retain their own policy.
-    /// Compatible redescription retains this descriptor and its bindings; change
-    /// the bound signal or use a new table key to replace the restriction.
+    /// Sorting and scrolling retain their own policy. Describing the table
+    /// again replaces the restriction with the new description's; a fixed
+    /// denial there cancels like a revocation.
     pub fn reorder_permission(mut self, permission: impl Into<Permission>) -> Self {
         self.reorder_permission = self.reorder_permission.and(permission);
         self
@@ -1495,7 +1502,7 @@ impl Table {
         let (handler, column) = (activate.clone(), controller.active_column());
         let on_selection: Rc<RefCell<Option<SelectionHandler>>> = Rc::new(RefCell::new(None));
         let selection_handler = on_selection.clone();
-        let observe_selection = Rc::new(Cell::new(false));
+        let observe_selection = Rc::new(crate::virtual_list::SelectionGate::default());
         let (editor, typed) = (controller.clone(), controller.clone());
         Ok(Self {
             resize_permission: Permission::allowed(),
@@ -1513,6 +1520,9 @@ impl Table {
                     // The active cell is outlined by its row instead.
                     .active_outline(false)
                     .keep_mounted(controller.0.shared.editing.row.read_only())
+                    // The callbacks forward to the table's, which follow a
+                    // re-description of the table.
+                    .owned_callbacks()
                     .on_selection_change_gated(observe_selection.clone(), move |cx, change| {
                         match selection_handler.borrow_mut().as_mut() {
                             Some(handler) => handler(cx, change),
@@ -1600,8 +1610,8 @@ impl Table {
     /// and a write through the selection or the [`TableController`] is
     /// [`ChangeOrigin::Application`](crate::ChangeOrigin::Application). The
     /// callback runs on the table's body list, so [`EventContext::id`] names
-    /// the body, and like the other callbacks it belongs to the first
-    /// description of a mounted table.
+    /// the body. Describing the table again replaces or removes it, as for a
+    /// list.
     pub fn on_selection_change(
         self,
         on_change: impl FnMut(
@@ -1625,9 +1635,10 @@ impl Table {
     ///
     /// The callback runs once per edit, in the update of the cell's host:
     /// its error fails that flush, is not retried, and closes the edit with
-    /// the body keeping focus. Like the table's other callbacks it belongs
-    /// to the first description of a mounted table; a later call replaces
-    /// an earlier one on the same description.
+    /// the body keeping focus. A later call replaces an earlier one on the
+    /// same description. Describing the table again replaces or removes the
+    /// callback for the edits that begin afterwards; an open edit keeps the
+    /// editor it built.
     pub fn cell_editor(
         mut self,
         editor: impl FnMut(&mut CellEdit<'_>) -> Result<Element, RuntimeError> + 'static,
@@ -2156,9 +2167,37 @@ impl Component for Table {
             .into_iter()
             .collect()
     }
+    fn reconcile(&mut self, next: Self) -> Option<Invalidation> {
+        // The controller, row height and body stay. The callbacks follow the
+        // description: the body's forward to the cells replaced here, and a
+        // removed selection callback discards the body's undelivered changes.
+        let on_selection = next.on_selection.borrow_mut().take();
+        self.observe_selection.set(on_selection.is_some());
+        *self.on_selection.borrow_mut() = on_selection;
+        *self.activate.borrow_mut() = next.activate.borrow_mut().take();
+        self.on_sort = next.on_sort;
+        // Edits that begin from now on build their editor with the new
+        // callback; an open edit keeps the editor it built. A first
+        // description's callback not yet installed is replaced too.
+        self.cell_editor = None;
+        *self.state.0.shared.editing.editor.borrow_mut() = next.cell_editor;
+        // The update this schedules reads the new restrictions and cancels a
+        // gesture they deny.
+        let mut update = false;
+        if !self.resize_permission.same_as(&next.resize_permission) {
+            self.resize_permission = next.resize_permission;
+            update = true;
+        }
+        if !self.reorder_permission.same_as(&next.reorder_permission) {
+            self.reorder_permission = next.reorder_permission;
+            update = true;
+        }
+        update.then_some(Invalidation::Paint)
+    }
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
         let editing = &self.state.0.shared.editing;
-        // The mounted (first) description's editing options.
+        // The mounted description's editing options; a redescription
+        // installs its editor callback itself.
         if let Some(editor) = self.cell_editor.take() {
             *editing.editor.borrow_mut() = Some(editor);
         }

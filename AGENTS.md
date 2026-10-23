@@ -130,8 +130,9 @@ Do not add a second source through a builder. Validate dynamic lists during
 update and preserve the last valid presentation when validation fails.
 Availability uses restrictive Permission composition and stays separate from
 parameter edit authority. Composite controls must document when descendants
-observe redescription. Never publish signals from reconciliation or discard a
-refused write; use the public event-phase notification contract when required.
+observe redescription. Never publish signals from reconciliation, except for the
+lifecycle cleanup [contracts.md](docs/contracts.md) names, or discard a refused
+write; use the public event-phase notification contract when required.
 
 ## Component API conventions
 

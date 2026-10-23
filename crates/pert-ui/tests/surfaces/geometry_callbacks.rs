@@ -479,6 +479,47 @@ fn a_region_layout_reports_its_edges() -> TestResult {
     Ok(())
 }
 
+#[test]
+fn a_region_callback_removed_and_reinstalled_before_delivery_reports_nothing_recorded_before()
+-> TestResult {
+    let mut ui = runtime(400.0, 200.0)?;
+    let (first, second) = (Log::default(), Log::default());
+    let root = ui.mount_tree(Element::new("root", View::new(regions(120.0, &first)?)))?;
+    frame(&mut ui);
+    let silent = |left: f32| -> Result<Element, GeometryError> {
+        Ok(Element::new(
+            "regions",
+            RegionLayout::new()
+                .left(Element::new("left", Label::new("Left")))
+                .center(Element::new("center", Label::new("Center")))
+                .left_width(Length::new(left)?)
+                .left_resizable(true),
+        ))
+    };
+    // A change recorded under the first callback, then one recorded while
+    // the layout has none; a callback installed before the flush delivers
+    // starts from the preference it finds and reports neither.
+    ui.reconcile_children(&root, vec![regions(160.0, &first)?])?;
+    ui.reconcile_children(&root, vec![silent(200.0)?])?;
+    ui.reconcile_children(&root, vec![regions(200.0, &second)?])?;
+    frame(&mut ui);
+    assert!(first.borrow().is_empty(), "{:?}", first.borrow());
+    assert!(second.borrow().is_empty(), "{:?}", second.borrow());
+    // The reinstalled callback reports later changes.
+    let divider = widget(&ui, &root, "split-left");
+    ui.focus(&divider)?;
+    key(&mut ui, KeyCode::ArrowRight);
+    frame(&mut ui);
+    assert_eq!(
+        *second.borrow(),
+        [(
+            (RegionEdge::Left, SplitRule::First(Length::new(208.0)?)),
+            ChangeOrigin::User
+        )]
+    );
+    Ok(())
+}
+
 // ---- PropertyGrid ----
 
 fn grid(log: &Log<Option<Length>>, value: Signal<String>) -> Element {

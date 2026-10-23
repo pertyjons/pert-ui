@@ -682,7 +682,7 @@ fn revoking_reorder_permission_does_not_cancel_an_active_scrollbar_drag() {
 }
 
 #[test]
-fn compatible_redescription_retains_collection_permission_bindings() {
+fn compatible_redescription_adopts_collection_permission_bindings() {
     for kind in 0..3 {
         let mut ui = runtime();
         let original = ui.signal(false);
@@ -732,12 +732,219 @@ fn compatible_redescription_retains_collection_permission_bindings() {
         } else {
             "reorderable"
         };
-        assert_eq!(property(&ui, "collection", name), InspectValue::Bool(false));
+        // The new description's binding replaces the first one.
+        assert_eq!(property(&ui, "collection", name), InspectValue::Bool(true));
         replacement.set(false).unwrap();
         original.set(true).unwrap();
         ui.flush(ui.now()).unwrap();
+        assert_eq!(property(&ui, "collection", name), InspectValue::Bool(false));
+        replacement.set(true).unwrap();
+        ui.flush(ui.now()).unwrap();
         assert_eq!(property(&ui, "collection", name), InspectValue::Bool(true));
     }
+}
+
+/// A list or tree over `Rows`, reorderable through `on_drop` when given one,
+/// under `permission`.
+fn reorder_collection(
+    tree: Option<&TreeController>,
+    rows: &Signal<ListSource>,
+    selection: &ListSelection,
+    on_drop: Option<Rc<Cell<usize>>>,
+    permission: Permission,
+) -> Element {
+    let callback = on_drop.map(|calls| {
+        move |_: &mut EventContext, _: &ListDrop<'_>| {
+            calls.set(calls.get() + 1);
+            Ok(true)
+        }
+    });
+    match tree {
+        Some(tree) => {
+            let widget = Tree::new(tree, 40.0)
+                .unwrap()
+                .reorder_permission(permission);
+            Element::new(
+                "collection",
+                match callback {
+                    Some(callback) => widget.reorderable(callback),
+                    None => widget,
+                },
+            )
+        }
+        None => {
+            let widget = VirtualList::new(rows.read_only(), 40.0)
+                .unwrap()
+                .selection(selection.clone())
+                .reorder_permission(permission);
+            Element::new(
+                "collection",
+                match callback {
+                    Some(callback) => widget.reorderable(callback),
+                    None => widget,
+                },
+            )
+        }
+    }
+}
+
+#[test]
+fn a_redescription_without_reordering_or_with_a_fixed_denial_cancels_the_active_drag() {
+    for is_tree in [false, true] {
+        for removed in [false, true] {
+            let mut ui = runtime();
+            let selection = ListSelection::new(&ui, SelectionMode::Single);
+            let rows = ui.signal(ListSource::new(Rows));
+            let controller =
+                TreeController::new(&ui, selection.clone(), TreeSource::new(Rows)).unwrap();
+            let tree = is_tree.then_some(&controller);
+            let calls = Rc::new(Cell::new(0));
+            let root = ui
+                .mount_tree(Element::new(
+                    "root",
+                    Column::new([reorder_collection(
+                        tree,
+                        &rows,
+                        &selection,
+                        Some(calls.clone()),
+                        Permission::allowed(),
+                    )]),
+                ))
+                .unwrap();
+            ui.flush(ui.now()).unwrap();
+            pointer(
+                &mut ui,
+                80.0,
+                20.0,
+                PointerKind::Press(PointerButton::Primary),
+            );
+            pointer(&mut ui, 80.0, 70.0, PointerKind::Move);
+            assert!(ui.drag_active());
+            let next = if removed {
+                reorder_collection(tree, &rows, &selection, None, Permission::allowed())
+            } else {
+                reorder_collection(
+                    tree,
+                    &rows,
+                    &selection,
+                    Some(calls.clone()),
+                    Permission::denied(),
+                )
+            };
+            ui.reconcile_children(&root, vec![next]).unwrap();
+            ui.flush(ui.now()).unwrap();
+            assert!(!ui.drag_active(), "tree {is_tree}, removed {removed}");
+            pointer(
+                &mut ui,
+                80.0,
+                90.0,
+                PointerKind::Release(PointerButton::Primary),
+            );
+            assert_eq!(calls.get(), 0);
+            assert_eq!(
+                property(&ui, "collection", "reorderable"),
+                InspectValue::Bool(false)
+            );
+        }
+    }
+}
+
+#[test]
+fn a_redescribed_fixed_resize_denial_restores_the_width_of_an_active_resize() {
+    let mut ui = runtime();
+    let state = table(
+        &ui,
+        TableColumn::new("a", "A")
+            .width(Length::new(100.0).unwrap())
+            .resizable(true),
+    );
+    let root = ui
+        .mount_tree(Element::new(
+            "root",
+            Column::new([Element::new("table", Table::new(&state, 24.0).unwrap())]),
+        ))
+        .unwrap();
+    ui.flush(ui.now()).unwrap();
+    pointer(
+        &mut ui,
+        100.0,
+        10.0,
+        PointerKind::Press(PointerButton::Primary),
+    );
+    pointer(&mut ui, 140.0, 10.0, PointerKind::Move);
+    assert_eq!(state.columns()[0].fixed_width(), Some(140.0));
+    ui.reconcile_children(
+        &root,
+        vec![Element::new(
+            "table",
+            Table::new(&state, 24.0).unwrap().resize_permission(false),
+        )],
+    )
+    .unwrap();
+    ui.flush(ui.now()).unwrap();
+    assert_eq!(state.columns()[0].fixed_width(), Some(100.0));
+    pointer(&mut ui, 180.0, 10.0, PointerKind::Move);
+    pointer(
+        &mut ui,
+        180.0,
+        10.0,
+        PointerKind::Release(PointerButton::Primary),
+    );
+    assert_eq!(state.columns()[0].fixed_width(), Some(100.0));
+    assert_eq!(
+        property(&ui, "table", "resize_allowed"),
+        InspectValue::Bool(false)
+    );
+}
+
+#[test]
+fn a_redescribed_fixed_reorder_denial_cancels_a_column_drag() {
+    let mut ui = runtime();
+    let state = table(
+        &ui,
+        TableColumn::new("a", "A")
+            .width(Length::new(100.0).unwrap())
+            .movable(true),
+    );
+    let root = ui
+        .mount_tree(Element::new(
+            "root",
+            Column::new([Element::new("table", Table::new(&state, 24.0).unwrap())]),
+        ))
+        .unwrap();
+    ui.flush(ui.now()).unwrap();
+    pointer(
+        &mut ui,
+        30.0,
+        10.0,
+        PointerKind::Press(PointerButton::Primary),
+    );
+    pointer(&mut ui, 160.0, 10.0, PointerKind::Move);
+    assert!(ui.drag_active());
+    ui.reconcile_children(
+        &root,
+        vec![Element::new(
+            "table",
+            Table::new(&state, 24.0).unwrap().reorder_permission(false),
+        )],
+    )
+    .unwrap();
+    ui.flush(ui.now()).unwrap();
+    assert!(!ui.drag_active());
+    pointer(
+        &mut ui,
+        350.0,
+        10.0,
+        PointerKind::Release(PointerButton::Primary),
+    );
+    assert_eq!(
+        state
+            .columns()
+            .iter()
+            .map(TableColumn::key)
+            .collect::<Vec<_>>(),
+        ["a", "b"]
+    );
 }
 
 #[test]

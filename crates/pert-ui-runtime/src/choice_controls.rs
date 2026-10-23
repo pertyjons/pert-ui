@@ -724,8 +724,14 @@ pub struct RadioGroup<T> {
     value: Rc<dyn ValueBinding<T>>,
     editable: bool,
     revision: Revision,
+    /// The name and selection last read from a binding whose options
+    /// validated: a rebind keeps them, as the last valid presentation, until
+    /// the new binding's options validate.
     name: Option<String>,
     selected: Option<T>,
+    /// The value binding was replaced and has not yet been read with valid
+    /// options, so the active option follows its selection then.
+    rebound: bool,
     active: Option<T>,
     pressed: Option<T>,
     enabled: bool,
@@ -767,6 +773,7 @@ impl<T: Clone + Eq + 'static> RadioGroup<T> {
             revision: Revision::INITIAL,
             name: None,
             selected: None,
+            rebound: false,
             active: None,
             pressed: None,
             enabled: true,
@@ -941,6 +948,7 @@ impl<T: Clone + Eq + 'static> Component for RadioGroup<T> {
             revision: _,
             name: _,
             selected: _,
+            rebound: _,
             active: _,
             pressed: _,
             input: _,
@@ -954,11 +962,11 @@ impl<T: Clone + Eq + 'static> Component for RadioGroup<T> {
         let mut cancel = false;
         if !same_binding(&self.value, &value) {
             // Pending input belongs to the old target; its option list and
-            // name come from the new binding at the next update.
+            // name come from the new binding at the next update. Until that
+            // list validates, the old name and selection stay shown.
             self.value = value;
             self.revision = Revision::INITIAL;
-            self.name = None;
-            self.selected = None;
+            self.rebound = true;
             cancel = true;
             invalidation = Some(Invalidation::Layout);
         }
@@ -1056,7 +1064,7 @@ impl<T: Clone + Eq + 'static> Component for RadioGroup<T> {
         }
         self.name = reading.name;
         let selected = reading.value;
-        if self.selected.as_ref() != Some(&selected) {
+        if std::mem::take(&mut self.rebound) || self.selected.as_ref() != Some(&selected) {
             self.active = Some(selected.clone());
         }
         self.selected = Some(selected);

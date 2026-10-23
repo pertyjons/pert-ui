@@ -2,6 +2,7 @@
 //! with another binding, options or callbacks is applied, not ignored.
 use crate::support;
 use pert_ui::*;
+use std::{cell::RefCell, rc::Rc};
 use support::{frame, key};
 
 /// The `text` inspection property of the component keyed `field`.
@@ -534,4 +535,174 @@ fn a_failing_reference_flush_still_unmounts_the_reference_tree() {
         .unwrap();
     ui.mount_tree(Element::new("redescribe", Label::new("Also free")))
         .unwrap();
+}
+
+/// The `text` inspection property of the label keyed `key`.
+fn label_text(ui: &Runtime, key: &str) -> String {
+    let component = ui
+        .inspect()
+        .components
+        .into_iter()
+        .find(|c| c.key == key)
+        .unwrap_or_else(|| panic!("{key} is mounted"));
+    match &component.details.properties["text"] {
+        InspectValue::Text(text) => text.clone(),
+        other => panic!("text is not text: {other:?}"),
+    }
+}
+
+/// A component that records the preview of the snapshot it reads in update.
+struct Watcher<T: ParameterValue> {
+    snapshot: ReadSignal<ParameterSnapshot<T>>,
+    seen: Rc<RefCell<String>>,
+}
+impl<T: ParameterValue + std::fmt::Debug> Component for Watcher<T> {
+    fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
+        *self.seen.borrow_mut() = format!("{:?}", cx.read(&self.snapshot)?.preview);
+        Ok(())
+    }
+}
+
+/// Mounts the control `phase` describes, a component reading `watched`'s
+/// snapshot and a label over a `Computed` derived from it, then starts a
+/// gesture with `begin`, moves to phase 1 and flushes once. Reconciliation
+/// cancels the gesture inside that flush, and both dependents must show the
+/// cancelled snapshot when it returns, with no update left for a later flush.
+fn dependents_settle_in_the_reconciling_flush<T>(
+    ui: &mut Runtime,
+    watched: &Parameter<T>,
+    phase: &Signal<u8>,
+    control: impl Fn(u8) -> Element + 'static,
+    begin: impl FnOnce(&mut Runtime, &WidgetId),
+) where
+    T: ParameterValue + std::fmt::Debug,
+{
+    ui.set_viewport(Viewport::new(400.0, 300.0, 1.0).unwrap())
+        .unwrap();
+    let seen = Rc::new(RefCell::new(String::new()));
+    let computed = watched
+        .snapshot()
+        .map(|snapshot| format!("{:?}", snapshot.preview))
+        .unwrap();
+    let root = ui
+        .mount_tree(Element::new(
+            "root",
+            Column::new([
+                Element::new("host", Dynamic::new(phase, move |_, phase| control(*phase))),
+                Element::new(
+                    "watcher",
+                    Watcher {
+                        snapshot: watched.snapshot(),
+                        seen: seen.clone(),
+                    },
+                ),
+                Element::new("computed", Label::new(computed.clone())),
+            ]),
+        ))
+        .unwrap();
+    frame(ui);
+    let field = ui.find_descendant(&root, "field").unwrap().unwrap();
+    begin(ui, &field);
+    frame(ui);
+    let previewing = seen.borrow().clone();
+    assert_ne!(previewing, "None", "the gesture previews");
+    assert_eq!(label_text(ui, "computed"), previewing);
+    phase.set(1).unwrap();
+    ui.flush(ui.now()).unwrap();
+    assert_eq!(watched.snapshot().get().unwrap().preview, None);
+    assert_eq!(*seen.borrow(), "None");
+    assert_eq!(label_text(ui, "computed"), "None");
+    // Nothing is left for another flush: painting finds no pending update.
+    ui.paint().unwrap();
+    assert_eq!(ui.flush(ui.now()).unwrap().components_updated, 0);
+}
+
+#[test]
+fn a_reconciled_number_input_settles_the_cancelled_snapshot_in_the_same_flush() {
+    for deny in [false, true] {
+        let mut ui = Runtime::new();
+        let (first, _first_host) = ui
+            .parameter(
+                ParameterId::new(1, 1, "first").unwrap(),
+                ParameterSpec::stepped("First", 0, 10, 2).unwrap(),
+            )
+            .unwrap();
+        let (second, _second_host) = ui
+            .parameter(
+                ParameterId::new(1, 2, "second").unwrap(),
+                ParameterSpec::stepped("Second", 0, 10, 7).unwrap(),
+            )
+            .unwrap();
+        let phase = ui.signal(0_u8);
+        let watched = first.clone();
+        dependents_settle_in_the_reconciling_flush(
+            &mut ui,
+            &watched,
+            &phase,
+            move |phase| {
+                let input = match (phase, deny) {
+                    (0, _) | (_, true) => InlineInteger::for_parameter(first.clone()),
+                    _ => InlineInteger::for_parameter(second.clone()),
+                };
+                let input = if phase == 1 && deny {
+                    input.disabled()
+                } else {
+                    input
+                };
+                Element::new("field", input)
+            },
+            |ui, field| {
+                ui.focus(field).unwrap();
+                frame(ui);
+                ui.key_input(KeyCode::ArrowUp, KeyAction::Press).unwrap();
+                ui.key_input(KeyCode::ArrowUp, KeyAction::Repeat).unwrap();
+            },
+        );
+    }
+}
+
+#[test]
+fn a_reconciled_slider_settles_the_cancelled_snapshot_in_the_same_flush() {
+    for deny in [false, true] {
+        let mut ui = Runtime::new();
+        let (first, _first_host) = ui
+            .parameter(
+                ParameterId::new(1, 1, "first").unwrap(),
+                ParameterSpec::new("First", 0.0, 100.0, 50.0).unwrap(),
+            )
+            .unwrap();
+        let (second, _second_host) = ui
+            .parameter(
+                ParameterId::new(1, 2, "second").unwrap(),
+                ParameterSpec::new("Second", 0.0, 100.0, 50.0).unwrap(),
+            )
+            .unwrap();
+        let phase = ui.signal(0_u8);
+        let watched = first.clone();
+        dependents_settle_in_the_reconciling_flush(
+            &mut ui,
+            &watched,
+            &phase,
+            move |phase| {
+                let slider = match (phase, deny) {
+                    (0, _) | (_, true) => Slider::new(first.clone()),
+                    _ => Slider::new(second.clone()),
+                };
+                let slider = if phase == 1 && deny {
+                    slider.enabled(false)
+                } else {
+                    slider
+                };
+                Element::new("field", slider)
+            },
+            |ui, field| {
+                let [x, y, width, height] = ui.bounds(field).unwrap().unwrap().values();
+                ui.pointer_input(PointerEvent::new(
+                    Point::new(x + width * 0.8, y + height / 2.0).unwrap(),
+                    PointerKind::Press(PointerButton::Primary),
+                ))
+                .unwrap();
+            },
+        );
+    }
 }

@@ -171,11 +171,24 @@ A surviving child described again takes its new description through
 `Component::reconcile`: texts, bindings, ranges, permissions and callbacks
 follow the new description, while focus, scroll and drafts stay. A different
 binding or edit target ends the edit in progress unsaved, as an application
-write does; a parameter's gesture is cancelled at the next safe point.
+write does.
+
+Reconciliation publishes no signal, with one lifecycle exception: a
+redescription that rebinds a parameter control or denies it a fixed permission
+cancels the parameter's gesture during reconciliation and publishes its
+snapshot at once; the terminal event follows at the next safe point. The
+components and derived bindings that read the snapshot settle in the flush
+that reconciles.
 
 Components whose data belongs to a controller (`VirtualList`, `Table`,
-`Tree`, `FileBrowser`, `ColorPicker`, `HistoryNavigator`) keep their mounted controller and
-options and say so; a new key replaces them. `HistoryNavigator` retains the
+`Tree`, `FileBrowser`, `ColorPicker`, `HistoryNavigator`) keep their mounted
+controller, source binding and structural options, such as a list's axis or a
+table's row height, and say so; a new key replaces them. Their permissions and
+callbacks follow the new description, including removal: a collection
+described without its reorder callback, or with a fixed denial, cancels an
+armed or active gesture at the update the re-description schedules, as a
+revocation does, and a removed notification callback discards the changes it
+has not yet delivered. `HistoryNavigator` retains the
 history it mounted with because its generated buttons, tooltips and list derive
 from it; `HistoryButtons` generates no parts and follows the history it was
 described with last, forgetting a press held across the handoff.

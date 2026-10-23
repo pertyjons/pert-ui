@@ -1280,10 +1280,11 @@ impl<T: Number> NumberEditor<T> {
     /// normalizer and callbacks.
     ///
     /// A different source ends the edit in progress unsaved: a parameter's
-    /// gesture session is dropped (its cancellation is delivered at the next
-    /// safe point, since `reconcile` may not write), a typed draft and a held
-    /// step end, and the next update shows the new source's value. Disabling
-    /// ends an edit the same way. A parameter source keeps the bounds and
+    /// gesture session is dropped, which cancels it and publishes the
+    /// parameter's snapshot at once, the lifecycle exception the contracts name
+    /// for reconciliation, while its terminal event follows at the next safe
+    /// point; a typed draft and a held step end, and the next update shows the
+    /// new source's value. Disabling ends an edit the same way. A parameter source keeps the bounds and
     /// step of its specification.
     fn adopt(&mut self, next: Self) -> Option<Invalidation> {
         let mut invalidation = None;

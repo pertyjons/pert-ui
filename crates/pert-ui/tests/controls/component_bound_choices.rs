@@ -190,3 +190,54 @@ fn same_key_can_switch_parameter_dynamic_and_fixed_choice_sources() -> TestResul
     }
     Ok(())
 }
+#[test]
+fn a_rebinding_with_an_invalid_list_keeps_the_last_valid_presentation() -> TestResult {
+    for kind in [Kind::Radio, Kind::Segmented, Kind::InlineChoice] {
+        let mut ui = Runtime::new();
+        ui.set_viewport(Viewport::new(500.0, 300.0, 1.0)?)?;
+        let describe = |value: Signal<u8>, options: ReadSignal<Vec<Choice<u8>>>| match kind {
+            Kind::Radio => Element::new("control", RadioGroup::bound(value, options)),
+            Kind::Segmented => Element::new("control", SegmentedControl::bound(value, options)),
+            _ => Element::new("control", InlineChoice::bound(value, options)),
+        };
+        let presented = |ui: &Runtime| {
+            ui.inspect()
+                .components
+                .into_iter()
+                .find(|component| component.key == "control")
+                .map(|component| component.details)
+        };
+        let first = ui.signal(vec![Choice::new(1, "One"), Choice::new(2, "Two")]);
+        let root = ui.mount_tree(Element::new(
+            "root",
+            Column::new([describe(ui.signal(2), first.read_only())]),
+        ))?;
+        ui.flush(Duration::ZERO)?;
+        let last_valid = presented(&ui);
+        // A new value binding and an invalid list in the same flush.
+        let second = ui.signal(vec![Choice::new(3, "Three"), Choice::new(3, "Duplicate")]);
+        ui.reconcile_children(&root, vec![describe(ui.signal(3), second.read_only())])?;
+        assert_eq!(
+            ui.flush(Duration::ZERO),
+            Err(RuntimeError::Choice(ChoiceError::DuplicateValue {
+                first: 0,
+                second: 1
+            })),
+            "{kind:?}"
+        );
+        assert_eq!(
+            presented(&ui),
+            last_valid,
+            "{kind:?} keeps the last valid presentation"
+        );
+        // A valid list then presents the new binding.
+        second.set(vec![Choice::new(3, "Three"), Choice::new(4, "Four")])?;
+        ui.flush(Duration::ZERO)?;
+        assert_ne!(
+            presented(&ui),
+            last_valid,
+            "{kind:?} presents the new binding"
+        );
+    }
+    Ok(())
+}

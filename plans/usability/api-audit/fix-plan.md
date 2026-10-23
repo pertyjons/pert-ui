@@ -403,6 +403,43 @@ and anything left to a later part.
     non-`Send` error's message is wrapped. The review also asked for the
     packaging results here, and verified 6c1's fix. Doctests and rustdoc
     were rerun after the fix, which 6d1's review verifies.
+- **6d1 (0.3.65):** the collections adopt a redescription's permissions
+  and callbacks, including removal.
+  - A fixed denial cancels a gesture in the update the redescription
+    schedules, so nothing is published from `reconcile`.
+  - A removed selection callback discards undelivered changes.
+  - `RegionLayout` forwards resizes only while it has a callback.
+  - The radio-style choices keep their old selection on a rebind until the
+    new list validates.
+  - `ContextMenu`'s enabled state is a private cell.
+  - **G2-13's test came first:** a custom component and a mapped label
+    reading the cancelled snapshot both settle in the reconciling flush, for
+    a number input and a slider, on rebind and on fixed denial. So the
+    lifecycle exception is documented, with no scheduling change.
+  - **Maintainer decision (2026-10-23):** AGENTS.md's rule becomes "Never
+    publish signals from reconciliation, except for the lifecycle cleanup
+    contracts.md names, …".
+  - **Checks run after the last edit:**
+    - `cargo fmt --all --check`;
+    - workspace Clippy;
+    - `cargo test --locked --workspace`, with every new behavior test
+      checked to fail with the runtime changes stashed;
+    - the five headless example sessions;
+    - `cargo test --locked --workspace --doc`;
+    - warning-free workspace rustdoc;
+    - `api/generate.sh`;
+    - `git diff --check`.
+
+    The `api/` diff, which the plan expected to be empty, shows only the
+    four overridden `reconcile` methods losing the default's
+    `where Self: Sized`.
+  - **Deviation:** a `FileBrowser` mounted without `folder_filter` cannot
+    gain the field later. Its tree holds the documented child key, and
+    replacing or removing the filter follows the description.
+  - **Beyond the plan's lines:** `AppError`'s non-carriable errors are
+    `Send + Sync`, which tightens 6c2's fix.
+  - **Left to a later part:** `N:publish-revision`, found here, joins 6d2
+    and TODO.md.
 
 ## Rules for every part
 
@@ -1091,6 +1128,11 @@ Found during 5b, not from the audit or round 1:
   that error, neither returned nor queued in `focus_errors`. Queue the held
   error before returning the reveal error, update `Runtime::focus`'s
   `# Errors` ("in place of"), and add a regression test.
+- **N:publish-revision** (found during 6d1): `Signal::publish_trusted`
+  publishes without advancing `revision`, so `Dynamic`, `Show` and `Each` over
+  a library-published signal never redescribe. Advance `revision` there and
+  add a regression test with a `Dynamic` over `Parameter::snapshot()` during a
+  gesture.
 
 Audit findings:
 

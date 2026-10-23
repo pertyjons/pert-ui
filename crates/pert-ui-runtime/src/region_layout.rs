@@ -278,7 +278,8 @@ impl Component for RegionLayout {
             resize,
             all,
             // The generated dividers forward to the new description's
-            // callback, which they adopted as they reconciled.
+            // callback, which they adopted as they reconciled, or have none
+            // when the description has none.
             on_resize: _,
         } = next;
         // Every property was already applied to the generated regions and
@@ -361,17 +362,24 @@ impl Component for RegionLayout {
                 Some(permission) => split.resizable(permission.and(self.all.clone())),
                 None => split.locked(),
             };
-            let slot = self.on_resize.clone();
-            let split = split.on_resize(move |cx, sizing, origin| {
-                // Taken out for the call, so no borrow spans application code.
-                let handler = slot.borrow_mut().take();
-                let Some(mut handler) = handler else {
-                    return Ok(());
-                };
-                let result = handler(cx, controller, sizing, origin);
-                slot.borrow_mut().get_or_insert(handler);
-                result
-            });
+            // A divider forwards only while the layout has a callback, so a
+            // description without one removes the divider's too, which drops
+            // the changes it recorded.
+            let split = if self.on_resize.borrow().is_some() {
+                let slot = self.on_resize.clone();
+                split.on_resize(move |cx, sizing, origin| {
+                    // Taken out for the call, so no borrow spans application code.
+                    let handler = slot.borrow_mut().take();
+                    let Some(mut handler) = handler else {
+                        return Ok(());
+                    };
+                    let result = handler(cx, controller, sizing, origin);
+                    slot.borrow_mut().get_or_insert(handler);
+                    result
+                })
+            } else {
+                split
+            };
             body = Some(
                 Element::new(format!("split-{}", edge.name()), split)
                     .part(format!("{}-divider", edge.name())),

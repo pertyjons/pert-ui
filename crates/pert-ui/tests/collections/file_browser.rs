@@ -1389,3 +1389,56 @@ fn folder_filter_permissions_preserve_a_fixed_denial() -> Result<(), Box<dyn std
     );
     Ok(())
 }
+
+#[test]
+fn a_redescription_replaces_and_removes_the_folder_filter_offer()
+-> Result<(), Box<dyn std::error::Error>> {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(800.0, 600.0, 1.0)?)?;
+    let controller = FileBrowserController::new(
+        &ui,
+        ListSelection::new(&ui, SelectionMode::Single),
+        ["/r"],
+        |_| {},
+    )?;
+    let offered = |ui: &Runtime| {
+        ui.inspect()
+            .components
+            .iter()
+            .find(|entry| entry.key == "folders")
+            .and_then(|entry| entry.details.properties.get("offered").cloned())
+    };
+    let browser = |offer: Option<Permission>| -> Result<Element, GeometryError> {
+        let browser = FileBrowser::new(&controller, 24.0)?;
+        Ok(Element::new(
+            "browser",
+            match offer {
+                Some(offer) => browser.folder_filter(offer),
+                None => browser,
+            },
+        ))
+    };
+    let root = ui.mount_tree(Element::new(
+        "root",
+        Column::new([browser(Some(Permission::allowed()))?]),
+    ))?;
+    settle(&mut ui);
+    assert_eq!(offered(&ui), Some(InspectValue::Bool(true)));
+    let binding = ui.signal(false);
+    for (offer, expected) in [
+        (Some(binding.read_only().into()), false),
+        (None, false),
+        (Some(Permission::allowed()), true),
+    ] {
+        ui.reconcile_children(&root, vec![browser(offer)?])?;
+        settle(&mut ui);
+        assert_eq!(offered(&ui), Some(InspectValue::Bool(expected)));
+    }
+    // A binding adopted from a re-description is followed.
+    ui.reconcile_children(&root, vec![browser(Some(binding.read_only().into()))?])?;
+    settle(&mut ui);
+    binding.set(true)?;
+    settle(&mut ui);
+    assert_eq!(offered(&ui), Some(InspectValue::Bool(true)));
+    Ok(())
+}

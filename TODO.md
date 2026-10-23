@@ -103,3 +103,11 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   change. Choose cases whose output omits the implementor list (for example a
   bound on a generic function with a local trait object), or document in
   `docs/verification.md` that such churn is expected and reviewed.
+- [ ] 2026-10-23 `crates/pert-ui-runtime/src/signal.rs`
+  `Signal::publish_trusted` — state contracts: it publishes a new value
+  without advancing `revision`, which `Signal::revision` documents as counting
+  changes, so `Dynamic`, `Show` and `Each` over a library-published signal
+  never redescribe (a `Dynamic` over `Parameter::snapshot()` stays at its old
+  description during a gesture). Advance `revision` in `publish_trusted` and
+  add a regression test. Planned as `N:publish-revision` in part 6d2 of
+  `plans/usability/api-audit/fix-plan.md`.

@@ -5007,7 +5007,7 @@ pub fn pert_ui_runtime::FileBrowser::paint(&self, &mut pert_ui_runtime::Painter)
 pub fn pert_ui_runtime::FileBrowser::paint_foreground(&self, &mut pert_ui_runtime::Painter) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::FileBrowser::pointer_input(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::PointerEvent) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FileBrowser::receives_unfocused_keys(&self) -> bool
-pub fn pert_ui_runtime::FileBrowser::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation> where Self: core::marker::Sized
+pub fn pert_ui_runtime::FileBrowser::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation>
 pub fn pert_ui_runtime::FileBrowser::restore_workspace_state(&mut self, &pert_ui_runtime::ViewState) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::FileBrowser::restore_workspace_state_with_children(&mut self, &pert_ui_runtime::ViewState, &[pert_ui_runtime::ChildInfo]) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::FileBrowser::retain_initial_children(&self) -> bool
@@ -9677,7 +9677,7 @@ pub fn pert_ui_runtime::Table::paint(&self, &mut pert_ui_runtime::Painter) -> co
 pub fn pert_ui_runtime::Table::paint_foreground(&self, &mut pert_ui_runtime::Painter) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Table::pointer_input(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::PointerEvent) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Table::receives_unfocused_keys(&self) -> bool
-pub fn pert_ui_runtime::Table::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation> where Self: core::marker::Sized
+pub fn pert_ui_runtime::Table::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation>
 pub fn pert_ui_runtime::Table::restore_workspace_state(&mut self, &pert_ui_runtime::ViewState) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::Table::restore_workspace_state_with_children(&mut self, &pert_ui_runtime::ViewState, &[pert_ui_runtime::ChildInfo]) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::Table::retain_initial_children(&self) -> bool
@@ -10859,7 +10859,7 @@ pub fn pert_ui_runtime::Tree::paint(&self, &mut pert_ui_runtime::Painter) -> cor
 pub fn pert_ui_runtime::Tree::paint_foreground(&self, &mut pert_ui_runtime::Painter) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Tree::pointer_input(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::PointerEvent) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Tree::receives_unfocused_keys(&self) -> bool
-pub fn pert_ui_runtime::Tree::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation> where Self: core::marker::Sized
+pub fn pert_ui_runtime::Tree::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation>
 pub fn pert_ui_runtime::Tree::restore_workspace_state(&mut self, &pert_ui_runtime::ViewState) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::Tree::restore_workspace_state_with_children(&mut self, &pert_ui_runtime::ViewState, &[pert_ui_runtime::ChildInfo]) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::Tree::retain_initial_children(&self) -> bool
@@ -11332,7 +11332,7 @@ pub fn pert_ui_runtime::VirtualList::paint(&self, &mut pert_ui_runtime::Painter)
 pub fn pert_ui_runtime::VirtualList::paint_foreground(&self, &mut pert_ui_runtime::Painter) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::VirtualList::pointer_input(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::PointerEvent) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::VirtualList::receives_unfocused_keys(&self) -> bool
-pub fn pert_ui_runtime::VirtualList::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation> where Self: core::marker::Sized
+pub fn pert_ui_runtime::VirtualList::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation>
 pub fn pert_ui_runtime::VirtualList::restore_workspace_state(&mut self, &pert_ui_runtime::ViewState) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::VirtualList::restore_workspace_state_with_children(&mut self, &pert_ui_runtime::ViewState, &[pert_ui_runtime::ChildInfo]) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::VirtualList::retain_initial_children(&self) -> bool
@@ -13060,7 +13060,7 @@ pub fn pert_ui_runtime::FileBrowser::paint(&self, &mut pert_ui_runtime::Painter)
 pub fn pert_ui_runtime::FileBrowser::paint_foreground(&self, &mut pert_ui_runtime::Painter) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::FileBrowser::pointer_input(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::PointerEvent) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FileBrowser::receives_unfocused_keys(&self) -> bool
-pub fn pert_ui_runtime::FileBrowser::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation> where Self: core::marker::Sized
+pub fn pert_ui_runtime::FileBrowser::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation>
 pub fn pert_ui_runtime::FileBrowser::restore_workspace_state(&mut self, &pert_ui_runtime::ViewState) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::FileBrowser::restore_workspace_state_with_children(&mut self, &pert_ui_runtime::ViewState, &[pert_ui_runtime::ChildInfo]) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::FileBrowser::retain_initial_children(&self) -> bool
@@ -15044,7 +15044,7 @@ pub fn pert_ui_runtime::Table::paint(&self, &mut pert_ui_runtime::Painter) -> co
 pub fn pert_ui_runtime::Table::paint_foreground(&self, &mut pert_ui_runtime::Painter) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Table::pointer_input(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::PointerEvent) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Table::receives_unfocused_keys(&self) -> bool
-pub fn pert_ui_runtime::Table::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation> where Self: core::marker::Sized
+pub fn pert_ui_runtime::Table::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation>
 pub fn pert_ui_runtime::Table::restore_workspace_state(&mut self, &pert_ui_runtime::ViewState) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::Table::restore_workspace_state_with_children(&mut self, &pert_ui_runtime::ViewState, &[pert_ui_runtime::ChildInfo]) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::Table::retain_initial_children(&self) -> bool
@@ -15684,7 +15684,7 @@ pub fn pert_ui_runtime::Tree::paint(&self, &mut pert_ui_runtime::Painter) -> cor
 pub fn pert_ui_runtime::Tree::paint_foreground(&self, &mut pert_ui_runtime::Painter) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Tree::pointer_input(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::PointerEvent) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Tree::receives_unfocused_keys(&self) -> bool
-pub fn pert_ui_runtime::Tree::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation> where Self: core::marker::Sized
+pub fn pert_ui_runtime::Tree::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation>
 pub fn pert_ui_runtime::Tree::restore_workspace_state(&mut self, &pert_ui_runtime::ViewState) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::Tree::restore_workspace_state_with_children(&mut self, &pert_ui_runtime::ViewState, &[pert_ui_runtime::ChildInfo]) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::Tree::retain_initial_children(&self) -> bool
@@ -15812,7 +15812,7 @@ pub fn pert_ui_runtime::VirtualList::paint(&self, &mut pert_ui_runtime::Painter)
 pub fn pert_ui_runtime::VirtualList::paint_foreground(&self, &mut pert_ui_runtime::Painter) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::VirtualList::pointer_input(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::PointerEvent) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::VirtualList::receives_unfocused_keys(&self) -> bool
-pub fn pert_ui_runtime::VirtualList::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation> where Self: core::marker::Sized
+pub fn pert_ui_runtime::VirtualList::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation>
 pub fn pert_ui_runtime::VirtualList::restore_workspace_state(&mut self, &pert_ui_runtime::ViewState) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::VirtualList::restore_workspace_state_with_children(&mut self, &pert_ui_runtime::ViewState, &[pert_ui_runtime::ChildInfo]) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::VirtualList::retain_initial_children(&self) -> bool
@@ -24956,7 +24956,7 @@ pub fn pert_ui_runtime::FileBrowser::paint(&self, &mut pert_ui_runtime::Painter)
 pub fn pert_ui_runtime::FileBrowser::paint_foreground(&self, &mut pert_ui_runtime::Painter) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::FileBrowser::pointer_input(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::PointerEvent) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FileBrowser::receives_unfocused_keys(&self) -> bool
-pub fn pert_ui_runtime::FileBrowser::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation> where Self: core::marker::Sized
+pub fn pert_ui_runtime::FileBrowser::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation>
 pub fn pert_ui_runtime::FileBrowser::restore_workspace_state(&mut self, &pert_ui_runtime::ViewState) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::FileBrowser::restore_workspace_state_with_children(&mut self, &pert_ui_runtime::ViewState, &[pert_ui_runtime::ChildInfo]) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::FileBrowser::retain_initial_children(&self) -> bool
@@ -30915,7 +30915,7 @@ pub fn pert_ui_runtime::Table::paint(&self, &mut pert_ui_runtime::Painter) -> co
 pub fn pert_ui_runtime::Table::paint_foreground(&self, &mut pert_ui_runtime::Painter) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Table::pointer_input(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::PointerEvent) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Table::receives_unfocused_keys(&self) -> bool
-pub fn pert_ui_runtime::Table::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation> where Self: core::marker::Sized
+pub fn pert_ui_runtime::Table::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation>
 pub fn pert_ui_runtime::Table::restore_workspace_state(&mut self, &pert_ui_runtime::ViewState) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::Table::restore_workspace_state_with_children(&mut self, &pert_ui_runtime::ViewState, &[pert_ui_runtime::ChildInfo]) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::Table::retain_initial_children(&self) -> bool
@@ -32331,7 +32331,7 @@ pub fn pert_ui_runtime::Tree::paint(&self, &mut pert_ui_runtime::Painter) -> cor
 pub fn pert_ui_runtime::Tree::paint_foreground(&self, &mut pert_ui_runtime::Painter) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Tree::pointer_input(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::PointerEvent) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Tree::receives_unfocused_keys(&self) -> bool
-pub fn pert_ui_runtime::Tree::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation> where Self: core::marker::Sized
+pub fn pert_ui_runtime::Tree::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation>
 pub fn pert_ui_runtime::Tree::restore_workspace_state(&mut self, &pert_ui_runtime::ViewState) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::Tree::restore_workspace_state_with_children(&mut self, &pert_ui_runtime::ViewState, &[pert_ui_runtime::ChildInfo]) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::Tree::retain_initial_children(&self) -> bool
@@ -33009,7 +33009,7 @@ pub fn pert_ui_runtime::VirtualList::paint(&self, &mut pert_ui_runtime::Painter)
 pub fn pert_ui_runtime::VirtualList::paint_foreground(&self, &mut pert_ui_runtime::Painter) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::VirtualList::pointer_input(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::PointerEvent) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::VirtualList::receives_unfocused_keys(&self) -> bool
-pub fn pert_ui_runtime::VirtualList::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation> where Self: core::marker::Sized
+pub fn pert_ui_runtime::VirtualList::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation>
 pub fn pert_ui_runtime::VirtualList::restore_workspace_state(&mut self, &pert_ui_runtime::ViewState) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::VirtualList::restore_workspace_state_with_children(&mut self, &pert_ui_runtime::ViewState, &[pert_ui_runtime::ChildInfo]) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::VirtualList::retain_initial_children(&self) -> bool
@@ -34843,7 +34843,7 @@ pub fn pert_ui_runtime::FileBrowser::paint(&self, &mut pert_ui_runtime::Painter)
 pub fn pert_ui_runtime::FileBrowser::paint_foreground(&self, &mut pert_ui_runtime::Painter) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::FileBrowser::pointer_input(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::PointerEvent) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FileBrowser::receives_unfocused_keys(&self) -> bool
-pub fn pert_ui_runtime::FileBrowser::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation> where Self: core::marker::Sized
+pub fn pert_ui_runtime::FileBrowser::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation>
 pub fn pert_ui_runtime::FileBrowser::restore_workspace_state(&mut self, &pert_ui_runtime::ViewState) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::FileBrowser::restore_workspace_state_with_children(&mut self, &pert_ui_runtime::ViewState, &[pert_ui_runtime::ChildInfo]) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::FileBrowser::retain_initial_children(&self) -> bool
@@ -36827,7 +36827,7 @@ pub fn pert_ui_runtime::Table::paint(&self, &mut pert_ui_runtime::Painter) -> co
 pub fn pert_ui_runtime::Table::paint_foreground(&self, &mut pert_ui_runtime::Painter) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Table::pointer_input(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::PointerEvent) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Table::receives_unfocused_keys(&self) -> bool
-pub fn pert_ui_runtime::Table::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation> where Self: core::marker::Sized
+pub fn pert_ui_runtime::Table::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation>
 pub fn pert_ui_runtime::Table::restore_workspace_state(&mut self, &pert_ui_runtime::ViewState) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::Table::restore_workspace_state_with_children(&mut self, &pert_ui_runtime::ViewState, &[pert_ui_runtime::ChildInfo]) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::Table::retain_initial_children(&self) -> bool
@@ -37467,7 +37467,7 @@ pub fn pert_ui_runtime::Tree::paint(&self, &mut pert_ui_runtime::Painter) -> cor
 pub fn pert_ui_runtime::Tree::paint_foreground(&self, &mut pert_ui_runtime::Painter) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Tree::pointer_input(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::PointerEvent) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Tree::receives_unfocused_keys(&self) -> bool
-pub fn pert_ui_runtime::Tree::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation> where Self: core::marker::Sized
+pub fn pert_ui_runtime::Tree::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation>
 pub fn pert_ui_runtime::Tree::restore_workspace_state(&mut self, &pert_ui_runtime::ViewState) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::Tree::restore_workspace_state_with_children(&mut self, &pert_ui_runtime::ViewState, &[pert_ui_runtime::ChildInfo]) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::Tree::retain_initial_children(&self) -> bool
@@ -37595,7 +37595,7 @@ pub fn pert_ui_runtime::VirtualList::paint(&self, &mut pert_ui_runtime::Painter)
 pub fn pert_ui_runtime::VirtualList::paint_foreground(&self, &mut pert_ui_runtime::Painter) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::VirtualList::pointer_input(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::PointerEvent) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::VirtualList::receives_unfocused_keys(&self) -> bool
-pub fn pert_ui_runtime::VirtualList::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation> where Self: core::marker::Sized
+pub fn pert_ui_runtime::VirtualList::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation>
 pub fn pert_ui_runtime::VirtualList::restore_workspace_state(&mut self, &pert_ui_runtime::ViewState) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::VirtualList::restore_workspace_state_with_children(&mut self, &pert_ui_runtime::ViewState, &[pert_ui_runtime::ChildInfo]) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
 pub fn pert_ui_runtime::VirtualList::retain_initial_children(&self) -> bool
