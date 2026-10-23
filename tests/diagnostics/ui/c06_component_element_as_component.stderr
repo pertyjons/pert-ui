@@ -1,0 +1,31 @@
+error[E0277]: `pert_ui::Element` is not a pert-ui component
+ --> ui/c06_component_element_as_component.rs:3:43
+  |
+3 | fn main() { let _ = Element::new("outer", Label::new("x").key("inner")); }
+  |                     ------------          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `pert_ui::Element` does not implement `Component`
+  |                     |
+  |                     required by a bound introduced by this call
+  |
+  = help: the trait `pert_ui::Component` is not implemented for `pert_ui::Element`
+  = note: a component type implements `Component`, where only `update` is required, and owns its data (`'static`)
+  = note: if this value is an `Element`, from `.key(..)` or `Element::new`, it is already described: pass it as a child instead of describing it again
+  = help: the following other types implement trait `pert_ui::Component`:
+            Accordion
+            Banner
+            Breadcrumb
+            Chip
+            Collapsible
+            CollectionFilter
+            ColorPicker
+            ColorSwatch
+          and $N others
+note: required by a bound in `pert_ui::Element::new`
+ --> $WORKSPACE/crates/pert-ui-runtime/src/layout.rs
+  |
+  |     pub fn new<C: Component + 'static>(key: impl Into<String>, mut component: C) -> Self {
+  |                   ^^^^^^^^^ required by this bound in `Element::new`
+help: consider removing this method call, as the receiver has type `pert_ui::Label` and `pert_ui::Label: pert_ui::Component` trivially holds
+  |
+3 - fn main() { let _ = Element::new("outer", Label::new("x").key("inner")); }
+3 + fn main() { let _ = Element::new("outer", Label::new("x")); }
+  |

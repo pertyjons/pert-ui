@@ -245,7 +245,7 @@ checks that exist; never claim a check you did not run.
 |---|---|
 | Markdown only | Author review, links and whitespace; review consistency with existing decisions. |
 | Rustdoc/public examples | Targeted doctests, example compilation, the affected example's headless session and warning-free rustdoc. |
-| Package-local ordinary implementation | Formatting, targeted Clippy and package tests, including affected doctests. |
+| Package-local ordinary implementation | Formatting, targeted Clippy and package tests, including affected doctests, and the diagnostics snapshots when a compiler message they cover changes. |
 | Public API, identity, scheduling, concurrency, persistence, real-time boundary or cross-package change | Workspace checks below, the API listing gate, focused contract tests and semantic review before merge. |
 | Dependencies, features, platform integration or release | Workspace checks, MSRV, supported feature configurations, the API listing gate, packaging/consumer checks and affected native platform checks. |
 
@@ -262,11 +262,23 @@ cargo run --locked -p pert-ui --features png,svg,cpu --example log_explorer -- -
 cargo run --locked -p pert-ui --features png,svg,cpu --example inventory -- --items 2000
 cargo test --locked --workspace --doc
 RUSTDOCFLAGS="-D warnings" cargo doc --locked --workspace --no-deps
+cargo test --locked -p pert-ui-diagnostics -- --ignored
 ```
 
 The `cargo run` lines are the packaged examples' headless sessions, with the
 features the workspace build unifies so its examples are reused. A new
 headless example joins them here and in the workflow.
+
+The last line compares the compiler messages pert-ui shapes with
+`#[diagnostic::on_unimplemented]` and `#[diagnostic::do_not_recommend]`
+against the `trybuild` snapshots in `tests/diagnostics/ui/`. rustc's wording
+changes between releases, so the test is ignored in ordinary runs, which
+compile it and skip it, and CI's separate `diagnostics` job runs it on Linux
+with the toolchain `rust-toolchain.toml` pins. A changed message or a
+toolchain update regenerates the snapshots by running the same command with
+`TRYBUILD=overwrite`, and the `.stderr` diff is reviewed like the `api/`
+listing. A `compile_fail` doctest does not check the error on stable Rust,
+so it proves a type-level restriction, not a message.
 
 The public API listings under `api/` must match the code. A change that adds,
 removes or changes a public item, a dependency or the toolchain runs the API
@@ -307,7 +319,8 @@ CPU-only desktop configuration (Clippy, tests and rustdoc with
 `-p pert-ui --no-default-features --features desktop-cpu`), the
 headless gallery
 (`cargo run --locked -p pert-ui-gallery -- --headless`) and library packaging
-(`cargo package --locked --workspace --exclude pert-ui-gallery --exclude pert-ui-native-checks`).
+(`cargo package --locked --workspace --exclude pert-ui-gallery
+--exclude pert-ui-native-checks --exclude pert-ui-diagnostics`).
 
 CI tests the declared MSRV, which `rust-toolchain.toml` pins for local work, on
 Linux and stable Rust on Linux, macOS and Windows. Define supported feature

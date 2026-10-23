@@ -1,0 +1,34 @@
+error[E0277]: `LiveItem` is sealed and cannot be implemented for `Level`
+ --> ui/v01_liveitem_impl.rs:5:19
+  |
+5 | impl LiveItem for Level {}
+  |                   ^^^^^ not one of pert-ui's live-data item types
+  |
+help: the trait `pert_ui_core::live::item::sealed::LiveItemSeal` is not implemented for `Level`
+ --> ui/v01_liveitem_impl.rs:4:1
+  |
+4 | struct Level(f32);
+  | ^^^^^^^^^^^^
+  = note: only `f32`, `f64`, `i32`, `i64`, `u32` and `u64` can be published; map an application's own value onto one of them and keep its meaning on the host side
+  = help: the following other types implement trait `pert_ui_core::live::item::sealed::LiveItemSeal`:
+            f32
+            f64
+            i32
+            i64
+            u32
+            u64
+note: required by a bound in `LiveItem`
+ --> $WORKSPACE/crates/pert-ui-core/src/live/item.rs
+  |
+  | pub trait LiveItem:
+  |           -------- required by a bound in this trait
+  |     LiveItemSeal + Copy + PartialOrd + Send + Sync + core::fmt::Debug + 'static
+  |     ^^^^^^^^^^^^ required by this bound in `LiveItem`
+  = note: `LiveItem` is a "sealed trait", because to implement it you also need to implement `pert_ui_core::live::item::sealed::LiveItemSeal`, which is not accessible; this is usually done to force you to use one of the provided types that already implement it
+  = help: the following types implement the trait:
+            f32
+            f64
+            i32
+            i64
+            u32
+            u64

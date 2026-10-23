@@ -7,8 +7,8 @@ use std::{
 use crate::runtime::{Invalidation, Node, RuntimeError, Shared};
 
 /// A runtime-local owner that creates new state: [`crate::Runtime`],
-/// [`crate::UpdateContext`] and [`crate::EventContext`], and references to
-/// them.
+/// [`crate::UpdateContext`], [`crate::EventContext`] and
+/// [`crate::DescribeContext`], and references to them.
 ///
 /// Constructors of built-in components that need local state (the open state
 /// of a [`crate::Select`] or [`crate::ContextMenu`], a controller's signals)
@@ -22,7 +22,24 @@ use crate::runtime::{Invalidation, Node, RuntimeError, Shared};
 /// state each time, so it keeps what must survive a description.
 ///
 /// The trait is sealed: the library implements it, so it can gain methods
-/// without breaking applications.
+/// without breaking applications. An application's own type holds the
+/// [`crate::Runtime`] or the context it was given and passes that on; it
+/// cannot implement the trait, and this does not compile:
+///
+/// ```compile_fail
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Runtime, Signal, StateOwner, UiSettings};
+///
+/// struct MyOwner(Runtime);
+/// impl StateOwner for MyOwner {
+///     fn signal<T>(&self, value: T) -> Signal<T> {
+///         self.0.signal(value)
+///     }
+///     fn ui_settings(&self) -> UiSettings {
+///         self.0.ui_settings()
+///     }
+/// }
+/// ```
 ///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
@@ -62,7 +79,12 @@ use crate::runtime::{Invalidation, Node, RuntimeError, Shared};
 /// assert!(ui.inspect().components.iter().any(|item| item.key == "mode"));
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
-pub trait StateOwner: sealed::Sealed {
+#[diagnostic::on_unimplemented(
+    message = "`{Self}` cannot create signals",
+    label = "expected a `Runtime`, `UpdateContext`, `EventContext` or `DescribeContext`",
+    note = "pass the runtime or the context of the callback you are in; `StateOwner` cannot be implemented outside pert-ui"
+)]
+pub trait StateOwner: sealed::StateOwnerSeal {
     /// Creates a signal owned by this owner's runtime, holding `value`.
     #[must_use]
     fn signal<T>(&self, value: T) -> Signal<T>;
@@ -87,12 +109,21 @@ pub trait StateOwner: sealed::Sealed {
     fn ui_settings(&self) -> crate::UiSettings;
 }
 pub(crate) mod sealed {
-    pub trait Sealed {}
-    impl Sealed for crate::Runtime {}
-    impl Sealed for crate::UpdateContext {}
-    impl Sealed for crate::EventContext {}
-    impl<O: Sealed + ?Sized> Sealed for &O {}
-    impl<O: Sealed + ?Sized> Sealed for &mut O {}
+    /// Seals [`StateOwner`](super::StateOwner). The distinct name keeps rustc
+    /// from pointing at a dependency's own `Sealed` trait when an application
+    /// tries to implement `StateOwner`, and the message below replaces the
+    /// private path in that error.
+    #[diagnostic::on_unimplemented(
+        message = "`StateOwner` is sealed and cannot be implemented for `{Self}`",
+        label = "not one of pert-ui's state owners",
+        note = "only `Runtime`, `UpdateContext`, `EventContext` and `DescribeContext` own state; hold one of them, or take `&impl StateOwner` and pass one through"
+    )]
+    pub trait StateOwnerSeal {}
+    impl StateOwnerSeal for crate::Runtime {}
+    impl StateOwnerSeal for crate::UpdateContext {}
+    impl StateOwnerSeal for crate::EventContext {}
+    impl<O: StateOwnerSeal + ?Sized> StateOwnerSeal for &O {}
+    impl<O: StateOwnerSeal + ?Sized> StateOwnerSeal for &mut O {}
 }
 impl StateOwner for crate::Runtime {
     fn signal<T>(&self, value: T) -> Signal<T> {

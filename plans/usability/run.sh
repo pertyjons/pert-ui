@@ -79,7 +79,8 @@ prepare() {
 
     echo "== packaging $ver"
     (cd "$CHECKOUT" && cargo package --locked --workspace \
-        --exclude pert-ui-gallery --exclude pert-ui-native-checks --no-verify)
+        --exclude pert-ui-gallery --exclude pert-ui-native-checks \
+        --exclude pert-ui-diagnostics --no-verify)
     local extracted="$prep/extracted"
     mkdir -p "$extracted"
     for c in "${LIB_CRATES[@]}"; do

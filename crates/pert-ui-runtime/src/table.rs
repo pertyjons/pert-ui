@@ -237,6 +237,11 @@ pub struct TableSort {
 /// An implementation is `'static`, as [`TableSource::new`] requires: it owns its
 /// rows or shares them through an `Rc`, never borrowing from a local or a
 /// component (see [`Component::content_rows`](crate::Component::content_rows)).
+#[diagnostic::on_unimplemented(
+    message = "`{Self}` cannot be used as table rows",
+    label = "`{Self}` does not implement `TableItems`",
+    note = "implement `TableItems` (`len`, `key`, `cell`) on a type that owns or shares the rows"
+)]
 pub trait TableItems {
     /// Number of rows.
     fn len(&self) -> usize;

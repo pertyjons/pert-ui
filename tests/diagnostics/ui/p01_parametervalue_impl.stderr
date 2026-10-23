@@ -1,0 +1,120 @@
+error[E0277]: `ParameterValue` is sealed and cannot be implemented for `Mode`
+ --> ui/p01_parametervalue_impl.rs:5:25
+  |
+5 | impl ParameterValue for Mode {
+  |                         ^^^^ not one of pert-ui's parameter value types
+  |
+help: the trait `pert_ui_core::family::sealed::ParameterValueSeal` is not implemented for `Mode`
+ --> ui/p01_parametervalue_impl.rs:4:1
+  |
+4 | struct Mode;
+  | ^^^^^^^^^^^
+  = note: only `f32`, `i64`, `bool` and `ChoiceId` are parameter values; map an application's own type onto one of them, such as an enum onto a choice
+help: the following other types implement trait `pert_ui_core::family::sealed::ParameterValueSeal`
+ --> $WORKSPACE/crates/pert-ui-core/src/family.rs
+  |
+  | impl sealed::ParameterValueSeal for f32 {
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `f32`
+...
+  | impl sealed::ParameterValueSeal for i64 {
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `i64`
+...
+  | impl sealed::ParameterValueSeal for bool {
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `bool`
+...
+  | impl sealed::ParameterValueSeal for ChoiceId {
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `ChoiceId`
+note: required by a bound in `ParameterValue`
+ --> $WORKSPACE/crates/pert-ui-core/src/family.rs
+  |
+  | pub trait ParameterValue:
+  |           -------------- required by a bound in this trait
+  |     sealed::ParameterValueSeal + Clone + PartialEq + Debug + Send + Sync + 'static
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `ParameterValue`
+  = note: `ParameterValue` is a "sealed trait", because to implement it you also need to implement `pert_ui_core::family::sealed::ParameterValueSeal`, which is not accessible; this is usually done to force you to use one of the provided types that already implement it
+  = help: the following types implement the trait:
+            f32
+            i64
+            bool
+            pert_ui::ChoiceId
+
+error[E0277]: `ParameterValue` is sealed and cannot be implemented for `Mode`
+ --> ui/p01_parametervalue_impl.rs:9:22
+  |
+9 |     fn spec_into_any(_: ParameterSpec<Self>) -> AnySpec { todo!() }
+  |                      ^ not one of pert-ui's parameter value types
+  |
+help: the trait `pert_ui_core::family::sealed::ParameterValueSeal` is not implemented for `Mode`
+ --> ui/p01_parametervalue_impl.rs:4:1
+  |
+4 | struct Mode;
+  | ^^^^^^^^^^^
+  = note: only `f32`, `i64`, `bool` and `ChoiceId` are parameter values; map an application's own type onto one of them, such as an enum onto a choice
+help: the following other types implement trait `pert_ui_core::family::sealed::ParameterValueSeal`
+ --> $WORKSPACE/crates/pert-ui-core/src/family.rs
+  |
+  | impl sealed::ParameterValueSeal for f32 {
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `f32`
+...
+  | impl sealed::ParameterValueSeal for i64 {
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `i64`
+...
+  | impl sealed::ParameterValueSeal for bool {
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `bool`
+...
+  | impl sealed::ParameterValueSeal for ChoiceId {
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `ChoiceId`
+
+error[E0277]: `ParameterValue` is sealed and cannot be implemented for `Mode`
+  --> ui/p01_parametervalue_impl.rs:10:37
+   |
+10 |     fn spec_from_any(_: AnySpec) -> Result<ParameterSpec<Self>, AnySpec> { todo!() }
+   |                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not one of pert-ui's parameter value types
+   |
+help: the trait `pert_ui_core::family::sealed::ParameterValueSeal` is not implemented for `Mode`
+  --> ui/p01_parametervalue_impl.rs:4:1
+   |
+ 4 | struct Mode;
+   | ^^^^^^^^^^^
+   = note: only `f32`, `i64`, `bool` and `ChoiceId` are parameter values; map an application's own type onto one of them, such as an enum onto a choice
+help: the following other types implement trait `pert_ui_core::family::sealed::ParameterValueSeal`
+  --> $WORKSPACE/crates/pert-ui-core/src/family.rs
+   |
+   | impl sealed::ParameterValueSeal for f32 {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `f32`
+...
+   | impl sealed::ParameterValueSeal for i64 {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `i64`
+...
+   | impl sealed::ParameterValueSeal for bool {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `bool`
+...
+   | impl sealed::ParameterValueSeal for ChoiceId {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `ChoiceId`
+
+error[E0277]: `ParameterValue` is sealed and cannot be implemented for `Mode`
+  --> ui/p01_parametervalue_impl.rs:11:26
+   |
+11 |     fn snapshot_into_any(_: ParameterSpec<Self>, _: ParameterSnapshot<Self>) -> AnyParameterSnapshot { todo!() }
+   |                          ^ not one of pert-ui's parameter value types
+   |
+help: the trait `pert_ui_core::family::sealed::ParameterValueSeal` is not implemented for `Mode`
+  --> ui/p01_parametervalue_impl.rs:4:1
+   |
+ 4 | struct Mode;
+   | ^^^^^^^^^^^
+   = note: only `f32`, `i64`, `bool` and `ChoiceId` are parameter values; map an application's own type onto one of them, such as an enum onto a choice
+help: the following other types implement trait `pert_ui_core::family::sealed::ParameterValueSeal`
+  --> $WORKSPACE/crates/pert-ui-core/src/family.rs
+   |
+   | impl sealed::ParameterValueSeal for f32 {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `f32`
+...
+   | impl sealed::ParameterValueSeal for i64 {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `i64`
+...
+   | impl sealed::ParameterValueSeal for bool {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `bool`
+...
+   | impl sealed::ParameterValueSeal for ChoiceId {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `ChoiceId`

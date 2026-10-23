@@ -1,0 +1,16 @@
+error[E0277]: `Vec<String>` cannot be used as list rows
+ --> ui/l01_listitems_vec.rs:3:37
+  |
+3 | fn main() { let _ = ListSource::new(vec!["a".to_owned(), "b".to_owned()]); }
+  |                     --------------- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `Vec<String>` does not implement `ListItems`
+  |                     |
+  |                     required by a bound introduced by this call
+  |
+  = help: the trait `ListItems` is not implemented for `Vec<String>`
+  = note: implement `ListItems` (`len`, `key`, `build`) on a type that owns or shares the rows, such as a struct holding an `Rc<Vec<_>>`
+  = note: `ListSource::new` takes the implementation itself, not an `Rc` of it
+note: required by a bound in `ListSource::new`
+ --> $WORKSPACE/crates/pert-ui-runtime/src/virtual_list.rs
+  |
+  |     pub fn new(items: impl ListItems + 'static) -> Self {
+  |                            ^^^^^^^^^ required by this bound in `ListSource::new`

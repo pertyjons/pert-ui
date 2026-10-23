@@ -25,6 +25,11 @@ use std::{
 /// An implementation is `'static`, as [`TreeSource::new`] requires: it owns its
 /// nodes or shares them through an `Rc`, never borrowing from a local or a
 /// component (see [`Component::content_rows`](crate::Component::content_rows)).
+#[diagnostic::on_unimplemented(
+    message = "`{Self}` cannot be used as a tree hierarchy",
+    label = "`{Self}` does not implement `TreeItems`",
+    note = "implement `TreeItems` (`roots`, `children`, `build`) on a type that owns or shares the hierarchy"
+)]
 pub trait TreeItems {
     /// The top-level nodes, in order.
     fn roots(&self) -> Vec<String>;

@@ -32,7 +32,7 @@ impl std::fmt::Debug for DescribeContext<'_> {
     }
 }
 
-impl crate::signal::sealed::Sealed for DescribeContext<'_> {}
+impl crate::signal::sealed::StateOwnerSeal for DescribeContext<'_> {}
 impl StateOwner for DescribeContext<'_> {
     fn signal<T>(&self, value: T) -> Signal<T> {
         self.0.signal(value)

@@ -16750,7 +16750,7 @@ pub fn pert_ui_runtime::prelude::ListItems::is_empty(&self) -> bool
 pub fn pert_ui_runtime::prelude::ListItems::key(&self, usize) -> core::option::Option<alloc::string::String>
 pub fn pert_ui_runtime::prelude::ListItems::len(&self) -> usize
 pub fn pert_ui_runtime::prelude::ListItems::text(&self, usize) -> core::option::Option<alloc::string::String>
-pub trait pert_ui_runtime::prelude::StateOwner: pert_ui_runtime::signal::sealed::Sealed
+pub trait pert_ui_runtime::prelude::StateOwner: pert_ui_runtime::signal::sealed::StateOwnerSeal
 pub fn pert_ui_runtime::prelude::StateOwner::signal<T>(&self, T) -> pert_ui_runtime::Signal<T>
 pub fn pert_ui_runtime::prelude::StateOwner::ui_settings(&self) -> pert_ui_runtime::UiSettings
 impl pert_ui_runtime::StateOwner for pert_ui_runtime::DescribeContext<'_>
@@ -38533,7 +38533,7 @@ pub fn pert_ui_runtime::ListItems::is_empty(&self) -> bool
 pub fn pert_ui_runtime::ListItems::key(&self, usize) -> core::option::Option<alloc::string::String>
 pub fn pert_ui_runtime::ListItems::len(&self) -> usize
 pub fn pert_ui_runtime::ListItems::text(&self, usize) -> core::option::Option<alloc::string::String>
-pub trait pert_ui_runtime::StateOwner: pert_ui_runtime::signal::sealed::Sealed
+pub trait pert_ui_runtime::StateOwner: pert_ui_runtime::signal::sealed::StateOwnerSeal
 pub fn pert_ui_runtime::StateOwner::signal<T>(&self, T) -> pert_ui_runtime::Signal<T>
 pub fn pert_ui_runtime::StateOwner::ui_settings(&self) -> pert_ui_runtime::UiSettings
 impl pert_ui_runtime::StateOwner for pert_ui_runtime::DescribeContext<'_>

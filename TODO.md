@@ -91,3 +91,15 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   neither returned nor queued in `focus_errors`. Queue it before returning the
   reveal error and add a regression test. Planned as `N:focus-reveal` in part
   6d2 of `plans/usability/api-audit/fix-plan.md`.
+- [ ] 2026-10-23 `crates/pert-ui/src/app.rs` `AppError` — public API and
+  documentation: its rustdoc lists every error type the blanket
+  `impl<E> From<E> for AppError` accepts, repeating the runtime's
+  `leaf_conversions!` set, and nothing checks the list. Generate the list from
+  the macro or add a test that converts each listed type, so a new leaf error
+  cannot go undocumented.
+- [ ] 2026-10-23 `tests/diagnostics/ui/c01_*`, `c06_*` — verification: the
+  `Component` snapshots include rustc's first eight implementors, so a new
+  built-in component whose name sorts early changes them without any message
+  change. Choose cases whose output omits the implementor list (for example a
+  bound on a generic function with a local trait object), or document in
+  `docs/verification.md` that such churn is expected and reviewed.

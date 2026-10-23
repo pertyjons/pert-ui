@@ -1039,6 +1039,12 @@ impl Node {
 /// data or shares it through an `Rc`, and never borrows from a local or from
 /// the code that builds it. The same holds for the rows and services it hands
 /// to the runtime; [`Self::content_rows`] shows the pattern.
+#[diagnostic::on_unimplemented(
+    message = "`{Self}` is not a pert-ui component",
+    label = "`{Self}` does not implement `Component`",
+    note = "a component type implements `Component`, where only `update` is required, and owns its data (`'static`)",
+    note = "if this value is an `Element`, from `.key(..)` or `Element::new`, it is already described: pass it as a child instead of describing it again"
+)]
 pub trait Component: std::any::Any {
     /// Applies a new same-key, same-type description to this mounted component.
     ///

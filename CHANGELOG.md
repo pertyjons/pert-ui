@@ -1,5 +1,66 @@
 # Changelog
 
+## 0.3.64 (2026-10-23)
+
+Compiler diagnostics (API audit fix plan, part 6c2). The compiler messages
+for the mistakes the diagnostics survey measured now name pert-ui's intent
+instead of a private path or the wrong type, and a new snapshot check keeps
+them that way on the pinned toolchain. Not breaking: the renamed trait is
+private.
+
+- Changed: `Component`, `ListItems`, `TreeItems`, `TableItems`,
+  `ContentRows`, `Clipboard` and `StateOwner` carry
+  `#[diagnostic::on_unimplemented]`. A type that does not implement one of
+  them is reported with a headline such as ``Vec<String>` cannot be used as
+  list rows`` and notes naming the required methods; an `Element` passed
+  where a component is expected is told that it is already described. The
+  notes hold for every type that can fail the bound.
+- Changed: the private seal of `StateOwner` is renamed from
+  `signal::sealed::Sealed` to `signal::sealed::StateOwnerSeal` and carries
+  its own message, so implementing `StateOwner` reports
+  ``StateOwner` is sealed and cannot be implemented for `MyOwner`` with the
+  types that own state, and no longer points at a dependency's `Sealed`
+  trait. The `api/` listings show the changed supertrait path of
+  `StateOwner` (at the root and in the prelude). `StateOwner`'s rustdoc has a
+  `compile_fail` example of the rejected implementation, and its summary
+  names `DescribeContext` among the owners.
+- Changed: the private seals of `pert_ui_core`'s other sealed traits get
+  distinct names and their own messages: `family::sealed::Sealed` is now
+  `family::sealed::ParameterValueSeal` and `live::item::sealed::Sealed` is
+  now `live::item::sealed::LiveItemSeal`. Implementing `ParameterValue` or
+  `LiveItem` reports that the trait is sealed for that type and names the
+  types that implement it (`f32`, `i64`, `bool` and `ChoiceId`; `f32`, `f64`,
+  `i32`, `i64`, `u32` and `u64`); the snapshot cases `p01` and `v01` cover
+  both messages. The `api/` listings show the changed
+  supertrait paths of `ParameterValue` and `LiveItem` and the changed
+  projection path in `ParameterSpec`'s and `ParameterState`'s auto-trait
+  bounds.
+- Changed (F11): `impl<E> From<E> for AppError` carries
+  `#[diagnostic::do_not_recommend]`, so `AppError::from` or `?` on an error
+  it does not accept, such as `std::io::Error`, reports the missing
+  `From` for `AppError` rather than for `DrawError`. `AppError`'s rustdoc
+  lists the accepted errors, which rustc no longer lists, and points to
+  `ApplicationError::new` for any other error.
+- Changed: `Modifiers`' fields carry rustdoc search aliases (`control`:
+  `CONTROL`, `CTRL`; `alt`: `ALT`, `OPTION`; `super_key`: `SUPER`, `META`,
+  `WINDOWS`), and its rustdoc says there are no per-key constants, shows
+  `Modifiers { control: true, ..Modifiers::default() }`, and says
+  `PRIMARY` is Control on Windows and Linux and Command on macOS.
+  `PRIMARY` has no alias, since Control means Command there only on macOS.
+- Tooling: the new unpublished workspace member `pert-ui-diagnostics`
+  (`tests/diagnostics`) compiles one case per message pert-ui shapes against
+  the facade and compares rustc's output with committed `trybuild` `.stderr`
+  snapshots. Its test is ignored in ordinary runs, which compile it and skip
+  it; CI's new `diagnostics` job runs `cargo test --locked -p
+  pert-ui-diagnostics -- --ignored` on Linux with the pinned toolchain, and a
+  toolchain update regenerates the snapshots with `TRYBUILD=overwrite`.
+  `trybuild` 1.0.122 is its only dev-dependency; adding it locks
+  `toml_datetime` 1.1.2 and `toml_parser` 1.1.5, which `toml_edit` shares;
+  winit uses that only on Android, through `proc-macro-crate`. The packaging commands in CI, AGENTS.md, the README
+  and the usability kit exclude the member. AGENTS.md and
+  `docs/verification.md` describe the check and say that a `compile_fail`
+  doctest does not check its error code on stable Rust.
+
 ## 0.3.63 (2026-10-23)
 
 Error values (API audit fix plan, part 6c1). An error that rejects a key,

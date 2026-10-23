@@ -1,0 +1,15 @@
+error[E0277]: `BTreeMap<String, Vec<String>>` cannot be used as a tree hierarchy
+ --> ui/t01_treeitems_not_impl.rs:4:96
+  |
+4 | fn main() { let tree: BTreeMap<String, Vec<String>> = BTreeMap::new(); let _ = TreeSource::new(tree); }
+  |                                                                                --------------- ^^^^ `BTreeMap<String, Vec<String>>` does not implement `TreeItems`
+  |                                                                                |
+  |                                                                                required by a bound introduced by this call
+  |
+  = help: the trait `TreeItems` is not implemented for `BTreeMap<String, Vec<String>>`
+  = note: implement `TreeItems` (`roots`, `children`, `build`) on a type that owns or shares the hierarchy
+note: required by a bound in `TreeSource::new`
+ --> $WORKSPACE/crates/pert-ui-runtime/src/tree.rs
+  |
+  |     pub fn new(items: impl TreeItems + 'static) -> Self {
+  |                            ^^^^^^^^^ required by this bound in `TreeSource::new`

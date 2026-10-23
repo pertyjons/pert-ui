@@ -45,7 +45,7 @@ impl std::fmt::Display for ParameterFamily {
 /// [`AnyValue`], [`AnySpec`] and [`AnyParameterSnapshot`]; prefer those.
 /// Values are cheap to clone: `ChoiceId` shares its text.
 pub trait ParameterValue:
-    sealed::Sealed + Clone + PartialEq + Debug + Send + Sync + 'static
+    sealed::ParameterValueSeal + Clone + PartialEq + Debug + Send + Sync + 'static
 {
     /// The family this canonical type represents.
     const FAMILY: ParameterFamily;
@@ -81,7 +81,17 @@ pub(crate) mod sealed {
     use super::*;
 
     /// Family-private domain storage and operations; not nameable outside the crate.
-    pub trait Sealed: Sized {
+    ///
+    /// It seals [`ParameterValue`](super::ParameterValue). The distinct name
+    /// keeps rustc from pointing at another crate's `Sealed` trait when an
+    /// application tries to implement `ParameterValue`, and the message below
+    /// replaces the private path in that error.
+    #[diagnostic::on_unimplemented(
+        message = "`ParameterValue` is sealed and cannot be implemented for `{Self}`",
+        label = "not one of pert-ui's parameter value types",
+        note = "only `f32`, `i64`, `bool` and `ChoiceId` are parameter values; map an application's own type onto one of them, such as an enum onto a choice"
+    )]
+    pub trait ParameterValueSeal: Sized {
         /// Family-specific domain data held by a specification.
         type Domain: Clone + Debug + PartialEq + Send + Sync + 'static;
         fn validate(domain: &Self::Domain, value: &Self) -> Result<(), ParameterError>;
@@ -218,7 +228,7 @@ fn rank_to_position(k: u64, n: u64) -> NormalizedValue {
     NormalizedValue::try_from(ratio_to_f32(k, n)).unwrap_or(NormalizedValue::MAX)
 }
 
-impl sealed::Sealed for f32 {
+impl sealed::ParameterValueSeal for f32 {
     type Domain = ContinuousDomain;
 
     fn validate(domain: &Self::Domain, value: &Self) -> Result<(), ParameterError> {
@@ -288,7 +298,7 @@ impl sealed::Sealed for f32 {
     }
 }
 
-impl sealed::Sealed for i64 {
+impl sealed::ParameterValueSeal for i64 {
     type Domain = SteppedDomain;
 
     fn validate(domain: &Self::Domain, value: &Self) -> Result<(), ParameterError> {
@@ -320,7 +330,7 @@ impl sealed::Sealed for i64 {
     }
 }
 
-impl sealed::Sealed for bool {
+impl sealed::ParameterValueSeal for bool {
     type Domain = BooleanDomain;
 
     fn validate(_: &Self::Domain, _: &Self) -> Result<(), ParameterError> {
@@ -358,7 +368,7 @@ impl ChoiceDomain {
     }
 }
 
-impl sealed::Sealed for ChoiceId {
+impl sealed::ParameterValueSeal for ChoiceId {
     type Domain = ChoiceDomain;
 
     fn validate(domain: &Self::Domain, value: &Self) -> Result<(), ParameterError> {

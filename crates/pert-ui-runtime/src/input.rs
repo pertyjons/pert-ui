@@ -299,6 +299,22 @@ impl KeyEvent {
 
 /// Combined left/right modifier state. See [`KeyboardState::modifiers`] for
 /// its source.
+///
+/// There are no per-key constants such as `Modifiers::CONTROL`: set the
+/// fields and leave the rest at their defaults. [`Self::PRIMARY`] is the one
+/// constant, the platform's primary modifier, which is Control on Windows and
+/// Linux and Command on macOS.
+///
+/// ```
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::Modifiers;
+///
+/// let control = Modifiers { control: true, ..Modifiers::default() };
+/// let control_shift = Modifiers { shift: true, ..control };
+/// assert!(control.control && !control.shift);
+/// assert!(control_shift.control && control_shift.shift);
+/// assert_eq!(control == Modifiers::PRIMARY, !cfg!(target_os = "macos"));
+/// ```
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 #[cfg_attr(
     feature = "serde",
@@ -309,10 +325,13 @@ pub struct Modifiers {
     /// Either Shift key is held.
     pub shift: bool,
     /// Either Control key is held.
+    #[doc(alias("CONTROL", "CTRL"))]
     pub control: bool,
     /// Either Alt key is held.
+    #[doc(alias("ALT", "OPTION"))]
     pub alt: bool,
     /// Either platform Super/Command/Windows key is held.
+    #[doc(alias("SUPER", "META", "WINDOWS"))]
     pub super_key: bool,
 }
 

@@ -1,0 +1,20 @@
+[package]
+name = "pert-ui-diagnostics"
+description = "Snapshots of the compiler messages pert-ui shapes with diagnostic attributes"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+# The snapshot cases under `ui/` use the facade with its default features, as
+# an application does; `AppError` needs `desktop`.
+pert-ui.workspace = true
+
+[dev-dependencies]
+trybuild.workspace = true
+
+[lints]
+workspace = true

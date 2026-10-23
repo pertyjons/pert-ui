@@ -285,6 +285,27 @@ cargo test --locked --workspace --doc
 RUSTDOCFLAGS="-D warnings" cargo doc --locked --workspace --no-deps
 ```
 
+The `pert-ui-diagnostics` package (`tests/diagnostics`, never published)
+holds `trybuild` snapshots of the compiler messages pert-ui shapes with
+`#[diagnostic::on_unimplemented]` on its extension traits and the seals of
+`StateOwner`, `ParameterValue` and `LiveItem`, and with
+`#[diagnostic::do_not_recommend]` on `AppError`'s blanket conversion. rustc's wording changes between releases, so the
+snapshot test is ignored in the runs above, which compile it and skip it;
+CI's `diagnostics` job runs it on Linux with the toolchain
+`rust-toolchain.toml` pins:
+
+```sh
+cargo test --locked -p pert-ui-diagnostics -- --ignored
+```
+
+A changed message or a toolchain update regenerates the snapshots with
+`TRYBUILD=overwrite` and the same command, and the `.stderr` diff is reviewed
+like the `api/` listing. A `compile_fail` doctest is different evidence: on
+stable Rust, rustdoc does not check the error code a `compile_fail,E0XXX`
+block names, so the doctest passes for any compile error, a typo included. It
+proves a type-level restriction that must hold on every toolchain, such as
+`StateOwner` being sealed, not the message.
+
 Changes to the core live-data protocol additionally run the release-profile
 Loom models named in AGENTS.md. Dependency, feature, platform and release
 changes also need the feature configurations, release tests, MSRV, headless

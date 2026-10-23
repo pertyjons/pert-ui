@@ -361,6 +361,42 @@ and anything left to a later part.
     - `api/generate.sh`, with no further difference.
 
     The fixes are verified in 6c2's review.
+- **6c2 (0.3.64):** compiler diagnostics.
+  - `#[diagnostic::on_unimplemented]` on the consumer traits, `StateOwner`
+    and its seal, renamed `StateOwnerSeal`.
+  - `do_not_recommend` on `AppError`'s blanket `From` (F11), with the
+    accepted errors listed in its rustdoc.
+  - A `compile_fail` doctest for sealing `StateOwner`, and `Modifiers`
+    field aliases and example (`S:m06`).
+  - A `publish = false` `pert-ui-diagnostics` member with `trybuild`
+    snapshots, run by its own CI job on the pinned toolchain and excluded
+    from packaging; AGENTS.md, CI, `docs/verification.md`, the README and
+    the kit's packaging command are kept in step.
+  - **Checks run (the dependency row):**
+    - the workspace gate;
+    - `cargo test --locked -p pert-ui-diagnostics -- --ignored`;
+    - release-profile tests;
+    - Clippy, tests and rustdoc in every CI feature configuration;
+    - the headless gallery;
+    - the loom models (core's seals changed);
+    - `api/generate.sh`;
+    - `git diff --check`.
+
+    The feature configurations, release tests, example sessions and gallery
+    ran before the follow-up below, which changed only seal names, rustdoc
+    and two snapshot cases, and is covered by the workspace gate, loom and
+    the diagnostics suite rerun after it. Library packaging and the
+    packaged-consumer check run after the commit.
+  - **Beyond the plan's lines:**
+    - the same similar-name defect in pert-ui-core's seals, renamed
+      `ParameterValueSeal` and `LiveItemSeal` with their own messages and
+      snapshot cases `p01` and `v01`;
+    - `StateOwner`'s summary names `DescribeContext`;
+    - the root README keeps the packaging command in step;
+    - `Cargo.lock` moved `toml_datetime` and `toml_parser`, which
+      `trybuild` shares.
+  - **Recorded in TODO.md:** `AppError`'s accepted-error list is unchecked,
+    and the `Component` snapshots list rustc's first implementors.
 
 ## Rules for every part
 

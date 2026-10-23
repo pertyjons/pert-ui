@@ -68,6 +68,9 @@ minimum supported version. The workspace packages are:
 - `pert-ui-native-checks`: unpublished runner for the opt-in native checks, one
   process per check; see [verification](docs/verification.md). It also holds
   an experimental native input probe.
+- `pert-ui-diagnostics`: unpublished snapshots of the compiler messages
+  pert-ui shapes, run on the pinned toolchain; see
+  [verification](docs/verification.md#workspace-gate).
 
 ```sh
 cargo run -p pert-ui-gallery
@@ -78,8 +81,8 @@ cargo test --locked --workspace
 cargo test --locked --workspace --doc
 cargo test --locked --release --workspace
 RUSTDOCFLAGS="-D warnings" cargo doc --locked --workspace --no-deps
-cargo package --locked --workspace --exclude pert-ui-gallery --exclude pert-ui-native-checks --list
-cargo package --locked --workspace --exclude pert-ui-gallery --exclude pert-ui-native-checks
+cargo package --locked --workspace --exclude pert-ui-gallery --exclude pert-ui-native-checks --exclude pert-ui-diagnostics --list
+cargo package --locked --workspace --exclude pert-ui-gallery --exclude pert-ui-native-checks --exclude pert-ui-diagnostics
 ```
 
 The default gallery groups one interactive page per implemented widget family

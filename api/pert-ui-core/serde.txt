@@ -745,13 +745,13 @@ pub type pert_ui_core::ParameterSpec<T>::Error = pert_ui_core::AnySpec
 pub fn pert_ui_core::ParameterSpec<T>::try_from(pert_ui_core::AnySpec) -> core::result::Result<Self, Self::Error>
 impl<T: pert_ui_core::ParameterValue> core::fmt::Debug for pert_ui_core::ParameterSpec<T>
 pub fn pert_ui_core::ParameterSpec<T>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
-impl<T> core::marker::Freeze for pert_ui_core::ParameterSpec<T> where T: core::marker::Freeze, <T as pert_ui_core::family::sealed::Sealed>::Domain: core::marker::Freeze
+impl<T> core::marker::Freeze for pert_ui_core::ParameterSpec<T> where T: core::marker::Freeze, <T as pert_ui_core::family::sealed::ParameterValueSeal>::Domain: core::marker::Freeze
 impl<T> core::marker::Send for pert_ui_core::ParameterSpec<T>
 impl<T> core::marker::Sync for pert_ui_core::ParameterSpec<T>
-impl<T> core::marker::Unpin for pert_ui_core::ParameterSpec<T> where T: core::marker::Unpin, <T as pert_ui_core::family::sealed::Sealed>::Domain: core::marker::Unpin
-impl<T> core::marker::UnsafeUnpin for pert_ui_core::ParameterSpec<T> where T: core::marker::UnsafeUnpin, <T as pert_ui_core::family::sealed::Sealed>::Domain: core::marker::UnsafeUnpin
-impl<T> core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::ParameterSpec<T> where T: core::panic::unwind_safe::RefUnwindSafe, <T as pert_ui_core::family::sealed::Sealed>::Domain: core::panic::unwind_safe::RefUnwindSafe
-impl<T> core::panic::unwind_safe::UnwindSafe for pert_ui_core::ParameterSpec<T> where T: core::panic::unwind_safe::UnwindSafe, <T as pert_ui_core::family::sealed::Sealed>::Domain: core::panic::unwind_safe::UnwindSafe
+impl<T> core::marker::Unpin for pert_ui_core::ParameterSpec<T> where T: core::marker::Unpin, <T as pert_ui_core::family::sealed::ParameterValueSeal>::Domain: core::marker::Unpin
+impl<T> core::marker::UnsafeUnpin for pert_ui_core::ParameterSpec<T> where T: core::marker::UnsafeUnpin, <T as pert_ui_core::family::sealed::ParameterValueSeal>::Domain: core::marker::UnsafeUnpin
+impl<T> core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::ParameterSpec<T> where T: core::panic::unwind_safe::RefUnwindSafe, <T as pert_ui_core::family::sealed::ParameterValueSeal>::Domain: core::panic::unwind_safe::RefUnwindSafe
+impl<T> core::panic::unwind_safe::UnwindSafe for pert_ui_core::ParameterSpec<T> where T: core::panic::unwind_safe::UnwindSafe, <T as pert_ui_core::family::sealed::ParameterValueSeal>::Domain: core::panic::unwind_safe::UnwindSafe
 pub struct pert_ui_core::ParameterState<T: pert_ui_core::ParameterValue>
 impl<T: pert_ui_core::ParameterValue> pert_ui_core::ParameterState<T>
 pub const pert_ui_core::ParameterState<T>::MAX_TERMINAL_RECEIPTS: usize
@@ -774,13 +774,13 @@ pub fn pert_ui_core::ParameterState<T>::update(&mut self, &pert_ui_core::EditTok
 pub fn pert_ui_core::ParameterState<T>::write_base(&mut self, T) -> core::result::Result<(), pert_ui_core::EditError>
 impl<T: pert_ui_core::ParameterValue> core::fmt::Debug for pert_ui_core::ParameterState<T>
 pub fn pert_ui_core::ParameterState<T>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
-impl<T> core::marker::Freeze for pert_ui_core::ParameterState<T> where T: core::marker::Freeze, <T as pert_ui_core::family::sealed::Sealed>::Domain: core::marker::Freeze
+impl<T> core::marker::Freeze for pert_ui_core::ParameterState<T> where T: core::marker::Freeze, <T as pert_ui_core::family::sealed::ParameterValueSeal>::Domain: core::marker::Freeze
 impl<T> core::marker::Send for pert_ui_core::ParameterState<T>
 impl<T> core::marker::Sync for pert_ui_core::ParameterState<T>
-impl<T> core::marker::Unpin for pert_ui_core::ParameterState<T> where T: core::marker::Unpin, <T as pert_ui_core::family::sealed::Sealed>::Domain: core::marker::Unpin
-impl<T> core::marker::UnsafeUnpin for pert_ui_core::ParameterState<T> where T: core::marker::UnsafeUnpin, <T as pert_ui_core::family::sealed::Sealed>::Domain: core::marker::UnsafeUnpin
-impl<T> core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::ParameterState<T> where T: core::panic::unwind_safe::RefUnwindSafe, <T as pert_ui_core::family::sealed::Sealed>::Domain: core::panic::unwind_safe::RefUnwindSafe
-impl<T> core::panic::unwind_safe::UnwindSafe for pert_ui_core::ParameterState<T> where T: core::panic::unwind_safe::UnwindSafe + core::panic::unwind_safe::RefUnwindSafe, <T as pert_ui_core::family::sealed::Sealed>::Domain: core::panic::unwind_safe::UnwindSafe
+impl<T> core::marker::Unpin for pert_ui_core::ParameterState<T> where T: core::marker::Unpin, <T as pert_ui_core::family::sealed::ParameterValueSeal>::Domain: core::marker::Unpin
+impl<T> core::marker::UnsafeUnpin for pert_ui_core::ParameterState<T> where T: core::marker::UnsafeUnpin, <T as pert_ui_core::family::sealed::ParameterValueSeal>::Domain: core::marker::UnsafeUnpin
+impl<T> core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::ParameterState<T> where T: core::panic::unwind_safe::RefUnwindSafe, <T as pert_ui_core::family::sealed::ParameterValueSeal>::Domain: core::panic::unwind_safe::RefUnwindSafe
+impl<T> core::panic::unwind_safe::UnwindSafe for pert_ui_core::ParameterState<T> where T: core::panic::unwind_safe::UnwindSafe + core::panic::unwind_safe::RefUnwindSafe, <T as pert_ui_core::family::sealed::ParameterValueSeal>::Domain: core::panic::unwind_safe::UnwindSafe
 pub struct pert_ui_core::PowerExponent(_)
 impl pert_ui_core::PowerExponent
 pub const pert_ui_core::PowerExponent::MAX: Self
@@ -1051,14 +1051,14 @@ pub type pert_ui_core::HostValue::Canonical: pert_ui_core::ParameterValue
 pub type pert_ui_core::HostValue::Error: core::error::Error + 'static
 pub fn pert_ui_core::HostValue::from_canonical(Self::Canonical) -> core::result::Result<Self, Self::Error>
 pub fn pert_ui_core::HostValue::to_canonical(&self) -> core::result::Result<Self::Canonical, Self::Error>
-pub trait pert_ui_core::LiveItem: pert_ui_core::live::item::sealed::Sealed + core::marker::Copy + core::cmp::PartialOrd + core::marker::Send + core::marker::Sync + core::fmt::Debug + 'static
+pub trait pert_ui_core::LiveItem: pert_ui_core::live::item::sealed::LiveItemSeal + core::marker::Copy + core::cmp::PartialOrd + core::marker::Send + core::marker::Sync + core::fmt::Debug + 'static
 impl pert_ui_core::LiveItem for f32
 impl pert_ui_core::LiveItem for f64
 impl pert_ui_core::LiveItem for i32
 impl pert_ui_core::LiveItem for i64
 impl pert_ui_core::LiveItem for u32
 impl pert_ui_core::LiveItem for u64
-pub trait pert_ui_core::ParameterValue: pert_ui_core::family::sealed::Sealed + core::clone::Clone + core::cmp::PartialEq + core::fmt::Debug + core::marker::Send + core::marker::Sync + 'static
+pub trait pert_ui_core::ParameterValue: pert_ui_core::family::sealed::ParameterValueSeal + core::clone::Clone + core::cmp::PartialEq + core::fmt::Debug + core::marker::Send + core::marker::Sync + 'static
 pub const pert_ui_core::ParameterValue::FAMILY: pert_ui_core::ParameterFamily
 pub fn pert_ui_core::ParameterValue::from_any(pert_ui_core::AnyValue) -> core::result::Result<Self, pert_ui_core::AnyValue>
 pub fn pert_ui_core::ParameterValue::into_any(self) -> pert_ui_core::AnyValue

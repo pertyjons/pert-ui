@@ -94,9 +94,28 @@ jobs:
       - name: Reclaim build artifacts before packaging
         run: cargo clean
       - name: Inspect library contents
-        run: cargo package --locked --workspace --exclude pert-ui-gallery --exclude pert-ui-native-checks --list
+        run: cargo package --locked --workspace --exclude pert-ui-gallery --exclude pert-ui-native-checks --exclude pert-ui-diagnostics --list
       - name: Verify library packages
-        run: cargo package --locked --workspace --exclude pert-ui-gallery --exclude pert-ui-native-checks
+        run: cargo package --locked --workspace --exclude pert-ui-gallery --exclude pert-ui-native-checks --exclude pert-ui-diagnostics
+
+  diagnostics:
+    # Snapshots of the compiler messages pert-ui shapes with diagnostic
+    # attributes (tests/diagnostics). rustc's wording changes between
+    # releases, so one Linux job compares them with the pinned toolchain; the
+    # headless jobs above compile the ignored test and skip it.
+    name: Compiler diagnostics
+    runs-on: ubuntu-latest
+    env:
+      CARGO_TERM_COLOR: always
+      CARGO_PROFILE_DEV_DEBUG: 0
+      CARGO_INCREMENTAL: 0
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install Rust
+        run: rustup toolchain install "$(sed -n 's/^channel = "\(.*\)"$/\1/p' rust-toolchain.toml)" --profile minimal
+      - run: cargo test --locked -p pert-ui-diagnostics -- --ignored
 
   api-listing:
     # The public API listings under api/ must match the code. They are a view

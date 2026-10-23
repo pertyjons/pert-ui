@@ -40,6 +40,12 @@ use std::collections::BTreeSet;
 /// An implementation is `'static`, as [`ListSource::new`] requires: it owns its
 /// rows or shares them through an `Rc`, never borrowing from a local or a
 /// component (see [`Component::content_rows`]).
+#[diagnostic::on_unimplemented(
+    message = "`{Self}` cannot be used as list rows",
+    label = "`{Self}` does not implement `ListItems`",
+    note = "implement `ListItems` (`len`, `key`, `build`) on a type that owns or shares the rows, such as a struct holding an `Rc<Vec<_>>`",
+    note = "`ListSource::new` takes the implementation itself, not an `Rc` of it"
+)]
 pub trait ListItems {
     /// Number of rows.
     fn len(&self) -> usize;

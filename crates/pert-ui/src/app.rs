@@ -10,6 +10,25 @@ use crate::{DrawError, Runtime, RuntimeError};
 /// in [`ApplicationError`](crate::ApplicationError). `?` therefore works on all of
 /// them in the initialization closure.
 ///
+/// `From` and `?` accept exactly these errors: [`DrawError`], [`RuntimeError`],
+/// [`PathError`](crate::PathError), and the leaf errors `RuntimeError` wraps,
+/// [`GeometryError`](crate::GeometryError), [`LayoutError`](crate::LayoutError),
+/// [`ChoiceError`](crate::ChoiceError), [`BindingError`](crate::BindingError),
+/// [`EditError`](crate::EditError), [`DeliveryError`](crate::DeliveryError),
+/// [`ApplicationError`](crate::ApplicationError), [`TextError`](crate::TextError),
+/// [`TextEditError`](crate::TextEditError), [`FontError`](crate::FontError),
+/// [`ClipboardError`](crate::ClipboardError),
+/// [`NumberInputError`](crate::NumberInputError),
+/// [`ParameterError`](crate::ParameterError),
+/// [`ParameterIdError`](crate::ParameterIdError),
+/// [`NormalizedValueError`](crate::NormalizedValueError) and
+/// [`LiveError`](crate::LiveError). Any other error, such as a
+/// `std::io::Error`, is wrapped first with
+/// [`ApplicationError::new`](crate::ApplicationError::new). The compiler does
+/// not list these types when a conversion fails, because the conversion is one
+/// blanket implementation that it is told not to recommend; it reports the
+/// missing `From` for `AppError` instead.
+///
 /// Unlike the library's other errors, `AppError` is neither `Clone` nor
 /// `PartialEq`: [`Self::ErrorReporting`] keeps the `std::io::Error` of a failed
 /// report as its typed source. Match on the variants instead.
@@ -164,6 +183,11 @@ impl std::error::Error for AppShutdownError {
 /// [`DrawError::Runtime`] and a leaf both become [`AppError::Runtime`], and any
 /// other drawing failure becomes [`AppError::Drawing`]. Deriving the set from
 /// `DrawError` keeps the list of leaf errors in one place, the runtime.
+///
+/// `#[diagnostic::do_not_recommend]` keeps rustc from reporting a failed
+/// conversion as a missing `From` for `DrawError`; it names `AppError`, and
+/// [`AppError`]'s own documentation lists the accepted errors.
+#[diagnostic::do_not_recommend]
 impl<E> From<E> for AppError
 where
     DrawError: From<E>,

@@ -1,0 +1,5 @@
+error[E0277]: the trait bound `pert_ui::AppError: From<std::io::Error>` is not satisfied
+ --> ui/m03_apperror_from_io.rs:3:21
+  |
+3 | fn main() { let _ = AppError::from(std::io::Error::other("x")); }
+  |                     ^^^^^^^^ the trait `From<std::io::Error>` is not implemented for `pert_ui::AppError`

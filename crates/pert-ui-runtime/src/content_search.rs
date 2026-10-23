@@ -351,6 +351,11 @@ impl ContentSearch {
 /// implementation is `'static`: it owns its rows or shares them through an
 /// `Rc`, never borrowing from the component (see
 /// [`Component::content_rows`](crate::Component::content_rows)).
+#[diagnostic::on_unimplemented(
+    message = "`{Self}` does not offer searchable rows",
+    label = "`{Self}` does not implement `ContentRows`",
+    note = "implement `ContentRows` (`len`, `key`, `text`, `revision`, `reveal`) for `{Self}`, answering from data it owns"
+)]
 pub trait ContentRows {
     /// Number of rows.
     fn len(&self) -> usize;

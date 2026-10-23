@@ -221,6 +221,11 @@ fn describe(description: &str) -> String {
 /// [`Runtime::set_clipboard`](crate::Runtime::set_clipboard) requires: it owns
 /// its storage or shares it through an `Rc`, such as a struct holding an
 /// `Rc<RefCell<String>>`, never borrowing from a local.
+#[diagnostic::on_unimplemented(
+    message = "`{Self}` is not a clipboard service",
+    label = "`{Self}` does not implement `Clipboard`",
+    note = "implement `Clipboard` (`read_text`, `write_text`) on a type that owns its storage, such as a struct holding an `Rc<RefCell<String>>`"
+)]
 pub trait Clipboard {
     /// Reads owned UTF-8 text.
     /// The service may allocate the complete clipboard payload; editor limits
