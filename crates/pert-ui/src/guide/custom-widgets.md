@@ -10,6 +10,39 @@ its deterministic headless session from a checkout with
 `cargo run -p pert-ui --example diagram_editor --no-default-features --features cpu`,
 or open it with `cargo run -p pert-ui --example diagram_editor --features cpu -- --window`.
 
+# Imports
+
+Application code globs [`prelude`], and a widget that lays
+out, draws and handles input needs nothing more. A widget that describes
+itself for inspection, starts a drag, keeps a receipt such as a
+[`TaskReceipt`], presents in its own native window or hosts an editor session
+also globs [`component`], which holds every name
+implementing [`Component`] writes. Both globs can be used together, since
+they re-export the same items:
+
+```
+use pert_ui::{component::*, prelude::*};
+
+struct Marker;
+
+impl Component for Marker {
+    fn update(&mut self, _cx: &mut UpdateContext) -> Result<(), RuntimeError> {
+        Ok(())
+    }
+    fn inspect(&self) -> ComponentDetails {
+        ComponentDetails {
+            semantics: Some(Semantics::new(SemanticRole::Image).name("marker")),
+            ..ComponentDetails::default()
+        }
+    }
+}
+# let _ = Marker;
+```
+
+The [`component`] page has an example that mounts such a
+widget. The examples in this chapter glob the crate root, which holds every
+name.
+
 # Who may write, and when
 
 A component runs in phases. [`Component::update`] reads bindings through its

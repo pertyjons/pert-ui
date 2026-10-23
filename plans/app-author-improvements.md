@@ -357,7 +357,10 @@ stays window-free.
   chapter on headless testing and CPU captures.
 - A smaller application prelude and thematic modules for the docs.rs index,
   as a separate public-API branch: removing a prelude name can break
-  consumers.
+  consumers. The API audit's part 6e (0.3.67) grew the prelude by about
+  seventy names under its decided membership rule and added the
+  `component` module for component authors; whether the prelude shrinks
+  stays this slice's decision, on its own breaking branch.
 
 Inputs from later plans and the 2026-10-20 audit:
 
@@ -368,20 +371,18 @@ Inputs from later plans and the 2026-10-20 audit:
   are applications with headless sessions. The tutorial and the testing
   chapter start from these rather than beside them.
 - The [mixer-probe plan](archive/mixer-probe-improvements.md) found that the
-  prelude lacks the names an ordinary command or live-data application uses
-  (`CommandScope`, `KeyChord`, `CommandSource`, `series_bridge`,
-  `SeriesConfig`, `SeriesSource`, `Delivery`, `Timestamp`, `LevelMeter`,
-  `Trace`, `MeterAxis`, `EditOutcome`). So a smaller prelude still needs
-  those names, or thematic modules that make them easy to find.
+  prelude lacks the names an ordinary command or live-data application uses.
+  `CommandScope`, `KeyChord`, `CommandSource`, `LevelMeter`, `Trace`,
+  `MeterAxis` and `EditOutcome` joined it in the API audit's part 6e
+  (0.3.67). `series_bridge`, `SeriesConfig`, `SeriesSource`, `Delivery` and
+  `Timestamp` stay at the crate root by decision G5-11, which leaves a
+  thematic live-data module to this slice. A smaller prelude still needs
+  the names that joined, or thematic modules that make them easy to find.
 - The same probe found inspection bounds only under
   `details.box_model.border_box`. The diagnostics guide should say where a
   component's bounds are.
 - The [developer-usability plan](developer-usability.md#round-1-findings)'s
-  blind tests (2026-10-21) add discovery and prelude evidence:
-  - **Prelude (F3):** six of eight round 1 submissions imported `Modifiers`,
-    `KeyChord`, `CommandKey` or `CommandScope` from the crate root, and
-    rustc suggests no `use pert_ui::…` for them. `VirtualList::reorderable`'s
-    `ListDrop` and `DropPosition` are missing too.
+  blind tests (2026-10-21) add discovery evidence:
   - **Testing chapter (F2):** the testers who tested an application, the
     pilots and the packaged examples built recurring helpers (click at
     bounds, replace a field's text, a key chord, find a component's

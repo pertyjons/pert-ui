@@ -3,7 +3,8 @@
 //!
 //! This file must not import anything else from `pert_ui`: its compiling is the
 //! evidence that the prelude names every type the `Component` trait's method
-//! signatures name.
+//! signatures name, and the types its other members take and return that the
+//! membership rule includes.
 use pert_ui::prelude::*;
 use std::{cell::Cell, rc::Rc, time::Duration};
 
@@ -107,6 +108,14 @@ impl Component for Swatch {
     ) -> Result<(), RuntimeError> {
         Ok(())
     }
+    fn tab_navigation(
+        &mut self,
+        _cx: &mut EventContext,
+        _direction: FocusDirection,
+        _transition: KeyTransition,
+    ) -> Result<InputOutcome, RuntimeError> {
+        Ok(InputOutcome::Ignored)
+    }
     fn child_redocked(&mut self, _cx: &mut EventContext, _child: &WidgetId) {}
     fn child_transform(&self) -> ViewTransform {
         ViewTransform::IDENTITY
@@ -193,4 +202,109 @@ fn a_custom_component_is_written_and_driven_from_the_prelude_alone()
             .any(|command| matches!(command, DrawCommand::FillRect { .. }))
     );
     Ok(())
+}
+
+/// Names a type, so that this file compiles only while the prelude holds it.
+fn named<T: ?Sized>() {}
+/// Names a parameter value type through the sealed trait's bound.
+fn parameter_value<T: ParameterValue>() {}
+
+#[test]
+fn the_prelude_holds_the_types_its_members_take_and_return() {
+    // Keyboard shortcuts, commands and held keys.
+    named::<Modifiers>();
+    named::<KeyChord>();
+    named::<CommandKey>();
+    named::<CommandScope>();
+    named::<CommandId>();
+    named::<CommandReceipt>();
+    named::<CommandStatus>();
+    named::<CommandSource>();
+    named::<CommandContext>();
+    named::<CommandEntry>();
+    named::<CommandOutcome>();
+    named::<HeldInputId>();
+    named::<HeldCancellation>();
+    named::<FocusDirection>();
+    // Reordering, live widgets and the collection callbacks' values.
+    named::<ListDrop<'static>>();
+    named::<ListDropPosition>();
+    named::<ListDropPoint>();
+    named::<ListDropPlacement>();
+    named::<ListDropMark>();
+    named::<LevelMeter>();
+    named::<Trace>();
+    named::<MeterAxis>();
+    named::<ExpansionChange>();
+    named::<Expansion>();
+    // Parameters, bindings and hosts, typed and erased.
+    named::<PowerExponent>();
+    named::<EditOutcome<f32>>();
+    named::<PreviewOutcome>();
+    named::<ParameterSnapshot<f32>>();
+    named::<EditToken>();
+    parameter_value::<f32>();
+    named::<Revision>();
+    named::<ParameterFamily>();
+    named::<AnyParameter>();
+    named::<AnyParameterHost>();
+    named::<AnyParameterSnapshot>();
+    named::<AnySpec>();
+    named::<AnyValue>();
+    named::<DeliveryStatus>();
+    named::<AuthorityStatus<f32>>();
+    named::<DeliveryMonitor<f32>>();
+    named::<DeliverySnapshot<f32>>();
+    named::<TerminalEvent<f32>>();
+    named::<PreviewEvent<f32>>();
+    named::<AnyDeliveryMonitor>();
+    named::<AnyTerminalEvent>();
+    named::<AnyPreviewEvent>();
+    named::<SinkError>();
+    named::<SinkErrorKind>();
+    named::<DeliveryResolution>();
+    named::<RemoteHost<f32>>();
+    named::<RemoteCommit<f32>>();
+    named::<AuthorityResponse<f32>>();
+    named::<AuthorityReceipt<f32>>();
+    named::<ResponseDisposition>();
+    named::<SubmissionDelivery>();
+    named::<ApplicationError>();
+    // Layout, theme, drawing and typography.
+    named::<ViewScale>();
+    named::<QuarterTurn>();
+    named::<OpaqueColor>();
+    named::<MaskImage>();
+    named::<ImageId>();
+    named::<MaskId>();
+    named::<VectorId>();
+    named::<VectorGeometry>();
+    named::<TextLayout>();
+    named::<FontManager>();
+    named::<IconManager>();
+    named::<IconGlyph>();
+    // Configuration and results of the prelude's widgets and documents.
+    named::<FilterCounts>();
+    named::<FilterOutcome>();
+    named::<FilterTarget>();
+    named::<EditorSession>();
+    named::<EditorStart>();
+    named::<ListingErrorKind>();
+    named::<LinkTarget>();
+    named::<WorkspaceSettings>();
+    named::<WorkspaceValue>();
+    named::<IgnoredEntry>();
+    named::<WindowPlacement>();
+}
+
+/// `App` and everything it reports, errors included.
+#[cfg(feature = "native")]
+#[test]
+fn the_native_prelude_holds_what_app_reports() {
+    named::<App>();
+    named::<AppError>();
+    named::<AppShutdownError>();
+    named::<NativeCloseAction>();
+    named::<NativeWindowId>();
+    named::<WindowError>();
 }

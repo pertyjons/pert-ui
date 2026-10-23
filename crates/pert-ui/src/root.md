@@ -38,13 +38,17 @@ Continue with the [guide](crate::guide), starting at
 [getting started](crate::guide::getting_started). Everything the guide and this
 page name is exported from the crate root; [`prelude`] holds the common imports,
 including what a custom [`Component`] that lays out, draws and handles input
-names, and its page lists the root names other code most often adds.
+names, and its page lists the root names other code most often adds. A
+component that also describes itself for inspection, starts a drag, keeps a
+receipt or presents in its own window globs [`component`] as well, which holds
+every name implementing [`Component`] writes.
 
 Most items are re-exported from the backend-independent `pert-ui-runtime`
 crate, which documents them. Their examples import `pert_ui::…`, as an
 application writes them: an application depends on `pert-ui` alone, every such
-item is at this crate's root, and `pert_ui::prelude` is
-`pert_ui_runtime::prelude` plus native startup.
+item is at this crate's root, `pert_ui::prelude` is
+`pert_ui_runtime::prelude` plus native startup, and `pert_ui::component` is
+`pert_ui_runtime::component`.
 
 # Map of the library
 

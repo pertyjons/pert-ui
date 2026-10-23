@@ -14,6 +14,7 @@ mod async_source;
 mod callback_conveniences;
 mod capture;
 mod click_counter;
+mod component_module;
 mod composition;
 mod coordinates;
 mod described;

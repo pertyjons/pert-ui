@@ -1,5 +1,7 @@
 pub mod pert_ui
 pub use pert_ui::<<pert_ui_runtime::*>>
+pub mod pert_ui::component
+pub use pert_ui::component::<<pert_ui_runtime::component::*>>
 pub mod pert_ui::guide
 pub mod pert_ui::guide::appearance
 pub mod pert_ui::guide::controls
@@ -76,6 +78,8 @@ pub fn pert_ui::images::decode(&[u8]) -> core::result::Result<pert_ui_runtime::r
 pub fn pert_ui::images::load(impl core::convert::AsRef<std::path::Path>) -> core::result::Result<pert_ui_runtime::resources::RasterImage, pert_ui::images::ImageError>
 pub mod pert_ui::prelude
 pub use pert_ui::prelude::<<pert_ui_runtime::prelude::*>>
+pub use pert_ui::prelude::NativeWindowId
+pub use pert_ui::prelude::WindowError
 #[non_exhaustive] pub enum pert_ui::prelude::AppError
 pub pert_ui::prelude::AppError::DeviceLost(alloc::string::String)
 pub pert_ui::prelude::AppError::Drawing(pert_ui_runtime::drawing::DrawError)

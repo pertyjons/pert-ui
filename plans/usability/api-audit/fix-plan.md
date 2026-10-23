@@ -518,6 +518,40 @@ and anything left to a later part.
     - each new regression checked to fail with its fix reverted.
 
     The fix is verified in 6e's review.
+- **6e (0.3.67):** prelude membership by the decided rule, and
+  `pert_ui::component` with `pert_ui_runtime::component`.
+  - **Prelude:** 79 names join the runtime prelude:
+    - the audit's lists;
+    - the parameter and remote-authority hosts with the types their
+      methods take and return (G5-16's rule);
+    - `ApplicationError`;
+    - `ExpansionChange`, `Expansion` and `FocusDirection` from 6a.
+  - **Facade prelude:** it adds `NativeWindowId` and `WindowError` under
+    `native`.
+  - **`component`:** holds 124 names a component author writes or keeps.
+  - **Pages:** the guarantee sentences, `root.md` and a new "Imports"
+    section in the custom-widgets guide point to `component`, and
+    app-author slice 9's inputs are updated.
+  - **Checks run after the last edit:**
+    - `cargo fmt --all --check`;
+    - workspace Clippy;
+    - `cargo test --locked --workspace`, including the new prelude and
+      `component_module` tests, which fail to compile with the re-exports
+      reverted;
+    - `cargo test --locked --workspace --doc`;
+    - warning-free workspace rustdoc;
+    - the diagnostics suite, with no snapshot change;
+    - `api/generate.sh`, which removes no line;
+    - `git diff --check`.
+
+    The five headless example sessions passed before the follow-up, which
+    changed only re-exports, docs and tests. A copy of the round 2 fixture
+    built against the workspace without warnings.
+  - **Beyond the plan's lines:**
+    - `RevealStatus`, `RevealOutcome` and `CommandOutcome` join
+      `component`;
+    - the erased host types join the prelude;
+    - the remote-authority family joins it by G5-16's rule.
 
 ## Rules for every part
 

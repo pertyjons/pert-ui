@@ -49,47 +49,95 @@ pub use svg::component::Svg;
 ///
 /// This includes the runtime prelude and enabled feature widgets. With the
 /// `native` feature, which `desktop` and `desktop-cpu` enable, it also includes
-/// `App` and the types it reports. They follow one membership rule: the
-/// widgets with their configuration types; state, parameters and layout; and
-/// the [`Component`] trait with every type its method signatures name, so a
-/// custom widget that lays out, draws and handles input needs no other import.
-/// It includes errors returned by [`Component`] method signatures:
-/// [`RuntimeError`], [`DrawError`], [`WorkspaceError`] and
-/// [`RestoreRejection`]. Widget configuration also brings [`HexColorError`],
-/// [`ListingError`] and [`InputRejection`] into the prelude, alongside
-/// `AppError` and its shutdown payload `AppShutdownError` with `native`. Other
-/// errors, and the inspection, capture, live-data and host-integration types,
-/// stay at the crate root. Asset-loading errors such as `svg::SvgError` stay
-/// in their feature modules.
+/// `App` and everything it reports, errors included. They follow one
+/// membership rule: the widgets with their configuration types; state,
+/// parameters, local and remote hosts, and layout; and the [`Component`]
+/// trait with every type its method signatures name, so a custom widget that
+/// lays out, draws and handles input needs no other import. It includes errors returned by
+/// [`Component`] method signatures: [`RuntimeError`], [`DrawError`],
+/// [`WorkspaceError`] and [`RestoreRejection`]. Widget configuration also
+/// brings [`HexColorError`], [`ListingError`] and [`InputRejection`] into the
+/// prelude, and so do the errors an application constructs to report its own
+/// failure, [`SinkError`] and [`ApplicationError`]; with `native` it holds
+/// `AppError`, its shutdown payload `AppShutdownError` and the [`WindowError`]
+/// that `App::on_window_error` reports. Other errors, and the inspection
+/// queries and records, capture, live-data plumbing and host transport, stay at
+/// the crate root; a live widget's [`SeriesSource`], and the bridge that feeds
+/// it, stay with the live-data plumbing. Asset-loading errors such as
+/// `svg::SvgError` stay in their feature modules.
 ///
-/// The re-exports are `#[doc(no_inline)]`: each item is documented once, at
-/// the crate root.
+/// A custom component that describes itself for inspection, starts a drag,
+/// keeps a receipt, presents in its own native window or hosts an editor
+/// session also globs [`component`], which holds every name implementing
+/// [`Component`] writes. The re-exports are `#[doc(no_inline)]`: each item is
+/// documented once, at the crate root.
 ///
 /// # Root names to add
 ///
 /// These are the crate-root names code most often adds to the glob:
 ///
-/// - keyboard shortcuts and commands: [`Modifiers`], [`KeyChord`],
-///   [`CommandKey`], [`CommandScope`], [`CommandId`] and [`CommandContext`];
-///   held keys: [`HeldInputId`] and [`HeldCancellation`];
-/// - reordering a list, tabs or a tree: [`ListDrop`], [`ListDropPosition`],
-///   [`ListDropPoint`], [`ListDropPlacement`] and [`ListDropMark`];
-/// - live data: [`LevelMeter`], [`Trace`], [`MeterAxis`], [`SeriesSource`],
-///   [`series_bridge`], [`SeriesConfig`] and [`Timestamp`]; a parameter edit's
-///   end: [`EditOutcome`];
-/// - a custom component that describes itself for inspection: [`Semantics`],
-///   [`SemanticRole`], [`SemanticValue`], [`SemanticAction`], [`SemanticItem`],
-///   [`InspectValue`], [`ValidationHints`] and [`BoxModelInspection`]; one that
-///   starts a drag: [`DragPreview`] and [`DRAG_THRESHOLD`]; one that presents
-///   in its own native window: [`NativeWindowOptions`], [`NativeWindowId`] and
-///   [`PresentationReceipt`].
+/// - live data: [`SeriesSource`], [`series_bridge`], [`SeriesConfig`] and
+///   [`Timestamp`];
+/// - a custom component's inspection description, drag preview, receipts and
+///   native windows: `use pert_ui::component::*` (see [`component`]).
 pub mod prelude {
     #[cfg(feature = "svg")]
     #[doc(no_inline)]
     pub use crate::Svg;
     #[cfg(feature = "native")]
     #[doc(no_inline)]
-    pub use crate::{App, AppError, AppShutdownError, ErrorAction, NativeCloseAction};
+    pub use crate::{
+        App, AppError, AppShutdownError, ErrorAction, NativeCloseAction, NativeWindowId,
+        WindowError,
+    };
     #[doc(no_inline)]
     pub use pert_ui_runtime::prelude::*;
+}
+
+/// The names implementing [`Component`] writes, for
+/// `use pert_ui::component::*`.
+///
+/// Applications glob [`prelude`]; code that implements [`Component`] also
+/// globs this module, which re-exports `pert_ui_runtime::component`. Two globs
+/// that re-export one item do not conflict, so the names both hold, such as
+/// [`Component`] and [`Painter`], can be imported through either.
+///
+/// It holds [`Component`], its contexts and every name an implementation has
+/// to write: an argument the component constructs, such as a [`DragPreview`];
+/// an enum it matches, including the status of a receipt it keeps; a field or
+/// payload it builds or destructures for a [`Component`] method, such as the
+/// [`Semantics`] and [`InspectValue`] parts of the [`ComponentDetails`] that
+/// [`Component::inspect`] returns; and a value it keeps where the rustdoc says
+/// to keep it, such as a [`TaskReceipt`] or an [`EditorAttachment`]. A value
+/// only passed on, compared or converted in the call that returned it, such as
+/// [`FittedText`], is not required. Profiling, capture, inspection queries and
+/// records, live-data plumbing and host transport stay at the crate root. The
+/// re-exports are `#[doc(no_inline)]`: each item is documented once, at the
+/// crate root.
+///
+/// ```
+/// use pert_ui::{component::*, prelude::*};
+///
+/// /// A marker that names itself for inspection.
+/// struct Marker;
+///
+/// impl Component for Marker {
+///     fn update(&mut self, _cx: &mut UpdateContext) -> Result<(), RuntimeError> {
+///         Ok(())
+///     }
+///     fn inspect(&self) -> ComponentDetails {
+///         ComponentDetails {
+///             semantics: Some(Semantics::new(SemanticRole::Image).name("marker")),
+///             ..ComponentDetails::default()
+///         }
+///     }
+/// }
+///
+/// let mut ui = Runtime::new();
+/// ui.mount_tree(Element::new("marker", Marker))?;
+/// # Ok::<(), RuntimeError>(())
+/// ```
+pub mod component {
+    #[doc(no_inline)]
+    pub use pert_ui_runtime::component::*;
 }

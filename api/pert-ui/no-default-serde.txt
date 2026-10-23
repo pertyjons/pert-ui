@@ -1,5 +1,7 @@
 pub mod pert_ui
 pub use pert_ui::<<pert_ui_runtime::*>>
+pub mod pert_ui::component
+pub use pert_ui::component::<<pert_ui_runtime::component::*>>
 pub mod pert_ui::guide
 pub mod pert_ui::guide::appearance
 pub mod pert_ui::guide::controls

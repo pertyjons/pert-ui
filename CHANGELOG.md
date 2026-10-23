@@ -1,5 +1,137 @@
 # Changelog
 
+## 0.3.67 (2026-10-23)
+
+Prelude and `component` module (API audit fix plan, part 6e). The prelude
+holds what its membership rule names, as decided, and a new
+component-authoring module holds every name implementing `Component`
+writes. Not breaking: every change adds a re-export.
+
+- Added (G5-7 to G5-24, G5-32, F3): names in the runtime prelude, and so in
+  `pert_ui::prelude`:
+  - keyboard shortcuts, commands and held keys: `Modifiers`, `KeyChord`,
+    `CommandKey`, `CommandScope`, `CommandId`, `CommandReceipt`,
+    `CommandStatus`, `CommandSource`, `CommandContext`, `CommandEntry`,
+    `CommandOutcome`, `HeldInputId` and `HeldCancellation`;
+  - reordering: `ListDrop`, `ListDropPosition`, `ListDropPoint`,
+    `ListDropPlacement` and `ListDropMark`;
+  - the live widgets: `LevelMeter`, `Trace` and `MeterAxis`;
+  - parameters and bindings: `PowerExponent`, `EditOutcome`,
+    `PreviewOutcome`, `ParameterSnapshot`, `EditToken`, `ParameterValue`,
+    `Revision`, `ParameterFamily`, `DeliveryStatus` and `AuthorityStatus`;
+    the erased forms `AnyParameter`, `AnyParameterHost`, `AnySpec` and
+    `AnyValue`;
+  - the host sink and recovery types (decision G5-16): `DeliveryMonitor`,
+    `DeliverySnapshot`, `TerminalEvent`, `PreviewEvent`, `SinkError`,
+    `SinkErrorKind` and `DeliveryResolution`;
+  - layout, theme and drawing values: `ViewScale`, `QuarterTurn`,
+    `OpaqueColor`, `MaskImage`, `ImageId`, `MaskId`, `VectorId`,
+    `VectorGeometry` and `TextLayout`;
+  - typography: `FontManager`, `IconManager` and `IconGlyph`;
+  - widget configuration and results: `FilterCounts`, `FilterOutcome`,
+    `FilterTarget`, `EditorSession`, `EditorStart`, `ListingErrorKind`,
+    `LinkTarget` and `WindowPlacement`;
+  - the workspace document: `WorkspaceSettings`, `WorkspaceValue` and
+    `IgnoredEntry`;
+  - `ApplicationError` (decision G5-32), which an application constructs
+    to report its own failure.
+- Added: by the same rule, beyond the audit's lists:
+  - `FocusDirection`, which `Component::tab_navigation` names;
+  - `ExpansionChange`, which `Accordion::on_change` reports;
+  - `Expansion`, which `ToolWindowChange` carries;
+  - `AnyTerminalEvent`, `AnyPreviewEvent` and `AnyDeliveryMonitor`, which
+    `AnyParameterHost`'s sinks take and return, as their typed forms do;
+  - `AnyParameterSnapshot`, which `AnyParameter::snapshot` returns.
+  - the remote-authority host by decision G5-16's "hosts" rule:
+    `RemoteHost`, which `Runtime::remote_parameter` returns and an
+    application keeps; `RemoteCommit`, which its submission sink receives,
+    `respond` and `retry_submission` take and `AuthorityStatus` carries;
+    `AuthorityResponse`, which `respond` takes; `ResponseDisposition`,
+    which `respond` returns; `SubmissionDelivery`, the status
+    `submission_delivery` returns; and `AuthorityReceipt`, the receipt
+    `RemoteHost::receipt` returns.
+
+  `SelectionExtension` stays at the root with `TextSelection`, the only
+  type whose methods name it.
+- Added (G5-26, G5-27, G5-14): the module `pert_ui_runtime::component`,
+  re-exported as `pert_ui::component`, for `use pert_ui::component::*`
+  beside the prelude. It holds `Component`, its contexts and every name an
+  implementation has to write: an argument it constructs, an enum it
+  matches (including a kept receipt's status and the outcome that status
+  carries), a field or payload it builds for a `Component` method, and a
+  value it keeps where the rustdoc says to keep it. Two globs re-exporting
+  one item do not conflict. Its names:
+  - the trait and its contexts: `Component`, `UpdateContext`,
+    `EventContext`, `MeasureContext`, `ArrangeContext`, `ChildInfo`,
+    `ChildReveal`, `ComponentDetails`, `ContentRows`, `Invalidation`,
+    `Notifier`, `WidgetId`, `Element`, `Signal`, `ReadSignal`,
+    `MotionPreference`, `RuntimeError` and `DrawError`;
+  - layout: `Constraints`, `Size`, `SizeLimits`, `Rect`, `Point`,
+    `Viewport`, `ViewTransform`, `ViewScale`, `Transform2D`, `SurfaceKind`,
+    `SurfaceDismissal` and `CursorIcon`;
+  - input and commands: `PointerEvent`, `PointerKind`, `PointerButton`,
+    `Magnification`, `KeyEvent`, `KeyCode`, `KeyAction`, `KeyTransition`,
+    `KeyboardState`, `Modifiers`, `FocusDirection`, `InputOutcome`,
+    `CommandKeyInput`, `CommandKey`, `TextCommand`, `TextCommandOutcome`,
+    `TextInputState`, `TextKeyOutcome`, `TextPreedit`, `CommandId`,
+    `CommandSource`, `CommandContext`, `CommandReceipt`, `CommandStatus` and
+    `CommandOutcome`;
+  - dragging: `DragEvent`, `DragOutcome`, `DragPayload`, `DragPhase`,
+    `DragRole`, `DropOperation`, `DropOperations`, `DropResponse`,
+    `DragPreview` and `DRAG_THRESHOLD`;
+  - drawing: `Painter`, `DisplayList`, `DrawCommand`, `Color`, `ColorRole`,
+    `MetricRole`, `Length`, `Shape`, `Path`, `PathBuilder`, `PathElement`,
+    `FillRule`, `LineCap`, `LineJoin`, `StrokeStyle`, `QuarterTurn`,
+    `TextStyle`, `TextOverflow`, `TextLayout`, `RichText`, `IconSource`,
+    `Icon`, `RasterImage`, `ImageSampling`, `MaskImage`, `ImageId`,
+    `MaskId`, `VectorId` and `VectorGeometry`;
+  - the inspection description: `Semantics`, `SemanticRole`,
+    `SemanticValue`, `SemanticAction`, `SemanticItem`, `InspectValue`,
+    `ValidationHints`, `OverlapPolicy`, `ShortcutBinding`, `ShortcutScope`,
+    `BoxModelInspection` and `BorderInspection`;
+  - workspace state: `ViewState`, `WorkspaceValue`, `WorkspaceError` and
+    `RestoreRejection`;
+  - receipts and native windows: `TaskReceipt`, `TaskStatus`,
+    `RevealReceipt`, `RevealStatus`, `RevealOutcome`, `PresentationReceipt`,
+    `PresentationStatus`, `NativeWindowOptions` and `NativeWindowId`;
+  - editor sessions: `EditorSession`, `EditorStart`, `EditorAttachment`,
+    `EditorTrigger` and `EditorOutcome`.
+
+  `FittedText`, `EditorCompletion` and `VectorStyle` are only received, so
+  not required; `ProfileSnapshot` and `EditSource` stay at the root.
+- Added (G5-28, G5-30): `NativeWindowId` and `WindowError` in
+  `pert_ui::prelude` with the `native` feature, so the prelude holds `App`
+  and everything it reports, errors included.
+- Changed (G5-11, G5-16, G5-25, G5-26, G5-30, G5-32): the prelude pages'
+  membership rule names hosts, local and remote, with the types their sink,
+  response and recovery methods take and return and the receipts and status
+  values they hand out, the
+  errors an application constructs (`SinkError`, `ApplicationError`) and,
+  in the facade, `WindowError`. The exclusions read "inspection queries and
+  records, profiling, capture, live-data plumbing and host transport", and
+  one sentence keeps a live widget's `SeriesSource` and the bridge that
+  feeds it at the root. The custom-component sentences of both prelude
+  pages and the crate page point to `component`, and the pages' lists of
+  root names to add keep only the live-data plumbing and the `component`
+  module.
+- Changed: the custom-widgets guide chapter opens with an "Imports"
+  section: application code globs the prelude, and a widget that describes
+  itself, starts a drag, keeps a receipt, presents in its own native window
+  or hosts an editor session also globs `pert_ui::component`, with an
+  example and a link to the module's page.
+- Added: contract tests in the facade's `foundation` binary: the prelude
+  test names each added prelude name and overrides
+  `Component::tab_navigation`, a native-only test names what `App`
+  reports, and a component written from `pert_ui::component::*` alone
+  keeps a task receipt, starts a drag, claims Tab, describes itself for
+  inspection and saves its workspace state. Each module has a running
+  rustdoc example.
+- The `api/` listings add `pub mod pert_ui_runtime::component` and
+  `pub mod pert_ui::component` with their re-exports, the new prelude
+  re-exports, and the facade prelude's `NativeWindowId` and `WindowError`
+  with `native`. The runtime listings repeat each re-exported item's block
+  under its new `prelude` and `component` paths.
+
 ## 0.3.66 (2026-10-23)
 
 Editors, data and defects (API audit fix plan, part 6d2). Fallible
