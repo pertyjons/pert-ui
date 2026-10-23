@@ -613,9 +613,9 @@ and anything left to a later part.
 
     Each behavior test was checked to fail with its change reverted.
   - **Deviations:**
-    - restoration uses `Runtime::focus`, whose refusals are the design's
-      set, since no public API reports focusability and `reveal_and_focus`
-      would flush during backoff;
+    - in 6795da9, restoration used `Runtime::focus` alone, since no public
+      API reported focusability; the review fix superseded this with
+      `Runtime::can_focus` (below);
     - `admit_close` validates the window through `select_window` and
       selects the previous window again, both documented;
     - a key release after a failed press shows as `UnmatchedRelease`
@@ -682,7 +682,15 @@ and anything left to a later part.
     - packaging and the packaged-consumer check, rerun after the fix's
       commit.
 
-    Codex rechecks the fix before 6f2 starts.
+  - **Recheck (Codex):** the review fix resolved every point, and found one
+    regression: restoration flushed at the time captured before `on_close`,
+    so a policy that had flushed at a later time made `admit_close` fail
+    with `TimeReversed`. Restoration now flushes no earlier than the
+    runtime's clock, with a regression test that fails without the fix. The
+    recheck also asked that the superseded deviation above be marked. After
+    that fix: `cargo fmt --all --check`, workspace Clippy, the `pert-ui`
+    tests, Clippy in the `desktop-cpu` configuration, library packaging and
+    the packaged-consumer check, and `git diff --check`.
   - **Not testable headlessly:** the title-bar close button's path from
     the window system into `window_event`, which the maintainer's hand
     check covers.

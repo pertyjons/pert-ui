@@ -103,7 +103,10 @@ pub(crate) fn restore_focus(runtime: &mut Runtime, released: Released) -> Result
     if !released.settled || released.focus.is_empty() {
         return Ok(());
     }
-    settle_roots(runtime, &released.affected, released.now)?;
+    // The policy may have flushed at a later time; the runtime rejects an
+    // earlier one.
+    let now = released.now.max(runtime.now());
+    settle_roots(runtime, &released.affected, now)?;
     let previous = runtime.current_window();
     let restored: Result<(), RuntimeError> =
         released.focus.into_iter().try_for_each(|(root, id)| {
@@ -265,6 +268,23 @@ mod tests {
         restore_focus(&mut runtime, released)?;
         assert_eq!(updates.get(), before + 2);
         assert_eq!(runtime.focused(), Some(field));
+        Ok(())
+    }
+
+    /// A policy that flushes at a later time does not make restoration flush
+    /// at admission's earlier time, which the runtime would reject.
+    #[test]
+    fn restoration_after_a_policy_that_advanced_the_clock_still_restores()
+    -> Result<(), RuntimeError> {
+        let Form {
+            mut runtime, field, ..
+        } = form()?;
+        let affected = affected_roots(&runtime, &runtime.primary_window());
+        let released = prepare_close(&mut runtime, &affected, true, Duration::from_secs(1))?;
+        runtime.flush(Duration::from_secs(2))?;
+        restore_focus(&mut runtime, released)?;
+        assert_eq!(runtime.focused(), Some(field));
+        assert_eq!(runtime.now(), Duration::from_secs(2));
         Ok(())
     }
 }
