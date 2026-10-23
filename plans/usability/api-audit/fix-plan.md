@@ -690,7 +690,8 @@ and anything left to a later part.
     recheck also asked that the superseded deviation above be marked. After
     that fix: `cargo fmt --all --check`, workspace Clippy, the `pert-ui`
     tests, Clippy in the `desktop-cpu` configuration, library packaging and
-    the packaged-consumer check, and `git diff --check`.
+    the packaged-consumer check, and `git diff --check`. The fix is
+    verified in 6f2's review.
   - **Not testable headlessly:** the title-bar close button's path from
     the window system into `window_event`, which the maintainer's hand
     check covers.
