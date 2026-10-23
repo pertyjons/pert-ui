@@ -1437,6 +1437,8 @@ impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::Win
 pub fn pert_ui_runtime::WindowError::from(pert_ui_runtime::RuntimeError) -> Self
 impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::WorkspaceError
 pub fn pert_ui_runtime::WorkspaceError::from(pert_ui_runtime::RuntimeError) -> Self
+impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::testing::TestError
+pub fn pert_ui_runtime::testing::TestError::from(pert_ui_runtime::RuntimeError) -> Self
 impl core::convert::From<pert_ui_runtime::TextEditError> for pert_ui_runtime::RuntimeError
 pub fn pert_ui_runtime::RuntimeError::from(pert_ui_runtime::TextEditError) -> Self
 impl core::convert::From<pert_ui_runtime::TextError> for pert_ui_runtime::RuntimeError
@@ -10831,6 +10833,8 @@ impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::Win
 pub fn pert_ui_runtime::WindowError::from(pert_ui_runtime::RuntimeError) -> Self
 impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::WorkspaceError
 pub fn pert_ui_runtime::WorkspaceError::from(pert_ui_runtime::RuntimeError) -> Self
+impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::testing::TestError
+pub fn pert_ui_runtime::testing::TestError::from(pert_ui_runtime::RuntimeError) -> Self
 impl core::convert::From<pert_ui_runtime::TextEditError> for pert_ui_runtime::RuntimeError
 pub fn pert_ui_runtime::RuntimeError::from(pert_ui_runtime::TextEditError) -> Self
 impl core::convert::From<pert_ui_runtime::TextError> for pert_ui_runtime::RuntimeError
@@ -26986,6 +26990,273 @@ pub fn pert_ui_runtime::prelude::TreeItems::children(&self, &str) -> alloc::vec:
 pub fn pert_ui_runtime::prelude::TreeItems::known_children(&self, &str) -> core::option::Option<alloc::vec::Vec<alloc::string::String>>
 pub fn pert_ui_runtime::prelude::TreeItems::roots(&self) -> alloc::vec::Vec<alloc::string::String>
 pub fn pert_ui_runtime::prelude::TreeItems::text(&self, &str) -> core::option::Option<alloc::string::String>
+pub mod pert_ui_runtime::testing
+#[non_exhaustive] pub enum pert_ui_runtime::testing::CaptureTarget
+pub pert_ui_runtime::testing::CaptureTarget::Component(u64)
+pub pert_ui_runtime::testing::CaptureTarget::Path(alloc::vec::Vec<alloc::string::String>)
+pub pert_ui_runtime::testing::CaptureTarget::Region
+pub pert_ui_runtime::testing::CaptureTarget::Region::height: f32
+pub pert_ui_runtime::testing::CaptureTarget::Region::width: f32
+pub pert_ui_runtime::testing::CaptureTarget::Region::window: u64
+pub pert_ui_runtime::testing::CaptureTarget::Region::x: f32
+pub pert_ui_runtime::testing::CaptureTarget::Region::y: f32
+pub pert_ui_runtime::testing::CaptureTarget::Window(u64)
+impl pert_ui_runtime::CaptureTarget
+pub fn pert_ui_runtime::CaptureTarget::region(&pert_ui_runtime::NativeWindowId, pert_ui_runtime::Rect) -> Self
+pub fn pert_ui_runtime::CaptureTarget::window(&pert_ui_runtime::NativeWindowId) -> Self
+impl core::clone::Clone for pert_ui_runtime::CaptureTarget
+pub fn pert_ui_runtime::CaptureTarget::clone(&self) -> pert_ui_runtime::CaptureTarget
+impl core::cmp::PartialEq for pert_ui_runtime::CaptureTarget
+pub fn pert_ui_runtime::CaptureTarget::eq(&self, &pert_ui_runtime::CaptureTarget) -> bool
+impl core::fmt::Debug for pert_ui_runtime::CaptureTarget
+pub fn pert_ui_runtime::CaptureTarget::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::CaptureTarget
+impl serde_core::ser::Serialize for pert_ui_runtime::CaptureTarget
+pub fn pert_ui_runtime::CaptureTarget::serialize<__S>(&self, __S) -> core::result::Result<<__S as serde_core::ser::Serializer>::Ok, <__S as serde_core::ser::Serializer>::Error> where __S: serde_core::ser::Serializer
+impl<'de> serde_core::de::Deserialize<'de> for pert_ui_runtime::CaptureTarget
+pub fn pert_ui_runtime::CaptureTarget::deserialize<__D>(__D) -> core::result::Result<Self, <__D as serde_core::de::Deserializer>::Error> where __D: serde_core::de::Deserializer<'de>
+impl core::marker::Freeze for pert_ui_runtime::CaptureTarget
+impl core::marker::Send for pert_ui_runtime::CaptureTarget
+impl core::marker::Sync for pert_ui_runtime::CaptureTarget
+impl core::marker::Unpin for pert_ui_runtime::CaptureTarget
+impl core::marker::UnsafeUnpin for pert_ui_runtime::CaptureTarget
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::CaptureTarget
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::CaptureTarget
+pub enum pert_ui_runtime::testing::Detail
+pub pert_ui_runtime::testing::Detail::Full
+pub pert_ui_runtime::testing::Detail::Geometry
+pub pert_ui_runtime::testing::Detail::Identity
+pub pert_ui_runtime::testing::Detail::Semantics
+impl core::clone::Clone for pert_ui_runtime::Detail
+pub fn pert_ui_runtime::Detail::clone(&self) -> pert_ui_runtime::Detail
+impl core::cmp::Eq for pert_ui_runtime::Detail
+impl core::cmp::Ord for pert_ui_runtime::Detail
+pub fn pert_ui_runtime::Detail::cmp(&self, &pert_ui_runtime::Detail) -> core::cmp::Ordering
+impl core::cmp::PartialEq for pert_ui_runtime::Detail
+pub fn pert_ui_runtime::Detail::eq(&self, &pert_ui_runtime::Detail) -> bool
+impl core::cmp::PartialOrd for pert_ui_runtime::Detail
+pub fn pert_ui_runtime::Detail::partial_cmp(&self, &pert_ui_runtime::Detail) -> core::option::Option<core::cmp::Ordering>
+impl core::default::Default for pert_ui_runtime::Detail
+pub fn pert_ui_runtime::Detail::default() -> pert_ui_runtime::Detail
+impl core::fmt::Debug for pert_ui_runtime::Detail
+pub fn pert_ui_runtime::Detail::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::Detail
+impl core::marker::StructuralPartialEq for pert_ui_runtime::Detail
+impl serde_core::ser::Serialize for pert_ui_runtime::Detail
+pub fn pert_ui_runtime::Detail::serialize<__S>(&self, __S) -> core::result::Result<<__S as serde_core::ser::Serializer>::Ok, <__S as serde_core::ser::Serializer>::Error> where __S: serde_core::ser::Serializer
+impl<'de> serde_core::de::Deserialize<'de> for pert_ui_runtime::Detail
+pub fn pert_ui_runtime::Detail::deserialize<__D>(__D) -> core::result::Result<Self, <__D as serde_core::de::Deserializer>::Error> where __D: serde_core::de::Deserializer<'de>
+impl core::marker::Freeze for pert_ui_runtime::Detail
+impl core::marker::Send for pert_ui_runtime::Detail
+impl core::marker::Sync for pert_ui_runtime::Detail
+impl core::marker::Unpin for pert_ui_runtime::Detail
+impl core::marker::UnsafeUnpin for pert_ui_runtime::Detail
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Detail
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Detail
+pub enum pert_ui_runtime::testing::Selector
+pub pert_ui_runtime::testing::Selector::Children(alloc::vec::Vec<alloc::string::String>)
+pub pert_ui_runtime::testing::Selector::Descendants(alloc::vec::Vec<alloc::string::String>)
+pub pert_ui_runtime::testing::Selector::Focused
+pub pert_ui_runtime::testing::Selector::Id(u64)
+pub pert_ui_runtime::testing::Selector::Key(alloc::string::String)
+pub pert_ui_runtime::testing::Selector::Path(alloc::vec::Vec<alloc::string::String>)
+pub pert_ui_runtime::testing::Selector::Semantic
+pub pert_ui_runtime::testing::Selector::Semantic::name: core::option::Option<alloc::string::String>
+pub pert_ui_runtime::testing::Selector::Semantic::role: pert_ui_runtime::SemanticRole
+pub pert_ui_runtime::testing::Selector::Window(u64)
+pub pert_ui_runtime::testing::Selector::Within(alloc::boxed::Box<pert_ui_runtime::Selector>, alloc::boxed::Box<pert_ui_runtime::Selector>)
+impl pert_ui_runtime::Selector
+pub fn pert_ui_runtime::Selector::children(impl core::iter::traits::collect::IntoIterator<Item = impl core::convert::Into<alloc::string::String>>) -> Self
+pub fn pert_ui_runtime::Selector::descendants(impl core::iter::traits::collect::IntoIterator<Item = impl core::convert::Into<alloc::string::String>>) -> Self
+pub const fn pert_ui_runtime::Selector::focused() -> Self
+pub const fn pert_ui_runtime::Selector::id(u64) -> Self
+pub fn pert_ui_runtime::Selector::key(impl core::convert::Into<alloc::string::String>) -> Self
+pub fn pert_ui_runtime::Selector::path(impl core::iter::traits::collect::IntoIterator<Item = impl core::convert::Into<alloc::string::String>>) -> Self
+pub fn pert_ui_runtime::Selector::semantic(pert_ui_runtime::SemanticRole, core::option::Option<impl core::convert::Into<alloc::string::String>>) -> Self
+pub const fn pert_ui_runtime::Selector::window(u64) -> Self
+pub fn pert_ui_runtime::Selector::within(Self, Self) -> Self
+impl core::clone::Clone for pert_ui_runtime::Selector
+pub fn pert_ui_runtime::Selector::clone(&self) -> pert_ui_runtime::Selector
+impl core::cmp::PartialEq for pert_ui_runtime::Selector
+pub fn pert_ui_runtime::Selector::eq(&self, &pert_ui_runtime::Selector) -> bool
+impl core::fmt::Debug for pert_ui_runtime::Selector
+pub fn pert_ui_runtime::Selector::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::Selector
+impl serde_core::ser::Serialize for pert_ui_runtime::Selector
+pub fn pert_ui_runtime::Selector::serialize<__S>(&self, __S) -> core::result::Result<<__S as serde_core::ser::Serializer>::Ok, <__S as serde_core::ser::Serializer>::Error> where __S: serde_core::ser::Serializer
+impl<'de> serde_core::de::Deserialize<'de> for pert_ui_runtime::Selector
+pub fn pert_ui_runtime::Selector::deserialize<__D>(__D) -> core::result::Result<Self, <__D as serde_core::de::Deserializer>::Error> where __D: serde_core::de::Deserializer<'de>
+impl core::marker::Freeze for pert_ui_runtime::Selector
+impl core::marker::Send for pert_ui_runtime::Selector
+impl core::marker::Sync for pert_ui_runtime::Selector
+impl core::marker::Unpin for pert_ui_runtime::Selector
+impl core::marker::UnsafeUnpin for pert_ui_runtime::Selector
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Selector
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Selector
+#[non_exhaustive] pub enum pert_ui_runtime::testing::TestError
+pub pert_ui_runtime::testing::TestError::Cleanup
+pub pert_ui_runtime::testing::TestError::Cleanup::cleanup: pert_ui_runtime::RuntimeError
+pub pert_ui_runtime::testing::TestError::Cleanup::error: alloc::boxed::Box<pert_ui_runtime::testing::TestError>
+pub pert_ui_runtime::testing::TestError::ClockOverflow
+pub pert_ui_runtime::testing::TestError::InputHeld
+pub pert_ui_runtime::testing::TestError::NoSemantics
+pub pert_ui_runtime::testing::TestError::NoSemantics::key: alloc::string::String
+pub pert_ui_runtime::testing::TestError::NotAnEditor
+pub pert_ui_runtime::testing::TestError::NotAnEditor::key: alloc::string::String
+pub pert_ui_runtime::testing::TestError::NotFound
+pub pert_ui_runtime::testing::TestError::NotFound::path: alloc::vec::Vec<alloc::string::String>
+pub pert_ui_runtime::testing::TestError::NotLaidOut
+pub pert_ui_runtime::testing::TestError::NotLaidOut::key: alloc::string::String
+pub pert_ui_runtime::testing::TestError::NotRevealed
+pub pert_ui_runtime::testing::TestError::NotRevealed::key: alloc::string::String
+pub pert_ui_runtime::testing::TestError::NotRevealed::refusal: pert_ui_runtime::RevealRefusal
+pub pert_ui_runtime::testing::TestError::OtherWindow
+pub pert_ui_runtime::testing::TestError::OtherWindow::key: alloc::string::String
+pub pert_ui_runtime::testing::TestError::Runtime(pert_ui_runtime::RuntimeError)
+pub pert_ui_runtime::testing::TestError::TimedOut
+pub pert_ui_runtime::testing::TestError::TimedOut::waited: core::time::Duration
+impl core::clone::Clone for pert_ui_runtime::testing::TestError
+pub fn pert_ui_runtime::testing::TestError::clone(&self) -> pert_ui_runtime::testing::TestError
+impl core::cmp::Eq for pert_ui_runtime::testing::TestError
+impl core::cmp::PartialEq for pert_ui_runtime::testing::TestError
+pub fn pert_ui_runtime::testing::TestError::eq(&self, &pert_ui_runtime::testing::TestError) -> bool
+impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::testing::TestError
+pub fn pert_ui_runtime::testing::TestError::from(pert_ui_runtime::RuntimeError) -> Self
+impl core::error::Error for pert_ui_runtime::testing::TestError
+pub fn pert_ui_runtime::testing::TestError::source(&self) -> core::option::Option<&(dyn core::error::Error + 'static)>
+impl core::fmt::Debug for pert_ui_runtime::testing::TestError
+pub fn pert_ui_runtime::testing::TestError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui_runtime::testing::TestError
+pub fn pert_ui_runtime::testing::TestError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::testing::TestError
+impl core::marker::Freeze for pert_ui_runtime::testing::TestError
+impl !core::marker::Send for pert_ui_runtime::testing::TestError
+impl !core::marker::Sync for pert_ui_runtime::testing::TestError
+impl core::marker::Unpin for pert_ui_runtime::testing::TestError
+impl core::marker::UnsafeUnpin for pert_ui_runtime::testing::TestError
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::testing::TestError
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::testing::TestError
+pub struct pert_ui_runtime::testing::CaptureRequest
+impl pert_ui_runtime::CaptureRequest
+pub const fn pert_ui_runtime::CaptureRequest::include_overlay(self, bool) -> Self
+pub const fn pert_ui_runtime::CaptureRequest::new(pert_ui_runtime::CaptureTarget) -> Self
+pub const fn pert_ui_runtime::CaptureRequest::overlay_included(&self) -> bool
+pub const fn pert_ui_runtime::CaptureRequest::target(&self) -> &pert_ui_runtime::CaptureTarget
+impl core::clone::Clone for pert_ui_runtime::CaptureRequest
+pub fn pert_ui_runtime::CaptureRequest::clone(&self) -> pert_ui_runtime::CaptureRequest
+impl core::cmp::PartialEq for pert_ui_runtime::CaptureRequest
+pub fn pert_ui_runtime::CaptureRequest::eq(&self, &pert_ui_runtime::CaptureRequest) -> bool
+impl core::fmt::Debug for pert_ui_runtime::CaptureRequest
+pub fn pert_ui_runtime::CaptureRequest::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::CaptureRequest
+impl serde_core::ser::Serialize for pert_ui_runtime::CaptureRequest
+pub fn pert_ui_runtime::CaptureRequest::serialize<__S>(&self, __S) -> core::result::Result<<__S as serde_core::ser::Serializer>::Ok, <__S as serde_core::ser::Serializer>::Error> where __S: serde_core::ser::Serializer
+impl<'de> serde_core::de::Deserialize<'de> for pert_ui_runtime::CaptureRequest
+pub fn pert_ui_runtime::CaptureRequest::deserialize<__D>(__D) -> core::result::Result<Self, <__D as serde_core::de::Deserializer>::Error> where __D: serde_core::de::Deserializer<'de>
+impl core::marker::Freeze for pert_ui_runtime::CaptureRequest
+impl core::marker::Send for pert_ui_runtime::CaptureRequest
+impl core::marker::Sync for pert_ui_runtime::CaptureRequest
+impl core::marker::Unpin for pert_ui_runtime::CaptureRequest
+impl core::marker::UnsafeUnpin for pert_ui_runtime::CaptureRequest
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::CaptureRequest
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::CaptureRequest
+pub struct pert_ui_runtime::testing::Driver<'a>
+impl<'a> pert_ui_runtime::testing::Driver<'a>
+pub const pert_ui_runtime::testing::Driver<'a>::FRAME: core::time::Duration
+pub fn pert_ui_runtime::testing::Driver<'a>::advance(&mut self, core::time::Duration) -> core::result::Result<pert_ui_runtime::FlushReport, pert_ui_runtime::testing::TestError>
+pub fn pert_ui_runtime::testing::Driver<'a>::chord(&mut self, pert_ui_runtime::KeyChord, pert_ui_runtime::KeyCode) -> core::result::Result<(), pert_ui_runtime::testing::TestError>
+pub fn pert_ui_runtime::testing::Driver<'a>::click(&mut self, &pert_ui_runtime::WidgetId) -> core::result::Result<(), pert_ui_runtime::testing::TestError>
+pub fn pert_ui_runtime::testing::Driver<'a>::find(&self, &pert_ui_runtime::WidgetId, &[&str]) -> core::result::Result<pert_ui_runtime::WidgetId, pert_ui_runtime::testing::TestError>
+pub fn pert_ui_runtime::testing::Driver<'a>::key(&mut self, pert_ui_runtime::KeyCode) -> core::result::Result<(), pert_ui_runtime::testing::TestError>
+pub fn pert_ui_runtime::testing::Driver<'a>::new(&'a mut pert_ui_runtime::Runtime) -> Self
+pub fn pert_ui_runtime::testing::Driver<'a>::replace_text(&mut self, &pert_ui_runtime::WidgetId, &str) -> core::result::Result<(), pert_ui_runtime::testing::TestError>
+pub fn pert_ui_runtime::testing::Driver<'a>::runtime(&self) -> &pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::testing::Driver<'a>::runtime_mut(&mut self) -> &mut pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::testing::Driver<'a>::semantics(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<pert_ui_runtime::Semantics, pert_ui_runtime::testing::TestError>
+pub fn pert_ui_runtime::testing::Driver<'a>::settle(&mut self) -> core::result::Result<pert_ui_runtime::FlushReport, pert_ui_runtime::testing::TestError>
+pub fn pert_ui_runtime::testing::Driver<'a>::type_text(&mut self, &str) -> core::result::Result<(), pert_ui_runtime::testing::TestError>
+pub fn pert_ui_runtime::testing::Driver<'a>::wait_until(&mut self, core::time::Duration, impl core::ops::function::FnMut(&pert_ui_runtime::Runtime) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>) -> core::result::Result<(), pert_ui_runtime::testing::TestError>
+impl core::fmt::Debug for pert_ui_runtime::testing::Driver<'_>
+pub fn pert_ui_runtime::testing::Driver<'_>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl<'a> core::marker::Freeze for pert_ui_runtime::testing::Driver<'a>
+impl<'a> !core::marker::Send for pert_ui_runtime::testing::Driver<'a>
+impl<'a> !core::marker::Sync for pert_ui_runtime::testing::Driver<'a>
+impl<'a> core::marker::Unpin for pert_ui_runtime::testing::Driver<'a>
+impl<'a> core::marker::UnsafeUnpin for pert_ui_runtime::testing::Driver<'a>
+impl<'a> !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::testing::Driver<'a>
+impl<'a> !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::testing::Driver<'a>
+pub struct pert_ui_runtime::testing::FrameImage
+impl pert_ui_runtime::FrameImage
+pub const pert_ui_runtime::FrameImage::MAX_BYTES: usize
+pub fn pert_ui_runtime::FrameImage::crop(&self, u32, u32, u32, u32) -> core::result::Result<Self, pert_ui_runtime::CaptureError>
+pub fn pert_ui_runtime::FrameImage::encode_png(&self) -> alloc::vec::Vec<u8>
+pub const fn pert_ui_runtime::FrameImage::height(&self) -> u32
+pub fn pert_ui_runtime::FrameImage::new(u32, u32, alloc::vec::Vec<u8>) -> core::result::Result<Self, pert_ui_runtime::CaptureError>
+pub fn pert_ui_runtime::FrameImage::pixels(&self) -> &[u8]
+pub const fn pert_ui_runtime::FrameImage::width(&self) -> u32
+impl core::clone::Clone for pert_ui_runtime::FrameImage
+pub fn pert_ui_runtime::FrameImage::clone(&self) -> pert_ui_runtime::FrameImage
+impl core::cmp::Eq for pert_ui_runtime::FrameImage
+impl core::cmp::PartialEq for pert_ui_runtime::FrameImage
+pub fn pert_ui_runtime::FrameImage::eq(&self, &pert_ui_runtime::FrameImage) -> bool
+impl core::fmt::Debug for pert_ui_runtime::FrameImage
+pub fn pert_ui_runtime::FrameImage::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FrameImage
+impl serde_core::ser::Serialize for pert_ui_runtime::FrameImage
+pub fn pert_ui_runtime::FrameImage::serialize<__S>(&self, __S) -> core::result::Result<<__S as serde_core::ser::Serializer>::Ok, <__S as serde_core::ser::Serializer>::Error> where __S: serde_core::ser::Serializer
+impl<'de> serde_core::de::Deserialize<'de> for pert_ui_runtime::FrameImage
+pub fn pert_ui_runtime::FrameImage::deserialize<__D>(__D) -> core::result::Result<Self, <__D as serde_core::de::Deserializer>::Error> where __D: serde_core::de::Deserializer<'de>
+impl core::marker::Freeze for pert_ui_runtime::FrameImage
+impl core::marker::Send for pert_ui_runtime::FrameImage
+impl core::marker::Sync for pert_ui_runtime::FrameImage
+impl core::marker::Unpin for pert_ui_runtime::FrameImage
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FrameImage
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FrameImage
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FrameImage
+pub struct pert_ui_runtime::testing::InspectionQuery
+impl pert_ui_runtime::InspectionQuery
+pub const fn pert_ui_runtime::InspectionQuery::application(self) -> Self
+pub fn pert_ui_runtime::InspectionQuery::components(pert_ui_runtime::Selector) -> Self
+pub const fn pert_ui_runtime::InspectionQuery::depth(self, pert_ui_runtime::Depth) -> Self
+pub const fn pert_ui_runtime::InspectionQuery::depth_value(&self) -> pert_ui_runtime::Depth
+pub const fn pert_ui_runtime::InspectionQuery::detail(self, pert_ui_runtime::Detail) -> Self
+pub const fn pert_ui_runtime::InspectionQuery::detail_value(&self) -> pert_ui_runtime::Detail
+pub const fn pert_ui_runtime::InspectionQuery::events_after(self, u64) -> Self
+pub const fn pert_ui_runtime::InspectionQuery::events_after_value(&self) -> core::option::Option<u64>
+pub const fn pert_ui_runtime::InspectionQuery::limit(self, usize) -> Self
+pub const fn pert_ui_runtime::InspectionQuery::limit_value(&self) -> core::option::Option<usize>
+pub fn pert_ui_runtime::InspectionQuery::new() -> Self
+pub const fn pert_ui_runtime::InspectionQuery::parameters(self) -> Self
+pub fn pert_ui_runtime::InspectionQuery::select(self, pert_ui_runtime::Selector) -> Self
+pub const fn pert_ui_runtime::InspectionQuery::selector(&self) -> core::option::Option<&pert_ui_runtime::Selector>
+pub const fn pert_ui_runtime::InspectionQuery::sources(self) -> Self
+pub const fn pert_ui_runtime::InspectionQuery::validation(self) -> Self
+pub const fn pert_ui_runtime::InspectionQuery::wants_application(&self) -> bool
+pub const fn pert_ui_runtime::InspectionQuery::wants_parameters(&self) -> bool
+pub const fn pert_ui_runtime::InspectionQuery::wants_sources(&self) -> bool
+pub const fn pert_ui_runtime::InspectionQuery::wants_validation(&self) -> bool
+pub const fn pert_ui_runtime::InspectionQuery::wants_windows(&self) -> bool
+pub const fn pert_ui_runtime::InspectionQuery::windows(self) -> Self
+impl core::clone::Clone for pert_ui_runtime::InspectionQuery
+pub fn pert_ui_runtime::InspectionQuery::clone(&self) -> pert_ui_runtime::InspectionQuery
+impl core::cmp::PartialEq for pert_ui_runtime::InspectionQuery
+pub fn pert_ui_runtime::InspectionQuery::eq(&self, &pert_ui_runtime::InspectionQuery) -> bool
+impl core::default::Default for pert_ui_runtime::InspectionQuery
+pub fn pert_ui_runtime::InspectionQuery::default() -> pert_ui_runtime::InspectionQuery
+impl core::fmt::Debug for pert_ui_runtime::InspectionQuery
+pub fn pert_ui_runtime::InspectionQuery::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::InspectionQuery
+impl serde_core::ser::Serialize for pert_ui_runtime::InspectionQuery
+pub fn pert_ui_runtime::InspectionQuery::serialize<__S>(&self, __S) -> core::result::Result<<__S as serde_core::ser::Serializer>::Ok, <__S as serde_core::ser::Serializer>::Error> where __S: serde_core::ser::Serializer
+impl<'de> serde_core::de::Deserialize<'de> for pert_ui_runtime::InspectionQuery
+pub fn pert_ui_runtime::InspectionQuery::deserialize<__D>(__D) -> core::result::Result<Self, <__D as serde_core::de::Deserializer>::Error> where __D: serde_core::de::Deserializer<'de>
+impl core::marker::Freeze for pert_ui_runtime::InspectionQuery
+impl core::marker::Send for pert_ui_runtime::InspectionQuery
+impl core::marker::Sync for pert_ui_runtime::InspectionQuery
+impl core::marker::Unpin for pert_ui_runtime::InspectionQuery
+impl core::marker::UnsafeUnpin for pert_ui_runtime::InspectionQuery
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::InspectionQuery
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::InspectionQuery
 pub enum pert_ui_runtime::Align
 pub pert_ui_runtime::Align::Center
 pub pert_ui_runtime::Align::End
@@ -30478,6 +30749,8 @@ impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::Win
 pub fn pert_ui_runtime::WindowError::from(pert_ui_runtime::RuntimeError) -> Self
 impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::WorkspaceError
 pub fn pert_ui_runtime::WorkspaceError::from(pert_ui_runtime::RuntimeError) -> Self
+impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::testing::TestError
+pub fn pert_ui_runtime::testing::TestError::from(pert_ui_runtime::RuntimeError) -> Self
 impl core::convert::From<pert_ui_runtime::TextEditError> for pert_ui_runtime::RuntimeError
 pub fn pert_ui_runtime::RuntimeError::from(pert_ui_runtime::TextEditError) -> Self
 impl core::convert::From<pert_ui_runtime::TextError> for pert_ui_runtime::RuntimeError

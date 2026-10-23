@@ -11,6 +11,7 @@ pub mod pert_ui::guide::getting_started
 pub mod pert_ui::guide::layout
 pub mod pert_ui::guide::state
 pub mod pert_ui::guide::surfaces
+pub mod pert_ui::guide::testing
 pub mod pert_ui::prelude
 pub use pert_ui::prelude::<<pert_ui_runtime::prelude::*>>
 pub use pert_ui::prelude::NativeWindowId
@@ -84,6 +85,8 @@ impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui::NativeCloseAction
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui::NativeCloseAction
 pub struct pert_ui::prelude::App
 impl pert_ui::App
+pub fn pert_ui::App::headless(self) -> core::result::Result<pert_ui::testing::HeadlessApp, pert_ui::AppError>
+impl pert_ui::App
 pub fn pert_ui::App::max_size(self, pert_ui_runtime::layout::Size) -> core::result::Result<Self, pert_ui_runtime::runtime::RuntimeError>
 pub fn pert_ui::App::min_size(self, pert_ui_runtime::layout::Size) -> core::result::Result<Self, pert_ui_runtime::runtime::RuntimeError>
 pub fn pert_ui::App::new(impl core::convert::Into<alloc::string::String>, impl core::ops::function::FnOnce(&mut pert_ui_runtime::runtime::Runtime) -> core::result::Result<(), pert_ui::AppError> + 'static) -> Self
@@ -120,6 +123,31 @@ impl core::marker::Unpin for pert_ui::AppShutdownError
 impl core::marker::UnsafeUnpin for pert_ui::AppShutdownError
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui::AppShutdownError
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui::AppShutdownError
+pub mod pert_ui::testing
+pub use pert_ui::testing::CaptureRequest
+pub use pert_ui::testing::CaptureTarget
+pub use pert_ui::testing::Detail
+pub use pert_ui::testing::Driver
+pub use pert_ui::testing::FrameImage
+pub use pert_ui::testing::InspectionQuery
+pub use pert_ui::testing::Selector
+pub use pert_ui::testing::TestError
+pub struct pert_ui::testing::HeadlessApp
+impl pert_ui::testing::HeadlessApp
+pub fn pert_ui::testing::HeadlessApp::admit_close(&mut self, &pert_ui_runtime::runtime::native_windows::NativeWindowId) -> core::result::Result<pert_ui::NativeCloseAction, pert_ui::AppError>
+pub fn pert_ui::testing::HeadlessApp::main_window(&self) -> pert_ui_runtime::runtime::native_windows::NativeWindowId
+pub fn pert_ui::testing::HeadlessApp::runtime(&self) -> &pert_ui_runtime::runtime::Runtime
+pub fn pert_ui::testing::HeadlessApp::runtime_mut(&mut self) -> &mut pert_ui_runtime::runtime::Runtime
+pub fn pert_ui::testing::HeadlessApp::shutdown(self) -> core::result::Result<(), pert_ui::AppError>
+impl core::fmt::Debug for pert_ui::testing::HeadlessApp
+pub fn pert_ui::testing::HeadlessApp::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl !core::marker::Freeze for pert_ui::testing::HeadlessApp
+impl !core::marker::Send for pert_ui::testing::HeadlessApp
+impl !core::marker::Sync for pert_ui::testing::HeadlessApp
+impl core::marker::Unpin for pert_ui::testing::HeadlessApp
+impl core::marker::UnsafeUnpin for pert_ui::testing::HeadlessApp
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui::testing::HeadlessApp
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui::testing::HeadlessApp
 #[non_exhaustive] pub enum pert_ui::AppError
 pub pert_ui::AppError::DeviceLost(alloc::string::String)
 pub pert_ui::AppError::Drawing(pert_ui_runtime::drawing::DrawError)
@@ -188,6 +216,8 @@ impl core::marker::UnsafeUnpin for pert_ui::NativeCloseAction
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui::NativeCloseAction
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui::NativeCloseAction
 pub struct pert_ui::App
+impl pert_ui::App
+pub fn pert_ui::App::headless(self) -> core::result::Result<pert_ui::testing::HeadlessApp, pert_ui::AppError>
 impl pert_ui::App
 pub fn pert_ui::App::max_size(self, pert_ui_runtime::layout::Size) -> core::result::Result<Self, pert_ui_runtime::runtime::RuntimeError>
 pub fn pert_ui::App::min_size(self, pert_ui_runtime::layout::Size) -> core::result::Result<Self, pert_ui_runtime::runtime::RuntimeError>

@@ -24,6 +24,7 @@ package boundaries; [verification](verification.md) records tested behavior.
   - [Commands and modal admission](#commands-and-modal-admission)
   - [Reveal and focus](#reveal-and-focus)
   - [Drag and drop](#drag-and-drop)
+  - [Closing a window](#closing-a-window)
   - [Calling the runtime from callbacks](#calling-the-runtime-from-callbacks)
 - [Text and draft editing](#text-and-draft-editing)
 - [Theme palettes](#theme-palettes)
@@ -889,6 +890,47 @@ nothing claims, over no target or outside the window, are distinct outcomes.
 Built-in list, tree, tab and table reordering build on this contract; the
 application still owns its collection order. Dragging to another
 application is not part of this contract.
+
+### Closing a window
+
+A close request, from the window system or `Runtime::request_close`, is
+admitted before `App::on_close` runs, so the close policy sees what the user
+typed. The windows an accepted close discards are affected: a detached
+window's own, or every open window for the main window, which ends the
+application. Admission releases each affected window's focus through
+`Runtime::clear_focus`, as a deactivation does, and selects the previously
+selected window again; each recipient's `focus_lost` runs and queues its error
+in its window, and the runtime-wide held keys and held-input registrations end.
+Each editor applies its own focus-loss policy, which closing does not change: a
+plain text editor has already written its text and drops a composition; a
+drafting text field saves a changed draft its rules accept and keeps it unsaved
+when they refuse it, when it is read-only or disabled; a local number input
+saves a valid changed draft, keeps an invalid or read-only one and cancels a
+step gesture; a parameter-bound number input cancels its draft, since
+parameter authority commits only on an explicit commit; a `DraftEditor`
+follows its owner's policy; an `EditorSession` reports `FocusLeft` with the
+save's outcome unless the edit already ended, and nothing when its field is
+disabled.
+
+When no window is in component-error backoff, admission then flushes the
+affected windows: the detached window alone, or every window through
+`flush_windows`. A failed `focus_lost` aborts the close through `on_error`,
+without replaying the request; a hidden window is not flushed. While any window
+backs off nothing is flushed, so closing never requires a failing update to
+succeed first, and `App::run` returns the pending error when the application
+ends. A detached window closed while it waits to retry keeps that error for
+`run` to return at exit.
+
+The policy runs with the closing window selected. On a synchronous `KeepOpen`,
+each affected window whose focus admission released focuses that component
+again when nothing in the window holds focus after the callback and the runtime
+still admits it; a hidden, unmounted or modal-blocked component leaves focus
+cleared. `Defer` and `Close` restore nothing. Whatever the decision, the native
+host forgets the component an affected window recorded to focus on
+reactivation. `HeadlessApp::admit_close` runs the same admission without a
+window; coalescing repeated requests while a decision is deferred, the
+receipts and applying the decision stay with the native host.
+`Runtime::request_close` lists the steps a host other than `App` follows.
 
 ### Runtime shutdown
 

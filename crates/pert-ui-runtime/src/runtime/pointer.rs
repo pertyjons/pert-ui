@@ -305,6 +305,39 @@ impl Runtime {
     /// state is updated even if a callback returns an error. Coordinates are logical
     /// window pixels; the platform adapter handles native DPI and wheel units.
     ///
+    /// The event is delivered at once and its recipient writes what its own
+    /// rules write, as [`Self::text_input`] describes; the tree, derived
+    /// bindings and layout show the result after the next [`Self::flush`].
+    /// A click is a press and a release at one point inside the target's
+    /// [`Self::bounds`], which are known once a flush has laid it out; a
+    /// component scrolled out of view or inside a closed container is revealed
+    /// first with [`Self::reveal`]. [`Driver::click`](crate::testing::Driver::click)
+    /// does all of this.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
+    /// use std::time::Duration;
+    ///
+    /// let mut ui = Runtime::new();
+    /// ui.set_viewport(Viewport::new(300.0, 100.0, 1.0)?)?;
+    /// let clicks = ui.signal(0);
+    /// let counter = clicks.clone();
+    /// let button = ui.mount_tree(Element::new("add",
+    ///     Button::new("Add", move |_| counter.update(|n| *n += 1))))?;
+    /// ui.flush(Duration::ZERO)?; // lays the button out
+    /// let [x, y, width, height] = ui.bounds(&button)?.ok_or("not laid out")?.values();
+    /// let middle = Point::new(x + width / 2.0, y + height / 2.0)?;
+    /// for kind in [
+    ///     PointerKind::Press(PointerButton::Primary),
+    ///     PointerKind::Release(PointerButton::Primary),
+    /// ] {
+    ///     ui.pointer_input(PointerEvent::new(middle, kind))?;
+    /// }
+    /// assert_eq!(clicks.get()?, 1);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
     /// # Errors
     /// Propagates pending update/layout errors, callback errors (including those of
     /// the flush that delivers a notification the event requested) and phase

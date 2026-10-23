@@ -72,6 +72,7 @@ feature widgets (`Svg` with `svg`), and `pert_ui::component` is
 | Themes, typography and graphics | [`ThemeManager`], [`UiSettings`], [`FontManager`], [`RichText`], [`Icon`], [`Painter`], [`Image`], [`RasterImage`] | [appearance](crate::guide::appearance) |
 | Image files and SVG | [`images`] (feature `images` or a format feature), [`svg`] (feature `svg`) | [appearance](crate::guide::appearance) |
 | Keyboard, inspection and profiling | [`Runtime::command_key_input`], [`Runtime::key_input`], [`Runtime::inspect`], [`InspectionService`], [`Runtime::request_capture`], [`Runtime::set_profiling`] | [diagnostics](crate::guide::diagnostics) |
+| Headless tests | [`testing`]: [`testing::Driver`] clicks, types, presses keys and settles; [`HeadlessApp`] (feature `native`) runs an `App`'s close policy without a window | [testing an application](crate::guide::testing) |
 | Rendering without a GPU | [`cpu`] (feature `cpu`): [`CpuRenderer`] renders frames and serves captures headlessly; `App::software_rendering` presents them in native windows | [diagnostics](crate::guide::diagnostics) |
 
 Custom widgets implement [`Component`] and use the same public measurement,

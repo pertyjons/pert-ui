@@ -7,8 +7,10 @@ then approved by the maintainer. It closes round 1's F2, F4, F5 and F34
 [group E](../runs/triage/group-E.md). Decision G5-32 allowed a testing module
 once it owns F2's helpers; this part gives it those helpers.
 
-Status: **revision 4, 2026-10-23**. Codex's third recheck found it ready
-for approval (review record at the end); awaiting the maintainer.
+Status: **revision 4, approved by the maintainer on 2026-10-23**, after
+Codex's third recheck found it ready (review record at the end). The
+maintainer also chose that a retired window's pending error is kept for
+`run` to return at exit.
 
 ## What the testers built by hand
 
@@ -310,9 +312,9 @@ and applying the decision.
      surviving windows only). That is a defect of the touched close path,
      so this part fixes it: retirement keeps the window's pending error,
      and `run` returns it at exit as it returns a surviving window's. This
-     is an author decision for the maintainer; the alternative, reporting
-     it through `on_error` at retirement, would offer a retry with nothing
-     left to retry.
+     was the author's proposal, which the maintainer chose on 2026-10-23
+     over reporting it through `on_error` at retirement, which would offer
+     a retry with nothing left to retry.
    - `HeadlessApp` has no backoff, so it always flushes.
 5. **`on_close` runs**, as now.
 6. **Focus after a kept window.**

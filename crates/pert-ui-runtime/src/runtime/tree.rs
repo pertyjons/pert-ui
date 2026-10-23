@@ -422,18 +422,26 @@ impl Runtime {
     /// Returns `ForeignRuntime` for an ID of another runtime and `Unmounted` for an
     /// unmounted one.
     ///
+    /// One component's entry is one [`Self::query`] with
+    /// [`Selector::id`](crate::Selector::id), a single lookup, rather than a
+    /// search of a whole [`Self::inspect`] snapshot:
+    ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
-    /// use pert_ui::{Button, Column, Element, Runtime};
+    /// use pert_ui::{Button, Column, Detail, Element, InspectionQuery, Runtime, Selector};
     /// let mut ui = Runtime::new();
     /// let root = ui.mount_tree(Element::new("root", Column::new([
     ///     Element::new("save", Button::new("Save", |_| Ok(()))),
     /// ])))?;
-    /// let save = ui.find_descendant(&root, "save")?.ok_or("not mounted")?;
+    /// let save = ui.find(&root, &["save"])?.ok_or("not mounted")?;
     /// let id = ui.inspection_id(&save)?;
-    /// let snapshot = ui.inspect();
-    /// let entry = snapshot.components.iter().find(|c| c.id == id).ok_or("no entry")?;
+    /// let result = ui.query(
+    ///     &InspectionQuery::components(Selector::id(id)).detail(Detail::Semantics),
+    /// );
+    /// let entry = result.components.first().ok_or("no entry")?;
     /// assert_eq!(entry.key, "save");
+    /// let semantics = entry.details.semantics.as_ref().ok_or("no semantics")?;
+    /// assert_eq!(semantics.name.as_deref(), Some("Save"));
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     pub fn inspection_id(&self, id: &WidgetId) -> Result<u64, RuntimeError> {

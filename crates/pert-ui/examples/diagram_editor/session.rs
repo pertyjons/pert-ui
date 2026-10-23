@@ -1,19 +1,16 @@
 //! The deterministic headless session: drives the editor through pointer
-//! and key input, shortcuts through the native command path, and checks the
-//! document, the selection, the inspector and the files it writes.
+//! and key input, the test driver's keys and shortcuts on the native command
+//! path, and checks the document, the selection, the inspector and the files
+//! it writes.
 use crate::app::{self, DiagramApp};
 use crate::editor::Tool;
 use crate::model::{Diagram, NodeId};
 use pert_ui::prelude::*;
+use pert_ui::testing::Driver;
 use pert_ui::{
     CommandKey, CommandKeyInput, CommandSource, KeyAction, KeyCode, ViewTransform, Viewport,
 };
-use std::{
-    collections::BTreeSet,
-    path::PathBuf,
-    rc::Rc,
-    time::{Duration, Instant},
-};
+use std::{collections::BTreeSet, path::PathBuf, rc::Rc, time::Duration};
 
 type Outcome = Result<(), Box<dyn std::error::Error>>;
 
@@ -21,34 +18,30 @@ struct Session {
     ui: Runtime,
     app: Rc<DiagramApp>,
     origin: (f32, f32),
-    clock: Duration,
 }
 
 impl Session {
-    /// Flushes at a later time; returns how many components updated.
-    fn flush(&mut self) -> Result<usize, RuntimeError> {
-        self.clock += Duration::from_millis(16);
-        Ok(self.ui.flush(self.clock)?.components_updated)
+    /// The test driver over the session's runtime: each action settles with
+    /// one flush.
+    fn driver(&mut self) -> Driver<'_> {
+        Driver::new(&mut self.ui)
     }
-    /// Lets more than a double-click interval pass. The runtime's clock moves
-    /// only with a flush.
-    fn pause(&mut self) -> Result<(), RuntimeError> {
-        self.clock += Duration::from_secs(1);
-        self.flush().map(|_| ())
+    /// One settle, a flush 16 ms later; returns how many components updated.
+    fn settle(&mut self) -> Result<usize, Box<dyn std::error::Error>> {
+        Ok(self.driver().settle()?.components_updated)
     }
-    /// Flushes until `done` holds, bounded, for background work.
-    fn settle(&mut self, what: &str, mut done: impl FnMut(&Self) -> bool) -> Outcome {
-        let deadline = Instant::now() + Duration::from_secs(5);
-        loop {
-            self.flush()?;
-            if done(self) {
-                return Ok(());
-            }
-            if Instant::now() > deadline {
-                return Err(format!("timed out waiting for {what}").into());
-            }
-            std::thread::sleep(Duration::from_millis(2));
-        }
+    /// Lets more than a double-click interval pass, so the next press at a
+    /// point starts a new click. The runtime's clock moves only with a flush.
+    fn pause(&mut self) -> Outcome {
+        self.driver().advance(Duration::from_secs(1))?;
+        Ok(())
+    }
+    /// Flushes until `done` holds for the application, for background work.
+    fn wait_for(&mut self, what: &str, mut done: impl FnMut(&DiagramApp) -> bool) -> Outcome {
+        let app = self.app.clone();
+        self.driver()
+            .wait_until(Duration::from_secs(5), |_| Ok(done(&app)))
+            .map_err(|error| format!("waiting for {what}: {error}").into())
     }
     fn doc(&self) -> Result<Rc<Diagram>, RuntimeError> {
         self.app.editor.diagram()
@@ -73,7 +66,7 @@ impl Session {
     }
     fn pointer(&mut self, point: Point, kind: PointerKind) -> Outcome {
         self.ui.pointer_input(PointerEvent::new(point, kind))?;
-        self.flush()?;
+        self.settle()?;
         Ok(())
     }
     fn click(&mut self, point: Point) -> Outcome {
@@ -94,40 +87,19 @@ impl Session {
         }
         self.pointer(to, PointerKind::Release(PointerButton::Primary))
     }
-    /// A key through the native path, which routes commands and held input.
+    /// One key transition through the native path, which routes commands
+    /// and held input, for a key held across other input.
     fn send(&mut self, code: KeyCode, action: KeyAction, base: CommandKey) -> Outcome {
         self.ui
             .command_key_input(CommandKeyInput::new(code, action, base))?;
         Ok(())
     }
-    fn key(&mut self, code: KeyCode) -> Outcome {
-        self.send(code, KeyAction::Press, CommandKey::Named(code))?;
-        self.send(code, KeyAction::Release, CommandKey::Named(code))?;
-        self.flush()?;
-        Ok(())
-    }
-    /// A shortcut with the platform's primary modifier held.
+    /// A shortcut with the platform's primary modifier held, and Shift too
+    /// when `shift`.
     fn shortcut(&mut self, letter: char, code: KeyCode, shift: bool) -> Outcome {
-        let primary = KeyCode::primary();
-        self.send(primary, KeyAction::Press, CommandKey::Named(primary))?;
-        if shift {
-            self.send(
-                KeyCode::ShiftLeft,
-                KeyAction::Press,
-                CommandKey::Named(KeyCode::ShiftLeft),
-            )?;
-        }
-        self.send(code, KeyAction::Press, CommandKey::Character(letter))?;
-        self.send(code, KeyAction::Release, CommandKey::Character(letter))?;
-        if shift {
-            self.send(
-                KeyCode::ShiftLeft,
-                KeyAction::Release,
-                CommandKey::Named(KeyCode::ShiftLeft),
-            )?;
-        }
-        self.send(primary, KeyAction::Release, CommandKey::Named(primary))?;
-        self.flush()?;
+        let chord = KeyChord::primary(letter);
+        let chord = if shift { chord.shifted() } else { chord };
+        self.driver().chord(chord, code)?;
         Ok(())
     }
     fn find(&self, key: &str) -> Result<WidgetId, Box<dyn std::error::Error>> {
@@ -155,9 +127,8 @@ pub fn run(dir: PathBuf) -> Outcome {
         ui,
         app,
         origin: (0.0, 0.0),
-        clock: Duration::ZERO,
     };
-    s.flush()?;
+    s.settle()?;
     let [x, y, _, _] =
         s.ui.bounds(&s.app.canvas)?
             .ok_or("canvas laid out")?
@@ -165,7 +136,7 @@ pub fn run(dir: PathBuf) -> Outcome {
     s.origin = (x, y);
     s.assert_clean("at start")?;
     assert_eq!((s.doc()?.nodes.len(), s.doc()?.edges.len()), (3, 2));
-    assert_eq!(s.flush()?, 0, "nothing updates while nothing happens");
+    assert_eq!(s.settle()?, 0, "nothing updates while nothing happens");
     let (start, decide, finish) = (NodeId(1), NodeId(2), NodeId(3));
 
     // A click selects a node, in the shared selection the outline shows.
@@ -183,7 +154,7 @@ pub fn run(dir: PathBuf) -> Outcome {
     let from = s.node_point(start)?;
     s.pointer(from, PointerKind::Press(PointerButton::Primary))?;
     s.pointer(Point::new(from.x() + 100.0, from.y())?, PointerKind::Move)?;
-    s.key(KeyCode::Escape)?;
+    s.driver().key(KeyCode::Escape)?;
     s.pointer(
         Point::new(from.x() + 100.0, from.y())?,
         PointerKind::Release(PointerButton::Primary),
@@ -200,7 +171,7 @@ pub fn run(dir: PathBuf) -> Outcome {
 
     // Arrow keys nudge the selection.
     s.ui.focus(&s.app.canvas)?;
-    s.key(KeyCode::ArrowRight)?;
+    s.driver().key(KeyCode::ArrowRight)?;
     assert_eq!(s.doc()?.node(start).map(|node| node.x), Some(moved.x + 1.0));
 
     // A rubber band around everything selects all three nodes.
@@ -228,7 +199,7 @@ pub fn run(dir: PathBuf) -> Outcome {
     // Delete removes a node with its edges; undo brings both back.
     s.click(s.node_point(decide)?)?;
     s.ui.focus(&s.app.canvas)?;
-    s.key(KeyCode::Delete)?;
+    s.driver().key(KeyCode::Delete)?;
     assert!(s.doc()?.node(decide).is_none());
     assert_eq!(s.doc()?.edges.len(), 1);
     s.shortcut('z', KeyCode::KeyZ, false)?;
@@ -239,14 +210,13 @@ pub fn run(dir: PathBuf) -> Outcome {
     s.click(s.node_point(finish)?)?;
     let field = s.find("label-input")?;
     s.ui.focus(&field)?;
-    s.key(KeyCode::End)?;
-    s.ui.text_input(" line")?;
-    s.flush()?;
+    s.driver().key(KeyCode::End)?;
+    s.driver().type_text(" line")?;
     let editor = s.app.editor.clone();
     editor.commit("Move", |doc| doc.move_by(&[start], 0.0, 5.0))?;
-    s.flush()?;
+    s.settle()?;
     assert_eq!(s.label(finish)?, "Finish", "a draft is not committed");
-    s.key(KeyCode::Enter)?;
+    s.driver().key(KeyCode::Enter)?;
     assert_eq!(
         s.label(finish)?,
         "Finish line",
@@ -256,15 +226,15 @@ pub fn run(dir: PathBuf) -> Outcome {
     // A draft belongs to the node it was typed for: duplicating the node,
     // which selects the copy, discards it instead of saving it to the copy.
     s.ui.focus(&s.find("label-input")?)?;
-    s.key(KeyCode::End)?;
-    s.ui.text_input(" draft")?;
+    s.driver().key(KeyCode::End)?;
+    s.driver().type_text(" draft")?;
     s.shortcut('d', KeyCode::KeyD, false)?;
     let copy = s.doc()?.nodes.last().map(|node| node.id).ok_or("copy")?;
     assert_ne!(copy, finish);
     assert_eq!(s.selected()?, BTreeSet::from([copy]));
     assert_eq!(s.label(finish)?, "Finish line");
     assert_eq!(s.label(copy)?, "Finish line");
-    s.key(KeyCode::Enter)?;
+    s.driver().key(KeyCode::Enter)?;
     assert_eq!(s.label(copy)?, "Finish line", "no draft reached the copy");
     s.shortcut('z', KeyCode::KeyZ, false)?;
     assert!(s.doc()?.node(copy).is_none());
@@ -274,14 +244,14 @@ pub fn run(dir: PathBuf) -> Outcome {
     s.click(s.node_point(finish)?)?;
     s.ui.focus(&s.find("label-input")?)?;
     s.shortcut('a', KeyCode::KeyA, false)?;
-    s.ui.text_input(&"e\u{301}".repeat(101))?;
-    s.key(KeyCode::Enter)?;
+    s.driver().type_text(&"e\u{301}".repeat(101))?;
+    s.driver().key(KeyCode::Enter)?;
     assert_eq!(
         s.label(finish)?,
         "Finish line",
         "refused, kept for correction"
     );
-    s.key(KeyCode::Escape)?;
+    s.driver().key(KeyCode::Escape)?;
     s.ui.focus(&s.app.canvas)?;
 
     // The outline shares the selection: a click on its first row selects
@@ -290,8 +260,7 @@ pub fn run(dir: PathBuf) -> Outcome {
     let row =
         s.ui.find_descendant(&outline, &start.key())?
             .ok_or("outline row")?;
-    let [rx, ry, rw, rh] = s.ui.bounds(&row)?.ok_or("row laid out")?.values();
-    s.click(Point::new(rx + rw / 2.0, ry + rh / 2.0)?)?;
+    s.driver().click(&row)?;
     assert_eq!(s.selected()?, BTreeSet::from([start]));
     assert_eq!(
         s.app.editor.inspector.shown.get()?,
@@ -301,22 +270,22 @@ pub fn run(dir: PathBuf) -> Outcome {
 
     // Renaming in place: F2 opens the editor with the label selected.
     s.ui.focus(&s.app.canvas)?;
-    s.key(KeyCode::F2)?;
+    s.driver().key(KeyCode::F2)?;
     let rename =
         s.ui.find_descendant(&s.app.canvas, "rename")?
             .ok_or("rename editor")?;
     assert_eq!(s.ui.focused(), Some(rename));
-    s.ui.text_input("Done")?;
-    s.key(KeyCode::Enter)?;
+    s.driver().type_text("Done")?;
+    s.driver().key(KeyCode::Enter)?;
     assert_eq!(
         s.label(finish)?,
         "Done",
         "typing replaced the selected label"
     );
     assert_eq!(s.ui.focused().as_ref(), Some(&s.app.canvas));
-    s.key(KeyCode::F2)?;
-    s.ui.text_input("Discarded")?;
-    s.key(KeyCode::Escape)?;
+    s.driver().key(KeyCode::F2)?;
+    s.driver().type_text("Discarded")?;
+    s.driver().key(KeyCode::Escape)?;
     assert_eq!(s.label(finish)?, "Done");
     // A double click on a node opens it too.
     let point = s.node_point(start)?;
@@ -327,10 +296,10 @@ pub fn run(dir: PathBuf) -> Outcome {
         s.ui.focused(),
         s.ui.find_descendant(&s.app.canvas, "rename")?
     );
-    s.key(KeyCode::Escape)?;
+    s.driver().key(KeyCode::Escape)?;
     // The editor is named for inspection.
     s.ui.focus(&s.app.canvas)?;
-    s.key(KeyCode::F2)?;
+    s.driver().key(KeyCode::F2)?;
     let named = s.ui.inspect().components.into_iter().any(|component| {
         component.key == "rename"
             && component
@@ -340,8 +309,9 @@ pub fn run(dir: PathBuf) -> Outcome {
     });
     assert!(named, "the rename editor has a name");
     // A label too long for the file format is refused and stays open.
-    s.ui.text_input(&"x".repeat(crate::model::MAX_LABEL + 1))?;
-    s.key(KeyCode::Enter)?;
+    s.driver()
+        .type_text(&"x".repeat(crate::model::MAX_LABEL + 1))?;
+    s.driver().key(KeyCode::Enter)?;
     assert_eq!(
         s.ui.focused(),
         s.ui.find_descendant(&s.app.canvas, "rename")?
@@ -353,15 +323,15 @@ pub fn run(dir: PathBuf) -> Outcome {
             .get()?
             .starts_with("A label has at most")
     );
-    s.key(KeyCode::Escape)?;
+    s.driver().key(KeyCode::Escape)?;
     assert_eq!(s.label(start)?, "Start");
     // Hiding the canvas ends a rename without saving it.
-    s.key(KeyCode::F2)?;
-    s.ui.text_input("Hidden")?;
+    s.driver().key(KeyCode::F2)?;
+    s.driver().type_text("Hidden")?;
     s.ui.set_visible(&s.app.canvas, false)?;
-    s.flush()?;
+    s.settle()?;
     s.ui.set_visible(&s.app.canvas, true)?;
-    s.flush()?;
+    s.settle()?;
     assert_eq!(s.label(start)?, "Start");
     let rename =
         s.ui.find_descendant(&s.app.canvas, "rename")?
@@ -370,13 +340,13 @@ pub fn run(dir: PathBuf) -> Outcome {
     // Replacing the document ends a rename: its draft never reaches the
     // new document's node of the same identity.
     s.ui.focus(&s.app.canvas)?;
-    s.key(KeyCode::F2)?;
-    s.ui.text_input("Old document")?;
+    s.driver().key(KeyCode::F2)?;
+    s.driver().type_text("Old document")?;
     let current = (*s.doc()?).clone();
     s.app.editor.replace(current, None)?;
-    s.flush()?;
+    s.settle()?;
     assert_ne!(s.ui.focused(), Some(rename));
-    s.key(KeyCode::Enter)?;
+    s.driver().key(KeyCode::Enter)?;
     assert_eq!(s.label(start)?, "Start");
     s.assert_clean("after renaming")?;
 
@@ -385,14 +355,14 @@ pub fn run(dir: PathBuf) -> Outcome {
     let fill = s.doc()?.node(finish).ok_or("finish")?.fill;
     let swatch = s.find("swatch")?;
     s.ui.focus(&swatch)?;
-    s.key(KeyCode::Enter)?;
+    s.driver().key(KeyCode::Enter)?;
     let hue = s.find("hue")?;
     s.ui.focus(&hue)?;
-    s.key(KeyCode::ArrowRight)?;
+    s.driver().key(KeyCode::ArrowRight)?;
     let picked = s.doc()?.node(finish).ok_or("finish")?.fill;
     assert_ne!(picked, fill);
     assert_eq!(s.app.editor.inspector.fill.get()?, picked);
-    s.key(KeyCode::Escape)?;
+    s.driver().key(KeyCode::Escape)?;
     s.shortcut('z', KeyCode::KeyZ, false)?;
     assert_eq!(s.doc()?.node(finish).ok_or("finish")?.fill, fill);
 
@@ -430,7 +400,7 @@ pub fn run(dir: PathBuf) -> Outcome {
         KeyAction::Release,
         CommandKey::Named(KeyCode::Space),
     )?;
-    s.flush()?;
+    s.settle()?;
 
     // Space pressed the focused Fit button instead.
     assert_ne!(s.app.editor.view.get()?, panned);
@@ -455,47 +425,51 @@ pub fn run(dir: PathBuf) -> Outcome {
     // Ctrl+wheel zooms at the pointer; zoom to fit frames everything.
     let point = s.node_point(start)?;
     let scale = s.app.editor.view.get()?.scale().get();
+    // The modifier is held across other input, so it is pressed by hand and
+    // reported with `native_modifiers`, as the native host does.
     let primary = KeyCode::primary();
     s.send(primary, KeyAction::Press, CommandKey::Named(primary))?;
+    s.ui.native_modifiers(Modifiers::PRIMARY)?;
     s.pointer(point, PointerKind::Scroll(Point::new(0.0, -1.0)?))?;
     s.send(primary, KeyAction::Release, CommandKey::Named(primary))?;
+    s.ui.native_modifiers(Modifiers::default())?;
     assert!(s.app.editor.view.get()?.scale().get() > scale);
     let after = s.node_point(start)?;
     assert!((after.x() - point.x()).abs() < 0.5 && (after.y() - point.y()).abs() < 0.5);
     let context = s.ui.command_context(CommandSource::Programmatic);
     s.ui.invoke_command(&s.app.commands.zoom_fit, context)?;
-    s.flush()?;
+    s.settle()?;
     assert_ne!(s.app.editor.view.get()?, ViewTransform::IDENTITY);
     s.assert_clean("after panning and zooming")?;
 
     // Save through the dialog's own button, then open the file again.
     let context = s.ui.command_context(CommandSource::Programmatic);
     s.ui.invoke_command(&s.app.commands.save_as, context)?;
-    s.flush()?;
+    s.settle()?;
     s.app.files.save_name.set("probe.txt".to_owned())?;
-    s.flush()?;
+    s.settle()?;
     let content = s.find("save-content")?;
     let button =
         s.ui.find_descendant(&content, "save")?
             .ok_or("save button")?;
-    let [bx, by, bw, bh] = s.ui.bounds(&button)?.ok_or("button laid out")?.values();
-    s.click(Point::new(bx + bw / 2.0, by + bh / 2.0)?)?;
-    s.settle("the save", |s| !s.app.editor.dirty.get().unwrap_or(true))?;
+    s.driver().click(&button)?;
+    s.wait_for("the save", |app| !app.editor.dirty.get().unwrap_or(true))?;
     let path = dir.join("probe.txt");
     let saved = s.doc()?;
     assert_eq!(Diagram::decode(&std::fs::read_to_string(&path)?)?, *saved);
     s.app.editor.replace(Diagram::default(), None)?;
     let files = s.app.files.clone();
     files.open_path(&mut s.ui, path.clone())?;
-    s.settle("the open", |s| s.doc().is_ok_and(|doc| *doc == *saved))?;
+    s.wait_for("the open", |app| {
+        app.editor.diagram().is_ok_and(|doc| *doc == *saved)
+    })?;
     assert_eq!(s.app.editor.path.get()?, Some(path));
     // A damaged file is reported and changes nothing.
     let damaged = dir.join("damaged.txt");
     std::fs::write(&damaged, "diagram 1\nnode 1 box 0 0 1 1 #ffffff tiny\n")?;
     files.open_path(&mut s.ui, damaged)?;
-    s.settle("the refusal", |s| {
-        s.app
-            .editor
+    s.wait_for("the refusal", |app| {
+        app.editor
             .status
             .get()
             .is_ok_and(|status| status.starts_with("Open failed"))
@@ -518,9 +492,8 @@ pub fn run(dir: PathBuf) -> Outcome {
     files.open_path(&mut s.ui, reopened)?;
     let edited = s.app.editor.clone();
     edited.commit("Move", |doc| doc.move_by(&[start], 1.0, 0.0))?;
-    s.settle("the overtaken open", |s| {
-        s.app
-            .editor
+    s.wait_for("the overtaken open", |app| {
+        app.editor
             .status
             .get()
             .is_ok_and(|status| status.starts_with("Did not open"))
@@ -541,31 +514,35 @@ pub fn run(dir: PathBuf) -> Outcome {
     files.restore_layout(&mut s.ui)?;
     assert_eq!(s.app.editor.status.get()?, "Layout restored");
     assert!(app::close_requested(&s.app, &mut s.ui)?.is_none());
-    // A draft open in the inspector counts: closing resolves it first.
+    // A draft open in the inspector counts: closing resolves it first. `App`
+    // releases focus before its close policy runs; the session calls the
+    // policy itself, so it releases focus as that admission does.
     s.click(s.node_point(start)?)?;
     s.ui.focus(&s.find("label-input")?)?;
-    s.key(KeyCode::End)?;
-    s.ui.text_input("!")?;
+    s.driver().key(KeyCode::End)?;
+    s.driver().type_text("!")?;
+    s.ui.clear_focus();
     let decision = app::close_requested(&s.app, &mut s.ui)?.ok_or("asks")?;
     assert_eq!(s.label(start)?, "Start!");
-    s.flush()?;
+    s.settle()?;
     assert_eq!(decision.get()?, None);
     s.app.files.discard_dialog.cancel()?;
-    s.flush()?;
+    s.settle()?;
     assert_eq!(decision.get()?, Some(WindowCloseAction::KeepOpen));
     // So does a rename open on the canvas.
     s.ui.focus(&s.app.canvas)?;
-    s.key(KeyCode::F2)?;
-    s.ui.text_input("Renamed")?;
+    s.driver().key(KeyCode::F2)?;
+    s.driver().type_text("Renamed")?;
+    s.ui.clear_focus();
     let decision = app::close_requested(&s.app, &mut s.ui)?.ok_or("asks")?;
     assert_eq!(s.label(start)?, "Renamed");
-    s.flush()?;
+    s.settle()?;
     s.app.files.discard_dialog.cancel()?;
-    s.flush()?;
+    s.settle()?;
     assert_eq!(decision.get()?, Some(WindowCloseAction::KeepOpen));
 
     s.assert_clean("at the end")?;
-    assert_eq!(s.flush()?, 0, "nothing updates while nothing happens");
+    assert_eq!(s.settle()?, 0, "nothing updates while nothing happens");
     s.ui.shutdown();
     let cleanup = s.ui.take_shutdown_errors();
     assert!(cleanup.is_empty(), "{cleanup:?}");

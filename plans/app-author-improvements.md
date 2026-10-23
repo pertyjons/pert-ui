@@ -353,8 +353,10 @@ stays window-free.
 - A notes or todo tutorial (state, value-driven list, editing, saving through
   background work, error feedback, shortcuts, close admission), written after
   the APIs it shows have settled; each slice still documents its own API.
-- Guide examples shaped as applications with harness lines hidden, and a
-  chapter on headless testing and CPU captures.
+- Guide examples shaped as applications with harness lines hidden. The
+  chapter on headless testing and CPU captures exists: the API audit's part
+  6f1 (0.3.68) added "Testing an application" with the `testing` module's
+  driver and `HeadlessApp`.
 - A smaller application prelude and thematic modules for the docs.rs index,
   as a separate public-API branch: removing a prelude name can break
   consumers. The API audit's part 6e (0.3.67) grew the prelude by about
@@ -368,8 +370,8 @@ Inputs from later plans and the 2026-10-20 audit:
   (`guide/getting-started.md`, `guide/getting-started-continued.md`) and a
   screenshot and capture section in `guide/diagnostics.md`. The packaged
   examples (`live_mixer`, `diagram_editor`, `log_explorer`, `inventory`)
-  are applications with headless sessions. The tutorial and the testing
-  chapter start from these rather than beside them.
+  are applications with headless sessions. The tutorial starts from these
+  rather than beside them, as the testing chapter does.
 - The [mixer-probe plan](archive/mixer-probe-improvements.md) found that the
   prelude lacks the names an ordinary command or live-data application uses.
   `CommandScope`, `KeyChord`, `CommandSource`, `LevelMeter`, `Trace`,
@@ -383,12 +385,6 @@ Inputs from later plans and the 2026-10-20 audit:
   component's bounds are.
 - The [developer-usability plan](developer-usability.md#round-1-findings)'s
   blind tests (2026-10-21) add discovery evidence:
-  - **Testing chapter (F2):** the testers who tested an application, the
-    pilots and the packaged examples built recurring helpers (click at
-    bounds, replace a field's text, a key chord, find a component's
-    semantics, settle after input), not all of them in every submission.
-    The chapter should start from `Runtime::query` with `Selector::id`,
-    not a full snapshot search.
   - **Background work from a callback (F13):** the `defer`-then-
     `Runtime::spawn` pattern the `diagram_editor` example uses, which both
     task 1 testers had to invent or work around.

@@ -572,6 +572,68 @@ and anything left to a later part.
     diff adds only the two names' blocks under `component` in the runtime
     listings, and `git diff --check`; the five headless example sessions
     on the final candidate. The fix is verified in 6f1's review.
+- **6f1 (0.3.68):** the testing module, the headless application and the
+  close order, by [design revision 4](design-6f1.md), which Codex reviewed
+  three times and the maintainer approved on 2026-10-23. The maintainer also
+  chose that a retired detached window's pending recovery error is kept for
+  `run` to return at exit.
+  - **F2:**
+    - `pert_ui_runtime::testing` holds `Driver` and `TestError`, with the
+      capture and query re-exports; `pert_ui::testing` adds `CpuRenderer`
+      with `cpu` and `HeadlessApp` with `native`;
+    - the guide chapter "Testing an application" and the five doc
+      sub-items;
+    - app-author slice 9's F2 input is removed and its chapter bullet met.
+  - **F4:** a crate-private admission (`app/close.rs`), used by the native
+    runner and `HeadlessApp::admit_close`, releases focus in every affected
+    root before `App::on_close`. It flushes unless any root is in backoff,
+    and restores focus only on a synchronous `KeepOpen`. The runner forgets
+    the affected roots' reactivation records and keeps a retired window's
+    pending error. contracts.md has a "Closing a window" section.
+  - **F5:** `App::headless`, `HeadlessApp`, and the custom-host steps on
+    `Runtime::request_close` and `take_presentation_requests`.
+  - **F34:** the diagnostics guide's chord example uses `Driver::chord`. The
+    three packaged sessions use the driver with one flush per settle, which
+    lead U2 showed is enough.
+  - **Checks run after the last code edit (the dependency, feature,
+    platform and release row):**
+    - the workspace gate, including the five headless example sessions and
+      the diagnostics suite (no snapshot change);
+    - `cargo test --locked --release --workspace`;
+    - Clippy, tests and rustdoc in every CI feature configuration, and
+      `pert-ui-core --features serde`;
+    - the headless gallery;
+    - every run on the pinned toolchain, which is the MSRV;
+    - `api/generate.sh`, whose diff adds only the planned items;
+    - the native checks on Linux (Fedora 44, GNOME/Wayland, Intel UHD 770
+      with Mesa 26.2.5 on Vulkan), 18 of 18 with the clipboard check,
+      recorded in `docs/verification.md`, where Windows and macOS evidence
+      is recorded as missing;
+    - `git diff --check`.
+
+    Each behavior test was checked to fail with its change reverted.
+  - **Deviations:**
+    - restoration uses `Runtime::focus`, whose refusals are the design's
+      set, since no public API reports focusability and `reveal_and_focus`
+      would flush during backoff;
+    - `admit_close` validates the window through `select_window` and
+      selects the previous window again, both documented;
+    - a key release after a failed press shows as `UnmatchedRelease`
+      through the public API, so those tests check that the release is sent
+      and no key stays held.
+  - **Beyond the plan's lines:**
+    - the diagram editor's close policy drops its `clear_focus` workaround,
+      and the custom-widgets guide's sentence teaching it is replaced;
+    - the inventory session's snapshot searches use `query` with
+      `Selector::id`;
+    - the round 2 fixture's requirement is 0.3.68, after a copy built and
+      tested against the workspace.
+  - **Not testable headlessly:** the wiring inside `begin_close`, the
+    `CloseRequested` path and `run` returning the retired error at exit;
+    the native checks cover the first two on Linux.
+  - **Open:** the maintainer's hand check of closing with a focused draft
+    (the diagram editor, `--window`), on Linux, and on Windows and macOS
+    when available.
 
 ## Rules for every part
 

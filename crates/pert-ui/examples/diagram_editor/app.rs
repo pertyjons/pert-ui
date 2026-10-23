@@ -883,16 +883,15 @@ fn mount(
     )?)
 }
 
-/// Close admission. Open drafts are resolved first, as a click elsewhere
-/// would resolve them: clearing focus saves the inspector field and the
-/// in-place rename being typed (a draft its field refuses stays unsaved and
-/// is lost with the window). The layout is saved, and with unsaved changes
-/// the user is asked before they are discarded.
+/// Close admission. `App` has resolved open drafts before this runs, as a
+/// click elsewhere would resolve them: releasing focus saved the inspector
+/// field and the in-place rename being typed (a draft its field refuses stays
+/// unsaved and is lost with the window). The layout is saved, and with
+/// unsaved changes the user is asked before they are discarded.
 pub fn close_requested(
     app: &DiagramApp,
     ui: &mut Runtime,
 ) -> Result<Option<ReadSignal<Option<WindowCloseAction>>>, RuntimeError> {
-    ui.clear_focus();
     app.files.save_layout(ui)?;
     if !app.editor.dirty.get()? {
         return Ok(None);

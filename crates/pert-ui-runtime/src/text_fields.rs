@@ -50,6 +50,12 @@ type RefusalReport =
 /// or a [session](Self::session) enable draft mode;
 /// Enter invokes an optional submit callback once per press.
 /// Text is vertically centered in the field's available height.
+/// Focusing the field leaves its caret and selection where its last edit or
+/// movement left them, which is the start of the text before the first edit
+/// and after an external write, so [`Runtime::focus`](crate::Runtime::focus)
+/// followed by typing inserts there; a pointer press places the caret where it
+/// lands, and [`TextCommand::SelectAll`] selects the whole text for
+/// replacement.
 /// Escape/focus loss discard only uncommitted IME text. External writes win, reset
 /// selection and clear local undo. This is not an authoritative parameter gesture.
 ///

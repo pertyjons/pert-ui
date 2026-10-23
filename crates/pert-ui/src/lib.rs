@@ -79,7 +79,10 @@ pub use svg::component::Svg;
 /// - live data: [`SeriesSource`], [`series_bridge`], [`SeriesConfig`] and
 ///   [`Timestamp`];
 /// - a custom component's inspection description, drag preview, receipts and
-///   native windows: `use pert_ui::component::*` (see [`component`]).
+///   native windows: `use pert_ui::component::*` (see [`component`]);
+/// - a headless test's driver, inspection queries, capture, the CPU renderer
+///   and the headless application: `use pert_ui::testing::*` (see
+///   [`testing`]).
 pub mod prelude {
     #[cfg(feature = "svg")]
     #[doc(no_inline)]
@@ -140,4 +143,57 @@ pub mod prelude {
 pub mod component {
     #[doc(no_inline)]
     pub use pert_ui_runtime::component::*;
+}
+
+/// Driving an application in a headless test, for `use pert_ui::testing::*`.
+///
+/// [`Driver`](testing::Driver) clicks a component, replaces or types text,
+/// presses keys and chords, settles the runtime after each step and finds a
+/// component's semantics; [`TestError`](testing::TestError) names what a step
+/// could not do. Neither needs a window or a GPU. The module also re-exports
+/// what a headless test writes besides the driver: [`InspectionQuery`],
+/// [`Selector`] and [`Detail`] for [`Runtime::query`], and
+/// [`CaptureRequest`], [`CaptureTarget`] and [`FrameImage`] for a capture.
+/// With the `cpu` feature it adds [`CpuRenderer`], which serves captures
+/// without a GPU, and with the `native` feature, which `desktop` and
+/// `desktop-cpu` enable, [`HeadlessApp`], an [`App`] started without a window
+/// by [`App::headless`] so its content and its close policy can be tested.
+/// The re-exported names stay at the crate root too.
+///
+/// The [testing chapter](crate::guide::testing) of the guide walks through a
+/// test.
+///
+/// ```
+/// use pert_ui::prelude::*;
+/// use pert_ui::testing::*;
+///
+/// let mut ui = Runtime::new();
+/// ui.set_viewport(Viewport::new(300.0, 100.0, 1.0)?)?;
+/// let clicks = ui.signal(0);
+/// let counter = clicks.clone();
+/// let button = ui.mount_tree(Element::new("add",
+///     Button::new("Add", move |_| counter.update(|n| *n += 1))))?;
+/// let mut driver = Driver::new(&mut ui);
+/// driver.settle()?;
+/// driver.click(&button)?;
+/// assert_eq!(clicks.get()?, 1);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+#[cfg_attr(feature = "native", doc = include_str!("guide/links/desktop.md"))]
+#[cfg_attr(not(feature = "native"), doc = include_str!("guide/links/no-desktop.md"))]
+#[cfg_attr(feature = "cpu", doc = include_str!("guide/links/cpu.md"))]
+#[cfg_attr(not(feature = "cpu"), doc = include_str!("guide/links/no-cpu.md"))]
+pub mod testing {
+    #[doc(no_inline)]
+    pub use pert_ui_runtime::testing::{
+        CaptureRequest, CaptureTarget, Detail, FrameImage, InspectionQuery, Selector,
+    };
+    #[doc(inline)]
+    pub use pert_ui_runtime::testing::{Driver, TestError};
+
+    #[cfg(feature = "native")]
+    pub use crate::app::HeadlessApp;
+    #[cfg(feature = "cpu")]
+    #[doc(no_inline)]
+    pub use crate::cpu::CpuRenderer;
 }

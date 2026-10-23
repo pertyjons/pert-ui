@@ -17,6 +17,9 @@
 //!   images and SVG.
 //! - [Diagnostics](diagnostics): keyboard input, inspection, screenshots,
 //!   serialization and profiling.
+//! - [Testing an application](testing): reading what a headless runtime
+//!   shows, clicks, text, keys and chords, settling, list rows, background
+//!   work, the close policy and a CPU capture.
 //! - [Custom widgets](custom_widgets): phases and writes, pointer gestures
 //!   that converge, clicks, held keys, described children, inspection, an
 //!   inspector over an application document and building an application.
@@ -143,6 +146,24 @@ pub mod diagnostics {
     //! profiling.
     //!
     #![doc = include_str!("guide/diagnostics.md")]
+    #![cfg_attr(feature = "native", doc = include_str!("guide/links/desktop.md"))]
+    #![cfg_attr(not(feature = "native"), doc = include_str!("guide/links/no-desktop.md"))]
+    #![cfg_attr(feature = "images", doc = include_str!("guide/links/images.md"))]
+    #![cfg_attr(not(feature = "images"), doc = include_str!("guide/links/no-images.md"))]
+    #![cfg_attr(feature = "svg", doc = include_str!("guide/links/svg.md"))]
+    #![cfg_attr(not(feature = "svg"), doc = include_str!("guide/links/no-svg.md"))]
+    #![cfg_attr(feature = "cpu", doc = include_str!("guide/links/cpu.md"))]
+    #![cfg_attr(not(feature = "cpu"), doc = include_str!("guide/links/no-cpu.md"))]
+    #[allow(unused_imports)]
+    use crate::*;
+}
+
+pub mod testing {
+    //! Testing an application: reading what a headless runtime shows, clicks,
+    //! text, keys and chords, settling, list rows, background work, the close
+    //! policy and a CPU capture.
+    //!
+    #![doc = include_str!("guide/testing.md")]
     #![cfg_attr(feature = "native", doc = include_str!("guide/links/desktop.md"))]
     #![cfg_attr(not(feature = "native"), doc = include_str!("guide/links/no-desktop.md"))]
     #![cfg_attr(feature = "images", doc = include_str!("guide/links/images.md"))]

@@ -233,9 +233,10 @@ draft, and hiding or removing the field discards it, as each editor
 documents. Each field reports its finished edit through its save callback
 (`on_save`, with `.normalize(Ok)` for a text field that should save on Enter or
 focus loss, `on_change` on choice controls and [`ColorPicker`]), and the
-application applies it to the document as one undoable step. Before closing,
-clearing focus ([`Runtime::clear_focus`]) saves the draft being typed, so that
-close admission sees it as an unsaved change.
+application applies it to the document as one undoable step. A close request
+releases focus before [`App::on_close`] runs, which saves the draft being typed
+by the field's own focus-loss rules, so close admission sees it as an unsaved
+change; a test checks the policy with [`HeadlessApp::admit_close`].
 
 ```
 use pert_ui::*;

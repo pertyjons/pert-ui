@@ -28,6 +28,7 @@ mod tool_windows;
 mod transient_reconcile;
 mod transients;
 mod views;
+mod window_close;
 mod window_geometry_callbacks;
 mod windows;
 mod workspace;

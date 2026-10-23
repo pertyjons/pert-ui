@@ -1189,6 +1189,12 @@ impl Runtime {
     /// Takes native work once, preserving queued order. Only native hosts need
     /// this API; ordinary applications use App. Dropping requests cancels receipts.
     ///
+    /// The host owns each request until it completes it with
+    /// [`PresentationRequest::complete`] and the actual
+    /// [`PresentationStatus`]; dropping an unfinished request completes it as
+    /// `Failed(WindowError::Cancelled)`. A host other than the facade's `App`
+    /// completes a close request as [`Self::request_close`] describes.
+    ///
     /// # Errors
     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
     /// `WriteDuringUpdate`, `WriteDuringLayout`, `WriteDuringPaint`,
@@ -1216,6 +1222,29 @@ impl Runtime {
     }
     /// Requests close/save admission. The main window asks for application exit;
     /// detached windows use their configured close policy after acceptance.
+    ///
+    /// The request reaches the host through [`Self::take_presentation_requests`]
+    /// as [`PresentationAction::Close`]. The facade's `App` admits it with its
+    /// close policy; a host other than `App` completes it in these steps:
+    ///
+    /// 1. take the `Close` request;
+    /// 2. run its own admission, in `App::on_close`'s order: release focus in
+    ///    every window the close would discard (the detached window's own, or
+    ///    every window for the main window) with [`Self::clear_focus`], flush
+    ///    them, run its policy, and on a synchronous refusal focus the
+    ///    released components again;
+    /// 3. on a refusal, complete the request with
+    ///    [`PresentationStatus::CloseRejected`]; on an error, with
+    ///    [`PresentationStatus::Failed`] and the error as a [`WindowError`];
+    /// 4. on a deferred decision, keep the request and read the decision
+    ///    signal with [`Self::read_signal`] after each flush; when its window
+    ///    is gone before a decision arrives, drop the request, so it reports
+    ///    `Failed(WindowError::Cancelled)`, as `App` does;
+    /// 5. on acceptance of the main window, end the application;
+    /// 6. on acceptance of a detached window, select it and call
+    ///    [`Self::close_detached_window`], which may still answer
+    ///    `CloseRejected` under [`DetachedClosePolicy::KeepOpen`];
+    /// 7. complete the request with the resulting status.
     ///
     /// # Errors
     /// Returns `Unmounted` for a window identity that is not an available presentation

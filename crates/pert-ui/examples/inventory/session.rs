@@ -1,9 +1,11 @@
-//! The headless session: drives the editor as a user would, through the
-//! native key path, checks each result and reports what it cost.
+//! The headless session: drives the editor as a user would, with the test
+//! driver on the native key path, checks each result and reports what it
+//! cost.
 use crate::app::{self, Inventory};
 use crate::model::{Category, Field, ItemId};
 use pert_ui::prelude::*;
-use pert_ui::{Clipboard, ClipboardError, CommandKey, CommandKeyInput, InspectValue};
+use pert_ui::testing::{Detail, Driver, InspectionQuery, Selector};
+use pert_ui::{Clipboard, ClipboardError, InspectValue};
 use std::{
     cell::RefCell,
     rc::Rc,
@@ -43,19 +45,12 @@ struct Session {
     ui: Runtime,
     root: WidgetId,
     inventory: Rc<Inventory>,
-    now: Duration,
 }
 impl Session {
-    fn flush(&mut self) -> Result {
-        self.now += Duration::from_millis(16);
-        self.ui.flush(self.now)?;
-        Ok(())
-    }
-    fn settle(&mut self) -> Result {
-        for _ in 0..3 {
-            self.flush()?;
-        }
-        Ok(())
+    /// The test driver over the session's runtime: each action settles with
+    /// one flush.
+    fn driver(&mut self) -> Driver<'_> {
+        Driver::new(&mut self.ui)
     }
     fn widget(&self, key: &str) -> Result<WidgetId> {
         Ok(self
@@ -63,39 +58,8 @@ impl Session {
             .find_descendant(&self.root, key)?
             .ok_or_else(|| format!("no {key}"))?)
     }
-    /// Presses and releases a named key on the native path: command
-    /// bindings, then the focused component, as a window delivers it.
-    fn key(&mut self, code: KeyCode) -> Result {
-        for action in [KeyAction::Press, KeyAction::Release] {
-            self.ui.command_key_input(CommandKeyInput::new(
-                code,
-                action,
-                CommandKey::Named(code),
-            ))?;
-        }
-        self.settle()
-    }
-    /// Presses `modifier` with `code` typing `character`, as a shortcut.
-    fn chord(&mut self, modifier: KeyCode, code: KeyCode, character: char) -> Result {
-        let named =
-            |key: KeyCode, action| CommandKeyInput::new(key, action, CommandKey::Named(key));
-        self.ui
-            .command_key_input(named(modifier, KeyAction::Press))?;
-        for action in [KeyAction::Press, KeyAction::Release] {
-            self.ui.command_key_input(CommandKeyInput::new(
-                code,
-                action,
-                CommandKey::Character(character),
-            ))?;
-        }
-        self.ui
-            .command_key_input(named(modifier, KeyAction::Release))?;
-        self.settle()
-    }
-    fn type_text(&mut self, text: &str) -> Result {
-        self.ui.text_input(text)?;
-        self.settle()
-    }
+    /// Clicks a point, such as a table cell, which is not one component of
+    /// its own, and settles.
     fn click(&mut self, at: Point) -> Result {
         for kind in [
             PointerKind::Press(PointerButton::Primary),
@@ -103,7 +67,8 @@ impl Session {
         ] {
             self.ui.pointer_input(PointerEvent::new(at, kind))?;
         }
-        self.settle()
+        self.driver().settle()?;
+        Ok(())
     }
     /// The middle of a mounted cell.
     fn cell(&self, row: &str, column: &str) -> Result<Point> {
@@ -137,13 +102,15 @@ impl Session {
     }
     /// The focused component's key and its inspected properties.
     fn focused(&self) -> Option<(String, std::collections::BTreeMap<String, InspectValue>)> {
-        let id = self.ui.focused()?;
-        let id = self.ui.inspection_id(&id).ok()?;
-        let snapshot = self.ui.inspect();
-        let component = snapshot.components.iter().find(|c| c.id == id)?;
+        let id = self.ui.inspection_id(&self.ui.focused()?).ok()?;
+        let component = self
+            .ui
+            .query(&InspectionQuery::components(Selector::id(id)).detail(Detail::Full))
+            .components
+            .pop()?;
         Some((
-            component.key.clone(),
-            component.details.properties.clone().into_iter().collect(),
+            component.key,
+            component.details.properties.into_iter().collect(),
         ))
     }
     fn focused_key(&self) -> Option<String> {
@@ -202,9 +169,8 @@ pub fn run(items: usize) -> Result {
         ui,
         root,
         inventory: inventory.clone(),
-        now: Duration::ZERO,
     };
-    s.settle()?;
+    s.driver().settle()?;
     report(
         &format!("build and first layout, {items} items"),
         start.elapsed(),
@@ -223,12 +189,12 @@ pub fn run(items: usize) -> Result {
         "a click makes the row active",
     )?;
     let start = Instant::now();
-    s.key(KeyCode::Enter)?;
+    s.driver().key(KeyCode::Enter)?;
     report("Enter opens the editor", start.elapsed());
     check(s.editing_is(&row, Field::Name)?, "Enter edits the name")?;
-    s.type_text("Renamed item")?;
+    s.driver().type_text("Renamed item")?;
     let start = Instant::now();
-    s.key(KeyCode::Enter)?;
+    s.driver().key(KeyCode::Enter)?;
     report("Enter saves", start.elapsed());
     check(
         s.item(&row, |item| item.name.clone())? == "Renamed item",
@@ -240,27 +206,27 @@ pub fn run(items: usize) -> Result {
     )?;
 
     // Tab moves along the row; typed digits replace a number's value.
-    s.key(KeyCode::Enter)?;
-    s.key(KeyCode::Tab)?;
+    s.driver().key(KeyCode::Enter)?;
+    s.driver().key(KeyCode::Tab)?;
     check(
         s.editing_is(&row, Field::Category)?,
         "Tab moves to the category",
     )?;
-    s.key(KeyCode::Tab)?;
+    s.driver().key(KeyCode::Tab)?;
     check(
         s.editing_is(&row, Field::Quantity)?,
         "Tab moves to the quantity",
     )?;
-    s.type_text("12")?;
-    s.key(KeyCode::Tab)?;
+    s.driver().type_text("12")?;
+    s.driver().key(KeyCode::Tab)?;
     check(
         s.item(&row, |item| item.quantity)? == 12,
         "the quantity is 12, not appended to the old value",
     )?;
     check(s.editing_is(&row, Field::Price)?, "Tab moves to the price")?;
     let price = s.item(&row, |item| item.cents)?;
-    s.type_text("1")?;
-    s.key(KeyCode::Escape)?;
+    s.driver().type_text("1")?;
+    s.driver().key(KeyCode::Escape)?;
     check(
         s.editing()?.is_none() && s.item(&row, |item| item.cents)? == price,
         "Escape cancels in one press",
@@ -268,12 +234,12 @@ pub fn run(items: usize) -> Result {
 
     // Typing on the active cell begins an edit with that text.
     s.set_column(Field::Quantity)?;
-    s.type_text("7")?;
+    s.driver().type_text("7")?;
     check(
         s.editing_is(&row, Field::Quantity)? && s.focused_text().as_deref() == Some("7"),
         "typing begins an edit",
     )?;
-    s.key(KeyCode::Enter)?;
+    s.driver().key(KeyCode::Enter)?;
     check(
         s.item(&row, |item| item.quantity)? == 7,
         "and Enter saves it",
@@ -281,14 +247,14 @@ pub fn run(items: usize) -> Result {
 
     // An empty name is refused and stays open for correction.
     s.set_column(Field::Name)?;
-    s.key(KeyCode::Enter)?;
-    s.key(KeyCode::Backspace)?;
-    s.key(KeyCode::Enter)?;
+    s.driver().key(KeyCode::Enter)?;
+    s.driver().key(KeyCode::Backspace)?;
+    s.driver().key(KeyCode::Enter)?;
     check(
         s.editing_is(&row, Field::Name)?,
         "an empty name is refused and stays open",
     )?;
-    s.key(KeyCode::Escape)?;
+    s.driver().key(KeyCode::Escape)?;
     check(
         s.item(&row, |item| item.name.clone())? == "Renamed item",
         "Escape keeps the saved name",
@@ -301,37 +267,37 @@ pub fn run(items: usize) -> Result {
     s.click(point)?;
     check(s.editing_is(&other, Field::Name)?, "a double-click edits")?;
     let name = s.item(&other, |item| item.name.clone())?;
-    s.type_text("!")?;
+    s.driver().type_text("!")?;
     check(
         s.focused_text() == Some(format!("{name}!")),
         "with the caret at the end",
     )?;
-    s.key(KeyCode::Escape)?;
+    s.driver().key(KeyCode::Escape)?;
 
     // The table is one Tab stop: F2 reaches the checkbox, Escape returns.
     s.set_column(Field::Active)?;
     let active = s.item(&other, |item| item.active)?;
-    s.key(KeyCode::F2)?;
+    s.driver().key(KeyCode::F2)?;
     check(
         s.focused_key().as_deref() == Some("check"),
         "F2 reaches the checkbox",
     )?;
-    s.key(KeyCode::Space)?;
+    s.driver().key(KeyCode::Space)?;
     check(
         s.item(&other, |item| item.active)? != active,
         "Space toggles it in the store",
     )?;
-    s.key(KeyCode::Escape)?;
+    s.driver().key(KeyCode::Escape)?;
     check(
         s.focused_key().as_deref() == Some("body"),
         "Escape returns to the table",
     )?;
-    s.key(KeyCode::Tab)?;
+    s.driver().key(KeyCode::Tab)?;
     check(!s.focus_in_table()?, "Tab leaves the table in one step")?;
 
     // Undo restores the store, and the mounted checkbox follows it.
     let start = Instant::now();
-    s.chord(KeyCode::primary(), KeyCode::KeyZ, 'z')?;
+    s.driver().chord(KeyChord::primary('z'), KeyCode::KeyZ)?;
     report("undo", start.elapsed());
     check(
         s.item(&other, |item| item.active)? == active,
@@ -345,10 +311,9 @@ pub fn run(items: usize) -> Result {
     };
     let id = s.ui.inspection_id(&check_box)?;
     let shown =
-        s.ui.inspect()
+        s.ui.query(&InspectionQuery::components(Selector::id(id)).detail(Detail::Full))
             .components
-            .iter()
-            .find(|c| c.id == id)
+            .pop()
             .and_then(|c| c.details.properties.get("checked").cloned());
     check(
         shown == Some(InspectValue::Bool(active)),
@@ -362,17 +327,17 @@ pub fn run(items: usize) -> Result {
         .selection()
         .select([row.clone(), other.clone()])?;
     s.ui.focus(&body)?;
-    s.settle()?;
-    s.chord(KeyCode::primary(), KeyCode::KeyC, 'c')?;
+    s.driver().settle()?;
+    s.driver().chord(KeyChord::primary('c'), KeyCode::KeyC)?;
     check(clipboard.0.borrow().lines().count() == 2, "two rows copied")?;
     let start = Instant::now();
-    s.chord(KeyCode::primary(), KeyCode::KeyV, 'v')?;
+    s.driver().chord(KeyChord::primary('v'), KeyCode::KeyV)?;
     report("paste two rows", start.elapsed());
     check(
         inventory.store.borrow().items.len() == count + 2,
         "two rows pasted",
     )?;
-    s.key(KeyCode::Delete)?;
+    s.driver().key(KeyCode::Delete)?;
     check(
         inventory.store.borrow().items.len() == count,
         "Delete removes the pasted rows",
@@ -383,22 +348,22 @@ pub fn run(items: usize) -> Result {
         column: "name".into(),
         direction: pert_ui::SortDirection::Ascending,
     }))?;
-    s.settle()?;
+    s.driver().settle()?;
     inventory.table.selection().set_active(Some(row.clone()))?;
     s.set_column(Field::Name)?;
     let _ = inventory.table.reveal(row.clone())?;
     s.ui.focus(&body)?;
-    s.settle()?;
-    s.key(KeyCode::Enter)?;
-    s.type_text("Aaa first")?;
+    s.driver().settle()?;
+    s.driver().key(KeyCode::Enter)?;
+    s.driver().type_text("Aaa first")?;
     let start = Instant::now();
-    s.key(KeyCode::Tab)?;
+    s.driver().key(KeyCode::Tab)?;
     report("save a sorted rename and move", start.elapsed());
     check(
         s.editing_is(&row, Field::Category)?,
         "Tab stays on the renamed row after the sort moved it",
     )?;
-    s.key(KeyCode::Escape)?;
+    s.driver().key(KeyCode::Escape)?;
     // The editor gives focus back on Escape, on the cell it edited; a
     // dropdown cell chooses with the keyboard.
     s.ui.focus(&body)?;
@@ -409,12 +374,12 @@ pub fn run(items: usize) -> Result {
         Field::Category,
         crate::model::Value::Category(Category::Hardware),
     )?;
-    s.settle()?;
+    s.driver().settle()?;
     let expected = Category::Software;
-    s.key(KeyCode::Enter)?;
-    s.key(KeyCode::ArrowDown)?;
-    s.key(KeyCode::ArrowDown)?;
-    s.key(KeyCode::Enter)?;
+    s.driver().key(KeyCode::Enter)?;
+    s.driver().key(KeyCode::ArrowDown)?;
+    s.driver().key(KeyCode::ArrowDown)?;
+    s.driver().key(KeyCode::Enter)?;
     check(
         s.item(&row, |item| item.category)? == expected
             && s.editing()?.is_none()
@@ -424,25 +389,32 @@ pub fn run(items: usize) -> Result {
 
     // A price saves in cents; Shift+Tab moves back along the row.
     s.set_column(Field::Price)?;
-    s.key(KeyCode::Enter)?;
-    s.type_text("12.5")?;
-    s.key(KeyCode::Enter)?;
+    s.driver().key(KeyCode::Enter)?;
+    s.driver().type_text("12.5")?;
+    s.driver().key(KeyCode::Enter)?;
     check(
         s.item(&row, |item| item.cents)? == 1250,
         "a price saves in cents",
     )?;
-    s.key(KeyCode::Enter)?;
-    s.chord(KeyCode::ShiftLeft, KeyCode::Tab, '\t')?;
+    s.driver().key(KeyCode::Enter)?;
+    let back = KeyChord::new(
+        CommandKey::Named(KeyCode::Tab),
+        Modifiers {
+            shift: true,
+            ..Modifiers::default()
+        },
+    );
+    s.driver().chord(back, KeyCode::Tab)?;
     check(
         s.editing_is(&row, Field::Quantity)?,
         "Shift+Tab moves back to the quantity",
     )?;
-    s.key(KeyCode::Escape)?;
+    s.driver().key(KeyCode::Escape)?;
 
     // Undo and redo the price.
-    s.chord(KeyCode::primary(), KeyCode::KeyZ, 'z')?;
+    s.driver().chord(KeyChord::primary('z'), KeyCode::KeyZ)?;
     let undone = s.item(&row, |item| item.cents)?;
-    s.chord(KeyCode::primary(), KeyCode::KeyY, 'y')?;
+    s.driver().chord(KeyChord::primary('y'), KeyCode::KeyY)?;
     check(
         undone != 1250 && s.item(&row, |item| item.cents)? == 1250,
         "undo and redo the price",
@@ -450,24 +422,24 @@ pub fn run(items: usize) -> Result {
 
     // A refused edit stays open when focus leaves, until it is reached again.
     s.set_column(Field::Name)?;
-    s.key(KeyCode::Enter)?;
-    s.key(KeyCode::Backspace)?;
-    s.key(KeyCode::Enter)?;
+    s.driver().key(KeyCode::Enter)?;
+    s.driver().key(KeyCode::Backspace)?;
+    s.driver().key(KeyCode::Enter)?;
     let title = s.widget("title")?;
     s.ui.focus(&title)?;
-    s.settle()?;
+    s.driver().settle()?;
     check(
         s.editing_is(&row, Field::Name)?,
         "a refused edit stays open when focus leaves",
     )?;
     s.ui.focus(&body)?;
-    s.settle()?;
-    s.key(KeyCode::Enter)?;
+    s.driver().settle()?;
+    s.driver().key(KeyCode::Enter)?;
     check(
         s.focused_text().as_deref() == Some(""),
         "Enter reaches the refused draft again",
     )?;
-    s.key(KeyCode::Escape)?;
+    s.driver().key(KeyCode::Escape)?;
     check(
         s.editing()?.is_none() && s.item(&row, |item| item.name.clone())? == "Aaa first",
         "Escape discards it",
@@ -476,13 +448,12 @@ pub fn run(items: usize) -> Result {
     // The toolbar's Add button and the Duplicate shortcut.
     let count = inventory.store.borrow().items.len();
     let add = s.widget("add")?;
-    let [x, y, w, h] = s.ui.bounds(&add)?.ok_or("the button is laid out")?.values();
-    s.click(Point::new(x + w / 2.0, y + h / 2.0)?)?;
+    s.driver().click(&add)?;
     check(
         inventory.store.borrow().items.len() == count + 1,
         "the Add button adds an item",
     )?;
-    s.chord(KeyCode::primary(), KeyCode::KeyD, 'd')?;
+    s.driver().chord(KeyChord::primary('d'), KeyCode::KeyD)?;
     check(
         inventory.store.borrow().items.len() == count + 2,
         "the Duplicate shortcut copies the selected item",
@@ -491,14 +462,14 @@ pub fn run(items: usize) -> Result {
     // Copied and pasted values, and a paste that is refused whole.
     inventory.table.selection().select([row.clone()])?;
     s.ui.focus(&body)?;
-    s.settle()?;
-    s.chord(KeyCode::primary(), KeyCode::KeyC, 'c')?;
+    s.driver().settle()?;
+    s.driver().chord(KeyChord::primary('c'), KeyCode::KeyC)?;
     check(
         *clipboard.0.borrow() == s.item(&row, crate::model::Item::tsv)?,
         "a copied row is its tab-separated fields",
     )?;
     "Widget\tService\t3\t2.50\tno".clone_into(&mut clipboard.0.borrow_mut());
-    s.chord(KeyCode::primary(), KeyCode::KeyV, 'v')?;
+    s.driver().chord(KeyChord::primary('v'), KeyCode::KeyV)?;
     let pasted = inventory
         .store
         .borrow()
@@ -512,7 +483,7 @@ pub fn run(items: usize) -> Result {
     )?;
     let count = inventory.store.borrow().items.len();
     "Gadget\tHardware\t1\t1.00\tmaybe".clone_into(&mut clipboard.0.borrow_mut());
-    s.chord(KeyCode::primary(), KeyCode::KeyV, 'v')?;
+    s.driver().chord(KeyChord::primary('v'), KeyCode::KeyV)?;
     check(
         inventory.store.borrow().items.len() == count
             && inventory.status.get()?.starts_with("Paste refused"),
@@ -530,9 +501,9 @@ pub fn run(items: usize) -> Result {
     inventory.category.set(Some(other_category))?;
     inventory.publish()?;
     s.ui.focus(&body)?;
-    s.settle()?;
+    s.driver().settle()?;
     let count = inventory.store.borrow().items.len();
-    s.key(KeyCode::Delete)?;
+    s.driver().key(KeyCode::Delete)?;
     check(
         !inventory.has_targets.get()? && inventory.store.borrow().items.len() == count,
         "a row the category filter hides is not a target",
@@ -540,16 +511,16 @@ pub fn run(items: usize) -> Result {
     inventory.category.set(None)?;
     inventory.publish()?;
     inventory.query.set("no item is called this".to_owned())?;
-    s.settle()?;
+    s.driver().settle()?;
     s.ui.focus(&body)?;
-    s.settle()?;
-    s.key(KeyCode::Delete)?;
+    s.driver().settle()?;
+    s.driver().key(KeyCode::Delete)?;
     check(
         !inventory.has_targets.get()? && inventory.store.borrow().items.len() == count,
         "a row the search hides is not a target",
     )?;
     inventory.query.set(String::new())?;
-    s.settle()?;
+    s.driver().settle()?;
     check(inventory.has_targets.get()?, "shown again, it is a target")?;
 
     // The store checks a group in order before applying any of it.
@@ -579,7 +550,7 @@ pub fn run(items: usize) -> Result {
         )?;
     }
     "Huge\tHardware\t9223372036854775807\t1.00\tyes".clone_into(&mut clipboard.0.borrow_mut());
-    s.chord(KeyCode::primary(), KeyCode::KeyV, 'v')?;
+    s.driver().chord(KeyChord::primary('v'), KeyCode::KeyV)?;
     check(
         inventory.store.borrow().items.len() == count,
         "a pasted quantity out of range is refused",

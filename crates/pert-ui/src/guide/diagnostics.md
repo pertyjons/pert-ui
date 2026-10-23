@@ -22,12 +22,17 @@ is open, so it suits driving one component directly. On both paths an
 unmodified Tab press or repeat is offered to [`Component::tab_navigation`] and
 otherwise moves focus, before the focused component's ordinary key handler
 sees it; its release is delivered as any key's. A test of what a user sees from a key,
-such as a shortcut, uses `command_key_input` and reports held modifiers through
-[`Runtime::native_modifiers`], as the native host does:
+such as a shortcut, sends it through `command_key_input` with
+[`Driver::chord`](crate::testing::Driver::chord) or
+[`Driver::key`](crate::testing::Driver::key). A chord presses each modifier's
+physical key and reports the held modifiers through
+[`Runtime::native_modifiers`], as the native host does, then presses and releases
+the principal key carrying the chord's identity, and releases the modifiers
+again:
 
 ```rust
-use pert_ui::{CommandKey, CommandKeyInput, CommandScope, KeyAction, KeyChord, KeyCode,
-              Modifiers, Runtime};
+use pert_ui::prelude::*;
+use pert_ui::testing::Driver;
 
 let mut ui = Runtime::new();
 let saved = ui.signal(false);
@@ -38,14 +43,17 @@ ui.register_command("Save", CommandScope::Application, vec![KeyChord::primary('s
         mark.set(true)?;
         Ok(())
     })?;
-ui.native_modifiers(Modifiers::PRIMARY)?;
-for action in [KeyAction::Press, KeyAction::Release] {
-    ui.command_key_input(CommandKeyInput::new(KeyCode::KeyS, action, CommandKey::Character('s')))?;
-}
-ui.native_modifiers(Modifiers::default())?;
+Driver::new(&mut ui).chord(KeyChord::primary('s'), KeyCode::KeyS)?;
 assert!(saved.get()?);
-# Ok::<(), pert_ui::RuntimeError>(())
+# Ok::<(), Box<dyn std::error::Error>>(())
 ```
+
+The driver's keys are synthetic: each names one key, carries no text and no
+composition, and its modifiers are pressed in a fixed order. A test of a
+keyboard layout, of text a key carries, of AltGr, a dead key or an input method
+builds a [`CommandKeyInput`] itself and reports modifiers with
+`native_modifiers`, the low-level entry points the driver uses; the
+[testing chapter](crate::guide::testing) shows the rest of the driver.
 
 Both entry points track every held physical key and classify presses, repeats and
 releases. A repeat for a key that is not held never establishes a press. Focused
@@ -68,7 +76,9 @@ input contract.
 to the application's own inspector or tooling thread. [`Component::inspect`] and `inspect_with` explicitly
 contribute component and host state. [`Runtime::inspection_id`] gives a mounted
 component's snapshot id, so a test finds the entry of a component it holds
-without matching keys, which repeat across a real application. Unmeasured box-model values stay absent,
+without matching keys, which repeat across a real application;
+[`Runtime::query`] with [`Selector::id`] of that id answers with that entry
+alone, one lookup instead of a whole snapshot. Unmeasured box-model values stay absent,
 including [`BoxModelInspection::border`], which reports a painted outline's width
 and color only after the paint that drew it.
 [`DebugMode::Inspect`] enables a 256-event history. [`DebugOverlay`] separately draws

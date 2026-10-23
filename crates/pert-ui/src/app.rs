@@ -1,6 +1,10 @@
 //! Public standalone application boundary. Backend types remain private.
 use crate::{DrawError, Runtime, RuntimeError};
 
+pub(crate) mod close;
+mod headless;
+pub use headless::HeadlessApp;
+
 /// Failure starting or running a native application; project data remains host-owned.
 ///
 /// Backend details are diagnostic strings, not third-party types in the public API.
@@ -309,7 +313,7 @@ type Initialize = Box<dyn FnOnce(&mut Runtime) -> Result<(), AppError>>;
 ///     }).run()
 /// }
 /// ```
-#[must_use = "call run to open the application"]
+#[must_use = "call run to open the application, or headless in a test"]
 pub struct App {
     pub(crate) title: String,
     pub(crate) window: MainWindow,
@@ -343,6 +347,8 @@ impl App {
     /// has empty bounds, which development validation does not report. Retain
     /// parameter host owners in components or captured application-owned state.
     /// The closure does not repeat on redraw. Errors are returned from `run`.
+    /// A test starts the same application without a window with
+    /// [`Self::headless`].
     pub fn new(
         title: impl Into<String>,
         initialize: impl FnOnce(&mut Runtime) -> Result<(), AppError> + 'static,
@@ -505,6 +511,68 @@ impl App {
     /// invoking window; return [`NativeCloseAction::Defer`] with its decision
     /// signal to preserve all windows while waiting.
     /// Errors abort closing and follow on_error without replaying the request.
+    ///
+    /// # Close order
+    ///
+    /// A close request, from the window system or [`Runtime::request_close`],
+    /// is admitted in this order, so the policy sees what the user typed:
+    ///
+    /// 1. The windows an accepted close discards are affected: a detached
+    ///    window's own, or every open window for the main window, which ends
+    ///    the application.
+    /// 2. Each affected window's focus is released through
+    ///    [`Runtime::clear_focus`], as a window deactivation releases it, and
+    ///    the window selected before is selected again. Each recipient's
+    ///    `Component::focus_lost` runs and its error is queued in its window.
+    ///    `clear_focus` also ends the runtime's held keys and held-input
+    ///    registrations; for a close the user started, the closing window has
+    ///    native focus, so nothing else is held, but a programmatic close of an
+    ///    inactive window also ends held input in the active one.
+    /// 3. Each focused editor applies its own focus-loss policy, unchanged by
+    ///    closing; the editors document theirs. The cases a close policy most
+    ///    often meets:
+    ///    - a plain `TextField` or `TextArea` has already written its text, and
+    ///      a composition is dropped;
+    ///    - a field that drafts (a normalizer, a length limit or an
+    ///      `EditorSession`) saves a changed draft its rules accept, and keeps
+    ///      it unsaved when they refuse it, when the field is read-only or when
+    ///      it is disabled;
+    ///    - a local number input saves a valid changed draft, keeps an invalid
+    ///      or read-only one unsaved, and cancels a pressed or held step
+    ///      gesture;
+    ///    - a parameter-bound number input cancels its draft, valid or not:
+    ///      parameter authority commits only on an explicit commit;
+    ///    - a `DraftEditor` follows its owner's save or cancel policy;
+    ///    - an `EditorSession` reports `FocusLeft` with the save's outcome
+    ///      unless the edit already ended, and reports nothing when the field
+    ///      is disabled.
+    ///
+    ///    So the policy sees a saved value only where that editor saves on
+    ///    focus loss.
+    /// 4. When no window is in component-error backoff, the affected windows
+    ///    are flushed: the detached window alone, or every window through
+    ///    [`Runtime::flush_windows`]. A failed `focus_lost` in any of them
+    ///    aborts the close: [`Self::on_error`] handles it as it handles an
+    ///    error of this callback, and the request is not replayed. That flush
+    ///    may also settle notifications in other visible windows, as any
+    ///    frame's flush does; a hidden window is not flushed. While any window
+    ///    is in backoff, nothing is flushed, so closing never needs a failing
+    ///    update to succeed first: bindings the drafts wrote are current, and
+    ///    derived values and the queued focus errors wait for the next flush.
+    /// 5. This callback runs, with the closing window selected.
+    /// 6. On a synchronous [`NativeCloseAction::KeepOpen`], in each affected
+    ///    window, the component whose focus step 2 released is focused again
+    ///    when nothing in that window holds focus after the callback, so a
+    ///    field the policy focused keeps focus, and when the runtime still
+    ///    admits it: a hidden, unmounted or modal-blocked component leaves
+    ///    focus cleared. On [`NativeCloseAction::Defer`] and
+    ///    [`NativeCloseAction::Close`] nothing is restored; when a deferred
+    ///    decision keeps the window open, the policy or its confirmation
+    ///    decides where focus goes. Whatever the decision, a component an
+    ///    affected window recorded to focus again on reactivation is
+    ///    forgotten: the close supersedes it.
+    ///
+    /// [`HeadlessApp::admit_close`] runs the same steps in a test.
     pub fn on_close(
         mut self,
         handler: impl FnMut(
@@ -624,8 +692,10 @@ impl App {
     /// [`Self::on_error`]. With no cleanup failure, the original result is unchanged.
     /// Native event-loop dispatch failure precedes runner/recovery failure;
     /// otherwise the runner failure precedes the current window's pending
-    /// recovery failure, then a parked window's. Selection among several parked
-    /// recovery failures is unspecified; it is not a cross-window error history.
+    /// recovery failure, then a parked window's, then that of a detached window
+    /// closed while it waited to retry. Selection among several parked or closed
+    /// windows' recovery failures is unspecified; it is not a cross-window error
+    /// history.
     /// Unsupported graphics fail explicitly; no software/legacy fallback is used
     /// unless the application chose `App::software_rendering` (`cpu` feature).
     ///

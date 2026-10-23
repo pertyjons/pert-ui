@@ -5,9 +5,10 @@
 use crate::app::{self, Explorer, Kind};
 use crate::model::{self, Level, LineId, MALFORMED_EVERY};
 use pert_ui::prelude::*;
+use pert_ui::testing::Driver;
 use pert_ui::{
-    Capacity, Clipboard, ClipboardError, CommandKey, CommandKeyInput, ContentQuery,
-    ListRevealStatus, ProgressStatus, SortDirection, TableSort, TextCommand, ValidationCode,
+    Capacity, Clipboard, ClipboardError, ContentQuery, ListRevealStatus, ProgressStatus,
+    SortDirection, TableSort, TextCommand, ValidationCode,
 };
 use std::{
     cell::RefCell,
@@ -37,22 +38,18 @@ struct Session {
     ui: Runtime,
     root: WidgetId,
     explorer: Rc<Explorer>,
-    now: Duration,
 }
 impl Session {
-    /// One flush at a later time, and how long it took.
-    fn flush(&mut self) -> Result<Duration> {
-        self.now += Duration::from_millis(16);
-        let start = Instant::now();
-        self.ui.flush(self.now)?;
-        Ok(start.elapsed())
+    /// The test driver over the session's runtime: each action settles with
+    /// one flush.
+    fn driver(&mut self) -> Driver<'_> {
+        Driver::new(&mut self.ui)
     }
+    /// One settle, a flush 16 ms later, and how long it took.
     fn settle(&mut self) -> Result<Duration> {
-        let mut took = Duration::ZERO;
-        for _ in 0..3 {
-            took += self.flush()?;
-        }
-        Ok(took)
+        let start = Instant::now();
+        self.driver().settle()?;
+        Ok(start.elapsed())
     }
     fn mounted(&self) -> usize {
         self.ui.inspect().components.len()
@@ -70,22 +67,6 @@ impl Session {
             .ui
             .find_descendant(&self.root, key)?
             .ok_or_else(|| format!("no {key}"))?)
-    }
-    /// The primary modifier held around `code`, as the native host sends it.
-    fn chord(&mut self, code: KeyCode, key: char) -> Result {
-        let modifier = KeyCode::primary();
-        let named = |action| CommandKeyInput::new(modifier, action, CommandKey::Named(modifier));
-        self.ui.command_key_input(named(KeyAction::Press))?;
-        for action in [KeyAction::Press, KeyAction::Release] {
-            self.ui.command_key_input(CommandKeyInput::new(
-                code,
-                action,
-                CommandKey::Character(key),
-            ))?;
-        }
-        self.ui.command_key_input(named(KeyAction::Release))?;
-        self.flush()?;
-        Ok(())
     }
 }
 
@@ -128,7 +109,6 @@ pub fn run(path: PathBuf, lines: u64) -> Result {
         ui,
         root,
         explorer: explorer.clone(),
-        now: Duration::ZERO,
     };
 
     // Loading: flush until the worker reports the end.
@@ -138,7 +118,7 @@ pub fn run(path: PathBuf, lines: u64) -> Result {
         if s.explorer.progress.get()? == ProgressStatus::Failed {
             return Err(s.explorer.status.get()?.into());
         }
-        worst = worst.max(s.flush()?);
+        worst = worst.max(s.settle()?);
         flushes += 1;
         if start.elapsed() > Duration::from_secs(300) {
             return Err("loading timed out".into());
@@ -168,7 +148,7 @@ pub fn run(path: PathBuf, lines: u64) -> Result {
             over,
             PointerKind::Scroll(Point::new(0.0, 120.0)?),
         ))?;
-        s.flush()?;
+        s.settle()?;
     }
     report("100 wheel steps, each", start.elapsed() / 100);
     s.bounded("while scrolled")?;
@@ -183,7 +163,7 @@ pub fn run(path: PathBuf, lines: u64) -> Result {
             direction: SortDirection::Ascending,
         }),
     )?;
-    s.flush()?;
+    s.settle()?;
     report("sort by message", start.elapsed());
     if explorer.errors.last_key(&explorer.store.borrow()) != errors_first {
         return Err("sorting the main table reordered Errors".into());
@@ -193,7 +173,7 @@ pub fn run(path: PathBuf, lines: u64) -> Result {
     explorer.query.set("timeout retry".to_owned())?;
     let start = Instant::now();
     for _ in 0..20 {
-        s.flush()?;
+        s.settle()?;
     }
     let counts = explorer.all.controller.filter_counts().get()?;
     report("filter 'timeout retry' (20 flushes)", start.elapsed());
@@ -201,14 +181,14 @@ pub fn run(path: PathBuf, lines: u64) -> Result {
     explorer.query.set(String::new())?;
     s.settle()?;
     for _ in 0..20 {
-        s.flush()?;
+        s.settle()?;
     }
 
     // The level filter.
     let start = Instant::now();
     explorer.levels.set(vec![Level::Error])?;
     explorer.publish()?;
-    s.flush()?;
+    s.settle()?;
     report("errors-only level filter", start.elapsed());
     if explorer.all.shown() != explorer.errors.shown() {
         return Err("errors only shows the Errors view's lines".into());
@@ -226,8 +206,8 @@ pub fn run(path: PathBuf, lines: u64) -> Result {
     ] {
         s.ui.pointer_input(PointerEvent::new(row, kind))?;
     }
-    s.flush()?;
-    s.chord(KeyCode::KeyC, 'c')?;
+    s.settle()?;
+    s.driver().chord(KeyChord::primary('c'), KeyCode::KeyC)?;
     let copied = clipboard.0.borrow().clone();
     if copied.lines().count() != 1 || !explorer.status.get()?.starts_with("Copied 1") {
         return Err(format!("copy lines copied {copied:?}").into());
@@ -250,12 +230,10 @@ pub fn run(path: PathBuf, lines: u64) -> Result {
     // The tree: select a source, which filters the main table.
     let sources = s.widget("sources")?;
     s.ui.focus(&sources)?;
-    s.flush()?;
+    s.settle()?;
     let start = Instant::now();
     for code in [KeyCode::ArrowDown, KeyCode::ArrowRight] {
-        s.ui.key_input(code, KeyAction::Press)?;
-        s.ui.key_input(code, KeyAction::Release)?;
-        s.flush()?;
+        s.driver().key(code)?;
     }
     report("tree: select and expand a source", start.elapsed());
     let source = explorer.source.get()?.ok_or("a source is selected")?;
@@ -283,7 +261,7 @@ pub fn run(path: PathBuf, lines: u64) -> Result {
     // Following a live tail reveals the last row the filter field leaves.
     explorer.query.set("timeout".to_owned())?;
     for _ in 0..20 {
-        s.flush()?;
+        s.settle()?;
     }
     explorer.follow.set(true)?;
     explorer.set_tail(true)?;
@@ -291,7 +269,7 @@ pub fn run(path: PathBuf, lines: u64) -> Result {
     let start = Instant::now();
     let mut worst = Duration::ZERO;
     while start.elapsed() < Duration::from_secs(1) {
-        worst = worst.max(s.flush()?);
+        worst = worst.max(s.settle()?);
         std::thread::sleep(Duration::from_millis(10));
     }
     explorer.set_tail(false)?;
@@ -311,7 +289,7 @@ pub fn run(path: PathBuf, lines: u64) -> Result {
     }
     explorer.query.set(String::new())?;
     for _ in 0..20 {
-        s.flush()?;
+        s.settle()?;
     }
     s.bounded("after following")?;
 
@@ -337,7 +315,7 @@ pub fn run(path: PathBuf, lines: u64) -> Result {
     explorer.set_tail(true)?;
     let start = Instant::now();
     while s.explorer.progress.get()? != ProgressStatus::Succeeded {
-        s.flush()?;
+        s.settle()?;
         if start.elapsed() > Duration::from_secs(300) {
             return Err("reloading timed out".into());
         }
@@ -346,7 +324,7 @@ pub fn run(path: PathBuf, lines: u64) -> Result {
     let loaded = explorer.store.borrow().entries.len();
     let start = Instant::now();
     while start.elapsed() < Duration::from_millis(500) {
-        s.flush()?;
+        s.settle()?;
         std::thread::sleep(Duration::from_millis(10));
     }
     explorer.set_tail(false)?;
@@ -369,7 +347,7 @@ pub fn run(path: PathBuf, lines: u64) -> Result {
     });
     let start = Instant::now();
     while !asked.is_finished() && start.elapsed() < Duration::from_secs(10) {
-        s.flush()?;
+        s.settle()?;
         std::thread::sleep(Duration::from_millis(1));
     }
     // Joined only once it has returned, so a stalled thread fails the session

@@ -254,6 +254,7 @@ pub use parameter_binding::remote::{
     ResponseDisposition, SubmissionDelivery,
 };
 mod runtime;
+pub mod testing;
 pub use runtime::application::{BackgroundTask, IntervalTimer};
 pub use runtime::commands::{
     CommandContext, CommandEntry, CommandId, CommandInfo, CommandKey, CommandKeyInput,
@@ -380,7 +381,9 @@ pub use pert_ui_core::{
 /// - live data: [`SeriesSource`], [`series_bridge`], [`SeriesConfig`] and
 ///   [`Timestamp`];
 /// - a custom component's inspection description, drag preview, receipts and
-///   native windows: `use pert_ui::component::*` (see [`component`]).
+///   native windows: `use pert_ui::component::*` (see [`component`]);
+/// - a headless test's driver, inspection queries and capture:
+///   `use pert_ui::testing::*` (see [`testing`]).
 pub mod prelude {
     #[doc(no_inline)]
     pub use crate::ApplicationError;

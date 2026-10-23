@@ -1279,7 +1279,15 @@ impl Runtime {
     /// routes command bindings and [`Runtime::register_held_input`]
     /// registrations. A test or custom host that should behave as an
     /// application does for its user uses this method rather than
-    /// [`Runtime::key_input`]. During a drag session, Escape's press cancels the drag
+    /// [`Runtime::key_input`]. [`Driver::key`](crate::testing::Driver::key)
+    /// and [`Driver::chord`](crate::testing::Driver::chord) send synthetic
+    /// named keys and chords through it; a test of a layout, of text a key
+    /// carries or of a composition builds the [`CommandKeyInput`] itself.
+    ///
+    /// The key is delivered at once and its recipient writes what its own
+    /// rules write, as [`Runtime::text_input`] describes; the tree, derived
+    /// bindings and layout show the result after the next
+    /// [`Runtime::flush`]. During a drag session, Escape's press cancels the drag
     /// before anything else sees it, and a modifier change re-resolves the
     /// offered operation, exactly as through [`Runtime::key_input`].
     ///

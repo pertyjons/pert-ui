@@ -43,8 +43,7 @@ impl Runner {
         if !self.app.runtime.contains_window(&self.current.root) {
             self.select_root(&self.app.runtime.primary_window())?;
         }
-        self.parked
-            .retain(|_, window| self.app.runtime.contains_window(&window.root));
+        retire_closed(&mut self.parked, &self.app.runtime, &mut self.retired_error);
         Ok(())
     }
     fn presentation_action(
@@ -249,18 +248,45 @@ impl Runner {
             }
             return Ok(());
         }
-        let admission = self
-            .select_root(&window)
-            .and_then(|_| self.app.handle_close(&window).map_err(AppError::from));
-        let admission = match admission {
-            Ok(action) => action,
+        // The close supersedes what an affected window recorded to focus on
+        // reactivation, whatever the decision.
+        let affected = crate::app::close::affected_roots(&self.app.runtime, &window);
+        forget_reactivation(
+            std::iter::once(&mut self.current).chain(self.parked.values_mut()),
+            &affected,
+        );
+        let now = self.start.elapsed();
+        // Settling could retry a backing-off window's update before its
+        // deadline, so while any window backs off nothing is flushed.
+        let settle = !backing_off(
+            std::iter::once(&self.current).chain(self.parked.values()),
+            now,
+        );
+        let admission =
+            crate::app::close::prepare_close(&mut self.app.runtime, &affected, settle, now)
+                .map_err(AppError::from)
+                .and_then(|released| {
+                    self.select_root(&window)?;
+                    Ok((released, self.app.handle_close(&window)?))
+                });
+        let (released, admission) = match admission {
+            Ok(admission) => admission,
             Err(error) => {
                 return Self::finish_close_requests(request.into_iter().collect(), Err(error));
             }
         };
         let accepted = match admission {
             crate::NativeCloseAction::Close => true,
-            crate::NativeCloseAction::KeepOpen => false,
+            crate::NativeCloseAction::KeepOpen => {
+                // The window stays open whether or not focus comes back; a
+                // failure to restore it goes to error recovery afterwards.
+                let restored = crate::app::close::restore_focus(&mut self.app.runtime, released);
+                Self::finish_close_requests(
+                    request.into_iter().collect(),
+                    Ok(crate::PresentationStatus::CloseRejected),
+                )?;
+                return restored.map_err(AppError::from);
+            }
             crate::NativeCloseAction::Defer(decision) => {
                 self.app.runtime.read_signal(&decision)?;
                 self.closing.push(PendingClose {
@@ -322,6 +348,49 @@ impl Runner {
     }
 }
 
+/// Forgets the component each window of `affected` recorded to focus again
+/// on reactivation: a close supersedes it whatever its decision, and after a
+/// kept window a later reactivation restores only what a later deactivation
+/// records.
+fn forget_reactivation<'a>(
+    states: impl IntoIterator<Item = &'a mut NativeState>,
+    affected: &[crate::NativeWindowId],
+) {
+    for state in states {
+        if affected.contains(&state.root) {
+            state.restore_focus = None;
+        }
+    }
+}
+
+/// Whether any window is waiting out a component-failure backoff at `now`.
+fn backing_off<'a>(states: impl IntoIterator<Item = &'a NativeState>, now: Duration) -> bool {
+    states
+        .into_iter()
+        .any(|state| state.component_recovery.waiting(now))
+}
+
+/// Drops the native state of windows the runtime has closed, keeping the
+/// first pending recovery error among them in `kept`, so `run` returns it at
+/// exit as it returns a surviving window's.
+fn retire_closed<K>(
+    states: &mut std::collections::HashMap<K, NativeState>,
+    runtime: &crate::Runtime,
+    kept: &mut Option<AppError>,
+) {
+    states.retain(|_, state| {
+        if runtime.contains_window(&state.root) {
+            return true;
+        }
+        if let Some(error) = state.component_recovery.error.take()
+            && kept.is_none()
+        {
+            *kept = Some(error);
+        }
+        false
+    });
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -352,5 +421,120 @@ mod tests {
             window_failure(&AppError::EventLoop("gone".into())),
             WindowError::Cancelled
         );
+    }
+
+    /// A runtime with a detached window, and a widget in each window.
+    fn two_windows() -> Result<
+        (
+            crate::Runtime,
+            crate::NativeWindowId,
+            crate::WidgetId,
+            crate::WidgetId,
+        ),
+        AppError,
+    > {
+        use crate::{Column, Element, Label, View};
+        let mut runtime = crate::Runtime::new();
+        let root = runtime.mount_tree(Element::new(
+            "root",
+            Column::new([
+                Element::new("main", Label::new("Main")),
+                Element::new(
+                    "panel",
+                    View::new(Element::new("detached", Label::new("Away"))),
+                ),
+            ]),
+        ))?;
+        let panel = runtime
+            .find(&root, &["panel"])?
+            .ok_or(RuntimeError::Unmounted)?;
+        let prepared = runtime.prepare_detach(&panel, crate::NativeWindowOptions::new("Panel")?)?;
+        let detached = runtime.commit_detach(prepared)?;
+        let main = runtime
+            .find(&root, &["main"])?
+            .ok_or(RuntimeError::Unmounted)?;
+        let away = runtime
+            .find(&root, &["panel", "detached"])?
+            .ok_or(RuntimeError::Unmounted)?;
+        Ok((runtime, detached, main, away))
+    }
+
+    /// Admission's flush waits while any window backs off, not only an
+    /// affected one: settling visits every visible window.
+    #[test]
+    fn any_window_in_backoff_stops_admissions_flush() -> Result<(), AppError> {
+        let (runtime, detached, ..) = two_windows()?;
+        let main = NativeState::new(runtime.primary_window());
+        let mut other = NativeState::new(detached);
+        let now = Duration::from_secs(1);
+        assert!(!backing_off([&main, &other], now));
+        other.component_recovery.retry_at = Some(now + Duration::from_millis(100));
+        assert!(backing_off([&main, &other], now));
+        assert!(backing_off([&other, &main], now));
+        assert!(!backing_off(
+            [&main, &other],
+            now + Duration::from_millis(100)
+        ));
+        Ok(())
+    }
+
+    /// A close forgets what the windows it would discard recorded to focus
+    /// on reactivation, whatever its decision, and only those.
+    #[test]
+    fn a_close_forgets_the_affected_windows_reactivation_records() -> Result<(), AppError> {
+        let (runtime, detached, main_widget, away) = two_windows()?;
+        let mut main = NativeState::new(runtime.primary_window());
+        let mut other = NativeState::new(detached.clone());
+        main.restore_focus = Some(main_widget.clone());
+        other.restore_focus = Some(away);
+        let affected = crate::app::close::affected_roots(&runtime, &detached);
+        forget_reactivation([&mut main, &mut other], &affected);
+        assert_eq!(main.restore_focus, Some(main_widget));
+        assert_eq!(other.restore_focus, None);
+        let affected = crate::app::close::affected_roots(&runtime, &runtime.primary_window());
+        forget_reactivation([&mut main, &mut other], &affected);
+        assert_eq!(main.restore_focus, None);
+        Ok(())
+    }
+
+    /// Retiring a closed window keeps its pending recovery error for `run`
+    /// to return at exit; a surviving window keeps its own.
+    #[test]
+    fn retiring_a_closed_window_keeps_its_pending_error() -> Result<(), AppError> {
+        let (mut runtime, detached, ..) = two_windows()?;
+        let mut states = std::collections::HashMap::new();
+        let mut closed = NativeState::new(detached.clone());
+        closed.component_recovery.error = Some(AppError::Drawing(crate::DrawError::InvalidColor));
+        let mut surviving = NativeState::new(runtime.primary_window());
+        surviving.component_recovery.error = Some(AppError::Runtime(RuntimeError::BorrowConflict));
+        states.insert(1_u8, closed);
+        states.insert(2_u8, surviving);
+        let mut kept = None;
+        retire_closed(&mut states, &runtime, &mut kept);
+        assert_eq!(states.len(), 2, "both windows are open");
+        assert!(kept.is_none());
+
+        runtime.redock(&detached)?;
+        retire_closed(&mut states, &runtime, &mut kept);
+        assert_eq!(states.keys().copied().collect::<Vec<_>>(), [2]);
+        assert!(matches!(
+            kept,
+            Some(AppError::Drawing(crate::DrawError::InvalidColor))
+        ));
+        assert!(matches!(
+            states[&2].component_recovery.error,
+            Some(AppError::Runtime(RuntimeError::BorrowConflict))
+        ));
+
+        // Only the first is kept; selection among several is unspecified.
+        let mut later = NativeState::new(detached);
+        later.component_recovery.error = Some(AppError::Runtime(RuntimeError::Exhausted));
+        states.insert(3, later);
+        retire_closed(&mut states, &runtime, &mut kept);
+        assert!(matches!(
+            kept,
+            Some(AppError::Drawing(crate::DrawError::InvalidColor))
+        ));
+        Ok(())
     }
 }

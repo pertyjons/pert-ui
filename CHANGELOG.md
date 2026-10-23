@@ -1,5 +1,106 @@
 # Changelog
 
+## 0.3.68 (2026-10-23)
+
+Testing and window close (API audit fix plan, part 6f1). A test driver and a
+headless application close the round 1 findings F2 and F5, a close request
+saves focused drafts before the close policy runs (F4), and the packaged
+examples' sessions use the driver (F34). Breaking in behavior: see F4 below.
+
+- Added (F2, G5-32): the module `pert_ui_runtime::testing`, re-exported as
+  `pert_ui::testing`, for headless tests:
+  - `testing::Driver<'a>`, which borrows a `Runtime` and drives it as a user
+    would, one settled step at a time: `Driver::new`, `runtime`,
+    `runtime_mut`, the constant `FRAME` (16 ms), `settle` and `advance` (one
+    flush at a checked later clock), `wait_until` (bounded polling at the
+    same clock, for background work), `find` and `semantics` (one
+    `Runtime::query` with `Selector::id` at `Detail::Semantics`), `click`
+    (reveal, then a primary press and release at the middle of the bounds),
+    `replace_text` (focus, select all, then type or Backspace),
+    `type_text`, `key` and `chord` (synthetic keys through
+    `Runtime::command_key_input`, a chord's modifiers pressed in the fixed
+    order Control, Alt, Shift, Super and reported with
+    `Runtime::native_modifiers`). Input goes to the selected window; `key`,
+    `chord`, `replace_text` and `click` require neutral keyboard input, and
+    a compound action releases everything it pressed when a step fails. Its
+    `Debug` shows no runtime state.
+  - `testing::TestError`, `#[non_exhaustive]`, `Clone`, `Eq`, with the
+    variants `Runtime` (converted from `RuntimeError`), `NotFound { path }`,
+    `OtherWindow { key }`, `NotRevealed { key, refusal }`,
+    `NotLaidOut { key }`, `NotAnEditor { key }`, `NoSemantics { key }`,
+    `TimedOut { waited }`, `ClockOverflow`, `InputHeld` and
+    `Cleanup { error, cleanup }`, whose source is the cleanup failure.
+  - re-exports of `CaptureRequest`, `CaptureTarget`, `FrameImage`,
+    `InspectionQuery`, `Selector` and `Detail`, which stay at the crate root
+    too; the facade's module adds `CpuRenderer` with `cpu` and
+    `HeadlessApp` with `native`. The prelude pages point to `testing`.
+- Added (F5): `App::headless`, which validates the title, sets the main
+  window's configured size at scale 1 as the viewport, runs the initializer
+  and lays the visible windows out, without an event loop, window or GPU,
+  and shuts the runtime down when that fails; and
+  `pert_ui::testing::HeadlessApp` (with `native`), `#[must_use]`, with
+  `runtime`, `runtime_mut`, `main_window`, `admit_close`, which runs close
+  admission and `App::on_close` for a window and returns the decision
+  without applying it, validating a `Defer` signal at once, and `shutdown`,
+  which reports cleanup failures as `AppError::Shutdown`. Its `Debug` shows
+  the title and the main window's geometry. `App`'s `#[must_use]` message
+  names `headless`.
+- Breaking (F4): a close request, from the window system or
+  `Runtime::request_close`, releases focus in every window the close would
+  discard (the detached window's own, or every window for the main window)
+  before `App::on_close` runs, so each focused editor applies its
+  focus-loss policy: a valid changed draft is saved before the policy reads
+  the application's state, and a parameter-bound draft is cancelled. When
+  no window is in component-error backoff, those windows are then flushed,
+  and a failed `focus_lost` aborts the close through `on_error`. On a
+  synchronous `KeepOpen` the released component is focused again when
+  nothing in its window holds focus after the callback; `Defer` and `Close`
+  restore nothing, and the native host forgets the affected windows'
+  reactivation records. Replacement usage: drop any `Runtime::clear_focus`
+  workaround in `on_close`; the `diagram_editor` example's close policy
+  drops its own. `App::on_close` and contracts.md ("Closing a window")
+  state the order and the editor cases.
+- Fixed: an accepted close of a detached window that was waiting to retry a
+  component failure kept its pending recovery error, which `App::run` now
+  returns at exit as it returns a surviving window's, instead of dropping it
+  with the window.
+- Changed (F2): rustdoc of `Runtime` and its input methods
+  (`text_input`, `key_input`, `command_key_input`, `pointer_input`) says
+  input is delivered at once and written by its component's rules, and
+  the tree, derived bindings and layout show it after the next flush;
+  `text_input` says empty text inserts nothing and leaves a selection;
+  `Runtime::focus` and `TextField` say focus leaves the caret where the
+  last edit or movement left it; `inspection_id`'s example uses
+  `Runtime::query` with `Selector::id`; `pointer_input` has a click
+  example. `Runtime::request_close` and `take_presentation_requests` say
+  how a host other than `App` completes a close request.
+- Added (F2): the guide chapter "Testing an application"
+  (`pert_ui::guide::testing`): reading what the runtime shows with
+  `Runtime::query` and `Selector::id`, clicks and click timing, typing and
+  replacing text, keys and chords with the synthetic events' limits,
+  settling, list rows, background work, `HeadlessApp` and the close policy,
+  and a CPU capture. The crate page's map links it.
+- Changed (F34): the diagnostics guide's keyboard example uses
+  `Driver::chord`, and names `command_key_input` and `native_modifiers` as
+  the low-level entry points for layouts, text and composition. The
+  `inventory`, `log_explorer` and `diagram_editor` sessions use the driver
+  for widget clicks, keys, chords, text and settling, one flush per settle
+  (lead U2: the extra two flushes did nothing); the log explorer keeps its
+  debounce loops as settle loops and its measuring loops, and the table
+  cells and canvas keep their point-based helpers, with the canvas pause
+  written as `Driver::advance`. The custom-widgets guide's close sentence
+  points to admission and `HeadlessApp::admit_close`.
+- Added: contract tests: the runtime's `tests/testing.rs` for each driver
+  action, each refusal and the cleanup rules; the facade's `surfaces`
+  binary's `window_close` module for headless start and close admission;
+  and unit tests of the native runner's backoff check, reactivation records
+  and retired-window error.
+- The `api/` listings add `pub mod pert_ui_runtime::testing` and
+  `pub mod pert_ui::testing` with their items and re-exports,
+  `pub mod pert_ui::guide::testing`, `App::headless` and `HeadlessApp` with
+  `native`, and `pert_ui::testing::CpuRenderer` with `cpu`. The runtime
+  listings repeat each re-exported item's block under its `testing` path.
+
 ## 0.3.67 (2026-10-23)
 
 Prelude and `component` module (API audit fix plan, part 6e). The prelude

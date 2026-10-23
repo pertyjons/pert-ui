@@ -95,13 +95,15 @@ pub(crate) fn run(mut app: App) -> Result<(), AppError> {
                 .values_mut()
                 .find_map(|window| window.component_recovery.error.take())
         })
+        .or(runner.retired_error.take())
         .map_or(Ok(()), Err);
     finish_runtime(&mut runner.app.runtime, error)
 }
 
 // Finalize even when the event loop did not call exiting. Kept independent of
-// native handles so terminal result ownership is verifiable headlessly.
-fn finish_runtime(
+// native handles so terminal result ownership is verifiable headlessly; the
+// headless application ends through it too.
+pub(crate) fn finish_runtime(
     runtime: &mut crate::Runtime,
     result: Result<(), AppError>,
 ) -> Result<(), AppError> {
@@ -128,6 +130,10 @@ struct Runner {
     start: Instant,
     generation: u64,
     error: Option<AppError>,
+    /// The pending recovery error of a detached window closed while it waited
+    /// to retry, which `run` returns at exit as it returns a surviving
+    /// window's. One is kept: selection among several is unspecified.
+    retired_error: Option<AppError>,
     #[cfg(test)]
     smoke: Option<Smoke>,
 }
@@ -146,6 +152,7 @@ impl Runner {
             start: Instant::now(),
             generation: 0,
             error: None,
+            retired_error: None,
             #[cfg(test)]
             smoke: None,
         }

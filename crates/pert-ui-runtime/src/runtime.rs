@@ -3610,6 +3610,13 @@ pub struct FlushReport {
 /// flush and paint, and coordinate roots through application_deadline/flush_windows.
 /// This runtime records drawing without OS windows, GPUs or background threads.
 ///
+/// Input is delivered to its component at once, and the component writes what
+/// its own rules write: a plain editor writes its binding immediately, while a
+/// draft, a parameter proposal and a notification for a hidden window are not
+/// written yet. The tree, derived bindings and layout show the result after
+/// the next [`Self::flush`], so a test flushes before it inspects;
+/// [`testing::Driver`](crate::testing::Driver) settles after every action.
+///
 /// Methods that change state first check the runtime. Their `# Errors`
 /// sections call that check's failures *a runtime phase error*:
 /// [`RuntimeError::Closed`] after [`Self::shutdown`], or
@@ -4432,6 +4439,14 @@ impl Runtime {
     /// Focusing a component of another window selects that window. A refused
     /// target leaves the selected window and its focus unchanged.
     ///
+    /// Focus does not move a text editor's caret or selection: they stay where
+    /// the editor's last edit or movement left them, which is the start of the
+    /// text for an editor not edited since it was mounted or since its binding
+    /// was written from outside. Typed text is inserted there. A pointer press
+    /// places the caret where it lands; to replace the text, select it all
+    /// first with [`TextCommand::SelectAll`](crate::TextCommand::SelectAll)
+    /// through [`Self::text_command`].
+    ///
     /// # Errors
     /// Before anything changes: a runtime phase error (see [`Runtime`]);
     /// [`RuntimeError::ForeignRuntime`] for an ID of another runtime;
@@ -4685,6 +4700,10 @@ impl Runtime {
     /// [`Runtime::command_key_input`], the native path, routes. Use it to
     /// drive components directly; a test that claims what an application's
     /// user sees from a key uses `command_key_input` instead.
+    ///
+    /// The key is delivered at once and its recipient writes what its own
+    /// rules write, as [`Self::text_input`] describes; the tree, derived
+    /// bindings and layout show the result after the next [`Self::flush`].
     ///
     /// # Errors
     /// Propagates component input errors, and the errors of the flush that
@@ -5016,6 +5035,15 @@ impl Runtime {
         self.deliver_input_notifications()
     }
     /// Dispatches committed text to the focused component without changing keys.
+    ///
+    /// Empty text inserts nothing and leaves a selection in place, as an input
+    /// method's empty commit must: deleting a selection takes a Backspace or
+    /// Delete key. The text is delivered at once and is written as the focused
+    /// component's own rules write it: a plain text editor writes its binding
+    /// immediately, while a draft, a parameter proposal and a notification for
+    /// a hidden window are not written yet. Derived bindings, dynamic children
+    /// and layout show the result after the next [`Self::flush`], so a test
+    /// flushes before it inspects.
     ///
     /// # Errors
     /// Forwards the errors of the [`Self::flush`] that runs first, the component's

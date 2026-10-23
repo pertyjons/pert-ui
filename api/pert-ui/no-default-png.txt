@@ -11,6 +11,7 @@ pub mod pert_ui::guide::getting_started
 pub mod pert_ui::guide::layout
 pub mod pert_ui::guide::state
 pub mod pert_ui::guide::surfaces
+pub mod pert_ui::guide::testing
 pub mod pert_ui::images
 #[non_exhaustive] pub enum pert_ui::images::ImageError
 pub pert_ui::images::ImageError::AllocationLimit
@@ -78,3 +79,12 @@ pub fn pert_ui::images::decode(&[u8]) -> core::result::Result<pert_ui_runtime::r
 pub fn pert_ui::images::load(impl core::convert::AsRef<std::path::Path>) -> core::result::Result<pert_ui_runtime::resources::RasterImage, pert_ui::images::ImageError>
 pub mod pert_ui::prelude
 pub use pert_ui::prelude::<<pert_ui_runtime::prelude::*>>
+pub mod pert_ui::testing
+pub use pert_ui::testing::CaptureRequest
+pub use pert_ui::testing::CaptureTarget
+pub use pert_ui::testing::Detail
+pub use pert_ui::testing::Driver
+pub use pert_ui::testing::FrameImage
+pub use pert_ui::testing::InspectionQuery
+pub use pert_ui::testing::Selector
+pub use pert_ui::testing::TestError

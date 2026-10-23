@@ -11,6 +11,7 @@ pub mod pert_ui::guide::getting_started
 pub mod pert_ui::guide::layout
 pub mod pert_ui::guide::state
 pub mod pert_ui::guide::surfaces
+pub mod pert_ui::guide::testing
 pub mod pert_ui::prelude
 pub use pert_ui::prelude::<<pert_ui_runtime::prelude::*>>
 pub struct pert_ui::prelude::Svg
@@ -69,6 +70,15 @@ pub const pert_ui::svg::MAX_NESTING: usize
 pub fn pert_ui::svg::intrinsic_size(&[u8]) -> core::result::Result<pert_ui_runtime::layout::Size, pert_ui::svg::SvgError>
 pub fn pert_ui::svg::rasterize(&[u8], u32, u32) -> core::result::Result<pert_ui_runtime::resources::RasterImage, pert_ui::svg::SvgError>
 pub fn pert_ui::svg::rasterize_mask(&[u8], u32, u32) -> core::result::Result<pert_ui_runtime::drawing::MaskImage, pert_ui::svg::SvgError>
+pub mod pert_ui::testing
+pub use pert_ui::testing::CaptureRequest
+pub use pert_ui::testing::CaptureTarget
+pub use pert_ui::testing::Detail
+pub use pert_ui::testing::Driver
+pub use pert_ui::testing::FrameImage
+pub use pert_ui::testing::InspectionQuery
+pub use pert_ui::testing::Selector
+pub use pert_ui::testing::TestError
 pub struct pert_ui::Svg
 impl pert_ui::Svg
 pub fn pert_ui::Svg::description(self, impl core::convert::Into<alloc::string::String>) -> Self
