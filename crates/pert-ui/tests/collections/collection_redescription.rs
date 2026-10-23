@@ -455,3 +455,186 @@ fn a_redescribed_table_builds_later_edits_with_its_new_cell_editor() -> TestResu
     );
     Ok(())
 }
+
+// ---- Reordering through replaced callbacks ----
+
+/// Rows tall enough for a drag over three of them in the stage's viewport.
+const TALL: f32 = 40.0;
+
+/// A reorder callback that records its name, the drop position and the
+/// operation, and accepts the drop.
+fn dropping(
+    log: &Log,
+    name: &'static str,
+) -> impl FnMut(&mut EventContext, &ListDrop<'_>) -> Result<bool, RuntimeError> + 'static {
+    let log = log.clone();
+    move |_, drop| {
+        log.borrow_mut().push(format!(
+            "{name}:{:?}:{:?}",
+            drop.position(),
+            drop.operation()
+        ));
+        Ok(true)
+    }
+}
+
+/// Drags the first row down over the third and drops it there.
+fn drag_first_row(ui: &mut Runtime) -> TestResult {
+    for (y, kind) in [
+        (20.0, PointerKind::Press(PointerButton::Primary)),
+        (70.0, PointerKind::Move),
+        (90.0, PointerKind::Move),
+        (90.0, PointerKind::Release(PointerButton::Primary)),
+    ] {
+        ui.pointer_input(PointerEvent::new(Point::new(80.0, y)?, kind))?;
+        settle(ui);
+    }
+    Ok(())
+}
+
+/// A placement rule that drops everything into the row keyed `key`, at
+/// shown position `index`.
+fn into(
+    key: &'static str,
+    index: usize,
+) -> impl Fn(&[String], &ListDropPoint) -> Option<ListDropPlacement> + 'static {
+    move |_, _| {
+        Some(ListDropPlacement::new(
+            ListDropPosition::Into(key.to_owned()),
+            ListDropMark::Into(index),
+        ))
+    }
+}
+
+#[test]
+fn a_replacement_reorder_callback_performs_the_drop() -> TestResult {
+    for tree in [false, true] {
+        let mut f = Stage::new()?;
+        let log: Log = Rc::default();
+        let describe = |f: &Stage, name: &'static str| -> Result<Element, GeometryError> {
+            Ok(if tree {
+                Element::new(
+                    "collection",
+                    Tree::new(&f.tree, TALL)?.reorderable(dropping(&log, name)),
+                )
+            } else {
+                Element::new(
+                    "collection",
+                    VirtualList::new(f.items.read_only(), TALL)?
+                        .selection(f.selection.clone())
+                        .reorderable(dropping(&log, name)),
+                )
+            })
+        };
+        let first = describe(&f, "first")?;
+        f.describe(first)?;
+        let second = describe(&f, "second")?;
+        f.describe(second)?;
+        drag_first_row(&mut f.ui)?;
+        let log = log.borrow();
+        assert_eq!(log.len(), 1, "tree {tree}: {log:?}");
+        assert!(log[0].starts_with("second:"), "tree {tree}: {log:?}");
+    }
+    Ok(())
+}
+
+#[test]
+fn a_list_follows_a_replaced_and_a_removed_placement_rule() -> TestResult {
+    let mut f = Stage::new()?;
+    let log: Log = Rc::default();
+    let list = |f: &Stage| -> Result<VirtualList, GeometryError> {
+        Ok(VirtualList::new(f.items.read_only(), TALL)?
+            .selection(f.selection.clone())
+            .reorderable(dropping(&log, "drop")))
+    };
+    let first = list(&f)?.placement(into("row0", 0));
+    f.describe(Element::new("collection", first))?;
+    let second = list(&f)?.placement(into("row1", 1));
+    f.describe(Element::new("collection", second))?;
+    drag_first_row(&mut f.ui)?;
+    // Without a rule the list drops at an item boundary.
+    let without = list(&f)?;
+    f.describe(Element::new("collection", without))?;
+    drag_first_row(&mut f.ui)?;
+    let log = log.borrow();
+    assert_eq!(log.len(), 2, "{log:?}");
+    assert_eq!(log[0], r#"drop:Into("row1"):Move"#);
+    assert!(
+        log[1].starts_with("drop:Before(") || log[1].starts_with("drop:After("),
+        "{log:?}"
+    );
+    Ok(())
+}
+
+#[test]
+fn a_redescribed_tree_places_drops_against_its_retained_controller() -> TestResult {
+    let mut f = Stage::new()?;
+    let log: Log = Rc::default();
+    let first = Tree::new(&f.tree, TALL)?.reorderable(dropping(&log, "first"));
+    f.describe(Element::new("collection", first))?;
+    // A description over another controller, whose hierarchy is empty: the
+    // mounted tree keeps its controller, and its placement rule reads it.
+    struct Empty;
+    impl TreeItems for Empty {
+        fn roots(&self) -> Vec<String> {
+            Vec::new()
+        }
+        fn children(&self, _: &str) -> Vec<String> {
+            Vec::new()
+        }
+        fn build(&self, _: &str) -> Option<Element> {
+            None
+        }
+    }
+    let other = TreeController::new(
+        &f.ui,
+        ListSelection::new(&f.ui, SelectionMode::Single),
+        TreeSource::new(Empty),
+    )?;
+    let second = Tree::new(&other, TALL)?.reorderable(dropping(&log, "second"));
+    f.describe(Element::new("collection", second))?;
+    drag_first_row(&mut f.ui)?;
+    let log = log.borrow();
+    assert_eq!(log.len(), 1, "{log:?}");
+    assert!(log[0].starts_with("second:"), "{log:?}");
+    assert!(
+        log[0].contains("\"row"),
+        "a position among the retained rows: {log:?}"
+    );
+    Ok(())
+}
+
+#[test]
+fn a_redescription_replaces_the_drag_operations() -> TestResult {
+    for tree in [false, true] {
+        let mut f = Stage::new()?;
+        let log: Log = Rc::default();
+        let describe = |f: &Stage, operations: DropOperations| -> Result<Element, GeometryError> {
+            Ok(if tree {
+                Element::new(
+                    "collection",
+                    Tree::new(&f.tree, TALL)?
+                        .reorderable(dropping(&log, "drop"))
+                        .drag_operations(operations),
+                )
+            } else {
+                Element::new(
+                    "collection",
+                    VirtualList::new(f.items.read_only(), TALL)?
+                        .selection(f.selection.clone())
+                        .reorderable(dropping(&log, "drop"))
+                        .drag_operations(operations),
+                )
+            })
+        };
+        let first = describe(&f, DropOperations::MOVE)?;
+        f.describe(first)?;
+        let second = describe(&f, DropOperations::COPY)?;
+        f.describe(second)?;
+        drag_first_row(&mut f.ui)?;
+        let log = log.borrow();
+        assert_eq!(log.len(), 1, "tree {tree}: {log:?}");
+        assert!(log[0].ends_with(":Copy"), "tree {tree}: {log:?}");
+    }
+    Ok(())
+}

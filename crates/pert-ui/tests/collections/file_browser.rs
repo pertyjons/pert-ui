@@ -1418,26 +1418,36 @@ fn a_redescription_replaces_and_removes_the_folder_filter_offer()
             },
         ))
     };
+    // Mounted with an offer that a binding allows.
+    let former = ui.signal(true);
     let root = ui.mount_tree(Element::new(
         "root",
-        Column::new([browser(Some(Permission::allowed()))?]),
+        Column::new([browser(Some(former.read_only().into()))?]),
     ))?;
     settle(&mut ui);
     assert_eq!(offered(&ui), Some(InspectValue::Bool(true)));
-    let binding = ui.signal(false);
-    for (offer, expected) in [
-        (Some(binding.read_only().into()), false),
-        (None, false),
-        (Some(Permission::allowed()), true),
-    ] {
-        ui.reconcile_children(&root, vec![browser(offer)?])?;
-        settle(&mut ui);
-        assert_eq!(offered(&ui), Some(InspectValue::Bool(expected)));
-    }
-    // A binding adopted from a re-description is followed.
-    ui.reconcile_children(&root, vec![browser(Some(binding.read_only().into()))?])?;
+    // A description without the filter removes the offer: the field hides,
+    // and the former binding cannot open it again.
+    ui.reconcile_children(&root, vec![browser(None)?])?;
     settle(&mut ui);
-    binding.set(true)?;
+    assert_eq!(offered(&ui), Some(InspectValue::Bool(false)));
+    former.set(false)?;
+    settle(&mut ui);
+    former.set(true)?;
+    settle(&mut ui);
+    assert_eq!(offered(&ui), Some(InspectValue::Bool(false)));
+    // A later offer replaces the removal, and a replacement binding is
+    // followed instead of the former one.
+    ui.reconcile_children(&root, vec![browser(Some(Permission::allowed()))?])?;
+    settle(&mut ui);
+    assert_eq!(offered(&ui), Some(InspectValue::Bool(true)));
+    let replacement = ui.signal(false);
+    ui.reconcile_children(&root, vec![browser(Some(replacement.read_only().into()))?])?;
+    settle(&mut ui);
+    assert_eq!(offered(&ui), Some(InspectValue::Bool(false)));
+    former.set(false)?;
+    settle(&mut ui);
+    replacement.set(true)?;
     settle(&mut ui);
     assert_eq!(offered(&ui), Some(InspectValue::Bool(true)));
     Ok(())

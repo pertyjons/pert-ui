@@ -403,7 +403,7 @@ and anything left to a later part.
     non-`Send` error's message is wrapped. The review also asked for the
     packaging results here, and verified 6c1's fix. Doctests and rustdoc
     were rerun after the fix, which 6d1's review verifies.
-- **6d1 (0.3.65):** the collections adopt a redescription's permissions
+- **6d1 (0.3.65), done 2026-10-23:** 0e52a23 and its review fix. The collections adopt a redescription's permissions
   and callbacks, including removal.
   - A fixed denial cancels a gesture in the update the redescription
     schedules, so nothing is published from `reconcile`.
@@ -440,6 +440,18 @@ and anything left to a later part.
     `Send + Sync`, which tightens 6c2's fix.
   - **Left to a later part:** `N:publish-revision`, found here, joins 6d2
     and TODO.md.
+  - **Review:** Codex found three points:
+    - the folder-filter removal test passed even if removal were ignored;
+    - replacement callbacks, placement and drag operations had no tests of
+      successful use;
+    - `cargo test --locked -p pert-ui-diagnostics -- --ignored` was missing
+      from the gate.
+
+    The fix rewrote the removal test and added four contract tests, each
+    checked to fail with its piece of the runtime change reverted. It then
+    ran the diagnostics suite and reran the workspace gate (fmt, Clippy,
+    tests, doctests, rustdoc, `api/generate.sh` with no further
+    difference, `git diff --check`). The fix is verified in 6d2's review.
 
 ## Rules for every part
 
