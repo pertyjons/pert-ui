@@ -109,7 +109,7 @@ fn updates_ready(
         || runtime
             .pending_captures()
             .iter()
-            .any(|job| job.window == root.id())
+            .any(|job| job.window() == root.id())
 }
 
 fn presentation_deadline(

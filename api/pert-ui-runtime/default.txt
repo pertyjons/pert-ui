@@ -1863,7 +1863,11 @@ pub pert_ui_runtime::prelude::StringRole::HistoryListName
 pub pert_ui_runtime::prelude::StringRole::HistoryName
 pub pert_ui_runtime::prelude::StringRole::HistorySearch
 pub pert_ui_runtime::prelude::StringRole::NoMatches
+pub pert_ui_runtime::prelude::StringRole::NotANumber
+pub pert_ui_runtime::prelude::StringRole::NotAWholeNumber
 pub pert_ui_runtime::prelude::StringRole::NotHexColor
+pub pert_ui_runtime::prelude::StringRole::NumberOffStep
+pub pert_ui_runtime::prelude::StringRole::NumberOutOfRange
 pub pert_ui_runtime::prelude::StringRole::PaletteCommands
 pub pert_ui_runtime::prelude::StringRole::PaletteName
 pub pert_ui_runtime::prelude::StringRole::PaletteNoMatches
@@ -2338,6 +2342,11 @@ pub pert_ui_runtime::prelude::UiMessage::ForwardTo
 pub pert_ui_runtime::prelude::UiMessage::ForwardTo::place: &'a str
 pub pert_ui_runtime::prelude::UiMessage::NotHexColor
 pub pert_ui_runtime::prelude::UiMessage::NotHexColor::reason: &'a str
+pub pert_ui_runtime::prelude::UiMessage::NumberOffStep
+pub pert_ui_runtime::prelude::UiMessage::NumberOffStep::step: &'a str
+pub pert_ui_runtime::prelude::UiMessage::NumberOutOfRange
+pub pert_ui_runtime::prelude::UiMessage::NumberOutOfRange::max: &'a str
+pub pert_ui_runtime::prelude::UiMessage::NumberOutOfRange::min: &'a str
 pub pert_ui_runtime::prelude::UiMessage::RemoveItem
 pub pert_ui_runtime::prelude::UiMessage::RemoveItem::item: &'a str
 pub pert_ui_runtime::prelude::UiMessage::ToolWindowHide
@@ -11433,7 +11442,7 @@ pub fn pert_ui_runtime::Workspace::entries(&self) -> impl core::iter::traits::it
 pub fn pert_ui_runtime::Workspace::is_empty(&self) -> bool
 pub fn pert_ui_runtime::Workspace::len(&self) -> usize
 pub fn pert_ui_runtime::Workspace::new(pert_ui_runtime::WorkspaceSettings, impl core::iter::traits::collect::IntoIterator<Item = (pert_ui_runtime::WorkspacePath, pert_ui_runtime::ViewState)>) -> core::result::Result<Self, pert_ui_runtime::WorkspaceError>
-pub const fn pert_ui_runtime::Workspace::set_settings(&mut self, pert_ui_runtime::WorkspaceSettings)
+pub fn pert_ui_runtime::Workspace::set_settings(&mut self, pert_ui_runtime::WorkspaceSettings) -> core::result::Result<(), pert_ui_runtime::WorkspaceError>
 pub const fn pert_ui_runtime::Workspace::settings(&self) -> &pert_ui_runtime::WorkspaceSettings
 impl pert_ui_runtime::Workspace
 pub fn pert_ui_runtime::Workspace::decode(&str) -> core::result::Result<Self, pert_ui_runtime::WorkspaceError>
@@ -20607,7 +20616,11 @@ pub pert_ui_runtime::StringRole::HistoryListName
 pub pert_ui_runtime::StringRole::HistoryName
 pub pert_ui_runtime::StringRole::HistorySearch
 pub pert_ui_runtime::StringRole::NoMatches
+pub pert_ui_runtime::StringRole::NotANumber
+pub pert_ui_runtime::StringRole::NotAWholeNumber
 pub pert_ui_runtime::StringRole::NotHexColor
+pub pert_ui_runtime::StringRole::NumberOffStep
+pub pert_ui_runtime::StringRole::NumberOutOfRange
 pub pert_ui_runtime::StringRole::PaletteCommands
 pub pert_ui_runtime::StringRole::PaletteName
 pub pert_ui_runtime::StringRole::PaletteNoMatches
@@ -21266,6 +21279,11 @@ pub pert_ui_runtime::UiMessage::ForwardTo
 pub pert_ui_runtime::UiMessage::ForwardTo::place: &'a str
 pub pert_ui_runtime::UiMessage::NotHexColor
 pub pert_ui_runtime::UiMessage::NotHexColor::reason: &'a str
+pub pert_ui_runtime::UiMessage::NumberOffStep
+pub pert_ui_runtime::UiMessage::NumberOffStep::step: &'a str
+pub pert_ui_runtime::UiMessage::NumberOutOfRange
+pub pert_ui_runtime::UiMessage::NumberOutOfRange::max: &'a str
+pub pert_ui_runtime::UiMessage::NumberOutOfRange::min: &'a str
 pub pert_ui_runtime::UiMessage::RemoveItem
 pub pert_ui_runtime::UiMessage::RemoveItem::item: &'a str
 pub pert_ui_runtime::UiMessage::ToolWindowHide
@@ -22205,9 +22223,10 @@ impl core::marker::UnsafeUnpin for pert_ui_runtime::Capture
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Capture
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Capture
 pub struct pert_ui_runtime::CaptureJob
-pub pert_ui_runtime::CaptureJob::id: u64
-pub pert_ui_runtime::CaptureJob::include_overlay: bool
-pub pert_ui_runtime::CaptureJob::window: u64
+impl pert_ui_runtime::CaptureJob
+pub const fn pert_ui_runtime::CaptureJob::id(&self) -> u64
+pub const fn pert_ui_runtime::CaptureJob::include_overlay(&self) -> bool
+pub const fn pert_ui_runtime::CaptureJob::window(&self) -> u64
 impl core::clone::Clone for pert_ui_runtime::CaptureJob
 pub fn pert_ui_runtime::CaptureJob::clone(&self) -> pert_ui_runtime::CaptureJob
 impl core::cmp::Eq for pert_ui_runtime::CaptureJob
@@ -31149,7 +31168,7 @@ pub fn pert_ui_runtime::TextSelection::byte_range(self) -> core::ops::range::Ran
 pub fn pert_ui_runtime::TextSelection::caret(self, &pert_ui_runtime::TextLayout) -> core::result::Result<pert_ui_runtime::Rect, pert_ui_runtime::GeometryError>
 pub fn pert_ui_runtime::TextSelection::focus_byte(self) -> usize
 pub fn pert_ui_runtime::TextSelection::moved(self, &pert_ui_runtime::TextLayout, pert_ui_runtime::TextMovement, pert_ui_runtime::SelectionExtension) -> Self
-pub fn pert_ui_runtime::TextSelection::new(&pert_ui_runtime::TextLayout, usize, usize) -> Self
+pub fn pert_ui_runtime::TextSelection::new(&pert_ui_runtime::TextLayout, usize, usize) -> core::result::Result<Self, pert_ui_runtime::TextEditError>
 pub fn pert_ui_runtime::TextSelection::rectangles(self, &pert_ui_runtime::TextLayout) -> core::result::Result<alloc::vec::Vec<pert_ui_runtime::Rect>, pert_ui_runtime::GeometryError>
 pub fn pert_ui_runtime::TextSelection::word_at_point(&pert_ui_runtime::TextLayout, pert_ui_runtime::Point) -> Self
 impl core::clone::Clone for pert_ui_runtime::TextSelection
@@ -32889,7 +32908,7 @@ pub fn pert_ui_runtime::Workspace::entries(&self) -> impl core::iter::traits::it
 pub fn pert_ui_runtime::Workspace::is_empty(&self) -> bool
 pub fn pert_ui_runtime::Workspace::len(&self) -> usize
 pub fn pert_ui_runtime::Workspace::new(pert_ui_runtime::WorkspaceSettings, impl core::iter::traits::collect::IntoIterator<Item = (pert_ui_runtime::WorkspacePath, pert_ui_runtime::ViewState)>) -> core::result::Result<Self, pert_ui_runtime::WorkspaceError>
-pub const fn pert_ui_runtime::Workspace::set_settings(&mut self, pert_ui_runtime::WorkspaceSettings)
+pub fn pert_ui_runtime::Workspace::set_settings(&mut self, pert_ui_runtime::WorkspaceSettings) -> core::result::Result<(), pert_ui_runtime::WorkspaceError>
 pub const fn pert_ui_runtime::Workspace::settings(&self) -> &pert_ui_runtime::WorkspaceSettings
 impl pert_ui_runtime::Workspace
 pub fn pert_ui_runtime::Workspace::decode(&str) -> core::result::Result<Self, pert_ui_runtime::WorkspaceError>

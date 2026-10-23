@@ -36,6 +36,11 @@ pub(crate) fn adorned_content<'a>(
 /// inspection and, when it is within [`TextEditError::MAX_TEXT_BYTES`], shows
 /// as delayed help while the pointer rests on a truncated label.
 ///
+/// Empty plain text, with no icon, measures as zero size, as an empty
+/// [`Field`](crate::Field) block does, so a label that shows a message only
+/// some of the time takes no height without one; a container's gap beside it
+/// remains. [`Show`](crate::Show) removes it entirely.
+///
 /// Inspection reports a [`SemanticRole::Label`] whose name is the label's
 /// text. Static text is a name, so the label reports no
 /// [`SemanticValue`](crate::SemanticValue): a value is the content of an
@@ -292,6 +297,12 @@ impl Component for Label {
         cx: &MeasureContext<'_>,
         available: Constraints,
     ) -> Result<Size, RuntimeError> {
+        // Empty plain text takes no space, as an empty `Field` block does.
+        let content = self.caption.display();
+        if content.parts.is_empty() || content.as_plain().is_some_and(str::is_empty) {
+            self.measured.set(Some(Size::ZERO));
+            return Ok(Size::ZERO);
+        }
         // A label turned on its side wraps against the height it is given.
         let line = if self.turn.swaps_axes() {
             available.height()

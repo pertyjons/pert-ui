@@ -108,6 +108,33 @@ type RefusalReport =
 /// progress as an application write does: a composition and a draft are
 /// dropped unsaved and undo is cleared. The same binding keeps them.
 ///
+/// # Keys
+///
+/// A focused editor claims the chords below in its editing phase, before
+/// [command bindings](crate::Runtime::register_command), so a command bound to
+/// one of them does not run while the editor has focus. Shift with a movement
+/// extends the selection. Every other chord is left to the editor's ancestors
+/// and to command bindings.
+///
+/// - On every platform: Left, Right, Up, Down, Home and End move the caret,
+///   with any modifiers the lists below do not give another meaning;
+///   Backspace and Delete delete; Enter saves or submits, and inserts a line
+///   break in a [`TextArea`]; Escape, while there is a composition, a
+///   selection or a draft to end, ends it; the ContextMenu key and Shift+F10 open
+///   the clipboard menu; Alt+F8 shows or hides a
+///   [revealable](Self::revealable) concealed text.
+/// - On macOS: Cmd+Left and Cmd+Right move to the line's ends, Cmd+Up,
+///   Cmd+Down, Cmd+Home and Cmd+End to the text's ends, Option+Left and
+///   Option+Right by word, and Option+Backspace and Option+Delete delete a
+///   word; Cmd+A, Cmd+C, Cmd+X, Cmd+V, Cmd+Z and Shift+Cmd+Z select, copy,
+///   cut, paste, undo and redo.
+/// - Elsewhere: Ctrl+Up, Ctrl+Down, Ctrl+Home and Ctrl+End move to the text's
+///   ends, Ctrl+Left and Ctrl+Right by word, and Ctrl+Backspace and
+///   Ctrl+Delete delete a word; Ctrl+A, Ctrl+C, Ctrl+X, Ctrl+V, Ctrl+Z,
+///   Shift+Ctrl+Z and Ctrl+Y select, copy, cut, paste, undo and redo. A
+///   `TextField`, which has one line, leaves Up and Down with Alt or Super
+///   to commands; a [`TextArea`] moves by line with them.
+///
 /// # Normalization
 ///
 /// Disabling retains an unsaved draft but cannot save it, including on immediate
@@ -185,7 +212,9 @@ description_debug!(TextField);
 /// scrollbar.
 ///
 /// Binding ownership and refused bindings, [`TextEditError::MAX_TEXT_BYTES`]/preparation limits,
-/// selection, clipboard, undo, cancellation and scheduling follow `TextField`.
+/// selection, clipboard, undo, cancellation and scheduling follow `TextField`,
+/// and so do the [chords it claims](TextField#keys), except that a text area
+/// also claims Up and Down with Alt or Super outside macOS, as line movement.
 /// This is plain text, with no syntax highlighting or host project undo policy.
 /// An enabled field uses SurfaceHover under the pointer without changing layout.
 ///
@@ -1456,7 +1485,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
         let (anchor, focus) = (real(selection.anchor_byte()), real(selection.focus_byte()));
         self.revealed = revealed;
         let layout = self.layout_of(cx, &self.text)?;
-        self.selection.set(TextSelection::new(
+        self.selection.set(TextSelection::snapped(
             &layout,
             self.shown_offset(&self.text, anchor),
             self.shown_offset(&self.text, focus),
@@ -1696,7 +1725,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             EditorStart::CaretAtEnd => {
                 let layout = self.layout(cx)?;
                 self.selection
-                    .set(TextSelection::new(&layout, usize::MAX, usize::MAX));
+                    .set(TextSelection::snapped(&layout, usize::MAX, usize::MAX));
                 self.changed(cx);
                 Ok(())
             }
@@ -1790,7 +1819,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
         if text != self.text {
             self.cancel_composition();
             self.selection
-                .set(TextSelection::new(&layout, usize::MAX, usize::MAX));
+                .set(TextSelection::snapped(&layout, usize::MAX, usize::MAX));
             self.text = text;
             self.payload = M::default();
         }
@@ -2269,7 +2298,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
                 // paste places text beside its target and keeps that target selected.
                 let layout = self.layout(cx)?;
                 self.selection
-                    .set(TextSelection::new(&layout, keep.start, keep.end));
+                    .set(TextSelection::snapped(&layout, keep.start, keep.end));
                 self.changed(cx);
                 Ok(R::Handled)
             }
@@ -2279,7 +2308,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
                 }
                 let layout = self.layout(cx)?;
                 self.selection
-                    .set(TextSelection::new(&layout, 0, usize::MAX));
+                    .set(TextSelection::snapped(&layout, 0, usize::MAX));
                 self.changed(cx);
                 Ok(R::Handled)
             }
@@ -2426,7 +2455,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
     fn display_selection(&self, layout: &TextLayout) -> TextSelection {
         if let Some((preedit, range)) = &self.preedit {
             let cursor = preedit.cursor_byte_range().unwrap_or(0..0);
-            TextSelection::new(layout, range.start + cursor.start, range.start + cursor.end)
+            TextSelection::snapped(layout, range.start + cursor.start, range.start + cursor.end)
         } else {
             self.selection.get()
         }
@@ -2842,7 +2871,9 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
                 })?;
             }
             if let Some(range) = composition {
-                for r in TextSelection::new(&layout, range.start, range.end).rectangles(&layout)? {
+                for r in
+                    TextSelection::snapped(&layout, range.start, range.end).rectangles(&layout)?
+                {
                     let [x, y, w, h] = r.values();
                     p.fill_rect(
                         Rect::new(origin[0] + x, origin[1] + y + h - 1.0, w, 1.0)?,
@@ -2992,7 +3023,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
         self.text = candidate;
         self.payload = payload;
         self.selection
-            .set(TextSelection::new(&layout, caret, caret));
+            .set(TextSelection::snapped(&layout, caret, caret));
         self.preedit = None;
         self.changed(cx);
         Ok(true)
@@ -3069,7 +3100,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
                         concealed_offset(&snapshot.text, offset)
                     }
                 };
-                TextSelection::new(
+                TextSelection::snapped(
                     &layout,
                     convert(snapshot.selection.anchor_byte()),
                     convert(snapshot.selection.focus_byte()),
@@ -3153,7 +3184,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
                 let caret = self.selection.get().focus_byte();
                 let layout = self.layout(cx)?;
                 self.selection
-                    .set(TextSelection::new(&layout, caret, caret));
+                    .set(TextSelection::snapped(&layout, caret, caret));
             }
             self.dragging = false;
             cx.release_pointer();
@@ -3181,7 +3212,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
         let layout = self.layout(cx)?;
         if command && e.code == KeyCode::KeyA {
             self.selection
-                .set(TextSelection::new(&layout, 0, usize::MAX));
+                .set(TextSelection::snapped(&layout, 0, usize::MAX));
             self.changed(cx);
             return Ok(InputOutcome::Handled);
         }
@@ -3207,6 +3238,16 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
                 self.undo(cx, m.shift || e.code == KeyCode::KeyY)?;
             }
             return Ok(InputOutcome::Handled);
+        }
+        // A single line has no line to move to: off macOS, where these chords
+        // have no editing meaning either, Alt or Super with Up or Down is left
+        // to the ancestors and command bindings.
+        if !self.multi
+            && !cfg!(target_os = "macos")
+            && matches!(e.code, KeyCode::ArrowUp | KeyCode::ArrowDown)
+            && (m.alt || m.super_key)
+        {
+            return Ok(InputOutcome::Ignored);
         }
         if let Some(movement) = key_movement(e.code, m) {
             self.selection.set(self.selection.get().moved(
@@ -3418,9 +3459,9 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             let selected = match self.clicks {
                 // Word boundaries of concealed text are secret, so a double
                 // click selects everything.
-                2 if self.concealed => TextSelection::new(&layout, 0, usize::MAX),
+                2 if self.concealed => TextSelection::snapped(&layout, 0, usize::MAX),
                 2 => TextSelection::word_at_point(&layout, point),
-                3 => TextSelection::new(&layout, 0, usize::MAX),
+                3 => TextSelection::snapped(&layout, 0, usize::MAX),
                 _ => self.selection.get().at_point(
                     &layout,
                     point,

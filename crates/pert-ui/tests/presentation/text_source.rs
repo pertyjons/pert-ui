@@ -366,3 +366,36 @@ fn a_menu_row_described_with_the_same_binding_keeps_its_text_and_press() -> Test
     assert_eq!(ran.get(), 1, "the press was not cancelled");
     Ok(())
 }
+
+#[test]
+fn an_empty_plain_label_takes_no_height_until_it_has_text() -> TestResult {
+    let mut ui = runtime()?;
+    let message = ui.signal(String::new());
+    let root = ui.mount_tree(Element::new(
+        "column",
+        Column::new([
+            Element::new("message", Label::new(message.read_only())),
+            Element::new("icon", Label::new("").leading_icon(Icon::Info)),
+        ]),
+    ))?;
+    frame(&mut ui);
+    let bounds = |ui: &Runtime, key: &str| {
+        let id = support::widget(ui, &root, key);
+        ui.bounds(&id).unwrap().unwrap()
+    };
+    assert_eq!(
+        bounds(&ui, "message").height(),
+        0.0,
+        "empty text takes no space"
+    );
+    assert!(bounds(&ui, "icon").height() > 0.0, "an icon is content");
+    let issues = ui.validation_report().issues;
+    assert!(issues.is_empty(), "{issues:?}");
+    message.set("Saved".into())?;
+    frame(&mut ui);
+    assert!(
+        bounds(&ui, "message").height() > 0.0,
+        "text takes its line again"
+    );
+    Ok(())
+}

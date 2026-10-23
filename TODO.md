@@ -84,13 +84,6 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   pure-Rust one such as `miniz_oxide`, already in the lockfile through
   `png`) would make captures practical to attach and commit; keep the
   output deterministic and test it against a decoder.
-- [ ] 2026-10-22 `crates/pert-ui-runtime/src/runtime.rs`
-  `Runtime::focus_with_reveal` — Rust and data invariants ("do not discard
-  failures"): when `reveal_focus(id)?` fails while a `focus_lost` or
-  `focus_within_changed` error is held in `focus_result`, the held error is
-  neither returned nor queued in `focus_errors`. Queue it before returning the
-  reveal error and add a regression test. Planned as `N:focus-reveal` in part
-  6d2 of `plans/usability/api-audit/fix-plan.md`.
 - [ ] 2026-10-23 `crates/pert-ui/src/app.rs` `AppError` — public API and
   documentation: its rustdoc lists every error type the blanket
   `impl<E> From<E> for AppError` accepts, repeating the runtime's
@@ -103,11 +96,3 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   change. Choose cases whose output omits the implementor list (for example a
   bound on a generic function with a local trait object), or document in
   `docs/verification.md` that such churn is expected and reviewed.
-- [ ] 2026-10-23 `crates/pert-ui-runtime/src/signal.rs`
-  `Signal::publish_trusted` — state contracts: it publishes a new value
-  without advancing `revision`, which `Signal::revision` documents as counting
-  changes, so `Dynamic`, `Show` and `Each` over a library-published signal
-  never redescribe (a `Dynamic` over `Parameter::snapshot()` stays at its old
-  description during a gesture). Advance `revision` in `publish_trusted` and
-  add a regression test. Planned as `N:publish-revision` in part 6d2 of
-  `plans/usability/api-audit/fix-plan.md`.

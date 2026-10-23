@@ -342,6 +342,85 @@ fn an_ancestor_error_does_not_veto_the_transfer_or_stop_other_notifications() ->
     Ok(())
 }
 
+/// A container whose [`Component::reveal`] fails, as a scroll viewport whose
+/// scrolling is refused.
+struct FailingReveal {
+    children: Vec<Element>,
+}
+
+impl Component for FailingReveal {
+    fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+        Ok(())
+    }
+    fn take_children(&mut self) -> Vec<Element> {
+        std::mem::take(&mut self.children)
+    }
+    fn measure(&self, _: &MeasureContext<'_>, _: Constraints) -> Result<Size, RuntimeError> {
+        Ok(Size::new(100.0, 30.0)?)
+    }
+    fn arrange(&self, cx: &mut ArrangeContext<'_>, size: Size) -> Result<(), RuntimeError> {
+        for index in 0..cx.len() {
+            cx.place(index, Rect::new(0.0, 0.0, size.width(), size.height())?)?;
+        }
+        Ok(())
+    }
+    fn can_reveal(&self) -> bool {
+        true
+    }
+    fn reveal(&mut self, _: &mut EventContext, _: Rect) -> Result<bool, RuntimeError> {
+        Err(RuntimeError::RevealQueueFull)
+    }
+}
+
+#[test]
+fn a_reveal_error_queues_the_callback_error_it_is_returned_before() -> TestResult {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(200.0, 100.0, 1.0)?)?;
+    let log: Log = Rc::default();
+    let root = ui.mount_tree(Probe::element(
+        "root",
+        &log,
+        vec![
+            Element::new(
+                "outer",
+                Probe {
+                    name: "outer",
+                    focusable: false,
+                    enter: Enter::Ignore,
+                    fail_on_leave: Some(RuntimeError::Exhausted),
+                    gate: None,
+                    unfocus: false,
+                    log: log.clone(),
+                    children: vec![Probe::element("x", &log, vec![])],
+                },
+            ),
+            Element::new(
+                "viewport",
+                FailingReveal {
+                    children: vec![Probe::element("z", &log, vec![])],
+                },
+            ),
+        ],
+    ))?;
+    ui.flush(ui.now())?;
+    let x = ui.find_descendant(&root, "x")?.ok_or("x")?;
+    let z = ui.find_descendant(&root, "z")?.ok_or("z")?;
+    ui.focus(&x)?;
+    assert_eq!(
+        ui.focus(&z),
+        Err(RuntimeError::RevealQueueFull),
+        "the reveal error is returned"
+    );
+    assert_eq!(ui.focused(), Some(z), "the transfer happened");
+    assert_eq!(
+        ui.flush(ui.now()),
+        Err(RuntimeError::Exhausted),
+        "the held focus_within_changed error was queued, not dropped"
+    );
+    ui.flush(ui.now())?;
+    Ok(())
+}
+
 fn probe(name: &'static str, enter: Enter, log: &Log, children: Vec<Element>) -> Element {
     Element::new(
         name,

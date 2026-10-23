@@ -4446,8 +4446,8 @@ impl Runtime {
     /// then enters is returned, and later ones are queued for later
     /// [`Self::flush`] calls. Revealing the target then forwards an error of
     /// an ancestor's [`Component::reveal`] or of the flush that settles a
-    /// scrolled ancestor; such an error is returned in place of a callback
-    /// error.
+    /// scrolled ancestor; such an error is returned, and a callback error
+    /// that would have been returned is queued ahead of the later ones.
     pub fn focus(&mut self, id: &WidgetId) -> Result<(), RuntimeError> {
         let previous = self.current_window();
         self.select_window(&self.window_of(id)?)?;
@@ -4626,8 +4626,13 @@ impl Runtime {
                     crate::EventStatus::Succeeded
                 });
         }
-        if reveal {
-            self.reveal_focus(id)?;
+        if reveal && let Err(error) = self.reveal_focus(id) {
+            // The reveal error is returned; a held callback error is queued
+            // ahead of the later ones rather than dropped.
+            if let Err(held) = focus_result {
+                self.window.focus_errors.push_front(held);
+            }
+            return Err(error);
         }
         focus_result
     }

@@ -595,6 +595,18 @@ fn finite_extreme_fixed_widths_keep_layout_valid() -> TestResult {
         ui.mount_tree(Element::new("table", Table::new(&controller, ROW)?))?;
         ui.flush(Duration::ZERO)?;
         ui.paint()?;
+        // The first column ends at the largest finite position; every later
+        // one starts there, and is the exception `TableColumn::MIN_WIDTH`
+        // names: it has no room left, so its width is 0.
+        let resolved = ui
+            .inspect()
+            .components
+            .into_iter()
+            .find(|component| component.key == "table")
+            .and_then(|component| component.details.properties.get("column_widths").cloned());
+        let mut expected = vec![InspectValue::Number(f64::from(f32::MAX))];
+        expected.resize(widths.len(), InspectValue::Number(0.0));
+        assert_eq!(resolved, Some(InspectValue::List(expected)));
         // Scrolling to the far end in either direction keeps the offset
         // finite, and a scroll moves it.
         let mut moved = false;

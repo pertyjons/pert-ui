@@ -956,6 +956,12 @@ Escape cancels a draft; confirmation parses and validates it before committing.
 External binding changes and focus loss follow each control's documented
 conflict and cancellation rules.
 
+An editor's `on_rejection` reports each refused save with an `InputRejection`,
+whatever refused it: the application's normalizer, a `TextField` or
+`TextArea` length limit, or an integer or decimal editor's own parse, range or
+step check. The library's own refusals take their messages from the installed
+`UiStrings`. `None` follows once when a reported refusal ends.
+
 A field refuses a value the application writes that it cannot hold, keeps its
 previous text and accepts no edits until the binding holds acceptable text
 again. `on_binding_refusal` reports such a refusal and its end in an event

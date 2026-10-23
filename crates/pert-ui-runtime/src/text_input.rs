@@ -28,11 +28,12 @@ pub enum TextEditError {
         /// The rejected range's end.
         end_byte: usize,
     },
-    /// The selection's UTF-8 byte offsets held here are not ordered character
-    /// boundaries within the text they select.
-    #[error(
-        "selection {anchor_byte}..{focus_byte} is not an ordered range of character boundaries"
-    )]
+    /// The selection's UTF-8 byte offsets held here are not boundaries within
+    /// the text they select, or not in the order the operation requires: a
+    /// [`DraftSelection::Range`](crate::DraftSelection::Range) needs ordered
+    /// character boundaries, and [`TextSelection::new`](crate::TextSelection::new)
+    /// needs grapheme boundaries of its layout in either order.
+    #[error("selection {anchor_byte}..{focus_byte} is not a valid range of boundaries in the text")]
     InvalidSelection {
         /// The rejected offset where the selection starts.
         anchor_byte: usize,

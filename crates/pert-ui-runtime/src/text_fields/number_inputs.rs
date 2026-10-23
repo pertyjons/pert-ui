@@ -6,7 +6,10 @@ use crate::choice_controls::rounded;
 ///
 /// Builder errors are returned to the caller. Invalid user text is retained and
 /// marked in the field; it never writes the numeric signal or causes a runtime
-/// failure. Inspection exposes that draft's error as `validation_error`. An
+/// failure. Inspection exposes that draft's error as `validation_error`, and a
+/// refused save reports it to the editor's `on_rejection` as an
+/// [`InputRejection`] with a message from the installed
+/// [`UiStrings`](crate::UiStrings). An
 /// invalid bound value written by the application is refused by the field and
 /// reported in inspection as `binding_error`, also without a runtime failure.
 ///
@@ -297,6 +300,8 @@ trait Number: Copy + PartialEq + PartialOrd + std::fmt::Display + 'static {
     const MIN: Self;
     const MAX: Self;
     const STEP: Self;
+    /// The role that refuses text this kind of number cannot parse.
+    const UNPARSABLE: crate::StringRole;
     fn finite(self) -> bool;
     // Inspection only; an i64 beyond 2^53 loses precision here, which is why the
     // exact value stays available as text in the `value` property.
@@ -312,6 +317,7 @@ impl Number for i64 {
     const MIN: Self = Self::MIN;
     const MAX: Self = Self::MAX;
     const STEP: Self = 1;
+    const UNPARSABLE: crate::StringRole = crate::StringRole::NotAWholeNumber;
     fn to_f64(self) -> f64 {
         self as f64
     }
@@ -349,6 +355,7 @@ impl Number for f64 {
     const MIN: Self = -Self::MAX;
     const MAX: Self = Self::MAX;
     const STEP: Self = 0.1;
+    const UNPARSABLE: crate::StringRole = crate::StringRole::NotANumber;
     fn to_f64(self) -> f64 {
         self
     }
@@ -980,7 +987,7 @@ impl<T: Number> NumberEditor<T> {
                 let layout = editor.layout(cx)?;
                 editor
                     .selection
-                    .set(TextSelection::new(&layout, usize::MAX, usize::MAX));
+                    .set(TextSelection::snapped(&layout, usize::MAX, usize::MAX));
                 editor.changed(cx);
                 Ok(())
             }
@@ -1059,6 +1066,24 @@ impl<T: Number> NumberEditor<T> {
         self.field.error = self.draft().err();
         cx.invalidate(Invalidation::Paint);
         Ok(())
+    }
+    /// The user-facing message for the field's own refusal of a draft.
+    fn number_rejection(
+        &self,
+        strings: &crate::UiStrings,
+        error: NumberInputError,
+    ) -> InputRejection {
+        let format = |value: T| value.format(self.precision);
+        InputRejection::new(match error {
+            NumberInputError::OutOfRange => strings.format(crate::UiMessage::NumberOutOfRange {
+                min: &format(self.min),
+                max: &format(self.max),
+            }),
+            NumberInputError::OffStep => strings.format(crate::UiMessage::NumberOffStep {
+                step: &format(self.step),
+            }),
+            _ => strings.text(T::UNPARSABLE).to_owned(),
+        })
     }
     fn validate(&self, value: T) -> Result<T, NumberInputError> {
         if !value.finite() {
@@ -1262,6 +1287,14 @@ impl<T: Number> NumberEditor<T> {
             EditorOutcome::Unchanged
         };
         self.report_session(outcome);
+        // The field's own refusal of a changed draft is reported like the
+        // normalizer's, with the installed strings' message; a draft that
+        // was never changed refuses nothing.
+        let error = match error {
+            Some(EntryError::Number(error)) => (outcome == EditorOutcome::Refused)
+                .then(|| EntryError::Rejected(self.number_rejection(&cx.strings(), error))),
+            other => other,
+        };
         // Both notifications are attempted, so a failing rejection report
         // cannot swallow the save; the first error is returned.
         let reported = self.report.outcome(cx, error.as_ref());
@@ -2108,16 +2141,28 @@ macro_rules! number_shared {
                 self.0.normalizer = Some(Rc::new(normalize));
                 Ok(self)
             }
-            /// Tells the application about the normalizer's refusals, with the
-            /// rules of [`TextField::on_rejection`]: `Some` on each save the
-            /// normalizer refuses, and `None` once when a reported refusal ends
-            /// at a later save or at Escape. A draft that is invalid for the
-            /// field's own reasons (unparsable, out of range) is not a
-            /// refusal; saving it ends a reported one. The draft shows a
-            /// refusal live, but the callback hears of it only when a save is
-            /// attempted. A step that saves at once and is refused (a step
-            /// button, including each held repeat, or an inline row's resting
-            /// arrow or wheel) is a refused save and is reported.
+            /// Tells the application about each refused save, with the rules
+            /// of [`TextField::on_rejection`]: `Some` on each save of a
+            /// changed draft that is refused, and `None` once when a reported
+            /// refusal ends at a later save or at Escape.
+            ///
+            /// A refusal is the normalizer's [`InputRejection`] or the field's
+            /// own, with a message from the installed
+            /// [`UiStrings`](crate::UiStrings): text that does not parse
+            /// ([`StringRole::NotAWholeNumber`](crate::StringRole::NotAWholeNumber)
+            /// for the integer editors,
+            /// [`StringRole::NotANumber`](crate::StringRole::NotANumber) for
+            /// the decimal ones), a number outside the bounds
+            /// ([`StringRole::NumberOutOfRange`](crate::StringRole::NumberOutOfRange))
+            /// and, for a parameter, a number off its step
+            /// ([`StringRole::NumberOffStep`](crate::StringRole::NumberOffStep)).
+            /// Inspection's `validation_error` keeps the developer-facing
+            /// [`NumberInputError`] text. A draft the user never changed
+            /// refuses nothing. The draft shows a refusal live, but the
+            /// callback hears of it only when a save is attempted. A step
+            /// that saves at once and is refused (a step button, including
+            /// each held repeat, or an inline row's resting arrow or wheel) is
+            /// a refused save and is reported.
             pub fn on_rejection(
                 mut self,
                 report: impl FnMut(

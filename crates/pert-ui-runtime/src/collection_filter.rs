@@ -436,10 +436,13 @@ struct Parts {
 /// A filter field above a list, table or tree that shows only the rows
 /// matching what the user types.
 ///
-/// The field is a [`SearchField`] nested in the direct child slot `filter-field`.
-/// That slot key is reserved, so the collection element must use another key;
-/// `filter` is valid for the collection because the inner SearchField's own key,
-/// also `filter`, is scoped beneath its slot. A collection keyed `filter-field`
+/// The field is a [`SearchField`] keyed `filter` in the direct child slot
+/// `filter-field`, so its address is the component's followed by
+/// `filter-field/filter`, for [`Runtime::find`](crate::Runtime::find),
+/// selectors and inspection paths. The field keeps no workspace state. That slot key is reserved, so the
+/// collection element must use another key; `filter` is valid for the
+/// collection because the inner SearchField's own key, also `filter`, is
+/// scoped beneath its slot. A collection keyed `filter-field`
 /// makes mounting fail with [`RuntimeError::DuplicateKey`]. The field sits above
 /// the collection element given to
 /// [`Self::new`], which must show the list, table or tree of the
@@ -609,7 +612,7 @@ impl CollectionFilter {
                 children: Vec::new(),
             },
         )
-        .structural()
+        .slot(FIELD_SLOT)
     }
     /// The rule rows must match; [`FilterMatcher::substring`] by default.
     pub fn matcher(mut self, matcher: FilterMatcher) -> Self {

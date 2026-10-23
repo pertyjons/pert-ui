@@ -453,7 +453,11 @@ struct Prepared {
 /// Bind the status with [`Field::status`], or with [`Field::form`] when a
 /// [`FormFields`] coordinates several fields; see [`FormFields`] for a complete
 /// example. Inspection reports `label`, `help`, `status`, `message` and
-/// `required`.
+/// `required`. In semantics the label names the control, and the line below
+/// describes it unless the control describes itself; an error marks the
+/// control invalid and its message replaces even the control's own
+/// description, such as an editor's unsaved-draft note
+/// ([`Semantics::names_children`](crate::Semantics::names_children)).
 #[must_use]
 pub struct Field {
     control: Option<Element>,

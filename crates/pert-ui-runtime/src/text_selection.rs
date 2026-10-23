@@ -51,16 +51,64 @@ impl SelectionExtension {
 ///
 /// Create and operate on this with the layout for the current text. Recreate it
 /// after replacing text; movement refreshes affinity for width/scale changes.
-/// Offsets are snapped to grapheme boundaries, including inside ligatures.
-/// Combining sequences and emoji joined by zero-width joiners form one stop.
+/// Every caret stop is a grapheme boundary, never inside a ligature:
+/// combining sequences and emoji joined by zero-width joiners form one stop.
+/// Pointer placement ([`Self::at_point`], [`Self::word_at_point`]) snaps to
+/// the nearest stop; explicit offsets given to [`Self::new`] must already be
+/// stops.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 #[must_use]
 pub struct TextSelection(Selection);
 impl TextSelection {
-    /// Creates a selection from UTF-8 byte offsets, clamping out-of-range
-    /// offsets to text end and snapping offsets inside clusters to their start.
-    /// Anchor is retained when extending.
-    pub fn new(layout: &TextLayout, anchor_byte: usize, focus_byte: usize) -> Self {
+    /// Creates a selection from UTF-8 byte offsets of `layout`'s text.
+    ///
+    /// The anchor is the end [`SelectionExtension::Extend`] keeps, and it may
+    /// follow the focus: a backward selection, as Shift+Left makes, is valid.
+    /// Both offsets must be caret stops: `0`, the text's length, or the start
+    /// of a grapheme.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Element, Label, Runtime, TextEditError, TextSelection, TextStyle};
+    /// let mut ui = Runtime::new();
+    /// let label = ui.mount_tree(Element::new("label", Label::new("")))?;
+    /// // "e" with a combining acute accent is one grapheme of three bytes.
+    /// let layout = ui.event(&label, |cx| cx.text("e\u{301}x", None, TextStyle::Body))??;
+    /// // Backward, from after "x" to the start.
+    /// let selection = TextSelection::new(&layout, 4, 0)?;
+    /// assert_eq!(selection.byte_range(), 0..4);
+    /// // Byte 1 is inside "e" with its combining accent.
+    /// assert_eq!(
+    ///     TextSelection::new(&layout, 1, 1),
+    ///     Err(TextEditError::InvalidSelection { anchor_byte: 1, focus_byte: 1 })
+    /// );
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// # Errors
+    /// Returns
+    /// [`TextEditError::InvalidSelection`](crate::TextEditError::InvalidSelection)
+    /// with both offsets when either lies past the end of the text or inside a
+    /// grapheme; nothing is clamped or snapped.
+    pub fn new(
+        layout: &TextLayout,
+        anchor_byte: usize,
+        focus_byte: usize,
+    ) -> Result<Self, crate::TextEditError> {
+        let selection = Self::snapped(layout, anchor_byte, focus_byte);
+        if selection.anchor_byte() != anchor_byte || selection.focus_byte() != focus_byte {
+            return Err(crate::TextEditError::InvalidSelection {
+                anchor_byte,
+                focus_byte,
+            });
+        }
+        Ok(selection)
+    }
+    /// A selection with out-of-range offsets moved to the text end and
+    /// offsets inside a grapheme moved to its start, for the library's own
+    /// placements (`usize::MAX` for "the end") and offsets carried across a
+    /// text replacement.
+    pub(crate) fn snapped(layout: &TextLayout, anchor_byte: usize, focus_byte: usize) -> Self {
         Self(Selection::new(
             Cursor::from_byte_index(&layout.shaped, anchor_byte, parley::Affinity::Downstream),
             Cursor::from_byte_index(&layout.shaped, focus_byte, parley::Affinity::Downstream),
@@ -183,7 +231,15 @@ mod tests {
         let mut text = TextService::new().unwrap();
         for (value, inside) in [("e\u{301}x", 1), ("👩‍💻x", 4)] {
             let layout = text.prepare(value, None, 1.0, TextStyle::Body).unwrap();
-            let selection = TextSelection::new(&layout, inside, inside);
+            assert_eq!(
+                TextSelection::new(&layout, inside, 0),
+                Err(crate::TextEditError::InvalidSelection {
+                    anchor_byte: inside,
+                    focus_byte: 0
+                }),
+                "{value:?}"
+            );
+            let selection = TextSelection::snapped(&layout, inside, inside);
             assert_eq!(selection.byte_range(), 0..0, "{value:?}");
             assert_eq!(
                 selection

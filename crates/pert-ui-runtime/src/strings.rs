@@ -217,6 +217,17 @@ pub enum StringRole {
     /// The tool window options-menu row that opens a tool window in its own
     /// native window.
     ToolWindowOpenWindow,
+    /// The refusal of a decimal editor's text that is not a finite number.
+    NotANumber,
+    /// The refusal of an integer editor's text that is not a whole number in
+    /// the `i64` range.
+    NotAWholeNumber,
+    /// The refusal of a number outside a numeric editor's bounds: `{min}` and
+    /// `{max}`, formatted as the editor shows its values.
+    NumberOutOfRange,
+    /// The refusal of a number off a parameter's step lattice: `{step}`,
+    /// formatted as the editor shows its values.
+    NumberOffStep,
 }
 
 crate::tables::variant_list! {
@@ -243,7 +254,8 @@ crate::tables::variant_list! {
         AtMostCharacters, NotHexColor, ColorAreaValue, CommandRan,
         CommandNotAvailable, CommandBlocked, CommandNoRepeat, CommandFailed,
         EntryFailed, ToolWindowOptions, ToolWindowHide,
-        ToolWindowDock, ToolWindowFloat, ToolWindowOpenWindow,
+        ToolWindowDock, ToolWindowFloat, ToolWindowOpenWindow, NotANumber,
+        NotAWholeNumber, NumberOutOfRange, NumberOffStep,
     ];
 }
 const STRING_ROLE_COUNT: usize = STRING_ROLES.len();
@@ -269,6 +281,8 @@ impl StringRole {
             Self::CommandFailed => &["command", "reason"],
             Self::EntryFailed => &["name", "reason"],
             Self::ToolWindowOptions | Self::ToolWindowHide => &["title"],
+            Self::NumberOutOfRange => &["min", "max"],
+            Self::NumberOffStep => &["step"],
             _ => &[],
         }
     }
@@ -396,6 +410,16 @@ const ENGLISH: [(StringRole, &str); STRING_ROLE_COUNT] = [
     (StringRole::ToolWindowDock, "Dock"),
     (StringRole::ToolWindowFloat, "Float"),
     (StringRole::ToolWindowOpenWindow, "Open in window"),
+    (StringRole::NotANumber, "Enter a number"),
+    (StringRole::NotAWholeNumber, "Enter a whole number"),
+    (
+        StringRole::NumberOutOfRange,
+        "Enter a number from {min} to {max}",
+    ),
+    (
+        StringRole::NumberOffStep,
+        "Enter a number in steps of {step}",
+    ),
 ];
 
 /// Places the English rows at their roles' indices, rejecting a missing or
@@ -748,6 +772,18 @@ pub enum UiMessage<'a> {
         /// The tool window's title.
         title: &'a str,
     },
+    /// [`StringRole::NumberOutOfRange`].
+    NumberOutOfRange {
+        /// The smallest allowed number, as the editor formats it.
+        min: &'a str,
+        /// The largest allowed number, as the editor formats it.
+        max: &'a str,
+    },
+    /// [`StringRole::NumberOffStep`].
+    NumberOffStep {
+        /// The step between allowed numbers, as the editor formats it.
+        step: &'a str,
+    },
 }
 
 impl UiMessage<'_> {
@@ -770,6 +806,8 @@ impl UiMessage<'_> {
             Self::EntryFailed { .. } => StringRole::EntryFailed,
             Self::ToolWindowOptions { .. } => StringRole::ToolWindowOptions,
             Self::ToolWindowHide { .. } => StringRole::ToolWindowHide,
+            Self::NumberOutOfRange { .. } => StringRole::NumberOutOfRange,
+            Self::NumberOffStep { .. } => StringRole::NumberOffStep,
         }
     }
 
@@ -803,6 +841,9 @@ impl UiMessage<'_> {
             (Self::ToolWindowOptions { title } | Self::ToolWindowHide { title }, "title") => {
                 out.push_str(title);
             }
+            (Self::NumberOutOfRange { min, .. }, "min") => out.push_str(min),
+            (Self::NumberOutOfRange { max, .. }, "max") => out.push_str(max),
+            (Self::NumberOffStep { step }, "step") => out.push_str(step),
             // Unreachable for validated templates; an unknown name writes nothing.
             _ => {}
         }
@@ -841,6 +882,8 @@ mod tests {
             },
             UiMessage::ToolWindowOptions { title: "x" },
             UiMessage::ToolWindowHide { title: "x" },
+            UiMessage::NumberOutOfRange { min: "x", max: "x" },
+            UiMessage::NumberOffStep { step: "x" },
         ];
         for message in messages {
             let text = strings.format(message);

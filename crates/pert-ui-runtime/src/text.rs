@@ -2155,8 +2155,8 @@ mod rich_tests {
                     assert_eq!(masks(&plain), masks(&split));
                     for index in 0..=text.len() {
                         assert_eq!(
-                            crate::TextSelection::new(&plain, index, index).caret(&plain),
-                            crate::TextSelection::new(&split, index, index).caret(&split)
+                            crate::TextSelection::snapped(&plain, index, index).caret(&plain),
+                            crate::TextSelection::snapped(&split, index, index).caret(&split)
                         );
                     }
                 }

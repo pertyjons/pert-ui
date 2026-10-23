@@ -605,3 +605,66 @@ fn a_dragged_row_preview_is_keyed_like_the_mounted_row() {
     ui.pointer_input(at(26.0, 20.0, PointerKind::Release(PointerButton::Primary)))
         .unwrap();
 }
+
+/// Rows of single-line text fields, one bound value per key.
+#[derive(Clone)]
+struct Fields(Vec<(String, Signal<String>)>);
+impl ListItems for Fields {
+    fn len(&self) -> usize {
+        self.0.len()
+    }
+    fn key(&self, index: usize) -> Option<String> {
+        self.0.get(index).map(|(key, _)| key.clone())
+    }
+    fn build(&self, index: usize) -> Option<Element> {
+        let (key, value) = self.0.get(index)?;
+        Some(Element::new(key.clone(), TextField::new(value.clone())))
+    }
+    fn index_of(&self, key: &str) -> Option<usize> {
+        self.0.iter().position(|(candidate, _)| candidate == key)
+    }
+}
+
+#[test]
+fn alt_with_an_arrow_in_a_row_field_moves_the_row_outside_macos() {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(100.0, 300.0, 1.0).unwrap())
+        .unwrap();
+    let rows: Vec<_> = ["a", "b", "c"]
+        .into_iter()
+        .map(|key| (key.to_owned(), ui.signal(key.to_owned())))
+        .collect();
+    let source = ui.signal(ListSource::new(Fields(rows.clone())));
+    let selection = ListSelection::new(&ui, SelectionMode::Single);
+    let drops = Rc::new(RefCell::new(Vec::new()));
+    let log = drops.clone();
+    let list = VirtualList::new(source.read_only(), ROW)
+        .unwrap()
+        .selection(selection.clone())
+        .reorderable(move |_, drop| {
+            log.borrow_mut()
+                .push(format!("{:?} {:?}", drop.items(), drop.position()));
+            Ok(true)
+        });
+    let root = ui.mount_tree(Element::new("list", list)).unwrap();
+    ui.flush(Duration::ZERO).unwrap();
+    let field = ui.find_descendant(&root, "a").unwrap().unwrap();
+    ui.focus(&field).unwrap();
+    selection.set_active(Some("a".into())).unwrap();
+    ui.flush(ui.now()).unwrap();
+    ui.key_input(KeyCode::AltLeft, KeyAction::Press).unwrap();
+    ui.key_input(KeyCode::ArrowDown, KeyAction::Press).unwrap();
+    ui.key_input(KeyCode::ArrowDown, KeyAction::Release)
+        .unwrap();
+    ui.key_input(KeyCode::AltLeft, KeyAction::Release).unwrap();
+    ui.flush(ui.now()).unwrap();
+    // On macOS, Option with Down moves the field's caret instead.
+    let expected: &[&str] = if cfg!(target_os = "macos") {
+        &[]
+    } else {
+        &[r#"["a"] After("b")"#]
+    };
+    assert_eq!(*drops.borrow(), expected, "the list moves the active row");
+    assert_eq!(ui.focused(), Some(field));
+    assert_eq!(rows[0].1.get().unwrap(), "a", "the field edited nothing");
+}

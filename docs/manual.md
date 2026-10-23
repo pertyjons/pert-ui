@@ -402,8 +402,10 @@ Every input field that saves a value (`TextField`, `TextArea`, `InlineText`
 and the integer and decimal inputs) accepts `normalize`, the application's
 adjustment of an entered value when it is saved, such as rounding to tenths or
 trimming text. The normalizer may refuse the value with an `InputRejection`,
-which keeps the draft for correction; `on_rejection` tells the application,
-which can publish it as the field's `FieldStatus`. `on_save` reports each save
+which keeps the draft for correction; `on_rejection` tells the application
+about it, and about the field's own refusals (a length limit, or a number that
+does not parse or is out of range), so it can publish them as the field's
+`FieldStatus`. `on_save` reports each save
 that wrote the local binding or submitted a remote proposal, with the saved
 value; Enter, focus loss or a step button saves, and the callback does not say
 which. Submission does not mean external authority acceptance. Values the application writes are never

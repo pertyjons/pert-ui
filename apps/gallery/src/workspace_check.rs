@@ -359,9 +359,13 @@ mod tests {
         assert!(report.starts_with("changed") && report.contains(&path.to_string()));
 
         let mut relit = initial.clone();
-        relit.set_settings((*initial.settings()).with_theme_mode(Some(ThemeMode::Light)));
+        relit
+            .set_settings((*initial.settings()).with_theme_mode(Some(ThemeMode::Light)))
+            .unwrap();
         let mut darkened = initial.clone();
-        darkened.set_settings((*initial.settings()).with_theme_mode(Some(ThemeMode::Dark)));
+        darkened
+            .set_settings((*initial.settings()).with_theme_mode(Some(ThemeMode::Dark)))
+            .unwrap();
         let settings = difference(&relit, &darkened).unwrap();
         assert!(settings.starts_with("settings"), "{settings}");
         assert_eq!(difference(&initial, &initial.clone()), None);

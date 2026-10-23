@@ -188,11 +188,17 @@ pub fn redescribe(
 /// one runs, or start an edit, re-describe, and check the draft and the
 /// binding.
 ///
+/// The reference is mounted as another root in the same viewport, so both
+/// trees are laid out alike. Its root declares itself an intentional overlay
+/// ([`OverlapPolicy::Allow`](crate::OverlapPolicy::Allow)), so development
+/// validation reports no overlap between the two trees.
+///
 /// # Errors
 /// As [`redescribe`], [`RedescriptionError::NotFound`] when either component
 /// cannot be found after the flush, and [`RedescriptionError::Differs`] when
 /// the reports differ. Success removes the reference tree and returns the
-/// retained tree under [`Redescribed::root`]. Every failure removes all roots
+/// retained tree under [`Redescribed::root`]; [`Redescribed::component`] is
+/// the re-described component itself. Every failure removes all roots
 /// this call mounted; [`RedescriptionError::Cleanup`] preserves the original
 /// cause and exact handles when removal itself fails. Comparison uses mounted
 /// incarnation identity, independently of workspace addressing metadata.
@@ -216,12 +222,16 @@ pub fn check_redescription(
 ) -> Result<Redescribed, RedescriptionError> {
     let key = after.key.clone();
     let result = redescribe(ui, before, after)?;
-    let reference = match ui.mount_tree(Element::new("fresh", Column::new([fresh]))) {
+    let reference = match ui.mount_tree(Element::new(
+        "fresh",
+        Reference(vec![Element::new("column", Column::new([fresh]))]),
+    )) {
         Ok(reference) => reference,
         Err(error) => return Err(cleanup_failed(ui, error.into(), [&result.root])),
     };
     let compared = (|| {
-        let (redescribed, fresh) = compare_reports(ui, &result, &reference, &key)?;
+        let column = direct_child(ui, &reference, "column")?;
+        let (redescribed, fresh) = compare_reports(ui, &result, &column, &key)?;
         if redescribed.semantics != fresh.semantics || redescribed.properties != fresh.properties {
             return Err(RedescriptionError::Differs {
                 key,
@@ -235,6 +245,24 @@ pub fn check_redescription(
     match compared {
         Ok(()) => Ok(result),
         Err(cause) => Err(cleanup_failed(ui, cause, [&reference, &result.root])),
+    }
+}
+
+/// The root of [`check_redescription`]'s reference tree: it lays its column
+/// out over the re-described tree, exactly as that tree's root is laid out,
+/// and declares the overlap intentional.
+struct Reference(Vec<Element>);
+impl crate::Component for Reference {
+    fn update(&mut self, _: &mut crate::UpdateContext) -> Result<(), RuntimeError> {
+        Ok(())
+    }
+    fn take_children(&mut self) -> Vec<Element> {
+        std::mem::take(&mut self.0)
+    }
+    fn inspect(&self) -> crate::ComponentDetails {
+        let mut details = crate::ComponentDetails::default();
+        details.validation.overlap = crate::OverlapPolicy::Allow;
+        details
     }
 }
 
@@ -320,5 +348,23 @@ fn compare_reports(
         _ => Err(RedescriptionError::NotFound {
             key: key.to_owned(),
         }),
+    }
+}
+
+#[cfg(all(test, debug_assertions))]
+mod tests {
+    use super::*;
+    use crate::validation::development::take_test_log;
+
+    #[test]
+    fn the_reference_laid_out_in_a_viewport_reports_no_overlap() {
+        let _ = take_test_log();
+        let mut ui = crate::Runtime::new();
+        ui.set_viewport(crate::Viewport::new(200.0, 100.0, 1.0).unwrap())
+            .unwrap();
+        let caption = || Element::new("caption", crate::Label::new("Caption"));
+        let result = check_redescription(&mut ui, caption(), caption(), caption()).unwrap();
+        assert_eq!(ui.key(&result.component).unwrap(), "caption");
+        assert_eq!(take_test_log(), "", "no validation output");
     }
 }

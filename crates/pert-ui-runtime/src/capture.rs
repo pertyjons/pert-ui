@@ -544,14 +544,32 @@ pub struct Capture {
 /// `Runtime::complete_capture`. A job stays listed until completed, so a host
 /// that cannot render a window right now (occluded, lost surface) completes
 /// it with [`CaptureError::SurfaceUnavailable`] rather than leaving it.
+///
+/// Only the runtime creates jobs, so a job always describes a request that
+/// runtime accepted; `capture_scene` refuses one that is no longer pending.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct CaptureJob {
-    /// Identifies the job for `complete_capture`; never reused.
-    pub id: u64,
+    pub(crate) id: u64,
+    pub(crate) window: u64,
+    pub(crate) include_overlay: bool,
+}
+impl CaptureJob {
+    /// Identifies the job for `complete_capture`; never reused by the runtime
+    /// that listed it.
+    #[must_use]
+    pub const fn id(&self) -> u64 {
+        self.id
+    }
     /// The window to render, [`WindowInspection::id`](crate::WindowInspection::id).
-    pub window: u64,
+    #[must_use]
+    pub const fn window(&self) -> u64 {
+        self.window
+    }
     /// Whether the scene for it includes overlays.
-    pub include_overlay: bool,
+    #[must_use]
+    pub const fn include_overlay(&self) -> bool {
+        self.include_overlay
+    }
 }
 
 /// A dependency-free PNG writer: stored deflate blocks, zlib framing, CRC-32.

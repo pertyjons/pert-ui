@@ -634,7 +634,7 @@ fn wrapped_and_mixed_direction_selections_paint_every_region() {
     let expected: Vec<[f32; 4]> = ui
         .event(&text, |cx| -> Result<Vec<[f32; 4]>, RuntimeError> {
             let layout = cx.text(mixed, Some(bounds.width()), TextStyle::Body)?;
-            Ok(TextSelection::new(&layout, anchor, focus)
+            Ok(TextSelection::new(&layout, anchor, focus)?
                 .rectangles(&layout)?
                 .into_iter()
                 .map(|r| {
@@ -960,4 +960,35 @@ fn a_width_change_keeps_the_selection_and_selected_glyphs_take_their_color() {
     ui.set_clipboard(copied.clone()).unwrap();
     ui.text_command(&text, TextCommand::Copy).unwrap();
     assert_eq!(*copied.0.borrow(), "quick");
+}
+
+#[test]
+fn an_explicit_selection_is_rejected_off_a_caret_stop_and_kept_in_either_order() {
+    let mut ui = Runtime::new();
+    let label = ui
+        .mount_tree(Element::new("label", Label::new("")))
+        .unwrap();
+    // "e" with a combining accent is one grapheme of bytes 0..3.
+    let text = "e\u{301}xy";
+    let layout = ui
+        .event(&label, |cx| cx.text(text, None, TextStyle::Body))
+        .unwrap()
+        .unwrap();
+    let backward = TextSelection::new(&layout, text.len(), 3).unwrap();
+    assert_eq!(
+        (backward.anchor_byte(), backward.focus_byte()),
+        (text.len(), 3),
+        "the anchor may follow the focus, and the text end is a stop"
+    );
+    assert_eq!(backward.byte_range(), 3..text.len());
+    for (anchor, focus) in [(0, text.len() + 1), (1, 3), (3, 2)] {
+        assert_eq!(
+            TextSelection::new(&layout, anchor, focus),
+            Err(TextEditError::InvalidSelection {
+                anchor_byte: anchor,
+                focus_byte: focus,
+            }),
+            "{anchor}..{focus} is past the end or inside the accented grapheme"
+        );
+    }
 }

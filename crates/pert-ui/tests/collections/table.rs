@@ -1153,3 +1153,43 @@ fn the_controller_fixes_a_column_width_like_a_drag_except_during_one() -> TestRe
     assert_eq!(state.columns()[2].fixed_width(), Some(90.0));
     Ok(())
 }
+
+#[test]
+fn a_saved_width_below_the_minimum_is_rejected_and_the_minimum_restores() -> TestResult {
+    let mut f = fixture(5)?;
+    let saved = |width: f64| -> Result<Workspace, Box<dyn std::error::Error>> {
+        Ok(Workspace::new(
+            WorkspaceSettings::default(),
+            [(
+                WorkspacePath::new(["table"])?,
+                ViewState::new("table")?.with(
+                    "widths",
+                    WorkspaceValue::map([("number".to_owned(), WorkspaceValue::number(width)?)])?,
+                )?,
+            )],
+        )?)
+    };
+    let before = (cells(&f), f.ui.capture_workspace()?);
+    let below = f64::from(TableColumn::MIN_WIDTH) - 1.0;
+    let report = f.ui.restore_workspace(&saved(below)?)?;
+    assert_eq!(
+        report
+            .rejected()
+            .map(|(_, reason)| reason.clone())
+            .collect::<Vec<_>>(),
+        [RestoreRejection::OutOfRange("number".into())],
+        "rejected, not raised to the minimum"
+    );
+    f.ui.flush(Duration::ZERO)?;
+    assert_eq!((cells(&f), f.ui.capture_workspace()?), before);
+
+    let at = saved(f64::from(TableColumn::MIN_WIDTH))?;
+    assert!(f.ui.restore_workspace(&at)?.is_complete());
+    f.ui.flush(Duration::ZERO)?;
+    assert_eq!(cells(&f)[0].1, TableColumn::MIN_WIDTH);
+    assert_eq!(
+        captured_widths(&f.ui.capture_workspace()?),
+        [("number".to_owned(), f64::from(TableColumn::MIN_WIDTH))]
+    );
+    Ok(())
+}

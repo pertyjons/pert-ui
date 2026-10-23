@@ -694,7 +694,7 @@ press(&mut ui, KeyCode::Enter)?;
 assert_eq!(tasks.get()?[0].title, "Write the whole plan");
 
 // Typing in the field hides the selected row, which disables Delete.
-let field = ui.find(&root, &["tasks", "filter"])?.ok_or("the field")?;
+let field = ui.find(&root, &["tasks", "filter-field", "filter"])?.ok_or("the field")?;
 ui.focus(&field)?;
 ui.text_input("ship")?;
 ui.flush(Duration::ZERO)?;

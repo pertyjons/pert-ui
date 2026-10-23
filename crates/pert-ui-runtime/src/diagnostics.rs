@@ -431,6 +431,15 @@ impl SemanticItem {
         self.shortcut = Some(shortcut.into()).filter(|shortcut| !shortcut.is_empty());
         self
     }
+    /// Restores the documented invariants the builders keep, for a row whose
+    /// public fields were assigned directly: a non-empty name, and sorted,
+    /// distinct actions, none while disabled.
+    pub(crate) fn normalize(&mut self) {
+        if self.name.as_deref() == Some("") {
+            self.name = None;
+        }
+        normalize_actions(&mut self.actions, self.disabled);
+    }
     /// Offers one action while the row is not disabled, keeping the list sorted
     /// and free of duplicates.
     #[must_use]
@@ -472,6 +481,12 @@ impl SemanticItem {
 /// Everything is an owned observation captured on the UI thread. Absent means
 /// not known or not applicable, never an empty placeholder. Reporting semantics
 /// schedules nothing and is evaluated only when a snapshot is captured.
+///
+/// The builders keep the invariants the fields document. A component may also
+/// assign the public fields directly; the snapshot then restores them: an
+/// empty name or description becomes absent, a [protected](Self::protected)
+/// value is withdrawn, and actions are sorted, distinct and absent while
+/// disabled, for the component and each of its [`SemanticItem`] rows.
 #[derive(Clone, Debug, PartialEq)]
 #[non_exhaustive]
 #[cfg_attr(
@@ -518,8 +533,12 @@ pub struct Semantics {
     pub protected: bool,
     /// Whether this component describes its immediate children: a child with no
     /// name of its own receives this name, and every child that reports semantics
-    /// receives this description, unless it has one, and this invalid state. A
-    /// [`SemanticRole::Field`] sets it, which is how a wrapped control is named.
+    /// receives this invalid state and this description. A child's own
+    /// description, such as an editor's unsaved-draft note, is kept while this
+    /// component is valid; while it is [invalid](Self::invalid), its
+    /// description is the error and replaces the child's. A
+    /// [`SemanticRole::Field`] sets it, which is how a wrapped control is named
+    /// and how its error reaches the control.
     pub names_children: bool,
 }
 impl Semantics {
@@ -657,6 +676,35 @@ impl Semantics {
     pub const fn names_children(mut self) -> Self {
         self.names_children = true;
         self
+    }
+    /// Restores the documented invariants the builders keep, for semantics
+    /// whose public fields were assigned directly: no empty name or
+    /// description, no value while protected, sorted and distinct actions,
+    /// none while disabled, and the same for every row.
+    pub(crate) fn normalize(&mut self) {
+        if self.name.as_deref() == Some("") {
+            self.name = None;
+        }
+        if self.description.as_deref() == Some("") {
+            self.description = None;
+        }
+        if self.protected {
+            self.value = None;
+        }
+        normalize_actions(&mut self.actions, self.disabled);
+        for item in &mut self.items {
+            item.normalize();
+        }
+    }
+}
+
+/// Sorts and deduplicates `actions`, or clears them for a disabled target.
+fn normalize_actions(actions: &mut Vec<SemanticAction>, disabled: bool) {
+    if disabled {
+        actions.clear();
+    } else {
+        actions.sort_unstable();
+        actions.dedup();
     }
 }
 

@@ -464,6 +464,7 @@ impl<T: PartialEq> Signal<T> {
         }
         *current = value;
         drop(current);
+        self.advance_revision();
         self.invalidate_computations();
         self.inner
             .subscribers
@@ -486,6 +487,7 @@ impl<T: PartialEq> Signal<T> {
         }
         *current = value;
         drop(current);
+        self.advance_revision();
         self.invalidate_computations();
         self.inner
             .subscribers
@@ -537,9 +539,7 @@ impl<T: PartialEq> Signal<T> {
         }
         let old = std::mem::replace(&mut *current, value);
         drop(current);
-        self.inner
-            .revision
-            .set(self.inner.revision.get().wrapping_add(1));
+        self.advance_revision();
         self.invalidate_computations();
         self.inner
             .subscribers
@@ -554,6 +554,13 @@ impl<T: PartialEq> Signal<T> {
             });
         drop(old);
         Ok(true)
+    }
+    /// Counts a write that changed the value, as [`Self::revision`]
+    /// documents for every publication path.
+    fn advance_revision(&self) {
+        self.inner
+            .revision
+            .set(self.inner.revision.get().wrapping_add(1));
     }
     fn invalidate_computations(&self) {
         self.inner.computations.borrow_mut().retain(|key, weak| {

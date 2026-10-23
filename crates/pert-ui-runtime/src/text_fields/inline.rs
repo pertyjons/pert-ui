@@ -221,7 +221,7 @@ impl<T: Copy + PartialEq + 'static> InlineField<T> {
         self.editor.payload = Some(value);
         self.editor
             .selection
-            .set(TextSelection::new(&layout, 0, self.editor.text.len()));
+            .set(TextSelection::snapped(&layout, 0, self.editor.text.len()));
         self.editor.active = true;
         self.editor.focused = cx.focused();
         self.editing = true;

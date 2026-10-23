@@ -1382,3 +1382,51 @@ fn a_scrollbar_press_ends_a_click_series() {
     let (start, end) = range.split_once("..").unwrap();
     assert_eq!(start, end, "a caret, not a word: {range}");
 }
+
+#[test]
+fn a_single_line_field_leaves_alt_and_super_up_and_down_to_commands_off_macos() {
+    for (multi, text) in [(false, "one"), (true, "one\ntwo")] {
+        for super_key in [false, true] {
+            let (mut ui, _, value) = setup(text, multi);
+            let mut held = Modifiers::default();
+            if super_key {
+                held.super_key = true;
+            } else {
+                held.alt = true;
+            }
+            let ran = Rc::new(std::cell::Cell::new(0));
+            let hit = ran.clone();
+            let _next = ui
+                .register_command(
+                    "Next",
+                    CommandScope::Application,
+                    vec![KeyChord::new(CommandKey::Named(KeyCode::ArrowDown), held)],
+                    move |_, _| {
+                        hit.set(hit.get() + 1);
+                        Ok(())
+                    },
+                )
+                .unwrap();
+            ui.native_modifiers(held).unwrap();
+            for action in [KeyAction::Press, KeyAction::Release] {
+                ui.command_key_input(CommandKeyInput::new(
+                    KeyCode::ArrowDown,
+                    action,
+                    CommandKey::Named(KeyCode::ArrowDown),
+                ))
+                .unwrap();
+            }
+            ui.native_modifiers(Modifiers::default()).unwrap();
+            frame(&mut ui);
+            // On macOS, Option or Cmd with Down moves the caret; a text area
+            // moves by line with either everywhere.
+            let claimed = multi || cfg!(target_os = "macos");
+            assert_eq!(
+                ran.get(),
+                u32::from(!claimed),
+                "multi {multi}, super {super_key}"
+            );
+            assert_eq!(value.get().unwrap(), text, "nothing was edited");
+        }
+    }
+}

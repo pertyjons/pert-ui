@@ -567,8 +567,23 @@ impl Workspace {
         &self.settings
     }
     /// Replaces the presentation settings, for a host that owns them itself.
-    pub const fn set_settings(&mut self, settings: WorkspaceSettings) {
-        self.settings = settings;
+    ///
+    /// The settings line counts toward [`Self::MAX_DOCUMENT_BYTES`] as
+    /// [`Self::new`] checks it, so a document this method accepts still
+    /// encodes to text [`Self::decode`] loads. The check encodes the
+    /// document once, in time linear in its size.
+    ///
+    /// # Errors
+    /// Returns [`WorkspaceError::TooLarge`] when the document with the new
+    /// settings would encode to more than [`Self::MAX_DOCUMENT_BYTES`]; the
+    /// previous settings are kept.
+    pub fn set_settings(&mut self, settings: WorkspaceSettings) -> Result<(), WorkspaceError> {
+        let previous = std::mem::replace(&mut self.settings, settings);
+        if self.encode().len() > Self::MAX_DOCUMENT_BYTES {
+            self.settings = previous;
+            return Err(WorkspaceError::TooLarge);
+        }
+        Ok(())
     }
     /// Entries in document order.
     pub fn entries(&self) -> impl Iterator<Item = (&WorkspacePath, &ViewState)> {

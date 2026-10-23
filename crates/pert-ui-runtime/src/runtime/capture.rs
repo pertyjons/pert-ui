@@ -293,10 +293,15 @@ impl Runtime {
     /// window reselects it afterwards. Requires flushed updates, like
     /// [`paint`](Self::paint).
     ///
+    /// The job is looked up among this runtime's pending captures by its id,
+    /// and the pending request decides what is rendered.
+    ///
     /// # Errors
     /// [`CaptureError::UnknownTarget`](crate::CaptureError::UnknownTarget) for
-    /// a job whose window is gone, and `paint`'s errors, such as pending
-    /// updates, as [`CaptureError::Drawing`](crate::CaptureError::Drawing).
+    /// a job that is not pending here, because it was completed or another
+    /// runtime listed it, and for a job whose window is gone; `paint`'s
+    /// errors, such as pending updates, as
+    /// [`CaptureError::Drawing`](crate::CaptureError::Drawing).
     /// Runtime causes from selecting or painting the window are retained as
     /// [`CaptureError::Runtime`](crate::CaptureError::Runtime). The host
     /// completes the job with the owned error it got.
@@ -304,14 +309,25 @@ impl Runtime {
         &mut self,
         job: &crate::CaptureJob,
     ) -> Result<crate::DisplayList, crate::CaptureError> {
+        // A job is trusted only as a reference to a pending request: one
+        // from another runtime may share the id but not the request.
+        let pending = self
+            .shared
+            .captures
+            .borrow()
+            .iter()
+            .find(|capture| capture.id == job.id)
+            .map(|capture| (capture.window, capture.request.overlay_included()))
+            .filter(|&pending| pending == (job.window, job.include_overlay));
+        let (window, include_overlay) = pending.ok_or(crate::CaptureError::UnknownTarget)?;
         let window = self
             .native_windows()
             .into_iter()
-            .find(|window| window.id() == job.window)
+            .find(|candidate| candidate.id() == window)
             .ok_or(crate::CaptureError::UnknownTarget)?;
         self.select_window(&window)
             .map_err(crate::CaptureError::from)?;
-        self.paint_scene(job.include_overlay)
+        self.paint_scene(include_overlay)
             .map_err(crate::CaptureError::from)
     }
 

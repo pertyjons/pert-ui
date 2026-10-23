@@ -65,6 +65,11 @@ enum ColumnWidth {
 }
 impl TableColumn {
     /// The narrowest a column can be laid out or dragged, in logical pixels.
+    ///
+    /// Column positions saturate at the largest finite `f32`, so a column that
+    /// starts there, after columns whose widths add up to it, has no room
+    /// left and is laid out with a width of 0. Only such a saturated column
+    /// is narrower than this minimum.
     pub const MIN_WIDTH: f32 = 40.0;
 
     /// Creates a column with one share of the width left by fixed columns. The
@@ -349,6 +354,8 @@ impl Shared {
     // nothing goes below its minimum; an overfull table overflows to the right.
     // Starts and the total add up in f64 and saturate at the largest finite
     // f32, so extreme valid widths keep every offset and scroll range finite.
+    // A column that starts at that saturated position ends there too, with a
+    // width of 0: the one case below the minimum, which `MIN_WIDTH` documents.
     fn resolve(&self, width: f32) {
         let columns = self.columns.borrow();
         let fixed: f64 = columns
@@ -1184,9 +1191,11 @@ enum HeaderGesture {
 /// Restoration obeys the current column capabilities: an immovable column stays
 /// in its slot, and movable columns remain inside their contiguous movable run.
 /// The saved positions must be `0..n` for the `n` columns the entry lists, as
-/// capture writes them. Other positions, or an incompatible order, report
-/// [`crate::RestoreRejection::OutOfRange`] and reject the entire table entry
-/// without changing widths or order. A saved key
+/// capture writes them. Other positions, an incompatible order, or a saved
+/// width that is not finite or is below [`TableColumn::MIN_WIDTH`], which
+/// capture never writes, report
+/// [`crate::RestoreRejection::OutOfRange`] with the column's key and reject the
+/// entire table entry without changing widths or order. A saved key
 /// missing from the current table reports [`crate::RestoreRejection::Unresolved`].
 /// Columns the entry does not list, such as ones added since, keep their slots.
 /// Restoration requires a writable runtime. A closed runtime or forbidden write
@@ -2085,7 +2094,9 @@ impl Component for Table {
                 .as_number()
                 .ok_or_else(|| RestoreRejection::Value("widths".to_owned()))?
                 as f32;
-            if !width.is_finite() || width <= 0.0 {
+            // Capture never writes a width below the column's minimum, so a
+            // smaller one is not this table's data: rejected, never raised.
+            if !width.is_finite() || width < shared.columns.borrow()[index].minimum {
                 return Err(RestoreRejection::OutOfRange(key.clone()));
             }
             resolved.push((index, width));
@@ -2132,7 +2143,7 @@ impl Component for Table {
             let mut user_sized = shared.user_sized.borrow_mut();
             user_sized.clear();
             for (index, width) in resolved {
-                columns[index].width = ColumnWidth::Fixed(width.max(columns[index].minimum));
+                columns[index].width = ColumnWidth::Fixed(width);
                 user_sized.insert(columns[index].key.clone());
             }
             drop(user_sized);

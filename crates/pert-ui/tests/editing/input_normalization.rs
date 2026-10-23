@@ -749,10 +749,13 @@ fn numbers_report_refusals_on_save_and_not_while_typing() {
     );
     enter(&mut ui);
     assert_eq!(*reports.borrow(), [Some("Enter an even number".into())]);
-    // An invalid draft for the field's own reasons is not a refusal.
+    // The field's own refusal of an unparsable draft is reported too.
     replace(&mut ui, "x");
     enter(&mut ui);
-    assert_eq!(reports.borrow().last(), Some(&None));
+    assert_eq!(
+        reports.borrow().last(),
+        Some(&Some("Enter a whole number".into()))
+    );
     replace(&mut ui, "7");
     enter(&mut ui);
     replace(&mut ui, "8");
@@ -761,6 +764,85 @@ fn numbers_report_refusals_on_save_and_not_while_typing() {
     assert_eq!(
         reports.borrow()[2..],
         [Some("Enter an even number".into()), None]
+    );
+}
+
+#[test]
+fn numbers_report_their_own_refusals_with_the_installed_strings() {
+    let mut ui = Runtime::new();
+    let (reports, report) = recorder();
+    let value = ui.signal(5.0_f64);
+    mount(
+        &mut ui,
+        DecimalInput::new(value.clone())
+            .range(0.0, 10.0)
+            .unwrap()
+            .decimal_places(1)
+            .unwrap()
+            .on_rejection(report),
+    );
+    enter(&mut ui);
+    assert!(
+        reports.borrow().is_empty(),
+        "an unchanged draft refuses nothing"
+    );
+    replace(&mut ui, "abc");
+    assert!(reports.borrow().is_empty(), "not while typing");
+    enter(&mut ui);
+    replace(&mut ui, "11");
+    enter(&mut ui);
+    assert_eq!(value.get().unwrap(), 5.0, "nothing refused is written");
+    replace(&mut ui, "7");
+    enter(&mut ui);
+    assert_eq!(value.get().unwrap(), 7.0);
+    assert_eq!(
+        *reports.borrow(),
+        [
+            Some("Enter a number".into()),
+            Some("Enter a number from 0.0 to 10.0".into()),
+            None
+        ]
+    );
+
+    // An integer parameter's lattice, and a replaced table's wording.
+    let mut ui = Runtime::new();
+    ui.ui_settings()
+        .set_strings(
+            UiStrings::english()
+                .with_text(StringRole::NotAWholeNumber, "Skriv ett heltal")
+                .unwrap()
+                .with_text(StringRole::NumberOffStep, "Steg om {step}")
+                .unwrap(),
+        )
+        .unwrap();
+    let (reports, report) = recorder();
+    let (count, _host) = ui
+        .parameter(
+            ParameterId::new(1, 1, "count").unwrap(),
+            ParameterSpec::stepped("Count", 0, 100, 10)
+                .unwrap()
+                .with_step(std::num::NonZeroU64::new(5).unwrap())
+                .unwrap(),
+        )
+        .unwrap();
+    mount(
+        &mut ui,
+        IntegerInput::for_parameter(count.clone()).on_rejection(report),
+    );
+    replace(&mut ui, "1.5");
+    enter(&mut ui);
+    replace(&mut ui, "7");
+    enter(&mut ui);
+    replace(&mut ui, "15");
+    enter(&mut ui);
+    assert_eq!(count.snapshot().get().unwrap().base, 15);
+    assert_eq!(
+        *reports.borrow(),
+        [
+            Some("Skriv ett heltal".into()),
+            Some("Steg om 5".into()),
+            None
+        ]
     );
 }
 

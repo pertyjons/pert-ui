@@ -1752,12 +1752,14 @@ fn workspace_restore_is_refused_while_something_is_being_dragged() {
     ui.flush(Duration::ZERO).unwrap();
     let mut saved = ui.capture_workspace().unwrap();
     let zoom = UiZoom::new(1.5).unwrap();
-    saved.set_settings(
-        WorkspaceSettings::default()
-            .with_zoom(Some(zoom))
-            .with_theme_mode(Some(ThemeMode::Light))
-            .with_density(Some(Density::Compact)),
-    );
+    saved
+        .set_settings(
+            WorkspaceSettings::default()
+                .with_zoom(Some(zoom))
+                .with_theme_mode(Some(ThemeMode::Light))
+                .with_density(Some(Density::Compact)),
+        )
+        .unwrap();
     for (x, kind) in [
         (10.0, PointerKind::Press(PointerButton::Primary)),
         (16.0, PointerKind::Move),

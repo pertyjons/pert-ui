@@ -1,5 +1,118 @@
 # Changelog
 
+## 0.3.66 (2026-10-23)
+
+Editors, data and defects (API audit fix plan, part 6d2). Fallible
+signatures where a value could be lost or coerced, the number inputs'
+refusals reported to the application, and defects in focus, signals,
+inspection, capture, tables and the conformance check fixed. Breaking in
+signatures and behavior.
+
+- Breaking (G1-4): `Workspace::set_settings` returns
+  `Result<(), WorkspaceError>` and is no longer `const`. Settings that would
+  take the encoded document past `Workspace::MAX_DOCUMENT_BYTES` are refused
+  with `WorkspaceError::TooLarge`, keeping the previous settings, so a
+  document the library accepted always decodes. Replace
+  `workspace.set_settings(settings);` with `workspace.set_settings(settings)?;`.
+- Breaking (G1-11): `TextSelection::new` returns
+  `Result<Self, TextEditError>`. An offset past the end of the text or inside
+  a grapheme is rejected with `TextEditError::InvalidSelection`, carrying both
+  offsets, instead of being clamped or snapped; a backward selection, with the
+  anchor after the focus, stays valid. Replace
+  `TextSelection::new(&layout, anchor, focus)` with
+  `TextSelection::new(&layout, anchor, focus)?`, and pass the text's length
+  rather than `usize::MAX` for its end. `TextEditError::InvalidSelection`'s
+  rustdoc and message ("selection {anchor_byte}..{focus_byte} is not a valid
+  range of boundaries in the text") cover both its uses.
+- Breaking (G4-26): `CaptureJob`'s fields are private, read through
+  `CaptureJob::id`, `CaptureJob::window` and `CaptureJob::include_overlay`;
+  only the runtime creates jobs. `Runtime::capture_scene` looks the job up
+  among the pending captures by its id and renders what that request asked
+  for; a completed job, or one another runtime listed, is refused with
+  `CaptureError::UnknownTarget`. Replace `job.id`, `job.window` and
+  `job.include_overlay` with `job.id()`, `job.window()` and
+  `job.include_overlay()`.
+- Breaking in behavior (G2-20, F6): `IntegerInput`, `DecimalInput`,
+  `InlineInteger` and `InlineDecimal` report their own refusals of a changed
+  draft through `on_rejection`, as `TextField` reports its length limits:
+  text that does not parse, a number outside the bounds and, for a
+  parameter, a number off its step, each as an `InputRejection` whose message
+  comes from the installed `UiStrings`. An `on_rejection` that published
+  every report as a `FieldStatus` now also shows these, with no further code;
+  one that expected only the normalizer's refusals checks the message.
+  Inspection's `validation_error` keeps the `NumberInputError` text.
+  `docs/contracts.md` "Text and draft editing" states the one rule for
+  `on_rejection`, and `docs/manual.md` mentions the field's own refusals.
+- Added (G2-20): `StringRole::NotANumber` ("Enter a number"),
+  `StringRole::NotAWholeNumber` ("Enter a whole number"),
+  `StringRole::NumberOutOfRange` ("Enter a number from {min} to {max}") and
+  `StringRole::NumberOffStep` ("Enter a number in steps of {step}"), with
+  `UiMessage::NumberOutOfRange { min, max }` and
+  `UiMessage::NumberOffStep { step }` for the two templates. The gallery's
+  Swedish table translates the four roles.
+- Breaking in behavior (F21): a naming parent that reports itself invalid,
+  such as a `Field` with an error status, gives its description to a child
+  even when the child describes itself, so a refused draft's control reports
+  the field's error rather than "Unsaved changes". A valid parent, including a
+  `Field` with a warning, still leaves a child's own description;
+  `Semantics::names_children` and `Field` say so.
+- Breaking in behavior (F22): outside macOS, a single-line editor
+  (`TextField`, and the number, search, inline and draft editors built on
+  it) leaves Up and Down with Alt or Super to its ancestors and command
+  bindings, where they have no editing meaning; a `TextArea` still moves by
+  line with them. An ancestor that handles these chords now receives them
+  from an editor inside it: Alt+Down in a field inside a reorderable
+  `VirtualList`'s row moves the list's active row. `TextField`'s new "Keys" section lists the chords the
+  editors claim on each platform, and `TextArea` refers to it.
+- Breaking in behavior (F29): an empty plain `Label`, with no icon, measures
+  as zero size, as an empty `Field` block does; a container's gap beside it
+  remains.
+- Breaking in behavior (F26, F31): `CollectionFilter`'s search field sits in
+  the slot `filter-field`, as its rustdoc said, so its address is
+  `…/filter-field/filter` instead of `…/filter`, and a collection keyed
+  `filter` no longer shares the field's address. Replace
+  `ui.find(&root, &["tasks", "filter"])` for the field with
+  `ui.find(&root, &["tasks", "filter-field", "filter"])`. The field keeps no
+  workspace state, so saved workspaces are unaffected.
+- Fixed (N:focus-reveal): `Runtime::focus` and the other focus transfers that
+  reveal their target queue a `focus_lost` or `focus_within_changed` error for
+  a later flush when revealing fails, instead of dropping it; the reveal
+  error is returned.
+- Fixed (N:publish-revision): signals the library publishes itself, such as
+  `Parameter::snapshot`, advance `Signal::revision` like any other changed
+  write, so a `Dynamic`, `Show` or `Each` over one describes again, for
+  example during a slider gesture. Live-data sources' presentation
+  publication advances it too.
+- Fixed (G4-25): an inspection snapshot keeps `Semantics`' and
+  `SemanticItem`'s documented invariants when a component assigned their
+  public fields directly: a protected value is withdrawn, an empty name or
+  description is absent, and actions are sorted, distinct and absent while
+  disabled.
+- Fixed (V3-2): restoring a workspace refuses a saved table column width
+  below `TableColumn::MIN_WIDTH`, which capture never writes, with
+  `RestoreRejection::OutOfRange` naming the column, instead of raising it to
+  the minimum and recording it as the user's.
+- Fixed (F25): `check_redescription` mounts its reference tree under a root
+  that declares the overlap with the re-described tree intentional, so a
+  runtime with a viewport no longer logs a false `UnexpectedOverlap`; its
+  rustdoc points to `Redescribed::component`.
+- Changed (V3-1): `TableColumn::MIN_WIDTH` states the one exception, a
+  column that starts at the saturated largest finite position and so has a
+  width of 0, and the layout comment says the same.
+- Changed: the `api/` listings of `pert-ui-runtime` show the changed
+  `Workspace::set_settings` and `TextSelection::new`, `CaptureJob`'s
+  accessors in place of its fields, and the new `StringRole` and
+  `UiMessage` variants.
+- Added: tests for a reveal error with a held focus error and the
+  `Dynamic` over a parameter snapshot (`controls`), the settings boundary
+  round trip (`surfaces`), explicit selections, the number inputs'
+  refusals with English and replaced strings and the single-line chords
+  (`editing`), directly assigned semantics, a field error over a draft's
+  description and a job from another runtime (`foundation`), the column
+  width rejection, the saturated widths, the filter field's address and a
+  row field's Alt+arrow reaching its reorderable list (`collections`), the empty label (`presentation`), and the conformance
+  check's validation output (a `pert-ui-runtime` unit test).
+
 ## 0.3.65 (2026-10-23)
 
 Redescription and reconciliation (API audit fix plan, part 6d1). Describing

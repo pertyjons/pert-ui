@@ -488,24 +488,24 @@ impl Runner {
             .next_deadline()
             .is_some_and(|time| time <= now);
         for job in jobs {
-            if job.window != self.current.root.id() {
+            if job.window() != self.current.root.id() {
                 let known = self
                     .app
                     .runtime
                     .native_windows()
                     .iter()
-                    .any(|root| root.id() == job.window);
+                    .any(|root| root.id() == job.window());
                 if !known {
                     self.app
                         .runtime
-                        .complete_capture(job.id, Err(crate::CaptureError::UnknownTarget));
+                        .complete_capture(job.id(), Err(crate::CaptureError::UnknownTarget));
                 }
                 continue;
             }
             if !self.active() {
                 self.app
                     .runtime
-                    .complete_capture(job.id, Err(crate::CaptureError::SurfaceUnavailable));
+                    .complete_capture(job.id(), Err(crate::CaptureError::SurfaceUnavailable));
                 continue;
             }
             if !flushed {
@@ -525,7 +525,7 @@ impl Runner {
                 },
                 Err(error) => Err(error),
             };
-            self.app.runtime.complete_capture(job.id, frame);
+            self.app.runtime.complete_capture(job.id(), frame);
         }
     }
     fn focus(&mut self, focused: bool) -> Result<(), AppError> {

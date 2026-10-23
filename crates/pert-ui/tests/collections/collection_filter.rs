@@ -786,6 +786,34 @@ fn the_direct_filter_slot_reserves_filter_field_but_allows_filter_as_collection_
             let children = ui.children(&root)?;
             let keys: Vec<_> = children.iter().map(|id| ui.key(id).unwrap()).collect();
             assert_eq!(keys, ["filter-field", "filter"]);
+            // The slot keeps the field's address apart from the collection's.
+            let field = ui.find(&root, &["filter-field", "filter"])?;
+            let collection = ui.find(&root, &["filter"])?;
+            assert_eq!(collection.as_ref(), Some(&children[1]));
+            assert!(field.is_some() && field != collection);
+            let mut paths: Vec<_> = ui
+                .inspect()
+                .components
+                .into_iter()
+                .filter(|component| component.key == "filter")
+                .filter_map(|component| component.path)
+                .collect();
+            paths.sort();
+            assert_eq!(
+                paths,
+                [
+                    vec!["fruit".to_owned(), "filter".into()],
+                    vec!["fruit".to_owned(), "filter-field".into(), "filter".into()],
+                ]
+            );
+            // Neither address holds workspace state of its own.
+            let saved = ui.capture_workspace()?;
+            assert!(
+                saved
+                    .entries()
+                    .all(|(path, _)| !path.to_string().contains("filter")),
+                "{saved:?}"
+            );
         }
     }
     Ok(())

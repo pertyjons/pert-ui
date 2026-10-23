@@ -216,6 +216,49 @@ fn a_field_names_describes_and_invalidates_the_control_it_wraps() {
 }
 
 #[test]
+fn a_field_error_outranks_the_description_a_drafting_control_gives_itself() {
+    let mut ui = ui();
+    let status = ui.signal(FieldStatus::Normal);
+    let root = ui
+        .mount_tree(Element::new(
+            "column",
+            Column::new([
+                Element::new(
+                    "field",
+                    Field::new(Element::new(
+                        "name",
+                        TextField::new(ui.signal(String::from("Ada"))).normalize(Ok),
+                    ))
+                    .label("Name")
+                    .help("As on the card")
+                    .status(status.read_only()),
+                ),
+                Element::new("other", Button::new("Other", |_| Ok(()))),
+            ]),
+        ))
+        .unwrap();
+    ui.flush(Duration::ZERO).unwrap();
+    let name = widget(&ui, &root, "name");
+    ui.focus(&name).unwrap();
+    ui.text_input("!").unwrap();
+    ui.flush(Duration::ZERO).unwrap();
+    // A valid field keeps the control's own description of its draft.
+    assert_eq!(
+        semantics(&ui, "name").description.as_deref(),
+        Some("Unsaved changes")
+    );
+    status.set(FieldStatus::error("No !")).unwrap();
+    ui.flush(Duration::ZERO).unwrap();
+    let name = semantics(&ui, "name");
+    assert!(name.invalid);
+    assert_eq!(
+        name.description.as_deref(),
+        Some("No !"),
+        "the field's error describes the control it marks invalid"
+    );
+}
+
+#[test]
 fn a_select_reports_its_choice_and_whether_its_list_is_open() {
     let mut ui = ui();
     let value = ui.signal(2_u8);
@@ -493,4 +536,76 @@ fn a_hidden_banner_describes_itself_without_reporting_a_box_it_does_not_have() {
     // Its container's padding describes no box while it has no extent.
     assert_eq!(component(&ui, "banner").details.box_model.padding, None);
     assert!(ui.validation_report().issues.is_empty());
+}
+
+/// A custom component that fills the public semantic fields directly,
+/// bypassing the builders.
+struct Assigned {
+    disabled: bool,
+}
+impl Component for Assigned {
+    fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+        Ok(())
+    }
+    fn measure(&self, _: &MeasureContext<'_>, _: Constraints) -> Result<Size, RuntimeError> {
+        Ok(Size::new(100.0, 20.0)?)
+    }
+    fn inspect(&self) -> ComponentDetails {
+        let mut semantics = Semantics::new(SemanticRole::TextInput);
+        semantics.protected = true;
+        semantics.value = Some(SemanticValue::Text("secret".into()));
+        semantics.description = Some(String::new());
+        semantics.disabled = self.disabled;
+        semantics.actions = vec![
+            SemanticAction::SetValue,
+            SemanticAction::Activate,
+            SemanticAction::SetValue,
+        ];
+        let mut row = SemanticItem::new("Row");
+        row.actions = vec![SemanticAction::Activate, SemanticAction::Activate];
+        let mut gone = SemanticItem::new("Gone");
+        gone.name = Some(String::new());
+        gone.disabled = true;
+        gone.actions = vec![SemanticAction::Activate];
+        semantics.items = vec![row, gone];
+        ComponentDetails {
+            semantics: Some(semantics),
+            ..ComponentDetails::default()
+        }
+    }
+}
+
+#[test]
+fn a_snapshot_keeps_the_builders_invariants_for_directly_assigned_fields() {
+    let mut ui = ui();
+    ui.mount_tree(Element::new(
+        "column",
+        Column::new([
+            Element::new("enabled", Assigned { disabled: false }),
+            Element::new("disabled", Assigned { disabled: true }),
+        ]),
+    ))
+    .unwrap();
+    ui.flush(Duration::ZERO).unwrap();
+
+    let enabled = semantics(&ui, "enabled");
+    assert_eq!(enabled.value, None, "a protected value is never exposed");
+    assert_eq!(enabled.description, None, "never an empty placeholder");
+    assert_eq!(
+        enabled.actions,
+        [SemanticAction::Activate, SemanticAction::SetValue],
+        "sorted and distinct"
+    );
+    assert_eq!(enabled.items[0].actions, [SemanticAction::Activate]);
+    assert_eq!(enabled.items[1].name, None, "a row's name is never empty");
+    assert!(
+        enabled.items[1].actions.is_empty(),
+        "a disabled row offers no actions"
+    );
+
+    let disabled = semantics(&ui, "disabled");
+    assert!(
+        disabled.actions.is_empty(),
+        "a disabled component offers none"
+    );
 }

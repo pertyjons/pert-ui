@@ -81,6 +81,56 @@ fn malformed_duplicate_fields_and_invalid_public_maps_cannot_round_trip() {
     );
 }
 
+/// A one-entry document whose encoding is `room` bytes short of
+/// `Workspace::MAX_DOCUMENT_BYTES` with default settings.
+fn document_short_of_the_limit_by(room: usize) -> Workspace {
+    let fill = "f".repeat(Workspace::MAX_STRING_BYTES - 9);
+    let build = |last: usize| {
+        let mut state = ViewState::new("k").unwrap();
+        for index in 0..4095 {
+            state = state
+                .with(format!("k{index:04}"), WorkspaceValue::text(&fill).unwrap())
+                .unwrap();
+        }
+        state = state
+            .with("k4095", WorkspaceValue::text("l".repeat(last)).unwrap())
+            .unwrap();
+        Workspace::new(
+            WorkspaceSettings::default(),
+            [(WorkspacePath::new(["x"]).unwrap(), state)],
+        )
+        .unwrap()
+    };
+    let last = Workspace::MAX_DOCUMENT_BYTES - room - build(0).encode().len();
+    let workspace = build(last);
+    assert_eq!(
+        workspace.encode().len(),
+        Workspace::MAX_DOCUMENT_BYTES - room
+    );
+    workspace
+}
+
+#[test]
+fn settings_that_would_overflow_the_document_are_refused_and_the_rest_round_trips() {
+    let light = WorkspaceSettings::default().with_theme_mode(Some(ThemeMode::Light));
+    let line = "settings mode=light\n".len();
+
+    // At the limit, the settings line would make the document unloadable.
+    let mut full = document_short_of_the_limit_by(0);
+    assert_eq!(full.set_settings(light), Err(WorkspaceError::TooLarge));
+    assert_eq!(*full.settings(), WorkspaceSettings::default(), "kept");
+    assert_eq!(Workspace::decode(&full.encode()), Ok(full.clone()));
+
+    // With exactly the line's room, the settings are accepted and the
+    // document at the limit still loads.
+    let mut fits = document_short_of_the_limit_by(line);
+    fits.set_settings(light).unwrap();
+    assert_eq!(fits.encode().len(), Workspace::MAX_DOCUMENT_BYTES);
+    let decoded = Workspace::decode(&fits.encode()).unwrap();
+    assert_eq!(decoded, fits);
+    assert_eq!(*decoded.settings(), light);
+}
+
 #[test]
 fn failed_mount_and_reconcile_do_not_consume_pending_restore() {
     struct Fail;
@@ -834,7 +884,7 @@ fn settings_travel_with_the_document() {
         .mount_tree(Element::new("main", Column::new([])))
         .unwrap();
     let mut without = workspace.clone();
-    without.set_settings(WorkspaceSettings::default());
+    without.set_settings(WorkspaceSettings::default()).unwrap();
     let report = third.restore_workspace(&without).unwrap();
     assert!(report.is_complete(), "{report:?}");
     assert_eq!(third.theme().mode().unwrap(), ThemeMode::Dark);

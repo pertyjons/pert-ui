@@ -206,7 +206,7 @@ impl SelectableText {
         if let Some(layout) = self.layout() {
             self.select(
                 cx,
-                TextSelection::new(&layout, selection.focus_byte(), selection.focus_byte()),
+                TextSelection::snapped(&layout, selection.focus_byte(), selection.focus_byte()),
             );
         }
         true
@@ -370,13 +370,13 @@ impl Component for SelectableText {
                 let kept = !replaced
                     || (old.anchor_byte() <= text.len() && old.focus_byte() <= text.len());
                 self.selection.set(if kept {
-                    TextSelection::new(
+                    TextSelection::snapped(
                         &layout,
                         boundary(text, old.anchor_byte()),
                         boundary(text, old.focus_byte()),
                     )
                 } else {
-                    TextSelection::new(&layout, 0, 0)
+                    TextSelection::snapped(&layout, 0, 0)
                 });
                 *self.shown.borrow_mut() = Some(Shown {
                     text: text.to_owned(),
@@ -458,7 +458,7 @@ impl Component for SelectableText {
                 self.clicks = if consecutive { self.clicks % 3 + 1 } else { 1 };
                 let selected = match self.clicks {
                     2 => TextSelection::word_at_point(&layout, point),
-                    3 => TextSelection::new(&layout, 0, usize::MAX),
+                    3 => TextSelection::snapped(&layout, 0, usize::MAX),
                     _ => self.selection.get().at_point(
                         &layout,
                         point,
@@ -552,7 +552,7 @@ impl Component for SelectableText {
                 let Some(layout) = self.layout().filter(|_| !self.caption.text().is_empty()) else {
                     return Ok(TextCommandOutcome::Unavailable);
                 };
-                self.select(cx, TextSelection::new(&layout, 0, usize::MAX));
+                self.select(cx, TextSelection::snapped(&layout, 0, usize::MAX));
                 Ok(TextCommandOutcome::Handled)
             }
             // The text never changes.

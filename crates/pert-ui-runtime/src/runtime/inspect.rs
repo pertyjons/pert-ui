@@ -153,6 +153,11 @@ impl Runtime {
                 ..Default::default()
             };
         }
+        // Public fields can bypass the builders' invariants; a snapshot
+        // never exposes a protected value or an unsorted or disabled action.
+        if let Some(semantics) = details.semantics.as_mut() {
+            semantics.normalize();
+        }
         // An element's label names a component that reports no name of its
         // own, so an application can name any control where it describes it.
         if let Some(semantics) = details.semantics.as_mut()
@@ -506,7 +511,9 @@ fn name_children(
             semantics.name.clone_from(name);
             component.labelled_by = Some(naming_parent);
         }
-        if semantics.description.is_none() {
+        // An invalid naming parent describes its error, which outranks a
+        // child's own description of its state.
+        if semantics.description.is_none() || (*invalid && description.is_some()) {
             semantics.description.clone_from(description);
         }
         semantics.invalid |= invalid;

@@ -814,3 +814,48 @@ fn a_power_mapped_slider_follows_its_curve_and_new_metadata_ends_its_edit() {
     );
     assert_eq!(p.snapshot().get().unwrap().base, 0.0);
 }
+#[test]
+fn a_dynamic_over_a_parameter_snapshot_redescribes_during_a_gesture()
+-> Result<(), Box<dyn std::error::Error>> {
+    // The snapshot is published by the library, not by `Signal::set`; its
+    // revision must advance all the same, or `Dynamic` keeps its first
+    // description.
+    let mut ui = ui();
+    let (p, _host) = ui.parameter(
+        ParameterId::new(1, 1, "value")?,
+        ParameterSpec::new("Value", 0.0, 100.0, 50.0)?,
+    )?;
+    let described = std::rc::Rc::new(std::cell::RefCell::new(Vec::new()));
+    let record = described.clone();
+    let root = ui.mount_tree(Element::new(
+        "column",
+        Column::new([
+            Element::new("slider", Slider::new(p.clone())),
+            Dynamic::new(p.snapshot(), move |_, snapshot: &ParameterSnapshot<f32>| {
+                record.borrow_mut().push(snapshot.preview);
+                Label::new(format!("{:?}", snapshot.preview)).key("shown")
+            })
+            .key("readout"),
+        ]),
+    ))?;
+    ui.flush(Duration::ZERO)?;
+    assert_eq!(*described.borrow(), [None]);
+    let ids = ui.children(&root)?;
+    ui.focus(&ids[0])?;
+    ui.key_input(KeyCode::ArrowRight, KeyAction::Press)?;
+    ui.flush(Duration::ZERO)?;
+    assert_eq!(
+        *described.borrow(),
+        [None, Some(51.0)],
+        "the preview of the held gesture is described"
+    );
+    ui.key_input(KeyCode::ArrowRight, KeyAction::Release)?;
+    ui.flush(Duration::ZERO)?;
+    assert_eq!(
+        *described.borrow(),
+        [None, Some(51.0), None],
+        "the commit is described"
+    );
+    assert_eq!(p.snapshot().get()?.base, 51.0);
+    Ok(())
+}

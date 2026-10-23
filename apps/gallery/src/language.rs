@@ -102,6 +102,10 @@ pub(crate) fn swedish() -> Result<UiStrings, RuntimeError> {
         ),
         (ToolWindowOptions, "Alternativ för {title}"),
         (ToolWindowHide, "Dölj {title}"),
+        (NotANumber, "Skriv ett tal"),
+        (NotAWholeNumber, "Skriv ett heltal"),
+        (NumberOutOfRange, "Skriv ett tal från {min} till {max}"),
+        (NumberOffStep, "Skriv ett tal i steg om {step}"),
     ];
     rows.into_iter()
         .try_fold(UiStrings::english(), |table, (role, text)| {

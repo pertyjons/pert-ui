@@ -452,6 +452,48 @@ and anything left to a later part.
     ran the diagnostics suite and reran the workspace gate (fmt, Clippy,
     tests, doctests, rustdoc, `api/generate.sh` with no further
     difference, `git diff --check`). The fix is verified in 6d2's review.
+- **6d2 (0.3.66):** the editor, data and defect fixes.
+  - **Defects found during the parts:** `N:focus-reveal` queues the held
+    focus error, and `N:publish-revision` advances the revision, as does
+    `publish_presentation_copy`.
+  - **Errors become results:**
+    - `set_settings` is fallible (G1-4);
+    - `TextSelection::new` rejects instead of clamping (G1-11);
+    - a stored column width below the minimum is rejected (V3-2), so the
+      clamp rule's known departures are gone.
+  - **Number editors:** they report parse, range and step refusals through
+    `on_rejection`, with localized messages and Swedish gallery rows (G2-20,
+    F6).
+  - **Data and inspection:**
+    - `describe_component` normalizes semantics (G4-25);
+    - `CaptureJob` has private fields and is looked up by id (G4-26);
+    - the table's saturated minimum width is documented (V3-1);
+    - the reference tree no longer reports a false overlap (F25);
+    - the filter field has its own `filter-field` slot (F26, F31);
+    - an empty plain `Label` measures as zero (F29).
+  - **Keys:** single-line editors leave Alt or Super with Up or Down to
+    their ancestors off macOS (F22).
+  - **Checks run after the last edit:**
+    - `cargo fmt --all --check`;
+    - workspace Clippy;
+    - `cargo test --locked --workspace`, with every behavior test checked
+      to fail with its change reverted;
+    - the five headless example sessions and the headless gallery;
+    - `cargo test --locked --workspace --doc`;
+    - warning-free workspace rustdoc;
+    - `cargo test --locked -p pert-ui-diagnostics -- --ignored`;
+    - `api/generate.sh`, matching the plan's expected diff;
+    - `git diff --check`.
+  - **Deviations:**
+    - F21 ranks a `Field`'s error above the control's own description
+      through the public `invalid` flag. A `Field` warning cannot be told
+      from help text without a new `Semantics` field, which would change
+      the inspection schema the plan keeps fixed. F21 names only the error.
+    - F25 mounts the reference under a private root that allows overlap,
+      rather than laying it out elsewhere, so both trees lay out
+      identically.
+  - **Beyond the plan's lines:** semantics normalization also drops empty
+    names and descriptions, and an ancestor test covers F22's side effect.
 
 ## Rules for every part
 

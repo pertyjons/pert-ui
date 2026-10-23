@@ -249,7 +249,7 @@ impl<P: Copy + PartialEq + 'static> DraftEditorController<P> {
         editor.cancel_composition();
         editor
             .selection
-            .set(TextSelection::new(&layout, anchor, focus));
+            .set(TextSelection::snapped(&layout, anchor, focus));
         editor.reveal.set(true);
         editor.restart_blink = true;
         editor.active = true;
