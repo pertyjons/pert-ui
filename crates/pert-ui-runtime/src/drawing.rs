@@ -40,20 +40,24 @@ pub enum DrawError {
         /// The number of bytes supplied.
         bytes: usize,
     },
-    /// A coverage mask that drawing needs, for a shape, an arc or a vector at
-    /// its raster scale, would exceed [`MaskImage::MAX_PIXELS`] after
-    /// clipping. Draw it smaller or clip it.
+    /// A coverage mask that drawing needs would exceed
+    /// [`MaskImage::MAX_PIXELS`]. Vector coverage is cropped to its clip
+    /// first, so drawing a vector smaller or clipping it avoids this. A shape
+    /// or arc mask is checked at its full size before the clipped draw, so a
+    /// clip does not help it; draw it smaller.
     #[error("a coverage mask would exceed its size limit")]
     CoverageTooLarge,
     /// A command refers to a vector its display list does not hold, as an ID
-    /// copied from another scene would.
-    #[error("a command refers to a vector missing from its scene")]
+    /// copied from another scene would. The message names the ID's index.
+    #[error("a command refers to vector {} missing from its scene", .0.0)]
     MissingVector(crate::VectorId),
     /// A command refers to a coverage mask its display list does not hold.
-    #[error("a command refers to a mask missing from its scene")]
+    /// The message names the ID's index.
+    #[error("a command refers to mask {} missing from its scene", .0.0)]
     MissingMask(MaskId),
-    /// A command refers to an image its display list does not hold.
-    #[error("a command refers to an image missing from its scene")]
+    /// A command refers to an image its display list does not hold. The
+    /// message names the ID's index.
+    #[error("a command refers to image {} missing from its scene", .0.0)]
     MissingImage(crate::ImageId),
     /// A vector path or stroke style was rejected.
     #[error(transparent)]

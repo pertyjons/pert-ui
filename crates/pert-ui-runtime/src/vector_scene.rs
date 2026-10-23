@@ -352,6 +352,19 @@ mod tests {
             cache.prepare(&masked),
             Err(DrawError::MissingMask(MaskId(3)))
         );
+        // The message names the missing ID's index.
+        assert_eq!(
+            DrawError::MissingVector(VectorId(0)).to_string(),
+            "a command refers to vector 0 missing from its scene"
+        );
+        assert_eq!(
+            DrawError::MissingMask(MaskId(3)).to_string(),
+            "a command refers to mask 3 missing from its scene"
+        );
+        assert_eq!(
+            DrawError::MissingImage(crate::ImageId(7)).to_string(),
+            "a command refers to image 7 missing from its scene"
+        );
     }
     #[test]
     fn persistent_fallback_reuses_tinted_coverage_recovers_and_evicts() {

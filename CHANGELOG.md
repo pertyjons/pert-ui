@@ -69,7 +69,10 @@ unchanged. The error policy in `docs/contracts.md` states the rule. Breaking.
   resource its display list does not hold, reported by
   `VectorRasterizer::prepare` and composition, is the new
   `DrawError::MissingVector(VectorId)`, `MissingMask(MaskId)` or
-  `MissingImage(ImageId)`. Code that matched `InvalidImage` for an oversized
+  `MissingImage(ImageId)`, whose message names the ID's index. Vector
+  coverage is cropped to its clip before the limit is checked; shape and arc
+  masks are checked at full size, so a clip does not avoid
+  `CoverageTooLarge` for them. Code that matched `InvalidImage` for an oversized
   stroke or arc matches `CoverageTooLarge`.
 - Changed: `WorkspaceError::Participant`'s message no longer repeats its
   source (`workspace participant `main/table` could not build its state`),

@@ -310,7 +310,7 @@ and anything left to a later part.
     `Element`, which `Toast` and `DragPreview` do not. The sentence was
     qualified and rustdoc rebuilt warning-free; the fix is verified in
     6c1's review. The review verified 6b2's four corrections.
-- **6c1 (0.3.63):** error values name what was rejected: keys, IDs,
+- **6c1 (0.3.63), done 2026-10-23:** 68dd6d2 and its review fix. Error values name what was rejected: keys, IDs,
   characters, positions, byte offsets, paths and integer limits.
   - **Maintainer decision (2026-10-23):** variants that validate a float
     stay unit in every error enum, extending decision G4-15's rule, so every
@@ -333,7 +333,7 @@ and anything left to a later part.
     - `cargo fmt --all --check`;
     - workspace Clippy;
     - `cargo test --locked --workspace`, including the new message,
-      chain, path and serialized-form tests;
+      chain and path tests;
     - the five headless example sessions;
     - `cargo test --locked --workspace --doc`;
     - warning-free workspace rustdoc;
@@ -342,6 +342,25 @@ and anything left to a later part.
     - `git diff --check`.
   - **Beyond the plan's lines:** `DuplicateKey` from `FormFields::field`,
     table columns and reparenting carries the key too.
+  - **Review:** Codex found three points:
+    - the missing-resource messages omitted their IDs, and now print the
+      index, with message assertions;
+    - `CoverageTooLarge` promised clipping that only vector coverage has,
+      and its rustdoc now says so;
+    - the record claimed the serde-gated serialized-form test ran in the
+      workspace tests.
+  - **After the fix:** the serde-gated test was run and the configuration
+    checks the review expected were added:
+    - `cargo test --locked -p pert-ui --features serde --test foundation`;
+    - Clippy and tests for `pert-ui` with `serde`, with
+      `--no-default-features --features serde`, with
+      `--no-default-features --features desktop-cpu` and with `cpu`;
+    - serde rustdoc;
+    - pert-ui-runtime's tests and doctests;
+    - warning-free workspace rustdoc;
+    - `api/generate.sh`, with no further difference.
+
+    The fixes are verified in 6c2's review.
 
 ## Rules for every part
 
