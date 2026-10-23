@@ -1192,8 +1192,8 @@ enum HeaderGesture {
 /// in its slot, and movable columns remain inside their contiguous movable run.
 /// The saved positions must be `0..n` for the `n` columns the entry lists, as
 /// capture writes them. Other positions, an incompatible order, or a saved
-/// width that is not finite or is below [`TableColumn::MIN_WIDTH`], which
-/// capture never writes, report
+/// width that is not finite, is below [`TableColumn::MIN_WIDTH`] or is beyond
+/// the largest `f32`, which capture never writes, report
 /// [`crate::RestoreRejection::OutOfRange`] with the column's key and reject the
 /// entire table entry without changing widths or order. A saved key
 /// missing from the current table reports [`crate::RestoreRejection::Unresolved`].
@@ -2090,15 +2090,19 @@ impl Component for Table {
                 .iter()
                 .position(|column| column.key() == key)
                 .ok_or_else(|| RestoreRejection::Unresolved(key.clone()))?;
-            let width = value
+            let stored = value
                 .as_number()
-                .ok_or_else(|| RestoreRejection::Value("widths".to_owned()))?
-                as f32;
+                .ok_or_else(|| RestoreRejection::Value("widths".to_owned()))?;
             // Capture never writes a width below the column's minimum, so a
             // smaller one is not this table's data: rejected, never raised.
-            if !width.is_finite() || width < shared.columns.borrow()[index].minimum {
+            // The stored number is checked before narrowing, which could
+            // round a width just below the minimum up to it, and one beyond
+            // the largest `f32` is out of range too.
+            let minimum = f64::from(shared.columns.borrow()[index].minimum);
+            if !stored.is_finite() || stored < minimum || stored > f64::from(f32::MAX) {
                 return Err(RestoreRejection::OutOfRange(key.clone()));
             }
+            let width = stored as f32;
             resolved.push((index, width));
         }
         // This public trait hook can also be called outside Runtime's restore

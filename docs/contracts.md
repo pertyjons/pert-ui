@@ -1102,7 +1102,15 @@ handles. Typed semantics report roles, names, values and supported actions.
 A component without a name of its own is named by its element's label
 (`Element::with_label`) or by a wrapping `Field`; for a composite that reports
 no semantics itself, such as a `Select`, either reaches the internal part that
-represents it.
+represents it. A naming parent (`Semantics::names_children`) also describes
+its children: a child's own description, such as an editor's unsaved-draft
+note, is kept over ordinary text such as help, but an invalid parent's error
+and a parent's warning (`Semantics::warning`) replace it, so a `Field`'s error
+or warning reaches its control. Custom components reach the same precedence
+through these public fields. Snapshots carry
+`InspectionSnapshot::SCHEMA_VERSION`, which advances whenever a field is added,
+removed or reinterpreted; the serialized form is closed, so a snapshot of
+another revision does not decode as this one.
 Unknown geometry remains absent until measured. Development validation checks
 geometry only for a native window whose latest layout ran with a viewport that
 has area: before a host supplies the first viewport, and while a window's

@@ -216,7 +216,7 @@ fn a_field_names_describes_and_invalidates_the_control_it_wraps() {
 }
 
 #[test]
-fn a_field_error_outranks_the_description_a_drafting_control_gives_itself() {
+fn a_field_error_or_warning_outranks_the_description_a_drafting_control_gives_itself() {
     let mut ui = ui();
     let status = ui.signal(FieldStatus::Normal);
     let root = ui
@@ -250,12 +250,30 @@ fn a_field_error_outranks_the_description_a_drafting_control_gives_itself() {
     status.set(FieldStatus::error("No !")).unwrap();
     ui.flush(Duration::ZERO).unwrap();
     let name = semantics(&ui, "name");
-    assert!(name.invalid);
+    assert!(name.invalid && !name.warning);
     assert_eq!(
         name.description.as_deref(),
         Some("No !"),
         "the field's error describes the control it marks invalid"
     );
+    status.set(FieldStatus::warning("Looks unusual")).unwrap();
+    ui.flush(Duration::ZERO).unwrap();
+    let name = semantics(&ui, "name");
+    assert!(!name.invalid && name.warning);
+    assert_eq!(
+        name.description.as_deref(),
+        Some("Looks unusual"),
+        "the field's warning describes the control too"
+    );
+    let field = semantics(&ui, "field");
+    assert!(field.warning, "the field marks its own description");
+    // A warning without a message leaves the help text, which is no warning
+    // and leaves the control's own description.
+    status.set(FieldStatus::warning("")).unwrap();
+    ui.flush(Duration::ZERO).unwrap();
+    let name = semantics(&ui, "name");
+    assert!(!name.warning);
+    assert_eq!(name.description.as_deref(), Some("Unsaved changes"));
 }
 
 #[test]

@@ -498,14 +498,14 @@ impl Runner {
                 if !known {
                     self.app
                         .runtime
-                        .complete_capture(job.id(), Err(crate::CaptureError::UnknownTarget));
+                        .complete_capture(&job, Err(crate::CaptureError::UnknownTarget));
                 }
                 continue;
             }
             if !self.active() {
                 self.app
                     .runtime
-                    .complete_capture(job.id(), Err(crate::CaptureError::SurfaceUnavailable));
+                    .complete_capture(&job, Err(crate::CaptureError::SurfaceUnavailable));
                 continue;
             }
             if !flushed {
@@ -525,7 +525,7 @@ impl Runner {
                 },
                 Err(error) => Err(error),
             };
-            self.app.runtime.complete_capture(job.id(), frame);
+            self.app.runtime.complete_capture(&job, frame);
         }
     }
     fn focus(&mut self, focused: bool) -> Result<(), AppError> {

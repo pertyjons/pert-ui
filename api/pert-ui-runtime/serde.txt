@@ -8547,7 +8547,7 @@ impl pert_ui_runtime::Runtime
 pub const pert_ui_runtime::Runtime::MAX_PENDING_CAPTURES: usize
 pub fn pert_ui_runtime::Runtime::capture_scene(&mut self, &pert_ui_runtime::CaptureJob) -> core::result::Result<pert_ui_runtime::DisplayList, pert_ui_runtime::CaptureError>
 pub fn pert_ui_runtime::Runtime::captures_supported(&self) -> bool
-pub fn pert_ui_runtime::Runtime::complete_capture(&self, u64, core::result::Result<pert_ui_runtime::FrameImage, pert_ui_runtime::CaptureError>) -> bool
+pub fn pert_ui_runtime::Runtime::complete_capture(&self, &pert_ui_runtime::CaptureJob, core::result::Result<pert_ui_runtime::FrameImage, pert_ui_runtime::CaptureError>) -> bool
 pub fn pert_ui_runtime::Runtime::pending_captures(&self) -> alloc::vec::Vec<pert_ui_runtime::CaptureJob>
 pub fn pert_ui_runtime::Runtime::request_capture(&self, pert_ui_runtime::CaptureRequest) -> pert_ui_runtime::Pending<core::result::Result<pert_ui_runtime::Capture, pert_ui_runtime::CaptureError>>
 pub fn pert_ui_runtime::Runtime::set_capture_support(&self, bool)
@@ -22427,10 +22427,9 @@ impl core::clone::Clone for pert_ui_runtime::CaptureJob
 pub fn pert_ui_runtime::CaptureJob::clone(&self) -> pert_ui_runtime::CaptureJob
 impl core::cmp::Eq for pert_ui_runtime::CaptureJob
 impl core::cmp::PartialEq for pert_ui_runtime::CaptureJob
-pub fn pert_ui_runtime::CaptureJob::eq(&self, &pert_ui_runtime::CaptureJob) -> bool
+pub fn pert_ui_runtime::CaptureJob::eq(&self, &Self) -> bool
 impl core::fmt::Debug for pert_ui_runtime::CaptureJob
 pub fn pert_ui_runtime::CaptureJob::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
-impl core::marker::StructuralPartialEq for pert_ui_runtime::CaptureJob
 impl core::marker::Freeze for pert_ui_runtime::CaptureJob
 impl core::marker::Send for pert_ui_runtime::CaptureJob
 impl core::marker::Sync for pert_ui_runtime::CaptureJob
@@ -29613,7 +29612,7 @@ impl pert_ui_runtime::Runtime
 pub const pert_ui_runtime::Runtime::MAX_PENDING_CAPTURES: usize
 pub fn pert_ui_runtime::Runtime::capture_scene(&mut self, &pert_ui_runtime::CaptureJob) -> core::result::Result<pert_ui_runtime::DisplayList, pert_ui_runtime::CaptureError>
 pub fn pert_ui_runtime::Runtime::captures_supported(&self) -> bool
-pub fn pert_ui_runtime::Runtime::complete_capture(&self, u64, core::result::Result<pert_ui_runtime::FrameImage, pert_ui_runtime::CaptureError>) -> bool
+pub fn pert_ui_runtime::Runtime::complete_capture(&self, &pert_ui_runtime::CaptureJob, core::result::Result<pert_ui_runtime::FrameImage, pert_ui_runtime::CaptureError>) -> bool
 pub fn pert_ui_runtime::Runtime::pending_captures(&self) -> alloc::vec::Vec<pert_ui_runtime::CaptureJob>
 pub fn pert_ui_runtime::Runtime::request_capture(&self, pert_ui_runtime::CaptureRequest) -> pert_ui_runtime::Pending<core::result::Result<pert_ui_runtime::Capture, pert_ui_runtime::CaptureError>>
 pub fn pert_ui_runtime::Runtime::set_capture_support(&self, bool)
@@ -30264,6 +30263,7 @@ pub pert_ui_runtime::Semantics::read_only: bool
 pub pert_ui_runtime::Semantics::required: bool
 pub pert_ui_runtime::Semantics::role: pert_ui_runtime::SemanticRole
 pub pert_ui_runtime::Semantics::value: core::option::Option<pert_ui_runtime::SemanticValue>
+pub pert_ui_runtime::Semantics::warning: bool
 impl pert_ui_runtime::Semantics
 pub fn pert_ui_runtime::Semantics::action(self, pert_ui_runtime::SemanticAction) -> Self
 pub fn pert_ui_runtime::Semantics::actions(self, impl core::iter::traits::collect::IntoIterator<Item = pert_ui_runtime::SemanticAction>) -> Self
@@ -30281,6 +30281,7 @@ pub const fn pert_ui_runtime::Semantics::read_only(self, bool) -> Self
 pub const fn pert_ui_runtime::Semantics::required(self, bool) -> Self
 pub const fn pert_ui_runtime::Semantics::role(self, pert_ui_runtime::SemanticRole) -> Self
 pub fn pert_ui_runtime::Semantics::value(self, pert_ui_runtime::SemanticValue) -> Self
+pub const fn pert_ui_runtime::Semantics::warning(self, bool) -> Self
 impl core::clone::Clone for pert_ui_runtime::Semantics
 pub fn pert_ui_runtime::Semantics::clone(&self) -> pert_ui_runtime::Semantics
 impl core::cmp::PartialEq for pert_ui_runtime::Semantics

@@ -455,8 +455,9 @@ struct Prepared {
 /// example. Inspection reports `label`, `help`, `status`, `message` and
 /// `required`. In semantics the label names the control, and the line below
 /// describes it unless the control describes itself; an error marks the
-/// control invalid and its message replaces even the control's own
-/// description, such as an editor's unsaved-draft note
+/// control invalid, a warning marks the description as a
+/// [warning](crate::Semantics::warning), and either message replaces even the
+/// control's own description, such as an editor's unsaved-draft note
 /// ([`Semantics::names_children`](crate::Semantics::names_children)).
 #[must_use]
 pub struct Field {
@@ -818,6 +819,15 @@ impl Component for Field {
                 .name(self.label.text())
                 .description(self.message())
                 .invalid(self.status.is_error())
+                // Only a warning's own message is a warning, not the help
+                // text an empty one leaves in its place.
+                .warning(
+                    self.status.is_warning()
+                        && self
+                            .status
+                            .message()
+                            .is_some_and(|message| !message.is_empty()),
+                )
                 .required(self.required)
                 .names_children(),
         );

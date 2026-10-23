@@ -104,9 +104,9 @@ fn a_host_renders_the_window_and_the_runtime_crops_to_the_target() -> TestResult
         scene.viewport().physical(),
         Some(PhysicalExtent::new(400, 200))
     );
-    assert!(ui.complete_capture(jobs[0].id(), Ok(frame(400, 200))));
+    assert!(ui.complete_capture(&jobs[0], Ok(frame(400, 200))));
     assert!(
-        !ui.complete_capture(jobs[0].id(), Ok(frame(400, 200))),
+        !ui.complete_capture(&jobs[0], Ok(frame(400, 200))),
         "completed once"
     );
     let capture = title.wait()?.value?;
@@ -136,7 +136,7 @@ fn a_host_renders_the_window_and_the_runtime_crops_to_the_target() -> TestResult
     let png = capture.image.encode_png();
     assert_eq!(&png[..8], b"\x89PNG\r\n\x1a\n");
 
-    ui.complete_capture(jobs[1].id(), Ok(frame(400, 200)));
+    ui.complete_capture(&jobs[1], Ok(frame(400, 200)));
     let capture = whole.wait()?.value?;
     assert_eq!((capture.image.width(), capture.image.height()), (400, 200));
     assert_eq!(capture.region, [0.0, 0.0, 200.0, 100.0]);
@@ -157,7 +157,7 @@ fn a_clipped_target_reports_its_visible_part_and_a_hidden_one_is_refused() -> Te
         "tall".into(),
     ])));
     let job = ui.pending_captures().remove(0);
-    ui.complete_capture(job.id(), Ok(frame(200, 100)));
+    ui.complete_capture(&job, Ok(frame(200, 100)));
     let capture = pending.wait()?.value?;
     let [_, _, _, tall] = bounds(&ui, "tall");
     assert!(capture.clipped && capture.region[3] < tall, "{capture:?}");
@@ -197,14 +197,14 @@ fn a_target_that_disappears_before_the_frame_is_reported_not_replaced() -> TestR
     let job = ui.pending_captures().remove(0);
     let title = ui.children(&root)?[0].clone();
     ui.unmount(&title)?;
-    ui.complete_capture(job.id(), Ok(frame(200, 100)));
+    ui.complete_capture(&job, Ok(frame(200, 100)));
     assert_eq!(pending.wait()?.value, Err(CaptureError::UnknownTarget));
     // A host that cannot render reports that, and the request is gone.
     let pending = ui.request_capture(CaptureRequest::new(CaptureTarget::Path(vec![
         "main".into(),
     ])));
     let job = ui.pending_captures().remove(0);
-    ui.complete_capture(job.id(), Err(CaptureError::SurfaceUnavailable));
+    ui.complete_capture(&job, Err(CaptureError::SurfaceUnavailable));
     assert_eq!(pending.wait()?.value, Err(CaptureError::SurfaceUnavailable));
     assert!(ui.pending_captures().is_empty());
     // A frame of the wrong size is a renderer mistake.
@@ -212,7 +212,7 @@ fn a_target_that_disappears_before_the_frame_is_reported_not_replaced() -> TestR
         "main".into(),
     ])));
     let job = ui.pending_captures().remove(0);
-    ui.complete_capture(job.id(), Ok(frame(20, 10)));
+    ui.complete_capture(&job, Ok(frame(20, 10)));
     assert!(matches!(
         pending.wait()?.value,
         Err(CaptureError::Frame(FrameError::ExtentMismatch {
@@ -263,7 +263,7 @@ fn a_tool_thread_gets_its_screenshot_after_the_host_renders() -> TestResult {
     }
     let job = ui.pending_captures().remove(0);
     let _scene = ui.capture_scene(&job)?;
-    ui.complete_capture(job.id(), Ok(frame(200, 100)));
+    ui.complete_capture(&job, Ok(frame(200, 100)));
     let reply = tool.join().expect("the tool finishes")?;
     let capture = reply.value?;
     assert_eq!(
@@ -324,7 +324,7 @@ fn a_replacement_at_the_same_path_is_not_the_admitted_target() -> TestResult {
     )?;
     ui.flush(Duration::ZERO)?;
     assert!(bounds(&ui, "title")[2] > 0.0, "the replacement is laid out");
-    ui.complete_capture(job.id(), Ok(frame(200, 100)));
+    ui.complete_capture(&job, Ok(frame(200, 100)));
     assert_eq!(pending.wait()?.value, Err(CaptureError::UnknownTarget));
     Ok(())
 }
@@ -347,7 +347,7 @@ fn admission_is_bounded_and_refuses_frames_over_the_limit() -> TestResult {
     ])));
     assert_eq!(refused.try_reply()?.value, Err(CaptureError::Busy));
     let job = ui.pending_captures().remove(0);
-    ui.complete_capture(job.id(), Ok(frame(200, 100)));
+    ui.complete_capture(&job, Ok(frame(200, 100)));
     assert!(pending.remove(0).wait()?.value.is_ok());
     let admitted = ui.request_capture(CaptureRequest::new(CaptureTarget::Path(vec![
         "main".into(),
@@ -411,7 +411,7 @@ fn closing_the_service_cancels_an_admitted_capture_and_a_closed_runtime_admits_n
     let job = ui.pending_captures().remove(0);
     drop(service);
     assert_eq!(pending.try_reply().map(|_| ()), Err(WaitError::Cancelled));
-    assert!(ui.complete_capture(job.id(), Ok(frame(200, 100))));
+    assert!(ui.complete_capture(&job, Ok(frame(200, 100))));
     assert_eq!(pending.wait().map(|_| ()), Err(WaitError::Cancelled));
     ui.shutdown();
     let pending = ui.request_capture(CaptureRequest::new(CaptureTarget::Path(vec![
@@ -446,7 +446,7 @@ fn an_unmeasured_target_and_a_scene_that_cannot_paint_are_reported() -> TestResu
     let issues = ui.validation_report().issues;
     assert!(issues.is_empty(), "{issues:?}");
     assert!(ui.capture_scene(&job).is_ok());
-    ui.complete_capture(job.id(), Ok(frame(200, 100)));
+    ui.complete_capture(&job, Ok(frame(200, 100)));
     assert!(pending.wait()?.value.is_ok());
     assert_eq!(
         ui.capture_scene(&job).err(),
@@ -467,7 +467,7 @@ fn the_overlay_flag_reports_what_was_drawn() -> TestResult {
     let job = ui.pending_captures().remove(0);
     assert!(job.include_overlay());
     ui.capture_scene(&job)?;
-    ui.complete_capture(job.id(), Ok(frame(200, 100)));
+    ui.complete_capture(&job, Ok(frame(200, 100)));
     // Nothing was drawn: no overlay is active.
     assert!(!asked.wait()?.value?.overlay);
     ui.set_debug_overlay(DebugOverlay::Boxes);
@@ -476,14 +476,14 @@ fn the_overlay_flag_reports_what_was_drawn() -> TestResult {
     );
     let job = ui.pending_captures().remove(0);
     ui.capture_scene(&job)?;
-    ui.complete_capture(job.id(), Ok(frame(200, 100)));
+    ui.complete_capture(&job, Ok(frame(200, 100)));
     assert_eq!(asked.wait()?.value?.overlay, cfg!(debug_assertions));
     let not_asked = ui.request_capture(CaptureRequest::new(CaptureTarget::Path(vec![
         "main".into(),
     ])));
     let job = ui.pending_captures().remove(0);
     ui.capture_scene(&job)?;
-    ui.complete_capture(job.id(), Ok(frame(200, 100)));
+    ui.complete_capture(&job, Ok(frame(200, 100)));
     assert!(!not_asked.wait()?.value?.overlay);
     Ok(())
 }
@@ -515,7 +515,7 @@ fn capture_keeps_the_admission_failure_after_a_later_successful_flush() -> TestR
     let job = ui.pending_captures().remove(0);
     ui.flush(Duration::ZERO)?;
     assert!(ui.capture_scene(&job).is_ok());
-    assert!(ui.complete_capture(job.id(), Ok(frame(200, 100))));
+    assert!(ui.complete_capture(&job, Ok(frame(200, 100))));
     let reply = std::thread::spawn(move || pending.wait())
         .join()
         .expect("worker finishes")?;
@@ -607,7 +607,7 @@ fn capture_forwards_owned_paint_causes_to_the_client() -> TestResult {
         let job = ui.pending_captures().remove(0);
         let error = ui.capture_scene(&job).expect_err("paint refused");
         assert_eq!(error, CaptureError::from(cause));
-        assert!(ui.complete_capture(job.id(), Err(error.clone())));
+        assert!(ui.complete_capture(&job, Err(error.clone())));
         let reply = pending.wait()?;
         assert_eq!(reply.value, Err(error));
         assert_eq!(reply.flush_error, None);
@@ -616,26 +616,43 @@ fn capture_forwards_owned_paint_causes_to_the_client() -> TestResult {
 }
 
 #[test]
-fn a_job_listed_by_another_runtime_is_refused_and_renders_nothing() -> TestResult {
-    let mut listing = ui(1.0)?;
-    mount(&mut listing)?;
-    listing.set_capture_support(true);
-    let mut other = ui(1.0)?;
-    mount(&mut other)?;
-    other.set_capture_support(true);
-    let main = || CaptureTarget::Path(vec!["main".into()]);
-    let _plain = listing.request_capture(CaptureRequest::new(main()));
-    let asked = other.request_capture(CaptureRequest::new(main()).include_overlay(true));
-    let foreign = listing.pending_captures().remove(0);
-    let own = other.pending_captures().remove(0);
-    assert!(!foreign.include_overlay() && own.include_overlay());
-    assert_eq!(
-        other.capture_scene(&foreign).err(),
-        Some(CaptureError::UnknownTarget),
-        "the other runtime's request decides nothing here"
-    );
-    other.capture_scene(&own)?;
-    assert!(other.complete_capture(own.id(), Ok(frame(200, 100))));
-    assert!(asked.wait()?.value.is_ok());
+fn a_job_listed_by_another_runtime_neither_renders_nor_completes() -> TestResult {
+    // With the same overlay flag, the two jobs look identical: the same id,
+    // window and flag, since every runtime numbers its own requests.
+    for overlay in [false, true] {
+        let mut listing = ui(1.0)?;
+        mount(&mut listing)?;
+        listing.set_capture_support(true);
+        let mut other = ui(1.0)?;
+        mount(&mut other)?;
+        other.set_capture_support(true);
+        let main = || CaptureTarget::Path(vec!["main".into()]);
+        let _plain = listing.request_capture(CaptureRequest::new(main()));
+        let asked = other.request_capture(CaptureRequest::new(main()).include_overlay(overlay));
+        let foreign = listing.pending_captures().remove(0);
+        let own = other.pending_captures().remove(0);
+        assert_eq!(
+            (foreign.id(), foreign.window(), foreign.include_overlay()),
+            (own.id(), own.window(), false),
+            "the public observations agree but for the flag asked"
+        );
+        assert_eq!(own.include_overlay(), overlay);
+        assert_ne!(foreign, own, "different requests");
+        assert_eq!(own, other.pending_captures().remove(0), "the same request");
+        assert_eq!(
+            other.capture_scene(&foreign).err(),
+            Some(CaptureError::UnknownTarget),
+            "the other runtime's request decides nothing here"
+        );
+        assert!(
+            !other.complete_capture(&foreign, Ok(frame(200, 100))),
+            "nor can it complete the local request"
+        );
+        assert!(matches!(asked.try_reply(), Err(WaitError::Timeout)));
+        assert_eq!(other.pending_captures(), std::slice::from_ref(&own));
+        other.capture_scene(&own)?;
+        assert!(other.complete_capture(&own, Ok(frame(200, 100))));
+        assert!(asked.wait()?.value.is_ok());
+    }
     Ok(())
 }

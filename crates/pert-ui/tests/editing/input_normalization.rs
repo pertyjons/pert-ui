@@ -927,6 +927,63 @@ fn a_refused_immediate_step_is_reported() {
 }
 
 #[test]
+fn an_immediate_step_normalized_out_of_range_is_reported() {
+    // The normalizer returns a number the bounds refuse: the field's own
+    // refusal of the step is reported, as for a typed draft.
+    let too_far = |_: i64| Ok(100);
+    let expected = || vec![Some("Enter a number from 0 to 10".to_owned())];
+
+    let mut ui = Runtime::new();
+    let (reports, report) = recorder();
+    let value = ui.signal(2_i64);
+    let (id, _) = mount(
+        &mut ui,
+        IntegerInput::new(value.clone())
+            .range(0, 10)
+            .unwrap()
+            .stepper(true)
+            .normalize(too_far)
+            .unwrap()
+            .on_rejection(report),
+    );
+    let [x, y, w, h] = ui.bounds(&id).unwrap().unwrap().values();
+    let metrics = ui.theme().metrics(Density::Standard).unwrap();
+    let plus = Point::new(
+        x + w
+            - metrics.metric(MetricRole::ControlPaddingX)
+            - metrics.metric(MetricRole::IconSize) / 2.0,
+        y + h / 2.0,
+    )
+    .unwrap();
+    for kind in [
+        PointerKind::Press(PointerButton::Primary),
+        PointerKind::Release(PointerButton::Primary),
+    ] {
+        ui.pointer_input(PointerEvent::new(plus, kind)).unwrap();
+    }
+    frame(&mut ui);
+    assert_eq!(value.get().unwrap(), 2, "the step was not taken");
+    assert_eq!(*reports.borrow(), expected(), "stepper press");
+
+    let mut ui = Runtime::new();
+    let (reports, report) = recorder();
+    let value = ui.signal(2_i64);
+    mount(
+        &mut ui,
+        InlineInteger::new(value.clone())
+            .range(0, 10)
+            .unwrap()
+            .normalize(too_far)
+            .unwrap()
+            .on_rejection(report),
+    );
+    key(&mut ui, KeyCode::ArrowUp);
+    frame(&mut ui);
+    assert_eq!(value.get().unwrap(), 2, "the step was not taken");
+    assert_eq!(*reports.borrow(), expected(), "resting inline step");
+}
+
+#[test]
 fn a_failing_callback_leaves_the_field_consistent_and_retries_the_end() {
     let mut ui = Runtime::new();
     let calls = Rc::new(RefCell::new(Vec::new()));

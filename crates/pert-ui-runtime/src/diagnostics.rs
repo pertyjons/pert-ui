@@ -484,7 +484,8 @@ impl SemanticItem {
 ///
 /// The builders keep the invariants the fields document. A component may also
 /// assign the public fields directly; the snapshot then restores them: an
-/// empty name or description becomes absent, a [protected](Self::protected)
+/// empty name or description becomes absent, a [warning](Self::warning) mark
+/// without a description is dropped, a [protected](Self::protected)
 /// value is withdrawn, and actions are sorted, distinct and absent while
 /// disabled, for the component and each of its [`SemanticItem`] rows.
 #[derive(Clone, Debug, PartialEq)]
@@ -521,6 +522,11 @@ pub struct Semantics {
     /// Whether the application or the component reports the content as not
     /// acceptable, such as a field in error or an unparsable draft.
     pub invalid: bool,
+    /// Whether the [description](Self::description) is a warning: the
+    /// content is acceptable but needs attention, as a [`Field`](crate::Field)
+    /// with a warning status reports. It marks the description, so it is
+    /// false while the description is absent. Schema 15 added this field.
+    pub warning: bool,
     /// Whether an owned surface or content is open; absent when there is none.
     pub expanded: Option<bool>,
     /// Whether the application requires a value, such as a mandatory form
@@ -533,12 +539,15 @@ pub struct Semantics {
     pub protected: bool,
     /// Whether this component describes its immediate children: a child with no
     /// name of its own receives this name, and every child that reports semantics
-    /// receives this invalid state and this description. A child's own
-    /// description, such as an editor's unsaved-draft note, is kept while this
-    /// component is valid; while it is [invalid](Self::invalid), its
-    /// description is the error and replaces the child's. A
-    /// [`SemanticRole::Field`] sets it, which is how a wrapped control is named
-    /// and how its error reaches the control.
+    /// receives this invalid state and this description, with its
+    /// [warning](Self::warning) mark. A child's own description, such as an
+    /// editor's unsaved-draft note, is kept while this component's
+    /// description is ordinary text, such as help; while this component is
+    /// [invalid](Self::invalid) or its description is a
+    /// [warning](Self::warning), its description is the error or the warning
+    /// and replaces the child's. A [`SemanticRole::Field`] sets it, which is
+    /// how a wrapped control is named and how its error or warning reaches
+    /// the control.
     pub names_children: bool,
 }
 impl Semantics {
@@ -555,6 +564,7 @@ impl Semantics {
             disabled: false,
             read_only: false,
             invalid: false,
+            warning: false,
             expanded: None,
             required: false,
             protected: false,
@@ -648,6 +658,15 @@ impl Semantics {
         self.invalid = invalid;
         self
     }
+    /// Marks the [description](Self::description) as a warning, which a
+    /// naming parent gives its children in place of their own descriptions
+    /// (see [`Self::names_children`]). A snapshot drops the mark while the
+    /// description is absent.
+    #[must_use]
+    pub const fn warning(mut self, warning: bool) -> Self {
+        self.warning = warning;
+        self
+    }
     /// Reports whether an owned surface or content is open.
     #[must_use]
     pub const fn expanded(mut self, expanded: bool) -> Self {
@@ -679,7 +698,8 @@ impl Semantics {
     }
     /// Restores the documented invariants the builders keep, for semantics
     /// whose public fields were assigned directly: no empty name or
-    /// description, no value while protected, sorted and distinct actions,
+    /// description, no warning mark without a description, no value while
+    /// protected, sorted and distinct actions,
     /// none while disabled, and the same for every row.
     pub(crate) fn normalize(&mut self) {
         if self.name.as_deref() == Some("") {
@@ -687,6 +707,9 @@ impl Semantics {
         }
         if self.description.as_deref() == Some("") {
             self.description = None;
+        }
+        if self.description.is_none() {
+            self.warning = false;
         }
         if self.protected {
             self.value = None;
@@ -978,7 +1001,7 @@ impl InspectionSnapshot {
     /// crate version. An external inspector compares it before decoding a
     /// snapshot and treats an unknown revision as unsupported rather than
     /// reinterpreting it.
-    pub const SCHEMA_VERSION: u32 = 14;
+    pub const SCHEMA_VERSION: u32 = 15;
     /// The most events history retains. Recording one more evicts the oldest
     /// and counts it in [`Self::dropped_events`].
     pub const MAX_EVENTS: usize = 256;

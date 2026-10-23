@@ -267,7 +267,7 @@ impl CpuRenderer {
             let frame = runtime
                 .capture_scene(&job)
                 .and_then(|scene| self.render(&scene).map_err(CaptureError::from));
-            if runtime.complete_capture(job.id(), frame) {
+            if runtime.complete_capture(&job, frame) {
                 completed += 1;
             }
         }

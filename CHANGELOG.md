@@ -6,7 +6,8 @@ Editors, data and defects (API audit fix plan, part 6d2). Fallible
 signatures where a value could be lost or coerced, the number inputs'
 refusals reported to the application, and defects in focus, signals,
 inspection, capture, tables and the conformance check fixed. Breaking in
-signatures and behavior.
+signatures and behavior, and in the inspection schema, which advances to 15
+by the maintainer's decision.
 
 - Breaking (G1-4): `Workspace::set_settings` returns
   `Result<(), WorkspaceError>` and is no longer `const`. Settings that would
@@ -26,10 +27,22 @@ signatures and behavior.
   range of boundaries in the text") cover both its uses.
 - Breaking (G4-26): `CaptureJob`'s fields are private, read through
   `CaptureJob::id`, `CaptureJob::window` and `CaptureJob::include_overlay`;
-  only the runtime creates jobs. `Runtime::capture_scene` looks the job up
-  among the pending captures by its id and renders what that request asked
-  for; a completed job, or one another runtime listed, is refused with
-  `CaptureError::UnknownTarget`. Replace `job.id`, `job.window` and
+  only the runtime creates jobs. A job carries the identity of the request it
+  was listed for, and `Runtime::capture_scene` looks it up among the pending
+  captures by that identity and renders what the request asked for; a
+  completed job, or one another runtime listed, is refused with
+  `CaptureError::UnknownTarget`, even when its id, window and overlay flag
+  match a pending request's, as two runtimes' first requests do. `CaptureJob`
+  equality follows that identity, and its `Debug` shows only the three
+  public observations.
+- Breaking (G4-26): `Runtime::complete_capture` takes the job,
+  `&CaptureJob`, instead of its `u64` id, and identifies the request as
+  `capture_scene` does, so a completed job, or one another runtime listed
+  with the same id, completes nothing and returns `false` instead of
+  answering another request. Replace
+  `ui.complete_capture(job.id(), frame)` with
+  `ui.complete_capture(&job, frame)`; the facade's native presenter and
+  `CpuRenderer::serve_captures` do so. Replace `job.id`, `job.window` and
   `job.include_overlay` with `job.id()`, `job.window()` and
   `job.include_overlay()`.
 - Breaking in behavior (G2-20, F6): `IntegerInput`, `DecimalInput`,
@@ -37,7 +50,10 @@ signatures and behavior.
   draft through `on_rejection`, as `TextField` reports its length limits:
   text that does not parse, a number outside the bounds and, for a
   parameter, a number off its step, each as an `InputRejection` whose message
-  comes from the installed `UiStrings`. An `on_rejection` that published
+  comes from the installed `UiStrings`. A step that saves at once (a step
+  button, or an inline row's resting step) and whose normalized value the
+  field refuses, such as a normalizer returning 100 in a field bounded to
+  0..10, is reported the same way instead of silently. An `on_rejection` that published
   every report as a `FieldStatus` now also shows these, with no further code;
   one that expected only the normalizer's refusals checks the message.
   Inspection's `validation_error` keeps the `NumberInputError` text.
@@ -51,19 +67,33 @@ signatures and behavior.
   `UiMessage::NumberOffStep { step }` for the two templates. The gallery's
   Swedish table translates the four roles.
 - Breaking in behavior (F21): a naming parent that reports itself invalid,
-  such as a `Field` with an error status, gives its description to a child
+  such as a `Field` with an error status, or whose description is a warning,
+  such as a `Field` with a warning status, gives its description to a child
   even when the child describes itself, so a refused draft's control reports
-  the field's error rather than "Unsaved changes". A valid parent, including a
-  `Field` with a warning, still leaves a child's own description;
-  `Semantics::names_children` and `Field` say so.
+  the field's error or warning rather than "Unsaved changes". A parent whose
+  description is ordinary text, such as help, still leaves a child's own
+  description. `Semantics::names_children`, `Field` and `docs/contracts.md`
+  "Inspection and diagnostics" say so.
+- Breaking, inspection schema (F21, maintainer's decision): the new public
+  field and builder `Semantics::warning` mark a description as a warning; a
+  `Field` sets it while its warning status has a message, the mark travels
+  with the description a naming parent gives its children, and a snapshot
+  drops it while the description is absent. Custom components reach the same
+  precedence by setting it. `InspectionSnapshot::SCHEMA_VERSION` is 15
+  (was 14): the serialized semantics require the field, so a schema 14
+  snapshot does not decode as this revision. Code that builds `Semantics`
+  through `Semantics::new` and its builders is unaffected; a tool that
+  decodes snapshots accepts revision 15.
 - Breaking in behavior (F22): outside macOS, a single-line editor
   (`TextField`, and the number, search, inline and draft editors built on
   it) leaves Up and Down with Alt or Super to its ancestors and command
   bindings, where they have no editing meaning; a `TextArea` still moves by
   line with them. An ancestor that handles these chords now receives them
   from an editor inside it: Alt+Down in a field inside a reorderable
-  `VirtualList`'s row moves the list's active row. `TextField`'s new "Keys" section lists the chords the
-  editors claim on each platform, and `TextArea` refers to it.
+  `VirtualList`'s row moves the list's active row. `TextField`'s new "Keys"
+  section lists the chords the editors claim on each platform, and what a
+  disabled, composing or read-only editor claims instead, and `TextArea`
+  refers to it.
 - Breaking in behavior (F29): an empty plain `Label`, with no icon, measures
   as zero size, as an empty `Field` block does; a container's gap beside it
   remains.
@@ -86,12 +116,14 @@ signatures and behavior.
 - Fixed (G4-25): an inspection snapshot keeps `Semantics`' and
   `SemanticItem`'s documented invariants when a component assigned their
   public fields directly: a protected value is withdrawn, an empty name or
-  description is absent, and actions are sorted, distinct and absent while
-  disabled.
+  description is absent, a warning mark without a description is dropped,
+  and actions are sorted, distinct and absent while disabled.
 - Fixed (V3-2): restoring a workspace refuses a saved table column width
   below `TableColumn::MIN_WIDTH`, which capture never writes, with
   `RestoreRejection::OutOfRange` naming the column, instead of raising it to
-  the minimum and recording it as the user's.
+  the minimum and recording it as the user's. The stored number is checked
+  before it is narrowed to `f32`, so a width just below the minimum that
+  would round up to it is refused too, as is one beyond the largest `f32`.
 - Fixed (F25): `check_redescription` mounts its reference tree under a root
   that declares the overlap with the re-described tree intentional, so a
   runtime with a viewport no longer logs a false `UnexpectedOverlap`; its
@@ -99,18 +131,28 @@ signatures and behavior.
 - Changed (V3-1): `TableColumn::MIN_WIDTH` states the one exception, a
   column that starts at the saturated largest finite position and so has a
   width of 0, and the layout comment says the same.
+- Changed: `TextSelection`'s rustdoc describes caret stops as the shaped
+  text's grapheme boundaries, without claiming anything about ligatures.
 - Changed: the `api/` listings of `pert-ui-runtime` show the changed
-  `Workspace::set_settings` and `TextSelection::new`, `CaptureJob`'s
-  accessors in place of its fields, and the new `StringRole` and
-  `UiMessage` variants.
+  `Workspace::set_settings`, `TextSelection::new` and
+  `Runtime::complete_capture`, `CaptureJob`'s accessors in place of its
+  fields with its `PartialEq`, `Eq` and `Debug` implemented by hand (no
+  longer `StructuralPartialEq`), the new
+  `Semantics::warning` field and builder, and the new `StringRole` and
+  `UiMessage` variants. The listings do not show constant values, so
+  `InspectionSnapshot::SCHEMA_VERSION`'s change to 15 does not appear in them.
 - Added: tests for a reveal error with a held focus error and the
   `Dynamic` over a parameter snapshot (`controls`), the settings boundary
   round trip (`surfaces`), explicit selections, the number inputs'
-  refusals with English and replaced strings and the single-line chords
-  (`editing`), directly assigned semantics, a field error over a draft's
-  description and a job from another runtime (`foundation`), the column
-  width rejection, the saturated widths, the filter field's address and a
-  row field's Alt+arrow reaching its reorderable list (`collections`), the empty label (`presentation`), and the conformance
+  refusals with English and replaced strings, an immediate step normalized
+  out of range and the single-line chords (`editing`), directly assigned
+  semantics, a field error or warning over a draft's description, a job
+  from another runtime with identical public observations, which neither
+  renders nor completes the local request, and the warning
+  field's round trip and closed schema (`foundation`), the column width
+  rejection just below the minimum, the saturated widths, the filter
+  field's address and a row field's Alt+arrow reaching its reorderable list
+  (`collections`), the empty label (`presentation`), and the conformance
   check's validation output (a `pert-ui-runtime` unit test).
 
 ## 0.3.65 (2026-10-23)

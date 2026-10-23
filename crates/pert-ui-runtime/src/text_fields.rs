@@ -113,8 +113,16 @@ type RefusalReport =
 /// A focused editor claims the chords below in its editing phase, before
 /// [command bindings](crate::Runtime::register_command), so a command bound to
 /// one of them does not run while the editor has focus. Shift with a movement
-/// extends the selection. Every other chord is left to the editor's ancestors
-/// and to command bindings.
+/// extends the selection. Outside the cases below, every other chord is left
+/// to the editor's ancestors and to command bindings:
+///
+/// - A disabled editor claims no key.
+/// - While an IME composition is active, the editor claims every key, so
+///   the input method's keys never reach a command.
+/// - A read-only editor, or one refusing its bound value, still claims the
+///   movement, selection, clipboard and undo chords, which then change
+///   nothing, but leaves Backspace, Delete and Enter to its ancestors and
+///   command bindings.
 ///
 /// - On every platform: Left, Right, Up, Down, Home and End move the caret,
 ///   with any modifiers the lists below do not give another meaning;

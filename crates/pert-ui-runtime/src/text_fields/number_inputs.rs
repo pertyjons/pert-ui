@@ -1686,11 +1686,15 @@ impl<T: Number> NumberEditor<T> {
             .offset(value, if up { 1 } else { -1 })
             .unwrap_or_else(|| value.increment(step, up, self.min, self.max));
         if immediate && let Err(error) = self.entry(value) {
-            // A refused step is a refused save; other errors cannot arise
-            // from a clamped step and leave the report alone.
-            if matches!(error, EntryError::Rejected(_)) {
-                self.report.outcome(cx, Some(&error))?;
-            }
+            // A refused step is a refused save, reported as one: the
+            // normalizer's refusal, or the field's own of what it returned.
+            let error = match error {
+                EntryError::Number(error) => {
+                    EntryError::Rejected(self.number_rejection(&cx.strings(), error))
+                }
+                other => other,
+            };
+            self.report.outcome(cx, Some(&error))?;
             return Ok(false);
         }
         self.field

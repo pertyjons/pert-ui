@@ -457,7 +457,7 @@ fn name_children(
     components: &mut [crate::ComponentInspection],
     structural: &std::collections::BTreeSet<u64>,
 ) {
-    let naming: BTreeMap<u64, (Option<String>, Option<String>, bool)> = components
+    let naming: BTreeMap<u64, (Option<String>, Option<String>, bool, bool)> = components
         .iter()
         .filter_map(|component| {
             let semantics = component.details.semantics.as_ref()?;
@@ -468,6 +468,7 @@ fn name_children(
                         semantics.name.clone(),
                         semantics.description.clone(),
                         semantics.invalid,
+                        semantics.warning,
                     ),
                 )
             })
@@ -501,7 +502,7 @@ fn name_children(
                 _ => break None,
             }
         };
-        let Some((naming_parent, (name, description, invalid))) = found else {
+        let Some((naming_parent, (name, description, invalid, warning))) = found else {
             continue;
         };
         let Some(semantics) = component.details.semantics.as_mut() else {
@@ -511,10 +512,12 @@ fn name_children(
             semantics.name.clone_from(name);
             component.labelled_by = Some(naming_parent);
         }
-        // An invalid naming parent describes its error, which outranks a
-        // child's own description of its state.
-        if semantics.description.is_none() || (*invalid && description.is_some()) {
+        // An invalid naming parent describes its error, and a warning one
+        // its warning; either outranks a child's own description of its
+        // state. The warning mark travels with the description.
+        if semantics.description.is_none() || ((*invalid || *warning) && description.is_some()) {
             semantics.description.clone_from(description);
+            semantics.warning = *warning && description.is_some();
         }
         semantics.invalid |= invalid;
     }

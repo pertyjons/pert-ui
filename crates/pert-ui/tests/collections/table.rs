@@ -1170,18 +1170,25 @@ fn a_saved_width_below_the_minimum_is_rejected_and_the_minimum_restores() -> Tes
         )?)
     };
     let before = (cells(&f), f.ui.capture_workspace()?);
-    let below = f64::from(TableColumn::MIN_WIDTH) - 1.0;
-    let report = f.ui.restore_workspace(&saved(below)?)?;
-    assert_eq!(
-        report
-            .rejected()
-            .map(|(_, reason)| reason.clone())
-            .collect::<Vec<_>>(),
-        [RestoreRejection::OutOfRange("number".into())],
-        "rejected, not raised to the minimum"
-    );
-    f.ui.flush(Duration::ZERO)?;
-    assert_eq!((cells(&f), f.ui.capture_workspace()?), before);
+    let minimum = f64::from(TableColumn::MIN_WIDTH);
+    // The second is just below the minimum, yet rounds up to it as an `f32`.
+    for below in [minimum - 1.0, minimum - 1.0e-6] {
+        assert_eq!(
+            below as f32,
+            if below == minimum - 1.0 { 39.0 } else { 40.0 }
+        );
+        let report = f.ui.restore_workspace(&saved(below)?)?;
+        assert_eq!(
+            report
+                .rejected()
+                .map(|(_, reason)| reason.clone())
+                .collect::<Vec<_>>(),
+            [RestoreRejection::OutOfRange("number".into())],
+            "{below} is rejected, not raised to the minimum"
+        );
+        f.ui.flush(Duration::ZERO)?;
+        assert_eq!((cells(&f), f.ui.capture_workspace()?), before, "{below}");
+    }
 
     let at = saved(f64::from(TableColumn::MIN_WIDTH))?;
     assert!(f.ui.restore_workspace(&at)?.is_complete());

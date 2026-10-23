@@ -452,7 +452,7 @@ and anything left to a later part.
     ran the diagnostics suite and reran the workspace gate (fmt, Clippy,
     tests, doctests, rustdoc, `api/generate.sh` with no further
     difference, `git diff --check`). The fix is verified in 6d2's review.
-- **6d2 (0.3.66):** the editor, data and defect fixes.
+- **6d2 (0.3.66), done 2026-10-23:** 1d405cf and its review fix. The editor, data and defect fixes.
   - **Defects found during the parts:** `N:focus-reveal` queues the held
     focus error, and `N:publish-revision` advances the revision, as does
     `publish_presentation_copy`.
@@ -485,15 +485,36 @@ and anything left to a later part.
     - `api/generate.sh`, matching the plan's expected diff;
     - `git diff --check`.
   - **Deviations:**
-    - F21 ranks a `Field`'s error above the control's own description
-      through the public `invalid` flag. A `Field` warning cannot be told
-      from help text without a new `Semantics` field, which would change
-      the inspection schema the plan keeps fixed. F21 names only the error.
+    - F21's warning case needed a new `Semantics` field. By the
+      maintainer's decision (2026-10-23) `Semantics::warning` was added and
+      `InspectionSnapshot::SCHEMA_VERSION` rose from 14 to 15. That is the
+      one exception to "Persisted formats are unchanged", and the closed
+      schema is tested.
     - F25 mounts the reference under a private root that allows overlap,
       rather than laying it out elsewhere, so both trees lay out
       identically.
   - **Beyond the plan's lines:** semantics normalization also drops empty
     names and descriptions, and an ancestor test covers F22's side effect.
+  - **Review:** Codex found six points:
+    - a foreign capture job with identical public values was accepted;
+    - immediate number steps still dropped built-in range refusals;
+    - F21's warning case was missing;
+    - a stored width was validated after narrowing to `f32`;
+    - caret stops were described with a wrong ligature claim;
+    - the key list omitted composition and read-only routing.
+
+    All six were fixed. Capture jobs carry a private request identity, and
+    `Runtime::complete_capture` takes the job, so a foreign or stale job
+    neither renders nor completes. The fix also covered completion by id,
+    which had the same defect.
+  - **After the fix:**
+    - the full public-API gate;
+    - Clippy and tests in the serde, `cpu` and `desktop-cpu`
+      configurations;
+    - serde rustdoc;
+    - each new regression checked to fail with its fix reverted.
+
+    The fix is verified in 6e's review.
 
 ## Rules for every part
 
@@ -524,7 +545,9 @@ and anything left to a later part.
   (`crates/pert-ui/tests/<area>/main.rs`). Each behavior change has a
   regression or contract test.
 - **Persisted formats are unchanged.** No part changes
-  `Workspace::SCHEMA_VERSION` or `InspectionSnapshot::SCHEMA_VERSION`.
+  `Workspace::SCHEMA_VERSION` or `InspectionSnapshot::SCHEMA_VERSION`, except
+  6d2's inspection schema 15, which the maintainer chose for F21's warning
+  case (2026-10-23).
   `#[non_exhaustive]` (6a3) does not affect serde. V3-2 (6d2) rejects a
   stored column width the library never writes. F26 (6d2) adds an address
   segment only to the search field, which has no workspace state; the

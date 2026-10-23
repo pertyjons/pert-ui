@@ -12,6 +12,8 @@ pub(super) struct PendingCapture {
     /// The error of the flush that admitted it, carried into the reply.
     flush_error: Option<crate::RuntimeError>,
     handle: crate::inspection::ReplyHandle<Result<crate::Capture, crate::CaptureError>>,
+    /// This request's identity, which every job listed for it shares.
+    token: std::sync::Arc<()>,
 }
 
 /// Where a capture target lies, resolved from the current state.
@@ -128,6 +130,7 @@ impl Runtime {
             request,
             flush_error: flush_error.cloned(),
             handle,
+            token: std::sync::Arc::new(()),
         });
     }
 
@@ -283,6 +286,7 @@ impl Runtime {
                 id: capture.id,
                 window: capture.window,
                 include_overlay: capture.request.overlay_included(),
+                request: capture.token.clone(),
             })
             .collect()
     }
@@ -309,16 +313,16 @@ impl Runtime {
         &mut self,
         job: &crate::CaptureJob,
     ) -> Result<crate::DisplayList, crate::CaptureError> {
-        // A job is trusted only as a reference to a pending request: one
-        // from another runtime may share the id but not the request.
+        // A job is trusted only as a reference to a pending request, by the
+        // request's identity: another runtime's job can repeat the id, the
+        // window and the overlay flag.
         let pending = self
             .shared
             .captures
             .borrow()
             .iter()
-            .find(|capture| capture.id == job.id)
-            .map(|capture| (capture.window, capture.request.overlay_included()))
-            .filter(|&pending| pending == (job.window, job.include_overlay));
+            .find(|capture| std::sync::Arc::ptr_eq(&capture.token, &job.request))
+            .map(|capture| (capture.window, capture.request.overlay_included()));
         let (window, include_overlay) = pending.ok_or(crate::CaptureError::UnknownTarget)?;
         let window = self
             .native_windows()
@@ -333,7 +337,10 @@ impl Runtime {
 
     /// Hands a rendered frame, or the error that prevented one, to the
     /// capture `job` names, answering its request. Returns whether the job
-    /// was pending; a completed or unknown id is ignored.
+    /// was pending here. The job is identified by the request it was listed
+    /// for, as [`capture_scene`](Self::capture_scene) identifies it, so a job
+    /// already completed, or one another runtime listed even with the same id,
+    /// completes nothing and returns `false`.
     ///
     /// The frame is the job's window at its physical extent; the runtime
     /// crops it to the target's visible region as the current state has it,
@@ -342,7 +349,7 @@ impl Runtime {
     /// since admission is reported, never replaced.
     pub fn complete_capture(
         &self,
-        job: u64,
+        job: &crate::CaptureJob,
         frame: Result<crate::FrameImage, crate::CaptureError>,
     ) -> bool {
         let position = self
@@ -350,7 +357,7 @@ impl Runtime {
             .captures
             .borrow()
             .iter()
-            .position(|capture| capture.id == job);
+            .position(|capture| std::sync::Arc::ptr_eq(&capture.token, &job.request));
         let Some(position) = position else {
             return false;
         };

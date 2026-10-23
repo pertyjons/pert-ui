@@ -546,16 +546,41 @@ pub struct Capture {
 /// it with [`CaptureError::SurfaceUnavailable`] rather than leaving it.
 ///
 /// Only the runtime creates jobs, so a job always describes a request that
-/// runtime accepted; `capture_scene` refuses one that is no longer pending.
-#[derive(Clone, Debug, Eq, PartialEq)]
+/// runtime accepted; `capture_scene` refuses, and `complete_capture` ignores,
+/// one that is no longer pending, or that another runtime listed even when
+/// its id, window and overlay flag are the same. Two jobs are equal only when they are the same runtime's job
+/// for the same request.
+#[derive(Clone)]
 pub struct CaptureJob {
     pub(crate) id: u64,
     pub(crate) window: u64,
     pub(crate) include_overlay: bool,
+    /// The identity of the admitted request, shared with the runtime's
+    /// pending entry: ids, windows and flags repeat across runtimes.
+    pub(crate) request: std::sync::Arc<()>,
+}
+impl PartialEq for CaptureJob {
+    fn eq(&self, other: &Self) -> bool {
+        std::sync::Arc::ptr_eq(&self.request, &other.request)
+            && (self.id, self.window, self.include_overlay)
+                == (other.id, other.window, other.include_overlay)
+    }
+}
+impl Eq for CaptureJob {}
+impl std::fmt::Debug for CaptureJob {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("CaptureJob")
+            .field("id", &self.id)
+            .field("window", &self.window)
+            .field("include_overlay", &self.include_overlay)
+            .finish_non_exhaustive()
+    }
 }
 impl CaptureJob {
-    /// Identifies the job for `complete_capture`; never reused by the runtime
-    /// that listed it.
+    /// The job's number, never reused by the runtime that listed it, for
+    /// logging and matching listings. Another runtime numbers its jobs alike,
+    /// so `capture_scene` and `complete_capture` take the job itself, which
+    /// also identifies its runtime's request.
     #[must_use]
     pub const fn id(&self) -> u64 {
         self.id

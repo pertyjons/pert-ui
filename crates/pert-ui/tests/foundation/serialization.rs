@@ -474,8 +474,7 @@ fn drop_operation_sets_are_lists_of_operations() -> TestResult {
 #[test]
 fn the_unbounded_collection_code_round_trips() -> TestResult {
     // Added with inspection schema 14.
-    assert_eq!(InspectionSnapshot::SCHEMA_VERSION, 14);
-    assert_eq!(Runtime::new().inspect().schema_version, 14);
+    assert!(Runtime::new().inspect().schema_version >= 14);
     // Only the runtime builds a report, so a tool reads it as JSON like this.
     let report: ValidationReport = serde_json::from_str(
         r#"{
@@ -676,5 +675,26 @@ fn capture_types_round_trip() -> TestResult {
         expected: 8,
         actual: 3,
     }))?;
+    Ok(())
+}
+
+#[test]
+fn a_warning_description_round_trips_and_is_a_required_field() -> TestResult {
+    // Added with inspection schema 15.
+    assert_eq!(InspectionSnapshot::SCHEMA_VERSION, 15);
+    assert_eq!(Runtime::new().inspect().schema_version, 15);
+    let warned = Semantics::new(SemanticRole::Field)
+        .description("Looks unusual")
+        .warning(true);
+    let text = serde_json::to_string(&warned)?;
+    assert!(text.contains(r#""warning":true"#), "{text}");
+    assert_eq!(round_trip(&warned)?, warned);
+    // The schema is closed: semantics written before the field existed, or
+    // with an unknown field, do not decode as this revision.
+    let older = text.replace(r#","warning":true"#, "");
+    assert!(!older.contains("warning"), "{older}");
+    assert!(serde_json::from_str::<Semantics>(&older).is_err());
+    let unknown = text.replace(r#""warning":true"#, r#""warning":true,"caution":true"#);
+    assert!(serde_json::from_str::<Semantics>(&unknown).is_err());
     Ok(())
 }

@@ -51,11 +51,11 @@ impl SelectionExtension {
 ///
 /// Create and operate on this with the layout for the current text. Recreate it
 /// after replacing text; movement refreshes affinity for width/scale changes.
-/// Every caret stop is a grapheme boundary, never inside a ligature:
-/// combining sequences and emoji joined by zero-width joiners form one stop.
-/// Pointer placement ([`Self::at_point`], [`Self::word_at_point`]) snaps to
-/// the nearest stop; explicit offsets given to [`Self::new`] must already be
-/// stops.
+/// Caret stops are the grapheme boundaries of the shaped text: a combining
+/// sequence or an emoji joined by zero-width joiners is one grapheme, with no
+/// stop inside it. Pointer placement ([`Self::at_point`],
+/// [`Self::word_at_point`]) snaps to the nearest stop; explicit offsets given
+/// to [`Self::new`] must already be stops.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 #[must_use]
 pub struct TextSelection(Selection);
