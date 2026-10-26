@@ -5787,15 +5787,31 @@ impl Runtime {
             // A command that began an edit shows its editor at its owner's
             // update; run that before focus is applied, so the editor's focus
             // request settles in this flush. Only work the commands caused
-            // repeats the cycle: read before removal, whose own work (the
-            // surviving parent, the cleared focus) still follows focus
-            // restoration as in a flush without commands.
-            let command_work = !self.window.shared.pending.borrow().is_empty();
+            // repeats the cycle: the components they left pending (nothing
+            // was pending before them), read before removal and still
+            // pending after it. Removal's own work (the surviving parent,
+            // the cleared focus) follows focus restoration as in a flush
+            // without commands, also when it removed every component the
+            // commands invalidated.
+            let command_work: Vec<u64> = self
+                .window
+                .shared
+                .pending
+                .borrow()
+                .keys()
+                .copied()
+                .collect();
             // Removal comes before the commands' updates are repeated, so a
             // component that requested its own unmount leaves now and later
             // commands for it are dropped, however its handler re-queues.
             self.apply_requested_removals()?;
-            if command_work {
+            let repeat = {
+                let pending = self.window.shared.pending.borrow();
+                command_work
+                    .iter()
+                    .any(|serial| pending.contains_key(serial))
+            };
+            if repeat {
                 continue;
             }
             let had_layout = self.settle_layout()?;

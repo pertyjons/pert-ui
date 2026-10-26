@@ -135,10 +135,12 @@ on a shown row while the user types in its field (F7b). Not breaking.
   editor that just became visible takes it. Requested removals still apply
   right after the delivered commands, before those updates, so a component
   that asked to be unmounted leaves in that flush and a command it queues
-  for itself is dropped. Only the work the commands caused repeats the
-  updates before focus: the work a removal causes (its surviving parent,
-  the cleared focus) follows focus restoration as before, also in a flush
-  that delivered no command. The `TextCommand`,
+  for itself is dropped. Only the commands' own work repeats the updates
+  before focus: a component they invalidated that is still pending after
+  the removals. The work a removal causes (its surviving parent, the
+  cleared focus) follows focus restoration as before, in a flush that
+  delivered no command and also when the removal ended all the commands'
+  work. The `TextCommand`,
   `Component::text_command`, `Runtime::text_command` and
   `request_text_command` rustdoc and contracts.md say so.
 - Changed (F15): `InlineInteger` and `InlineDecimal` answer `BeginEdit` at

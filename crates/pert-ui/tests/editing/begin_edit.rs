@@ -291,7 +291,8 @@ impl Component for Owner {
     }
 }
 
-/// A focusable child that requests its own unmount while `leave` is true.
+/// A focusable child that requests its own unmount while `leave` is true,
+/// and answers a text command by invalidating itself.
 struct Departing {
     leave: Signal<bool>,
 }
@@ -302,6 +303,14 @@ impl Component for Departing {
         }
         Ok(())
     }
+    fn text_command(
+        &mut self,
+        cx: &mut EventContext,
+        _: TextCommand,
+    ) -> Result<TextCommandOutcome, RuntimeError> {
+        cx.invalidate(Invalidation::Paint);
+        Ok(TextCommandOutcome::Handled)
+    }
     fn focusable(&self) -> bool {
         true
     }
@@ -310,12 +319,10 @@ impl Component for Departing {
     }
 }
 
-#[test]
-fn a_removal_without_commands_restores_focus_before_the_parent_updates() -> TestResult {
-    // Only work that delivered text commands caused repeats the cycle before
-    // focus: removing the focused child restores focus to its owner before
-    // the owner's next update, so the owner still finds focus within it.
-    let mut ui = Runtime::new();
+/// An `Owner` around a focused `Departing` child, with the child's `leave`.
+fn owner_with_focused_child(
+    ui: &mut Runtime,
+) -> Result<(WidgetId, WidgetId, Signal<bool>), Box<dyn std::error::Error>> {
     ui.set_viewport(Viewport::new(300.0, 200.0, 1.0)?)?;
     let leave = ui.signal(false);
     let owner = ui.mount_tree(Element::new(
@@ -330,11 +337,44 @@ fn a_removal_without_commands_restores_focus_before_the_parent_updates() -> Test
             had_focus: false,
         },
     ))?;
-    settle(&mut ui);
-    let child = widget(&ui, &owner, "child");
+    settle(ui);
+    let child = widget(ui, &owner, "child");
     ui.focus(&child)?;
-    settle(&mut ui);
+    settle(ui);
+    Ok((owner, child, leave))
+}
+
+#[test]
+fn a_removal_without_commands_restores_focus_before_the_parent_updates() -> TestResult {
+    // Only work that delivered text commands caused repeats the cycle before
+    // focus: removing the focused child restores focus to its owner before
+    // the owner's next update, so the owner still finds focus within it.
+    let mut ui = Runtime::new();
+    let (owner, _, leave) = owner_with_focused_child(&mut ui)?;
     leave.set(true)?;
+    ui.flush(ui.now())?;
+    assert_eq!(ui.focused(), Some(owner.clone()), "focus fell back to it");
+    assert!(
+        support::find(&ui, &owner, "child").is_none(),
+        "the child left"
+    );
+    settle(&mut ui);
+    assert_eq!(ui.focused(), Some(owner), "the owner stayed");
+    Ok(())
+}
+
+#[test]
+fn a_command_whose_work_the_removal_ends_keeps_removal_after_focus() -> TestResult {
+    // The command invalidates the departing child, and the removal ends
+    // that work with the child: what is left is the removal's own, which
+    // follows focus restoration as without the command.
+    let mut ui = Runtime::new();
+    let (owner, child, leave) = owner_with_focused_child(&mut ui)?;
+    leave.set(true)?;
+    // `event` focuses its target, so the focused child queues it itself.
+    ui.event(&child, |cx| {
+        cx.request_text_command(&child, TextCommand::SelectAll)
+    })??;
     ui.flush(ui.now())?;
     assert_eq!(ui.focused(), Some(owner.clone()), "focus fell back to it");
     assert!(

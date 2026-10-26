@@ -840,6 +840,19 @@ and anything left to a later part.
     After it: the workspace gate, including the five headless example
     sessions and the diagnostics suite; `api/generate.sh`, with no change;
     `git diff --check`.
+  - **Second recheck (Codex):** needs fixes, with one point, verified: the
+    record of command work was a flag read before removals, so when a
+    removal ended every pending entry the commands caused, the flush still
+    repeated and ran the removal's own work before focus restoration.
+    **The fix:** the loop records the serials the delivered commands left
+    pending (nothing is pending before them) and repeats only if one is
+    still pending after the removals. A new test, in which the focused
+    child queues `SelectAll` for itself and requests its own unmount,
+    fails with the flag restored; the starvation test still fails in
+    6219dda's order. The CHANGELOG sentence says which work repeats. After
+    it: the workspace gate, including the five headless example sessions
+    and the diagnostics suite; `api/generate.sh`, with no change;
+    `git diff --check`.
 - **6f3 (0.3.70), done 2026-10-26:** 232c22b and its review fix dbe86fc.
   Controlled controls, by [design revision 4](design-6f3.md),
   which Codex reviewed once and rechecked three times. The maintainer
