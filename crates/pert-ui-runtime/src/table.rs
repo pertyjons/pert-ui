@@ -565,9 +565,10 @@ struct StateInner {
     /// whenever the rows are published.
     filter: RefCell<(String, crate::FilterMatcher)>,
     counts: Signal<crate::FilterCounts>,
-    /// Source replacements: a revision and the nearest remaining row when the
-    /// replacement hid the active row, which a filter wrapper applies.
-    replaced: Signal<(u64, Option<String>)>,
+    /// Source replacements: a revision and, when the replacement hid the
+    /// active row, its key and the nearest remaining row, which a filter
+    /// wrapper applies.
+    replaced: Signal<crate::collection_filter::Replacement>,
 }
 
 /// Application-owned controller of a [`Table`]: its columns, rows, sort indication and
@@ -680,19 +681,20 @@ impl TableController {
         // by a column move that publishes the rows again.
         *self.0.source.borrow_mut() = source;
         let after = self.0.items.get()?;
-        let nearest = self
-            .0
-            .selection
-            .active()
-            .get()?
-            .and_then(|key| crate::collection_filter::nearest(&*before, &*after, &key));
+        let active = self.0.selection.active().get()?;
+        let hidden = crate::collection_filter::hid(&*before, &*after, active);
         let revision = self.0.replaced.get()?.0.wrapping_add(1);
-        self.0.replaced.set((revision, nearest))
+        self.0.replaced.set((revision, hidden))
     }
-    /// Source replacements with the nearest remaining row, for
-    /// [`CollectionFilter`](crate::CollectionFilter).
-    pub(crate) fn replaced(&self) -> ReadSignal<(u64, Option<String>)> {
+    /// Source replacements with the active key they hid and its nearest
+    /// remaining row, for [`CollectionFilter`](crate::CollectionFilter).
+    pub(crate) fn replaced(&self) -> ReadSignal<crate::collection_filter::Replacement> {
         self.0.replaced.read_only()
+    }
+    /// Whether the table shows the row `key` now, for
+    /// [`CollectionFilter`](crate::CollectionFilter).
+    pub(crate) fn shows(&self, key: &str) -> Result<bool, RuntimeError> {
+        Ok(self.0.items.get()?.index_of(key).is_some())
     }
     // Publishes the rows again, so mounted rows rebuild their cells in the
     // current column order.

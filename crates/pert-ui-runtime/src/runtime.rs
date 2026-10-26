@@ -1135,16 +1135,24 @@ pub trait Component: std::any::Any {
         Ok(crate::TextKeyOutcome::NotAnEditor)
     }
 
-    /// Performs a clipboard action on this component's own selection and caret.
+    /// Performs a text command on this component's own text: a clipboard or
+    /// selection action on its selection and caret, or beginning an edit.
     ///
     /// The runtime calls this for a [`TextCommand`](crate::TextCommand) queued with
     /// [`EventContext::request_text_command`], during the event phase of the flush
     /// that reaches it, so an implementation may write bindings and commit edits
-    /// exactly as it does for ordinary key input. Default reports `NotAnEditor`.
+    /// exactly as it does for ordinary key input, and synchronously for
+    /// [`Runtime::text_command`]. Default reports `NotAnEditor`.
     ///
     /// An implementation reads and writes the clipboard through the context, keeps
     /// a failed clipboard operation from destroying text, and reports `Unavailable`
     /// rather than failing when the command does not apply to its current state.
+    /// Only [`TextCommand::BeginEdit`](crate::TextCommand::BeginEdit) moves
+    /// focus: an editor with a resting state answers it as its own editing key
+    /// does, requesting focus for its editing part with
+    /// [`EventContext::request_focus`] or
+    /// [`EventContext::request_focus_for`], and reports `Handled` only when it
+    /// began editing. The other commands never request focus.
     ///
     /// # Errors
     /// An implementation returns an error for a failed binding write or edit commit, not
@@ -3209,12 +3217,17 @@ impl EventContext {
         self.node.size.get()
     }
 
-    /// Queues a clipboard action for another component's own selection, such as a
-    /// context-menu item acting on the editor it was opened from.
+    /// Queues a text command for another component's own text, such as a
+    /// context-menu item acting on the editor it was opened from, or a list's
+    /// activation beginning the rename of a row's label.
     ///
     /// The runtime delivers it to [`Component::text_command`] in the event phase of
     /// this flush, in request order, so the receiving editor may commit edits as it
-    /// does for key input. Focus is not moved and the clipboard is not read here.
+    /// does for key input. The clipboard is not read here, and only
+    /// [`TextCommand::BeginEdit`](crate::TextCommand::BeginEdit) moves focus:
+    /// the editor's focus request settles at the end of the same flush. Routing
+    /// follows [`Runtime::text_command`]: a target that is not an editor passes
+    /// the command on to the focused component inside its subtree.
     /// A request whose target is unmounted or hidden before it applies is dropped;
     /// a target blocked by current modality returns `ModalBlocked` from the flush
     /// without reading the clipboard or changing the editor. The refused request
@@ -4755,6 +4768,12 @@ impl Runtime {
     /// rules write, as [`Self::text_input`] describes; the tree, derived
     /// bindings and layout show the result after the next [`Self::flush`].
     ///
+    /// A synthesized press of a key that is physically held is a repeat
+    /// ([`KeyTransition::Repeated`](crate::KeyTransition::Repeated)), as the
+    /// keyboard state classifies it. Controls that act on a fresh press, such
+    /// as [`InlineText`](crate::InlineText)'s F2, ignore it. To start editing
+    /// from code, use [`TextCommand::BeginEdit`](crate::TextCommand::BeginEdit).
+    ///
     /// # Errors
     /// Propagates component input errors, and the errors of the flush that
     /// delivers a notification the key requested, including a
@@ -5375,9 +5394,9 @@ impl Runtime {
         Ok(())
     }
 
-    /// Performs a text command (clipboard or selection) on one component's own
-    /// selection, for hosts and application chrome such as an Edit menu acting
-    /// on the focused editor.
+    /// Performs a text command (clipboard, selection or beginning an edit) on one
+    /// component's own text, for hosts and application chrome such as an Edit
+    /// menu acting on the focused editor, or a command that renames a label.
     ///
     /// Delivery is immediate and synchronous, unlike
     /// [`EventContext::request_text_command`], which a component uses to reach
@@ -5385,7 +5404,14 @@ impl Runtime {
     /// `NotAnEditor` without an error; when the focused component lies inside its
     /// subtree, the command goes on to that one, so a composite control whose text
     /// mode is an embedded editor (such as a row with a
-    /// [`DraftEditor`](crate::DraftEditor)) answers through it.
+    /// [`DraftEditor`](crate::DraftEditor)) answers through it. A resting
+    /// label has no focused descendant, so code that begins an edit targets the
+    /// label itself.
+    ///
+    /// No command moves focus except
+    /// [`TextCommand::BeginEdit`](crate::TextCommand::BeginEdit): an editor
+    /// that answers it `Handled` is editing on return, and its focus request
+    /// moves focus at the next flush, since this call does not flush.
     ///
     /// # Errors
     /// Rejects foreign, unmounted, hidden and modal-blocked IDs (`Hidden` and
@@ -5758,6 +5784,12 @@ impl Runtime {
                 continue;
             }
             self.apply_requested_text_commands()?;
+            // A command that began an edit shows its editor at its owner's
+            // update; run that before focus is applied, so the editor's focus
+            // request settles in this flush.
+            if !self.window.shared.pending.borrow().is_empty() {
+                continue;
+            }
             self.apply_requested_removals()?;
             let had_layout = self.settle_layout()?;
             self.apply_requested_focus()?;

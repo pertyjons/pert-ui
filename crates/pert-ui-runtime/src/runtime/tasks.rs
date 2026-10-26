@@ -98,9 +98,7 @@ impl EventContext {
     /// Queues an application operation with mutable runtime access for the next
     /// flush, before component evaluation. Use it to create document parameters,
     /// register commands or change a tree in response to ordinary button input.
-    /// It is also how a callback starts background work: the operation calls
-    /// [`Runtime::spawn`], which needs the runtime that an event callback does
-    /// not have.
+    /// Background work starts with [`Self::spawn`].
     ///
     /// The callback runs once in the originating window if its widget is still
     /// mounted and logically visible. Otherwise its receipt becomes
@@ -203,6 +201,85 @@ impl EventContext {
             Owner::Window(Rc::downgrade(&self.node.window())),
             Box::new(action),
         )
+    }
+
+    /// Starts `work` on a background thread from a callback and hands its
+    /// result to `deliver` on the UI thread, as [`Runtime::spawn`] does.
+    ///
+    /// A callback has no runtime, so this queues the start: it is the
+    /// operation `|ui| ui.spawn(work, deliver).map(|_| ())` queued with
+    /// [`Self::defer_detached`]. The thread starts at the beginning of the
+    /// next flush, before component evaluation, as every queued operation
+    /// does. The start belongs to the widget's window, not to the widget: it
+    /// still runs when the widget is hidden or removed before that flush, as a
+    /// Save button that closes its dialog is, and is cancelled only when the
+    /// window has closed or the runtime has shut down first. Once started, the
+    /// result follows [`Runtime::spawn`]'s rules, which the window does not
+    /// govern: results are delivered in arrival order, a panicking `work`
+    /// fails the flush that receives its outcome with
+    /// [`RuntimeError::BackgroundPanicked`], and nothing is delivered after
+    /// shutdown.
+    ///
+    /// The receipt reports the start, not the result:
+    ///
+    /// - [`TaskStatus::Succeeded`]: the thread started.
+    /// - [`TaskStatus::Failed`]: [`Runtime::spawn`] refused with that error
+    ///   and nothing started, such as `BackgroundFull` while
+    ///   [`Runtime::MAX_BACKGROUND_TASKS`] tasks wait, `BackgroundSpawn` with
+    ///   the operating system's reason, or `Exhausted`. As for every queued
+    ///   operation, the error also propagates from that flush.
+    /// - [`TaskStatus::Cancelled`]: the window closed, or the runtime shut
+    ///   down, before the start.
+    ///
+    /// There is no handle to cancel the delivery. Code that must discard a
+    /// result that has not been delivered queues [`Runtime::spawn`] with
+    /// [`Self::defer`] and keeps the [`BackgroundTask`](crate::BackgroundTask)
+    /// it returns. `work` receives no UI handles; return what the interface
+    /// needs and let `deliver` write it to signals.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Button, Element, KeyAction, KeyCode, Runtime};
+    /// use std::time::Duration;
+    /// let mut ui = Runtime::new();
+    /// let status = ui.signal("Ready".to_owned());
+    /// let shown = status.clone();
+    /// let count = Button::new("Count words", move |cx| {
+    ///     shown.set("Counting".to_owned())?;
+    ///     // Real work would read a file; the result carries any failure.
+    ///     let text = String::from("one two three");
+    ///     let shown = shown.clone();
+    ///     let _receipt = cx.spawn(
+    ///         move || text.split_whitespace().count(),
+    ///         move |words| shown.set(format!("{words} words")),
+    ///     )?;
+    ///     Ok(())
+    /// });
+    /// let button = ui.mount_tree(Element::new("count", count))?;
+    /// ui.flush(Duration::ZERO)?;
+    /// ui.focus(&button)?;
+    /// ui.key_input(KeyCode::Space, KeyAction::Press)?;
+    /// ui.key_input(KeyCode::Space, KeyAction::Release)?;
+    /// // A native host flushes when the result wakes it; a headless one polls.
+    /// while status.get()? == "Counting" {
+    ///     std::thread::sleep(Duration::from_millis(1));
+    ///     ui.flush(Duration::ZERO)?;
+    /// }
+    /// assert_eq!(status.get()?, "3 words");
+    /// # Ok::<(), pert_ui::RuntimeError>(())
+    /// ```
+    ///
+    /// # Errors
+    /// Returns `TaskQueueFull` at [`Runtime::MAX_TASKS`] pending operations,
+    /// or the runtime phase/shutdown error, without accepting the operation.
+    /// [`Runtime::spawn`]'s own refusals arrive later, in the receipt and from
+    /// the flush that starts the work.
+    pub fn spawn<T: Send + 'static>(
+        &self,
+        work: impl FnOnce() -> T + Send + 'static,
+        deliver: impl FnOnce(T) -> Result<(), RuntimeError> + 'static,
+    ) -> Result<TaskReceipt, RuntimeError> {
+        self.defer_detached(move |ui| ui.spawn(work, deliver).map(|_| ()))
     }
 }
 impl Runtime {

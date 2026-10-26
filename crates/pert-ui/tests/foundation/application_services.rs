@@ -340,3 +340,133 @@ fn an_interval_survives_focus_loss_and_cancelled_input_and_stops_at_shutdown() -
     assert_eq!(count.get(), 2, "no tick during or after shutdown");
     Ok(())
 }
+
+/// The receipt of the last start a button's callback queued.
+type KeptReceipt = Rc<RefCell<Option<TaskReceipt>>>;
+
+/// A button whose callback counts words with `EventContext::spawn`, keeping
+/// the receipt, and the signal the count reaches.
+fn spawning_button(
+    ui: &mut Runtime,
+) -> Result<(WidgetId, Signal<usize>, KeptReceipt), RuntimeError> {
+    ui.set_viewport(Viewport::new(200.0, 100.0, 1.0)?)?;
+    let words = ui.signal(0_usize);
+    let receipt: KeptReceipt = Rc::default();
+    let (shown, kept) = (words.clone(), receipt.clone());
+    let button = ui.mount_tree(
+        Button::new("Count", move |cx| {
+            let shown = shown.clone();
+            *kept.borrow_mut() = Some(cx.spawn(
+                || "one two three".split_whitespace().count(),
+                move |count| shown.set(count),
+            )?);
+            Ok(())
+        })
+        .key("count"),
+    )?;
+    ui.flush(Duration::ZERO)?;
+    Ok((button, words, receipt))
+}
+
+fn receipt_status(receipt: &KeptReceipt) -> Option<TaskStatus> {
+    receipt.borrow().as_ref().map(TaskReceipt::status)
+}
+
+#[test]
+fn a_callback_spawn_starts_at_the_next_flush_and_delivers_its_result() -> TestResult {
+    let mut ui = Runtime::new();
+    let (button, words, receipt) = spawning_button(&mut ui)?;
+    ui.focus(&button)?;
+    ui.key_input(KeyCode::Space, KeyAction::Press)?;
+    ui.key_input(KeyCode::Space, KeyAction::Release)?;
+    // Queued in the callback; the thread starts at the next flush.
+    ui.flush(ui.now())?;
+    assert_eq!(receipt_status(&receipt), Some(TaskStatus::Succeeded));
+    flush_until(&mut ui, || words.get().is_ok_and(|words| words != 0))?;
+    assert_eq!(words.get()?, 3);
+    Ok(())
+}
+
+#[test]
+fn a_refused_callback_spawn_fails_its_receipt_and_the_flush() -> TestResult {
+    let mut ui = Runtime::new();
+    let (button, words, _) = spawning_button(&mut ui)?;
+    let (release, gate) = mpsc::channel::<()>();
+    let gate = std::sync::Arc::new(std::sync::Mutex::new(gate));
+    for _ in 0..Runtime::MAX_BACKGROUND_TASKS {
+        let gate = gate.clone();
+        ui.spawn(
+            move || gate.lock().map(|gate| gate.recv().is_ok()).unwrap_or(false),
+            |_| Ok(()),
+        )?;
+    }
+    let receipt = ui.event(&button, |cx| cx.spawn(|| 1_usize, |_| Ok(())))??;
+    assert_eq!(ui.flush(ui.now()).err(), Some(RuntimeError::BackgroundFull));
+    assert_eq!(
+        receipt.status(),
+        TaskStatus::Failed(RuntimeError::BackgroundFull)
+    );
+    for _ in 0..Runtime::MAX_BACKGROUND_TASKS {
+        release.send(())?;
+    }
+    assert_eq!(words.get()?, 0);
+    Ok(())
+}
+
+#[test]
+fn a_callback_spawn_outlives_its_widget_but_not_its_window() -> TestResult {
+    let mut ui = Runtime::new();
+    let (button, words, _) = spawning_button(&mut ui)?;
+    let shown = words.clone();
+    let removed = ui.event(&button, |cx| {
+        cx.spawn(|| 2_usize, move |count| shown.set(count))
+    })??;
+    // The widget goes before the flush, as a dialog closes after Save.
+    ui.unmount(&button)?;
+    ui.flush(ui.now())?;
+    assert_eq!(removed.status(), TaskStatus::Succeeded);
+    flush_until(&mut ui, || words.get().is_ok_and(|words| words != 0))?;
+    assert_eq!(words.get()?, 2);
+
+    // Hiding does not cancel the start either.
+    let (button, _, _) = spawning_button(&mut ui)?;
+    let hidden = ui.event(&button, |cx| cx.spawn(|| 0_usize, |_| Ok(())))??;
+    ui.set_visible(&button, false)?;
+    ui.flush(ui.now())?;
+    assert_eq!(hidden.status(), TaskStatus::Succeeded);
+
+    // A window that closes before the flush cancels it.
+    let view = ui.mount_tree(Element::new("view", Label::new("Detached")))?;
+    ui.flush(ui.now())?;
+    let prepared = ui.prepare_detach(&view, NativeWindowOptions::new("Detached")?)?;
+    let detached = ui.commit_detach(prepared)?;
+    ui.flush(ui.now())?;
+    let closed = ui.event(&view, |cx| {
+        cx.spawn(
+            || -> usize { panic!("a closed window must not start") },
+            |_| Ok(()),
+        )
+    })??;
+    ui.select_window(&ui.primary_window())?;
+    ui.unmount(&view)?;
+    assert!(!ui.contains_window(&detached));
+    ui.flush(ui.now())?;
+    assert_eq!(closed.status(), TaskStatus::Cancelled);
+    Ok(())
+}
+
+#[test]
+fn a_callback_spawn_is_cancelled_by_shutdown_before_the_flush() -> TestResult {
+    let mut ui = Runtime::new();
+    let (button, _, _) = spawning_button(&mut ui)?;
+    let receipt = ui.event(&button, |cx| {
+        cx.spawn(
+            || -> usize { panic!("shutdown must cancel the start") },
+            |_| Ok(()),
+        )
+    })??;
+    assert_eq!(receipt.status(), TaskStatus::Pending);
+    ui.shutdown();
+    assert_eq!(receipt.status(), TaskStatus::Cancelled);
+    Ok(())
+}

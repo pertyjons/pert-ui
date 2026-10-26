@@ -8,6 +8,7 @@
 #[path = "../support/mod.rs"]
 mod support;
 
+mod begin_edit;
 mod binding_refusal;
 mod draft_editor;
 mod editor_permissions;

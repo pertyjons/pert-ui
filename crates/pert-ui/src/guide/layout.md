@@ -485,17 +485,27 @@ implementation over a copy of that value. Each piece then has one job:
 - **Filter.** A [`ListFilter`] over that source, shown by a
   [`CollectionFilter`] field, publishes the rows that match in
   [`ListFilter::items`], which the list binds instead of the source.
-- **Selection and actions.** A [`ListSelection`] makes the list one Tab stop
-  that the arrows navigate; [`VirtualList::on_activate`] runs on Enter, and
-  [`VirtualList::reorderable`] receives drags and Alt with an arrow as one
-  [`ListDrop`] whose position names keys, which the callback applies to the
-  records.
-- **Hidden selection.** A filter never prunes the selection, and moves the
-  active row off a hidden row only while the list has focus, so a selected
-  row can be hidden while the user types in the field. Deriving
-  `ListFilter::items()` with [`ListSelection::active`] through
-  [`ReadSignal::combine`] and [`ListItems::index_of`] tells whether it is
-  shown; the Delete button below is enabled only then.
+- **Selection and actions.** A [`ListSelection`] makes the list a Tab stop
+  that the arrows navigate; [`VirtualList::on_activate`] runs on Enter, here
+  to rename the active row, and [`VirtualList::reorderable`] receives drags
+  and Alt with an arrow as one [`ListDrop`] whose position names keys, which
+  the callback applies to the records.
+- **Hidden selection.** A filter never prunes the selection. While the list
+  has focus it moves the active row off a hidden row; while the user types
+  in the field, [`CollectionFilter::hidden_active`] decides, and
+  [`HiddenActive::Clear`] leaves no row active once the active row is
+  hidden. Application writes and a filter that hides every row while the
+  list has focus can still leave a hidden active row, so the Delete button
+  below stays guarded: deriving `ListFilter::items()` with
+  [`ListSelection::active`] through [`ReadSignal::combine`] and
+  [`ListItems::index_of`] tells whether the active row is shown, and Delete
+  is enabled only then.
+- **Renaming.** The title is an [`InlineText`] in
+  [row mode](InlineText::in_row): a single press on it selects the row, as a
+  press elsewhere in the row does, and a double click renames it. Enter on
+  the list renames the active row: `on_activate` finds the row's title below
+  the list and sends it [`TextCommand::BeginEdit`]. Enter in the editor saves
+  and gives focus back to the list.
 
 A control in a row binds a signal, and [`ListItems::build`] has no state
 owner, so a row makes its binding in one of two ways:
@@ -520,6 +530,7 @@ owner, so a row makes its binding in one of two ways:
 ```rust
 use std::{mem, time::Duration};
 use pert_ui::prelude::*;
+use pert_ui::testing::Driver;
 use pert_ui::{ListDrop, ListDropPosition};
 
 // Signal values are compared when written and cloned when read.
@@ -585,9 +596,10 @@ impl Component for Title {
         if self.shown.is_none() {
             let shown = cx.signal(self.title.clone());
             let (store, id) = (self.store.clone(), self.id);
+            // In row mode a single press reaches the row and selects it.
             cx.request_children(vec![Element::new(
                 "editor",
-                InlineText::new(&shown).on_save(move |_, title| {
+                InlineText::new(&shown).in_row(true).on_save(move |_, title| {
                     edit(&store, id, |task| task.title = title.to_owned())
                 }),
             )]);
@@ -638,12 +650,21 @@ let filter = ListFilter::new(&ui, source)?.selection(selection.clone());
 let selected_shown = filter.items().combine(&selection.active(), |rows, active| {
     active.as_deref().is_some_and(|key| rows.index_of(key).is_some())
 })?;
-let opened = ui.signal(None::<String>);
-let (open, order, remove, active) =
-    (opened.clone(), tasks.clone(), tasks.clone(), selection.active());
+let (order, remove, active) = (tasks.clone(), tasks.clone(), selection.active());
 let list = VirtualList::new(filter.items(), 32.0)?
     .selection(selection.clone())
-    .on_activate(move |_, key| open.set(Some(key.to_owned())))
+    // Enter renames the active row. The callback's context is the list's, and
+    // the row's title is found below it by the row's key.
+    .on_activate(|cx, key| {
+        let (list, key) = (cx.id(), key.to_owned());
+        let _receipt = cx.defer(move |ui| {
+            let Some(title) = ui.find(&list, &[key.as_str(), "title", "editor"])? else {
+                return Ok(());
+            };
+            ui.text_command(&title, TextCommand::BeginEdit).map(|_| ())
+        })?;
+        Ok(())
+    })
     .reorderable(move |_, drop| reorder(&order, drop));
 let delete = Button::new("Delete", move |_| {
     let Some(key) = active.get()? else { return Ok(()) };
@@ -652,6 +673,7 @@ let delete = Button::new("Delete", move |_| {
 .enabled(&selected_shown);
 let root = ui.mount_tree(Column::new([
     CollectionFilter::new(&ui, filter.clone(), Element::new("list", list))
+        .hidden_active(HiddenActive::Clear)
         .key("tasks")
         .with_grow(1),
     delete.key("delete"),
@@ -666,7 +688,7 @@ let ids = |tasks: &Signal<Vec<Task>>| -> Result<Vec<u64>, RuntimeError> {
     Ok(tasks.get()?.iter().map(|task| task.id).collect())
 };
 
-// Select the first row, move it down with Alt+Down and open it with Enter.
+// Select the first row and move it down with Alt+Down.
 let list = ui.find(&root, &["tasks", "list"])?.ok_or("the list")?;
 ui.focus(&list)?;
 press(&mut ui, KeyCode::ArrowDown)?;
@@ -674,8 +696,19 @@ ui.key_input(KeyCode::AltLeft, KeyAction::Press)?;
 press(&mut ui, KeyCode::ArrowDown)?;
 ui.key_input(KeyCode::AltLeft, KeyAction::Release)?;
 assert_eq!(ids(&tasks)?, [2, 1, 3]);
+
+// Enter renames the active row once the next flush runs the deferred
+// command. The draft survives a change to another record, and Enter saves
+// it and gives focus back to the list.
 press(&mut ui, KeyCode::Enter)?;
-assert_eq!(opened.get()?.as_deref(), Some("1"));
+ui.flush(Duration::ZERO)?;
+ui.text_input("Buy oat milk")?; // replaces the selected title
+edit(&tasks, 3, |task| task.done = true)?;
+ui.flush(Duration::ZERO)?;
+press(&mut ui, KeyCode::Enter)?;
+ui.flush(Duration::ZERO)?;
+assert_eq!(tasks.get()?[1].title, "Buy oat milk");
+assert_eq!(ui.focused(), Some(list.clone()));
 
 // The per-row checkbox writes the record.
 let check = ui.find(&root, &["tasks", "list", "1", "done"])?.ok_or("a checkbox")?;
@@ -683,29 +716,36 @@ ui.focus(&check)?;
 press(&mut ui, KeyCode::Space)?;
 assert!(tasks.get()?[1].done);
 
-// A title draft survives a change to another record.
-let title = ui.find(&root, &["tasks", "list", "2", "title", "editor"])?.ok_or("a title")?;
-ui.focus(&title)?;
-press(&mut ui, KeyCode::F2)?;
-ui.text_input("Write the whole plan")?;
-edit(&tasks, 3, |task| task.done = true)?;
-ui.flush(Duration::ZERO)?;
-press(&mut ui, KeyCode::Enter)?;
-assert_eq!(tasks.get()?[0].title, "Write the whole plan");
+// A press on another row's title selects that row; a double click on a
+// title renames it. The driver's clicks are one frame apart.
+let title = |ui: &Runtime, key| ui.find(&root, &["tasks", "list", key, "title", "editor"]);
+let write = title(&ui, "2")?.ok_or("a title")?;
+let ship = title(&ui, "3")?.ok_or("a title")?;
+let mut driver = Driver::new(&mut ui);
+driver.click(&write)?;
+assert_eq!(selection.active().get()?.as_deref(), Some("2"));
+driver.click(&ship)?;
+driver.click(&ship)?;
+driver.type_text("Ship it today")?;
+driver.key(KeyCode::Enter)?;
+assert_eq!(tasks.get()?[2].title, "Ship it today");
+assert_eq!(selection.active().get()?.as_deref(), Some("3"));
 
-// Typing in the field hides the selected row, which disables Delete.
-let field = ui.find(&root, &["tasks", "filter-field", "filter"])?.ok_or("the field")?;
-ui.focus(&field)?;
-ui.text_input("ship")?;
-ui.flush(Duration::ZERO)?;
+// Typing in the field hides the active row, which leaves no row active,
+// so Delete is disabled.
+let field = driver.find(&root, &["tasks", "filter-field", "filter"])?;
+driver.runtime_mut().focus(&field)?;
+driver.type_text("milk")?;
 assert_eq!(filter.counts().get()?.shown, 1);
-assert_eq!(selection.active().get()?.as_deref(), Some("1"));
+assert_eq!(selection.active().get()?, None);
 assert!(!selected_shown.get()?);
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
 
-A press on the title focuses the title rather than selecting its row; Enter
-or F2 on the focused title, or a double click, starts editing. The [inventory
+A single press on a title selects its row, a double click renames it, and
+Enter on the list renames the active row; with the label's default press
+behavior a press would focus the title instead and the row would never see
+it. The [inventory
 example](https://github.com/pertyjons/pert-ui/blob/main/crates/pert-ui/examples/inventory/main.rs)
 applies the retained form to a table's checkbox column, and a
 [`Table`] edits text cells in place through its own editor instead.

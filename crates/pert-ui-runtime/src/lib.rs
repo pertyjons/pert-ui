@@ -104,7 +104,8 @@ mod chip;
 mod collapsible;
 mod collection_filter;
 pub use collection_filter::{
-    CollectionFilter, FilterCounts, FilterMatcher, FilterOutcome, FilterTarget, ListFilter,
+    CollectionFilter, FilterCounts, FilterMatcher, FilterOutcome, FilterTarget, HiddenActive,
+    ListFilter,
 };
 mod command_palette;
 mod content_search;
@@ -443,7 +444,7 @@ pub mod prelude {
         ChoiceId, ChoiceOption, NormalizedValue, ParameterId, ParameterMapping, ParameterSpec,
     };
     #[doc(no_inline)]
-    pub use crate::{CollectionFilter, FilterMatcher, ListFilter};
+    pub use crate::{CollectionFilter, FilterMatcher, HiddenActive, ListFilter};
     #[doc(no_inline)]
     pub use crate::{
         Color, ColorPicker, ColorSwatch, DisplayList, DrawCommand, DrawError, HexColorError,

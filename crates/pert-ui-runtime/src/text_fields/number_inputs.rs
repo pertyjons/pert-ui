@@ -238,7 +238,13 @@ description_debug!(DecimalInput);
 /// mode keeps the Enter and
 /// focus-loss save, Escape cancel, IME, clipboard and undo rules of
 /// [`IntegerInput`], including its text commands; outside text mode the row
-/// answers every text command with [`TextCommandOutcome::NotAnEditor`]. Hiding
+/// answers [`TextCommand::BeginEdit`] by entering text mode as Enter/F2 does,
+/// read-only text mode included, and every other text command with
+/// [`TextCommandOutcome::NotAnEditor`]. `BeginEdit` answers
+/// [`TextCommandOutcome::Unavailable`] while the row is disabled, has had no
+/// valid value since it mounted, or is in a step gesture (a step drag, a
+/// pressed stepper or a held step key, which then ends on its release as
+/// before), and in text mode. Hiding
 /// and removal cancel. One Tab stop covers the caption,
 /// value and unit, and resting focus schedules no caret work. The preferred width
 /// reserves the formatted bounds, capped at eight characters for very large
@@ -1647,12 +1653,16 @@ impl<T: Number> NumberEditor<T> {
         }
     }
     /// A clipboard command on the draft, with the chords' semantics. A resting
-    /// inline row is not an editor, since it holds no draft to act on.
+    /// inline row is not an editor, since it holds no draft to act on, except
+    /// for [`TextCommand::BeginEdit`], which it answers as Enter and F2.
     fn command(
         &mut self,
         cx: &mut EventContext,
         command: TextCommand,
     ) -> Result<TextCommandOutcome, RuntimeError> {
+        if command == TextCommand::BeginEdit {
+            return self.begin_command(cx);
+        }
         if self.field.inline && !self.field.editing {
             return Ok(TextCommandOutcome::NotAnEditor);
         }
@@ -1666,6 +1676,28 @@ impl<T: Number> NumberEditor<T> {
             return Ok(TextCommandOutcome::NotAnEditor);
         }
         self.field.editor.command(cx, command)
+    }
+    /// [`TextCommand::BeginEdit`]: a resting inline row enters text mode as
+    /// Enter and F2 do, read-only text mode included, but not during a step
+    /// gesture, which keeps its own lifetime. A field that is always editing,
+    /// and a row already in text mode, have nothing to begin.
+    fn begin_command(&mut self, cx: &mut EventContext) -> Result<TextCommandOutcome, RuntimeError> {
+        self.sync(self.source.current()?)?;
+        if !self.field.inline || self.field.editing {
+            return Ok(TextCommandOutcome::Unavailable);
+        }
+        // Narrower than the key path, which refuses only a drag and a pressed
+        // stepper: text mode must not start under a held step key's preview.
+        if self.held() || !self.field.editor.enabled {
+            return Ok(TextCommandOutcome::Unavailable);
+        }
+        // Only a field refused since mount has no valid value to show.
+        let Ok(value) = self.draft() else {
+            return Ok(TextCommandOutcome::Unavailable);
+        };
+        self.field
+            .begin_text(cx, value, value.format(self.precision))?;
+        Ok(TextCommandOutcome::Handled)
     }
     /// Steps the draft from its own value. A step into the draft is
     /// normalized when the draft is saved; an `immediate` step is saved next,

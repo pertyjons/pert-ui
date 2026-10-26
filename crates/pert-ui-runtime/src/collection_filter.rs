@@ -115,7 +115,8 @@ pub struct FilterCounts {
 /// Besides the counts it names where keyboard navigation should go when the
 /// active item disappeared: the nearest row still shown, by the order before
 /// the filter changed. Applying a filter never moves the active item itself;
-/// [`CollectionFilter`] moves it only while the collection has focus.
+/// [`CollectionFilter`] moves it while the collection has focus, and without
+/// focus only as its [`HiddenActive`] policy says.
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct FilterOutcome {
@@ -126,6 +127,74 @@ pub struct FilterOutcome {
     /// before it. `None` when the active item is still shown, was not shown,
     /// or no row remains.
     pub nearest_active: Option<String>,
+}
+
+/// What a [`CollectionFilter`] does with an active item that a filter change
+/// leaves hidden while focus is outside the collection, chosen with
+/// [`CollectionFilter::hidden_active`].
+///
+/// With focus in the collection the active item always moves to the nearest
+/// row still shown, whatever the policy; see the "Selection and focus"
+/// paragraph of [`CollectionFilter`]. The policy acts once per delivered
+/// filter change (an applied query, a table's or tree's source replacement,
+/// or both), after the change, on the item the selection holds as active
+/// then. It moves only the active item: in
+/// [`SelectionMode::Single`](crate::SelectionMode::Single) the selection
+/// follows it, and in [`SelectionMode::Multiple`](crate::SelectionMode::Multiple)
+/// hidden selected keys stay selected, since the selection is never pruned.
+/// Its writes go through [`ListSelection::set_active`] and are reported as
+/// application writes.
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
+#[non_exhaustive]
+pub enum HiddenActive {
+    /// It stays active and hidden, and is shown again when the filter
+    /// clears. The default, and the behavior before this option.
+    #[default]
+    Keep,
+    /// It moves to the nearest row still shown, as it does while the
+    /// collection has focus: the transition [`FilterOutcome::nearest_active`]
+    /// describes. Only a change that hid the current active item, with a row
+    /// remaining, moves it. An item that was already hidden, one that no row
+    /// remains for, and one the application made active after the change
+    /// hid another stay where they are. A table or tree reports only its
+    /// latest source replacement, so when two replacements arrive before one
+    /// delivery and the first hid the item, the second finds it already
+    /// hidden and it stays.
+    Nearest,
+    /// No item stays active: an active item that is hidden after the change
+    /// is cleared, whether this change hid it or an earlier one did, and
+    /// whether or not a row remains. When a delivered filter change is
+    /// evaluated with focus outside the collection, the active item is
+    /// therefore shown, or there is none, afterwards. That says nothing about
+    /// later application writes, nor about a change evaluated while the
+    /// collection has focus, which keeps a hidden active item when no row
+    /// remains.
+    Clear,
+}
+impl HiddenActive {
+    /// The name inspection reports.
+    fn name(self) -> &'static str {
+        match self {
+            Self::Keep => "keep",
+            Self::Nearest => "nearest",
+            Self::Clear => "clear",
+        }
+    }
+}
+
+/// The active key a change hid and the nearest row still shown, if any:
+/// `Some` when `key` was a row of `before` and is not one of `after`.
+pub(crate) fn hid(
+    before: &dyn ListItems,
+    after: &dyn ListItems,
+    key: Option<String>,
+) -> Option<(String, Option<String>)> {
+    let key = key?;
+    if before.index_of(&key).is_none() || after.index_of(&key).is_some() {
+        return None;
+    }
+    let nearest = nearest(before, after, &key);
+    Some((key, nearest))
 }
 
 /// Rows of a source restricted to the positions a filter kept, in order.
@@ -355,6 +424,10 @@ impl ListFilter {
             nearest_active,
         })
     }
+    /// Whether the filtered rows show `key`.
+    fn shows(&self, key: &str) -> Result<bool, RuntimeError> {
+        Ok(self.0.items.get()?.index_of(key).is_some())
+    }
     /// Applies the last query and matcher again, after the source binding
     /// changed.
     ///
@@ -403,7 +476,7 @@ impl FilterTarget {
     }
     /// A table's or tree's source replacements, which reapply the filter in
     /// the controller; a list's source is part of what the wrapper applies.
-    fn replaced(&self) -> Option<ReadSignal<(u64, Option<String>)>> {
+    fn replaced(&self) -> Option<ReadSignal<Replacement>> {
         match self {
             Self::List(_) => None,
             Self::Table(table) => Some(table.replaced()),
@@ -424,7 +497,22 @@ impl FilterTarget {
             Self::Tree(tree) => Some(tree.selection()),
         }
     }
+    /// Whether the collection shows the row `key` now: a list's filtered
+    /// rows, a table's shown rows, a tree's flattened rows with the
+    /// temporary expansion.
+    fn shows(&self, key: &str) -> Result<bool, RuntimeError> {
+        match self {
+            Self::List(filter) => filter.shows(key),
+            Self::Table(table) => table.shows(key),
+            Self::Tree(tree) => Ok(tree.shows(key)),
+        }
+    }
 }
+
+/// A table's or tree's source replacement as its controller publishes it: a
+/// revision, and the active key the replacement hid with the nearest row
+/// still shown, if any.
+pub(crate) type Replacement = (u64, Option<(String, Option<String>)>);
 
 /// Ids of the field and the collection, shared with the field's key callback.
 #[derive(Default)]
@@ -461,15 +549,27 @@ struct Parts {
 /// and hidden. When the active item disappears while the collection has
 /// focus, the active item moves to the nearest remaining row (in
 /// [`SelectionMode::Single`](crate::SelectionMode::Single) the selection
-/// follows, since it is the active item); when no row remains, focus moves to
-/// the field. Without focus in the collection nothing moves, so the selected
-/// row stays hidden while the user types in the field. To tell whether it is
-/// shown, for example to enable an action on it, derive from the shown rows
-/// and the active key, which for a list are [`ListFilter::items`] and
-/// [`ListSelection::active`]:
+/// follows, since it is the active item); when no row remains and the query
+/// is not empty, focus moves to the field and the hidden active item stays.
+/// Without focus in the collection, as while the user types in the field,
+/// [`Self::hidden_active`] decides: by default ([`HiddenActive::Keep`])
+/// nothing moves and the selected row stays hidden;
+/// [`HiddenActive::Nearest`] moves the active item as with focus, and
+/// [`HiddenActive::Clear`] leaves no item active, so after a filter change
+/// evaluated without focus the active item is shown or there is none.
+///
+/// Application writes and the focused case can still leave a hidden active
+/// item, so an action on it checks that it is shown, for example to enable
+/// it. Derive that from the shown rows and the active key, which for a list
+/// are [`ListFilter::items`] and [`ListSelection::active`]:
 /// `filter.items().combine(&selection.active(), |rows, active|
 /// active.as_deref().is_some_and(|key| rows.index_of(key).is_some()))`
-/// ([`ReadSignal::combine`], [`ListItems::index_of`]). Down in the field
+/// ([`ReadSignal::combine`], [`ListItems::index_of`]). An action on a
+/// [`SelectionMode::Multiple`](crate::SelectionMode::Multiple) selection acts
+/// on every selected key, so its guard checks those rather than the active
+/// one, since hidden selected keys stay selected under every policy:
+/// `filter.items().combine(&selection.selected(), |rows, keys|
+/// keys.iter().all(|key| rows.index_of(key).is_some()))`. Down in the field
 /// moves focus into the collection; Escape clears the query first, as the
 /// search field documents.
 ///
@@ -482,10 +582,11 @@ struct Parts {
 /// before applying it.
 ///
 /// Inspection reports a [`SemanticRole::Group`] with the properties `query`,
-/// `shown`, `total` and `offered`. A new description replaces the matcher,
-/// the permission, the name and the placeholder (the same binding or role keeps
-/// the text already read); the target, query binding and debounce are fixed
-/// when it mounts.
+/// `shown`, `total`, `offered` and `hidden_active` (`keep`, `nearest` or
+/// `clear`). A new description replaces the matcher, the permission, the
+/// hidden-active policy, the name and the placeholder (the same binding or
+/// role keeps the text already read); the target, query binding and debounce
+/// are fixed when it mounts.
 ///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
@@ -546,8 +647,10 @@ pub struct CollectionFilter {
     wanted: (String, Option<ListSource>),
     /// A table's or tree's latest source replacement the update read, and
     /// the revision last handled.
-    replacement: Option<(u64, Option<String>)>,
+    replacement: Option<Replacement>,
     handled_replacement: Option<u64>,
+    /// What an unfocused filter change does with a hidden active item.
+    hidden_active: HiddenActive,
     shown_field: bool,
     collection_focused: bool,
     counts: Cell<FilterCounts>,
@@ -593,6 +696,7 @@ impl CollectionFilter {
             wanted: (String::new(), None),
             replacement: None,
             handled_replacement: None,
+            hidden_active: HiddenActive::Keep,
             shown_field: true,
             collection_focused: false,
             counts: Cell::new(FilterCounts::default()),
@@ -654,6 +758,55 @@ impl CollectionFilter {
         self.offered = self.offered.and(offered);
         self
     }
+    /// Chooses what happens to an active item that a filter change leaves
+    /// hidden while the collection lacks focus, such as while the user types
+    /// in the field. Default [`HiddenActive::Keep`]; the variants describe
+    /// each policy. With focus in the collection the active item moves to
+    /// the nearest row whatever the policy. Redescription replaces it, and a
+    /// new policy applies from the next delivered filter change; changing it
+    /// moves nothing by itself.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::{HiddenActive, ListItems, ListSource};
+    /// use std::time::Duration;
+    ///
+    /// struct Fruit;
+    /// const NAMES: [&str; 3] = ["Apple", "Banana", "Cherry"];
+    /// impl ListItems for Fruit {
+    ///     fn len(&self) -> usize { NAMES.len() }
+    ///     fn key(&self, index: usize) -> Option<String> { NAMES.get(index).map(|n| n.to_lowercase()) }
+    ///     fn build(&self, index: usize) -> Option<Element> {
+    ///         Some(Element::new(self.key(index)?, Label::new(NAMES[index])))
+    ///     }
+    ///     fn text(&self, index: usize) -> Option<String> { NAMES.get(index).map(|n| n.to_string()) }
+    /// }
+    ///
+    /// let mut ui = Runtime::new();
+    /// ui.set_viewport(Viewport::new(300.0, 200.0, 1.0)?)?;
+    /// let source = ui.signal(ListSource::new(Fruit));
+    /// let selection = ListSelection::new(&ui, SelectionMode::Single);
+    /// let filter = ListFilter::new(&ui, source.read_only())?.selection(selection.clone());
+    /// let list = VirtualList::new(filter.items(), 20.0)?.selection(selection.clone());
+    /// let query = ui.signal(String::new());
+    /// ui.mount_tree(Element::new(
+    ///     "fruit",
+    ///     CollectionFilter::with_query(query.clone(), filter, Element::new("list", list))
+    ///         .hidden_active(HiddenActive::Clear),
+    /// ))?;
+    /// selection.set_active(Some("apple".to_owned()))?;
+    /// ui.flush(Duration::ZERO)?;
+    /// // The list lacks focus, as while the user types in the field.
+    /// query.set("an".to_owned())?;
+    /// ui.flush(Duration::ZERO)?;
+    /// assert_eq!(selection.active().get()?, None);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn hidden_active(mut self, policy: HiddenActive) -> Self {
+        self.hidden_active = policy;
+        self
+    }
     /// The query binding the field edits.
     #[must_use]
     pub fn query(&self) -> Signal<String> {
@@ -661,6 +814,34 @@ impl CollectionFilter {
     }
     fn gap(cx: &MeasureContext<'_>) -> f32 {
         cx.metric(MetricRole::ItemGap)
+    }
+    /// Applies the hidden-active policy after a filter change evaluated
+    /// without focus in the collection. `hidden` is the active key the
+    /// change hid, with its nearest row still shown.
+    fn unfocused_hidden(
+        &self,
+        selection: &ListSelection,
+        hidden: Option<(String, Option<String>)>,
+    ) -> Result<(), RuntimeError> {
+        if self.hidden_active == HiddenActive::Keep {
+            return Ok(());
+        }
+        let Some(active) = selection.active().get()? else {
+            return Ok(());
+        };
+        if self.target.shows(&active)? {
+            return Ok(());
+        }
+        match self.hidden_active {
+            // A state rule: whenever it became hidden.
+            HiddenActive::Clear => selection.set_active(None),
+            // Only the transition this change made for this active key.
+            HiddenActive::Nearest => match hidden {
+                Some((key, Some(nearest))) if key == active => selection.set_active(Some(nearest)),
+                _ => Ok(()),
+            },
+            HiddenActive::Keep => Ok(()),
+        }
     }
 }
 
@@ -679,6 +860,7 @@ impl Component for CollectionFilter {
         }
         self.matcher = next.matcher;
         self.offered = next.offered;
+        self.hidden_active = next.hidden_active;
         // The field slot adopts the new name and placeholder itself.
         self.name.reconcile(next.name);
         self.placeholder = next.placeholder;
@@ -739,17 +921,28 @@ impl Component for CollectionFilter {
         if let Some((revision, _)) = &replacement {
             self.handled_replacement = Some(*revision);
         }
-        let outcome = if self.applied.as_ref() != Some(&self.wanted) {
+        // The change and the active key it hid with its nearest row: a
+        // query applied over the current source supplies its own transition,
+        // which takes precedence over a replacement in the same delivery.
+        let (outcome, hidden) = if self.applied.as_ref() != Some(&self.wanted) {
+            let active = match self.target.selection() {
+                Some(selection) => selection.active().get()?,
+                None => None,
+            };
             let outcome = self.target.apply(&self.wanted.0, &self.matcher)?;
             self.applied = Some(self.wanted.clone());
-            outcome
-        } else if let Some((_, nearest_active)) = replacement {
+            let hidden = active
+                .zip(outcome.nearest_active.clone())
+                .map(|(key, nearest)| (key, Some(nearest)));
+            (outcome, hidden)
+        } else if let Some((_, hid)) = replacement {
             // The controller reapplied the filter to its new source; follow
             // its counts and the active row it hid, as for a query change.
-            FilterOutcome {
+            let outcome = FilterOutcome {
                 counts: self.target.counts()?.unwrap_or_default(),
-                nearest_active,
-            }
+                nearest_active: hid.as_ref().and_then(|(_, nearest)| nearest.clone()),
+            };
+            (outcome, hid)
         } else {
             return Ok(());
         };
@@ -769,6 +962,8 @@ impl Component for CollectionFilter {
             {
                 cx.request_focus_for(&field)?;
             }
+        } else if let Some(selection) = self.target.selection() {
+            self.unfocused_hidden(&selection, hidden)?;
         }
         Ok(())
     }
@@ -843,6 +1038,10 @@ impl Component for CollectionFilter {
         details
             .properties
             .insert("offered".into(), InspectValue::Bool(self.shown_field));
+        details.properties.insert(
+            "hidden_active".into(),
+            InspectValue::Text(self.hidden_active.name().into()),
+        );
         details.semantics = Some(Semantics::new(SemanticRole::Group).name(self.name.text()));
         details
     }

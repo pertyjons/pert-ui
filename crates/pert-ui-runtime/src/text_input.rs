@@ -128,13 +128,16 @@ impl TextPreedit {
     }
 }
 
-/// A clipboard action a text editor performs on its own selection and caret.
+/// An action a text editor performs on its own text: a clipboard or selection
+/// action on its selection and caret, or beginning an edit.
 ///
 /// This is the contract behind the built-in editors' clipboard chords and their
 /// context menu, and the same one a custom editor implements through
 /// [`Component::text_command`](crate::Component::text_command). Requesting a
-/// command never moves focus and never reads the clipboard on the caller's
-/// behalf; the receiving editor decides what its own selection means.
+/// command never reads the clipboard on the caller's behalf; the receiving
+/// editor decides what its own selection means. No command moves focus except
+/// [`Self::BeginEdit`], which the editor answers by requesting focus for its
+/// editing part.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum TextCommand {
@@ -164,6 +167,52 @@ pub enum TextCommand {
     /// text editor and a [`SelectableText`](crate::SelectableText) answer it;
     /// an empty text reports `Unavailable`.
     SelectAll,
+    /// Begins editing in an editor that has a resting state, as its own
+    /// editing key (Enter or F2) does, without depending on the keyboard's
+    /// state. This is how code starts a rename, for example from a list's
+    /// [`on_activate`](crate::VirtualList::on_activate) or a menu command.
+    ///
+    /// It is the one command that moves focus. `Handled` means the editor
+    /// began editing: its draft is open with the text selected, inspection
+    /// reports `editing: true`, and the editor has requested focus for its
+    /// editing part. That request settles at a flush:
+    /// [`Runtime::text_command`](crate::Runtime::text_command) delivers at
+    /// once and does not flush, so focus moves at the next flush;
+    /// [`EventContext::request_text_command`](crate::EventContext::request_text_command)
+    /// is delivered in the event phase of a flush, and its focus request
+    /// settles at the end of that flush.
+    ///
+    /// A resting editor does exactly what its Enter/F2 path does and answers
+    /// `Unavailable` wherever that path does nothing, such as while it is
+    /// disabled. [`InlineText`](crate::InlineText),
+    /// [`InlineInteger`](crate::InlineInteger) and
+    /// [`InlineDecimal`](crate::InlineDecimal) answer it at rest; an editor
+    /// that is already editing, and one that has no resting state, such as a
+    /// [`TextField`](crate::TextField), answers `Unavailable`, as
+    /// [`SelectableText`](crate::SelectableText) does. A component without a
+    /// text-command handler answers `NotAnEditor`. A custom editor answers it
+    /// from [`Component::text_command`](crate::Component::text_command) like
+    /// the other commands.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{
+    ///     Element, InlineText, KeyAction, KeyCode, Runtime, TextCommand, TextCommandOutcome,
+    /// };
+    /// use std::time::Duration;
+    /// let mut ui = Runtime::new();
+    /// let name = ui.signal(String::from("Draft"));
+    /// let label = ui.mount_tree(Element::new("name", InlineText::new(name.clone())))?;
+    /// ui.flush(Duration::ZERO)?;
+    /// let outcome = ui.text_command(&label, TextCommand::BeginEdit)?;
+    /// assert_eq!(outcome, TextCommandOutcome::Handled);
+    /// ui.flush(Duration::ZERO)?; // focus moves into the editor
+    /// ui.text_input("Final")?; // replaces the selected text
+    /// ui.key_input(KeyCode::Enter, KeyAction::Press)?;
+    /// assert_eq!(name.get()?, "Final");
+    /// # Ok::<(), pert_ui::RuntimeError>(())
+    /// ```
+    BeginEdit,
 }
 
 /// Outcome of a [`TextCommand`] delivered to a component.

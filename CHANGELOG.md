@@ -1,5 +1,105 @@
 # Changelog
 
+## 0.3.69 (2026-10-26)
+
+Editing and collection capabilities (API audit fix plan, part 6f2, after its
+design checkpoint `plans/usability/api-audit/design-6f2.md`). Callbacks start
+background work (F13), code begins an edit (F15), a label can be part of a
+selectable list row (F27), and a collection filter can keep the active item
+on a shown row while the user types in its field (F7b). Not breaking.
+
+- Added (F13): `EventContext::spawn`, which starts background work from a
+  callback as `Runtime::spawn` does. It queues the start, the operation
+  `|ui| ui.spawn(work, deliver).map(|_| ())`, bound to the widget's window as
+  `EventContext::defer_detached` is: the thread starts at the beginning of
+  the next flush, also when the widget was hidden or removed by then, and
+  the start is cancelled only when the window closed or the runtime shut
+  down first. Its `TaskReceipt` reports the start: `Succeeded` once the
+  thread started, `Failed` with `Runtime::spawn`'s refusal (which also fails
+  that flush), or `Cancelled`. The call itself fails with `TaskQueueFull`
+  and the phase and shutdown errors. There is no cancel handle; the rustdoc
+  points to `defer` with `Runtime::spawn` for a cancellable delivery.
+- Added (F15): `TextCommand::BeginEdit`, which begins editing in an editor
+  that has a resting state, as its own Enter or F2 does, without depending
+  on the keyboard's state. `InlineText` answers it at rest by beginning to
+  edit with the text selected (`Handled`), and with `Unavailable` while it
+  is disabled, refuses its binding or is already editing. Editors without a
+  resting state (`TextField`, `TextArea`, `SearchField`, `IntegerInput`,
+  `DecimalInput`, `DraftEditor`) and `SelectableText` answer `Unavailable`.
+- Added (F27): `InlineText::in_row(bool)`, a list-row mode, default `false`.
+  The resting label is not focusable and adds no Tab stop, so a press
+  focuses the list; an unmodified press is left to the row (which selects
+  it and may arm a reorder drag) unless it is the second of a click series,
+  which begins editing; a press with Shift, Control, Alt or Super is left
+  to the row. A series ends when the pointer leaves the label (also when a
+  reorder drag starts from it), on a modified press, on cancelled input,
+  hiding, disabling and when an edit begins. Editing that ends by key
+  leaves focus to the nearest focusable ancestor, the list. Inspection
+  reports `in_row` while the mode is on; redescription replaces it and
+  never ends a draft.
+- Added (F7b): `HiddenActive` (`Keep`, the default; `Nearest`; `Clear`),
+  `#[non_exhaustive]`, `Copy`, `Eq`, `Hash`, `Default`, at the root and in
+  the prelude beside `CollectionFilter`, and
+  `CollectionFilter::hidden_active(HiddenActive)`. The policy acts once per
+  delivered filter change evaluated while focus is outside the collection:
+  `Nearest` moves the active item to the nearest row still shown when this
+  change hid it and a row remains, `Clear` leaves no item active whenever
+  the active item is hidden after the change, and `Keep` leaves it, as
+  before. With focus in the collection the earlier rule holds under every
+  policy. Only the active item changes; hidden selected keys stay selected.
+  Inspection reports `hidden_active` (`keep`, `nearest` or `clear`), and
+  redescription replaces the policy. Internally a table's or tree's source
+  replacement now reports the active key it hid with the nearest row, so
+  `Nearest` acts only on its own transition.
+- Changed (F15): the text-command contract. A text command still never
+  moves focus, except `TextCommand::BeginEdit`, whose `Handled` means the
+  editor began editing and requested focus for its editing part. That
+  request settles at the next flush after the synchronous
+  `Runtime::text_command`, and at the end of the delivering flush for
+  `EventContext::request_text_command`; for the latter, the flush now runs
+  the updates a delivered command caused before it applies focus, so the
+  editor that just became visible takes it. The `TextCommand`,
+  `Component::text_command`, `Runtime::text_command` and
+  `request_text_command` rustdoc and contracts.md say so.
+- Changed (F15): `InlineInteger` and `InlineDecimal` answer `BeginEdit` at
+  rest by entering text mode as Enter/F2 does, read-only text mode
+  included, where they answered `NotAnEditor`. They answer `Unavailable`
+  while disabled, without a valid value since mount, in text mode, and
+  during a step gesture (a step drag, a pressed stepper or a held step key),
+  which is narrower than the key path; the gesture still ends on its
+  release. Every other command at rest is still `NotAnEditor`.
+- Documentation (F27): `InlineText`'s default press behavior, unchanged in
+  code: a single primary press is handled and focuses the label, a
+  double-click edits, and a row around it never sees the press.
+- Documentation (F15): `Runtime::key_input` says a synthesized press of a
+  key that is physically held is a repeat, which controls acting on a fresh
+  press ignore, and points to `TextCommand::BeginEdit`.
+- Documentation (F13): `Runtime::spawn` points callbacks to
+  `EventContext::spawn`, and `EventContext::defer` no longer calls itself
+  the way to start background work. The guide's "Worker results and live
+  data" uses `cx.spawn` and says who owns the start, the data-contract table
+  names `EventContext::spawn`, and contracts.md's background-work paragraph
+  describes it.
+- Documentation (F7b, F15, F27): the guide's editable list recipe builds
+  its titles with `InlineText::in_row(true)`, renames the active row from
+  `VirtualList::on_activate` with `TextCommand::BeginEdit` instead of
+  writing an "opened" signal, uses `HiddenActive::Clear`, and asserts that
+  a press selects a row, a double click and Enter rename, and typing in the
+  field leaves no row active. `CollectionFilter`'s "Selection and focus"
+  paragraph and `FilterOutcome` name the policy, and the rustdoc gives a
+  guard over the selected keys for a `Multiple` selection.
+- Added: contract tests in the facade's binaries: `foundation`'s
+  `application_services` for `EventContext::spawn`, `editing`'s new
+  `begin_edit` module, and `collections`' new `inline_text_rows` and
+  `filter_hidden_active` modules, with the compatibility checks named as
+  such.
+- The runtime's `api/` listings (default and `serde`) add
+  `EventContext::spawn`, `TextCommand::BeginEdit` (also under the `prelude`
+  and `component` paths), `InlineText::in_row`, `HiddenActive` with its
+  variants and trait implementations (also under the `prelude` path) and
+  `CollectionFilter::hidden_active`. The facade's listings do not change,
+  since the facade re-exports the runtime by glob.
+
 ## 0.3.68 (2026-10-23)
 
 Testing and window close (API audit fix plan, part 6f1). A test driver and a

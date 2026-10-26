@@ -385,13 +385,12 @@ Inputs from later plans and the 2026-10-20 audit:
   component's bounds are.
 - The [developer-usability plan](developer-usability.md#round-1-findings)'s
   blind tests (2026-10-21) add discovery evidence:
-  - **Background work from a callback (F13):** the `defer`-then-
-    `Runtime::spawn` pattern the `diagram_editor` example uses, which both
-    task 1 testers had to invent or work around.
   - **Per-row state (F16):** how per-row controls bind to an application's
     own `Vec`; an optional controlled-control API stays in follow-ups.
-  Those findings may instead be fixed in that plan's slices 5 and 6 if its
-  joint checkpoint chooses them.
+  That finding may instead be fixed in that plan's slice 6 if its joint
+  checkpoint chooses it. Background work from a callback (F13) left this
+  list: the API audit's part 6f2 (0.3.69) added `EventContext::spawn`, and
+  the guide's worker section uses it.
 
 ## Optional follow-ups
 

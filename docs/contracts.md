@@ -678,7 +678,11 @@ wait at once; each holds a reserved place in that mailbox, so a worker's send
 never finds it full. Cancellation discards an undelivered result but cannot stop
 the thread; a panicking work delivers nothing and fails the flush that receives
 its outcome with `BackgroundPanicked`. The work holds no UI handle, and the
-helper is not a callback-safe endpoint.
+helper is not a callback-safe endpoint. `EventContext::spawn` queues the same
+call from a callback, bound to the widget's window as `defer_detached` is: the
+start runs at the next flush even when the widget is gone by then, its receipt
+reports the start rather than the result, and only a closed window or shutdown
+cancels it.
 
 `Runtime::start_interval` repeats an application callback on the UI thread. It
 belongs to the application rather than a window or component, so focus loss,
@@ -803,7 +807,13 @@ physical press. A disabled binding still reserves its chord, and commands
 explicitly permitted in modals retain that admission. Direct and queued targeted
 text commands validate the target's current modal scope before editor mutation
 or clipboard access. A blocked queued request reports `ModalBlocked` from the
-flush, is spent, and leaves later requests queued.
+flush, is spent, and leaves later requests queued. A text command never moves
+focus, except `TextCommand::BeginEdit`: an editor with a resting state answers
+it as its own Enter/F2 does, beginning the edit and requesting focus for its
+editing part, and answers `Unavailable` wherever that key does nothing. The
+request settles at a flush: at the next one after the synchronous
+`Runtime::text_command`, and at the end of the delivering flush for
+`EventContext::request_text_command`.
 
 #### Native and headless key entry
 

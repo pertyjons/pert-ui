@@ -703,6 +703,72 @@ and anything left to a later part.
     The check showed the canvas rename editor drawn over the node's own
     centered label, recorded in TODO.md (not a 6f1 defect).
   - **Open:** the same hand check on Windows and macOS when available.
+- **6f2 (0.3.69), implemented 2026-10-26:** commit and review to be
+  recorded. Editing and collection capabilities, by
+  [design revision 4](design-6f2.md), which Codex reviewed once and
+  rechecked three times. The maintainer approved it on 2026-10-26 with the
+  recommended answers: D1 `TextCommand::BeginEdit` instead of
+  `InlineText::session`, D2 a window-owned start for `EventContext::spawn`,
+  and D3 a double-click only in row mode, with the label not focusable at
+  rest.
+  - **F13:** `EventContext::spawn`, a `defer_detached` start of
+    `Runtime::spawn`. The guide's worker example, its prose, the
+    data-contract table and contracts.md use it, and app-author slice 9
+    drops its F13 input.
+  - **F15:**
+    - `TextCommand::BeginEdit`. The focus contract changes in the
+      `TextCommand` rustdoc, `Component::text_command`, both routing
+      methods and contracts.md.
+    - `InlineText`, `InlineInteger` and `InlineDecimal` answer it. The
+      inline numbers follow their Enter/F2 path, including read-only text
+      mode, and answer `Unavailable` during any `held()` gesture.
+    - The text editors answer `Unavailable`.
+    - `Runtime::key_input` has the held-key note.
+    - "Sessions for more editors" keeps `InlineText`, with the design's
+      note.
+  - **F27:** `InlineText::in_row(bool)`, with the press, release, series
+    and focus rules of design section 3. The default press behavior is
+    documented on `InlineText`.
+  - **F7b:**
+    - `HiddenActive` and `CollectionFilter::hidden_active`.
+    - Each target has a crate-internal membership test.
+    - Table and tree replacements carry the hidden key and its nearest row
+      internally.
+    - `HiddenActive` is in the root and the prelude beside
+      `CollectionFilter`.
+  - **The guide recipe** (`guide/layout.md`) is migrated as design section 5
+    says. It finds the label with `ui.find` and the path `[key, "title",
+    "editor"]`, not `find_descendant`, because `find_descendant` takes one
+    key and `"editor"` occurs in every row.
+  - **Checks run after the last code edit (the public-API row):**
+    - the workspace gate, including the five headless example sessions and
+      the diagnostics suite (no snapshot change);
+    - `api/generate.sh`, whose diff adds only the planned items to the
+      runtime listings; the facade listings are unchanged, because the
+      facade re-exports the runtime by glob;
+    - `git diff --check`.
+
+    The key behavior tests were checked to fail with their change reverted
+    (the spawn owner, the policy logic, the row press routing, the series
+    resets, non-focusability, the `BeginEdit` answers, the inline-number
+    gesture check and the settle-loop change). Compatibility checks are
+    kept apart from them.
+  - **Deviations:**
+    - **The settle loop.** A queued `BeginEdit` began the edit, but its focus
+      request was dropped. The flush applied focus right after delivering
+      text commands, while the editor child was still hidden.
+      `settle_notification_presentation` now runs the updates a delivered
+      command caused before it applies focus, as it already did after
+      requested children. This is recorded as "Changed" in the CHANGELOG.
+    - **The driver note.** `testing::Driver::key` did not get the held-key
+      note. The driver refuses held input with `TestError::InputHeld` before
+      sending anything, so the design's reason does not hold.
+    - **The held step key.** Only parameter-bound inline numbers have a
+      held step key; local rows save each step at once. The held-key test
+      therefore uses a parameter row.
+  - **Beyond the plan's lines:** the constraint on 6f after 6e, the
+    follow-ups bullet and the F27 rows of this plan described the planned
+    session and a press on the selected row. They now follow the design.
 
 ## Rules for every part
 
@@ -805,9 +871,9 @@ Constraints:
   `component` module, and G5-6's prelude-page list moves the capture names
   to it. F4's regression test needs F5's headless close (both 6f1). F34
   needs F2's helpers. 6f2's `CollectionFilter` policy follows 6d1's
-  collection redescription, and `InlineText::session` follows 6d2's editor
-  changes. 6f3's controlled `InlineText` builds on 6f2's session and
-  list-row mode.
+  collection redescription, and `TextCommand::BeginEdit` follows 6d2's
+  editor changes. 6f3's controlled `InlineText` builds on 6f2's list-row
+  mode ([the 6f2 design](design-6f2.md) replaced the planned session).
 - **Round 2** (slice 7) waits until every part, 6f3 included, is closed,
   and runs on that branch head.
 
@@ -1527,8 +1593,10 @@ without focus it stays hidden. The new policy applies only to the unfocused
 branch.
 
 - **Gate:** the public-API row.
-- **`api/` diff:** `InlineText::session` and the list-row mode builder;
-  `CollectionFilter`'s policy builder and its enum; `EventContext::spawn`.
+- **`api/` diff** (as [the 6f2 design](design-6f2.md) revised it):
+  `TextCommand::BeginEdit` and the list-row mode builder `InlineText::in_row`;
+  `CollectionFilter`'s policy builder and its enum; `EventContext::spawn`. No
+  `InlineText::session`.
 - **Breaking:** no.
 - **CHANGELOG:** "Added".
 - **Version:** 0.3.69.
@@ -1539,8 +1607,8 @@ Round 1 findings:
 
 - **F7b:** `CollectionFilter` gains an opt-in policy for a filter change that hides the active item while the collection lacks focus (default keeps today's rule: it stays hidden; options move it to `nearest_active` or clear it); the focused branch (`collection_filter.rs:438-443`) is unchanged; tests for focused and unfocused filtering under every policy.
 - **F13:** `EventContext::spawn`, starting background work from a callback as `Runtime::spawn` does; 5c's guide example switches to it.
-- **F15:** `InlineText::session(&EditorSession)` lets code begin a row's rename; `Runtime::key_input` says a synthesized press of a held key is a repeat.
-- **F27:** An `InlineText` list-row mode: a single press reaches the row, a press on the selected row or a double-click edits; the default press behavior documented.
+- **F15:** `TextCommand::BeginEdit` lets code begin a row's rename, as [the 6f2 design](design-6f2.md) decided instead of `InlineText::session(&EditorSession)`; `Runtime::key_input` says a synthesized press of a held key is a repeat.
+- **F27:** An `InlineText` list-row mode, `InlineText::in_row`: a single press reaches the row and a double-click edits (a press on the selected row does not, as [the 6f2 design](design-6f2.md) decided in D3); the default press behavior documented.
 
 ### 6f3 Controlled controls
 
@@ -1583,8 +1651,9 @@ Round 1 findings:
     seventy names. Slice 9 keeps the decision to shrink it on its own
     breaking branch.
 - **Follow-ups** (`plans/follow-ups.md`):
-  - "Sessions for more editors": 6f2 removes `InlineText` and the F15
-    evidence; the other editors stay.
+  - "Sessions for more editors": 6f2 keeps `InlineText` with a note that
+    `TextCommand::BeginEdit` met F15 ([the 6f2 design](design-6f2.md),
+    section 2); the other editors stay.
   - "Controlled controls": 6f3 narrows it to the controls F16 does not
     cover, or removes it if none remain.
   - 5b adds a sendable font key for styled text (G4-7).
@@ -1721,7 +1790,7 @@ diagnostics-survey cases.
 | F12 | 5b | `Component::cancel_input` states that it runs outside evaluation phases, may restore the widget's own bindings, must not activate actions, and that a failed restore is recorded and returned through a `Notifier`; guide "Who may write" lists it. |
 | F13 | 6f2 | `EventContext::spawn`, starting background work from a callback as `Runtime::spawn` does; 5c's guide example switches to it. |
 | F14 | 5c | A guide recipe for an editable, selectable, filterable list of records (`Vec` to `ListSource`, `ListFilter`, `VirtualList` with `ListSelection`, `on_activate`, `reorderable`, per-row controls), linked from "Children from values". |
-| F15 | 6f2 | `InlineText::session(&EditorSession)` lets code begin a row's rename; `Runtime::key_input` says a synthesized press of a held key is a repeat. |
+| F15 | 6f2 | `TextCommand::BeginEdit` lets code begin a row's rename, as [the 6f2 design](design-6f2.md) decided instead of `InlineText::session(&EditorSession)`; `Runtime::key_input` says a synthesized press of a held key is a repeat. |
 | F16 | 6f3 | Controlled forms of `Checkbox` and `InlineText` (a value plus a change callback) on their own constructor path, with refusal, optimistic presentation and callback timing specified in contracts.md first; `ListItems::build` points to them. |
 | F17 | 5b | Owner-contract bullets: an owner described again returns `true` from `retain_initial_children` or reconciles controller and child together; `begin` runs the owner's `cancel_input`, so a draft ends in `focus_within_changed(false)`. |
 | F18 | 5b | guide/custom-widgets.md:86-89 and guide/controls.md:11 corrected to what Escape does (the focused component's capture, timer and edit sessions end, then the key arrives; no `cancel_input`); `Runtime::key_input` and `EventContext::set_timer` say so. |
@@ -1733,7 +1802,7 @@ diagnostics-survey cases.
 | F24 | 5b | `SemanticValue` and guide/custom-widgets.md "Inspection": a multi-component value is `Text` plus one `InspectValue::Number` property per component, as `ColorPicker` does. |
 | F25 | 6d2 | `check_redescription` (`conformance.rs:217`) lays the reference out where it cannot overlap; a viewport test asserts no validation output; its prose points to `Redescribed::component`. |
 | F26 | 6d2 | The `CollectionFilter` field wrapper becomes `.slot("filter-field")` (`collection_filter.rs:571-584`), so the documented address holds; workspace persistence checked. |
-| F27 | 6f2 | An `InlineText` list-row mode: a single press reaches the row, a press on the selected row or a double-click edits; the default press behavior documented. |
+| F27 | 6f2 | An `InlineText` list-row mode, `InlineText::in_row`: a single press reaches the row and a double-click edits (a press on the selected row does not, as [the 6f2 design](design-6f2.md) decided in D3); the default press behavior documented. |
 | F28 | 5c | guide/state.md says signal values need `PartialEq` to be written and `Clone` to be read. |
 | F29 | 6d2 | An empty plain `Label` measures zero height, as an empty `Field` block does (`controls.rs:282-315`); rustdoc and test. |
 | F30 | 5b | Closed by G4-22's rustdoc pointers; the source loss was already resolved. |

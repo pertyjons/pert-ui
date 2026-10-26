@@ -2175,6 +2175,8 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             C::Cut => !self.locked() && !self.selection.get().byte_range().is_empty(),
             C::Paste | C::PasteBefore | C::PasteAfter => !self.locked() && clipboard,
             C::SelectAll => !self.text.is_empty(),
+            // The editor is always editing; nothing begins.
+            C::BeginEdit => false,
         }
     }
     /// Opens the clipboard menu, at a pointer position or anchored below the field
@@ -2336,6 +2338,8 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
                 self.changed(cx);
                 Ok(R::Handled)
             }
+            // The editor has no resting state: it is always editing.
+            C::BeginEdit => Ok(R::Unavailable),
         }
     }
     fn sync_text(&mut self, text: String) {

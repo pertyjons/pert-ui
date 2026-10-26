@@ -7,9 +7,9 @@ F27 ([the round 1 table](../../developer-usability.md)). The evidence is
 triage [group B](../runs/triage/group-B.md) (F13) and
 [group C](../runs/triage/group-C.md) (F7b, F15, F27).
 
-Status: **revision 4, 2026-10-26**, ready for approval after Codex's
-first review and three rechecks (review record at the end). Not yet
-approved by the maintainer. Three choices are the maintainer's
+Status: **revision 4, approved by the maintainer on 2026-10-26** with the
+recommended answers to D1, D2 and D3, after Codex's first review and
+three rechecks found it ready (review record at the end). Three choices are the maintainer's
 ([decisions](#decisions-for-the-maintainer)); each section states the
 recommended answer.
 

@@ -1666,6 +1666,7 @@ impl core::marker::UnsafeUnpin for pert_ui_runtime::TaskStatus
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::TaskStatus
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::TaskStatus
 #[non_exhaustive] pub enum pert_ui_runtime::component::TextCommand
+pub pert_ui_runtime::component::TextCommand::BeginEdit
 pub pert_ui_runtime::component::TextCommand::Copy
 pub pert_ui_runtime::component::TextCommand::Cut
 pub pert_ui_runtime::component::TextCommand::Paste
@@ -2347,6 +2348,7 @@ pub fn pert_ui_runtime::EventContext::invoke_command(&self, &pert_ui_runtime::Co
 impl pert_ui_runtime::EventContext
 pub fn pert_ui_runtime::EventContext::defer(&self, impl core::ops::function::FnOnce(&mut pert_ui_runtime::Runtime) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::EventContext::defer_detached(&self, impl core::ops::function::FnOnce(&mut pert_ui_runtime::Runtime) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::EventContext::spawn<T: core::marker::Send + 'static>(&self, impl core::ops::function::FnOnce() -> T + core::marker::Send + 'static, impl core::ops::function::FnOnce(T) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::EventContext
 pub fn pert_ui_runtime::EventContext::drag_active(&self) -> bool
 pub fn pert_ui_runtime::EventContext::start_drag(&self, pert_ui_runtime::DragPayload, impl core::convert::Into<pert_ui_runtime::DropOperations>, pert_ui_runtime::DragPreview) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
@@ -9663,6 +9665,30 @@ impl core::marker::Unpin for pert_ui_runtime::HexColorError
 impl core::marker::UnsafeUnpin for pert_ui_runtime::HexColorError
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::HexColorError
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::HexColorError
+#[non_exhaustive] pub enum pert_ui_runtime::prelude::HiddenActive
+pub pert_ui_runtime::prelude::HiddenActive::Clear
+pub pert_ui_runtime::prelude::HiddenActive::Keep
+pub pert_ui_runtime::prelude::HiddenActive::Nearest
+impl core::clone::Clone for pert_ui_runtime::HiddenActive
+pub fn pert_ui_runtime::HiddenActive::clone(&self) -> pert_ui_runtime::HiddenActive
+impl core::cmp::Eq for pert_ui_runtime::HiddenActive
+impl core::cmp::PartialEq for pert_ui_runtime::HiddenActive
+pub fn pert_ui_runtime::HiddenActive::eq(&self, &pert_ui_runtime::HiddenActive) -> bool
+impl core::default::Default for pert_ui_runtime::HiddenActive
+pub fn pert_ui_runtime::HiddenActive::default() -> pert_ui_runtime::HiddenActive
+impl core::fmt::Debug for pert_ui_runtime::HiddenActive
+pub fn pert_ui_runtime::HiddenActive::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::HiddenActive
+pub fn pert_ui_runtime::HiddenActive::hash<__H: core::hash::Hasher>(&self, &mut __H)
+impl core::marker::Copy for pert_ui_runtime::HiddenActive
+impl core::marker::StructuralPartialEq for pert_ui_runtime::HiddenActive
+impl core::marker::Freeze for pert_ui_runtime::HiddenActive
+impl core::marker::Send for pert_ui_runtime::HiddenActive
+impl core::marker::Sync for pert_ui_runtime::HiddenActive
+impl core::marker::Unpin for pert_ui_runtime::HiddenActive
+impl core::marker::UnsafeUnpin for pert_ui_runtime::HiddenActive
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::HiddenActive
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::HiddenActive
 #[non_exhaustive] pub enum pert_ui_runtime::prelude::Icon
 pub pert_ui_runtime::prelude::Icon::Add
 pub pert_ui_runtime::prelude::Icon::Back
@@ -11168,6 +11194,7 @@ impl core::marker::UnsafeUnpin for pert_ui_runtime::TextColor
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::TextColor
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::TextColor
 #[non_exhaustive] pub enum pert_ui_runtime::prelude::TextCommand
+pub pert_ui_runtime::prelude::TextCommand::BeginEdit
 pub pert_ui_runtime::prelude::TextCommand::Copy
 pub pert_ui_runtime::prelude::TextCommand::Cut
 pub pert_ui_runtime::prelude::TextCommand::Paste
@@ -12440,6 +12467,7 @@ impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Collapsible
 pub struct pert_ui_runtime::prelude::CollectionFilter
 impl pert_ui_runtime::CollectionFilter
 pub fn pert_ui_runtime::CollectionFilter::debounce(self, core::time::Duration) -> Self
+pub fn pert_ui_runtime::CollectionFilter::hidden_active(self, pert_ui_runtime::HiddenActive) -> Self
 pub fn pert_ui_runtime::CollectionFilter::matcher(self, pert_ui_runtime::FilterMatcher) -> Self
 pub fn pert_ui_runtime::CollectionFilter::name(self, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
 pub fn pert_ui_runtime::CollectionFilter::new(&impl pert_ui_runtime::StateOwner, impl core::convert::Into<pert_ui_runtime::FilterTarget>, pert_ui_runtime::Element) -> Self
@@ -14130,6 +14158,7 @@ pub fn pert_ui_runtime::EventContext::invoke_command(&self, &pert_ui_runtime::Co
 impl pert_ui_runtime::EventContext
 pub fn pert_ui_runtime::EventContext::defer(&self, impl core::ops::function::FnOnce(&mut pert_ui_runtime::Runtime) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::EventContext::defer_detached(&self, impl core::ops::function::FnOnce(&mut pert_ui_runtime::Runtime) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::EventContext::spawn<T: core::marker::Send + 'static>(&self, impl core::ops::function::FnOnce() -> T + core::marker::Send + 'static, impl core::ops::function::FnOnce(T) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::EventContext
 pub fn pert_ui_runtime::EventContext::drag_active(&self) -> bool
 pub fn pert_ui_runtime::EventContext::start_drag(&self, pert_ui_runtime::DragPayload, impl core::convert::Into<pert_ui_runtime::DropOperations>, pert_ui_runtime::DragPreview) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
@@ -15703,6 +15732,7 @@ pub struct pert_ui_runtime::prelude::InlineText
 impl pert_ui_runtime::InlineText
 pub fn pert_ui_runtime::InlineText::disabled(self) -> Self
 pub fn pert_ui_runtime::InlineText::enabled(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
+pub fn pert_ui_runtime::InlineText::in_row(self, bool) -> Self
 pub fn pert_ui_runtime::InlineText::new(impl core::convert::Into<pert_ui_runtime::Signal<alloc::string::String>>) -> Self
 pub fn pert_ui_runtime::InlineText::normalize(self, impl core::ops::function::Fn(alloc::string::String) -> core::result::Result<alloc::string::String, pert_ui_runtime::InputRejection> + 'static) -> Self
 pub fn pert_ui_runtime::InlineText::on_rejection(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, core::option::Option<&pert_ui_runtime::InputRejection>) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
@@ -28909,6 +28939,30 @@ impl core::marker::Unpin for pert_ui_runtime::HexColorError
 impl core::marker::UnsafeUnpin for pert_ui_runtime::HexColorError
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::HexColorError
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::HexColorError
+#[non_exhaustive] pub enum pert_ui_runtime::HiddenActive
+pub pert_ui_runtime::HiddenActive::Clear
+pub pert_ui_runtime::HiddenActive::Keep
+pub pert_ui_runtime::HiddenActive::Nearest
+impl core::clone::Clone for pert_ui_runtime::HiddenActive
+pub fn pert_ui_runtime::HiddenActive::clone(&self) -> pert_ui_runtime::HiddenActive
+impl core::cmp::Eq for pert_ui_runtime::HiddenActive
+impl core::cmp::PartialEq for pert_ui_runtime::HiddenActive
+pub fn pert_ui_runtime::HiddenActive::eq(&self, &pert_ui_runtime::HiddenActive) -> bool
+impl core::default::Default for pert_ui_runtime::HiddenActive
+pub fn pert_ui_runtime::HiddenActive::default() -> pert_ui_runtime::HiddenActive
+impl core::fmt::Debug for pert_ui_runtime::HiddenActive
+pub fn pert_ui_runtime::HiddenActive::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::HiddenActive
+pub fn pert_ui_runtime::HiddenActive::hash<__H: core::hash::Hasher>(&self, &mut __H)
+impl core::marker::Copy for pert_ui_runtime::HiddenActive
+impl core::marker::StructuralPartialEq for pert_ui_runtime::HiddenActive
+impl core::marker::Freeze for pert_ui_runtime::HiddenActive
+impl core::marker::Send for pert_ui_runtime::HiddenActive
+impl core::marker::Sync for pert_ui_runtime::HiddenActive
+impl core::marker::Unpin for pert_ui_runtime::HiddenActive
+impl core::marker::UnsafeUnpin for pert_ui_runtime::HiddenActive
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::HiddenActive
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::HiddenActive
 #[non_exhaustive] pub enum pert_ui_runtime::HighlightError
 pub pert_ui_runtime::HighlightError::NotGraphemeBoundary
 pub pert_ui_runtime::HighlightError::NotGraphemeBoundary::index: usize
@@ -31152,6 +31206,7 @@ impl core::marker::UnsafeUnpin for pert_ui_runtime::TextColor
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::TextColor
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::TextColor
 #[non_exhaustive] pub enum pert_ui_runtime::TextCommand
+pub pert_ui_runtime::TextCommand::BeginEdit
 pub pert_ui_runtime::TextCommand::Copy
 pub pert_ui_runtime::TextCommand::Cut
 pub pert_ui_runtime::TextCommand::Paste
@@ -32928,6 +32983,7 @@ impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Collapsible
 pub struct pert_ui_runtime::CollectionFilter
 impl pert_ui_runtime::CollectionFilter
 pub fn pert_ui_runtime::CollectionFilter::debounce(self, core::time::Duration) -> Self
+pub fn pert_ui_runtime::CollectionFilter::hidden_active(self, pert_ui_runtime::HiddenActive) -> Self
 pub fn pert_ui_runtime::CollectionFilter::matcher(self, pert_ui_runtime::FilterMatcher) -> Self
 pub fn pert_ui_runtime::CollectionFilter::name(self, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
 pub fn pert_ui_runtime::CollectionFilter::new(&impl pert_ui_runtime::StateOwner, impl core::convert::Into<pert_ui_runtime::FilterTarget>, pert_ui_runtime::Element) -> Self
@@ -34823,6 +34879,7 @@ pub fn pert_ui_runtime::EventContext::invoke_command(&self, &pert_ui_runtime::Co
 impl pert_ui_runtime::EventContext
 pub fn pert_ui_runtime::EventContext::defer(&self, impl core::ops::function::FnOnce(&mut pert_ui_runtime::Runtime) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::EventContext::defer_detached(&self, impl core::ops::function::FnOnce(&mut pert_ui_runtime::Runtime) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::EventContext::spawn<T: core::marker::Send + 'static>(&self, impl core::ops::function::FnOnce() -> T + core::marker::Send + 'static, impl core::ops::function::FnOnce(T) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::EventContext
 pub fn pert_ui_runtime::EventContext::drag_active(&self) -> bool
 pub fn pert_ui_runtime::EventContext::start_drag(&self, pert_ui_runtime::DragPayload, impl core::convert::Into<pert_ui_runtime::DropOperations>, pert_ui_runtime::DragPreview) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
@@ -36517,6 +36574,7 @@ pub struct pert_ui_runtime::InlineText
 impl pert_ui_runtime::InlineText
 pub fn pert_ui_runtime::InlineText::disabled(self) -> Self
 pub fn pert_ui_runtime::InlineText::enabled(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
+pub fn pert_ui_runtime::InlineText::in_row(self, bool) -> Self
 pub fn pert_ui_runtime::InlineText::new(impl core::convert::Into<pert_ui_runtime::Signal<alloc::string::String>>) -> Self
 pub fn pert_ui_runtime::InlineText::normalize(self, impl core::ops::function::Fn(alloc::string::String) -> core::result::Result<alloc::string::String, pert_ui_runtime::InputRejection> + 'static) -> Self
 pub fn pert_ui_runtime::InlineText::on_rejection(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, core::option::Option<&pert_ui_runtime::InputRejection>) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self

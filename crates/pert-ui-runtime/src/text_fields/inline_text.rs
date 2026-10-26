@@ -12,14 +12,19 @@ use crate::layout::{centered, rect};
 /// ControlHeight row, with an optional muted placeholder when the text is empty.
 /// Double-click (two primary presses as [`ClickCounter`](crate::ClickCounter)
 /// counts them: within 500 ms and four logical pixels), Enter or F2 enters
-/// editing with the text selected. Editing
+/// editing with the text selected, and so does [`TextCommand::BeginEdit`] sent
+/// from code, which does not depend on the keyboard's state. Editing
 /// happens in a [`DraftEditor`] the label mounts as its child under the key
 /// `"editor"`, with the validation, 16 KiB limit, selection, clipboard chord,
 /// IME and 32-edit undo rules of [`TextField`]; focus moves into it and returns
-/// to the label when editing ends by key. While editing,
+/// to the label when editing ends by key ([in a row](Self::in_row), to the
+/// row's list). While editing,
 /// [`Runtime::text_command`](crate::Runtime::text_command) on the label and
-/// [`EventContext::request_text_command`] act on the draft as the chords do; at
-/// rest the control answers [`TextCommandOutcome::NotAnEditor`]. The label has no
+/// [`EventContext::request_text_command`] act on the draft as the chords do,
+/// and `BeginEdit` answers [`TextCommandOutcome::Unavailable`]. At rest the
+/// control answers `BeginEdit` by beginning to edit, with `Handled`, or with
+/// `Unavailable` while it is disabled or refuses its binding, and every other
+/// command with [`TextCommandOutcome::NotAnEditor`]. The label has no
 /// clipboard context menu. Each editing session starts with an empty undo
 /// history. Up and Down are consumed while editing. Editing is a draft:
 /// Enter and focus leaving the label save it to the binding, Escape restores the
@@ -44,6 +49,13 @@ use crate::layout::{centered, rect};
 /// The next acceptable binding value ends the refusal. The binding itself is
 /// never rewritten.
 ///
+/// **Presses.** By default a single primary press is handled and focuses the
+/// label, the second press of a double-click begins editing, and a row
+/// around the label never sees the press: a
+/// [`VirtualList`](crate::VirtualList) does not select the row whose label was
+/// pressed. A label inside a selectable row uses [`Self::in_row`] instead, so
+/// that a single press reaches the row.
+///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
 /// use pert_ui::{Element, InlineText, KeyAction, KeyCode, Runtime};
@@ -61,8 +73,8 @@ use crate::layout::{centered, rect};
 /// ```
 ///
 /// Re-describing the field under the same key applies its binding, enablement,
-/// style, placeholder, normalizer and callbacks; a new binding or disabling
-/// discards an open draft.
+/// style, placeholder, normalizer, row mode and callbacks; a new binding or
+/// disabling discards an open draft.
 #[must_use]
 pub struct InlineText {
     value: Signal<String>,
@@ -89,6 +101,11 @@ pub struct InlineText {
     prepared: RefCell<Option<TextLayout>>,
     area: Cell<Option<Rect>>,
     clicks: crate::ClickCounter,
+    /// The label is part of a selectable row; see [`InlineText::in_row`].
+    in_row: bool,
+    /// Whether the label handled the primary press that the next release
+    /// ends, so the release answers alike.
+    handled_press: bool,
 }
 description_debug!(InlineText);
 impl InlineText {
@@ -122,6 +139,8 @@ impl InlineText {
             prepared: RefCell::new(None),
             area: Cell::new(None),
             clicks: crate::ClickCounter::new(),
+            in_row: false,
+            handled_press: false,
         }
     }
     /// Shows muted text while the bound value is empty and editing is not active.
@@ -198,6 +217,88 @@ impl InlineText {
         self.normalizer = Some(Rc::new(normalize));
         self
     }
+    /// Makes the label part of a selectable row, such as the title in a
+    /// [`VirtualList`](crate::VirtualList) row: a single press reaches the
+    /// row, and a double-click edits. Default `false`.
+    ///
+    /// In this mode the resting label is not focusable, so a press on it
+    /// focuses its nearest focusable ancestor, the list, which stays the
+    /// collection's keyboard owner, and the label adds no Tab stop at rest;
+    /// other row content, such as a checkbox, keeps its own. The label's own
+    /// Enter and F2 are therefore out of reach at rest: the keyboard route is
+    /// the list's, whose [`on_activate`](crate::VirtualList::on_activate) or an
+    /// application command sends [`TextCommand::BeginEdit`] to the active
+    /// row's label.
+    ///
+    /// Presses at rest:
+    ///
+    /// - A primary press with Shift, Control, Alt or Super held is left to
+    ///   the row, which selects with those modifiers, and starts no series.
+    /// - An unmodified primary press counts as
+    ///   [`ClickCounter`](crate::ClickCounter) counts (within 500 ms and four
+    ///   logical pixels). The first press of a series is left to the row,
+    ///   which makes it active, selects it and may arm a reorder drag; the
+    ///   second begins editing and is handled, so the row does not see it.
+    /// - A release answers like the press it ends. A press the label left to
+    ///   the row is not captured by the label; the row's own capture rules
+    ///   apply.
+    ///
+    /// A series also ends when the pointer leaves the label (so a press on
+    /// another row's label and back is not a double-click), when a reorder
+    /// drag starts from it, on a modified press, on cancelled input, on
+    /// hiding, on disabling and when an edit begins. A single press therefore
+    /// never renames, and a selected row can be dragged by its label.
+    ///
+    /// While editing, presses follow the default rules. When editing ends by
+    /// key, focus falls back to the nearest focusable ancestor, the list, so
+    /// its arrows navigate again; focus leaving by other means saves, as by
+    /// default. Inspection reports the property `in_row` while the mode is
+    /// on. Redescription replaces the mode and never ends a draft; turning it
+    /// on while the resting label has focus moves focus to the nearest
+    /// focusable ancestor at the end of the flush.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::{ListItems, ListSource, PointerButton, PointerEvent, PointerKind};
+    /// use std::time::Duration;
+    ///
+    /// struct Names(Signal<String>);
+    /// impl ListItems for Names {
+    ///     fn len(&self) -> usize { 1 }
+    ///     fn key(&self, index: usize) -> Option<String> { (index == 0).then(|| "a".to_owned()) }
+    ///     fn build(&self, index: usize) -> Option<Element> {
+    ///         (index == 0).then(|| Element::new("title", InlineText::new(&self.0).in_row(true)))
+    ///     }
+    /// }
+    ///
+    /// let mut ui = Runtime::new();
+    /// ui.set_viewport(Viewport::new(200.0, 100.0, 1.0)?)?;
+    /// let name = ui.signal(String::from("Mix"));
+    /// let rows = ui.signal(ListSource::new(Names(name.clone())));
+    /// let selection = ListSelection::new(&ui, SelectionMode::Single);
+    /// let list = ui.mount_tree(Element::new("list",
+    ///     VirtualList::new(rows.read_only(), 32.0)?.selection(selection.clone())))?;
+    /// ui.flush(Duration::ZERO)?;
+    /// let at = Point::new(20.0, 16.0)?;
+    /// let click = |ui: &mut Runtime| -> Result<(), RuntimeError> {
+    ///     ui.pointer_input(PointerEvent::new(at, PointerKind::Press(PointerButton::Primary)))?;
+    ///     ui.pointer_input(PointerEvent::new(at, PointerKind::Release(PointerButton::Primary)))?;
+    ///     Ok(())
+    /// };
+    /// click(&mut ui)?; // a single press selects the row
+    /// assert_eq!(selection.active().get()?.as_deref(), Some("a"));
+    /// assert_eq!(ui.focused(), Some(list.clone()));
+    /// click(&mut ui)?; // the second press of a double-click edits
+    /// ui.text_input("Master")?;
+    /// ui.key_input(KeyCode::Enter, KeyAction::Press)?;
+    /// assert_eq!(name.get()?, "Master");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn in_row(mut self, in_row: bool) -> Self {
+        self.in_row = in_row;
+        self
+    }
     /// Tells the application about the normalizer's refusals, with the rules
     /// of [`TextField::on_rejection`]: `Some` on each refused save, and `None`
     /// once when a reported refusal ends at a later save, at focus loss or at
@@ -249,7 +350,59 @@ impl InlineText {
         if self.editing() || !self.enabled || self.rejected.is_some() {
             return Ok(());
         }
+        self.reset_row_series();
         self.slot.begin(cx, &self.text, None, false)
+    }
+    /// Ends a row-mode click series; the default mode keeps its own rules.
+    fn reset_row_series(&mut self) {
+        if self.in_row {
+            self.clicks.reset();
+        }
+    }
+    /// Ends a session by key: focus returns to the label, or, in a row,
+    /// where the label is not focusable at rest, falls back to its nearest
+    /// focusable ancestor.
+    fn end_by_key(&mut self, cx: &mut EventContext) {
+        if self.in_row {
+            self.discard(None);
+            cx.invalidate(Invalidation::Layout);
+        } else {
+            self.discard(Some(cx));
+        }
+    }
+    /// A press or release at rest in row mode.
+    fn row_pointer(
+        &mut self,
+        cx: &mut EventContext,
+        e: PointerEvent,
+    ) -> Result<InputOutcome, RuntimeError> {
+        match e.kind() {
+            PointerKind::Press(PointerButton::Primary) => {
+                let modifiers = cx.modifiers();
+                self.handled_press = false;
+                if modifiers.shift || modifiers.control || modifiers.alt || modifiers.super_key {
+                    // The row selects with modifiers.
+                    self.clicks.reset();
+                    return Ok(InputOutcome::Ignored);
+                }
+                if self.clicks.press_event(cx, e) > Some(1) {
+                    self.clicks.reset();
+                    self.begin(cx)?;
+                    self.handled_press = true;
+                    return Ok(InputOutcome::Handled);
+                }
+                // The first press of a series selects the row.
+                Ok(InputOutcome::Ignored)
+            }
+            PointerKind::Release(PointerButton::Primary) => {
+                Ok(if std::mem::take(&mut self.handled_press) {
+                    InputOutcome::Handled
+                } else {
+                    InputOutcome::Ignored
+                })
+            }
+            _ => Ok(InputOutcome::Ignored),
+        }
     }
     /// Writes a changed draft to the binding, normalized, and ends the
     /// session. Returns `false` when the normalizer or the check refused the
@@ -331,6 +484,7 @@ impl Component for InlineText {
             self.enabled = enabled;
             if !self.enabled {
                 self.discard(None);
+                self.reset_row_series();
             }
             invalidation = Some(Invalidation::Layout);
         }
@@ -342,13 +496,19 @@ impl Component for InlineText {
             self.placeholder = next.placeholder;
             invalidation = Some(Invalidation::Layout);
         }
+        if self.in_row != next.in_row {
+            // Focusability changes; an open draft stays.
+            self.in_row = next.in_row;
+            invalidation = invalidation.max(Some(Invalidation::Paint));
+        }
         self.normalizer = next.normalizer;
         self.report.adopt(next.report);
         self.saved.adopt(next.saved);
         invalidation
     }
     fn focusable(&self) -> bool {
-        self.enabled && !self.editing()
+        // In a row the resting label leaves focus to the list.
+        self.enabled && !self.editing() && !self.in_row
     }
     fn child_visible(&self, key: &str) -> bool {
         self.slot.child_visible(key)
@@ -361,6 +521,11 @@ impl Component for InlineText {
             self.hovered = hovered;
             cx.invalidate(Invalidation::Paint);
         }
+        if !hovered {
+            // Leaving the label, also when a drag session starts from it,
+            // ends a series.
+            self.reset_row_series();
+        }
     }
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
         let enabled = self.enablement.read_paint(cx)?;
@@ -369,6 +534,7 @@ impl Component for InlineText {
             if !enabled {
                 // A revoked permission ends the draft as disabling does.
                 self.discard(None);
+                self.reset_row_series();
                 cx.cancel_input();
             }
             cx.request_layout();
@@ -439,6 +605,9 @@ impl Component for InlineText {
                 InputOutcome::Handled
             });
         }
+        if self.in_row {
+            return self.row_pointer(cx, e);
+        }
         match e.kind() {
             PointerKind::Press(PointerButton::Primary) => {
                 if self.clicks.press_event(cx, e) > Some(1) {
@@ -479,12 +648,12 @@ impl Component for InlineText {
         // The editor leaves these keys to its owner.
         match control {
             KeyCode::Escape if e.transition == KeyTransition::Pressed => {
-                self.discard(Some(cx));
+                self.end_by_key(cx);
                 self.report.clear(cx)?;
                 Ok(InputOutcome::Handled)
             }
             KeyCode::Enter if e.transition == KeyTransition::Pressed => {
-                if self.save(cx)? {
+                if self.save(cx)? && !self.in_row {
                     cx.request_focus();
                 }
                 Ok(InputOutcome::Handled)
@@ -517,10 +686,19 @@ impl Component for InlineText {
     }
     fn text_command(
         &mut self,
-        _: &mut EventContext,
-        _: TextCommand,
+        cx: &mut EventContext,
+        command: TextCommand,
     ) -> Result<TextCommandOutcome, RuntimeError> {
-        Ok(TextCommandOutcome::NotAnEditor)
+        if command != TextCommand::BeginEdit {
+            // While editing the runtime passes the command on to the editor.
+            return Ok(TextCommandOutcome::NotAnEditor);
+        }
+        // What Enter and F2 do at rest; nothing to begin otherwise.
+        if self.editing() || !self.enabled || self.rejected.is_some() {
+            return Ok(TextCommandOutcome::Unavailable);
+        }
+        self.begin(cx)?;
+        Ok(TextCommandOutcome::Handled)
     }
     fn focus_within_changed(
         &mut self,
@@ -546,10 +724,12 @@ impl Component for InlineText {
         if !visible {
             // Hiding discards the draft.
             self.discard(None);
+            self.reset_row_series();
         }
     }
     fn input_reset(&mut self) {
         self.clicks.reset();
+        self.handled_press = false;
     }
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
         let Some(size) = p.size() else {
@@ -625,6 +805,10 @@ impl Component for InlineText {
         }
         d.properties
             .insert("enabled".into(), InspectValue::Bool(self.enabled));
+        if self.in_row {
+            d.properties
+                .insert("in_row".into(), InspectValue::Bool(true));
+        }
         d.validation.interactive = self.enabled;
         let editable = self.enabled && self.rejected.is_none();
         d.semantics = Some(

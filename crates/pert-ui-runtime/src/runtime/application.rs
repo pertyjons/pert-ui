@@ -158,9 +158,11 @@ impl Runtime {
     ///
     /// A component's or control's callback receives an
     /// [`EventContext`](crate::EventContext), not the runtime: it starts the
-    /// work by queuing this call with
-    /// [`EventContext::defer`](crate::EventContext::defer), whose operation
-    /// runs at the start of the next flush with the runtime.
+    /// work with [`EventContext::spawn`](crate::EventContext::spawn), which
+    /// queues this call for the start of the next flush. A callback that must
+    /// be able to cancel the delivery queues this call itself with
+    /// [`EventContext::defer`](crate::EventContext::defer) and keeps the
+    /// returned handle.
     ///
     /// The returned handle can [`cancel`](BackgroundTask::cancel) the
     /// delivery; dropping it does not. If `work` panics, nothing is delivered

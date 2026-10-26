@@ -279,8 +279,8 @@ Occasional work that must not block the interface, such as reading or writing
 a file, runs through [`Runtime::spawn`]: the work runs on a new thread and its
 result reaches a delivery callback on the UI thread, where it may write
 bindings. A button or component callback receives an [`EventContext`], not the
-runtime, so it queues the spawn with [`EventContext::defer`], whose operation
-runs with the runtime at the start of the next flush.
+runtime, so it starts the work with [`EventContext::spawn`], which queues the
+start for the beginning of the next flush.
 
 ```rust
 use std::time::Duration;
@@ -292,16 +292,13 @@ let status = ui.signal("Ready".to_owned());
 let shown = status.clone();
 let load = Button::new("Count words", move |cx| {
     shown.set("Counting".to_owned())?;
+    // Real work would read a file; the result carries any failure.
+    let text = String::from("one two three");
     let shown = shown.clone();
-    let _receipt = cx.defer(move |ui| {
-        // Real work would read a file; the result carries any failure.
-        let text = String::from("one two three");
-        let _task = ui.spawn(
-            move || text.split_whitespace().count(),
-            move |words| shown.set(format!("{words} words")),
-        )?;
-        Ok(())
-    })?;
+    let _receipt = cx.spawn(
+        move || text.split_whitespace().count(),
+        move |words| shown.set(format!("{words} words")),
+    )?;
     Ok(())
 });
 let button = ui.mount_tree(load.key("load"))?;
@@ -318,10 +315,14 @@ assert_eq!(status.get()?, "3 words");
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
 
-The work receives no UI handles. The deferred operation runs only while the
-button is mounted and shown; [`EventContext::defer_detached`] queues one that
-outlives it. [`Runtime::spawn`] lists the limits and what happens to a result
-after cancellation or shutdown.
+The work receives no UI handles. The start belongs to the button's window, so
+it still runs when the callback hides or removes the button, as a Save button
+that closes its dialog does, and is cancelled only when the window closes or
+the runtime shuts down first; the receipt reports that start, not the result.
+To be able to discard a result that has not arrived, queue [`Runtime::spawn`]
+with [`EventContext::defer`] and keep the [`BackgroundTask`] it returns.
+[`Runtime::spawn`] lists the limits and what happens to a result after
+cancellation or shutdown.
 
 A long-lived worker thread hands owned results to the UI thread through a
 [`Runtime::mailbox`]: its [`UiSender`] is [`Send`], a full or closed mailbox returns

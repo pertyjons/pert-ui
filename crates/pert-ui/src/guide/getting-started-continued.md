@@ -37,7 +37,7 @@ two-axis scrolling by default. A plain [`ScrollArea::new`] scrolls vertically.
 |---|---|---|
 | Local search text, toggles or form values | `Signal<T>` and `ReadSignal<T>` | UI thread; writes invalidate subscribed components. |
 | An editable parameter with preview and commit/cancel | `Parameter<T>` and `ParameterHost<T>` | Host retains the authority; controls share the binding. |
-| Worker results or application messages | [`Runtime::mailbox`], `Mailbox<T>`, `UiSender<T>` | Worker sends owned values; retained mailbox delivers on the UI thread. |
+| Worker results or application messages | [`EventContext::spawn`] from a callback, [`Runtime::mailbox`], `Mailbox<T>`, `UiSender<T>` | Background work returns an owned result, or a worker sends owned values; either is delivered on the UI thread. |
 | Lossy, high-rate presentation | [`SeriesSource`] or [`Telemetry`] | Producer and UI have separate endpoints and explicit gap/freshness semantics. |
 
 Do not send UI handles to a worker or mutate a shared value invisibly. Mailboxes

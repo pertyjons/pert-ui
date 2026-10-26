@@ -160,9 +160,10 @@ struct StateInner {
     /// The active filter, if any; see [`TreeController::filter`].
     filter: RefCell<Option<Filtering>>,
     counts: Signal<crate::FilterCounts>,
-    /// Source replacements: a revision and the nearest remaining row when the
-    /// replacement hid the active node, which a filter wrapper applies.
-    replaced: Signal<(u64, Option<String>)>,
+    /// Source replacements: a revision and, when the replacement hid the
+    /// active node, its key and the nearest remaining row, which a filter
+    /// wrapper applies.
+    replaced: Signal<crate::collection_filter::Replacement>,
 }
 
 /// A tree's filter: the query, what it found and the temporary expansion
@@ -449,19 +450,21 @@ impl TreeController {
             })?;
         }
         let after = self.flat();
-        let nearest = self
-            .0
-            .selection
-            .active()
-            .get()?
-            .and_then(|key| crate::collection_filter::nearest(&*before, &*after, &key));
+        let active = self.0.selection.active().get()?;
+        let hidden = crate::collection_filter::hid(&*before, &*after, active);
         let revision = self.0.replaced.get()?.0.wrapping_add(1);
-        self.0.replaced.set((revision, nearest))
+        self.0.replaced.set((revision, hidden))
     }
-    /// Source replacements with the nearest remaining row, for
-    /// [`CollectionFilter`](crate::CollectionFilter).
-    pub(crate) fn replaced(&self) -> ReadSignal<(u64, Option<String>)> {
+    /// Source replacements with the active key they hid and its nearest
+    /// remaining row, for [`CollectionFilter`](crate::CollectionFilter).
+    pub(crate) fn replaced(&self) -> ReadSignal<crate::collection_filter::Replacement> {
         self.0.replaced.read_only()
+    }
+    /// Whether the tree shows the node `key` now, by its flattened rows with
+    /// a filter's temporary expansion, for
+    /// [`CollectionFilter`](crate::CollectionFilter).
+    pub(crate) fn shows(&self, key: &str) -> bool {
+        self.flat().index_of(key).is_some()
     }
     /// Shows only the nodes whose [`TreeItems::text`] matches `query` under
     /// `matcher`, each with its ancestors, and keeps applying it when the

@@ -53,7 +53,10 @@ until then if one is being written.
   ignore sessions too.
   The developer-usability blind tests (F15) supply application evidence for
   `InlineText`: two task-list testers needed to start a row's rename from
-  the list and sent synthetic key presses instead.
+  the list and sent synthetic key presses instead. API audit part 6f2 met
+  that need with `TextCommand::BeginEdit`, which begins editing a mounted
+  label; a session-attached `InlineText` would still need a host that
+  describes the label again for each edit.
 - **Controlled controls** (a `Checkbox` built from a `bool` that reports a
   toggle). From table-editing slice 6. Considered only with their refusal,
   optimistic-presentation and callback timing specified.
