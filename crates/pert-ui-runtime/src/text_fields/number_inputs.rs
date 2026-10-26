@@ -244,8 +244,8 @@ description_debug!(DecimalInput);
 /// [`TextCommandOutcome::Unavailable`] while the row is disabled, has had no
 /// valid value since it mounted, or is in a step gesture (a step drag, a
 /// pressed stepper or a held step key, which then ends on its release as
-/// before), and in text mode. Hiding
-/// and removal cancel. One Tab stop covers the caption,
+/// before), and in text mode. Inspection reports text mode as the
+/// `text_editing` property. Hiding and removal cancel. One Tab stop covers the caption,
 /// value and unit, and resting focus schedules no caret work. The preferred width
 /// reserves the formatted bounds, capped at eight characters for very large
 /// ranges; a custom [`NumberFormat`] supplies an explicit width example. The

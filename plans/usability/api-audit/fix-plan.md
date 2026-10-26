@@ -703,8 +703,8 @@ and anything left to a later part.
     The check showed the canvas rename editor drawn over the node's own
     centered label, recorded in TODO.md (not a 6f1 defect).
   - **Open:** the same hand check on Windows and macOS when available.
-- **6f2 (0.3.69), implemented 2026-10-26:** commit and review to be
-  recorded. Editing and collection capabilities, by
+- **6f2 (0.3.69), implemented 2026-10-26:** 6219dda and its review fix;
+  done after Codex's recheck of the fix. Editing and collection capabilities, by
   [design revision 4](design-6f2.md), which Codex reviewed once and
   rechecked three times. The maintainer approved it on 2026-10-26 with the
   recommended answers: D1 `TextCommand::BeginEdit` instead of
@@ -769,6 +769,46 @@ and anything left to a later part.
   - **Beyond the plan's lines:** the constraint on 6f after 6e, the
     follow-ups bullet and the F27 rows of this plan described the planned
     session and a press on the selected row. They now follow the design.
+  - **Review (Codex):** needs fixes, with four should-fix points and a nit,
+    all verified against the code. It confirmed 6f1's recheck fix
+    (9d34b85): restoration flushes at the later clock value, and its test
+    fails with `TimeReversed` without the fix.
+    - the settle-loop step repeated before requested removals, so a
+      component that asked to be unmounted and re-queued a text command
+      for itself stayed mounted until `UpdateLimit`;
+    - `InlineSlider` and `InlineReadout` enter text mode with Enter/F2 but
+      answered `BeginEdit` with `NotAnEditor`, which the design's rule
+      covers and its list omitted;
+    - the queued-command test flushed explicitly before asserting focus,
+      so a one-flush-late implementation passed;
+    - the filter tests did not run the design's list, table and tree
+      matrix;
+    - the `BeginEdit` rustdoc promised an `editing` inspection property,
+      which the inline rows report as `text_editing`.
+
+    **The fix:**
+    - requested removals apply right after delivered text commands,
+      before their updates repeat, with a regression test that fails with
+      `UpdateLimit` in the old order;
+    - `InlineReadout` answers `BeginEdit` by entering read-only text mode;
+      `InlineSlider` enters text mode exactly where Enter/F2 does and
+      answers `Unavailable` where that key does nothing. It needs no
+      narrowing like the inline numbers' `held()` rule, because every
+      slider gesture holds the edit session. `Slider` and `Knob` still
+      answer `NotAnEditor`. A deviation from the design's list, under its
+      rule; the CHANGELOG records it under "Changed";
+    - the queued-command test uses `testing::Driver::key`, which ends with
+      exactly one flush, since `Runtime::key_input` does not flush; it
+      fails with the settle-loop step removed;
+    - the filter tests are parameterized over list, table and tree, with
+      the replacement cases for table and tree and a policy-redescription
+      test; with the policy logic disabled every behavior test fails and
+      the compatibility checks pass;
+    - the rustdoc names each editor's own inspection property, and the
+      tests assert it.
+  - **After the fix:** the workspace gate, including the five headless
+    example sessions and the diagnostics suite; `api/generate.sh`, with no
+    change; `git diff --check`.
 
 ## Rules for every part
 

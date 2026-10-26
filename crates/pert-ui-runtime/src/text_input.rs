@@ -174,20 +174,29 @@ pub enum TextCommand {
     ///
     /// It is the one command that moves focus. `Handled` means the editor
     /// began editing: its draft is open with the text selected, inspection
-    /// reports `editing: true`, and the editor has requested focus for its
-    /// editing part. That request settles at a flush:
+    /// reports it, and the editor has requested focus for its editing part.
+    /// That request settles at a flush:
     /// [`Runtime::text_command`](crate::Runtime::text_command) delivers at
     /// once and does not flush, so focus moves at the next flush;
     /// [`EventContext::request_text_command`](crate::EventContext::request_text_command)
     /// is delivered in the event phase of a flush, and its focus request
-    /// settles at the end of that flush.
+    /// settles at the end of that flush. Inspection reports editing in the
+    /// editor's own property: [`InlineText`](crate::InlineText) reports
+    /// `editing: true`, and the inline rows
+    /// ([`InlineInteger`](crate::InlineInteger),
+    /// [`InlineDecimal`](crate::InlineDecimal),
+    /// [`InlineSlider`](crate::InlineSlider) and
+    /// [`InlineReadout`](crate::InlineReadout)) report `text_editing: true`.
     ///
     /// A resting editor does exactly what its Enter/F2 path does and answers
     /// `Unavailable` wherever that path does nothing, such as while it is
     /// disabled. [`InlineText`](crate::InlineText),
-    /// [`InlineInteger`](crate::InlineInteger) and
-    /// [`InlineDecimal`](crate::InlineDecimal) answer it at rest; an editor
-    /// that is already editing, and one that has no resting state, such as a
+    /// [`InlineInteger`](crate::InlineInteger),
+    /// [`InlineDecimal`](crate::InlineDecimal),
+    /// [`InlineSlider`](crate::InlineSlider) and
+    /// [`InlineReadout`](crate::InlineReadout) answer it at rest, each as its
+    /// own documentation states; an editor that is already editing, and one
+    /// that has no resting state, such as a
     /// [`TextField`](crate::TextField), answers `Unavailable`, as
     /// [`SelectableText`](crate::SelectableText) does. A component without a
     /// text-command handler answers `NotAnEditor`. A custom editor answers it

@@ -3,7 +3,12 @@
 //! admission, and the editors that have nothing to begin.
 use crate::support;
 use pert_ui::*;
-use std::{cell::RefCell, collections::HashMap, rc::Rc, time::Duration};
+use std::{
+    cell::{Cell, RefCell},
+    collections::HashMap,
+    rc::Rc,
+    time::Duration,
+};
 use support::{settle, widget};
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
@@ -181,15 +186,82 @@ fn a_queued_begin_edit_from_on_activate_opens_the_focused_rename_in_that_flush()
     ui.focus(&list)?;
     support::press(&mut ui, KeyCode::ArrowDown);
     assert_eq!(selection.active().get()?.as_deref(), Some("0"));
-    ui.key_input(KeyCode::Enter, KeyAction::Press)?;
-    ui.key_input(KeyCode::Enter, KeyAction::Release)?;
-    ui.flush(ui.now())?;
+    // The driver's Enter ends with exactly one flush, which delivers the
+    // queued command: when the call returns, with no other input or flush,
+    // the rename is open and its editor focused.
     let label = labels.borrow()["0"].clone();
-    assert_eq!(ui.focused(), Some(editor(&ui, &label)));
+    {
+        let mut driver = testing::Driver::new(&mut ui);
+        driver.key(KeyCode::Enter)?;
+        let ui = driver.runtime();
+        assert!(editing(ui, "0"), "the activation began the rename");
+        assert_eq!(ui.focused(), Some(editor(ui, &label)));
+    }
     ui.text_input("Renamed")?;
     ui.key_input(KeyCode::Enter, KeyAction::Press)?;
     assert_eq!(names[0].get()?, "Renamed");
     assert_eq!(names[1].get()?, "Second");
+    Ok(())
+}
+
+/// A component that asks to leave at its update and answers every text
+/// command by changing itself and queuing the command for itself again.
+struct Leaver {
+    leave: Signal<bool>,
+    commands: Rc<Cell<usize>>,
+}
+impl Component for Leaver {
+    fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
+        if cx.read_paint(&self.leave)? {
+            cx.request_unmount();
+        }
+        Ok(())
+    }
+    fn text_command(
+        &mut self,
+        cx: &mut EventContext,
+        command: TextCommand,
+    ) -> Result<TextCommandOutcome, RuntimeError> {
+        self.commands.set(self.commands.get() + 1);
+        cx.invalidate(Invalidation::Paint);
+        let own = cx.id();
+        cx.request_text_command(&own, command)?;
+        Ok(TextCommandOutcome::Handled)
+    }
+}
+
+#[test]
+fn a_requested_unmount_applies_before_queued_commands_repeat_their_updates() -> TestResult {
+    // Running a command's updates before focus must not starve removal: the
+    // component leaves in the flush, and the command it queued for itself is
+    // dropped with it.
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(300.0, 200.0, 1.0)?)?;
+    let leave = ui.signal(false);
+    let commands = Rc::new(Cell::new(0));
+    let root = ui.mount_tree(Element::new(
+        "root",
+        Column::new([
+            Element::new("other", Button::new("Other", |_| Ok(()))),
+            Element::new(
+                "leaver",
+                Leaver {
+                    leave: leave.clone(),
+                    commands: commands.clone(),
+                },
+            ),
+        ]),
+    ))?;
+    settle(&mut ui);
+    let other = widget(&ui, &root, "other");
+    let leaver = widget(&ui, &root, "leaver");
+    leave.set(true)?;
+    ui.event(&other, |cx| {
+        cx.request_text_command(&leaver, TextCommand::SelectAll)
+    })??;
+    ui.flush(ui.now())?;
+    assert!(support::find(&ui, &root, "leaver").is_none(), "it left");
+    assert_eq!(commands.get(), 1, "its re-queued command was dropped");
     Ok(())
 }
 
@@ -464,6 +536,162 @@ fn begin_edit_enters_read_only_text_mode_without_edit_authority() -> TestResult 
     ui.key_input(KeyCode::Enter, KeyAction::Press)?;
     settle(&mut ui);
     assert_eq!(voices.snapshot().get()?.base, 4);
+    Ok(())
+}
+
+fn amount(
+    ui: &mut Runtime,
+    spec: ParameterSpec<f32>,
+) -> Result<(Parameter<f32>, ParameterHost<f32>), RuntimeError> {
+    ui.parameter(ParameterId::new(1, 1, "amount")?, spec)
+}
+
+#[test]
+fn begin_edit_enters_an_inline_sliders_text_mode_at_rest() -> TestResult {
+    let mut ui = Runtime::new();
+    let (amount, _host) = amount(&mut ui, ParameterSpec::new("Amount", 0.0, 100.0, 50.0)?)?;
+    let row = number_row(&mut ui, InlineSlider::new(amount.clone()))?;
+    assert_eq!(
+        ui.text_command(&row, TextCommand::BeginEdit)?,
+        TextCommandOutcome::Handled
+    );
+    assert!(text_editing(&ui));
+    settle(&mut ui);
+    assert_eq!(ui.focused(), Some(editor(&ui, &row)), "focus at the flush");
+    assert_eq!(
+        ui.text_command(&row, TextCommand::BeginEdit)?,
+        TextCommandOutcome::Unavailable,
+        "already in text mode"
+    );
+    ui.text_input("42.5")?; // replaces the selected text
+    ui.key_input(KeyCode::Enter, KeyAction::Press)?;
+    settle(&mut ui);
+    assert_eq!(amount.snapshot().get()?.base, 42.5);
+    assert!(!text_editing(&ui));
+    Ok(())
+}
+
+#[test]
+fn begin_edit_is_unavailable_where_an_inline_sliders_enter_does_nothing() -> TestResult {
+    // Disabled, and a parameter that takes no edit: Enter and F2 do nothing.
+    for case in ["disabled", "read-only"] {
+        let mut ui = Runtime::new();
+        let spec = ParameterSpec::new("Amount", 0.0, 100.0, 50.0)?;
+        let (row, _host) = if case == "disabled" {
+            let (amount, host) = amount(&mut ui, spec)?;
+            (
+                number_row(&mut ui, InlineSlider::new(amount).disabled())?,
+                host,
+            )
+        } else {
+            let (amount, host) = amount(&mut ui, spec.read_only())?;
+            (number_row(&mut ui, InlineSlider::new(amount))?, host)
+        };
+        for code in [KeyCode::Enter, KeyCode::F2] {
+            ui.focus(&row)?;
+            support::press(&mut ui, code);
+            assert!(!text_editing(&ui), "{case}: {code:?} does nothing");
+        }
+        assert_eq!(
+            ui.text_command(&row, TextCommand::BeginEdit)?,
+            TextCommandOutcome::Unavailable,
+            "{case}"
+        );
+        assert!(!text_editing(&ui), "{case}");
+    }
+    Ok(())
+}
+
+#[test]
+fn begin_edit_waits_for_an_inline_sliders_gesture_to_end() -> TestResult {
+    // A drag on the value.
+    let mut ui = Runtime::new();
+    let (amount, _host) = amount(&mut ui, ParameterSpec::new("Amount", 0.0, 100.0, 50.0)?)?;
+    let row = number_row(&mut ui, InlineSlider::new(amount.clone()))?;
+    let start = value_point(&ui, &row)?;
+    ui.pointer_input(PointerEvent::new(
+        start,
+        PointerKind::Press(PointerButton::Primary),
+    ))?;
+    assert_eq!(
+        ui.text_command(&row, TextCommand::BeginEdit)?,
+        TextCommandOutcome::Unavailable,
+        "a pressed value, before it moves"
+    );
+    let moved = Point::new(start.x() + 16.0, start.y())?;
+    ui.pointer_input(PointerEvent::new(moved, PointerKind::Move))?;
+    assert_eq!(
+        ui.text_command(&row, TextCommand::BeginEdit)?,
+        TextCommandOutcome::Unavailable
+    );
+    assert!(!text_editing(&ui));
+    ui.pointer_input(PointerEvent::new(
+        moved,
+        PointerKind::Release(PointerButton::Primary),
+    ))?;
+    settle(&mut ui);
+    assert!(
+        (amount.snapshot().get()?.base - 60.0).abs() < 0.0001,
+        "the drag saves on release as before"
+    );
+    assert!(!text_editing(&ui));
+
+    // A held step key: one edit per held key, which its release commits.
+    let mut ui = Runtime::new();
+    let (amount, _host) = self::amount(&mut ui, ParameterSpec::new("Amount", 0.0, 100.0, 50.0)?)?;
+    let row = number_row(&mut ui, InlineSlider::new(amount.clone()))?;
+    ui.focus(&row)?;
+    ui.key_input(KeyCode::ArrowRight, KeyAction::Press)?;
+    assert_eq!(
+        ui.text_command(&row, TextCommand::BeginEdit)?,
+        TextCommandOutcome::Unavailable
+    );
+    assert!(!text_editing(&ui));
+    ui.key_input(KeyCode::ArrowRight, KeyAction::Release)?;
+    settle(&mut ui);
+    assert_eq!(amount.snapshot().get()?.base, 51.0, "the release commits");
+    assert_eq!(
+        ui.text_command(&row, TextCommand::BeginEdit)?,
+        TextCommandOutcome::Handled,
+        "the gesture has ended"
+    );
+    Ok(())
+}
+
+#[test]
+fn begin_edit_opens_an_inline_readouts_read_only_text_mode() -> TestResult {
+    let mut ui = Runtime::new();
+    let load = ui.signal("42 %".to_owned());
+    let row = number_row(&mut ui, InlineReadout::new(load.read_only()))?;
+    assert_eq!(
+        ui.text_command(&row, TextCommand::BeginEdit)?,
+        TextCommandOutcome::Handled
+    );
+    assert!(text_editing(&ui));
+    settle(&mut ui);
+    assert_eq!(ui.focused(), Some(editor(&ui, &row)), "focus at the flush");
+    assert_eq!(
+        ui.text_command(&row, TextCommand::BeginEdit)?,
+        TextCommandOutcome::Unavailable,
+        "already in text mode"
+    );
+    ui.text_input("typed")?;
+    ui.key_input(KeyCode::Enter, KeyAction::Press)?;
+    settle(&mut ui);
+    assert_eq!(load.get()?, "42 %", "nothing is written");
+    Ok(())
+}
+
+#[test]
+fn a_slider_without_text_mode_is_no_editor() -> TestResult {
+    // A compatibility check: a slider has no resting text mode to begin.
+    let mut ui = Runtime::new();
+    let (amount, _host) = amount(&mut ui, ParameterSpec::new("Amount", 0.0, 100.0, 50.0)?)?;
+    let slider = number_row(&mut ui, Slider::new(amount))?;
+    assert_eq!(
+        ui.text_command(&slider, TextCommand::BeginEdit)?,
+        TextCommandOutcome::NotAnEditor
+    );
     Ok(())
 }
 

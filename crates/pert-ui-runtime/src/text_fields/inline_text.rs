@@ -24,7 +24,8 @@ use crate::layout::{centered, rect};
 /// and `BeginEdit` answers [`TextCommandOutcome::Unavailable`]. At rest the
 /// control answers `BeginEdit` by beginning to edit, with `Handled`, or with
 /// `Unavailable` while it is disabled or refuses its binding, and every other
-/// command with [`TextCommandOutcome::NotAnEditor`]. The label has no
+/// command with [`TextCommandOutcome::NotAnEditor`]. Inspection reports
+/// editing as the `editing` property. The label has no
 /// clipboard context menu. Each editing session starts with an empty undo
 /// history. Up and Down are consumed while editing. Editing is a draft:
 /// Enter and focus leaving the label save it to the binding, Escape restores the

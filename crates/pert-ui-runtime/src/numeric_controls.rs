@@ -527,6 +527,35 @@ impl NumericControl {
     fn busy(&self) -> bool {
         self.edit.is_some() || self.drag.is_some() || self.key.is_some() || self.field.pressed()
     }
+    /// A text command on the typed value. A resting inline row answers
+    /// [`TextCommand::BeginEdit`] as Enter and F2 do; outside text mode every
+    /// other command finds no editor.
+    fn text_command(
+        &mut self,
+        cx: &mut EventContext,
+        command: TextCommand,
+    ) -> Result<TextCommandOutcome, RuntimeError> {
+        if command == TextCommand::BeginEdit && self.field.inline {
+            return self.begin_command(cx);
+        }
+        self.field.command(cx, command)
+    }
+    /// [`TextCommand::BeginEdit`]: text mode begins exactly where Enter and F2
+    /// begin it. They do nothing during a gesture (a pressed value, a drag or
+    /// a held step key, each holding the row's edit) and when the parameter
+    /// takes no edit, so the command answers `Unavailable` there, as it does
+    /// in text mode.
+    fn begin_command(&mut self, cx: &mut EventContext) -> Result<TextCommandOutcome, RuntimeError> {
+        if self.field.editing || self.busy() {
+            return Ok(TextCommandOutcome::Unavailable);
+        }
+        self.begin_text(cx)?;
+        Ok(if self.field.editing {
+            TextCommandOutcome::Handled
+        } else {
+            TextCommandOutcome::Unavailable
+        })
+    }
 }
 impl Component for NumericControl {
     fn reconcile(&mut self, next: Self) -> Option<Invalidation> {
@@ -1478,7 +1507,7 @@ macro_rules! numeric_widget {
                 cx: &mut EventContext,
                 command: TextCommand,
             ) -> Result<TextCommandOutcome, RuntimeError> {
-                self.0.field.command(cx, command)
+                self.0.text_command(cx, command)
             }
             fn input_reset(&mut self) {
                 self.0.input_reset();
@@ -1595,7 +1624,7 @@ numeric_widget!(
     InlineSlider,
     true,
     Shape::Linear,
-    "A one-line parameter row with a caption, a short track, an editable value and a unit, sharing one Tab stop. Inline controls fit toolbars, channel strips and status bars at ControlHeight and follow the ordinary theme metrics for density and zoom. The secondary caption uses `TextStyle::Caption`; the value and unit use `TextStyle::Monospace` on one baseline. Click the value or press Enter/F2 to type; horizontal value dragging begins after four logical pixels and uses 160 logical pixels for full travel, with Shift dividing sensitivity by ten. Track, key and wheel gestures keep the normal parameter edit protocol. Enter confirms typed values; Escape or loss of context cancels, and invalid text stays editable without changing the base. While typing, keys reach the value before application key commands, as in `TextField`, and `Runtime::text_command` acts on the typed text as the clipboard chords do; outside text mode the row is not a text editor. Resting focus schedules no caret work. The caption and unit are literal presentation text outside selection, clipboard text and IME composition. Editable track and value hover uses SurfaceHover without changing row geometry."
+    "A one-line parameter row with a caption, a short track, an editable value and a unit, sharing one Tab stop. Inline controls fit toolbars, channel strips and status bars at ControlHeight and follow the ordinary theme metrics for density and zoom. The secondary caption uses `TextStyle::Caption`; the value and unit use `TextStyle::Monospace` on one baseline. Click the value or press Enter/F2 to type; horizontal value dragging begins after four logical pixels and uses 160 logical pixels for full travel, with Shift dividing sensitivity by ten. Track, key and wheel gestures keep the normal parameter edit protocol. Enter confirms typed values; Escape or loss of context cancels, and invalid text stays editable without changing the base. While typing, keys reach the value before application key commands, as in `TextField`, and `Runtime::text_command` acts on the typed text as the clipboard chords do; outside text mode the row is not a text editor, except that `TextCommand::BeginEdit` begins text mode as Enter/F2 does, requesting focus for it, and answers `Handled`. `BeginEdit` answers `Unavailable` where Enter/F2 does nothing: while the parameter takes no edit (disabled, unavailable, without edit authority or not editable), during a gesture that holds the row's edit (a pressed value, a track drag or a held step key, which then ends on its release as before), and in text mode. Inspection reports text mode as the `text_editing` property. Resting focus schedules no caret work. The caption and unit are literal presentation text outside selection, clipboard text and IME composition. Editable track and value hover uses SurfaceHover without changing row geometry."
 );
 numeric_widget!(
     Knob,

@@ -14,6 +14,64 @@ const POLICIES: [HiddenActive; 3] = [
     HiddenActive::Clear,
 ];
 
+/// The filtered collections every behavior runs for.
+#[derive(Clone, Copy, Debug)]
+enum Kind {
+    List,
+    Table,
+    Tree,
+}
+const KINDS: [Kind; 3] = [Kind::List, Kind::Table, Kind::Tree];
+/// The collections whose controllers replace their source.
+const REPLACING: [Kind; 2] = [Kind::Table, Kind::Tree];
+
+/// Keys and queries of one collection's rows.
+struct Case {
+    /// The item the tests make active.
+    active: &'static str,
+    /// Another key `hide` hides, selected beside `active` in `Multiple` mode.
+    also: &'static str,
+    /// A query that hides `active` and `also` while rows remain.
+    hide: &'static str,
+    /// The row still shown nearest to `active` after `hide`.
+    nearest: &'static str,
+    /// Another query that hides `active` while rows remain.
+    narrower: &'static str,
+}
+
+impl Kind {
+    fn case(self) -> Case {
+        match self {
+            // "ap" keeps Apple, Apricot and Grape: Grape follows Banana.
+            Kind::List => Case {
+                active: "banana",
+                also: "blueberry",
+                hide: "ap",
+                nearest: "grape",
+                narrower: "apr",
+            },
+            // "sun" keeps Oak, which follows Fern.
+            Kind::Table => Case {
+                active: "fern",
+                also: "moss",
+                hide: "sun",
+                nearest: "oak",
+                narrower: "su",
+            },
+            // "rock" shows `rock` with its ancestor `music`; `notes` is
+            // hidden, and the nearest row is the last one before it in the
+            // rows shown before the change, where `music` was collapsed.
+            Kind::Tree => Case {
+                active: "notes",
+                also: "jazz",
+                hide: "rock",
+                nearest: "music",
+                narrower: "roc",
+            },
+        }
+    }
+}
+
 const FRUIT: [&str; 6] = ["Apple", "Apricot", "Banana", "Blueberry", "Cherry", "Grape"];
 struct Fruit;
 impl ListItems for Fruit {
@@ -29,86 +87,6 @@ impl ListItems for Fruit {
     fn text(&self, index: usize) -> Option<String> {
         FRUIT.get(index).map(|name| (*name).to_owned())
     }
-}
-
-/// A filter over a collection, the collection's selection and its query.
-struct Stage {
-    ui: Runtime,
-    root: WidgetId,
-    query: Signal<String>,
-    selection: ListSelection,
-}
-impl Stage {
-    fn active(&self) -> Option<String> {
-        self.selection.active().get().expect("readable")
-    }
-    fn selected(&self) -> Vec<String> {
-        self.selection
-            .selected()
-            .get()
-            .expect("readable")
-            .iter()
-            .cloned()
-            .collect()
-    }
-    fn set_active(&mut self, key: &str) {
-        self.selection
-            .set_active(Some(key.to_owned()))
-            .expect("writable");
-        settle(&mut self.ui);
-    }
-    /// Types `query` as the user does: with focus in the field.
-    fn type_query(&mut self, query: &str) {
-        let field = widget(&self.ui, &self.root, "filter");
-        self.ui.focus(&field).expect("focusable");
-        self.query.set(query.to_owned()).expect("writable");
-        settle(&mut self.ui);
-    }
-    /// Changes the query while the collection, keyed `collection`, has focus.
-    fn query_in_collection(&mut self, query: &str) {
-        let collection = widget(&self.ui, &self.root, "collection");
-        self.ui.focus(&collection).expect("focusable");
-        settle(&mut self.ui);
-        self.query.set(query.to_owned()).expect("writable");
-        settle(&mut self.ui);
-    }
-}
-
-fn mount(
-    mut ui: Runtime,
-    target: impl Into<FilterTarget>,
-    collection: Element,
-    selection: ListSelection,
-    policy: HiddenActive,
-) -> Result<Stage, Box<dyn std::error::Error>> {
-    ui.set_viewport(Viewport::new(400.0, 400.0, 1.0)?)?;
-    let query = ui.signal(String::new());
-    let root = ui.mount_tree(Element::new(
-        "filtered",
-        CollectionFilter::with_query(query.clone(), target, collection).hidden_active(policy),
-    ))?;
-    ui.flush(Duration::ZERO)?;
-    Ok(Stage {
-        ui,
-        root,
-        query,
-        selection,
-    })
-}
-
-fn list(policy: HiddenActive, mode: SelectionMode) -> Result<Stage, Box<dyn std::error::Error>> {
-    let ui = Runtime::new();
-    let source = ui.signal(ListSource::new(Fruit));
-    let selection = ListSelection::new(&ui, mode);
-    let filter = ListFilter::new(&ui, source.read_only())?.selection(selection.clone());
-    let list = VirtualList::new(filter.items(), ROW)?.selection(selection.clone());
-    mount(
-        ui,
-        filter,
-        Element::new("collection", list),
-        selection,
-        policy,
-    )
 }
 
 /// Plants with a name and a light column; `with` keeps only the named rows.
@@ -143,22 +121,6 @@ impl TableItems for Plants {
 }
 const ALL_PLANTS: &[&str] = &["fern", "moss", "oak"];
 
-fn table(policy: HiddenActive) -> Result<(Stage, TableController), Box<dyn std::error::Error>> {
-    let ui = Runtime::new();
-    let selection = ListSelection::new(&ui, SelectionMode::Single);
-    let table = TableController::new(
-        &ui,
-        selection.clone(),
-        [
-            TableColumn::new("name", "Name"),
-            TableColumn::new("light", "Light"),
-        ],
-        TableSource::new(Plants(ALL_PLANTS)),
-    )?;
-    let view = Element::new("collection", Table::new(&table, ROW)?);
-    Ok((mount(ui, table.clone(), view, selection, policy)?, table))
-}
-
 /// `music` holds `jazz` and `rock`, `jazz` holds `bebop` while `bebop` is
 /// true; `notes` is a leaf.
 struct Library {
@@ -189,28 +151,242 @@ impl TreeItems for Library {
     }
 }
 
-fn tree(policy: HiddenActive) -> Result<(Stage, TreeController), Box<dyn std::error::Error>> {
-    let ui = Runtime::new();
-    let selection = ListSelection::new(&ui, SelectionMode::Single);
-    let tree = TreeController::new(
-        &ui,
-        selection.clone(),
-        TreeSource::new(Library { bebop: true }),
-    )?;
-    let view = Element::new("collection", Tree::new(&tree, ROW)?);
-    Ok((mount(ui, tree.clone(), view, selection, policy)?, tree))
+/// A table's or a tree's controller, which replaces its source.
+enum Controller {
+    Table(TableController),
+    Tree(TreeController),
+}
+
+/// A source replacement and what it does to the rows.
+#[derive(Clone, Copy, Debug)]
+enum Replacement {
+    /// The same rows.
+    Same,
+    /// Hides the replacement case's active item; a row remains.
+    Hide,
+    /// Hides it too when applied after `Hide`, and hides `stray`.
+    HideMore,
+}
+
+/// The keys of a replacement that hides the active item.
+struct Replaced {
+    /// The query set first, if the hidden item shows only through it.
+    query: &'static str,
+    /// The item the tests make active.
+    active: &'static str,
+    /// The row still shown nearest to it after `Replacement::Hide`.
+    nearest: &'static str,
+    /// Another key `Replacement::HideMore` leaves hidden.
+    stray: &'static str,
+}
+
+impl Controller {
+    fn replace(&self, replacement: Replacement) -> Result<(), RuntimeError> {
+        match self {
+            Controller::Table(table) => {
+                table.set_source(TableSource::new(Plants(match replacement {
+                    Replacement::Same => ALL_PLANTS,
+                    Replacement::Hide => &["moss", "oak"],
+                    Replacement::HideMore => &["oak"],
+                })))
+            }
+            Controller::Tree(tree) => tree.set_source(TreeSource::new(Library {
+                bebop: matches!(replacement, Replacement::Same),
+            })),
+        }
+    }
+    fn replaced(&self) -> Replaced {
+        match self {
+            Controller::Table(_) => Replaced {
+                query: "",
+                active: "fern",
+                nearest: "moss",
+                stray: "moss",
+            },
+            // `bebop` is shown only through the filter's temporary expansion
+            // of "o", and `jazz` only as its ancestor.
+            Controller::Tree(_) => Replaced {
+                query: "o",
+                active: "bebop",
+                nearest: "rock",
+                stray: "jazz",
+            },
+        }
+    }
+}
+
+/// Describes an element again, as an owner does for each description.
+type Build = Box<dyn Fn() -> Result<Element, RuntimeError>>;
+
+/// A filter over a collection, the collection's selection and its query.
+struct Stage {
+    ui: Runtime,
+    root: WidgetId,
+    query: Signal<String>,
+    selection: ListSelection,
+    controller: Option<Controller>,
+    describe: Box<dyn Fn(HiddenActive) -> Result<Element, RuntimeError>>,
+}
+impl Stage {
+    fn active(&self) -> Option<String> {
+        self.selection.active().get().expect("readable")
+    }
+    fn selected(&self) -> Vec<String> {
+        let mut keys: Vec<String> = self
+            .selection
+            .selected()
+            .get()
+            .expect("readable")
+            .iter()
+            .cloned()
+            .collect();
+        keys.sort();
+        keys
+    }
+    fn set_active(&mut self, key: &str) {
+        self.selection
+            .set_active(Some(key.to_owned()))
+            .expect("writable");
+        settle(&mut self.ui);
+    }
+    /// Types `query` as the user does: with focus in the field.
+    fn type_query(&mut self, query: &str) {
+        let field = widget(&self.ui, &self.root, "filter");
+        self.ui.focus(&field).expect("focusable");
+        self.query.set(query.to_owned()).expect("writable");
+        settle(&mut self.ui);
+    }
+    /// Changes the query while the collection, keyed `collection`, has focus
+    /// where a press puts it: on the collection, or on a table's body.
+    fn query_in_collection(&mut self, query: &str) {
+        let collection = widget(&self.ui, &self.root, "collection");
+        let mut targets = vec![collection.clone()];
+        targets.extend(self.ui.children(&collection).expect("mounted"));
+        let target = targets
+            .into_iter()
+            .find(|id| self.ui.can_focus(id).expect("mounted"))
+            .expect("a focusable collection");
+        self.ui.focus(&target).expect("focusable");
+        settle(&mut self.ui);
+        self.query.set(query.to_owned()).expect("writable");
+        settle(&mut self.ui);
+    }
+    fn controller(&self) -> &Controller {
+        self.controller.as_ref().expect("a replacing collection")
+    }
+    /// Describes the filter again with `policy`.
+    fn redescribe(&mut self, policy: HiddenActive) -> TestResult {
+        let filter = (self.describe)(policy)?;
+        self.ui.reconcile_children(&self.root, vec![filter])?;
+        settle(&mut self.ui);
+        Ok(())
+    }
+    fn inspected_policy(&self) -> Option<InspectValue> {
+        self.ui
+            .inspect()
+            .components
+            .into_iter()
+            .find(|c| c.key == "filtered")
+            .and_then(|c| c.details.properties.get("hidden_active").cloned())
+    }
+}
+
+fn stage(kind: Kind, policy: HiddenActive) -> Result<Stage, Box<dyn std::error::Error>> {
+    stage_with(kind, policy, SelectionMode::Single)
+}
+
+fn stage_with(
+    kind: Kind,
+    policy: HiddenActive,
+    mode: SelectionMode,
+) -> Result<Stage, Box<dyn std::error::Error>> {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(400.0, 400.0, 1.0)?)?;
+    let query = ui.signal(String::new());
+    let selection = ListSelection::new(&ui, mode);
+    let (target, collection, controller): (FilterTarget, Build, _) = match kind {
+        Kind::List => {
+            let source = ui.signal(ListSource::new(Fruit));
+            let filter = ListFilter::new(&ui, source.read_only())?.selection(selection.clone());
+            let items = filter.items();
+            let rows = selection.clone();
+            let view = move || {
+                Ok(Element::new(
+                    "collection",
+                    VirtualList::new(items.clone(), ROW)?.selection(rows.clone()),
+                ))
+            };
+            (filter.into(), Box::new(view), None)
+        }
+        Kind::Table => {
+            let table = TableController::new(
+                &ui,
+                selection.clone(),
+                [
+                    TableColumn::new("name", "Name"),
+                    TableColumn::new("light", "Light"),
+                ],
+                TableSource::new(Plants(ALL_PLANTS)),
+            )?;
+            let shown = table.clone();
+            let view = move || Ok(Element::new("collection", Table::new(&shown, ROW)?));
+            (
+                table.clone().into(),
+                Box::new(view),
+                Some(Controller::Table(table)),
+            )
+        }
+        Kind::Tree => {
+            let tree = TreeController::new(
+                &ui,
+                selection.clone(),
+                TreeSource::new(Library { bebop: true }),
+            )?;
+            let shown = tree.clone();
+            let view = move || Ok(Element::new("collection", Tree::new(&shown, ROW)?));
+            (
+                tree.clone().into(),
+                Box::new(view),
+                Some(Controller::Tree(tree)),
+            )
+        }
+    };
+    let filtered = query.clone();
+    let describe = Box::new(move |policy| {
+        Ok(Element::new(
+            "filtered",
+            CollectionFilter::with_query(filtered.clone(), target.clone(), collection()?)
+                .hidden_active(policy),
+        ))
+    });
+    let root = ui.mount_tree(Element::new("root", Column::new([describe(policy)?])))?;
+    ui.flush(Duration::ZERO)?;
+    Ok(Stage {
+        ui,
+        root,
+        query,
+        selection,
+        controller,
+        describe,
+    })
 }
 
 #[test]
-fn nearest_moves_a_list_item_the_field_hides_to_the_next_or_previous_row() -> TestResult {
-    let mut stage = list(HiddenActive::Nearest, SelectionMode::Single)?;
-    stage.set_active("banana");
-    // "ap" keeps Apple, Apricot and Grape: Grape follows Banana.
-    stage.type_query("ap");
-    assert_eq!(stage.active().as_deref(), Some("grape"));
-    assert_eq!(stage.selected(), ["grape"], "a single selection follows");
-    // At the end there is no next row: the previous one.
-    stage.type_query("");
+fn nearest_moves_an_item_the_field_hides_to_the_nearest_shown_row() -> TestResult {
+    for kind in KINDS {
+        let case = kind.case();
+        let mut stage = stage(kind, HiddenActive::Nearest)?;
+        stage.set_active(case.active);
+        stage.type_query(case.hide);
+        assert_eq!(stage.active().as_deref(), Some(case.nearest), "{kind:?}");
+        assert_eq!(
+            stage.selected(),
+            [case.nearest],
+            "{kind:?}: selection follows"
+        );
+    }
+    // At a list's end there is no next row: the previous one.
+    let mut stage = stage(Kind::List, HiddenActive::Nearest)?;
     stage.set_active("grape");
     stage.type_query("an");
     assert_eq!(stage.active().as_deref(), Some("banana"));
@@ -218,143 +394,149 @@ fn nearest_moves_a_list_item_the_field_hides_to_the_next_or_previous_row() -> Te
 }
 
 #[test]
-fn clear_leaves_no_list_item_active_when_the_field_hides_it() -> TestResult {
-    let mut stage = list(HiddenActive::Clear, SelectionMode::Single)?;
-    stage.set_active("banana");
-    stage.type_query("ap");
-    assert_eq!(stage.active(), None);
-    assert!(stage.selected().is_empty());
-    let snapshot = stage.ui.inspect();
-    let filter = snapshot
-        .components
-        .iter()
-        .find(|c| c.key == "filtered")
-        .ok_or("the filter")?;
-    assert_eq!(
-        filter.details.properties.get("hidden_active"),
-        Some(&InspectValue::Text("clear".into()))
-    );
+fn clear_leaves_no_item_active_when_the_field_hides_it() -> TestResult {
+    for kind in KINDS {
+        let case = kind.case();
+        let mut stage = stage(kind, HiddenActive::Clear)?;
+        stage.set_active(case.active);
+        stage.type_query(case.hide);
+        assert_eq!(stage.active(), None, "{kind:?}");
+        assert!(stage.selected().is_empty(), "{kind:?}");
+        assert_eq!(
+            stage.inspected_policy(),
+            Some(InspectValue::Text("clear".into())),
+            "{kind:?}"
+        );
+    }
     Ok(())
 }
 
 #[test]
 fn clear_clears_when_no_row_remains_and_when_the_item_was_already_hidden() -> TestResult {
-    let mut stage = list(HiddenActive::Clear, SelectionMode::Single)?;
-    stage.set_active("banana");
-    stage.type_query("zzz");
-    assert_eq!(stage.active(), None, "no row remains");
+    for kind in KINDS {
+        let case = kind.case();
+        let mut stage = stage(kind, HiddenActive::Clear)?;
+        stage.set_active(case.active);
+        stage.type_query("zzz");
+        assert_eq!(stage.active(), None, "{kind:?}: no row remains");
 
-    let mut stage = list(HiddenActive::Clear, SelectionMode::Single)?;
-    stage.type_query("ap");
-    // The application makes a hidden row active; the next change clears it.
-    stage.set_active("cherry");
-    stage.type_query("apr");
-    assert_eq!(stage.active(), None, "it was hidden before this change");
+        let mut stage = self::stage(kind, HiddenActive::Clear)?;
+        stage.type_query(case.hide);
+        // The application makes a hidden row active; the next change clears it.
+        stage.set_active(case.active);
+        stage.type_query(case.narrower);
+        assert_eq!(stage.active(), None, "{kind:?}: hidden before this change");
+    }
     Ok(())
 }
 
 #[test]
-fn the_policy_follows_the_field_for_a_table_and_a_tree() -> TestResult {
-    let (mut stage, _) = table(HiddenActive::Nearest)?;
-    stage.set_active("fern");
-    stage.type_query("sun");
-    assert_eq!(stage.active().as_deref(), Some("oak"));
-    let (mut stage, _) = table(HiddenActive::Clear)?;
-    stage.set_active("fern");
-    stage.type_query("sun");
-    assert_eq!(stage.active(), None);
-
-    // A tree shows `rock` with its ancestor `music`; `notes` is hidden, so
-    // the nearest row is the last one before it in the rows shown before
-    // the change, where `music` was collapsed.
-    let (mut stage, _) = tree(HiddenActive::Nearest)?;
-    stage.set_active("notes");
-    stage.type_query("rock");
-    assert_eq!(stage.active().as_deref(), Some("music"));
-    let (mut stage, _) = tree(HiddenActive::Clear)?;
-    stage.set_active("notes");
-    stage.type_query("rock");
-    assert_eq!(stage.active(), None);
-    Ok(())
-}
-
-#[test]
-fn a_table_replacement_that_hides_the_active_row_follows_the_policy() -> TestResult {
-    let (mut stage, table) = table(HiddenActive::Nearest)?;
-    stage.set_active("fern");
-    table.set_source(TableSource::new(Plants(&["moss", "oak"])))?;
-    settle(&mut stage.ui);
-    assert_eq!(stage.active().as_deref(), Some("moss"));
-
-    let (mut stage, table) = self::table(HiddenActive::Clear)?;
-    stage.set_active("fern");
-    table.set_source(TableSource::new(Plants(&["moss", "oak"])))?;
-    settle(&mut stage.ui);
-    assert_eq!(stage.active(), None);
-    Ok(())
-}
-
-#[test]
-fn a_tree_replacement_hides_a_node_shown_through_the_temporary_expansion() -> TestResult {
-    for (policy, expected) in [
-        (HiddenActive::Nearest, Some("rock")),
-        (HiddenActive::Clear, None),
-    ] {
-        let (mut stage, tree) = tree(policy)?;
-        // `bebop` is shown only through the filter's temporary expansion.
-        stage.type_query("o");
-        stage.set_active("bebop");
-        tree.set_source(TreeSource::new(Library { bebop: false }))?;
-        settle(&mut stage.ui);
-        assert_eq!(stage.active().as_deref(), expected, "{policy:?}");
+fn a_replacement_that_hides_the_active_item_follows_the_policy() -> TestResult {
+    for kind in REPLACING {
+        for (policy, nearest) in [(HiddenActive::Nearest, true), (HiddenActive::Clear, false)] {
+            let mut stage = stage(kind, policy)?;
+            let replaced = stage.controller().replaced();
+            stage.type_query(replaced.query);
+            stage.set_active(replaced.active);
+            stage.controller().replace(Replacement::Hide)?;
+            settle(&mut stage.ui);
+            let expected = nearest.then_some(replaced.nearest);
+            assert_eq!(stage.active().as_deref(), expected, "{kind:?} {policy:?}");
+        }
     }
     Ok(())
 }
 
 #[test]
 fn clear_clears_after_two_replacements_before_one_delivery() -> TestResult {
-    let (mut stage, table) = table(HiddenActive::Clear)?;
-    stage.set_active("fern");
-    table.set_source(TableSource::new(Plants(&["moss", "oak"])))?;
-    table.set_source(TableSource::new(Plants(&["oak"])))?;
-    settle(&mut stage.ui);
-    assert_eq!(stage.active(), None);
+    for kind in REPLACING {
+        let mut stage = stage(kind, HiddenActive::Clear)?;
+        let replaced = stage.controller().replaced();
+        stage.type_query(replaced.query);
+        stage.set_active(replaced.active);
+        stage.controller().replace(Replacement::Hide)?;
+        stage.controller().replace(Replacement::HideMore)?;
+        settle(&mut stage.ui);
+        assert_eq!(stage.active(), None, "{kind:?}");
+    }
+    Ok(())
+}
+
+#[test]
+fn clear_clears_an_item_the_application_made_active_before_delivery() -> TestResult {
+    for kind in REPLACING {
+        let mut stage = stage(kind, HiddenActive::Clear)?;
+        let replaced = stage.controller().replaced();
+        stage.type_query(replaced.query);
+        stage.set_active(replaced.active);
+        stage.controller().replace(Replacement::HideMore)?;
+        stage
+            .selection
+            .set_active(Some(replaced.stray.to_owned()))?;
+        settle(&mut stage.ui);
+        assert_eq!(stage.active(), None, "{kind:?}");
+    }
     Ok(())
 }
 
 #[test]
 fn a_query_with_a_replacement_in_one_delivery_supplies_the_transition() -> TestResult {
-    let (mut stage, table) = table(HiddenActive::Nearest)?;
-    stage.set_active("fern");
-    let field = widget(&stage.ui, &stage.root, "filter");
-    stage.ui.focus(&field)?;
-    // The replacement keeps `fern`; the query over the new rows hides it.
-    table.set_source(TableSource::new(Plants(ALL_PLANTS)))?;
-    stage.query.set("sun".to_owned())?;
-    settle(&mut stage.ui);
-    assert_eq!(stage.active().as_deref(), Some("oak"));
+    for kind in REPLACING {
+        let case = kind.case();
+        let mut stage = stage(kind, HiddenActive::Nearest)?;
+        stage.set_active(case.active);
+        let field = widget(&stage.ui, &stage.root, "filter");
+        stage.ui.focus(&field)?;
+        // The replacement keeps the item; the query over the new rows hides it.
+        stage.controller().replace(Replacement::Same)?;
+        stage.query.set(case.hide.to_owned())?;
+        settle(&mut stage.ui);
+        assert_eq!(stage.active().as_deref(), Some(case.nearest), "{kind:?}");
+    }
     Ok(())
 }
 
 #[test]
 fn a_multiple_selection_keeps_its_hidden_keys_under_either_policy() -> TestResult {
-    let mut stage = list(HiddenActive::Nearest, SelectionMode::Multiple)?;
-    stage
-        .selection
-        .select(["banana".to_owned(), "blueberry".to_owned()])?;
-    stage.set_active("banana");
-    stage.type_query("ap");
-    assert_eq!(stage.active().as_deref(), Some("grape"));
-    assert_eq!(stage.selected(), ["banana", "blueberry"]);
+    for kind in KINDS {
+        let case = kind.case();
+        let mut both = vec![case.active.to_owned(), case.also.to_owned()];
+        both.sort();
+        for (policy, expected) in [
+            (HiddenActive::Nearest, Some(case.nearest)),
+            (HiddenActive::Clear, None),
+        ] {
+            let mut stage = stage_with(kind, policy, SelectionMode::Multiple)?;
+            stage.selection.select(both.clone())?;
+            stage.set_active(case.active);
+            stage.type_query(case.hide);
+            assert_eq!(stage.active().as_deref(), expected, "{kind:?} {policy:?}");
+            assert_eq!(stage.selected(), both, "{kind:?} {policy:?}");
+        }
+    }
+    Ok(())
+}
 
-    let mut stage = list(HiddenActive::Clear, SelectionMode::Multiple)?;
-    stage
-        .selection
-        .select(["banana".to_owned(), "blueberry".to_owned()])?;
-    stage.set_active("banana");
-    stage.type_query("ap");
-    assert_eq!(stage.active(), None);
-    assert_eq!(stage.selected(), ["banana", "blueberry"]);
+#[test]
+fn a_redescribed_policy_applies_from_the_next_change() -> TestResult {
+    for kind in KINDS {
+        let case = kind.case();
+        let mut stage = stage(kind, HiddenActive::Keep)?;
+        stage.set_active(case.active);
+        stage.type_query(case.hide);
+        assert_eq!(stage.active().as_deref(), Some(case.active), "{kind:?}");
+        // Changing the policy acts on nothing by itself.
+        stage.redescribe(HiddenActive::Clear)?;
+        assert_eq!(
+            stage.inspected_policy(),
+            Some(InspectValue::Text("clear".into())),
+            "{kind:?}"
+        );
+        assert_eq!(stage.active().as_deref(), Some(case.active), "{kind:?}");
+        // The next delivered change applies it.
+        stage.type_query(case.narrower);
+        assert_eq!(stage.active(), None, "{kind:?}");
+    }
     Ok(())
 }
 
@@ -363,57 +545,80 @@ fn a_multiple_selection_keeps_its_hidden_keys_under_either_policy() -> TestResul
 
 #[test]
 fn keep_leaves_the_item_active_and_hidden() -> TestResult {
-    let mut stage = list(HiddenActive::Keep, SelectionMode::Single)?;
-    stage.set_active("banana");
-    stage.type_query("ap");
-    assert_eq!(stage.active().as_deref(), Some("banana"));
+    for kind in KINDS {
+        let case = kind.case();
+        let mut stage = stage(kind, HiddenActive::Keep)?;
+        stage.set_active(case.active);
+        stage.type_query(case.hide);
+        assert_eq!(stage.active().as_deref(), Some(case.active), "{kind:?}");
+    }
     Ok(())
 }
 
 #[test]
 fn nearest_keeps_the_item_without_a_transition_of_its_own() -> TestResult {
-    // No row remains.
-    let mut stage = list(HiddenActive::Nearest, SelectionMode::Single)?;
-    stage.set_active("banana");
-    stage.type_query("zzz");
-    assert_eq!(stage.active().as_deref(), Some("banana"));
-    // It was already hidden.
-    let mut stage = list(HiddenActive::Nearest, SelectionMode::Single)?;
-    stage.type_query("ap");
-    stage.set_active("cherry");
-    stage.type_query("apr");
-    assert_eq!(stage.active().as_deref(), Some("cherry"));
-    // The application made another hidden row active before the delivery.
-    let (mut stage, table) = table(HiddenActive::Nearest)?;
-    stage.set_active("fern");
-    table.set_source(TableSource::new(Plants(&["moss"])))?;
-    stage.selection.set_active(Some("oak".to_owned()))?;
-    settle(&mut stage.ui);
-    assert_eq!(stage.active().as_deref(), Some("oak"));
-    // Two replacements before one delivery: the second found it hidden.
-    let (mut stage, table) = self::table(HiddenActive::Nearest)?;
-    stage.set_active("fern");
-    table.set_source(TableSource::new(Plants(&["moss", "oak"])))?;
-    table.set_source(TableSource::new(Plants(&["oak"])))?;
-    settle(&mut stage.ui);
-    assert_eq!(stage.active().as_deref(), Some("fern"));
+    for kind in KINDS {
+        let case = kind.case();
+        // No row remains.
+        let mut stage = stage(kind, HiddenActive::Nearest)?;
+        stage.set_active(case.active);
+        stage.type_query("zzz");
+        assert_eq!(stage.active().as_deref(), Some(case.active), "{kind:?}");
+        // It was already hidden.
+        let mut stage = self::stage(kind, HiddenActive::Nearest)?;
+        stage.type_query(case.hide);
+        stage.set_active(case.active);
+        stage.type_query(case.narrower);
+        assert_eq!(stage.active().as_deref(), Some(case.active), "{kind:?}");
+    }
+    for kind in REPLACING {
+        // The application made another hidden row active before the delivery.
+        let mut stage = stage(kind, HiddenActive::Nearest)?;
+        let replaced = stage.controller().replaced();
+        stage.type_query(replaced.query);
+        stage.set_active(replaced.active);
+        stage.controller().replace(Replacement::HideMore)?;
+        stage
+            .selection
+            .set_active(Some(replaced.stray.to_owned()))?;
+        settle(&mut stage.ui);
+        assert_eq!(stage.active().as_deref(), Some(replaced.stray), "{kind:?}");
+        // Two replacements before one delivery: the second found it hidden.
+        let mut stage = self::stage(kind, HiddenActive::Nearest)?;
+        stage.type_query(replaced.query);
+        stage.set_active(replaced.active);
+        stage.controller().replace(Replacement::Hide)?;
+        stage.controller().replace(Replacement::HideMore)?;
+        settle(&mut stage.ui);
+        assert_eq!(stage.active().as_deref(), Some(replaced.active), "{kind:?}");
+    }
     Ok(())
 }
 
 #[test]
 fn with_focus_in_the_collection_every_policy_keeps_todays_rule() -> TestResult {
-    for policy in POLICIES {
-        let mut stage = list(policy, SelectionMode::Single)?;
-        stage.set_active("banana");
-        stage.query_in_collection("ap");
-        assert_eq!(stage.active().as_deref(), Some("grape"), "{policy:?}");
-        // No row remains with a query: focus moves to the field and the
-        // hidden item stays active.
-        stage.set_active("apple");
-        stage.query_in_collection("zzz");
-        let field = widget(&stage.ui, &stage.root, "filter");
-        assert_eq!(stage.ui.focused(), Some(field), "{policy:?}");
-        assert_eq!(stage.active().as_deref(), Some("apple"), "{policy:?}");
+    for kind in KINDS {
+        let case = kind.case();
+        for policy in POLICIES {
+            let mut stage = stage(kind, policy)?;
+            stage.set_active(case.active);
+            stage.query_in_collection(case.hide);
+            assert_eq!(
+                stage.active().as_deref(),
+                Some(case.nearest),
+                "{kind:?} {policy:?}"
+            );
+            // No row remains with a query: focus moves to the field and the
+            // hidden item stays active.
+            stage.query_in_collection("zzz");
+            let field = widget(&stage.ui, &stage.root, "filter");
+            assert_eq!(stage.ui.focused(), Some(field), "{kind:?} {policy:?}");
+            assert_eq!(
+                stage.active().as_deref(),
+                Some(case.nearest),
+                "{kind:?} {policy:?}"
+            );
+        }
     }
     Ok(())
 }

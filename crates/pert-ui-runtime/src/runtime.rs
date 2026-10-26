@@ -5784,13 +5784,16 @@ impl Runtime {
                 continue;
             }
             self.apply_requested_text_commands()?;
+            // Removal comes before the commands' updates are repeated, so a
+            // component that requested its own unmount leaves now and later
+            // commands for it are dropped, however its handler re-queues.
+            self.apply_requested_removals()?;
             // A command that began an edit shows its editor at its owner's
             // update; run that before focus is applied, so the editor's focus
             // request settles in this flush.
             if !self.window.shared.pending.borrow().is_empty() {
                 continue;
             }
-            self.apply_requested_removals()?;
             let had_layout = self.settle_layout()?;
             self.apply_requested_focus()?;
             self.refresh_stack_hover(had_layout)?;

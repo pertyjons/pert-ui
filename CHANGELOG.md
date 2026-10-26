@@ -23,7 +23,9 @@ on a shown row while the user types in its field (F7b). Not breaking.
   that has a resting state, as its own Enter or F2 does, without depending
   on the keyboard's state. `InlineText` answers it at rest by beginning to
   edit with the text selected (`Handled`), and with `Unavailable` while it
-  is disabled, refuses its binding or is already editing. Editors without a
+  is disabled, refuses its binding or is already editing. Inspection
+  reports the edit in each editor's own property: `editing` for
+  `InlineText`, `text_editing` for the inline rows. Editors without a
   resting state (`TextField`, `TextArea`, `SearchField`, `IntegerInput`,
   `DecimalInput`, `DraftEditor`) and `SelectableText` answer `Unavailable`.
 - Added (F27): `InlineText::in_row(bool)`, a list-row mode, default `false`.
@@ -58,7 +60,10 @@ on a shown row while the user types in its field (F7b). Not breaking.
   `Runtime::text_command`, and at the end of the delivering flush for
   `EventContext::request_text_command`; for the latter, the flush now runs
   the updates a delivered command caused before it applies focus, so the
-  editor that just became visible takes it. The `TextCommand`,
+  editor that just became visible takes it. Requested removals still apply
+  right after the delivered commands, before those updates, so a component
+  that asked to be unmounted leaves in that flush and a command it queues
+  for itself is dropped. The `TextCommand`,
   `Component::text_command`, `Runtime::text_command` and
   `request_text_command` rustdoc and contracts.md say so.
 - Changed (F15): `InlineInteger` and `InlineDecimal` answer `BeginEdit` at
@@ -68,6 +73,16 @@ on a shown row while the user types in its field (F7b). Not breaking.
   during a step gesture (a step drag, a pressed stepper or a held step key),
   which is narrower than the key path; the gesture still ends on its
   release. Every other command at rest is still `NotAnEditor`.
+- Changed (F15): `InlineSlider` and `InlineReadout` also answer `BeginEdit`
+  at rest, where they answered `NotAnEditor`, since Enter/F2 enters their
+  text mode too. `InlineReadout` enters its read-only text mode (`Handled`).
+  `InlineSlider` enters text mode exactly where Enter/F2 does, and answers
+  `Unavailable` where that key does nothing: while the parameter takes no
+  edit (disabled, unavailable, without edit authority or not editable),
+  during a gesture that holds the row's edit (a pressed value, a track drag
+  or a held step key) and in text mode. Both answer `Unavailable` in text
+  mode; `Slider` and `Knob` have no text mode and still answer
+  `NotAnEditor`.
 - Documentation (F27): `InlineText`'s default press behavior, unchanged in
   code: a single primary press is handled and focuses the label, a
   double-click edits, and a row around it never sees the press.
@@ -92,7 +107,7 @@ on a shown row while the user types in its field (F7b). Not breaking.
   `application_services` for `EventContext::spawn`, `editing`'s new
   `begin_edit` module, and `collections`' new `inline_text_rows` and
   `filter_hidden_active` modules, with the compatibility checks named as
-  such.
+  such. The filter's behavior tests run for a list, a table and a tree.
 - The runtime's `api/` listings (default and `serde`) add
   `EventContext::spawn`, `TextCommand::BeginEdit` (also under the `prelude`
   and `component` paths), `InlineText::in_row`, `HiddenActive` with its

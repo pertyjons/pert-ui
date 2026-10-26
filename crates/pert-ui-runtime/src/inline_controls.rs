@@ -558,7 +558,11 @@ type Reader = Box<dyn FnMut(&mut UpdateContext) -> Result<(String, Option<String
 /// them, so a command bound to a plain character key does not run there. Text
 /// mode also stops unmodified Enter, Up/Down and Page keys at the row, while
 /// their modified chords reach command bindings. Outside text mode the row is
-/// not a text editor. Resting focus schedules no caret work.
+/// not a text editor, except that [`TextCommand::BeginEdit`] opens read-only
+/// text mode as Enter/F2 does, requesting focus for it, and answers
+/// [`TextCommandOutcome::Handled`]; in text mode `BeginEdit` answers
+/// [`TextCommandOutcome::Unavailable`]. Inspection reports text mode as the
+/// `text_editing` property. Resting focus schedules no caret work.
 ///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
@@ -838,6 +842,14 @@ impl Component for InlineReadout {
         cx: &mut EventContext,
         command: TextCommand,
     ) -> Result<TextCommandOutcome, RuntimeError> {
+        if command == TextCommand::BeginEdit {
+            // As Enter and F2: a resting readout enters read-only text mode.
+            if self.field.editing {
+                return Ok(TextCommandOutcome::Unavailable);
+            }
+            self.begin(cx)?;
+            return Ok(TextCommandOutcome::Handled);
+        }
         self.field.command(cx, command)
     }
     fn focus_lost(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
