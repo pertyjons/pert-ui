@@ -867,7 +867,8 @@ and anything left to a later part.
     and the contract test for refusal at adoption with one that adopts the
     invalid text. The next-flush redescription is checked with a raw input
     and exactly one flush for a `Dynamic` child, a `VirtualList` row and a
-    `Table` cell.
+    `Table` cell; the review fix corrected the list row's sequence
+    (below).
   - **Checks run after the last code edit (the public-API row):** the
     workspace gate, including the five headless example sessions (the
     inventory session checks the controlled checkbox through undo) and the
@@ -888,6 +889,25 @@ and anything left to a later part.
     claimed above; and the builder-replacement tests use a no-op
     constructor callback, so they cannot detect both callbacks running,
     and `InlineText::controlled(...).on_save(...)` is untested.
+
+    **The fix:**
+    - reconciliation that adopts changed controlled text ends the draft at
+      once, as the bound path's write does at update; a new-behavior test
+      describes "New" and then "Old" before one flush, and fails at
+      `!editing()` when the discard is left to update;
+    - the list test sends Enter's press only, flushes once, asserts the
+      proposal, the model and the row, and then releases; with the old
+      press-and-release sequence the row already showed the new title
+      before the flush. The `Dynamic` and table tests already ended with
+      the input that proposes, which was confirmed by observing the old
+      value before their single flush;
+    - separate tests check that `on_change` (`Checkbox`, `Toggle`) and
+      `on_save` (`InlineText`) builders replace the constructor's
+      callback, with separate logs; a mutation that runs both fails them.
+
+    After it: the workspace gate, including the five headless example
+    sessions and the diagnostics suite; `api/generate.sh`, with no change;
+    `git diff --check`.
 
 ## Rules for every part
 

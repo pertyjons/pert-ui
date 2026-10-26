@@ -292,28 +292,61 @@ fn a_new_description_replaces_the_callback() -> TestResult {
         s.click("box")?;
         assert!(old.borrow().is_empty(), "{kind:?}");
         assert_eq!(*new.borrow(), [true], "{kind:?}");
-        // A later `on_change` builder replaces the constructor's callback.
-        let later: Log<bool> = Rc::default();
-        let record = later.clone();
-        let replaced = match kind {
-            Kind::Checkbox => Checkbox::controlled(false, "Box", |_, _| Ok(()))
-                .on_change(move |_, value| {
-                    record.borrow_mut().push(value);
-                    Ok(())
-                })
-                .key("box"),
-            Kind::Toggle => Toggle::controlled(false, "Box", |_, _| Ok(()))
-                .on_change(move |_, value| {
-                    record.borrow_mut().push(value);
-                    Ok(())
-                })
-                .key("box"),
-        };
-        s.redescribe(replaced)?;
+    }
+    Ok(())
+}
+
+/// A controlled checkbox or toggle whose constructor callback logs to
+/// `constructor` and whose later `on_change` builder logs to `replacement`.
+fn replaced_boolean(kind: Kind, constructor: &Log<bool>, replacement: &Log<bool>) -> Element {
+    let (first, later) = (constructor.clone(), replacement.clone());
+    let constructed = move |_: &mut EventContext, value: bool| {
+        first.borrow_mut().push(value);
+        Ok(())
+    };
+    let replacing = move |_: &mut EventContext, value: bool| {
+        later.borrow_mut().push(value);
+        Ok(())
+    };
+    match kind {
+        Kind::Checkbox => Checkbox::controlled(false, "Box", constructed)
+            .on_change(replacing)
+            .key("box"),
+        Kind::Toggle => Toggle::controlled(false, "Box", constructed)
+            .on_change(replacing)
+            .key("box"),
+    }
+}
+
+/// Contract: a later `on_change` builder replaces the constructor's
+/// callback, at mount and by redescription: only the replacement runs, once
+/// per proposal.
+#[test]
+fn the_on_change_builder_replaces_the_constructor_callback() -> TestResult {
+    for kind in KINDS {
+        let (constructor, replacement): (Log<bool>, Log<bool>) = (Rc::default(), Rc::default());
+        let mut s = Stage::new(replaced_boolean(kind, &constructor, &replacement))?;
+        s.click("box")?;
+        assert!(
+            constructor.borrow().is_empty(),
+            "{kind:?}: {:?}",
+            constructor.borrow()
+        );
+        assert_eq!(*replacement.borrow(), [true], "{kind:?}");
+        // The same through a redescription of a plain controlled control.
+        let plain: Log<bool> = Rc::default();
+        let mut s = Stage::new(boolean(kind, false, &plain))?;
+        let (constructor, replacement): (Log<bool>, Log<bool>) = (Rc::default(), Rc::default());
+        s.redescribe(replaced_boolean(kind, &constructor, &replacement))?;
         s.flush()?;
         s.click("box")?;
-        assert_eq!(*later.borrow(), [true], "{kind:?}");
-        assert_eq!(*new.borrow(), [true], "{kind:?}");
+        assert!(plain.borrow().is_empty(), "{kind:?}");
+        assert!(
+            constructor.borrow().is_empty(),
+            "{kind:?}: {:?}",
+            constructor.borrow()
+        );
+        assert_eq!(*replacement.borrow(), [true], "{kind:?}");
     }
     Ok(())
 }
@@ -608,6 +641,27 @@ fn a_same_text_description_keeps_the_draft() -> TestResult {
     Ok(())
 }
 
+/// New behavior: changed text ends the draft when it is described, even
+/// when another description returns to the shown text before the next
+/// flush. Detected by the assertion `!s.editing()`, which fails when the
+/// draft ends only at update, by comparing the described text with the
+/// shown text.
+#[test]
+fn a_changed_text_ends_the_draft_even_when_changed_back_before_a_flush() -> TestResult {
+    let log: Log<String> = Rc::default();
+    let mut s = Stage::new(label("Old", &log).key("name"))?;
+    s.edit("Typed")?;
+    s.redescribe(label("New", &log).key("name"))?;
+    s.redescribe(label("Old", &log).key("name"))?;
+    s.flush()?;
+    assert!(!s.editing());
+    assert_eq!(s.text(), text("Old"));
+    s.press(KeyCode::Enter)?;
+    s.flush()?;
+    assert!(log.borrow().is_empty(), "{:?}", log.borrow());
+    Ok(())
+}
+
 /// Contract: changed described text wins over the draft and ends it
 /// unsaved, as an application write does with `new`.
 #[test]
@@ -680,6 +734,47 @@ fn the_save_callback_follows_the_description_and_errors_are_not_replayed() -> Te
     assert_eq!(*calls.borrow(), 1);
     assert!(!s.editing());
     assert_eq!(s.text(), text("Old"));
+    Ok(())
+}
+
+/// Contract: a later `on_save` builder replaces the constructor's callback,
+/// at mount and by redescription: only the replacement runs, once per save.
+#[test]
+fn the_on_save_builder_replaces_the_constructor_callback() -> TestResult {
+    let replaced = |constructor: &Log<String>, replacement: &Log<String>| {
+        let later = replacement.clone();
+        label("Old", constructor)
+            .on_save(move |_, text| {
+                later.borrow_mut().push(text.to_owned());
+                Ok(())
+            })
+            .key("name")
+    };
+    let (constructor, replacement): (Log<String>, Log<String>) = (Rc::default(), Rc::default());
+    let mut s = Stage::new(replaced(&constructor, &replacement))?;
+    s.edit("Typed")?;
+    s.press(KeyCode::Enter)?;
+    assert!(
+        constructor.borrow().is_empty(),
+        "{:?}",
+        constructor.borrow()
+    );
+    assert_eq!(*replacement.borrow(), ["Typed"]);
+    // The same through a redescription of a plain controlled label.
+    let plain: Log<String> = Rc::default();
+    let mut s = Stage::new(label("Old", &plain).key("name"))?;
+    let (constructor, replacement): (Log<String>, Log<String>) = (Rc::default(), Rc::default());
+    s.redescribe(replaced(&constructor, &replacement))?;
+    s.flush()?;
+    s.edit("Again")?;
+    s.press(KeyCode::Enter)?;
+    assert!(plain.borrow().is_empty());
+    assert!(
+        constructor.borrow().is_empty(),
+        "{:?}",
+        constructor.borrow()
+    );
+    assert_eq!(*replacement.borrow(), ["Again"]);
     Ok(())
 }
 

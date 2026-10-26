@@ -607,9 +607,9 @@ impl Component for InlineText {
     /// permission, normalizer and callbacks. A different binding or path ends
     /// an open draft unsaved, as an application write does, and so does
     /// disabling; the next update shows the new binding's text. A controlled
-    /// text is kept while it is the same, with its draft; changed text
-    /// reaches the next update, which ends the draft as an application
-    /// write does, or refuses the text.
+    /// text is kept while it is the same, with its draft; changed text ends
+    /// the draft unsaved, as an application write does, and the next update
+    /// shows or refuses it.
     fn reconcile(&mut self, next: Self) -> Option<Invalidation> {
         let mut invalidation = None;
         let same_path = match (&self.value, &next.value) {
@@ -629,6 +629,10 @@ impl Component for InlineText {
             && *text != next
         {
             *text = next;
+            // Changed text ends the draft here, as an application write does
+            // at update: a later description back to the shown text must not
+            // revive it.
+            self.discard(None);
             invalidation = Some(Invalidation::Layout);
         }
         // A bound permission keeps the current state until the next update

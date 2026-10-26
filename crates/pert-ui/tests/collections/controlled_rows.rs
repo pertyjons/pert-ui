@@ -157,10 +157,10 @@ fn a_list_row_keeps_its_draft_across_record_changes_and_scrolling() -> TestResul
     assert_eq!(ui.find(&list, &["2", "title"])?, Some(title.clone()));
     assert_eq!(property(&ui, &title, "draft")?, text("Typed"));
 
-    // Enter proposes the draft, the callback applies it, and exactly one
-    // flush shows the new title.
+    // Enter's press proposes the draft and the callback applies it; exactly
+    // one flush, with no further input call (a later one may flush pending
+    // work first), shows the new title.
     ui.key_input(KeyCode::Enter, KeyAction::Press)?;
-    ui.key_input(KeyCode::Enter, KeyAction::Release)?;
     assert_eq!(*log.borrow(), ["2 title Typed"]);
     assert_eq!(store.get()?[1].title, "Typed");
     ui.flush(Duration::ZERO)?;
@@ -169,6 +169,7 @@ fn a_list_row_keeps_its_draft_across_record_changes_and_scrolling() -> TestResul
         property(&ui, &title, "editing")?,
         Some(InspectValue::Bool(false))
     );
+    ui.key_input(KeyCode::Enter, KeyAction::Release)?;
     Ok(())
 }
 
@@ -308,6 +309,8 @@ fn a_table_cell_checkbox_keeps_its_press_and_shows_the_applied_value() -> TestRe
     edit(&store, 3, |task| task.done = true)?;
     publish(&store, &table, &log)?;
     ui.flush(Duration::ZERO)?;
+    // The release proposes; it is the last input call before the one flush
+    // that shows the applied value.
     ui.pointer_input(PointerEvent::new(
         at,
         PointerKind::Release(PointerButton::Primary),
