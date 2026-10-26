@@ -82,8 +82,9 @@ provide editing/IME over the same text service.
 # Boolean and discrete controls
 
 Checkbox, Toggle, InlineToggle and single-choice controls offer `on_change`: it
-runs after a successful user write or remote proposal submission. It does not
-report application writes or authority responses. Errors propagate without
+runs after a successful user write or remote proposal submission, or, on a
+Checkbox or Toggle made with `controlled`, which writes nothing, with the
+user's proposal. It does not report application writes or authority responses. Errors propagate without
 rollback or replay; redescription replaces the handler. Select closes first. Its
 callback receives the list context, so use `EventContext::defer_detached` for work
 that must survive the list hiding. MultiSelect's `on_change` reports each user
@@ -214,6 +215,10 @@ These constructors bind local signals. [`Checkbox::for_parameter`],
 [`Toggle::for_parameter`] and [`RadioGroup::for_parameter`] bind a boolean or choice
 parameter instead, so each activation is a committed host edit; see
 [parameter families](crate::guide::state#parameter-families-and-host-notifications).
+[`Checkbox::controlled`] and [`Toggle::controlled`] take a value from the
+application's own model and report each toggle as a proposal without writing
+anything, as [an editable list of records](crate::guide::layout#an-editable-list-of-records)
+does in its rows.
 
 ```rust
 use pert_ui::prelude::*;

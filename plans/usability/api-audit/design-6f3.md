@@ -13,8 +13,8 @@ answers to D1-D4 on 2026-10-26, before that review. The review reopened D4, whic
 needs an exception to an AGENTS.md rule; the maintainer then confirmed
 the exception and approved the AGENTS.md callback wording the same day
 ([decisions](#decisions-for-the-maintainer)). Both AGENTS.md changes are
-made in the part's implementation. Approval of the design as a whole is
-the maintainer's next step.
+made in the part's implementation. **Approved as a whole by the
+maintainer on 2026-10-26.**
 
 ## What the testers built by hand
 

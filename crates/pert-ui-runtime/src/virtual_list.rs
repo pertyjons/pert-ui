@@ -63,17 +63,26 @@ pub trait ListItems {
     /// and whenever the mounted rows or their positions change, as a scroll or
     /// a resize that mounts or unmounts another row does. A row that stays
     /// mounted receives the new description on its retained components.
-    /// `build` gets no state owner, so a control in the row that binds a
-    /// signal gets it in one of two ways:
+    /// `build` gets no state owner, so a control in the row shows the
+    /// record's value in one of three ways:
     ///
-    /// - **Per row.** Create the binding here with [`Signal::sibling`] from a
+    /// - **Controlled.** [`Checkbox::controlled`](crate::Checkbox::controlled),
+    ///   [`Toggle::controlled`](crate::Toggle::controlled) and
+    ///   [`InlineText::controlled`](crate::InlineText::controlled) take the
+    ///   record's value itself and propose each user change to their
+    ///   callback, which writes it to the application's records. They bind
+    ///   nothing, so describing the row again with the same value keeps an
+    ///   open draft and a pending press, and the changed record shows after
+    ///   the next flush. Use this form for these controls.
+    /// - **Per row.** For a control without a controlled form, create the
+    ///   binding here with [`Signal::sibling`] from a
     ///   signal the source holds, and write changes back to the application's
     ///   records from the control's callback. Creating a signal is not a write,
     ///   so it is allowed here. Every description gives every mounted row a
-    ///   new binding, which suits a control without a draft, such as a
-    ///   checkbox. A text editor ends its open draft when its binding changes,
-    ///   so with this form a change to any record, or a scroll that mounts
-    ///   another row, discards what the user is typing.
+    ///   new binding, which suits a control without a draft. A text editor
+    ///   ends its open draft when its binding changes, so with this form a
+    ///   change to any record, or a scroll that mounts another row, discards
+    ///   what the user is typing.
     /// - **Retained.** Return a row component that creates its binding once,
     ///   in its first update, and requests the control as its child with
     ///   [`UpdateContext::request_children`]. It keeps the record's value from

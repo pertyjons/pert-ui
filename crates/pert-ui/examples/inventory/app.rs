@@ -3,10 +3,10 @@
 use crate::model::{self, Category, EditError, Field, Item, ItemId, Op, Store, Value};
 use pert_ui::prelude::*;
 use pert_ui::{
-    ApplicationError, CellEdit, CollectionFilter, CommandId, CommandScope, Component, EventContext,
-    FilterMatcher, Icon, InlineInteger, InlineReadout, InlineSelect, InlineText, InlineToggle,
-    InputRejection, Invalidation, KeyChord, Notifier, SortDirection, TableColumn, TableController,
-    TableItems, TableSort, TableSource, ToolGroup, Toolbar, Tooltip, UpdateContext,
+    ApplicationError, CellEdit, CollectionFilter, CommandId, CommandScope, FilterMatcher, Icon,
+    InlineInteger, InlineReadout, InlineSelect, InlineText, InlineToggle, InputRejection, KeyChord,
+    SortDirection, TableColumn, TableController, TableItems, TableSort, TableSource, ToolGroup,
+    Toolbar, Tooltip,
 };
 use std::{
     cell::RefCell,
@@ -67,18 +67,17 @@ impl TableItems for Rows {
     }
     fn cell(&self, index: usize, column: &str) -> Option<Element> {
         if column == Field::Active.key() {
+            // Controlled: the cell's description carries the item's value, so
+            // undo or a paste that changes it shows in the next flush.
             let (id, active) = self.item(index, |item| (item.id, item.active))?;
-            return Some(Element::new(
-                "active",
-                ActiveCell {
-                    inventory: self.inventory.clone(),
-                    id,
-                    active,
-                    shown: None,
-                    notifier: None,
-                    stale: false,
-                },
-            ));
+            let inventory = self.inventory.clone();
+            return Some(
+                Checkbox::controlled(active, "", move |_, active| match inventory.upgrade() {
+                    Some(inventory) => inventory.set(id, Field::Active, Value::Bool(active)),
+                    None => Ok(()),
+                })
+                .key("check"),
+            );
         }
         let text = self.text(index, column)?;
         Some(
@@ -102,72 +101,6 @@ fn cell_text(item: &Item, column: &str) -> String {
         "total" => model::money(item.total_cents()),
         "active" => if item.active { "yes" } else { "no" }.to_owned(),
         _ => String::new(),
-    }
-}
-
-/// The checkbox of the Active column at rest. A checkbox binds a signal, and
-/// `TableItems::cell` has no state owner, so this retained component makes
-/// the signal in its first update: only mounted cells hold one. When the
-/// store changes the value (undo, paste), the row's next description brings
-/// it, and the signal follows in the event phase, since an update or a
-/// reconciliation must not write signals.
-struct ActiveCell {
-    inventory: Weak<Inventory>,
-    id: ItemId,
-    active: bool,
-    shown: Option<Signal<bool>>,
-    notifier: Option<Notifier>,
-    stale: bool,
-}
-impl Component for ActiveCell {
-    fn reconcile(&mut self, next: Self) -> Option<Invalidation> {
-        if next.active == self.active {
-            return None;
-        }
-        self.active = next.active;
-        self.stale = true;
-        Some(Invalidation::Paint)
-    }
-    fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
-        let notifier = self.notifier.get_or_insert_with(|| cx.notifier());
-        if self.shown.is_none() {
-            let shown = cx.signal(self.active);
-            let (inventory, id) = (self.inventory.clone(), self.id);
-            cx.request_children(vec![Element::new(
-                "check",
-                Checkbox::new(shown.clone(), "").on_change(move |_, active| {
-                    match inventory.upgrade() {
-                        Some(inventory) => inventory.set(id, Field::Active, Value::Bool(active)),
-                        None => Ok(()),
-                    }
-                }),
-            )]);
-            self.shown = Some(shown);
-        } else if self.stale {
-            notifier.request();
-        }
-        Ok(())
-    }
-    fn deliver_notifications(&mut self, _: &mut EventContext) -> Result<(), RuntimeError> {
-        if std::mem::take(&mut self.stale)
-            && let Some(shown) = &self.shown
-        {
-            shown.set_changed(self.active)?;
-        }
-        Ok(())
-    }
-    fn measure(&self, cx: &MeasureContext<'_>, space: Constraints) -> Result<Size, RuntimeError> {
-        if cx.is_empty() {
-            return Ok(Size::new(0.0, 0.0)?);
-        }
-        cx.measure(0, space)
-    }
-    fn arrange(&self, cx: &mut ArrangeContext<'_>, size: Size) -> Result<(), RuntimeError> {
-        if !cx.is_empty() {
-            let content = cx.measure(0, Constraints::new(Some(size.width()), None)?)?;
-            cx.place(0, Rect::new(0.0, 0.0, content.width(), size.height())?)?;
-        }
-        Ok(())
     }
 }
 

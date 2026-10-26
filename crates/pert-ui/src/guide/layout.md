@@ -507,25 +507,17 @@ implementation over a copy of that value. Each piece then has one job:
   the list and sends it [`TextCommand::BeginEdit`]. Enter in the editor saves
   and gives focus back to the list.
 
-A control in a row binds a signal, and [`ListItems::build`] has no state
-owner, so a row makes its binding in one of two ways:
-
-- **Per-row bindings.** `build` creates a binding with [`Signal::sibling`]
-  holding the record's value, and the control's callback writes the change
-  back to the records. The list describes all its mounted rows again, so each
-  of them receives a new binding, whenever a change of the records replaces
-  the source, and also whenever a scroll or resize mounts or unmounts another
-  row. That suits a control without a draft, such as the checkbox below. A
-  text editor ends its open draft when its binding changes, so a per-row
-  binding would discard the user's typing whenever any record changes or the
-  list scrolls another row into view.
-- **Retained rows.** A row component makes its binding once, in its first
-  update, and keeps it while the row stays mounted. A new description brings
-  the record's current value, which [`Component::reconcile`] keeps and, after
-  a [`Notifier`] request, [`Component::deliver_notifications`] writes to the
-  binding, since neither an update nor a reconciliation may write. The title
-  below works this way, so its draft survives scrolling and changes to other
-  records.
+[`ListItems::build`] has no state owner, and the list describes all its
+mounted rows again whenever a change of the records replaces the source, and
+also whenever a scroll or resize mounts or unmounts another row. The row's
+checkbox and title are therefore [controlled](Checkbox::controlled): each
+takes the record's value from the row's description and proposes the user's
+change to its callback, which writes it to the records. They bind nothing,
+so describing the row again with the same value leaves an open draft alone,
+and the changed record shows after the next flush. A control without a
+controlled form uses a retained row component instead, which makes its
+binding once and writes each new value to it, as [`ListItems::build`]
+describes.
 
 ```rust
 use std::{mem, time::Duration};
@@ -546,18 +538,19 @@ impl ListItems for Rows {
     }
     fn build(&self, index: usize) -> Option<Element> {
         let task = self.tasks.get(index)?;
-        // Per-row binding: a new signal each time the row is described.
-        let done = self.store.sibling(task.done);
+        // Controlled: the row's description carries the record's values.
         let (store, id) = (self.store.clone(), task.id);
-        let check = Checkbox::new(done, "Done").on_change(move |_, done| {
+        let check = Checkbox::controlled(task.done, "Done", move |_, done| {
             edit(&store, id, |task| task.done = done)
         });
-        let title = Title {
-            id, title: task.title.clone(), store: self.store.clone(),
-            shown: None, notifier: None, stale: false,
-        };
+        let store = self.store.clone();
+        // In row mode a single press reaches the row and selects it.
+        let title = InlineText::controlled(task.title.clone(), move |_, title| {
+            edit(&store, id, |task| task.title = title.to_owned())
+        })
+        .in_row(true);
         // The list keys the row with the task's key, replacing "row".
-        Some(Row::new([check.key("done"), Element::new("title", title).with_grow(1)]).key("row"))
+        Some(Row::new([check.key("done"), title.key("title").with_grow(1)]).key("row"))
     }
     fn text(&self, index: usize) -> Option<String> {
         Some(self.tasks.get(index)?.title.clone())
@@ -570,51 +563,6 @@ fn edit(store: &Signal<Vec<Task>>, id: u64, change: impl FnOnce(&mut Task)) -> R
             change(task);
         }
     })
-}
-
-/// A retained row part: it makes its title binding once, so describing the
-/// rows again leaves an open draft alone.
-struct Title {
-    id: u64,
-    title: String,
-    store: Signal<Vec<Task>>,
-    shown: Option<Signal<String>>,
-    notifier: Option<Notifier>,
-    stale: bool,
-}
-impl Component for Title {
-    fn reconcile(&mut self, next: Self) -> Option<Invalidation> {
-        if next.title == self.title {
-            return None;
-        }
-        self.title = next.title;
-        self.stale = true;
-        Some(Invalidation::Paint)
-    }
-    fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
-        let notifier = self.notifier.get_or_insert_with(|| cx.notifier());
-        if self.shown.is_none() {
-            let shown = cx.signal(self.title.clone());
-            let (store, id) = (self.store.clone(), self.id);
-            // In row mode a single press reaches the row and selects it.
-            cx.request_children(vec![Element::new(
-                "editor",
-                InlineText::new(&shown).in_row(true).on_save(move |_, title| {
-                    edit(&store, id, |task| task.title = title.to_owned())
-                }),
-            )]);
-            self.shown = Some(shown);
-        } else if self.stale {
-            notifier.request(); // the write waits for the event phase
-        }
-        Ok(())
-    }
-    fn deliver_notifications(&mut self, _: &mut EventContext) -> Result<(), RuntimeError> {
-        if let (true, Some(shown)) = (mem::take(&mut self.stale), &self.shown) {
-            shown.set_changed(self.title.clone())?;
-        }
-        Ok(())
-    }
 }
 
 /// Applies a drop to the records: the dropped tasks move, in their order, to
@@ -658,7 +606,7 @@ let list = VirtualList::new(filter.items(), 32.0)?
     .on_activate(|cx, key| {
         let (list, key) = (cx.id(), key.to_owned());
         let _receipt = cx.defer(move |ui| {
-            let Some(title) = ui.find(&list, &[key.as_str(), "title", "editor"])? else {
+            let Some(title) = ui.find(&list, &[key.as_str(), "title"])? else {
                 return Ok(());
             };
             ui.text_command(&title, TextCommand::BeginEdit).map(|_| ())
@@ -710,7 +658,7 @@ ui.flush(Duration::ZERO)?;
 assert_eq!(tasks.get()?[1].title, "Buy oat milk");
 assert_eq!(ui.focused(), Some(list.clone()));
 
-// The per-row checkbox writes the record.
+// The checkbox proposes the change, which its callback writes to the record.
 let check = ui.find(&root, &["tasks", "list", "1", "done"])?.ok_or("a checkbox")?;
 ui.focus(&check)?;
 press(&mut ui, KeyCode::Space)?;
@@ -718,7 +666,7 @@ assert!(tasks.get()?[1].done);
 
 // A press on another row's title selects that row; a double click on a
 // title renames it. The driver's clicks are one frame apart.
-let title = |ui: &Runtime, key| ui.find(&root, &["tasks", "list", key, "title", "editor"]);
+let title = |ui: &Runtime, key| ui.find(&root, &["tasks", "list", key, "title"]);
 let write = title(&ui, "2")?.ok_or("a title")?;
 let ship = title(&ui, "3")?.ok_or("a title")?;
 let mut driver = Driver::new(&mut ui);
@@ -747,7 +695,7 @@ Enter on the list renames the active row; with the label's default press
 behavior a press would focus the title instead and the row would never see
 it. The [inventory
 example](https://github.com/pertyjons/pert-ui/blob/main/crates/pert-ui/examples/inventory/main.rs)
-applies the retained form to a table's checkbox column, and a
+applies the controlled checkbox to a table's checkbox column, and a
 [`Table`] edits text cells in place through its own editor instead.
 
 # Zoomable content

@@ -1,6 +1,6 @@
 //! Boolean and typed discrete selection controls.
 use crate::activation::{ActivationState, activation_key, key_result};
-use crate::control_binding::{ValueBinding, same_binding};
+use crate::control_binding::{Controlled, ValueBinding, same_binding};
 use crate::inline_controls::shared_help_child;
 use crate::layout::centered;
 use crate::popover::{HelpTimer, arrange_help};
@@ -504,15 +504,19 @@ macro_rules! boolean_widget {
     ($name:ident, $switch:expr, $doc:literal) => {
         #[doc = $doc]
         ///
-        /// Binds either a shared UI-local `Signal<bool>` ([`Self::new`]) or a
-        /// boolean [`Parameter`] ([`Self::for_parameter`]). Enabled by default. The
+        /// Takes its value by the path its constructor chooses: a
+        /// shared UI-local `Signal<bool>` it writes ([`Self::new`]), a boolean
+        /// [`Parameter`] it edits through the parameter's host
+        /// ([`Self::for_parameter`]), or a value the application owns and
+        /// describes, which the control shows and never writes
+        /// ([`Self::controlled`]). Enabled by default. The
         /// entire label activates on primary release inside or matched unmodified Enter/Space
         /// release; OS repeats do not toggle. Escape, focus loss, hiding and removal
         /// cancel pending activation; an idle control leaves Escape to View,
         /// Window and Application commands. External changes repaint only
         /// subscribed controls. Re-describing the control under the same key
         /// applies its label, binding and enabled state, cancelling a pending
-        /// activation when the binding changes.
+        /// activation when the binding, the path or a controlled value changes.
         ///
         #[doc = concat!(
             "```\n",
@@ -540,6 +544,73 @@ macro_rules! boolean_widget {
             pub fn new(value: impl Into<Signal<bool>>, label: impl Into<TextSource>) -> Self {
                 let value: Signal<bool> = value.into();
                 Self(BooleanControl::new(label, Rc::new(value), $switch))
+            }
+            /// Creates a labeled control showing `checked`, which the application
+            /// owns; each user toggle proposes the opposite value to `on_change`.
+            ///
+            /// The control writes nothing. It shows the described value only: a
+            /// toggle leaves it as it is, and a new description with another
+            /// value changes it. The application applies a proposal by changing
+            /// its model so that the control is described again with the new
+            /// value, as a list's rows, a table's cells or a [`Dynamic`](crate::Dynamic)
+            /// are; the next successful flush then shows it, before layout and
+            /// paint. It refuses by changing nothing. `on_change` is called at
+            /// the moments a signal-bound control writes: a matched primary
+            /// release inside and a matched unmodified Enter or Space release.
+            /// Two activations before the next description propose the same
+            /// value twice. A callback error propagates from the input call;
+            /// nothing is rolled back or replayed.
+            ///
+            /// A description with the same value keeps a pending activation; a
+            /// changed value, or another path under the same key, cancels it, so
+            /// a press never releases into a proposal against another value. The
+            /// callback follows each description, and a later
+            /// [`on_change`](Self::on_change) replaces it. Inspection and
+            /// semantics report the described value.
+            ///
+            #[doc = concat!(
+                "```\n",
+                "# use pert_ui_runtime as pert_ui;\n",
+                "use pert_ui::{", stringify!($name), ", Dynamic, InspectValue, IntoElement, KeyAction, KeyCode, Runtime};\n",
+                "use std::time::Duration;\n",
+                "let checked = |ui: &Runtime, key: &str| ui.inspect().components.into_iter()\n",
+                "    .find(|c| c.key == key).and_then(|c| c.details.properties.get(\"checked\").cloned());\n",
+                "let mut ui = Runtime::new();\n",
+                "// Refused: the callback changes nothing, so the box stays unchecked.\n",
+                "let refused = ui.mount_tree(",
+                stringify!($name), "::controlled(false, \"Locked\", |_, _| Ok(())).key(\"locked\"))?;\n",
+                "ui.focus(&refused)?;\n",
+                "ui.key_input(KeyCode::Space, KeyAction::Press)?;\n",
+                "ui.key_input(KeyCode::Space, KeyAction::Release)?;\n",
+                "ui.flush(Duration::ZERO)?;\n",
+                "assert_eq!(checked(&ui, \"locked\"), Some(InspectValue::Bool(false)));\n",
+                "// Applied: the model changes and describes the control again.\n",
+                "let model = ui.signal(false);\n",
+                "let store = model.clone();\n",
+                "let root = ui.mount_tree(Dynamic::new(&model, move |_, &on| {\n",
+                "    let store = store.clone();\n",
+                "    ", stringify!($name), "::controlled(on, \"Enabled\", move |_, on| store.set(on)).key(\"box\")\n",
+                "}).key(\"model\"))?;\n",
+                "ui.flush(Duration::ZERO)?;\n",
+                "let applied = ui.find(&root, &[\"box\"])?.ok_or(\"the control\")?;\n",
+                "ui.focus(&applied)?;\n",
+                "ui.key_input(KeyCode::Space, KeyAction::Press)?;\n",
+                "ui.key_input(KeyCode::Space, KeyAction::Release)?;\n",
+                "ui.flush(Duration::ZERO)?;\n",
+                "assert!(model.get()?);\n",
+                "assert_eq!(checked(&ui, \"box\"), Some(InspectValue::Bool(true)));\n",
+                "# Ok::<(), Box<dyn std::error::Error>>(())\n",
+                "```",
+            )]
+            pub fn controlled(
+                checked: bool,
+                label: impl Into<TextSource>,
+                on_change: impl FnMut(&mut EventContext, bool) -> Result<(), RuntimeError> + 'static,
+            ) -> Self {
+                let mut control = BooleanControl::new(label, Rc::new(Controlled(checked)), $switch);
+                control.checked = checked;
+                control.on_change = Some(Box::new(on_change));
+                Self(control)
             }
             /// Creates a control bound to a boolean parameter, labeled with the
             /// parameter's name until [`Self::label`] replaces it. The label
@@ -584,9 +655,12 @@ macro_rules! boolean_widget {
                 self
             }
             /// Reports each successful user write or remote proposal submission,
-            /// synchronously after it occurs. Application writes, refused edits and
-            /// authority responses do not call it. Failure propagates without rollback
-            /// or replay. Redescription replaces the handler, including removing it.
+            /// synchronously after it occurs; on a [controlled](Self::controlled)
+            /// control, which writes nothing, it receives each user proposal
+            /// instead, where the other paths write. Application writes, refused
+            /// edits and authority responses do not call it. Failure propagates
+            /// without rollback or replay. Redescription replaces the handler,
+            /// including removing it.
             pub fn on_change(mut self, handler: impl FnMut(&mut EventContext, bool)
                 -> Result<(), RuntimeError> + 'static) -> Self {
                 self.0.on_change = Some(Box::new(handler));

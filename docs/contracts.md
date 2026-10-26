@@ -16,6 +16,7 @@ package boundaries; [verification](verification.md) records tested behavior.
   - [Container composition and validation](#container-composition-and-validation)
   - [Layout, visibility and focus](#layout-visibility-and-focus)
 - [Data and edit ownership](#data-and-edit-ownership)
+  - [Controlled controls](#controlled-controls)
   - [Parameters and gestures](#parameters-and-gestures)
   - [Component notifications](#component-notifications)
   - [Producer data and mailboxes](#producer-data-and-mailboxes)
@@ -204,6 +205,15 @@ mounts or reconciles it then fails before anything changes, so an invalid
 description cannot unmount children it fails to list (the tool window layout
 uses this for its keys and edges). `redescribe` and `check_redescription` perform a re-description and
 compare it with a fresh mount, for built-in and custom components alike.
+
+A value a description carries from application data, such as a controlled
+control's value, is the exception to rejecting what a description shows up
+front: the control refuses an invalid value at adoption, at mount or at
+reconciliation, and keeps its last valid presentation, as for reactive data,
+and the call does not fail. Otherwise one record with an invalid value would
+fail every flush in which a collection describes its rows. A controlled
+control described again with the same value keeps its draft and pending
+input; see [Controlled controls](#controlled-controls).
 
 Conformance helpers compare the direct described component by mounted incarnation,
 independently of workspace addressing metadata, and flush at the current elapsed
@@ -490,6 +500,9 @@ experimental.
 
 Boolean controls and single-choice controls offer `on_change` after a successful
 local write or remote proposal submission, not after authority acceptance.
+A [controlled](#controlled-controls) `Checkbox` or `Toggle` writes nothing: its
+`on_change`, like a controlled `InlineText`'s `on_save`, receives the user's
+proposal where the other paths write.
 Application writes, same-value choices and refused edits do not call it. Failure
 propagates without rollback or replay. A redescribed handler replaces the old
 one, including removal. Select closes before invoking its list-context callback;
@@ -528,13 +541,80 @@ the application's own writes.
 
 ### Ownership paths
 
-There are three distinct paths:
+The paths are distinct:
 
 | Path | Owner and behavior |
 |---|---|
 | `Signal<T>` / `ReadSignal<T>` | UI-local observable state. Reads register component dependencies; writes invalidate those readers. |
 | `Parameter<T>` with a host | An authoritative application value with validated metadata and begin, preview, commit or cancel gestures. The host accepts or rejects edits explicitly. |
 | Live data sources | Bounded, possibly lossy producer data for presentation. Consumers observe freshness, sequence and gaps; it is never an edit authority. |
+| Described value with a change callback ([controlled controls](#controlled-controls)) | The application's model. The value arrives in the control's description and changes only by a new description; the control reports each user change as a proposal through its callback and never changes what it shows on its own. |
+
+### Controlled controls
+
+`Checkbox::controlled`, `Toggle::controlled` and `InlineText::controlled` take
+a value the application owns, in their description, and a callback. They suit
+data the application changes synchronously in its own model, such as the
+records behind a list's rows or a table's cells, whose descriptions carry no
+state owner. A controlled control has no host, revision or pending state, as
+a parameter has, and no binding, as a signal-bound control has: nothing is
+written by the control, and the callback is the only effect of a user change.
+
+Presentation: the control shows the described value only. A user toggle or
+save does not change what it shows; a new description with a different value
+does. When the callback writes the application's model and that write
+describes the control again, as a list's source replacement or a `Dynamic`
+does, the next successful flush reconciles the new description before layout
+and paint. A raw input call does not promise to settle the redescription its
+own callback caused; painting is refused while presentation work is pending,
+and the desktop host flushes before every paint, so no presented frame shows
+the old value after the model accepted the new one. An application that
+confirms later shows the old value until it describes the new one, and shows
+a pending state from its own model if it wants one. Inspection and semantics
+report the described value: `checked` for a checkbox or toggle, the resting
+text for `InlineText`.
+
+Refusal: the application refuses by not changing the value it describes.
+Nothing is rolled back or replayed, because the control already shows the
+model's value. An `InlineText` save ends the session before the callback
+runs, so a refused save closes the editor and the typed text is gone. To
+refuse while keeping the draft open, `InlineText::normalize` refuses with an
+`InputRejection`, which runs before the callback exactly as with a bound
+label; for `InlineText` its normalizer may read application state, never
+write it, is deterministic and idempotent for a given draft and unchanged
+observed state, and creates no dependency, so a refused draft is checked again
+at the user's next save. A `bool` is always valid. Described text the editor
+does not accept (`TextField::check` fails) is refused at adoption, as a
+refused bound value is: the label keeps its previous text (empty if it never
+had a valid one), draws the error outline, reports `binding_error` in
+inspection, marks its semantics invalid, ends an open session unsaved and
+cannot begin editing, and the next acceptable description ends the refusal.
+This is the exception to validating descriptions up front that
+[component redescription](#component-redescription) names.
+
+Callback timing: the callback runs at the moments a signal-bound control
+writes. `Checkbox` and `Toggle` call `on_change` at a matched primary release
+inside and a matched unmodified Enter or Space release, with the negation of
+the value shown; two activations before the next description propose the
+same value twice. `InlineText` calls `on_save` at Enter and when focus leaves
+the label, after the normalizer, with the normalized draft, only when it
+differs from the described text. A new description, Escape, hiding, removal,
+revoked permission, a refused draft and an inspection read never call it.
+A callback error propagates from the input call, with nothing to roll back;
+`InlineText` keeps its rule that a failing rejection report cannot swallow a
+save report.
+
+Redescription: the same value changes nothing, so a pending activation stays
+armed and an open draft stays open; a collection may describe its rows as
+often as it likes without disturbing an edit. A changed value is shown at
+once: it cancels a checkbox's pending activation, so a press made against
+one value never releases into a proposal against another, and ends an open
+`InlineText` session unsaved, as an application write does with a bound
+label. Changing the path under the same key, such as from `new` to
+`controlled`, is a change of binding: a pending activation is cancelled and
+an open draft ends unsaved. The callback follows each
+description, including the constructor's, and a later `on_change` or
+`on_save` builder replaces it.
 
 ### Parameters and gestures
 

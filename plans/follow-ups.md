@@ -57,12 +57,14 @@ until then if one is being written.
   that need with `TextCommand::BeginEdit`, which begins editing a mounted
   label; a session-attached `InlineText` would still need a host that
   describes the label again for each edit.
-- **Controlled controls** (a `Checkbox` built from a `bool` that reports a
-  toggle). From table-editing slice 6. Considered only with their refusal,
-  optimistic-presentation and callback timing specified.
-  The developer-usability blind tests (F16) supply application evidence:
-  two task-list testers bound per-row checkboxes and titles to their own
-  `Vec` through throwaway `Signal::sibling` signals.
+- **Controlled forms of more controls** (a control built from a value that
+  reports a change). From table-editing slice 6. API audit part 6f3 added
+  controlled `Checkbox`, `Toggle` and `InlineText` for the developer-usability
+  blind tests' per-row state (F16), with the rules in contracts.md's
+  "Controlled controls". `RadioGroup`, `Select`, `Slider` and the number
+  inputs, and `TextField` have no controlled form; each is considered only
+  with its refusal, presentation and callback timing specified, and
+  `TextField`'s normalizer contract would then widen as `InlineText`'s did.
 
 - **Refusal for other captioned controls.** From
   [plan-audit-repairs](plan-audit-repairs.md) slice 2: `Label` and the

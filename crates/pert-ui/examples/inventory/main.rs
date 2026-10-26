@@ -10,9 +10,9 @@
 //! - one editor per column, built from a `CellEdit` with its own state owner,
 //!   so a `Select` needs no wrapper and the editor's signals live only as long
 //!   as the edit;
-//! - a checkbox column at rest whose state is made lazily by a retained cell
-//!   component, so only mounted rows hold a signal, and which follows undo in
-//!   the event phase;
+//! - a checkbox column at rest made with `Checkbox::controlled`, which shows
+//!   the item's value from the cell's description, proposes each toggle to
+//!   the store and follows undo at the next flush;
 //! - the table as one Tab stop (`Table::cell_tab_stops`), with F2 reaching
 //!   the checkbox;
 //! - an application-owned store that checks a group of edits in order

@@ -145,12 +145,16 @@ Required state owners lead constructor arguments. Fixed, reactive and parameter
 choice sources are exclusive constructor paths. Explicit control adornment slots
 remain independent of captions; rich-content composition is a separate operation.
 
-User-write callbacks report successful local writes or proposal submission, never
-remote acceptance. Failures do not undo accepted state or replay notifications.
+User-write callbacks report successful local writes, proposal submission or a
+controlled control's proposal, never remote acceptance. Failures do not undo
+accepted state or replay notifications.
 Component-owned selection/expansion changes report their origin after layout
 settles through the public notification contract. Validate fixed descriptions
-before adoption where their validity is locally knowable; validate reactive data
-when observed and preserve the last valid presentation on failure.
+before adoption where their validity is locally knowable, except a value a
+description carries from application data, such as a controlled control's
+value, which is refused at adoption with the last valid presentation kept;
+validate reactive data when observed and preserve the last valid presentation
+on failure.
 
 The unpublished component review explicitly permits documented breaking migrations;
 it does not waive separately versioned persistence or authorize publication.

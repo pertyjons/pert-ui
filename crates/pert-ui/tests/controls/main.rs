@@ -25,6 +25,7 @@ mod component_format_retention;
 mod component_workflows;
 mod control_permissions;
 mod control_reconcile;
+mod controlled;
 mod field_status;
 mod focus_within;
 mod forms;

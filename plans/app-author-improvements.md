@@ -384,13 +384,12 @@ Inputs from later plans and the 2026-10-20 audit:
   `details.box_model.border_box`. The diagnostics guide should say where a
   component's bounds are.
 - The [developer-usability plan](developer-usability.md#round-1-findings)'s
-  blind tests (2026-10-21) add discovery evidence:
-  - **Per-row state (F16):** how per-row controls bind to an application's
-    own `Vec`; an optional controlled-control API stays in follow-ups.
-  That finding may instead be fixed in that plan's slice 6 if its joint
-  checkpoint chooses it. Background work from a callback (F13) left this
-  list: the API audit's part 6f2 (0.3.69) added `EventContext::spawn`, and
-  the guide's worker section uses it.
+  blind tests (2026-10-21) added discovery evidence, which has left this
+  list: background work from a callback (F13) with the API audit's part 6f2
+  (0.3.69), which added `EventContext::spawn`, used by the guide's worker
+  section, and per-row state (F16) with part 6f3 (0.3.70), which added
+  controlled `Checkbox`, `Toggle` and `InlineText`, used by the guide's
+  editable list recipe and the inventory example.
 
 ## Optional follow-ups
 

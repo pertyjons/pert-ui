@@ -321,7 +321,7 @@ Parameter construction has no independent option-list builder.
 | `Button` | `Button::new(label, callback)`, or `Button::command(&ui, &command, on_receipt)?` and `command_icon` for a registered command | An action callback; keyboard activation starts with unmodified Enter or Space. A command button shows the command's name (or an icon), follows its enabled binding and reports each invocation's receipt. |
 | `Link` | `Link::new(text, callback)`, optionally `.underline(LinkUnderline::Always)` | Navigation presented as text-sized link text, activated like a button by pointer or unmodified Enter or Space. The destination is the application's, typically a reveal through `EventContext::request_reveal`. |
 | `Chip` | `Chip::new(text)` or `Chip::removable(text, on_remove)` | A compact tag or chosen item. A static chip has no Tab stop; a removable one reports Delete, Backspace or its × button to the owner, which removes the item and describes its chips again. Focus moves on to the next chip. |
-| `Checkbox`, `Toggle` | `Checkbox::new(bool_signal, label)` / `Toggle::new(bool_signal, label)` | Two presentations of a local boolean. |
+| `Checkbox`, `Toggle` | `Checkbox::new(bool_signal, label)` / `Toggle::new(bool_signal, label)`; `Checkbox::controlled(value, label, on_change)` for a value the application owns | Two presentations of a boolean. |
 | `RadioGroup` | `RadioGroup::new(signal, [Choice::new(value, label), ...])?` | One typed selection with arrow navigation. |
 | `SegmentedControl` | `SegmentedControl::new(signal, choices)?` | Joined, exclusive choices. |
 | `Select` | `Select::new(&ui, signal, choices)?` | A popup for one selection. |
@@ -389,7 +389,7 @@ and register the platform's shortcuts from `KeyChord::navigate_back` and
 | `InlineToggle`, `InlineChoice`, `InlineSelect` | `InlineToggle::new(bool_signal, name)`, `InlineChoice::new(signal, choices)?`, `InlineSelect::new(&ui, signal, choices)?` | Controls that fit a toolbar or dense row. |
 | `TextField`, `TextArea` | `TextField::new(string_signal)` / `TextArea::new(string_signal)` | Single-line and multiline editing with selection, clipboard and IME. `placeholder`, `required`, `min_length`/`max_length` with a `counter`; `TextField::concealed` for a password, with an optional `revealable` eye button; `TextField::clearable`, `leading_icon` and `suffix`; `modified_indicator` and `on_modified` for unsaved drafts; `on_binding_refusal` reports when the field refuses a value the application wrote. |
 | `SearchField` | `SearchField::new(string_signal)` | A query with a search icon and clear button. Escape clears; Up/Down, Page Up/Down and Enter go to `on_key` for a result list while focus stays in the field; `debounce` delays the query until typing pauses. |
-| `InlineText` | Bind a string signal. | Compact editable text. |
+| `InlineText` | Bind a string signal, or `InlineText::controlled(text, on_save)` for text the application owns. | Compact editable text. |
 | `DraftEditor` | `DraftEditor::new(DraftEditorController::new())` | Embed a draft text session in a custom component. |
 
 `ParameterSpec` defines the numeric domain, default and mapping: linear,
@@ -406,8 +406,9 @@ which keeps the draft for correction; `on_rejection` tells the application
 about it, and about the field's own refusals (a length limit, or a number that
 does not parse or is out of range), so it can publish them as the field's
 `FieldStatus`. `on_save` reports each save
-that wrote the local binding or submitted a remote proposal, with the saved
-value; Enter, focus loss or a step button saves, and the callback does not say
+that wrote the local binding or submitted a remote proposal, or, on an
+`InlineText::controlled` label, which writes nothing, proposed it, with the
+saved value; Enter, focus loss or a step button saves, and the callback does not say
 which. Submission does not mean external authority acceptance. Values the application writes are never
 normalized. A normalizing `TextField` or `TextArea` holds a draft and writes
 its binding only when the draft is saved, instead of on every edit; the
@@ -582,8 +583,9 @@ numbers with an application-chosen decimal separator and digit grouping.
 ### Component review workflow notes
 
 Boolean controls and single-choice controls support `on_change` for successful
-user writes or remote submissions. External writes and authority responses do not
-invoke it. Select closes its list before calling the handler; use
+user writes or remote submissions; a controlled Checkbox or Toggle, which writes
+nothing, reports the user's proposal instead. External writes and authority
+responses do not invoke it. Select closes its list before calling the handler; use
 `EventContext::defer_detached` for application work that must outlive that list.
 MultiSelect's `on_change` reports each user write with the values written: a
 toggle under EachToggle, a chip removal, and an OnClose draft written by a

@@ -6,7 +6,8 @@ use crate::choice_controls::focus_ring;
 use crate::layout::{centered, rect};
 
 /// An editable label for names of tracks, patterns and modules, bound to a
-/// UI-local `Signal<String>`.
+/// UI-local `Signal<String>` ([`Self::new`]) or showing text the application
+/// owns and describes ([`Self::controlled`]).
 ///
 /// At rest the control draws its bound text as body typography inside a
 /// ControlHeight row, with an optional muted placeholder when the text is empty.
@@ -28,9 +29,10 @@ use crate::layout::{centered, rect};
 /// editing as the `editing` property. The label has no
 /// clipboard context menu. Each editing session starts with an empty undo
 /// history. Up and Down are consumed while editing. Editing is a draft:
-/// Enter and focus leaving the label save it to the binding, Escape restores the
-/// last observed bound value, and hiding or removal discard it. An external write that changes
-/// the bound text wins over a draft and ends editing. The preferred width is the
+/// Enter and focus leaving the label save it to the binding (on a controlled
+/// label, propose it), Escape restores the last observed bound value, and
+/// hiding or removal discard it. An external write that changes the bound
+/// text wins over a draft and ends editing. The preferred width is the
 /// wider of the bound text and the placeholder plus `ControlPaddingX`; longer
 /// drafts scroll inside that allocation instead of moving neighbors.
 ///
@@ -42,9 +44,10 @@ use crate::layout::{centered, rect};
 /// normalized.
 ///
 /// A bound value the editor does not accept ([`TextField::check`] fails),
-/// written by the application, is refused by the label rather than failing the
-/// runtime: it keeps showing its previous text, draws the error outline, reports
-/// `binding_error` in inspection and marks its semantics invalid. A refusal
+/// written by the application, or such a controlled text, is refused by the
+/// label rather than failing the runtime: it keeps showing its previous text,
+/// draws the error outline, reports `binding_error` in inspection and marks
+/// its semantics invalid. A refusal
 /// ends an editing session without saving, and editing cannot begin while the
 /// binding is refused, so the label never overwrites the application's value.
 /// The next acceptable binding value ends the refusal. The binding itself is
@@ -74,11 +77,11 @@ use crate::layout::{centered, rect};
 /// ```
 ///
 /// Re-describing the field under the same key applies its binding, enablement,
-/// style, placeholder, normalizer, row mode and callbacks; a new binding or
-/// disabling discards an open draft.
+/// style, placeholder, normalizer, row mode and callbacks; a new binding, a
+/// changed controlled text, another path or disabling discards an open draft.
 #[must_use]
 pub struct InlineText {
-    value: Signal<String>,
+    value: Source,
     slot: DraftSlot<()>,
     text: String,
     placeholder: String,
@@ -109,12 +112,89 @@ pub struct InlineText {
     handled_press: bool,
 }
 description_debug!(InlineText);
+
+/// Where an [`InlineText`] takes its text from.
+enum Source {
+    /// A UI-local signal the label writes when it saves.
+    Bound(Signal<String>),
+    /// Text the application describes; the label never writes it.
+    Controlled(String),
+}
+
 impl InlineText {
     /// Creates an enabled editable label. The binding is validated and
     /// subscribed on the first update; bound text the editor does not accept
     /// is refused as described on [`InlineText`], without rewriting the source.
     pub fn new(value: impl Into<Signal<String>>) -> Self {
-        let value: Signal<String> = value.into();
+        Self::with_source(Source::Bound(value.into()))
+    }
+    /// Creates an editable label showing `text`, which the application owns;
+    /// each save proposes the saved text to `on_save`.
+    ///
+    /// The label writes nothing. It shows the described text only: a save
+    /// ends the session and the label shows the described text again, and a
+    /// new description with other text changes it. The application applies a
+    /// proposal by changing its model so that the label is described again
+    /// with the new text, as a list's rows or a [`Dynamic`](crate::Dynamic)
+    /// are; the next successful flush shows it. It refuses by changing
+    /// nothing; the typed text is then gone. To refuse while keeping the
+    /// draft open for correction, use [`Self::normalize`], which may read the
+    /// application's state.
+    ///
+    /// `on_save` is called where [`Self::new`] writes: at Enter and when focus
+    /// leaves the label, with the normalized draft, only when it differs from
+    /// the described text. An unchanged draft, Escape, hiding, removal, a
+    /// revoked permission, a refused draft and a new description call
+    /// nothing. A callback error propagates from the input call and is not
+    /// replayed. A later [`on_save`](Self::on_save) replaces the callback,
+    /// and each description replaces it.
+    ///
+    /// A description with the same text keeps an open draft, so a list may
+    /// describe its rows as often as it likes without disturbing an edit;
+    /// changed text ends the session unsaved, as an application write does
+    /// with [`Self::new`]. Text the editor does not accept
+    /// ([`TextField::check`] fails) is refused when it is described, as a
+    /// refused binding value is: the label keeps its previous text, and the
+    /// next acceptable description ends the refusal. Every other builder
+    /// works as with `new`.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{InlineText, IntoElement, KeyAction, KeyCode, Runtime, TextCommand};
+    /// use std::{cell::RefCell, rc::Rc, time::Duration};
+    /// let mut ui = Runtime::new();
+    /// let saved = Rc::new(RefCell::new(Vec::new()));
+    /// let describe = |saved: &Rc<RefCell<Vec<String>>>| {
+    ///     let saved = saved.clone();
+    ///     InlineText::controlled("Draft", move |_, text| {
+    ///         saved.borrow_mut().push(text.to_owned());
+    ///         Ok(())
+    ///     })
+    ///     .key("name")
+    /// };
+    /// let root = ui.mount_tree(pert_ui::Column::new([describe(&saved)]).key("form"))?;
+    /// ui.flush(Duration::ZERO)?;
+    /// let name = ui.find(&root, &["name"])?.ok_or("the label")?;
+    /// ui.text_command(&name, TextCommand::BeginEdit)?;
+    /// ui.flush(Duration::ZERO)?;
+    /// ui.text_input("Final")?;
+    /// // Describing the label again with the same text keeps the draft open.
+    /// ui.reconcile_children(&root, vec![describe(&saved)])?;
+    /// ui.flush(Duration::ZERO)?;
+    /// ui.key_input(KeyCode::Enter, KeyAction::Press)?;
+    /// assert_eq!(*saved.borrow(), ["Final"]);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn controlled(
+        text: impl Into<String>,
+        on_save: impl FnMut(&mut EventContext, &str) -> Result<(), RuntimeError> + 'static,
+    ) -> Self {
+        let text = text.into();
+        let mut label = Self::with_source(Source::Controlled(text));
+        label.saved.set(Box::new(on_save));
+        label
+    }
+    fn with_source(value: Source) -> Self {
         let slot = DraftSlot::new(TextStyle::Body, DraftAlign::Start);
         let edits = Rc::new(Cell::new(0_u64));
         let counter = edits.clone();
@@ -183,12 +263,22 @@ impl InlineText {
     /// refuses it with an [`InputRejection`].
     ///
     /// Saving runs the normalizer, checks the result as single-line bound text
-    /// ([`TextField::check`]), prepares it and writes it. A refusal writes
-    /// nothing and keeps the draft open with the error outline until it
-    /// changes. Text the application writes to the binding is never normalized.
-    /// The function must be deterministic, bounded, free of side effects,
-    /// binding writes and I/O, and idempotent, as [`TextField::normalize`]
-    /// describes. Installing another normalizer replaces this one.
+    /// ([`TextField::check`]), prepares it and writes it, or, on a
+    /// [controlled](Self::controlled) label, proposes it. A refusal writes
+    /// and proposes nothing and keeps the draft open with the error outline
+    /// until it changes. Text the application writes to the binding or
+    /// describes is never normalized.
+    ///
+    /// The function must be bounded and free of side effects, binding writes
+    /// and I/O. It may read application state, such as the other names in a
+    /// list, but never write it. For a given draft and unchanged observed
+    /// application state it must be deterministic and idempotent, so a saved
+    /// value stays as it is on the next save while that state is unchanged;
+    /// a refusal may turn into acceptance, or back, when the state changes.
+    /// Reading application state creates no dependency: nothing runs the
+    /// normalizer again when that state changes, and a refused draft is
+    /// checked again at the user's next save (Enter or focus loss).
+    /// Installing another normalizer replaces this one.
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
@@ -209,6 +299,40 @@ impl InlineText {
     /// ui.text_input(" Final ")?;
     /// ui.key_input(KeyCode::Enter, KeyAction::Press)?;
     /// assert_eq!(name.get()?, "Final");
+    /// # Ok::<(), pert_ui::RuntimeError>(())
+    /// ```
+    ///
+    /// A normalizer may check the draft against the application's model, here
+    /// a name another row already has, which it accepts once that row is
+    /// renamed:
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Element, InlineText, InputRejection, KeyAction, KeyCode, Runtime};
+    /// use std::{cell::RefCell, rc::Rc};
+    /// let mut ui = Runtime::new();
+    /// let names = Rc::new(RefCell::new(vec![String::from("Bass"), String::from("Drums")]));
+    /// let (taken, store) = (names.clone(), names.clone());
+    /// let field = ui.mount_tree(Element::new("name", InlineText::controlled("Bass", move |_, text| {
+    ///         store.borrow_mut()[0] = text.to_owned();
+    ///         Ok(())
+    ///     })
+    ///     .normalize(move |text| {
+    ///         if taken.borrow()[1..].contains(&text) {
+    ///             Err(InputRejection::new("Another track has this name"))
+    ///         } else {
+    ///             Ok(text)
+    ///         }
+    ///     })))?;
+    /// ui.focus(&field)?;
+    /// ui.key_input(KeyCode::F2, KeyAction::Press)?;
+    /// ui.text_input("Drums")?;
+    /// ui.key_input(KeyCode::Enter, KeyAction::Press)?; // refused: the draft stays open
+    /// ui.key_input(KeyCode::Enter, KeyAction::Release)?;
+    /// assert_eq!(names.borrow()[0], "Bass");
+    /// names.borrow_mut()[1] = String::from("Kit"); // the other row is renamed
+    /// ui.key_input(KeyCode::Enter, KeyAction::Press)?; // checked again, and saved
+    /// assert_eq!(names.borrow()[0], "Drums");
     /// # Ok::<(), pert_ui::RuntimeError>(())
     /// ```
     pub fn normalize(
@@ -319,7 +443,10 @@ impl InlineText {
     /// the saved (normalized) text: Enter or focus loss ending a session
     /// whose draft differs from the bound text. The rules are those of
     /// [`TextField::on_save`]; an unchanged draft writes nothing and is not
-    /// reported.
+    /// reported. On a [controlled](Self::controlled) label, which writes
+    /// nothing, it receives each save's proposal instead, at the same
+    /// moments, and the label shows the described text until a new
+    /// description changes it.
     pub fn on_save(
         mut self,
         saved: impl FnMut(&mut EventContext, &str) -> Result<(), RuntimeError> + 'static,
@@ -415,9 +542,14 @@ impl InlineText {
             self.report.clear(cx)?;
             return Ok(true);
         }
-        // An application write since the last update wins over the draft, as
-        // it would have at that update, which then shows it.
-        if self.value.get()? != self.text {
+        // An application write, or a new controlled text, since the last
+        // update wins over the draft, as it would have at that update, which
+        // then shows it.
+        let current = match &self.value {
+            Source::Bound(value) => value.get()?,
+            Source::Controlled(text) => text.clone(),
+        };
+        if current != self.text {
             self.discard(None);
             cx.invalidate(Invalidation::Layout);
             self.report.clear(cx)?;
@@ -440,15 +572,24 @@ impl InlineText {
             }
             _ => draft,
         };
-        if saved != self.text {
+        let changed = saved != self.text;
+        let bound = match &self.value {
+            Source::Bound(value) => Some(value.clone()),
+            Source::Controlled(_) => None,
+        };
+        if changed && bound.is_some() {
             cx.text(&saved, None, self.slot.style())?;
         }
         self.discard(None);
-        let wrote = saved != self.text;
-        let wrote = wrote && {
-            self.text = saved.clone();
-            self.value.set_changed(saved.clone())?
-        };
+        let wrote = changed
+            && match bound {
+                Some(value) => {
+                    self.text = saved.clone();
+                    value.set_changed(saved.clone())?
+                }
+                // A proposal: the label keeps showing the described text.
+                None => true,
+            };
         cx.invalidate(Invalidation::Layout);
         // Both notifications are attempted, so a failing rejection report
         // cannot swallow the save; the first error is returned.
@@ -463,15 +604,31 @@ impl InlineText {
 }
 impl Component for InlineText {
     /// Applies a new description: binding, typography, placeholder,
-    /// permission, normalizer and callbacks. A different binding ends an open
-    /// draft unsaved, as an application write does, and so does disabling;
-    /// the next update shows the new binding's text.
+    /// permission, normalizer and callbacks. A different binding or path ends
+    /// an open draft unsaved, as an application write does, and so does
+    /// disabling; the next update shows the new binding's text. A controlled
+    /// text is kept while it is the same, with its draft; changed text
+    /// reaches the next update, which ends the draft as an application
+    /// write does, or refuses the text.
     fn reconcile(&mut self, next: Self) -> Option<Invalidation> {
         let mut invalidation = None;
-        if !self.value.read_only().same_source(&next.value.read_only()) {
+        let same_path = match (&self.value, &next.value) {
+            (Source::Bound(value), Source::Bound(next)) => {
+                value.read_only().same_source(&next.read_only())
+            }
+            (Source::Controlled(_), Source::Controlled(_)) => true,
+            _ => false,
+        };
+        if !same_path {
             self.value = next.value;
             self.rejected = None;
             self.discard(None);
+            invalidation = Some(Invalidation::Layout);
+        } else if let (Source::Controlled(text), Source::Controlled(next)) =
+            (&mut self.value, next.value)
+            && *text != next
+        {
+            *text = next;
             invalidation = Some(Invalidation::Layout);
         }
         // A bound permission keeps the current state until the next update
@@ -542,7 +699,10 @@ impl Component for InlineText {
         }
         self.slot.update(cx);
         self.focused = cx.focus_within();
-        let text = cx.read_paint(&self.value)?;
+        let text = match &self.value {
+            Source::Bound(value) => cx.read_paint(value)?,
+            Source::Controlled(text) => text.clone(),
+        };
         // Refused text is kept out of the label rather than failing every
         // flush: the label keeps its previous text and marks the refusal, and
         // an open draft ends unsaved so it never overwrites the value.

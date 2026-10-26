@@ -809,6 +809,54 @@ and anything left to a later part.
   - **After the fix:** the workspace gate, including the five headless
     example sessions and the diagnostics suite; `api/generate.sh`, with no
     change; `git diff --check`.
+  - **Recheck (Codex):** needs fixes, with three points, all verified:
+    applying removals before the pending-update check changes focus
+    settlement in flushes without text commands; `Driver::key` sends the
+    release, whose preflush delivers the queued command, so the timing
+    test still allows a one-flush-late focus (the "exactly one flush"
+    above is wrong); the filter matrix lacks a table's previous-row
+    fallback and a tree's next-row move. The slider, readout and
+    inspection points were confirmed resolved. The fix follows 6f3's
+    commit, so the two parts' changes stay apart.
+- **6f3 (0.3.70), implemented 2026-10-26:** commit and review to be
+  recorded. Controlled controls, by [design revision 4](design-6f3.md),
+  which Codex reviewed once and rechecked three times. The maintainer
+  chose the recommended D1-D4 (the name `controlled`, the described value
+  only, refusal through the normalizer, refusal at adoption) and, after
+  the review reopened D4, confirmed its exception to AGENTS.md's
+  validation rule and approved the AGENTS.md callback sentence; both
+  AGENTS.md changes are in this part. The design was approved as a whole
+  on 2026-10-26.
+  - **F16:** `Checkbox::controlled`, `Toggle::controlled` and
+    `InlineText::controlled`, through a private controlled binding for the
+    boolean controls and a private source for `InlineText`. contracts.md
+    has the ownership row and the "Controlled controls" subsection; the
+    `on_change`, `on_save` and `normalize` contracts are qualified;
+    `ListItems::build` and `TableItems::cell` teach the controlled form
+    first. The guide recipe drops its `Title` component and the inventory
+    example its `ActiveCell`. Follow-ups' "Controlled controls" is
+    narrowed to `RadioGroup`, `Select`, `Slider`, the number inputs and
+    `TextField`, and app-author slice 9 drops F16.
+  - **Tests:** `controls::controlled` and `collections::controlled_rows`,
+    each test marked as new-behavior, contract or compatibility. Each
+    new-behavior test was checked with a compiling mutation reproducing
+    the `new` behavior (an optimistic toggle, cancelling or keeping a
+    press, writing the saved text, ending the draft on every description),
+    and the contract test for refusal at adoption with one that adopts the
+    invalid text. The next-flush redescription is checked with a raw input
+    and exactly one flush for a `Dynamic` child, a `VirtualList` row and a
+    `Table` cell.
+  - **Checks run after the last code edit (the public-API row):** the
+    workspace gate, including the five headless example sessions (the
+    inventory session checks the controlled checkbox through undo) and the
+    diagnostics suite; `api/generate.sh`, whose diff adds only the three
+    constructors to the runtime listings; `git diff --check`. The author
+    then added the controlled constructors to the guide's controls chapter
+    and the manual's component table, and reran the facade's rustdoc with
+    `-D warnings` and the guide doctests.
+  - **Beyond the design's lines:** the guide's controls chapter repeated
+    the callback claim and now qualifies it; the inventory example's module
+    doc described the retained cell.
 
 ## Rules for every part
 

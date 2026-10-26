@@ -1,5 +1,77 @@
 # Changelog
 
+## 0.3.70 (2026-10-26)
+
+Controlled controls (API audit fix plan, part 6f3, after its design
+checkpoint `plans/usability/api-audit/design-6f3.md`). A checkbox, toggle or
+editable label can show a value the application owns and propose each user
+change to its callback, so a list row or table cell can edit a record
+without a signal of its own, and a list may describe its rows again without
+ending an open edit (F16). Not breaking.
+
+- Added (F16): `Checkbox::controlled(checked, label, on_change)` and
+  `Toggle::controlled(checked, label, on_change)`, a third ownership path
+  beside `new` (a signal) and `for_parameter`. The control writes nothing
+  and shows the described value only: a toggle proposes the negation of the
+  value shown to `on_change`, at the moments `new` writes (a matched primary
+  release inside, a matched unmodified Enter or Space release), and a new
+  description with another value changes what it shows. Two activations
+  before the next description propose the same value twice. A description
+  with the same value keeps a pending activation; a changed value, or
+  another path under the same key, cancels it. A later `on_change` replaces
+  the constructor's callback, and each description replaces it.
+- Added (F16): `InlineText::controlled(text, on_save)`. The label writes
+  nothing: Enter or focus leaving it with a changed draft proposes the
+  normalized draft to `on_save` and ends the session, and the label shows
+  the described text until a new description changes it. A description with
+  the same text keeps an open draft; changed text ends it unsaved, as an
+  application write does with `new`. Described text the editor does not
+  accept (`TextField::check` fails) is refused at adoption as a refused
+  binding value is (previous text kept, `binding_error`, invalid semantics,
+  no editing), without failing the runtime. Every other builder, `in_row`
+  and `TextCommand::BeginEdit` work as with `new`.
+- Added: the ownership path "described value with a change callback" in
+  contracts.md's ownership paths, and a "Controlled controls" subsection
+  under "Data and edit ownership" on presentation, refusal, callback timing
+  and redescription, which "User-write callbacks" and "Component
+  redescription" point to.
+- Changed: `on_change` of `Checkbox` and `Toggle`, and `InlineText::on_save`,
+  report a controlled control's proposal, where the other paths write,
+  besides successful writes and proposal submissions; contracts.md's
+  "User-write callbacks", the guide's controls chapter and the manual say
+  so. AGENTS.md's user-write callback sentence names the controlled
+  proposal, with the maintainer's approval.
+- Changed: `InlineText::normalize`'s contract. The normalizer may read
+  application state, never write it; it must be deterministic and
+  idempotent for a given draft and unchanged observed state, a refusal may
+  turn into acceptance when that state changes, and reading it creates no
+  dependency, so a refused draft is checked again at the user's next save.
+  The rustdoc gives a model-dependent example. `TextField::normalize` keeps
+  its wording.
+- Changed: AGENTS.md's and contracts.md's validation rule gain an exception,
+  with the maintainer's approval: a value a description carries from
+  application data, such as a controlled control's value, is refused at
+  adoption with the last valid presentation kept, rather than rejected by
+  `Component::check_description`.
+- Documentation (F16): `ListItems::build` and `TableItems::cell` name the
+  controlled form as the way for `Checkbox`, `Toggle` and `InlineText`,
+  keeping the per-row and retained forms, with their costs, for other
+  controls. The guide's editable list recipe builds its checkbox with
+  `Checkbox::controlled` and its title with `InlineText::controlled(...)
+  .in_row(true)`, keyed `"title"`, instead of a per-row signal and a
+  retained `Title` component, so `on_activate` finds the title at
+  `[key, "title"]`. The inventory example's Active column uses
+  `Checkbox::controlled` in `TableItems::cell` instead of its retained
+  `ActiveCell` component. The guide's controls chapter and the manual's
+  component table name the controlled constructors.
+- The runtime's `api/` listings (default and `serde`) add
+  `Checkbox::controlled`, `Toggle::controlled` and `InlineText::controlled`,
+  at the root and under the `prelude`; the facade listings are unchanged.
+- Added: tests in the facade's binaries: `controls`' new `controlled` module
+  and `collections`' new `controlled_rows` module (F16 in a list, under a
+  filter and in a table cell), each test marked as a new-behavior,
+  contract or compatibility test.
+
 ## 0.3.69 (2026-10-26)
 
 Editing and collection capabilities (API audit fix plan, part 6f2, after its

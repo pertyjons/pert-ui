@@ -1,5 +1,6 @@
 //! The one seam between built-in discrete controls and their value: a UI-local
-//! signal, or a parameter driven through its public edit protocol.
+//! signal, a parameter driven through its public edit protocol, or a
+//! controlled control's described value.
 //!
 //! Parameter bindings use only public API (`snapshot`, `spec`, `delivery_status`,
 //! `authority_status`, `begin_edit`), so a custom control can reproduce what the built-ins do.
@@ -82,6 +83,38 @@ impl<T: Clone + PartialEq + 'static> ValueBinding<T> for Signal<T> {
         other
             .downcast_ref::<Self>()
             .is_some_and(|other| other.read_only().same_source(&self.read_only()))
+    }
+}
+
+/// A controlled control's value: the application owns it and describes it,
+/// and the control shows it without ever writing it.
+pub(crate) struct Controlled(pub(crate) bool);
+
+impl ValueBinding<bool> for Controlled {
+    fn read(&self, _: &mut UpdateContext) -> Result<Reading<bool>, RuntimeError> {
+        Ok(Reading {
+            value: self.0,
+            editable: true,
+            revision: Revision::INITIAL,
+            name: None,
+            options: None,
+        })
+    }
+    fn current(&self) -> Result<bool, RuntimeError> {
+        Ok(self.0)
+    }
+    /// Writes nothing: every user choice is a proposal, which the control
+    /// reports to its callback; only a new description changes the value.
+    fn choose(&self, _: &mut EventContext, _: bool, _: Revision) -> Result<bool, RuntimeError> {
+        Ok(true)
+    }
+    /// Two described values are one target only while they are equal, so a
+    /// changed value cancels input armed against the old one.
+    fn same_target(&self, other: &dyn ValueBinding<bool>) -> bool {
+        let other: &dyn std::any::Any = other;
+        other
+            .downcast_ref::<Self>()
+            .is_some_and(|other| other.0 == self.0)
     }
 }
 

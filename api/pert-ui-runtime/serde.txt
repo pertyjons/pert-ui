@@ -12297,6 +12297,7 @@ impl<'a> !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::CellEdit<
 impl<'a> !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::CellEdit<'a>
 pub struct pert_ui_runtime::prelude::Checkbox(_)
 impl pert_ui_runtime::Checkbox
+pub fn pert_ui_runtime::Checkbox::controlled(bool, impl core::convert::Into<pert_ui_runtime::TextSource>, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::Checkbox::disabled(self) -> Self
 pub fn pert_ui_runtime::Checkbox::enabled(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
 pub fn pert_ui_runtime::Checkbox::for_parameter(pert_ui_runtime::Parameter<bool>) -> Self
@@ -15866,6 +15867,7 @@ impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::InlineSlider
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::InlineSlider
 pub struct pert_ui_runtime::prelude::InlineText
 impl pert_ui_runtime::InlineText
+pub fn pert_ui_runtime::InlineText::controlled(impl core::convert::Into<alloc::string::String>, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, &str) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::InlineText::disabled(self) -> Self
 pub fn pert_ui_runtime::InlineText::enabled(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
 pub fn pert_ui_runtime::InlineText::in_row(self, bool) -> Self
@@ -20355,6 +20357,7 @@ impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ToastReceipt
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ToastReceipt
 pub struct pert_ui_runtime::prelude::Toggle(_)
 impl pert_ui_runtime::Toggle
+pub fn pert_ui_runtime::Toggle::controlled(bool, impl core::convert::Into<pert_ui_runtime::TextSource>, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::Toggle::disabled(self) -> Self
 pub fn pert_ui_runtime::Toggle::enabled(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
 pub fn pert_ui_runtime::Toggle::for_parameter(pert_ui_runtime::Parameter<bool>) -> Self
@@ -32998,6 +33001,7 @@ impl<'a> !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::CellEdit<
 impl<'a> !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::CellEdit<'a>
 pub struct pert_ui_runtime::Checkbox(_)
 impl pert_ui_runtime::Checkbox
+pub fn pert_ui_runtime::Checkbox::controlled(bool, impl core::convert::Into<pert_ui_runtime::TextSource>, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::Checkbox::disabled(self) -> Self
 pub fn pert_ui_runtime::Checkbox::enabled(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
 pub fn pert_ui_runtime::Checkbox::for_parameter(pert_ui_runtime::Parameter<bool>) -> Self
@@ -36940,6 +36944,7 @@ impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::InlineSlider
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::InlineSlider
 pub struct pert_ui_runtime::InlineText
 impl pert_ui_runtime::InlineText
+pub fn pert_ui_runtime::InlineText::controlled(impl core::convert::Into<alloc::string::String>, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, &str) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::InlineText::disabled(self) -> Self
 pub fn pert_ui_runtime::InlineText::enabled(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
 pub fn pert_ui_runtime::InlineText::in_row(self, bool) -> Self
@@ -42240,6 +42245,7 @@ impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ToastReceipt
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ToastReceipt
 pub struct pert_ui_runtime::Toggle(_)
 impl pert_ui_runtime::Toggle
+pub fn pert_ui_runtime::Toggle::controlled(bool, impl core::convert::Into<pert_ui_runtime::TextSource>, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::Toggle::disabled(self) -> Self
 pub fn pert_ui_runtime::Toggle::enabled(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
 pub fn pert_ui_runtime::Toggle::for_parameter(pert_ui_runtime::Parameter<bool>) -> Self
