@@ -168,6 +168,8 @@ impl Breadcrumb {
     /// Creates a breadcrumb over `segments`, outermost first, that reports the
     /// key of an activated segment or chosen overflow row to `on_activate`.
     ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
+    ///
     /// The breadcrumb needs no `Runtime`, so an owner can describe it again
     /// from its own update, for example after navigating. The callback runs on
     /// the UI thread in the event phase and may write bindings; an error

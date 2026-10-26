@@ -953,6 +953,8 @@ impl ToolWindowLayout {
     /// A new description replaces the callback; a description without one
     /// discards changes not yet delivered.
     ///
+    /// Timing class: [after settling](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#after-settling).
+    ///
     /// The callback runs on the UI thread and may write bindings, which the
     /// same flush then settles. Its error is returned from the flush after
     /// every pending change was delivered; the change itself stays.

@@ -1039,6 +1039,31 @@ impl Node {
 /// data or shares it through an `Rc`, and never borrows from a local or from
 /// the code that builds it. The same holds for the rows and services it hands
 /// to the runtime; [`Self::content_rows`] shows the pattern.
+///
+/// # Hooks by concern
+///
+/// Only [`update`](Self::update) is required; every other hook has a
+/// default. A typical widget implements `update`, [`measure`](Self::measure)
+/// and [`paint`](Self::paint) first. An interactive one adds
+/// [`focusable`](Self::focusable), [`pointer_input`](Self::pointer_input) or
+/// [`keyboard_event`](Self::keyboard_event) and [`cancel_input`](Self::cancel_input),
+/// and one that tools should understand adds [`inspect`](Self::inspect). The
+/// table groups the hooks by concern; their declaration order below is
+/// unchanged.
+///
+/// | Concern | Hooks |
+/// |---|---|
+/// | Lifecycle | [`update`](Self::update), [`reconcile`](Self::reconcile), [`check_description`](Self::check_description), [`mounted`](Self::mounted), [`visibility_changed`](Self::visibility_changed), [`unmounted`](Self::unmounted), [`take_children`](Self::take_children), [`retain_initial_children`](Self::retain_initial_children) |
+/// | Pointer and keys | [`pointer_input`](Self::pointer_input), [`keyboard_event`](Self::keyboard_event), [`key_input`](Self::key_input), [`receives_unfocused_keys`](Self::receives_unfocused_keys), [`hover_changed`](Self::hover_changed), [`cursor`](Self::cursor), [`hit_test`](Self::hit_test), [`hit_test_foreground`](Self::hit_test_foreground), [`command_target`](Self::command_target), [`timer_elapsed`](Self::timer_elapsed), [`cancel_input`](Self::cancel_input), [`input_reset`](Self::input_reset) |
+/// | Focus | [`focusable`](Self::focusable), [`tab_stop`](Self::tab_stop), [`descendant_tab_stops`](Self::descendant_tab_stops), [`tab_navigation`](Self::tab_navigation), [`focus_siblings_on_removal`](Self::focus_siblings_on_removal), [`focus_gained`](Self::focus_gained), [`focus_lost`](Self::focus_lost), [`focus_within_changed`](Self::focus_within_changed) |
+/// | Text editing | [`text_key_event`](Self::text_key_event), [`text_input`](Self::text_input), [`text_preedit`](Self::text_preedit), [`text_input_state`](Self::text_input_state), [`text_command`](Self::text_command) |
+/// | Drag and drop | [`drag_event`](Self::drag_event), [`drag_finished`](Self::drag_finished) |
+/// | Layout | [`measure`](Self::measure), [`arrange`](Self::arrange), [`size_limits`](Self::size_limits), [`measure_limits`](Self::measure_limits), [`fills_row_height`](Self::fills_row_height), [`layout_position`](Self::layout_position), [`clips_children`](Self::clips_children), [`child_transform`](Self::child_transform) |
+/// | Children and surfaces | [`child_visible`](Self::child_visible), [`child_surface`](Self::child_surface), [`dismiss_surface`](Self::dismiss_surface), [`stacks_children`](Self::stacks_children), [`child_stacking_priority`](Self::child_stacking_priority), [`child_redocked`](Self::child_redocked), [`can_reveal`](Self::can_reveal), [`reveal`](Self::reveal), [`reveal_child`](Self::reveal_child) |
+/// | Painting | [`paint`](Self::paint), [`paint_foreground`](Self::paint_foreground) |
+/// | Notifications | [`deliver_notifications`](Self::deliver_notifications) |
+/// | Inspection and search | [`inspect`](Self::inspect), [`conceals_input`](Self::conceals_input), [`content_rows`](Self::content_rows), [`try_content_rows`](Self::try_content_rows) |
+/// | Workspace | [`workspace_state`](Self::workspace_state), [`workspace_state_with_children`](Self::workspace_state_with_children), [`restore_workspace_state`](Self::restore_workspace_state), [`restore_workspace_state_with_children`](Self::restore_workspace_state_with_children) |
 #[diagnostic::on_unimplemented(
     message = "`{Self}` is not a pert-ui component",
     label = "`{Self}` does not implement `Component`",
@@ -3653,6 +3678,133 @@ pub struct FlushReport {
 /// let runtime = pert_ui::Runtime::new();
 /// std::thread::spawn(move || drop(runtime)); // UI ownership cannot cross threads.
 /// ```
+///
+/// # Methods by audience
+///
+/// The methods are listed by who calls them. An application needs the first
+/// group; tests and tools add the second; only a custom host needs the
+/// third. Each method's own page holds its contract.
+///
+/// **Applications.** What an application's own code calls.
+///
+/// - Content and state: [`new`](Self::new), [`signal`](Self::signal),
+///   [`mount_tree`](Self::mount_tree), [`unmount`](Self::unmount),
+///   [`reconcile_children`](Self::reconcile_children),
+///   [`reparent`](Self::reparent), [`set_visible`](Self::set_visible),
+///   [`keep_alive`](Self::keep_alive).
+/// - Appearance: [`theme`](Self::theme), [`ui_settings`](Self::ui_settings),
+///   [`fonts`](Self::fonts), [`icons`](Self::icons).
+/// - Parameters: [`parameter`](Self::parameter),
+///   [`parameter_any`](Self::parameter_any),
+///   [`remote_parameter`](Self::remote_parameter).
+/// - Work and timing: [`spawn`](Self::spawn), [`mailbox`](Self::mailbox),
+///   [`defer`](Self::defer), [`start_interval`](Self::start_interval),
+///   [`series_source`](Self::series_source), [`live_waker`](Self::live_waker).
+/// - Commands and keys: [`register_command`](Self::register_command),
+///   [`unregister_command`](Self::unregister_command),
+///   [`rebind_command`](Self::rebind_command),
+///   [`command_enabled`](Self::command_enabled),
+///   [`command_enabled_signal`](Self::command_enabled_signal),
+///   [`command_enabled_binding`](Self::command_enabled_binding),
+///   [`command_in_modals`](Self::command_in_modals),
+///   [`command_repeats`](Self::command_repeats),
+///   [`command_name`](Self::command_name),
+///   [`command_shortcuts`](Self::command_shortcuts),
+///   [`command_info`](Self::command_info),
+///   [`commands_for`](Self::commands_for),
+///   [`command_context`](Self::command_context),
+///   [`set_command_target`](Self::set_command_target),
+///   [`invoke_command`](Self::invoke_command),
+///   [`register_held_input`](Self::register_held_input),
+///   [`unregister_held_input`](Self::unregister_held_input).
+/// - Focus, reveal and search: [`focus`](Self::focus),
+///   [`focus_next`](Self::focus_next), [`focused`](Self::focused),
+///   [`can_focus`](Self::can_focus), [`reveal`](Self::reveal),
+///   [`reveal_and_focus`](Self::reveal_and_focus),
+///   [`reveal_child`](Self::reveal_child),
+///   [`content_search`](Self::content_search),
+///   [`jump_to_content`](Self::jump_to_content),
+///   [`resume_content_jump`](Self::resume_content_jump).
+/// - Windows: [`request_detach`](Self::request_detach),
+///   [`request_redock`](Self::request_redock),
+///   [`request_close`](Self::request_close),
+///   [`request_window_title`](Self::request_window_title),
+///   [`window_of`](Self::window_of), [`native_windows`](Self::native_windows),
+///   [`primary_window`](Self::primary_window),
+///   [`detached_view`](Self::detached_view),
+///   [`contains_window`](Self::contains_window).
+/// - Workspace: [`capture_workspace`](Self::capture_workspace),
+///   [`restore_workspace`](Self::restore_workspace),
+///   [`workspace_report`](Self::workspace_report).
+/// - Clipboard and text: [`clipboard_text`](Self::clipboard_text),
+///   [`set_clipboard_text`](Self::set_clipboard_text),
+///   [`text_command`](Self::text_command).
+/// - Lookups: [`find`](Self::find), [`find_descendant`](Self::find_descendant),
+///   [`find_path`](Self::find_path), [`children`](Self::children),
+///   [`key`](Self::key).
+/// - Failures and shutdown: [`last_failure`](Self::last_failure),
+///   [`shutdown`](Self::shutdown).
+///
+/// **Tests and inspection.** What tests and tools add; a test also calls the
+/// application methods.
+///
+/// - Driving: [`flush`](Self::flush), [`now`](Self::now),
+///   [`next_deadline`](Self::next_deadline), [`event`](Self::event),
+///   [`try_event`](Self::try_event), [`key_input`](Self::key_input),
+///   [`text_input`](Self::text_input), [`pointer_input`](Self::pointer_input),
+///   [`mount`](Self::mount).
+/// - Inspection: [`inspect`](Self::inspect),
+///   [`inspect_with`](Self::inspect_with), [`query`](Self::query),
+///   [`query_with`](Self::query_with), [`inspection_id`](Self::inspection_id),
+///   [`inspection_service`](Self::inspection_service),
+///   [`validation_report`](Self::validation_report), [`bounds`](Self::bounds),
+///   [`drag_active`](Self::drag_active), [`read_signal`](Self::read_signal).
+/// - Diagnostics and capture: [`set_debug_mode`](Self::set_debug_mode),
+///   [`clear_event_history`](Self::clear_event_history),
+///   [`set_debug_overlay`](Self::set_debug_overlay),
+///   [`debug_overlay`](Self::debug_overlay),
+///   [`set_profiling`](Self::set_profiling), [`profile`](Self::profile),
+///   [`clear_profile`](Self::clear_profile),
+///   [`request_capture`](Self::request_capture).
+///
+/// **Hosts.** What only a host that drives the runtime in place of `App`
+/// calls.
+///
+/// - Event loop: [`flush_windows`](Self::flush_windows),
+///   [`flush_commands`](Self::flush_commands),
+///   [`has_command_requests`](Self::has_command_requests),
+///   [`application_deadline`](Self::application_deadline),
+///   [`interval_deadline`](Self::interval_deadline),
+///   [`service_intervals`](Self::service_intervals),
+///   [`service_inspection`](Self::service_inspection),
+///   [`set_wake_delivery`](Self::set_wake_delivery).
+/// - Windows and presentation: [`select_window`](Self::select_window),
+///   [`current_window`](Self::current_window),
+///   [`set_viewport`](Self::set_viewport), [`viewport`](Self::viewport),
+///   [`set_window_visible`](Self::set_window_visible),
+///   [`set_presentation_rate`](Self::set_presentation_rate),
+///   [`presentation_rate`](Self::presentation_rate),
+///   [`needs_paint`](Self::needs_paint), [`paint`](Self::paint),
+///   [`invalidate`](Self::invalidate),
+///   [`has_presentation_requests`](Self::has_presentation_requests),
+///   [`take_presentation_requests`](Self::take_presentation_requests),
+///   [`prepare_detach`](Self::prepare_detach),
+///   [`commit_detach`](Self::commit_detach), [`redock`](Self::redock),
+///   [`close_detached_window`](Self::close_detached_window),
+///   [`native_window_options`](Self::native_window_options).
+/// - Native input: [`command_key_input`](Self::command_key_input),
+///   [`native_modifiers`](Self::native_modifiers),
+///   [`text_preedit`](Self::text_preedit),
+///   [`text_input_state`](Self::text_input_state),
+///   [`cursor_icon`](Self::cursor_icon), [`keyboard`](Self::keyboard),
+///   [`clear_focus`](Self::clear_focus), [`cancel_input`](Self::cancel_input).
+/// - Captures: [`set_capture_support`](Self::set_capture_support),
+///   [`captures_supported`](Self::captures_supported),
+///   [`pending_captures`](Self::pending_captures),
+///   [`capture_scene`](Self::capture_scene),
+///   [`complete_capture`](Self::complete_capture).
+/// - Services and shutdown: [`set_clipboard`](Self::set_clipboard),
+///   [`take_shutdown_errors`](Self::take_shutdown_errors).
 pub struct Runtime {
     held_registrations: BTreeMap<u64, held::Registration>,
     held_owners: BTreeMap<crate::KeyCode, held::Owner>,
@@ -4040,6 +4192,8 @@ impl Runtime {
 
     /// Runs a fallible application event and records its reported success/failure.
     ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
+    ///
     /// Unlike `event`, this can inspect the closure's Result. Delivery failures
     /// remain the outer runtime error; application failures remain the inner error.
     /// Generic `event` records only `Dispatched`, not an invented success result.
@@ -4261,6 +4415,8 @@ impl Runtime {
     /// Creates a bounded mailbox that delivers owned values from other threads to
     /// `handler` on this runtime's thread.
     ///
+    /// Timing class: [at the next flush](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#at-the-next-flush).
+    ///
     /// Hand [`Mailbox::sender`](crate::Mailbox::sender) handles to workers; each
     /// accepted value wakes the host like a [`LiveWaker`](crate::LiveWaker) and
     /// reaches `handler` at the start of a later [`Self::flush`], in order, after
@@ -4404,6 +4560,8 @@ impl Runtime {
     }
 
     /// Dispatches a general event closure to a visible mount and focuses it.
+    ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
     ///
     /// Switching focus first cancels the old component's active gestures. The
     /// closure may write signals or begin/edit parameter gestures. Its return

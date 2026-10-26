@@ -44,6 +44,8 @@ type Score = dyn Fn(&str, &CommandEntry) -> Option<u32>;
 impl CommandMatcher {
     /// Uses `score` as the matching and ranking policy; see the type
     /// documentation for its rules.
+    ///
+    /// Timing class: [evaluation](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#evaluation).
     pub fn new(score: impl Fn(&str, &CommandEntry) -> Option<u32> + 'static) -> Self {
         Self(Rc::new(score))
     }
@@ -585,6 +587,8 @@ impl CommandPalette {
     /// Redescription applies it to subsequent choices; an already Pending choice
     /// retains its captured formatter. Reentrant redescription during the choose
     /// callback retains the active callback's formatter.
+    ///
+    /// Timing class: [evaluation](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#evaluation).
     pub fn outcome_text(
         self,
         text: impl Fn(&str, &Result<CommandOutcome, RuntimeError>) -> String + 'static,

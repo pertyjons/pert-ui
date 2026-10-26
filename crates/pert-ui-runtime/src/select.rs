@@ -1481,6 +1481,8 @@ impl<T: Clone + Eq + 'static> Select<T> {
     /// The context belongs to the closing list: use [`EventContext::defer_detached`]
     /// for deferred application work that must survive the list becoming hidden.
     ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
+    ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
     /// use pert_ui::{Choice, Select, Runtime};
@@ -1824,6 +1826,8 @@ impl<T: Clone + Eq + 'static> InlineSelect<T> {
     /// Reports successful user writes or remote submissions as [`Select::on_change`].
     /// Runs after closing; errors do not undo the write. The callback context belongs
     /// to the closing list; use detached deferral for longer-lived application work.
+    ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
     pub fn on_change(
         mut self,
         handler: impl FnMut(&mut EventContext, &T) -> Result<(), RuntimeError> + 'static,

@@ -1,5 +1,58 @@
 # Changelog
 
+## 0.3.71 (2026-10-26)
+
+Documentation layering (layering plan, part L1): each audience meets its own
+layer of the documentation first. No public item, signature or behavior
+changes, and no code moves; the `api/` listings are unchanged. The review
+record is `plans/usability/layering-L1-classification.md`.
+
+- Documentation: contracts.md is classified per obligation as application,
+  extension or maintainer material. Extension material (redescription and
+  conformance helpers, retained generated children, layout and focus hooks,
+  `Notifier` reporting, stacking, hit testing and pointer refresh, content
+  search hooks, host-loaded data, editor sessions, workspace hooks, custom
+  semantics and what a custom host does) moves under a new heading, "For
+  component and host authors", after the application sections; each
+  application section keeps its guarantees, with a pointer where it named a
+  moved hook. A table's cell editing gets its own application section, "Table
+  cell edits".
+- Documentation: a new `docs/internals.md` ("Implementation notes") holds
+  only implementation rationale and internal ordering moved from
+  contracts.md: surface admission recovery and command query mechanics,
+  notification preparation and budgets, failure provenance, content search's
+  exclusion after a failed reconciliation and the order of queued shutdown
+  errors. contracts.md keeps a summary of each guarantee and links the notes.
+- Documentation: contracts.md defines callback timing classes, derived from a
+  classification of every public callback: in the input, after settling, at
+  the next flush, at parameter delivery and evaluation, with the callbacks
+  that keep a moment of their own and the excluded host-integration
+  callbacks. Access, coalescing, cancellation and failure and replay are
+  defined as separate properties. Each classified callback's rustdoc names
+  its class with a link: the `on_*` builders, constructors that take a
+  callback (`Button::new`, `controlled`, `Breadcrumb::new`, `QuickPick::new`
+  and others), normalizers, deferral, `spawn`, `mailbox`, `start_interval`,
+  parameter sinks, binding derivations, description factories, matchers and
+  number formats.
+- Documentation: the guide's state and layout chapters open with "Choosing a
+  way" tables: where a control's value comes from (`new`, `controlled`,
+  `for_parameter`, with the per-row and retained row forms as advanced),
+  background work, work deferred from a callback with the closing-surface
+  rule, and children from data. The state chapter opens with a signal and a
+  text field; its custom component example moves to the custom-widgets
+  chapter as "A component that follows a binding".
+- Documentation: `Signal::sibling` and the guide's editable list recipe name
+  the controlled form first and the per-row binding as the advanced form for
+  a control without a controlled form.
+- Documentation: `Runtime`'s page indexes its methods by audience
+  (applications, tests and inspection, hosts), and the `Component` trait's
+  page groups its hooks by concern with the few a typical widget implements;
+  the declaration order is unchanged.
+- AGENTS.md: the design-reading list includes `docs/internals.md`, and the
+  component API conventions gain a sentence: an addition that offers a new
+  way to do something already possible names, in its change rationale, the
+  way it makes advanced or retires, or says why none can be.
+
 ## 0.3.70 (2026-10-26)
 
 Controlled controls (API audit fix plan, part 6f3, after its design

@@ -5,6 +5,13 @@ construction examples and generated Rust documentation for each item's full
 signature, defaults and errors. [Architecture](architecture.md) describes the
 package boundaries; [verification](verification.md) records tested behavior.
 
+The sections up to the public naming rules hold what an application relies
+on. What a custom component or a custom host needs beyond that is under
+[For component and host authors](#for-component-and-host-authors). The
+[implementation notes](internals.md) record, for maintainers, the rationale
+and internal ordering behind some of these rules; nothing there is a
+guarantee this document does not state.
+
 ## Contents
 
 - [Identity and composition](#identity-and-composition)
@@ -15,6 +22,8 @@ package boundaries; [verification](verification.md) records tested behavior.
   - [Permissions and availability](#permissions-and-availability)
   - [Container composition and validation](#container-composition-and-validation)
   - [Layout, visibility and focus](#layout-visibility-and-focus)
+  - [User-write callbacks](#user-write-callbacks)
+- [Callback timing](#callback-timing)
 - [Data and edit ownership](#data-and-edit-ownership)
   - [Controlled controls](#controlled-controls)
   - [Parameters and gestures](#parameters-and-gestures)
@@ -26,6 +35,7 @@ package boundaries; [verification](verification.md) records tested behavior.
   - [Reveal and focus](#reveal-and-focus)
   - [Drag and drop](#drag-and-drop)
   - [Closing a window](#closing-a-window)
+  - [Runtime shutdown](#runtime-shutdown)
   - [Calling the runtime from callbacks](#calling-the-runtime-from-callbacks)
 - [Text and draft editing](#text-and-draft-editing)
 - [Theme palettes](#theme-palettes)
@@ -34,6 +44,17 @@ package boundaries; [verification](verification.md) records tested behavior.
 - [Public compatibility policy](#public-compatibility-policy)
 - [Error policy](#error-policy)
 - [Public naming rules](#public-naming-rules)
+- [For component and host authors](#for-component-and-host-authors)
+  - [Describing and redescribing components](#describing-and-redescribing-components)
+  - [Layout and focus hooks](#layout-and-focus-hooks)
+  - [Reporting component notifications](#reporting-component-notifications)
+  - [Stacking, hit testing and pointer refresh](#stacking-hit-testing-and-pointer-refresh)
+  - [Content search hooks](#content-search-hooks)
+  - [Host-loaded data](#host-loaded-data)
+  - [Editor sessions](#editor-sessions)
+  - [Workspace hooks](#workspace-hooks)
+  - [Inspection in custom components](#inspection-in-custom-components)
+  - [Custom hosts](#custom-hosts)
 
 ## Identity and composition
 
@@ -86,8 +107,8 @@ first update, except a library default, which shows the table's current text.
 Redescription with the same binding or role keeps the text already read;
 another binding or fixed text replaces it, fixed text when the description is
 adopted. A foreign binding fails the update with `ForeignRuntime`. Custom
-components follow the same contract through `TextSource::read`, `read_paint`
-and `same_as`.
+components follow the same contract ([text
+sources](#describing-and-redescribing-components)).
 
 #### Text beyond the limits
 
@@ -141,16 +162,10 @@ cancelling an armed activation. Toasts are identified by admission, never by
 text.
 
 A detached tab or tool window's native window opens with the title its
-detach request carries; when the view's title differs, its container queues a
-coalescing `PresentationAction::Retitle` through
-`EventContext::set_window_title` in the event phase, and the default App
-applies it to the open window. A container
-compares against the title the window opened with, so a window opened with
-another title takes the view's title when first seen; it follows each request's
-receipt, asks again for a retitle the host dropped unfinished, asks for a title
-the host refused only once the view's title changes, and after a full request
-queue asks again 250 ms later. `NativeWindowOptions` keep the title the
-window opened with.
+detach request carries and then follows its view's title, which the default
+App applies to the open window; a window opened with another title takes the
+view's title when first seen. `NativeWindowOptions` keep the title the window
+opened with. [Custom hosts](#custom-hosts) apply the same requests.
 
 ### Control adornments
 
@@ -203,8 +218,7 @@ arrives. A component can instead reject a description up front, from what the
 description alone shows, through `Component::check_description`: the call that
 mounts or reconciles it then fails before anything changes, so an invalid
 description cannot unmount children it fails to list (the tool window layout
-uses this for its keys and edges). `redescribe` and `check_redescription` perform a re-description and
-compare it with a fresh mount, for built-in and custom components alike.
+uses this for its keys and edges).
 
 A value a description carries from application data, such as a controlled
 control's value, is the exception to rejecting what a description shows up
@@ -214,31 +228,6 @@ and the call does not fail. Otherwise one record with an invalid value would
 fail every flush in which a collection describes its rows. A controlled
 control described again with the same value keeps its draft and pending
 input; see [Controlled controls](#controlled-controls).
-
-Conformance helpers compare the direct described component by mounted incarnation,
-independently of workspace addressing metadata, and flush at the current elapsed
-time. Success returns ownership of the retained test tree and removes any fresh
-reference tree. Failure removes only roots this call mounted; a typed
-`RedescriptionError::Cleanup` preserves the original cause and exact unreleased
-root handles if removal fails. Callback side effects are not rolled back, and
-teardown errors queued by components remain observable through later runtime
-flushes.
-
-#### Retained generated children
-
-A component whose constructor generates parts for its retained controller may
-opt into `Component::retain_initial_children`. Initial parts mount normally even
-while hidden, so search and workspace capture can discover them before first
-reveal. A compatible ancestor redescription applies only the owner's properties:
-its incoming generated descendants are discarded before validation or mounting,
-while mounted parts keep their bindings, metadata and identities. The policy is
-captured once at mount. The component regenerates replaceable part properties
-from retained state through `UpdateContext::request_children`; ordinary
-self-managed components still reject incoming descendants. Direct explicit child
-reconciliation remains available to the owner. `StateOwner::ui_settings` gives
-custom controllers the installed table for constructing initial hidden parts,
-without subscribing or scheduling presentation. Retained components track later
-string-table changes through `UpdateContext::strings` on update.
 
 #### Value-driven children
 
@@ -294,25 +283,16 @@ leave current presentation unchanged.
 A still-visible surface whose declared kind changes is admitted again under the
 new kind's conflict/cancellation/focus rules, retaining the original opener.
 
-Error recovery records the current kind and retries incomplete admission;
-a pending ApplicationDialog also blocks other windows and targetless command
+A pending ApplicationDialog blocks other windows and targetless command
 queries before admission. A downgraded ApplicationDialog releases its
-application-wide singleton. No-flush command queries inspect current root
-visibility and declared kind rather than cached admission kind, including local
-Dialog/ViewDialog scope and default application-command restrictions. Hidden
-logical dialogs and downgraded surfaces stop blocking; hiding only the native
-application-dialog window suspends its session and continues blocking other roots.
+application-wide singleton. Hidden logical dialogs and downgraded surfaces stop
+blocking; hiding only the native application-dialog window suspends its session
+and continues blocking other roots.
 
 Command queries inspect current mounted surface declarations, including newly
-shown roots missing from the last synchronized frontier. They do not evaluate
-pending component updates or run admission callbacks. A command listing shares
-one pass over all mounted nodes across all rows. Command invocation and native
-key routing flush all presentation roots before admission, then inspect the
-synchronized surface frontier without repeating the full declaration walk.
-
-An ordinary update failure during the native-key preflush, including in another
-visible window, prevents dispatch and cancels input in the selected window.
-Older/external notification failures retain their separate preservation policy.
+shown roots. They do not evaluate pending component updates or run admission
+callbacks. Command invocation and native key routing flush all presentation
+roots before admission.
 
 ### Permissions and availability
 
@@ -432,10 +412,8 @@ Composite hard minimums propagate before allocation. Container includes its
 visible child's minimum and padding; explicit outer maximums cap that minimum
 and clip conflicting child content. A smaller preferred size does not override
 the propagated minimum. Row retains the parent's offered height for ordinary
-children. Decorations can opt into `Component::fills_row_height`: they contribute
-their natural height first, then fill the resolved row content up to the offered
-height. The public measurement context exposes the same preference to custom
-containers. Grid resolves fixed and weighted track widths before wrapped row
+children; a decoration can instead fill the resolved row content up to the
+offered height ([layout hooks](#layout-and-focus-hooks)). Grid resolves fixed and weighted track widths before wrapped row
 heights in both measurement and arrangement, including unbounded measurement.
 
 Row and Column give every child its natural size first, then divide the space
@@ -454,12 +432,9 @@ the main axis: a column within its width, a row within its tallest child,
 except that `Align::Stretch` in a row fills the height the row is allocated
 when it is arranged. A row's measured height stays its tallest child's, so the
 stretch fills what a parent gives (for example a column that grows the row)
-without asking for more; children keep their maximum and minimum heights. The
-public `ArrangeContext` receives that allocation, so a custom container can do
-the same.
+without asking for more; children keep their maximum and minimum heights.
 Without a weight or a justify choice, a row or column keeps its natural size.
-Custom containers read the weight through `MeasureContext::grow`; Wrap and
-Grid do not grow children.
+Wrap and Grid do not grow children.
 
 Containers provide flow, wrapping, grids, scroll areas, adaptive forms,
 resizable splits, tab groups and regions. Nested regions share one runtime.
@@ -489,16 +464,10 @@ subtree out of traversal, up to the next surface or native window root, which
 starts a scope of its own; `VirtualList::item_tab_stops(false)` uses it to make
 a list with interactive rows one stop. Pointer presses, explicit focus and
 focus restoration are unaffected, and traversal from a focused descendant
-continues from its place in navigation order.
-
-An unmodified Tab or Shift+Tab that reaches default traversal is first offered
-through `Component::tab_navigation` to the focused component and the ancestors
-ordinary bubbling reaches, innermost first; a component that claims it moves
-focus itself, as an editor moving to the next cell does. Keys owned earlier
-keep their owner: on the native path held keys, command presses, the editing
-phase, capture bindings and held-input registrations come first, so view,
-window and application bindings still never see an unmodified Tab. The offer
-does not take the key's release.
+continues from its place in navigation order. A component may move focus on
+Tab itself, as an editor moving to the next cell does; view, window and
+application bindings never see an unmodified Tab ([layout and focus
+hooks](#layout-and-focus-hooks)).
 
 An element can opt out of native detachment; detachable tabs and explicit
 runtime requests honor the same permission. Native multi-window support remains
@@ -507,7 +476,8 @@ experimental.
 ### User-write callbacks
 
 Boolean controls and single-choice controls offer `on_change` after a successful
-local write or remote proposal submission, not after authority acceptance.
+local write or remote proposal submission, not after authority acceptance; it
+runs [in the input](#in-the-input).
 A [controlled](#controlled-controls) `Checkbox` or `Toggle` writes nothing: its
 `on_change`, like a controlled `InlineText`'s `on_save`, receives the user's
 proposal where the other paths write.
@@ -535,7 +505,8 @@ refused text report nothing. The handler follows same-key redescription,
 also in the popover form, whose retained picker otherwise keeps its binding,
 options and drafts.
 
-Parameter sinks cannot write to the runtime. A sink that must update bindings
+Parameter sinks run [at parameter delivery](#at-parameter-delivery) and
+cannot write to the runtime. A sink that must update bindings
 sends to an application-owned `Mailbox`, whose handler runs in a later flush;
 the recommended shape is a capacity-one refresh mailbox whose handler rereads
 application state, sent to as the sink's last step after it recorded the
@@ -544,6 +515,123 @@ outcome, with a full mailbox meaning a refresh is already pending.
 calls no sink otherwise; the writer forwards its own writes. No general signal
 observer exists: these per-source callbacks cover user writes, outcomes and
 the application's own writes.
+
+## Callback timing
+
+A callback the runtime calls later, or during an event, runs on the UI thread
+at one of a few moments: its timing class. The class says only when the
+callback runs. What it may do, whether changes are coalesced, what cancels it
+and what a failure leaves behind are [separate
+properties](#properties-beside-the-class), which vary within a class; each
+callback's rustdoc names its class and states those properties.
+
+| Class | When it runs | For example |
+|---|---|---|
+| [In the input](#in-the-input) | inside the input call that caused it | a button's action, `on_change`, `on_save`, `on_activate` |
+| [After settling](#after-settling) | in an event phase once the flush's updates and layout have settled | `Tabs::on_select`, `on_selection_change`, `on_scroll`, `on_modified` |
+| [At the next flush](#at-the-next-flush) | at the start of a later flush, before components update | deferred tasks, mailbox handlers, background results, interval ticks |
+| [At parameter delivery](#at-parameter-delivery) | when the runtime delivers a parameter edit's event | `ParameterHost::on_outcome`, `RemoteHost::on_submit` |
+| [Evaluation](#evaluation) | whenever the runtime needs the value it computes | `ReadSignal::map`, `Dynamic`, filter rules, number formats |
+
+### In the input
+
+The callback runs inside the input call that caused it, before that call
+returns: a pointer, key, text or composition entry point, `Runtime::event`, or
+a component's own timer, such as a held step button's repeat, in the flush
+that reaches its deadline. A control's callback runs after the control's own
+write or proposal submission; a [controlled](#controlled-controls) control
+writes nothing and calls it with the user's proposal at the moment the
+signal-bound form would write. A `Select` list and a menu row call it once
+their surface has started to close, and a picker closes right after its
+choose callback answers, so work that must outlive the surface is queued with
+`defer_detached` ([calling the runtime from
+callbacks](#calling-the-runtime-from-callbacks)).
+
+### After settling
+
+The callback runs in an event phase once the update and layout waves of the
+flush that follows the change, or of the flush in progress, have settled,
+through `Component::deliver_notifications` ([component
+notifications](#component-notifications)), so it sees the settled state.
+Callbacks run in the order the changes happened, across components. An input
+entry point or a reveal operation settles a flush of its own, so a change it
+causes is delivered before it returns while its window is visible; a hidden
+native window holds the callbacks until it is shown.
+
+### At the next flush
+
+The callback runs at the start of a later flush, before components update:
+work queued with `EventContext::defer`, `defer_detached` or `Runtime::defer`,
+the start of `EventContext::spawn` and a command invocation queued with
+`EventContext::invoke_command` run in the next flush; a mailbox handler or a
+`Runtime::spawn` result runs in the first flush after its value arrives; an
+interval tick runs in the first flush at or after its due time, or in
+`Runtime::service_intervals` for a host that cannot flush. A flush nested in a
+deferred task delivers no further deferred tasks ([calling the runtime from
+callbacks](#calling-the-runtime-from-callbacks)).
+
+### At parameter delivery
+
+The callback runs when the runtime delivers a parameter edit's event, after
+the parameter has published the edit's new state: inside the call that
+previewed or ended the edit when a delivery may run there, otherwise at the
+next safe point, which is the next operation on that parameter or the next
+flush. A remote host's submission callback runs at the same point for a
+proposal.
+
+### Evaluation
+
+The function runs whenever the runtime needs the value it computes: while it
+settles derived bindings, updates or measures a component, prepares a
+control's text, or answers a query, a command availability check or an
+inspection. Unless its rustdoc says how often, it may run at any of those
+moments, so it must be pure: deterministic for its inputs, bounded, free of
+I/O and side effects, and it writes nothing; during update, layout, paint or
+inspection the runtime rejects a write. Binding derivations (`ReadSignal::map`
+and `combine`), description factories (`Dynamic`, `Show` and `Each`, a
+collection's row builders and `Table::cell_editor`), filter and ranking rules,
+number formats, command enabled predicates and inspection providers are
+evaluation callbacks. A normalizer is pure as well, but runs in the input, at
+the save it checks.
+
+### Callbacks outside the classes
+
+A few callbacks keep a moment of their own, which their rustdoc states:
+`App`'s initializer, `on_close`, `on_error` and `on_window_error` run from the
+native host's event loop outside a flush; a command action runs at its
+invocation, which is in the input for a routed chord, at the next flush for a
+queued invocation and inside `Runtime::invoke_command` for a direct call; a
+held-input registration's cancellation runs wherever its input is cancelled;
+`Popover::on_dismiss` runs in the input that closes the surface or where the
+runtime closes it (a hidden or removed owner, lost window focus, no space);
+and a file browser's request callback runs during the controller's calls and
+the browser's update. Host-integration callbacks, such as
+`Runtime::set_wake_delivery`'s, which runs on the notifying thread, keep
+their own threading contracts, and the `Component` hooks are placed by their
+own documentation.
+
+### Properties beside the class
+
+Each callback's rustdoc states these properties besides its class:
+
+- **Access:** callbacks with an `EventContext` or `&mut Runtime` may write
+  bindings, and [calling the runtime from
+  callbacks](#calling-the-runtime-from-callbacks) lists those that receive
+  the runtime; parameter sinks and a remote host's submission callback may
+  not write, and evaluation callbacks write nothing.
+- **Coalescing:** `Tabs::on_select` reports each settled change, a
+  collection's `on_selection_change` merges the writes between two of its
+  updates, [geometry notifications](#geometry-notifications) report the last
+  value once per flush, and `on_modified` reports each change in order.
+- **Cancellation:** what discards a callback or its pending payload before it
+  runs, such as a redescription without the callback, the component's
+  removal, or the widget or window a deferred task is bound to.
+- **Failure and replay:** what a failing callback leaves behind. As a rule
+  the change it reports stays and is not reported again ([user-write
+  callbacks](#user-write-callbacks), [component
+  notifications](#component-notifications)); the exceptions, such as a
+  parameter sink's failed delivery kept for an explicit retry or an editor's
+  pending end of a refusal, are documented on the callback.
 
 ## Data and edit ownership
 
@@ -664,16 +752,13 @@ placement report through `on_scroll`, `on_resize`, `on_frame` and
 See [permissions](#permissions-and-availability) and
 [geometry notifications](#geometry-notifications).
 
-Many of these changes happen where no event context exists, in
-`Component::update` or `Component::restore_workspace_state_with_children`, so a component
-records them and asks for `Component::deliver_notifications` through a
-`Notifier`.
-
-The runtime calls that hook in an event phase once the update and
-layout waves of the flush that follows the change (or of the flush in progress)
-have settled: the callbacks see the new state, run in the order the changes
-happened, across components too (each request is one call in request order),
-and may write bindings, which the same flush settles.
+These callbacks run [after settling](#after-settling): in an event phase
+once the update and layout waves of the flush that follows the change (or of
+the flush in progress) have settled. They see the new state, run in the order
+the changes happened, across components too, and may write bindings, which
+the same flush settles. A custom component reports its own changes the same
+way ([reporting component
+notifications](#reporting-component-notifications)).
 
 Input entry points and reveal operations settle in a flush of their own, so a
 change they cause is delivered before they return when its current presentation window is
@@ -691,67 +776,41 @@ Ready requests follow global FIFO order across visible presentation windows.
 
 Hidden native windows retain requests without blocking visible windows or keeping
 a deadline due; showing them resumes delivery. Hidden components in visible
-windows still receive callbacks. Preparation follows the mounted incarnation's
-current owner and repeats visible presentation settlement after callback writes,
-without replaying mailbox, task or timer delivery frontiers. Callback failures
-consume their request once; preparation failures retain undelivered requests.
+windows still receive callbacks. Callback failures consume their request once;
+preparation failures retain undelivered requests.
 
 Reentrant requests join the next frontier. It runs in the same flush if the
 preceding frontier settled presentation work, including recipient preparation;
-otherwise requests wait for the next flush. Notification followups share the
-update-wave budget. An exhausted notification budget is not restarted for pending
-reveals; ordinary queued reveals use their normal flush budgets, so independent
-requests and path depth do not count as feedback.
+otherwise requests wait for the next flush. The [implementation
+notes](internals.md#notification-delivery) record how delivery is prepared and
+budgeted.
 
-ToolWindows associates each reported change with its own delivery slot,
-separate from housekeeping, so interleaved layout changes retain request order.
-Detached-panel
-housekeeping requests coalesce while one wakeup is pending, including hidden roots.
+#### Failures and input cleanup
 
-#### Failure provenance and input cleanup
-
-Input cancellation applies to direct dispatch errors and failures of notification
-requests attributable to that dispatch. The first reported error retains
-precedence, but any encountered attributable failure still requires cleanup, even
-when an older unrelated error is reported. Older requests, their descendants, and
-requests generated by external/preflush work retain their own provenance; their
-errors propagate without cancelling another event's focus, capture or drag.
-
-Collective presentation-settlement errors without a uniquely attributable request
-also propagate without cancelling the current gesture after dispatch. Headless
-key failure cleanup follows every mounted incarnation actually called, including
-keyboard and Escape-text bubbling, even if preparation or callbacks transfer
-focus. Completed focus-loss, focusability-loss, hiding and surface-admission
-capture cancellation is not repeated by later failure cleanup. Transfers into an
-owner's subtree preserve its existing context policy. With no dispatched callback,
-preparation failure cleanup retains the preflush owner. Regaining focus or
-receiving keyboard, text, IME, text-command or general event input starts a fresh
-input context.
-
-Later focusability loss still clears focus after an already completed cancellation.
-If a preflush blocks a held key's release or the last held pointer button's release
-before its owner receives it, cleanup still ends the held action or edit. Pending
-requests hold weak input provenance and cannot retarget a later event. Nested
-input calls share request lineage but scope error classification to their own call.
+A failing input callback, or a failing notification that its dispatch caused,
+cancels that input, as `Runtime::cancel_input` does. Errors from older or
+unrelated work, such as a request an earlier input caused, still propagate,
+but without cancelling another event's focus, capture or drag. An ordinary
+update failure during the native-key preflush, including in another visible
+window, prevents the key's dispatch and cancels input in the selected window.
+The [implementation
+notes](internals.md#failure-provenance-and-input-cleanup) record how a failure
+is attributed.
 
 Command actions retain their explicit failure boundary: an error returned by
 the action cancels input, including a nested runtime error the action chooses
 to propagate. An action
 can catch an unrelated nested delivery error and remain successful. Deferred
 application callbacks have the same explicit returned-error boundary; caught
-nested flush errors do not classify subsequent work. Queued reveals preserve
-their request's weak provenance while invoking container reveal hooks, and
-parameter delivery runs without current-input provenance.
-
-The hook and `Notifier` are public, so a custom component reports its changes
-the same way.
+nested flush errors do not classify subsequent work.
 
 ### Producer data and mailboxes
 
 A time-critical producer may use only the endpoint documented for callback-safe work.
 Its bounded, preallocated path has explicit overflow and reclamation behavior.
 Ordinary UI senders and worker mailboxes have different thread and failure
-contracts. A flush captures all mailbox delivery frontiers before invoking any
+contracts. Mailbox handlers, background results and interval ticks run [at the
+next flush](#at-the-next-flush). A flush captures all mailbox delivery frontiers before invoking any
 handler; values sent between handlers wait for the next flush regardless of
 registration order. Concurrent worker sends join the current delivery only when
 accepted before their inbox's frontier is captured. Closing or dropping a mailbox
@@ -784,24 +843,6 @@ and clearing retained data resets its receipt time. Notified sources may drain
 again at the same runtime time when a new wake arrives; resuming a suspended
 source may also change its revision without advancing time.
 
-### Host-loaded data
-
-Components perform no filesystem or other blocking I/O. A component
-that needs data its host must load uses a `RequestTracker`: it issues a
-`RequestTicket` per key (the key, a generation and the tracker's identity),
-hands it to the host, and applies a result only while `status` reports it
-`Current`, then calls `complete`. A newer ticket for the same key supersedes
-an older one, a cancelled or completed key reports `Settled` (so a repeated
-delivery changes nothing), and a ticket from another tracker, including one
-that no longer exists, reports `Foreign`. A result whose application fails
-is not completed, so it can be delivered again. The host chooses how results
-travel back, a `Mailbox` or anything else, and the component chooses how it
-shows data that is loading or failed. Issuing fails with `Exhausted` after
-`u64::MAX` tickets rather than reusing a generation. The file browser is built
-on this contract and reports such failures from its methods and its update
-instead of leaving a folder loading. A host must keep its own project, undo
-and persistent domain state.
-
 ## Input and focus
 
 ### Physical keys and held actions
@@ -826,37 +867,17 @@ to the component's contract.
 
 ### Stacking and hit testing
 
-Stacking parents can assign `Component::child_stacking_priority` to stable
-immediate child keys. Drawing and hit testing order priorities first, then raised
-recency within equal priorities. Logical navigation, layout and retained identity
-stay unchanged. ToolWindows keeps center/docked content below overlays and
-floating frames, and allows floating frames to raise among their peers. Custom
-parents request layout when stacking or priorities change, even with unchanged
-geometry, so stationary hover and drag targets are refreshed.
-
-That refresh is an ordinary `PointerKind::Move` at the last position, delivered
-after every layout or stacking change to the capture owner, or else to the
-component under the pointer, and marked by `PointerEvent::is_refresh`. It is
-not delivered during a drag session, which retargets through its own service.
-Built-in components rely on it to follow geometry that changed under a
-stationary pointer (subregion hover, a held scrollbar thumb, text selection).
-A pointer handler must converge on it: it invalidates only when the state it
-derives from the event changed, since an unconditional layout invalidation makes
-every layout produce the next move. In debug builds an `UpdateLimit` report
-names a refresh recipient whose refreshes left new work scheduled more than
-once in the failing flush.
-
-`Component::hit_test` describes the body hit region in local logical pixels,
-under a read-only UI-thread query. Returning false permits lower drawing entries
-to receive pointer input without excluding independently tested children or
-foreground controls. Clipping and modality still apply; capture bypasses body
-rejection. Hover, cursor, focus and drag targeting share the same hit order.
-Surface outside-press dismissal still uses the surface root's clipped bounding
-rectangle, including transparent body gaps; the body query does not redefine its
-presentation extent. ToastHost uses actual toast rectangles so transparent gaps
-reach content behind it. Toast selection follows stable IDs and picks the first
-surviving following toast, then nearest surviving preceding toast, then first
-newly visible toast.
+Overlapping content draws and takes pointer input in one order, which hover,
+cursor, focus and drag targeting share; logical navigation, layout and retained
+identity do not change with it. ToolWindows keeps center/docked content below
+overlays and floating frames, and allows floating frames to raise among their
+peers. Surface outside-press dismissal uses the surface root's clipped bounding
+rectangle, including transparent body gaps. ToastHost uses actual toast
+rectangles so transparent gaps reach content behind it. Toast selection follows
+stable IDs and picks the first surviving following toast, then nearest
+surviving preceding toast, then first newly visible toast. Custom stacking
+parents and hit regions are [described for component
+authors](#stacking-hit-testing-and-pointer-refresh).
 
 ### Activation and navigation keys
 
@@ -938,17 +959,11 @@ destination registry.
 ### Content search
 
 Content search reads what components already report: their semantic names and
-values through `Component::inspect`, under the inspection phase, and the rows a
-collection offers through the public `Component::try_content_rows` hook (whose
-default preserves existing `Component::content_rows` implementations), which
-`VirtualList` implements. Lists expose their current bound source even when
-hidden after an earlier presentation. `ContentRows::mounted_rows_current`
-lets collections report that retained row children describe an older source;
-search skips those subtrees and reads current source rows without updating,
-laying out or mounting presentation. The default preserves mounted-child search
-and duplicate suppression for collections whose children remain current.
-Runtime also excludes retained row children after a requested reconciliation
-fails, until a subsequent child request succeeds.
+values, under the inspection phase, and the rows a collection such as
+`VirtualList` offers beyond its mounted children ([content search
+hooks](#content-search-hooks)). Lists expose their current bound source even when
+hidden after an earlier presentation, and search reads current source rows
+without updating, laying out or mounting presentation.
 Unavailable bound rows propagate their typed read error, rather than exposing
 obsolete children. It keeps no index and schedules nothing; a held cursor retains
 the owned row sources it has visited until it is dropped. A search is
@@ -1031,8 +1046,8 @@ restored during backoff. `Defer` and
 host forgets the component an affected window recorded to focus on
 reactivation. `HeadlessApp::admit_close` runs the same admission without a
 window; coalescing repeated requests while a decision is deferred, the
-receipts and applying the decision stay with the native host.
-`Runtime::request_close` lists the steps a host other than `App` follows.
+receipts and applying the decision stay with the native host. A host other
+than `App` follows [its own steps](#custom-hosts).
 
 ### Runtime shutdown
 
@@ -1041,15 +1056,12 @@ participants are mounted. Targets and observers receive Leave before the source'
 Cancelled outcome. Replacement drags are refused during teardown. Cleanup
 continues after failure; its first error per cancellation operation and previously
 queued cleanup errors remain typed in `Runtime::take_shutdown_errors`, including
-when their native window is retired. Outside shutdown, retirement appends queued
-cleanup causes to a surviving window rather than discarding them. Terminal
-OwnerRemoved failures are queued individually and do not retry the removed owner;
-an earlier coalesced surface-dismissal cause remains observable. Within a window,
-focus/terminal-removal errors keep FIFO order before that stored surface cause.
-A visible surviving window stays due until delivery; no global chronology across
-windows or error kinds is promised. Hosts using Runtime directly drain that report
-after shutdown and before dropping it. The native App host drains that report
-even after initialization or event-loop dispatch failure. If cleanup failed,
+when their native window is retired. No global chronology across windows or
+error kinds is promised; the [implementation
+notes](internals.md#runtime-shutdown) record the order within a window. The
+native App host drains that report even after initialization or event-loop
+dispatch failure, and [custom hosts](#custom-hosts) drain it themselves. If
+cleanup failed,
 AppError::Shutdown retains the original terminal result and all cleanup causes
 in report order; otherwise the original result is preserved. Terminal cleanup
 does not enter component retry policy after the runtime has closed.
@@ -1113,45 +1125,18 @@ phase after the flush settles, as `on_modified` reports a draft's state; it is
 never a user-write callback, and refused typing and normalizer rejections do
 not call it.
 
-### Editor sessions
+### Table cell edits
 
-A host that runs one editor at a time, such as a table cell, owns an
-`EditorSession` and learns from it how each edit ended, because a component
-cannot call another one while it handles an event. The host calls `begin`
-with an `EditorStart` before it builds the editor, which attaches to that edit
-through its `session` builder (`TextField`, `IntegerInput`, `DecimalInput`,
-`Select`) or `EditorSession::attach`. The editor applies the start, keeps
-Enter, Tab and Escape (claiming them in its editing phase on the native path,
-so capture bindings, surfaces and ancestors never see them), performs its own
-save, normalization and refusal, and reports an `EditorCompletion` before any
-fallible application callback runs; the report requests the host's
-`deliver_notifications`. `Saved`, `Unchanged` and `Cancelled` end the edit, so
-reports of an older edit, including a focus departure the host's own focus
-move caused, are dropped; `Refused` keeps it open. When a callback fails,
-dispatch returns its error and the completion arrives at the next flush. A
-text or number field with a session is always in draft mode, and its steps
-change the draft rather than the binding, so Escape restores. While a
-composition or selection drag is active the editor keeps Enter and Tab without
-saving and Escape ends only the composition or drag. Reattaching a mounted,
-focused editor to a new edit applies that edit's start. A `Select` list's
-choice completes the edit that was open when the list opened. Parameter-bound
-editors ignore sessions, since a refused submission cannot be told from an
-unchanged value. Hiding and removal report nothing. Disabling an editor
-reports nothing either: revoking its enabled permission releases focus as
-cancelled input, not as focus loss, so its draft stays unsaved and the edit
-open until the host ends it (a table closes it on Escape on its body). A
-native window that hides clears focus and records `FocusLeft`, which is
-delivered once the window is shown again, as hidden windows hold
-notifications. A host never takes focus back after `FocusLeft`.
-
-`Table` is such a host. It owns the open cell edit rather than the cell,
-creates the session from its own notifier so a completion reaches it even when
-the edited row is gone, and keeps the edited row mounted through
-`VirtualList::keep_mounted` for the whole edit. It acts on completions in its
-delivery, after the save's callbacks, so Tab's destination follows the order
-they left; a completion delivered after focus left the editor never moves
-focus. An edit closes when its row leaves the rows, when another edit begins
-(discarding a refused draft), and when the table is hidden or unmounted.
+A `Table` with a cell editor edits one cell at a time and hosts the editor
+through an [editor session](#editor-sessions), so a parameter-bound editor,
+which ignores sessions, is not a cell editor. The table owns the open cell
+edit rather than the cell: the edited row stays mounted for the whole edit,
+and the table acts on how the edit ended after the save's callbacks, so Tab's
+destination follows the order they left; an edit that ended after focus left
+the editor never moves focus. An edit closes when its row leaves the rows,
+when another edit begins (discarding a refused draft), and when the table is
+hidden or unmounted. Disabling the editor leaves its draft unsaved and the
+edit open until the table ends it, which it does on Escape on its body.
 
 ### Search field
 
@@ -1208,27 +1193,14 @@ example because a key it must record is not storable workspace text, fails
 the whole capture (and an explicit restore) with an error naming its path,
 rather than being left out of a document that reports success.
 
-### Capture with mounted children
-
-Capture that depends on child keys uses `Component::workspace_state_with_children`.
-The runtime supplies actual mounted children, including hidden and detached ones,
-without flushing updates or emitting callbacks. The default delegates to the
-existing capture hook. Accordion filters open preferences against current children;
-Tabs resolves the same surviving docked selection as its next update, omitting
-selection when no docked child remains. That empty selection can be restored.
-
-### Restore with mounted children
-
-Restore admission that depends on child keys uses
-`Component::restore_workspace_state_with_children`. Its snapshot reflects actual
-mounted children after committed reconciliation, including hidden and detached
-children, even before the parent's next update. The default delegates to the
-existing restore hook. Implementations validate all fields and identities before
-changing preferences; rejected entries leave those preferences unchanged.
-Table restoration also checks runtime writability before changing column widths
-or order, including direct calls to its public component hook. A closed runtime
-or forbidden write phase is a typed `RestoreRejection::Runtime`, not success
-with a delayed row refresh.
+Capture and restore see the actual mounted children, hidden and detached
+ones included, without flushing updates or emitting callbacks. Accordion
+records only open sections whose children still exist, and Tabs the surviving
+docked selection its next update would show, omitting the selection when no
+docked child remains; that empty selection can be restored. A rejected entry
+leaves its preferences unchanged, and a table's entry restored while the
+runtime is closed or forbids writes is rejected as `RestoreRejection::Runtime`.
+Custom components take part through the [workspace hooks](#workspace-hooks).
 
 ### Restore and active gestures
 
@@ -1250,8 +1222,8 @@ represents it. A naming parent (`Semantics::names_children`) also describes
 its children: a child's own description, such as an editor's unsaved-draft
 note, is kept over ordinary text such as help, but an invalid parent's error
 and a parent's warning (`Semantics::warning`) replace it, so a `Field`'s error
-or warning reaches its control. Custom components reach the same precedence
-through these public fields. Snapshots carry
+or warning reaches its control ([inspection in custom
+components](#inspection-in-custom-components)). Snapshots carry
 `InspectionSnapshot::SCHEMA_VERSION`, which advances whenever a field is added,
 removed or reinterpreted; the serialized form is closed, so a snapshot of
 another revision does not decode as this one.
@@ -1280,11 +1252,7 @@ successful flushes do not erase it. Runtime/drawing capture failures remain type
 including application error identity and downcasting. With `serde`, portable
 capture outcomes retain their representation; Rust-cause variants explicitly
 reject encoding/decoding. Protocol adapters define their own diagnostic DTO.
-
-Frames that a host supplies with the wrong byte count, extent or crop
-region fail with a typed `CaptureError::Frame`. That error keeps the dimensions
-involved and serializes like other portable outcomes. Only backend-specific
-rendering diagnostics remain text.
+[Custom hosts](#custom-hosts) render and supply the frames.
 
 ## Public compatibility policy
 
@@ -1496,3 +1464,229 @@ and it may carry a continuation for unfinished work (`ContentJump::Pending`).
 An outcome of local processing does not report acceptance by the authority,
 which stays a separate report, as for [user-write
 callbacks](#user-write-callbacks).
+
+## For component and host authors
+
+This part holds what a custom component or a custom host needs beyond the
+application rules above. A custom component uses the same public contexts,
+child, event and painting operations as a built-in one; a custom host drives
+`Runtime` in place of `App`.
+
+### Describing and redescribing components
+
+**Text sources.** A component that shows a `TextSource` follows the
+[caption contract](#captions) through `TextSource::read`, `read_paint` and
+`same_as`.
+
+**Checking a description.** `Component::check_description` rejects a
+description from what it alone shows, before the call that mounts or
+reconciles it changes anything ([component
+redescription](#component-redescription)). `redescribe` and
+`check_redescription` perform a re-description and compare it with a fresh
+mount, for built-in and custom components alike.
+
+Conformance helpers compare the direct described component by mounted incarnation,
+independently of workspace addressing metadata, and flush at the current elapsed
+time. Success returns ownership of the retained test tree and removes any fresh
+reference tree. Failure removes only roots this call mounted; a typed
+`RedescriptionError::Cleanup` preserves the original cause and exact unreleased
+root handles if removal fails. Callback side effects are not rolled back, and
+teardown errors queued by components remain observable through later runtime
+flushes.
+
+#### Retained generated children
+
+A component whose constructor generates parts for its retained controller may
+opt into `Component::retain_initial_children`. Initial parts mount normally even
+while hidden, so search and workspace capture can discover them before first
+reveal. A compatible ancestor redescription applies only the owner's properties:
+its incoming generated descendants are discarded before validation or mounting,
+while mounted parts keep their bindings, metadata and identities. The policy is
+captured once at mount. The component regenerates replaceable part properties
+from retained state through `UpdateContext::request_children`; ordinary
+self-managed components still reject incoming descendants. Direct explicit child
+reconciliation remains available to the owner. `StateOwner::ui_settings` gives
+custom controllers the installed table for constructing initial hidden parts,
+without subscribing or scheduling presentation. Retained components track later
+string-table changes through `UpdateContext::strings` on update.
+
+### Layout and focus hooks
+
+Decorations can opt into `Component::fills_row_height`: they contribute their
+natural height first, then fill the resolved row content up to the offered
+height. The public measurement context exposes the same preference to custom
+containers. The public `ArrangeContext` receives a row's stretch allocation,
+so a custom container can do the same, and custom containers read an
+element's grow weight through `MeasureContext::grow`.
+
+An unmodified Tab or Shift+Tab that reaches default traversal is first offered
+through `Component::tab_navigation` to the focused component and the ancestors
+ordinary bubbling reaches, innermost first; a component that claims it moves
+focus itself, as an editor moving to the next cell does. Keys owned earlier
+keep their owner: on the native path held keys, command presses, the editing
+phase, capture bindings and held-input registrations come first, so view,
+window and application bindings still never see an unmodified Tab. The offer
+does not take the key's release.
+
+### Reporting component notifications
+
+Many of the changes that [component notifications](#component-notifications)
+report happen where no event context exists, in `Component::update` or
+`Component::restore_workspace_state_with_children`, so a component records
+them and asks for `Component::deliver_notifications` through a `Notifier`. The
+runtime calls that hook [after settling](#after-settling), each request one
+call in request order. The hook and `Notifier` are public, so a custom
+component reports its changes the same way.
+
+### Stacking, hit testing and pointer refresh
+
+Stacking parents can assign `Component::child_stacking_priority` to stable
+immediate child keys. Drawing and hit testing order priorities first, then raised
+recency within equal priorities. Logical navigation, layout and retained identity
+stay unchanged. Custom parents request layout when stacking or priorities
+change, even with unchanged geometry, so stationary hover and drag targets are
+refreshed.
+
+That refresh is an ordinary `PointerKind::Move` at the last position, delivered
+after every layout or stacking change to the capture owner, or else to the
+component under the pointer, and marked by `PointerEvent::is_refresh`. It is
+not delivered during a drag session, which retargets through its own service.
+Built-in components rely on it to follow geometry that changed under a
+stationary pointer (subregion hover, a held scrollbar thumb, text selection).
+A pointer handler must converge on it: it invalidates only when the state it
+derives from the event changed, since an unconditional layout invalidation makes
+every layout produce the next move. In debug builds an `UpdateLimit` report
+names a refresh recipient whose refreshes left new work scheduled more than
+once in the failing flush.
+
+`Component::hit_test` describes the body hit region in local logical pixels,
+under a read-only UI-thread query. Returning false permits lower drawing entries
+to receive pointer input without excluding independently tested children or
+foreground controls. Clipping and modality still apply; capture bypasses body
+rejection. Hover, cursor, focus and drag targeting share the same hit order.
+The body query does not redefine a surface's presentation extent, so
+outside-press dismissal still uses the surface root's clipped bounding
+rectangle.
+
+### Content search hooks
+
+Content search reads semantic names and values through `Component::inspect`,
+under the inspection phase, and the rows a collection offers through the public
+`Component::try_content_rows` hook (whose default preserves existing
+`Component::content_rows` implementations), which `VirtualList` implements.
+`ContentRows::mounted_rows_current` lets collections report that retained row
+children describe an older source; search skips those subtrees and reads
+current source rows without updating, laying out or mounting presentation. The
+default preserves mounted-child search and duplicate suppression for
+collections whose children remain current.
+
+### Host-loaded data
+
+Components perform no filesystem or other blocking I/O. A component
+that needs data its host must load uses a `RequestTracker`: it issues a
+`RequestTicket` per key (the key, a generation and the tracker's identity),
+hands it to the host, and applies a result only while `status` reports it
+`Current`, then calls `complete`. A newer ticket for the same key supersedes
+an older one, a cancelled or completed key reports `Settled` (so a repeated
+delivery changes nothing), and a ticket from another tracker, including one
+that no longer exists, reports `Foreign`. A result whose application fails
+is not completed, so it can be delivered again. The host chooses how results
+travel back, a `Mailbox` or anything else, and the component chooses how it
+shows data that is loading or failed. Issuing fails with `Exhausted` after
+`u64::MAX` tickets rather than reusing a generation. The file browser is built
+on this contract and reports such failures from its methods and its update
+instead of leaving a folder loading. A host must keep its own project, undo
+and persistent domain state.
+
+### Editor sessions
+
+A host that runs one editor at a time, such as a table cell, owns an
+`EditorSession` and learns from it how each edit ended, because a component
+cannot call another one while it handles an event. The host calls `begin`
+with an `EditorStart` before it builds the editor, which attaches to that edit
+through its `session` builder (`TextField`, `IntegerInput`, `DecimalInput`,
+`Select`) or `EditorSession::attach`. The editor applies the start, keeps
+Enter, Tab and Escape (claiming them in its editing phase on the native path,
+so capture bindings, surfaces and ancestors never see them), performs its own
+save, normalization and refusal, and reports an `EditorCompletion` before any
+fallible application callback runs; the report requests the host's
+`deliver_notifications`. `Saved`, `Unchanged` and `Cancelled` end the edit, so
+reports of an older edit, including a focus departure the host's own focus
+move caused, are dropped; `Refused` keeps it open. When a callback fails,
+dispatch returns its error and the completion arrives at the next flush. A
+text or number field with a session is always in draft mode, and its steps
+change the draft rather than the binding, so Escape restores. While a
+composition or selection drag is active the editor keeps Enter and Tab without
+saving and Escape ends only the composition or drag. Reattaching a mounted,
+focused editor to a new edit applies that edit's start. A `Select` list's
+choice completes the edit that was open when the list opened. Parameter-bound
+editors ignore sessions, since a refused submission cannot be told from an
+unchanged value. Hiding and removal report nothing. Disabling an editor
+reports nothing either: revoking its enabled permission releases focus as
+cancelled input, not as focus loss, so its draft stays unsaved and the edit
+open until the host ends it (a table closes it on Escape on its body). A
+native window that hides clears focus and records `FocusLeft`, which is
+delivered once the window is shown again, as hidden windows hold
+notifications. A host never takes focus back after `FocusLeft`.
+
+`Table` is such a host ([table cell edits](#table-cell-edits)). It creates
+the session from its own notifier so a completion reaches it even when the
+edited row is gone, keeps the edited row mounted through
+`VirtualList::keep_mounted` for the whole edit and acts on completions in its
+delivery.
+
+### Workspace hooks
+
+#### Capture with mounted children
+
+Capture that depends on child keys uses `Component::workspace_state_with_children`.
+The runtime supplies actual mounted children, including hidden and detached ones,
+without flushing updates or emitting callbacks. The default delegates to the
+existing capture hook. Accordion filters open preferences against current children;
+Tabs resolves the same surviving docked selection as its next update, omitting
+selection when no docked child remains. That empty selection can be restored.
+
+#### Restore with mounted children
+
+Restore admission that depends on child keys uses
+`Component::restore_workspace_state_with_children`. Its snapshot reflects actual
+mounted children after committed reconciliation, including hidden and detached
+children, even before the parent's next update. The default delegates to the
+existing restore hook. Implementations validate all fields and identities before
+changing preferences; rejected entries leave those preferences unchanged.
+Table restoration also checks runtime writability before changing column widths
+or order, including direct calls to its public component hook. A closed runtime
+or forbidden write phase is a typed `RestoreRejection::Runtime`, not success
+with a delayed row refresh.
+
+### Inspection in custom components
+
+Custom components reach the [naming precedence](#inspection-and-diagnostics)
+through the public `Semantics` fields: a naming parent
+(`Semantics::names_children`) describes its children, and its error and
+warning replace a child's own description. A component that conceals its
+input reports it through `Component::conceals_input`.
+
+### Custom hosts
+
+A host that drives `Runtime` itself, in place of `App`, takes on what `App`
+does for an application:
+
+- **Window titles.** A detached tab or tool window's container queues a
+  coalescing `PresentationAction::Retitle` through
+  `EventContext::set_window_title` in the event phase when the view's title
+  differs from the title the window opened with; the host applies it to the
+  open window. The container follows each request's receipt, asks again for a
+  retitle the host dropped unfinished, asks for a title the host refused only
+  once the view's title changes, and after a full request queue asks again
+  250 ms later.
+- **Closing.** `Runtime::request_close` lists the steps a host other than
+  `App` follows to admit a close ([closing a window](#closing-a-window)).
+- **Shutdown.** Hosts using `Runtime` directly drain
+  `Runtime::take_shutdown_errors` after shutdown and before dropping it
+  ([runtime shutdown](#runtime-shutdown)).
+- **Captures.** Frames that a host supplies with the wrong byte count, extent
+  or crop region fail with a typed `CaptureError::Frame`. That error keeps the
+  dimensions involved and serializes like other portable outcomes. Only
+  backend-specific rendering diagnostics remain text ([rendered
+  capture](#rendered-capture)).

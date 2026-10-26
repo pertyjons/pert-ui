@@ -131,6 +131,8 @@ impl InlineText {
     /// Creates an editable label showing `text`, which the application owns;
     /// each save proposes the saved text to `on_save`.
     ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
+    ///
     /// The label writes nothing. It shows the described text only: a save
     /// ends the session and the label shows the described text again, and a
     /// new description with other text changes it. The application applies a
@@ -261,6 +263,8 @@ impl InlineText {
     }
     /// Adjusts a changed draft when it is saved, such as trimming it, or
     /// refuses it with an [`InputRejection`].
+    ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input), at the save it checks.
     ///
     /// Saving runs the normalizer, checks the result as single-line bound text
     /// ([`TextField::check`]), prepares it and writes it, or, on a
@@ -431,6 +435,8 @@ impl InlineText {
     /// Escape discards the draft before delivering this callback. A callback
     /// failure does not keep editing active; the clear notification stays pending
     /// for a later retry.
+    ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
     pub fn on_rejection(
         mut self,
         report: impl FnMut(&mut EventContext, Option<&InputRejection>) -> Result<(), RuntimeError>
@@ -447,6 +453,8 @@ impl InlineText {
     /// nothing, it receives each save's proposal instead, at the same
     /// moments, and the label shows the described text until a new
     /// description changes it.
+    ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
     pub fn on_save(
         mut self,
         saved: impl FnMut(&mut EventContext, &str) -> Result<(), RuntimeError> + 'static,

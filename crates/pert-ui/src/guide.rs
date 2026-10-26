@@ -4,11 +4,13 @@
 //! contracts, a saved workspace and a custom widget. The other chapters can be
 //! read in any order:
 //!
-//! - [State and parameters](state): signals, retained components, parameter
-//!   gestures and host notifications, worker results, live data and recovery.
-//! - [Layout and views](layout): region layouts, splits, tabs, floating and
-//!   native windows, workspaces, large collections, an editable list of
-//!   records, zoomable content and drag and drop.
+//! - [State and parameters](state): which way to choose, signals and controls,
+//!   parameter gestures and host notifications, worker results, live data and
+//!   recovery.
+//! - [Layout and views](layout): which way to choose for children from data,
+//!   region layouts, splits, tabs, floating and native windows, workspaces,
+//!   large collections, an editable list of records, zoomable content and
+//!   drag and drop.
 //! - [Controls](controls): buttons, boolean and choice controls, sliders, text
 //!   and numeric editors, progress, inline controls and toolbars.
 //! - [Surfaces](surfaces): selects, popovers, tooltips, menus, dialogs and
@@ -20,9 +22,10 @@
 //! - [Testing an application](testing): reading what a headless runtime
 //!   shows, clicks, text, keys and chords, settling, list rows, background
 //!   work, the close policy and a CPU capture.
-//! - [Custom widgets](custom_widgets): phases and writes, pointer gestures
-//!   that converge, clicks, held keys, described children, inspection, an
-//!   inspector over an application document and building an application.
+//! - [Custom widgets](custom_widgets): a component that follows a binding,
+//!   phases and writes, pointer gestures that converge, clicks, held keys,
+//!   described children, inspection, an inspector over an application
+//!   document and building an application.
 //!
 //! Every example is a doctest that imports only the public API. Each item's own
 //! reference page holds its complete contract: defaults, limits, errors and
@@ -59,8 +62,8 @@ pub mod getting_started {
 }
 
 pub mod state {
-    //! State and parameters: signals, retained components, parameter edits, worker
-    //! results, live data and recovery.
+    //! State and parameters: which way to choose, signals and controls,
+    //! parameter edits, worker results, live data and recovery.
     //!
     #![doc = include_str!("guide/state.md")]
     #![cfg_attr(feature = "native", doc = include_str!("guide/links/desktop.md"))]
@@ -177,8 +180,9 @@ pub mod testing {
 }
 
 pub mod custom_widgets {
-    //! Custom widgets: phases and writes, pointer gestures, clicks, held keys,
-    //! described children, inspection and an application around them.
+    //! Custom widgets: a component that follows a binding, phases and writes,
+    //! pointer gestures, clicks, held keys, described children, inspection and
+    //! an application around them.
     //!
     #![doc = include_str!("guide/custom-widgets.md")]
     #![cfg_attr(feature = "native", doc = include_str!("guide/links/desktop.md"))]

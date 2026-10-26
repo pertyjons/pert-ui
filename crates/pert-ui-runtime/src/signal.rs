@@ -351,16 +351,22 @@ impl<T> Signal<T> {
     /// runtime creates a signal whose writes fail with
     /// [`RuntimeError::Closed`], like the original's.
     ///
-    /// It is also how a row of a collection gets a binding for a control,
-    /// since [`ListItems::build`](crate::ListItems::build) and
-    /// [`TableItems::cell`](crate::TableItems::cell) get no state owner:
-    /// call it there on a signal the rows hold, with the record's value, and
-    /// write changes back to the records from the control's callback.
-    /// Creating a signal is not a write, so any phase may. The cost is a new
-    /// binding for every mounted row each time the collection describes its
-    /// rows again: when the source is replaced, and when a scroll or resize
-    /// changes which rows are mounted. A new binding ends an open text draft;
-    /// `ListItems::build` describes the retained alternative.
+    /// A row of a collection gets no state owner in
+    /// [`ListItems::build`](crate::ListItems::build) or
+    /// [`TableItems::cell`](crate::TableItems::cell). Its control should be
+    /// controlled where it can be: [`Checkbox::controlled`](crate::Checkbox::controlled),
+    /// [`Toggle::controlled`](crate::Toggle::controlled) and
+    /// [`InlineText::controlled`](crate::InlineText::controlled) take the
+    /// record's value and propose each change, with no binding. For a control
+    /// without a controlled form, a per-row binding made here is the advanced
+    /// form: call it in `build` on a signal the rows hold, with the record's
+    /// value, and write changes back to the records from the control's
+    /// callback. Creating a signal is not a write, so any phase may. The cost
+    /// is a new binding for every mounted row each time the collection
+    /// describes its rows again: when the source is replaced, and when a
+    /// scroll or resize changes which rows are mounted. A new binding ends an
+    /// open text draft; `ListItems::build` describes the retained alternative
+    /// for a control that keeps one.
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
@@ -727,6 +733,8 @@ impl Drop for Derived {
 impl<T: Clone + 'static> ReadSignal<T> {
     /// Derives a read-only value, retaining this input for the result's lifetime.
     ///
+    /// Timing class: [evaluation](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#evaluation).
+    ///
     /// The pure UI-thread function runs once here, then at most once per batch of
     /// input writes (or an earlier explicit read). Equal results do not invalidate
     /// downstream widgets. No callback runs from `Signal::set`; the runtime settles
@@ -782,6 +790,8 @@ impl<T: Clone + 'static> ReadSignal<T> {
     /// Combines two bindings from the same runtime with the batching, equality
     /// and ownership rules of [`Self::map`]. Both inputs are observed, and chains
     /// read their current upstream values before publishing a downstream value.
+    ///
+    /// Timing class: [evaluation](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#evaluation).
     ///
     /// # Errors
     /// Returns `ForeignRuntime` for different owners, otherwise input read errors.

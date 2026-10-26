@@ -496,6 +496,8 @@ impl ColorPicker {
     /// the color written, for example to record it as one undo step or to
     /// apply it to the application's own document.
     ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
+    ///
     /// It runs on the UI thread in the event phase of the input that
     /// committed the edit, after the binding and the text fields hold the
     /// color: a pointer release on the area or a strip, a key press or repeat

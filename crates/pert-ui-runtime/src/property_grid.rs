@@ -310,6 +310,8 @@ impl PropertyGrid {
     /// changed, with what changed it: `Some` width in logical pixels, or
     /// `None` while the column follows its labels.
     ///
+    /// Timing class: [after settling](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#after-settling).
+    ///
     /// The callback runs on the UI thread from an event phase once the
     /// flush's updates and layout have settled
     /// ([`Component::deliver_notifications`]), at most once per flush, with

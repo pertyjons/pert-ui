@@ -4,6 +4,22 @@ splits, tabs, floating windows and native windows keep each view's identity and
 local state while the user rearranges them. The arrangement itself can be saved
 as a versioned workspace document.
 
+# Choosing a way
+
+**Children from data.** The first row is the way to start with for fixed
+content; the others serve the need their last column names.
+
+| Way | Use it when |
+|---|---|
+| Containers with fixed children, such as [`Column`] and [`Row`] | the structure does not depend on data |
+| [`Each`] | a short list of keyed items described from a binding, with no selection, keyboard navigation or filtering ([children from values](#children-from-values)) |
+| [`VirtualList`], [`Table`] or [`Tree`] | a collection the user selects, filters, reorders or edits in place, or one too large to mount whole ([large collections](#large-collections)) |
+| [`Dynamic`] | one child whose description depends on a binding's value |
+| [`Show`] | a child that exists only while a flag is true: hiding it unmounts it and drops its state |
+| [`View::visible_signal`] | content a flag hides and shows, keeping its state and subscriptions while hidden |
+| Advanced: [`Runtime::reconcile_children`] | code holding the runtime replaces a parent's children itself |
+| Advanced: [`UpdateContext::request_children`] | a custom component describes its own children ([custom widgets](crate::guide::custom_widgets)) |
+
 # Views, groups and region layouts
 
 [`RegionLayout`] supplies optional full-width top/bottom regions, middle-band left/right
@@ -515,9 +531,11 @@ takes the record's value from the row's description and proposes the user's
 change to its callback, which writes it to the records. They bind nothing,
 so describing the row again with the same value leaves an open draft alone,
 and the changed record shows after the next flush. A control without a
-controlled form uses a retained row component instead, which makes its
-binding once and writes each new value to it, as [`ListItems::build`]
-describes.
+controlled form uses one of the two advanced forms [`ListItems::build`]
+describes: a per-row binding from [`Signal::sibling`], which suits a control
+without a draft, since every description of the rows gives it a new binding,
+or a retained row component, which makes its binding once and writes each
+new value to it, so a draft survives.
 
 ```rust
 use std::{mem, time::Duration};

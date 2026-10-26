@@ -962,6 +962,8 @@ impl Tree {
     /// [`ListDragItems`](crate::ListDragItems), which is how an outline is
     /// rearranged. A tree is not reorderable unless this is called.
     ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
+    ///
     /// Dragging is the list's: a primary press on a row that its content did
     /// not handle arms a drag of the node's key, or of every selected key in
     /// display order when the node is part of a multiple selection; see
@@ -1095,6 +1097,8 @@ impl Tree {
     /// [`ChangeOrigin::Application`](crate::ChangeOrigin::Application). The
     /// callback runs on the tree. Describing the tree again replaces or
     /// removes it, as for a list.
+    ///
+    /// Timing class: [after settling](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#after-settling).
     pub fn on_selection_change(
         mut self,
         on_change: impl FnMut(
@@ -1107,6 +1111,8 @@ impl Tree {
         self
     }
     /// Runs when Enter is pressed on the active node; receives its key.
+    ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
     pub fn on_activate(
         mut self,
         activate: impl FnMut(&mut EventContext, &str) -> Result<(), RuntimeError> + 'static,

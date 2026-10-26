@@ -52,6 +52,8 @@ impl Runtime {
     /// are position-based; modifier keys themselves cannot be owned.
     /// Duplicate keys in overlapping registrations are rejected in every build profile.
     ///
+    /// Timing class of `action`: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input); `cancel` runs wherever the input is cancelled.
+    ///
     /// Returning Handled for Pressed owns the key; repeats and release are routed
     /// solely here. The release record is removed before calling action. A callback
     /// error cancels any still-owned keys. Cancellation is a separate infallible

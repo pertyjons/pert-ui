@@ -132,6 +132,8 @@ impl<T: Clone + Eq + 'static> HistoryNavigator<T> {
     /// an update or event context when a component builds the control from
     /// its own update ([`StateOwner`](crate::StateOwner)).
     ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
+    ///
     /// # Errors
     /// Returns the runtime's errors creating the bindings the parts derive
     /// from the history, such as [`RuntimeError::Closed`] after shutdown.
@@ -503,6 +505,8 @@ description_debug!(HistoryButtons<T>);
 impl<T: Clone + Eq + 'static> HistoryButtons<T> {
     /// Wraps `content`; side-button presses over it move `history` and call
     /// `restore` with the entry.
+    ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
     pub fn new(
         history: NavigationHistory<T>,
         content: Element,

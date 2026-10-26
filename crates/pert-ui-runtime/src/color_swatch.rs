@@ -160,6 +160,8 @@ impl ColorSwatch {
     /// `action` on the UI thread once per completed activation. The callback
     /// may write bindings, such as one that opens a picker; its error
     /// propagates out of the input call.
+    ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
     pub fn on_activate(
         mut self,
         action: impl FnMut(&mut EventContext) -> Result<(), RuntimeError> + 'static,

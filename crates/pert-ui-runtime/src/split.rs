@@ -271,6 +271,8 @@ impl SplitPane {
     /// it: read the rule and its extent with [`SplitSizing::rule`], and pass it
     /// back to [`Self::sizing`] to describe the split that way.
     ///
+    /// Timing class: [after settling](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#after-settling).
+    ///
     /// The callback runs on the UI thread from an event phase once the
     /// flush's updates and layout have settled
     /// ([`Component::deliver_notifications`]), at most once per flush, with

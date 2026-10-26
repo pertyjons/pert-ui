@@ -479,6 +479,8 @@ impl Button {
     /// Creates an enabled button showing `text`; the callback expresses
     /// application intent.
     ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
+    ///
     /// The text is a [`TextSource`]: fixed plain or rich content, or a
     /// binding the caption follows, for example a translated caption. Explicit
     /// [`Self::leading_icon`] and [`Self::trailing_icon`] slots stay when the
@@ -511,6 +513,8 @@ impl Button {
     /// The minimum width equals ControlHeight. Wrap in `Tooltip` to also show the
     /// action name on hover/focus; the name is independent of the icon's appearance.
     ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
+    ///
     /// The name is a [`TextSource`]; a binding keeps the name current, for
     /// example when the application installs translated strings, and only its
     /// plain text is used. Re-describing the button can change its icon while
@@ -528,6 +532,8 @@ impl Button {
     /// Creates a button that invokes a registered command, showing the command's
     /// name, as [`MenuItem::command`](crate::MenuItem::command) does for a menu
     /// row.
+    ///
+    /// Timing class of `on_receipt`: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input); the command itself runs at its invocation.
     ///
     /// A command whose availability is a simple binding from
     /// [`Runtime::command_enabled_signal`](crate::Runtime::command_enabled_signal)
@@ -592,6 +598,8 @@ impl Button {
     /// name remains the button's accessible name, as for [`Self::icon`]. Wrap
     /// it in [`Tooltip::command`](crate::Tooltip::command) to show the name
     /// and the command's shortcut as help.
+    ///
+    /// Timing class of `on_receipt`: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input); the command itself runs at its invocation.
     ///
     /// # Errors
     /// `StaleCommand` if the command is no longer registered.

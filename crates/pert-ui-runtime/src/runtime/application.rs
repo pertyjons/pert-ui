@@ -144,6 +144,8 @@ impl Runtime {
     /// Runs `work` on a new background thread and hands its result to
     /// `deliver` on the UI thread, in the first flush after it arrives.
     ///
+    /// Timing class of `deliver`: [at the next flush](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#at-the-next-flush).
+    ///
     /// This is for occasional work that must not block the interface, such
     /// as reading or writing a file: each call starts one thread, and at most
     /// [`Self::MAX_BACKGROUND_TASKS`] tasks wait for their results at once.
@@ -271,6 +273,8 @@ impl Runtime {
 
     /// Calls `tick` every `period` until it is cancelled or the runtime shuts
     /// down, for application work on a schedule, such as saving a draft.
+    ///
+    /// Timing class: [at the next flush](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#at-the-next-flush).
     ///
     /// The timer belongs to the application, not to a component or window:
     /// focus changes, input cancellation and hidden windows do not stop it.

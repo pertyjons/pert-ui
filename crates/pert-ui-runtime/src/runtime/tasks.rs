@@ -100,6 +100,8 @@ impl EventContext {
     /// register commands or change a tree in response to ordinary button input.
     /// Background work starts with [`Self::spawn`].
     ///
+    /// Timing class: [at the next flush](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#at-the-next-flush).
+    ///
     /// The callback runs once in the originating window if its widget is still
     /// mounted and logically visible. Otherwise its receipt becomes
     /// `Cancelled`. A dropped receipt still surfaces `Failed` through the
@@ -138,6 +140,8 @@ impl EventContext {
     /// widget's window instead of the widget: it still runs when the widget is
     /// hidden or unmounted before the next flush, and its receipt becomes
     /// `Cancelled` only when that window has closed or the runtime shut down.
+    ///
+    /// Timing class: [at the next flush](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#at-the-next-flush).
     ///
     /// Use it for work the callback starts that outlives the widget's
     /// presence, such as a jump that a [`QuickPick`](crate::QuickPick)'s choose
@@ -205,6 +209,8 @@ impl EventContext {
 
     /// Starts `work` on a background thread from a callback and hands its
     /// result to `deliver` on the UI thread, as [`Runtime::spawn`] does.
+    ///
+    /// Timing class: [at the next flush](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#at-the-next-flush), for the start and for `deliver`.
     ///
     /// A callback has no runtime, so this queues the start: it is the
     /// operation `|ui| ui.spawn(work, deliver).map(|_| ())` queued with
@@ -290,6 +296,8 @@ impl Runtime {
     /// Delivery, errors and capacity match [`EventContext::defer`]; only runtime
     /// shutdown cancels it before delivery. The selected window at delivery is
     /// unspecified: select one explicitly for window-specific work.
+    ///
+    /// Timing class: [at the next flush](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#at-the-next-flush).
     ///
     /// # Errors
     /// Returns `TaskQueueFull` or the runtime phase/shutdown error.

@@ -913,6 +913,8 @@ impl VirtualList {
     /// begins a cell edit from typed text this way. The handler runs in the
     /// event phase; its error propagates from the text input call. Describing
     /// the list again replaces or removes the handler.
+    ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
     pub fn on_text_input(
         mut self,
         handler: impl FnMut(&mut EventContext, &str) -> Result<(), RuntimeError> + 'static,
@@ -925,6 +927,8 @@ impl VirtualList {
     /// effect, with its [`ChangeOrigin`](crate::ChangeOrigin), so an
     /// application can follow the user's choice, for example to show the
     /// chosen item in a detail view.
+    ///
+    /// Timing class: [after settling](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#after-settling).
     ///
     /// The list observes its selection when it updates. A change it sees is
     /// reported with the origin of the latest write: [`ChangeOrigin::User`](crate::ChangeOrigin::User)
@@ -1077,6 +1081,8 @@ impl VirtualList {
     /// Runs when Enter is pressed on the active item of a list with a selection.
     /// The callback receives the item's key and may write bindings; failures
     /// propagate through input routing.
+    ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
     pub fn on_activate(
         mut self,
         activate: impl FnMut(&mut EventContext, &str) -> Result<(), RuntimeError> + 'static,
@@ -1087,6 +1093,8 @@ impl VirtualList {
 
     /// Makes items draggable and the list a drop target for
     /// [`ListDragItems`], which is how rows are reordered and moved between lists.
+    ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
     ///
     /// A primary press on an item that the item's own content did not handle
     /// arms a drag; once it has moved [`DRAG_THRESHOLD`](crate::DRAG_THRESHOLD)
@@ -1145,6 +1153,8 @@ impl VirtualList {
     /// [`Tree::reorderable`](crate::Tree::reorderable) does to offer dropping
     /// into a node and after an enclosing level. Has no effect without
     /// [`Self::reorderable`].
+    ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input), on each movement of the drag.
     ///
     /// While a [`ListDragItems`] drag is over the list as the drop candidate,
     /// the rule receives the dragged keys and a [`ListDropPoint`], and answers

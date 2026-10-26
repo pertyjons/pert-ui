@@ -46,6 +46,8 @@ pub struct FilterMatcher(Rc<MatchFn>);
 type MatchFn = dyn Fn(&str, &str) -> bool;
 impl FilterMatcher {
     /// Uses `matches(query, text)` as the rule.
+    ///
+    /// Timing class: [evaluation](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#evaluation).
     pub fn new(matches: impl Fn(&str, &str) -> bool + 'static) -> Self {
         Self(Rc::new(matches))
     }

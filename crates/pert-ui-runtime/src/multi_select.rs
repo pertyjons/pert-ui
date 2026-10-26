@@ -1322,6 +1322,8 @@ impl<T: Clone + Eq + Hash + 'static> MultiSelect<T> {
     /// Reports each user write of the bound value, synchronously in the input
     /// event that made it, with the values just written in binding order.
     ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
+    ///
     /// It is called after a toggle under [`MultiSelectCommit::EachToggle`],
     /// after a chip removal under either commit timing, and after an
     /// [`MultiSelectCommit::OnClose`] draft is written by one of the closes
@@ -1389,6 +1391,8 @@ impl<T: Clone + Eq + Hash + 'static> MultiSelect<T> {
     /// or the options change, during the runtime's settling of derived values,
     /// so it must be deterministic, cheap and free of side effects. The
     /// default lists the options whose label contains the query, ignoring case.
+    ///
+    /// Timing class: [evaluation](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#evaluation).
     ///
     /// Unlike the collection filters, which trim a query before their
     /// [`FilterMatcher`](crate::FilterMatcher) sees it, this rule receives

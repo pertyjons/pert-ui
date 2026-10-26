@@ -1069,6 +1069,8 @@ impl Accordion {
     /// Redescription replaces the handler; removing it discards queued changes.
     /// Removing the component prevents delivery. By default there is no handler.
     ///
+    /// Timing class: [after settling](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#after-settling).
+    ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
     /// use pert_ui::{Accordion, Element, Label, Runtime, Section};

@@ -490,6 +490,8 @@ impl<T: ParameterValue> Inner<T> {
 impl<T: ParameterValue> ParameterHost<T> {
     /// Registers the terminal sink and returns the monitor of its delivery report.
     ///
+    /// Timing class: [at parameter delivery](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#at-parameter-delivery).
+    ///
     /// There is one terminal sink per parameter. The sink receives every
     /// subsequently admitted edit's [`TerminalEvent`] once. `Ok` means the adapter
     /// accepted responsibility for the event; it must not then silently drop it.
@@ -526,6 +528,8 @@ impl<T: ParameterValue> ParameterHost<T> {
     }
 
     /// Registers the preview sink for audition; requires a terminal sink.
+    ///
+    /// Timing class: [at parameter delivery](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#at-parameter-delivery).
     ///
     /// Accepted previews are delivered once in increasing sequence order. Register
     /// only when the host supports audition and its cleanup: every audition ends

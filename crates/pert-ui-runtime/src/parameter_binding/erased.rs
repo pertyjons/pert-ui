@@ -336,6 +336,8 @@ impl AnyParameterHost {
     }
     /// Registers an erased terminal sink; see [`ParameterHost::on_outcome`].
     ///
+    /// Timing class: [at parameter delivery](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#at-parameter-delivery).
+    ///
     /// # Errors
     /// Same as the typed registration.
     pub fn on_outcome(
@@ -358,6 +360,8 @@ impl AnyParameterHost {
         })
     }
     /// Registers an erased preview sink; see [`ParameterHost::on_preview`].
+    ///
+    /// Timing class: [at parameter delivery](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#at-parameter-delivery).
     ///
     /// # Errors
     /// Same as the typed registration.

@@ -109,6 +109,8 @@ impl Chip {
     /// Creates a removable chip whose remove button, Delete and Backspace call
     /// `on_remove` on the UI thread.
     ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
+    ///
     /// The callback runs once per request in the event phase and may write
     /// bindings; an error propagates to the caller of the input method. It
     /// should remove the item from the owner's data, after which the owner's next

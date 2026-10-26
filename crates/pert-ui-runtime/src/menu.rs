@@ -253,6 +253,8 @@ impl MenuItem {
     }
     /// Creates an enabled action with an application key independent of its label.
     ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
+    ///
     /// The label is a [`TextSource`]: fixed plain or rich content, or a
     /// binding the row follows while the menu stays retained, such as a label
     /// translated when the application installs other
@@ -364,6 +366,8 @@ impl MenuItem {
     /// Creates a row that invokes a registered command, presenting its name as the
     /// label and its first chord as the shortcut.
     ///
+    /// Timing class of `on_receipt`: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input); the command itself runs at its invocation.
+    ///
     /// The shortcut follows [`Runtime::rebind_command`], and a command whose
     /// availability is a simple binding from [`Runtime::command_enabled_signal`]
     /// grays out with it. A contextual predicate from [`Runtime::command_enabled`]
@@ -423,6 +427,8 @@ impl MenuItem {
     /// Reports each successful user write of a [`Self::toggle`] or [`Self::radio`]
     /// row with the row's new checked state: the toggle's new value, or `true`
     /// for a radio row that became selected.
+    ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
     ///
     /// The handler runs synchronously after the row's own write succeeded, once
     /// the menu has requested its closure, with the event context of the list or

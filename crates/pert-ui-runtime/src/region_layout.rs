@@ -247,6 +247,8 @@ impl RegionLayout {
     /// the edge follows its content). Opposite edges that share one divider
     /// report the edge whose permission or sizing controls it.
     ///
+    /// Timing class: [after settling](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#after-settling).
+    ///
     /// Origins are [`ChangeOrigin::User`] when a drag or held keys end,
     /// [`ChangeOrigin::Restore`] for [`Runtime::restore_workspace`] and
     /// [`ChangeOrigin::Redescription`] when a described extent replaced the

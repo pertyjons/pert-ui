@@ -437,6 +437,8 @@ impl<T: ParameterValue> core::fmt::Debug for RemoteHost<T> {
 impl<T: ParameterValue> RemoteHost<T> {
     /// Registers the UI-thread transport callback before editing begins.
     ///
+    /// Timing class: [at parameter delivery](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#at-parameter-delivery).
+    ///
     /// It runs once after a proposal and its receipt are installed. Returning
     /// `Ok` means transport handoff only. A typed failure is retained in
     /// [`Self::submission_delivery`], leaves the proposal pending, and never

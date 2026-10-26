@@ -611,6 +611,8 @@ impl FileBrowserController {
     /// browser instead. The callback runs in the event phase and may write
     /// signals and call this controller; its error propagates to the input
     /// method. It replaces an earlier callback.
+    ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
     pub fn on_open(
         &self,
         open: impl FnMut(&mut EventContext, &DirectoryEntry) -> Result<(), RuntimeError> + 'static,

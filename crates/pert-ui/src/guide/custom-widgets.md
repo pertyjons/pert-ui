@@ -43,6 +43,62 @@ The [`component`] page has an example that mounts such a
 widget. The examples in this chapter glob the crate root, which holds every
 name.
 
+# A component that follows a binding
+
+A component reads the bindings it shows in [`Component::update`] and retains
+what it read; the runtime updates it again only when one of them changes, and
+not while it is hidden:
+
+```rust
+use std::time::Duration;
+use pert_ui::prelude::*;
+
+// A custom component that follows a text binding.
+struct Status {
+    text: ReadSignal<String>,
+    retained: String,
+}
+impl Component for Status {
+    fn update(&mut self, context: &mut UpdateContext) -> Result<(), RuntimeError> {
+        self.retained = context.read(&self.text)?;
+        Ok(())
+    }
+}
+
+let mut runtime = Runtime::new();
+let text = runtime.signal(String::from("Ready"));
+let status = Status { text: text.read_only(), retained: String::new() };
+let id = runtime.mount_tree(Element::new("status", status))?;
+assert_eq!(runtime.flush(Duration::ZERO)?.components_updated, 1);
+assert_eq!(runtime.next_deadline(), None);
+text.set(String::from("Working"))?;
+text.set(String::from("Done"))?;
+assert_eq!(runtime.flush(Duration::ZERO)?.components_updated, 1);
+runtime.set_visible(&id, false)?;
+text.set(String::from("Hidden update"))?;
+assert_eq!(runtime.next_deadline(), None);
+runtime.unmount(&id)?;
+# Ok::<(), RuntimeError>(())
+```
+
+Components retain their own presentation data. Every update recollects all
+dependencies; ordinary reads invalidate layout and paint, while `read_paint` is
+for data confined to fixed geometry. No writes are allowed during update, paint
+or inspection. Changed signals only enqueue dependents, and hidden components
+retain dirtiness without evaluation. `animate()` uses the per-window
+presentation ceiling (60 Hz when unknown); no catch-up frames are generated.
+A timed action that must reach application state uses the separate event-phase
+timer instead: [`EventContext::set_timer`] arms one deadline for the component and
+[`Component::timer_elapsed`] runs in the event phase of the flush that reaches it,
+so a held repeat or auto-scroll may write bindings and commit edits like ordinary
+input. The timer is one-shot, replaces a pending one, and is cancelled with the
+component's input context on focus loss, hiding, unmount or `cancel_input`.
+Components record solid rectangles, shapes, vector paths, text and images through
+[`Painter`]; runtime retains their commands and copies the visible scene on `paint`.
+Unchanged paint callbacks are not repeated. GPU resources belong to the selected
+graphics adapter; text preparation and coverage are cached separately from GPU
+resources.
+
 # Who may write, and when
 
 A component runs in phases. [`Component::update`] reads bindings through its

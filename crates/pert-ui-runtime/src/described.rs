@@ -189,6 +189,8 @@ description_debug!(Dynamic<T>);
 
 impl<T: Clone + 'static> Dynamic<T> {
     /// Describes one child from `source`'s value with `build`.
+    ///
+    /// Timing class: [evaluation](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#evaluation).
     pub fn new(
         source: impl Into<ReadSignal<T>>,
         build: impl Fn(&DescribeContext<'_>, &T) -> Element + 'static,
@@ -236,6 +238,8 @@ description_debug!(Show);
 
 impl Show {
     /// Describes a child with `build` while `when` reads true.
+    ///
+    /// Timing class: [evaluation](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#evaluation).
     pub fn new(
         when: impl Into<ReadSignal<bool>>,
         build: impl Fn(&DescribeContext<'_>) -> Element + 'static,
@@ -319,6 +323,8 @@ description_debug!(Each<T>);
 impl<T: Clone + 'static> Each<T> {
     /// Describes one element per item of `items`, keyed by `key`, in a
     /// [`Column`] keyed `items`.
+    ///
+    /// Timing class of `key` and `build`: [evaluation](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#evaluation).
     pub fn new(
         items: impl Into<ReadSignal<Vec<T>>>,
         key: impl Fn(&T) -> String + 'static,
@@ -340,6 +346,8 @@ impl<T: Clone + 'static> Each<T> {
     /// Places the items' elements in the container `within` describes, such as
     /// a [`Row`] or [`Wrap`], instead of a [`Column`]. The container's key is
     /// part of the items' path; keep it stable so they are retained.
+    ///
+    /// Timing class: [evaluation](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#evaluation).
     pub fn within(mut self, within: impl Fn(Vec<Element>) -> Element + 'static) -> Self {
         self.inner = Described::new(
             self.items.clone(),

@@ -363,6 +363,8 @@ impl FloatingWindow {
     /// origin, from an event phase after layout settles, as
     /// [`Component::deliver_notifications`] describes.
     ///
+    /// Timing class: [after settling](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#after-settling).
+    ///
     /// The callback receives the placement after the change:
     /// [`ChangeOrigin::User`] when a title-bar move or a corner resize ends
     /// on release, or for each Alt+arrow step; [`ChangeOrigin::Restore`] when
@@ -446,6 +448,8 @@ impl FloatingWindow {
     /// completed activation on the UI thread. Errors propagate and keep the window
     /// open; the action is never replayed. Return KeepOpen while asking the user,
     /// then call WindowController::close after confirmation. No implicit save/undo occurs.
+    ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
     pub fn on_close(
         mut self,
         action: impl FnMut(&mut EventContext) -> Result<WindowCloseAction, RuntimeError> + 'static,

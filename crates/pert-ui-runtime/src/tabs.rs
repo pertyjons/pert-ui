@@ -482,6 +482,8 @@ impl Tabs {
     /// Lets titles be dragged to a new place in the strip, and Alt with Left or
     /// Right move the selected tab one place, with no other modifier.
     ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
+    ///
     /// The strip does not own its order: the application describes the tabs, so
     /// `on_reorder` performs the move in the application's model and describes
     /// the tabs again in the new order. It receives a [`ListDrop`] naming the
@@ -559,6 +561,8 @@ impl Tabs {
     /// Reports every change of the selected tab after it took effect, with its
     /// [`ChangeOrigin`](crate::ChangeOrigin), so an application can follow the
     /// pages a user opens without asking the strip.
+    ///
+    /// Timing class: [after settling](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#after-settling).
     ///
     /// The origins are:
     ///

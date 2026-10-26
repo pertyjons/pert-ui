@@ -2144,6 +2144,8 @@ macro_rules! number_shared {
             /// Adjusts a changed value before it is validated and saved, such as
             /// rounding it to tenths, or refuses it with an [`InputRejection`].
             ///
+            /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input), at the save it checks.
+            ///
             /// The order is parse, normalize, validate (finite, within the
             /// range), prepare the display and write; a failure at any stage
             /// writes nothing, and a normalized value outside the range is an
@@ -2181,6 +2183,8 @@ macro_rules! number_shared {
             /// of [`TextField::on_rejection`]: `Some` on each save of a
             /// changed draft that is refused, and `None` once when a reported
             /// refusal ends at a later save or at Escape.
+            ///
+            /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
             ///
             /// A refusal is the normalizer's [`InputRejection`] or the field's
             /// own, with a message from the installed
@@ -2227,6 +2231,8 @@ macro_rules! number_shared {
             /// from the [`Runtime::flush`] that dispatched it. A failing
             /// rejection report does not suppress it. Replaces an earlier
             /// callback.
+            ///
+            /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
             pub fn on_save(
                 mut self,
                 saved: impl FnMut(&mut EventContext, $ty) -> Result<(), RuntimeError> + 'static,

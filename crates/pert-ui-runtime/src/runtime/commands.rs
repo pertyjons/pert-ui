@@ -707,6 +707,8 @@ impl Runtime {
     /// Installs a pure UI-thread contextual predicate shared by every source.
     /// Signal writes during evaluation are rejected. Errors stop invocation.
     ///
+    /// Timing class: [evaluation](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#evaluation).
+    ///
     /// # Errors
     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
     /// `WriteDuringUpdate`, `WriteDuringLayout`, `WriteDuringPaint`,

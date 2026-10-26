@@ -158,6 +158,8 @@ impl Toast {
     /// Sets the toast's one explicit action, replacing an earlier one. Use
     /// dialogs for authoritative task responses; a toast can expire or
     /// disappear with its owner without invoking the action.
+    ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
     pub fn action(
         mut self,
         label: impl Into<TextSource>,

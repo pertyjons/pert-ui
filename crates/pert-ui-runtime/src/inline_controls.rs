@@ -185,6 +185,8 @@ impl InlineToggle {
     /// Reports successful user writes or remote submissions as [`Toggle::on_change`].
     /// Application writes and authority responses do not call it. Failures do not
     /// roll back or replay the write; redescription replaces the handler.
+    ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
     pub fn on_change(
         mut self,
         handler: impl FnMut(&mut EventContext, bool) -> Result<(), RuntimeError> + 'static,

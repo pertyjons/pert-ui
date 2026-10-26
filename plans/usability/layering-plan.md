@@ -416,6 +416,47 @@ All six were decided on 2026-10-26 as recommended.
   - **Alternative:** a broader guarantee, such as every name any guide
     chapter for layer 0 writes, at the cost of a larger prelude.
 
+## Progress
+
+- **L1 (0.3.71), implemented 2026-10-26:** commit and review to be
+  recorded.
+  - **contracts.md by obligation:** the per-obligation classification is
+    in [layering-L1-classification.md](layering-L1-classification.md).
+    Only implementation rationale and internal ordering moved, to
+    `docs/internals.md`, which links each note back; extension material
+    sits under "For component and host authors". The compatibility, error
+    and naming sections stay as application material: per obligation they
+    describe the API's shape, unlike the inventory's section label.
+  - **Callback timing:** contracts.md's "Callback timing" defines the
+    classes derived from the classification table (in the input, after
+    settling, at the next flush, at parameter delivery, evaluation) and,
+    separately, the properties beside the class. Callbacks that fit no
+    class keep their own description (`App`'s initializer, `on_close`,
+    `on_error`, `on_window_error`, command actions, held-input
+    cancellation, `Popover::on_dismiss`, the file browser's request
+    callback); host-integration callbacks are excluded. Each classified
+    callback's rustdoc names its class with a link.
+  - **Guide:** "choosing a way" tables in the state and layout chapters;
+    the state chapter opens with a signal, a field and a derived label,
+    and its custom component example moved to the custom-widgets chapter;
+    the controlled form is taught first.
+  - **Reference pages:** `Runtime` has a "Methods by audience" index and
+    `Component` a "Hooks by concern" table (eleven groups rather than the
+    plan's seven names, splitting input by kind); no code moved.
+  - **AGENTS.md:** `docs/internals.md` in the design-reading list (LD3) and
+    the anti-regrowth sentence (LD4).
+  - **Checks run after the last edit:** `cargo fmt --all --check`,
+    workspace Clippy, the workspace doctests, warning-free workspace
+    rustdoc, the API listing gate (no change), `git diff --check`, and a
+    link check over `docs/`, `plans/`, the guide and the sources, whose
+    errors are the same as at HEAD before the change (all pre-existing).
+    The rendered `Runtime` and `Component` pages were reviewed: every
+    index link resolves.
+  - **Deviations:** the state chapter's new example no longer asserts the
+    runtime's next deadline (a derived binding keeps the runtime due); a
+    few application paragraphs gained one-sentence summaries where they
+    named moved material.
+
 ## Review record
 
 - **Revision 1, Codex evaluation (2026-10-26):** needs revision, with one

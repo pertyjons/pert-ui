@@ -258,6 +258,8 @@ impl SearchField {
     /// bubble further and moves neither focus nor caret. An error from the
     /// callback propagates from the input call that delivered the key.
     /// Replaces an earlier callback.
+    ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
     pub fn on_key(
         mut self,
         report: impl FnMut(&mut EventContext, SearchKey) -> Result<(), RuntimeError> + 'static,

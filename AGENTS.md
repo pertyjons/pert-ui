@@ -30,6 +30,7 @@ Read the relevant design before changing it:
 
 - [Architecture and direction](docs/architecture.md)
 - [State and interaction contracts](docs/contracts.md)
+- [Implementation notes](docs/internals.md)
 - [Rendering and platform contract](docs/rendering-platform.md)
 - [Verification and evidence](docs/verification.md)
 - [Application manual](docs/manual.md)
@@ -144,6 +145,9 @@ change authority, callback timing or cancellation merely for spelling symmetry.
 Required state owners lead constructor arguments. Fixed, reactive and parameter
 choice sources are exclusive constructor paths. Explicit control adornment slots
 remain independent of captions; rich-content composition is a separate operation.
+An addition that offers a new way to do something already possible names, in
+its change rationale, the way it makes advanced or retires, or says why none
+can be.
 
 User-write callbacks report successful local writes, proposal submission or a
 controlled control's proposal, never remote acceptance. Failures do not undo

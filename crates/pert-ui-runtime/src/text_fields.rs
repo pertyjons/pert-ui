@@ -333,6 +333,8 @@ macro_rules! editor_api {
             /// Adjusts the entered text when it is saved, such as trimming it or
             /// changing its case, or refuses it with an [`InputRejection`].
             ///
+            /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input), at the save it checks.
+            ///
             /// A normalizing editor holds a **draft**: edits stay local, and the
             /// binding is written only by a save of a changed draft, which runs
             /// the normalizer, checks the result as bound text ([`Self::check`]),
@@ -359,6 +361,8 @@ macro_rules! editor_api {
             /// can present them, for example by publishing a
             /// [`FieldStatus`](crate::FieldStatus) through its
             /// [`FieldHandle`](crate::FieldHandle).
+            ///
+            /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
             ///
             /// The callback runs on the UI thread in the event phase. It
             /// receives `Some` on each save the normalizer or a length limit
@@ -433,6 +437,8 @@ macro_rules! editor_api {
             /// with the saved (normalized) text, so it can act on a value the
             /// user finished entering, for example to update other state from
             /// it.
+            ///
+            /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
             ///
             /// Only an editor in draft mode saves, one with a normalizer, a
             /// length limit or, for a `TextField`, a
@@ -558,6 +564,8 @@ macro_rules! editor_api {
             /// Only an editor in draft mode ever reports `true`. Its error is
             /// returned from the flush or input call that delivered it.
             ///
+            /// Timing class: [after settling](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#after-settling).
+            ///
             /// ```
             /// # use pert_ui_runtime as pert_ui;
             /// use pert_ui::*;
@@ -591,6 +599,8 @@ macro_rules! editor_api {
             /// Reports when the field refuses a value the application wrote
             /// to its binding, with the reason, and with `None` when an
             /// acceptable value ends the refusal.
+            ///
+            /// Timing class: [after settling](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#after-settling).
             ///
             /// A refused value, such as text longer than
             /// [`TextEditError::MAX_TEXT_BYTES`] or a control character the
@@ -971,6 +981,8 @@ impl TextField {
     /// Enter press. No implicit save/undo occurs; callback errors propagate.
     /// With [`Self::normalize`], Enter first saves the draft, and the callback
     /// runs only when that save succeeds, with the saved text.
+    ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
     pub fn on_submit(
         mut self,
         submit: impl FnMut(&mut EventContext, &str) -> Result<(), RuntimeError> + 'static,

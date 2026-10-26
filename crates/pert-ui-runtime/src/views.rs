@@ -362,6 +362,8 @@ impl ScrollArea {
     }
     /// Reports the scroll offset after it changed, with what changed it.
     ///
+    /// Timing class: [after settling](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#after-settling).
+    ///
     /// The offset is in the content's logical pixels from its top-left corner,
     /// after arrangement clamped it to the content and the viewport. The
     /// callback runs on the UI thread from an event phase once the flush's

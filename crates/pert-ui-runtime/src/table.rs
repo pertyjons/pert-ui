@@ -1599,6 +1599,8 @@ impl Table {
     /// Runs after a sortable header set the sort indication. Sort the data and
     /// publish it with [`TableController::set_source`]; failures propagate through
     /// input routing.
+    ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
     pub fn on_sort(
         mut self,
         sort: impl FnMut(&mut EventContext, &TableSort) -> Result<(), RuntimeError> + 'static,
@@ -1610,6 +1612,8 @@ impl Table {
     /// the active column's key, or `None` while no column is active. This is
     /// where an application opens an editor for the cell. Failures propagate
     /// through input routing.
+    ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
     pub fn on_activate(
         self,
         activate: impl FnMut(&mut EventContext, &str, Option<&str>) -> Result<(), RuntimeError>
@@ -1626,6 +1630,8 @@ impl Table {
     /// callback runs on the table's body list, so [`EventContext::id`] names
     /// the body. Describing the table again replaces or removes it, as for a
     /// list.
+    ///
+    /// Timing class: [after settling](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#after-settling).
     pub fn on_selection_change(
         self,
         on_change: impl FnMut(
@@ -1646,6 +1652,8 @@ impl Table {
     /// must be a session editor that takes focus, built with
     /// [`CellEdit::session`]; parameter-bound editors ignore sessions and
     /// are not cell editors.
+    ///
+    /// Timing class: [evaluation](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#evaluation).
     ///
     /// The callback runs once per edit, in the update of the cell's host:
     /// its error fails that flush, is not retried, and closes the edit with

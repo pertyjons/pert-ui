@@ -408,6 +408,8 @@ impl<P: Copy + PartialEq + 'static> DraftEditorController<P> {
     /// [`Self::begin`], [`Self::replace`] or [`Self::end`]. Replaces an earlier
     /// callback.
     ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
+    ///
     /// The owner is repainted after each such change, so it can show live
     /// validation, such as an error outline while the draft does not parse.
     /// The callback may call this controller's methods. Its error propagates

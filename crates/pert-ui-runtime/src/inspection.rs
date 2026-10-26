@@ -1099,6 +1099,8 @@ impl InspectionService {
     /// asking for `application` use, as [`Runtime::inspect_with`] takes one.
     /// It runs on the UI thread while answering, with signal and parameter
     /// writes forbidden; report only what the connected tool should see.
+    ///
+    /// Timing class: [evaluation](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#evaluation).
     pub fn set_application(&self, provider: impl Fn() -> BTreeMap<String, InspectValue> + 'static) {
         *self.inner.application.borrow_mut() = Some(Box::new(provider));
     }

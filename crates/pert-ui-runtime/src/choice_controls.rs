@@ -548,6 +548,8 @@ macro_rules! boolean_widget {
             /// Creates a labeled control showing `checked`, which the application
             /// owns; each user toggle proposes the opposite value to `on_change`.
             ///
+            /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
+            ///
             /// The control writes nothing. It shows the described value only: a
             /// toggle leaves it as it is, and a new description with another
             /// value changes it. The application applies a proposal by changing
@@ -661,6 +663,8 @@ macro_rules! boolean_widget {
             /// edits and authority responses do not call it. Failure propagates
             /// without rollback or replay. Redescription replaces the handler,
             /// including removing it.
+            ///
+            /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
             pub fn on_change(mut self, handler: impl FnMut(&mut EventContext, bool)
                 -> Result<(), RuntimeError> + 'static) -> Self {
                 self.0.on_change = Some(Box::new(handler));
@@ -905,6 +909,8 @@ impl<T: Clone + Eq + 'static> RadioGroup<T> {
     /// Calls a UI-thread handler after a local write or remote submission,
     /// with the rules of [`SegmentedControl::on_change`]. By default there is
     /// no handler.
+    ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
     pub fn on_change(
         mut self,
         handler: impl FnMut(&mut EventContext, &T) -> Result<(), RuntimeError> + 'static,
@@ -1594,6 +1600,8 @@ impl<T: Clone + Eq + 'static> SegmentedControl<T> {
     /// for this call only. The callback must return promptly and may update local
     /// application settings; it is not safe for time-critical producers. By
     /// default there is no handler.
+    ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
     pub fn on_change(
         mut self,
         handler: impl FnMut(&mut EventContext, &T) -> Result<(), RuntimeError> + 'static,
@@ -1733,6 +1741,8 @@ impl<T: Clone + Eq + 'static> InlineChoice<T> {
     }
     /// Calls a UI-thread handler after a local write or remote submission,
     /// with the rules of [`SegmentedControl::on_change`].
+    ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
     pub fn on_change(
         mut self,
         handler: impl FnMut(&mut EventContext, &T) -> Result<(), RuntimeError> + 'static,

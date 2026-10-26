@@ -92,6 +92,8 @@ impl<T> NumberFormat<T> {
     /// `display` supplies the value text without a unit; it also supplies editing
     /// text until `edit_text` overrides it. `parse` interprets text in those display
     /// units and returns a canonical value or a user-visible validation error.
+    ///
+    /// Timing class: [evaluation](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#evaluation) for `display`; `parse` runs [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input), at a save.
     pub fn new(
         width_hint: impl Into<String>,
         display: impl Fn(T) -> String + 'static,
@@ -109,6 +111,8 @@ impl<T> NumberFormat<T> {
     }
     /// Overrides initial editing text, for example with unrounded display units.
     /// Unchanged submissions preserve the original exact value even if text rounds.
+    ///
+    /// Timing class: [evaluation](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#evaluation).
     pub fn edit_text(mut self, edit: impl Fn(T) -> String + 'static) -> Self {
         self.edit = Rc::new(edit);
         self
@@ -117,6 +121,8 @@ impl<T> NumberFormat<T> {
     /// The suffix stays outside selection/IME text. `parse` must understand the
     /// editing text without this suffix; use a stable editing scale if the resting
     /// suffix changes scale, such as seconds/milliseconds. Pair it with `edit_unit`.
+    ///
+    /// Timing class: [evaluation](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#evaluation).
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;

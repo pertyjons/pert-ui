@@ -89,6 +89,8 @@ impl Link {
     /// Creates an enabled link showing `text`, whose callback expresses the
     /// navigation.
     ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
+    ///
     /// The text is a [`TextSource`]: fixed plain or rich content, such as text
     /// with an icon, or a binding the link follows. Its plain text names it in
     /// inspection; the underline spans the whole content. Explicit icon slots

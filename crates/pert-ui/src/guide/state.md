@@ -4,61 +4,88 @@ authoritatively are parameters, edited through gestures that the host observes.
 Results from other threads arrive through mailboxes, and lossy high-rate data
 through live-data sources.
 
-# Local state and retained components
+# Choosing a way
+
+Each table's first row is the way to start with; the rows after it serve the
+need their last column names.
+
+**Where a control's value comes from**
+
+| Way | Use it when |
+|---|---|
+| A `new` constructor with a [`Signal`], such as [`Checkbox::new`] | the value is UI-local state; the control writes it |
+| `controlled`: [`Checkbox::controlled`], [`Toggle::controlled`], [`InlineText::controlled`] | the application's model owns the value, as the records behind list rows and table cells do; the control proposes each change to a callback |
+| `for_parameter`, such as [`Checkbox::for_parameter`] | the value is authoritative: a host validates edits, keeps revisions and observes gestures ([parameters](#parameters)) |
+| Advanced: a per-row binding from [`Signal::sibling`] | a list row's control without a controlled form and without a draft; each description of the rows gives it a new binding |
+| Advanced: a retained row component | a list row's control without a controlled form that keeps a draft, such as a text editor; [`ListItems::build`] describes it |
+
+**Work in the background**
+
+| Way | Use it when |
+|---|---|
+| [`EventContext::spawn`] | a callback starts one unit of work, such as reading a file, and shows its result |
+| [`Runtime::spawn`] | code holding the runtime does the same, or a callback must be able to discard the result: it queues this call with [`EventContext::defer`] and keeps the [`BackgroundTask`] |
+| [`Runtime::mailbox`] | a long-lived worker thread sends owned values over time |
+| Live data: a [`series_bridge`] read as a [`SeriesSource`] | a producer publishes lossy, high-rate data such as levels with bounded work; the only path safe from a time-critical callback |
+
+**Work deferred from a callback**
+
+| Way | Use it when |
+|---|---|
+| [`EventContext::defer`] | a callback needs the [`Runtime`] for work tied to its widget, such as describing new content; the work is skipped when the widget is hidden or removed first |
+| [`EventContext::defer_detached`] | the work must outlive the widget. A callback on a surface that closes, such as a dialog's Save button, a menu row, [`Select::on_change`] or a [`QuickPick`] choice, queues its work here, since the surface hides before the next flush |
+| [`Runtime::defer`] | code holding the runtime queues work that belongs to nothing but the runtime |
+
+Each callback's documentation names its timing class: whether it runs in the
+input that caused it, after the flush has settled, at the next flush, at
+parameter delivery or whenever a value is evaluated. The
+[callback timing](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#callback-timing)
+contract defines the classes.
+
+# Signals and controls
+
+A control bound to a [`Signal`] writes it as the user edits, and everything
+that reads the signal follows: here a label shows a greeting derived from a
+text field's value.
 
 ```rust
 use std::time::Duration;
 use pert_ui::prelude::*;
+use pert_ui::{KeyAction, KeyCode};
 
-// A custom component that follows a text binding.
-struct Status {
-    text: ReadSignal<String>,
-    retained: String,
-}
-impl Component for Status {
-    fn update(&mut self, context: &mut UpdateContext) -> Result<(), RuntimeError> {
-        self.retained = context.read(&self.text)?;
-        Ok(())
-    }
-}
-
-let mut runtime = Runtime::new();
-let text = runtime.signal(String::from("Ready"));
-let status = Status { text: text.read_only(), retained: String::new() };
-let id = runtime.mount_tree(Element::new("status", status))?;
-assert_eq!(runtime.flush(Duration::ZERO)?.components_updated, 1);
-assert_eq!(runtime.next_deadline(), None);
-text.set(String::from("Working"))?;
-text.set(String::from("Done"))?;
-assert_eq!(runtime.flush(Duration::ZERO)?.components_updated, 1);
-runtime.set_visible(&id, false)?;
-text.set(String::from("Hidden update"))?;
-assert_eq!(runtime.next_deadline(), None);
-runtime.unmount(&id)?;
-# Ok::<(), RuntimeError>(())
+let mut ui = Runtime::new();
+let name = ui.signal(String::from("Ada"));
+let greeting = name.read_only().map(|name| format!("Hello, {name}"))?;
+let form = Column::new([
+    TextField::new(&name).key("name"),
+    Label::new(greeting.clone()).key("greeting"),
+]);
+let root = ui.mount_tree(form.key("form"))?;
+ui.flush(Duration::ZERO)?;
+let field = ui.find(&root, &["name"])?.expect("the name field");
+ui.focus(&field)?;
+ui.key_input(KeyCode::End, KeyAction::Press)?;
+ui.text_input(" Lovelace")?;
+assert_eq!(name.get()?, "Ada Lovelace"); // the field wrote its binding
+ui.flush(Duration::ZERO)?;
+assert_eq!(greeting.get()?, "Hello, Ada Lovelace");
+# Ok::<(), Box<dyn std::error::Error>>(())
 ```
+
+The field writes its binding at once. The derived binding and the label follow
+at the next flush, where only the components that read a changed binding
+update, and several writes before a flush coalesce. A hidden component keeps
+its change pending without being updated until it is shown.
 
 A signal's value type needs [`PartialEq`] to be written, since a write that
 leaves the value equal notifies nobody, and [`Clone`] to be read, since
 [`ReadSignal::get`] returns a copy. Creating a signal needs neither.
 
-This example drives runtime directly. The default native [`App`] supplies elapsed
-time and waits for work/deadlines automatically. Custom hosts drive the same API. Components retain their own presentation
-data. Every update recollects all dependencies; ordinary reads invalidate layout
-and paint, while `read_paint` is for data confined to fixed geometry. No writes
-are allowed during update, paint or inspection. Changed signals only enqueue dependents,
-and hidden components retain dirtiness without evaluation. `animate()` uses the
-per-window presentation ceiling (60 Hz when unknown); no catch-up frames are generated.
-A timed action that must reach application state uses the separate event-phase
-timer instead: [`EventContext::set_timer`] arms one deadline for the component and
-[`Component::timer_elapsed`] runs in the event phase of the flush that reaches it,
-so a held repeat or auto-scroll may write bindings and commit edits like ordinary
-input. The timer is one-shot, replaces a pending one, and is cancelled with the
-component's input context on focus loss, hiding, unmount or `cancel_input`.
-Components record solid rectangles, shapes, vector paths, text and images through
-[`Painter`]; runtime retains their commands and copies the visible scene on `paint`.
-Unchanged paint callbacks are not repeated. GPU resources belong to the selected graphics adapter; text preparation
-and coverage are cached separately from GPU resources.
+This example drives the runtime directly. The default native [`App`] supplies
+elapsed time and waits for work and deadlines automatically; custom hosts
+drive the same API. A custom component that reads bindings itself, with its
+own retained data, painting and timers, is in the [custom widgets
+chapter](crate::guide::custom_widgets#a-component-that-follows-a-binding).
 
 # Parameters
 

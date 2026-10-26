@@ -121,6 +121,8 @@ type Score = dyn Fn(&str, &PickItem) -> Option<u32>;
 impl PickMatcher {
     /// Uses `score` as the matching and ranking policy; see the type
     /// documentation for its rules.
+    ///
+    /// Timing class: [evaluation](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#evaluation).
     pub fn new(score: impl Fn(&str, &PickItem) -> Option<u32> + 'static) -> Self {
         Self(Rc::new(score))
     }
@@ -326,6 +328,8 @@ type Poll = dyn Fn(Option<&mut UpdateContext>) -> Result<Option<Result<(), Strin
 impl PickPending {
     /// A pending result read from `binding` through `resolve`; see the type
     /// documentation.
+    ///
+    /// Timing class: [evaluation](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#evaluation).
     pub fn new<S: Clone + 'static>(
         binding: impl Into<ReadSignal<S>>,
         resolve: impl Fn(&S) -> Option<Result<(), String>> + 'static,
@@ -891,6 +895,8 @@ impl QuickPick {
     /// calling `choose` with each item the user chooses; see the type
     /// documentation. The controller is claimed when the picker mounts, not
     /// here.
+    ///
+    /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
     pub fn new(
         controller: QuickPickController,
         anchor: Element,
