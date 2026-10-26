@@ -875,6 +875,28 @@ and anything left to a later part.
     gate, including the five headless example sessions and the
     diagnostics suite; `api/generate.sh`, with no change;
     `git diff --check`.
+  - **Fourth recheck (Codex):** the settle loop was confirmed identical to
+    6219dda^ and retention the only addition, with four points, verified:
+    a queued `BeginEdit` for the focused label itself lost focus, because
+    the label stops being focusable when its edit begins and the
+    retention step dropped its focus first; the retention branches had no
+    tests that entered retention; "same flush" needed the failure
+    qualification; and the test fixture's children overlapped.
+    **The fix:** while a request is kept, the step skips dropping the
+    focus of a component that contains the request's target, so focus
+    passes from the label to its editor in the next pass; if the request
+    is dropped, the ordinary path restores focus. Tests enter retention
+    and cover a non-`BeginEdit` request, a target left hidden (no
+    resurrection), cancellation by restoration, a failed flush retried
+    later, and, as compatibility checks, a newer request and a target no
+    longer focusable. The rustdoc, contracts.md and the CHANGELOG say
+    focus moves when the flush succeeds and a failed flush retries. Not
+    tested: a modal opening between delivery and application (the apply
+    time recheck is covered by the unfocusable case) and an exhausted
+    wave budget (the retry is covered by a failing update). After it: the
+    workspace gate, including the five headless example sessions and the
+    diagnostics suite; `api/generate.sh`, with no change;
+    `git diff --check`.
 - **6f3 (0.3.70), done 2026-10-26:** 232c22b and its review fix dbe86fc.
   Controlled controls, by [design revision 4](design-6f3.md),
   which Codex reviewed once and rechecked three times. The maintainer

@@ -289,6 +289,21 @@ impl Component for Owner {
     fn measure(&self, _: &MeasureContext<'_>, _: Constraints) -> Result<Size, RuntimeError> {
         Ok(Size::new(200.0, 40.0)?)
     }
+    fn arrange(&self, cx: &mut ArrangeContext<'_>, size: Size) -> Result<(), RuntimeError> {
+        rows(cx, size)
+    }
+}
+
+/// Places a container's children in equal rows, one below the other.
+fn rows(cx: &mut ArrangeContext<'_>, size: Size) -> Result<(), RuntimeError> {
+    let row = size.height() / cx.len().max(1) as f32;
+    for index in 0..cx.len() {
+        cx.place(
+            index,
+            Rect::new(0.0, row * index as f32, size.width(), row)?,
+        )?;
+    }
+    Ok(())
 }
 
 /// A focusable child that requests its own unmount while `leave` is true,
@@ -414,6 +429,289 @@ fn a_command_for_a_surviving_sibling_keeps_removal_after_focus() -> TestResult {
     );
     settle(&mut ui);
     assert_eq!(ui.focused(), Some(owner), "the owner stayed");
+    Ok(())
+}
+
+#[test]
+fn a_queued_begin_edit_on_the_focused_label_moves_focus_into_its_editor() -> TestResult {
+    // The focused label stops being focusable as the command begins the
+    // edit; its focus still passes to the editor in the delivering flush.
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(300.0, 100.0, 1.0)?)?;
+    let name = ui.signal("Draft".to_owned());
+    let label = ui.mount_tree(Element::new("name", InlineText::new(name.clone())))?;
+    settle(&mut ui);
+    // `event` focuses the label, which queues the command for itself.
+    let target = label.clone();
+    ui.event(&label, |cx| {
+        cx.request_text_command(&target, TextCommand::BeginEdit)
+    })??;
+    assert_eq!(ui.focused(), Some(label.clone()));
+    ui.flush(ui.now())?;
+    assert!(editing(&ui, "name"));
+    assert_eq!(ui.focused(), Some(editor(&ui, &label)));
+    ui.text_input("Final")?;
+    ui.key_input(KeyCode::Enter, KeyAction::Press)?;
+    assert_eq!(name.get()?, "Final");
+    Ok(())
+}
+
+/// What a [`Reveal`] does: whether its next update shows its children,
+/// whether that update fails, which child its text command requests focus
+/// for, and which component the command then passes a command on to.
+#[derive(Default)]
+struct Plan {
+    show: Cell<bool>,
+    fail: Cell<bool>,
+    target: RefCell<Option<WidgetId>>,
+    then: RefCell<Option<WidgetId>>,
+}
+
+/// A container whose children are hidden until an update finds
+/// `plan.show`. Its text command requests focus for `plan.target` and
+/// invalidates the container, so the request waits for that update: an
+/// ordinary focus request, not a begun edit.
+struct Reveal {
+    children: Vec<Element>,
+    plan: Rc<Plan>,
+    shown: bool,
+}
+impl Component for Reveal {
+    fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+        if self.plan.fail.get() {
+            return Err(RuntimeError::EmptyKey);
+        }
+        self.shown = self.plan.show.get();
+        Ok(())
+    }
+    fn child_visible(&self, _: &str) -> bool {
+        self.shown
+    }
+    fn text_command(
+        &mut self,
+        cx: &mut EventContext,
+        _: TextCommand,
+    ) -> Result<TextCommandOutcome, RuntimeError> {
+        if let Some(target) = self.plan.target.borrow().as_ref() {
+            cx.request_focus_for(target)?;
+        }
+        if let Some(next) = self.plan.then.borrow().as_ref() {
+            cx.request_text_command(next, TextCommand::SelectAll)?;
+        }
+        cx.invalidate(Invalidation::Paint);
+        Ok(TextCommandOutcome::Handled)
+    }
+    fn take_children(&mut self) -> Vec<Element> {
+        std::mem::take(&mut self.children)
+    }
+    fn measure(&self, _: &MeasureContext<'_>, _: Constraints) -> Result<Size, RuntimeError> {
+        Ok(Size::new(200.0, 20.0)?)
+    }
+    fn arrange(&self, cx: &mut ArrangeContext<'_>, size: Size) -> Result<(), RuntimeError> {
+        rows(cx, size)
+    }
+}
+
+/// A component focusable while `focusable` holds, which answers a text
+/// command by requesting focus for itself.
+struct Target {
+    focusable: Rc<Cell<bool>>,
+}
+impl Component for Target {
+    fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+        Ok(())
+    }
+    fn focusable(&self) -> bool {
+        self.focusable.get()
+    }
+    fn text_command(
+        &mut self,
+        cx: &mut EventContext,
+        _: TextCommand,
+    ) -> Result<TextCommandOutcome, RuntimeError> {
+        cx.request_focus();
+        Ok(TextCommandOutcome::Handled)
+    }
+    fn measure(&self, _: &MeasureContext<'_>, _: Constraints) -> Result<Size, RuntimeError> {
+        Ok(Size::new(100.0, 20.0)?)
+    }
+}
+
+/// A button, a [`Reveal`] holding a hidden [`Target`] keyed "inner", a
+/// second `Target` keyed "grabber" and a focusable [`Departing`] keyed
+/// "leaver"; the button has focus.
+struct Retention {
+    ui: Runtime,
+    plan: Rc<Plan>,
+    inner_focusable: Rc<Cell<bool>>,
+    leave: Signal<bool>,
+    button: WidgetId,
+    reveal: WidgetId,
+    inner: WidgetId,
+    grabber: WidgetId,
+    leaver: WidgetId,
+}
+impl Retention {
+    fn new() -> Result<Self, Box<dyn std::error::Error>> {
+        let mut ui = Runtime::new();
+        ui.set_viewport(Viewport::new(300.0, 200.0, 1.0)?)?;
+        let plan = Rc::new(Plan::default());
+        let inner_focusable = Rc::new(Cell::new(true));
+        let leave = ui.signal(false);
+        let root = ui.mount_tree(Element::new(
+            "root",
+            Column::new([
+                Element::new("button", Button::new("Button", |_| Ok(()))),
+                Element::new(
+                    "reveal",
+                    Reveal {
+                        children: vec![Element::new(
+                            "inner",
+                            Target {
+                                focusable: inner_focusable.clone(),
+                            },
+                        )],
+                        plan: plan.clone(),
+                        shown: false,
+                    },
+                ),
+                Element::new(
+                    "grabber",
+                    Target {
+                        focusable: Rc::new(Cell::new(true)),
+                    },
+                ),
+                Element::new(
+                    "leaver",
+                    Departing {
+                        leave: leave.clone(),
+                    },
+                ),
+            ]),
+        ))?;
+        settle(&mut ui);
+        let button = widget(&ui, &root, "button");
+        let reveal = widget(&ui, &root, "reveal");
+        let inner = widget(&ui, &root, "inner");
+        *plan.target.borrow_mut() = Some(inner.clone());
+        ui.focus(&button)?;
+        settle(&mut ui);
+        Ok(Self {
+            grabber: widget(&ui, &root, "grabber"),
+            leaver: widget(&ui, &root, "leaver"),
+            ui,
+            plan,
+            inner_focusable,
+            leave,
+            button,
+            reveal,
+            inner,
+        })
+    }
+    /// Queues the reveal's command from `from`, which `event` focuses.
+    fn command_from(&mut self, from: &WidgetId) -> TestResult {
+        let reveal = self.reveal.clone();
+        self.ui.event(from, |cx| {
+            cx.request_text_command(&reveal, TextCommand::SelectAll)
+        })??;
+        Ok(())
+    }
+    fn inner_shown(&self) -> Result<bool, RuntimeError> {
+        Ok(self.ui.bounds(&self.inner)?.is_some())
+    }
+}
+
+#[test]
+fn a_focus_request_waits_for_the_pending_update_that_shows_its_target() -> TestResult {
+    // An ordinary request, not a begun edit: the rule is general.
+    let mut r = Retention::new()?;
+    r.plan.show.set(true);
+    let button = r.button.clone();
+    r.command_from(&button)?;
+    r.ui.flush(r.ui.now())?;
+    assert!(r.inner_shown()?);
+    assert_eq!(r.ui.focused(), Some(r.inner.clone()), "in the same flush");
+    Ok(())
+}
+
+#[test]
+fn a_kept_request_survives_a_failed_flush_and_applies_on_the_retry() -> TestResult {
+    let mut r = Retention::new()?;
+    r.plan.show.set(true);
+    r.plan.fail.set(true);
+    let button = r.button.clone();
+    r.command_from(&button)?;
+    assert_eq!(r.ui.flush(r.ui.now()), Err(RuntimeError::EmptyKey));
+    assert_eq!(r.ui.focused(), Some(r.button.clone()));
+    r.plan.fail.set(false);
+    r.ui.flush(r.ui.now())?;
+    assert_eq!(
+        r.ui.focused(),
+        Some(r.inner.clone()),
+        "the retry applies it"
+    );
+    Ok(())
+}
+
+#[test]
+fn a_kept_request_ends_when_the_update_leaves_its_target_hidden() -> TestResult {
+    let mut r = Retention::new()?;
+    let button = r.button.clone();
+    r.command_from(&button)?; // `show` is false: the update keeps it hidden
+    r.ui.flush(r.ui.now())?;
+    assert!(!r.inner_shown()?);
+    assert_eq!(r.ui.focused(), Some(r.button.clone()));
+    // A later reveal does not bring the request back.
+    r.plan.show.set(true);
+    r.ui.invalidate(&r.reveal, Invalidation::Paint)?;
+    settle(&mut r.ui);
+    assert!(r.inner_shown()?);
+    assert_eq!(r.ui.focused(), Some(r.button.clone()));
+    Ok(())
+}
+
+#[test]
+fn a_focus_restoration_cancels_a_kept_request() -> TestResult {
+    // The focused leaver departs in the pass that keeps the request: focus
+    // restoration takes over, and the shown target gets no focus.
+    let mut r = Retention::new()?;
+    r.plan.show.set(true);
+    r.leave.set(true)?;
+    let leaver = r.leaver.clone();
+    r.command_from(&leaver)?;
+    r.ui.flush(r.ui.now())?;
+    assert!(r.inner_shown()?);
+    assert!(r.ui.focused().is_some(), "focus was restored");
+    assert_ne!(r.ui.focused(), Some(r.inner.clone()));
+    Ok(())
+}
+
+#[test]
+fn a_newer_request_replaces_a_kept_one() -> TestResult {
+    // A compatibility check: the latest request wins, kept or not.
+    let mut r = Retention::new()?;
+    r.plan.show.set(true);
+    *r.plan.then.borrow_mut() = Some(r.grabber.clone());
+    let button = r.button.clone();
+    r.command_from(&button)?;
+    r.ui.flush(r.ui.now())?;
+    assert!(r.inner_shown()?);
+    assert_eq!(r.ui.focused(), Some(r.grabber.clone()));
+    Ok(())
+}
+
+#[test]
+fn a_kept_request_for_a_target_no_longer_focusable_moves_nothing() -> TestResult {
+    // A compatibility check: the kept request is applied under the usual
+    // rules, so a target that stopped being focusable gets no focus.
+    let mut r = Retention::new()?;
+    r.plan.show.set(true);
+    r.inner_focusable.set(false);
+    let button = r.button.clone();
+    r.command_from(&button)?;
+    r.ui.flush(r.ui.now())?;
+    assert!(r.inner_shown()?);
+    assert_eq!(r.ui.focused(), Some(r.button.clone()));
     Ok(())
 }
 

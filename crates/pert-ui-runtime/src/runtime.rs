@@ -3225,7 +3225,8 @@ impl EventContext {
     /// this flush, in request order, so the receiving editor may commit edits as it
     /// does for key input. The clipboard is not read here, and only
     /// [`TextCommand::BeginEdit`](crate::TextCommand::BeginEdit) moves focus:
-    /// the editor's focus request settles at the end of the same flush. Routing
+    /// the editor's focus request settles at the end of the same flush when that
+    /// flush succeeds, as [`Self::request_focus`] describes. Routing
     /// follows [`Runtime::text_command`]: a target that is not an editor passes
     /// the command on to the focused component inside its subtree.
     /// A request whose target is unmounted or hidden before it applies is dropped;
@@ -3324,8 +3325,12 @@ impl EventContext {
     /// The request is ignored if it becomes hidden, unmounted or nonfocusable.
     /// A recipient hidden only until an ancestor's update still pending in the
     /// same flush shows it, such as an editor its owner reveals, keeps the
-    /// request until that update has run; a focus restoration meanwhile
-    /// cancels it.
+    /// request until that update has run, so focus moves when the flush
+    /// settles successfully. A flush that fails first leaves the request
+    /// pending with that update, and a later flush retries both. A focus
+    /// restoration meanwhile cancels it, except that a focused component
+    /// containing the recipient, as a label contains its editor, keeps focus
+    /// for the transfer even when it stopped being focusable to make it.
     /// Multiple requests before a flush use the latest recipient; IDs are never retargeted.
     /// Explicit focus transfers and window focus loss cancel any older request.
     pub fn request_focus(&self) {
@@ -6267,14 +6272,27 @@ impl Runtime {
         // flush shows it (an ancestor's, as the label whose text command
         // began an edit shows its editor) keeps the request for the next
         // pass of this flush, so focus reaches it once that update has run.
-        // The rest of this step runs as without the request, and a focus
-        // restoration in it cancels the request, as any transfer does.
+        // A flush that fails first leaves it pending, with that update, for
+        // the next flush. The rest of this step runs as without the request,
+        // and a focus restoration in it cancels the request, as any transfer
+        // does, with one exception: a focused component that contains the
+        // target hands focus to it, as the label does to its editor, so its
+        // loss of focusability waits for that transfer instead of counting
+        // as a cancellation now. A request dropped later, its target still
+        // hidden, lets that loss restore focus in its own pass.
         if let Some(node) = &requested
             && node.mounted.get()
             && !node.visible.get()
             && self.ancestor_update_pending(node)
         {
-            self.drop_unfocusable_focus();
+            let hands_over = self
+                .window
+                .focus
+                .as_ref()
+                .is_some_and(|focus| Self::presentation_ancestor(node, focus.0.serial));
+            if !hands_over {
+                self.drop_unfocusable_focus();
+            }
             if !self.window.restore_focus {
                 *self.window.shared.requested_focus.borrow_mut() = request;
                 self.window.shared.requested_within.set(within);
@@ -6299,6 +6317,17 @@ impl Runtime {
         // itself non-focusable for that very reason.
         self.drop_unfocusable_focus();
         self.restore_fallback_focus()
+    }
+    /// Whether the component `ancestor` is a presentation ancestor of `node`.
+    fn presentation_ancestor(node: &Rc<Node>, ancestor: u64) -> bool {
+        let mut current = node.presentation_parent();
+        while let Some(parent) = current {
+            if parent.serial == ancestor {
+                return true;
+            }
+            current = parent.presentation_parent();
+        }
+        false
     }
     /// Whether a presentation ancestor of `node` has an update pending in
     /// its window.

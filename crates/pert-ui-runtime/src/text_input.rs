@@ -180,7 +180,9 @@ pub enum TextCommand {
     /// once and does not flush, so focus moves at the next flush;
     /// [`EventContext::request_text_command`](crate::EventContext::request_text_command)
     /// is delivered in the event phase of a flush, and its focus request
-    /// settles at the end of that flush. Inspection reports editing in the
+    /// settles at the end of that flush when the flush succeeds (see
+    /// [`EventContext::request_focus`](crate::EventContext::request_focus)).
+    /// Inspection reports editing in the
     /// editor's own property: [`InlineText`](crate::InlineText) reports
     /// `editing: true`, and the inline rows
     /// ([`InlineInteger`](crate::InlineInteger),

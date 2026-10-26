@@ -474,7 +474,11 @@ tool window does when Escape returns the user to the main content. A focus
 request whose target is hidden is dropped, except while the target is hidden
 only until an ancestor's update still pending in the same flush shows it, as
 an editor is until its owner reveals it: the request then waits for that
-update, unless a focus restoration in the meantime cancels it.
+update and applies when the flush settles successfully, or, after a failed
+flush, at the later flush that retries the update. A focus restoration in the
+meantime cancels it, but a focused component containing the target, such as
+the label whose editor it is, keeps focus for the transfer even though it
+stopped being focusable to make it.
 
 Tab and Shift+Tab stop at focusable components whose `Component::tab_stop`
 allows it; a component whose focus moves by other keys, such as menu-bar

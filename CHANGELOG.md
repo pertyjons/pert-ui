@@ -136,8 +136,12 @@ on a shown row while the user types in its field (F7b). Not breaking.
   ancestor's update still pending in the same flush shows it, as the
   editor a command began is until its label updates, is kept for the next
   pass of that flush instead of being dropped, so focus reaches the editor
-  in the delivering flush. A focus restoration in the same step cancels
-  it, as any focus transfer does, and a target still hidden once no such
+  when the delivering flush settles successfully; a flush that fails first
+  leaves the request pending with the update, and a later flush retries
+  both. A focus restoration in the same step cancels it, as any focus
+  transfer does, except that a focused component containing the target
+  (the label whose editor it is) keeps focus for the transfer although it
+  stopped being focusable to make it. A target still hidden once no such
   update is pending loses the request as before. `EventContext::request_focus`
   and contracts.md's focus paragraph say so. The `TextCommand`,
   `Component::text_command`, `Runtime::text_command` and
