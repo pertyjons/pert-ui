@@ -1280,9 +1280,9 @@ rendering diagnostics remain text.
 
 ## Public compatibility policy
 
-While no library version has been published, the component API review may
-make breaking changes without compatibility aliases or a version bump solely
-for unpublished compatibility. Record replacement usage and update repository
+While no library version has been published, any change may make breaking
+API or code-structure changes that improve the library, without compatibility
+aliases or a version bump solely for unpublished compatibility. Record replacement usage and update repository
 consumers, examples and docs together. Persisted schemas remain separately
 versioned and validated. The following policy applies to published versions.
 

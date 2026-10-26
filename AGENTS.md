@@ -156,9 +156,12 @@ value, which is refused at adoption with the last valid presentation kept;
 validate reactive data when observed and preserve the last valid presentation
 on failure.
 
-The unpublished component review explicitly permits documented breaking migrations;
-it does not waive separately versioned persistence or authorize publication.
-Subsequent ordinary fixes still follow the compatibility policy below.
+While the library is unpublished, breaking changes to public APIs and code
+structure are welcome wherever they improve the API, its usability or the code:
+the purpose of the component and usability reviews is to change what works
+poorly, not to preserve it. Each such change records its replacement usage and
+migrates repository consumers, as the compatibility policy below says; it does
+not waive separately versioned persistence or authorize publication.
 
 ## Rust and data invariants
 
@@ -420,11 +423,11 @@ and avoid build-time downloads or reliance on untracked generated files.
 
 Use the compatibility policy in [contracts.md](docs/contracts.md): documented minor-version breaks
 before 1.0, compatible patch releases and separately versioned persisted formats.
-While the library remains unpublished, the component API review may make
-breaking changes without compatibility aliases or a version bump solely for
-unpublished compatibility. Record replacement usage and update repository
-consumers, examples and documentation in the same change; persisted schema
-rules still apply. The version compatibility rules govern published versions.
+While the library remains unpublished, any change may make breaking API or
+code-structure changes that improve the library, without compatibility aliases
+or a version bump solely for unpublished compatibility. Record replacement usage
+and update repository consumers, examples and documentation in the same change;
+persisted schema rules still apply. The version compatibility rules govern published versions.
 Keep a changelog and review exported API changes, including defaults and errors.
 Prefer hiding backend churn behind the facade. An intentional breaking change
 must be explicit in the task/release scope; do not silently widen an ordinary fix.
