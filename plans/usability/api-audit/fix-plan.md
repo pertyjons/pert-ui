@@ -703,8 +703,8 @@ and anything left to a later part.
     The check showed the canvas rename editor drawn over the node's own
     centered label, recorded in TODO.md (not a 6f1 defect).
   - **Open:** the same hand check on Windows and macOS when available.
-- **6f2 (0.3.69), implemented 2026-10-26:** 6219dda and its review fix;
-  done after Codex's recheck of the fix. Editing and collection capabilities, by
+- **6f2 (0.3.69), done 2026-10-26:** 6219dda and its review fixes
+  (a8b1899, 7075e50, ca2c500, 011b695, df6c73f and a final test). Editing and collection capabilities, by
   [design revision 4](design-6f2.md), which Codex reviewed once and
   rechecked three times. The maintainer approved it on 2026-10-26 with the
   recommended answers: D1 `TextCommand::BeginEdit` instead of
@@ -897,6 +897,15 @@ and anything left to a later part.
     workspace gate, including the five headless example sessions and the
     diagnostics suite; `api/generate.sh`, with no change;
     `git diff --check`.
+  - **Fifth recheck (Codex):** ready, with one nit: the abandoned handover
+    (a focused owner that becomes unfocusable while its requested
+    descendant stays hidden) had no direct test. The settle loop and the
+    fallback restoration were confirmed identical to 6219dda^, retention
+    and its handover exception the only behavioral changes, and no
+    conflict with 6f1's close admission. **The nit's fix** adds that test,
+    which fails with the ordinary path's cleanup disabled; after it:
+    `cargo fmt --all --check`, Clippy and the `editing` tests of
+    `pert-ui`. It is verified in the layering pass's first review.
 - **6f3 (0.3.70), done 2026-10-26:** 232c22b and its review fix dbe86fc.
   Controlled controls, by [design revision 4](design-6f3.md),
   which Codex reviewed once and rechecked three times. The maintainer

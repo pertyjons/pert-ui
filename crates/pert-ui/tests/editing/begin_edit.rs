@@ -456,11 +456,13 @@ fn a_queued_begin_edit_on_the_focused_label_moves_focus_into_its_editor() -> Tes
     Ok(())
 }
 
-/// What a [`Reveal`] does: whether its next update shows its children,
-/// whether that update fails, which child its text command requests focus
-/// for, and which component the command then passes a command on to.
+/// What a [`Reveal`] does: whether it is focusable (until its text command,
+/// which ends that), whether its next update shows its children, whether
+/// that update fails, which child its text command requests focus for, and
+/// which component the command then passes a command on to.
 #[derive(Default)]
 struct Plan {
+    focusable: Cell<bool>,
     show: Cell<bool>,
     fail: Cell<bool>,
     target: RefCell<Option<WidgetId>>,
@@ -487,11 +489,16 @@ impl Component for Reveal {
     fn child_visible(&self, _: &str) -> bool {
         self.shown
     }
+    fn focusable(&self) -> bool {
+        self.plan.focusable.get()
+    }
     fn text_command(
         &mut self,
         cx: &mut EventContext,
         _: TextCommand,
     ) -> Result<TextCommandOutcome, RuntimeError> {
+        // As a label that begins its edit, it hands focus to a child.
+        self.plan.focusable.set(false);
         if let Some(target) = self.plan.target.borrow().as_ref() {
             cx.request_focus_for(target)?;
         }
@@ -661,6 +668,34 @@ fn a_kept_request_ends_when_the_update_leaves_its_target_hidden() -> TestResult 
     r.ui.flush(r.ui.now())?;
     assert!(!r.inner_shown()?);
     assert_eq!(r.ui.focused(), Some(r.button.clone()));
+    // A later reveal does not bring the request back.
+    r.plan.show.set(true);
+    r.ui.invalidate(&r.reveal, Invalidation::Paint)?;
+    settle(&mut r.ui);
+    assert!(r.inner_shown()?);
+    assert_eq!(r.ui.focused(), Some(r.button.clone()));
+    Ok(())
+}
+
+#[test]
+fn an_abandoned_handover_restores_focus_from_the_unfocusable_owner() -> TestResult {
+    // The focused reveal stops being focusable as it requests focus for its
+    // hidden child, so it keeps focus while the request waits. Its update
+    // leaves the child hidden: the request ends, and the owner's loss of
+    // focusability restores focus as the ordinary path does.
+    let mut r = Retention::new()?;
+    r.plan.focusable.set(true);
+    let reveal = r.reveal.clone();
+    r.ui.focus(&reveal)?;
+    settle(&mut r.ui);
+    r.command_from(&reveal)?; // `show` is false
+    r.ui.flush(r.ui.now())?;
+    assert!(!r.inner_shown()?);
+    assert_eq!(
+        r.ui.focused(),
+        Some(r.button.clone()),
+        "focus restored to the first focusable component"
+    );
     // A later reveal does not bring the request back.
     r.plan.show.set(true);
     r.ui.invalidate(&r.reveal, Invalidation::Paint)?;
