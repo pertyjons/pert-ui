@@ -96,3 +96,17 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   change. Choose cases whose output omits the implementor list (for example a
   bound on a generic function with a local trait object), or document in
   `docs/verification.md` that such churn is expected and reviewed.
+- [ ] 2026-10-26 `crates/pert-ui/examples/diagram_editor/canvas.rs`
+  `NodeView::paint` — application manual/examples: while a node is renamed in
+  place, `NodeView` still paints its centered label under the frameless
+  `DraftEditor`, which draws its leading-aligned text over it, so the two
+  overlap ("Decide" over "Decide" shifted). Seen in the 6f1 hand check on
+  Linux. Leave the label out of the renamed node's paint (pass the renaming
+  state into `NodeView`) or give the editor area the node's fill, and check
+  it in the native window.
+- [ ] 2026-10-26 `crates/pert-ui-runtime/src/text_fields/draft.rs`
+  `DraftAlign` — concrete improvement: it offers only `Start` and `End`, so a
+  centered label, such as a diagram node's, jumps to the leading edge when it
+  is opened for editing. A `Center` variant (the enum is `#[non_exhaustive]`)
+  would let in-place editors keep a centered label where it was; test the
+  placement and caret scrolling for narrow and wide text.

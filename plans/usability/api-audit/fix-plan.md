@@ -695,9 +695,14 @@ and anything left to a later part.
   - **Not testable headlessly:** the title-bar close button's path from
     the window system into `window_event`, which the maintainer's hand
     check covers.
-  - **Open:** the maintainer's hand check of closing with a focused draft
-    (the diagram editor, `--window`), on Linux, and on Windows and macOS
-    when available.
+  - **Hand check (maintainer, 2026-10-26, Linux: Fedora 44, Wayland):**
+    the diagram editor with `--window`, closed from the title bar. A label
+    draft in the inspector and an F2 rename on the canvas were both saved
+    before the discard dialog opened; cancelling kept the window open with
+    focus restored to the label field; accepting closed it, exit code 0.
+    The check showed the canvas rename editor drawn over the node's own
+    centered label, recorded in TODO.md (not a 6f1 defect).
+  - **Open:** the same hand check on Windows and macOS when available.
 
 ## Rules for every part
 
