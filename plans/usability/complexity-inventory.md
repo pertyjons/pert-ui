@@ -515,3 +515,103 @@ API, where AGENTS.md permits documented breaking migrations.
    and AI testers?
 7. Is the unified editor draft policy (N5) acceptable as a behavior change,
    or are the per-editor policies deliberate product decisions?
+
+## Re-measurement at 46a219b (fix plan closed, before the layering pass)
+
+Measured 2026-10-26 at commit 46a219b (0.3.70, branch
+`developer-usability`): the API audit fix plan closed with parts 6f2 and
+6f3, before layering part L1. It records the post-6f3 baseline apart from
+the layering pass, as [the layering plan](layering-plan.md) ("Round 2 and
+attribution") requires.
+
+**Method.** The header's method and this document's definitions, applied
+to `git archive` extractions of 46a219b and 6219dda, because the working
+tree was being edited for L1. The 6219dda column was measured again with
+the same throwaway scripts; where that differs from the value recorded
+above, the table gives the recorded value with the re-measured one in
+brackets, and the difference is taken against the re-measured value. The
+contracts.md classes are this document's section 5 classes, with section
+lengths counted below each heading as there; a new section is classed by
+its primary audience. Names whose source did not change were checked by
+diff rather than recounted: `crates/pert-ui/src/lib.rs` and
+`crates/pert-ui-runtime/src/lib.rs` are identical at both commits, and
+the `api/` listings differ only by three added method lines (each listed
+under the crate root and `prelude`).
+
+| Measure | 6219dda (0.3.69) | 46a219b (0.3.70) | Difference |
+|---|---|---|---|
+| `pert-ui-runtime` structs / enums / traits / free fns | 300 / 178 / 8 / 3 | 300 / 178 / 8 / 3 | 0 |
+| `pert-ui-runtime` inherent methods (types with one) | 1,771 (271) | 1,774 (271) | +3 |
+| `pert-ui-runtime` trait methods declared | 95 | 95 | 0 |
+| `pert-ui-runtime` variants and pub fields | 1,570 [1,571] | 1,571 | 0 |
+| `pert-ui-core` structs / enums / traits; methods; trait methods; variants and fields | 24 / 13 / 3; 109; 7; 96 | same | 0 |
+| `pert-ui` own items; `pert-ui-cpu`; `pert-ui-wgpu` | unchanged rows of section 1 | same | 0 |
+| Unique runtime and core type names | 526 | 526 | 0 |
+| Types implementing `Component` | 77 | 77 | 0 |
+| Crate root / `prelude` / `component` / `testing` names | 533 / 368 (+8 facade) / 126 / 10 | same | 0 |
+| Prelude groups: authoring / parameter / windows / commands / file browser / workspace | 59 / 38 / 25 / 21 / 9 / 8 | same | 0 |
+| `Runtime` / `EventContext` / `UpdateContext` / `Element` / `Painter` methods | 137 / 49 / 25 / 19 / 26 | same | 0 |
+| `Component` hooks | 63 | 63 | 0 |
+| Types (proxy) / `pub fn` (proxy) | 544 / 1,842 | 544 / 1,844 | 0 / +2 |
+| Library src lines | 138,462 | 138,857 | +395 |
+| Doc-comment lines | 32,559 [32,553] | 32,753 | +200 |
+| AGENTS.md lines | 470 | 477 | +7 |
+| contracts.md lines | 1,410 | 1,498 | +88 |
+| contracts.md lines in classified sections | 1,318 | 1,404 | +86 |
+| Class A | 465 (22 sections) | 534 (23) | +69 |
+| Class A with W detail | 209 (5) | 226 (5) | +17 |
+| Class A with M detail | 93 (3) | 93 (3) | 0 |
+| Class W | 214 (11) | 214 (11) | 0 |
+| Class M | 337 (8) | 337 (8) | 0 |
+| Lines an application author needs (A to A + A/W + A/M) | 465 to 767 | 534 to 853 | +69 to +86 |
+| Guide lines | 3,810 | 3,763 | −47 |
+| Guide: layout chapter / editable-list recipe section | 794 / 277 | 742 / 225 | −52 / −52 |
+| Guide: controls and surfaces | 980 [979] | 984 | +5 |
+| Guide: getting started, both parts | 199 [198] | 198 | 0 |
+| Guide: state / appearance / custom widgets / testing and diagnostics | 391 / 518 / 333 / 597 | same | 0 |
+| List recipe, application part: lines / types | 134 / 27 | 93 / 22 | −41 / −5 |
+| List recipe, retained `Title` component: lines / types | 41 / 9 | removed | −41 / −9 |
+| List recipe, tests: lines / types | 47 / 7 | 47 / 7 | 0 |
+| `inventory` example lines / `impl Component` | 1,632 / 1 | 1,570 / 0 | −62 / −1 |
+| `inventory` retained `ActiveCell` component | about 60 [57] | removed | −57 |
+| Other packaged examples' lines and `impl Component` | section 4's rows | same | 0 |
+
+- The API grew only by part 6f3's three controlled constructors
+  (`Checkbox::controlled`, `Toggle::controlled`, `InlineText::controlled`);
+  6f2's review fixes after 6219dda changed behavior and documentation, no
+  public item, export or prelude name. The `pub fn` proxy counts two
+  because `Checkbox` and `Toggle` share one generated constructor.
+- contracts.md grew by 88 lines, 66 of them 6f3's new "Controlled
+  controls" section (class A) and 13 more 6f3 text in component
+  redescription, ownership paths and user-write callbacks; 6f2's focus
+  handover rule added 8 lines to "Layout, visibility and focus", and the
+  contents list one entry. All the growth is in application-facing classes, so the maintainer-only share
+  falls from 26% to 24% by dilution alone, and an application author's
+  share rises.
+- The guide shrank by 47 lines, the first decrease in the growth table:
+  6f3 replaced the editable-list recipe's retained `Title` component and
+  its two-way explanation with controlled controls (−52), and the
+  controls chapter gained five lines introducing `controlled`.
+- The list recipe's application part lost 41 lines and five types
+  (`Component`, `EventContext`, `Invalidation`, `Notifier`,
+  `UpdateContext`), matching the 41 lines section 4 planned; the fifth
+  type is `EventContext`, which only the removed `deliver_notifications`
+  signature named. The title lookup is now `[key, "title"]`.
+- The inventory example lost 62 lines because 6f3 replaced `ActiveCell`
+  with `Checkbox::controlled`; no packaged example now implements
+  `Component` except the diagram editor's two real custom widgets.
+- AGENTS.md grew by seven lines from 146133e (unpublished breaking changes
+  are welcome where they improve the library) and 6f3's two approved
+  sentences on controlled controls; source and doc-comment growth is 6f3's implementation and
+  rustdoc and 6f2's fixes.
+
+Not reproduced exactly at 6219dda: the runtime's variants and fields
+(1,571 by this parse, 1,570 recorded; no variant or field changed between
+the commits), doc-comment lines (32,553, 32,559 recorded), the guide's
+getting-started pair (198, 199 recorded) and controls with surfaces (979,
+980 recorded; the guide total of 3,810 matches), and `ActiveCell` (57
+non-blank, non-comment lines, "about 60" recorded). The `component`
+module's 126 and the crate root's 533 were not recounted; neither source
+nor listing changed. The CHANGELOG's 2,278 lines recorded above are its
+length at 6311e48, where this inventory was written; at 6219dda it has
+2,263 lines, and at 46a219b 2,358.
