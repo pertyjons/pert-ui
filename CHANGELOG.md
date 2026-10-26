@@ -1,5 +1,69 @@
 # Changelog
 
+## 0.3.72 (2026-10-27)
+
+One deferral call for application callbacks (layering plan, part L4a, from
+its approved design checkpoint `plans/usability/layering-design-L4a.md`).
+Work a callback queues runs whatever its own surface or window does next.
+
+- Breaking: `EventContext::defer_detached` is removed; use
+  `EventContext::defer`, which now has its "run after the surface closes"
+  property without its window cancellation:
+  `cx.defer_detached(move |ui| files.save_to(ui, path))` becomes
+  `cx.defer(move |ui| files.save_to(ui, path))`.
+- Breaking: `EventContext::defer` is no longer cancelled when its widget is
+  hidden or removed, or when its window is hidden or closes; only shutdown
+  cancels it before delivery. It runs in its widget's current window while
+  the widget is mounted, else in the window it was queued in while that
+  window is open, else with the window the delivering flush has selected.
+  An operation whose targets are gone reports their error, such as
+  `Unmounted`, from the flush. For the old behavior, a component's work on
+  itself, use `EventContext::defer_while_shown`.
+- Breaking: `EventContext::spawn`'s start is no longer cancelled when its
+  window closes, superseding part 6f2's window owner (its decision D2); only
+  shutdown cancels it before it starts. To tie a start to a component, use
+  `cx.defer_while_shown(|ui| ui.spawn(work, deliver).map(|_| ()))`.
+- Added: `EventContext::defer_while_shown`, the former `defer` rule under a
+  name that states it: cancelled when its component is unmounted or not
+  effectively visible at delivery (its own or an ancestor's visibility, a
+  closed surface, a hidden native window), routed to the component's window
+  at delivery. It is for a custom component's work on itself.
+- Fixed: a task queued during `Runtime::shutdown`, such as from a
+  `Component::cancel_input` that removal calls, is refused with `Closed`; it
+  was accepted and its receipt stayed `Pending`. After `Runtime::shutdown`
+  returns no queued task's receipt reads `Pending`.
+- Documentation: `TaskStatus::Cancelled` names its three causes (shutdown
+  before delivery, a `defer_while_shown` component hidden or removed, a
+  panicking callback unwinding), and the rustdoc of the deferral calls
+  states that cancellation reaches only queued tasks, not an executing one.
+  The closing-surface warnings on `Select::on_change`, `InlineSelect`,
+  `MenuItem::on_change`, `QuickPick` and `HistoryNavigator`, contracts.md
+  (user-write callbacks, the "in the input" and "at the next flush" timing
+  classes, the cancellation property, `EventContext::spawn`, and a table of
+  each call's cancellation and window in "Calling the runtime from
+  callbacks"), the manual and the guide's controls, state (the "Work
+  deferred from a callback" table, with `defer_while_shown` as advanced) and
+  custom-widgets chapters now say that work queued with
+  `EventContext::defer` runs after the surface closes.
+- Migrated: the `diagram_editor` example's open and save dialogs and the
+  gallery's history restore, search jump and navigation history use
+  `defer`; the gallery's worker decode uses `EventContext::spawn`; its
+  workspace and interaction check components, which step themselves, use
+  `defer_while_shown`.
+- Tests: new `deferral` modules in the facade's foundation and surfaces
+  areas cover a closing `Select`, `QuickPick`, menu row and dialog with the
+  closure settled before delivery, hidden widgets and windows, detached
+  windows closed with `Redock` and `RemoveView`, the origin-window fallback,
+  a widget detached and then hidden, and queuing during shutdown, each
+  checked with a mutation restoring the old rule; and the kept contracts
+  (`defer_while_shown`, routing after detachment, ordering, shared capacity,
+  nested flushes, failure, shutdown, shutdown inside a task, a panicking
+  task). The window clause of the callback spawn test now expects the start
+  to run.
+- API listing: `pert_ui_runtime::EventContext::defer_detached` removed and
+  `pert_ui_runtime::EventContext::defer_while_shown` added in
+  `api/pert-ui-runtime/default.txt` and `serde.txt`.
+
 ## 0.3.71 (2026-10-26)
 
 Documentation layering (layering plan, part L1): each audience meets its own

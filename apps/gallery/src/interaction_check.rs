@@ -1005,7 +1005,7 @@ impl Component for Probe {
     fn deliver_notifications(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
         let (progress, painted, id) =
             (self.progress.clone(), self.painted.clone(), self.id.clone());
-        let _task = cx.defer(move |ui| advance(ui, &progress, &painted, &id))?;
+        let _task = cx.defer_while_shown(move |ui| advance(ui, &progress, &painted, &id))?;
         Ok(())
     }
     fn visibility_changed(&mut self, visible: bool) {

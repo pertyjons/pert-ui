@@ -595,9 +595,9 @@ pub fn build(ui: &mut Runtime, dir: PathBuf) -> Result<Rc<DiagramApp>, Box<dyn s
     files.browser.on_open(move |cx, entry: &DirectoryEntry| {
         let (files, path) = (opening.clone(), entry.path().to_owned());
         files.open_dialog.accept()?;
-        // The dialog closes with this action: work that must outlive it is
-        // queued on the window. It reports its own outcome in the status.
-        let _receipt = cx.defer_detached(move |ui| files.open_path(ui, path))?;
+        // The dialog closes with this action; the queued work runs after it
+        // has closed and reports its own outcome in the status.
+        let _receipt = cx.defer(move |ui| files.open_path(ui, path))?;
         Ok(())
     });
 
@@ -818,7 +818,7 @@ fn mount(
                         opening.open_dialog.accept()?;
                         let files = opening.clone();
                         // Reports its own outcome in the status line.
-                        let _receipt = cx.defer_detached(move |ui| files.open_path(ui, path))?;
+                        let _receipt = cx.defer(move |ui| files.open_path(ui, path))?;
                         Ok(())
                     }),
                 ),
@@ -849,7 +849,7 @@ fn mount(
                         let path = saving.dir.join(name);
                         saving.save_dialog.accept()?;
                         let files = saving.clone();
-                        let _receipt = cx.defer_detached(move |ui| files.save_to(ui, path))?;
+                        let _receipt = cx.defer(move |ui| files.save_to(ui, path))?;
                         Ok(())
                     }),
                 ),

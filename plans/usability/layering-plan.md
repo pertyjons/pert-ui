@@ -484,6 +484,39 @@ All six were decided on 2026-10-26 as recommended.
     `App::headless`, and `on_close` also from `HeadlessApp::admit_close`.
     L1 is done.
 
+- **L4a (0.3.72), implemented 2026-10-27:** commit and review to be
+  recorded. One deferral call, by [the approved design](layering-design-L4a.md)
+  (revision 2, D1 and D2 as recommended). **Order changed:** L4a was
+  implemented before L2 and L3, while their designs were written, so it
+  takes 0.3.72; L2, L3 and L4b follow as 0.3.73, 0.3.74 and 0.3.75.
+  - **API:** `EventContext::defer` is the application default, cancelled
+    before delivery only by shutdown and routed to the widget's window
+    while it is mounted, else the window it was queued in if open;
+    `EventContext::defer_while_shown` is the former widget-bound form;
+    `defer_detached` is removed; `EventContext::spawn` starts through
+    `defer`, superseding 6f2's window owner. Queuing refuses with `Closed`
+    once shutdown has begun.
+  - **Migration:** every `defer_detached` call uses `defer`; component
+    hooks working on themselves and tests asserting the old semantics use
+    `defer_while_shown`; the gallery's data page uses `cx.spawn`.
+    contracts.md, the manual, the guide, the gallery's and the
+    `diagram_editor`'s documentation follow.
+  - **Tests:** the design's new-behavior tests, each checked with its
+    compiling mutation (widget-owned `defer`, window-cancelled events,
+    no origin fallback, origin routing after detachment, window-owned
+    `spawn`, no shutdown refusal), and the contract tests (nested-flush
+    order, queued versus executing at shutdown).
+  - **Final search:** no obsolete use or recommendation remains; the
+    reviewed matches are this plan's L1 and L4a text, the inventory, L1's
+    classification record and two test comments naming the former rule.
+  - **Checks:** the public-API row (formatting, Clippy, workspace tests,
+    the five headless example sessions, doctests, rustdoc, the
+    diagnostics suite, the API listing gate, whose diff replaces
+    `defer_detached` by `defer_while_shown`), the headless gallery and
+    `git diff --check`. Native checks were not run (no desktop session).
+  - **Deviation:** the nested-flush test lives in `foundation/deferral.rs`
+    rather than `phase_rules.rs`.
+
 ## Review record
 
 - **Revision 1, Codex evaluation (2026-10-26):** needs revision, with one

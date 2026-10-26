@@ -209,7 +209,7 @@ fn history_demo(ui: &Runtime, targets: &NavigationTargets) -> Result<Element, Ru
     let navigator = HistoryNavigator::new(ui, history, move |cx, entry| {
         let strip = restoring.get(NavigationTargets::HISTORY_STRIP)?;
         let key = *entry.value();
-        cx.defer_detached(move |ui| ui.reveal_child(&strip, key).map(|_| ()))
+        cx.defer(move |ui| ui.reveal_child(&strip, key).map(|_| ()))
             .map(|_| ())
     })?
     .name("Demo history");

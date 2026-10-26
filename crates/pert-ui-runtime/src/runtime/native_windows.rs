@@ -1565,8 +1565,9 @@ impl Runtime {
                 }
                 // With every root hidden no flush delivers deferred tasks, and
                 // a queued task would keep the application due forever: deliver
-                // them here once. A task owned by a widget that is not shown is
-                // cancelled, as `EventContext::defer` documents.
+                // them here once. A task queued with
+                // `EventContext::defer_while_shown` whose widget is not shown
+                // is cancelled, as that method documents.
                 if !flushed && !self.shared.tasks.borrow().is_empty() {
                     self.dispatch_tasks()?;
                 }

@@ -86,8 +86,8 @@ runs after a successful user write or remote proposal submission, or, on a
 Checkbox or Toggle made with `controlled`, which writes nothing, with the
 user's proposal. It does not report application writes or authority responses. Errors propagate without
 rollback or replay; redescription replaces the handler. Select closes first. Its
-callback receives the list context, so use `EventContext::defer_detached` for work
-that must survive the list hiding. MultiSelect's `on_change` reports each user
+callback receives the list context; work queued with `EventContext::defer` runs
+after the list has closed. MultiSelect's `on_change` reports each user
 write with the values written: a toggle under EachToggle, a chip removal, and an
 OnClose draft written by a committing close; discarded and conflicting drafts
 report nothing.

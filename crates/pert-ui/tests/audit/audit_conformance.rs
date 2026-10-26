@@ -188,7 +188,7 @@ impl Component for FreshRemover {
     }
     fn deliver_notifications(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
         let retained = self.saved.borrow().as_ref().unwrap().clone();
-        let _task = cx.defer(move |ui| ui.unmount(&retained))?;
+        let _task = cx.defer_while_shown(move |ui| ui.unmount(&retained))?;
         let _reveal = cx.request_reveal(&cx.id())?;
         Ok(())
     }

@@ -32,9 +32,9 @@ need their last column names.
 
 | Way | Use it when |
 |---|---|
-| [`EventContext::defer`] | a callback needs the [`Runtime`] for work tied to its widget, such as describing new content; the work is skipped when the widget is hidden or removed first |
-| [`EventContext::defer_detached`] | the work must outlive the widget. A callback on a surface that closes, such as a dialog's Save button, a menu row, [`Select::on_change`] or a [`QuickPick`] choice, queues its work here, since the surface hides before the next flush |
-| [`Runtime::defer`] | code holding the runtime queues work that belongs to nothing but the runtime |
+| [`EventContext::defer`] | a callback needs the [`Runtime`], such as to open a document or describe new content. The work runs at the next flush even when the callback's surface closes first, such as a dialog's Save button, a menu row, [`Select::on_change`] or a [`QuickPick`] choice; only shutdown cancels it |
+| [`Runtime::defer`] | code holding the runtime queues work; it runs with whichever window the flush has selected |
+| Advanced: [`EventContext::defer_while_shown`] | a custom component queues work on itself, such as describing its own children again; the work is skipped when the component is hidden or removed first |
 
 Each callback's documentation names its timing class: whether it runs in the
 input that caused it, after the flush has settled, at the next flush, at
@@ -342,12 +342,13 @@ assert_eq!(status.get()?, "3 words");
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
 
-The work receives no UI handles. The start belongs to the button's window, so
-it still runs when the callback hides or removes the button, as a Save button
-that closes its dialog does, and is cancelled only when the window closes or
-the runtime shuts down first; the receipt reports that start, not the result.
-To be able to discard a result that has not arrived, queue [`Runtime::spawn`]
-with [`EventContext::defer`] and keep the [`BackgroundTask`] it returns.
+The work receives no UI handles. The start belongs to the application, as
+work queued with [`EventContext::defer`] does: it runs at the next flush
+whatever happens to the button or its window, as when a Save button closes
+its dialog, and only shutdown cancels it before it starts; the receipt reports
+that start, not the result. To be able to discard a result that has not
+arrived, queue [`Runtime::spawn`] with [`EventContext::defer`] and keep the
+[`BackgroundTask`] it returns.
 [`Runtime::spawn`] lists the limits and what happens to a result after
 cancellation or shutdown.
 

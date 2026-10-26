@@ -1478,8 +1478,8 @@ impl<T: Clone + Eq + 'static> Select<T> {
     /// after closing the list. Same-value choices, refused edits, application writes
     /// and authority responses do not call it. Failure propagates without rollback
     /// or replay. Redescription replaces the handler without closing the list.
-    /// The context belongs to the closing list: use [`EventContext::defer_detached`]
-    /// for deferred application work that must survive the list becoming hidden.
+    /// The context belongs to the closing list; work queued with
+    /// [`EventContext::defer`] runs after the list has closed.
     ///
     /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
     ///
@@ -1825,7 +1825,8 @@ impl<T: Clone + Eq + 'static> InlineSelect<T> {
     }
     /// Reports successful user writes or remote submissions as [`Select::on_change`].
     /// Runs after closing; errors do not undo the write. The callback context belongs
-    /// to the closing list; use detached deferral for longer-lived application work.
+    /// to the closing list; work queued with [`EventContext::defer`] runs after it
+    /// has closed.
     ///
     /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
     pub fn on_change(

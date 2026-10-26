@@ -414,7 +414,7 @@ fn a_refused_callback_spawn_fails_its_receipt_and_the_flush() -> TestResult {
 }
 
 #[test]
-fn a_callback_spawn_outlives_its_widget_but_not_its_window() -> TestResult {
+fn a_callback_spawn_outlives_its_widget_and_its_window() -> TestResult {
     let mut ui = Runtime::new();
     let (button, words, _) = spawning_button(&mut ui)?;
     let shown = words.clone();
@@ -435,23 +435,30 @@ fn a_callback_spawn_outlives_its_widget_but_not_its_window() -> TestResult {
     ui.flush(ui.now())?;
     assert_eq!(hidden.status(), TaskStatus::Succeeded);
 
-    // A window that closes before the flush cancels it.
+    // New-behavior test 6 of layering part L4a: a window that closes with its
+    // widget before the flush no longer cancels the start. Named assertions:
+    // the receipt reads `Succeeded` and the result is delivered. Mutation:
+    // `EventContext::spawn` records the former window owner.
     let view = ui.mount_tree(Element::new("view", Label::new("Detached")))?;
     ui.flush(ui.now())?;
-    let prepared = ui.prepare_detach(&view, NativeWindowOptions::new("Detached")?)?;
+    let options =
+        NativeWindowOptions::new("Detached")?.close_policy(DetachedClosePolicy::RemoveView);
+    let prepared = ui.prepare_detach(&view, options)?;
     let detached = ui.commit_detach(prepared)?;
     ui.flush(ui.now())?;
+    let delivered = ui.signal(0_usize);
+    let target = delivered.clone();
     let closed = ui.event(&view, |cx| {
-        cx.spawn(
-            || -> usize { panic!("a closed window must not start") },
-            |_| Ok(()),
-        )
+        cx.spawn(|| 5_usize, move |count| target.set(count))
     })??;
-    ui.select_window(&ui.primary_window())?;
-    ui.unmount(&view)?;
+    ui.select_window(&detached)?;
+    assert_eq!(ui.close_detached_window()?, PresentationStatus::Closed);
     assert!(!ui.contains_window(&detached));
+    ui.select_window(&ui.primary_window())?;
     ui.flush(ui.now())?;
-    assert_eq!(closed.status(), TaskStatus::Cancelled);
+    assert_eq!(closed.status(), TaskStatus::Succeeded);
+    flush_until(&mut ui, || delivered.get().is_ok_and(|count| count != 0))?;
+    assert_eq!(delivered.get()?, 5);
     Ok(())
 }
 

@@ -122,7 +122,7 @@ fn select(
     let handler = move |cx: &mut EventContext, value: &&'static str| {
         let log = log.clone();
         let value = *value;
-        let _ = cx.defer_detached(move |_| {
+        let _ = cx.defer(move |_| {
             log.borrow_mut().push(value);
             Ok(())
         })?;

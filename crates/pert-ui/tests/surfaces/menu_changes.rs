@@ -212,7 +212,7 @@ fn rows_without_a_write_of_their_own_ignore_it_and_disabled_rows_write_nothing()
 }
 
 #[test]
-fn context_menus_and_menu_bar_titles_report_too_and_detached_work_survives() {
+fn context_menus_and_menu_bar_titles_report_too_and_deferred_work_survives() {
     let mut ui = ui();
     let grid = ui.signal(false);
     let wrap = ui.signal(false);
@@ -226,7 +226,7 @@ fn context_menus_and_menu_bar_titles_report_too_and_detached_work_survives() {
         vec![
             MenuItem::toggle("wrap", wrap.clone(), "Wrap").on_change(move |cx, _| {
                 let done = done.clone();
-                let _receipt = cx.defer_detached(move |_| done.set(true))?;
+                let _receipt = cx.defer(move |_| done.set(true))?;
                 Ok(())
             }),
         ],

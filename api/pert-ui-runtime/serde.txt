@@ -2407,7 +2407,7 @@ pub fn pert_ui_runtime::EventContext::command_context(&self, pert_ui_runtime::Co
 pub fn pert_ui_runtime::EventContext::invoke_command(&self, &pert_ui_runtime::CommandId, pert_ui_runtime::CommandContext) -> core::result::Result<pert_ui_runtime::CommandReceipt, pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::EventContext
 pub fn pert_ui_runtime::EventContext::defer(&self, impl core::ops::function::FnOnce(&mut pert_ui_runtime::Runtime) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::EventContext::defer_detached(&self, impl core::ops::function::FnOnce(&mut pert_ui_runtime::Runtime) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::EventContext::defer_while_shown(&self, impl core::ops::function::FnOnce(&mut pert_ui_runtime::Runtime) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::EventContext::spawn<T: core::marker::Send + 'static>(&self, impl core::ops::function::FnOnce() -> T + core::marker::Send + 'static, impl core::ops::function::FnOnce(T) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::EventContext
 pub fn pert_ui_runtime::EventContext::drag_active(&self) -> bool
@@ -14294,7 +14294,7 @@ pub fn pert_ui_runtime::EventContext::command_context(&self, pert_ui_runtime::Co
 pub fn pert_ui_runtime::EventContext::invoke_command(&self, &pert_ui_runtime::CommandId, pert_ui_runtime::CommandContext) -> core::result::Result<pert_ui_runtime::CommandReceipt, pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::EventContext
 pub fn pert_ui_runtime::EventContext::defer(&self, impl core::ops::function::FnOnce(&mut pert_ui_runtime::Runtime) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::EventContext::defer_detached(&self, impl core::ops::function::FnOnce(&mut pert_ui_runtime::Runtime) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::EventContext::defer_while_shown(&self, impl core::ops::function::FnOnce(&mut pert_ui_runtime::Runtime) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::EventContext::spawn<T: core::marker::Send + 'static>(&self, impl core::ops::function::FnOnce() -> T + core::marker::Send + 'static, impl core::ops::function::FnOnce(T) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::EventContext
 pub fn pert_ui_runtime::EventContext::drag_active(&self) -> bool
@@ -35238,7 +35238,7 @@ pub fn pert_ui_runtime::EventContext::command_context(&self, pert_ui_runtime::Co
 pub fn pert_ui_runtime::EventContext::invoke_command(&self, &pert_ui_runtime::CommandId, pert_ui_runtime::CommandContext) -> core::result::Result<pert_ui_runtime::CommandReceipt, pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::EventContext
 pub fn pert_ui_runtime::EventContext::defer(&self, impl core::ops::function::FnOnce(&mut pert_ui_runtime::Runtime) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::EventContext::defer_detached(&self, impl core::ops::function::FnOnce(&mut pert_ui_runtime::Runtime) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::EventContext::defer_while_shown(&self, impl core::ops::function::FnOnce(&mut pert_ui_runtime::Runtime) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::EventContext::spawn<T: core::marker::Send + 'static>(&self, impl core::ops::function::FnOnce() -> T + core::marker::Send + 'static, impl core::ops::function::FnOnce(T) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::EventContext
 pub fn pert_ui_runtime::EventContext::drag_active(&self) -> bool

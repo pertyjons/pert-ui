@@ -8,6 +8,7 @@
 #[path = "../support/mod.rs"]
 mod support;
 
+mod deferral;
 mod detach_permissions;
 mod drag_and_drop;
 mod geometry_callbacks;

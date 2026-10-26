@@ -398,7 +398,7 @@ fn presentation_preparation_does_not_replay_mailbox_or_task_frontiers() {
     *s.a.action.borrow_mut() = Some(Box::new(move |cx| {
         sender.send(1).unwrap();
         let flag = task_flag.clone();
-        let _receipt = cx.defer(move |_| {
+        let _receipt = cx.defer_while_shown(move |_| {
             flag.set(true);
             Ok(())
         })?;
@@ -956,7 +956,7 @@ fn caught_task_flush_error_does_not_suppress_later_update_failure_cleanup() {
     *s.a.action.borrow_mut() = Some(Box::new(move |cx| {
         let a = a.clone();
         let window = b_window.clone();
-        *saved.borrow_mut() = Some(cx.defer(move |ui| {
+        *saved.borrow_mut() = Some(cx.defer_while_shown(move |ui| {
             let previous = ui.current_window();
             ui.select_window(&window)?;
             ui.set_window_visible(true)?;

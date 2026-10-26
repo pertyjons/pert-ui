@@ -810,11 +810,9 @@ impl Shared {
 ///   and reopens it with a message if the result later fails, and
 ///   [`PickChoice::Refused`] keeps it open with a message above the list, so
 ///   no choice is skipped silently. An error from the callback is returned
-///   from the input call and leaves the picker as it was. Since `Done` and
-///   `Pending` close the picker, queue follow-up work with
-///   [`EventContext::defer_detached`]: work queued with
-///   [`EventContext::defer`] is bound to a widget inside the picker and is
-///   cancelled when the picker closes before the flush delivers it.
+///   from the input call and leaves the picker as it was. Follow-up work
+///   queued with [`EventContext::defer`] runs after `Done` or `Pending` has
+///   closed the picker.
 ///
 /// Configuration ([`Self::matcher`], [`Self::placeholder`],
 /// [`Self::empty_text`], [`Self::name`], [`Self::list_name`], [`Self::width`],

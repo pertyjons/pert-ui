@@ -288,7 +288,9 @@ fn bound_button_caption_keeps_adornments_and_tasks_cancel_with_owner() -> Result
     ))?;
     reference.flush(Duration::ZERO)?;
     assert_eq!(bound, reference.paint()?);
-    let task = ui.event(&id, |cx| cx.defer(|_| panic!("removed owner must not run")))??;
+    let task = ui.event(&id, |cx| {
+        cx.defer_while_shown(|_| panic!("removed owner must not run"))
+    })??;
     ui.unmount(&id)?;
     ui.mount_tree(Element::new(
         "button",
@@ -317,16 +319,18 @@ fn bound_button_caption_keeps_adornments_and_tasks_cancel_with_owner() -> Result
 }
 
 #[test]
-fn detached_tasks_outlive_their_widget_but_not_shutdown() -> Result {
+fn event_tasks_outlive_their_widget_but_not_shutdown() -> Result {
     let mut ui = Runtime::new();
     ui.set_viewport(Viewport::new(300.0, 100.0, 1.0)?)?;
     let id = ui.mount_tree(Element::new("button", Button::new("Go", |_| Ok(()))))?;
     ui.flush(Duration::ZERO)?;
     let ran = Rc::new(Cell::new(false));
     let flag = ran.clone();
-    let bound = ui.event(&id, |cx| cx.defer(|_| panic!("removed owner must not run")))??;
+    let bound = ui.event(&id, |cx| {
+        cx.defer_while_shown(|_| panic!("removed owner must not run"))
+    })??;
     let detached = ui.event(&id, |cx| {
-        cx.defer_detached(move |_| {
+        cx.defer(move |_| {
             flag.set(true);
             Ok(())
         })
@@ -339,9 +343,7 @@ fn detached_tasks_outlive_their_widget_but_not_shutdown() -> Result {
     assert!(ran.get());
     let id = ui.mount_tree(Element::new("button", Button::new("Go", |_| Ok(()))))?;
     ui.flush(Duration::ZERO)?;
-    let late = ui.event(&id, |cx| {
-        cx.defer_detached(|_| panic!("shutdown must cancel"))
-    })??;
+    let late = ui.event(&id, |cx| cx.defer(|_| panic!("shutdown must cancel")))??;
     ui.shutdown();
     assert_eq!(late.status(), TaskStatus::Cancelled);
     Ok(())

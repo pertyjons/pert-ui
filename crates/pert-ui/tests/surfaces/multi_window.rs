@@ -143,10 +143,10 @@ fn removing_owner_retires_detached_descendants_and_bindings() -> TestResult {
     Ok(())
 }
 #[test]
-fn detached_tasks_run_in_their_window_and_cancel_when_it_closes() -> TestResult {
+fn event_tasks_run_in_their_widgets_window_and_restore_the_selection() -> TestResult {
     let mut ui = Runtime::new();
     let text = ui.signal("State".to_owned());
-    let (owner, view) = tabs(&mut ui, text)?;
+    let (_owner, view) = tabs(&mut ui, text)?;
     let prepared = ui.prepare_detach(&view, NativeWindowOptions::new("Editor")?)?;
     let detached = ui.commit_detach(prepared)?;
     ui.flush(Duration::ZERO)?;
@@ -154,7 +154,7 @@ fn detached_tasks_run_in_their_window_and_cancel_when_it_closes() -> TestResult 
     let seen = Rc::new(std::cell::RefCell::new(None));
     let window = seen.clone();
     let task = ui.event(&view, |cx| {
-        cx.defer_detached(move |ui| {
+        cx.defer(move |ui| {
             *window.borrow_mut() = Some(ui.current_window());
             Ok(())
         })
@@ -164,15 +164,6 @@ fn detached_tasks_run_in_their_window_and_cancel_when_it_closes() -> TestResult 
     assert_eq!(task.status(), TaskStatus::Succeeded);
     assert_eq!(seen.borrow().as_ref(), Some(&detached));
     assert_eq!(ui.current_window(), primary);
-    // Retiring the window cancels an operation queued in it.
-    let task = ui.event(&view, |cx| {
-        cx.defer_detached(|_| panic!("a closed window must not run"))
-    })??;
-    ui.select_window(&primary)?;
-    ui.unmount(&owner)?;
-    assert!(!ui.contains_window(&detached));
-    ui.flush(Duration::ZERO)?;
-    assert_eq!(task.status(), TaskStatus::Cancelled);
     Ok(())
 }
 #[test]

@@ -490,7 +490,8 @@ proposal where the other paths write.
 Application writes, same-value choices and refused edits do not call it. Failure
 propagates without rollback or replay. A redescribed handler replaces the old
 one, including removal. Select closes before invoking its list-context callback;
-deferred application work must use `defer_detached` to survive the list hiding.
+application work queued with `EventContext::defer` runs after the list has
+closed.
 MultiSelect's `on_change` reports each user write of its bound value with the
 values written: an EachToggle toggle, a chip removal in either mode and an
 OnClose draft written by a committing close. Draft toggles, discarding closes
@@ -557,8 +558,8 @@ writes nothing and calls it with the user's proposal at the moment the
 signal-bound form would write. A `Select` list and a menu row call it once
 their surface has started to close, and a picker closes right after its
 choose callback answers, so work that must outlive the surface is queued with
-`defer_detached` ([calling the runtime from
-callbacks](#calling-the-runtime-from-callbacks)).
+`EventContext::defer`, which runs after the surface has closed ([calling the
+runtime from callbacks](#calling-the-runtime-from-callbacks)).
 
 ### After settling
 
@@ -574,7 +575,8 @@ native window holds the callbacks until it is shown.
 ### At the next flush
 
 The callback runs at the start of a later flush, before components update:
-work queued with `EventContext::defer`, `defer_detached` or `Runtime::defer`,
+work queued with `EventContext::defer`, `EventContext::defer_while_shown` or
+`Runtime::defer`,
 the start of `EventContext::spawn` and a command invocation queued with
 `EventContext::invoke_command` run in the next flush; a mailbox handler or a
 `Runtime::spawn` result runs in the first flush after its value arrives; an
@@ -641,7 +643,7 @@ Each callback's rustdoc states these properties besides its class:
   and `on_modified` reports each change in order.
 - **Cancellation:** what discards a callback or its pending payload before it
   runs, such as a redescription without the callback, the component's
-  removal, or the widget or window a deferred task is bound to.
+  removal, or the component a `defer_while_shown` task is bound to.
 - **Failure and replay:** what a failing callback leaves behind. As a rule
   the change it reports stays and is not reported again ([user-write
   callbacks](#user-write-callbacks), [component
@@ -850,10 +852,10 @@ never finds it full. Cancellation discards an undelivered result but cannot stop
 the thread; a panicking work delivers nothing and fails the flush that receives
 its outcome with `BackgroundPanicked`. The work holds no UI handle, and the
 helper is not a callback-safe endpoint. `EventContext::spawn` queues the same
-call from a callback, bound to the widget's window as `defer_detached` is: the
-start runs at the next flush even when the widget is gone by then, its receipt
-reports the start rather than the result, and only a closed window or shutdown
-cancels it.
+call from a callback with `EventContext::defer`: the start belongs to the
+application and runs at the next flush whatever happens to the widget or its
+window, its receipt reports the start rather than the result, and only
+shutdown cancels it before it starts.
 
 `Runtime::start_interval` repeats an application callback on the UI thread. It
 belongs to the application rather than a window or component, so focus loss,
@@ -1109,7 +1111,7 @@ matching `WriteDuring…` error. These callbacks do receive the runtime:
 
 | Callback | Access | May call |
 |---|---|---|
-| Deferred task (`EventContext::defer`, `EventContext::defer_detached`, `Runtime::defer`) | `&mut Runtime`, during the next flush | Any operation, including those that flush |
+| Deferred task (`EventContext::defer`, `EventContext::defer_while_shown`, `Runtime::defer`) | `&mut Runtime`, during the next flush | Any operation, including those that flush |
 | Command action (`Runtime::register_command`) | `&mut Runtime`, during invocation | Any operation, including those that flush; invoking itself is a `BorrowConflict` |
 | Interval tick (`Runtime::start_interval`) | `&mut Runtime`, in a flush at or after its due time, or in `Runtime::service_intervals` | Any operation, including those that flush; a flush nested in a tick does not run that tick again |
 | Command enabled predicate (`Runtime::command_enabled`) | `&Runtime` | Read-only queries; it cannot change state |
@@ -1132,11 +1134,37 @@ flush. Likewise, commands queued while queued commands are delivered, and
 reveals queued while queued reveals run, wait for the next flush. A nested flush
 does deliver due timers and mailbox messages.
 
-A task from `EventContext::defer` is bound to its widget and is cancelled if
-the widget is hidden or unmounted before delivery. `defer_detached` binds it
-to the widget's window instead, for work that outlives the widget, such as a
-jump a picker's choice starts while the picker closes; `Runtime::defer` binds
-it to nothing but the runtime.
+The three calls share one queue, delivered in enqueue order, with
+`Runtime::MAX_TASKS` places across them. They differ in what cancels a task
+before delivery and in the window selected while it runs:
+
+| Call | Cancelled before delivery when | Window selected while it runs |
+|---|---|---|
+| `EventContext::defer` | the runtime shuts down | its widget's window while the widget is mounted, wherever detaching or redocking moved it; once the widget is gone, the window it was queued in while that window is open; otherwise unchanged |
+| `EventContext::defer_while_shown` | its widget is unmounted or not effectively visible (hidden itself or through an ancestor, on a closed surface, in a hidden native window), or the runtime shuts down | its widget's window at delivery |
+| `Runtime::defer` | the runtime shuts down | unchanged: whichever window the delivering flush has selected |
+
+`EventContext::defer` is the deferral for application callbacks, including
+those on surfaces that close before the next flush (a `Select` change, a menu
+row, a picker's choice, a dialog's Save button) and in detached windows that
+the callback closes or redocks: the work runs after the closure, and an
+operation whose targets are gone reports their error, such as `Unmounted`,
+from the flush instead of disappearing. `defer_while_shown` serves a
+component's work on itself, which ends with the component as its timer does.
+Routing never cancels a task or fails; a window that is not open is skipped,
+and after the task the earlier selection is restored while its window is
+open. Work that must address the window the event came from captures
+`EventContext::native_window` and selects it in the task.
+
+These rules decide only whether a queued task is delivered. Once delivered, a
+task is executing and nothing cancels it: if its action calls
+`Runtime::shutdown`, the shutdown cancels the tasks still queued and refuses
+new ones, and the executing task records its own result, `Succeeded` or
+`Failed`, when the action returns. If the action panics, its receipt reads
+`Cancelled` as the task unwinds, and the tasks behind it stay queued until the
+next delivery or shutdown. From the moment shutdown begins, every call refuses
+with `Closed`, including from cleanup callbacks that shutdown runs, so no
+receipt is left `Pending` after `Runtime::shutdown` returns.
 
 ## Text and draft editing
 

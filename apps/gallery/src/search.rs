@@ -5,10 +5,9 @@
 //! [`Runtime::content_search`] and the commands with
 //! [`Runtime::commands_for`], then opens a [`QuickPick`] the user filters by
 //! typing. Choosing content jumps to it with [`Runtime::jump_to_content`] in a
-//! deferred task, since a jump flushes and the choose callback runs inside an
-//! event; choosing a command invokes it. The task is queued with
-//! [`EventContext::defer_detached`]: answering `Pending` closes the picker, and
-//! a task bound to a widget inside it would be cancelled.
+//! task queued with [`EventContext::defer`], since a jump flushes and the
+//! choose callback runs inside an event; the task runs after answering
+//! `Pending` has closed the picker. Choosing a command invokes it.
 use crate::{history::GalleryHistory, pages::layout::describe_outcome};
 use pert_ui::*;
 use std::{cell::RefCell, rc::Rc};
@@ -102,12 +101,12 @@ pub(crate) fn search_picker(
                 Ok(PickChoice::Done)
             }
             Some(SearchTarget::Content(target)) => {
-                // A jump flushes, so it runs in a deferred task; the picker
-                // closes and reopens with a message if the jump is refused.
-                // Closing hides this row, so the task is not bound to it.
+                // A jump flushes, so it runs in a deferred task, after the
+                // picker has closed; the picker reopens with a message if the
+                // jump is refused.
                 let outcome = cx.signal(None::<Result<(), String>>);
                 let writer = outcome.clone();
-                let _ = cx.defer_detached(move |ui| {
+                let _ = cx.defer(move |ui| {
                     let result = match ui.jump_to_content(&target) {
                         Ok(jump) => describe_jump(&jump),
                         Err(error) => Err(error.to_string()),

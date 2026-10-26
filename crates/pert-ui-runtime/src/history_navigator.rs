@@ -37,8 +37,8 @@ impl<T: Clone + Eq + 'static> Shared<T> {
 /// entry, in an event phase, and the application shows that place, for
 /// example with [`Runtime::reveal_child`](crate::Runtime::reveal_child) on
 /// its tab strips. That call flushes, so queue it from the callback with
-/// [`EventContext::defer_detached`]: choosing from the list closes it, and an
-/// operation queued with [`EventContext::defer`] from there can be cancelled. Because the history is already at that entry, the
+/// [`EventContext::defer`], which runs it after the list has closed. Because
+/// the history is already at that entry, the
 /// application must not record the restoration as a new visit; recording only
 /// [`ChangeOrigin::User`](crate::ChangeOrigin::User) selections from
 /// [`Tabs::on_select`](crate::Tabs::on_select) does that, as

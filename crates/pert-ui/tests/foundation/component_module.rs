@@ -70,7 +70,7 @@ mod widget {
                     cx.capture_pointer()?;
                 }
                 PointerKind::Press(PointerButton::Secondary) => {
-                    let task = cx.defer(|_| Ok(()))?;
+                    let task = cx.defer_while_shown(|_| Ok(()))?;
                     self.record.borrow_mut().task = Some(task);
                 }
                 PointerKind::Move => {

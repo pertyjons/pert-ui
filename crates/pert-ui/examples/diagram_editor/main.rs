@@ -24,7 +24,7 @@
 //! whose `on_change` records each picked fill as one undo step, commands in a
 //! menu bar, a context menu, a toolbar and a command palette, files opened
 //! through a `FileBrowser` dialog and saved on background threads, work a
-//! closing dialog starts queued with `EventContext::defer_detached`, a saved
+//! closing dialog starts queued with `EventContext::defer`, a saved
 //! tool-window layout, close admission and, with the `cpu` feature, PNG
 //! export through a second runtime in the light theme.
 //!

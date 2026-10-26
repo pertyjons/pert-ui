@@ -55,7 +55,7 @@ impl Component for Finish {
             self.report.clone(),
             self.interrupted.clone(),
         );
-        let _task = cx.defer(move |ui| {
+        let _task = cx.defer_while_shown(move |ui| {
             if !interrupted.get() {
                 *capture.borrow_mut() = Some(ui.capture_workspace());
                 *report.borrow_mut() = Some(ui.workspace_report().clone());

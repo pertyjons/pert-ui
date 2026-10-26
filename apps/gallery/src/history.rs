@@ -198,8 +198,8 @@ impl GalleryHistory {
     }
 
     /// Shows `place` from an event phase, after the event, and reports it in
-    /// the status bar. The operation is bound to the window rather than the
-    /// widget, since choosing an entry closes the list it was chosen from.
+    /// the status bar. The operation runs after the list the entry was chosen
+    /// from has closed.
     pub(crate) fn restore_later(
         &self,
         cx: &mut EventContext,
@@ -208,7 +208,7 @@ impl GalleryHistory {
     ) -> Result<(), RuntimeError> {
         let (history, place, status) = (self.clone(), entry.value().clone(), status.clone());
         let label = entry.label().to_owned();
-        cx.defer_detached(move |ui| {
+        cx.defer(move |ui| {
             history.show(ui, &place)?;
             status.set(format!("Returned to {label}."))
         })

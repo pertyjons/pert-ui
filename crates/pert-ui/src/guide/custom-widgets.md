@@ -108,8 +108,9 @@ binding: a write there fails with an error such as
 [`RuntimeError::WriteDuringUpdate`]. Input callbacks
 ([`Component::pointer_input`], [`Component::keyboard_event`]), command and
 button actions, mailbox handlers, [`Component::deliver_notifications`] and the
-work queued with [`EventContext::defer`] run in event phases, where writes
-are allowed. [`Component::cancel_input`] also runs outside the evaluation
+work queued with [`EventContext::defer`] or, for a component's work on itself
+that ends when it is hidden or removed, [`EventContext::defer_while_shown`]
+run in event phases, where writes are allowed. [`Component::cancel_input`] also runs outside the evaluation
 phases: it may restore the widget's own bindings but must not run application
 actions, and its rustdoc says how a failed restore is reported.
 
@@ -340,9 +341,8 @@ started on a background thread ([`Runtime::spawn`]) finishes later than the
 user moves on: compare what it was started for (a document, a generation of
 requests) with what is current before applying its result, and run writes to
 one file one at a time. Work a
-closing dialog starts belongs to the window rather than the dialog:
-[`EventContext::defer_detached`] queues it there, whereas [`EventContext::defer`]
-is skipped when its owner is hidden first. Close admission (`App::on_close`)
+closing dialog starts is queued with [`EventContext::defer`], which runs it
+after the dialog has closed. Close admission (`App::on_close`)
 and error handling (`App::on_error`) receive the [`Runtime`] but not what
 the initializer created; share the application with them through a slot the
 initializer fills, and decide what the callbacks do while it is still empty.

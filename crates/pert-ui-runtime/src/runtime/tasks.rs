@@ -1,14 +1,18 @@
 //! Bounded application operations applied outside component callbacks.
 use super::*;
 
-/// Result of an operation queued with [`EventContext::defer`].
+/// Result of an operation queued with [`EventContext::defer`],
+/// [`EventContext::defer_while_shown`] or [`Runtime::defer`].
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum TaskStatus {
     /// The callback has not run.
     Pending,
     /// The callback returned successfully.
     Succeeded,
-    /// The owner disappeared or the runtime shut down before delivery.
+    /// The operation did not complete: the runtime shut down before delivery;
+    /// for an operation queued with [`EventContext::defer_while_shown`], its
+    /// component was hidden or removed first; or its callback panicked and the
+    /// operation unwound.
     Cancelled,
     /// The callback failed; it is never replayed automatically.
     Failed(RuntimeError),
@@ -58,13 +62,20 @@ impl std::fmt::Debug for TaskReceipt {
 }
 
 type Action = Box<dyn FnOnce(&mut Runtime) -> Result<(), RuntimeError>>;
-/// What a queued operation's delivery depends on.
+/// What a queued operation's delivery and routing depend on.
 enum Owner {
-    /// Runs in the widget's window while the widget is mounted and visible.
-    Widget(Weak<Node>),
-    /// Runs in the window while it is open.
-    Window(Weak<native_windows::WindowShared>),
-    /// Runs in whichever window is selected.
+    /// [`EventContext::defer`]: cancelled only by shutdown; runs in the
+    /// widget's window while the widget is mounted, else in the window it was
+    /// queued in while that window is open.
+    Event {
+        widget: Weak<Node>,
+        origin: Weak<native_windows::WindowShared>,
+    },
+    /// [`EventContext::defer_while_shown`]: runs in the widget's window while
+    /// the widget is mounted and effectively visible, and is cancelled
+    /// otherwise.
+    Shown(Weak<Node>),
+    /// [`Runtime::defer`]: runs in whichever window is selected.
     Application,
 }
 pub(super) struct Queued {
@@ -80,6 +91,12 @@ impl Drop for Queued {
     }
 }
 fn enqueue(shared: &Rc<Shared>, owner: Owner, action: Action) -> Result<TaskReceipt, RuntimeError> {
+    // Shutdown clears the queue early in teardown; an operation queued after
+    // that, such as from a `cancel_input` that removal calls, would never be
+    // delivered or cancelled.
+    if shared.shutting_down.get() {
+        return Err(RuntimeError::Closed);
+    }
     shared.writable()?;
     let mut queue = shared.tasks.borrow_mut();
     if queue.len() >= Runtime::MAX_TASKS {
@@ -96,24 +113,53 @@ fn enqueue(shared: &Rc<Shared>, owner: Owner, action: Action) -> Result<TaskRece
 
 impl EventContext {
     /// Queues an application operation with mutable runtime access for the next
-    /// flush, before component evaluation. Use it to create document parameters,
-    /// register commands or change a tree in response to ordinary button input.
-    /// Background work starts with [`Self::spawn`].
+    /// flush, before component evaluation. This is the deferral for
+    /// application callbacks: use it to create document parameters, register
+    /// commands, open or save a document or change a tree in response to
+    /// input. Background work starts with [`Self::spawn`].
     ///
     /// Timing class: [at the next flush](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#at-the-next-flush).
     ///
-    /// The callback runs once in the originating window if its widget is still
-    /// mounted and logically visible. Otherwise its receipt becomes
-    /// `Cancelled`. A dropped receipt still surfaces `Failed` through the
-    /// flush, but `Cancelled` only through the receipt, so keep it when a
-    /// skipped operation matters, such as a save. Focus/capture are not
-    /// transferred to replacement widgets. New operations queued during
-    /// delivery wait for the next flush. Errors propagate from flush and remain
-    /// in the receipt; partial application work is not rolled back or replayed.
-    /// A returned callback error is an explicit application operation failure,
-    /// including a nested runtime error it chooses to propagate; a caught error
-    /// does not classify subsequent runtime work. Callbacks must return
-    /// promptly. This is UI-thread work, never a callback-safe endpoint.
+    /// The operation belongs to the application, not to the widget: only
+    /// runtime shutdown cancels it before delivery. It runs once at the next
+    /// flush even when the widget is hidden or removed first, so a callback
+    /// on a surface that closes, such as a [`Select`](crate::Select) change, a
+    /// menu row, a [`QuickPick`](crate::QuickPick) choice or a dialog's Save
+    /// button, queues its work here, and the work runs after the surface has
+    /// closed. It also runs when the callback closes or redocks its detached
+    /// window. An operation whose targets may be gone by then reports their
+    /// error, such as `Unmounted`, from the flush; work a component does on
+    /// itself, which should be skipped with it, uses
+    /// [`Self::defer_while_shown`].
+    ///
+    /// At delivery the operation runs with the widget's window selected while
+    /// the widget is mounted, wherever detaching or redocking has moved it;
+    /// once the widget is gone, with the window it was queued in (the
+    /// [`Self::native_window`] of this call) while that window is open; and
+    /// otherwise with whichever window the delivering flush has selected.
+    /// Routing never cancels the operation or fails. Work that must address
+    /// the window the event came from, wherever the widget is later, captures
+    /// [`Self::native_window`] and selects it in the operation. After the
+    /// operation the earlier selection is restored while its window is open.
+    ///
+    /// Cancellation reaches only queued operations. Once delivered, an
+    /// operation is executing and nothing cancels it: if it calls
+    /// [`Runtime::shutdown`], the shutdown cancels the operations still queued
+    /// and refuses new ones, and this operation's receipt records its own
+    /// result when it returns. If it panics, its receipt reads `Cancelled` as
+    /// it unwinds, and the operations behind it stay queued until the next
+    /// delivery or shutdown.
+    ///
+    /// A dropped receipt still surfaces `Failed` through the flush, but
+    /// `Cancelled` only through the receipt, so keep it when a skipped
+    /// operation matters, such as a save. Focus/capture are not transferred
+    /// to replacement widgets. New operations queued during delivery wait for
+    /// the next flush. Errors propagate from flush and remain in the receipt;
+    /// partial application work is not rolled back or replayed. A returned
+    /// callback error is an explicit application operation failure, including
+    /// a nested runtime error it chooses to propagate; a caught error does not
+    /// classify subsequent runtime work. Callbacks must return promptly. This
+    /// is UI-thread work, never a callback-safe endpoint.
     ///
     /// The callback may call any runtime operation, including those that flush
     /// internally, such as [`Runtime::reveal_child`], [`Runtime::reveal`],
@@ -121,36 +167,6 @@ impl EventContext {
     /// settles the tree but delivers no further deferred tasks: tasks queued
     /// before delivery started still run in order after this one, and tasks
     /// queued from inside it wait for the next flush.
-    ///
-    /// # Errors
-    /// Returns `TaskQueueFull` at [`Runtime::MAX_TASKS`] pending operations,
-    /// or the runtime phase/shutdown error, without accepting the operation.
-    pub fn defer(
-        &self,
-        action: impl FnOnce(&mut Runtime) -> Result<(), RuntimeError> + 'static,
-    ) -> Result<TaskReceipt, RuntimeError> {
-        enqueue(
-            &self.node.shared,
-            Owner::Widget(Rc::downgrade(&self.node)),
-            Box::new(action),
-        )
-    }
-
-    /// Queues an application operation like [`Self::defer`], but bound to the
-    /// widget's window instead of the widget: it still runs when the widget is
-    /// hidden or unmounted before the next flush, and its receipt becomes
-    /// `Cancelled` only when that window has closed or the runtime shut down.
-    ///
-    /// Timing class: [at the next flush](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#at-the-next-flush).
-    ///
-    /// Use it for work the callback starts that outlives the widget's
-    /// presence, such as a jump that a [`QuickPick`](crate::QuickPick)'s choose
-    /// callback starts before answering [`PickChoice::Pending`](crate::PickChoice::Pending):
-    /// that answer closes the picker, so an operation queued with
-    /// [`Self::defer`] from inside it is cancelled whenever the picker closes
-    /// before the flush delivers it. The callback runs in the window the
-    /// widget was in when the operation was queued. Delivery order, errors,
-    /// nested flushes and capacity match [`Self::defer`].
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
@@ -171,9 +187,9 @@ impl EventContext {
     ///         Element::new("doc", Label::new("Document")),
     ///         move |cx, item| {
     ///             // Answering `Pending` closes the picker, which hides the row
-    ///             // this callback runs for, so the work is bound to the window.
+    ///             // this callback runs for; the queued work still runs.
     ///             let (result, key) = (writer.clone(), item.key.clone());
-    ///             let _receipt = cx.defer_detached(move |_ui| {
+    ///             let _receipt = cx.defer(move |_ui| {
     ///                 // Work that flushes, such as revealing a page, goes here.
     ///                 result.set(Some(key))
     ///             })?;
@@ -195,14 +211,93 @@ impl EventContext {
     ///
     /// # Errors
     /// Returns `TaskQueueFull` at [`Runtime::MAX_TASKS`] pending operations,
-    /// or the runtime phase/shutdown error, without accepting the operation.
-    pub fn defer_detached(
+    /// or the runtime phase/shutdown error, including from cleanup callbacks
+    /// that run during [`Runtime::shutdown`], without accepting the operation.
+    pub fn defer(
         &self,
         action: impl FnOnce(&mut Runtime) -> Result<(), RuntimeError> + 'static,
     ) -> Result<TaskReceipt, RuntimeError> {
         enqueue(
             &self.node.shared,
-            Owner::Window(Rc::downgrade(&self.node.window())),
+            Owner::Event {
+                widget: Rc::downgrade(&self.node),
+                origin: Rc::downgrade(&self.node.window()),
+            },
+            Box::new(action),
+        )
+    }
+
+    /// Queues an operation on this component's behalf, cancelled when the
+    /// component is hidden or removed before the next flush. It is for custom
+    /// component authors (see [`Component`]), for work a component does on
+    /// itself, such as describing its own children again from an input hook,
+    /// that should end with the component as its
+    /// [`set_timer`](Self::set_timer) deadline does. Application callbacks use
+    /// [`Self::defer`].
+    ///
+    /// Timing class: [at the next flush](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#at-the-next-flush).
+    ///
+    /// The receipt reads `Cancelled` without running the operation when, at
+    /// delivery, the component is unmounted or not effectively visible: hidden
+    /// itself or through an ancestor, on a surface that has closed, or in a
+    /// native window that is hidden. Runtime shutdown also cancels it.
+    /// Otherwise it runs with the component's window at delivery selected,
+    /// wherever detaching or redocking has moved it. Delivery order, receipts,
+    /// errors, nested flushes and capacity match [`Self::defer`], with which
+    /// it shares one queue.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{
+    ///     Component, Element, EventContext, InputOutcome, KeyAction, KeyCode, KeyEvent,
+    ///     KeyTransition, KeyboardState, Runtime, RuntimeError, TaskReceipt, TaskStatus,
+    ///     UpdateContext,
+    /// };
+    /// use std::{cell::RefCell, rc::Rc, time::Duration};
+    ///
+    /// /// Refreshes its own content one flush after Enter, while it is shown.
+    /// struct Refreshing(Rc<RefCell<Option<TaskReceipt>>>);
+    /// impl Component for Refreshing {
+    ///     fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> { Ok(()) }
+    ///     fn focusable(&self) -> bool { true }
+    ///     fn keyboard_event(
+    ///         &mut self,
+    ///         cx: &mut EventContext,
+    ///         event: KeyEvent,
+    ///         _: &KeyboardState,
+    ///     ) -> Result<InputOutcome, RuntimeError> {
+    ///         if event.transition == KeyTransition::Pressed {
+    ///             // Describing this component's children again would go here.
+    ///             *self.0.borrow_mut() = Some(cx.defer_while_shown(|_ui| Ok(()))?);
+    ///         }
+    ///         Ok(InputOutcome::Handled)
+    ///     }
+    /// }
+    ///
+    /// let mut ui = Runtime::new();
+    /// let receipt = Rc::new(RefCell::new(None));
+    /// let id = ui.mount_tree(Element::new("refreshing", Refreshing(receipt.clone())))?;
+    /// ui.focus(&id)?;
+    /// ui.key_input(KeyCode::Enter, KeyAction::Press)?;
+    /// // Hidden before the flush delivers it: the refresh is skipped.
+    /// ui.set_visible(&id, false)?;
+    /// ui.flush(Duration::ZERO)?;
+    /// let status = receipt.borrow().as_ref().map(TaskReceipt::status);
+    /// assert_eq!(status, Some(TaskStatus::Cancelled));
+    /// # Ok::<(), RuntimeError>(())
+    /// ```
+    ///
+    /// # Errors
+    /// Returns `TaskQueueFull` at [`Runtime::MAX_TASKS`] pending operations,
+    /// or the runtime phase/shutdown error, including from cleanup callbacks
+    /// that run during [`Runtime::shutdown`], without accepting the operation.
+    pub fn defer_while_shown(
+        &self,
+        action: impl FnOnce(&mut Runtime) -> Result<(), RuntimeError> + 'static,
+    ) -> Result<TaskReceipt, RuntimeError> {
+        enqueue(
+            &self.node.shared,
+            Owner::Shown(Rc::downgrade(&self.node)),
             Box::new(action),
         )
     }
@@ -214,15 +309,13 @@ impl EventContext {
     ///
     /// A callback has no runtime, so this queues the start: it is the
     /// operation `|ui| ui.spawn(work, deliver).map(|_| ())` queued with
-    /// [`Self::defer_detached`]. The thread starts at the beginning of the
-    /// next flush, before component evaluation, as every queued operation
-    /// does. The start belongs to the widget's window, not to the widget: it
-    /// still runs when the widget is hidden or removed before that flush, as a
-    /// Save button that closes its dialog is, and is cancelled only when the
-    /// window has closed or the runtime has shut down first. Once started, the
-    /// result follows [`Runtime::spawn`]'s rules, which the window does not
-    /// govern: results are delivered in arrival order, a panicking `work`
-    /// fails the flush that receives its outcome with
+    /// [`Self::defer`]. The thread starts at the beginning of the next flush,
+    /// before component evaluation, as every queued operation does. The start
+    /// belongs to the application, as `defer`'s operation does: it runs at the
+    /// next flush whatever happens to the widget or its window, and only
+    /// shutdown cancels it before it starts. Once started, the result follows
+    /// [`Runtime::spawn`]'s rules: results are delivered in arrival order, a
+    /// panicking `work` fails the flush that receives its outcome with
     /// [`RuntimeError::BackgroundPanicked`], and nothing is delivered after
     /// shutdown.
     ///
@@ -234,14 +327,15 @@ impl EventContext {
     ///   [`Runtime::MAX_BACKGROUND_TASKS`] tasks wait, `BackgroundSpawn` with
     ///   the operating system's reason, or `Exhausted`. As for every queued
     ///   operation, the error also propagates from that flush.
-    /// - [`TaskStatus::Cancelled`]: the window closed, or the runtime shut
-    ///   down, before the start.
+    /// - [`TaskStatus::Cancelled`]: the runtime shut down before the start.
     ///
     /// There is no handle to cancel the delivery. Code that must discard a
-    /// result that has not been delivered queues [`Runtime::spawn`] with
-    /// [`Self::defer`] and keeps the [`BackgroundTask`](crate::BackgroundTask)
-    /// it returns. `work` receives no UI handles; return what the interface
-    /// needs and let `deliver` write it to signals.
+    /// result that has not been delivered, or tie the start to a component,
+    /// queues [`Runtime::spawn`] itself, with [`Self::defer`] or
+    /// [`Self::defer_while_shown`], and keeps the
+    /// [`BackgroundTask`](crate::BackgroundTask) it returns. `work` receives
+    /// no UI handles; return what the interface needs and let `deliver` write
+    /// it to signals.
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
@@ -277,7 +371,8 @@ impl EventContext {
     ///
     /// # Errors
     /// Returns `TaskQueueFull` at [`Runtime::MAX_TASKS`] pending operations,
-    /// or the runtime phase/shutdown error, without accepting the operation.
+    /// or the runtime phase/shutdown error, including from cleanup callbacks
+    /// that run during [`Runtime::shutdown`], without accepting the operation.
     /// [`Runtime::spawn`]'s own refusals arrive later, in the receipt and from
     /// the flush that starts the work.
     pub fn spawn<T: Send + 'static>(
@@ -285,22 +380,27 @@ impl EventContext {
         work: impl FnOnce() -> T + Send + 'static,
         deliver: impl FnOnce(T) -> Result<(), RuntimeError> + 'static,
     ) -> Result<TaskReceipt, RuntimeError> {
-        self.defer_detached(move |ui| ui.spawn(work, deliver).map(|_| ()))
+        self.defer(move |ui| ui.spawn(work, deliver).map(|_| ()))
     }
 }
 impl Runtime {
-    /// Maximum number of accepted, undelivered application operations.
+    /// Maximum number of accepted, undelivered application operations, across
+    /// [`EventContext::defer`], [`EventContext::defer_while_shown`] and
+    /// [`Self::defer`].
     pub const MAX_TASKS: usize = 64;
 
     /// Queues an application-owned operation, independent of a widget lifetime.
-    /// Delivery, errors and capacity match [`EventContext::defer`]; only runtime
-    /// shutdown cancels it before delivery. The selected window at delivery is
-    /// unspecified: select one explicitly for window-specific work.
+    /// Delivery, receipts, errors and capacity match [`EventContext::defer`],
+    /// including that only runtime shutdown cancels it before delivery and
+    /// that nothing cancels it once it executes. The selection is not changed:
+    /// the operation runs with whichever window the delivering flush has
+    /// selected; select one explicitly for window-specific work.
     ///
     /// Timing class: [at the next flush](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#at-the-next-flush).
     ///
     /// # Errors
-    /// Returns `TaskQueueFull` or the runtime phase/shutdown error.
+    /// Returns `TaskQueueFull` or the runtime phase/shutdown error, `Closed`
+    /// from the moment [`Self::shutdown`] begins.
     pub fn defer(
         &self,
         action: impl FnOnce(&mut Self) -> Result<(), RuntimeError> + 'static,
@@ -334,7 +434,16 @@ impl Runtime {
                 break;
             };
             let window = match &task.owner {
-                Owner::Widget(owner) => {
+                Owner::Event { widget, origin } => widget
+                    .upgrade()
+                    .filter(|n| n.mounted.get())
+                    .map(|n| n.window())
+                    .or_else(|| origin.upgrade())
+                    // Routing never cancels or fails: a closed window is
+                    // skipped, not selected.
+                    .filter(|w| w.mounted.get())
+                    .map(native_windows::NativeWindowId),
+                Owner::Shown(owner) => {
                     let Some(node) = owner
                         .upgrade()
                         .filter(|n| n.mounted.get() && n.visible.get())
@@ -342,12 +451,6 @@ impl Runtime {
                         continue;
                     };
                     Some(native_windows::NativeWindowId(node.window()))
-                }
-                Owner::Window(owner) => {
-                    let Some(window) = owner.upgrade().filter(|w| w.mounted.get()) else {
-                        continue;
-                    };
-                    Some(native_windows::NativeWindowId(window))
                 }
                 Owner::Application => None,
             };

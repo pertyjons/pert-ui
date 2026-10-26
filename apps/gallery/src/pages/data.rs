@@ -640,26 +640,23 @@ pub(crate) fn images(ui: &Runtime) -> Result<Element, AppError> {
         let (generation, current) = (latest.get(), latest.clone());
         let (target, status) = (target.clone(), status.clone());
         status.set("Decoding…".to_owned())?;
-        let _task = cx.defer(move |ui| {
-            let _work = ui.spawn(
-                || images::decode(BADGE),
-                move |result| {
-                    if generation != current.get() {
-                        return Ok(());
+        let _task = cx.spawn(
+            || images::decode(BADGE),
+            move |result| {
+                if generation != current.get() {
+                    return Ok(());
+                }
+                match result {
+                    Ok(image) => {
+                        target.set(Some(image))?;
+                        status.set(format!(
+                            "Decoded on a worker thread (request {generation})."
+                        ))
                     }
-                    match result {
-                        Ok(image) => {
-                            target.set(Some(image))?;
-                            status.set(format!(
-                                "Decoded on a worker thread (request {generation})."
-                            ))
-                        }
-                        Err(error) => status.set(format!("Decoding failed: {error}")),
-                    }
-                },
-            )?;
-            Ok(())
-        })?;
+                    Err(error) => status.set(format!("Decoding failed: {error}")),
+                }
+            },
+        )?;
         Ok(())
     });
     // SVG: one monochrome mark rasterized at three sizes and tinted by the

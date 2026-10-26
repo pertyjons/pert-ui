@@ -432,9 +432,9 @@ impl MenuItem {
     ///
     /// The handler runs synchronously after the row's own write succeeded, once
     /// the menu has requested its closure, with the event context of the list or
-    /// menu-bar title that was activated. A list is hiding by then, so work that
-    /// must outlive it is queued with
-    /// [`EventContext::defer_detached`](crate::EventContext::defer_detached).
+    /// menu-bar title that was activated. A list is hiding by then; work queued
+    /// with [`EventContext::defer`](crate::EventContext::defer) runs after it
+    /// has closed.
     /// Writes to the signal from elsewhere, choosing a radio row that is already
     /// selected, a refused write and deselected sibling rows report nothing.
     /// A failing handler keeps the write, propagates as the row's error and is not

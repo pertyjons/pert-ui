@@ -17,6 +17,7 @@ mod click_counter;
 mod component_module;
 mod composition;
 mod coordinates;
+mod deferral;
 mod described;
 mod failure_sites;
 mod flex_layout;

@@ -585,8 +585,8 @@ numbers with an application-chosen decimal separator and digit grouping.
 Boolean controls and single-choice controls support `on_change` for successful
 user writes or remote submissions; a controlled Checkbox or Toggle, which writes
 nothing, reports the user's proposal instead. External writes and authority
-responses do not invoke it. Select closes its list before calling the handler; use
-`EventContext::defer_detached` for application work that must outlive that list.
+responses do not invoke it. Select closes its list before calling the handler;
+work queued with `EventContext::defer` runs after the list has closed.
 MultiSelect's `on_change` reports each user write with the values written: a
 toggle under EachToggle, a chip removal, and an OnClose draft written by a
 committing close. Discarded and conflicting drafts report nothing.
