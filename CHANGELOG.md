@@ -12,20 +12,25 @@ record is `plans/usability/layering-L1-classification.md`.
   conformance helpers, retained generated children, layout and focus hooks,
   `Notifier` reporting, stacking, hit testing and pointer refresh, content
   search hooks, host-loaded data, editor sessions, workspace hooks, custom
-  semantics and what a custom host does) moves under a new heading, "For
-  component and host authors", after the application sections; each
+  semantics, failure cleanup in components and what a custom host does)
+  moves under a new heading, "For component and host authors", after the
+  application sections; each
   application section keeps its guarantees, with a pointer where it named a
   moved hook. A table's cell editing gets its own application section, "Table
   cell edits".
 - Documentation: a new `docs/internals.md` ("Implementation notes") holds
-  only implementation rationale and internal ordering moved from
-  contracts.md: surface admission recovery and command query mechanics,
-  notification preparation and budgets, failure provenance, content search's
-  exclusion after a failed reconciliation and the order of queued shutdown
-  errors. contracts.md keeps a summary of each guarantee and links the notes.
+  only mechanisms moved from contracts.md: how command queries walk surface
+  declarations, how notification delivery is prepared and how ToolWindows
+  slots and coalesces its housekeeping, and the weak provenance and request
+  lineage behind failure cleanup. Every guarantee an application or extension
+  author observes stays in contracts.md, which links the notes.
 - Documentation: contracts.md defines callback timing classes, derived from a
   classification of every public callback: in the input, after settling, at
-  the next flush, at parameter delivery and evaluation, with the callbacks
+  the next flush, at parameter delivery and evaluation (in the input also
+  covers focus changes, where an editor saves on focus loss; a numeric
+  editor's normalizer and its number format's parser are evaluation
+  callbacks, since the editor evaluates its draft in update, paint and
+  inspection), with the callbacks
   that keep a moment of their own and the excluded host-integration
   callbacks. Access, coalescing, cancellation and failure and replay are
   defined as separate properties. Each classified callback's rustdoc names
@@ -33,7 +38,9 @@ record is `plans/usability/layering-L1-classification.md`.
   callback (`Button::new`, `controlled`, `Breadcrumb::new`, `QuickPick::new`
   and others), normalizers, deferral, `spawn`, `mailbox`, `start_interval`,
   parameter sinks, binding derivations, description factories, matchers and
-  number formats.
+  number formats. The table of callbacks that receive the runtime adds
+  interval ticks and names `App`'s callbacks, and geometry notifications
+  state that a `RegionLayout` reports once per divider.
 - Documentation: the guide's state and layout chapters open with "Choosing a
   way" tables: where a control's value comes from (`new`, `controlled`,
   `for_parameter`, with the per-row and retained row forms as advanced),
@@ -45,7 +52,8 @@ record is `plans/usability/layering-L1-classification.md`.
   the controlled form first and the per-row binding as the advanced form for
   a control without a controlled form.
 - Documentation: `Runtime`'s page indexes its methods by audience
-  (applications, tests and inspection, hosts), and the `Component` trait's
+  (applications; tests and inspection, including the host methods a headless
+  test uses to stand in for a host; hosts), and the `Component` trait's
   page groups its hooks by concern with the few a typical widget implements;
   the declaration order is unchanged.
 - AGENTS.md: the design-reading list includes `docs/internals.md`, and the

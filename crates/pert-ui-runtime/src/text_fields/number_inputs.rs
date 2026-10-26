@@ -2144,7 +2144,9 @@ macro_rules! number_shared {
             /// Adjusts a changed value before it is validated and saved, such as
             /// rounding it to tenths, or refuses it with an [`InputRejection`].
             ///
-            /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input), at the save it checks.
+            /// Timing class: [evaluation](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#evaluation): the editor normalizes its draft
+            /// whenever it evaluates it, in update, paint and inspection as well as at a
+            /// save.
             ///
             /// The order is parse, normalize, validate (finite, within the
             /// range), prepare the display and write; a failure at any stage

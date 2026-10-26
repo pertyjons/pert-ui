@@ -1,6 +1,6 @@
 //! The drag-and-drop contract, through the facade.
 //!
-//! These pin the rules in [drag and drop](../../../docs/contracts.md): how a
+//! These pin the rules in [drag and drop](../../../../docs/contracts.md): how a
 //! session starts, how its target is found while the source holds the capture,
 //! what each side is told and in which order, and every way a session ends.
 use pert_ui::*;

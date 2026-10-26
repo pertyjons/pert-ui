@@ -3682,8 +3682,9 @@ pub struct FlushReport {
 /// # Methods by audience
 ///
 /// The methods are listed by who calls them. An application needs the first
-/// group; tests and tools add the second; only a custom host needs the
-/// third. Each method's own page holds its contract.
+/// group; tests and tools add the second, which includes the host methods a
+/// headless test uses to stand in for a host; a custom host needs the third.
+/// Each method's own page holds its contract.
 ///
 /// **Applications.** What an application's own code calls.
 ///
@@ -3753,6 +3754,12 @@ pub struct FlushReport {
 ///   [`try_event`](Self::try_event), [`key_input`](Self::key_input),
 ///   [`text_input`](Self::text_input), [`pointer_input`](Self::pointer_input),
 ///   [`mount`](Self::mount).
+/// - Standing in for a host: [`set_viewport`](Self::set_viewport),
+///   [`viewport`](Self::viewport),
+///   [`command_key_input`](Self::command_key_input),
+///   [`native_modifiers`](Self::native_modifiers),
+///   [`keyboard`](Self::keyboard), [`paint`](Self::paint),
+///   [`set_capture_support`](Self::set_capture_support).
 /// - Inspection: [`inspect`](Self::inspect),
 ///   [`inspect_with`](Self::inspect_with), [`query`](Self::query),
 ///   [`query_with`](Self::query_with), [`inspection_id`](Self::inspection_id),
@@ -3767,8 +3774,9 @@ pub struct FlushReport {
 ///   [`clear_profile`](Self::clear_profile),
 ///   [`request_capture`](Self::request_capture).
 ///
-/// **Hosts.** What only a host that drives the runtime in place of `App`
-/// calls.
+/// **Hosts.** What a host that drives the runtime in place of `App` calls
+/// besides the methods above; a headless test calls some of these too when it
+/// stands in for a host.
 ///
 /// - Event loop: [`flush_windows`](Self::flush_windows),
 ///   [`flush_commands`](Self::flush_commands),
@@ -3780,26 +3788,21 @@ pub struct FlushReport {
 ///   [`set_wake_delivery`](Self::set_wake_delivery).
 /// - Windows and presentation: [`select_window`](Self::select_window),
 ///   [`current_window`](Self::current_window),
-///   [`set_viewport`](Self::set_viewport), [`viewport`](Self::viewport),
 ///   [`set_window_visible`](Self::set_window_visible),
 ///   [`set_presentation_rate`](Self::set_presentation_rate),
 ///   [`presentation_rate`](Self::presentation_rate),
-///   [`needs_paint`](Self::needs_paint), [`paint`](Self::paint),
-///   [`invalidate`](Self::invalidate),
+///   [`needs_paint`](Self::needs_paint), [`invalidate`](Self::invalidate),
 ///   [`has_presentation_requests`](Self::has_presentation_requests),
 ///   [`take_presentation_requests`](Self::take_presentation_requests),
 ///   [`prepare_detach`](Self::prepare_detach),
 ///   [`commit_detach`](Self::commit_detach), [`redock`](Self::redock),
 ///   [`close_detached_window`](Self::close_detached_window),
 ///   [`native_window_options`](Self::native_window_options).
-/// - Native input: [`command_key_input`](Self::command_key_input),
-///   [`native_modifiers`](Self::native_modifiers),
-///   [`text_preedit`](Self::text_preedit),
+/// - Native input: [`text_preedit`](Self::text_preedit),
 ///   [`text_input_state`](Self::text_input_state),
-///   [`cursor_icon`](Self::cursor_icon), [`keyboard`](Self::keyboard),
-///   [`clear_focus`](Self::clear_focus), [`cancel_input`](Self::cancel_input).
-/// - Captures: [`set_capture_support`](Self::set_capture_support),
-///   [`captures_supported`](Self::captures_supported),
+///   [`cursor_icon`](Self::cursor_icon), [`clear_focus`](Self::clear_focus),
+///   [`cancel_input`](Self::cancel_input).
+/// - Captures: [`captures_supported`](Self::captures_supported),
 ///   [`pending_captures`](Self::pending_captures),
 ///   [`capture_scene`](Self::capture_scene),
 ///   [`complete_capture`](Self::complete_capture).

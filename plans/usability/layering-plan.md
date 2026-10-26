@@ -418,8 +418,8 @@ All six were decided on 2026-10-26 as recommended.
 
 ## Progress
 
-- **L1 (0.3.71), implemented 2026-10-26:** commit and review to be
-  recorded.
+- **L1 (0.3.71), implemented 2026-10-26:** 6360b00 and its review fix;
+  done after Codex's recheck.
   - **contracts.md by obligation:** the per-obligation classification is
     in [layering-L1-classification.md](layering-L1-classification.md).
     Only implementation rationale and internal ordering moved, to
@@ -456,6 +456,28 @@ All six were decided on 2026-10-26 as recommended.
     runtime's next deadline (a derived binding keeps the runtime due); a
     few application paragraphs gained one-sentence summaries where they
     named moved material.
+  - **Review (Codex):** needs fixes, with one blocker and five should-fix
+    points and a nit, all verified: observable guarantees (cancellation
+    rules custom components rely on, search exclusion after a failed
+    reconciliation, cleanup-error delivery) had moved to
+    `docs/internals.md`; numeric normalizers and parsers were classed "in
+    the input" although they run during update, paint and inspection;
+    "in the input" omitted saves during explicit focus changes; the
+    `Runtime` index made test operations host-only; `RegionLayout`
+    reports once per divider, not per component; the runtime-access table
+    omitted interval ticks; and a test's link to contracts.md was broken.
+    **The fix:** every moved sentence was tested again by whether an
+    application or extension author observes or relies on it, and each
+    one that does is back in contracts.md, with a new extension section
+    "Failure cleanup in components"; `internals.md` keeps mechanisms only,
+    and no classification row remains purely maintainer. Numeric
+    normalizers and parsers are evaluation callbacks; "in the input"
+    covers focus changes and states where errors go; the index has a
+    "Standing in for a host" group under tests; geometry and the access
+    table are corrected; the link is fixed. After it: the L1 gate again
+    (formatting, Clippy, doctests, rustdoc, the API listing gate with no
+    change, the link check with only pre-existing errors, `git diff
+    --check`).
 
 ## Review record
 

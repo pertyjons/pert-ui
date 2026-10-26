@@ -93,7 +93,9 @@ impl<T> NumberFormat<T> {
     /// text until `edit_text` overrides it. `parse` interprets text in those display
     /// units and returns a canonical value or a user-visible validation error.
     ///
-    /// Timing class: [evaluation](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#evaluation) for `display`; `parse` runs [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input), at a save.
+    /// Timing class: [evaluation](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#evaluation), for `display` and `parse`: an
+    /// editor parses its draft whenever it evaluates it, in update, paint and
+    /// inspection as well as at a save.
     pub fn new(
         width_hint: impl Into<String>,
         display: impl Fn(T) -> String + 'static,

@@ -54,14 +54,14 @@ the moved mechanism.
 | 25 | Menus, 279-283 | menu open-state ownership and callback replacement on redescription | A | stays (the plan names it) |
 | 26 | Menus, 285-292 | QuickPick and CommandPalette configuration per session | A | stays |
 | 27 | Menus, 294-295 | a changed surface kind is admitted again | A | stays |
-| 28 | Menus, 297-298 | error recovery records the kind and retries admission | M | internals, "Surface admission and command queries" |
+| 28 | Menus, 297-298 | an interrupted admission is retried with the current kind | A | stays (corrected after review; the recording mechanism is in internals) |
 | 29 | Menus, 298-304 | pending and downgraded ApplicationDialog blocking; hidden dialogs | A | stays |
-| 30 | Menus, 300-302 | no-flush queries read current kind rather than cached admission kind | M | internals |
+| 30 | Menus, 300-302 | no-flush queries judge blocking by current visibility and kind, with local dialog scope and application-command restrictions | A | stays (corrected after review) |
 | 31 | Menus, 306-308 | command queries see current declarations, evaluate no pending update, run no admission callback | A | stays |
-| 32 | Menus, 306-311 | "missing from the last synchronized frontier"; one pass per listing; frontier without a second walk | M | internals |
+| 32 | Menus, 306-311 | queries see newly shown roots no flush has synchronized (A, stays); one pass per listing and the frontier without a second walk (M) | A, M | split: the guarantee stays, the mechanism is in internals |
 | 33 | Menus, 309-310 | invocation and native key routing flush every root before admission | A | stays |
 | 34 | Menus, 313-314 | a native-key preflush failure prevents dispatch and cancels input | A | "Failures and input cleanup" |
-| 35 | Menus, 314-315 | older and external failures keep their preservation policy | M | internals, "Failure provenance and input cleanup" |
+| 35 | Menus, 314-315 | older and external failures keep their preservation policy | A | "Failures and input cleanup" (corrected after review) |
 | 36 | Permissions, 319-332 | `Permission` composition; bound permissions at update; table and list restrictions | A | stays |
 | 37 | Permissions, 334-340 | adjective versus `*_permission` | A | stays |
 | 38 | Permissions, 342-345 | bool part properties | A | stays |
@@ -95,15 +95,15 @@ the moved mechanism.
 | 66 | Component notifications, 678-686 | input entry points settle; failing callbacks; removed components and callbacks | A | stays |
 | 67 | Delivery order, 690 | global FIFO across visible windows | A | stays |
 | 68 | Delivery order, 692-694 | hidden windows retain; hidden components in visible windows receive | A | stays |
-| 69 | Delivery order, 694-696 | preparation owner, repeated settlement, frontiers not replayed | M | internals, "Notification delivery" |
+| 69 | Delivery order, 694-696 | settlement repeats after callback writes without delivering mailboxes, tasks or timers again (A, stays); preparation follows the current owner (M) | A, M | split: the guarantee stays, the mechanism is in internals |
 | 70 | Delivery order, 696-697 | callback failure consumes its request; preparation failure retains | A | stays |
 | 71 | Delivery order, 699-701 | reentrant requests: same flush or next | A | stays |
-| 72 | Delivery order, 701-704 | notification and reveal budgets | M | internals |
-| 73 | Delivery order, 706-709 | ToolWindows delivery slots; housekeeping coalescing | M | internals |
-| 74 | Failure provenance, 713-718 | which failures cancel which input | M | internals; a one-paragraph A summary stays ("Failures and input cleanup") |
-| 75 | Failure provenance, 720-735 | collective errors, headless cleanup, fresh contexts, weak provenance | M | internals |
+| 72 | Delivery order, 701-704 | notification follow-ups share the wave budget; reveals keep theirs | A | stays (corrected after review) |
+| 73 | Delivery order, 706-709 | ToolWindows reports interleaved changes in request order (A, stays); delivery slots and housekeeping coalescing (M) | A, M | split: the guarantee stays, the mechanism is in internals |
+| 74 | Failure provenance, 713-718 | which failures cancel which input | W | "Failure cleanup in components", with an A summary in "Failures and input cleanup" (corrected after review) |
+| 75 | Failure provenance, 720-735 | collective errors, headless cleanup, cancellation not repeated, fresh contexts, blocked releases, no retargeting (W); weak provenance and request lineage (M) | W, M | split: "Failure cleanup in components"; the mechanism is in internals (corrected after review) |
 | 76 | Failure provenance, 737-742 | command actions' and deferred tasks' returned-error boundary | A | stays |
-| 77 | Failure provenance, 742-744 | reveal and parameter delivery provenance | M | internals |
+| 77 | Failure provenance, 742-744 | a failing sink cancels no input (A); a reveal hook's failure belongs to the reveal's request (W); weak provenance (M) | A, W, M | split (corrected after review) |
 | 78 | Failure provenance, 746-747 | the hook and `Notifier` are public | W | "Reporting component notifications" |
 | 79 | Producer data, 751-760 | callback-safe endpoints, mailbox frontiers, `keep_alive` | A | stays; names its timing class |
 | 80 | Producer data, 762-773 | `Runtime::spawn` and `EventContext::spawn` | A | stays |
@@ -123,18 +123,18 @@ the moved mechanism.
 | 94 | Reveal and focus, 918-936 | reveal path, refusals, receipts | A | stays (names the hook) |
 | 95 | Content search, 940-944, 945-950 | `inspect`, `try_content_rows`, `mounted_rows_current` | W | "Content search hooks"; an A summary stays |
 | 96 | Content search, 944-945 | hidden lists expose their bound source | A | stays |
-| 97 | Content search, 950-951 | retained row children excluded after a failed reconciliation | M | internals, "Content search" |
+| 97 | Content search, 950-951 | retained row children excluded after a failed reconciliation | A | stays (corrected after review) |
 | 98 | Content search, 952-968 | read errors, budgets, `Stale`, modality, exclusions, jumps | A | stays |
 | 99 | Command palette, 972-979 | palette snapshot, closing before invocation, reopening | A | stays |
 | 100 | Drag and drop, 983-990 | session outcomes; built-in reordering; application order | A | stays (built-in reordering is defined by the outcomes) |
 | 101 | Closing a window, 994-1034 | admission order, editor policies, backoff, `KeepOpen`, `HeadlessApp` | A | stays |
 | 102 | Closing a window, 1035 | the steps a host other than `App` follows | W (host) | "Custom hosts"; a pointer stays |
 | 103 | Shutdown, 1039-1044 | sessions cancelled; cleanup errors typed in `take_shutdown_errors` | A | stays |
-| 104 | Shutdown, 1044-1049 | queued cleanup causes, `OwnerRemoved`, order within a window | M | internals, "Runtime shutdown" |
+| 104 | Shutdown, 1044-1049 | queued cleanup causes kept, `OwnerRemoved` queued individually, order within a window, delivery | A | stays (corrected after review) |
 | 105 | Shutdown, 1049-1050 | no global chronology promised | A | stays |
 | 106 | Shutdown, 1050-1051 | hosts using `Runtime` drain the report | W (host) | "Custom hosts" (the plan names it) |
 | 107 | Shutdown, 1051-1060 | App drains; `AppError::Shutdown`; timers; `keep_alive` order | A | stays (the plan names the `keep_alive` order) |
-| 108 | Calling the runtime, 1064-1091 | contexts, the three runtime callbacks, flushing operations, nested flushes, deferral binding | A | stays |
+| 108 | Calling the runtime, 1064-1091 | contexts, the callbacks that receive the runtime (interval ticks and `App`'s callbacks added after review), flushing operations, nested flushes, deferral binding | A | stays |
 | 109 | Text editing, 1095-1114 | editors, drafts, `on_rejection`, `on_binding_refusal` | A | stays |
 | 110 | Editor sessions, 1118-1145 | `EditorSession` protocol | W | "Editor sessions" under the W heading |
 | 111 | Editor sessions, 1147-1154 | a table's cell edits: one at a time, row kept, Tab order, when edits close | A | "Table cell edits" |
@@ -160,8 +160,15 @@ API a consumer relies on (closed and growing enums, typed errors, what a name
 means) and contain no implementation rationale or internal ordering, so
 they stay; AGENTS.md also cites the compatibility policy in contracts.md.
 
-Summary: 126 obligations: 91 A, 23 W (4 of them a custom host's) and
-12 M. Of the paragraphs the plan named, menu binding and callback
+Summary: 126 obligations. 97 are A, 24 W (4 of them a custom host's) and
+none purely M; 5 more mix classes and are split (rows 32, 69, 73, 75 and 77),
+leaving only mechanisms in internals.md. Codex's implementation review found
+that the first version had moved observable guarantees (rows 28, 30, 35, 72,
+74, 75, 77, 97 and 104) to internals.md; they are back in contracts.md, and
+the test for every moved sentence is whether an application or extension
+author observes or relies on it.
+
+Of the paragraphs the plan named, menu binding and callback
 replacement (row 25), the `keep_alive` order (row 107) and restore cancelling
 gestures (row 118) are A, and a custom host draining shutdown errors
 (row 106) is W.
@@ -198,16 +205,23 @@ that cover all but eight of them:
 
 | Class | Moment | Rows |
 |---|---|---|
-| In the input | inside the input call that caused it | 1-33 |
+| In the input | inside the input or focus change that caused it | 1-33 |
 | After settling | event phase after the flush's update and layout settle | 34-40 |
 | At the next flush | start of a later flush, before components update | 41-47 |
 | At parameter delivery | when a parameter edit's event is delivered | 48-50 |
-| Evaluation | whenever the runtime needs the value | 51-58 and the group below |
+| Evaluation | whenever the runtime needs the value | 51-59 and the group below |
 
 The classes are timing only. The table shows that access, coalescing,
 cancellation and failure vary inside each class (rows 11, 13 and 25 differ
 from row 8 in the input class; rows 34, 36 and 38 coalesce differently after
 settling), so contracts.md defines them as separate properties.
+
+Corrected after Codex's implementation review: the input class covers focus
+changes too, since an editor saves a draft when it loses focus in
+`Runtime::focus` or `Runtime::clear_focus` (which queues the error for a later
+flush instead of returning it), and the numeric editors' normalizers and their
+formats' parsers are evaluation callbacks (rows 54 and 59), since the editor
+evaluates its draft in update, paint and inspection, not only at a save.
 
 ### Rows
 
@@ -227,12 +241,12 @@ settling), so contracts.md defines them as separate properties.
 | 12 | `MultiSelect::on_change` | in the input | writes | each write of the bound value | redescription replaces | the write and close stay; not replayed |
 | 13 | `MenuItem::new`, `MenuItem::command` (`on_receipt`), `MenuItem::on_change` | in the input, once closing is requested | writes | each choice | the row's description | the write stays; not replayed |
 | 14 | `ColorPicker::on_change` | in the input that committed | writes | each committed change | follows same-key redescription | the color stays; not repeated |
-| 15 | `TextField::on_save`, `TextArea::on_save` | in the input (Enter or focus loss) | writes | each save that wrote | replaced | the text stays written |
-| 16 | `IntegerInput::on_save`, `DecimalInput::on_save`, `InlineInteger::on_save`, `InlineDecimal::on_save` | in the input; a held step's repeat in its timer's flush | writes | each save | replaced | from the input call or the flush |
-| 17 | `InlineText::on_save`, `InlineText::controlled` | in the input (Enter, focus leaving) | writes | each changed save | each description replaces | propagates; not replayed |
-| 18 | `on_rejection` of `TextField`, `TextArea`, `InlineText`, `IntegerInput`, `DecimalInput`, `InlineInteger`, `InlineDecimal` | in the input | writes | `Some` per refused save, `None` once | replaced | a failed `None` stays pending |
+| 15 | `TextField::on_save`, `TextArea::on_save` | in the input (Enter, or focus loss in an input or focus change) | writes | each save that wrote | replaced | the text stays written; from the input or focus call, queued for a later flush by `clear_focus` |
+| 16 | `IntegerInput::on_save`, `DecimalInput::on_save`, `InlineInteger::on_save`, `InlineDecimal::on_save` | in the input, including focus changes; a held step's repeat in its timer's flush | writes | each save | replaced | from the input or focus call, the timer's flush, or queued by `clear_focus` |
+| 17 | `InlineText::on_save`, `InlineText::controlled` | in the input (Enter, focus leaving, also in a focus change) | writes | each changed save | each description replaces | propagates, or queued by `clear_focus`; not replayed |
+| 18 | `on_rejection` of `TextField`, `TextArea`, `InlineText`, `IntegerInput`, `DecimalInput`, `InlineInteger`, `InlineDecimal` | in the input, including focus changes | writes | `Some` per refused save, `None` once | replaced | a failed `None` stays pending |
 | 19 | `TextField::on_submit` | in the input (fresh Enter) | writes | per Enter | replaced | propagates |
-| 20 | `normalize` of the seven editors above | in the input, at the save | none: pure (`InlineText`'s may read application state) | per save | replaced | a refusal keeps the draft |
+| 20 | `normalize` of `TextField`, `TextArea` and `InlineText` | in the input, at the save | none: pure (`InlineText`'s may read application state) | per save | replaced | a refusal keeps the draft |
 | 21 | `DraftEditorController::on_edit` | in the input | writes; may call the controller | each user change | replaced | the change stays |
 | 22 | `SearchField::on_key` | in the input | writes | each reported key | replaced | propagates |
 | 23 | `VirtualList::on_activate`, `Tree::on_activate`, `Table::on_activate` | in the input (Enter) | writes | each | redescription | propagates |
@@ -250,7 +264,7 @@ settling), so contracts.md defines them as separate properties.
 | 35 | `Accordion::on_change` | after settling | writes | each change, in order | as row 34 | as row 34 |
 | 36 | `VirtualList::on_selection_change`, `Tree::on_selection_change`, `Table::on_selection_change` | after settling | writes | writes between two updates merge | as row 34 | as row 34 |
 | 37 | `ToolWindowLayout::on_change` | after settling | writes | each change | as row 34 | returned after every pending change |
-| 38 | `ScrollArea::on_scroll`, `SplitPane::on_resize`, `RegionLayout::on_resize`, `PropertyGrid::on_resize`, `FloatingWindow::on_frame` | after settling | writes | once per flush and component, last value | as row 34 | returned; the value stays; not replayed |
+| 38 | `ScrollArea::on_scroll`, `SplitPane::on_resize`, `RegionLayout::on_resize`, `PropertyGrid::on_resize`, `FloatingWindow::on_frame` | after settling | writes | once per flush and component, last value; `RegionLayout` once per divider, so one layout can report several | as row 34 | returned; the value stays; not replayed |
 | 39 | `TextField::on_modified`, `TextArea::on_modified` | after settling | writes | each change, in order | none | returned from the flush or input call |
 | 40 | `TextField::on_binding_refusal`, `TextArea::on_binding_refusal` | after settling | writes | each refusal and its end; none within one flush | a description without one stops it | returned; the refusal stays |
 | 41 | `EventContext::defer` | at the next flush | `&mut Runtime`, may flush | once | the widget hidden or unmounted first | from the flush and the receipt; not replayed |
@@ -266,11 +280,12 @@ settling), so contracts.md defines them as separate properties.
 | 51 | `MultiSelect::filter` | evaluation (settling derived values) | none: pure | every option on each change | replaced | none |
 | 52 | `FilterMatcher::new` | evaluation | none: pure | per query and source | replaced | none |
 | 53 | `PickMatcher::new`, `CommandMatcher::new` | evaluation | none: pure | per query | replaced | none |
-| 54 | `NumberFormat::new`, `NumberFormat::edit_text`, `NumberFormat::unit` | evaluation; `parse` in the input at a save | none: pure | per value | replaced | a parse error refuses the draft |
+| 54 | `NumberFormat::new` (`display` and `parse`), `NumberFormat::edit_text`, `NumberFormat::unit` | evaluation: an editor parses its draft in update, paint and inspection as well as at a save | none: pure | per value | replaced | a parse error refuses the draft |
 | 55 | `CommandPalette::outcome_text` | evaluation | none: pure and bounded | per outcome | redescription, for later choices | none |
 | 56 | `PickPending::new` (`resolve`) | evaluation | none: pure and bounded | per read | none | none |
 | 57 | `Runtime::command_enabled` (predicate) | evaluation (command queries and invocation) | `&Runtime`, read-only | per query | unregistering | an error stops invocation |
 | 58 | `InspectionService::set_application` (provider) | evaluation (while answering) | none | per answer | replaced | none |
+| 59 | `normalize` of `IntegerInput`, `DecimalInput`, `InlineInteger`, `InlineDecimal` | evaluation: the editor normalizes its draft in update, paint and inspection as well as at a save | none: pure | per evaluation of the draft | replaced | a refusal keeps the draft |
 
 ### Evaluation callbacks, apart from the rows
 
@@ -316,7 +331,7 @@ These keep their own description in rustdoc, which already states it:
 
 ### Rustdoc
 
-Each API in rows 1-58 and the group's `ReadSignal::map`, `combine`,
+Each API in rows 1-59 and the group's `ReadSignal::map`, `combine`,
 `Dynamic::new`, `Show::new`, `Each::new`, `Each::within` and
 `Table::cell_editor` name their class with a link to its contracts.md
 section, beside their existing wording (95 rustdoc comments, macro-generated

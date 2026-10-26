@@ -48,6 +48,7 @@ guarantee this document does not state.
   - [Describing and redescribing components](#describing-and-redescribing-components)
   - [Layout and focus hooks](#layout-and-focus-hooks)
   - [Reporting component notifications](#reporting-component-notifications)
+  - [Failure cleanup in components](#failure-cleanup-in-components)
   - [Stacking, hit testing and pointer refresh](#stacking-hit-testing-and-pointer-refresh)
   - [Content search hooks](#content-search-hooks)
   - [Host-loaded data](#host-loaded-data)
@@ -283,16 +284,20 @@ leave current presentation unchanged.
 A still-visible surface whose declared kind changes is admitted again under the
 new kind's conflict/cancellation/focus rules, retaining the original opener.
 
-A pending ApplicationDialog blocks other windows and targetless command
+An admission that an error interrupted is retried with the surface's current
+kind. A pending ApplicationDialog blocks other windows and targetless command
 queries before admission. A downgraded ApplicationDialog releases its
-application-wide singleton. Hidden logical dialogs and downgraded surfaces stop
-blocking; hiding only the native application-dialog window suspends its session
-and continues blocking other roots.
+application-wide singleton. Command queries that do not flush judge blocking by
+current root visibility and declared kind, not by the kind admitted earlier,
+including local Dialog/ViewDialog scope and default application-command
+restrictions. Hidden logical dialogs and downgraded surfaces stop blocking;
+hiding only the native application-dialog window suspends its session and
+continues blocking other roots.
 
 Command queries inspect current mounted surface declarations, including newly
-shown roots. They do not evaluate pending component updates or run admission
-callbacks. Command invocation and native key routing flush all presentation
-roots before admission.
+shown roots that no flush has synchronized yet. They do not evaluate pending
+component updates or run admission callbacks. Command invocation and native key
+routing flush all presentation roots before admission.
 
 ### Permissions and availability
 
@@ -374,7 +379,8 @@ Committed geometry is observable live through callbacks with a `ChangeOrigin`:
 `ScrollArea::on_scroll`, `SplitPane::on_resize`, `RegionLayout::on_resize`,
 `PropertyGrid::on_resize`, `FloatingWindow::on_frame` and
 `ToolWindowChangeKind::Geometry`. They run in an event phase after layout
-settles, at most once per flush and component with the last value and origin,
+settles, at most once per flush and component (once per divider for a
+`RegionLayout`, whose dividers report separately) with the last value and origin,
 only for committed values: previews and cancelled gestures report nothing, and
 neither does an unchanged value. A description replaces or removes the
 callback; one without a callback discards changes not yet delivered; a failing
@@ -527,7 +533,7 @@ callback's rustdoc names its class and states those properties.
 
 | Class | When it runs | For example |
 |---|---|---|
-| [In the input](#in-the-input) | inside the input call that caused it | a button's action, `on_change`, `on_save`, `on_activate` |
+| [In the input](#in-the-input) | inside the input or focus change that caused it | a button's action, `on_change`, `on_save`, `on_activate` |
 | [After settling](#after-settling) | in an event phase once the flush's updates and layout have settled | `Tabs::on_select`, `on_selection_change`, `on_scroll`, `on_modified` |
 | [At the next flush](#at-the-next-flush) | at the start of a later flush, before components update | deferred tasks, mailbox handlers, background results, interval ticks |
 | [At parameter delivery](#at-parameter-delivery) | when the runtime delivers a parameter edit's event | `ParameterHost::on_outcome`, `RemoteHost::on_submit` |
@@ -535,10 +541,17 @@ callback's rustdoc names its class and states those properties.
 
 ### In the input
 
-The callback runs inside the input call that caused it, before that call
-returns: a pointer, key, text or composition entry point, `Runtime::event`, or
-a component's own timer, such as a held step button's repeat, in the flush
-that reaches its deadline. A control's callback runs after the control's own
+The callback runs synchronously, in an event phase, inside the call that
+delivers the input or focus change that caused it, before that call returns:
+a pointer, key, text or composition entry point, `Runtime::event`, a focus
+change (`Runtime::focus` and its relatives, `Runtime::clear_focus` as a window
+deactivation or a close admission calls it), where the component losing focus
+may save a draft, or a component's own timer, such as a held step button's
+repeat, in the flush that reaches its deadline. Its error propagates from that
+call, except where the call has no error path for it: `clear_focus` queues a
+`focus_lost` error, such as a failing save callback's, in its window and a later
+flush returns it, and a timer's error comes from the flush that ran it. A
+control's callback runs after the control's own
 write or proposal submission; a [controlled](#controlled-controls) control
 writes nothing and calls it with the user's proposal at the moment the
 signal-bound form would write. A `Select` list and a menu row call it once
@@ -591,8 +604,10 @@ inspection the runtime rejects a write. Binding derivations (`ReadSignal::map`
 and `combine`), description factories (`Dynamic`, `Show` and `Each`, a
 collection's row builders and `Table::cell_editor`), filter and ranking rules,
 number formats, command enabled predicates and inspection providers are
-evaluation callbacks. A normalizer is pure as well, but runs in the input, at
-the save it checks.
+evaluation callbacks, and so are a numeric editor's normalizer and its number
+format's parser, which the editor runs whenever it evaluates its draft. A text
+editor's normalizer is pure as well, but runs in the input, at the save it
+checks.
 
 ### Callbacks outside the classes
 
@@ -622,7 +637,8 @@ Each callback's rustdoc states these properties besides its class:
 - **Coalescing:** `Tabs::on_select` reports each settled change, a
   collection's `on_selection_change` merges the writes between two of its
   updates, [geometry notifications](#geometry-notifications) report the last
-  value once per flush, and `on_modified` reports each change in order.
+  value once per flush for each component (each divider of a `RegionLayout`),
+  and `on_modified` reports each change in order.
 - **Cancellation:** what discards a callback or its pending payload before it
   runs, such as a redescription without the callback, the component's
   removal, or the widget or window a deferred task is bound to.
@@ -776,14 +792,21 @@ Ready requests follow global FIFO order across visible presentation windows.
 
 Hidden native windows retain requests without blocking visible windows or keeping
 a deadline due; showing them resumes delivery. Hidden components in visible
-windows still receive callbacks. Callback failures consume their request once;
-preparation failures retain undelivered requests.
+windows still receive callbacks. Presentation settles again after callback
+writes, without delivering mailbox values, deferred tasks or timers a second
+time in that flush. Callback failures consume their request once; preparation
+failures retain undelivered requests.
 
 Reentrant requests join the next frontier. It runs in the same flush if the
 preceding frontier settled presentation work, including recipient preparation;
-otherwise requests wait for the next flush. The [implementation
-notes](internals.md#notification-delivery) record how delivery is prepared and
-budgeted.
+otherwise requests wait for the next flush. Notification followups share the
+update-wave budget. An exhausted notification budget is not restarted for pending
+reveals; ordinary queued reveals use their normal flush budgets, so independent
+requests and path depth do not count as feedback.
+
+ToolWindows reports interleaved layout changes in request order, separately from
+its housekeeping. The [implementation notes](internals.md#notification-delivery)
+record how delivery is prepared.
 
 #### Failures and input cleanup
 
@@ -792,17 +815,18 @@ cancels that input, as `Runtime::cancel_input` does. Errors from older or
 unrelated work, such as a request an earlier input caused, still propagate,
 but without cancelling another event's focus, capture or drag. An ordinary
 update failure during the native-key preflush, including in another visible
-window, prevents the key's dispatch and cancels input in the selected window.
-The [implementation
-notes](internals.md#failure-provenance-and-input-cleanup) record how a failure
-is attributed.
+window, prevents the key's dispatch and cancels input in the selected window;
+older and external notification failures keep their own preservation policy.
+Which component's input a failure cancels, and when cleanup is not repeated, is
+[described for component authors](#failure-cleanup-in-components).
 
 Command actions retain their explicit failure boundary: an error returned by
 the action cancels input, including a nested runtime error the action chooses
 to propagate. An action
 can catch an unrelated nested delivery error and remain successful. Deferred
 application callbacks have the same explicit returned-error boundary; caught
-nested flush errors do not classify subsequent work.
+nested flush errors do not classify subsequent work. Parameter delivery runs
+without the current input's provenance, so a failing sink cancels no input.
 
 ### Producer data and mailboxes
 
@@ -963,7 +987,9 @@ values, under the inspection phase, and the rows a collection such as
 `VirtualList` offers beyond its mounted children ([content search
 hooks](#content-search-hooks)). Lists expose their current bound source even when
 hidden after an earlier presentation, and search reads current source rows
-without updating, laying out or mounting presentation.
+without updating, laying out or mounting presentation. After a requested
+reconciliation of a collection's rows fails, search skips its retained row
+children until a later child request succeeds.
 Unavailable bound rows propagate their typed read error, rather than exposing
 obsolete children. It keeps no index and schedules nothing; a held cursor retains
 the owned row sources it has visited until it is dropped. A search is
@@ -1056,10 +1082,13 @@ participants are mounted. Targets and observers receive Leave before the source'
 Cancelled outcome. Replacement drags are refused during teardown. Cleanup
 continues after failure; its first error per cancellation operation and previously
 queued cleanup errors remain typed in `Runtime::take_shutdown_errors`, including
-when their native window is retired. No global chronology across windows or
-error kinds is promised; the [implementation
-notes](internals.md#runtime-shutdown) record the order within a window. The
-native App host drains that report even after initialization or event-loop
+when their native window is retired. Outside shutdown, retirement appends queued
+cleanup causes to a surviving window rather than discarding them. Terminal
+OwnerRemoved failures are queued individually and do not retry the removed owner;
+an earlier coalesced surface-dismissal cause remains observable. Within a window,
+focus/terminal-removal errors keep FIFO order before that stored surface cause.
+A visible surviving window stays due until delivery; no global chronology across
+windows or error kinds is promised. The native App host drains that report even after initialization or event-loop
 dispatch failure, and [custom hosts](#custom-hosts) drain it themselves. If
 cleanup failed,
 AppError::Shutdown retains the original terminal result and all cleanup causes
@@ -1076,13 +1105,18 @@ ended their edits, in the reverse order of keeping.
 Components never receive the `Runtime`: their callbacks get an
 `EventContext`, `UpdateContext` or a paint or layout context, and a signal
 write during update, layout, paint, inspection or delivery fails with the
-matching `WriteDuring…` error. Three callbacks do receive the runtime:
+matching `WriteDuring…` error. These callbacks do receive the runtime:
 
 | Callback | Access | May call |
 |---|---|---|
 | Deferred task (`EventContext::defer`, `EventContext::defer_detached`, `Runtime::defer`) | `&mut Runtime`, during the next flush | Any operation, including those that flush |
 | Command action (`Runtime::register_command`) | `&mut Runtime`, during invocation | Any operation, including those that flush; invoking itself is a `BorrowConflict` |
+| Interval tick (`Runtime::start_interval`) | `&mut Runtime`, in a flush at or after its due time, or in `Runtime::service_intervals` | Any operation, including those that flush; a flush nested in a tick does not run that tick again |
 | Command enabled predicate (`Runtime::command_enabled`) | `&Runtime` | Read-only queries; it cannot change state |
+
+`App`'s initializer and policies (`App::new`, `on_close`, `on_error` and
+`on_window_error`) also receive `&mut Runtime`, from the native host's event
+loop outside a flush, as their rustdoc describes.
 
 These operations flush internally, settling update and layout before they
 return: `flush` and `flush_windows`; the input entry points `key_input`,
@@ -1537,6 +1571,35 @@ them and asks for `Component::deliver_notifications` through a `Notifier`. The
 runtime calls that hook [after settling](#after-settling), each request one
 call in request order. The hook and `Notifier` are public, so a custom
 component reports its changes the same way.
+
+### Failure cleanup in components
+
+A custom component observes which input a failure cancels through
+`Component::cancel_input`. Input cancellation applies to direct dispatch errors
+and failures of notification requests attributable to that dispatch. The first
+reported error retains precedence, but any encountered attributable failure
+still requires cleanup, even when an older unrelated error is reported. Older
+requests, their descendants, and requests generated by external/preflush work
+keep their own attribution; their errors propagate without cancelling another
+event's focus, capture or drag.
+
+Collective presentation-settlement errors without a uniquely attributable request
+also propagate without cancelling the current gesture after dispatch. Headless
+key failure cleanup follows every mounted incarnation actually called, including
+keyboard and Escape-text bubbling, even if preparation or callbacks transfer
+focus. Completed focus-loss, focusability-loss, hiding and surface-admission
+capture cancellation is not repeated by later failure cleanup. Transfers into an
+owner's subtree preserve its existing context policy. With no dispatched callback,
+preparation failure cleanup retains the preflush owner. Regaining focus or
+receiving keyboard, text, IME, text-command or general event input starts a fresh
+input context.
+
+Later focusability loss still clears focus after an already completed cancellation.
+If a preflush blocks a held key's release or the last held pointer button's release
+before its owner receives it, cleanup still ends the held action or edit. A
+pending request cannot retarget a later event. Nested input calls scope error
+classification to their own call. A failure of a container's reveal hook during
+a queued reveal is attributed to the reveal's request.
 
 ### Stacking, hit testing and pointer refresh
 
