@@ -1164,7 +1164,9 @@ new ones, and the executing task records its own result, `Succeeded` or
 `Cancelled` as the task unwinds, and the tasks behind it stay queued until the
 next delivery or shutdown. From the moment shutdown begins, every call refuses
 with `Closed`, including from cleanup callbacks that shutdown runs, so no
-receipt is left `Pending` after `Runtime::shutdown` returns.
+queued task's receipt is left `Pending` after `Runtime::shutdown` returns. A
+task whose action is executing, and calls `shutdown` itself, keeps `Pending`
+until its action returns and records its own result.
 
 ## Text and draft editing
 

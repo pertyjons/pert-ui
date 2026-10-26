@@ -484,8 +484,7 @@ All six were decided on 2026-10-26 as recommended.
     `App::headless`, and `on_close` also from `HeadlessApp::admit_close`.
     L1 is done.
 
-- **L4a (0.3.72), implemented 2026-10-27:** commit and review to be
-  recorded. One deferral call, by [the approved design](layering-design-L4a.md)
+- **L4a (0.3.72), done 2026-10-27:** 4c47c9a and its review fix. One deferral call, by [the approved design](layering-design-L4a.md)
   (revision 2, D1 and D2 as recommended). **Order changed:** L4a was
   implemented before L2 and L3, while their designs were written, so it
   takes 0.3.72; L2, L3 and L4b follow as 0.3.73, 0.3.74 and 0.3.75.
@@ -506,9 +505,24 @@ All six were decided on 2026-10-26 as recommended.
     no origin fallback, origin routing after detachment, window-owned
     `spawn`, no shutdown refusal), and the contract tests (nested-flush
     order, queued versus executing at shutdown).
-  - **Final search:** no obsolete use or recommendation remains; the
-    reviewed matches are this plan's L1 and L4a text, the inventory, L1's
-    classification record and two test comments naming the former rule.
+  - **Final search:** no obsolete use or recommendation remains. The
+    command, run after the last edit:
+
+    ```sh
+    rg -n -i 'defer_detached|detached deferral|bound to its widget|bound to the window|outlive the widget|skipped when the widget is hidden|cancelled when the window closes' \
+      crates apps docs tests README.md AGENTS.md plans \
+      --glob '!plans/archive/**' --glob '!plans/usability/runs/**' \
+      --glob '!plans/usability/api-audit/**' \
+      | grep -v '^plans/usability/layering-design-L4a.md'
+    ```
+
+    Its matches, each reviewed as historical and allowed: this plan's L1
+    and L4a text (`layering-plan.md:104`, `:131`, `:319`), the frozen
+    inventory (`complexity-inventory.md:120`, `:245`, `:247`, `:254`,
+    `:348`), L1's closed classification record
+    (`layering-L1-classification.md:271`) and two test comments naming the
+    former rule (`tests/surfaces/deferral.rs:301`, `:366`). The design file
+    itself is an allowed match. No obsolete use or recommendation remains.
   - **Checks:** the public-API row (formatting, Clippy, workspace tests,
     the five headless example sessions, doctests, rustdoc, the
     diagnostics suite, the API listing gate, whose diff replaces
@@ -516,6 +530,13 @@ All six were decided on 2026-10-26 as recommended.
     `git diff --check`. Native checks were not run (no desktop session).
   - **Deviation:** the nested-flush test lives in `foundation/deferral.rs`
     rather than `phase_rules.rs`.
+  - **Review (Codex):** no implementation bug or incorrect migration; one
+    should-fix point and a nit. contracts.md promised that no receipt
+    stays `Pending` after shutdown, which an executing task that calls
+    `shutdown` contradicts; it now says no queued task's receipt does, and
+    states the executing exception. The final search's command and
+    reviewed matches are recorded above. Both are documentation fixes made
+    by the author, verified in L2's review.
 
 ## Review record
 
