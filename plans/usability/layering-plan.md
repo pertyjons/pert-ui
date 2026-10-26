@@ -418,8 +418,7 @@ All six were decided on 2026-10-26 as recommended.
 
 ## Progress
 
-- **L1 (0.3.71), implemented 2026-10-26:** 6360b00 and its review fix;
-  done after Codex's recheck.
+- **L1 (0.3.71), done 2026-10-27:** 6360b00 and its review fixes.
   - **contracts.md by obligation:** the per-obligation classification is
     in [layering-L1-classification.md](layering-L1-classification.md).
     Only implementation rationale and internal ordering moved, to
@@ -478,6 +477,12 @@ All six were decided on 2026-10-26 as recommended.
     (formatting, Clippy, doctests, rustdoc, the API listing gate with no
     change, the link check with only pre-existing errors, `git diff
     --check`).
+  - **Recheck (Codex):** every point resolved and no guarantee left only
+    in `internals.md`, with one wording point: the `App` callbacks'
+    summary placed initialization in the native event loop. Corrected by
+    the author: the initializer runs before the event loop or in
+    `App::headless`, and `on_close` also from `HeadlessApp::admit_close`.
+    L1 is done.
 
 ## Review record
 

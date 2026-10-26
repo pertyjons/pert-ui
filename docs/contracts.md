@@ -1114,9 +1114,11 @@ matching `WriteDuring…` error. These callbacks do receive the runtime:
 | Interval tick (`Runtime::start_interval`) | `&mut Runtime`, in a flush at or after its due time, or in `Runtime::service_intervals` | Any operation, including those that flush; a flush nested in a tick does not run that tick again |
 | Command enabled predicate (`Runtime::command_enabled`) | `&Runtime` | Read-only queries; it cannot change state |
 
-`App`'s initializer and policies (`App::new`, `on_close`, `on_error` and
-`on_window_error`) also receive `&mut Runtime`, from the native host's event
-loop outside a flush, as their rustdoc describes.
+`App`'s initializer and policies also receive `&mut Runtime`, always outside
+a flush, as their rustdoc describes. The initializer (`App::new`) runs before
+the native event loop starts, or in `App::headless`; `on_close`, `on_error`
+and `on_window_error` run from the native event loop, and `on_close` also
+from `HeadlessApp::admit_close`, which has no event loop.
 
 These operations flush internally, settling update and layout before they
 return: `flush` and `flush_windows`; the input entry points `key_input`,
