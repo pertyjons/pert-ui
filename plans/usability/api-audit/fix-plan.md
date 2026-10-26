@@ -840,8 +840,8 @@ and anything left to a later part.
     After it: the workspace gate, including the five headless example
     sessions and the diagnostics suite; `api/generate.sh`, with no change;
     `git diff --check`.
-- **6f3 (0.3.70), implemented 2026-10-26:** commit and review to be
-  recorded. Controlled controls, by [design revision 4](design-6f3.md),
+- **6f3 (0.3.70), done 2026-10-26:** 232c22b and its review fix dbe86fc.
+  Controlled controls, by [design revision 4](design-6f3.md),
   which Codex reviewed once and rechecked three times. The maintainer
   chose the recommended D1-D4 (the name `controlled`, the described value
   only, refusal through the normalizer, refusal at adoption) and, after
@@ -908,6 +908,10 @@ and anything left to a later part.
     After it: the workspace gate, including the five headless example
     sessions and the diagnostics suite; `api/generate.sh`, with no change;
     `git diff --check`.
+  - **Recheck (Codex):** ready, no findings. It confirmed that the
+    discard at reconciliation keeps the refusal path, the row-mode focus
+    fallback, pending `on_rejection` clears and IME state correct, and
+    that the `Dynamic` and table tests end with the proposing input.
 
 ## Rules for every part
 
