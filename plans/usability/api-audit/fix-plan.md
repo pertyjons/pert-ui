@@ -853,6 +853,28 @@ and anything left to a later part.
     it: the workspace gate, including the five headless example sessions
     and the diagnostics suite; `api/generate.sh`, with no change;
     `git diff --check`.
+  - **Third recheck (Codex):** needs fixes, with one point of the same
+    kind, verified: when a command's target survived the removals, the
+    repeat updated every pending component, including those only the
+    removal invalidated, before focus restoration. Three case-by-case
+    fixes had each left a neighbouring case, so the fix was made by goal:
+    the only intended difference from 6219dda^ is that an editor a
+    delivered command begins receives its focus in the same flush.
+    **The fix:** `settle_notification_presentation` is restored to
+    6219dda^'s code exactly (checked with `diff`), so the starvation the
+    first review found cannot arise. `apply_requested_focus` instead keeps
+    a focus request for the next pass of the same flush while its target
+    is mounted, not yet visible and has a presentation ancestor with a
+    pending update; a fallback restoration in that step cancels it, and
+    any other request for a hidden target is dropped as before. The rule
+    is general, not specific to text commands, and the `request_focus`
+    rustdoc, contracts.md and the CHANGELOG state it. A new test (a
+    sibling's command while the focused child leaves) fails on ca2c500;
+    the queued `BeginEdit` timing test fails with the retention disabled;
+    the earlier ordering tests stay as guards. After it: the workspace
+    gate, including the five headless example sessions and the
+    diagnostics suite; `api/generate.sh`, with no change;
+    `git diff --check`.
 - **6f3 (0.3.70), done 2026-10-26:** 232c22b and its review fix dbe86fc.
   Controlled controls, by [design revision 4](design-6f3.md),
   which Codex reviewed once and rechecked three times. The maintainer

@@ -470,7 +470,11 @@ goes to its nearest focusable ancestor; a component such as `Chip` can opt into
 passing focus to its next, then previous, surviving sibling of the same type.
 `EventContext::request_focus_within` moves focus to the first focusable
 component inside a region whose components the caller does not know, as a
-tool window does when Escape returns the user to the main content.
+tool window does when Escape returns the user to the main content. A focus
+request whose target is hidden is dropped, except while the target is hidden
+only until an ancestor's update still pending in the same flush shows it, as
+an editor is until its owner reveals it: the request then waits for that
+update, unless a focus restoration in the meantime cancels it.
 
 Tab and Shift+Tab stop at focusable components whose `Component::tab_stop`
 allows it; a component whose focus moves by other keys, such as menu-bar

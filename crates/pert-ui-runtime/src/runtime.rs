@@ -3322,6 +3322,10 @@ impl EventContext {
     }
     /// Requests focus for this recipient after pending updates and layout complete.
     /// The request is ignored if it becomes hidden, unmounted or nonfocusable.
+    /// A recipient hidden only until an ancestor's update still pending in the
+    /// same flush shows it, such as an editor its owner reveals, keeps the
+    /// request until that update has run; a focus restoration meanwhile
+    /// cancels it.
     /// Multiple requests before a flush use the latest recipient; IDs are never retargeted.
     /// Explicit focus transfers and window focus loss cancel any older request.
     pub fn request_focus(&self) {
@@ -5784,36 +5788,7 @@ impl Runtime {
                 continue;
             }
             self.apply_requested_text_commands()?;
-            // A command that began an edit shows its editor at its owner's
-            // update; run that before focus is applied, so the editor's focus
-            // request settles in this flush. Only work the commands caused
-            // repeats the cycle: the components they left pending (nothing
-            // was pending before them), read before removal and still
-            // pending after it. Removal's own work (the surviving parent,
-            // the cleared focus) follows focus restoration as in a flush
-            // without commands, also when it removed every component the
-            // commands invalidated.
-            let command_work: Vec<u64> = self
-                .window
-                .shared
-                .pending
-                .borrow()
-                .keys()
-                .copied()
-                .collect();
-            // Removal comes before the commands' updates are repeated, so a
-            // component that requested its own unmount leaves now and later
-            // commands for it are dropped, however its handler re-queues.
             self.apply_requested_removals()?;
-            let repeat = {
-                let pending = self.window.shared.pending.borrow();
-                command_work
-                    .iter()
-                    .any(|serial| pending.contains_key(serial))
-            };
-            if repeat {
-                continue;
-            }
             let had_layout = self.settle_layout()?;
             self.apply_requested_focus()?;
             self.refresh_stack_hover(had_layout)?;
@@ -6284,14 +6259,28 @@ impl Runtime {
     /// Moves focus to a requested focusable target, then restores focus
     /// after the focused component was lost.
     fn apply_requested_focus(&mut self) -> Result<(), RuntimeError> {
-        let requested = self
-            .window
-            .shared
-            .requested_focus
-            .borrow_mut()
-            .take()
-            .and_then(|id| id.upgrade());
+        let request = self.window.shared.requested_focus.borrow_mut().take();
+        let requested = request.as_ref().and_then(Weak::upgrade);
         let within = self.window.shared.requested_within.replace(false);
+        // The one difference from dropping a hidden target's request: a
+        // mounted target hidden only until an update still pending in this
+        // flush shows it (an ancestor's, as the label whose text command
+        // began an edit shows its editor) keeps the request for the next
+        // pass of this flush, so focus reaches it once that update has run.
+        // The rest of this step runs as without the request, and a focus
+        // restoration in it cancels the request, as any transfer does.
+        if let Some(node) = &requested
+            && node.mounted.get()
+            && !node.visible.get()
+            && self.ancestor_update_pending(node)
+        {
+            self.drop_unfocusable_focus();
+            if !self.window.restore_focus {
+                *self.window.shared.requested_focus.borrow_mut() = request;
+                self.window.shared.requested_within.set(within);
+            }
+            return self.restore_fallback_focus();
+        }
         let requested = match requested {
             Some(node) if within && node.visible.get() => self.first_focusable_within(&node),
             other => other,
@@ -6309,6 +6298,24 @@ impl Runtime {
         // After a request, which may move focus out of a component that made
         // itself non-focusable for that very reason.
         self.drop_unfocusable_focus();
+        self.restore_fallback_focus()
+    }
+    /// Whether a presentation ancestor of `node` has an update pending in
+    /// its window.
+    fn ancestor_update_pending(&self, node: &Rc<Node>) -> bool {
+        let pending = self.window.shared.pending.borrow();
+        let mut current = node.presentation_parent();
+        while let Some(parent) = current {
+            if pending.contains_key(&parent.serial) {
+                return true;
+            }
+            current = parent.presentation_parent();
+        }
+        false
+    }
+    /// Gives focus that a cancellation cleared back to the nearest ancestor
+    /// that can hold it again.
+    fn restore_fallback_focus(&mut self) -> Result<(), RuntimeError> {
         if self.window.restore_focus {
             self.window.restore_focus = false;
             // The nearest ancestor that can hold focus again takes it, as an

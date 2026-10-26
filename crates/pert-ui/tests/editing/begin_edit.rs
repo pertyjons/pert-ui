@@ -232,9 +232,9 @@ impl Component for Leaver {
 
 #[test]
 fn a_requested_unmount_applies_before_queued_commands_repeat_their_updates() -> TestResult {
-    // Running a command's updates before focus must not starve removal: the
-    // component leaves in the flush, and the command it queued for itself is
-    // dropped with it.
+    // Removal applies in the pass that delivered the commands, so the
+    // component leaves in the flush however its handler re-queues, and the
+    // command it queued for itself is dropped with it.
     let mut ui = Runtime::new();
     ui.set_viewport(Viewport::new(300.0, 200.0, 1.0)?)?;
     let leave = ui.signal(false);
@@ -319,21 +319,25 @@ impl Component for Departing {
     }
 }
 
-/// An `Owner` around a focused `Departing` child, with the child's `leave`.
+/// An `Owner` around a focused `Departing` child and `others`, with the
+/// child's `leave`.
 fn owner_with_focused_child(
     ui: &mut Runtime,
+    others: Vec<Element>,
 ) -> Result<(WidgetId, WidgetId, Signal<bool>), Box<dyn std::error::Error>> {
     ui.set_viewport(Viewport::new(300.0, 200.0, 1.0)?)?;
     let leave = ui.signal(false);
+    let mut children = vec![Element::new(
+        "child",
+        Departing {
+            leave: leave.clone(),
+        },
+    )];
+    children.extend(others);
     let owner = ui.mount_tree(Element::new(
         "owner",
         Owner {
-            child: vec![Element::new(
-                "child",
-                Departing {
-                    leave: leave.clone(),
-                },
-            )],
+            child: children,
             had_focus: false,
         },
     ))?;
@@ -346,11 +350,10 @@ fn owner_with_focused_child(
 
 #[test]
 fn a_removal_without_commands_restores_focus_before_the_parent_updates() -> TestResult {
-    // Only work that delivered text commands caused repeats the cycle before
-    // focus: removing the focused child restores focus to its owner before
-    // the owner's next update, so the owner still finds focus within it.
+    // Removing the focused child restores focus to its owner before the
+    // owner's next update, so the owner still finds focus within it.
     let mut ui = Runtime::new();
-    let (owner, _, leave) = owner_with_focused_child(&mut ui)?;
+    let (owner, _, leave) = owner_with_focused_child(&mut ui, Vec::new())?;
     leave.set(true)?;
     ui.flush(ui.now())?;
     assert_eq!(ui.focused(), Some(owner.clone()), "focus fell back to it");
@@ -369,11 +372,39 @@ fn a_command_whose_work_the_removal_ends_keeps_removal_after_focus() -> TestResu
     // that work with the child: what is left is the removal's own, which
     // follows focus restoration as without the command.
     let mut ui = Runtime::new();
-    let (owner, child, leave) = owner_with_focused_child(&mut ui)?;
+    let (owner, child, leave) = owner_with_focused_child(&mut ui, Vec::new())?;
     leave.set(true)?;
     // `event` focuses its target, so the focused child queues it itself.
     ui.event(&child, |cx| {
         cx.request_text_command(&child, TextCommand::SelectAll)
+    })??;
+    ui.flush(ui.now())?;
+    assert_eq!(ui.focused(), Some(owner.clone()), "focus fell back to it");
+    assert!(
+        support::find(&ui, &owner, "child").is_none(),
+        "the child left"
+    );
+    settle(&mut ui);
+    assert_eq!(ui.focused(), Some(owner), "the owner stayed");
+    Ok(())
+}
+
+#[test]
+fn a_command_for_a_surviving_sibling_keeps_removal_after_focus() -> TestResult {
+    // A command whose target survives the removal leaves its own update
+    // pending; the owner, which the removal invalidated, still finds focus
+    // restored to it at its update.
+    let mut ui = Runtime::new();
+    let stays = ui.signal(false);
+    let (owner, child, leave) = owner_with_focused_child(
+        &mut ui,
+        vec![Element::new("sibling", Departing { leave: stays })],
+    )?;
+    let sibling = widget(&ui, &owner, "sibling");
+    leave.set(true)?;
+    // `event` focuses its target, so the focused child queues it itself.
+    ui.event(&child, |cx| {
+        cx.request_text_command(&sibling, TextCommand::SelectAll)
     })??;
     ui.flush(ui.now())?;
     assert_eq!(ui.focused(), Some(owner.clone()), "focus fell back to it");
