@@ -797,9 +797,9 @@ and anything left to a later part.
       slider gesture holds the edit session. `Slider` and `Knob` still
       answer `NotAnEditor`. A deviation from the design's list, under its
       rule; the CHANGELOG records it under "Changed";
-    - the queued-command test uses `testing::Driver::key`, which ends with
-      exactly one flush, since `Runtime::key_input` does not flush; it
-      fails with the settle-loop step removed;
+    - the queued-command test used `testing::Driver::key`; the recheck
+      found that its release preflushes, and the recheck fix replaced it
+      (below);
     - the filter tests are parameterized over list, table and tree, with
       the replacement cases for table and tree and a policy-redescription
       test; with the policy logic disabled every behavior test fails and
@@ -818,6 +818,28 @@ and anything left to a later part.
     fallback and a tree's next-row move. The slider, readout and
     inspection points were confirmed resolved. The fix follows 6f3's
     commit, so the two parts' changes stay apart.
+
+    **The recheck fix:**
+    - the settle loop records whether the delivered text commands left
+      pending updates before it applies removals, and repeats only on that
+      record, so work a removal causes follows focus restoration as before
+      6f2, also in flushes without commands. A new test (an owner that
+      unmounts itself when it loses focus within, whose focused child
+      unmounts) fails in a8b1899's order, and the starvation test fails in
+      6219dda's order;
+    - the timing test sends Enter's press only, flushes once and asserts
+      editing and editor focus before the release; it fails when focus
+      lands one flush late;
+    - the Nearest test covers next and previous rows for list, table and
+      tree, and the single selection following; with the policy logic
+      disabled every behavior test fails and the compatibility checks
+      pass;
+    - the CHANGELOG's text-command item says which updates repeat before
+      focus.
+
+    After it: the workspace gate, including the five headless example
+    sessions and the diagnostics suite; `api/generate.sh`, with no change;
+    `git diff --check`.
 - **6f3 (0.3.70), implemented 2026-10-26:** commit and review to be
   recorded. Controlled controls, by [design revision 4](design-6f3.md),
   which Codex reviewed once and rechecked three times. The maintainer
@@ -857,6 +879,15 @@ and anything left to a later part.
   - **Beyond the design's lines:** the guide's controls chapter repeated
     the callback claim and now qualifies it; the inventory example's module
     doc described the retained cell.
+  - **Review (Codex):** needs fixes, with three should-fix points, all
+    verified: a controlled label whose text changes and changes back
+    before one flush keeps its draft, because reconciliation leaves the
+    discard to the next update, which compares with the previous
+    presentation; the list test sends Enter's release, whose preflush can
+    settle the save, so it does not establish the single-flush timing
+    claimed above; and the builder-replacement tests use a no-op
+    constructor callback, so they cannot detect both callbacks running,
+    and `InlineText::controlled(...).on_save(...)` is untested.
 
 ## Rules for every part
 

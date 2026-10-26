@@ -186,17 +186,17 @@ fn a_queued_begin_edit_from_on_activate_opens_the_focused_rename_in_that_flush()
     ui.focus(&list)?;
     support::press(&mut ui, KeyCode::ArrowDown);
     assert_eq!(selection.active().get()?.as_deref(), Some("0"));
-    // The driver's Enter ends with exactly one flush, which delivers the
-    // queued command: when the call returns, with no other input or flush,
-    // the rename is open and its editor focused.
+    // The press runs the activation, which only queues the command:
+    // `key_input` does not flush.
     let label = labels.borrow()["0"].clone();
-    {
-        let mut driver = testing::Driver::new(&mut ui);
-        driver.key(KeyCode::Enter)?;
-        let ui = driver.runtime();
-        assert!(editing(ui, "0"), "the activation began the rename");
-        assert_eq!(ui.focused(), Some(editor(ui, &label)));
-    }
+    ui.key_input(KeyCode::Enter, KeyAction::Press)?;
+    assert!(!editing(&ui, "0"), "nothing is delivered before a flush");
+    // The one flush that delivers it opens the rename and focuses its
+    // editor, before the release or any other flush.
+    ui.flush(ui.now())?;
+    assert!(editing(&ui, "0"), "the activation began the rename");
+    assert_eq!(ui.focused(), Some(editor(&ui, &label)));
+    ui.key_input(KeyCode::Enter, KeyAction::Release)?;
     ui.text_input("Renamed")?;
     ui.key_input(KeyCode::Enter, KeyAction::Press)?;
     assert_eq!(names[0].get()?, "Renamed");
@@ -262,6 +262,87 @@ fn a_requested_unmount_applies_before_queued_commands_repeat_their_updates() -> 
     ui.flush(ui.now())?;
     assert!(support::find(&ui, &root, "leaver").is_none(), "it left");
     assert_eq!(commands.get(), 1, "its re-queued command was dropped");
+    Ok(())
+}
+
+/// A focusable owner that leaves when focus leaves it: it requests its own
+/// unmount at an update that finds focus outside it after having had it.
+struct Owner {
+    child: Vec<Element>,
+    had_focus: bool,
+}
+impl Component for Owner {
+    fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
+        let within = cx.focus_within();
+        if self.had_focus && !within {
+            cx.request_unmount();
+        }
+        self.had_focus = within;
+        Ok(())
+    }
+    fn focusable(&self) -> bool {
+        true
+    }
+    fn take_children(&mut self) -> Vec<Element> {
+        std::mem::take(&mut self.child)
+    }
+    fn measure(&self, _: &MeasureContext<'_>, _: Constraints) -> Result<Size, RuntimeError> {
+        Ok(Size::new(200.0, 40.0)?)
+    }
+}
+
+/// A focusable child that requests its own unmount while `leave` is true.
+struct Departing {
+    leave: Signal<bool>,
+}
+impl Component for Departing {
+    fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
+        if cx.read_paint(&self.leave)? {
+            cx.request_unmount();
+        }
+        Ok(())
+    }
+    fn focusable(&self) -> bool {
+        true
+    }
+    fn measure(&self, _: &MeasureContext<'_>, _: Constraints) -> Result<Size, RuntimeError> {
+        Ok(Size::new(100.0, 20.0)?)
+    }
+}
+
+#[test]
+fn a_removal_without_commands_restores_focus_before_the_parent_updates() -> TestResult {
+    // Only work that delivered text commands caused repeats the cycle before
+    // focus: removing the focused child restores focus to its owner before
+    // the owner's next update, so the owner still finds focus within it.
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(300.0, 200.0, 1.0)?)?;
+    let leave = ui.signal(false);
+    let owner = ui.mount_tree(Element::new(
+        "owner",
+        Owner {
+            child: vec![Element::new(
+                "child",
+                Departing {
+                    leave: leave.clone(),
+                },
+            )],
+            had_focus: false,
+        },
+    ))?;
+    settle(&mut ui);
+    let child = widget(&ui, &owner, "child");
+    ui.focus(&child)?;
+    settle(&mut ui);
+    leave.set(true)?;
+    ui.flush(ui.now())?;
+    assert_eq!(ui.focused(), Some(owner.clone()), "focus fell back to it");
+    assert!(
+        support::find(&ui, &owner, "child").is_none(),
+        "the child left"
+    );
+    settle(&mut ui);
+    assert_eq!(ui.focused(), Some(owner), "the owner stayed");
     Ok(())
 }
 

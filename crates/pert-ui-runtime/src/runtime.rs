@@ -5784,14 +5784,18 @@ impl Runtime {
                 continue;
             }
             self.apply_requested_text_commands()?;
+            // A command that began an edit shows its editor at its owner's
+            // update; run that before focus is applied, so the editor's focus
+            // request settles in this flush. Only work the commands caused
+            // repeats the cycle: read before removal, whose own work (the
+            // surviving parent, the cleared focus) still follows focus
+            // restoration as in a flush without commands.
+            let command_work = !self.window.shared.pending.borrow().is_empty();
             // Removal comes before the commands' updates are repeated, so a
             // component that requested its own unmount leaves now and later
             // commands for it are dropped, however its handler re-queues.
             self.apply_requested_removals()?;
-            // A command that began an edit shows its editor at its owner's
-            // update; run that before focus is applied, so the editor's focus
-            // request settles in this flush.
-            if !self.window.shared.pending.borrow().is_empty() {
+            if command_work {
                 continue;
             }
             let had_layout = self.settle_layout()?;

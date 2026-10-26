@@ -373,23 +373,32 @@ fn stage_with(
 
 #[test]
 fn nearest_moves_an_item_the_field_hides_to_the_nearest_shown_row() -> TestResult {
-    for kind in KINDS {
-        let case = kind.case();
+    // For each collection, the next shown row, and the previous one where
+    // no row follows: (collection, active, query, nearest).
+    let moves = [
+        (Kind::List, "banana", "ap", "grape"),
+        (Kind::List, "grape", "an", "banana"),
+        (Kind::Table, "fern", "sun", "oak"),
+        (Kind::Table, "oak", "shade", "moss"),
+        // With `music` collapsed the rows are `music` and `notes`.
+        (Kind::Tree, "music", "notes", "notes"),
+        (Kind::Tree, "notes", "rock", "music"),
+    ];
+    for (kind, active, query, nearest) in moves {
         let mut stage = stage(kind, HiddenActive::Nearest)?;
-        stage.set_active(case.active);
-        stage.type_query(case.hide);
-        assert_eq!(stage.active().as_deref(), Some(case.nearest), "{kind:?}");
+        stage.set_active(active);
+        stage.type_query(query);
+        assert_eq!(
+            stage.active().as_deref(),
+            Some(nearest),
+            "{kind:?} {active}"
+        );
         assert_eq!(
             stage.selected(),
-            [case.nearest],
-            "{kind:?}: selection follows"
+            [nearest],
+            "{kind:?} {active}: selection follows"
         );
     }
-    // At a list's end there is no next row: the previous one.
-    let mut stage = stage(Kind::List, HiddenActive::Nearest)?;
-    stage.set_active("grape");
-    stage.type_query("an");
-    assert_eq!(stage.active().as_deref(), Some("banana"));
     Ok(())
 }
 
