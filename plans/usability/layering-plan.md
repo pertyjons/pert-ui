@@ -5,8 +5,9 @@ rechecks of revisions 2 to 4 (record at the end), and after the maintainer
 widened the scope on 2026-10-26: the usability work exists to improve the
 API, so this pass changes code structure and public APIs where that
 improves them, as AGENTS.md's compatibility policy allows while the
-library is unpublished. Codex found LD1 to LD6 decidable; awaiting the
-maintainer's decisions ([decisions](#decisions-for-the-maintainer)).
+library is unpublished. Codex found LD1 to LD6 decidable. **The
+maintainer approved the plan with every recommended answer to LD1 to LD6
+on 2026-10-26** ([decisions](#decisions-for-the-maintainer)).
 
 This plan runs after the API audit fix plan's last part (6f3, 0.3.70) is
 closed and before slice 7 of [the developer-usability
@@ -370,6 +371,8 @@ as the fix plan's 6f parts did.
   plan after round 2 unless the maintainer pulls it in.
 
 ## Decisions for the maintainer
+
+All six were decided on 2026-10-26 as recommended.
 
 - **LD1: the prelude now, not in app-author slice 9.**
   - **Recommended:** part L2 before round 2, superseding 6e's
