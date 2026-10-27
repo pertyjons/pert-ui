@@ -1,7 +1,9 @@
 # Layering pass before round 2
 
-Status: **revision 5**, after Codex's evaluation of revision 1 and its
-rechecks of revisions 2 to 4 (record at the end), and after the maintainer
+Status: **done 2026-10-27**: every part (L1, L4a, L2, L3, L4b) is
+implemented, reviewed by Codex and recorded under [Progress](#progress); the
+inventory was re-measured after the pass. Plan revision 5, after Codex's
+evaluation of revision 1 and its rechecks of revisions 2 to 4 (record at the end), and after the maintainer
 widened the scope on 2026-10-26: the usability work exists to improve the
 API, so this pass changes code structure and public APIs where that
 improves them, as AGENTS.md's compatibility policy allows while the
@@ -665,8 +667,7 @@ All six were decided on 2026-10-26 as recommended.
     handling makes the forms it covers fail. Verified in L4b's review
     fix recheck.
 
-- **L4b (0.3.75), implemented 2026-10-27:** commit and review to be
-  recorded. One draft policy, by [the approved design](layering-design-L4b.md)
+- **L4b (0.3.75), done 2026-10-27:** 3fabfbc and its review fixes. One draft policy, by [the approved design](layering-design-L4b.md)
   (revision 4, D1 to D4 as recommended).
   - **Policy:** contracts.md's "Draft policy" (scope, save attempts, busy
     editors, eleven rules, the event table, the parameter-outcome table,
@@ -714,6 +715,15 @@ All six were decided on 2026-10-26 as recommended.
     mutations rerun, each panic line checked); the text-command rustdoc
     names both focus-requesting commands; and the changed disabled-number
     cells left the contract matrix for a new-behavior test.
+  - **Recheck (Codex):** the runtime fixes, the reordered assertions, the
+    split matrix and the widened `end` confirmed. Three points, fixed: the
+    import-scope check's path collection now ignores paths in comments and
+    literals (fixtures for a quoted and a commented path); the backslash
+    string fixture holds a `}` so removing string handling fails it; and
+    row-mode `InlineText` is documented as the exception to `DiscardDraft`
+    returning focus (focus falls back to the list), with direct and queued
+    tests. After it: formatting, Clippy, the foundation and editing tests,
+    runtime rustdoc and `git diff --check`; the final workspace gate below.
 
 ## Review record
 

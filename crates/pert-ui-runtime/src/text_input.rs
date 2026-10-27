@@ -138,8 +138,10 @@ impl TextPreedit {
 /// editor decides what its own selection means. Only two commands request
 /// focus: [`Self::BeginEdit`], which the editor answers by requesting focus
 /// for its editing part, and [`Self::DiscardDraft`], with which an in-place
-/// control whose editor holds focus returns it to the control; neither moves
-/// focus out of the target control.
+/// control whose editor holds focus returns it to the control (an
+/// [`InlineText`](crate::InlineText) in [row mode](crate::InlineText::in_row)
+/// leaves it to its nearest focusable ancestor instead); neither moves focus
+/// out of the target control.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum TextCommand {
@@ -261,7 +263,11 @@ pub enum TextCommand {
     /// field. It moves no focus out of the control: an in-place session that
     /// holds focus returns it to its control, as Escape does, at the next
     /// flush after `Runtime::text_command` and at the end of the delivering
-    /// flush after `request_text_command`.
+    /// flush after `request_text_command`. The exception is an
+    /// [`InlineText`](crate::InlineText) in [row mode](crate::InlineText::in_row),
+    /// which is not focusable at rest: as when Escape ends its session, it
+    /// requests no focus, and at that flush focus falls back to its nearest
+    /// focusable ancestor, such as its list.
     ///
     /// The command belongs to the control that owns the draft, which decides
     /// what discarding means; aim it at that control. The in-place controls

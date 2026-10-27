@@ -90,7 +90,9 @@ can keep a draft without focus reports it.
   selection drag end, releasing the drag's pointer capture), `Unavailable`
   otherwise. A `DraftEditor` answers it `Unavailable`; the command is aimed
   at the control that owns the draft. An in-place control whose session held
-  focus requests focus for itself, as Escape does, so `Runtime::text_command`
+  focus requests focus for itself, as Escape does (a row-mode `InlineText`,
+  not focusable at rest, leaves focus to its nearest focusable ancestor, such
+  as its list), so `Runtime::text_command`
   and `EventContext::request_text_command` now document two commands that
   request focus.
 - Documentation: contracts.md's "Draft policy" (scope, save attempts, rules

@@ -415,11 +415,16 @@ fn main_body(code: &str) -> Option<std::ops::Range<usize>> {
 }
 
 /// The `pert_ui::…` paths a piece of code names, in order, with whitespace
-/// removed, each with whether it is inside `fn main`'s body.
+/// removed, each with whether it is inside `fn main`'s body. A path inside a
+/// comment or a literal is not named.
 fn paths(code: &str) -> Vec<(String, bool)> {
     let main = main_body(code);
+    let is_code = code_bytes(code);
     let mut found = Vec::new();
     for (at, _) in code.match_indices("pert_ui::") {
+        if !is_code[at] {
+            continue;
+        }
         let rest = &code[at..];
         let len = if rest["pert_ui::".len()..].starts_with('{') {
             rest.find('}').map_or(rest.len(), |end| end + 1)
@@ -594,7 +599,10 @@ fn a_brace_in_any_comment_or_literal_does_not_end_main() {
         ("an escaped byte literal", "let _ = (b'\\'','}');"),
         ("a string", "let _ = \"}\";"),
         ("a string with an escaped quote", "let _ = \"\\\"}\";"),
-        ("a string ending in a backslash", "let _ = (\"\\\\\", '}');"),
+        (
+            "a string ending in a backslash",
+            "let _ = (\"}\\\\\", '}');",
+        ),
         ("a byte string", "let _ = b\"\\\"}\";"),
         ("a C string", "let _ = c\"\\\"}\";"),
         ("a raw string", "let _ = (r\"\\\", '}');"),
@@ -627,6 +635,25 @@ fn an_escaped_quote_and_a_raw_c_string_keep_the_import_in_main() {
     ] {
         check("a testing import in main", code, TEST_GLOBS, true);
     }
+}
+
+/// A path quoted in a string is not an import: a program whose only
+/// `testing` path is a string literal fails the check.
+#[test]
+#[should_panic(expected = "must import only its audience's globs")]
+fn a_quoted_path_is_not_an_import() {
+    let code = "use pert_ui::prelude::*;\nfn main() { let _ = \"pert_ui::testing::*\"; }\n";
+    check("a quoted testing path", code, TEST_GLOBS, true);
+}
+
+/// A path mentioned in comments is not counted: a program with the right
+/// imports and comments naming them, inside and outside `fn main`, passes.
+#[test]
+fn a_path_in_a_comment_is_not_counted() {
+    let code = "use pert_ui::prelude::*;\n\
+                // The test adds pert_ui::testing::* in main.\n\
+                fn main() {\n    /* pert_ui::prelude::* */\n    use pert_ui::testing::*; // pert_ui::testing::*\n}\n";
+    check("an import with commented paths", code, TEST_GLOBS, true);
 }
 
 /// The globs a representative test imports.

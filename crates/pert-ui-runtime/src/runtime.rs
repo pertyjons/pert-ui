@@ -3274,8 +3274,12 @@ impl EventContext {
     /// [`TextCommand::DiscardDraft`](crate::TextCommand::DiscardDraft), when it
     /// ends an in-place session (such as an [`InlineText`](crate::InlineText)'s)
     /// whose editor holds focus, returns it to the owning control, as Escape
-    /// does. Either request settles at the end of the same flush when that
-    /// flush succeeds, as [`Self::request_focus`] describes. Routing
+    /// does; an [`InlineText`](crate::InlineText) in
+    /// [row mode](crate::InlineText::in_row), which is not focusable at rest,
+    /// requests none, and focus falls back to its nearest focusable ancestor,
+    /// such as its list, as when Escape ends the session. Either request
+    /// settles at the end of the same flush when that flush succeeds, as
+    /// [`Self::request_focus`] describes. Routing
     /// follows [`Runtime::text_command`]: a target that is not an editor passes
     /// the command on to the focused component inside its subtree.
     /// A request whose target is unmounted or hidden before it applies is dropped;
@@ -5478,7 +5482,11 @@ impl Runtime {
     /// [`TextCommand::DiscardDraft`](crate::TextCommand::DiscardDraft)
     /// `Handled` by ending a session whose editor held focus has requested
     /// focus for itself, as Escape does. Either request moves focus at the
-    /// next flush, since this call does not flush.
+    /// next flush, since this call does not flush. An
+    /// [`InlineText`](crate::InlineText) in
+    /// [row mode](crate::InlineText::in_row), which is not focusable at rest,
+    /// requests none: at that flush focus falls back to its nearest
+    /// focusable ancestor, such as its list, as when Escape ends the session.
     ///
     /// # Errors
     /// Rejects foreign, unmounted, hidden and modal-blocked IDs (`Hidden` and

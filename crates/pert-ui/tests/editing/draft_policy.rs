@@ -2031,3 +2031,119 @@ fn discard_draft_during_a_selection_drag_releases_the_capture() {
         assert_eq!(query.get().unwrap(), "", "{kind:?}");
     }
 }
+
+/// One row whose title is an `InlineText` in row mode.
+struct Titles(Signal<String>);
+impl ListItems for Titles {
+    fn len(&self) -> usize {
+        1
+    }
+    fn key(&self, index: usize) -> Option<String> {
+        (index == 0).then(|| "a".to_owned())
+    }
+    fn build(&self, index: usize) -> Option<Element> {
+        (index == 0).then(|| Element::new("title", InlineText::new(&self.0).in_row(true)))
+    }
+}
+
+/// Sends `DiscardDraft` to a target from its own delivery when `go` turns
+/// true.
+struct Discarder {
+    target: Rc<RefCell<Option<WidgetId>>>,
+    go: Signal<bool>,
+    sent: bool,
+    notifier: Option<Notifier>,
+}
+impl Component for Discarder {
+    fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
+        let notifier = self.notifier.get_or_insert_with(|| cx.notifier()).clone();
+        if cx.read(&self.go)? && !self.sent {
+            notifier.request();
+        }
+        Ok(())
+    }
+    fn deliver_notifications(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
+        let target = self.target.borrow().clone();
+        if let Some(target) = target
+            && !self.sent
+        {
+            self.sent = true;
+            cx.request_text_command(&target, TextCommand::DiscardDraft)?;
+        }
+        Ok(())
+    }
+}
+
+/// `DiscardDraft` on a row-mode `InlineText` whose session holds focus, sent
+/// directly and queued: the session ends unsaved and, as when Escape ends
+/// it, focus falls back to the nearest focusable ancestor, the list, rather
+/// than to the label, which is not focusable at rest in a row.
+#[test]
+fn discard_draft_in_a_row_leaves_focus_to_the_list() {
+    for queued in [false, true] {
+        let mut ui = Runtime::new();
+        ui.set_viewport(Viewport::new(240.0, 160.0, 1.0).unwrap())
+            .unwrap();
+        let name = ui.signal("Mix".to_owned());
+        let rows = ui.signal(ListSource::new(Titles(name.clone())));
+        let go = ui.signal(false);
+        let target: Rc<RefCell<Option<WidgetId>>> = Rc::default();
+        let root = ui
+            .mount_tree(Element::new(
+                "root",
+                Column::new([
+                    Element::new(
+                        "list",
+                        VirtualList::new(rows.read_only(), 32.0)
+                            .unwrap()
+                            .selection(ListSelection::new(&ui, SelectionMode::Single)),
+                    )
+                    .with_grow(1),
+                    Element::new(
+                        "discarder",
+                        Discarder {
+                            target: target.clone(),
+                            go: go.clone(),
+                            sent: false,
+                            notifier: None,
+                        },
+                    ),
+                ]),
+            ))
+            .unwrap();
+        settle(&mut ui);
+        let list = ui.find_descendant(&root, "list").unwrap().unwrap();
+        // The list keys each row by its item, so the label is the row "a".
+        let title = ui.find_descendant(&root, "a").unwrap().unwrap();
+        // The list is the collection's keyboard owner, as after a press on
+        // the row.
+        ui.focus(&list).unwrap();
+        settle(&mut ui);
+        ui.text_command(&title, TextCommand::BeginEdit).unwrap();
+        settle(&mut ui);
+        ui.text_input("Master").unwrap();
+        settle(&mut ui);
+        assert_eq!(
+            ui.focused(),
+            Some(child_editor(&ui, &title)),
+            "queued {queued}"
+        );
+        if queued {
+            *target.borrow_mut() = Some(title.clone());
+            go.set(true).unwrap();
+        } else {
+            assert_eq!(
+                ui.text_command(&title, TextCommand::DiscardDraft).unwrap(),
+                TextCommandOutcome::Handled
+            );
+        }
+        settle(&mut ui);
+        assert_eq!(
+            property(&ui, "a", "editing"),
+            Some(InspectValue::Bool(false)),
+            "queued {queued}"
+        );
+        assert_eq!(name.get().unwrap(), "Mix");
+        assert_eq!(ui.focused(), Some(list), "queued {queued}");
+    }
+}
