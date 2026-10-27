@@ -101,6 +101,46 @@ maintainer then chooses the implementation phases.
    supported platforms (Vulkan, DX12, Metal) and on software
    presentation; MSRV and dependency policy; how each candidate affects
    capture, inspection, the CPU renderer and the `api/` listings.
+6. **peniko as the paint model** (the maintainer's request, 2026-10-27).
+   [peniko](https://docs.rs/peniko) is Linebender's renderer-independent
+   crate of paint and composition types: `Brush` (solid, gradient,
+   image), `Gradient` with linear, radial and sweep positions,
+   `ColorStops` and an interpolation alpha space, `Extend`, `ImageBrush`,
+   `BlendMode` (`Mix` and `Compose`), `Fill` and `Style`. It depends on
+   `kurbo` (geometry) and `color`, not on any renderer; vello builds on
+   it, and so does the Linebender stack the text path already uses
+   (parley, swash). Study:
+   - Whether its model fits candidate A and G as the shape of a
+     pert-ui-owned `Paint`, blend mode and layer, item by item, and what
+     pert-ui must define itself: sweep direction and angle unit (peniko
+     reversed the sweep direction's description in 0.5), the
+     interpolation color space against the theme's color system, alpha
+     interpolation, dithering and the CPU/GPU parity tolerance.
+   - Its stability. As of 2026-10-27 it is pre-1.0 (0.6.1, 2026-05-15)
+     with no stated 1.0 plan, and broke its API in 0.3 (the move to
+     `color`), 0.5 (gradient positions as structs, `Image` to
+     `ImageBrush`, `Font` to `FontData`) and 0.6 (kurbo 0.13); each kurbo
+     release has meant a peniko release. Its types therefore cannot
+     appear in the runtime or facade API (AGENTS.md); the question is
+     whether to mirror its concepts in pert-ui's own types, depend on it
+     inside a renderer only, or both.
+   - What depending on it inside `pert-ui-cpu` and `pert-ui-wgpu` would
+     cost: dependency weight, MSRV (1.85 in 0.6), licence (Apache-2.0 or
+     MIT), and the translation from pert-ui's types.
+   - With it, the renderers of the same family as a backend option
+     (question 3): `vello_cpu` and `vello_gpu` (formerly `vello_hybrid`),
+     both 0.3.0 and both on the sparse-strips pipeline, `vello_gpu` on
+     wgpu 30 as pert-ui is. A spike that renders the `DisplayList`
+     through both would measure frame cost and CPU/GPU parity against
+     today's renderers. Their documentation states that mask layers,
+     complex filter graphs and some blend modes panic, which the
+     translation would have to exclude, and that glyph caching is
+     experimental.
+   - `anyrender`'s `PaintScene` trait (fill, stroke, layers, clip
+     layers, glyph runs, box shadow, image) only as a checklist of the
+     primitives a display list needs, not as a dependency: the
+     `DisplayList` already is pert-ui's backend abstraction, and that
+     trait's signatures use kurbo and peniko types.
 
 ## Candidate directions
 
@@ -108,7 +148,8 @@ None is chosen. Phase 0 ranks them and may add or drop any.
 
 - **A. A paint model with gradients.** `Paint` for fills and strokes:
   solid, linear, radial and conic gradients, with defined interpolation
-  and dithering.
+  and dithering. peniko's types (phase 0, item 6) are the reference
+  model to compare against.
 - **B. Analytic shapes.** Rounded rectangles with per-corner radii and
   borders, ellipses and arcs computed in the fragment shader from
   distance fields, and by the same formula in the CPU renderer. It
