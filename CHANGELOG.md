@@ -38,8 +38,10 @@ can keep a draft without focus reports it.
   text command, direct or queued, including its own clipboard menu's) at
   once, as without a debounce, and discards a pending debounced query when
   focus leaves while editing is denied; it armed the debounce without focus
-  and kept a refused query pending after focus left. Replacement usage: none
-  needed.
+  and kept a refused query pending after focus left. Whether focus leaving
+  writes the query follows the editing permission's current value, so a
+  field allowed again just before its departure writes it. Replacement usage:
+  none needed.
 - Breaking (N5): a session field (`TextField`, `IntegerInput`, `DecimalInput`)
   that a focus loss reaches while disabled, between a fixed `disabled()`
   description and the next flush, reports nothing; it reported `Refused`.
@@ -50,6 +52,10 @@ can keep a draft without focus reports it.
   reported directly before), so a host that closes the edit and removes the
   field does so after the field's `false`, and an application count of unsaved
   fields returns to zero.
+- Changed: `DraftEditorController::end` also releases the pointer capture the
+  editor holds for a gesture the session's end discards, so a selection drag
+  cut short by `end` no longer keeps routing the held button's moves to the
+  editor.
 - Changed: a `Table` has a second, invisible child after its body, keyed
   `edit end reporter` and structural (no workspace state), which delivers
   `on_edit_end`; it has no extent, paints nothing, takes no focus or hits and
@@ -80,9 +86,13 @@ can keep a draft without focus reports it.
   answered by every built-in editor also while disabled or read-only:
   `Handled` with Escape's effect and no write when there was a draft (an
   in-place session, including `InlineSlider`'s text mode, ends; a parameter
-  draft is cancelled; a search query is dropped), `Unavailable` otherwise.
-  A `DraftEditor` answers it `Unavailable`; the command is aimed at the
-  control that owns the draft.
+  draft is cancelled; a search query is dropped; a composition and a
+  selection drag end, releasing the drag's pointer capture), `Unavailable`
+  otherwise. A `DraftEditor` answers it `Unavailable`; the command is aimed
+  at the control that owns the draft. An in-place control whose session held
+  focus requests focus for itself, as Escape does, so `Runtime::text_command`
+  and `EventContext::request_text_command` now document two commands that
+  request focus.
 - Documentation: contracts.md's "Draft policy" (scope, save attempts, rules
   1 to 11, the event, parameter-outcome and table-completion tables),
   replacing the per-editor lists in "Permissions and availability" and

@@ -360,14 +360,12 @@ fn discard_draft_discards_without_writing() {
     replace(&mut ui, &field, "42");
     enabled.set(false).unwrap();
     settle(&mut ui);
-    assert_eq!(
-        ui.text_command(&field, TextCommand::DiscardDraft).unwrap(),
-        TextCommandOutcome::Handled
-    );
+    let outcome = ui.text_command(&field, TextCommand::DiscardDraft).unwrap();
     settle(&mut ui);
+    assert_eq!(*modified.borrow(), [true, false]);
+    assert_eq!(outcome, TextCommandOutcome::Handled);
     assert_eq!(value.get().unwrap(), 7);
     assert_eq!(text_of(&ui, &field, "text"), "7");
-    assert_eq!(*modified.borrow(), [true, false]);
     assert_eq!(
         ui.text_command(&field, TextCommand::DiscardDraft).unwrap(),
         TextCommandOutcome::Unavailable,
@@ -443,13 +441,14 @@ fn discard_draft_discards_without_writing() {
 }
 
 /// New-behavior test 12, targeting. Named assertion: the command aimed at an
-/// in-place owner whose refused session stayed open without focus answers
-/// `Handled` and ends it. Mutation checked: forwarding the command to the
-/// editor instead of answering at the owner answers `NotAnEditor` there.
+/// in-place owner answers `Handled` and ends the session, checked first for
+/// a refused session that stayed open without focus (`focused false`).
+/// Mutation checked: forwarding the command to the editor instead of
+/// answering at the owner answers `NotAnEditor` there.
 #[test]
 fn discard_draft_is_answered_by_the_owning_control() {
-    // InlineText, focused and then unfocused with a refused session.
-    for focused in [true, false] {
+    // InlineText, unfocused with a refused session and then focused.
+    for focused in [false, true] {
         let mut ui = Runtime::new();
         let name = ui.signal("Bass".to_owned());
         let (modified, report) = reports();
@@ -493,8 +492,8 @@ fn discard_draft_is_answered_by_the_owning_control() {
         assert_eq!(*modified.borrow(), [true, false], "focused {focused}");
     }
 
-    // An inline number row, focused and unfocused with a refused draft.
-    for focused in [true, false] {
+    // An inline number row, unfocused with a refused draft and then focused.
+    for focused in [false, true] {
         let mut ui = Runtime::new();
         let value = ui.signal(8_i64);
         let (modified, report) = reports();
@@ -1377,65 +1376,98 @@ fn expect(row: EditorRow, event: Event) -> Option<Expect> {
     })
 }
 
-/// The policy table (contract): every editor row against every event.
-/// Mutation checked: making a parameter field save on focus loss fails the
-/// parameter rows' focus-loss cells.
-#[test]
-fn the_policy_table_holds_for_every_built_in_editor() {
-    let mut failures = Vec::new();
-    for row in EditorRow::ALL {
-        for event in [
-            Event::Enter,
-            Event::FocusLoss,
-            Event::ApplicationWrite,
-            Event::NotEditable,
-            Event::Disabled,
-            Event::Hidden,
-        ] {
-            let Some((written, shown, modified, log)) = expect(row, event) else {
-                continue;
-            };
-            assert!(row.has_editable() || event != Event::NotEditable);
-            let mut s = subject(row);
-            match event {
-                Event::Enter => press(&mut s.ui, KeyCode::Enter),
-                Event::FocusLoss => {
-                    s.ui.clear_focus();
-                    settle(&mut s.ui);
-                }
-                Event::ApplicationWrite => {
-                    (s.write)(&mut s.ui);
-                    settle(&mut s.ui);
-                }
-                Event::NotEditable => {
-                    s.editable.set(false).unwrap();
-                    settle(&mut s.ui);
-                }
-                Event::Disabled => {
-                    s.enabled.set(false).unwrap();
-                    settle(&mut s.ui);
-                }
-                Event::Hidden => {
-                    s.ui.set_visible(&s.field, false).unwrap();
-                    settle(&mut s.ui);
-                }
-            }
-            // A debounce that would write later must not.
-            s.ui.flush(s.ui.now() + Duration::from_millis(400)).unwrap();
-            let actual = (
-                (s.written)(),
-                (s.shown)(&s.ui),
-                s.modified.borrow().last().copied(),
-                s.log.borrow().clone(),
-            );
-            let expected = (written.to_owned(), shown.to_owned(), modified, log.to_vec());
-            if actual != expected {
-                failures.push(format!(
-                    "{row:?} {event:?}: {actual:?}, expected {expected:?}"
-                ));
-            }
+/// The cells of the policy table this part changed: before it, revoking a
+/// number field's enablement discarded its draft. Every other cell held
+/// before and after the change.
+fn changed(row: EditorRow, event: Event) -> bool {
+    matches!(
+        (row, event),
+        (
+            EditorRow::IntegerLocal | EditorRow::IntegerSession,
+            Event::Disabled
+        )
+    )
+}
+
+/// Runs one cell of the policy table: a fresh editor of `row` with a draft,
+/// then `event`. Returns a description of the difference from the
+/// expectation, if any.
+fn run_cell(row: EditorRow, event: Event) -> Option<String> {
+    let (written, shown, modified, log) = expect(row, event)?;
+    assert!(row.has_editable() || event != Event::NotEditable);
+    let mut s = subject(row);
+    match event {
+        Event::Enter => press(&mut s.ui, KeyCode::Enter),
+        Event::FocusLoss => {
+            s.ui.clear_focus();
+            settle(&mut s.ui);
+        }
+        Event::ApplicationWrite => {
+            (s.write)(&mut s.ui);
+            settle(&mut s.ui);
+        }
+        Event::NotEditable => {
+            s.editable.set(false).unwrap();
+            settle(&mut s.ui);
+        }
+        Event::Disabled => {
+            s.enabled.set(false).unwrap();
+            settle(&mut s.ui);
+        }
+        Event::Hidden => {
+            s.ui.set_visible(&s.field, false).unwrap();
+            settle(&mut s.ui);
         }
     }
+    // A debounce that would write later must not.
+    s.ui.flush(s.ui.now() + Duration::from_millis(400)).unwrap();
+    let actual = (
+        (s.written)(),
+        (s.shown)(&s.ui),
+        s.modified.borrow().last().copied(),
+        s.log.borrow().clone(),
+    );
+    let expected = (written.to_owned(), shown.to_owned(), modified, log.to_vec());
+    (actual != expected).then(|| format!("{row:?} {event:?}: {actual:?}, expected {expected:?}"))
+}
+
+const EVENTS: [Event; 6] = [
+    Event::Enter,
+    Event::FocusLoss,
+    Event::ApplicationWrite,
+    Event::NotEditable,
+    Event::Disabled,
+    Event::Hidden,
+];
+
+/// The policy table (contract): every editor row against every event, except
+/// the cells this part changed, which the next test covers. Mutation checked:
+/// making a parameter field save on focus loss fails the parameter rows'
+/// focus-loss cells.
+#[test]
+fn the_policy_table_holds_for_every_built_in_editor() {
+    let failures: Vec<String> = EditorRow::ALL
+        .into_iter()
+        .flat_map(|row| EVENTS.map(|event| (row, event)))
+        .filter(|(row, event)| !changed(*row, *event))
+        .filter_map(|(row, event)| run_cell(row, event))
+        .collect();
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+}
+
+/// New-behavior test: the policy table's changed cells, a local number
+/// field with and without a session keeping its draft unsaved when its
+/// enablement is revoked. Named assertion: no cell differs. Mutation
+/// checked: test 1's (the draft discarded on revocation) makes both cells
+/// show 7 with `on_modified` false.
+#[test]
+fn the_policy_tables_changed_cells_keep_a_disabled_number_draft() {
+    let failures: Vec<String> = EditorRow::ALL
+        .into_iter()
+        .flat_map(|row| EVENTS.map(|event| (row, event)))
+        .filter(|(row, event)| changed(*row, *event))
+        .filter_map(|(row, event)| run_cell(row, event))
+        .collect();
     assert!(failures.is_empty(), "{}", failures.join("\n"));
 }
 
@@ -1722,7 +1754,9 @@ fn parameter_number_fields_distinguish_their_save_outcomes() {
     }
 }
 
-/// `InlineSlider`'s own contract (unchanged by the policy).
+/// `InlineSlider`'s own contract (unchanged by the policy). Named assertion:
+/// text mode opens with the parameter edit begun. Mutation checked: beginning
+/// the edit at confirmation instead leaves no text mode open with an edit.
 #[test]
 fn an_inline_slider_begins_its_edit_with_text_mode_and_commits_on_enter() {
     let mut ui = Runtime::new();
@@ -1772,8 +1806,7 @@ fn an_inline_slider_begins_its_edit_with_text_mode_and_commits_on_enter() {
     ui.focus(&field).unwrap();
     settle(&mut ui);
     press(&mut ui, KeyCode::F2);
-    assert!(text_mode(&ui));
-    assert!(begun(), "the edit begins with text mode");
+    assert!(text_mode(&ui) && begun(), "the edit begins with text mode");
     // Unparsable text stays with the edit open.
     ui.text_input("x").unwrap();
     settle(&mut ui);
@@ -1886,4 +1919,115 @@ fn some_inputs_initiate_no_save_attempt() {
         "Escape ended only the composition"
     );
     assert!(log.borrow().is_empty());
+}
+
+/// Records the pointer events that reach it.
+struct PointerProbe(Rc<RefCell<Vec<PointerKind>>>);
+impl Component for PointerProbe {
+    fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+        Ok(())
+    }
+    fn measure(&self, _: &MeasureContext<'_>, _: Constraints) -> Result<Size, RuntimeError> {
+        Ok(Size::new(240.0, 40.0)?)
+    }
+    fn pointer_input(
+        &mut self,
+        _: &mut EventContext,
+        event: PointerEvent,
+    ) -> Result<InputOutcome, RuntimeError> {
+        self.0.borrow_mut().push(event.kind());
+        Ok(InputOutcome::Handled)
+    }
+}
+
+/// New-behavior test for `DiscardDraft` (review point 1): discarding during a
+/// selection drag releases the drag's pointer capture. Named assertion: with
+/// the primary button still held, a move over a sibling reaches the sibling.
+/// Mutations checked: without the release in the number field's
+/// `discard_command`, in `SearchField`'s answer, and in `DraftEditor`'s
+/// session end (the inline row), the move goes to the captured editor.
+#[test]
+fn discard_draft_during_a_selection_drag_releases_the_capture() {
+    #[derive(Clone, Copy, Debug, PartialEq)]
+    enum Kind {
+        Number,
+        Inline,
+        Search,
+    }
+    for kind in [Kind::Number, Kind::Inline, Kind::Search] {
+        let mut ui = Runtime::new();
+        ui.set_viewport(Viewport::new(400.0, 200.0, 1.0).unwrap())
+            .unwrap();
+        let number = ui.signal(7_i64);
+        let query = ui.signal(String::new());
+        let seen = Rc::new(RefCell::new(Vec::new()));
+        let field = match kind {
+            Kind::Number => IntegerInput::new(number.clone()).key("field"),
+            Kind::Inline => InlineInteger::new(number.clone()).key("field"),
+            Kind::Search => SearchField::new(query.clone())
+                .debounce(Duration::from_millis(300))
+                .key("field"),
+        };
+        let root = ui
+            .mount_tree(Element::new(
+                "root",
+                Column::new([field, Element::new("probe", PointerProbe(seen.clone()))]),
+            ))
+            .unwrap();
+        settle(&mut ui);
+        let field = ui.find_descendant(&root, "field").unwrap().unwrap();
+        let probe = ui.find_descendant(&root, "probe").unwrap().unwrap();
+        ui.focus(&field).unwrap();
+        settle(&mut ui);
+        if kind == Kind::Inline {
+            press(&mut ui, KeyCode::F2);
+        } else {
+            ui.text_command(&field, TextCommand::SelectAll).unwrap();
+        }
+        ui.text_input(if kind == Kind::Search {
+            "abcdef"
+        } else {
+            "424242"
+        })
+        .unwrap();
+        settle(&mut ui);
+        let target = if kind == Kind::Inline {
+            child_editor(&ui, &field)
+        } else {
+            field.clone()
+        };
+        let point = center(&ui, &target);
+        ui.pointer_input(PointerEvent::new(
+            point,
+            PointerKind::Press(PointerButton::Primary),
+        ))
+        .unwrap();
+        ui.pointer_input(PointerEvent::new(
+            Point::new(point.x() - 10.0, point.y()).unwrap(),
+            PointerKind::Move,
+        ))
+        .unwrap();
+        assert_eq!(
+            ui.text_command(&field, TextCommand::DiscardDraft).unwrap(),
+            TextCommandOutcome::Handled,
+            "{kind:?}"
+        );
+        seen.borrow_mut().clear();
+        let over = center(&ui, &probe);
+        ui.pointer_input(PointerEvent::new(over, PointerKind::Move))
+            .unwrap();
+        assert!(
+            seen.borrow().contains(&PointerKind::Move),
+            "{kind:?}: the probe receives the move while the button is held: {:?}",
+            seen.borrow()
+        );
+        ui.pointer_input(PointerEvent::new(
+            over,
+            PointerKind::Release(PointerButton::Primary),
+        ))
+        .unwrap();
+        settle(&mut ui);
+        assert_eq!(number.get().unwrap(), 7, "{kind:?}");
+        assert_eq!(query.get().unwrap(), "", "{kind:?}");
+    }
 }

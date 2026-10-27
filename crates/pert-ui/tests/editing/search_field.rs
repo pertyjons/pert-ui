@@ -771,3 +771,37 @@ fn an_edit_without_focus_writes_the_query_at_once() {
     assert_eq!(query.get().unwrap(), "abc");
     assert_eq!(property(&ui, "pending"), InspectValue::Bool(false));
 }
+
+/// Review point 2: the departure decides with the current permissions.
+/// Named assertion: after editing is revoked, observed by a flush, and
+/// allowed again without another flush, focus leaving writes the pending
+/// query. Mutation checked: deciding the write with the editability the last
+/// update cached leaves the query unwritten.
+#[test]
+fn a_query_allowed_again_before_focus_leaves_is_written() {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(320.0, 160.0, 1.0).unwrap())
+        .unwrap();
+    let query = ui.signal(String::new());
+    let editable = ui.signal(true);
+    let field = ui
+        .mount_tree(Element::new(
+            "search",
+            SearchField::new(query.clone())
+                .debounce(Duration::from_millis(300))
+                .editable(&editable),
+        ))
+        .unwrap();
+    ui.focus(&field).unwrap();
+    frame(&mut ui);
+    ui.text_input("abc").unwrap();
+    frame(&mut ui);
+    editable.set(false).unwrap();
+    frame(&mut ui);
+    editable.set(true).unwrap();
+    ui.clear_focus();
+    assert_eq!(query.get().unwrap(), "abc");
+    frame(&mut ui);
+    assert_eq!(property(&ui, "pending"), InspectValue::Bool(false));
+    assert_eq!(text(&ui), "abc");
+}

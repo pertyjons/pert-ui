@@ -318,8 +318,10 @@ impl SearchField {
         if self.value.get()? != self.editor.observed {
             return Ok(());
         }
-        if self.editor.enabled && self.editor.text != self.editor.observed && !self.editor.locked()
-        {
+        // The permissions read above decide, not the state the last update
+        // cached: a field allowed again since then writes its query. Only a
+        // refused binding still blocks the write.
+        if self.editor.text != self.editor.observed && self.editor.rejected.is_none() {
             self.value.set(self.editor.text.clone())?;
             self.editor.observed.clone_from(&self.editor.text);
         }
@@ -687,6 +689,9 @@ impl Component for SearchField {
             self.pending = false;
             cx.cancel_timer();
             self.editor.cancel_composition();
+            // A selection drag ends, and with it the field's pointer capture.
+            self.editor.dragging = false;
+            cx.release_pointer();
             self.discard();
             cx.invalidate(Invalidation::Paint);
             return Ok(TextCommandOutcome::Handled);

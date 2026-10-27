@@ -1902,10 +1902,8 @@ fn disabling_a_session_number_field_keeps_the_edit_and_the_draft() {
     s.type_text("42");
     enabled.set(false).unwrap();
     s.settle();
-    assert_ne!(s.focused().as_deref(), Some("editor"));
-    assert!(s.log().is_empty(), "a revoked editor reports nothing");
-    assert_eq!(value.get().unwrap(), 27);
-    assert_eq!(s.text(), InspectValue::Text("42".into()));
+    // Observed now, asserted after the named assertion.
+    let revoked = (s.focused(), s.log(), value.get().unwrap(), s.text());
     enabled.set(true).unwrap();
     s.settle();
     let editor = s.ui.find_descendant(&s.root, "editor").unwrap().unwrap();
@@ -1914,6 +1912,11 @@ fn disabling_a_session_number_field_keeps_the_edit_and_the_draft() {
     s.key(KeyCode::Enter, false, false);
     assert_eq!(s.log(), [(EditorTrigger::Enter, EditorOutcome::Saved)]);
     assert_eq!(value.get().unwrap(), 42);
+    let (focused, log, written, shown) = revoked;
+    assert_ne!(focused.as_deref(), Some("editor"));
+    assert!(log.is_empty(), "a revoked editor reports nothing");
+    assert_eq!(written, 27);
+    assert_eq!(shown, InspectValue::Text("42".into()));
 }
 
 /// New-behavior test 6. Named assertion: focus leaving during a held step

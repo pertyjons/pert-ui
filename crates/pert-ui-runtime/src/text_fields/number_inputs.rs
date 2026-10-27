@@ -1797,8 +1797,10 @@ impl<T: Number> NumberEditor<T> {
         let refocus = self.field.drafting() && self.field.focused;
         if self.hold.is_some() || self.held_key.is_some() || self.field.pressed() {
             cx.cancel_timer();
-            cx.release_pointer();
         }
+        // A step gesture's or a selection drag's capture ends with it; an
+        // inline row's editor releases its own when its session ends.
+        cx.release_pointer();
         self.cancel();
         self.field.editor.cancel_composition();
         self.field.editor.dragging = false;

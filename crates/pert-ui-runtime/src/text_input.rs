@@ -129,15 +129,17 @@ impl TextPreedit {
 }
 
 /// An action a text editor performs on its own text: a clipboard or selection
-/// action on its selection and caret, or beginning an edit.
+/// action on its selection and caret, beginning an edit or discarding a draft.
 ///
 /// This is the contract behind the built-in editors' clipboard chords and their
 /// context menu, and the same one a custom editor implements through
 /// [`Component::text_command`](crate::Component::text_command). Requesting a
 /// command never reads the clipboard on the caller's behalf; the receiving
-/// editor decides what its own selection means. No command moves focus except
-/// [`Self::BeginEdit`], which the editor answers by requesting focus for its
-/// editing part.
+/// editor decides what its own selection means. Only two commands request
+/// focus: [`Self::BeginEdit`], which the editor answers by requesting focus
+/// for its editing part, and [`Self::DiscardDraft`], with which an in-place
+/// control whose editor holds focus returns it to the control; neither moves
+/// focus out of the target control.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum TextCommand {
@@ -257,7 +259,9 @@ pub enum TextCommand {
     /// [`EventContext::request_text_command`](crate::EventContext::request_text_command)
     /// deliver it without focus, so it reaches an unfocused or disabled
     /// field. It moves no focus out of the control: an in-place session that
-    /// holds focus returns it to its control, as Escape does.
+    /// holds focus returns it to its control, as Escape does, at the next
+    /// flush after `Runtime::text_command` and at the end of the delivering
+    /// flush after `request_text_command`.
     ///
     /// The command belongs to the control that owns the draft, which decides
     /// what discarding means; aim it at that control. The in-place controls

@@ -119,6 +119,11 @@ impl<P: Copy + PartialEq> Shared<P> {
     /// Ends the session held in `core`, telling the owner.
     fn end_in(&self, core: &mut Core<P>) {
         if core.editor.active {
+            // A pointer gesture ends with the session, and with it the
+            // capture the editor holds for it.
+            if let Some(node) = core.node.upgrade() {
+                node.release_capture();
+            }
             core.clear();
             self.publish(core);
             core.invalidate(Invalidation::Paint, Some(Invalidation::Layout));
@@ -388,7 +393,8 @@ impl<P: Copy + PartialEq + 'static> DraftEditorController<P> {
     }
 
     /// Ends the session, discarding the draft, its undo history, any
-    /// composition and pointer gesture. The editor stops being focusable, and
+    /// composition and pointer gesture, and releasing the pointer capture the
+    /// editor holds for that gesture. The editor stops being focusable, and
     /// its owner is re-evaluated so it can hide it. Idempotent; the owner
     /// commits the draft first if it wants to keep it.
     ///

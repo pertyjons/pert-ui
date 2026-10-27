@@ -702,6 +702,18 @@ All six were decided on 2026-10-26 as recommended.
     test 18 holds an end back through a failing probe callback.
   - **Records:** a TODO.md entry for the `diagram_editor` close policy that
     ignores a refused inspector draft.
+  - **Review (Codex):** on_modified, completion ordering, session-bound
+    locks, reporter-child FIFO delivery, parameter outcomes, the prelude
+    names, `api/` and the CHANGELOG were confirmed. Three should-fix
+    points and two nits, all fixed: `DiscardDraft` ends a selection drag
+    and releases its capture in the number field, `SearchField` and an
+    inline row (through `DraftEditorController::end`, which now releases a
+    drag's capture for any owner); `SearchField`'s departure write
+    decides with the current permissions, not the cached lock; the tests
+    that failed before their named assertions were reordered (31
+    mutations rerun, each panic line checked); the text-command rustdoc
+    names both focus-requesting commands; and the changed disabled-number
+    cells left the contract matrix for a new-behavior test.
 
 ## Review record
 

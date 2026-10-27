@@ -3268,9 +3268,13 @@ impl EventContext {
     ///
     /// The runtime delivers it to [`Component::text_command`] in the event phase of
     /// this flush, in request order, so the receiving editor may commit edits as it
-    /// does for key input. The clipboard is not read here, and only
-    /// [`TextCommand::BeginEdit`](crate::TextCommand::BeginEdit) moves focus:
-    /// the editor's focus request settles at the end of the same flush when that
+    /// does for key input. The clipboard is not read here, and only two
+    /// commands request focus: [`TextCommand::BeginEdit`](crate::TextCommand::BeginEdit)
+    /// moves it into the editing part, and
+    /// [`TextCommand::DiscardDraft`](crate::TextCommand::DiscardDraft), when it
+    /// ends an in-place session (such as an [`InlineText`](crate::InlineText)'s)
+    /// whose editor holds focus, returns it to the owning control, as Escape
+    /// does. Either request settles at the end of the same flush when that
     /// flush succeeds, as [`Self::request_focus`] describes. Routing
     /// follows [`Runtime::text_command`]: a target that is not an editor passes
     /// the command on to the focused component inside its subtree.
@@ -5466,10 +5470,15 @@ impl Runtime {
     /// label has no focused descendant, so code that begins an edit targets the
     /// label itself.
     ///
-    /// No command moves focus except
-    /// [`TextCommand::BeginEdit`](crate::TextCommand::BeginEdit): an editor
-    /// that answers it `Handled` is editing on return, and its focus request
-    /// moves focus at the next flush, since this call does not flush.
+    /// Two commands request focus, and none moves it out of the target
+    /// control: an editor that answers
+    /// [`TextCommand::BeginEdit`](crate::TextCommand::BeginEdit) `Handled` is
+    /// editing on return and has requested focus for its editing part, and
+    /// an in-place control that answers
+    /// [`TextCommand::DiscardDraft`](crate::TextCommand::DiscardDraft)
+    /// `Handled` by ending a session whose editor held focus has requested
+    /// focus for itself, as Escape does. Either request moves focus at the
+    /// next flush, since this call does not flush.
     ///
     /// # Errors
     /// Rejects foreign, unmounted, hidden and modal-blocked IDs (`Hidden` and
