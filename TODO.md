@@ -143,3 +143,18 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   which round 1's triage took for a dead key the kit could drop). Let
   `build` return any component, or give `Element` a keyless form that `Each`
   keys, and drop the placeholder keys from the examples.
+- [ ] 2026-10-27 `crates/pert-ui-wgpu/src/native_smoke.rs` (pixel readback,
+  realtime workload probe) and `crates/pert-ui/src/platform/smoke.rs`
+  (`persistent-paint-error`) — Verification and review: layering L3 migrated
+  these probes' legacy roots to `mount_tree` roots, which are laid out and
+  overlap-validated, but the design's migration exceptions
+  (`layering-design-L3.md` §2, items 1–2) did not list them and the native
+  checks were not run for L3. The 2026-10-27 native run passed but logged
+  500,503 `UnexpectedOverlap` lines, 499,500 of them the pairs of the
+  pixel-readback probe's 1,000 stacked `static-N` roots, so its debug-profile
+  update and compose timings now include writing them. Have the overlapping
+  probe components report `OverlapPolicy::Allow` (or mount them under one
+  stacking container), and rerun the native suite to see a log without
+  validation errors. Separately, consider whether development validation
+  should cap or summarize overlap reports, since it writes one line per
+  overlapping pair.
