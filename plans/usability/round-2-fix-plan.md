@@ -5,7 +5,12 @@ Status: **draft revision 4, 2026-10-27.** Revision 1 was reviewed by Codex
 three open, which revision 3 answers; Codex's second recheck left one
 (D4's part traversal), which revision 4 answers; Codex's third recheck
 found it ready for the maintainer's decisions
-([review record](#review-record)). No decision below is approved; no part has
+([review record](#review-record)). **Approved by the maintainer on
+2026-10-28:** D1 to D15 as recommended; task 6 is written by a fresh agent
+session as [round 3](#round-3-proposal) describes; the parts land on the
+branch `round-2-fixes`; the design checkpoints are approved by the author and
+Codex once Codex finds them ready, with the recommended options, under the
+maintainer's delegation of 2026-10-28, and recorded as such. No part has
 started. Written against `developer-usability` at 26e6b5a (0.3.75); the
 library code is unchanged at ceb5dc7, which Codex's recheck read.
 
