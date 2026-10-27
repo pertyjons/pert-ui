@@ -12,6 +12,30 @@ distinct error and warning the summary counts).
 Counts are descriptive observations of how the tester worked, not a usability
 score: they depend on how often the tester chose to build. The imported-items
 list is a candidate inventory for the author to verify.
+
+The sources are <run-dir>/work, or <run-dir>/submission for a kept record.
+The code-size section's definitions were frozen for round 2 on 2026-10-27,
+before any round 2 run, and apply unchanged to round 1's kept records:
+
+- Code lines: lines of the tester's `*.rs` files (outside `target/`) that
+  hold something other than whitespace once comments, doc comments included,
+  are removed. A string literal is code.
+- Test code: every file with a `tests` or `benches` directory in its path,
+  and each item under `#[cfg(test)]` elsewhere. The rest, a headless mode
+  included, is application code.
+- Task 4: lines are counted only where they differ from the fixture at the
+  kit's commit (inserted or replaced lines of a line diff of each file's
+  code lines), and imports only when the fixture lacks them.
+- Distinct pert-ui types: identifiers in code, outside string literals, that
+  name a public struct, enum, trait, type alias or union (by its path, not
+  an associated type) of `pert-ui`,
+  `pert-ui-runtime`, `pert-ui-core` or `pert-ui-cpu` in the API listings at
+  the kit's commit. A candidate list: a tester's own type of the same name
+  counts too, so the author checks it.
+- Import routes: each distinct `pert_ui::` path written in the source is
+  `prelude` (it starts with `prelude::`), `module` (another lowercase first
+  segment, named in the report) or `root` (anything else, as `pert_ui::Button`,
+  `pert_ui::App::new` or the glob `pert_ui::*`). Glob imports are also listed.
 """
 
 import collections
@@ -217,15 +241,184 @@ def expand(tree, prefix):
     return result
 
 
+source_root = run / "work" if (run / "work").exists() else run / "submission"
+sources = sorted(src for src in source_root.rglob("*.rs")
+                 if "target" not in src.relative_to(source_root).parts)
+
 imports = set()
-for src in (run / "work").rglob("*.rs"):
-    if "target" in src.parts:
-        continue
+for src in sources:
     text = strip_comments_and_strings(src.read_text(errors="replace"))
     for m in re.finditer(r"\buse\s+pert_ui::([^;]+);", text):
         imports.update(p.removesuffix("::self") for p in expand(m[1], ""))
     for m in re.finditer(r"(?<!use )\bpert_ui::((?:\w+::)*\w+)", text):
         imports.add(m[1])
+
+def lex(text):
+    """Returns (code, bare): `code` is the text with every comment replaced by
+    spaces, `bare` additionally blanks string and character literal contents.
+    Both keep every newline, so lines stay aligned with the file."""
+    code, bare = list(text), list(text)
+    n, i = len(text), 0
+
+    def blank(start, end, *targets):
+        for t in targets:
+            for k in range(start, end):
+                if t[k] != "\n":
+                    t[k] = " "
+
+    while i < n:
+        c = text[i]
+        if text.startswith("//", i):
+            end = text.find("\n", i)
+            end = n if end < 0 else end
+            blank(i, end, code, bare)
+            i = end
+        elif text.startswith("/*", i):
+            depth, j = 1, i + 2
+            while j < n and depth:
+                if text.startswith("/*", j):
+                    depth, j = depth + 1, j + 2
+                elif text.startswith("*/", j):
+                    depth, j = depth - 1, j + 2
+                else:
+                    j += 1
+            blank(i, j, code, bare)
+            i = j
+        elif (m := re.match(r'(?:b|c)?r(#*)"', text[i:])) and (i == 0 or not (text[i - 1].isalnum() or text[i - 1] == "_")):
+            close = '"' + m[1]
+            end = text.find(close, i + len(m[0]))
+            end = n if end < 0 else end + len(close)
+            blank(i + len(m[0]), end - len(close), bare)
+            i = end
+        elif c == '"' or (c in "bc" and text.startswith('"', i + 1) and (i == 0 or not (text[i - 1].isalnum() or text[i - 1] == "_"))):
+            j = i + (1 if c == '"' else 2)
+            start = j
+            while j < n and text[j] != '"':
+                j += 2 if text[j] == "\\" else 1
+            blank(start, min(j, n), bare)
+            i = j + 1
+        elif c == "'" and (m := re.match(r"'(\\(?:x[0-9a-fA-F]{2}|u\{[0-9a-fA-F_]+\}|.)|[^\\'\n])'", text[i:])):
+            blank(i + 1, i + len(m[0]) - 1, bare)
+            i += len(m[0])
+        else:
+            i += 1
+    return "".join(code), "".join(bare)
+
+
+def cfg_test_lines(bare):
+    """Line indexes (0-based) covered by items under `#[cfg(test)]`."""
+    covered = set()
+    for m in re.finditer(r"#\s*\[\s*cfg\s*\(\s*test\s*\)\s*\]", bare):
+        depth, j, opened = 0, m.end(), False
+        while j < len(bare):
+            ch = bare[j]
+            if ch in "([{":
+                depth += 1
+                opened = opened or ch == "{"
+            elif ch in ")]}":
+                depth -= 1
+                if depth < 0 or (depth == 0 and ch == "}" and opened):
+                    break
+            elif ch in ";," and depth == 0:
+                break
+            j += 1
+        first = bare.count("\n", 0, m.start())
+        last = bare.count("\n", 0, min(j, len(bare) - 1))
+        covered.update(range(first, last + 1))
+    return covered
+
+
+def git_show(commit, path):
+    """A file at the kit's commit, or None. The checkout holds the history."""
+    import subprocess
+    result = subprocess.run(["git", "-C", str(pathlib.Path(__file__).resolve().parent),
+                             "show", f"{commit}:{path}"], capture_output=True, text=True)
+    return result.stdout if result.returncode == 0 else None
+
+
+def code_lines(text):
+    """(index, stripped text) of each code line."""
+    code, _ = lex(text)
+    return [(k, line.strip()) for k, line in enumerate(code.split("\n")) if line.strip()]
+
+
+commit = cond.get("commit", "")
+task4 = cond.get("task", "").startswith("4-")
+project = source_root
+if task4 and (source_root / "bookmarks").is_dir():
+    project = source_root / "bookmarks"
+
+counts = {"application": 0, "test": 0}
+type_names = set()
+for package in ("pert-ui", "pert-ui-runtime", "pert-ui-core", "pert-ui-cpu"):
+    for config in ("default", "cpu"):
+        listing = git_show(commit, f"api/{package}/{config}.txt") or ""
+        for m in re.finditer(r"^pub (?:struct|enum|trait|type|union) (pert_ui\w*::(?:\w+::)*)(\w+)", listing, re.M):
+            # `Type::Assoc` is an associated type, not a type of its own.
+            if not m[1].rstrip(":").split("::")[-1][:1].isupper():
+                type_names.add(m[2])
+types_used = {"application": set(), "test": set()}
+fixture_imports = set()
+
+for src in sources:
+    text = src.read_text(errors="replace")
+    _, bare = lex(text)
+    rel = src.relative_to(project) if src.is_relative_to(project) else src.relative_to(source_root)
+    whole_test = bool({"tests", "benches"} & set(rel.parts[:-1]))
+    in_cfg_test = cfg_test_lines(bare)
+    lines = code_lines(text)
+    counted = {k for k, _ in lines}
+    if task4:
+        fixture = git_show(commit, f"plans/usability/task4-app/{rel.as_posix()}")
+        if fixture is not None:
+            fixture_text = strip_comments_and_strings(fixture)
+            for m in re.finditer(r"\buse\s+pert_ui::([^;]+);", fixture_text):
+                fixture_imports.update(p.removesuffix("::self") for p in expand(m[1], ""))
+            for m in re.finditer(r"(?<!use )\bpert_ui::((?:\w+::)*\w+)", fixture_text):
+                fixture_imports.add(m[1])
+            import difflib
+            old = [t for _, t in code_lines(fixture)]
+            new = [t for _, t in lines]
+            counted = set()
+            for tag, _, _, j1, j2 in difflib.SequenceMatcher(None, old, new, autojunk=False).get_opcodes():
+                if tag in ("insert", "replace"):
+                    counted.update(lines[j][0] for j in range(j1, j2))
+    for k in counted:
+        counts["test" if whole_test or k in in_cfg_test else "application"] += 1
+    for k, line in enumerate(bare.split("\n")):
+        for name in set(re.findall(r"\b[A-Za-z_]\w*\b", line)) & type_names:
+            types_used["test" if whole_test or k in in_cfg_test else "application"].add(name)
+
+routes = collections.Counter()
+modules = collections.Counter()
+globs = sorted(p for p in imports - fixture_imports if p.endswith("*"))
+for path in imports - fixture_imports:
+    first = path.split("::")[0]
+    if first == "prelude":
+        routes["prelude"] += 1
+    elif first[:1].islower():
+        routes["module"] += 1
+        modules[first] += 1
+    else:
+        routes["root"] += 1
+all_types = types_used["application"] | types_used["test"]
+code_size_lines = [
+    "## Code size and API surface (definitions in summarize.py, frozen for round 2)",
+    "",
+    f"- Sources: `{source_root.name}`"
+    + (", task 4 counted against the fixture at the kit's commit" if task4 else ""),
+    f"- Code lines{' added or changed' if task4 else ''}: application {counts['application']}, "
+    f"test {counts['test']}, total {counts['application'] + counts['test']}",
+    f"- Distinct pert-ui types (candidates): {len(all_types)} "
+    f"(application {len(types_used['application'])}, test {len(types_used['test'])})",
+    f"- Import routes{' (paths the fixture lacks)' if task4 else ''}: "
+    f"prelude {routes['prelude']}, root {routes['root']}, module {routes['module']}"
+    + (" (" + ", ".join(f"`{k}` {v}" for k, v in sorted(modules.items())) + ")" if modules else "")
+    + "; glob imports: " + (", ".join(f"`pert_ui::{g}`" for g in globs) or "none"),
+    "",
+    ", ".join(f"`{t}`" for t in sorted(all_types)) or "No pert-ui types.",
+    "",
+]
 
 # Mentions of the model hosts or the proxy in the tester's tool use: any is a
 # lead for the author to read, since only the CLI itself should use them.
@@ -284,6 +477,7 @@ lines = [
     "",
     ", ".join(f"`{i}`" for i in sorted(imports)) or "none",
     "",
+    *code_size_lines,
     "## Proxy and model-host mentions in the transcript (read each)",
     "",
     *(f"- `{k}`: {v}" for k, v in audit.most_common()),

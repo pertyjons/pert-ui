@@ -688,6 +688,53 @@ Documentation only, no version.
   its own relative links and the links to it from other plans, `docs/`
   and TODO.md updated and checked in the same change.
 
+#### Round 2 measures
+
+Decided by the maintainer on 2026-10-27, before any round 2 run. Round 2
+is an exploratory comparison of everything since round 1: the fix plan,
+6f3 and [the layering pass](usability/layering-plan.md). Nothing in it is
+a pass mark.
+
+- **Round 1's measures, unchanged:**
+  - brief to accepted completion, time to the first build;
+  - builds and failed builds, errors and warnings by code;
+  - the first successful headless session;
+  - friction entries, source reading and acceptance.
+
+  `summarize.py` computes them as it did in round 1.
+- **Recurrence of F1 to F36 is the main outcome.** Each run records each
+  finding as *recurred*, *passed without friction* or *not reached*. A
+  finding that recurs is reopened, never counted as partly fixed.
+- **New findings,** counted by severity, triaged as round 1's were: fresh
+  verifying agents, then a Codex review.
+- **Code size and API surface,** descriptive (complexity inventory
+  question 6):
+  - code lines, application and test apart;
+  - distinct pert-ui types;
+  - the import route of each `pert_ui::` path: prelude, crate root or a
+    thematic module (layering L2).
+
+  The counting definitions are frozen in `summarize.py`'s header. Task 4
+  is counted against the fixture at the kit's commit. Round 1's kept
+  records are counted by the same script, run on copies so that their
+  committed summaries stay as recorded.
+- **Runs:**
+  - Tasks 1 to 4: one run per tester, as in round 1.
+  - Task 5: two runs per tester on each of the round 1 commit (359122e)
+    and the branch head, because round 1's runs varied widely (task 3: 21
+    builds against 4).
+- **Conditions as in round 1:**
+  - `claude-opus-5-5` at high effort, Codex `gpt-6.1-sol` at medium;
+  - a 90-minute budget and no third-party build cache;
+  - CLI versions that differ from round 1 are recorded.
+
+  Task 5's kit for 359122e is prepared from a worktree of that commit with
+  the current harness copied over it (`run.sh`, `bridge.py`, `proxy.py`,
+  `cargo-wrapper.py`, `friction-log.md`, `check-probe.py`,
+  `claude-settings.json`). The brief and task 5 are unchanged since round
+  1, so the two task 5 kits differ only in the library; the kit's `dirty`
+  count records the overlay.
+
 ## Not in this plan
 
 - Property, model-based and fuzz testing, mutation testing and visual

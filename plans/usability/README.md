@@ -24,9 +24,14 @@ directory; they get a prepared kit, the brief and one task.
 ```sh
 plans/usability/run.sh prepare ~/pert-ui-usability/kit-<commit>
 plans/usability/run.sh probe   ~/pert-ui-usability/kit-<commit> ~/pert-ui-usability/probe-<tester>-<n> <claude|codex>
-plans/usability/run.sh launch  ~/pert-ui-usability/kit-<commit> ~/pert-ui-usability/r1-<task>-<tester> <claude|codex> 2-task-list.md 90
-python3 -I plans/usability/summarize.py ~/pert-ui-usability/r1-<task>-<tester>
+plans/usability/run.sh launch  ~/pert-ui-usability/kit-<commit> ~/pert-ui-usability/r<round>-<task>-<tester> <claude|codex> 2-task-list.md 90
+python3 -I plans/usability/summarize.py ~/pert-ui-usability/r<round>-<task>-<tester>
 ```
+
+Task 5 is passed by path (`plans/usability/reserved/5-job-monitor.md`).
+`summarize.py` rewrites a run's `summary.md`, so a kept record under
+`runs/` is summarized again only as a copy. It reads the API listings and
+task 4's fixture at the kit's commit from this checkout's history.
 
 Kit and run directories must be on disk outside the checkout; `run.sh`
 refuses the checkout and tmpfs. A kit is about 1.6 GB (vendored sources and
