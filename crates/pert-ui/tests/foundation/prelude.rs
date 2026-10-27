@@ -264,10 +264,53 @@ fn headings(page: &str) -> Vec<&str> {
     found
 }
 
+/// The byte range of `fn main`'s body in `code`, from its opening brace to
+/// its matching closing brace, skipping braces in comments and in string and
+/// character literals.
+fn main_body(code: &str) -> Option<std::ops::Range<usize>> {
+    let start = code.find("fn main(")?;
+    let bytes = code.as_bytes();
+    let mut depth = 0_usize;
+    let mut open = None;
+    let mut at = start;
+    while at < bytes.len() {
+        match bytes[at] {
+            b'/' if bytes.get(at + 1) == Some(&b'/') => {
+                at = code[at..].find('\n').map_or(bytes.len(), |end| at + end);
+            }
+            b'"' => {
+                at += 1;
+                while at < bytes.len() && bytes[at] != b'"' {
+                    at += if bytes[at] == b'\\' { 2 } else { 1 };
+                }
+            }
+            // A character literal: 'x', '\n' or '{'; a lifetime has no
+            // closing quote two or three bytes on.
+            b'\'' if bytes.get(at + 2) == Some(&b'\'') => at += 2,
+            b'\'' if bytes.get(at + 1) == Some(&b'\\') && bytes.get(at + 3) == Some(&b'\'') => {
+                at += 3;
+            }
+            b'{' => {
+                depth += 1;
+                open.get_or_insert(at);
+            }
+            b'}' if open.is_some() => {
+                depth -= 1;
+                if depth == 0 {
+                    return open.map(|open| open..at);
+                }
+            }
+            _ => {}
+        }
+        at += 1;
+    }
+    None
+}
+
 /// The `pert_ui::…` paths a piece of code names, in order, with whitespace
-/// removed, each with whether it comes after the start of `fn main`.
+/// removed, each with whether it is inside `fn main`'s body.
 fn paths(code: &str) -> Vec<(String, bool)> {
-    let main = code.find("fn main(");
+    let main = main_body(code);
     let mut found = Vec::new();
     for (at, _) in code.match_indices("pert_ui::") {
         let rest = &code[at..];
@@ -278,7 +321,7 @@ fn paths(code: &str) -> Vec<(String, bool)> {
                 .unwrap_or(rest.len())
         };
         let path: String = rest[..len].chars().filter(|c| !c.is_whitespace()).collect();
-        found.push((path, main.is_some_and(|main| at > main)));
+        found.push((path, main.as_ref().is_some_and(|body| body.contains(&at))));
     }
     found
 }
@@ -384,6 +427,31 @@ fn representative_programs_import_only_their_globs() {
         false,
     );
 }
+
+/// A `testing` import after `fn main`'s closing brace is at module level,
+/// in the application part, and fails the check.
+#[test]
+#[should_panic(expected = "the test in `fn main` adds testing")]
+fn a_testing_import_after_main_is_not_inside_main() {
+    let code = "use pert_ui::prelude::*;\n\
+                fn build() {}\n\
+                fn main() {\n    let _ = \"{\";\n    let _ = '}';\n    build();\n}\n\
+                use pert_ui::testing::*;\n";
+    check("a module-level testing import", code, TEST_GLOBS, true);
+}
+
+/// The same import inside `fn main`, after nested blocks and braces in
+/// literals, passes.
+#[test]
+fn a_testing_import_inside_main_passes() {
+    let code = "use pert_ui::prelude::*;\n\
+                fn main() {\n    if true { let _ = \"}\"; }\n    let _ = '{';\n\
+                use pert_ui::testing::*;\n}\n";
+    check("a testing import in main", code, TEST_GLOBS, true);
+}
+
+/// The globs a representative test imports.
+const TEST_GLOBS: &[&str] = &["pert_ui::prelude::*", "pert_ui::testing::*"];
 
 /// Names a type, so that this file compiles only while the prelude holds it.
 #[cfg(feature = "native")]

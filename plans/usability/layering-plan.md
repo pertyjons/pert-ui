@@ -175,7 +175,13 @@ by Codex and approved by the maintainer, as parts 6f1 to 6f3 had.
   matches, a value it keeps past the call), not when a value is only
   passed on (`decisions.md:1545-1556`). The prelude becomes the names the
   representative programs require. Its size is an estimate (about 120 to
-  150 names), not a target.
+  150 names), not a target. **Superseded by L2's approved checkpoint**
+  ([layering-design-L2.md](layering-design-L2.md), D1): the prelude also
+  holds every built-in component outside a thematic family with its
+  vocabulary and the application-wide names, closed under what each
+  member's constructors, builders, matched enums and kept values need,
+  with the named exceptions the prelude page lists; later parts re-apply
+  that closure to any new API of a prelude member. It holds 195 names.
 - **Completeness guarantee** (decision LD6), by audience:
   - application code of each representative program compiles with
     `use pert_ui::prelude::*` alone;
@@ -538,8 +544,7 @@ All six were decided on 2026-10-26 as recommended.
     reviewed matches are recorded above. Both are documentation fixes made
     by the author, verified in L2's review.
 
-- **L2 (0.3.73), implemented 2026-10-27:** commit and review to be
-  recorded. A layered prelude, by [the approved design](layering-design-L2.md)
+- **L2 (0.3.73), done 2026-10-27:** 0354b5e and its review fix. A layered prelude, by [the approved design](layering-design-L2.md)
   (revision 3; D1 the widened membership rule, D2 services root-only).
   - **Membership:** the prelude holds 195 names, closed under what its
     members' constructors, builders, matched enums and kept values need;
@@ -578,6 +583,16 @@ All six were decided on 2026-10-26 as recommended.
     functions returning the handles their tests need.
   - **Out of scope, recorded:** a TODO.md entry for the facade's root `svg`
     module (the same glob ambiguity as `windows`).
+  - **Review (Codex):** every mechanical comparison matched (the 195
+    prelude names, the 174 moved names and destinations, module
+    memberships, the exhaustive and collision fixtures); it also confirmed
+    L4a's review fix and that the L4b design commit holds only its file.
+    Three should-fix points and a nit, all fixed: the representative
+    programs' import check now tracks `main`'s real body (a regression
+    test fails with the old "after `fn main`" rule); the CHANGELOG lists
+    every member of each new module and the command names shared with
+    `component`; this plan's membership bullet records the approved
+    rule. Verified in L3's review.
 
 ## Review record
 

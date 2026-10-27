@@ -41,8 +41,9 @@ format or real-time endpoint changes.
   pert_ui::commands::*;`: `CommandContext`, `CommandEntry`, `CommandId`,
   `CommandMatcher`, `CommandOutcome`, `CommandPalette`,
   `CommandPaletteController`, `CommandPaletteStatus`, `CommandReceipt`,
-  `CommandSource`, `CommandStatus`, `HeldCancellation`, `HeldInputId` (the
-  last six also in `component`).
+  `CommandSource`, `CommandStatus`, `HeldCancellation`, `HeldInputId`
+  (`CommandContext`, `CommandId`, `CommandOutcome`, `CommandReceipt`,
+  `CommandSource` and `CommandStatus` also in `component`).
 - Breaking: parameter and authority names, `Slider`, `Knob` and `InlineSlider`
   need `use pert_ui::parameter::*;`: `AnyDeliveryMonitor`, `AnyParameter`,
   `AnyParameterHost`, `AnyParameterSnapshot`, `AnyPreviewEvent`, `AnySpec`,
@@ -91,6 +92,97 @@ format or real-time endpoint changes.
   `ClickCounter`, `DraftAlign`, `DraftEditor`, `DraftEditorController` and
   `DraftSelection`. The runtime's private modules `inspection` and `live` are
   renamed `inspection_service` and `live_source`; no public path changes.
+- Added: the members of `pert_ui_runtime::parameter` and `pert_ui::parameter`:
+  `parameter::AnyDeliveryMonitor`, `parameter::AnyParameter`,
+  `parameter::AnyParameterHost`, `parameter::AnyParameterSnapshot`,
+  `parameter::AnyPreviewEvent`, `parameter::AnySpec`,
+  `parameter::AnyTerminalEvent`, `parameter::AnyValue`,
+  `parameter::ArcOrigin`, `parameter::AuthorityReceipt`,
+  `parameter::AuthorityResponse`, `parameter::AuthorityStatus`,
+  `parameter::BindingError`, `parameter::ChoiceId`, `parameter::ChoiceOption`,
+  `parameter::DeliveryError`, `parameter::DeliveryMonitor`,
+  `parameter::DeliveryResolution`, `parameter::DeliverySnapshot`,
+  `parameter::DeliveryStatus`, `parameter::EditError`,
+  `parameter::EditOutcome`, `parameter::EditSequence`,
+  `parameter::EditSession`, `parameter::EditSource`, `parameter::EditToken`,
+  `parameter::HostValue`, `parameter::InlineSlider`, `parameter::Knob`,
+  `parameter::NormalizedValue`, `parameter::NormalizedValueError`,
+  `parameter::Parameter`, `parameter::ParameterError`,
+  `parameter::ParameterFamily`, `parameter::ParameterHost`,
+  `parameter::ParameterId`, `parameter::ParameterIdError`,
+  `parameter::ParameterMapping`, `parameter::ParameterSnapshot`,
+  `parameter::ParameterSpec`, `parameter::ParameterState`,
+  `parameter::ParameterValue`, `parameter::PowerExponent`,
+  `parameter::PreviewEvent`, `parameter::PreviewOutcome`,
+  `parameter::RemoteCommit`, `parameter::RemoteHost`,
+  `parameter::ResponseDisposition`, `parameter::Revision`,
+  `parameter::SinkError`, `parameter::SinkErrorKind`, `parameter::Slider`,
+  `parameter::SubmissionDelivery`, `parameter::TerminalEvent`.
+- Added: the members of `pert_ui_runtime::commands` and `pert_ui::commands`:
+  `commands::CommandContext`, `commands::CommandEntry`, `commands::CommandId`,
+  `commands::CommandInfo`, `commands::CommandKey`, `commands::CommandMatcher`,
+  `commands::CommandOutcome`, `commands::CommandPalette`,
+  `commands::CommandPaletteController`, `commands::CommandPaletteStatus`,
+  `commands::CommandReceipt`, `commands::CommandScope`,
+  `commands::CommandSource`, `commands::CommandStatus`,
+  `commands::HeldCancellation`, `commands::HeldInputId`, `commands::KeyChord`,
+  `commands::KeyCode`, `commands::Modifiers`, `commands::NativeWindowId`.
+- Added: the members of `pert_ui_runtime::windowing` and `pert_ui::windowing`:
+  `windowing::DetachedClosePolicy`, `windowing::EdgeMode`,
+  `windowing::Expansion`, `windowing::FloatingWindow`,
+  `windowing::NativeWindowId`, `windowing::NativeWindowOptions`,
+  `windowing::NormalizedValue`, `windowing::PresentationReceipt`,
+  `windowing::PresentationStatus`, `windowing::Rect`, `windowing::RegionEdge`,
+  `windowing::RegionLayout`, `windowing::SplitAxis`, `windowing::SplitPane`,
+  `windowing::SplitRule`, `windowing::SplitSizing`, `windowing::StripeGroup`,
+  `windowing::ToolEdge`, `windowing::ToolWindow`,
+  `windowing::ToolWindowChange`, `windowing::ToolWindowChangeKind`,
+  `windowing::ToolWindowController`, `windowing::ToolWindowLayout`,
+  `windowing::ToolWindowMode`, `windowing::WindowCloseAction`,
+  `windowing::WindowController`, `windowing::WindowError`,
+  `windowing::WindowLayer`, `windowing::WindowPlacement`,
+  `windowing::WindowStatus`.
+- Added: the members of `pert_ui_runtime::inspection` and
+  `pert_ui::inspection`: `inspection::BorderInspection`,
+  `inspection::BoxModelInspection`, `inspection::Capture`,
+  `inspection::CaptureError`, `inspection::CaptureRequest`,
+  `inspection::CaptureTarget`, `inspection::ComponentDetails`,
+  `inspection::ComponentInspection`, `inspection::DebugMode`,
+  `inspection::DebugOverlay`, `inspection::Depth`, `inspection::Detail`,
+  `inspection::DiagnosticCommand`, `inspection::DragInspection`,
+  `inspection::EventHistory`, `inspection::EventKind`,
+  `inspection::EventRecord`, `inspection::EventStatus`,
+  `inspection::FailurePhase`, `inspection::FailureSite`,
+  `inspection::FlushReport`, `inspection::FrameError`,
+  `inspection::FrameImage`, `inspection::InspectValue`,
+  `inspection::InspectionClient`, `inspection::InspectionQuery`,
+  `inspection::InspectionReply`, `inspection::InspectionService`,
+  `inspection::InspectionSnapshot`, `inspection::Invalidation`,
+  `inspection::KeyEvent`, `inspection::LimitError`,
+  `inspection::NativeWindowId`, `inspection::OverlapPolicy`,
+  `inspection::ParameterInspection`, `inspection::Pending`,
+  `inspection::ProfileOperation`, `inspection::ProfileSample`,
+  `inspection::ProfileSnapshot`, `inspection::ProfileStats`,
+  `inspection::QueryResult`, `inspection::Rect`, `inspection::RequestError`,
+  `inspection::ResourceKind`, `inspection::Selector`,
+  `inspection::SemanticAction`, `inspection::SemanticItem`,
+  `inspection::SemanticRole`, `inspection::SemanticValue`,
+  `inspection::Semantics`, `inspection::ShortcutBinding`,
+  `inspection::ShortcutScope`, `inspection::SourceInspection`,
+  `inspection::ValidationCode`, `inspection::ValidationHints`,
+  `inspection::ValidationIssue`, `inspection::ValidationMarker`,
+  `inspection::ValidationReport`, `inspection::Viewport`,
+  `inspection::WaitError`, `inspection::WindowInspection`.
+- Added: the members of `pert_ui_runtime::live` and `pert_ui::live`:
+  `live::Capacity`, `live::Delivery`, `live::DrainReport`, `live::Freshness`,
+  `live::Incarnation`, `live::LevelMeter`, `live::LiveError`,
+  `live::LiveItem`, `live::LiveWaker`, `live::Mailbox`, `live::MeterAxis`,
+  `live::ParameterSpec`, `live::PublishOutcome`, `live::Sample`,
+  `live::SampleWindow`, `live::SampleWindowEntry`, `live::SendError`,
+  `live::Sequence`, `live::SeriesConfig`, `live::SeriesConsumer`,
+  `live::SeriesEndpoint`, `live::SeriesSource`, `live::Telemetry`,
+  `live::Timestamp`, `live::Trace`, `live::UiSender`, `live::WakeError`,
+  `live::WakeFlag`, `live::series_bridge`.
 - Documentation: the guide's new "Authoritative values" chapter
   (`guide::authoritative_values`, after the state chapter, now titled "State")
   holds the parameter sections moved from the state chapter unchanged in
