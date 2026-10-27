@@ -615,3 +615,173 @@ module's 126 and the crate root's 533 were not recounted; neither source
 nor listing changed. The CHANGELOG's 2,278 lines recorded above are its
 length at 6311e48, where this inventory was written; at 6219dda it has
 2,263 lines, and at 46a219b 2,358.
+
+## Re-measurement at be5aff8 (after the layering pass)
+
+Measured 2026-10-27 at commit be5aff8 (0.3.75, branch
+`developer-usability`): every part of [the layering plan](layering-plan.md)
+is implemented (L1 0.3.71, L4a 0.3.72, L2 0.3.73, L3 0.3.74, L4b 0.3.75)
+and L3's review fixes are committed. L4b's review fix was in progress in
+the working tree and is not measured; it is not expected to change these
+numbers materially. This is the second measurement the plan's "Round 2 and
+attribution" requires, beside the 46a219b baseline above.
+
+**Method.** As for 46a219b: the header's method and this document's
+definitions, applied to `git archive` extractions of be5aff8 and
+46a219b, because the working tree was being edited. The scripts were
+written again; where this parse of 46a219b differs from the recorded
+value, the table gives the recorded value with this parse's in brackets,
+and the difference is taken against this parse. Attribution to a part
+compares the committed files at each part's last commit (L1 eea2daa, L4a
+2a406a4, L2 98a9449, L3 cb28154, L4b 3fabfbc). Three definitions needed a
+decision:
+
+- **contracts.md classes.** L1 classified contracts.md per obligation
+  ([classification](layering-L1-classification.md)) as A (application), W
+  (a custom component or host) or M (maintainer), moved the W text under
+  "For component and host authors" and the M text to `docs/internals.md`.
+  At be5aff8 the classes are therefore places: A is every section before
+  that heading, W every section under it, M is `docs/internals.md`.
+  Section 5's mixed classes no longer apply: L1 found no purely maintainer
+  obligation and kept the compatibility, error and naming sections (class
+  M in section 5) as A. Lines are counted below each heading as before;
+  the three top-level group headings whose body is one blank line are not
+  counted, which reproduces the recorded 1,404 at 46a219b.
+- **Modules.** The crate root counts the runtime's own types and free
+  functions, the core's re-exports and the facade's five, as before (the
+  constant `DRAG_THRESHOLD` is not counted at the root, which reproduces
+  the recorded 533, but is counted in `component`, which reproduces 126).
+  The facade's `parameter`, `commands`, `windowing`, `inspection` and
+  `live` are globs of the runtime's modules of those names; its `host`
+  module re-exports the same 39 names as the runtime's, one by one.
+- **The list recipe.** L2 reshaped the recipe into an application part
+  (`fn build` and the items it uses) and a test (`fn main`). The
+  application part is everything outside `fn main`; the test is `fn main`,
+  including the runtime, viewport and first flush, which the 46a219b
+  column counted in the application part.
+
+| Measure | 46a219b (0.3.70) | be5aff8 (0.3.75) | Difference |
+|---|---|---|---|
+| `pert-ui-runtime` structs / enums / traits / free fns | 300 / 178 / 8 / 3 | 301 / 179 / 9 / 3 | +1 / +1 / +1 / 0 |
+| `pert-ui-runtime` inherent methods (types with one) | 1,774 (271) | 1,749 (272) | −25 (+1) |
+| `pert-ui-runtime` trait methods declared | 95 | 128 | +33 |
+| `pert-ui-runtime` variants and pub fields | 1,571 [1,570] | 1,577 | +7 |
+| `pert-ui-core`; `pert-ui` own items; `pert-ui-cpu`; `pert-ui-wgpu` | rows of section 1 | listings identical | 0 |
+| Unique runtime and core type names | 526 | 529 | +3 |
+| Types implementing `Component` | 77 | 77 | 0 |
+| Crate root names | 533 | 535 | +2 |
+| `prelude` names | 368 (+8 facade) | 201 (+8 facade) | −167 |
+| `component` names | 126 | 131 | +5 |
+| `testing` names (facade, with `HeadlessApp` and `CpuRenderer`) | 10 | 21 | +11 |
+| `parameter` / `commands` / `windowing` / `inspection` / `live` / `host` names | — | 54 / 20 / 30 / 61 / 29 / 39 | new |
+| Prelude names in the family of `parameter` / `commands` / `windowing` / `inspection` / `live` / `component` | 44 / 18 / 24 / 5 / 4 / 100 | 0 / 5 / 0 / 0 / 0 / 34 | −44 / −13 / −24 / −5 / −4 / −66 |
+| `Runtime` inherent methods | 137 | 102 | −35 |
+| `Runtime` by audience | about 65 application, 25 tests and inspection, 47 host (section 1, by first rustdoc line) | 69 application, 33 tests and inspection (7 standing in for a host), by its index | — |
+| `HostIntegration` trait methods | — | 33 | +33 |
+| `EventContext` / `UpdateContext` / `Element` / `Painter` methods | 49 / 25 / 19 / 26 | same | 0 |
+| `Component` hooks | 63 | 63 | 0 |
+| Types (proxy) / `pub fn` (proxy) | 544 / 1,844 | 548 / 1,817 | +4 / −27 |
+| Library src lines | 138,857 | 141,581 | +2,724 |
+| Doc-comment lines | 32,753 | 34,776 | +2,023 |
+| AGENTS.md lines | 477 | 481 | +4 |
+| CHANGELOG lines | 2,358 | 2,897 | +539 |
+| contracts.md lines | 1,498 | 1,967 | +469 |
+| contracts.md lines in classified sections | 1,404 | 1,830 | +426 |
+| A: the application sections, the text an application author is pointed to | 1,404, one text (534 to 853 by section 5's classes) | 1,580 | +176 |
+| W: "For component and host authors" (of it, custom hosts) | — | 250 (28) | +250 |
+| M: `docs/internals.md` lines | — | 53 | +53 |
+| contracts.md: "Callback timing" / "Draft policy" | — | 120 / 154 | +120 / +154 |
+| Guide lines | 3,763 | 3,987 | +224 |
+| Guide: getting started, both parts | 198 | 196 | −2 |
+| Guide: state / authoritative values | 391 / — | 186 / 256 | −205 / +256 |
+| Guide: layout / editable-list recipe section | 742 / 225 | 784 / 249 | +42 / +24 |
+| Guide: controls and surfaces | 984 | 1,026 | +42 |
+| Guide: appearance / custom widgets / testing and diagnostics | 518 / 333 / 597 | 517 / 393 / 629 | −1 / +60 / +32 |
+| First window (`getting_started`): lines / types | 33 / 10 | 33 / 10 | 0 |
+| List recipe, application part: lines / types | 93 / 22 | 102 / 22 | +9 / 0 |
+| List recipe, test: lines / types | 47 / 7 [6] | 55 / 7 | +8 / +1 |
+| `inventory` example lines / `impl Component` | 1,570 / 0 | 1,570 / 0 | 0 |
+| `live_mixer` / `diagram_editor` lines | 672 / 2,812 | 673 / 2,804 | +1 / −8 |
+| `dynamic_documents`, `log_explorer` lines; `impl Component` in all examples | section 4's rows | same | 0 |
+
+- `Runtime` lost 35 methods because L3 moved 33 host-integration methods
+  to the sealed `HostIntegration` trait in `host` and removed
+  `Runtime::mount` and `Runtime::find_path`; the 33 trait methods declared
+  are the same move, and the seven methods a test standing in for a host
+  calls stay on `Runtime`.
+- The other inherent-method changes are L4b's ten additions
+  (`on_modified` on `IntegerInput`, `DecimalInput`, `InlineInteger`,
+  `InlineDecimal` and `InlineText`, `DraftEditorController::set_read_only`,
+  `Table::on_edit_end` and `CellEditEnd`'s three accessors) and L4a's
+  replacement of `EventContext::defer_detached` by `defer_while_shown`
+  (net zero, with `defer` now the application default).
+- The three new types are `HostIntegration` (L3) and `CellEditEnd` with
+  `CellEditEndReason` (L4b), and the seven new variants are
+  `CellEditEndReason`'s six and `TextCommand::DiscardDraft` (L4b); the
+  crate root grew only by L4b's two types, since `HostIntegration` is
+  reached through `host` and `testing`.
+- The prelude fell from 368 to 201 names because L2 moved 174 names to the
+  crate root and the thematic modules and added `NumberInputError` (195),
+  after which L4b added the six names L2's closure rule requires for its
+  new API; no parameter, windowing, inspection or live-data name remains
+  in it.
+- `component` gained the draft editor family and `ClickCounter` (L2), and
+  `testing` gained ten names that test programs write (L2) and
+  `HostIntegration` (L3).
+- The `pub fn` proxy fell by 27 mostly because L3 made the 33 host methods
+  crate-private inherent methods behind the trait. The source grew by
+  2,724 lines, 2,023 of them doc comments: L1 +359 (all rustdoc), L4a
+  +103, L2 +569, L3 +553 and its review fixes +2, L4b +1,138.
+- contracts.md grew by 469 lines: L1 +259 (the "Callback timing" classes,
+  119 lines, the extension heading's summaries and connecting text, and a
+  longer contents list), L4a +30 (the deferral rules in "Calling the
+  runtime from callbacks"), L2 0, L3 +20 (`Each` addressing, custom hosts,
+  workspace schema 2) and L4b +160 ("Draft policy", 154 lines, while the
+  per-editor rules it replaces in "Permissions and availability" and
+  "Closing a window" lost five).
+- The text an application author is pointed to grew from 1,404 to 1,580
+  lines although L1 put 239 lines under the extension heading and 53 in
+  `docs/internals.md`: the timing classes (L1) and the draft policy (L4b)
+  add about 270 lines of application rules. Classified per obligation, the
+  maintainer-only text section 5 estimated at about a quarter of the
+  document is 53 lines of mechanism (L1).
+- The guide grew by 224 lines: L1 +101 (the "choosing a way" tables in the
+  state and layout chapters, and the state chapter's custom component
+  example moved to the custom-widgets chapter), L4a +1, L2 +76 (the
+  256-line "Authoritative values" chapter from the state chapter's 233
+  parameter lines, and the representative programs reshaped into an
+  application part and a test: layout +23, surfaces +30), L3 +25 (the
+  testing chapter's `Each` addresses with and without `within`) and L4b +21
+  (the draft policy in the controls, custom-widgets and testing chapters).
+- The list recipe's application part grew by nine lines because L2's
+  reshape added the `TaskList` handles the test needs (7 lines), `build`'s
+  signature and return (3) and a records list split over five lines (+4),
+  while the runtime, viewport, first flush and two imports left it (−5);
+  `Driver` and `Viewport` moved to the test, and `ReadSignal` and
+  `WidgetId` (the handles' types) joined, so its type count is unchanged.
+  The test grew by `fn main`'s frame (8 lines). The recipe section grew by
+  24 lines: L2's reshape +22 and L1's sentence naming the two advanced
+  forms +2.
+- The packaged examples changed only by migration: imports from the
+  thematic modules (L2, all examples), `Painter::size` returning `Size`
+  in the diagram editor (L3, two let-else blocks), and its three
+  `defer_detached` calls, which section 4 listed as library-shaped code,
+  are plain `defer` (L4a). `getting_started` keeps 33 lines and ten types;
+  only its prelude import moved to the top (L2).
+- AGENTS.md grew by four lines in L1 (`docs/internals.md` in the reading
+  list and the anti-regrowth sentence).
+
+Not reproduced exactly at 46a219b: the runtime's variants and fields
+(1,570 by this parse, the value section 1 recorded for 6219dda; 1,571
+recorded above, with no variant or field changed between the commits),
+and the recipe test's types (6 by this parse: `Driver`, `KeyAction`,
+`KeyCode`, `Runtime`, `RuntimeError`, `Signal`; 7 recorded, and the
+seventh could not be identified). The core's trait methods declared parse
+as 5, against 7 in section 1; the core listing is identical at both
+commits, so the row stays unchanged. The section 5 class rows have no
+46a219b value under L1's classes, because L1 classified obligations, not
+lines (97 A, 24 W, 5 split, none purely M), so A is compared with the
+whole text an author was pointed to at 46a219b. Section 1's prelude
+groups by name pattern were not recounted, since their name lists were
+not recorded; the module-family row replaces them, counting the 46a219b
+prelude against be5aff8's module memberships.
