@@ -120,7 +120,7 @@ pub fn build(ui: &mut Runtime) -> Result<WidgetId, RuntimeError> {
 
     // Registered for the application's lifetime, so its identity is not kept.
     let clear = filter.clone();
-    let _ = ui.register_command(
+    ui.register_command(
         "Clear filter",
         CommandScope::Application,
         vec![KeyChord::primary('l')],

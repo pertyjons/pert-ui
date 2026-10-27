@@ -1,8 +1,10 @@
 # Friction log
 
 Copy this file to `/work/FRICTION.md`. Add one entry per event, in time
-order, as it happens. Take each entry's time from the shell (`date +%H:%M`);
-do not estimate it.
+order, as it happens. When something costs you time, run `date +%H:%M` at
+that moment and write the entry before you continue; do not estimate a
+time. If you do write an entry later, give it the time you write it and add
+`(written later)` after the time.
 
 ## Entries
 

@@ -18,9 +18,11 @@ For every run:
    library's facilities (input, inspection, captures), not by calling the
    application's own model functions.
 3. Where the tester's check does not cover an item's required behavior,
-   the author adds a check of their own in the acceptance directory,
-   records it in the acceptance result, and does not count the tester's
-   partial check as meeting the item.
+   the author adds a check of their own in the acceptance directory and
+   records it in the acceptance result. The tester's partial check alone
+   does not meet the item, but the author's check can: the item is met when
+   the implementation is correct and the author's check passes, and the
+   result names the author's check as the evidence.
 4. Record per item: met, partly met (what is missing) or not met, and for
    each a pointer to the code and the check, in the run's `acceptance.md`.
    Write `acceptance=met|partly|not-met` and, when every item is met,

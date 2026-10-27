@@ -67,7 +67,9 @@ loopback: `bridge.py` forwards `127.0.0.1:3128` to a Unix socket where
 `proxy.py` admits `CONNECT` to the model and authentication hosts on port
 443 only, and logs every request with its decision. The tester's command
 runs in a nested mount namespace with an empty `/run`, so only the bridge
-holds the socket and nothing the tester starts can open it directly.
+holds the socket and nothing the tester starts can open it directly. The
+bridge's script is mounted at `/run/bridge.py` from the checkout, so the same
+empty `/run` hides it from the tester; it is not part of the kit.
 
 **What the proxy does not cover.** The proxy restricts destinations, not
 processes, so each CLI's own sandbox stays on inside ours and keeps tool

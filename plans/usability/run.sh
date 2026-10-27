@@ -140,7 +140,6 @@ EOF
     rm -rf "$kit/doc/kit_prep" "$prep"
 
     cp "$HERE/cargo-wrapper.py" "$kit/bin/cargo"
-    cp "$HERE/bridge.py" "$kit/bin/bridge.py"
     chmod +x "$kit/bin/cargo"
     cp "$HERE/tester-brief.md" "$HERE/friction-log.md" "$kit/"
     {
@@ -277,6 +276,7 @@ sandbox_args() {
         --bind "$RUN/home" /home/tester
         --bind "$RUN/log" /log
         --ro-bind "$RUN/proxy.sock" /run/proxy.sock
+        --ro-bind "$HERE/bridge.py" /run/bridge.py
         --setenv HOME /home/tester --setenv USER tester --setenv LOGNAME tester
         --setenv LANG C.UTF-8 --setenv TERM dumb
         --setenv RUSTUP_HOME /opt/rustup --setenv CARGO_HOME /home/tester/.cargo
@@ -311,7 +311,8 @@ sandbox_args() {
 # Runs "$@" in the sandbox for tester $1, with an optional `timeout` prefix in
 # TIMEOUT. The bridge forwards 127.0.0.1:3128 to the host proxy. The command
 # itself runs in a nested mount namespace where /run is empty, so neither the
-# CLI nor its tool commands can open the proxy socket directly: only the
+# CLI nor its tool commands can open the proxy socket directly or read the
+# bridge's script, which shows how the sandbox is built: only the
 # bridge's loopback port leads out, and a CLI's own sandbox gives its tool
 # commands a network namespace without it. The command starts once the bridge
 # listens (127.0.0.1:3128 in /proc/net/tcp), so its first request does not
@@ -320,7 +321,7 @@ in_sandbox() {
     local tester="$1"; shift
     sandbox_args "$tester"
     ${TIMEOUT:-} bwrap "${SANDBOX[@]}" /bin/bash -c \
-        'python3 -I /kit/bin/bridge.py &
+        'python3 -I /run/bridge.py &
          for _ in $(seq 100); do
              grep -q " 0100007F:0C38 00000000:0000 0A " /proc/net/tcp && break
              sleep 0.05
@@ -396,6 +397,13 @@ launch() {
         4-*)
             cp -r "$HERE/task4-app" "$RUN/work/bookmarks"
             rm -rf "$RUN/work/bookmarks/target" "$RUN/work/bookmarks/Cargo.lock"
+            # The application requires the kit's version, as an application
+            # written against that release would.
+            local ver; ver="$(sed -n 's/^version=//p' "$KIT/kit.env")"
+            sed -i "s/^pert-ui = { version = \"[^\"]*\"/pert-ui = { version = \"$ver\"/" \
+                "$RUN/work/bookmarks/Cargo.toml"
+            grep -q "^pert-ui = { version = \"$ver\"" "$RUN/work/bookmarks/Cargo.toml" \
+                || die "could not set task 4's pert-ui requirement to $ver"
             ;;
     esac
     record_conditions "$tester" "$task" "$minutes"

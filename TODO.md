@@ -133,3 +133,13 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   `on_modified`: feed a `FormFields` from them and keep the window open, or
   ask, while `FormSummary::modified` is non-zero, with a test through
   `HeadlessApp::admit_close`.
+- [ ] 2026-10-27 `crates/pert-ui-runtime/src/described.rs` `Each::new` —
+  developer usability (round 1 finding F9, triage group E r1-4-claude#4):
+  `build` returns an `Element`, and the only way from a component
+  to an `Element` is a key, which `Each` then replaces with the item's key.
+  Every caller writes a placeholder key that never takes effect: `Each`'s own
+  rustdoc (`.key("task")`), the guide's layout and testing chapters and the
+  round 2 fixture (`plans/usability/task4-app/src/lib.rs`, `.key("row")`,
+  which round 1's triage took for a dead key the kit could drop). Let
+  `build` return any component, or give `Element` a keyless form that `Each`
+  keys, and drop the placeholder keys from the examples.

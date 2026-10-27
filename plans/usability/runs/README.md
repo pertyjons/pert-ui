@@ -62,18 +62,34 @@ logs.
 
 ## Kit fixes found in round 1
 
-Before round 2:
+Before round 2, each with what was done (2026-10-27):
 
 - **Task 4's app README:** it gives row paths as `list/<id>/…`, but `Each`
-  puts its rows under `list/items/<id>/…`.
+  puts its rows under `list/items/<id>/…`. *Done by the library:* since
+  layering part L3 (0.3.74) `Each`'s default container adds no address
+  segment, so the README's `list/<id>/…` is the real path. The fixture's
+  `.key("row")`, which `Each` replaces with the item's key, stays: `build`
+  must return an `Element`, and a key is the only way to make one (TODO.md,
+  `Each::new`).
 - **Task 4's app `Cargo.toml`:** it requires 0.3.51, which led one tester to
-  edit it; the requirement could name the kit's version.
+  edit it; the requirement could name the kit's version. *Done:* `run.sh
+  launch` sets the copied application's requirement to the kit's version,
+  and the fixture itself requires the branch's version.
 - **The bridge script:** `bridge.py` sits in `/kit/bin`, where a tester read
   it, and shows how the sandbox is built. It could be mounted outside
-  `/kit`.
+  `/kit`. *Done:* it is mounted at `/run/bridge.py`, which the tester's
+  nested namespace hides with the proxy socket, and is no longer copied
+  into the kit.
 - **The acceptance procedure:** it should say plainly that the author's own
   check can establish an item the tester's check covers only partly. These
-  acceptances read it that way.
+  acceptances read it that way. *Done:* `acceptance.md` step 3 says so.
 - **Friction-log times:** several testers first wrote estimated times and
   corrected them from `date`. Entries were often written in batches, so
-  their times are write times rather than event times.
+  their times are write times rather than event times. *Done:*
+  `friction-log.md` asks for the time at the moment of the event and marks
+  an entry written later with `(written later)`; round 2's comparison
+  treats unmarked times as event times and marked ones as write times.
+- **Task 4's fixture, `let _ =`:** an application-lifetime command needed
+  `let _ = ui.register_command(…)` while `CommandId` was `#[must_use]`
+  (author notes; fix-plan part 6b1 left it for the kit fixes). *Done:* the
+  fixture registers the command with a plain statement.
