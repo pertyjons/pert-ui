@@ -2181,8 +2181,9 @@ pub trait Component: std::any::Any {
     ///
     /// Defaults to no drawing. Unchanged components reuse their commands, even
     /// when another component animates or the OS requests the window again.
-    /// Composed components draw locally within `painter.size()`; legacy roots
-    /// continue to draw in window coordinates using `painter.viewport()`.
+    /// Every component draws in its own local coordinates, within its
+    /// allocation, `painter.size()`; the runtime places the commands in the
+    /// window.
     /// Signal/parameter writes are rejected.
     ///
     /// # Errors
@@ -3253,7 +3254,7 @@ impl EventContext {
         self.node.scale.get()
     }
     /// Last successful allocation in this component's own local pixels, absent
-    /// before layout and for legacy roots. Use this, not [`Self::bounds`], for
+    /// before the component's first layout. Use this, not [`Self::bounds`], for
     /// local geometry: `bounds` is the window rectangle, which a view transform
     /// scales.
     #[must_use]
@@ -3423,9 +3424,10 @@ impl EventContext {
         target.0.window().requested_within.set(true);
         Ok(())
     }
-    /// Last successful allocation in window-logical coordinates, absent for legacy
-    /// roots. Inside a [view transform](crate::ViewTransform) its extent is the
-    /// displayed one; [`Self::size`] is the local allocation.
+    /// Last successful allocation in window-logical coordinates, absent before
+    /// the component's first layout. Inside a
+    /// [view transform](crate::ViewTransform) its extent is the displayed one;
+    /// [`Self::size`] is the local allocation.
     #[must_use]
     pub fn bounds(&self) -> Option<crate::Rect> {
         self.node.bounds.get()

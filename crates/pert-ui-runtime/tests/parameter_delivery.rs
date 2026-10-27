@@ -2,6 +2,7 @@
 //! retention, recovery, deferred lifecycle delivery and shutdown, for typed,
 //! erased and remote bindings.
 use pert_ui_runtime::Element;
+use pert_ui_runtime::testing::HostIntegration;
 use std::{
     cell::{Cell, RefCell},
     rc::Rc,
@@ -605,20 +606,25 @@ fn a_delivered_deferred_notification_leaves_nothing_due() -> TestResult {
     ui.flush(Duration::ZERO)?;
     for round in 1..=3 {
         let id = widget(&mut ui, "control")?;
+        // The root's own first update and layout settle before the edit, so
+        // only the edit's work is left once the root is removed.
+        ui.flush(Duration::ZERO)?;
+        assert_eq!(ui.next_deadline(), None);
         let edit = ui.event(&id, |cx| {
             amount.begin_edit(cx, amount.snapshot().get()?.revision)
         })??;
         ui.unmount(&id)?;
+        // Removing the focused root leaves focus restoration due, which is
+        // unrelated to the parameter: a window deactivation clears it without
+        // a flush and without delivering parameter notifications.
+        ui.clear_focus();
         drop(edit);
         assert_eq!(ui.next_deadline(), Some(Duration::ZERO));
         assert_eq!(delivered.get(), round - 1);
         // Delivered by the next operation on the parameter, not only by a flush.
         host.write_base(0.5)?;
-        assert_eq!(delivered.get(), round);
-        // Removing the focused root also left focus restoration due; once that
-        // settles, nothing is.
-        ui.flush(Duration::ZERO)?;
         assert_eq!(ui.next_deadline(), None);
+        assert_eq!(delivered.get(), round);
     }
     Ok(())
 }

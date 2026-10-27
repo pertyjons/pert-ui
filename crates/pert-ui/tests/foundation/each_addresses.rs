@@ -46,6 +46,28 @@ fn captured_paths(ui: &Runtime) -> Result<Vec<String>, WorkspaceError> {
     Ok(paths)
 }
 
+/// The item keyed `key` of the `Each` mounted as `each`, found by walking
+/// keys and children, so the lookup does not depend on any addressing.
+fn item(ui: &Runtime, each: &WidgetId, key: &str) -> Result<WidgetId, RuntimeError> {
+    let container = ui.children(each)?.remove(0);
+    for child in ui.children(&container)? {
+        if ui.key(&child)? == key {
+            return Ok(child);
+        }
+    }
+    Err(RuntimeError::Unmounted)
+}
+
+/// The child keyed `key` of `parent`, found without any addressing.
+fn child(ui: &Runtime, parent: &WidgetId, key: &str) -> Result<WidgetId, RuntimeError> {
+    for child in ui.children(parent)? {
+        if ui.key(&child)? == key {
+            return Ok(child);
+        }
+    }
+    Err(RuntimeError::Unmounted)
+}
+
 /// The inspection record of the one component keyed `key`.
 fn inspected(ui: &Runtime, key: &str) -> ComponentInspection {
     let mut found = ui
@@ -55,8 +77,9 @@ fn inspected(ui: &Runtime, key: &str) -> ComponentInspection {
     found.remove(0)
 }
 
-/// New-behavior test. Named assertion: `["items", "ship"]` no longer
-/// resolves, because the default container adds no segment.
+/// New-behavior test. Named assertions: `find(&each, &["ship"])` is the
+/// item, and `["items", "ship"]` no longer resolves, because the default
+/// container adds no segment.
 #[test]
 fn an_item_is_found_by_its_key_below_the_each() -> TestResult {
     let mut ui = runtime()?;
@@ -64,10 +87,8 @@ fn an_item_is_found_by_its_key_below_the_each() -> TestResult {
     let each =
         ui.mount_tree(Each::new(&tasks, Clone::clone, |_, task| label(task)).key("tasks"))?;
     ui.flush(Duration::ZERO)?;
-    let ship = ui
-        .find(&each, &["ship"])?
-        .ok_or("the item is addressed by its key")?;
-    assert_eq!(ui.key(&ship)?, "ship");
+    let ship = item(&ui, &each, "ship")?;
+    assert_eq!(ui.find(&each, &["ship"])?, Some(ship));
     assert_eq!(ui.find(&each, &["items", "ship"])?, None);
     // The container keeps its key for key lookups, without an address.
     let container = ui.find_descendant(&each, "items")?.ok_or("the container")?;
@@ -172,10 +193,11 @@ fn a_default_container_keeps_its_addressing_when_described_again() -> TestResult
         .key("list"),
     )?;
     ui.flush(Duration::ZERO)?;
-    let each = ui.find(&root, &["tasks"])?.ok_or("the list")?;
-    let ship = ui.find(&each, &["ship"])?.ok_or("the item")?;
+    let each = child(&ui, &root, "tasks")?;
+    let ship = item(&ui, &each, "ship")?;
     explicit.set(true)?;
     ui.flush(Duration::ZERO)?;
+    assert_eq!(item(&ui, &each, "ship")?, ship, "the item is retained");
     assert_eq!(ui.find(&each, &["ship"])?, Some(ship));
     assert_eq!(ui.find(&each, &["items", "ship"])?, None);
     assert_eq!(

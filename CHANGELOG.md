@@ -199,9 +199,12 @@ moves the workspace document to revision 2.
   viewport that relied on a legacy root being presented set one; tests whose
   fixtures reported their own geometry place them with a test-local container;
   scene assertions of an unclipped command expect the root's allocation as its
-  clip; and the deferred-notification delivery test asserts the delivery through
-  its outcome monitor, since removing a focused laid-out root also leaves focus
-  restoration due.
+  clip; and the deferred-notification delivery test settles the root's own
+  first update and layout before the edit and clears the unrelated focus
+  restoration that removing a focused laid-out root leaves due
+  (`HostIntegration::clear_focus`, no flush), keeping its deadline assertions
+  around the delivering parameter write, with the outcome monitor's count as
+  further evidence.
 
 ## 0.3.73 (2026-10-27)
 

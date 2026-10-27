@@ -644,6 +644,18 @@ All six were decided on 2026-10-26 as recommended.
   - **Out of scope, noted:** `FailureSite` description trails still name
     the structural container in their key trail; a TODO.md entry records
     the yanked `clipboard-win` in the lockfile.
+  - **Review (Codex):** the sealed trait, the seven inherent methods, the
+    host vocabularies, schema-2 rejection, `Each` addressing and naming,
+    `Painter::size` and the test-side deviations were confirmed;
+    `FailureSite` trails are key trails by contract, not addresses. Four
+    should-fix points, all fixed: the `parameter_delivery` test again
+    asserts the deadline around `write_base` without a flush (it clears
+    only focus restoration and fails at its named assertion when pruning
+    is removed); the `Each` and capture tests find their fixtures by
+    address-independent walks, so each fails at its named assertion when
+    `.structural()` is removed; three rustdoc passages about legacy roots
+    are rewritten; and L2's import-scope checker skips block comments and
+    literals, with Codex's negative fixture.
 
 - **L4b (0.3.75), implemented 2026-10-27:** commit and review to be
   recorded. One draft policy, by [the approved design](layering-design-L4b.md)

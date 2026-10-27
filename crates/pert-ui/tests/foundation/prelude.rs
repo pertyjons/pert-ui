@@ -264,32 +264,110 @@ fn headings(page: &str) -> Vec<&str> {
     found
 }
 
-/// The byte range of `fn main`'s body in `code`, from its opening brace to
-/// its matching closing brace, skipping braces in comments and in string and
-/// character literals.
-fn main_body(code: &str) -> Option<std::ops::Range<usize>> {
-    let start = code.find("fn main(")?;
+/// Which bytes of `code` are code: false inside comments (line comments and
+/// nested block comments) and inside string, raw string, byte string and
+/// character literals, so a brace or `fn main(` there is not counted.
+fn code_bytes(code: &str) -> Vec<bool> {
     let bytes = code.as_bytes();
-    let mut depth = 0_usize;
-    let mut open = None;
-    let mut at = start;
+    let mut is_code = vec![true; bytes.len()];
+    let identifier =
+        |at: usize| at > 0 && (bytes[at - 1].is_ascii_alphanumeric() || bytes[at - 1] == b'_');
+    let mut at = 0;
     while at < bytes.len() {
+        let from = at;
         match bytes[at] {
             b'/' if bytes.get(at + 1) == Some(&b'/') => {
                 at = code[at..].find('\n').map_or(bytes.len(), |end| at + end);
+            }
+            b'/' if bytes.get(at + 1) == Some(&b'*') => {
+                // Block comments nest.
+                let mut depth = 0_usize;
+                while at < bytes.len() {
+                    if bytes[at] == b'/' && bytes.get(at + 1) == Some(&b'*') {
+                        depth += 1;
+                        at += 2;
+                    } else if bytes[at] == b'*' && bytes.get(at + 1) == Some(&b'/') {
+                        depth -= 1;
+                        at += 2;
+                        if depth == 0 {
+                            break;
+                        }
+                    } else {
+                        at += 1;
+                    }
+                }
+            }
+            // A raw string, `r"…"`, `r#"…"#` or `br#"…"#`: no escapes, closed
+            // by a quote and as many hashes as it opened with.
+            b'r' if !identifier(at) || (at > 0 && bytes[at - 1] == b'b' && !identifier(at - 1)) => {
+                let hashes = bytes[at + 1..].iter().take_while(|b| **b == b'#').count();
+                if bytes.get(at + 1 + hashes) == Some(&b'"') {
+                    let close = format!("\"{}", "#".repeat(hashes));
+                    let body = at + 2 + hashes;
+                    at = code[body..]
+                        .find(&close)
+                        .map_or(bytes.len(), |end| body + end + close.len());
+                } else {
+                    at += 1;
+                    continue;
+                }
             }
             b'"' => {
                 at += 1;
                 while at < bytes.len() && bytes[at] != b'"' {
                     at += if bytes[at] == b'\\' { 2 } else { 1 };
                 }
+                at += 1;
             }
-            // A character literal: 'x', '\n' or '{'; a lifetime has no
-            // closing quote two or three bytes on.
-            b'\'' if bytes.get(at + 2) == Some(&b'\'') => at += 2,
-            b'\'' if bytes.get(at + 1) == Some(&b'\\') && bytes.get(at + 3) == Some(&b'\'') => {
-                at += 3;
+            // A character literal, `'x'`, `'\n'`, `'\u{7b}'` or `'{'`; a
+            // lifetime or label has no closing quote after one character.
+            b'\'' => {
+                if bytes.get(at + 1) == Some(&b'\\') {
+                    at += 2;
+                    while at < bytes.len() && bytes[at] != b'\'' {
+                        at += 1;
+                    }
+                    at += 1;
+                } else if let Some(c) = code[at + 1..].chars().next() {
+                    let after = at + 1 + c.len_utf8();
+                    if bytes.get(after) == Some(&b'\'') {
+                        at = after + 1;
+                    } else {
+                        at += 1;
+                        continue;
+                    }
+                } else {
+                    at += 1;
+                    continue;
+                }
             }
+            _ => {
+                at += 1;
+                continue;
+            }
+        }
+        let to = at.min(bytes.len());
+        is_code[from..to].fill(false);
+    }
+    is_code
+}
+
+/// The byte range of `fn main`'s body in `code`, from its opening brace to
+/// its matching closing brace, counting only braces in code: not in
+/// comments, nested block comments included, or in literals.
+fn main_body(code: &str) -> Option<std::ops::Range<usize>> {
+    let is_code = code_bytes(code);
+    let start = code
+        .match_indices("fn main(")
+        .map(|(at, _)| at)
+        .find(|at| is_code[*at])?;
+    let mut depth = 0_usize;
+    let mut open = None;
+    for (at, byte) in code.bytes().enumerate().skip(start) {
+        if !is_code[at] {
+            continue;
+        }
+        match byte {
             b'{' => {
                 depth += 1;
                 open.get_or_insert(at);
@@ -302,7 +380,6 @@ fn main_body(code: &str) -> Option<std::ops::Range<usize>> {
             }
             _ => {}
         }
-        at += 1;
     }
     None
 }
@@ -447,6 +524,32 @@ fn a_testing_import_inside_main_passes() {
     let code = "use pert_ui::prelude::*;\n\
                 fn main() {\n    if true { let _ = \"}\"; }\n    let _ = '{';\n\
                 use pert_ui::testing::*;\n}\n";
+    check("a testing import in main", code, TEST_GLOBS, true);
+}
+
+/// A brace inside a block comment in `fn main` does not open a block, so a
+/// module-level `testing` import after `main`, followed by a comment that
+/// closes the brace, is still outside `main` and fails the check.
+#[test]
+#[should_panic(expected = "the test in `fn main` adds testing")]
+fn a_brace_in_a_block_comment_does_not_extend_main() {
+    let code = "use pert_ui::prelude::*;\n\
+                fn main() { /* { */ }\n\
+                use pert_ui::testing::*;\n\
+                /* } */\n";
+    check("a module-level testing import", code, TEST_GLOBS, true);
+}
+
+/// Nested block comments, raw strings, byte literals and escaped characters
+/// hide their braces; the import inside `main` still passes.
+#[test]
+fn braces_in_nested_comments_and_raw_literals_are_not_counted() {
+    let code = "use pert_ui::prelude::*;\n\
+                /* outer /* { nested */ } */\n\
+                fn main() {\n    let _ = r#\"}\"#;\n    let _ = br\"}\";\n\
+                \x20   let _ = b'}';\n    let _ = '\\u{7d}';\n    let _ = '\\'';\n\
+                \x20   fn label<'a>(x: &'a str) -> &'a str { x }\n\
+                \x20   use pert_ui::testing::*;\n}\n";
     check("a testing import in main", code, TEST_GLOBS, true);
 }
 

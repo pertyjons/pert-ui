@@ -660,8 +660,9 @@ fn a_job_listed_by_another_runtime_neither_renders_nor_completes() -> TestResult
 
 /// New-behavior test. Named assertion: a capture of
 /// `CaptureTarget::Path(["main", "tasks", "ship"])` is admitted, so exactly
-/// one job is pending and the reply waits; the address through the old
-/// `items` segment would be answered at once with `UnknownTarget`.
+/// one job is pending (`jobs.len() == 1`) and the reply waits; the address
+/// through the old `items` segment is then answered at once with
+/// `UnknownTarget`.
 #[test]
 fn an_each_item_is_captured_at_its_address_below_the_each() -> TestResult {
     let mut ui = ui(1.0)?;
@@ -675,14 +676,14 @@ fn an_each_item_is_captured_at_its_address_below_the_each() -> TestResult {
     ))?;
     ui.flush(Duration::ZERO)?;
     ui.set_capture_support(true);
-    let ship = ui.find(&root, &["tasks", "ship"])?.ok_or("the item")?;
-    let old = ui.request_capture(CaptureRequest::new(CaptureTarget::Path(vec![
-        "main".into(),
-        "tasks".into(),
-        "items".into(),
-        "ship".into(),
-    ])));
-    assert_eq!(old.try_reply()?.value, Err(CaptureError::UnknownTarget));
+    // The item, found by walking keys and children, independent of addressing.
+    let each = ui.children(&root)?.remove(0);
+    let container = ui.children(&each)?.remove(0);
+    let ship = ui
+        .children(&container)?
+        .into_iter()
+        .find(|item| ui.key(item).is_ok_and(|key| key == "ship"))
+        .ok_or("the item")?;
     let reply = ui.request_capture(CaptureRequest::new(CaptureTarget::Path(vec![
         "main".into(),
         "tasks".into(),
@@ -691,6 +692,14 @@ fn an_each_item_is_captured_at_its_address_below_the_each() -> TestResult {
     let jobs = ui.pending_captures();
     assert_eq!(jobs.len(), 1);
     assert_eq!(reply.try_reply().map(|_| ()), Err(WaitError::Timeout));
+    let old = ui.request_capture(CaptureRequest::new(CaptureTarget::Path(vec![
+        "main".into(),
+        "tasks".into(),
+        "items".into(),
+        "ship".into(),
+    ])));
+    assert_eq!(old.try_reply()?.value, Err(CaptureError::UnknownTarget));
+    assert_eq!(ui.pending_captures(), jobs);
     // The host renders the whole window; the runtime crops at completion.
     ui.capture_scene(&jobs[0])?;
     assert!(ui.complete_capture(&jobs[0], Ok(frame(200, 100))));
