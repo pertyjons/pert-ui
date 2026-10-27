@@ -594,8 +594,7 @@ All six were decided on 2026-10-26 as recommended.
     `component`; this plan's membership bullet records the approved
     rule. Verified in L3's review.
 
-- **L3 (0.3.74), implemented 2026-10-27:** commit and review to be
-  recorded. One way where history left two, by
+- **L3 (0.3.74), done 2026-10-27:** cb28154 and its review fixes. One way where history left two, by
   [the approved design](layering-design-L3.md) (revision 4; D1
   `HostIntegration`, D2 workspace schema 2 with versioned rejection, D3
   `Painter::size` returning `Size`).
@@ -656,6 +655,15 @@ All six were decided on 2026-10-26 as recommended.
     `.structural()` is removed; three rustdoc passages about legacy roots
     are rewritten; and L2's import-scope checker skips block comments and
     literals, with Codex's negative fixture.
+  - **Recheck (Codex):** the first three points resolved; the scanner
+    still misread an escaped apostrophe and raw C strings. **The fix**
+    replaces the scanner with a small lexer covering every Rust comment
+    and literal form (nested block comments, char and byte literals with
+    every escape, lifetimes and labels, strings, byte and C strings, raw
+    `r`, `br` and `cr` strings with any number of `#`), with Codex's two
+    fixtures and one table-driven fixture per form; removing each
+    handling makes the forms it covers fail. Verified in L4b's review
+    fix recheck.
 
 - **L4b (0.3.75), implemented 2026-10-27:** commit and review to be
   recorded. One draft policy, by [the approved design](layering-design-L4b.md)

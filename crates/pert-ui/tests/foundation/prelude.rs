@@ -265,91 +265,121 @@ fn headings(page: &str) -> Vec<&str> {
 }
 
 /// Which bytes of `code` are code: false inside comments (line comments and
-/// nested block comments) and inside string, raw string, byte string and
-/// character literals, so a brace or `fn main(` there is not counted.
+/// nested block comments) and inside Rust's literal forms, so a brace or
+/// `fn main(` there is not counted. The literals are character and byte
+/// literals with every escape form, strings, byte strings and C strings
+/// with escapes, and raw strings `r`, `br` and `cr` with any number of `#`.
+/// A `'` that starts no character literal is a lifetime or a label, which
+/// is code.
 fn code_bytes(code: &str) -> Vec<bool> {
     let bytes = code.as_bytes();
     let mut is_code = vec![true; bytes.len()];
-    let identifier =
-        |at: usize| at > 0 && (bytes[at - 1].is_ascii_alphanumeric() || bytes[at - 1] == b'_');
     let mut at = 0;
     while at < bytes.len() {
-        let from = at;
-        match bytes[at] {
-            b'/' if bytes.get(at + 1) == Some(&b'/') => {
-                at = code[at..].find('\n').map_or(bytes.len(), |end| at + end);
+        match non_code_end(code, at) {
+            Some(end) => {
+                let end = end.min(bytes.len());
+                is_code[at..end].fill(false);
+                at = end;
             }
-            b'/' if bytes.get(at + 1) == Some(&b'*') => {
-                // Block comments nest.
-                let mut depth = 0_usize;
-                while at < bytes.len() {
-                    if bytes[at] == b'/' && bytes.get(at + 1) == Some(&b'*') {
-                        depth += 1;
-                        at += 2;
-                    } else if bytes[at] == b'*' && bytes.get(at + 1) == Some(&b'/') {
-                        depth -= 1;
-                        at += 2;
-                        if depth == 0 {
-                            break;
-                        }
-                    } else {
-                        at += 1;
-                    }
-                }
-            }
-            // A raw string, `r"…"`, `r#"…"#` or `br#"…"#`: no escapes, closed
-            // by a quote and as many hashes as it opened with.
-            b'r' if !identifier(at) || (at > 0 && bytes[at - 1] == b'b' && !identifier(at - 1)) => {
-                let hashes = bytes[at + 1..].iter().take_while(|b| **b == b'#').count();
-                if bytes.get(at + 1 + hashes) == Some(&b'"') {
-                    let close = format!("\"{}", "#".repeat(hashes));
-                    let body = at + 2 + hashes;
-                    at = code[body..]
-                        .find(&close)
-                        .map_or(bytes.len(), |end| body + end + close.len());
-                } else {
-                    at += 1;
-                    continue;
-                }
-            }
-            b'"' => {
-                at += 1;
-                while at < bytes.len() && bytes[at] != b'"' {
-                    at += if bytes[at] == b'\\' { 2 } else { 1 };
-                }
-                at += 1;
-            }
-            // A character literal, `'x'`, `'\n'`, `'\u{7b}'` or `'{'`; a
-            // lifetime or label has no closing quote after one character.
-            b'\'' => {
-                if bytes.get(at + 1) == Some(&b'\\') {
-                    at += 2;
-                    while at < bytes.len() && bytes[at] != b'\'' {
-                        at += 1;
-                    }
-                    at += 1;
-                } else if let Some(c) = code[at + 1..].chars().next() {
-                    let after = at + 1 + c.len_utf8();
-                    if bytes.get(after) == Some(&b'\'') {
-                        at = after + 1;
-                    } else {
-                        at += 1;
-                        continue;
-                    }
-                } else {
-                    at += 1;
-                    continue;
-                }
-            }
-            _ => {
-                at += 1;
-                continue;
-            }
+            None => at += 1,
         }
-        let to = at.min(bytes.len());
-        is_code[from..to].fill(false);
     }
     is_code
+}
+
+/// The end of the comment or literal that starts at byte `at` of `code`, or
+/// `None` when code continues there.
+fn non_code_end(code: &str, at: usize) -> Option<usize> {
+    let bytes = code.as_bytes();
+    let byte = |offset: usize| bytes.get(at + offset).copied();
+    // A byte string `b"…"`, a C string `c"…"` and a byte literal `b'…'` lex
+    // as their string or character literal; the prefix letter is code.
+    match bytes[at] {
+        b'/' if byte(1) == Some(b'/') => {
+            Some(code[at..].find('\n').map_or(bytes.len(), |end| at + end))
+        }
+        b'/' if byte(1) == Some(b'*') => Some(block_comment_end(bytes, at)),
+        b'"' => Some(escaped_string_end(bytes, at + 1)),
+        b'\'' => char_literal_end(code, at),
+        b'b' | b'c' if byte(1) == Some(b'r') => raw_string_end(code, at + 1),
+        b'r' => raw_string_end(code, at),
+        _ => None,
+    }
+}
+
+/// The end of the block comment opening at `at`; block comments nest.
+fn block_comment_end(bytes: &[u8], mut at: usize) -> usize {
+    let mut depth = 0_usize;
+    while at < bytes.len() {
+        if bytes[at] == b'/' && bytes.get(at + 1) == Some(&b'*') {
+            depth += 1;
+            at += 2;
+        } else if bytes[at] == b'*' && bytes.get(at + 1) == Some(&b'/') {
+            depth -= 1;
+            at += 2;
+            if depth == 0 {
+                return at;
+            }
+        } else {
+            at += 1;
+        }
+    }
+    at
+}
+
+/// The end of a string, byte string or C string whose body starts at
+/// `body`: past the closing quote, skipping each escaped character.
+fn escaped_string_end(bytes: &[u8], mut at: usize) -> usize {
+    while at < bytes.len() {
+        match bytes[at] {
+            b'\\' => at += 2,
+            b'"' => return at + 1,
+            _ => at += 1,
+        }
+    }
+    at
+}
+
+/// The end of the raw string whose `r` is at `at`, past its closing quote
+/// and as many `#` as it opened with, or `None` when no quote follows the
+/// hashes (a raw identifier such as `r#type`, or an `r` inside an
+/// identifier: Rust reserves an identifier directly followed by `"` or
+/// `#"`, so such an `r` is never followed by them in valid code).
+fn raw_string_end(code: &str, at: usize) -> Option<usize> {
+    let bytes = code.as_bytes();
+    let hashes = bytes[at + 1..].iter().take_while(|b| **b == b'#').count();
+    if bytes.get(at + 1 + hashes) != Some(&b'"') {
+        return None;
+    }
+    let close = format!("\"{}", "#".repeat(hashes));
+    let body = at + 2 + hashes;
+    Some(
+        code[body..]
+            .find(&close)
+            .map_or(bytes.len(), |end| body + end + close.len()),
+    )
+}
+
+/// The end of the character or byte literal whose opening quote is at `at`,
+/// past its closing quote, or `None` for a lifetime or label. After the
+/// quote, an escape always means a literal (`\'`, `\\`, `\n`, `\x7d`,
+/// `\u{7d}` and the rest); otherwise it is a literal exactly when the
+/// character after the next one is a quote.
+fn char_literal_end(code: &str, at: usize) -> Option<usize> {
+    let bytes = code.as_bytes();
+    let mut next = at + 1;
+    if bytes.get(next) == Some(&b'\\') {
+        next = match bytes.get(next + 1)? {
+            b'x' => next + 4,
+            b'u' => next + code[next..].find('}')? + 1,
+            _ => next + 2,
+        };
+    } else {
+        let c = code[next..].chars().next()?;
+        next += c.len_utf8();
+    }
+    (bytes.get(next) == Some(&b'\'')).then_some(next + 1)
 }
 
 /// The byte range of `fn main`'s body in `code`, from its opening brace to
@@ -540,17 +570,63 @@ fn a_brace_in_a_block_comment_does_not_extend_main() {
     check("a module-level testing import", code, TEST_GLOBS, true);
 }
 
-/// Nested block comments, raw strings, byte literals and escaped characters
-/// hide their braces; the import inside `main` still passes.
+/// A brace inside each of Rust's comment and literal forms, and a lifetime
+/// or label beside one, never ends `fn main`: the testing import after it is
+/// still inside `main` and passes. Every form is checked, and the failure
+/// names the forms whose brace ended `main`.
 #[test]
-fn braces_in_nested_comments_and_raw_literals_are_not_counted() {
-    let code = "use pert_ui::prelude::*;\n\
-                /* outer /* { nested */ } */\n\
-                fn main() {\n    let _ = r#\"}\"#;\n    let _ = br\"}\";\n\
-                \x20   let _ = b'}';\n    let _ = '\\u{7d}';\n    let _ = '\\'';\n\
-                \x20   fn label<'a>(x: &'a str) -> &'a str { x }\n\
-                \x20   use pert_ui::testing::*;\n}\n";
-    check("a testing import in main", code, TEST_GLOBS, true);
+fn a_brace_in_any_comment_or_literal_does_not_end_main() {
+    // Literals are written without spaces after commas, so a literal read
+    // wrongly would end at the next quote and expose the brace after it.
+    let forms: &[(&str, &str)] = &[
+        ("a nested block comment", "/* outer /* } */ } */"),
+        ("a line comment", "// }\n"),
+        ("a character literal", "let _ = '}';"),
+        ("an escaped quote", "let _ = ['\\'','}'];"),
+        ("an escaped backslash", "let _ = ['\\\\','}'];"),
+        ("a newline escape", "let _ = ['\\n','}'];"),
+        ("a hex escape", "let _ = ['\\x7d','}'];"),
+        ("a unicode escape", "let _ = ['\\u{7d}','}'];"),
+        ("a non-ASCII character", "let _ = ['é','}'];"),
+        ("a lifetime", "let _ = |x: &'static str| x; let _ = '}';"),
+        ("a label", "'outer: loop { break 'outer; } let _ = '}';"),
+        ("a byte literal", "let _ = b'}';"),
+        ("an escaped byte literal", "let _ = (b'\\'','}');"),
+        ("a string", "let _ = \"}\";"),
+        ("a string with an escaped quote", "let _ = \"\\\"}\";"),
+        ("a string ending in a backslash", "let _ = (\"\\\\\", '}');"),
+        ("a byte string", "let _ = b\"\\\"}\";"),
+        ("a C string", "let _ = c\"\\\"}\";"),
+        ("a raw string", "let _ = (r\"\\\", '}');"),
+        ("a raw string with hashes", "let _ = (r##\"\"#\\\"##, '}');"),
+        ("a raw byte string", "let _ = (br#\"\\\"#, '}');"),
+        ("a raw C string", "let _ = (cr#\"\\\"#, '}');"),
+        ("a raw identifier", "let r#type = '}'; let _ = r#type;"),
+    ];
+    let failed: Vec<&str> = forms
+        .iter()
+        .filter(|(_, form)| {
+            let code = format!(
+                "use pert_ui::prelude::*;\nfn main() {{\n    {form}\n    use pert_ui::testing::*;\n}}\n"
+            );
+            std::panic::catch_unwind(|| check("a testing import in main", &code, TEST_GLOBS, true))
+                .is_err()
+        })
+        .map(|(name, _)| *name)
+        .collect();
+    assert!(failed.is_empty(), "a brace ended `main` in: {failed:?}");
+}
+
+/// Codex's fixtures: an escaped quote before a brace literal, and a raw C
+/// string holding a brace, each followed by the testing import in `main`.
+#[test]
+fn an_escaped_quote_and_a_raw_c_string_keep_the_import_in_main() {
+    for code in [
+        "use pert_ui::prelude::*;\nfn main() { let _ = ['\\'','}']; use pert_ui::testing::*; }\n",
+        "use pert_ui::prelude::*;\nfn main() { let _ = cr#\"}\"#; use pert_ui::testing::*; }\n",
+    ] {
+        check("a testing import in main", code, TEST_GLOBS, true);
+    }
 }
 
 /// The globs a representative test imports.
