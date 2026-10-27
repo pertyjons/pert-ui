@@ -1,6 +1,7 @@
 //! The CPU renderer against hand-computed pixels: a mathematical oracle for
 //! the rendering model, through scenes built only with public APIs.
 use pert_ui_cpu::{CpuRenderError, CpuRenderer};
+use pert_ui_runtime::testing::HostIntegration;
 use pert_ui_runtime::{
     CaptureRequest, CaptureTarget, Color, Component, DisplayList, DrawError, Element, FillRule,
     FrameImage, ImageSampling, Length, LimitError, MaskImage, Painter, Path, Point, QuarterTurn,
@@ -42,7 +43,7 @@ fn scene(
 ) -> Result<DisplayList, Box<dyn std::error::Error>> {
     let mut ui = Runtime::new();
     ui.set_viewport(Viewport::new(width, height, scale)?)?;
-    ui.mount("scene", Scene(Box::new(paint)))?;
+    ui.mount_tree(Element::new("scene", Scene(Box::new(paint))))?;
     ui.flush(Duration::ZERO)?;
     Ok(ui.paint()?)
 }
@@ -553,13 +554,13 @@ fn an_opaque_frame_clears_with_the_background_at_full_alpha() -> TestResult {
     )?;
     ui.theme().set_mode(pert_ui_runtime::ThemeMode::Dark)?;
     let fill = Color::from_linear(0.0, 0.0, 1.0, 0.5)?;
-    ui.mount(
+    ui.mount_tree(Element::new(
         "scene",
         Scene(Box::new(move |p| {
             p.fill_rect(Rect::new(0.0, 0.0, 2.0, 2.0)?, fill);
             Ok(())
         })),
-    )?;
+    ))?;
     ui.flush(Duration::ZERO)?;
     let scene = ui.paint()?;
     let mut renderer = CpuRenderer::new();

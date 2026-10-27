@@ -1,6 +1,7 @@
 //! Flex layout of rows and columns through the facade: growth weights share
 //! spare main-axis space up to each child's maximum, `Justify` places what is
 //! left, `Align` places children across, and the defaults keep natural sizes.
+use crate::support;
 use pert_ui::*;
 use std::time::Duration;
 
@@ -194,7 +195,7 @@ fn a_hidden_child_takes_no_share() -> TestResult {
         .key("column"),
     )?;
     assert_eq!(bounds(&ui, &root, &["a"])?[3], 50.0);
-    let b = ui.find_path(&root, &["b"])?.ok_or("mounted")?;
+    let b = support::key_path(&ui, &root, &["b"]).ok_or("mounted")?;
     ui.set_visible(&b, false)?;
     ui.flush(Duration::ZERO)?;
     assert_eq!(bounds(&ui, &root, &["a"])?[3], 100.0);

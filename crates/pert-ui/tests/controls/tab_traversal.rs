@@ -1,6 +1,7 @@
 //! Traversal scopes (`Component::descendant_tab_stops`) and the Tab offer
 //! (`Component::tab_navigation`) on both key paths.
 use crate::support;
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::RefCell, rc::Rc, time::Duration};
 use support::frame;

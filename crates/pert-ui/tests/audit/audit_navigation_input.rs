@@ -1,4 +1,5 @@
 //! Navigation input admission and cancellation regressions through the facade.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{
     cell::{Cell, RefCell},

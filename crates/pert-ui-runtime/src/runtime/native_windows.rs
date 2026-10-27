@@ -240,7 +240,9 @@ impl NativeWindowOptions {
 /// Validated presentation movement awaiting native window/surface preparation.
 ///
 /// Dropping this token leaves the view unchanged. The native host prepares all
-/// resources before calling [`Runtime::commit_detach`], which revalidates identity
+/// resources before calling
+/// [`HostIntegration::commit_detach`](crate::host::HostIntegration::commit_detach), which
+/// revalidates identity
 /// and modality and applies focus-loss cleanup. Tokens are UI-local and single-use.
 #[must_use = "dropping the token leaves the movement uncommitted"]
 pub struct PreparedDetach {
@@ -293,9 +295,8 @@ impl Runtime {
     pub fn primary_window(&self) -> NativeWindowId {
         self.primary_window.clone()
     }
-    /// Presentation root used by viewport, painting and native input operations.
-    /// Selecting a root is routing, not a focus transition or native activation.
-    pub fn current_window(&self) -> NativeWindowId {
+    // Documented on `crate::host::HostIntegration::current_window`.
+    pub(crate) fn current_window(&self) -> NativeWindowId {
         NativeWindowId(self.window.shared.clone())
     }
     /// All mounted native presentation roots, in creation order.
@@ -309,20 +310,8 @@ impl Runtime {
             .map(NativeWindowId)
             .collect()
     }
-    /// Routes subsequent viewport/paint/input operations to a mounted window.
-    ///
-    /// Does not call component focus callbacks or request OS activation. Native
-    /// hosts select the event's root before dispatch. Applications normally use
-    /// the default App host.
-    ///
-    /// # Errors
-    /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
-    /// `WriteDuringUpdate`, `WriteDuringLayout`, `WriteDuringPaint`,
-    /// `WriteDuringInspection` or `WriteDuringDelivery` when called from inside that phase;
-    /// [`RuntimeError::ForeignRuntime`](crate::RuntimeError::ForeignRuntime) for a window
-    /// identity of another runtime; and `Unmounted` for one of this runtime that is retired
-    /// or no longer mounted.
-    pub fn select_window(&mut self, window: &NativeWindowId) -> Result<(), RuntimeError> {
+    // Documented on `crate::host::HostIntegration::select_window`.
+    pub(crate) fn select_window(&mut self, window: &NativeWindowId) -> Result<(), RuntimeError> {
         self.shared.writable()?;
         if !std::ptr::eq(window.0.runtime.as_ptr(), Rc::as_ptr(&self.shared)) {
             return Err(RuntimeError::ForeignRuntime);
@@ -362,25 +351,8 @@ impl Runtime {
     pub fn contains_window(&self, window: &NativeWindowId) -> bool {
         self.native_windows().contains(window)
     }
-    /// Supplies known native presentation visibility for the selected root.
-    ///
-    /// Hidden/zero-sized roots stop deadlines and presentation work; showing
-    /// refreshes retained state. Unknown native visibility must be left unchanged,
-    /// and lack of keyboard focus must never be treated as hidden.
-    ///
-    /// Hiding ends input like a native focus loss: focus, held actions,
-    /// gestures and nonmodal surfaces such as popovers and menus end. It only
-    /// suspends an open modal `Dialog`, which stays open with its outcome
-    /// pending, keeps an application-modal session blocking other roots, and is
-    /// admitted again, with safe focus, when the root is shown. Hiding a view
-    /// with [`Runtime::set_visible`] instead dismisses its dialogs as
-    /// `SurfaceDismissal::OwnerHidden`.
-    ///
-    /// # Errors
-    /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
-    /// `WriteDuringUpdate`, `WriteDuringLayout`, `WriteDuringPaint`,
-    /// `WriteDuringInspection` or `WriteDuringDelivery` when called from inside that phase.
-    pub fn set_window_visible(&mut self, visible: bool) -> Result<(), RuntimeError> {
+    // Documented on `crate::host::HostIntegration::set_window_visible`.
+    pub(crate) fn set_window_visible(&mut self, visible: bool) -> Result<(), RuntimeError> {
         self.shared.writable()?;
         if self.window.shared.visible.replace(visible) == visible {
             return Ok(());
@@ -395,36 +367,8 @@ impl Runtime {
         self.native_hiding = false;
         Ok(())
     }
-    /// Reserves a native destination without changing mounted state or input.
-    ///
-    /// Native creation failure can simply drop the token.
-    ///
-    /// ```
-    /// # use pert_ui_runtime as pert_ui;
-    /// use pert_ui::{Runtime, Element, Label, NativeWindowOptions};
-    /// let mut ui = Runtime::new();
-    /// let view = ui.mount_tree(Element::new("editor", Label::new("Retained")))?;
-    /// let original = ui.window_of(&view)?;
-    /// let prepared = ui.prepare_detach(&view, NativeWindowOptions::new("Editor")?)?;
-    /// // A native host prepares its OS window and GPU surface here. Headless
-    /// // tests can commit directly to exercise retained identity and cleanup.
-    /// let detached = ui.commit_detach(prepared)?;
-    /// assert_eq!(ui.window_of(&view)?, detached);
-    /// ui.redock(&detached)?;
-    /// assert_eq!(ui.window_of(&view)?, original);
-    /// # Ok::<(), pert_ui::RuntimeError>(())
-    /// ```
-    ///
-    /// # Errors
-    /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
-    /// `WriteDuringUpdate`, `WriteDuringLayout`, `WriteDuringPaint`,
-    /// `WriteDuringInspection` or `WriteDuringDelivery` when called from inside that phase;
-    /// `ForeignRuntime` or `Unmounted` for a foreign or unmounted view; `Hidden` for a
-    /// hidden view; `NotDetachable` when its description forbids its own window;
-    /// `ModalBlocked` when the subtree holds an open modal dialog; `AlreadyDetached` for a
-    /// view that already has its own window; and `Exhausted` when window identities run
-    /// out.
-    pub fn prepare_detach(
+    // Documented on `crate::host::HostIntegration::prepare_detach`.
+    pub(crate) fn prepare_detach(
         &mut self,
         view: &WidgetId,
         options: NativeWindowOptions,
@@ -627,37 +571,8 @@ impl Runtime {
             self.window.focus_errors.push_back(error);
         }
     }
-    /// Commits movement after the native host successfully prepares all resources.
-    ///
-    /// The same view incarnation and subscriptions move; no mount/unmount callback
-    /// runs. Cleanup failure leaves presentation at its source. Completed numeric
-    /// draft saves and input cancellation are not rolled back. A stale token fails
-    /// without recreating an owner. Returns the new root and selects it for routing;
-    /// on failure the root selected before the call stays selected.
-    ///
-    /// Initial geometry is validated against current UI zoom before cleanup.
-    /// If cleanup callbacks change zoom, geometry is validated again before
-    /// ownership moves; a rejection then leaves completed input cleanup in effect.
-    ///
-    /// Cleanup is confined to the moved subtree: its focused component loses
-    /// focus through ordinary `focus_lost` policy, and its held keys, pointer
-    /// capture, gestures and owned nonmodal surfaces end. Held keys, modifiers,
-    /// pointer presses and surfaces owned elsewhere in the source window continue.
-    ///
-    /// # Errors
-    /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
-    /// `WriteDuringUpdate`, `WriteDuringLayout`, `WriteDuringPaint`,
-    /// `WriteDuringInspection` or `WriteDuringDelivery` when called from inside that phase;
-    /// `ForeignRuntime` or `Unmounted` for a foreign or unmounted view; `Hidden` for a
-    /// hidden view; `NotDetachable` when its description forbids its own window;
-    /// `ModalBlocked` when the subtree holds an open modal dialog (all checked again); and
-    /// `StalePresentation` when the view moved or was detached since the token was
-    /// prepared. It forwards the errors of applying the new window's size as its viewport.
-    /// When the focused component inside the view saves on focus loss, an error
-    /// from its [`Component::focus_lost`](crate::Component::focus_lost) or from an ancestor's
-    /// [`Component::focus_within_changed`](crate::Component::focus_within_changed) is returned
-    /// and the view stays where it was; further such errors wait for the next flush.
-    pub fn commit_detach(
+    // Documented on `crate::host::HostIntegration::commit_detach`.
+    pub(crate) fn commit_detach(
         &mut self,
         prepared: PreparedDetach,
     ) -> Result<NativeWindowId, RuntimeError> {
@@ -749,25 +664,8 @@ impl Runtime {
             node.invalidate(Invalidation::Layout);
         }
     }
-    /// Returns a detached window's view to its retained original owner.
-    ///
-    /// Revalidates the owner and modality before cleanup. Failure leaves the
-    /// detached root available and the root selected before the call selected.
-    /// On success retires its identity and selects the owner's window. Native
-    /// hosts destroy the old resources after success. Input cleanup is confined
-    /// to the moved view, as for [`Self::commit_detach`].
-    ///
-    /// # Errors
-    /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
-    /// `WriteDuringUpdate`, `WriteDuringLayout`, `WriteDuringPaint`,
-    /// `WriteDuringInspection` or `WriteDuringDelivery` when called from inside that phase;
-    /// `ForeignRuntime` for a window identity of another runtime; `Unmounted` for one
-    /// that is retired or unmounted; `NotDetached` for a window that is not a detached view; `Hidden` when the view, its
-    /// owner or the owner's window is hidden; `ModalBlocked` when the subtree holds an open
-    /// modal dialog; and `ForeignRuntime` or `Unmounted` when the view or its owner is no
-    /// longer mounted. A focus-loss error from the focused component or an ancestor is
-    /// returned as for [`Self::commit_detach`], and the view stays detached.
-    pub fn redock(&mut self, window: &NativeWindowId) -> Result<(), RuntimeError> {
+    // Documented on `crate::host::HostIntegration::redock`.
+    pub(crate) fn redock(&mut self, window: &NativeWindowId) -> Result<(), RuntimeError> {
         self.shared.writable()?;
         let previous = self.current_window();
         let result = self.redock_selected(window);
@@ -855,8 +753,8 @@ impl Runtime {
     pub fn detached_view(&self) -> Option<WidgetId> {
         self.window.detached_root.clone()
     }
-    /// Options of the selected detached window; the main window uses App defaults.
-    pub fn native_window_options(&self) -> Option<&NativeWindowOptions> {
+    // Documented on `crate::host::HostIntegration::native_window_options`.
+    pub(crate) fn native_window_options(&self) -> Option<&NativeWindowOptions> {
         self.window.options.as_ref()
     }
 }
@@ -1136,12 +1034,14 @@ impl Runtime {
     /// [`EventContext::activate_window`] and [`EventContext::set_window_title`].
     /// A request beyond it is refused with
     /// [`RuntimeError::WindowRequestFull`] without being queued; taking the
-    /// requests with [`Self::take_presentation_requests`] frees the queue.
+    /// requests with
+    /// [`HostIntegration::take_presentation_requests`](crate::host::HostIntegration::take_presentation_requests) frees the queue.
     pub const MAX_WINDOW_REQUESTS: usize = 64;
 
     /// Queues a native detach; the default App prepares resources before movement.
     /// Observe the receipt for typed native/cleanup
-    /// failures. Headless hosts consume [`Self::take_presentation_requests`].
+    /// failures. Headless hosts consume
+    /// [`HostIntegration::take_presentation_requests`](crate::host::HostIntegration::take_presentation_requests).
     ///
     /// # Errors
     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
@@ -1186,20 +1086,10 @@ impl Runtime {
         }
         enqueue(&self.shared, PresentationAction::Redock(window.clone()))
     }
-    /// Takes native work once, preserving queued order. Only native hosts need
-    /// this API; ordinary applications use App. Dropping requests cancels receipts.
-    ///
-    /// The host owns each request until it completes it with
-    /// [`PresentationRequest::complete`] and the actual
-    /// [`PresentationStatus`]; dropping an unfinished request completes it as
-    /// `Failed(WindowError::Cancelled)`. A host other than the facade's `App`
-    /// completes a close request as [`Self::request_close`] describes.
-    ///
-    /// # Errors
-    /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
-    /// `WriteDuringUpdate`, `WriteDuringLayout`, `WriteDuringPaint`,
-    /// `WriteDuringInspection` or `WriteDuringDelivery` when called from inside that phase.
-    pub fn take_presentation_requests(&self) -> Result<Vec<PresentationRequest>, RuntimeError> {
+    // Documented on `crate::host::HostIntegration::take_presentation_requests`.
+    pub(crate) fn take_presentation_requests(
+        &self,
+    ) -> Result<Vec<PresentationRequest>, RuntimeError> {
         self.shared.writable()?;
         Ok(std::mem::take(
             &mut *self.shared.presentation_requests.borrow_mut(),
@@ -1223,15 +1113,17 @@ impl Runtime {
     /// Requests close/save admission. The main window asks for application exit;
     /// detached windows use their configured close policy after acceptance.
     ///
-    /// The request reaches the host through [`Self::take_presentation_requests`]
+    /// The request reaches the host through
+    /// [`HostIntegration::take_presentation_requests`](crate::host::HostIntegration::take_presentation_requests)
     /// as [`PresentationAction::Close`]. The facade's `App` admits it with its
     /// close policy; a host other than `App` completes it in these steps:
     ///
     /// 1. take the `Close` request;
     /// 2. run its own admission, in `App::on_close`'s order: release focus in
     ///    every window the close would discard (the detached window's own, or
-    ///    every window for the main window) with [`Self::clear_focus`], flush
-    ///    them, run its policy, and on a synchronous refusal focus the
+    ///    every window for the main window) with
+    ///    [`HostIntegration::clear_focus`](crate::host::HostIntegration::clear_focus),
+    ///    flush them, run its policy, and on a synchronous refusal focus the
     ///    released components again;
     /// 3. on a refusal, complete the request with
     ///    [`PresentationStatus::CloseRejected`]; on an error, with
@@ -1242,7 +1134,8 @@ impl Runtime {
     ///    `Failed(WindowError::Cancelled)`, as `App` does;
     /// 5. on acceptance of the main window, end the application;
     /// 6. on acceptance of a detached window, select it and call
-    ///    [`Self::close_detached_window`], which may still answer
+    ///    [`HostIntegration::close_detached_window`](crate::host::HostIntegration::close_detached_window),
+    ///    which may still answer
     ///    `CloseRejected` under [`DetachedClosePolicy::KeepOpen`];
     /// 7. complete the request with the resulting status.
     ///
@@ -1287,14 +1180,8 @@ impl Runtime {
             title.into(),
         )
     }
-    /// Applies accepted close policy to the selected detached window. Main-window
-    /// shutdown belongs to the native host. Failed re-dock leaves content available.
-    ///
-    /// # Errors
-    /// Returns `NotDetached` when the selected window is the main window. The `Redock`
-    /// policy forwards the errors of [`Self::redock`] and the `RemoveView` policy those of
-    /// [`Self::unmount`].
-    pub fn close_detached_window(&mut self) -> Result<PresentationStatus, RuntimeError> {
+    // Documented on `crate::host::HostIntegration::close_detached_window`.
+    pub(crate) fn close_detached_window(&mut self) -> Result<PresentationStatus, RuntimeError> {
         let policy = self
             .native_window_options()
             .ok_or(RuntimeError::NotDetached)?
@@ -1311,8 +1198,8 @@ impl Runtime {
         }
         Ok(PresentationStatus::Closed)
     }
-    /// Whether the native host has presentation operations to process.
-    pub fn has_presentation_requests(&self) -> bool {
+    // Documented on `crate::host::HostIntegration::has_presentation_requests`.
+    pub(crate) fn has_presentation_requests(&self) -> bool {
         !self.shared.presentation_requests.borrow().is_empty()
     }
 }
@@ -1494,10 +1381,8 @@ impl WindowData {
     }
 }
 impl Runtime {
-    /// Earliest eligible work across all roots, independent of selected/focused
-    /// window. Known hidden roots are excluded. Native hosts additionally account
-    /// for OS redraw availability and recovery deadlines; reading never polls.
-    pub fn application_deadline(&self) -> Option<Duration> {
+    // Documented on `crate::host::HostIntegration::application_deadline`.
+    pub(crate) fn application_deadline(&self) -> Option<Duration> {
         if !self.shared.tasks.borrow().is_empty()
             || self.drag_needs_service()
             || !self.shared.computations.borrow().is_empty()
@@ -1525,18 +1410,8 @@ impl Runtime {
             .chain(self.shared.scale_settle_deadline().filter(|_| presentable))
             .min()
     }
-    /// Flushes eligible roots at a shared time, retaining the selected root.
-    /// Only each root's pending components run; static roots do not rebuild.
-    /// Returns the total update count and earliest application deadline.
-    /// When every root is hidden, deferred tasks are still delivered once, so a
-    /// task cannot keep [`Self::application_deadline`] due without being run.
-    ///
-    /// # Errors
-    /// Returns the first error of [`Self::flush`] for a visible root, or of a
-    /// task delivered while every root is hidden; the remaining roots
-    /// are not flushed and the previously selected root is selected again. `Unmounted` when
-    /// a root cannot be selected.
-    pub fn flush_windows(&mut self, now: Duration) -> Result<FlushReport, RuntimeError> {
+    // Documented on `crate::host::HostIntegration::flush_windows`.
+    pub(crate) fn flush_windows(&mut self, now: Duration) -> Result<FlushReport, RuntimeError> {
         let previous = self.current_window();
         let mut count = 0;
         // Inspection is answered once, after every root, so a reply describes

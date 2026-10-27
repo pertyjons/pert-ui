@@ -1,6 +1,7 @@
 //! Value-driven children through the facade: `Dynamic`, `Show` and `Each`
 //! describe children from a binding, retain children whose key and type stay,
 //! release the rest, and follow a new description of themselves.
+use crate::support;
 use pert_ui::*;
 use std::{cell::Cell, rc::Rc, time::Duration};
 
@@ -33,13 +34,14 @@ fn a_child_that_keeps_its_key_and_type_is_retained_with_its_focus() -> TestResul
         .key("dynamic"),
     )?;
     ui.flush(Duration::ZERO)?;
-    let button = ui
-        .find_path(&root, &["button"])?
-        .ok_or("the button is mounted")?;
+    let button = support::key_path(&ui, &root, &["button"]).ok_or("the button is mounted")?;
     ui.focus(&button)?;
     count.set(2)?;
     ui.flush(Duration::ZERO)?;
-    assert_eq!(ui.find_path(&root, &["button"])?, Some(button.clone()));
+    assert_eq!(
+        support::key_path(&ui, &root, &["button"]),
+        Some(button.clone())
+    );
     assert_eq!(ui.focused(), Some(button.clone()));
     assert_eq!(name_of(&ui, "button").as_deref(), Some("Clicked 2 times"));
     Ok(())
@@ -59,11 +61,11 @@ fn a_child_with_another_key_replaces_the_old_one_and_a_type_change_is_refused() 
         .key("dynamic"),
     )?;
     ui.flush(Duration::ZERO)?;
-    let zero = ui.find_path(&root, &["a"])?.ok_or("mounted")?;
+    let zero = support::key_path(&ui, &root, &["a"]).ok_or("mounted")?;
     mode.set(1)?;
     ui.flush(Duration::ZERO)?;
     assert!(ui.key(&zero).is_err(), "the old key unmounted");
-    let one = ui.find_path(&root, &["b"])?.ok_or("mounted")?;
+    let one = support::key_path(&ui, &root, &["b"]).ok_or("mounted")?;
     // A kept key cannot change its component type: the flush fails and the
     // previous child stays until a valid description arrives.
     mode.set(2)?;
@@ -71,11 +73,11 @@ fn a_child_with_another_key_replaces_the_old_one_and_a_type_change_is_refused() 
         ui.flush(Duration::ZERO),
         Err(RuntimeError::ChildTypeChanged(_))
     ));
-    assert_eq!(ui.find_path(&root, &["b"])?, Some(one.clone()));
+    assert_eq!(support::key_path(&ui, &root, &["b"]), Some(one.clone()));
     mode.set(3)?;
     ui.flush(Duration::ZERO)?;
     assert!(ui.key(&one).is_err());
-    assert!(ui.find_path(&root, &["c"])?.is_some());
+    assert!(support::key_path(&ui, &root, &["c"]).is_some());
     Ok(())
 }
 
@@ -117,9 +119,7 @@ fn a_new_description_replaces_the_build_callback_and_the_binding() -> TestResult
     };
     let root = ui.mount_tree(Column::new(describe(&first, "Old")).key("root"))?;
     ui.flush(Duration::ZERO)?;
-    let value = ui
-        .find_path(&root, &["dynamic", "value"])?
-        .ok_or("mounted")?;
+    let value = support::key_path(&ui, &root, &["dynamic", "value"]).ok_or("mounted")?;
     // The same value with a new callback still describes the child again.
     ui.reconcile_children(&root, describe(&first, "New"))?;
     ui.flush(Duration::ZERO)?;
@@ -131,7 +131,10 @@ fn a_new_description_replaces_the_build_callback_and_the_binding() -> TestResult
     first.set(2)?;
     ui.flush(Duration::ZERO)?;
     assert_eq!(name_of(&ui, "value").as_deref(), Some("New 10"));
-    assert_eq!(ui.find_path(&root, &["dynamic", "value"])?, Some(value));
+    assert_eq!(
+        support::key_path(&ui, &root, &["dynamic", "value"]),
+        Some(value)
+    );
     Ok(())
 }
 
@@ -181,8 +184,8 @@ fn show_unmounts_a_hidden_child_and_releases_its_subscriptions() -> TestResult {
         .key("column"),
     )?;
     ui.flush(Duration::ZERO)?;
-    let root = ui.find_path(&column, &["show"])?.ok_or("mounted")?;
-    let reader = ui.find_path(&root, &["reader"])?.ok_or("mounted")?;
+    let root = support::key_path(&ui, &column, &["show"]).ok_or("mounted")?;
+    let reader = support::key_path(&ui, &root, &["reader"]).ok_or("mounted")?;
     source.set(1)?;
     ui.flush(Duration::ZERO)?;
     let while_shown = updates.get();
@@ -202,7 +205,7 @@ fn show_unmounts_a_hidden_child_and_releases_its_subscriptions() -> TestResult {
     );
     shown.set(true)?;
     ui.flush(Duration::ZERO)?;
-    let again = ui.find_path(&root, &["reader"])?.ok_or("mounted again")?;
+    let again = support::key_path(&ui, &root, &["reader"]).ok_or("mounted again")?;
     assert_ne!(again, reader, "showing again builds a fresh child");
     Ok(())
 }
@@ -221,8 +224,9 @@ fn each_retains_items_by_key_across_reorder_and_removal() -> TestResult {
     )?;
     ui.flush(Duration::ZERO)?;
     let ids = |ui: &Runtime| -> Result<Vec<String>, RuntimeError> {
+        // The default container has no address, but it keeps its key.
         let column = ui
-            .find_path(&root, &["items"])?
+            .find_descendant(&root, "items")?
             .ok_or(RuntimeError::Unmounted)?;
         ui.children(&column)?
             .iter()
@@ -230,17 +234,12 @@ fn each_retains_items_by_key_across_reorder_and_removal() -> TestResult {
             .collect()
     };
     assert_eq!(ids(&ui)?, ["item-1", "item-2", "item-3"]);
-    let two = ui
-        .find_path(&root, &["items", "item-2"])?
-        .ok_or("mounted")?;
+    let two = ui.find(&root, &["item-2"])?.ok_or("mounted")?;
     ui.focus(&two)?;
     items.set(vec![3, 2])?;
     ui.flush(Duration::ZERO)?;
     assert_eq!(ids(&ui)?, ["item-3", "item-2"]);
-    assert_eq!(
-        ui.find_path(&root, &["items", "item-2"])?,
-        Some(two.clone())
-    );
+    assert_eq!(ui.find(&root, &["item-2"])?, Some(two.clone()));
     assert_eq!(ui.focused(), Some(two));
     Ok(())
 }
@@ -256,18 +255,18 @@ fn a_duplicate_key_fails_the_flush_and_a_valid_list_recovers() -> TestResult {
         .key("each"),
     )?;
     ui.flush(Duration::ZERO)?;
-    let a = ui.find_path(&root, &["items", "a"])?.ok_or("mounted")?;
+    let a = ui.find(&root, &["a"])?.ok_or("mounted")?;
     items.set(vec!["a".to_owned(), "a".to_owned()])?;
     assert!(ui.flush(Duration::ZERO).is_err());
     assert_eq!(
-        ui.find_path(&root, &["items", "a"])?,
+        ui.find(&root, &["a"])?,
         Some(a.clone()),
         "the previous items stay"
     );
     items.set(vec!["a".to_owned(), "b".to_owned()])?;
     ui.flush(Duration::ZERO)?;
-    assert_eq!(ui.find_path(&root, &["items", "a"])?, Some(a));
-    assert!(ui.find_path(&root, &["items", "b"])?.is_some());
+    assert_eq!(ui.find(&root, &["a"])?, Some(a));
+    assert!(ui.find(&root, &["b"])?.is_some());
     Ok(())
 }
 
@@ -283,8 +282,8 @@ fn each_places_items_in_the_container_it_is_given() -> TestResult {
         .key("each"),
     )?;
     ui.flush(Duration::ZERO)?;
-    let first = ui.find_path(&root, &["row", "1"])?.ok_or("mounted")?;
-    let second = ui.find_path(&root, &["row", "2"])?.ok_or("mounted")?;
+    let first = ui.find(&root, &["row", "1"])?.ok_or("mounted")?;
+    let second = ui.find(&root, &["row", "2"])?.ok_or("mounted")?;
     let (a, b) = (
         ui.bounds(&first)?.ok_or("laid out")?,
         ui.bounds(&second)?.ok_or("laid out")?,
@@ -313,7 +312,7 @@ fn a_description_callback_creates_state_but_cannot_write() -> TestResult {
         .key("dynamic"),
     )?;
     ui.flush(Duration::ZERO)?;
-    assert!(ui.find_path(&root, &["select"])?.is_some());
+    assert!(support::key_path(&ui, &root, &["select"]).is_some());
     assert_eq!(
         *written.borrow(),
         Some(Err(RuntimeError::WriteDuringUpdate))
@@ -339,7 +338,7 @@ fn a_new_value_is_described_even_when_the_old_one_compares_equal_later() -> Test
     source.set(Rc::new(Cell::new(1)))?;
     first.set(1);
     ui.flush(Duration::ZERO)?;
-    assert!(ui.find_path(&root, &["value"])?.is_some());
+    assert!(support::key_path(&ui, &root, &["value"]).is_some());
     assert_eq!(name_of(&ui, "value").as_deref(), Some("1"));
     Ok(())
 }

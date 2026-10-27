@@ -49,6 +49,16 @@ impl Component for Finish {
         self.painted.set(true);
         Ok(())
     }
+    // Laid over the gallery as a second root: pointer input passes through to
+    // the gallery, and the overlap is intended.
+    fn hit_test(&self, _: Point) -> bool {
+        false
+    }
+    fn inspect(&self) -> ComponentDetails {
+        let mut details = ComponentDetails::default();
+        details.validation.overlap = OverlapPolicy::Allow;
+        details
+    }
     fn deliver_notifications(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
         let (capture, report, interrupted) = (
             self.capture.clone(),
@@ -193,7 +203,7 @@ pub(super) fn run(save: bool, path: &Path) -> Result<(), Box<dyn std::error::Err
         let _report = ui
             .restore_workspace(&workspace)
             .map_err(ApplicationError::new)?;
-        let _finish = ui.mount("restart-check", probe)?;
+        let _finish = ui.mount_tree(Element::new("restart-check", probe))?;
         Ok(())
     })
     .on_error(|_, _| ErrorAction::Exit)
@@ -246,6 +256,7 @@ pub(super) fn run(save: bool, path: &Path) -> Result<(), Box<dyn std::error::Err
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pert_ui::testing::HostIntegration;
 
     #[test]
     fn a_hidden_restart_probe_reports_interruption_after_resume() {
@@ -254,7 +265,7 @@ mod tests {
             .unwrap();
         let capture = Capture::default();
         let interrupted = Rc::new(Cell::new(false));
-        ui.mount(
+        ui.mount_tree(Element::new(
             "restart-check",
             Finish {
                 capture: capture.clone(),
@@ -264,7 +275,7 @@ mod tests {
                 until: None,
                 notifier: None,
             },
-        )
+        ))
         .unwrap();
         ui.flush(Duration::ZERO).unwrap();
         assert!(ui.next_deadline().is_some());

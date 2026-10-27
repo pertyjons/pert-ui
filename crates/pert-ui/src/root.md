@@ -40,7 +40,8 @@ page name is exported from the crate root. Application code globs
 [`prelude`], which holds what an application's first program writes: the
 built-in components with their configuration types and the names an
 application uses everywhere. Code that implements [`Component`] also globs
-[`component`], and a headless test globs [`testing`]. The thematic modules
+[`component`], a headless test globs [`testing`], and a custom host that
+drives the runtime in place of [`App`] imports [`host`]. The thematic modules
 gather the rest by need: [`parameter`] for authoritative values, [`commands`]
 for commands and the command palette, [`windowing`] for windows, regions,
 splits and tool windows, [`inspection`] for inspection, capture and
@@ -77,6 +78,7 @@ modules re-export their `pert_ui_runtime` namesakes.
 | Image files and SVG | [`images`] (feature `images` or a format feature), [`svg`] (feature `svg`) | [appearance](crate::guide::appearance) |
 | Keyboard, inspection and profiling | [`Runtime::command_key_input`], [`Runtime::key_input`], [`Runtime::inspect`], [`InspectionService`], [`Runtime::request_capture`], [`Runtime::set_profiling`] | [diagnostics](crate::guide::diagnostics) |
 | Headless tests | [`testing`]: [`testing::Driver`] clicks, types, presses keys and settles; [`HeadlessApp`] (feature `native`) runs an `App`'s close policy without a window | [testing an application](crate::guide::testing) |
+| Custom hosts | [`host`]: [`host::HostIntegration`] holds what a host that drives a [`Runtime`] in place of [`App`] calls, with a complete host loop | [diagnostics](crate::guide::diagnostics) |
 | Rendering without a GPU | [`cpu`] (feature `cpu`): [`CpuRenderer`] renders frames and serves captures headlessly; `App::software_rendering` presents them in native windows | [diagnostics](crate::guide::diagnostics) |
 
 Custom widgets implement [`Component`] and use the same public measurement,

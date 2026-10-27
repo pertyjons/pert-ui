@@ -965,6 +965,7 @@ fn vertices(scene: &DisplayList) -> Result<Vec<u8>, RenderError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pert_ui_runtime::Element;
 
     #[test]
     fn renderer_implements_debug() {
@@ -1074,7 +1075,7 @@ mod tests {
             }
         }
         let mut ui = Runtime::new();
-        ui.mount("turned", Turned)?;
+        ui.mount_tree(Element::new("turned", Turned))?;
         ui.set_viewport(Viewport::new(100.0, 100.0, 1.0)?)?;
         ui.flush(std::time::Duration::ZERO)?;
         let (bytes, _) = geometry(&ui.paint()?)?;
@@ -1119,7 +1120,7 @@ mod tests {
         }
         let image = |byte| RasterImage::from_srgba8(1, 1, vec![byte, byte, byte, 255]);
         let mut ui = Runtime::new();
-        ui.mount("images", Images(image(10)?, image(20)?))?;
+        ui.mount_tree(Element::new("images", Images(image(10)?, image(20)?)))?;
         ui.set_viewport(Viewport::new(100.0, 100.0, 1.0)?)?;
         ui.flush(std::time::Duration::ZERO)?;
         let scene = ui.paint()?;
@@ -1168,7 +1169,7 @@ mod tests {
             }
         }
         let mut ui = Runtime::new();
-        ui.mount("huge", Huge)?;
+        ui.mount_tree(Element::new("huge", Huge))?;
         ui.set_viewport(Viewport::new(100.0, 100.0, 1.25)?)?;
         ui.flush(std::time::Duration::ZERO)?;
         let bytes = vertices(&ui.paint()?)?;

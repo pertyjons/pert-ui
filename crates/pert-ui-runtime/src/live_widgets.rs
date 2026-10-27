@@ -321,9 +321,7 @@ impl Component for LevelMeter {
         leaf(cx)
     }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = painter.size() else {
-            return Ok(());
-        };
+        let size = painter.size();
         let across = match self.axis {
             MeterAxis::Horizontal => size.height(),
             MeterAxis::Vertical => size.width(),
@@ -574,9 +572,7 @@ impl Component for Trace {
         leaf(cx)
     }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = painter.size() else {
-            return Ok(());
-        };
+        let size = painter.size();
         let count = self.points.len();
         if count == 0 || size.width() <= 0.0 || size.height() <= 0.0 {
             return Ok(());

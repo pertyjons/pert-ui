@@ -63,7 +63,8 @@ const MENU: [(TextCommand, &str, StringRole); 2] = [
 /// in progress, as does a redescription with another source, even one with
 /// the same text; a redescription with the same source keeps everything.
 /// Text that becomes empty gives up focus at the end of the flush, and
-/// cancelled input ([`Runtime::cancel_input`], focus loss, hiding) ends a
+/// cancelled input ([`HostIntegration::cancel_input`](crate::host::HostIntegration::cancel_input),
+/// focus loss, hiding) ends a
 /// drag and keeps the selection.
 ///
 /// Text that cannot be prepared, longer than
@@ -82,6 +83,7 @@ const MENU: [(TextCommand, &str, StringRole); 2] = [
 ///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::testing::HostIntegration;
 /// use pert_ui::*;
 /// use std::{cell::RefCell, rc::Rc, time::Duration};
 /// struct Memory(Rc<RefCell<String>>);

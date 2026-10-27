@@ -1,6 +1,7 @@
 //! Menu rows (separators, marks, shortcuts, command rows) and the menu bar,
 //! driven through the public facade.
 use crate::support;
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::time::Duration;
 use support::{find, press};
@@ -1077,10 +1078,7 @@ fn a_redescribed_submenu_takes_new_rows_and_closes_when_its_row_goes() {
     redescribe(&mut ui, &["new", "recent/x"]);
     assert_eq!(submenu_names(&ui, "recent"), None);
     // The closed submenu keeps its own "items", so the menu's rows need a path.
-    let items = ui
-        .find_path(&root, &["menu", "popup", "actions", "items"])
-        .unwrap()
-        .unwrap();
+    let items = support::key_path(&ui, &root, &["menu", "popup", "actions", "items"]).unwrap();
     ui.focus(&items).unwrap();
     press(&mut ui, KeyCode::End);
     press(&mut ui, KeyCode::ArrowRight);
@@ -1340,10 +1338,7 @@ fn a_final_fixed_denial_keeps_bound_menu_actions_and_branches_disabled() {
         let items = semantics(&ui, "items");
         assert!(items.items[0].disabled);
         assert!(items.items[1].disabled);
-        let list = ui
-            .find_path(&root, &["menu", "popup", "actions", "items"])
-            .unwrap()
-            .unwrap();
+        let list = support::key_path(&ui, &root, &["menu", "popup", "actions", "items"]).unwrap();
         let bounds = ui.bounds(&list).unwrap().unwrap();
         click(&mut ui, bounds.x() + 10.0, bounds.y() + 10.0);
         assert_eq!(submenu_names(&ui, "blocked"), None);
@@ -1383,10 +1378,7 @@ fn live_enablement_cannot_open_empty_or_all_disabled_submenus() {
         press(&mut ui, KeyCode::ArrowRight);
         assert_eq!(submenu_names(&ui, "empty"), None);
         assert_eq!(submenu_names(&ui, "disabled"), None);
-        let list = ui
-            .find_path(&root, &["menu", "popup", "actions", "items"])
-            .unwrap()
-            .unwrap();
+        let list = support::key_path(&ui, &root, &["menu", "popup", "actions", "items"]).unwrap();
         let bounds = ui.bounds(&list).unwrap().unwrap();
         click(&mut ui, bounds.x() + 10.0, bounds.y() + 10.0);
         assert_eq!(submenu_names(&ui, "empty"), None);
@@ -1844,10 +1836,7 @@ fn revoked_menu_row_does_not_retarget_an_armed_key_or_resume_a_pointer_press() {
         )
         .unwrap();
         let root = open_menu(&mut ui, menu);
-        let list = ui
-            .find_path(&root, &["menu", "popup", "actions", "items"])
-            .unwrap()
-            .unwrap();
+        let list = support::key_path(&ui, &root, &["menu", "popup", "actions", "items"]).unwrap();
         let bounds = ui.bounds(&list).unwrap().unwrap();
         if mouse {
             point(

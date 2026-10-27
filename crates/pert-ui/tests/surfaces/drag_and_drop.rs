@@ -3,6 +3,7 @@
 //! These pin the rules in [drag and drop](../../../../docs/contracts.md): how a
 //! session starts, how its target is found while the source holds the capture,
 //! what each side is told and in which order, and every way a session ends.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{
     cell::{Cell, RefCell},

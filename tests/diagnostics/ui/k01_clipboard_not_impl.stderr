@@ -1,18 +1,15 @@
 error[E0277]: `String` is not a clipboard service
- --> ui/k01_clipboard_not_impl.rs:3:87
+ --> ui/k01_clipboard_not_impl.rs:4:87
   |
-3 | fn main() -> Result<(), RuntimeError> { let mut ui = Runtime::new(); ui.set_clipboard(String::new())?; Ok(()) }
+4 | fn main() -> Result<(), RuntimeError> { let mut ui = Runtime::new(); ui.set_clipboard(String::new())?; Ok(()) }
   |                                                                         ------------- ^^^^^^^^^^^^^ `String` does not implement `Clipboard`
   |                                                                         |
   |                                                                         required by a bound introduced by this call
   |
   = help: the trait `pert_ui::Clipboard` is not implemented for `String`
   = note: implement `Clipboard` (`read_text`, `write_text`) on a type that owns its storage, such as a struct holding an `Rc<RefCell<String>>`
-note: required by a bound in `pert_ui::Runtime::set_clipboard`
- --> $WORKSPACE/crates/pert-ui-runtime/src/runtime.rs
+note: required by a bound in `set_clipboard`
+ --> $WORKSPACE/crates/pert-ui-runtime/src/host.rs
   |
-  |     pub fn set_clipboard(
-  |            ------------- required by a bound in this associated function
-  |         &mut self,
-  |         clipboard: impl crate::Clipboard + 'static,
-  |                         ^^^^^^^^^^^^^^^^ required by this bound in `Runtime::set_clipboard`
+  |     fn set_clipboard(&mut self, clipboard: impl Clipboard + 'static) -> Result<(), RuntimeError>;
+  |                                                 ^^^^^^^^^ required by this bound in `HostIntegration::set_clipboard`

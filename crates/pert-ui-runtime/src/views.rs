@@ -248,20 +248,18 @@ impl Component for Group {
         self.inner.arrange(cx, size)
     }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        if let Some(size) = painter.size() {
-            let shape = Shape::Rounded(Length::new(painter.metric(MetricRole::CornerRadius))?);
-            painter.fill_shape(
-                Rect::from_size(size),
-                shape,
-                painter.color(ColorRole::Surface),
-            )?;
-        }
+        let size = painter.size();
+        let shape = Shape::Rounded(Length::new(painter.metric(MetricRole::CornerRadius))?);
+        painter.fill_shape(
+            Rect::from_size(size),
+            shape,
+            painter.color(ColorRole::Surface),
+        )?;
         Ok(())
     }
     fn paint_foreground(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        if self.framed
-            && let Some(size) = painter.size()
-        {
+        let size = painter.size();
+        if self.framed {
             let role = if painter.focus_within() {
                 ColorRole::Primary
             } else {
@@ -271,8 +269,7 @@ impl Component for Group {
             let width = Length::new(painter.metric(MetricRole::BorderWidth))?;
             painter.stroke_shape(Rect::from_size(size), shape, width, painter.color(role))?;
         }
-        self.background
-            .set(painter.size().map(|_| painter.color(ColorRole::Surface)));
+        self.background.set(Some(painter.color(ColorRole::Surface)));
         Ok(())
     }
     fn inspect(&self) -> ComponentDetails {
@@ -1012,25 +1009,24 @@ impl Component for Divider {
         })
     }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        if let Some(size) = painter.size() {
-            let inset = self.inset.get();
-            let rect = if self.vertical {
-                Rect::new(
-                    inset.min(size.width()),
-                    0.0,
-                    self.thickness.get().min((size.width() - inset).max(0.0)),
-                    size.height(),
-                )?
-            } else {
-                Rect::new(
-                    0.0,
-                    inset.min(size.height()),
-                    size.width(),
-                    self.thickness.get().min((size.height() - inset).max(0.0)),
-                )?
-            };
-            painter.fill_rect(rect, painter.color(ColorRole::Divider));
-        }
+        let size = painter.size();
+        let inset = self.inset.get();
+        let rect = if self.vertical {
+            Rect::new(
+                inset.min(size.width()),
+                0.0,
+                self.thickness.get().min((size.width() - inset).max(0.0)),
+                size.height(),
+            )?
+        } else {
+            Rect::new(
+                0.0,
+                inset.min(size.height()),
+                size.width(),
+                self.thickness.get().min((size.height() - inset).max(0.0)),
+            )?
+        };
+        painter.fill_rect(rect, painter.color(ColorRole::Divider));
         Ok(())
     }
 }

@@ -1270,9 +1270,8 @@ impl Component for PickPanel {
         }
     }
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
-        if self.shared.modal.get()
-            && let Some(size) = p.size()
-        {
+        let size = p.size();
+        if self.shared.modal.get() {
             p.fill_rect(
                 Rect::from_size(size),
                 Color::from_linear(0.0, 0.0, 0.0, 0.35)?,
@@ -1685,12 +1684,11 @@ impl Component for PickRow {
         )
     }
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
-        if let Some(size) = p.size() {
-            if self.highlighted {
-                p.fill_rect(Rect::from_size(size), p.color(ColorRole::TabSelected));
-            } else if self.hovered {
-                p.fill_rect(Rect::from_size(size), p.color(ColorRole::SurfaceHover));
-            }
+        let size = p.size();
+        if self.highlighted {
+            p.fill_rect(Rect::from_size(size), p.color(ColorRole::TabSelected));
+        } else if self.hovered {
+            p.fill_rect(Rect::from_size(size), p.color(ColorRole::SurfaceHover));
         }
         Ok(())
     }

@@ -1,4 +1,5 @@
 //! Typed cleanup errors survive window retirement and terminal surface removal.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{
     cell::{Cell, RefCell},
@@ -48,13 +49,15 @@ fn retired_focus_failures_follow_the_surviving_windows_queue_once() {
         .unwrap();
     let old = failure("retired focus");
     let surviving = failure("surviving focus");
-    let root = ui.mount("focus", FocusFailure(old.clone())).unwrap();
+    let root = ui
+        .mount_tree(Element::new("focus", FocusFailure(old.clone())))
+        .unwrap();
     let window = detached(&mut ui, &root);
     ui.focus(&root).unwrap();
     ui.clear_focus();
     ui.select_window(&ui.primary_window()).unwrap();
     let survivor = ui
-        .mount("survivor", FocusFailure(surviving.clone()))
+        .mount_tree(Element::new("survivor", FocusFailure(surviving.clone())))
         .unwrap();
     ui.focus(&survivor).unwrap();
     ui.clear_focus();
@@ -72,7 +75,9 @@ fn retired_focus_failures_remain_available_at_shutdown_before_flush() {
     ui.set_viewport(Viewport::new(600.0, 400.0, 1.0).unwrap())
         .unwrap();
     let error = failure("retired focus");
-    let root = ui.mount("focus", FocusFailure(error.clone())).unwrap();
+    let root = ui
+        .mount_tree(Element::new("focus", FocusFailure(error.clone())))
+        .unwrap();
     let _window = detached(&mut ui, &root);
     ui.focus(&root).unwrap();
     ui.clear_focus();

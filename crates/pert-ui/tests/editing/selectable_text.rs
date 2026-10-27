@@ -1,6 +1,7 @@
 //! Selectable display text: pointer and keyboard selection, copying, Escape,
 //! the clipboard menu, bound text, refusal, focus and semantics.
 use crate::support::{self, frame, widget};
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::RefCell, rc::Rc, time::Duration};
 

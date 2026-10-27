@@ -1,5 +1,6 @@
 //! Commit-time normalization of every input field through the public facade.
 use crate::support;
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::RefCell, rc::Rc};
 use support::{frame, key};

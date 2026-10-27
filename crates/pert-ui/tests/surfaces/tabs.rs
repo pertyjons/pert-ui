@@ -1,4 +1,5 @@
 //! Keyed tab retention, metadata and overflow behavior.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::Cell, rc::Rc, time::Duration};
 fn ui(width: f32) -> Runtime {

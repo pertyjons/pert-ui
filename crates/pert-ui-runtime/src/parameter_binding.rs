@@ -1059,7 +1059,8 @@ mod tests {
                 let (parameter, host) = runtime.parameter(id, spec)?;
                 (parameter, Some(host), None)
             };
-            let owner = runtime.mount("owner", crate::Label::new("Owner"))?;
+            let owner =
+                runtime.mount_tree(crate::Element::new("owner", crate::Label::new("Owner")))?;
             let edit = runtime.event(&owner, |cx| {
                 parameter.begin_edit(cx, parameter.snapshot().get()?.revision)
             })??;
@@ -1106,7 +1107,7 @@ mod tests {
             ParameterId::new(1, 1, "phase")?,
             ParameterSpec::new("Phase", 0.0, 1.0, 0.25)?,
         )?;
-        let owner = runtime.mount("owner", crate::Label::new("Owner"))?;
+        let owner = runtime.mount_tree(crate::Element::new("owner", crate::Label::new("Owner")))?;
         let mut context = EventContext {
             node: owner.0.clone(),
         };

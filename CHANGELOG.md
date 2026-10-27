@@ -1,5 +1,109 @@
 # Changelog
 
+## 0.3.74 (2026-10-27)
+
+One way where history left two (layering plan, part L3, from its approved design
+checkpoint `plans/usability/layering-design-L3.md`, revision 4). The methods
+only a host calls leave `Runtime`'s own page for a sealed trait in a new `host`
+module; the legacy root that is never laid out and the full-key lookup
+`find_path` are removed; `Painter::size` is no longer optional; and an `Each`'s
+default container stops adding an `items` segment to its items' addresses, which
+moves the workspace document to revision 2.
+
+- Breaking: the host-integration methods move from inherent `Runtime` methods to
+  the sealed trait `pert_ui::host::HostIntegration`
+  (`pert_ui_runtime::host::HostIntegration`), which `Runtime` implements, with
+  unchanged signatures, behavior and errors: `flush_windows`, `flush_commands`,
+  `has_command_requests`, `application_deadline`, `interval_deadline`,
+  `service_intervals`, `service_inspection`, `set_wake_delivery`,
+  `select_window`, `current_window`, `set_window_visible`,
+  `set_presentation_rate`, `presentation_rate`, `needs_paint`, `invalidate`,
+  `has_presentation_requests`, `take_presentation_requests`, `prepare_detach`,
+  `commit_detach`, `redock`, `close_detached_window`, `native_window_options`,
+  `text_preedit`, `text_input_state`, `cursor_icon`, `clear_focus`,
+  `cancel_input`, `captures_supported`, `pending_captures`, `capture_scene`,
+  `complete_capture`, `set_clipboard`, `take_shutdown_errors`. Replacement: a
+  custom host adds `use pert_ui::host::HostIntegration;` (`use
+  pert_ui_runtime::host::HostIntegration;` with the runtime crate alone); a test
+  that globs `pert_ui::testing::*` needs nothing; applications using `App` are
+  unaffected. Neither the prelude nor a crate-root glob brings the trait into
+  scope, so a call from application code fails with rustc's help naming the
+  trait. `set_viewport`, `viewport`, `paint`, `command_key_input`,
+  `native_modifiers`, `keyboard` and `set_capture_support` stay inherent.
+- Breaking: `Runtime::mount` is removed; use `ui.mount_tree(Element::new(key,
+  component))`, with the same key rules and errors. A root mounted so is
+  measured and arranged into the whole window, so it has bounds, takes part in
+  hit testing, focus navigation and development validation's overlap check, and
+  is presented (painted, animated, polled for live data) only while its window's
+  viewport has area; its commands carry its
+  allocation as their clip. An overlay probe above other content returns false
+  from `Component::hit_test` and reports `OverlapPolicy::Allow`.
+- Breaking: `Painter::size` returns `Size`, the component's allocation in local
+  logical pixels, which may be empty, instead of `Option<Size>`: drop the `None`
+  branch, `let size = painter.size();`. A paint of a presented entry without an
+  allocation, which layout makes unreachable, is refused with
+  `DrawError::PendingUpdates`.
+- Breaking: `Runtime::find_path` is removed; use `Runtime::find` with the
+  addressable path, or walk `Runtime::children` and `Runtime::key` level by
+  level.
+- Breaking: an `Each`'s default container is internal structure
+  (`Element::structural`) and no longer adds `items` to its items' addresses:
+  `find(&each, &["items", key])` becomes `find(&each, &[key])`, and the same for
+  `Selector` paths, `CaptureTarget::Path`, workspace paths and content-search
+  hit paths. The container keeps its key for `find_descendant`, `Selector::Key`
+  and `Runtime::children`. A container given with `within` keeps its key in the
+  address, `items` included. A container's addressing is decided when it first
+  mounts; to change it, give the new container another key, which mounts the
+  items again. An item the application marks `Element::structural` now takes its
+  name from the `Each`'s label or a naming parent above the `Each`, and under an
+  `Each` the application marks structural, content search names an ordinary item
+  from a `Field` above it.
+- Breaking: `Workspace::SCHEMA_VERSION` is 2; a revision-1 document is rejected:
+  `Workspace::decode` returns `WorkspaceError::UnsupportedVersion { found: 1,
+  supported: 2 }`, and serde deserialization fails with that error's message.
+  Capture the workspace again. The format is otherwise unchanged.
+- Changed: `ComponentInspection::path` of an `Each` item omits the default
+  container, and the container has no path, as for every structural component.
+  `InspectionSnapshot::SCHEMA_VERSION` stays 15, since no field is added,
+  removed or reinterpreted. `TestError::NotLaidOut` stays as the driver's report
+  of a broken layout invariant; the reveal before a click flushes, so a revealed
+  target has bounds.
+- Added: the module `pert_ui_runtime::host` with the trait `HostIntegration` (the
+  methods above and its implementation for `Runtime`) and `#[doc(no_inline)]`
+  re-exports of the names a host writes: `CaptureError`, `CaptureJob`,
+  `Clipboard`, `ClipboardError`, `CommandKey`, `CommandKeyInput`, `CursorIcon`,
+  `DisplayList`, `DrawError`, `FlushReport`, `FrameImage`, `Invalidation`,
+  `KeyAction`, `KeyCode`, `KeyDispatch`, `KeyboardState`, `LimitError`,
+  `Magnification`, `Modifiers`, `NativeWindowId`, `NativeWindowOptions`,
+  `PhysicalExtent`, `Point`, `PointerButton`, `PointerEvent`, `PointerKind`,
+  `PreparedDetach`, `PresentationAction`, `PresentationRate`,
+  `PresentationRequest`, `PresentationStatus`, `Runtime`, `RuntimeError`,
+  `TextInputState`, `TextPreedit`, `Viewport`, `WidgetId`, `WindowError`; the
+  facade's module `pert_ui::host`, with the same trait and re-exports and a
+  complete custom-host example; `HostIntegration` in `pert_ui_runtime::testing`
+  and `pert_ui::testing`; the diagnostics fixture `h01_hostintegration_impl` for
+  the sealed trait. `HostIntegration` is reached through `host` and `testing`
+  only, not at the crate root.
+- API listings: `api/pert-ui-runtime/{default,serde}.txt` add
+  `pert_ui_runtime::host` with its trait, its methods under
+  `host::HostIntegration` and `testing::HostIntegration`, and the listing of
+  every re-exported item under `host::`; they remove the 33 inherent `Runtime`
+  methods, `Runtime::mount` and `Runtime::find_path` and change `Painter::size`.
+  Every facade listing adds `pert_ui::host` with its re-exports and
+  `pert_ui::testing::HostIntegration`. `api/pert-ui-cpu` and `api/pert-ui-wgpu`
+  are unchanged.
+- Documentation: `Runtime`'s audience index points hosts to the trait;
+  contracts.md's custom hosts, workspace persistence and children from data; the
+  guide's list rows, layout, number-input and custom-component examples; the
+  facade's root page and module tables; and every migrated rustdoc example.
+- Tests: the tests that mounted legacy roots mount laid-out roots. Tests without a
+  viewport that relied on a legacy root being presented set one; tests whose
+  fixtures reported their own geometry place them with a test-local container;
+  scene assertions of an unclipped command expect the root's allocation as its
+  clip; and the deferred-notification delivery test asserts the delivery through
+  its outcome monitor, since removing a focused laid-out root also leaves focus
+  restoration due.
+
 ## 0.3.73 (2026-10-27)
 
 A layered prelude (layering plan, part L2, from its approved design checkpoint

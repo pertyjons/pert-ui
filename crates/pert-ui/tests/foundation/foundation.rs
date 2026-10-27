@@ -1,4 +1,5 @@
 //! Consumer contracts for changing descriptions and dynamic application state.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{
     cell::{Cell, RefCell},
@@ -442,7 +443,7 @@ fn inspection_does_not_evaluate_a_dirty_derived_callback() -> Result {
         count.set(count.get() + 1);
         v * 2
     })?;
-    ui.mount("probe", Probe(derived))?;
+    ui.mount_tree(Element::new("probe", Probe(derived)))?;
     ui.flush(Duration::ZERO)?;
     input.set(3)?;
     let snapshot = ui.inspect();

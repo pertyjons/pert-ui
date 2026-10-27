@@ -5,6 +5,7 @@
 //! neighbours, that cells follow their column, that a move and a sort share a
 //! title without stealing each other's gesture, and that the order survives a
 //! workspace round trip.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::RefCell, rc::Rc, time::Duration};
 

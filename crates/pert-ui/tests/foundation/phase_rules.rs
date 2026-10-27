@@ -1,5 +1,6 @@
 //! Which `Runtime` operations a callback with runtime access may call:
 //! deferred tasks and command actions, through the public facade.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::RefCell, rc::Rc, time::Duration};
 

@@ -173,7 +173,7 @@ same `SeriesSource` API.
 including internal focus/hover/layout follow-ups. [`RuntimeError::UpdateLimit`]
 preserves pending work for repair and explicit retry; development validation names
 pending components. This does not bound the duration of a user callback or tree depth.
-Custom hosts can call [`Runtime::cancel_input`] after a failed operation to clear
+Custom hosts can call [`HostIntegration::cancel_input`](crate::host::HostIntegration::cancel_input) after a failed operation to clear
 held actions and capture while preserving focus and numeric drafts without saving.
 
 With the default desktop feature, component input/update/drawing errors are reported

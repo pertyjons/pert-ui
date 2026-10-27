@@ -254,6 +254,7 @@ pub use parameter_binding::remote::{
     AuthorityReceipt, AuthorityResponse, AuthorityStatus, RemoteCommit, RemoteHost,
     ResponseDisposition, SubmissionDelivery,
 };
+pub mod host;
 mod runtime;
 pub mod testing;
 pub use runtime::application::{BackgroundTask, IntervalTimer};
@@ -390,6 +391,7 @@ pub use pert_ui_core::{
 /// |---|---|
 /// | Implementing [`Component`]: contexts, drawing, input events, drag and drop, receipts, editor sessions and the embedded draft editor | `use pert_ui_runtime::component::*` ([`component`]) |
 /// | A headless test: the driver, the viewport, key and pointer input, queries and captures | `use pert_ui_runtime::testing::*` ([`testing`]) |
+/// | A custom host that drives the runtime in place of the facade's `App`: [`HostIntegration`](host::HostIntegration) and the names a host writes | `use pert_ui_runtime::host::*` ([`host`]) |
 /// | Authoritative values: parameters, edit gestures, hosts, external authority, and [`Slider`], [`Knob`] and [`InlineSlider`] | `use pert_ui_runtime::parameter::*` ([`parameter`]) |
 /// | Commands beyond a shortcut's chord and scope, held input and the command palette | `use pert_ui_runtime::commands::*` ([`commands`]) |
 /// | Windows inside a view, native windows, regions, splits and tool windows | `use pert_ui_runtime::windowing::*` ([`windowing`]) |
@@ -525,7 +527,7 @@ pub mod prelude {
 /// it, such as [`FittedText`], is not required. The excluded families are in
 /// their own modules: profiling, capture and inspection queries and records
 /// in [`inspection`], live-data plumbing and mailboxes in [`live`]; host
-/// transport stays at the crate root. The
+/// transport in [`host`]. The
 /// description a component returns from [`Component::inspect`] is not an
 /// inspection record and is here. The re-exports are `#[doc(no_inline)]`:
 /// each item is documented once, at the crate root.
@@ -794,8 +796,8 @@ pub mod commands {
 /// or in the prelude, so it adds the [`NormalizedValue`] of
 /// `SplitRule::Ratio` and the [`Rect`] of a tool window's floating bounds. A
 /// host's presentation plumbing ([`PresentationRequest`],
-/// [`PresentationAction`], [`PreparedDetach`], [`PresentationRate`]) stays at
-/// the crate root, and the error payload of `WindowError::Drawing` is
+/// [`PresentationAction`], [`PreparedDetach`], [`PresentationRate`]) is in
+/// [`host`], and the error payload of `WindowError::Drawing` is
 /// [`DrawError`] in [`component`].
 ///
 /// The name is `windowing`, not `windows`: a crate that globs the crate root
@@ -852,8 +854,8 @@ pub mod windowing {
 /// here or in the prelude, so it adds the [`Rect`] and [`NativeWindowId`] of
 /// `CaptureTarget::region`, the [`ComponentDetails`] and [`Invalidation`] of
 /// a [`ComponentInspection`], the [`KeyEvent`] of `EventKind::KeyInput` and
-/// the [`Viewport`] of a [`WindowInspection`]. A host's [`CaptureJob`] stays
-/// at the crate root, the error payload of `CaptureError::Drawing` is
+/// the [`Viewport`] of a [`WindowInspection`]. A host's [`CaptureJob`] is in
+/// [`host`], the error payload of `CaptureError::Drawing` is
 /// [`DrawError`] in [`component`], and the fields records take from another
 /// family are in that family's module: the parameter names of a
 /// [`ParameterInspection`] and an [`EventRecord`] in [`parameter`], and the

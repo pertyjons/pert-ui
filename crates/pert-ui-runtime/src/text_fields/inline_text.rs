@@ -906,9 +906,7 @@ impl Component for InlineText {
         self.handled_press = false;
     }
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = p.size() else {
-            return Ok(());
-        };
+        let size = p.size();
         let rect = Rect::from_size(size);
         if self.editing() {
             // The editor child draws the draft inside this frame.

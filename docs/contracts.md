@@ -248,7 +248,16 @@ which retains it. The description callback runs during update, where writes
 are rejected; an invalid description fails the flush and keeps the previous
 children until a later value or description is valid. `Each` keys each item's
 element with the key it gives and places the elements in a container it
-describes, a `Column` unless `within` says otherwise.
+describes, a `Column` unless `within` says otherwise. The default `Column` is
+internal structure (`Element::structural`): it adds no segment to an item's
+address, which is the `Each` element's address followed by the item's key, and
+like any structural wrapper it is transparent to naming, so an item the
+application marks structural takes its name from the `Each`'s label or a
+naming parent above the `Each`. A container given with `within` is used as it
+is, and its key, `items` included, is a segment of the items' addresses. The
+container's addressing is decided when it first mounts: a new description that
+keeps the container's key keeps its component and its addressing, and to change
+it the new container takes another key, which mounts the items again.
 
 #### Controller ownership
 
@@ -545,8 +554,8 @@ callback's rustdoc names its class and states those properties.
 The callback runs synchronously, in an event phase, inside the call that
 delivers the input or focus change that caused it, before that call returns:
 a pointer, key, text or composition entry point, `Runtime::event`, a focus
-change (`Runtime::focus` and its relatives, `Runtime::clear_focus` as a window
-deactivation or a close admission calls it), where the component losing focus
+change (`Runtime::focus` and its relatives, `HostIntegration::clear_focus` as a
+window deactivation or a close admission calls it), where the component losing focus
 may save a draft, or a component's own timer, such as a held step button's
 repeat, in the flush that reaches its deadline. Its error propagates from that
 call, except where the call has no error path for it: `clear_focus` queues a
@@ -581,7 +590,7 @@ the start of `EventContext::spawn` and a command invocation queued with
 `EventContext::invoke_command` run in the next flush; a mailbox handler or a
 `Runtime::spawn` result runs in the first flush after its value arrives; an
 interval tick runs in the first flush at or after its due time, or in
-`Runtime::service_intervals` for a host that cannot flush. A flush nested in a
+`HostIntegration::service_intervals` for a host that cannot flush. A flush nested in a
 deferred task delivers no further deferred tasks ([calling the runtime from
 callbacks](#calling-the-runtime-from-callbacks)).
 
@@ -623,7 +632,7 @@ held-input registration's cancellation runs wherever its input is cancelled;
 runtime closes it (a hidden or removed owner, lost window focus, no space);
 and a file browser's request callback runs during the controller's calls and
 the browser's update. Host-integration callbacks, such as
-`Runtime::set_wake_delivery`'s, which runs on the notifying thread, keep
+`HostIntegration::set_wake_delivery`'s, which runs on the notifying thread, keep
 their own threading contracts, and the `Component` hooks are placed by their
 own documentation.
 
@@ -813,7 +822,7 @@ record how delivery is prepared.
 #### Failures and input cleanup
 
 A failing input callback, or a failing notification that its dispatch caused,
-cancels that input, as `Runtime::cancel_input` does. Errors from older or
+cancels that input, as `HostIntegration::cancel_input` does. Errors from older or
 unrelated work, such as a request an earlier input caused, still propagate,
 but without cancelling another event's focus, capture or drag. An ordinary
 update failure during the native-key preflush, including in another visible
@@ -1039,7 +1048,7 @@ admitted before `App::on_close` runs, so the close policy sees what the user
 typed. The windows an accepted close discards are affected: a detached
 window's own, or every open window for the main window, which ends the
 application. Admission releases each affected window's focus through
-`Runtime::clear_focus`, as a deactivation does, and selects the previously
+`HostIntegration::clear_focus`, as a deactivation does, and selects the previously
 selected window again; each recipient's `focus_lost` runs and queues its error
 in its window, and the runtime-wide held keys and held-input registrations end.
 Each editor applies its own focus-loss policy, which closing does not change: a
@@ -1055,7 +1064,7 @@ disabled.
 
 When no window is in component-error backoff, admission then flushes the
 affected windows: the detached window alone, or every window through
-`flush_windows`. A failed `focus_lost` aborts the close through `on_error`,
+`HostIntegration::flush_windows`. A failed `focus_lost` aborts the close through `on_error`,
 without replaying the request; a hidden window is not flushed. While any window
 backs off nothing is flushed, so closing never requires a failing update to
 succeed first, and `App::run` returns the pending error when the application
@@ -1083,7 +1092,7 @@ Runtime shutdown cancels adopted sessions and accepted pending requests while
 participants are mounted. Targets and observers receive Leave before the source's
 Cancelled outcome. Replacement drags are refused during teardown. Cleanup
 continues after failure; its first error per cancellation operation and previously
-queued cleanup errors remain typed in `Runtime::take_shutdown_errors`, including
+queued cleanup errors remain typed in `HostIntegration::take_shutdown_errors`, including
 when their native window is retired. Outside shutdown, retirement appends queued
 cleanup causes to a surviving window rather than discarding them. Terminal
 OwnerRemoved failures are queued individually and do not retry the removed owner;
@@ -1113,7 +1122,7 @@ matching `WriteDuring…` error. These callbacks do receive the runtime:
 |---|---|---|
 | Deferred task (`EventContext::defer`, `EventContext::defer_while_shown`, `Runtime::defer`) | `&mut Runtime`, during the next flush | Any operation, including those that flush |
 | Command action (`Runtime::register_command`) | `&mut Runtime`, during invocation | Any operation, including those that flush; invoking itself is a `BorrowConflict` |
-| Interval tick (`Runtime::start_interval`) | `&mut Runtime`, in a flush at or after its due time, or in `Runtime::service_intervals` | Any operation, including those that flush; a flush nested in a tick does not run that tick again |
+| Interval tick (`Runtime::start_interval`) | `&mut Runtime`, in a flush at or after its due time, or in `HostIntegration::service_intervals` | Any operation, including those that flush; a flush nested in a tick does not run that tick again |
 | Command enabled predicate (`Runtime::command_enabled`) | `&Runtime` | Read-only queries; it cannot change state |
 
 `App`'s initializer and policies also receive `&mut Runtime`, always outside
@@ -1123,8 +1132,9 @@ and `on_window_error` run from the native event loop, and `on_close` also
 from `HeadlessApp::admit_close`, which has no event loop.
 
 These operations flush internally, settling update and layout before they
-return: `flush` and `flush_windows`; the input entry points `key_input`,
-`command_key_input`, `text_input`, `text_preedit` and `pointer_input`; `focus`
+return: `flush` and `HostIntegration::flush_windows`; the input entry points
+`key_input`, `command_key_input`, `text_input`, `HostIntegration::text_preedit`
+and `pointer_input`; `focus`
 when it scrolls an ancestor to reveal the target, and `focus_next`; `reveal`,
 `reveal_and_focus` and `reveal_child`; and `invoke_command`, which flushes
 every window before admission. A flush nested in a deferred task delivers no
@@ -1250,7 +1260,11 @@ paths identify participating views; structural wrappers do not change those
 paths. Capture includes user arrangement and component-provided view state, not
 hover, pointer capture, transient gestures or application content. Restore
 validates schema, identities and numeric ranges. Unsupported formats fail;
-missing or changed views are reported and may be skipped. Layout clamps saved
+missing or changed views are reported and may be skipped. Revision 2 of the
+document changed how an `Each`'s default container addresses its items (it
+adds no segment), so a revision-1 document is rejected with
+`WorkspaceError::UnsupportedVersion`, never reinterpreted, and the host falls
+back to its default workspace as for any unsupported document. Layout clamps saved
 sizes to current usable bounds without rewriting the preference merely because
 the current window is smaller. The host chooses storage and I/O policy.
 
@@ -1764,8 +1778,14 @@ input reports it through `Component::conceals_input`.
 
 ### Custom hosts
 
-A host that drives `Runtime` itself, in place of `App`, takes on what `App`
-does for an application:
+A host that drives `Runtime` itself, in place of `App`, imports the `host`
+module: its sealed `HostIntegration` trait, which `Runtime` implements, holds
+the methods only a host calls (event loop, windows and presentation, native
+input, captures, the clipboard and shutdown), and the module re-exports the
+names a host writes. A headless test that stands in for a host reaches the
+trait through `testing`. `App` drives the runtime through the same trait, and
+the facade's `host` page carries a complete host loop. A host takes on what
+`App` does for an application:
 
 - **Window titles.** A detached tab or tool window's container queues a
   coalescing `PresentationAction::Retitle` through
@@ -1778,7 +1798,7 @@ does for an application:
 - **Closing.** `Runtime::request_close` lists the steps a host other than
   `App` follows to admit a close ([closing a window](#closing-a-window)).
 - **Shutdown.** Hosts using `Runtime` directly drain
-  `Runtime::take_shutdown_errors` after shutdown and before dropping it
+  `HostIntegration::take_shutdown_errors` after shutdown and before dropping it
   ([runtime shutdown](#runtime-shutdown)).
 - **Captures.** Frames that a host supplies with the wrong byte count, extent
   or crop region fail with a typed `CaptureError::Frame`. That error keeps the

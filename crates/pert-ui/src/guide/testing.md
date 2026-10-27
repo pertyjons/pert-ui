@@ -58,8 +58,10 @@ assert!(result.components[0].details.box_model.border_box.is_some());
 [`Driver::click`](crate::testing::Driver::click) reveals the target, opening a
 closed container and scrolling it into view, then presses and releases the
 primary button at the middle of its bounds and settles. A reveal that stops is
-[`TestError::NotRevealed`](crate::testing::TestError::NotRevealed) and a target
-never laid out is [`TestError::NotLaidOut`](crate::testing::TestError::NotLaidOut).
+[`TestError::NotRevealed`](crate::testing::TestError::NotRevealed). The reveal
+flushes, so a revealed target has bounds; a target without them would be the
+driver's report of a broken layout invariant,
+[`TestError::NotLaidOut`](crate::testing::TestError::NotLaidOut).
 Whether the press reaches the target is not checked: a surface covering it is a
 result to assert on.
 
@@ -200,10 +202,12 @@ assert_eq!(length.get()?, 3);
 
 # List rows
 
-[`Each`] puts its rows in a container keyed `items` by default, so a row's path
-goes through it, and each row is keyed by its item's key, not by the key its
-element had. [`Runtime::children`] lists the mounted rows in order, and
-[`Selector::children`] returns them with their semantics in one query:
+Each row of an [`Each`] is keyed by its item's key, not by the key its
+element had, and its address is the `Each` element's address followed by
+that key: the default container that holds the rows is internal structure
+and adds no segment. [`Driver::find`](crate::testing::Driver::find) takes the
+row's key below the `Each`, and [`Selector::children`] of the `Each`'s path
+returns the rows with their semantics in one query:
 
 ```rust
 use pert_ui::prelude::*;
@@ -219,19 +223,40 @@ let root = ui.mount_tree(
 )?;
 let mut driver = Driver::new(&mut ui);
 driver.settle()?;
-let ship = driver.find(&root, &["items", "ship"])?;
+let ship = driver.find(&root, &["ship"])?;
 assert_eq!(driver.semantics(&ship)?.name.as_deref(), Some("ship"));
 
-let rows = driver.find(&root, &["items"])?;
+let result = driver.runtime().query(
+    &InspectionQuery::components(Selector::children(["tasks"])).detail(Detail::Semantics),
+);
+assert_eq!(result.components.len(), 2);
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
+For the rows in display order, name the container with `within`: a
+container the application gives keeps its key in the rows' addresses, so
+[`Runtime::children`] of that container lists the mounted rows in order:
+
+```rust
+use pert_ui::prelude::*;
+use pert_ui::testing::*;
+
+let mut ui = Runtime::new();
+ui.set_viewport(Viewport::new(300.0, 200.0, 1.0)?)?;
+let tasks = ui.signal(vec!["write".to_owned(), "ship".to_owned()]);
+let root = ui.mount_tree(
+    Each::new(&tasks, |task| task.clone(), |_, task| Label::new(task.as_str()).key("task"))
+        .within(|rows| Column::new(rows).key("rows"))
+        .key("tasks"),
+)?;
+let mut driver = Driver::new(&mut ui);
+driver.settle()?;
+let rows = driver.find(&root, &["rows"])?;
 let keys: Vec<String> = driver.runtime().children(&rows)?.iter()
     .map(|row| driver.runtime().key(row).map(str::to_owned))
     .collect::<Result<_, _>>()?;
 assert_eq!(keys, ["write", "ship"]);
-
-let result = driver.runtime().query(
-    &InspectionQuery::components(Selector::children(["tasks", "items"])).detail(Detail::Semantics),
-);
-assert_eq!(result.components.len(), 2);
+assert!(driver.find(&root, &["rows", "ship"]).is_ok());
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
 

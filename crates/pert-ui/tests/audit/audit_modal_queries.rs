@@ -1,4 +1,5 @@
 //! Current modal admission in command queries before presentation synchronization.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::Cell, rc::Rc, time::Duration};
 

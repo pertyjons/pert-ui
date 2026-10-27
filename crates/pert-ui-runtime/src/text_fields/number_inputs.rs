@@ -201,6 +201,7 @@ description_debug!(IntegerInput);
 ///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::testing::HostIntegration;
 /// use pert_ui::{DecimalInput, Element, KeyAction, KeyCode, Runtime};
 /// let mut ui = Runtime::new();
 /// let amount = ui.signal(1.234567_f64);
@@ -1916,9 +1917,8 @@ impl<T: Number> NumberEditor<T> {
             self.field.editor.paint(p)?;
             self.field.paint_buttons(p)?;
         }
-        if (self.draft().is_err() || self.refused.is_some())
-            && let Some(size) = p.size()
-        {
+        let size = p.size();
+        if self.draft().is_err() || self.refused.is_some() {
             p.stroke_shape(
                 Rect::from_size(size),
                 rounded(p.metric(MetricRole::CornerRadius))?,

@@ -1,5 +1,6 @@
 //! Content search contracts through the public facade: what is found, what
 //! never is, the work budget, staleness and jumping to a hit.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::time::Duration;
 
@@ -1037,4 +1038,57 @@ fn a_hit_carries_the_components_other_text() {
     let by_value = search(&ui, "reverb");
     assert_eq!(by_value[0].field, ContentField::Value);
     assert_eq!(by_value[0].other.as_deref(), Some("Name"));
+}
+
+/// New-behavior test. Named assertion: a content search for a `Field`'s name
+/// finds an ordinary, unnamed text field inside an `Each` the application
+/// marks structural: the search's naming fallback climbs through the
+/// structural `Each` and its default container, which used to stop it. The
+/// inspection assertions are contract checks: inspection names only a
+/// structural component through structure, so it does not name this one.
+#[test]
+fn a_field_names_an_ordinary_item_of_a_structural_each_in_content_search() {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(400.0, 300.0, 1.0).unwrap())
+        .unwrap();
+    let entries = ui.signal(vec!["one".to_owned()]);
+    let root = ui
+        .mount_tree(Element::new(
+            "field",
+            Field::new(
+                Each::new(
+                    &entries,
+                    |_| "entry".to_owned(),
+                    |cx, _| TextField::new(cx.signal(String::new())).key("x"),
+                )
+                .key("entries")
+                .structural(),
+            )
+            .label("Batch"),
+        ))
+        .unwrap();
+    settle(&mut ui);
+    let entry = ui.find_descendant(&root, "entry").unwrap().unwrap();
+    let hits = search(&ui, "Batch");
+    assert!(
+        hits.iter()
+            .any(|hit| hit.field == ContentField::Name && widget(hit) == entry),
+        "{hits:?}"
+    );
+    let inspected = ui
+        .query(&InspectionQuery::components(Selector::key("entry")).detail(Detail::Semantics))
+        .components;
+    assert_eq!(
+        inspected[0].details.semantics.as_ref().unwrap().name,
+        None,
+        "inspection does not name an ordinary component through structure"
+    );
+    assert!(
+        ui.query(&InspectionQuery::components(Selector::semantic(
+            SemanticRole::TextInput,
+            Some("Batch"),
+        )))
+        .components
+        .is_empty()
+    );
 }

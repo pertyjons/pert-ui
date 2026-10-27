@@ -852,7 +852,6 @@ pub(crate) struct Node {
     /// another owner without changing any incarnation.
     parent: RefCell<Option<Weak<Node>>>,
     parent_serial: Cell<Option<u64>>,
-    composed: bool,
     layout_dirty: Cell<bool>,
     measured: Cell<Option<(crate::Constraints, crate::Size)>>,
     limits: Cell<Option<crate::SizeLimits>>,
@@ -978,7 +977,7 @@ impl Node {
         self.layout_dirty.set(true);
         self.measured.set(None);
         self.limits.set(None);
-        if self.visible.get() && self.composed {
+        if self.visible.get() {
             self.window().layout_pending.set(true);
             if let Some(parent) = self.presentation_parent() {
                 parent.invalidate_layout();
@@ -2306,7 +2305,8 @@ pub trait Component: std::any::Any {
     ///
     /// # Errors
     /// An implementation returns an error when composition cannot be applied; it propagates
-    /// from [`Runtime::text_preedit`] and physical key state remains unchanged. The default
+    /// from [`HostIntegration::text_preedit`](crate::host::HostIntegration::text_preedit) and
+    /// physical key state remains unchanged. The default
     /// never fails.
     fn text_preedit(
         &mut self,
@@ -2368,7 +2368,8 @@ pub trait Component: std::any::Any {
     /// [`RuntimeError::DropNotPermitted`], which the runtime raises itself. An error
     /// cancels the session, tells every participant, and propagates from the input call
     /// that delivered it. During shutdown, only the first error per cancelled
-    /// operation is retained for [`Runtime::take_shutdown_errors`], whether from
+    /// operation is retained for
+    /// [`HostIntegration::take_shutdown_errors`](crate::host::HostIntegration::take_shutdown_errors), whether from
     /// target, observer, preview or source. The default never fails.
     fn drag_event(
         &mut self,
@@ -2390,7 +2391,8 @@ pub trait Component: std::any::Any {
     /// An implementation returns an error when restoring its presentation fails; it
     /// propagates from the input call or [`Runtime::flush`] that ended the session.
     /// During shutdown, only the first error per cancelled operation is retained
-    /// for [`Runtime::take_shutdown_errors`], whether from target, observer, preview
+    /// for
+    /// [`HostIntegration::take_shutdown_errors`](crate::host::HostIntegration::take_shutdown_errors), whether from target, observer, preview
     /// or source. Cleanup still notifies every participant.
     /// The default never fails.
     fn drag_finished(
@@ -2433,7 +2435,8 @@ pub trait Component: std::any::Any {
     /// # Errors
     /// An implementation returns an error when saving its draft fails, after releasing its
     /// local input. Errors do not veto the focus change: [`Runtime::focus`] returns them
-    /// after transferring focus, and the infallible [`Runtime::clear_focus`] queues them
+    /// after transferring focus, and the infallible
+    /// [`HostIntegration::clear_focus`](crate::host::HostIntegration::clear_focus) queues them
     /// for later [`Runtime::flush`] calls, in order. The default never fails.
     fn focus_lost(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
         self.cancel_input(cx);
@@ -2451,8 +2454,11 @@ pub trait Component: std::any::Any {
     ///
     /// Delivered on the same occasions as `focus_gained`/`focus_lost`: a focus
     /// transfer inside a window ([`Runtime::focus`], a requested focus, Tab, a
-    /// pointer press), native window focus loss ([`Runtime::clear_focus`],
-    /// which hiding a native window with [`Runtime::set_window_visible`] also
+    /// pointer press), native window focus loss
+    /// ([`HostIntegration::clear_focus`](crate::host::HostIntegration::clear_focus),
+    /// which hiding a native window with
+    /// [`HostIntegration::set_window_visible`](crate::host::HostIntegration::set_window_visible)
+    /// also
     /// performs), the focused component moving into a native window of its
     /// own, and [`Runtime::reparent`] moving a subtree that holds focus, which
     /// tells ancestors of the old position that lost focus-within, innermost
@@ -2485,10 +2491,13 @@ pub trait Component: std::any::Any {
     /// as a rejected binding write. Errors do not veto a focus transfer and do
     /// not stop the other notifications: [`Runtime::focus`] returns the first
     /// error, from `focus_lost` or any notification, and queues the rest for
-    /// later [`Runtime::flush`] calls; [`Runtime::clear_focus`] queues each one.
+    /// later [`Runtime::flush`] calls;
+    /// [`HostIntegration::clear_focus`](crate::host::HostIntegration::clear_focus) queues each one.
     /// Moving the focused component into a native window treats an error like a
-    /// `focus_lost` error there: [`Runtime::commit_detach`] and
-    /// [`Runtime::redock`] return the first one and do not move the
+    /// `focus_lost` error there:
+    /// [`HostIntegration::commit_detach`](crate::host::HostIntegration::commit_detach) and
+    /// [`HostIntegration::redock`](crate::host::HostIntegration::redock) return the first one and
+    /// do not move the
     /// presentation. The default never fails.
     fn focus_within_changed(
         &mut self,
@@ -2982,7 +2991,8 @@ impl UpdateContext {
     /// one flush share a deadline. Missed frames skip ahead without catch-up.
     /// Hidden, fully clipped and unmounted components have no live deadline.
     /// Revealing a retained component restarts its presentation. Unknown display
-    /// rates use 60 Hz; see [`Runtime::set_presentation_rate`].
+    /// rates use 60 Hz; see
+    /// [`HostIntegration::set_presentation_rate`](crate::host::HostIntegration::set_presentation_rate).
     ///
     /// # Errors
     /// Returns `Exhausted` if elapsed time cannot represent the next deadline.
@@ -3078,7 +3088,8 @@ impl EventContext {
     /// double-click recognition. Native hosts advance this when dispatching events.
     ///
     /// It is the runtime's time, which only [`Runtime::flush`] and
-    /// [`Runtime::service_intervals`] advance: input dispatched without one of
+    /// [`HostIntegration::service_intervals`](crate::host::HostIntegration::service_intervals)
+    /// advance: input dispatched without one of
     /// them in between shares one instant. A headless host or test therefore
     /// advances time, for example by flushing with a later time, before the
     /// next input, as here, where two presses half a second apart are not a
@@ -3086,6 +3097,7 @@ impl EventContext {
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::testing::HostIntegration;
     /// use pert_ui::*;
     /// use std::{cell::Cell, rc::Rc, time::Duration};
     /// struct Clicks { last: Option<Duration>, doubles: Rc<Cell<u32>> }
@@ -3502,7 +3514,7 @@ impl EventContext {
     /// time, decides eligibility: no OS timer or background executor is started,
     /// and the host wakes at [`Runtime::next_deadline`]. The timer is cancelled
     /// with this component's input context, so focus loss, hiding, unmounting,
-    /// presentation movement and `Runtime::cancel_input` all stop it. An Escape
+    /// presentation movement and `HostIntegration::cancel_input` all stop it. An Escape
     /// press that reaches the focused component's ordinary delivery stops it
     /// silently, without [`Component::cancel_input`]. An earlier consumer of
     /// Escape (a drag, delayed help, an editor, an open surface; see
@@ -3628,7 +3640,6 @@ struct Entry {
     children: Vec<u64>,
     raised_children: Vec<u64>,
     kind: std::any::TypeId,
-    composed: bool,
     subscriptions: Vec<Subscription>,
     /// The parent whose description lists this component: its lifetime parent,
     /// unless a move placed it deeper inside that parent's subtree, where it
@@ -3654,7 +3665,10 @@ pub struct FlushReport {
 /// The clock starts at zero and advances through flush operations. Each native
 /// root has independent presentation state; the default App waits for eligible
 /// deadlines or native events. Custom hosts select a root before local input,
-/// flush and paint, and coordinate roots through application_deadline/flush_windows.
+/// flush and paint, and coordinate roots through
+/// [`application_deadline`](crate::host::HostIntegration::application_deadline)
+/// and [`flush_windows`](crate::host::HostIntegration::flush_windows) of
+/// [`HostIntegration`](crate::host::HostIntegration).
 /// This runtime records drawing without OS windows, GPUs or background threads.
 ///
 /// Input is delivered to its component at once, and the component writes what
@@ -3683,8 +3697,8 @@ pub struct FlushReport {
 ///
 /// The methods are listed by who calls them. An application needs the first
 /// group; tests and tools add the second, which includes the host methods a
-/// headless test uses to stand in for a host; a custom host needs the third.
-/// Each method's own page holds its contract.
+/// headless test uses to stand in for a host; a custom host also needs the
+/// trait the third names. Each method's own page holds its contract.
 ///
 /// **Applications.** What an application's own code calls.
 ///
@@ -3741,8 +3755,7 @@ pub struct FlushReport {
 ///   [`set_clipboard_text`](Self::set_clipboard_text),
 ///   [`text_command`](Self::text_command).
 /// - Lookups: [`find`](Self::find), [`find_descendant`](Self::find_descendant),
-///   [`find_path`](Self::find_path), [`children`](Self::children),
-///   [`key`](Self::key).
+///   [`children`](Self::children), [`key`](Self::key).
 /// - Failures and shutdown: [`last_failure`](Self::last_failure),
 ///   [`shutdown`](Self::shutdown).
 ///
@@ -3752,9 +3765,9 @@ pub struct FlushReport {
 /// - Driving: [`flush`](Self::flush), [`now`](Self::now),
 ///   [`next_deadline`](Self::next_deadline), [`event`](Self::event),
 ///   [`try_event`](Self::try_event), [`key_input`](Self::key_input),
-///   [`text_input`](Self::text_input), [`pointer_input`](Self::pointer_input),
-///   [`mount`](Self::mount).
-/// - Standing in for a host: [`set_viewport`](Self::set_viewport),
+///   [`text_input`](Self::text_input), [`pointer_input`](Self::pointer_input).
+/// - Standing in for a host, which a host calls as well:
+///   [`set_viewport`](Self::set_viewport),
 ///   [`viewport`](Self::viewport),
 ///   [`command_key_input`](Self::command_key_input),
 ///   [`native_modifiers`](Self::native_modifiers),
@@ -3774,40 +3787,12 @@ pub struct FlushReport {
 ///   [`clear_profile`](Self::clear_profile),
 ///   [`request_capture`](Self::request_capture).
 ///
-/// **Hosts.** What a host that drives the runtime in place of `App` calls
-/// besides the methods above; a headless test calls some of these too when it
-/// stands in for a host.
-///
-/// - Event loop: [`flush_windows`](Self::flush_windows),
-///   [`flush_commands`](Self::flush_commands),
-///   [`has_command_requests`](Self::has_command_requests),
-///   [`application_deadline`](Self::application_deadline),
-///   [`interval_deadline`](Self::interval_deadline),
-///   [`service_intervals`](Self::service_intervals),
-///   [`service_inspection`](Self::service_inspection),
-///   [`set_wake_delivery`](Self::set_wake_delivery).
-/// - Windows and presentation: [`select_window`](Self::select_window),
-///   [`current_window`](Self::current_window),
-///   [`set_window_visible`](Self::set_window_visible),
-///   [`set_presentation_rate`](Self::set_presentation_rate),
-///   [`presentation_rate`](Self::presentation_rate),
-///   [`needs_paint`](Self::needs_paint), [`invalidate`](Self::invalidate),
-///   [`has_presentation_requests`](Self::has_presentation_requests),
-///   [`take_presentation_requests`](Self::take_presentation_requests),
-///   [`prepare_detach`](Self::prepare_detach),
-///   [`commit_detach`](Self::commit_detach), [`redock`](Self::redock),
-///   [`close_detached_window`](Self::close_detached_window),
-///   [`native_window_options`](Self::native_window_options).
-/// - Native input: [`text_preedit`](Self::text_preedit),
-///   [`text_input_state`](Self::text_input_state),
-///   [`cursor_icon`](Self::cursor_icon), [`clear_focus`](Self::clear_focus),
-///   [`cancel_input`](Self::cancel_input).
-/// - Captures: [`captures_supported`](Self::captures_supported),
-///   [`pending_captures`](Self::pending_captures),
-///   [`capture_scene`](Self::capture_scene),
-///   [`complete_capture`](Self::complete_capture).
-/// - Services and shutdown: [`set_clipboard`](Self::set_clipboard),
-///   [`take_shutdown_errors`](Self::take_shutdown_errors).
+/// **Hosts.** A host that drives the runtime in place of `App` imports
+/// [`host::HostIntegration`](crate::host::HostIntegration), whose page lists
+/// the methods only a host calls, by duty. It calls the methods above as
+/// well, the "Standing in for a host" group in particular; a headless test
+/// that stands in for a host reaches the trait through
+/// [`testing`](crate::testing).
 pub struct Runtime {
     held_registrations: BTreeMap<u64, held::Registration>,
     held_owners: BTreeMap<crate::KeyCode, held::Owner>,
@@ -4407,7 +4392,9 @@ impl Runtime {
 
     /// Returns a `Send` handle that asks the runtime to drain notified sources.
     ///
-    /// Without [`Self::set_wake_delivery`] a notification only marks the
+    /// Without
+    /// [`HostIntegration::set_wake_delivery`](crate::host::HostIntegration::set_wake_delivery) a
+    /// notification only marks the
     /// runtime due, which [`Self::next_deadline`] reports; a host that sleeps
     /// on an event loop installs delivery so the notification also wakes it.
     #[must_use]
@@ -4479,23 +4466,8 @@ impl Runtime {
         Ok(service)
     }
 
-    /// Answers every queued inspection request now, from the state the last
-    /// flush left, without flushing.
-    ///
-    /// For a host that withholds flushes: the native `App` does while a
-    /// window's redraw is pending or its surface is unavailable, since a
-    /// compositor may hold a minimized window's redraw indefinitely. Calling
-    /// this there keeps a request from being stranded; the reply carries no
-    /// flush error. An ordinary host never needs it, because every outermost
-    /// [`flush`](Self::flush) and [`flush_windows`](Self::flush_windows)
-    /// answers on its own. Answering during a flush, an update, a paint or an
-    /// inspection is refused.
-    ///
-    /// # Errors
-    /// Returns a runtime phase error (see [`Runtime`]), or [`RuntimeError::BorrowConflict`]
-    /// when called during a flush or while inspection requests are being
-    /// answered.
-    pub fn service_inspection(&mut self) -> Result<(), RuntimeError> {
+    // Documented on `crate::host::HostIntegration::service_inspection`.
+    pub(crate) fn service_inspection(&mut self) -> Result<(), RuntimeError> {
         self.shared.writable()?;
         if self.flush_state.depth.get() > 0 || self.shared.answer_depth.get() > 0 {
             return Err(RuntimeError::BorrowConflict);
@@ -4505,51 +4477,9 @@ impl Runtime {
         Ok(())
     }
 
-    /// Installs how a [`LiveWaker`](crate::LiveWaker) wakes this host's event
-    /// loop; the callback runs on the notifying thread and returns whether the
-    /// wake was delivered. The default native `App` installs its own; a custom
-    /// host installs one that reaches its loop. Replacing it reopens a waker
-    /// that reported closed because delivery failed. After
-    /// [`Self::shutdown`] the call is ignored and every waker keeps reporting
-    /// [`WakeError::Closed`](crate::WakeError::Closed), since no flush will
-    /// drain what a wake announces. A callback that panics unwinds out of
-    /// that `notify`, leaving the wake pending for the next flush; later
-    /// notifications still reach the callback.
-    pub fn set_wake_delivery(&self, deliver: impl Fn() -> bool + Send + Sync + 'static) {
+    // Documented on `crate::host::HostIntegration::set_wake_delivery`.
+    pub(crate) fn set_wake_delivery(&self, deliver: impl Fn() -> bool + Send + Sync + 'static) {
         self.shared.wake.set_delivery(Box::new(deliver));
-    }
-
-    /// Mounts an independent *legacy root*: one component with a nonempty
-    /// root-scoped stable key that takes no part in layout.
-    ///
-    /// Prefer [`Self::mount_tree`] for anything that is laid out. A legacy root
-    /// is never measured or arranged, so it has no allocation and paints in
-    /// window coordinates through `painter.viewport()`, and it has no
-    /// description to reconcile: a container mounted this way never lays out,
-    /// draws or reconciles its children. It remains for components that only
-    /// update or paint the whole window themselves, such as a binding observer
-    /// or a test probe.
-    ///
-    /// The first update is scheduled once. Keeping a mount while changing its
-    /// presentation order preserves identity; unmount/remount creates a new one.
-    ///
-    /// # Errors
-    /// Each leaves other mounts in place: a runtime phase error (see [`Runtime`]);
-    /// [`RuntimeError::EmptyKey`] for a key without a non-whitespace
-    /// character; [`RuntimeError::DuplicateKey`] for a key another root already
-    /// uses; or [`RuntimeError::Exhausted`] when no new identity remains.
-    pub fn mount(
-        &mut self,
-        key: impl Into<String>,
-        component: impl Component + 'static,
-    ) -> Result<WidgetId, RuntimeError> {
-        let _timing = self
-            .shared
-            .profiler
-            .span(crate::ProfileOperation::Mount, None, "");
-        let id = self.mount_description(crate::Element::new(key, component), None, false)?;
-        self.apply_pending_workspace();
-        Ok(id)
     }
 
     fn check(&self, id: &WidgetId) -> Result<(), RuntimeError> {
@@ -5149,18 +5079,8 @@ impl Runtime {
         Ok(())
     }
 
-    /// Installs a UI-thread clipboard service, replacing and dropping the old
-    /// service outside internal borrows. Runtime shutdown drops the service even
-    /// when UI handles survive. Native App configures this before initialization;
-    /// headless hosts may inject
-    /// a service for deterministic tests.
-    ///
-    /// # Errors
-    /// Returns [`RuntimeError::Closed`] after shutdown, and `WriteDuringUpdate`,
-    /// `WriteDuringLayout`, `WriteDuringPaint`, `WriteDuringInspection` or
-    /// `WriteDuringDelivery` when called from inside that phase; and `BorrowConflict` when
-    /// called from inside the clipboard service. The old service is kept on error.
-    pub fn set_clipboard(
+    // Documented on `crate::host::HostIntegration::set_clipboard`.
+    pub(crate) fn set_clipboard(
         &mut self,
         clipboard: impl crate::Clipboard + 'static,
     ) -> Result<(), RuntimeError> {
@@ -5178,7 +5098,9 @@ impl Runtime {
     /// a command action, without involving any component or moving focus.
     ///
     /// The native `App` installs the platform clipboard; a headless runtime
-    /// has none until [`Self::set_clipboard`] installs a service.
+    /// has none until
+    /// [`HostIntegration::set_clipboard`](crate::host::HostIntegration::set_clipboard) installs a
+    /// service.
     ///
     /// # Errors
     /// As [`EventContext::clipboard_text`]: `Closed` after shutdown, the phase
@@ -5195,6 +5117,7 @@ impl Runtime {
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::testing::HostIntegration;
     /// use pert_ui::*;
     /// struct Memory(std::rc::Rc<std::cell::RefCell<String>>);
     /// impl Clipboard for Memory {
@@ -5222,9 +5145,8 @@ impl Runtime {
     pub fn set_clipboard_text(&self, text: &str) -> Result<(), RuntimeError> {
         self.shared.clipboard_write(text)
     }
-    /// Returns the focused text recipient and its clipped window-logical IME
-    /// anchor. Absent for non-editable, hidden or fully clipped components.
-    pub fn text_input_state(&self) -> Option<(WidgetId, crate::TextInputState)> {
+    // Documented on `crate::host::HostIntegration::text_input_state`.
+    pub(crate) fn text_input_state(&self) -> Option<(WidgetId, crate::TextInputState)> {
         let id = self.window.focus.as_ref()?;
         let entry = self.entries.get(&id.0.serial)?;
         if !id.0.visible.get() {
@@ -5250,17 +5172,11 @@ impl Runtime {
             },
         ))
     }
-    /// Dispatches temporary IME composition to the current focused component.
-    /// Flushes pending binding changes first. No focus ignores
-    /// the event. Adapters must discard native events from a previous focus owner.
-    ///
-    /// # Errors
-    /// Returns [`RuntimeError::Closed`] after shutdown and the phase errors of any write,
-    /// forwards the errors of the [`Self::flush`] that runs first, then the focused
-    /// component's [`Component::text_preedit`] error, and then the errors of the flush
-    /// that delivers a notification the composition requested, including a
-    /// [`Component::deliver_notifications`] error.
-    pub fn text_preedit(&mut self, preedit: &crate::TextPreedit) -> Result<(), RuntimeError> {
+    // Documented on `crate::host::HostIntegration::text_preedit`.
+    pub(crate) fn text_preedit(
+        &mut self,
+        preedit: &crate::TextPreedit,
+    ) -> Result<(), RuntimeError> {
         self.shared.writable()?;
         self.flush(self.shared.now.get())?;
         if let Some(id) = self.window.focus.clone()
@@ -5324,33 +5240,8 @@ impl Runtime {
         self.deliver_input_notifications()
     }
 
-    /// Cancels active input after a host/component failure without transferring focus.
-    ///
-    /// Clears physical keys/buttons, requested focus and pointer capture, and calls
-    /// [`Component::cancel_input`] on the focused/captured recipients and their
-    /// ancestor paths, once per component (events may bubble). Authoritative
-    /// gestures cancel; local numeric drafts remain while their field retains focus.
-    /// Does not call `focus_lost`, save drafts or replay the failed event. Custom
-    /// components must release held actions without activating application commands.
-    /// Pending updates and diagnostic errors remain available for repair and retry.
-    ///
-    /// ```
-    /// # use pert_ui_runtime as pert_ui;
-    /// use pert_ui::{Element, IntegerInput, Runtime};
-    /// let mut ui = Runtime::new();
-    /// let value = ui.signal(1_i64);
-    /// let field = ui.mount_tree(Element::new("number", IntegerInput::new(value.clone())))?;
-    /// ui.focus(&field)?;
-    /// ui.text_input("2")?; // local draft, not saved
-    /// ui.cancel_input()?;
-    /// assert_eq!(value.get()?, 1);
-    /// assert_eq!(ui.focused(), Some(field));
-    /// # Ok::<(), pert_ui::RuntimeError>(())
-    /// ```
-    ///
-    /// # Errors
-    /// Returns only a runtime phase error (see [`Runtime`]), before changing state.
-    pub fn cancel_input(&mut self) -> Result<(), RuntimeError> {
+    // Documented on `crate::host::HostIntegration::cancel_input`.
+    pub(crate) fn cancel_input(&mut self) -> Result<(), RuntimeError> {
         self.shared.writable()?;
         self.cancel_drag_infallibly();
         self.cancel_held(crate::HeldCancellation::InputFailure);
@@ -5404,14 +5295,8 @@ impl Runtime {
         }
     }
 
-    /// Handles window focus loss: clears all held keys and cancels focused edits.
-    ///
-    /// Calls `Component::focus_lost` for the focused recipient; local editors may
-    /// save valid drafts. Errors are queued for `flush`, without preventing input
-    /// cleanup. Other captured input and ancestor input handlers are canceled once
-    /// per component, since key/pointer events may bubble. Late OS up notifications become
-    /// `UnmatchedRelease`, preventing stuck-key actions.
-    pub fn clear_focus(&mut self) {
+    // Documented on `crate::host::HostIntegration::clear_focus`.
+    pub(crate) fn clear_focus(&mut self) {
         if self.drag_in_window() || self.drag.is_none() {
             self.cancel_drag_infallibly();
         }
@@ -5551,15 +5436,8 @@ impl Runtime {
         Ok(())
     }
 
-    /// Invalidates a mount for external geometry/surface events.
-    ///
-    /// Normal bindings invalidate automatically; this is a platform/component
-    /// extension for events such as resizing. Hidden mounts only retain dirtiness.
-    ///
-    /// # Errors
-    /// Returns [`RuntimeError::ForeignRuntime`] for an ID of another runtime and
-    /// [`RuntimeError::Unmounted`] for an unmounted one.
-    pub fn invalidate(&self, id: &WidgetId, kind: Invalidation) -> Result<(), RuntimeError> {
+    // Documented on `crate::host::HostIntegration::invalidate`.
+    pub(crate) fn invalidate(&self, id: &WidgetId, kind: Invalidation) -> Result<(), RuntimeError> {
         self.check(id)?;
         id.0.invalidate(kind);
         Ok(())
@@ -6204,10 +6082,8 @@ impl Runtime {
                 if promoted {
                     details.validation.overlap = crate::OverlapPolicy::Allow;
                 }
-                if entry.composed {
-                    details.box_model.border_box = entry.node.bounds.get().map(crate::Rect::values);
-                    details.validation.clip = entry.node.clip.get().map(crate::Rect::values);
-                }
+                details.box_model.border_box = entry.node.bounds.get().map(crate::Rect::values);
+                details.validation.clip = entry.node.clip.get().map(crate::Rect::values);
                 self.validator.update(
                     serial,
                     crate::validation::development::NodeData {
@@ -6660,7 +6536,7 @@ impl Runtime {
     /// targets are told to leave before the source receives its terminal outcome.
     /// Cleanup continues after callback failure. The first error per cancelled drag
     /// operation and other queued cleanup errors remain available through
-    /// [`Self::take_shutdown_errors`]. New drags are refused during teardown.
+    /// [`HostIntegration::take_shutdown_errors`](crate::host::HostIntegration::take_shutdown_errors). New drags are refused during teardown.
     pub fn shutdown(&mut self) {
         if self.shared.closed.get() {
             return;
@@ -6744,55 +6620,9 @@ impl Runtime {
         self.shut_down_application_services();
     }
 
-    /// Drains typed errors retained by infallible cleanup after [`Self::shutdown`].
-    ///
-    /// Returns an empty list before shutdown without consuming pending errors.
-    /// Within each window, queued focus/terminal-removal errors retain FIFO
-    /// order, followed by its earliest coalesced surface-dismissal error.
-    /// Retirement appends them after the surviving window's queued errors;
-    /// shutdown drains at its retention points. There is no global chronological
-    /// ordering across windows or error kinds.
-    ///
-    /// After shutdown this also includes earlier cleanup errors that were queued
-    /// for a flush but had not yet been returned. Errors are drained from the
-    /// selected window, then other windows in identity order at each retention
-    /// point. Errors survive
-    /// native-window retirement. A later call is empty. This performs no callbacks
-    /// or flush.
-    ///
-    /// When several drag participants fail, drag cleanup retains its first error
-    /// while still notifying the remaining participants. Read this report before
-    /// dropping the runtime; dropping it releases any undrained errors.
-    ///
-    /// ```
-    /// # use pert_ui_runtime as pert_ui;
-    /// use pert_ui::*;
-    /// struct Source;
-    /// impl Component for Source {
-    ///     fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> { Ok(()) }
-    ///     fn measure(&self, _: &MeasureContext<'_>, _: Constraints) -> Result<Size, RuntimeError> {
-    ///         Ok(Size::from([20, 20]))
-    ///     }
-    ///     fn drag_finished(&mut self, _: &mut EventContext, _: DragOutcome) -> Result<(), RuntimeError> {
-    ///         Err(RuntimeError::Exhausted)
-    ///     }
-    /// }
-    /// let mut ui = Runtime::new();
-    /// ui.set_viewport(Viewport::new(100.0, 100.0, 1.0)?)?;
-    /// let source = ui.mount_tree(Element::new("source", Source))?;
-    /// ui.flush(ui.now())?;
-    /// ui.pointer_input(PointerEvent::new(Point::new(5.0, 5.0)?,
-    ///     PointerKind::Press(PointerButton::Primary)))?;
-    /// ui.event(&source, |cx| cx.start_drag(DragPayload::new("item"),
-    ///     DropOperations::MOVE, DragPreview::none()))??;
-    /// assert!(ui.take_shutdown_errors().is_empty());
-    /// ui.shutdown(); // cancels the accepted, still-pending request
-    /// assert_eq!(ui.take_shutdown_errors(), [RuntimeError::Exhausted]);
-    /// assert!(ui.take_shutdown_errors().is_empty());
-    /// # Ok::<(), RuntimeError>(())
-    /// ```
+    // Documented on `crate::host::HostIntegration::take_shutdown_errors`.
     #[must_use]
-    pub fn take_shutdown_errors(&mut self) -> Vec<RuntimeError> {
+    pub(crate) fn take_shutdown_errors(&mut self) -> Vec<RuntimeError> {
         if !self.shared.closed.get() {
             return Vec::new();
         }

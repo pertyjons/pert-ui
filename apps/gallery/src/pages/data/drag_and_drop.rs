@@ -334,9 +334,8 @@ impl Component for Chip {
     }
     fn paint_foreground(&self, painter: &mut Painter) -> Result<(), DrawError> {
         // The chip left behind is outlined while its drag is in progress.
-        if self.dragging
-            && let Some(size) = painter.size()
-        {
+        let size = painter.size();
+        if self.dragging {
             let width = Length::new(painter.metric(MetricRole::FocusWidth))?;
             painter.stroke_shape(
                 Rect::from_size(size),
@@ -416,7 +415,7 @@ impl Component for Bin {
         })
     }
     fn paint_foreground(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        let (Some(over), Some(size)) = (self.over, painter.size()) else {
+        let (Some(over), size) = (self.over, painter.size()) else {
             return Ok(());
         };
         let role = match over {

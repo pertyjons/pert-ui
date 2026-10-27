@@ -58,7 +58,7 @@ impl Runtime {
     /// let workspace = ui.capture_workspace()?;
     /// assert_eq!(workspace.len(), 1);
     /// let text = workspace.encode();
-    /// assert!(text.starts_with("pert-ui-workspace 1\n"));
+    /// assert!(text.starts_with("pert-ui-workspace 2\n"));
     /// # Ok::<(), pert_ui::WorkspaceError>(())
     /// ```
     pub fn capture_workspace(&self) -> Result<Workspace, crate::WorkspaceError> {

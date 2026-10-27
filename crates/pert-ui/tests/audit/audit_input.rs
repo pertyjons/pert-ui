@@ -1,5 +1,6 @@
 //! Adverse-path input ownership and modal admission through the public facade.
 use crate::support;
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{
     cell::{Cell, RefCell},

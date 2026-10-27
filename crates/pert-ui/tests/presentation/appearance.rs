@@ -1,4 +1,5 @@
 //! Public shape, panel boundary and cursor contracts.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::time::Duration;
 fn draw(ui: &mut Runtime) -> DisplayList {

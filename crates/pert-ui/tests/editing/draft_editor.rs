@@ -2,6 +2,7 @@
 //! owns the session, commits and cancels by bubbled keys, steps through the
 //! payload and saves on focus loss.
 use crate::support;
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::RefCell, rc::Rc};
 use support::{find, frame, key};

@@ -1,4 +1,5 @@
 //! Joined, mutually exclusive choices through the public facade.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::Cell, rc::Rc, time::Duration};
 fn runtime() -> Runtime {

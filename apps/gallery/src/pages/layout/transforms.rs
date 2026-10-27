@@ -210,9 +210,7 @@ impl Component for Timeline {
         cx.invalidate(Invalidation::Paint);
     }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = painter.size() else {
-            return Ok(());
-        };
+        let size = painter.size();
         let width = size.width();
         let hairline = 1.0 / painter.viewport().scale() as f32;
         let (lane_top, clips_top) = (

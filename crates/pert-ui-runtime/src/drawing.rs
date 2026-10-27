@@ -1408,7 +1408,7 @@ pub struct Painter {
     pub(crate) metric_roles: std::cell::Cell<u64>,
     pub(crate) palette: crate::Palette,
     pub(crate) roles: std::cell::Cell<u64>,
-    pub(crate) size: Option<crate::Size>,
+    pub(crate) size: crate::Size,
     pub(crate) clip: Option<Rect>,
     pub(crate) list: DisplayList,
 }
@@ -1638,7 +1638,7 @@ impl Painter {
     /// let mut ui = Runtime::new();
     /// ui.set_viewport(Viewport::new(64.0, 64.0, 1.0)?)?;
     /// let pixels = [0, 0, 0, 255, 255, 255, 255, 255].repeat(2);
-    /// ui.mount("swatch", Swatch(RasterImage::from_srgba8(2, 2, pixels)?))?;
+    /// ui.mount_tree(Element::new("swatch", Swatch(RasterImage::from_srgba8(2, 2, pixels)?)))?;
     /// ui.flush(std::time::Duration::ZERO)?;
     /// let scene = ui.paint()?;
     /// assert_eq!(scene.images().len(), 1);
@@ -1691,10 +1691,14 @@ impl Painter {
             clip: self.clip,
         });
     }
-    /// Allocated component size in logical pixels, or `None` for legacy roots.
-    /// Composed components draw relative to their own top-left origin.
+    /// The component's allocation in its own local logical pixels, which may
+    /// be empty. A component draws relative to its own top-left origin, so
+    /// `Rect::from_size(painter.size())` covers exactly its allocation.
+    ///
+    /// Every painted component has been laid out: the runtime paints only
+    /// after layout has given each presented component its allocation.
     #[must_use]
-    pub const fn size(&self) -> Option<crate::Size> {
+    pub const fn size(&self) -> crate::Size {
         self.size
     }
     /// Records a clipped group in local coordinates, intersecting any outer clip.

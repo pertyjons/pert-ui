@@ -209,18 +209,18 @@ fn a_json_workspace_is_validated_like_the_text_one() -> TestResult {
     let accepted = document(
         &entry(r#"["main","split"]"#, "split", r#""ratio":{"Number":0.25}"#),
         "",
-        1,
+        2,
     );
     let workspace: Workspace = serde_json::from_str(&accepted)?;
     assert_eq!(
         workspace.encode(),
-        "pert-ui-workspace 1\nentry \"main/split\" split ratio=0.25\n"
+        "pert-ui-workspace 2\nentry \"main/split\" split ratio=0.25\n"
     );
 
     let rejected: Vec<(&str, String)> = vec![
         (
             "newer schema",
-            document(&entry(r#"["a"]"#, "split", ""), "", 2),
+            document(&entry(r#"["a"]"#, "split", ""), "", 3),
         ),
         (
             "duplicate path",
@@ -231,28 +231,28 @@ fn a_json_workspace_is_validated_like_the_text_one() -> TestResult {
                     entry(r#"["a"]"#, "tabs", "")
                 ),
                 "",
-                1,
+                2,
             ),
         ),
         (
             "empty segment",
-            document(&entry(r#"["a",""]"#, "split", ""), "", 1),
+            document(&entry(r#"["a",""]"#, "split", ""), "", 2),
         ),
-        ("empty path", document(&entry("[]", "split", ""), "", 1)),
+        ("empty path", document(&entry("[]", "split", ""), "", 2)),
         (
             "control character",
-            document(&entry(r#"["a\u0007"]"#, "split", ""), "", 1),
+            document(&entry(r#"["a\u0007"]"#, "split", ""), "", 2),
         ),
         (
             "invalid kind",
-            document(&entry(r#"["a"]"#, "bad kind", ""), "", 1),
+            document(&entry(r#"["a"]"#, "bad kind", ""), "", 2),
         ),
         (
             "invalid name",
             document(
                 &entry(r#"["a"]"#, "split", r#""bad name":{"Flag":true}"#),
                 "",
-                1,
+                2,
             ),
         ),
         (
@@ -260,7 +260,7 @@ fn a_json_workspace_is_validated_like_the_text_one() -> TestResult {
             document(
                 &entry(r#"["a"]"#, "table", r#""w":{"Map":{"x":{"Map":{}}}}"#),
                 "",
-                1,
+                2,
             ),
         ),
         (
@@ -268,7 +268,7 @@ fn a_json_workspace_is_validated_like_the_text_one() -> TestResult {
             document(
                 &entry(r#"["a"]"#, "split", r#""ratio":{"Number":"NaN"}"#),
                 "",
-                1,
+                2,
             ),
         ),
         (
@@ -280,7 +280,7 @@ fn a_json_workspace_is_validated_like_the_text_one() -> TestResult {
                     &format!(r#""selected":{{"Text":"{}"}}"#, "x".repeat(257)),
                 ),
                 "",
-                1,
+                2,
             ),
         ),
         (
@@ -294,17 +294,17 @@ fn a_json_workspace_is_validated_like_the_text_one() -> TestResult {
                     "",
                 ),
                 "",
-                1,
+                2,
             ),
         ),
-        ("zoom out of range", document("", r#""zoom":3.0"#, 1)),
-        ("unknown setting", document("", r#""motion":"Full""#, 1)),
+        ("zoom out of range", document("", r#""zoom":3.0"#, 2)),
+        ("unknown setting", document("", r#""motion":"Full""#, 2)),
         (
             "unknown entry field",
             document(
                 r#"{"path":["a"],"state":{"kind":"split","values":{}},"extra":1}"#,
                 "",
-                1,
+                2,
             ),
         ),
     ];
@@ -315,7 +315,7 @@ fn a_json_workspace_is_validated_like_the_text_one() -> TestResult {
         );
         // The reason matters: a case rejected for another one proves nothing.
         let expected = match case {
-            "newer schema" => "schema version 2 is not supported",
+            "newer schema" => "schema version 3 is not supported",
             "duplicate path" => "two workspace entries address `a`",
             "empty segment" | "empty path" => "need at least one nonempty segment",
             "control character" => "contains a control character",
@@ -342,7 +342,7 @@ fn a_json_workspace_is_validated_like_the_text_one() -> TestResult {
     let many: Vec<String> = (0..=Workspace::MAX_ENTRIES)
         .map(|i| entry(&format!(r#"["item-{i}"]"#), "split", ""))
         .collect();
-    let error = serde_json::from_str::<Workspace>(&document(&many.join(","), "", 1))
+    let error = serde_json::from_str::<Workspace>(&document(&many.join(","), "", 2))
         .err()
         .map(|error| error.to_string());
     assert!(
@@ -358,9 +358,9 @@ fn a_json_workspace_is_validated_like_the_text_one() -> TestResult {
 fn repeated_keys_in_a_json_workspace_are_rejected_like_the_text_ones() {
     // Built as text on purpose: a `serde_json::Value` would already have
     // collapsed the duplicates before the document saw them.
-    let values = r#"{"schema_version":1,"settings":{},"entries":[{"path":["t"],"state":{"kind":"tabs","values":{"selected":{"Text":"a"},"selected":{"Text":"b"}}}}]}"#;
-    let map = r#"{"schema_version":1,"settings":{},"entries":[{"path":["t"],"state":{"kind":"table","values":{"widths":{"Map":{"a":{"Number":1.0},"a":{"Number":2.0}}}}}}]}"#;
-    let settings = r#"{"schema_version":1,"settings":{"zoom":1.0,"zoom":1.5},"entries":[]}"#;
+    let values = r#"{"schema_version":2,"settings":{},"entries":[{"path":["t"],"state":{"kind":"tabs","values":{"selected":{"Text":"a"},"selected":{"Text":"b"}}}}]}"#;
+    let map = r#"{"schema_version":2,"settings":{},"entries":[{"path":["t"],"state":{"kind":"table","values":{"widths":{"Map":{"a":{"Number":1.0},"a":{"Number":2.0}}}}}}]}"#;
+    let settings = r#"{"schema_version":2,"settings":{"zoom":1.0,"zoom":1.5},"entries":[]}"#;
     // The reason matters: a document refused for anything but the repeated key
     // proves nothing about duplicate detection.
     for (case, text, expected) in [
@@ -376,7 +376,7 @@ fn repeated_keys_in_a_json_workspace_are_rejected_like_the_text_ones() {
             ),
         }
     }
-    let distinct = r#"{"schema_version":1,"settings":{},"entries":[{"path":["t"],"state":{"kind":"table","values":{"widths":{"Map":{"a":{"Number":1.0},"b":{"Number":2.0}}}}}}]}"#;
+    let distinct = r#"{"schema_version":2,"settings":{},"entries":[{"path":["t"],"state":{"kind":"table","values":{"widths":{"Map":{"a":{"Number":1.0},"b":{"Number":2.0}}}}}}]}"#;
     assert!(serde_json::from_str::<Workspace>(distinct).is_ok());
 }
 
@@ -697,4 +697,19 @@ fn a_warning_description_round_trips_and_is_a_required_field() -> TestResult {
     let unknown = text.replace(r#""warning":true"#, r#""warning":true,"caution":true"#);
     assert!(serde_json::from_str::<Semantics>(&unknown).is_err());
     Ok(())
+}
+
+/// New-behavior test. Named assertion: a revision-1 JSON workspace, valid
+/// otherwise, fails to deserialize with `UnsupportedVersion`'s message, so no
+/// `Workspace` holding paths under the old `Each` addressing is built.
+#[test]
+fn a_revision_one_json_workspace_is_rejected() {
+    let document = r#"{"schema_version":1,"settings":{},"entries":[{"path":["list","items","7","scroll"],"state":{"kind":"scroll","values":{"x":{"Number":0.0},"y":{"Number":10.0}}}}]}"#;
+    let error = serde_json::from_str::<Workspace>(document)
+        .expect_err("revision 1 is not supported")
+        .to_string();
+    assert!(
+        error.starts_with("workspace schema version 1 is not supported (this build writes 2)"),
+        "{error}"
+    );
 }

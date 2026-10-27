@@ -66,7 +66,7 @@ fn rect(x: f32, y: f32, w: f32, h: f32) -> Rect {
 fn scene(viewport: Viewport, probe: Probe) -> DisplayList {
     let mut ui = Runtime::new();
     ui.set_viewport(viewport).unwrap();
-    ui.mount("probe", probe).unwrap();
+    ui.mount_tree(Element::new("probe", probe)).unwrap();
     ui.flush(Duration::ZERO).unwrap();
     ui.paint().unwrap()
 }
@@ -98,8 +98,11 @@ fn zoom_divides_logical_space_and_leaves_the_physical_extent_alone() {
     let mut ui = Runtime::new();
     ui.set_viewport(Viewport::new(800.0, 600.0, 1.5).unwrap())
         .unwrap();
-    ui.mount("probe", Probe::new(rect(0.0, 0.0, 10.0, 10.0)))
-        .unwrap();
+    ui.mount_tree(Element::new(
+        "probe",
+        Probe::new(rect(0.0, 0.0, 10.0, 10.0)),
+    ))
+    .unwrap();
     let settings = ui.ui_settings();
     for factor in [0.75, 1.0, 1.25, 2.0] {
         settings.set_zoom(UiZoom::new(factor).unwrap()).unwrap();
@@ -132,8 +135,11 @@ fn a_native_viewport_keeps_the_exact_physical_extent_through_zoom() {
     assert_eq!((extent.width(), extent.height()), (1001, 601));
     let mut ui = Runtime::new();
     ui.set_viewport(native).unwrap();
-    ui.mount("probe", Probe::new(rect(0.0, 0.0, 10.0, 10.0)))
-        .unwrap();
+    ui.mount_tree(Element::new(
+        "probe",
+        Probe::new(rect(0.0, 0.0, 10.0, 10.0)),
+    ))
+    .unwrap();
     let settings = ui.ui_settings();
     for factor in [0.75, 1.0, 1.25, 2.0] {
         settings.set_zoom(UiZoom::new(factor).unwrap()).unwrap();
@@ -241,7 +247,7 @@ fn nested_local_clips_intersect_and_an_empty_intersection_has_zero_area() {
     let mut ui = Runtime::new();
     ui.set_viewport(Viewport::new(100.0, 100.0, 1.0).unwrap())
         .unwrap();
-    ui.mount("nested", Nested).unwrap();
+    ui.mount_tree(Element::new("nested", Nested)).unwrap();
     ui.flush(Duration::ZERO).unwrap();
     let scene = ui.paint().unwrap();
     let recorded = fills(&scene);
@@ -311,8 +317,12 @@ fn a_mask_stretches_to_its_destination_and_keeps_its_source_when_cropped() {
         Viewport::new(100.0, 100.0, 1.0).unwrap(),
         Probe::new(rect(0.0, 0.0, 1.0, 1.0)).mask(rect(10.0, 10.0, 40.0, 20.0)),
     );
-    // The whole image maps to the destination rectangle, whatever its pixel size.
-    assert_eq!(masks(&uncropped), vec![([10.0, 10.0, 40.0, 20.0], None)]);
+    // The whole image maps to the destination rectangle, whatever its pixel size;
+    // only the root's own allocation, the whole window, clips it.
+    assert_eq!(
+        masks(&uncropped),
+        vec![([10.0, 10.0, 40.0, 20.0], Some([0.0, 0.0, 100.0, 100.0]))]
+    );
     assert_eq!(uncropped.masks().len(), 1);
     assert_eq!(
         (uncropped.masks()[0].width(), uncropped.masks()[0].height()),
@@ -421,7 +431,7 @@ fn command_order_is_preserved_so_later_drawing_covers_earlier_drawing() {
     let mut ui = Runtime::new();
     ui.set_viewport(Viewport::new(50.0, 50.0, 1.0).unwrap())
         .unwrap();
-    ui.mount("stack", Stack).unwrap();
+    ui.mount_tree(Element::new("stack", Stack)).unwrap();
     ui.flush(Duration::ZERO).unwrap();
     let scene = ui.paint().unwrap();
     let colors: Vec<_> = scene
@@ -455,7 +465,7 @@ fn coverage_is_rasterized_at_the_effective_scale_and_follows_a_scale_change() {
         let mut ui = Runtime::new();
         ui.set_viewport(Viewport::new(50.0, 50.0, scale).unwrap())
             .unwrap();
-        ui.mount("rounded", Rounded).unwrap();
+        ui.mount_tree(Element::new("rounded", Rounded)).unwrap();
         ui.flush(Duration::ZERO).unwrap();
         let scene = ui.paint().unwrap();
         let image = &scene.masks()[0];

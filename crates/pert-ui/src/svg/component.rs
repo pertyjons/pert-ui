@@ -280,7 +280,7 @@ impl Component for Svg {
     }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
         let borrowed = self.raster.borrow();
-        let (Some(size), Some(raster)) = (painter.size(), borrowed.as_ref()) else {
+        let (size, Some(raster)) = (painter.size(), borrowed.as_ref()) else {
             return Ok(());
         };
         let rect = self.placement(size)?;

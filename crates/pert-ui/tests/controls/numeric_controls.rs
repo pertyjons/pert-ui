@@ -1,4 +1,5 @@
 //! Parameter controls preserve transaction and identity boundaries.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::time::Duration;
 fn ui() -> Runtime {

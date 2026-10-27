@@ -1,4 +1,5 @@
 //! Density, typography and custom-widget measurement dependencies.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::Cell, rc::Rc, time::Duration};
 

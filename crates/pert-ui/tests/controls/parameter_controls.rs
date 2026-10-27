@@ -1,6 +1,7 @@
 //! Standard and inline controls bound to boolean, choice and stepped parameters
 //! through the public facade: one begin/commit per change, spec-supplied
 //! domains, cancellation, shared bindings and unavailable/faulted states.
+use pert_ui::testing::HostIntegration;
 use std::{cell::RefCell, rc::Rc};
 
 use crate::support;

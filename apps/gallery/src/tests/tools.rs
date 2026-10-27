@@ -1,5 +1,6 @@
 //! The Appearance & tools category's pages.
 use super::support::*;
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 
 #[test]

@@ -1,5 +1,7 @@
 //! Failure sites through the facade: a failing flush or paint names the
 //! component where it arose, and the next one starts without a site.
+use crate::support;
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::Cell, rc::Rc, time::Duration};
 
@@ -51,7 +53,7 @@ fn a_failure_is_named_where_it_arose_and_cleared_by_the_next_success() -> TestRe
     assert!(site.description.is_empty());
     assert_eq!(site.to_string(), "measurement of form/frame/leaf");
     measure.set(false);
-    let leaf = ui.find_path(&root, &["frame", "leaf"])?.ok_or("mounted")?;
+    let leaf = support::key_path(&ui, &root, &["frame", "leaf"]).ok_or("mounted")?;
     ui.invalidate(&leaf, Invalidation::Layout)?;
     ui.flush(Duration::ZERO)?;
     assert_eq!(ui.last_failure(), None);
@@ -96,13 +98,13 @@ fn flushing_every_window_names_its_own_failure() -> TestResult {
     );
     a.set(false);
     for key in ["a", "b"] {
-        let id = ui.find_path(&root, &[key])?.ok_or("mounted")?;
+        let id = support::key_path(&ui, &root, &[key]).ok_or("mounted")?;
         ui.invalidate(&id, Invalidation::Paint)?;
     }
     ui.flush_windows(Duration::ZERO)?;
     assert_eq!(ui.last_failure(), None);
     b.set(true);
-    let id = ui.find_path(&root, &["b"])?.ok_or("mounted")?;
+    let id = support::key_path(&ui, &root, &["b"]).ok_or("mounted")?;
     ui.invalidate(&id, Invalidation::Paint)?;
     assert!(ui.flush_windows(Duration::ZERO).is_err());
     assert_eq!(
@@ -204,7 +206,7 @@ fn a_duplicated_key_from_each_names_the_owner_and_the_key() -> TestResult {
         .key("root"),
     )?;
     ui.flush(Duration::ZERO)?;
-    let kept = ui.find_path(&root, &["each", "items", "dup"])?;
+    let kept = ui.find(&root, &["each", "dup"])?;
     assert!(kept.is_some());
     items.set(vec!["a".to_owned(), "b".to_owned()])?;
     assert_eq!(
@@ -217,13 +219,13 @@ fn a_duplicated_key_from_each_names_the_owner_and_the_key() -> TestResult {
     assert_eq!(text, "reconciliation of root/each at items/dup");
     // The rejected request changed nothing and is consumed: an unchanged
     // flush succeeds without a site, and a valid value applies.
-    assert_eq!(ui.find_path(&root, &["each", "items", "dup"])?, kept);
+    assert_eq!(ui.find(&root, &["each", "dup"])?, kept);
     ui.flush(Duration::ZERO)?;
     assert_eq!(ui.last_failure(), None);
     items.set(vec!["c".to_owned()])?;
     ui.flush(Duration::ZERO)?;
     assert_eq!(ui.last_failure(), None);
-    assert_eq!(ui.find_path(&root, &["each", "items", "dup"])?, kept);
+    assert_eq!(ui.find(&root, &["each", "dup"])?, kept);
     Ok(())
 }
 
@@ -353,8 +355,8 @@ fn a_rejected_preparation_rolls_back_new_siblings() -> TestResult {
     );
     let (_, description, _) = reconciliation(&ui)?;
     assert_eq!(description, ["box", "list"]);
-    assert_eq!(ui.find_path(&root, &["box", "fresh"])?, None);
-    assert!(ui.find_path(&root, &["box", "list"])?.is_some());
+    assert_eq!(support::key_path(&ui, &root, &["box", "fresh"]), None);
+    assert!(support::key_path(&ui, &root, &["box", "list"]).is_some());
     Ok(())
 }
 
@@ -386,7 +388,7 @@ fn successive_owners_are_each_named_and_a_removed_owners_request_is_dropped() ->
     ui.reconcile_children(&root, vec![described(&first, "first")])?;
     ui.flush(Duration::ZERO)?;
     assert_eq!(ui.last_failure(), None);
-    assert_eq!(ui.find_path(&root, &["second"])?, None);
+    assert_eq!(support::key_path(&ui, &root, &["second"]), None);
     // A later failure of another owner names that owner.
     let second = ui.signal(false);
     ui.reconcile_children(
@@ -455,8 +457,8 @@ fn a_key_taken_by_a_moved_child_names_the_colliding_description() -> TestResult 
         }),
     ))?;
     ui.flush(Duration::ZERO)?;
-    let moved = ui.find_path(&root, &["moved"])?.ok_or("mounted")?;
-    let target = ui.find_path(&root, &["box"])?.ok_or("mounted")?;
+    let moved = support::key_path(&ui, &root, &["moved"]).ok_or("mounted")?;
+    let target = support::key_path(&ui, &root, &["box"]).ok_or("mounted")?;
     ui.reparent(&moved, &target, 0)?;
     ui.flush(Duration::ZERO)?;
     collide.set(true)?;
@@ -559,7 +561,7 @@ fn an_earlier_site_of_the_same_flush_stays_authoritative() -> TestResult {
     ui.flush(Duration::ZERO)?;
     // A deferred task catches a nested flush's failure, repairs its cause and
     // then makes the outer flush reject requested children.
-    let switch = ui.find_path(&root, &["switch"])?.ok_or("mounted")?;
+    let switch = support::key_path(&ui, &root, &["switch"]).ok_or("mounted")?;
     let repair = failing.clone();
     let outer_dup = dup.clone();
     let _task = ui.defer(move |ui| {

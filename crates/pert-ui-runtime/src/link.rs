@@ -257,9 +257,7 @@ impl Component for Link {
         self.input.reset();
     }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = painter.size() else {
-            return Ok(());
-        };
+        let size = painter.size();
         let Some(text) = self.prepared.borrow().clone() else {
             return Ok(());
         };

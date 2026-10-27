@@ -1,6 +1,7 @@
 //! Native window titles through the public facade: a detached tab's window is
 //! retitled when the tab's title changes, queued retitles for one window
 //! coalesce, and `EventContext::set_window_title` validates its request.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::RefCell, rc::Rc, time::Duration};
 

@@ -1,4 +1,6 @@
 //! Public consumer contracts for retained composition and layout.
+use crate::support;
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{
     cell::{Cell, RefCell},
@@ -776,7 +778,7 @@ fn translated_leaf_keeps_arrangement_and_font_metric_dependencies() {
             Ok(())
         }
         fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
-            let size = painter.size().unwrap();
+            let size = painter.size();
             painter.fill_rect(Rect::from_size(size), Color::ACCENT);
             Ok(())
         }
@@ -1124,10 +1126,10 @@ fn a_child_moved_inside_its_describing_parent_stays_described_by_it() {
         ]))
         .unwrap();
     ui.flush(Duration::ZERO).unwrap();
-    let home = ui.find_path(&root, &["home"]).unwrap().unwrap();
-    let inner = ui.find_path(&home, &["inner"]).unwrap().unwrap();
-    let away = ui.find_path(&root, &["away"]).unwrap().unwrap();
-    let item = ui.find_path(&home, &["item"]).unwrap().unwrap();
+    let home = support::key_path(&ui, &root, &["home"]).unwrap();
+    let inner = support::key_path(&ui, &home, &["inner"]).unwrap();
+    let away = support::key_path(&ui, &root, &["away"]).unwrap();
+    let item = support::key_path(&ui, &home, &["item"]).unwrap();
     let described = || {
         vec![
             leaf("item"),
@@ -1168,10 +1170,10 @@ fn a_child_moved_inside_its_describing_parent_stays_described_by_it() {
 
     // Moved anywhere else, the new owner describes it.
     ui.reconcile_children(&home, described()).unwrap();
-    let item = ui.find_path(&home, &["item"]).unwrap().unwrap();
+    let item = support::key_path(&ui, &home, &["item"]).unwrap();
     ui.reparent(&item, &away, 0).unwrap();
     ui.reconcile_children(&home, described()).unwrap();
-    let fresh = ui.find_path(&home, &["item"]).unwrap().unwrap();
+    let fresh = support::key_path(&ui, &home, &["item"]).unwrap();
     assert_ne!(fresh, item, "the former parent mounts its own again");
     assert_eq!(ui.children(&away).unwrap(), std::slice::from_ref(&item));
     ui.reconcile_children(&away, Vec::new()).unwrap();

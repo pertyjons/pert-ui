@@ -1,4 +1,5 @@
 //! Versioned inspection, bounded history and read-only tool integration.
+use pert_ui_runtime::testing::HostIntegration;
 use pert_ui_runtime::*;
 use std::{collections::BTreeMap, time::Duration};
 
@@ -29,12 +30,17 @@ fn snapshot_is_owned_read_only_and_includes_explicit_host_state() -> TestResult 
     assert_send_sync::<InspectionSnapshot>();
     let mut runtime = Runtime::new();
     let value = runtime.signal(3);
-    let id = runtime.mount(
+    let id = runtime.mount_tree(Element::new(
         "inspectable",
         Inspectable {
             value: value.clone(),
         },
-    )?;
+    ))?;
+    // Unknown geometry stays absent until the root is measured.
+    assert_eq!(
+        runtime.inspect().components[0].details.box_model.border_box,
+        None
+    );
     let (parameter, _host) = runtime.parameter(
         ParameterId::new(1, 2, "x")?,
         ParameterSpec::new("X", 0.0, 1.0, 0.5)?,
@@ -50,7 +56,11 @@ fn snapshot_is_owned_read_only_and_includes_explicit_host_state() -> TestResult 
     assert_eq!(snapshot.mode, DebugMode::Inspect);
     assert_eq!(snapshot.components.len(), 1);
     assert!(snapshot.components[0].focused);
-    assert_eq!(snapshot.components[0].details.box_model.border_box, None);
+    // Laid out without a viewport: the empty box layout assigns.
+    assert_eq!(
+        snapshot.components[0].details.box_model.border_box,
+        Some([0.0; 4])
+    );
     assert_eq!(
         snapshot.components[0].details.properties["value"],
         InspectValue::Number(3.0)
@@ -79,7 +89,7 @@ fn history_records_success_failure_cancellation_and_specific_keys() -> TestResul
     let mut runtime = Runtime::new();
     runtime.set_debug_mode(DebugMode::Inspect);
     let value = runtime.signal(0);
-    let id = runtime.mount("widget", Inspectable { value })?;
+    let id = runtime.mount_tree(Element::new("widget", Inspectable { value }))?;
     runtime.try_event(&id, |_| Ok::<_, &str>(()))??;
     assert_eq!(
         runtime.try_event(&id, |_| Err::<(), _>("application rejected"))?,
@@ -135,7 +145,7 @@ fn a_generic_event_is_dispatched_and_a_long_failure_message_is_truncated() -> Te
     let mut runtime = Runtime::new();
     runtime.set_debug_mode(DebugMode::Inspect);
     let value = runtime.signal(0);
-    let id = runtime.mount("widget", Inspectable { value })?;
+    let id = runtime.mount_tree(Element::new("widget", Inspectable { value }))?;
     // The runtime cannot know what an arbitrary closure achieved.
     runtime.event(&id, |_| ())?;
     let last = runtime.inspect().events.pop().ok_or("empty history")?;
@@ -207,7 +217,7 @@ fn automatic_cleanup_does_not_log_cancellation_for_terminal_edits() -> TestResul
             let mut runtime = Runtime::new();
             runtime.set_debug_mode(DebugMode::Inspect);
             let value = runtime.signal(0);
-            let widget = runtime.mount("control", Inspectable { value })?;
+            let widget = runtime.mount_tree(Element::new("control", Inspectable { value }))?;
             runtime.focus(&widget)?;
             let (parameter, host) = runtime.parameter(
                 ParameterId::new(1, 1, "value")?,
@@ -261,7 +271,7 @@ fn unfinished_cleanup_logs_one_cancel_and_reclaims_receipts() -> TestResult {
     let mut runtime = Runtime::new();
     runtime.set_debug_mode(DebugMode::Inspect);
     let value = runtime.signal(0);
-    let widget = runtime.mount("control", Inspectable { value })?;
+    let widget = runtime.mount_tree(Element::new("control", Inspectable { value }))?;
     let (parameter, _host) = runtime.parameter(
         ParameterId::new(1, 1, "value")?,
         ParameterSpec::new("Value", 0.0, 1.0, 0.0)?,

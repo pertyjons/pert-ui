@@ -1,6 +1,7 @@
 //! The pointer move the runtime repeats after layout (`PointerEvent::is_refresh`),
 //! how a custom drag converges on it, and the `UpdateLimit` evidence for one that
 //! does not.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::RefCell, rc::Rc, time::Duration};
 

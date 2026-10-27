@@ -1,4 +1,5 @@
 //! Change delivery preserves request order across components and presentation roots.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::RefCell, rc::Rc, time::Duration};
 type Log = Rc<RefCell<Vec<String>>>;

@@ -279,7 +279,7 @@ fn describe(description: &str) -> String {
 /// copied data as required by their platform, and never access live widgets.
 /// Calls are synchronous ordinary UI operations, never safe for time-critical callbacks.
 /// An implementation is `'static`, as
-/// [`Runtime::set_clipboard`](crate::Runtime::set_clipboard) requires: it owns
+/// [`Runtime::set_clipboard`](crate::host::HostIntegration::set_clipboard) requires: it owns
 /// its storage or shares it through an `Rc`, such as a struct holding an
 /// `Rc<RefCell<String>>`, never borrowing from a local.
 #[diagnostic::on_unimplemented(

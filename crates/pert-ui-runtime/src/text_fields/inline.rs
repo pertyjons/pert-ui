@@ -546,9 +546,7 @@ impl<T: Copy + PartialEq + 'static> InlineField<T> {
         Ok(())
     }
     pub(crate) fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = p.size() else {
-            return Ok(());
-        };
+        let size = p.size();
         let outer = Rect::from_size(size);
         field_frame(
             p,
@@ -656,9 +654,7 @@ impl<T: Copy + PartialEq + 'static> InlineField<T> {
     /// Paints an ordinary field at rest: its frame and the formatted display
     /// text with its unit, in place of the editing text.
     pub(crate) fn paint_rest(&self, p: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = p.size() else {
-            return Ok(());
-        };
+        let size = p.size();
         let outer = Rect::from_size(size);
         field_frame(
             p,

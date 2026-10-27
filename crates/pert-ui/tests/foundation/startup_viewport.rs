@@ -4,6 +4,7 @@
 //! component that is empty after a layout with area still does.
 #![cfg(debug_assertions)]
 
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::time::Duration;
 

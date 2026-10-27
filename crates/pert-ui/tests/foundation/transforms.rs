@@ -5,6 +5,7 @@
 //! transform a container gives its children. Like the coordinate contract they
 //! extend, they are written against observable `DisplayList` output and public
 //! queries rather than internal geometry.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::Cell, rc::Rc, time::Duration};
 
@@ -122,7 +123,7 @@ impl Component for Block {
         self.log.paints.set(self.log.paints.get() + 1);
         self.log.raster.set(p.viewport().scale());
         self.log.view_scale.set(p.view_scale());
-        self.log.size.set(p.size());
+        self.log.size.set(Some(p.size()));
         p.fill_rect(self.inset, Color::ACCENT);
         Ok(())
     }
@@ -213,7 +214,8 @@ fn transforming_maps_the_outline_and_leaves_the_stroke_width_alone() {
         .transformed(&Transform2D::scale(10.0, 1.0).unwrap())
         .unwrap();
     let mut ui = ui(200.0, 40.0);
-    ui.mount("trace", Trace(stretched)).unwrap();
+    ui.mount_tree(Element::new("trace", Trace(stretched)))
+        .unwrap();
     ui.flush(Duration::ZERO).unwrap();
     let scene = ui.paint().unwrap().rasterized().unwrap();
     let DrawCommand::DrawMask { rect, .. } = scene.commands()[0] else {
@@ -243,7 +245,7 @@ fn a_quarter_turn_travels_with_the_command_and_shares_the_coverage() {
         }
     }
     let mut ui = ui(100.0, 40.0);
-    ui.mount("turned", Turned).unwrap();
+    ui.mount_tree(Element::new("turned", Turned)).unwrap();
     ui.flush(Duration::ZERO).unwrap();
     let scene = ui.paint().unwrap();
     assert_eq!(scene.masks().len(), 1, "a turn samples the same coverage");

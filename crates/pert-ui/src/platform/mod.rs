@@ -22,6 +22,7 @@ mod window_smoke;
 #[cfg(test)]
 use smoke::{Smoke, native_test_event_loop};
 
+use crate::host::HostIntegration;
 use crate::{App, AppError, KeyAction, PhysicalExtent, RuntimeError, Viewport, WidgetId};
 use presenter::Presenter;
 use presenter::{Frame, Notice};
@@ -1172,13 +1173,13 @@ mod tests {
             .set_viewport(crate::Viewport::new(100.0, 100.0, 1.0).unwrap())
             .unwrap();
         let source = runtime
-            .mount(
+            .mount_tree(crate::Element::new(
                 "source",
                 ShutdownSource {
                     cause: cause.clone(),
                     callbacks: callbacks.clone(),
                 },
-            )
+            ))
             .unwrap();
         runtime.flush(runtime.now()).unwrap();
         runtime

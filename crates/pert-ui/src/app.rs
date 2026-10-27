@@ -124,7 +124,9 @@ pub enum AppError {
 /// Owned terminal failures returned by [`App::run`] through [`AppError::Shutdown`].
 ///
 /// The preceding app failure is retained alongside a nonempty list of cleanup
-/// causes in [`Runtime::take_shutdown_errors`] order. No global chronology
+/// causes in
+/// [`HostIntegration::take_shutdown_errors`](crate::host::HostIntegration::take_shutdown_errors)
+/// order. No global chronology
 /// across windows or error kinds is implied. There is no recovery callback or
 /// retry after shutdown. The error source is the preceding failure, or the first
 /// cleanup cause on an otherwise successful close; inspect [`Self::errors`] for
@@ -278,19 +280,23 @@ type Initialize = Box<dyn FnOnce(&mut Runtime) -> Result<(), AppError>>;
 /// resets the component allowance; repeated failure returns the last error.
 ///
 /// ```no_run
-/// use pert_ui::{App, AppError, Color, Component, DrawError, Painter, Rect,
+/// use pert_ui::{App, AppError, Color, Component, DrawError, Element, Painter, Rect,
 ///               RuntimeError, UpdateContext};
 /// struct Example;
 /// impl Component for Example {
 ///     fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> { Ok(()) }
 ///     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
-///         painter.fill_rect(Rect::new(32.0, 32.0, 240.0, 120.0)?, Color::ACCENT);
+///         // The root's allocation is the whole window; inset the panel in it.
+///         let size = painter.size();
+///         let panel = Rect::new(32.0, 32.0, (size.width() - 64.0).max(0.0),
+///             (size.height() - 64.0).max(0.0))?;
+///         painter.fill_rect(panel, Color::ACCENT);
 ///         Ok(())
 ///     }
 /// }
 /// fn main() -> Result<(), AppError> {
 ///     App::new("Example", |ui| {
-///         let root = ui.mount("example", Example)?;
+///         let root = ui.mount_tree(Element::new("example", Example))?;
 ///         ui.focus(&root)?;
 ///         Ok(())
 ///     }).run()
@@ -521,8 +527,9 @@ impl App {
     ///    window's own, or every open window for the main window, which ends
     ///    the application.
     /// 2. Each affected window's focus is released through
-    ///    [`Runtime::clear_focus`], as a window deactivation releases it, and
-    ///    the window selected before is selected again. Each recipient's
+    ///    [`HostIntegration::clear_focus`](crate::host::HostIntegration::clear_focus), as a
+    ///    window deactivation releases it, and the window selected before is
+    ///    selected again. Each recipient's
     ///    `Component::focus_lost` runs and its error is queued in its window.
     ///    `clear_focus` also ends the runtime's held keys and held-input
     ///    registrations; for a close the user started, the closing window has
@@ -551,8 +558,8 @@ impl App {
     ///    focus loss.
     /// 4. When no window is in component-error backoff, the affected windows
     ///    are flushed: the detached window alone, or every window through
-    ///    [`Runtime::flush_windows`]. A failed `focus_lost` in any of them
-    ///    aborts the close: [`Self::on_error`] handles it as it handles an
+    ///    [`HostIntegration::flush_windows`](crate::host::HostIntegration::flush_windows).
+    ///    A failed `focus_lost` in any of them aborts the close: [`Self::on_error`] handles it as it handles an
     ///    error of this callback, and the request is not replayed. That flush
     ///    may also settle notifications in other visible windows, as any
     ///    frame's flush does; a hidden window is not flushed. While any window

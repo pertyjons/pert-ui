@@ -1127,9 +1127,7 @@ impl Component for NumericControl {
         self.clicks.reset();
     }
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = p.size() else {
-            return Ok(());
-        };
+        let size = p.size();
         if self.field.inline {
             self.field.paint(p)?;
         }

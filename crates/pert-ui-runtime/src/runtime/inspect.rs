@@ -183,7 +183,7 @@ impl Runtime {
                 details.validation.overlap = crate::OverlapPolicy::Allow;
             }
         }
-        if detail >= crate::Detail::Geometry && entry.composed {
+        if detail >= crate::Detail::Geometry {
             details.box_model.border_box = entry.node.bounds.get().map(crate::Rect::values);
             details.validation.clip = entry.node.clip.get().map(crate::Rect::values);
         }

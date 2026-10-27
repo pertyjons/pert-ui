@@ -3,6 +3,7 @@
 //! palette first and revalidates, outcomes that are shown instead of skipped,
 //! dismissal, and the controller's lifetime rules.
 use crate::support;
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::Cell, cell::RefCell, rc::Rc};
 use support::{find, key, settle, widget};

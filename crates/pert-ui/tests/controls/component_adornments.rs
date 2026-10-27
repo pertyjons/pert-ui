@@ -1,4 +1,5 @@
 //! Caption bindings and replaceable adornments through the public facade.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::time::Duration;
 

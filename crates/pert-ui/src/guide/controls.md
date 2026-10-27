@@ -389,7 +389,8 @@ Custom editors use [`EventContext::text`], [`TextSelection`] and [`TextMovement`
 hit testing and selection geometry, [`Component::text_preedit`] for composition and
 [`Component::text_input_state`] for the IME anchor/session. The native adapter resets
 composition when the owner or session changes. Headless hosts can install their
-own [`Clipboard`] service through [`Runtime::set_clipboard`].
+own [`Clipboard`] service through
+[`HostIntegration::set_clipboard`](crate::host::HostIntegration::set_clipboard).
 
 Escape in a text field cancels composition first, or collapses a selection and
 ends dragging. With nothing to cancel it bubbles to ancestors. Numeric fields
@@ -450,7 +451,7 @@ ui.key_input(KeyCode::ArrowUp, KeyAction::Release)?;
 assert_eq!(count.get()?, 12); // draft only
 ui.focus(&fields[1])?; // saves count
 assert_eq!(count.get()?, 13);
-ui.clear_focus(); // unchanged rounded display preserves the full amount
+ui.focus(&fields[0])?; // unchanged rounded display preserves the full amount
 assert_eq!(amount.get()?, 1.234567);
 # Ok::<(), pert_ui::RuntimeError>(())
 ```

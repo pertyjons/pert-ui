@@ -1,4 +1,5 @@
 //! Public contracts for bounded scheduling and host-driven input recovery.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::Cell, rc::Rc, time::Duration};
 
@@ -27,20 +28,20 @@ fn focus_feedback_is_bounded_diagnosed_and_repairable() -> Result<(), RuntimeErr
     let mut ui = Runtime::new();
     let active = Rc::new(Cell::new(true));
     let updates = Rc::new(Cell::new(0));
-    let a = ui.mount(
+    let a = ui.mount_tree(Element::new(
         "first",
         Bounce {
             active: active.clone(),
             updates: updates.clone(),
         },
-    )?;
-    let b = ui.mount(
+    ))?;
+    let b = ui.mount_tree(Element::new(
         "second",
         Bounce {
             active: active.clone(),
             updates: updates.clone(),
         },
-    )?;
+    ))?;
     ui.flush(Duration::ZERO)?;
     ui.focus(&a)?;
     ui.focus(&b)?;
@@ -83,13 +84,13 @@ fn wave_limit_does_not_limit_number_of_independent_components() -> Result<(), Ru
     let updates = Rc::new(Cell::new(0));
     let active = Rc::new(Cell::new(false));
     for index in 0..1000 {
-        ui.mount(
+        ui.mount_tree(Element::new(
             format!("static-{index}"),
             Bounce {
                 active: active.clone(),
                 updates: updates.clone(),
             },
-        )?;
+        ))?;
     }
     assert_eq!(ui.flush(Duration::ZERO)?.components_updated, 1000);
     assert_eq!(ui.flush(Duration::ZERO)?.components_updated, 0);

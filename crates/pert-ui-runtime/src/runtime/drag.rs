@@ -77,7 +77,9 @@ impl EventContext {
     /// Every session ends with exactly one [`Component::drag_finished`] to a
     /// source that is still mounted: a drop, a refusal, a release that nothing
     /// claimed, or a cancellation.
-    /// Escape, native focus loss, [`Runtime::cancel_input`], a modal surface that
+    /// Escape, native focus loss,
+    /// [`HostIntegration::cancel_input`](crate::host::HostIntegration::cancel_input), a modal
+    /// surface that
     /// blocks the source, an error from a participant, and the source being
     /// hidden, removed or input-cancelled, and runtime shutdown all cancel. A session is confined to
     /// the window it started in.

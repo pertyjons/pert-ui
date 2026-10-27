@@ -1,5 +1,6 @@
 //! Inline numeric presentation and editing through the public facade.
 use crate::support;
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use support::{frame, key};
 fn pointer(ui: &mut Runtime, point: Point, kind: PointerKind) {

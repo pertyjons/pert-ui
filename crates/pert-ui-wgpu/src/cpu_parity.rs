@@ -58,7 +58,7 @@ fn case(
 ) -> Result<Case, Box<dyn std::error::Error>> {
     let mut ui = Runtime::new();
     ui.set_viewport(Viewport::new(SIZE as f32, SIZE as f32, 1.0)?)?;
-    ui.mount("fixture", Fixture(Box::new(paint)))?;
+    ui.mount_tree(Element::new("fixture", Fixture(Box::new(paint))))?;
     ui.flush(std::time::Duration::ZERO)?;
     Ok(Case {
         name,
@@ -98,13 +98,13 @@ fn text_mode_case(
         scale,
     )?)?;
     ui.ui_settings().set_text_rendering(mode)?;
-    ui.mount(
+    ui.mount_tree(Element::new(
         "text",
         Fixture(Box::new(|p| {
             p.text("Il1 O0", None, TextStyle::Body)?
                 .paint(p, Point::new(3.25, 7.25)?, Color::WHITE)
         })),
-    )?;
+    ))?;
     ui.flush(std::time::Duration::ZERO)?;
     Ok(Case {
         name,
@@ -121,7 +121,7 @@ fn rich_icon_case(name: &'static str, scale: f64) -> Result<Case, Box<dyn std::e
     )?)?;
     ui.ui_settings()
         .set_text_rendering(TextRenderingMode::PhaseLine)?;
-    ui.mount(
+    ui.mount_tree(Element::new(
         "rich",
         Fixture(Box::new(|p| {
             let rich = RichText::new().text("H").gap().tinted_icon(
@@ -134,7 +134,7 @@ fn rich_icon_case(name: &'static str, scale: f64) -> Result<Case, Box<dyn std::e
                 Color::WHITE,
             )
         })),
-    )?;
+    ))?;
     ui.flush(std::time::Duration::ZERO)?;
     Ok(Case {
         name,
@@ -397,13 +397,13 @@ impl ApplicationHandler<Notice> for TextModeProbe {
                 ui.set_viewport(Viewport::new(800.0, 500.0, 1.0)?)?;
                 ui.ui_settings().set_text_rendering(mode)?;
                 let offset = ui.signal(0.0f32);
-                ui.mount(
+                ui.mount_tree(Element::new(
                     "moving-text",
                     MovingText {
                         offset: offset.read_only(),
                         current: 0.0,
                     },
-                )?;
+                ))?;
                 ui.flush(std::time::Duration::ZERO)?;
                 let mut preparation = Vec::new();
                 let mut cpu_render = Vec::new();

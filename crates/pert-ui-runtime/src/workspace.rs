@@ -480,7 +480,7 @@ impl WorkspaceSettings {
 /// ```
 /// # use pert_ui_runtime as pert_ui;
 /// use pert_ui::Workspace;
-/// let text = "pert-ui-workspace 1\nentry \"main/split\" split ratio=0.25\n";
+/// let text = "pert-ui-workspace 2\nentry \"main/split\" split ratio=0.25\n";
 /// let workspace = Workspace::decode(text)?;
 /// assert_eq!(workspace.len(), 1);
 /// assert_eq!(workspace.encode(), text);
@@ -508,11 +508,13 @@ pub struct Workspace {
 impl Workspace {
     /// The document schema revision this build writes and accepts.
     ///
-    /// It is versioned separately from the crate version. A document from a
-    /// newer revision is rejected with [`WorkspaceError::UnsupportedVersion`]
-    /// rather than partially applied, and the host falls back to its default
-    /// workspace.
-    pub const SCHEMA_VERSION: u32 = 1;
+    /// It is versioned separately from the crate version. A document from
+    /// another revision, older or newer, is rejected with
+    /// [`WorkspaceError::UnsupportedVersion`] rather than partially applied,
+    /// and the host falls back to its default workspace. Revision 2 changed
+    /// how an [`Each`](crate::Each)'s default container addresses its items,
+    /// so a revision-1 document is rejected rather than reinterpreted.
+    pub const SCHEMA_VERSION: u32 = 2;
     /// The largest number of entries one document may hold.
     pub const MAX_ENTRIES: usize = 4096;
     /// The largest encoded path, in bytes.
@@ -914,7 +916,7 @@ impl Workspace {
     /// let newer = "pert-ui-workspace 9\n";
     /// assert_eq!(
     ///     Workspace::decode(newer),
-    ///     Err(WorkspaceError::UnsupportedVersion { found: 9, supported: 1 }),
+    ///     Err(WorkspaceError::UnsupportedVersion { found: 9, supported: 2 }),
     /// );
     /// ```
     pub fn decode(text: &str) -> Result<Self, WorkspaceError> {
@@ -1336,11 +1338,11 @@ mod tests {
 
     #[test]
     fn rejects_an_unsupported_version_without_reading_entries() {
-        let text = "pert-ui-workspace 2\nentry \"a\" tabs selected=\"x\"\n";
+        let text = "pert-ui-workspace 3\nentry \"a\" tabs selected=\"x\"\n";
         assert_eq!(
             Workspace::decode(text),
             Err(WorkspaceError::UnsupportedVersion {
-                found: 2,
+                found: 3,
                 supported: Workspace::SCHEMA_VERSION,
             }),
         );
@@ -1348,7 +1350,7 @@ mod tests {
 
     #[test]
     fn rejects_malformed_documents() {
-        let entry = |line: &str| format!("pert-ui-workspace 1\n{line}\n");
+        let entry = |line: &str| format!("pert-ui-workspace 2\n{line}\n");
         let number = |token: &str| malformed(&format!("unreadable number `{token}`"));
         for (text, expected) in [
             (String::new(), malformed("missing header")),
@@ -1405,7 +1407,7 @@ mod tests {
                 malformed("expected `=`"),
             ),
             (
-                "pert-ui-workspace 1\nentry \"a\" tabs x=1\nsettings zoom=1.0\n".into(),
+                "pert-ui-workspace 2\nentry \"a\" tabs x=1\nsettings zoom=1.0\n".into(),
                 malformed("misplaced settings line"),
             ),
         ] {
@@ -1415,7 +1417,7 @@ mod tests {
 
     #[test]
     fn every_token_has_one_spelling_and_the_layout_is_tolerated() {
-        let entry = |line: &str| format!("pert-ui-workspace 1\n{line}\n");
+        let entry = |line: &str| format!("pert-ui-workspace 2\n{line}\n");
         let number = |token: &str| malformed(&format!("unreadable number `{token}`"));
         let version = malformed("unreadable schema version");
         for (text, expected) in [
@@ -1438,7 +1440,7 @@ mod tests {
         ] {
             assert_eq!(Workspace::decode(&text), Err(expected), "{text:?}");
         }
-        let canonical = "pert-ui-workspace 1\nentry \"a\\\\/b\" tabs t=\"/\" x=0.5 y=-3\n";
+        let canonical = "pert-ui-workspace 2\nentry \"a\\\\/b\" tabs t=\"/\" x=0.5 y=-3\n";
         let decoded = Workspace::decode(canonical).expect("canonical text decodes");
         assert_eq!(
             decoded
@@ -1451,7 +1453,7 @@ mod tests {
         // CRLF line endings, blank lines, extra spaces and a missing final
         // newline are a transport's changes, not other spellings.
         let transported =
-            "pert-ui-workspace  1 \r\n\r\nentry  \"a\\\\/b\"  tabs t=\"/\"   x=0.5 y=-3 ";
+            "pert-ui-workspace  2 \r\n\r\nentry  \"a\\\\/b\"  tabs t=\"/\"   x=0.5 y=-3 ";
         assert_eq!(Workspace::decode(transported), Ok(decoded));
     }
 
@@ -1549,7 +1551,7 @@ mod tests {
     #[test]
     fn settings_survive_a_round_trip_and_stay_optional() {
         let empty = Workspace::new(WorkspaceSettings::default(), []).unwrap();
-        assert_eq!(empty.encode(), "pert-ui-workspace 1\n");
+        assert_eq!(empty.encode(), "pert-ui-workspace 2\n");
         assert_eq!(Workspace::decode(&empty.encode()), Ok(empty));
         let decoded = Workspace::decode(&document().encode()).unwrap();
         assert_eq!(

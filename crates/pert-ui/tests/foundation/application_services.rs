@@ -1,5 +1,6 @@
 //! Application services through the facade: values kept until shutdown,
 //! background work delivered on the UI thread, and interval timers.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{
     cell::RefCell,

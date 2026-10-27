@@ -1,5 +1,6 @@
 //! Public consumer contracts for local editors and native text extension points.
 use crate::support;
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::RefCell, rc::Rc, time::Duration};
 use support::{find, frame};
@@ -516,7 +517,7 @@ fn pointer_drag_replaces_a_range_and_focus_transfer_cancels_preedit() {
     ui.text_preedit(&TextPreedit::new("pending", None).unwrap())
         .unwrap();
     let button = ui
-        .mount("button", Button::new("Other", |_| Ok(())))
+        .mount_tree(Element::new("button", Button::new("Other", |_| Ok(()))))
         .unwrap();
     ui.focus(&button).unwrap();
     frame(&mut ui);

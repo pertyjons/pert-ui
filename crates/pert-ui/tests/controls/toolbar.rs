@@ -1,5 +1,6 @@
 //! Toolbar layout, overflow and wrapping through the public facade.
 use crate::support;
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use support::{find, frame, key};
 

@@ -1,5 +1,6 @@
 //! Revealing a hidden target: the container hook, the walk, focus, the queued
 //! form and keyed collection reveals.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::Cell, rc::Rc};
 
@@ -637,7 +638,9 @@ fn the_reveal_queue_is_bounded_and_shutdown_cancels_it() -> TestResult {
 fn a_request_for_another_runtime_is_refused() {
     let mut ui = ui();
     let mut other = Runtime::new();
-    let foreign = other.mount("x", Label::new("x")).unwrap();
+    let foreign = other
+        .mount_tree(Element::new("x", Label::new("x")))
+        .unwrap();
     let requester = ui
         .mount_tree(Element::new("requester", Button::new("r", |_| Ok(()))))
         .unwrap();

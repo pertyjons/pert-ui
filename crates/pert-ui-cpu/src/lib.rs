@@ -1,5 +1,6 @@
 #![doc = include_str!("../README.md")]
 
+use pert_ui_runtime::host::HostIntegration;
 use pert_ui_runtime::{
     CaptureError, Color, DisplayList, DrawCommand, DrawError, FrameImage, ImageSampling,
     LimitError, MaskImage, QuarterTurn, RasterImage, Runtime, VectorRasterizer,
@@ -103,7 +104,7 @@ impl From<CpuRenderError> for CaptureError {
 ///
 /// let mut ui = Runtime::new();
 /// ui.set_viewport(Viewport::new(4.0, 2.0, 1.0)?)?;
-/// ui.mount("swatch", Swatch)?;
+/// ui.mount_tree(Element::new("swatch", Swatch))?;
 /// ui.flush(Duration::ZERO)?;
 /// let frame = CpuRenderer::new().render(&ui.paint()?)?;
 /// assert_eq!((frame.width(), frame.height()), (4, 2));

@@ -973,9 +973,7 @@ impl Component for Toolbar {
         Ok(())
     }
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = p.size() else {
-            return Ok(());
-        };
+        let size = p.size();
         p.fill_rect(Rect::from_size(size), p.color(ColorRole::SurfaceContainer));
         let thickness = p.metric(MetricRole::BorderWidth).min(size.height());
         let y = if self.below {
@@ -1162,33 +1160,25 @@ impl Component for OverflowColumn {
         Ok(())
     }
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
-        if let Some(size) = p.size() {
-            let color = p.color(ColorRole::Surface);
-            p.fill_shape(
-                Rect::from_size(size),
-                crate::choice_controls::rounded(p.metric(MetricRole::CornerRadius))?,
-                color,
-            )?;
-            self.painted_background.set(Some(color));
-        } else {
-            self.painted_background.set(None);
-        }
+        let color = p.color(ColorRole::Surface);
+        p.fill_shape(
+            Rect::from_size(p.size()),
+            crate::choice_controls::rounded(p.metric(MetricRole::CornerRadius))?,
+            color,
+        )?;
+        self.painted_background.set(Some(color));
         Ok(())
     }
     fn paint_foreground(&self, p: &mut Painter) -> Result<(), DrawError> {
-        if let Some(size) = p.size() {
-            let width = Length::new(p.metric(MetricRole::BorderWidth))?;
-            let color = p.color(ColorRole::PanelBorder);
-            p.stroke_shape(
-                Rect::from_size(size),
-                crate::choice_controls::rounded(p.metric(MetricRole::CornerRadius))?,
-                width,
-                color,
-            )?;
-            self.painted_border.set(Some((width.get(), color)));
-        } else {
-            self.painted_border.set(None);
-        }
+        let width = Length::new(p.metric(MetricRole::BorderWidth))?;
+        let color = p.color(ColorRole::PanelBorder);
+        p.stroke_shape(
+            Rect::from_size(p.size()),
+            crate::choice_controls::rounded(p.metric(MetricRole::CornerRadius))?,
+            width,
+            color,
+        )?;
+        self.painted_border.set(Some((width.get(), color)));
         Ok(())
     }
     fn inspect(&self) -> ComponentDetails {

@@ -1,5 +1,6 @@
 //! Links: button activation with link presentation, semantics and cursor.
 use crate::support;
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::Cell, rc::Rc};
 use support::{key, press, settle, widget};

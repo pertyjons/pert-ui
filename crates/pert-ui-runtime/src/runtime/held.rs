@@ -12,7 +12,8 @@ pub struct HeldInputId(WidgetId, u64);
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum HeldCancellation {
-    /// The keyboard focus left the window: [`Runtime::clear_focus`](crate::Runtime::clear_focus)
+    /// The keyboard focus left the window:
+    /// [`Runtime::clear_focus`](crate::host::HostIntegration::clear_focus)
     /// ran, as the platform layer does when a native window loses focus or is
     /// hidden. Every press the runtime admitted is cancelled, whichever of its
     /// windows or views owns the registration, since releases may no longer

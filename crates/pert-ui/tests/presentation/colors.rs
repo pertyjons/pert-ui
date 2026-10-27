@@ -1,6 +1,7 @@
 //! sRGB conversion, hexadecimal notation, color arithmetic, contrast and the
 //! color swatch, through the public facade.
 use crate::support;
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::Cell, rc::Rc, time::Duration};
 use support::{frame, press, settle, widget};

@@ -1,4 +1,5 @@
 //! App-wide zoom, native geometry and gesture cancellation through public APIs.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::Cell, rc::Rc, time::Duration};
 fn draw(ui: &mut Runtime) -> DisplayList {

@@ -12,6 +12,42 @@
 
 use pert_ui::{KeyAction, KeyCode, Runtime, WidgetId};
 
+/// The descendant of `root` reached by `keys`, one key per level and every
+/// level named, including the keys built-in composites give the parts they
+/// create; an empty path is `root` itself. `None` when a level has no child
+/// with its key.
+///
+/// This is how a test of a composite's internal parts names them. It walks
+/// the public [`Runtime::children`] and [`Runtime::key`]; an application
+/// addresses a component with [`Runtime::find`], whose path skips
+/// library-internal structure.
+///
+/// # Panics
+/// When `root` or a child on the way is not mounted in `ui`.
+#[track_caller]
+pub fn key_path(ui: &Runtime, root: &WidgetId, keys: &[&str]) -> Option<WidgetId> {
+    let mut current = root.clone();
+    for wanted in keys {
+        let children = match ui.children(&current) {
+            Ok(children) => children,
+            Err(error) => panic!("walking {keys:?}: the children of {current:?}: {error}"),
+        };
+        let mut next = None;
+        for child in children {
+            match ui.key(&child) {
+                Ok(key) if key == *wanted => {
+                    next = Some(child);
+                    break;
+                }
+                Ok(_) => {}
+                Err(error) => panic!("walking {keys:?}: the key of {child:?}: {error}"),
+            }
+        }
+        current = next?;
+    }
+    Some(current)
+}
+
 /// The widget keyed `key` in the subtree rooted at `root`, `root` itself
 /// included, or `None`.
 ///

@@ -48,7 +48,7 @@ fn submission_retains_preview_and_base_until_corrected_acceptance() -> Result {
 #[test]
 fn full_transport_guard_drop_rejection_and_invalid_correction_preserve_receipts() -> Result {
     let (mut ui, parameter, host) = fixture()?;
-    let id = ui.mount("owner", Owner)?;
+    let id = ui.mount_tree(Element::new("owner", Owner))?;
     let edit = ui.event(&id, |cx| {
         parameter.begin_edit(cx, parameter.snapshot().get().unwrap().revision)
     })??;
@@ -89,7 +89,7 @@ fn full_transport_guard_drop_rejection_and_invalid_correction_preserve_receipts(
 #[test]
 fn disconnect_reconnect_conflict_and_shutdown_never_invent_acknowledgement() -> Result {
     let (mut ui, parameter, host) = fixture()?;
-    let id = ui.mount("owner", Owner)?;
+    let id = ui.mount_tree(Element::new("owner", Owner))?;
     let edit = ui.event(&id, |cx| {
         parameter.begin_edit(cx, parameter.snapshot().get().unwrap().revision)
     })??;
@@ -143,7 +143,7 @@ impl Component for Owner {
 #[test]
 fn invalid_submission_is_terminal_and_disconnect_cancels_unsent_preview() -> Result {
     let (mut ui, parameter, host) = fixture()?;
-    let id = ui.mount("owner", Owner)?;
+    let id = ui.mount_tree(Element::new("owner", Owner))?;
     let edit = ui.event(&id, |cx| {
         parameter.begin_edit(cx, parameter.snapshot().get().unwrap().revision)
     })??;
@@ -184,7 +184,7 @@ fn terminal_sink_observes_resolved_authority_after_guard_drop() -> Result {
         seen.set(true);
         Ok(())
     })?;
-    let id = ui.mount("owner", Owner)?;
+    let id = ui.mount_tree(Element::new("owner", Owner))?;
     let edit = ui.event(&id, |cx| {
         parameter.begin_edit(cx, parameter.snapshot().get().unwrap().revision)
     })??;
@@ -215,7 +215,7 @@ fn automatic_submission_retains_transport_errors_and_retries_only_explicitly() -
             Ok(())
         }
     })?;
-    let id = ui.mount("owner", Owner)?;
+    let id = ui.mount_tree(Element::new("owner", Owner))?;
     let edit = ui.event(&id, |cx| {
         parameter.begin_edit(cx, parameter.snapshot().get().unwrap().revision)
     })??;
@@ -309,7 +309,7 @@ fn parameter_events<T: ParameterValue>(ui: &Runtime, parameter: &Parameter<T>) -
 fn remote_history_distinguishes_submission_rejection_and_explicit_cancel() -> Result {
     let (mut ui, parameter, host) = fixture()?;
     ui.set_debug_mode(DebugMode::Inspect);
-    let owner = ui.mount("history-owner", Owner)?;
+    let owner = ui.mount_tree(Element::new("history-owner", Owner))?;
     host.on_submit(|_| Err(SinkError::new(SinkErrorKind::Full, "transport full")))?;
     let edit = ui.event(&owner, |cx| {
         parameter.begin_edit(cx, parameter.snapshot().get()?.revision)
@@ -366,7 +366,7 @@ fn remote_history_distinguishes_submission_rejection_and_explicit_cancel() -> Re
 #[test]
 fn early_parameter_admission_refusals_are_recorded_once_and_stay_opt_in_bounded() -> Result {
     let (mut ui, parameter, host) = fixture()?;
-    let owner = ui.mount("owner", Owner)?;
+    let owner = ui.mount_tree(Element::new("owner", Owner))?;
     host.disconnect()?;
     let refused = || RuntimeError::from(EditError::Unavailable);
     assert_eq!(
@@ -392,7 +392,7 @@ fn early_parameter_admission_refusals_are_recorded_once_and_stay_opt_in_bounded(
     assert_eq!(events[0].kind, EventKind::EditBegin);
     assert!(matches!(events[0].status, EventStatus::Failed(_)));
     let mut other = Runtime::new();
-    let foreign_owner = other.mount("foreign", Owner)?;
+    let foreign_owner = other.mount_tree(Element::new("foreign", Owner))?;
     ui.clear_event_history();
     for _ in 0..InspectionSnapshot::MAX_EVENTS + 1 {
         assert_eq!(
@@ -447,7 +447,7 @@ fn unknown_authority_receipts_correlate_with_local_rejection_after_recovery_or_r
             recorded.borrow_mut().push(event.clone());
             Ok(())
         })?;
-        let owner = ui.mount("owner", Owner)?;
+        let owner = ui.mount_tree(Element::new("owner", Owner))?;
         let edit = ui.event(&owner, |cx| {
             parameter.begin_edit(cx, parameter.snapshot().get()?.revision)
         })??;
@@ -490,7 +490,7 @@ fn unknown_authority_receipts_correlate_with_local_rejection_after_recovery_or_r
 fn connected_resynchronization_locally_supersedes_without_an_authority_response() -> Result {
     let (mut ui, parameter, host) = fixture()?;
     host.on_submit(|_| Ok(()))?;
-    let owner = ui.mount("owner", Owner)?;
+    let owner = ui.mount_tree(Element::new("owner", Owner))?;
     let edit = ui.event(&owner, |cx| {
         parameter.begin_edit(cx, parameter.snapshot().get()?.revision)
     })??;

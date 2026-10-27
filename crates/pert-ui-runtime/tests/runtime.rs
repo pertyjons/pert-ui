@@ -1,4 +1,5 @@
 //! Public headless runtime, subscriptions, input and edit-lifecycle contracts.
+use pert_ui_runtime::testing::HostIntegration;
 use pert_ui_runtime::{
     BindingError, EditError, EditOutcome, InputOutcome, RuntimeError, component::*, parameter::*,
     prelude::*,
@@ -47,9 +48,9 @@ fn signal_changes_are_coalesced_and_only_reach_dependents() -> TestResult {
     let (one, seen_one) = probe(&a, false);
     let (two, seen_two) = probe(&a, false);
     let (other, seen_other) = probe(&b, false);
-    runtime.mount("one", one)?;
-    runtime.mount("two", two)?;
-    runtime.mount("other", other)?;
+    runtime.mount_tree(Element::new("one", one))?;
+    runtime.mount_tree(Element::new("two", two))?;
+    runtime.mount_tree(Element::new("other", other))?;
     assert_eq!(runtime.flush(Duration::ZERO)?.components_updated, 3);
     assert_eq!(runtime.next_deadline(), None);
     assert!(!a.set_changed(1)?);
@@ -94,7 +95,7 @@ fn conditional_dependencies_are_recollected_and_unmount_releases_them() -> TestR
     let a = runtime.signal(1);
     let b = runtime.signal(2);
     let seen = Rc::new(RefCell::new(Vec::new()));
-    let id = runtime.mount(
+    let id = runtime.mount_tree(Element::new(
         "conditional",
         Conditional {
             choose: choose.read_only(),
@@ -102,7 +103,7 @@ fn conditional_dependencies_are_recollected_and_unmount_releases_them() -> TestR
             b: b.read_only(),
             seen: seen.clone(),
         },
-    )?;
+    ))?;
     runtime.flush(Duration::ZERO)?;
     choose.set(false)?;
     runtime.flush(Duration::ZERO)?;
@@ -120,9 +121,10 @@ fn conditional_dependencies_are_recollected_and_unmount_releases_them() -> TestR
 #[test]
 fn hidden_live_views_sleep_and_return_with_current_data() -> TestResult {
     let mut runtime = Runtime::new();
+    runtime.set_viewport(Viewport::new(100.0, 100.0, 1.0)?)?;
     let signal = runtime.signal(1);
     let (component, seen) = probe(&signal, true);
-    let id = runtime.mount("live", component)?;
+    let id = runtime.mount_tree(Element::new("live", component))?;
     runtime.flush(Duration::ZERO)?;
     let deadline = runtime.next_deadline().ok_or("missing live deadline")?;
     assert_eq!(deadline, Duration::from_nanos(16_666_667));
@@ -154,14 +156,15 @@ fn hidden_live_views_sleep_and_return_with_current_data() -> TestResult {
 #[test]
 fn shared_live_deadlines_skip_missed_frames_without_visiting_static_components() -> TestResult {
     let mut runtime = Runtime::new();
+    runtime.set_viewport(Viewport::new(100.0, 100.0, 1.0)?)?;
     let signal = runtime.signal(1);
     for i in 0..1_000 {
         let (component, _) = probe(&signal, false);
-        runtime.mount(format!("static-{i}"), component)?;
+        runtime.mount_tree(Element::new(format!("static-{i}"), component))?;
     }
     for i in 0..2 {
         let (component, _) = probe(&signal, true);
-        runtime.mount(format!("live-{i}"), component)?;
+        runtime.mount_tree(Element::new(format!("live-{i}"), component))?;
     }
     assert_eq!(runtime.flush(Duration::ZERO)?.components_updated, 1_002);
     assert_eq!(
@@ -192,15 +195,15 @@ fn keys_and_handles_never_retarget_after_remount_or_across_runtimes() -> TestRes
     let mut runtime = Runtime::new();
     let signal = runtime.signal(1);
     let (component, _) = probe(&signal, false);
-    let old = runtime.mount("same", component)?;
+    let old = runtime.mount_tree(Element::new("same", component))?;
     let (duplicate, _) = probe(&signal, false);
     assert_eq!(
-        runtime.mount("same", duplicate),
+        runtime.mount_tree(Element::new("same", duplicate)),
         Err(RuntimeError::DuplicateKey("same".into()))
     );
     runtime.unmount(&old)?;
     let (component, _) = probe(&signal, false);
-    let new = runtime.mount("same", component)?;
+    let new = runtime.mount_tree(Element::new("same", component))?;
     assert_ne!(old, new);
     assert_eq!(runtime.event(&old, |_| ()), Err(RuntimeError::Unmounted));
     let foreign = Runtime::new();
@@ -228,13 +231,13 @@ fn writes_are_rejected_during_update_and_handles_close_with_runtime() -> TestRes
     let mut runtime = Runtime::new();
     let signal = runtime.signal(1);
     let observed = Rc::new(Cell::new(None));
-    runtime.mount(
+    runtime.mount_tree(Element::new(
         "writer",
         WritesDuringUpdate {
             signal: signal.clone(),
             observed: observed.clone(),
         },
-    )?;
+    ))?;
     runtime.flush(Duration::ZERO)?;
     assert_eq!(observed.take(), Some(RuntimeError::WriteDuringUpdate));
     assert_eq!(signal.get()?, 1);
@@ -260,9 +263,9 @@ impl Component for FailsOnce {
 fn component_errors_preserve_pending_work_and_restore_write_phase() -> TestResult {
     let mut runtime = Runtime::new();
     let signal = runtime.signal(1);
-    runtime.mount("failing", FailsOnce { first: true })?;
+    runtime.mount_tree(Element::new("failing", FailsOnce { first: true }))?;
     let (component, _) = probe(&signal, false);
-    runtime.mount("other", component)?;
+    runtime.mount_tree(Element::new("other", component))?;
     assert_eq!(
         runtime.flush(Duration::ZERO),
         Err(RuntimeError::BorrowConflict)
@@ -291,20 +294,20 @@ fn shared_parameter_controls_observe_preview_conflict_and_effective_independentl
     )?;
     let seen_a = Rc::new(RefCell::new(Vec::new()));
     let seen_b = Rc::new(RefCell::new(Vec::new()));
-    let a = runtime.mount(
+    let a = runtime.mount_tree(Element::new(
         "a",
         ParameterProbe {
             value: parameter.snapshot(),
             seen: seen_a.clone(),
         },
-    )?;
-    runtime.mount(
+    ))?;
+    runtime.mount_tree(Element::new(
         "b",
         ParameterProbe {
             value: parameter.snapshot(),
             seen: seen_b.clone(),
         },
-    )?;
+    ))?;
     runtime.flush(Duration::ZERO)?;
     let revision = parameter.snapshot().get()?.revision;
     let edit = runtime.event(&a, |cx| parameter.begin_edit(cx, revision))??;
@@ -336,7 +339,7 @@ fn hiding_unmount_focus_loss_escape_and_guard_drop_cancel_gestures() -> TestResu
         )?;
         let dummy = runtime.signal(0);
         let (component, _) = probe(&dummy, false);
-        let id = runtime.mount("edit", component)?;
+        let id = runtime.mount_tree(Element::new("edit", component))?;
         let edit = runtime.event(&id, |cx| {
             parameter.begin_edit(cx, parameter.snapshot().get()?.revision)
         })??;
@@ -379,7 +382,7 @@ fn host_drop_marks_unavailable_and_recreation_requires_new_identity() -> TestRes
     let (parameter, host) = runtime.parameter(id.clone(), spec.clone())?;
     let dummy = runtime.signal(0);
     let (component, _) = probe(&dummy, false);
-    let widget = runtime.mount("edit", component)?;
+    let widget = runtime.mount_tree(Element::new("edit", component))?;
     let edit = runtime.event(&widget, |cx| {
         parameter.begin_edit(cx, parameter.snapshot().get()?.revision)
     })??;
@@ -439,7 +442,7 @@ impl Component for InputProbe {
 fn keyboard_tracks_simultaneous_keys_repeat_modifiers_and_text_separately() -> TestResult {
     let mut runtime = Runtime::new();
     let log = Rc::new(RefCell::new(InputLog::default()));
-    let id = runtime.mount("input", InputProbe(log.clone()))?;
+    let id = runtime.mount_tree(Element::new("input", InputProbe(log.clone())))?;
     runtime.focus(&id)?;
     for key in [
         KeyCode::KeyA,
@@ -490,8 +493,8 @@ fn focus_transfer_and_hiding_reset_component_owned_key_actions() -> TestResult {
     let mut runtime = Runtime::new();
     let first = Rc::new(RefCell::new(InputLog::default()));
     let second = Rc::new(RefCell::new(InputLog::default()));
-    let a = runtime.mount("a", InputProbe(first.clone()))?;
-    let b = runtime.mount("b", InputProbe(second.clone()))?;
+    let a = runtime.mount_tree(Element::new("a", InputProbe(first.clone())))?;
+    let b = runtime.mount_tree(Element::new("b", InputProbe(second.clone())))?;
     runtime.focus(&a)?;
     runtime.key_input(KeyCode::KeyA, KeyAction::Press)?;
     runtime.focus(&b)?;
@@ -513,7 +516,7 @@ fn gesture_drop_reclaims_receipts_and_commits_remain_committed() -> TestResult {
     )?;
     let dummy = runtime.signal(0);
     let (component, _) = probe(&dummy, false);
-    let id = runtime.mount("control", component)?;
+    let id = runtime.mount_tree(Element::new("control", component))?;
     for _ in 0..100 {
         let revision = parameter.snapshot().get()?.revision;
         let edit = runtime.event(&id, |cx| parameter.begin_edit(cx, revision))??;
@@ -539,7 +542,7 @@ impl Component for PanicOnce {
 fn unwinding_an_update_preserves_work_and_restores_phase() -> TestResult {
     let mut runtime = Runtime::new();
     let signal = runtime.signal(0);
-    runtime.mount("panic", PanicOnce(true))?;
+    runtime.mount_tree(Element::new("panic", PanicOnce(true)))?;
     assert!(
         std::panic::catch_unwind(std::panic::AssertUnwindSafe(
             || runtime.flush(Duration::ZERO)
@@ -568,13 +571,13 @@ fn shared_reads_keep_the_strongest_dependency_kind() -> TestResult {
     let mut runtime = Runtime::new();
     let signal = runtime.signal(0);
     let seen = Rc::new(Cell::new(None));
-    let id = runtime.mount(
+    let id = runtime.mount_tree(Element::new(
         "read",
         MultiRead {
             value: signal.read_only(),
             seen: seen.clone(),
         },
-    )?;
+    ))?;
     runtime.flush(Duration::ZERO)?;
     for value in 1..3 {
         signal.set(value)?;
@@ -601,13 +604,13 @@ fn failed_mount_does_not_reserve_its_key_and_focus_reset_repaints() -> TestResul
     let mut runtime = Runtime::new();
     assert!(
         std::panic::catch_unwind(std::panic::AssertUnwindSafe(
-            || runtime.mount("key", BadMount)
+            || runtime.mount_tree(Element::new("key", BadMount))
         ))
         .is_err()
     );
     let signal = runtime.signal(0);
     let (component, seen) = probe(&signal, false);
-    let id = runtime.mount("key", component)?;
+    let id = runtime.mount_tree(Element::new("key", component))?;
     runtime.flush(Duration::ZERO)?;
     runtime.focus(&id)?;
     runtime.flush(Duration::ZERO)?;
@@ -657,7 +660,7 @@ fn event_phase_timers_commit_held_repeats_and_stop_with_their_input_context() ->
     let mut runtime = Runtime::new();
     let value = runtime.signal(0);
     let ticks = Rc::new(Cell::new(0));
-    let id = runtime.mount(
+    let id = runtime.mount_tree(Element::new(
         "repeater",
         Repeater {
             value: value.clone(),
@@ -665,7 +668,7 @@ fn event_phase_timers_commit_held_repeats_and_stop_with_their_input_context() ->
             interval: Duration::from_millis(80),
             ticks: ticks.clone(),
         },
-    )?;
+    ))?;
     runtime.flush(Duration::ZERO)?;
     runtime.focus(&id)?;
     runtime.flush(Duration::ZERO)?;
@@ -746,7 +749,7 @@ fn timer_requests_reject_zero_delays_and_report_callback_failures() -> TestResul
         }
     }
     let mut runtime = Runtime::new();
-    let id = runtime.mount("failing", Failing { armed: false })?;
+    let id = runtime.mount_tree(Element::new("failing", Failing { armed: false }))?;
     runtime.flush(Duration::ZERO)?;
     runtime.focus(&id)?;
     runtime.key_input(KeyCode::KeyA, KeyAction::Press)?;

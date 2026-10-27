@@ -20,7 +20,8 @@ encode application units.
 The default facade starts a native application with bundled typography and a
 coherent dark or light theme. Normal applications need no renderer selection,
 repaint timer, executor, theme file or cache key. A custom host can use the
-runtime without native startup. Accessibility adapters and plugin hosting are
+runtime without native startup through the `host` module, whose
+`HostIntegration` trait holds the methods only a host calls. Accessibility adapters and plugin hosting are
 outside the current delivery. Native support has been exercised on one Linux
 desktop configuration; the rest of the [platform matrix](verification.md#native-evidence)
 still needs execution evidence.

@@ -684,9 +684,7 @@ impl<T: Clone + Eq + 'static> Component for OptionList<T> {
         self.pressed = None;
     }
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = p.size() else {
-            return Ok(());
-        };
+        let size = p.size();
         let geometry = &self.geometry;
         let h = geometry.row.get();
         let offset = geometry.offset.get();
@@ -1217,9 +1215,7 @@ impl<T: Clone + Eq + 'static> Component for SelectAnchor<T> {
         self.input.reset();
     }
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
-        let Some(s) = p.size() else {
-            return Ok(());
-        };
+        let s = p.size();
         let rect = Rect::from_size(s);
         if self.inline {
             if self.input.hovered && self.focusable() {

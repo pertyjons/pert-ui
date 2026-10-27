@@ -1,5 +1,6 @@
 //! Progress and activity presentation through the public facade: what each status
 //! draws, and that indeterminate activity is the only thing that schedules work.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::time::Duration;
 

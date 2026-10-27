@@ -1,6 +1,7 @@
 //! `Component::focus_within_changed` contracts: which ancestors are told,
 //! in which order relative to `focus_lost`/`focus_gained`, on which occasions,
 //! and how errors propagate.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{
     cell::{Cell, RefCell},

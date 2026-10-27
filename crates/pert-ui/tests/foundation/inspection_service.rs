@@ -1,6 +1,7 @@
 //! Queries over the mounted interface and the inspection service that carries
 //! them from another thread, through the public facade as an application's
 //! tooling adapter would use them.
+use pert_ui::testing::HostIntegration;
 use std::{collections::BTreeMap, sync::mpsc, thread, time::Duration};
 
 use pert_ui::*;

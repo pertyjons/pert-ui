@@ -459,9 +459,7 @@ impl Component for MenuTitle {
         self.hovered = false;
     }
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = p.size() else {
-            return Ok(());
-        };
+        let size = p.size();
         let bounds = Rect::from_size(size);
         let fill = if self.shown {
             Some(ColorRole::Primary)
@@ -1063,9 +1061,7 @@ impl Component for MenuBar {
         Ok(InputOutcome::Handled)
     }
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = p.size() else {
-            return Ok(());
-        };
+        let size = p.size();
         let row = self.row.get().min(size.height());
         p.fill_rect(
             rect(0.0, 0.0, size.width(), row)?,

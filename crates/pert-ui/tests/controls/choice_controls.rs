@@ -1,4 +1,5 @@
 //! Boolean and discrete control contracts through the public facade.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::time::Duration;
 fn send(ui: &mut Runtime, y: f32, kind: PointerKind) {

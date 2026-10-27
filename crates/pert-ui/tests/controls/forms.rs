@@ -1,5 +1,6 @@
 //! Adaptive layout preserves the controls' identity and editing contracts.
 use crate::support;
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::time::Duration;
 use support::frame;

@@ -176,7 +176,8 @@ component whose handling of the repeated move kept scheduling work.
 A gesture belongs to the button that started it: end it on that button's
 release, not any release. Cancel it in [`Component::cancel_input`], which the
 runtime calls when the widget loses its input context (hiding, removal, window
-focus loss, a modal surface, [`Runtime::cancel_input`]), and on
+focus loss, a modal surface, a host's
+[`HostIntegration::cancel_input`](crate::host::HostIntegration::cancel_input)), and on
 [`Component::focus_lost`] where the gesture should not outlive focus. Escape's
 ordinary delivery never calls `cancel_input`: when no drag session, delayed
 help, editor or open surface takes it first ([`Runtime::key_input`] has the

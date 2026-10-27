@@ -54,15 +54,18 @@ fn equal_images_from_different_allocations_share_one_scene_entry() {
     let rect = Rect::new(0.0, 0.0, 10.0, 10.0).unwrap();
     let red = [255, 0, 0, 255];
     // Two components, each with its own allocation of the same pixels.
-    ui.mount("a", Draw(vec![(solid(2, 2, red), rect, None)]))
-        .unwrap();
-    ui.mount(
+    ui.mount_tree(Element::new(
+        "a",
+        Draw(vec![(solid(2, 2, red), rect, None)]),
+    ))
+    .unwrap();
+    ui.mount_tree(Element::new(
         "b",
         Draw(vec![
             (solid(2, 2, red), rect, None),
             (solid(2, 2, [0, 0, 255, 255]), rect, None),
         ]),
-    )
+    ))
     .unwrap();
     let scene = draw(&mut ui);
     assert_eq!(scene.images().len(), 2);
@@ -81,13 +84,13 @@ fn resources_enter_the_scene_only_through_a_surviving_command() {
     let mut ui = ui(100.0, 100.0);
     let rect = Rect::new(0.0, 0.0, 10.0, 10.0).unwrap();
     let hidden = Rect::new(50.0, 50.0, 10.0, 10.0).unwrap();
-    ui.mount(
+    ui.mount_tree(Element::new(
         "images",
         Draw(vec![
             (solid(1, 1, [1, 1, 1, 255]), rect, Some(hidden)),
             (solid(1, 1, [2, 2, 2, 255]), rect, None),
         ]),
-    )
+    ))
     .unwrap();
     let scene = draw(&mut ui);
     assert_eq!(
@@ -104,10 +107,10 @@ fn an_image_keeps_its_destination_and_carries_its_clip_like_a_mask() {
     let mut ui = ui(100.0, 100.0);
     let rect = Rect::new(10.0, 10.0, 40.0, 20.0).unwrap();
     let clip = Rect::new(20.0, 0.0, 10.0, 100.0).unwrap();
-    ui.mount(
+    ui.mount_tree(Element::new(
         "image",
         Draw(vec![(solid(2, 2, [9, 9, 9, 255]), rect, Some(clip))]),
-    )
+    ))
     .unwrap();
     let scene = draw(&mut ui);
     assert_eq!(

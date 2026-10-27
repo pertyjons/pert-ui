@@ -1,6 +1,8 @@
 //! What an application callback reaches for: `?` on the library's
 //! higher-level errors, the address lookup, typed capture targets, command
 //! buttons and the named-key chord.
+use crate::support;
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::RefCell, error::Error, rc::Rc, time::Duration};
 
@@ -127,7 +129,7 @@ fn find_takes_the_path_inspection_reports() -> TestResult {
     let fader = ui.find(&root, &below)?.ok_or("found")?;
     assert_eq!(ui.key(&fader)?, "fader");
     // The full internal path needs the structure the address skips.
-    assert!(ui.find_path(&root, &below)?.is_none());
+    assert!(support::key_path(&ui, &root, &below).is_none());
     assert!(ui.find(&root, &["center", "mixer", "missing"])?.is_none());
     // Two faders: one key alone is ambiguous, an address is not.
     assert_eq!(

@@ -24,12 +24,17 @@
 //! - [`InspectionQuery`], [`Selector`] and [`Detail`], for reading what the
 //!   runtime shows through [`Runtime::query`];
 //! - [`CaptureRequest`], [`CaptureTarget`] and [`FrameImage`], for a
-//!   rendered capture.
+//!   rendered capture;
+//! - [`HostIntegration`], whose methods a test calls where it stands in for
+//!   a host, such as selecting a native window, taking presentation requests
+//!   or clearing focus as a window's deactivation would.
 //!
 //! The key names a chord writes ([`KeyCode`], [`Modifiers`], [`CommandKey`])
 //! and [`Point`] are in the prelude.
 //!
-//! These names stay at the crate root too; the module only gathers them. The
+//! These names stay at the crate root too, except [`HostIntegration`], which
+//! is reached through [`host`](crate::host) and this module; the module only
+//! gathers them. The
 //! `pert-ui` facade's `testing` module re-exports this one and adds its CPU
 //! renderer and its headless application entry.
 //!
@@ -72,6 +77,8 @@ use crate::{
 use std::time::{Duration, Instant};
 
 #[doc(no_inline)]
+pub use crate::host::HostIntegration;
+#[doc(no_inline)]
 pub use crate::{
     CaptureRequest, CaptureTarget, ClickCounter, CommandKeyInput, Detail, FocusDirection,
     FrameImage, InputOutcome, InspectionQuery, KeyAction, PointerButton, PointerEvent, PointerKind,
@@ -101,7 +108,7 @@ pub use crate::{
 /// Input goes where [`Runtime`]'s input methods send it: to the selected
 /// window. The driver never selects another window itself, so a click followed
 /// by typing stays in one place. A test of a detached window selects it with
-/// [`Runtime::select_window`] first; [`Self::click`] and
+/// [`HostIntegration::select_window`] first; [`Self::click`] and
 /// [`Self::replace_text`] refuse a target in another window
 /// ([`TestError::OtherWindow`]).
 ///
@@ -241,7 +248,7 @@ impl<'a> Driver<'a> {
     }
 
     /// The driven runtime, for input or changes the driver has no action for,
-    /// such as [`Runtime::select_window`] or [`Runtime::focus`].
+    /// such as [`HostIntegration::select_window`] or [`Runtime::focus`].
     pub fn runtime_mut(&mut self) -> &mut Runtime {
         self.runtime
     }
@@ -300,7 +307,7 @@ impl<'a> Driver<'a> {
     /// and future deadlines do not. When `condition` does not hold yet, the
     /// driver sleeps 1 ms of wall time and repeats, for at most `timeout` of
     /// wall time. It polls rather than installing
-    /// [`Runtime::set_wake_delivery`], which would replace a delivery the test
+    /// [`HostIntegration::set_wake_delivery`], which would replace a delivery the test
     /// or its host set.
     ///
     /// # Errors
@@ -712,7 +719,7 @@ pub enum TestError {
     },
     /// The target is in another window than the selected one, which receives
     /// the driver's input. Nothing changed; select the target's window with
-    /// [`Runtime::select_window`] first.
+    /// [`HostIntegration::select_window`] first.
     #[error("`{key}` is not in the selected window")]
     OtherWindow {
         /// The target's key.
@@ -726,8 +733,11 @@ pub enum TestError {
         /// Where and why the reveal stopped.
         refusal: RevealRefusal,
     },
-    /// The target has no bounds to click: it has never been laid out
-    /// ([`Driver::click`]).
+    /// The target has no bounds to click after its reveal ([`Driver::click`]).
+    ///
+    /// The reveal flushes, and layout gives every revealed component its
+    /// bounds, so this is the driver's typed report of a broken layout
+    /// invariant rather than a panic; a test should not reach it.
     #[error("`{key}` has not been laid out")]
     NotLaidOut {
         /// The target's key.

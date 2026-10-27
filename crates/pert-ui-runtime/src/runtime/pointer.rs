@@ -36,11 +36,8 @@ impl Runtime {
                 Some(serial)
             })
     }
-    /// Resolves cursor appearance at the latest pointer position, respecting capture,
-    /// clipping and ancestor fallback. Uses current layout without scheduling work;
-    /// custom hosts call this after flush. Returns Default outside the window.
-    /// Component cursor callbacks run under the read-only inspection restriction.
-    pub fn cursor_icon(&self) -> crate::CursorIcon {
+    // Documented on `crate::host::HostIntegration::cursor_icon`.
+    pub(crate) fn cursor_icon(&self) -> crate::CursorIcon {
         if let Some(icon) = self.drag_cursor() {
             return icon;
         }

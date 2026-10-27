@@ -1179,9 +1179,7 @@ impl Component for ColorPart {
         self.abandon();
     }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = painter.size() else {
-            return Ok(());
-        };
+        let size = painter.size();
         let bounds = Rect::from_size(size);
         let [_, _, width, height] = bounds.values();
         if self.part == Part::Alpha {

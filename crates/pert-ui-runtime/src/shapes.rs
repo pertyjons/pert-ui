@@ -542,7 +542,7 @@ mod tests {
         for scale in [0.23, 0.69, 0.75, 0.99, 1.0, 1.25] {
             let mut ui = Runtime::new();
             ui.set_viewport(Viewport::new(120.0, 50.0, scale)?)?;
-            ui.mount("ring", FocusRingScene)?;
+            ui.mount_tree(crate::Element::new("ring", FocusRingScene))?;
             ui.flush(Duration::ZERO)?;
             let scene = ui.paint()?;
             let colors: Vec<_> = scene

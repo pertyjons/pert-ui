@@ -1,4 +1,5 @@
 //! Scripted inline editing presented in a real native window.
+use crate::host::HostIntegration;
 use crate::*;
 use std::cell::Cell;
 
@@ -21,9 +22,7 @@ impl Component for ArcDial {
         Ok(Size::from([48, 48]))
     }
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = p.size() else {
-            return Ok(());
-        };
+        let size = p.size();
         let side = size.width().min(size.height());
         let half = side / 2.0;
         let center = Point::new(half, half)?;

@@ -64,8 +64,8 @@ focused component, or on `command_key_input` at the first component that is
 not an editor; the default returns
 `Ignored` after calling `key_input`, so a component that only observes keys never
 swallows Escape or shortcuts. `input_reset` releases component-owned actions on
-context loss, called by the default `cancel_input`; `clear_focus` also clears
-window keys. Committed UTF-8 text uses `text_input`,
+context loss, called by the default `cancel_input`; a host's
+[`HostIntegration::clear_focus`](crate::host::HostIntegration::clear_focus) also clears window keys. Committed UTF-8 text uses `text_input`,
 independently of physical key positions. The default native adapter maps physical
 keys and delivers native committed text and IME preedit through the public text
 input contract.
@@ -144,7 +144,7 @@ reply there, since the frame is rendered between flushes. The [`App`] renders th
 offscreen with the same renderer that presents; a headless runtime answers
 [`CaptureError::Unsupported`] unless a host declares that it renders captures
 with [`Runtime::set_capture_support`] and completes the jobs
-[`Runtime::pending_captures`] lists.
+[`HostIntegration::pending_captures`](crate::host::HostIntegration::pending_captures) lists.
 
 With the `cpu` feature, [`CpuRenderer`] is such a host for a headless runtime:
 [`CpuRenderer::serve_captures`] renders each pending job on the CPU, with no

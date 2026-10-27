@@ -91,7 +91,7 @@ type RefusalReport =
 ///
 /// Clipboard errors propagate (an empty/non-text clipboard is a no-op), and
 /// failed cut preserves the text. No clipboard is installed
-/// in a headless runtime unless the host calls `Runtime::set_clipboard`.
+/// in a headless runtime unless the host calls `HostIntegration::set_clipboard`.
 ///
 /// Both editors own a clipboard context menu, opened with the secondary pointer
 /// button at the pointer or with the ContextMenu (Menu) key or Shift+F10 below
@@ -2843,9 +2843,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
         })
     }
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = p.size() else {
-            return Ok(());
-        };
+        let size = p.size();
         let px = p
             .metric(MetricRole::ControlPaddingX)
             .min(size.width() / 2.0);

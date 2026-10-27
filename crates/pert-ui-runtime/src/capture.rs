@@ -539,9 +539,9 @@ pub struct Capture {
 /// Work a host does for one accepted capture: render this window's current
 /// scene, with or without overlays, and hand the frame back.
 ///
-/// `Runtime::pending_captures` lists them; the host renders each with the
-/// scene `Runtime::capture_scene` gives it and completes it with
-/// `Runtime::complete_capture`. A job stays listed until completed, so a host
+/// `HostIntegration::pending_captures` lists them; the host renders each with
+/// the scene `HostIntegration::capture_scene` gives it and completes it with
+/// `HostIntegration::complete_capture`. A job stays listed until completed, so a host
 /// that cannot render a window right now (occluded, lost surface) completes
 /// it with [`CaptureError::SurfaceUnavailable`] rather than leaving it.
 ///

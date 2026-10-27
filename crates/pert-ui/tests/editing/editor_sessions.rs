@@ -1,6 +1,7 @@
 //! `EditorSession`: a consumer-defined host running one editor and learning
 //! how each edit ended, on both key paths.
 use crate::support;
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::RefCell, rc::Rc};
 use support::frame;

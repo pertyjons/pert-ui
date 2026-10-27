@@ -515,13 +515,13 @@ fn refused_tree_mutations_preserve_the_visible_snapshot_and_navigation() -> Test
     f.ui.flush(Duration::ZERO)?;
     let before = f.ui.inspect();
     let trigger = f.ui.signal(true);
-    let other = f.ui.mount(
+    let other = f.ui.mount_tree(Element::new(
         "probe",
         RejectTreeMutation {
             state: f.state.clone(),
             trigger,
         },
-    )?;
+    ))?;
     f.ui.flush(Duration::ZERO)?;
     assert!(f.state.is_expanded("a")?);
     assert_eq!(f.state.filter_counts().get()?, FilterCounts::default());
@@ -574,7 +574,7 @@ fn the_tree_keys_each_built_row_content_with_its_node() -> TestResult {
     let tree = ui.mount_tree(Tree::new(&state, ROW)?.key("tree"))?;
     ui.flush(Duration::ZERO)?;
     for node in ["a", "b"] {
-        let row = ui.find_path(&tree, &[node])?.ok_or("the row is mounted")?;
+        let row = support::key_path(&ui, &tree, &[node]).ok_or("the row is mounted")?;
         let content = ui.children(&row)?;
         assert_eq!(ui.key(&content[0])?, node);
     }

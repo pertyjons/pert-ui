@@ -2,6 +2,7 @@
 //! it reaches the owner, owner keys leave focus and caret alone, the clear
 //! button, and the debounce deadline.
 use crate::support;
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::RefCell, rc::Rc, time::Duration};
 use support::{frame, settle};

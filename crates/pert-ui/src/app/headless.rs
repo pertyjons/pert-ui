@@ -1,5 +1,6 @@
 //! An [`App`] without an event loop, for tests of its content and close policy.
 use super::{App, AppError, NativeCloseAction, close};
+use crate::host::HostIntegration;
 use crate::{NativeWindowId, Runtime};
 use std::time::Duration;
 
@@ -96,7 +97,8 @@ impl App {
     /// 3. the initialization closure runs on the runtime at clock zero;
     /// 4. the primary window is selected again, since the closure may have
     ///    selected a detached one, and every visible root is flushed with
-    ///    [`Runtime::flush_windows`] at [`Duration::ZERO`], so its content is
+    ///    [`HostIntegration::flush_windows`](crate::host::HostIntegration::flush_windows) at
+    ///    [`Duration::ZERO`], so its content is
     ///    laid out. The primary window stays selected; a hidden root lays out
     ///    when it is shown.
     ///
@@ -108,7 +110,7 @@ impl App {
     /// through [`HeadlessApp::admit_close`]; [`Self::on_error`] and
     /// [`Self::on_window_error`] belong to the native runner and are not
     /// called. No clipboard is installed; a test installs one with
-    /// [`Runtime::set_clipboard`].
+    /// [`HostIntegration::set_clipboard`](crate::host::HostIntegration::set_clipboard).
     ///
     /// # Errors
     /// [`AppError::InvalidTitle`] for a title without a non-whitespace
@@ -221,7 +223,7 @@ impl HeadlessApp {
     ///
     /// # Errors
     /// [`AppError::Shutdown`] with the runtime's cleanup failures, in
-    /// [`Runtime::take_shutdown_errors`] order.
+    /// [`HostIntegration::take_shutdown_errors`](crate::host::HostIntegration::take_shutdown_errors) order.
     pub fn shutdown(mut self) -> Result<(), AppError> {
         crate::platform::finish_runtime(&mut self.app.runtime, Ok(()))
     }

@@ -126,6 +126,7 @@ pub enum EdgeMode {
 ///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::testing::HostIntegration;
 /// use pert_ui::*;
 /// use std::time::Duration;
 ///

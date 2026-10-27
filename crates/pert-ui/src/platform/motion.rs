@@ -66,6 +66,7 @@ impl Motion {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::host::HostIntegration;
     use crate::*;
     use std::{cell::RefCell, rc::Rc, time::Duration};
 

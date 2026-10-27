@@ -233,9 +233,7 @@ impl Component for ProgressBar {
         }
     }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = painter.size() else {
-            return Ok(());
-        };
+        let size = painter.size();
         // The bar keeps its themed thickness, centered, in a taller allocation.
         let height = painter
             .metric(MetricRole::ProgressHeight)
@@ -406,9 +404,7 @@ impl Component for Spinner {
         }
     }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = painter.size() else {
-            return Ok(());
-        };
+        let size = painter.size();
         if !self.busy {
             return Ok(());
         }

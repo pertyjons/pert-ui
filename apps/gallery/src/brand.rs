@@ -142,9 +142,7 @@ impl Component for BrandMark {
         self.pressed = false;
     }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = painter.size() else {
-            return Ok(());
-        };
+        let size = painter.size();
         let rect = Rect::new(0.0, 0.0, size.width(), size.height())?;
         let shape = Shape::Rounded(Length::new(painter.metric(MetricRole::CornerRadius))?);
         if self.pressed || self.hovered {

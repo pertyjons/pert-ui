@@ -1,5 +1,6 @@
 //! The Data & media category's pages.
 use super::support::*;
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::time::Duration;
 
@@ -500,7 +501,7 @@ fn the_drag_and_drop_page_moves_a_track_into_an_empty_folder() {
     open(&mut ui, &root, "dragdrop");
     let outline = find(&ui, &root, "outline");
     // A tree row's content carries the row's key too, so a row is its direct child.
-    let row = |ui: &Runtime, key: &str| ui.find_path(&outline, &[key]).unwrap().unwrap();
+    let row = |ui: &Runtime, key: &str| ui.find(&outline, &[key]).unwrap().unwrap();
     // Both rows lie clear of the list's edges, where a resting drag scrolls.
     let piano = center_of(&ui, &row(&ui, "Piano"));
     let archive = center_of(&ui, &row(&ui, "Archive/"));

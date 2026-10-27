@@ -225,7 +225,7 @@ impl Component for Image {
         }
     }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        let (Some(size), Some(image)) = (painter.size(), &self.image) else {
+        let (size, Some(image)) = (painter.size(), &self.image) else {
             return Ok(());
         };
         if size.width() == 0.0 || size.height() == 0.0 {

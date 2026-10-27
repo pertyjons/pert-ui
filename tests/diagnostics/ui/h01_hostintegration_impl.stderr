@@ -1,0 +1,65 @@
+error[E0046]: not all trait items implemented, missing: `flush_windows`, `flush_commands`, `has_command_requests`, `application_deadline`, `interval_deadline`, `service_intervals`, `service_inspection`, `set_wake_delivery`, `select_window`, `current_window`, `set_window_visible`, `set_presentation_rate`, `presentation_rate`, `needs_paint`, `invalidate`, `has_presentation_requests`, `take_presentation_requests`, `prepare_detach`, `commit_detach`, `redock`, `close_detached_window`, `native_window_options`, `text_preedit`, `text_input_state`, `cursor_icon`, `clear_focus`, `cancel_input`, `captures_supported`, `pending_captures`, `capture_scene`, `complete_capture`, `set_clipboard`, `take_shutdown_errors`
+ --> ui/h01_hostintegration_impl.rs:4:1
+  |
+4 | impl HostIntegration for MyRuntime {}
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ missing `flush_windows`, `flush_commands`, `has_command_requests`, `application_deadline`, `interval_deadline`, `service_intervals`, `service_inspection`, `set_wake_delivery`, `select_window`, `current_window`, `set_window_visible`, `set_presentation_rate`, `presentation_rate`, `needs_paint`, `invalidate`, `has_presentation_requests`, `take_presentation_requests`, `prepare_detach`, `commit_detach`, `redock`, `close_detached_window`, `native_window_options`, `text_preedit`, `text_input_state`, `cursor_icon`, `clear_focus`, `cancel_input`, `captures_supported`, `pending_captures`, `capture_scene`, `complete_capture`, `set_clipboard`, `take_shutdown_errors` in implementation
+  |
+  = help: implement the missing item: `fn flush_windows(&mut self, _: Duration) -> Result<FlushReport, RuntimeError> { todo!() }`
+  = help: implement the missing item: `fn flush_commands(&mut self) -> Result<(), RuntimeError> { todo!() }`
+  = help: implement the missing item: `fn has_command_requests(&self) -> bool { todo!() }`
+  = help: implement the missing item: `fn application_deadline(&self) -> Option<Duration> { todo!() }`
+  = help: implement the missing item: `fn interval_deadline(&self) -> Option<Duration> { todo!() }`
+  = help: implement the missing item: `fn service_intervals(&mut self, _: Duration) -> Result<(), RuntimeError> { todo!() }`
+  = help: implement the missing item: `fn service_inspection(&mut self) -> Result<(), RuntimeError> { todo!() }`
+  = help: implement the missing item: `fn set_wake_delivery(&self, _: impl Fn() -> bool + Send + Sync + 'static) { todo!() }`
+  = help: implement the missing item: `fn select_window(&mut self, _: &NativeWindowId) -> Result<(), RuntimeError> { todo!() }`
+  = help: implement the missing item: `fn current_window(&self) -> NativeWindowId { todo!() }`
+  = help: implement the missing item: `fn set_window_visible(&mut self, _: bool) -> Result<(), RuntimeError> { todo!() }`
+  = help: implement the missing item: `fn set_presentation_rate(&self, _: Option<PresentationRate>) -> Result<(), RuntimeError> { todo!() }`
+  = help: implement the missing item: `fn presentation_rate(&self) -> Option<PresentationRate> { todo!() }`
+  = help: implement the missing item: `fn needs_paint(&self) -> bool { todo!() }`
+  = help: implement the missing item: `fn invalidate(&self, _: &WidgetId, _: Invalidation) -> Result<(), RuntimeError> { todo!() }`
+  = help: implement the missing item: `fn has_presentation_requests(&self) -> bool { todo!() }`
+  = help: implement the missing item: `fn take_presentation_requests(&self) -> Result<Vec<PresentationRequest>, RuntimeError> { todo!() }`
+  = help: implement the missing item: `fn prepare_detach(&mut self, _: &WidgetId, _: NativeWindowOptions) -> Result<PreparedDetach, RuntimeError> { todo!() }`
+  = help: implement the missing item: `fn commit_detach(&mut self, _: PreparedDetach) -> Result<NativeWindowId, RuntimeError> { todo!() }`
+  = help: implement the missing item: `fn redock(&mut self, _: &NativeWindowId) -> Result<(), RuntimeError> { todo!() }`
+  = help: implement the missing item: `fn close_detached_window(&mut self) -> Result<PresentationStatus, RuntimeError> { todo!() }`
+  = help: implement the missing item: `fn native_window_options(&self) -> Option<&NativeWindowOptions> { todo!() }`
+  = help: implement the missing item: `fn text_preedit(&mut self, _: &TextPreedit) -> Result<(), RuntimeError> { todo!() }`
+  = help: implement the missing item: `fn text_input_state(&self) -> Option<(WidgetId, TextInputState)> { todo!() }`
+  = help: implement the missing item: `fn cursor_icon(&self) -> CursorIcon { todo!() }`
+  = help: implement the missing item: `fn clear_focus(&mut self) { todo!() }`
+  = help: implement the missing item: `fn cancel_input(&mut self) -> Result<(), RuntimeError> { todo!() }`
+  = help: implement the missing item: `fn captures_supported(&self) -> bool { todo!() }`
+  = help: implement the missing item: `fn pending_captures(&self) -> Vec<CaptureJob> { todo!() }`
+  = help: implement the missing item: `fn capture_scene(&mut self, _: &CaptureJob) -> Result<DisplayList, CaptureError> { todo!() }`
+  = help: implement the missing item: `fn complete_capture(&self, _: &CaptureJob, _: Result<FrameImage, CaptureError>) -> bool { todo!() }`
+  = help: implement the missing item: `fn set_clipboard(&mut self, _: impl Clipboard + 'static) -> Result<(), RuntimeError> { todo!() }`
+  = help: implement the missing item: `fn take_shutdown_errors(&mut self) -> Vec<RuntimeError> { todo!() }`
+
+error[E0277]: `HostIntegration` is sealed and cannot be implemented for `MyRuntime`
+ --> ui/h01_hostintegration_impl.rs:4:26
+  |
+4 | impl HostIntegration for MyRuntime {}
+  |                          ^^^^^^^^^ not a pert-ui runtime
+  |
+help: the trait `pert_ui_runtime::host::sealed::HostIntegrationSeal` is not implemented for `MyRuntime`
+ --> ui/h01_hostintegration_impl.rs:3:1
+  |
+3 | struct MyRuntime;
+  | ^^^^^^^^^^^^^^^^
+  = note: only `Runtime` implements `HostIntegration`; a host imports the trait (`use pert_ui::host::HostIntegration;`) to call its methods on a `Runtime`
+help: the trait `pert_ui_runtime::host::sealed::HostIntegrationSeal` is implemented for `pert_ui::Runtime`
+ --> $WORKSPACE/crates/pert-ui-runtime/src/host.rs
+  |
+  |     impl HostIntegrationSeal for crate::Runtime {}
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: required by a bound in `HostIntegration`
+ --> $WORKSPACE/crates/pert-ui-runtime/src/host.rs
+  |
+  | pub trait HostIntegration: sealed::HostIntegrationSeal {
+  |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `HostIntegration`
+  = note: `HostIntegration` is a "sealed trait", because to implement it you also need to implement `pert_ui_runtime::host::sealed::HostIntegrationSeal`, which is not accessible; this is usually done to force you to use one of the provided types that already implement it
+  = help: the following type implements the trait:
+            pert_ui::Runtime

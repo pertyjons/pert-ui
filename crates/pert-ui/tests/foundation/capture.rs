@@ -1,6 +1,7 @@
 //! Screenshots: how a request is admitted, what a host is asked to render,
 //! and how the frame is cropped to the target, with a scripted host in place
 //! of a renderer.
+use pert_ui::testing::HostIntegration;
 use std::time::{Duration, Instant};
 
 use pert_ui::*;
@@ -503,7 +504,7 @@ fn capture_keeps_the_admission_failure_after_a_later_successful_flush() -> TestR
     let mut ui = ui(1.0)?;
     mount(&mut ui)?;
     ui.set_capture_support(true);
-    ui.mount("broken", Broken(true))?;
+    ui.mount_tree(Element::new("broken", Broken(true)))?;
     let service = ui.inspection_service(Capacity::new(4)?)?;
     let pending = service
         .client()
@@ -654,5 +655,50 @@ fn a_job_listed_by_another_runtime_neither_renders_nor_completes() -> TestResult
         assert!(other.complete_capture(&own, Ok(frame(200, 100))));
         assert!(asked.wait()?.value.is_ok());
     }
+    Ok(())
+}
+
+/// New-behavior test. Named assertion: a capture of
+/// `CaptureTarget::Path(["main", "tasks", "ship"])` is admitted, so exactly
+/// one job is pending and the reply waits; the address through the old
+/// `items` segment would be answered at once with `UnknownTarget`.
+#[test]
+fn an_each_item_is_captured_at_its_address_below_the_each() -> TestResult {
+    let mut ui = ui(1.0)?;
+    let tasks = ui.signal(vec!["write".to_owned(), "ship".to_owned()]);
+    let root = ui.mount_tree(Element::new(
+        "main",
+        Column::new([Each::new(&tasks, Clone::clone, |_, task| {
+            Label::new(task.as_str()).key("task")
+        })
+        .key("tasks")]),
+    ))?;
+    ui.flush(Duration::ZERO)?;
+    ui.set_capture_support(true);
+    let ship = ui.find(&root, &["tasks", "ship"])?.ok_or("the item")?;
+    let old = ui.request_capture(CaptureRequest::new(CaptureTarget::Path(vec![
+        "main".into(),
+        "tasks".into(),
+        "items".into(),
+        "ship".into(),
+    ])));
+    assert_eq!(old.try_reply()?.value, Err(CaptureError::UnknownTarget));
+    let reply = ui.request_capture(CaptureRequest::new(CaptureTarget::Path(vec![
+        "main".into(),
+        "tasks".into(),
+        "ship".into(),
+    ])));
+    let jobs = ui.pending_captures();
+    assert_eq!(jobs.len(), 1);
+    assert_eq!(reply.try_reply().map(|_| ()), Err(WaitError::Timeout));
+    // The host renders the whole window; the runtime crops at completion.
+    ui.capture_scene(&jobs[0])?;
+    assert!(ui.complete_capture(&jobs[0], Ok(frame(200, 100))));
+    let capture = reply.wait()?.value?;
+    assert_eq!(capture.component, Some(ui.inspection_id(&ship)?));
+    assert_eq!(
+        capture.region,
+        ui.bounds(&ship)?.ok_or("laid out")?.values()
+    );
     Ok(())
 }

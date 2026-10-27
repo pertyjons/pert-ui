@@ -1,5 +1,6 @@
 //! Public constrained split and cancellation contracts.
 use crate::support;
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::time::Duration;
 use support::find;

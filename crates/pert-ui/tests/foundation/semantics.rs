@@ -349,7 +349,7 @@ fn a_custom_component_describes_itself_through_the_same_contract() {
         }
     }
     let mut ui = ui();
-    ui.mount("dial", Dial(0.25)).unwrap();
+    ui.mount_tree(Element::new("dial", Dial(0.25))).unwrap();
     ui.flush(Duration::ZERO).unwrap();
     let dial = semantics(&ui, "dial");
     assert_eq!(dial.name.as_deref(), Some("Cutoff"));

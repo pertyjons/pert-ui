@@ -117,6 +117,7 @@ pub use svg::component::Svg;
 /// |---|---|
 /// | Implementing [`Component`]: contexts, drawing, input events, drag and drop, receipts, editor sessions and the embedded draft editor | `use pert_ui::component::*` ([`component`]) |
 /// | A headless test: the driver, the viewport, key and pointer input, queries, captures, the CPU renderer and the headless application | `use pert_ui::testing::*` ([`testing`]) |
+/// | A custom host that drives the runtime in place of `App`: [`HostIntegration`](host::HostIntegration) and the names a host writes | `use pert_ui::host::*` ([`host`]) |
 /// | Authoritative values: parameters, edit gestures, hosts, external authority, and [`Slider`], [`Knob`] and [`InlineSlider`] | `use pert_ui::parameter::*` ([`parameter`]) |
 /// | Commands beyond a shortcut's chord and scope, held input and the command palette | `use pert_ui::commands::*` ([`commands`]) |
 /// | Windows inside a view, native windows, regions, splits and tool windows | `use pert_ui::windowing::*` ([`windowing`]) |
@@ -164,7 +165,8 @@ pub mod prelude {
 /// only passed on, compared or converted in the call that returned it, such as
 /// [`FittedText`], is not required. Profiling, capture and inspection queries
 /// and records are in [`inspection`], live-data plumbing in [`live`], and host
-/// transport stays at the crate root. The re-exports are `#[doc(no_inline)]`: each item is documented once, at the
+/// transport in [`host`]. The re-exports are `#[doc(no_inline)]`: each item is documented once, at
+/// the
 /// crate root.
 ///
 /// ```
@@ -205,13 +207,18 @@ pub mod component {
 /// [`PointerKind`], [`PointerButton`] and [`CommandKeyInput`] for input by
 /// hand, with the [`InputOutcome`] it returns; [`SemanticValue`] and
 /// [`ClickCounter`]; [`InspectionQuery`], [`Selector`] and [`Detail`] for
-/// [`Runtime::query`]; and [`CaptureRequest`], [`CaptureTarget`] and
-/// [`FrameImage`] for a capture.
+/// [`Runtime::query`]; [`CaptureRequest`], [`CaptureTarget`] and
+/// [`FrameImage`] for a capture; and
+/// [`HostIntegration`](host::HostIntegration), because a test that selects a
+/// native window, takes presentation requests or clears focus stands in for
+/// a [`host`].
 /// With the `cpu` feature it adds [`CpuRenderer`], which serves captures
 /// without a GPU, and with the `native` feature, which `desktop` and
 /// `desktop-cpu` enable, [`HeadlessApp`], an [`App`] started without a window
 /// by [`App::headless`] so its content and its close policy can be tested.
-/// The re-exported names stay at the crate root too.
+/// The re-exported names stay at the crate root too, except
+/// [`HostIntegration`](host::HostIntegration), which is reached through
+/// [`host`] and this module.
 ///
 /// The [testing chapter](crate::guide::testing) of the guide walks through a
 /// test.
@@ -232,11 +239,33 @@ pub mod component {
 /// assert_eq!(clicks.get()?, 1);
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
+///
+/// A test that stands in for a host calls the
+/// [`HostIntegration`](host::HostIntegration) methods through the same glob:
+///
+/// ```
+/// use pert_ui::prelude::*;
+/// use pert_ui::testing::*;
+///
+/// let mut ui = Runtime::new();
+/// ui.set_viewport(Viewport::new(300.0, 100.0, 1.0)?)?;
+/// let name = ui.mount_tree(Element::new("name", TextField::new(ui.signal(String::new()))))?;
+/// let main = ui.primary_window();
+/// ui.select_window(&main)?;
+/// // Nothing asked for a native window.
+/// assert!(ui.take_presentation_requests()?.is_empty());
+/// ui.focus(&name)?;
+/// ui.clear_focus(); // as the window's deactivation would
+/// assert_eq!(ui.focused(), None);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[cfg_attr(feature = "native", doc = include_str!("guide/links/desktop.md"))]
 #[cfg_attr(not(feature = "native"), doc = include_str!("guide/links/no-desktop.md"))]
 #[cfg_attr(feature = "cpu", doc = include_str!("guide/links/cpu.md"))]
 #[cfg_attr(not(feature = "cpu"), doc = include_str!("guide/links/no-cpu.md"))]
 pub mod testing {
+    #[doc(no_inline)]
+    pub use pert_ui_runtime::testing::HostIntegration;
     #[doc(no_inline)]
     pub use pert_ui_runtime::testing::{
         CaptureRequest, CaptureTarget, ClickCounter, CommandKeyInput, Detail, FocusDirection,
@@ -251,6 +280,263 @@ pub mod testing {
     #[cfg(feature = "cpu")]
     #[doc(no_inline)]
     pub use crate::cpu::CpuRenderer;
+}
+
+/// Driving a [`Runtime`] in place of `App`, for a custom host:
+/// [`HostIntegration`](host::HostIntegration) and the names a host writes,
+/// for `use pert_ui::host::*`.
+///
+/// A *host* owns the event loop around a runtime. It supplies the viewport
+/// from its surface, translates native input, flushes, paints and presents
+/// frames, completes presentation requests, serves captures and drains
+/// shutdown errors. `App` is the host most applications use, and an
+/// application under `App` never imports this module. A custom host, built
+/// on another window system or on none, imports it and calls the
+/// [`HostIntegration`](host::HostIntegration) methods on its [`Runtime`],
+/// together with the inherent methods a host shares with tests
+/// ([`set_viewport`](Runtime::set_viewport),
+/// [`pointer_input`](Runtime::pointer_input),
+/// [`command_key_input`](Runtime::command_key_input),
+/// [`text_input`](Runtime::text_input), [`flush`](Runtime::flush),
+/// [`paint`](Runtime::paint), [`shutdown`](Runtime::shutdown) and others the
+/// trait's page lists). `App` drives the runtime through this same trait, so
+/// whatever it does, a custom host can do.
+///
+/// A headless test stands in for a host when it selects a native window,
+/// takes presentation requests or clears focus as a window's deactivation
+/// would; it reaches the trait through [`testing`]. The module also
+/// re-exports what a host writes while it drives the runtime: input events
+/// and key entry, the viewport and its physical extent, the scene and its
+/// drawing error, presentation requests and their statuses, capture jobs and
+/// frames, and the clipboard service. Each name stays at the crate root too,
+/// except [`HostIntegration`](host::HostIntegration), which is reached
+/// through this module and [`testing`]. The re-exports are
+/// `#[doc(no_inline)]`: each item is documented once, at the crate root.
+///
+/// # A host without a window system
+///
+/// A complete host loop that needs no window or GPU. It installs wake
+/// delivery, supplies a viewport, runs one turn of its loop (flush, complete
+/// the presentation requests, paint, read the next deadline), translates a
+/// key and a click, and drains the shutdown errors before it drops the
+/// runtime.
+///
+/// ```
+/// use pert_ui::host::*;
+/// use pert_ui::prelude::*;
+/// use std::sync::Arc;
+/// use std::sync::atomic::{AtomicBool, Ordering};
+/// use std::time::Duration;
+///
+/// /// One turn of the loop: flush every window, answer the presentation
+/// /// requests, present a frame when one is due and return when to wake.
+/// fn turn(
+///     ui: &mut Runtime,
+///     now: Duration,
+///     presented: &mut usize,
+/// ) -> Result<Option<Duration>, Box<dyn std::error::Error>> {
+///     ui.flush_windows(now)?;
+///     for request in ui.take_presentation_requests()? {
+///         let status = match request.action() {
+///             // This host has no native windows to give a detached view.
+///             PresentationAction::Detach { .. } => PresentationStatus::Failed(
+///                 WindowError::Creation("this host has no windows".into()),
+///             ),
+///             _ => PresentationStatus::Failed(WindowError::Cancelled),
+///         };
+///         request.complete(status)?;
+///     }
+///     if ui.needs_paint() {
+///         let frame: DisplayList = ui.paint()?;
+///         // "Presents" the frame: a real host hands it to its renderer.
+///         *presented += frame.len();
+///     }
+///     // A host sleeps until this deadline or until a wake arrives.
+///     Ok(ui.application_deadline())
+/// }
+///
+/// let mut ui = Runtime::new();
+/// // 1. Wake delivery, before any work: a producer's wake sets the flag
+/// //    the loop waits on and reports that it was delivered.
+/// let woken = Arc::new(AtomicBool::new(false));
+/// let flag = Arc::clone(&woken);
+/// ui.set_wake_delivery(move || {
+///     flag.store(true, Ordering::Release);
+///     true
+/// });
+/// // 2. The viewport, from the physical surface size and the scale factor
+/// //    a window system reports.
+/// ui.set_viewport(Viewport::from_physical(PhysicalExtent::new(640, 400), 2.0)?)?;
+///
+/// // 3. Content: two buttons and a view that asks for its own window.
+/// let saves = ui.signal(0);
+/// let opens = ui.signal(0);
+/// let (save_count, open_count) = (saves.clone(), opens.clone());
+/// let root = ui.mount_tree(Element::new("main", Column::new([
+///     Element::new("save", Button::new("Save", move |_| save_count.update(|n| *n += 1))),
+///     Element::new("open", Button::new("Open", move |_| open_count.update(|n| *n += 1))),
+///     Element::new("notes", View::new(Element::new("text", Label::new("Notes")))),
+/// ])))?;
+/// let notes = ui.find(&root, &["notes"])?.ok_or("mounted")?;
+/// let detach = ui.request_detach(&notes, NativeWindowOptions::new("Notes")?)?;
+///
+/// // 4. One turn: the refused detach, a presented frame and the next deadline.
+/// let mut presented = 0;
+/// let mut now = Duration::ZERO;
+/// let _wake_at = turn(&mut ui, now, &mut presented)?;
+/// assert!(matches!(detach.status(), PresentationStatus::Failed(WindowError::Creation(_))));
+/// assert!(presented > 0);
+///
+/// // 5. A native key: Space on the focused button. Text goes on only when
+/// //    the dispatch says so.
+/// let save = ui.find(&root, &["save"])?.ok_or("mounted")?;
+/// ui.focus(&save)?;
+/// for action in [KeyAction::Press, KeyAction::Release] {
+///     let key = CommandKeyInput::new(KeyCode::Space, action, CommandKey::Named(KeyCode::Space));
+///     let dispatch: KeyDispatch = ui.command_key_input(key)?;
+///     if dispatch.deliver_text && action == KeyAction::Press {
+///         ui.text_input(" ")?;
+///     }
+/// }
+/// now += Duration::from_millis(16);
+/// turn(&mut ui, now, &mut presented)?;
+/// assert_eq!(saves.get()?, 1);
+///
+/// // 6. A native click at the second button's centre, then the cursor a
+/// //    host shows there.
+/// let open = ui.find(&root, &["open"])?.ok_or("mounted")?;
+/// let bounds = ui.bounds(&open)?.ok_or("the button is laid out")?;
+/// let centre = Point::new(bounds.x() + bounds.width() / 2.0, bounds.y() + bounds.height() / 2.0)?;
+/// ui.pointer_input(PointerEvent::new(centre, PointerKind::Move))?;
+/// let _cursor: CursorIcon = ui.cursor_icon();
+/// ui.pointer_input(PointerEvent::new(centre, PointerKind::Press(PointerButton::Primary)))?;
+/// ui.pointer_input(PointerEvent::new(centre, PointerKind::Release(PointerButton::Primary)))?;
+/// now += Duration::from_millis(16);
+/// turn(&mut ui, now, &mut presented)?;
+/// assert_eq!(opens.get()?, 1);
+///
+/// // 7. Shut down and drain the cleanup errors before dropping the runtime.
+/// ui.shutdown();
+/// assert!(ui.take_shutdown_errors().is_empty());
+/// # let _ = woken.load(Ordering::Acquire);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// The host's other duties follow the same pattern:
+///
+/// - IME: after each turn, [`text_input_state`](host::HostIntegration::text_input_state)
+///   names the focused text recipient and where its composition is shown;
+///   the host sends composition with
+///   [`text_preedit`](host::HostIntegration::text_preedit) and committed
+///   text with [`text_input`](Runtime::text_input).
+/// - Window deactivation: [`clear_focus`](host::HostIntegration::clear_focus)
+///   releases held keys and ends focused edits.
+/// - Captures: a host that renders declares it with
+///   [`set_capture_support`](Runtime::set_capture_support), then renders each
+///   of [`pending_captures`](host::HostIntegration::pending_captures) from
+///   [`capture_scene`](host::HostIntegration::capture_scene) and answers it
+///   with [`complete_capture`](host::HostIntegration::complete_capture). With
+///   the `cpu` feature, `cpu::CpuRenderer::serve_captures` does all three.
+/// - The clipboard: [`set_clipboard`](host::HostIntegration::set_clipboard)
+///   installs the host's [`Clipboard`] service.
+/// - Several native windows: the host selects the window an event belongs
+///   to with [`select_window`](host::HostIntegration::select_window) and
+///   flushes every window together with
+///   [`flush_windows`](host::HostIntegration::flush_windows).
+///
+/// [contracts.md's custom
+/// hosts](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#custom-hosts)
+/// states every obligation a host takes on.
+///
+/// # What application code sees
+///
+/// The prelude and the crate root do not bring the trait into scope, so an
+/// application cannot call a host method by accident:
+///
+/// ```compile_fail
+/// use pert_ui::prelude::*;
+/// use std::time::Duration;
+///
+/// let mut ui = Runtime::new();
+/// ui.flush_windows(Duration::ZERO)?; // `HostIntegration` is not in scope
+/// # Ok::<(), RuntimeError>(())
+/// ```
+///
+/// ```compile_fail
+/// use pert_ui::*;
+/// use std::time::Duration;
+///
+/// let mut ui = Runtime::new();
+/// ui.flush_windows(Duration::ZERO)?; // `HostIntegration` is not in scope
+/// # Ok::<(), RuntimeError>(())
+/// ```
+///
+/// # The names a host writes
+///
+/// This glob alone builds what translating native events and producing
+/// frames writes:
+///
+/// ```
+/// use pert_ui::host::*;
+///
+/// fn vocabulary() -> Result<(), Box<dyn std::error::Error>> {
+///     let viewport = Viewport::from_physical(PhysicalExtent::new(800, 600), 1.5)?;
+///     let point = Point::new(4.0, 8.0)?;
+///     let kinds = [
+///         PointerKind::Move,
+///         PointerKind::Leave,
+///         PointerKind::Press(PointerButton::Primary),
+///         PointerKind::Release(PointerButton::Secondary),
+///         PointerKind::Scroll(Point::new(0.0, -1.0)?),
+///         PointerKind::Pinch(Magnification::new(1.25)?),
+///     ];
+///     let events: Vec<PointerEvent> =
+///         kinds.into_iter().map(|kind| PointerEvent::new(point, kind)).collect();
+///     let a = CommandKey::Character('a');
+///     let mut key = CommandKeyInput::new(KeyCode::KeyA, KeyAction::Press, a);
+///     key.has_text = true;
+///     let _modifiers = Modifiers::default();
+///     let preedit = TextPreedit::new("å", Some(0..2))?;
+///     let extent = LimitError::SurfaceExtent { width: 9000, height: 9000, max: 8192 };
+///     let too_large = CaptureError::Limit(extent);
+///     let _ = (viewport, events, key, preedit, too_large);
+///     Ok(())
+/// }
+///
+/// fn after_paint(result: Result<DisplayList, DrawError>) -> Option<DisplayList> {
+///     match result {
+///         Ok(frame) => Some(frame),
+///         // Flush first, then paint again.
+///         Err(DrawError::PendingUpdates) => None,
+///         Err(_) => None,
+///     }
+/// }
+///
+/// fn describe(request: &PresentationRequest) -> &'static str {
+///     match request.action() {
+///         PresentationAction::Detach { .. } => "create a window",
+///         PresentationAction::Redock(_) => "return a view",
+///         PresentationAction::Activate(_) => "raise a window",
+///         PresentationAction::Close(_) => "close a window",
+///         _ => "other",
+///     }
+/// }
+/// # vocabulary().unwrap();
+/// # let _ = (after_paint, describe);
+/// ```
+pub mod host {
+    #[doc(inline)]
+    pub use pert_ui_runtime::host::HostIntegration;
+    #[doc(no_inline)]
+    pub use pert_ui_runtime::host::{
+        CaptureError, CaptureJob, Clipboard, ClipboardError, CommandKey, CommandKeyInput,
+        CursorIcon, DisplayList, DrawError, FlushReport, FrameImage, Invalidation, KeyAction,
+        KeyCode, KeyDispatch, KeyboardState, LimitError, Magnification, Modifiers, NativeWindowId,
+        NativeWindowOptions, PhysicalExtent, Point, PointerButton, PointerEvent, PointerKind,
+        PreparedDetach, PresentationAction, PresentationRate, PresentationRequest,
+        PresentationStatus, Runtime, RuntimeError, TextInputState, TextPreedit, Viewport, WidgetId,
+        WindowError,
+    };
 }
 
 /// Authoritative values, for `use pert_ui::parameter::*`: parameters,
@@ -375,8 +661,8 @@ pub mod commands {
 /// or in the prelude, so it adds the [`NormalizedValue`] of
 /// `SplitRule::Ratio` and the [`Rect`] of a tool window's floating bounds. A
 /// host's presentation plumbing ([`PresentationRequest`],
-/// [`PresentationAction`], [`PreparedDetach`], [`PresentationRate`]) stays at
-/// the crate root, and the error payload of `WindowError::Drawing` is
+/// [`PresentationAction`], [`PreparedDetach`], [`PresentationRate`]) is in
+/// [`host`], and the error payload of `WindowError::Drawing` is
 /// [`DrawError`] in [`component`].
 ///
 /// The name is `windowing`, not `windows`: a crate that globs the crate root
@@ -425,8 +711,8 @@ pub mod windowing {
 /// here or in the prelude, so it adds the [`Rect`] and [`NativeWindowId`] of
 /// `CaptureTarget::region`, the [`ComponentDetails`] and [`Invalidation`] of
 /// a [`ComponentInspection`], the [`KeyEvent`] of `EventKind::KeyInput` and
-/// the [`Viewport`] of a [`WindowInspection`]. A host's [`CaptureJob`] stays
-/// at the crate root, the error payload of `CaptureError::Drawing` is
+/// the [`Viewport`] of a [`WindowInspection`]. A host's [`CaptureJob`] is in
+/// [`host`], the error payload of `CaptureError::Drawing` is
 /// [`DrawError`] in [`component`], and the fields records take from another
 /// family are in that family's module: the parameter names of a
 /// [`ParameterInspection`] and an [`EventRecord`] in [`parameter`], and the

@@ -260,9 +260,9 @@ type BuildItem<T> = Rc<dyn Fn(&DescribeContext<'_>, &T) -> Element>;
 ///
 /// `key` gives each item's stable key and `build` its element, which `Each`
 /// keys with that key, replacing the element's own. The items' elements go
-/// into a container: a [`Column`] keyed `items` by default, or what
-/// [`Self::within`] describes, so the container's own layout and builders
-/// apply. When the list changes, every item is described again: an item whose
+/// into a container: a [`Column`] by default, or what [`Self::within`]
+/// describes, so the container's own layout and builders apply. When the list changes, every item
+/// is described again: an item whose
 /// key stays keeps its component and state, also when it moves, a new key
 /// mounts and a removed key unmounts. Keys identify items, not positions, so
 /// a key must be stable for an item and unique in the list; a duplicate fails
@@ -271,8 +271,14 @@ type BuildItem<T> = Rc<dyn Fn(&DescribeContext<'_>, &T) -> Element>;
 /// `key`, `build` and the container follow the rules of [`Dynamic`]'s `build`.
 /// For collections too large to describe in full, use a [`VirtualList`].
 ///
-/// The default container adds its key to an item's path, so a lookup from the
-/// `Each` element goes through `items`:
+/// The default container is internal structure, keyed `items` and marked
+/// [`Element::structural`]: it adds no segment to an item's address, so an
+/// item's address is the `Each` element's address followed by the item's
+/// key, in [`Runtime::find`](crate::Runtime::find), inspection paths,
+/// selectors, capture targets and workspace documents. Like any structural
+/// wrapper it is also transparent to naming: an item the application marks
+/// [`Element::structural`] takes its name from the `Each`'s label or from a
+/// naming parent above the `Each`.
 ///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
@@ -285,13 +291,14 @@ type BuildItem<T> = Rc<dyn Fn(&DescribeContext<'_>, &T) -> Element>;
 ///         .key("tasks"),
 /// )?;
 /// ui.flush(Duration::ZERO)?;
-/// assert!(ui.find(&root, &["items", "ship"])?.is_some());
+/// assert!(ui.find(&root, &["ship"])?.is_some());
 /// // The element's own key, "task", was replaced by the item's key.
-/// assert!(ui.find(&root, &["items", "task"])?.is_none());
+/// assert!(ui.find(&root, &["task"])?.is_none());
 /// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
 ///
-/// [`Self::within`] replaces the container, and its key replaces `items`:
+/// [`Self::within`] replaces the container, and its key becomes a segment of
+/// the items' addresses:
 ///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
@@ -312,6 +319,13 @@ type BuildItem<T> = Rc<dyn Fn(&DescribeContext<'_>, &T) -> Element>;
 /// assert!(ui.find(&root, &["tags", "blue"])?.is_some());
 /// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
+///
+/// The container's addressing is decided when it first mounts; to change it,
+/// give the new container another key, which mounts the items again.
+/// Described again under the same key, a container keeps its component and
+/// its addressing, so the items keep their identities, state and addresses;
+/// a container of another type under the same key fails the flush with
+/// [`RuntimeError::ChildTypeChanged`].
 #[must_use]
 pub struct Each<T> {
     inner: Described<Vec<T>>,
@@ -322,7 +336,9 @@ description_debug!(Each<T>);
 
 impl<T: Clone + 'static> Each<T> {
     /// Describes one element per item of `items`, keyed by `key`, in a
-    /// [`Column`] keyed `items`.
+    /// [`Column`]. The column is internal structure, transparent to addresses
+    /// and naming: an item's address is this element's address followed by
+    /// the item's key.
     ///
     /// Timing class of `key` and `build`: [evaluation](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#evaluation).
     pub fn new(
@@ -336,7 +352,7 @@ impl<T: Clone + 'static> Each<T> {
             element.key = key(value);
             element
         });
-        let within: Within = Rc::new(|children| Column::new(children).key("items"));
+        let within: Within = Rc::new(|children| Column::new(children).key("items").structural());
         Self {
             inner: Described::new(items.clone(), Self::describe(item.clone(), within)),
             items,
@@ -345,7 +361,13 @@ impl<T: Clone + 'static> Each<T> {
     }
     /// Places the items' elements in the container `within` describes, such as
     /// a [`Row`] or [`Wrap`], instead of a [`Column`]. The container's key is
-    /// part of the items' path; keep it stable so they are retained.
+    /// part of the items' path; keep it stable so they are retained. The
+    /// element is used as it is, whatever its key, `items` included; for the
+    /// default addressing with another layout, mark it
+    /// [`Element::structural`].
+    ///
+    /// The container's addressing is decided when it first mounts; to change
+    /// it, give the new container another key, which mounts the items again.
     ///
     /// Timing class: [evaluation](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#evaluation).
     pub fn within(mut self, within: impl Fn(Vec<Element>) -> Element + 'static) -> Self {

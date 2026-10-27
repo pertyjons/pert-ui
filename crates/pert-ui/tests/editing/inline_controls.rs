@@ -1,5 +1,6 @@
 //! Inline toggles, choices, selects and editable labels through the public facade.
 use crate::support;
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::time::Duration;
 use support::{find, frame, key};

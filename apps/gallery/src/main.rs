@@ -19,6 +19,7 @@ mod search;
 #[cfg(test)]
 mod tests;
 mod workspace_check;
+use pert_ui::host::HostIntegration;
 use pert_ui::{
     ComponentDetails, DebugMode, EditOutcome, InspectValue, ParameterSnapshot, RuntimeError,
     component::*, parameter::*, prelude::*,
@@ -225,20 +226,20 @@ fn headless() -> Result<String, Box<dyn Error>> {
         ParameterId::new(1, 1, "amount")?,
         ParameterSpec::new("Amount", -100.0, 100.0, 0.0)?,
     )?;
-    let first = runtime.mount(
+    let first = runtime.mount_tree(Element::new(
         "first",
         Readout {
             binding: amount.snapshot(),
             retained: None,
         },
-    )?;
-    runtime.mount(
+    ))?;
+    runtime.mount_tree(Element::new(
         "second",
         Readout {
             binding: amount.snapshot(),
             retained: None,
         },
-    )?;
+    ))?;
     runtime.flush(Duration::ZERO)?;
 
     let revision = amount.snapshot().get()?.revision;

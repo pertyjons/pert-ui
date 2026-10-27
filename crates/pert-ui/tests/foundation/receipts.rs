@@ -1,5 +1,6 @@
 //! The one receipt contract: an owned `status()` that survives shutdown and a
 //! `status_binding()` that invalidates its readers when the status changes.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::Cell, rc::Rc, time::Duration};
 
@@ -23,13 +24,13 @@ fn watch<S: Clone + 'static>(
     binding: ReadSignal<S>,
 ) -> Result<Rc<Cell<usize>>, RuntimeError> {
     let updates = Rc::new(Cell::new(0));
-    ui.mount(
+    ui.mount_tree(Element::new(
         key,
         Watch {
             binding,
             updates: updates.clone(),
         },
-    )?;
+    ))?;
     ui.flush(Duration::ZERO)?;
     Ok(updates)
 }
@@ -128,7 +129,7 @@ fn authority_receipt_binding_follows_the_response_and_status_survives_shutdown()
         ParameterId::new(1, 1, "amount")?,
         ParameterSpec::new("Amount", 0.0, 1.0, 0.25)?,
     )?;
-    let id = ui.mount("owner", Owner)?;
+    let id = ui.mount_tree(Element::new("owner", Owner))?;
     let edit = ui.event(&id, |cx| {
         parameter.begin_edit(cx, parameter.snapshot().get()?.revision)
     })??;

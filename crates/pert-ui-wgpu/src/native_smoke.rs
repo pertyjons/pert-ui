@@ -1,6 +1,7 @@
 //! Native GPU smoke checks: pixel read-back from a real hardware surface.
 //! Test evidence only, not a screenshot API; run through `pert-ui-native-checks`.
 use super::*;
+use pert_ui_runtime::Element;
 use pert_ui_runtime::{
     Component, DrawError, Painter, Rect, Runtime, RuntimeError, UpdateContext, Viewport,
 };
@@ -64,7 +65,7 @@ impl Renderer {
                     .map_err(|e| RenderError::Graphics(e.to_string()))?,
             )
             .map_err(|e| RenderError::Graphics(e.to_string()))?;
-            ui.mount("rectangles", Rectangles(count, color))
+            ui.mount_tree(Element::new("rectangles", Rectangles(count, color)))
                 .map_err(|e| RenderError::Graphics(e.to_string()))?;
             ui.flush(std::time::Duration::ZERO)
                 .map_err(|e| RenderError::Graphics(e.to_string()))?;
@@ -155,13 +156,13 @@ impl Renderer {
                 let background = [alpha, alpha, alpha, alpha];
                 let empty = self.render_offscreen(ui.paint()?)?;
                 check(&empty, 4, background)?;
-                ui.mount(
+                ui.mount_tree(Element::new(
                     "layers",
                     Layers {
                         mask: MaskImage::new(1, 1, vec![255])?,
                         image: RasterImage::from_srgba8(1, 1, vec![0, 0, 255, 128])?,
                     },
-                )?;
+                ))?;
                 ui.flush(Duration::ZERO)?;
                 let frame = self.render_offscreen(ui.paint()?)?;
                 check(&frame, 4, background)?;
@@ -223,7 +224,7 @@ impl Renderer {
             let paints = Rc::new(Cell::new(0));
             let updates = Rc::new(Cell::new(0));
             for i in 0..1000 {
-                ui.mount(
+                ui.mount_tree(Element::new(
                     format!("static-{i}"),
                     Probe {
                         live: None,
@@ -231,10 +232,10 @@ impl Renderer {
                         paints: paints.clone(),
                         updates: updates.clone(),
                     },
-                )?;
+                ))?;
             }
             let value = ui.signal(false);
-            ui.mount(
+            ui.mount_tree(Element::new(
                 "changing",
                 Probe {
                     live: Some(value.read_only()),
@@ -242,7 +243,7 @@ impl Renderer {
                     paints: Rc::default(),
                     updates: Rc::default(),
                 },
-            )?;
+            ))?;
             ui.flush(Duration::ZERO)?;
             self.prepare_scene(ui.paint()?)?;
             let buffer = self.vertices.clone();
@@ -371,7 +372,7 @@ impl Renderer {
             let signal = ui.signal(0_u8);
             let grid_paints = Rc::new(Cell::new(0));
             let trace_paints = Rc::new(Cell::new(0));
-            let grid = ui.mount("grid", Grid(grid_paints.clone()))?;
+            let grid = ui.mount_tree(Element::new("grid", Grid(grid_paints.clone())))?;
             ui.flush(Duration::ZERO)?;
             self.prepare_scene(ui.paint()?)?;
 
@@ -404,14 +405,14 @@ impl Renderer {
             let layered_view = layered.create_view(&Default::default());
             let surface_partial_view = surface_partial.create_view(&Default::default());
             self.submit_probe_pass(&static_view, None)?;
-            let trace = ui.mount(
+            let trace = ui.mount_tree(Element::new(
                 "trace",
                 Trace {
                     signal: signal.read_only(),
                     state: 0,
                     paints: trace_paints.clone(),
                 },
-            )?;
+            ))?;
             assert_ne!(grid, trace);
             ui.flush(Duration::ZERO)?;
             self.prepare_scene(ui.paint()?)?;
@@ -580,14 +581,14 @@ impl Renderer {
                 let mut bare = Runtime::new();
                 bare.set_viewport(Viewport::new(WIDTH as f32, HEIGHT as f32, 1.0)?)?;
                 let bare_signal = bare.signal(0_u8);
-                bare.mount(
+                bare.mount_tree(Element::new(
                     "trace",
                     Trace {
                         signal: bare_signal.read_only(),
                         state: 0,
                         paints: Rc::default(),
                     },
-                )?;
+                ))?;
                 bare.theme().set_color(
                     pert_ui_runtime::ThemeMode::Dark,
                     pert_ui_runtime::ColorRole::Background,
@@ -1047,13 +1048,13 @@ impl Renderer {
             let faded = Color::from_linear(1.0, 1.0, 1.0, 0.5)?;
             let mut ui = Runtime::new();
             ui.set_viewport(Viewport::new(8.0, 8.0, 1.0)?)?;
-            ui.mount(
+            ui.mount_tree(Element::new(
                 "images",
                 Images(vec![
                     (image, [0.0, 0.0, 8.0, 4.0], Color::WHITE),
                     (copy, [0.0, 4.0, 8.0, 4.0], faded),
                 ]),
-            )?;
+            ))?;
             ui.flush(std::time::Duration::ZERO)?;
             let scene = ui.paint()?;
             assert_eq!(
@@ -1120,7 +1121,7 @@ impl Renderer {
             let stroke = Color::from_linear(0.1, 0.7, 0.3, 1.0)?;
             let mut ui = Runtime::new();
             ui.set_viewport(Viewport::new(8.0, 8.0, 1.0)?)?;
-            ui.mount("geometry", Geometry(fill, stroke))?;
+            ui.mount_tree(Element::new("geometry", Geometry(fill, stroke)))?;
             ui.flush(std::time::Duration::ZERO)?;
             let scene = ui.paint()?;
             let background = scene.background();
@@ -1169,7 +1170,7 @@ impl Renderer {
             let ink = Color::from_linear(0.9, 0.3, 0.1, 1.0)?;
             let mut ui = Runtime::new();
             ui.set_viewport(Viewport::new(8.0, 8.0, 1.0)?)?;
-            ui.mount("turned", Turned(ink))?;
+            ui.mount_tree(Element::new("turned", Turned(ink)))?;
             ui.flush(std::time::Duration::ZERO)?;
             let scene = ui.paint()?;
             assert_eq!(scene.masks().len(), 1, "both turns share one coverage");
@@ -1481,7 +1482,7 @@ impl ApplicationHandler<Notice> for Harness {
                             )
                             .map_err(|e| RenderError::Graphics(e.to_string()))?;
                         shapes
-                            .mount("cut-tab", CutTab)
+                            .mount_tree(Element::new("cut-tab", CutTab))
                             .map_err(|e| RenderError::Graphics(e.to_string()))?;
                         shapes
                             .flush(std::time::Duration::ZERO)
@@ -1524,10 +1525,10 @@ impl ApplicationHandler<Notice> for Harness {
                                 .map_err(|e| RenderError::Graphics(e.to_string()))?,
                         )
                         .map_err(|e| RenderError::Graphics(e.to_string()))?;
-                        ui.mount(
+                        ui.mount_tree(Element::new(
                             "bad",
                             Oversized(renderer.device.limits().max_texture_dimension_2d + 1),
-                        )
+                        ))
                         .map_err(|e| RenderError::Graphics(e.to_string()))?;
                         ui.flush(std::time::Duration::ZERO)
                             .map_err(|e| RenderError::Graphics(e.to_string()))?;
@@ -1609,7 +1610,7 @@ pub(crate) fn native_test_event_loop() -> Result<EventLoop<Notice>, Box<dyn std:
 pub(super) fn pixel_readback() -> Result<(), Box<dyn std::error::Error>> {
     let mut runtime = Runtime::new();
     runtime.set_viewport(Viewport::new(64.0, 64.0, 1.0)?)?;
-    runtime.mount("rectangle", Rectangle)?;
+    runtime.mount_tree(Element::new("rectangle", Rectangle))?;
     runtime.flush(std::time::Duration::ZERO)?;
     let event_loop = native_test_event_loop()?;
     let mut harness = Harness {

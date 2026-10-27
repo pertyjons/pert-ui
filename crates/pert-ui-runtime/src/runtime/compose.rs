@@ -97,6 +97,14 @@ impl Runtime {
                 entry.paint_dirty.set(true);
             }
             if entry.paint_dirty.get() {
+                // Layout gives every presented component a size before a paint
+                // is admitted; an entry without one is work layout has not
+                // finished, never a guessed size.
+                let size = entry.node.size.get();
+                debug_assert!(size.is_some(), "a presented component has no allocation");
+                let Some(size) = size else {
+                    return Err(crate::DrawError::PendingUpdates);
+                };
                 let _timing = self.shared.profiler.span(
                     crate::ProfileOperation::Paint,
                     Some(serial),
@@ -126,7 +134,7 @@ impl Runtime {
                     metric_roles: Cell::new(0),
                     palette,
                     roles: Cell::new(0),
-                    size: entry.node.size.get(),
+                    size,
                     clip: None,
                     view_scale: entry.node.prepared_scale.get(),
                     window_scale: viewport.scale(),
@@ -329,13 +337,9 @@ impl Runtime {
         Ok(scene)
     }
 
-    /// Whether visible drawing or the scene background needs fresh composition.
-    ///
-    /// Custom hosts check this after events/flushes, then call `paint` after pending
-    /// updates are flushed. Successful painting clears scene damage. Hidden component
-    /// dirtiness alone does not request presentation. This query creates no timers.
+    // Documented on `crate::host::HostIntegration::needs_paint`.
     #[must_use]
-    pub fn needs_paint(&self) -> bool {
+    pub(crate) fn needs_paint(&self) -> bool {
         !self.window.focus_errors.is_empty()
             || self.window.shared.scene_dirty.get()
             || self

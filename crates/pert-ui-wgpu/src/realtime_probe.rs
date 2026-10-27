@@ -2,6 +2,7 @@
 //! Test evidence only: it motivates or rejects renderer work such as a GPU line
 //! primitive or streamed images, and sets no pass/fail performance threshold.
 use super::*;
+use pert_ui_runtime::Element;
 use pert_ui_runtime::{
     ColorRole, Component, DrawError, ImageSampling, Length, LineJoin, Painter, Point, ReadSignal,
     Rect, Runtime, RuntimeError, StrokeStyle, UpdateContext, Viewport,
@@ -207,7 +208,10 @@ impl Renderer {
         let mut ui = Runtime::new();
         ui.set_viewport(Viewport::new(WIDTH as f32, HEIGHT as f32, 1.0)?)?;
         let signal = ui.signal(0_u64);
-        ui.mount("content", Content::new(signal.read_only(), workload))?;
+        ui.mount_tree(Element::new(
+            "content",
+            Content::new(signal.read_only(), workload),
+        ))?;
         let mut phases: [Vec<Duration>; 6] = Default::default();
         let mut previous: Option<DisplayList> = None;
         let mut first_pixels = None;

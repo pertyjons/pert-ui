@@ -33,15 +33,16 @@ impl Runtime {
     /// [`CaptureRequest`](crate::CaptureRequest) with
     /// [`CaptureError::Unsupported`](crate::CaptureError::Unsupported) at
     /// once. The native `App` turns it on; a custom host that turns it on
-    /// commits to completing every job [`pending_captures`](Self::pending_captures)
+    /// commits to completing every job
+    /// [`pending_captures`](crate::host::HostIntegration::pending_captures)
     /// lists, with a frame or with an error.
     pub fn set_capture_support(&self, supported: bool) {
         self.shared.capture_support.set(supported);
     }
 
-    /// Whether a host has declared that it renders capture jobs.
+    // Documented on `crate::host::HostIntegration::captures_supported`.
     #[must_use]
-    pub fn captures_supported(&self) -> bool {
+    pub(crate) fn captures_supported(&self) -> bool {
         self.shared.capture_support.get()
     }
 
@@ -266,17 +267,9 @@ impl Runtime {
         })
     }
 
-    /// The captures waiting for a host to render their windows, oldest first.
-    ///
-    /// A host renders each job's window with the scene
-    /// [`capture_scene`](Self::capture_scene) composes and completes it with
-    /// [`complete_capture`](Self::complete_capture). A job stays listed until
-    /// completed; a window whose surface cannot render now is completed with
-    /// [`CaptureError::SurfaceUnavailable`](crate::CaptureError::SurfaceUnavailable)
-    /// rather than left. [`needs_paint`](Self::needs_paint) is true while a
-    /// job targets the selected window.
+    // Documented on `crate::host::HostIntegration::pending_captures`.
     #[must_use]
-    pub fn pending_captures(&self) -> Vec<crate::CaptureJob> {
+    pub(crate) fn pending_captures(&self) -> Vec<crate::CaptureJob> {
         self.prune_cancelled_captures();
         self.shared
             .captures
@@ -291,27 +284,8 @@ impl Runtime {
             .collect()
     }
 
-    /// Composes the scene a host renders for `job`: the job's window, with
-    /// overlays only when the job asks for them. Selects that window, as
-    /// [`select_window`](Self::select_window) does; a host presenting another
-    /// window reselects it afterwards. Requires flushed updates, like
-    /// [`paint`](Self::paint).
-    ///
-    /// The job is looked up among this runtime's pending captures by its
-    /// private request identity, so a stale job or one another runtime listed
-    /// is refused even when its id matches; the pending request decides what
-    /// is rendered.
-    ///
-    /// # Errors
-    /// [`CaptureError::UnknownTarget`](crate::CaptureError::UnknownTarget) for
-    /// a job that is not pending here, because it was completed or another
-    /// runtime listed it, and for a job whose window is gone; `paint`'s
-    /// errors, such as pending updates, as
-    /// [`CaptureError::Drawing`](crate::CaptureError::Drawing).
-    /// Runtime causes from selecting or painting the window are retained as
-    /// [`CaptureError::Runtime`](crate::CaptureError::Runtime). The host
-    /// completes the job with the owned error it got.
-    pub fn capture_scene(
+    // Documented on `crate::host::HostIntegration::capture_scene`.
+    pub(crate) fn capture_scene(
         &mut self,
         job: &crate::CaptureJob,
     ) -> Result<crate::DisplayList, crate::CaptureError> {
@@ -337,19 +311,8 @@ impl Runtime {
             .map_err(crate::CaptureError::from)
     }
 
-    /// Hands a rendered frame, or the error that prevented one, to the
-    /// capture `job` names, answering its request. Returns whether the job
-    /// was pending here. The job is identified by the request it was listed
-    /// for, as [`capture_scene`](Self::capture_scene) identifies it, so a job
-    /// already completed, or one another runtime listed even with the same id,
-    /// completes nothing and returns `false`.
-    ///
-    /// The frame is the job's window at its physical extent; the runtime
-    /// crops it to the target's visible region as the current state has it,
-    /// which is the state the frame shows when the host rendered it without
-    /// flushing in between. A target that was unmounted, hidden or unmeasured
-    /// since admission is reported, never replaced.
-    pub fn complete_capture(
+    // Documented on `crate::host::HostIntegration::complete_capture`.
+    pub(crate) fn complete_capture(
         &self,
         job: &crate::CaptureJob,
         frame: Result<crate::FrameImage, crate::CaptureError>,

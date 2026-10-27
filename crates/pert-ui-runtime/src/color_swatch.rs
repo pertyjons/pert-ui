@@ -313,9 +313,7 @@ impl Component for ColorSwatch {
         self.input.reset();
     }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = painter.size() else {
-            return Ok(());
-        };
+        let size = painter.size();
         let rect = Rect::from_size(size);
         if self.color.alpha() < 1.0 {
             paint_checkerboard(painter, rect)?;

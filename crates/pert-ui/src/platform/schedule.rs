@@ -1,6 +1,7 @@
 //! Presentation scheduling and the recovery policies behind it: component
 //! failure backoff, per-window surface retries and the one device recreation.
 use super::*;
+use crate::host::HostIntegration;
 
 // This allowance spans update, input and paint errors. Only a successfully
 // presented frame resets it; successful flushes cannot hide repeated paint errors.
@@ -339,7 +340,7 @@ mod scheduling_tests {
         let mut runtime = Runtime::new();
         runtime.set_viewport(crate::Viewport::new(320.0, 100.0, 1.0)?)?;
         let fired = Rc::new(Cell::new(0));
-        let timed = runtime.mount("timed", Timed(fired.clone()))?;
+        let timed = runtime.mount_tree(crate::Element::new("timed", Timed(fired.clone())))?;
         runtime.flush(Duration::ZERO)?;
         runtime.event(&timed, |cx| cx.set_timer(Duration::from_secs(1)))??;
         assert_eq!(runtime.focused(), Some(timed.clone()));
@@ -449,7 +450,7 @@ mod scheduling_tests {
         let mut runtime = Runtime::new();
         runtime.set_capture_support(true);
         runtime.set_viewport(crate::Viewport::new(320.0, 100.0, 1.0)?)?;
-        runtime.mount("live", Live)?;
+        runtime.mount_tree(crate::Element::new("live", Live))?;
         let root = runtime.primary_window();
         assert_eq!(prepare_updates(&mut runtime, Duration::ZERO, true)?, 1);
         runtime.paint()?;
@@ -562,7 +563,8 @@ mod scheduling_tests {
     fn withheld_redraw_suspends_live_updates_until_compositor_resumes() -> Result<(), RuntimeError>
     {
         let mut runtime = Runtime::new();
-        runtime.mount("live", Live)?;
+        runtime.set_viewport(crate::Viewport::new(320.0, 100.0, 1.0)?)?;
+        runtime.mount_tree(crate::Element::new("live", Live))?;
         assert_eq!(prepare_updates(&mut runtime, Duration::ZERO, true)?, 1);
         let pending = runtime.next_deadline();
         assert!(pending.is_some());

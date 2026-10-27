@@ -4,6 +4,7 @@
 //! Each size renders a scene of overlapping translucent panels, text-like
 //! masks and a filtered image, and reports the median of several renders.
 use pert_ui_cpu::CpuRenderer;
+use pert_ui_runtime::Element;
 use pert_ui_runtime::{
     Color, Component, DrawError, ImageSampling, MaskImage, Painter, PhysicalExtent, RasterImage,
     Rect, Runtime, RuntimeError, UpdateContext, Viewport,
@@ -69,13 +70,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             PhysicalExtent::new(width, height),
             1.0,
         )?)?;
-        ui.mount(
+        ui.mount_tree(Element::new(
             "load",
             Load {
                 width: width as f32,
                 height: height as f32,
             },
-        )?;
+        ))?;
         ui.flush(Duration::ZERO)?;
         let scene = ui.paint()?;
         let mut times = Vec::new();

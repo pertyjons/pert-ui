@@ -5,6 +5,7 @@
 //! the application, which owns the order; the insertion line; auto-scroll over
 //! the overflow arrows; the keyboard equivalent; and how reordering combines
 //! with detaching.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::RefCell, rc::Rc, time::Duration};
 

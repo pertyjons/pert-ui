@@ -114,12 +114,12 @@ mod tests {
         let mut ui = Runtime::new();
         ui.set_viewport(Viewport::new(500.0, 100.0, 1.0)?)?;
         let dynamic = ui.signal(0.0);
-        ui.mount(
+        ui.mount_tree(Element::new(
             "scene",
             Scene {
                 dynamic: dynamic.read_only(),
             },
-        )?;
+        ))?;
         ui.flush(Duration::ZERO)?;
         let mut cache = RetainedGeometry::default().prepare(&ui.paint()?)?;
         assert_eq!(cache.encoded_commands, 1001);
@@ -161,7 +161,7 @@ mod tests {
         }
         let mut ui = Runtime::new();
         ui.set_viewport(Viewport::new(width, 10.0, 1.0)?)?;
-        ui.mount("squares", Squares(xs.to_vec()))?;
+        ui.mount_tree(Element::new("squares", Squares(xs.to_vec())))?;
         ui.flush(Duration::ZERO)?;
         Ok(ui.paint()?)
     }

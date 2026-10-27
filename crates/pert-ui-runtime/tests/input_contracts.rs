@@ -1,5 +1,6 @@
 //! Public contracts of text commands, key routing, key-path lookup and
 //! observable presentation settings.
+use pert_ui_runtime::testing::HostIntegration;
 use pert_ui_runtime::{
     DebugOverlay, Density, InputOutcome, InspectionQuery, KeyAction, KeyCode, KeyEvent,
     KeyTransition, KeyboardState, Modifiers, MotionPreference, RuntimeError, Selector, TextCommand,
@@ -8,6 +9,32 @@ use pert_ui_runtime::{
 use std::{cell::Cell, rc::Rc, time::Duration};
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
+
+/// The descendant of `root` reached by `keys`, one key per level and every
+/// level named, walking the public `children` and `key`; an empty path is
+/// `root` itself, and a level without the key is `Ok(None)`.
+fn key_path(
+    ui: &Runtime,
+    root: &WidgetId,
+    keys: &[&str],
+) -> Result<Option<WidgetId>, RuntimeError> {
+    ui.key(root)?;
+    let mut current = root.clone();
+    for wanted in keys {
+        let mut next = None;
+        for child in ui.children(&current)? {
+            if ui.key(&child)? == *wanted {
+                next = Some(child);
+                break;
+            }
+        }
+        let Some(next) = next else {
+            return Ok(None);
+        };
+        current = next;
+    }
+    Ok(Some(current))
+}
 
 /// Counts updates, observed keys and text commands.
 #[derive(Default)]
@@ -178,7 +205,7 @@ fn modifiers_follow_the_pressed_set_until_the_host_reports_a_snapshot() -> TestR
 }
 
 #[test]
-fn find_resolves_key_paths_under_a_root() -> TestResult {
+fn a_key_path_walk_resolves_under_a_root() -> TestResult {
     let mut ui = Runtime::new();
     let root = ui.mount_tree(Element::new(
         "root",
@@ -187,32 +214,32 @@ fn find_resolves_key_paths_under_a_root() -> TestResult {
             Row::new([Element::new("first", Label::new("First"))]),
         )]),
     ))?;
-    let first = ui.find_path(&root, &["group", "first"])?.ok_or("mounted")?;
+    let first = key_path(&ui, &root, &["group", "first"])?.ok_or("mounted")?;
     assert_eq!(ui.key(&first)?, "first");
-    assert_eq!(ui.find_path(&root, &[])?, Some(root.clone()));
-    assert_eq!(ui.find_path(&root, &["first"])?, None);
-    assert_eq!(ui.find_path(&root, &["group", "first", "deeper"])?, None);
+    assert_eq!(key_path(&ui, &root, &[])?, Some(root.clone()));
+    assert_eq!(key_path(&ui, &root, &["first"])?, None);
+    assert_eq!(key_path(&ui, &root, &["group", "first", "deeper"])?, None);
     // A key path is relative to its root.
-    let group = ui.find_path(&root, &["group"])?.ok_or("mounted")?;
-    assert_eq!(ui.find_path(&group, &["first"])?, Some(first.clone()));
+    let group = key_path(&ui, &root, &["group"])?.ok_or("mounted")?;
+    assert_eq!(key_path(&ui, &group, &["first"])?, Some(first.clone()));
     // Hidden components are still found.
     ui.set_visible(&first, false)?;
-    assert_eq!(ui.find_path(&root, &["group", "first"])?, Some(first));
+    assert_eq!(key_path(&ui, &root, &["group", "first"])?, Some(first));
 
     let other = Runtime::new();
     assert_eq!(
-        other.find_path(&root, &["group"]),
+        key_path(&other, &root, &["group"]),
         Err(RuntimeError::ForeignRuntime)
     );
     ui.unmount(&root)?;
-    assert_eq!(ui.find_path(&root, &[]), Err(RuntimeError::Unmounted));
+    assert_eq!(key_path(&ui, &root, &[]), Err(RuntimeError::Unmounted));
     Ok(())
 }
 
 #[test]
 fn find_descendant_skips_built_in_parts_and_refuses_ambiguity() -> TestResult {
     let mut ui = Runtime::new();
-    // A group puts its content below parts it keys itself, which `find`
+    // A group puts its content below parts it keys itself, which a key path
     // would have to name.
     let root = ui.mount_tree(Element::new(
         "root",
@@ -237,10 +264,10 @@ fn find_descendant_skips_built_in_parts_and_refuses_ambiguity() -> TestResult {
         ]),
     ))?;
     ui.flush(Duration::ZERO)?;
-    let left = ui.find_path(&root, &["left"])?.ok_or("mounted")?;
+    let left = key_path(&ui, &root, &["left"])?.ok_or("mounted")?;
     let form = ui.find_descendant(&root, "form")?.ok_or("mounted")?;
     assert_eq!(
-        ui.find_path(&left, &["form"])?,
+        key_path(&ui, &left, &["form"])?,
         None,
         "the group adds levels"
     );
@@ -251,7 +278,7 @@ fn find_descendant_skips_built_in_parts_and_refuses_ambiguity() -> TestResult {
         Err(RuntimeError::AmbiguousKey("apply".into()))
     );
     let apply = ui.find_descendant(&left, "apply")?.ok_or("mounted")?;
-    assert_eq!(ui.find_path(&form, &["apply"])?, Some(apply.clone()));
+    assert_eq!(key_path(&ui, &form, &["apply"])?, Some(apply.clone()));
     // The ancestor is not its own descendant.
     let same = ui.find_descendant(&root, "root")?.ok_or("mounted")?;
     assert_ne!(same, root);
@@ -319,14 +346,14 @@ fn find_address_names_addressable_segments_and_refuses_ambiguity() -> TestResult
         ]),
     ))?;
     ui.flush(Duration::ZERO)?;
-    let left = ui.find_path(&root, &["left"])?.ok_or("mounted")?;
+    let left = key_path(&ui, &root, &["left"])?.ok_or("mounted")?;
     let form = ui.find_descendant(&left, "form")?.ok_or("mounted")?;
     assert_eq!(ui.find(&root, &["left", "form"])?, Some(form.clone()));
     assert_eq!(ui.find(&left, &["form"])?, Some(form.clone()));
     let apply = ui
         .find(&root, &["left", "form", "apply"])?
         .ok_or("mounted")?;
-    assert_eq!(ui.find_path(&form, &["apply"])?, Some(apply.clone()));
+    assert_eq!(key_path(&ui, &form, &["apply"])?, Some(apply.clone()));
     // The address agrees with inspection's path selector.
     let query = ui.query(&InspectionQuery::components(Selector::path([
         "root", "left", "form", "apply",

@@ -392,9 +392,7 @@ impl Component for BooleanControl {
         self.input.reset();
     }
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = p.size() else {
-            return Ok(());
-        };
+        let size = p.size();
         let enabled = self.interactive();
         let rect = Rect::from_size(size);
         if self.input.hovered && enabled {
@@ -1350,9 +1348,7 @@ impl<T: Clone + Eq + 'static> Component for RadioGroup<T> {
         self.hovered = None;
     }
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = p.size() else {
-            return Ok(());
-        };
+        let size = p.size();
         if self.segmented {
             return self.paint_segments(p);
         }

@@ -2,6 +2,7 @@
 //! editors that answer it, when its focus request settles, routing and
 //! admission, and the editors that have nothing to begin.
 use crate::support;
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{
     cell::{Cell, RefCell},

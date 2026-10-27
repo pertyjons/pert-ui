@@ -2,6 +2,7 @@
 //! placeholder, required, length limits with a counter, and a pending field
 //! status.
 use crate::support;
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::RefCell, rc::Rc, time::Duration};
 use support::frame;

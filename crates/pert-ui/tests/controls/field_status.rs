@@ -320,7 +320,7 @@ fn request_focus_for_rejects_a_foreign_runtime_and_ignores_a_stale_target() {
     let mut ui = ui();
     let mut foreign = self::ui();
     let outsider = foreign
-        .mount("outsider", Button::new("Other", |_| Ok(())))
+        .mount_tree(Element::new("outsider", Button::new("Other", |_| Ok(()))))
         .unwrap();
     let outcome = Rc::new(RefCell::new(None));
     let target = Rc::new(RefCell::new(None::<WidgetId>));

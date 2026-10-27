@@ -2531,9 +2531,7 @@ impl Component for VirtualList {
         if self.selected.is_empty() && self.hovered_point.is_none() {
             return Ok(());
         }
-        let Some(size) = painter.size() else {
-            return Ok(());
-        };
+        let size = painter.size();
         let bounds = Rect::from_size(size);
         let hovered_index = self.hovered_point.and_then(|point| self.item_at(point));
         for (index, key) in &self.mounted {
@@ -2555,21 +2553,19 @@ impl Component for VirtualList {
 
     fn paint_foreground(&self, painter: &mut Painter) -> Result<(), DrawError> {
         // While a drop is indicated, the indication is what the list shows.
+        let size = painter.size();
         if self.focused
             && self.outline
             && self.mark.is_none()
             && let Some(index) = self.active_index
             && self.mounted.iter().any(|(mounted, _)| *mounted == index)
-            && let Some(size) = painter.size()
         {
             let slot = self.slot(index)?.intersection(Rect::from_size(size));
             if !slot.is_empty() {
                 painter.focus_ring(slot, Shape::Rectangle)?;
             }
         }
-        if let Some(ListDropMark::Into(index)) = self.mark
-            && let Some(size) = painter.size()
-        {
+        if let Some(ListDropMark::Into(index)) = self.mark {
             let slot = self.slot(index)?.intersection(Rect::from_size(size));
             if !slot.is_empty() {
                 let width = Length::new(painter.metric(MetricRole::FocusWidth))?;
@@ -2582,7 +2578,6 @@ impl Component for VirtualList {
             }
         }
         if let Some(ListDropMark::Line { boundary, indent }) = self.mark
-            && let Some(size) = painter.size()
             && let Some(line) =
                 self.insertion_line(boundary, painter.metric(MetricRole::FocusWidth))
         {

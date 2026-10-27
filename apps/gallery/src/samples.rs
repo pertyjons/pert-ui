@@ -72,7 +72,7 @@ impl Component for Pulse {
         Ok(Size::from([320, 32]))
     }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        let width = painter.size().map_or(320.0, |size| size.width());
+        let width = painter.size().width();
         let cell = width / 12.0;
         for index in 0..12 {
             let color = if self.active && index == self.updates % 12 {
@@ -153,22 +153,21 @@ impl Component for KeyPad {
         self.text.arrange(cx, size)
     }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        if let Some(size) = painter.size() {
+        let size = painter.size();
+        painter.fill_rect(
+            Rect::from_size(size),
+            painter.color(ColorRole::SurfaceHover),
+        );
+        if self.focused {
             painter.fill_rect(
-                Rect::from_size(size),
-                painter.color(ColorRole::SurfaceHover),
+                Rect::new(
+                    0.0,
+                    (size.height() - 2.0).max(0.0),
+                    size.width(),
+                    size.height().min(2.0),
+                )?,
+                painter.color(ColorRole::Primary),
             );
-            if self.focused {
-                painter.fill_rect(
-                    Rect::new(
-                        0.0,
-                        (size.height() - 2.0).max(0.0),
-                        size.width(),
-                        size.height().min(2.0),
-                    )?,
-                    painter.color(ColorRole::Primary),
-                );
-            }
         }
         self.text.paint(painter)
     }

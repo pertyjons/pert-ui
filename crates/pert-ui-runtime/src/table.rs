@@ -1118,7 +1118,7 @@ impl Component for TableRow {
         Ok(InputOutcome::Ignored)
     }
     fn paint_foreground(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        let (Some(column), Some(size)) = (self.active, painter.size()) else {
+        let (Some(column), size) = (self.active, painter.size()) else {
             return Ok(());
         };
         let Some((start, width)) = self.shared.resolved.borrow().get(column).copied() else {
@@ -2408,9 +2408,7 @@ impl Component for Table {
         )
     }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = painter.size() else {
-            return Ok(());
-        };
+        let size = painter.size();
         let header = self.header.get();
         painter.fill_rect(
             Rect::new(0.0, 0.0, size.width(), header)?,
@@ -2755,9 +2753,8 @@ impl Component for Table {
         self.overflows() && self.bar().is_ok_and(|bar| bar.track.contains(point))
     }
     fn paint_foreground(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        if let Some((_, boundary)) = self.drop_boundary()
-            && let Some(size) = painter.size()
-        {
+        let size = painter.size();
+        if let Some((_, boundary)) = self.drop_boundary() {
             let shared = &self.state.0.shared;
             let resolved = shared.resolved.borrow();
             let edge = match resolved.get(boundary) {

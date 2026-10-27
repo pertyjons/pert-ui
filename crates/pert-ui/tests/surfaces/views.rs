@@ -1,5 +1,6 @@
 //! Default view, scroll and nested-region layout contracts through the facade.
 use crate::support;
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::Cell, rc::Rc, time::Duration};
 use support::find;
@@ -79,7 +80,7 @@ fn nested_region_layout_regions_fill_and_small_windows_keep_center_accessible() 
     // looked up by their path through the layout's splits.
     let region = |path: &[&str]| {
         let path = [&["shell-viewport", "regions", "split-top"], path].concat();
-        ui.find_path(&region_layout, &path).unwrap().unwrap()
+        support::key_path(&ui, &region_layout, &path).unwrap()
     };
     let top = region(&["top"]);
     let bottom = region(&["split-bottom", "bottom"]);

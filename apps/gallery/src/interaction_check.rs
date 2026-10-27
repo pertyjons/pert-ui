@@ -17,6 +17,7 @@
 //! the adapter's translation of them are not exercised here; the drag smoke
 //! and the input probe cover that path. The run is evidence for exactly the
 //! steps in [`steps`], on the platform where it ran.
+use pert_ui::host::HostIntegration;
 use pert_ui::*;
 use std::{
     cell::{Cell, RefCell},
@@ -1002,6 +1003,16 @@ impl Component for Probe {
         self.painted.set(self.painted.get() + 1);
         Ok(())
     }
+    // Laid over the gallery as a second root: pointer input passes through to
+    // the gallery, and the overlap is intended.
+    fn hit_test(&self, _: Point) -> bool {
+        false
+    }
+    fn inspect(&self) -> ComponentDetails {
+        let mut details = ComponentDetails::default();
+        details.validation.overlap = OverlapPolicy::Allow;
+        details
+    }
     fn deliver_notifications(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
         let (progress, painted, id) =
             (self.progress.clone(), self.painted.clone(), self.id.clone());
@@ -1105,7 +1116,7 @@ pub(super) fn run(software: bool) -> Result<(), Box<dyn std::error::Error>> {
     let app = App::new("pert-ui — Gallery interaction check", move |ui| {
         let root = gallery.mount(ui)?;
         scene.borrow_mut().scene = Some(Scene::new(root));
-        let probe = ui.mount(PROBE, probe)?;
+        let probe = ui.mount_tree(Element::new(PROBE, probe))?;
         *id.borrow_mut() = Some(probe);
         Ok(())
     })
@@ -1169,7 +1180,7 @@ mod probe_tests {
         let mut ui = Runtime::new();
         ui.set_viewport(Viewport::new(320.0, 240.0, 1.0).unwrap())
             .unwrap();
-        *id.borrow_mut() = Some(ui.mount(PROBE, probe).unwrap());
+        *id.borrow_mut() = Some(ui.mount_tree(Element::new(PROBE, probe)).unwrap());
         ui.flush(Duration::ZERO).unwrap();
         assert!(ui.next_deadline().is_some());
         ui.set_window_visible(false).unwrap();

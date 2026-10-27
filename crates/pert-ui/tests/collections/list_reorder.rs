@@ -4,6 +4,7 @@
 //! `drag_and_drop.rs`; these pin what it adds: keyed payloads and positions, the
 //! insertion line, a multiple selection dragged together, moving between two
 //! lists as one edit, auto-scroll, and the keyboard equivalent.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::RefCell, rc::Rc, time::Duration};
 

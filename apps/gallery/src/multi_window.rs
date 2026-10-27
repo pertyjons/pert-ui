@@ -23,9 +23,7 @@ impl Component for Motion {
         Ok(Size::from([480, 140]))
     }
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = p.size() else {
-            return Ok(());
-        };
+        let size = p.size();
         let color = p.color(if self.down {
             ColorRole::Secondary
         } else {
@@ -202,7 +200,7 @@ pub(super) fn run() -> Result<(), AppError> {
         let mut views = Vec::new();
         for index in 0..dialogs.len() {
             let strip = format!("tabs-{index}");
-            let view = ui.find_path(&root, &[&strip, "panel"])?.ok_or_else(|| {
+            let view = ui.find(&root, &[&strip, "panel"])?.ok_or_else(|| {
                 ApplicationError::from(format!("editor view `{strip}/panel` is not mounted"))
             })?;
             views.push(view);

@@ -1,6 +1,7 @@
 //! Host notification contracts: ordering, registration, reentrancy, failure
 //! retention, recovery, deferred lifecycle delivery and shutdown, for typed,
 //! erased and remote bindings.
+use pert_ui_runtime::Element;
 use std::{
     cell::{Cell, RefCell},
     rc::Rc,
@@ -26,7 +27,7 @@ impl Component for Idle {
 }
 
 fn widget(ui: &mut Runtime, key: &str) -> Result<WidgetId, RuntimeError> {
-    ui.mount(key, Idle)
+    ui.mount_tree(Element::new(key, Idle))
 }
 
 type Log<T> = Rc<RefCell<Vec<T>>>;
@@ -595,9 +596,14 @@ fn a_delivered_deferred_notification_leaves_nothing_due() -> TestResult {
         ParameterId::new(1, 1, "amount")?,
         ParameterSpec::new("Amount", 0.0, 1.0, 0.0)?,
     )?;
-    let _monitor = host.on_outcome(|_| Ok(()))?;
+    let delivered = Rc::new(Cell::new(0));
+    let count = delivered.clone();
+    let _monitor = host.on_outcome(move |_| {
+        count.set(count.get() + 1);
+        Ok(())
+    })?;
     ui.flush(Duration::ZERO)?;
-    for _ in 0..3 {
+    for round in 1..=3 {
         let id = widget(&mut ui, "control")?;
         let edit = ui.event(&id, |cx| {
             amount.begin_edit(cx, amount.snapshot().get()?.revision)
@@ -605,8 +611,13 @@ fn a_delivered_deferred_notification_leaves_nothing_due() -> TestResult {
         ui.unmount(&id)?;
         drop(edit);
         assert_eq!(ui.next_deadline(), Some(Duration::ZERO));
+        assert_eq!(delivered.get(), round - 1);
         // Delivered by the next operation on the parameter, not only by a flush.
         host.write_base(0.5)?;
+        assert_eq!(delivered.get(), round);
+        // Removing the focused root also left focus restoration due; once that
+        // settles, nothing is.
+        ui.flush(Duration::ZERO)?;
         assert_eq!(ui.next_deadline(), None);
     }
     Ok(())

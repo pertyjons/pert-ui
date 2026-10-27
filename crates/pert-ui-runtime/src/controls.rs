@@ -804,9 +804,7 @@ impl Component for Button {
         self.input.reset();
     }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = painter.size() else {
-            return Ok(());
-        };
+        let size = painter.size();
         let background = if self.input.pressed() {
             painter.color(ColorRole::ButtonPressed)
         } else if self.input.hovered && self.enabled {

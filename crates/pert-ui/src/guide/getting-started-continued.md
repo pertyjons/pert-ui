@@ -131,11 +131,9 @@ impl Component for Indicator {
         Ok(Size::new(side, side)?)
     }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        if let Some(size) = painter.size() {
-            let role = if self.active { ColorRole::Primary } else { ColorRole::Muted };
-            let color = painter.color(role);
-            painter.fill_rect(Rect::from_size(size), color);
-        }
+        let role = if self.active { ColorRole::Primary } else { ColorRole::Muted };
+        let color = painter.color(role);
+        painter.fill_rect(Rect::from_size(painter.size()), color);
         Ok(())
     }
 }

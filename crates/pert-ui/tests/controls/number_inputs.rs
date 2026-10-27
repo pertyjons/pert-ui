@@ -1,5 +1,6 @@
 //! Numeric editing contracts through the public facade.
 use crate::support;
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::Cell, rc::Rc, time::Duration};
 use support::{frame, key};
@@ -558,10 +559,14 @@ impl Component for FailingFocus {
 #[test]
 fn public_focus_hook_errors_do_not_block_cleanup_and_window_errors_are_delivered() {
     let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(100.0, 100.0, 1.0).unwrap())
+        .unwrap();
     let calls = Rc::new(Cell::new(0));
-    let first = ui.mount("first", FailingFocus(calls.clone())).unwrap();
+    let first = ui
+        .mount_tree(Element::new("first", FailingFocus(calls.clone())))
+        .unwrap();
     let second = ui
-        .mount("second", Button::new("Other", |_| Ok(())))
+        .mount_tree(Element::new("second", Button::new("Other", |_| Ok(()))))
         .unwrap();
     ui.focus(&first).unwrap();
     ui.flush(Duration::ZERO).unwrap();

@@ -1,5 +1,6 @@
 //! Which tab a strip selects when its selection is removed, and which tabs
 //! keyboard stepping reaches.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::time::Duration;
 
@@ -35,7 +36,7 @@ fn text(key: &str) -> Option<InspectValue> {
 }
 
 fn select(ui: &mut Runtime, key: &str) {
-    let document = format!("pert-ui-workspace 1\nentry \"tabs\" tabs selected=\"{key}\"\n");
+    let document = format!("pert-ui-workspace 2\nentry \"tabs\" tabs selected=\"{key}\"\n");
     let report = ui
         .restore_workspace(&Workspace::decode(&document).unwrap())
         .unwrap();

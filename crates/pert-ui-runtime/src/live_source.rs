@@ -130,7 +130,7 @@ impl WakeShared {
 /// Created by [`Runtime::live_waker`](crate::Runtime::live_waker). Calling
 /// [`Self::notify`] after publishing sets the runtime's pending flag and, when
 /// a host installed delivery with
-/// [`Runtime::set_wake_delivery`](crate::Runtime::set_wake_delivery), wakes
+/// [`Runtime::set_wake_delivery`](crate::host::HostIntegration::set_wake_delivery), wakes
 /// the event loop; concurrent notifications coalesce into one wake. The flag
 /// protocol is [`WakeFlag`], and it is what makes a publish either drained by
 /// the wake it raced or followed by a fresh one. A host without delivery, such

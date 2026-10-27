@@ -195,7 +195,7 @@ fn settle_ticks_one_frame_and_advance_is_one_deadline_jump() -> TestResult {
     assert_eq!(Driver::FRAME, Duration::from_millis(16));
     let mut ui = runtime()?;
     let ticks = Rc::new(Cell::new(0));
-    let _ticker = ui.mount("ticker", Ticker(ticks.clone()))?;
+    let _ticker = ui.mount_tree(Element::new("ticker", Ticker(ticks.clone())))?;
     let mut driver = Driver::new(&mut ui);
     driver.settle()?;
     assert_eq!(ticks.get(), 1);
@@ -332,7 +332,7 @@ fn click_reveals_presses_and_releases_at_the_middle_and_settles() -> TestResult 
 }
 
 #[test]
-fn click_refuses_another_window_a_refused_reveal_and_no_bounds() -> TestResult {
+fn click_refuses_another_window_and_a_refused_reveal() -> TestResult {
     let mut ui = runtime()?;
     let (clicks, action) = counter(&mut ui);
     let root = ui.mount_tree(Element::new(
@@ -355,13 +355,6 @@ fn click_refuses_another_window_a_refused_reveal_and_no_bounds() -> TestResult {
     ui.select_window(&primary)?;
     let hidden = ui.find(&root, &["hidden"])?.ok_or("hidden")?;
     ui.set_visible(&hidden, false)?;
-    let legacy = ui.mount(
-        "legacy",
-        Target {
-            releases: Rc::default(),
-            fail_release: false,
-        },
-    )?;
     let mut driver = Driver::new(&mut ui);
     driver.settle()?;
 
@@ -385,13 +378,6 @@ fn click_refuses_another_window_a_refused_reveal_and_no_bounds() -> TestResult {
             refusal: RevealRefusal::Hidden {
                 component: hidden.clone()
             },
-        })
-    );
-    // A root mounted without a tree has no allocation to click.
-    assert_eq!(
-        driver.click(&legacy),
-        Err(TestError::NotLaidOut {
-            key: "legacy".into()
         })
     );
     Ok(())

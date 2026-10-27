@@ -1,4 +1,5 @@
 //! Public body hit regions preserve capture, children, foreground and drag routing.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{
     cell::{Cell, RefCell},

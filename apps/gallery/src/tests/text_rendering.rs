@@ -81,7 +81,7 @@ fn phase_line_accepts_text_at_line_mask_raster_limit() -> TestResult<()> {
         let mut ui = Runtime::new();
         ui.set_viewport(Viewport::new(300.0, 80.0, 1.0)?)?;
         ui.ui_settings().set_text_rendering(mode)?;
-        ui.mount("long", LongText(count))?;
+        ui.mount_tree(Element::new("long", LongText(count)))?;
         ui.flush(Duration::ZERO)?;
         Ok(ui.paint().is_ok())
     };
@@ -247,14 +247,14 @@ fn inline_icon_tracks_text_across_pixel_phases_and_zoom() -> TestResult<()> {
                         let mut ui = Runtime::new();
                         ui.set_viewport(Viewport::new(300.0, 70.0, scale)?)?;
                         ui.ui_settings().set_text_rendering(mode)?;
-                        ui.mount(
+                        ui.mount_tree(Element::new(
                             "rich",
                             RichPhaseProbe {
                                 x: (physical_x / scale) as f32,
                                 y: (physical_y / scale) as f32,
                                 icon,
                             },
-                        )?;
+                        ))?;
                         ui.flush(Duration::ZERO)?;
                         let scene = ui.paint()?;
                         if mode == TextRenderingMode::PhaseLine {
@@ -306,7 +306,7 @@ fn inline_icon_tracks_text_across_pixel_phases_and_zoom() -> TestResult<()> {
 fn live_text_modes_change_coverage_without_adding_commands() -> TestResult<()> {
     let mut ui = Runtime::new();
     ui.set_viewport(Viewport::new(400.0, 70.0, 1.0)?)?;
-    ui.mount("text", LiveText)?;
+    ui.mount_tree(Element::new("text", LiveText))?;
     ui.flush(Duration::ZERO)?;
     let mut frames = Vec::new();
     let mut counts = Vec::new();
@@ -359,7 +359,7 @@ fn phase_modes_keep_vertical_ink_aligned_with_line_mask() -> TestResult<()> {
             let y = physical_y / scale;
             let mut ui = Runtime::new();
             ui.set_viewport(Viewport::new(400.0, 70.0, scale as f64)?)?;
-            ui.mount("text", PhaseProbeText(y))?;
+            ui.mount_tree(Element::new("text", PhaseProbeText(y)))?;
             ui.flush(Duration::ZERO)?;
             let mut centers = Vec::new();
             for mode in [TextRenderingMode::LineMask, TextRenderingMode::PhaseLine] {

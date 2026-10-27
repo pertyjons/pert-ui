@@ -1,4 +1,5 @@
 //! Public theme management, role dependencies and retained widget behavior.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::Cell, rc::Rc, time::Duration};
 type Result = std::result::Result<(), Box<dyn std::error::Error>>;
@@ -39,7 +40,7 @@ fn mount(ui: &mut Runtime, key: &str, role: ColorRole, foreground: bool) -> Moun
     let paints = Rc::new(Cell::new(0));
     let fail = Rc::new(Cell::new(false));
     let id = ui
-        .mount(
+        .mount_tree(Element::new(
             key,
             Swatch {
                 role,
@@ -48,7 +49,7 @@ fn mount(ui: &mut Runtime, key: &str, role: ColorRole, foreground: bool) -> Moun
                 foreground,
                 fail: fail.clone(),
             },
-        )
+        ))
         .unwrap();
     (id, signal, paints, fail)
 }
@@ -60,6 +61,7 @@ fn draw(ui: &mut Runtime) -> DisplayList {
 #[test]
 fn overrides_survive_mode_switches_and_inactive_edits_do_no_work() -> Result {
     let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(100.0, 100.0, 1.0)?)?;
     let theme = ui.theme();
     let (_, _, paints, _) = mount(&mut ui, "primary", ColorRole::Primary, false);
     draw(&mut ui);
@@ -89,6 +91,7 @@ fn overrides_survive_mode_switches_and_inactive_edits_do_no_work() -> Result {
 #[test]
 fn only_read_roles_invalidate_and_dependencies_are_recollected() -> Result {
     let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(100.0, 100.0, 1.0)?)?;
     let theme = ui.theme();
     let (_, role, first, _) = mount(&mut ui, "first", ColorRole::Primary, false);
     let (_, _, second, _) = mount(&mut ui, "second", ColorRole::Secondary, true);
@@ -112,6 +115,7 @@ fn only_read_roles_invalidate_and_dependencies_are_recollected() -> Result {
 #[test]
 fn hidden_and_removed_painters_do_not_schedule_theme_work() -> Result {
     let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(100.0, 100.0, 1.0)?)?;
     let (id, _, paints, _) = mount(&mut ui, "swatch", ColorRole::Primary, false);
     let theme = ui.theme();
     draw(&mut ui);
@@ -147,6 +151,7 @@ fn hidden_and_removed_painters_do_not_schedule_theme_work() -> Result {
 #[test]
 fn failed_paint_keeps_damage_and_retries_with_the_latest_palette() -> Result {
     let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(100.0, 100.0, 1.0)?)?;
     let (_, role, _, fail) = mount(&mut ui, "swatch", ColorRole::Primary, false);
     draw(&mut ui);
     role.set(ColorRole::Secondary)?;
@@ -561,6 +566,7 @@ fn followers_track_source_overrides_until_overridden_themselves() -> Result {
 fn a_source_override_repaints_only_the_readers_of_changed_followers() -> Result {
     use ColorRole::*;
     let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(100.0, 100.0, 1.0)?)?;
     let theme = ui.theme();
     let (_, _, pressed, _) = mount(&mut ui, "pressed", ButtonPressed, false);
     let (_, _, focus, _) = mount(&mut ui, "focus", FocusRing, false);
@@ -706,6 +712,7 @@ fn overrides_and_followers_work_on_a_seeded_palette() -> Result {
 fn seeded_palettes_in_both_modes_survive_switches_and_reset_repaints() -> Result {
     use ColorRole::*;
     let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(100.0, 100.0, 1.0)?)?;
     let theme = ui.theme();
     let (_, _, paints, _) = mount(&mut ui, "primary", Primary, false);
     draw(&mut ui);

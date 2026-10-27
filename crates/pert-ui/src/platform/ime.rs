@@ -1,4 +1,5 @@
 //! Focus/session correlation for untagged native IME event streams.
+use crate::host::HostIntegration;
 use crate::{Runtime, RuntimeError, TextEditError, TextField, TextPreedit, WidgetId};
 use winit::event::Ime;
 

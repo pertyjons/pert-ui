@@ -661,7 +661,7 @@ impl Painter {
     /// }
     /// let mut ui = Runtime::new();
     /// ui.set_viewport(Viewport::new(32.0, 32.0, 1.0)?)?;
-    /// ui.mount("badge", Badge)?;
+    /// ui.mount_tree(Element::new("badge", Badge))?;
     /// ui.flush(std::time::Duration::ZERO)?;
     /// let scene = ui.paint()?.rasterized()?;
     /// let DrawCommand::DrawMask { mask, .. } = scene.commands()[0] else {
@@ -755,7 +755,7 @@ impl Painter {
     ///     .collect::<Result<Vec<_>, _>>()?;
     /// let mut ui = Runtime::new();
     /// ui.set_viewport(Viewport::new(128.0, 32.0, 2.0)?)?;
-    /// ui.mount("trace", Trace(points))?;
+    /// ui.mount_tree(Element::new("trace", Trace(points)))?;
     /// ui.flush(std::time::Duration::ZERO)?;
     /// assert_eq!(ui.paint()?.vectors().len(), 1);
     /// # Ok::<(), Box<dyn std::error::Error>>(())

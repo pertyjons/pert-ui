@@ -340,7 +340,7 @@ impl Component for Container {
                 .map(|role| painter.color(role))
         });
         self.painted_background.set(color);
-        if let (Some(color), Some(size)) = (color, painter.size()) {
+        if let (Some(color), size) = (color, painter.size()) {
             let bounds = Rect::from_size(size);
             if self.border_role.is_some() {
                 painter.fill_shape(bounds, panel_shape(painter)?, color)?;
@@ -351,7 +351,7 @@ impl Component for Container {
         Ok(())
     }
     fn paint_foreground(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        if let (Some(role), Some(size)) = (self.border_role, painter.size()) {
+        if let (Some(role), size) = (self.border_role, painter.size()) {
             let width = Length::new(painter.metric(MetricRole::BorderWidth))?;
             let color = painter.color(role);
             painter.stroke_shape(Rect::from_size(size), panel_shape(painter)?, width, color)?;

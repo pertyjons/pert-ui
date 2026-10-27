@@ -1,4 +1,5 @@
 //! Public font identity, rich-label layout, icon overrides and retained dependencies.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{
     cell::{Cell, RefCell},

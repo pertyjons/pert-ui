@@ -1,5 +1,6 @@
 //! Workspace capture uses current identities without presenting pending changes.
 use crate::support;
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::RefCell, rc::Rc};
 use support::{frame, widget};

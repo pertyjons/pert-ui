@@ -3406,7 +3406,7 @@ pub fn pert_ui_runtime::Painter::icon(&mut self, impl core::convert::Into<pert_u
 pub fn pert_ui_runtime::Painter::icon_turned(&mut self, impl core::convert::Into<pert_ui_runtime::IconSource>, pert_ui_runtime::Rect, pert_ui_runtime::Color, pert_ui_runtime::QuarterTurn) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Painter::metric(&self, pert_ui_runtime::MetricRole) -> f32
 pub fn pert_ui_runtime::Painter::rich_text(&self, &pert_ui_runtime::RichText, core::option::Option<f32>, pert_ui_runtime::TextStyle) -> core::result::Result<pert_ui_runtime::TextLayout, pert_ui_runtime::DrawError>
-pub const fn pert_ui_runtime::Painter::size(&self) -> core::option::Option<pert_ui_runtime::Size>
+pub const fn pert_ui_runtime::Painter::size(&self) -> pert_ui_runtime::Size
 pub fn pert_ui_runtime::Painter::text(&self, &str, core::option::Option<f32>, pert_ui_runtime::TextStyle) -> core::result::Result<pert_ui_runtime::TextLayout, pert_ui_runtime::DrawError>
 pub const fn pert_ui_runtime::Painter::view_scale(&self) -> f32
 pub const fn pert_ui_runtime::Painter::viewport(&self) -> pert_ui_runtime::Viewport
@@ -9274,6 +9274,1419 @@ pub fn pert_ui_runtime::component::ContentRows::mounted_rows_current(&self) -> b
 pub fn pert_ui_runtime::component::ContentRows::reveal(&self, &str) -> core::result::Result<pert_ui_runtime::ListRevealReceipt, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::component::ContentRows::revision(&self) -> u64
 pub fn pert_ui_runtime::component::ContentRows::text(&self, usize) -> core::option::Option<alloc::string::String>
+pub mod pert_ui_runtime::host
+#[non_exhaustive] pub enum pert_ui_runtime::host::CaptureError
+pub pert_ui_runtime::host::CaptureError::Backend(alloc::string::String)
+pub pert_ui_runtime::host::CaptureError::Busy
+pub pert_ui_runtime::host::CaptureError::Drawing(pert_ui_runtime::DrawError)
+pub pert_ui_runtime::host::CaptureError::Frame(pert_ui_runtime::FrameError)
+pub pert_ui_runtime::host::CaptureError::Hidden
+pub pert_ui_runtime::host::CaptureError::InvalidRegion
+pub pert_ui_runtime::host::CaptureError::Limit(pert_ui_runtime::LimitError)
+pub pert_ui_runtime::host::CaptureError::Runtime(pert_ui_runtime::RuntimeError)
+pub pert_ui_runtime::host::CaptureError::SurfaceUnavailable
+pub pert_ui_runtime::host::CaptureError::UnknownTarget
+pub pert_ui_runtime::host::CaptureError::Unmeasured
+pub pert_ui_runtime::host::CaptureError::Unsupported
+impl core::clone::Clone for pert_ui_runtime::CaptureError
+pub fn pert_ui_runtime::CaptureError::clone(&self) -> pert_ui_runtime::CaptureError
+impl core::cmp::Eq for pert_ui_runtime::CaptureError
+impl core::cmp::PartialEq for pert_ui_runtime::CaptureError
+pub fn pert_ui_runtime::CaptureError::eq(&self, &pert_ui_runtime::CaptureError) -> bool
+impl core::convert::From<pert_ui_runtime::CaptureError> for pert_ui_runtime::RuntimeError
+pub fn pert_ui_runtime::RuntimeError::from(pert_ui_runtime::CaptureError) -> Self
+impl core::convert::From<pert_ui_runtime::DrawError> for pert_ui_runtime::CaptureError
+pub fn pert_ui_runtime::CaptureError::from(pert_ui_runtime::DrawError) -> Self
+impl core::convert::From<pert_ui_runtime::FrameError> for pert_ui_runtime::CaptureError
+pub fn pert_ui_runtime::CaptureError::from(pert_ui_runtime::FrameError) -> Self
+impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::CaptureError
+pub fn pert_ui_runtime::CaptureError::from(pert_ui_runtime::RuntimeError) -> Self
+impl core::error::Error for pert_ui_runtime::CaptureError
+pub fn pert_ui_runtime::CaptureError::source(&self) -> core::option::Option<&(dyn core::error::Error + 'static)>
+impl core::fmt::Debug for pert_ui_runtime::CaptureError
+pub fn pert_ui_runtime::CaptureError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui_runtime::CaptureError
+pub fn pert_ui_runtime::CaptureError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::CaptureError
+impl core::marker::Freeze for pert_ui_runtime::CaptureError
+impl core::marker::Send for pert_ui_runtime::CaptureError
+impl core::marker::Sync for pert_ui_runtime::CaptureError
+impl core::marker::Unpin for pert_ui_runtime::CaptureError
+impl core::marker::UnsafeUnpin for pert_ui_runtime::CaptureError
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::CaptureError
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::CaptureError
+#[non_exhaustive] pub enum pert_ui_runtime::host::ClipboardError
+pub pert_ui_runtime::host::ClipboardError::Busy
+pub pert_ui_runtime::host::ClipboardError::Failed(alloc::string::String)
+pub pert_ui_runtime::host::ClipboardError::NoText
+pub pert_ui_runtime::host::ClipboardError::Unavailable
+impl core::clone::Clone for pert_ui_runtime::ClipboardError
+pub fn pert_ui_runtime::ClipboardError::clone(&self) -> pert_ui_runtime::ClipboardError
+impl core::cmp::Eq for pert_ui_runtime::ClipboardError
+impl core::cmp::PartialEq for pert_ui_runtime::ClipboardError
+pub fn pert_ui_runtime::ClipboardError::eq(&self, &pert_ui_runtime::ClipboardError) -> bool
+impl core::convert::From<pert_ui_runtime::ClipboardError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::ClipboardError) -> Self
+impl core::convert::From<pert_ui_runtime::ClipboardError> for pert_ui_runtime::RuntimeError
+pub fn pert_ui_runtime::RuntimeError::from(pert_ui_runtime::ClipboardError) -> Self
+impl core::convert::From<pert_ui_runtime::ClipboardError> for pert_ui_runtime::WindowError
+pub fn pert_ui_runtime::WindowError::from(pert_ui_runtime::ClipboardError) -> Self
+impl core::convert::From<pert_ui_runtime::ClipboardError> for pert_ui_runtime::WorkspaceError
+pub fn pert_ui_runtime::WorkspaceError::from(pert_ui_runtime::ClipboardError) -> Self
+impl core::error::Error for pert_ui_runtime::ClipboardError
+impl core::fmt::Debug for pert_ui_runtime::ClipboardError
+pub fn pert_ui_runtime::ClipboardError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui_runtime::ClipboardError
+pub fn pert_ui_runtime::ClipboardError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::ClipboardError
+impl core::marker::Freeze for pert_ui_runtime::ClipboardError
+impl core::marker::Send for pert_ui_runtime::ClipboardError
+impl core::marker::Sync for pert_ui_runtime::ClipboardError
+impl core::marker::Unpin for pert_ui_runtime::ClipboardError
+impl core::marker::UnsafeUnpin for pert_ui_runtime::ClipboardError
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ClipboardError
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ClipboardError
+pub enum pert_ui_runtime::host::CommandKey
+pub pert_ui_runtime::host::CommandKey::Character(char)
+pub pert_ui_runtime::host::CommandKey::Named(pert_ui_runtime::KeyCode)
+impl core::clone::Clone for pert_ui_runtime::CommandKey
+pub fn pert_ui_runtime::CommandKey::clone(&self) -> pert_ui_runtime::CommandKey
+impl core::cmp::Eq for pert_ui_runtime::CommandKey
+impl core::cmp::PartialEq for pert_ui_runtime::CommandKey
+pub fn pert_ui_runtime::CommandKey::eq(&self, &pert_ui_runtime::CommandKey) -> bool
+impl core::fmt::Debug for pert_ui_runtime::CommandKey
+pub fn pert_ui_runtime::CommandKey::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::CommandKey
+pub fn pert_ui_runtime::CommandKey::hash<__H: core::hash::Hasher>(&self, &mut __H)
+impl core::marker::Copy for pert_ui_runtime::CommandKey
+impl core::marker::StructuralPartialEq for pert_ui_runtime::CommandKey
+impl core::marker::Freeze for pert_ui_runtime::CommandKey
+impl core::marker::Send for pert_ui_runtime::CommandKey
+impl core::marker::Sync for pert_ui_runtime::CommandKey
+impl core::marker::Unpin for pert_ui_runtime::CommandKey
+impl core::marker::UnsafeUnpin for pert_ui_runtime::CommandKey
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::CommandKey
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::CommandKey
+#[non_exhaustive] pub enum pert_ui_runtime::host::CursorIcon
+pub pert_ui_runtime::host::CursorIcon::Alias
+pub pert_ui_runtime::host::CursorIcon::Copy
+pub pert_ui_runtime::host::CursorIcon::Default
+pub pert_ui_runtime::host::CursorIcon::Grabbing
+pub pert_ui_runtime::host::CursorIcon::Move
+pub pert_ui_runtime::host::CursorIcon::NoDrop
+pub pert_ui_runtime::host::CursorIcon::Pointer
+pub pert_ui_runtime::host::CursorIcon::ResizeDiagonal
+pub pert_ui_runtime::host::CursorIcon::ResizeHorizontal
+pub pert_ui_runtime::host::CursorIcon::ResizeVertical
+pub pert_ui_runtime::host::CursorIcon::Text
+impl core::clone::Clone for pert_ui_runtime::CursorIcon
+pub fn pert_ui_runtime::CursorIcon::clone(&self) -> pert_ui_runtime::CursorIcon
+impl core::cmp::Eq for pert_ui_runtime::CursorIcon
+impl core::cmp::PartialEq for pert_ui_runtime::CursorIcon
+pub fn pert_ui_runtime::CursorIcon::eq(&self, &pert_ui_runtime::CursorIcon) -> bool
+impl core::default::Default for pert_ui_runtime::CursorIcon
+pub fn pert_ui_runtime::CursorIcon::default() -> pert_ui_runtime::CursorIcon
+impl core::fmt::Debug for pert_ui_runtime::CursorIcon
+pub fn pert_ui_runtime::CursorIcon::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::CursorIcon
+impl core::marker::StructuralPartialEq for pert_ui_runtime::CursorIcon
+impl core::marker::Freeze for pert_ui_runtime::CursorIcon
+impl core::marker::Send for pert_ui_runtime::CursorIcon
+impl core::marker::Sync for pert_ui_runtime::CursorIcon
+impl core::marker::Unpin for pert_ui_runtime::CursorIcon
+impl core::marker::UnsafeUnpin for pert_ui_runtime::CursorIcon
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::CursorIcon
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::CursorIcon
+#[non_exhaustive] pub enum pert_ui_runtime::host::DrawError
+pub pert_ui_runtime::host::DrawError::CoverageTooLarge
+pub pert_ui_runtime::host::DrawError::InvalidColor
+pub pert_ui_runtime::host::DrawError::InvalidImage
+pub pert_ui_runtime::host::DrawError::InvalidImage::bytes: usize
+pub pert_ui_runtime::host::DrawError::InvalidImage::height: u32
+pub pert_ui_runtime::host::DrawError::InvalidImage::width: u32
+pub pert_ui_runtime::host::DrawError::MissingImage(pert_ui_runtime::ImageId)
+pub pert_ui_runtime::host::DrawError::MissingMask(pert_ui_runtime::MaskId)
+pub pert_ui_runtime::host::DrawError::MissingVector(pert_ui_runtime::VectorId)
+pub pert_ui_runtime::host::DrawError::Path(pert_ui_runtime::PathError)
+pub pert_ui_runtime::host::DrawError::PendingUpdates
+pub pert_ui_runtime::host::DrawError::Runtime(pert_ui_runtime::RuntimeError)
+pub pert_ui_runtime::host::DrawError::TooComplex
+impl core::clone::Clone for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::clone(&self) -> pert_ui_runtime::DrawError
+impl core::cmp::Eq for pert_ui_runtime::DrawError
+impl core::cmp::PartialEq for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::eq(&self, &pert_ui_runtime::DrawError) -> bool
+impl core::convert::From<pert_ui_core::edit::EditError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_core::edit::EditError) -> Self
+impl core::convert::From<pert_ui_core::live::LiveError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_core::live::LiveError) -> Self
+impl core::convert::From<pert_ui_core::normalized::NormalizedValueError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_core::normalized::NormalizedValueError) -> Self
+impl core::convert::From<pert_ui_core::parameter::ParameterError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_core::parameter::ParameterError) -> Self
+impl core::convert::From<pert_ui_core::parameter_id::ParameterIdError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_core::parameter_id::ParameterIdError) -> Self
+impl core::convert::From<pert_ui_runtime::ApplicationError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::ApplicationError) -> Self
+impl core::convert::From<pert_ui_runtime::BindingError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::BindingError) -> Self
+impl core::convert::From<pert_ui_runtime::ChoiceError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::ChoiceError) -> Self
+impl core::convert::From<pert_ui_runtime::ClipboardError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::ClipboardError) -> Self
+impl core::convert::From<pert_ui_runtime::DeliveryError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::DeliveryError) -> Self
+impl core::convert::From<pert_ui_runtime::DrawError> for pert_ui_runtime::CaptureError
+pub fn pert_ui_runtime::CaptureError::from(pert_ui_runtime::DrawError) -> Self
+impl core::convert::From<pert_ui_runtime::DrawError> for pert_ui_runtime::WindowError
+pub fn pert_ui_runtime::WindowError::from(pert_ui_runtime::DrawError) -> Self
+impl core::convert::From<pert_ui_runtime::FontError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::FontError) -> Self
+impl core::convert::From<pert_ui_runtime::GeometryError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::GeometryError) -> Self
+impl core::convert::From<pert_ui_runtime::LayoutError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::LayoutError) -> Self
+impl core::convert::From<pert_ui_runtime::NumberInputError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::NumberInputError) -> Self
+impl core::convert::From<pert_ui_runtime::PathError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::PathError) -> Self
+impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::RuntimeError) -> Self
+impl core::convert::From<pert_ui_runtime::TextEditError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::TextEditError) -> Self
+impl core::convert::From<pert_ui_runtime::TextError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::TextError) -> Self
+impl core::error::Error for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::source(&self) -> core::option::Option<&(dyn core::error::Error + 'static)>
+impl core::fmt::Debug for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::DrawError
+impl core::marker::Freeze for pert_ui_runtime::DrawError
+impl core::marker::Send for pert_ui_runtime::DrawError
+impl core::marker::Sync for pert_ui_runtime::DrawError
+impl core::marker::Unpin for pert_ui_runtime::DrawError
+impl core::marker::UnsafeUnpin for pert_ui_runtime::DrawError
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::DrawError
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::DrawError
+pub enum pert_ui_runtime::host::Invalidation
+pub pert_ui_runtime::host::Invalidation::Layout
+pub pert_ui_runtime::host::Invalidation::Paint
+impl core::clone::Clone for pert_ui_runtime::Invalidation
+pub fn pert_ui_runtime::Invalidation::clone(&self) -> pert_ui_runtime::Invalidation
+impl core::cmp::Eq for pert_ui_runtime::Invalidation
+impl core::cmp::Ord for pert_ui_runtime::Invalidation
+pub fn pert_ui_runtime::Invalidation::cmp(&self, &pert_ui_runtime::Invalidation) -> core::cmp::Ordering
+impl core::cmp::PartialEq for pert_ui_runtime::Invalidation
+pub fn pert_ui_runtime::Invalidation::eq(&self, &pert_ui_runtime::Invalidation) -> bool
+impl core::cmp::PartialOrd for pert_ui_runtime::Invalidation
+pub fn pert_ui_runtime::Invalidation::partial_cmp(&self, &pert_ui_runtime::Invalidation) -> core::option::Option<core::cmp::Ordering>
+impl core::fmt::Debug for pert_ui_runtime::Invalidation
+pub fn pert_ui_runtime::Invalidation::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::Invalidation
+impl core::marker::StructuralPartialEq for pert_ui_runtime::Invalidation
+impl core::marker::Freeze for pert_ui_runtime::Invalidation
+impl core::marker::Send for pert_ui_runtime::Invalidation
+impl core::marker::Sync for pert_ui_runtime::Invalidation
+impl core::marker::Unpin for pert_ui_runtime::Invalidation
+impl core::marker::UnsafeUnpin for pert_ui_runtime::Invalidation
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Invalidation
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Invalidation
+pub enum pert_ui_runtime::host::KeyAction
+pub pert_ui_runtime::host::KeyAction::Press
+pub pert_ui_runtime::host::KeyAction::Release
+pub pert_ui_runtime::host::KeyAction::Repeat
+impl core::clone::Clone for pert_ui_runtime::KeyAction
+pub fn pert_ui_runtime::KeyAction::clone(&self) -> pert_ui_runtime::KeyAction
+impl core::cmp::Eq for pert_ui_runtime::KeyAction
+impl core::cmp::PartialEq for pert_ui_runtime::KeyAction
+pub fn pert_ui_runtime::KeyAction::eq(&self, &pert_ui_runtime::KeyAction) -> bool
+impl core::fmt::Debug for pert_ui_runtime::KeyAction
+pub fn pert_ui_runtime::KeyAction::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::KeyAction
+impl core::marker::StructuralPartialEq for pert_ui_runtime::KeyAction
+impl core::marker::Freeze for pert_ui_runtime::KeyAction
+impl core::marker::Send for pert_ui_runtime::KeyAction
+impl core::marker::Sync for pert_ui_runtime::KeyAction
+impl core::marker::Unpin for pert_ui_runtime::KeyAction
+impl core::marker::UnsafeUnpin for pert_ui_runtime::KeyAction
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::KeyAction
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::KeyAction
+#[non_exhaustive] pub enum pert_ui_runtime::host::KeyCode
+pub pert_ui_runtime::host::KeyCode::AltLeft
+pub pert_ui_runtime::host::KeyCode::AltRight
+pub pert_ui_runtime::host::KeyCode::ArrowDown
+pub pert_ui_runtime::host::KeyCode::ArrowLeft
+pub pert_ui_runtime::host::KeyCode::ArrowRight
+pub pert_ui_runtime::host::KeyCode::ArrowUp
+pub pert_ui_runtime::host::KeyCode::Backquote
+pub pert_ui_runtime::host::KeyCode::Backslash
+pub pert_ui_runtime::host::KeyCode::Backspace
+pub pert_ui_runtime::host::KeyCode::BracketLeft
+pub pert_ui_runtime::host::KeyCode::BracketRight
+pub pert_ui_runtime::host::KeyCode::CapsLock
+pub pert_ui_runtime::host::KeyCode::Comma
+pub pert_ui_runtime::host::KeyCode::ContextMenu
+pub pert_ui_runtime::host::KeyCode::ControlLeft
+pub pert_ui_runtime::host::KeyCode::ControlRight
+pub pert_ui_runtime::host::KeyCode::Delete
+pub pert_ui_runtime::host::KeyCode::Digit0
+pub pert_ui_runtime::host::KeyCode::Digit1
+pub pert_ui_runtime::host::KeyCode::Digit2
+pub pert_ui_runtime::host::KeyCode::Digit3
+pub pert_ui_runtime::host::KeyCode::Digit4
+pub pert_ui_runtime::host::KeyCode::Digit5
+pub pert_ui_runtime::host::KeyCode::Digit6
+pub pert_ui_runtime::host::KeyCode::Digit7
+pub pert_ui_runtime::host::KeyCode::Digit8
+pub pert_ui_runtime::host::KeyCode::Digit9
+pub pert_ui_runtime::host::KeyCode::End
+pub pert_ui_runtime::host::KeyCode::Enter
+pub pert_ui_runtime::host::KeyCode::Equal
+pub pert_ui_runtime::host::KeyCode::Escape
+pub pert_ui_runtime::host::KeyCode::F1
+pub pert_ui_runtime::host::KeyCode::F10
+pub pert_ui_runtime::host::KeyCode::F11
+pub pert_ui_runtime::host::KeyCode::F12
+pub pert_ui_runtime::host::KeyCode::F2
+pub pert_ui_runtime::host::KeyCode::F3
+pub pert_ui_runtime::host::KeyCode::F4
+pub pert_ui_runtime::host::KeyCode::F5
+pub pert_ui_runtime::host::KeyCode::F6
+pub pert_ui_runtime::host::KeyCode::F7
+pub pert_ui_runtime::host::KeyCode::F8
+pub pert_ui_runtime::host::KeyCode::F9
+pub pert_ui_runtime::host::KeyCode::Home
+pub pert_ui_runtime::host::KeyCode::Insert
+pub pert_ui_runtime::host::KeyCode::IntlBackslash
+pub pert_ui_runtime::host::KeyCode::KeyA
+pub pert_ui_runtime::host::KeyCode::KeyB
+pub pert_ui_runtime::host::KeyCode::KeyC
+pub pert_ui_runtime::host::KeyCode::KeyD
+pub pert_ui_runtime::host::KeyCode::KeyE
+pub pert_ui_runtime::host::KeyCode::KeyF
+pub pert_ui_runtime::host::KeyCode::KeyG
+pub pert_ui_runtime::host::KeyCode::KeyH
+pub pert_ui_runtime::host::KeyCode::KeyI
+pub pert_ui_runtime::host::KeyCode::KeyJ
+pub pert_ui_runtime::host::KeyCode::KeyK
+pub pert_ui_runtime::host::KeyCode::KeyL
+pub pert_ui_runtime::host::KeyCode::KeyM
+pub pert_ui_runtime::host::KeyCode::KeyN
+pub pert_ui_runtime::host::KeyCode::KeyO
+pub pert_ui_runtime::host::KeyCode::KeyP
+pub pert_ui_runtime::host::KeyCode::KeyQ
+pub pert_ui_runtime::host::KeyCode::KeyR
+pub pert_ui_runtime::host::KeyCode::KeyS
+pub pert_ui_runtime::host::KeyCode::KeyT
+pub pert_ui_runtime::host::KeyCode::KeyU
+pub pert_ui_runtime::host::KeyCode::KeyV
+pub pert_ui_runtime::host::KeyCode::KeyW
+pub pert_ui_runtime::host::KeyCode::KeyX
+pub pert_ui_runtime::host::KeyCode::KeyY
+pub pert_ui_runtime::host::KeyCode::KeyZ
+pub pert_ui_runtime::host::KeyCode::Minus
+pub pert_ui_runtime::host::KeyCode::Native(u32)
+pub pert_ui_runtime::host::KeyCode::PageDown
+pub pert_ui_runtime::host::KeyCode::PageUp
+pub pert_ui_runtime::host::KeyCode::Period
+pub pert_ui_runtime::host::KeyCode::Quote
+pub pert_ui_runtime::host::KeyCode::Semicolon
+pub pert_ui_runtime::host::KeyCode::ShiftLeft
+pub pert_ui_runtime::host::KeyCode::ShiftRight
+pub pert_ui_runtime::host::KeyCode::Slash
+pub pert_ui_runtime::host::KeyCode::Space
+pub pert_ui_runtime::host::KeyCode::SuperLeft
+pub pert_ui_runtime::host::KeyCode::SuperRight
+pub pert_ui_runtime::host::KeyCode::Tab
+impl pert_ui_runtime::KeyCode
+pub const fn pert_ui_runtime::KeyCode::primary() -> Self
+impl core::clone::Clone for pert_ui_runtime::KeyCode
+pub fn pert_ui_runtime::KeyCode::clone(&self) -> pert_ui_runtime::KeyCode
+impl core::cmp::Eq for pert_ui_runtime::KeyCode
+impl core::cmp::Ord for pert_ui_runtime::KeyCode
+pub fn pert_ui_runtime::KeyCode::cmp(&self, &pert_ui_runtime::KeyCode) -> core::cmp::Ordering
+impl core::cmp::PartialEq for pert_ui_runtime::KeyCode
+pub fn pert_ui_runtime::KeyCode::eq(&self, &pert_ui_runtime::KeyCode) -> bool
+impl core::cmp::PartialOrd for pert_ui_runtime::KeyCode
+pub fn pert_ui_runtime::KeyCode::partial_cmp(&self, &pert_ui_runtime::KeyCode) -> core::option::Option<core::cmp::Ordering>
+impl core::fmt::Debug for pert_ui_runtime::KeyCode
+pub fn pert_ui_runtime::KeyCode::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::KeyCode
+pub fn pert_ui_runtime::KeyCode::hash<__H: core::hash::Hasher>(&self, &mut __H)
+impl core::marker::Copy for pert_ui_runtime::KeyCode
+impl core::marker::StructuralPartialEq for pert_ui_runtime::KeyCode
+impl core::marker::Freeze for pert_ui_runtime::KeyCode
+impl core::marker::Send for pert_ui_runtime::KeyCode
+impl core::marker::Sync for pert_ui_runtime::KeyCode
+impl core::marker::Unpin for pert_ui_runtime::KeyCode
+impl core::marker::UnsafeUnpin for pert_ui_runtime::KeyCode
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::KeyCode
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::KeyCode
+#[non_exhaustive] pub enum pert_ui_runtime::host::LimitError
+pub pert_ui_runtime::host::LimitError::FrameSize
+pub pert_ui_runtime::host::LimitError::FrameSize::height: u32
+pub pert_ui_runtime::host::LimitError::FrameSize::width: u32
+pub pert_ui_runtime::host::LimitError::ResourceExtent
+pub pert_ui_runtime::host::LimitError::ResourceExtent::height: u32
+pub pert_ui_runtime::host::LimitError::ResourceExtent::kind: pert_ui_runtime::ResourceKind
+pub pert_ui_runtime::host::LimitError::ResourceExtent::max: u32
+pub pert_ui_runtime::host::LimitError::ResourceExtent::width: u32
+pub pert_ui_runtime::host::LimitError::SceneBudget
+pub pert_ui_runtime::host::LimitError::SceneBudget::kind: pert_ui_runtime::ResourceKind
+pub pert_ui_runtime::host::LimitError::SurfaceExtent
+pub pert_ui_runtime::host::LimitError::SurfaceExtent::height: u32
+pub pert_ui_runtime::host::LimitError::SurfaceExtent::max: u32
+pub pert_ui_runtime::host::LimitError::SurfaceExtent::width: u32
+pub pert_ui_runtime::host::LimitError::VertexBuffer
+pub pert_ui_runtime::host::LimitError::VertexBuffer::bytes: u64
+pub pert_ui_runtime::host::LimitError::VertexBuffer::max: u64
+pub pert_ui_runtime::host::LimitError::VertexCount
+impl core::clone::Clone for pert_ui_runtime::LimitError
+pub fn pert_ui_runtime::LimitError::clone(&self) -> pert_ui_runtime::LimitError
+impl core::cmp::Eq for pert_ui_runtime::LimitError
+impl core::cmp::PartialEq for pert_ui_runtime::LimitError
+pub fn pert_ui_runtime::LimitError::eq(&self, &pert_ui_runtime::LimitError) -> bool
+impl core::error::Error for pert_ui_runtime::LimitError
+impl core::fmt::Debug for pert_ui_runtime::LimitError
+pub fn pert_ui_runtime::LimitError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui_runtime::LimitError
+pub fn pert_ui_runtime::LimitError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::LimitError
+impl core::marker::Freeze for pert_ui_runtime::LimitError
+impl core::marker::Send for pert_ui_runtime::LimitError
+impl core::marker::Sync for pert_ui_runtime::LimitError
+impl core::marker::Unpin for pert_ui_runtime::LimitError
+impl core::marker::UnsafeUnpin for pert_ui_runtime::LimitError
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::LimitError
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::LimitError
+#[non_exhaustive] pub enum pert_ui_runtime::host::PointerButton
+pub pert_ui_runtime::host::PointerButton::Back
+pub pert_ui_runtime::host::PointerButton::Forward
+pub pert_ui_runtime::host::PointerButton::Middle
+pub pert_ui_runtime::host::PointerButton::Other(u16)
+pub pert_ui_runtime::host::PointerButton::Primary
+pub pert_ui_runtime::host::PointerButton::Secondary
+impl core::clone::Clone for pert_ui_runtime::PointerButton
+pub fn pert_ui_runtime::PointerButton::clone(&self) -> pert_ui_runtime::PointerButton
+impl core::cmp::Eq for pert_ui_runtime::PointerButton
+impl core::cmp::Ord for pert_ui_runtime::PointerButton
+pub fn pert_ui_runtime::PointerButton::cmp(&self, &pert_ui_runtime::PointerButton) -> core::cmp::Ordering
+impl core::cmp::PartialEq for pert_ui_runtime::PointerButton
+pub fn pert_ui_runtime::PointerButton::eq(&self, &pert_ui_runtime::PointerButton) -> bool
+impl core::cmp::PartialOrd for pert_ui_runtime::PointerButton
+pub fn pert_ui_runtime::PointerButton::partial_cmp(&self, &pert_ui_runtime::PointerButton) -> core::option::Option<core::cmp::Ordering>
+impl core::fmt::Debug for pert_ui_runtime::PointerButton
+pub fn pert_ui_runtime::PointerButton::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::PointerButton
+pub fn pert_ui_runtime::PointerButton::hash<__H: core::hash::Hasher>(&self, &mut __H)
+impl core::marker::Copy for pert_ui_runtime::PointerButton
+impl core::marker::StructuralPartialEq for pert_ui_runtime::PointerButton
+impl core::marker::Freeze for pert_ui_runtime::PointerButton
+impl core::marker::Send for pert_ui_runtime::PointerButton
+impl core::marker::Sync for pert_ui_runtime::PointerButton
+impl core::marker::Unpin for pert_ui_runtime::PointerButton
+impl core::marker::UnsafeUnpin for pert_ui_runtime::PointerButton
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::PointerButton
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::PointerButton
+#[non_exhaustive] pub enum pert_ui_runtime::host::PointerKind
+pub pert_ui_runtime::host::PointerKind::Leave
+pub pert_ui_runtime::host::PointerKind::Move
+pub pert_ui_runtime::host::PointerKind::Pinch(pert_ui_runtime::Magnification)
+pub pert_ui_runtime::host::PointerKind::Press(pert_ui_runtime::PointerButton)
+pub pert_ui_runtime::host::PointerKind::Release(pert_ui_runtime::PointerButton)
+pub pert_ui_runtime::host::PointerKind::Scroll(pert_ui_runtime::Point)
+impl core::clone::Clone for pert_ui_runtime::PointerKind
+pub fn pert_ui_runtime::PointerKind::clone(&self) -> pert_ui_runtime::PointerKind
+impl core::cmp::PartialEq for pert_ui_runtime::PointerKind
+pub fn pert_ui_runtime::PointerKind::eq(&self, &pert_ui_runtime::PointerKind) -> bool
+impl core::fmt::Debug for pert_ui_runtime::PointerKind
+pub fn pert_ui_runtime::PointerKind::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::PointerKind
+impl core::marker::StructuralPartialEq for pert_ui_runtime::PointerKind
+impl core::marker::Freeze for pert_ui_runtime::PointerKind
+impl core::marker::Send for pert_ui_runtime::PointerKind
+impl core::marker::Sync for pert_ui_runtime::PointerKind
+impl core::marker::Unpin for pert_ui_runtime::PointerKind
+impl core::marker::UnsafeUnpin for pert_ui_runtime::PointerKind
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::PointerKind
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::PointerKind
+pub enum pert_ui_runtime::host::PresentationAction
+pub pert_ui_runtime::host::PresentationAction::Activate(pert_ui_runtime::NativeWindowId)
+pub pert_ui_runtime::host::PresentationAction::Close(pert_ui_runtime::NativeWindowId)
+pub pert_ui_runtime::host::PresentationAction::Detach
+pub pert_ui_runtime::host::PresentationAction::Detach::options: pert_ui_runtime::NativeWindowOptions
+pub pert_ui_runtime::host::PresentationAction::Detach::view: pert_ui_runtime::WidgetId
+pub pert_ui_runtime::host::PresentationAction::Redock(pert_ui_runtime::NativeWindowId)
+pub pert_ui_runtime::host::PresentationAction::Retitle
+pub pert_ui_runtime::host::PresentationAction::Retitle::title: alloc::string::String
+pub pert_ui_runtime::host::PresentationAction::Retitle::window: pert_ui_runtime::NativeWindowId
+impl core::clone::Clone for pert_ui_runtime::PresentationAction
+pub fn pert_ui_runtime::PresentationAction::clone(&self) -> pert_ui_runtime::PresentationAction
+impl core::fmt::Debug for pert_ui_runtime::PresentationAction
+pub fn pert_ui_runtime::PresentationAction::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for pert_ui_runtime::PresentationAction
+impl !core::marker::Send for pert_ui_runtime::PresentationAction
+impl !core::marker::Sync for pert_ui_runtime::PresentationAction
+impl core::marker::Unpin for pert_ui_runtime::PresentationAction
+impl core::marker::UnsafeUnpin for pert_ui_runtime::PresentationAction
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::PresentationAction
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::PresentationAction
+pub enum pert_ui_runtime::host::PresentationStatus
+pub pert_ui_runtime::host::PresentationStatus::ActivationRequested(pert_ui_runtime::NativeWindowId)
+pub pert_ui_runtime::host::PresentationStatus::ActivationUnsupported(pert_ui_runtime::NativeWindowId)
+pub pert_ui_runtime::host::PresentationStatus::CloseRejected
+pub pert_ui_runtime::host::PresentationStatus::Closed
+pub pert_ui_runtime::host::PresentationStatus::Failed(pert_ui_runtime::WindowError)
+pub pert_ui_runtime::host::PresentationStatus::Pending
+pub pert_ui_runtime::host::PresentationStatus::Presented(pert_ui_runtime::NativeWindowId)
+impl core::clone::Clone for pert_ui_runtime::PresentationStatus
+pub fn pert_ui_runtime::PresentationStatus::clone(&self) -> pert_ui_runtime::PresentationStatus
+impl core::cmp::PartialEq for pert_ui_runtime::PresentationStatus
+pub fn pert_ui_runtime::PresentationStatus::eq(&self, &pert_ui_runtime::PresentationStatus) -> bool
+impl core::fmt::Debug for pert_ui_runtime::PresentationStatus
+pub fn pert_ui_runtime::PresentationStatus::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::PresentationStatus
+impl core::marker::Freeze for pert_ui_runtime::PresentationStatus
+impl !core::marker::Send for pert_ui_runtime::PresentationStatus
+impl !core::marker::Sync for pert_ui_runtime::PresentationStatus
+impl core::marker::Unpin for pert_ui_runtime::PresentationStatus
+impl core::marker::UnsafeUnpin for pert_ui_runtime::PresentationStatus
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::PresentationStatus
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::PresentationStatus
+#[non_exhaustive] pub enum pert_ui_runtime::host::RuntimeError
+pub pert_ui_runtime::host::RuntimeError::AlreadyDetached
+pub pert_ui_runtime::host::RuntimeError::AmbiguousKey(alloc::string::String)
+pub pert_ui_runtime::host::RuntimeError::Application(pert_ui_runtime::ApplicationError)
+pub pert_ui_runtime::host::RuntimeError::BackgroundFull
+pub pert_ui_runtime::host::RuntimeError::BackgroundPanicked
+pub pert_ui_runtime::host::RuntimeError::BackgroundSpawn(core::io::error::ErrorKind)
+pub pert_ui_runtime::host::RuntimeError::Binding(pert_ui_runtime::BindingError)
+pub pert_ui_runtime::host::RuntimeError::BorrowConflict
+pub pert_ui_runtime::host::RuntimeError::CaptureUnavailable
+pub pert_ui_runtime::host::RuntimeError::ChildTypeChanged(alloc::string::String)
+pub pert_ui_runtime::host::RuntimeError::Choice(pert_ui_runtime::ChoiceError)
+pub pert_ui_runtime::host::RuntimeError::Clipboard(pert_ui_runtime::ClipboardError)
+pub pert_ui_runtime::host::RuntimeError::Closed
+pub pert_ui_runtime::host::RuntimeError::CommandQueueFull
+pub pert_ui_runtime::host::RuntimeError::DialogBusy
+pub pert_ui_runtime::host::RuntimeError::DraftEditorBusy
+pub pert_ui_runtime::host::RuntimeError::DragUnavailable
+pub pert_ui_runtime::host::RuntimeError::DropNotPermitted
+pub pert_ui_runtime::host::RuntimeError::DuplicateKey(alloc::string::String)
+pub pert_ui_runtime::host::RuntimeError::EmptyCommandName
+pub pert_ui_runtime::host::RuntimeError::EmptyKey
+pub pert_ui_runtime::host::RuntimeError::EmptyWindowTitle
+pub pert_ui_runtime::host::RuntimeError::Exhausted
+pub pert_ui_runtime::host::RuntimeError::Font(pert_ui_runtime::FontError)
+pub pert_ui_runtime::host::RuntimeError::ForeignRuntime
+pub pert_ui_runtime::host::RuntimeError::Geometry(pert_ui_runtime::GeometryError)
+pub pert_ui_runtime::host::RuntimeError::GestureInProgress
+pub pert_ui_runtime::host::RuntimeError::Hidden
+pub pert_ui_runtime::host::RuntimeError::IntervalsFull
+pub pert_ui_runtime::host::RuntimeError::InvalidPresentationRate
+pub pert_ui_runtime::host::RuntimeError::Layout(pert_ui_runtime::LayoutError)
+pub pert_ui_runtime::host::RuntimeError::Live(pert_ui_core::live::LiveError)
+pub pert_ui_runtime::host::RuntimeError::ModalBlocked
+pub pert_ui_runtime::host::RuntimeError::ModalConflict
+pub pert_ui_runtime::host::RuntimeError::NormalizedValue(pert_ui_core::normalized::NormalizedValueError)
+pub pert_ui_runtime::host::RuntimeError::NotDetachable
+pub pert_ui_runtime::host::RuntimeError::NotDetached
+pub pert_ui_runtime::host::RuntimeError::NotMovable
+pub pert_ui_runtime::host::RuntimeError::NumberInput(pert_ui_runtime::NumberInputError)
+pub pert_ui_runtime::host::RuntimeError::Parameter(pert_ui_core::parameter::ParameterError)
+pub pert_ui_runtime::host::RuntimeError::ParameterId(pert_ui_core::parameter_id::ParameterIdError)
+pub pert_ui_runtime::host::RuntimeError::RevealQueueFull
+pub pert_ui_runtime::host::RuntimeError::ShortcutConflict(pert_ui_runtime::KeyChord)
+pub pert_ui_runtime::host::RuntimeError::StaleCommand
+pub pert_ui_runtime::host::RuntimeError::StaleCommandTarget
+pub pert_ui_runtime::host::RuntimeError::StalePresentation
+pub pert_ui_runtime::host::RuntimeError::TaskQueueFull
+pub pert_ui_runtime::host::RuntimeError::Text(pert_ui_runtime::TextError)
+pub pert_ui_runtime::host::RuntimeError::TextEdit(pert_ui_runtime::TextEditError)
+pub pert_ui_runtime::host::RuntimeError::TimeReversed
+pub pert_ui_runtime::host::RuntimeError::ToastFull
+pub pert_ui_runtime::host::RuntimeError::Unmounted
+pub pert_ui_runtime::host::RuntimeError::UpdateLimit
+pub pert_ui_runtime::host::RuntimeError::WindowRequestFull
+pub pert_ui_runtime::host::RuntimeError::WriteDuringDelivery
+pub pert_ui_runtime::host::RuntimeError::WriteDuringInspection
+pub pert_ui_runtime::host::RuntimeError::WriteDuringLayout
+pub pert_ui_runtime::host::RuntimeError::WriteDuringPaint
+pub pert_ui_runtime::host::RuntimeError::WriteDuringUpdate
+pub pert_ui_runtime::host::RuntimeError::ZeroDelay
+impl core::clone::Clone for pert_ui_runtime::RuntimeError
+pub fn pert_ui_runtime::RuntimeError::clone(&self) -> pert_ui_runtime::RuntimeError
+impl core::cmp::Eq for pert_ui_runtime::RuntimeError
+impl core::cmp::PartialEq for pert_ui_runtime::RuntimeError
+pub fn pert_ui_runtime::RuntimeError::eq(&self, &pert_ui_runtime::RuntimeError) -> bool
+impl core::convert::From<pert_ui_core::edit::EditError> for pert_ui_runtime::RuntimeError
+pub fn pert_ui_runtime::RuntimeError::from(pert_ui_core::edit::EditError) -> Self
+impl core::convert::From<pert_ui_core::live::LiveError> for pert_ui_runtime::RuntimeError
+pub fn pert_ui_runtime::RuntimeError::from(pert_ui_core::live::LiveError) -> Self
+impl core::convert::From<pert_ui_core::normalized::NormalizedValueError> for pert_ui_runtime::RuntimeError
+pub fn pert_ui_runtime::RuntimeError::from(pert_ui_core::normalized::NormalizedValueError) -> Self
+impl core::convert::From<pert_ui_core::parameter::ParameterError> for pert_ui_runtime::RuntimeError
+pub fn pert_ui_runtime::RuntimeError::from(pert_ui_core::parameter::ParameterError) -> Self
+impl core::convert::From<pert_ui_core::parameter_id::ParameterIdError> for pert_ui_runtime::RuntimeError
+pub fn pert_ui_runtime::RuntimeError::from(pert_ui_core::parameter_id::ParameterIdError) -> Self
+impl core::convert::From<pert_ui_runtime::ApplicationError> for pert_ui_runtime::RuntimeError
+pub fn pert_ui_runtime::RuntimeError::from(pert_ui_runtime::ApplicationError) -> Self
+impl core::convert::From<pert_ui_runtime::BindingError> for pert_ui_runtime::RuntimeError
+pub fn pert_ui_runtime::RuntimeError::from(pert_ui_runtime::BindingError) -> Self
+impl core::convert::From<pert_ui_runtime::CaptureError> for pert_ui_runtime::RuntimeError
+pub fn pert_ui_runtime::RuntimeError::from(pert_ui_runtime::CaptureError) -> Self
+impl core::convert::From<pert_ui_runtime::ChoiceError> for pert_ui_runtime::RuntimeError
+pub fn pert_ui_runtime::RuntimeError::from(pert_ui_runtime::ChoiceError) -> Self
+impl core::convert::From<pert_ui_runtime::ClipboardError> for pert_ui_runtime::RuntimeError
+pub fn pert_ui_runtime::RuntimeError::from(pert_ui_runtime::ClipboardError) -> Self
+impl core::convert::From<pert_ui_runtime::DeliveryError> for pert_ui_runtime::RuntimeError
+pub fn pert_ui_runtime::RuntimeError::from(pert_ui_runtime::DeliveryError) -> Self
+impl core::convert::From<pert_ui_runtime::FontError> for pert_ui_runtime::RuntimeError
+pub fn pert_ui_runtime::RuntimeError::from(pert_ui_runtime::FontError) -> Self
+impl core::convert::From<pert_ui_runtime::GeometryError> for pert_ui_runtime::RuntimeError
+pub fn pert_ui_runtime::RuntimeError::from(pert_ui_runtime::GeometryError) -> Self
+impl core::convert::From<pert_ui_runtime::LayoutError> for pert_ui_runtime::RuntimeError
+pub fn pert_ui_runtime::RuntimeError::from(pert_ui_runtime::LayoutError) -> Self
+impl core::convert::From<pert_ui_runtime::NumberInputError> for pert_ui_runtime::RuntimeError
+pub fn pert_ui_runtime::RuntimeError::from(pert_ui_runtime::NumberInputError) -> Self
+impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::CaptureError
+pub fn pert_ui_runtime::CaptureError::from(pert_ui_runtime::RuntimeError) -> Self
+impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::ContentSearchError
+pub fn pert_ui_runtime::ContentSearchError::from(pert_ui_runtime::RuntimeError) -> Self
+impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::RuntimeError) -> Self
+impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::FileBrowserError
+pub fn pert_ui_runtime::FileBrowserError::from(pert_ui_runtime::RuntimeError) -> Self
+impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::RedescriptionError
+pub fn pert_ui_runtime::RedescriptionError::from(pert_ui_runtime::RuntimeError) -> Self
+impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::WindowError
+pub fn pert_ui_runtime::WindowError::from(pert_ui_runtime::RuntimeError) -> Self
+impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::WorkspaceError
+pub fn pert_ui_runtime::WorkspaceError::from(pert_ui_runtime::RuntimeError) -> Self
+impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::testing::TestError
+pub fn pert_ui_runtime::testing::TestError::from(pert_ui_runtime::RuntimeError) -> Self
+impl core::convert::From<pert_ui_runtime::TextEditError> for pert_ui_runtime::RuntimeError
+pub fn pert_ui_runtime::RuntimeError::from(pert_ui_runtime::TextEditError) -> Self
+impl core::convert::From<pert_ui_runtime::TextError> for pert_ui_runtime::RuntimeError
+pub fn pert_ui_runtime::RuntimeError::from(pert_ui_runtime::TextError) -> Self
+impl core::convert::From<pert_ui_runtime::WindowError> for pert_ui_runtime::RuntimeError
+pub fn pert_ui_runtime::RuntimeError::from(pert_ui_runtime::WindowError) -> Self
+impl core::convert::From<pert_ui_runtime::WorkspaceError> for pert_ui_runtime::RuntimeError
+pub fn pert_ui_runtime::RuntimeError::from(pert_ui_runtime::WorkspaceError) -> Self
+impl core::error::Error for pert_ui_runtime::RuntimeError
+pub fn pert_ui_runtime::RuntimeError::source(&self) -> core::option::Option<&(dyn core::error::Error + 'static)>
+impl core::fmt::Debug for pert_ui_runtime::RuntimeError
+pub fn pert_ui_runtime::RuntimeError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui_runtime::RuntimeError
+pub fn pert_ui_runtime::RuntimeError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::RuntimeError
+impl core::marker::Freeze for pert_ui_runtime::RuntimeError
+impl core::marker::Send for pert_ui_runtime::RuntimeError
+impl core::marker::Sync for pert_ui_runtime::RuntimeError
+impl core::marker::Unpin for pert_ui_runtime::RuntimeError
+impl core::marker::UnsafeUnpin for pert_ui_runtime::RuntimeError
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::RuntimeError
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::RuntimeError
+#[non_exhaustive] pub enum pert_ui_runtime::host::WindowError
+pub pert_ui_runtime::host::WindowError::Cancelled
+pub pert_ui_runtime::host::WindowError::Creation(alloc::string::String)
+pub pert_ui_runtime::host::WindowError::Drawing(pert_ui_runtime::DrawError)
+pub pert_ui_runtime::host::WindowError::Runtime(pert_ui_runtime::RuntimeError)
+pub pert_ui_runtime::host::WindowError::Surface(alloc::string::String)
+impl core::clone::Clone for pert_ui_runtime::WindowError
+pub fn pert_ui_runtime::WindowError::clone(&self) -> pert_ui_runtime::WindowError
+impl core::cmp::Eq for pert_ui_runtime::WindowError
+impl core::cmp::PartialEq for pert_ui_runtime::WindowError
+pub fn pert_ui_runtime::WindowError::eq(&self, &pert_ui_runtime::WindowError) -> bool
+impl core::convert::From<pert_ui_core::edit::EditError> for pert_ui_runtime::WindowError
+pub fn pert_ui_runtime::WindowError::from(pert_ui_core::edit::EditError) -> Self
+impl core::convert::From<pert_ui_core::live::LiveError> for pert_ui_runtime::WindowError
+pub fn pert_ui_runtime::WindowError::from(pert_ui_core::live::LiveError) -> Self
+impl core::convert::From<pert_ui_core::normalized::NormalizedValueError> for pert_ui_runtime::WindowError
+pub fn pert_ui_runtime::WindowError::from(pert_ui_core::normalized::NormalizedValueError) -> Self
+impl core::convert::From<pert_ui_core::parameter::ParameterError> for pert_ui_runtime::WindowError
+pub fn pert_ui_runtime::WindowError::from(pert_ui_core::parameter::ParameterError) -> Self
+impl core::convert::From<pert_ui_core::parameter_id::ParameterIdError> for pert_ui_runtime::WindowError
+pub fn pert_ui_runtime::WindowError::from(pert_ui_core::parameter_id::ParameterIdError) -> Self
+impl core::convert::From<pert_ui_runtime::ApplicationError> for pert_ui_runtime::WindowError
+pub fn pert_ui_runtime::WindowError::from(pert_ui_runtime::ApplicationError) -> Self
+impl core::convert::From<pert_ui_runtime::BindingError> for pert_ui_runtime::WindowError
+pub fn pert_ui_runtime::WindowError::from(pert_ui_runtime::BindingError) -> Self
+impl core::convert::From<pert_ui_runtime::ChoiceError> for pert_ui_runtime::WindowError
+pub fn pert_ui_runtime::WindowError::from(pert_ui_runtime::ChoiceError) -> Self
+impl core::convert::From<pert_ui_runtime::ClipboardError> for pert_ui_runtime::WindowError
+pub fn pert_ui_runtime::WindowError::from(pert_ui_runtime::ClipboardError) -> Self
+impl core::convert::From<pert_ui_runtime::DeliveryError> for pert_ui_runtime::WindowError
+pub fn pert_ui_runtime::WindowError::from(pert_ui_runtime::DeliveryError) -> Self
+impl core::convert::From<pert_ui_runtime::DrawError> for pert_ui_runtime::WindowError
+pub fn pert_ui_runtime::WindowError::from(pert_ui_runtime::DrawError) -> Self
+impl core::convert::From<pert_ui_runtime::FontError> for pert_ui_runtime::WindowError
+pub fn pert_ui_runtime::WindowError::from(pert_ui_runtime::FontError) -> Self
+impl core::convert::From<pert_ui_runtime::GeometryError> for pert_ui_runtime::WindowError
+pub fn pert_ui_runtime::WindowError::from(pert_ui_runtime::GeometryError) -> Self
+impl core::convert::From<pert_ui_runtime::LayoutError> for pert_ui_runtime::WindowError
+pub fn pert_ui_runtime::WindowError::from(pert_ui_runtime::LayoutError) -> Self
+impl core::convert::From<pert_ui_runtime::NumberInputError> for pert_ui_runtime::WindowError
+pub fn pert_ui_runtime::WindowError::from(pert_ui_runtime::NumberInputError) -> Self
+impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::WindowError
+pub fn pert_ui_runtime::WindowError::from(pert_ui_runtime::RuntimeError) -> Self
+impl core::convert::From<pert_ui_runtime::TextEditError> for pert_ui_runtime::WindowError
+pub fn pert_ui_runtime::WindowError::from(pert_ui_runtime::TextEditError) -> Self
+impl core::convert::From<pert_ui_runtime::TextError> for pert_ui_runtime::WindowError
+pub fn pert_ui_runtime::WindowError::from(pert_ui_runtime::TextError) -> Self
+impl core::convert::From<pert_ui_runtime::WindowError> for pert_ui_runtime::RuntimeError
+pub fn pert_ui_runtime::RuntimeError::from(pert_ui_runtime::WindowError) -> Self
+impl core::error::Error for pert_ui_runtime::WindowError
+pub fn pert_ui_runtime::WindowError::source(&self) -> core::option::Option<&(dyn core::error::Error + 'static)>
+impl core::fmt::Debug for pert_ui_runtime::WindowError
+pub fn pert_ui_runtime::WindowError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui_runtime::WindowError
+pub fn pert_ui_runtime::WindowError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::WindowError
+impl core::marker::Freeze for pert_ui_runtime::WindowError
+impl core::marker::Send for pert_ui_runtime::WindowError
+impl core::marker::Sync for pert_ui_runtime::WindowError
+impl core::marker::Unpin for pert_ui_runtime::WindowError
+impl core::marker::UnsafeUnpin for pert_ui_runtime::WindowError
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::WindowError
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::WindowError
+pub struct pert_ui_runtime::host::CaptureJob
+impl pert_ui_runtime::CaptureJob
+pub const fn pert_ui_runtime::CaptureJob::id(&self) -> u64
+pub const fn pert_ui_runtime::CaptureJob::include_overlay(&self) -> bool
+pub const fn pert_ui_runtime::CaptureJob::window(&self) -> u64
+impl core::clone::Clone for pert_ui_runtime::CaptureJob
+pub fn pert_ui_runtime::CaptureJob::clone(&self) -> pert_ui_runtime::CaptureJob
+impl core::cmp::Eq for pert_ui_runtime::CaptureJob
+impl core::cmp::PartialEq for pert_ui_runtime::CaptureJob
+pub fn pert_ui_runtime::CaptureJob::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::CaptureJob
+pub fn pert_ui_runtime::CaptureJob::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for pert_ui_runtime::CaptureJob
+impl core::marker::Send for pert_ui_runtime::CaptureJob
+impl core::marker::Sync for pert_ui_runtime::CaptureJob
+impl core::marker::Unpin for pert_ui_runtime::CaptureJob
+impl core::marker::UnsafeUnpin for pert_ui_runtime::CaptureJob
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::CaptureJob
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::CaptureJob
+pub struct pert_ui_runtime::host::CommandKeyInput
+pub pert_ui_runtime::host::CommandKeyInput::action: pert_ui_runtime::KeyAction
+pub pert_ui_runtime::host::CommandKeyInput::base: core::option::Option<pert_ui_runtime::CommandKey>
+pub pert_ui_runtime::host::CommandKeyInput::composing: bool
+pub pert_ui_runtime::host::CommandKeyInput::has_text: bool
+pub pert_ui_runtime::host::CommandKeyInput::logical: core::option::Option<pert_ui_runtime::CommandKey>
+pub pert_ui_runtime::host::CommandKeyInput::physical: pert_ui_runtime::KeyCode
+impl pert_ui_runtime::CommandKeyInput
+pub fn pert_ui_runtime::CommandKeyInput::editing_event(self, pert_ui_runtime::KeyTransition) -> pert_ui_runtime::KeyEvent
+pub fn pert_ui_runtime::CommandKeyInput::new(pert_ui_runtime::KeyCode, pert_ui_runtime::KeyAction, pert_ui_runtime::CommandKey) -> Self
+impl core::clone::Clone for pert_ui_runtime::CommandKeyInput
+pub fn pert_ui_runtime::CommandKeyInput::clone(&self) -> pert_ui_runtime::CommandKeyInput
+impl core::cmp::Eq for pert_ui_runtime::CommandKeyInput
+impl core::cmp::PartialEq for pert_ui_runtime::CommandKeyInput
+pub fn pert_ui_runtime::CommandKeyInput::eq(&self, &pert_ui_runtime::CommandKeyInput) -> bool
+impl core::fmt::Debug for pert_ui_runtime::CommandKeyInput
+pub fn pert_ui_runtime::CommandKeyInput::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::CommandKeyInput
+impl core::marker::StructuralPartialEq for pert_ui_runtime::CommandKeyInput
+impl core::marker::Freeze for pert_ui_runtime::CommandKeyInput
+impl core::marker::Send for pert_ui_runtime::CommandKeyInput
+impl core::marker::Sync for pert_ui_runtime::CommandKeyInput
+impl core::marker::Unpin for pert_ui_runtime::CommandKeyInput
+impl core::marker::UnsafeUnpin for pert_ui_runtime::CommandKeyInput
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::CommandKeyInput
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::CommandKeyInput
+pub struct pert_ui_runtime::host::DisplayList
+impl pert_ui_runtime::DisplayList
+pub const fn pert_ui_runtime::DisplayList::background(&self) -> pert_ui_runtime::Color
+pub fn pert_ui_runtime::DisplayList::commands(&self) -> &[pert_ui_runtime::DrawCommand]
+pub fn pert_ui_runtime::DisplayList::image(&self, pert_ui_runtime::ImageId) -> core::option::Option<&pert_ui_runtime::RasterImage>
+pub fn pert_ui_runtime::DisplayList::images(&self) -> &[pert_ui_runtime::RasterImage]
+pub fn pert_ui_runtime::DisplayList::is_empty(&self) -> bool
+pub fn pert_ui_runtime::DisplayList::len(&self) -> usize
+pub fn pert_ui_runtime::DisplayList::mask(&self, pert_ui_runtime::MaskId) -> core::option::Option<&pert_ui_runtime::MaskImage>
+pub fn pert_ui_runtime::DisplayList::masks(&self) -> &[pert_ui_runtime::MaskImage]
+pub fn pert_ui_runtime::DisplayList::rasterized(&self) -> core::result::Result<Self, pert_ui_runtime::DrawError>
+pub fn pert_ui_runtime::DisplayList::vector(&self, pert_ui_runtime::VectorId) -> core::option::Option<&pert_ui_runtime::VectorGeometry>
+pub fn pert_ui_runtime::DisplayList::vectors(&self) -> &[pert_ui_runtime::VectorGeometry]
+pub const fn pert_ui_runtime::DisplayList::viewport(&self) -> pert_ui_runtime::Viewport
+impl core::clone::Clone for pert_ui_runtime::DisplayList
+pub fn pert_ui_runtime::DisplayList::clone(&self) -> pert_ui_runtime::DisplayList
+impl core::cmp::PartialEq for pert_ui_runtime::DisplayList
+pub fn pert_ui_runtime::DisplayList::eq(&self, &pert_ui_runtime::DisplayList) -> bool
+impl core::default::Default for pert_ui_runtime::DisplayList
+pub fn pert_ui_runtime::DisplayList::default() -> Self
+impl core::fmt::Debug for pert_ui_runtime::DisplayList
+pub fn pert_ui_runtime::DisplayList::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::DisplayList
+impl core::marker::Freeze for pert_ui_runtime::DisplayList
+impl core::marker::Send for pert_ui_runtime::DisplayList
+impl core::marker::Sync for pert_ui_runtime::DisplayList
+impl core::marker::Unpin for pert_ui_runtime::DisplayList
+impl core::marker::UnsafeUnpin for pert_ui_runtime::DisplayList
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::DisplayList
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::DisplayList
+pub struct pert_ui_runtime::host::FlushReport
+pub pert_ui_runtime::host::FlushReport::components_updated: usize
+pub pert_ui_runtime::host::FlushReport::next_deadline: core::option::Option<core::time::Duration>
+impl core::clone::Clone for pert_ui_runtime::FlushReport
+pub fn pert_ui_runtime::FlushReport::clone(&self) -> pert_ui_runtime::FlushReport
+impl core::cmp::Eq for pert_ui_runtime::FlushReport
+impl core::cmp::PartialEq for pert_ui_runtime::FlushReport
+pub fn pert_ui_runtime::FlushReport::eq(&self, &pert_ui_runtime::FlushReport) -> bool
+impl core::fmt::Debug for pert_ui_runtime::FlushReport
+pub fn pert_ui_runtime::FlushReport::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::FlushReport
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FlushReport
+impl core::marker::Freeze for pert_ui_runtime::FlushReport
+impl core::marker::Send for pert_ui_runtime::FlushReport
+impl core::marker::Sync for pert_ui_runtime::FlushReport
+impl core::marker::Unpin for pert_ui_runtime::FlushReport
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FlushReport
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FlushReport
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FlushReport
+pub struct pert_ui_runtime::host::FrameImage
+impl pert_ui_runtime::FrameImage
+pub const pert_ui_runtime::FrameImage::MAX_BYTES: usize
+pub fn pert_ui_runtime::FrameImage::crop(&self, u32, u32, u32, u32) -> core::result::Result<Self, pert_ui_runtime::CaptureError>
+pub fn pert_ui_runtime::FrameImage::encode_png(&self) -> alloc::vec::Vec<u8>
+pub const fn pert_ui_runtime::FrameImage::height(&self) -> u32
+pub fn pert_ui_runtime::FrameImage::new(u32, u32, alloc::vec::Vec<u8>) -> core::result::Result<Self, pert_ui_runtime::CaptureError>
+pub fn pert_ui_runtime::FrameImage::pixels(&self) -> &[u8]
+pub const fn pert_ui_runtime::FrameImage::width(&self) -> u32
+impl core::clone::Clone for pert_ui_runtime::FrameImage
+pub fn pert_ui_runtime::FrameImage::clone(&self) -> pert_ui_runtime::FrameImage
+impl core::cmp::Eq for pert_ui_runtime::FrameImage
+impl core::cmp::PartialEq for pert_ui_runtime::FrameImage
+pub fn pert_ui_runtime::FrameImage::eq(&self, &pert_ui_runtime::FrameImage) -> bool
+impl core::fmt::Debug for pert_ui_runtime::FrameImage
+pub fn pert_ui_runtime::FrameImage::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FrameImage
+impl core::marker::Freeze for pert_ui_runtime::FrameImage
+impl core::marker::Send for pert_ui_runtime::FrameImage
+impl core::marker::Sync for pert_ui_runtime::FrameImage
+impl core::marker::Unpin for pert_ui_runtime::FrameImage
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FrameImage
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FrameImage
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FrameImage
+pub struct pert_ui_runtime::host::KeyDispatch
+pub pert_ui_runtime::host::KeyDispatch::deliver_text: bool
+pub pert_ui_runtime::host::KeyDispatch::event: pert_ui_runtime::KeyEvent
+pub pert_ui_runtime::host::KeyDispatch::handled: bool
+impl core::clone::Clone for pert_ui_runtime::KeyDispatch
+pub fn pert_ui_runtime::KeyDispatch::clone(&self) -> pert_ui_runtime::KeyDispatch
+impl core::cmp::Eq for pert_ui_runtime::KeyDispatch
+impl core::cmp::PartialEq for pert_ui_runtime::KeyDispatch
+pub fn pert_ui_runtime::KeyDispatch::eq(&self, &pert_ui_runtime::KeyDispatch) -> bool
+impl core::fmt::Debug for pert_ui_runtime::KeyDispatch
+pub fn pert_ui_runtime::KeyDispatch::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::KeyDispatch
+impl core::marker::StructuralPartialEq for pert_ui_runtime::KeyDispatch
+impl core::marker::Freeze for pert_ui_runtime::KeyDispatch
+impl core::marker::Send for pert_ui_runtime::KeyDispatch
+impl core::marker::Sync for pert_ui_runtime::KeyDispatch
+impl core::marker::Unpin for pert_ui_runtime::KeyDispatch
+impl core::marker::UnsafeUnpin for pert_ui_runtime::KeyDispatch
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::KeyDispatch
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::KeyDispatch
+pub struct pert_ui_runtime::host::KeyboardState
+impl pert_ui_runtime::KeyboardState
+pub fn pert_ui_runtime::KeyboardState::chord_modifiers(&self, pert_ui_runtime::KeyEvent) -> pert_ui_runtime::Modifiers
+pub fn pert_ui_runtime::KeyboardState::control_key(&self, pert_ui_runtime::KeyEvent) -> pert_ui_runtime::KeyCode
+pub fn pert_ui_runtime::KeyboardState::is_pressed(&self, pert_ui_runtime::KeyCode) -> bool
+pub fn pert_ui_runtime::KeyboardState::modifiers(&self) -> pert_ui_runtime::Modifiers
+pub fn pert_ui_runtime::KeyboardState::pressed(&self) -> impl core::iter::traits::iterator::Iterator<Item = pert_ui_runtime::KeyCode> + '_
+impl core::clone::Clone for pert_ui_runtime::KeyboardState
+pub fn pert_ui_runtime::KeyboardState::clone(&self) -> pert_ui_runtime::KeyboardState
+impl core::cmp::Eq for pert_ui_runtime::KeyboardState
+impl core::cmp::PartialEq for pert_ui_runtime::KeyboardState
+pub fn pert_ui_runtime::KeyboardState::eq(&self, &pert_ui_runtime::KeyboardState) -> bool
+impl core::default::Default for pert_ui_runtime::KeyboardState
+pub fn pert_ui_runtime::KeyboardState::default() -> pert_ui_runtime::KeyboardState
+impl core::fmt::Debug for pert_ui_runtime::KeyboardState
+pub fn pert_ui_runtime::KeyboardState::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::KeyboardState
+impl core::marker::Freeze for pert_ui_runtime::KeyboardState
+impl core::marker::Send for pert_ui_runtime::KeyboardState
+impl core::marker::Sync for pert_ui_runtime::KeyboardState
+impl core::marker::Unpin for pert_ui_runtime::KeyboardState
+impl core::marker::UnsafeUnpin for pert_ui_runtime::KeyboardState
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::KeyboardState
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::KeyboardState
+pub struct pert_ui_runtime::host::Magnification(_)
+impl pert_ui_runtime::Magnification
+pub const fn pert_ui_runtime::Magnification::get(self) -> f32
+pub fn pert_ui_runtime::Magnification::new(f32) -> core::result::Result<Self, pert_ui_runtime::GeometryError>
+impl core::clone::Clone for pert_ui_runtime::Magnification
+pub fn pert_ui_runtime::Magnification::clone(&self) -> pert_ui_runtime::Magnification
+impl core::cmp::Eq for pert_ui_runtime::Magnification
+impl core::cmp::Ord for pert_ui_runtime::Magnification
+pub fn pert_ui_runtime::Magnification::cmp(&self, &Self) -> core::cmp::Ordering
+impl core::cmp::PartialEq for pert_ui_runtime::Magnification
+pub fn pert_ui_runtime::Magnification::eq(&self, &pert_ui_runtime::Magnification) -> bool
+impl core::cmp::PartialOrd for pert_ui_runtime::Magnification
+pub fn pert_ui_runtime::Magnification::partial_cmp(&self, &Self) -> core::option::Option<core::cmp::Ordering>
+impl core::convert::From<pert_ui_runtime::Magnification> for f32
+pub fn f32::from(pert_ui_runtime::Magnification) -> Self
+impl core::convert::TryFrom<f32> for pert_ui_runtime::Magnification
+pub type pert_ui_runtime::Magnification::Error = pert_ui_runtime::GeometryError
+pub fn pert_ui_runtime::Magnification::try_from(f32) -> core::result::Result<Self, Self::Error>
+impl core::fmt::Debug for pert_ui_runtime::Magnification
+pub fn pert_ui_runtime::Magnification::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::Magnification
+pub fn pert_ui_runtime::Magnification::hash<H: core::hash::Hasher>(&self, &mut H)
+impl core::marker::Copy for pert_ui_runtime::Magnification
+impl core::marker::StructuralPartialEq for pert_ui_runtime::Magnification
+impl core::marker::Freeze for pert_ui_runtime::Magnification
+impl core::marker::Send for pert_ui_runtime::Magnification
+impl core::marker::Sync for pert_ui_runtime::Magnification
+impl core::marker::Unpin for pert_ui_runtime::Magnification
+impl core::marker::UnsafeUnpin for pert_ui_runtime::Magnification
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Magnification
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Magnification
+pub struct pert_ui_runtime::host::Modifiers
+pub pert_ui_runtime::host::Modifiers::alt: bool
+pub pert_ui_runtime::host::Modifiers::control: bool
+pub pert_ui_runtime::host::Modifiers::shift: bool
+pub pert_ui_runtime::host::Modifiers::super_key: bool
+impl pert_ui_runtime::Modifiers
+pub const pert_ui_runtime::Modifiers::PRIMARY: Self
+pub const fn pert_ui_runtime::Modifiers::primary(self) -> bool
+impl core::clone::Clone for pert_ui_runtime::Modifiers
+pub fn pert_ui_runtime::Modifiers::clone(&self) -> pert_ui_runtime::Modifiers
+impl core::cmp::Eq for pert_ui_runtime::Modifiers
+impl core::cmp::PartialEq for pert_ui_runtime::Modifiers
+pub fn pert_ui_runtime::Modifiers::eq(&self, &pert_ui_runtime::Modifiers) -> bool
+impl core::default::Default for pert_ui_runtime::Modifiers
+pub fn pert_ui_runtime::Modifiers::default() -> pert_ui_runtime::Modifiers
+impl core::fmt::Debug for pert_ui_runtime::Modifiers
+pub fn pert_ui_runtime::Modifiers::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::Modifiers
+pub fn pert_ui_runtime::Modifiers::hash<__H: core::hash::Hasher>(&self, &mut __H)
+impl core::marker::Copy for pert_ui_runtime::Modifiers
+impl core::marker::StructuralPartialEq for pert_ui_runtime::Modifiers
+impl core::marker::Freeze for pert_ui_runtime::Modifiers
+impl core::marker::Send for pert_ui_runtime::Modifiers
+impl core::marker::Sync for pert_ui_runtime::Modifiers
+impl core::marker::Unpin for pert_ui_runtime::Modifiers
+impl core::marker::UnsafeUnpin for pert_ui_runtime::Modifiers
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Modifiers
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Modifiers
+pub struct pert_ui_runtime::host::NativeWindowId(_)
+impl pert_ui_runtime::NativeWindowId
+pub fn pert_ui_runtime::NativeWindowId::id(&self) -> u64
+impl core::clone::Clone for pert_ui_runtime::NativeWindowId
+pub fn pert_ui_runtime::NativeWindowId::clone(&self) -> pert_ui_runtime::NativeWindowId
+impl core::cmp::Eq for pert_ui_runtime::NativeWindowId
+impl core::cmp::PartialEq for pert_ui_runtime::NativeWindowId
+pub fn pert_ui_runtime::NativeWindowId::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::NativeWindowId
+pub fn pert_ui_runtime::NativeWindowId::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::NativeWindowId
+pub fn pert_ui_runtime::NativeWindowId::hash<H: core::hash::Hasher>(&self, &mut H)
+impl core::marker::Freeze for pert_ui_runtime::NativeWindowId
+impl !core::marker::Send for pert_ui_runtime::NativeWindowId
+impl !core::marker::Sync for pert_ui_runtime::NativeWindowId
+impl core::marker::Unpin for pert_ui_runtime::NativeWindowId
+impl core::marker::UnsafeUnpin for pert_ui_runtime::NativeWindowId
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::NativeWindowId
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::NativeWindowId
+pub struct pert_ui_runtime::host::NativeWindowOptions
+impl pert_ui_runtime::NativeWindowOptions
+pub fn pert_ui_runtime::NativeWindowOptions::close_policy(self, pert_ui_runtime::DetachedClosePolicy) -> Self
+pub const fn pert_ui_runtime::NativeWindowOptions::closing_policy(&self) -> pert_ui_runtime::DetachedClosePolicy
+pub const fn pert_ui_runtime::NativeWindowOptions::initial_size(&self) -> pert_ui_runtime::Size
+pub fn pert_ui_runtime::NativeWindowOptions::new(impl core::convert::Into<alloc::string::String>) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::NativeWindowOptions::size(self, pert_ui_runtime::Size) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::NativeWindowOptions::title(&self) -> &str
+impl core::clone::Clone for pert_ui_runtime::NativeWindowOptions
+pub fn pert_ui_runtime::NativeWindowOptions::clone(&self) -> pert_ui_runtime::NativeWindowOptions
+impl core::cmp::PartialEq for pert_ui_runtime::NativeWindowOptions
+pub fn pert_ui_runtime::NativeWindowOptions::eq(&self, &pert_ui_runtime::NativeWindowOptions) -> bool
+impl core::fmt::Debug for pert_ui_runtime::NativeWindowOptions
+pub fn pert_ui_runtime::NativeWindowOptions::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::NativeWindowOptions
+impl core::marker::Freeze for pert_ui_runtime::NativeWindowOptions
+impl core::marker::Send for pert_ui_runtime::NativeWindowOptions
+impl core::marker::Sync for pert_ui_runtime::NativeWindowOptions
+impl core::marker::Unpin for pert_ui_runtime::NativeWindowOptions
+impl core::marker::UnsafeUnpin for pert_ui_runtime::NativeWindowOptions
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::NativeWindowOptions
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::NativeWindowOptions
+pub struct pert_ui_runtime::host::PhysicalExtent
+impl pert_ui_runtime::PhysicalExtent
+pub const fn pert_ui_runtime::PhysicalExtent::height(self) -> u32
+pub const fn pert_ui_runtime::PhysicalExtent::is_empty(self) -> bool
+pub const fn pert_ui_runtime::PhysicalExtent::new(u32, u32) -> Self
+pub const fn pert_ui_runtime::PhysicalExtent::width(self) -> u32
+impl core::clone::Clone for pert_ui_runtime::PhysicalExtent
+pub fn pert_ui_runtime::PhysicalExtent::clone(&self) -> pert_ui_runtime::PhysicalExtent
+impl core::cmp::Eq for pert_ui_runtime::PhysicalExtent
+impl core::cmp::PartialEq for pert_ui_runtime::PhysicalExtent
+pub fn pert_ui_runtime::PhysicalExtent::eq(&self, &pert_ui_runtime::PhysicalExtent) -> bool
+impl core::fmt::Debug for pert_ui_runtime::PhysicalExtent
+pub fn pert_ui_runtime::PhysicalExtent::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::PhysicalExtent
+pub fn pert_ui_runtime::PhysicalExtent::hash<__H: core::hash::Hasher>(&self, &mut __H)
+impl core::marker::Copy for pert_ui_runtime::PhysicalExtent
+impl core::marker::StructuralPartialEq for pert_ui_runtime::PhysicalExtent
+impl core::marker::Freeze for pert_ui_runtime::PhysicalExtent
+impl core::marker::Send for pert_ui_runtime::PhysicalExtent
+impl core::marker::Sync for pert_ui_runtime::PhysicalExtent
+impl core::marker::Unpin for pert_ui_runtime::PhysicalExtent
+impl core::marker::UnsafeUnpin for pert_ui_runtime::PhysicalExtent
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::PhysicalExtent
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::PhysicalExtent
+pub struct pert_ui_runtime::host::Point
+impl pert_ui_runtime::Point
+pub const pert_ui_runtime::Point::ZERO: Self
+pub fn pert_ui_runtime::Point::new(f32, f32) -> core::result::Result<Self, pert_ui_runtime::GeometryError>
+pub const fn pert_ui_runtime::Point::x(self) -> f32
+pub const fn pert_ui_runtime::Point::y(self) -> f32
+impl core::clone::Clone for pert_ui_runtime::Point
+pub fn pert_ui_runtime::Point::clone(&self) -> pert_ui_runtime::Point
+impl core::cmp::PartialEq for pert_ui_runtime::Point
+pub fn pert_ui_runtime::Point::eq(&self, &pert_ui_runtime::Point) -> bool
+impl core::default::Default for pert_ui_runtime::Point
+pub fn pert_ui_runtime::Point::default() -> pert_ui_runtime::Point
+impl core::fmt::Debug for pert_ui_runtime::Point
+pub fn pert_ui_runtime::Point::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::Point
+impl core::marker::StructuralPartialEq for pert_ui_runtime::Point
+impl core::marker::Freeze for pert_ui_runtime::Point
+impl core::marker::Send for pert_ui_runtime::Point
+impl core::marker::Sync for pert_ui_runtime::Point
+impl core::marker::Unpin for pert_ui_runtime::Point
+impl core::marker::UnsafeUnpin for pert_ui_runtime::Point
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Point
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Point
+pub struct pert_ui_runtime::host::PointerEvent
+impl pert_ui_runtime::PointerEvent
+pub const fn pert_ui_runtime::PointerEvent::is_outside(self) -> bool
+pub const fn pert_ui_runtime::PointerEvent::is_refresh(self) -> bool
+pub const fn pert_ui_runtime::PointerEvent::kind(self) -> pert_ui_runtime::PointerKind
+pub const fn pert_ui_runtime::PointerEvent::new(pert_ui_runtime::Point, pert_ui_runtime::PointerKind) -> Self
+pub const fn pert_ui_runtime::PointerEvent::outside(self) -> Self
+pub const fn pert_ui_runtime::PointerEvent::position(self) -> pert_ui_runtime::Point
+impl core::clone::Clone for pert_ui_runtime::PointerEvent
+pub fn pert_ui_runtime::PointerEvent::clone(&self) -> pert_ui_runtime::PointerEvent
+impl core::cmp::PartialEq for pert_ui_runtime::PointerEvent
+pub fn pert_ui_runtime::PointerEvent::eq(&self, &pert_ui_runtime::PointerEvent) -> bool
+impl core::fmt::Debug for pert_ui_runtime::PointerEvent
+pub fn pert_ui_runtime::PointerEvent::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::PointerEvent
+impl core::marker::StructuralPartialEq for pert_ui_runtime::PointerEvent
+impl core::marker::Freeze for pert_ui_runtime::PointerEvent
+impl core::marker::Send for pert_ui_runtime::PointerEvent
+impl core::marker::Sync for pert_ui_runtime::PointerEvent
+impl core::marker::Unpin for pert_ui_runtime::PointerEvent
+impl core::marker::UnsafeUnpin for pert_ui_runtime::PointerEvent
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::PointerEvent
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::PointerEvent
+pub struct pert_ui_runtime::host::PreparedDetach
+impl pert_ui_runtime::PreparedDetach
+pub fn pert_ui_runtime::PreparedDetach::destination(&self) -> pert_ui_runtime::NativeWindowId
+pub fn pert_ui_runtime::PreparedDetach::options(&self) -> &pert_ui_runtime::NativeWindowOptions
+impl core::fmt::Debug for pert_ui_runtime::PreparedDetach
+pub fn pert_ui_runtime::PreparedDetach::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for pert_ui_runtime::PreparedDetach
+impl !core::marker::Send for pert_ui_runtime::PreparedDetach
+impl !core::marker::Sync for pert_ui_runtime::PreparedDetach
+impl core::marker::Unpin for pert_ui_runtime::PreparedDetach
+impl core::marker::UnsafeUnpin for pert_ui_runtime::PreparedDetach
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::PreparedDetach
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::PreparedDetach
+pub struct pert_ui_runtime::host::PresentationRate(_)
+impl pert_ui_runtime::PresentationRate
+pub const pert_ui_runtime::PresentationRate::MAX: Self
+pub const pert_ui_runtime::PresentationRate::MIN: Self
+pub const fn pert_ui_runtime::PresentationRate::hertz(self) -> f64
+pub fn pert_ui_runtime::PresentationRate::new(f64) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
+impl core::clone::Clone for pert_ui_runtime::PresentationRate
+pub fn pert_ui_runtime::PresentationRate::clone(&self) -> pert_ui_runtime::PresentationRate
+impl core::cmp::Eq for pert_ui_runtime::PresentationRate
+impl core::cmp::Ord for pert_ui_runtime::PresentationRate
+pub fn pert_ui_runtime::PresentationRate::cmp(&self, &Self) -> core::cmp::Ordering
+impl core::cmp::PartialEq for pert_ui_runtime::PresentationRate
+pub fn pert_ui_runtime::PresentationRate::eq(&self, &pert_ui_runtime::PresentationRate) -> bool
+impl core::cmp::PartialOrd for pert_ui_runtime::PresentationRate
+pub fn pert_ui_runtime::PresentationRate::partial_cmp(&self, &Self) -> core::option::Option<core::cmp::Ordering>
+impl core::convert::From<pert_ui_runtime::PresentationRate> for f64
+pub fn f64::from(pert_ui_runtime::PresentationRate) -> Self
+impl core::convert::TryFrom<f64> for pert_ui_runtime::PresentationRate
+pub type pert_ui_runtime::PresentationRate::Error = pert_ui_runtime::RuntimeError
+pub fn pert_ui_runtime::PresentationRate::try_from(f64) -> core::result::Result<Self, Self::Error>
+impl core::fmt::Debug for pert_ui_runtime::PresentationRate
+pub fn pert_ui_runtime::PresentationRate::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::PresentationRate
+pub fn pert_ui_runtime::PresentationRate::hash<H: core::hash::Hasher>(&self, &mut H)
+impl core::marker::Copy for pert_ui_runtime::PresentationRate
+impl core::marker::StructuralPartialEq for pert_ui_runtime::PresentationRate
+impl core::marker::Freeze for pert_ui_runtime::PresentationRate
+impl core::marker::Send for pert_ui_runtime::PresentationRate
+impl core::marker::Sync for pert_ui_runtime::PresentationRate
+impl core::marker::Unpin for pert_ui_runtime::PresentationRate
+impl core::marker::UnsafeUnpin for pert_ui_runtime::PresentationRate
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::PresentationRate
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::PresentationRate
+pub struct pert_ui_runtime::host::PresentationRequest
+impl pert_ui_runtime::PresentationRequest
+pub fn pert_ui_runtime::PresentationRequest::action(&self) -> &pert_ui_runtime::PresentationAction
+pub fn pert_ui_runtime::PresentationRequest::complete(self, pert_ui_runtime::PresentationStatus) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+impl core::fmt::Debug for pert_ui_runtime::PresentationRequest
+pub fn pert_ui_runtime::PresentationRequest::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::ops::drop::Drop for pert_ui_runtime::PresentationRequest
+pub fn pert_ui_runtime::PresentationRequest::drop(&mut self)
+impl core::marker::Freeze for pert_ui_runtime::PresentationRequest
+impl !core::marker::Send for pert_ui_runtime::PresentationRequest
+impl !core::marker::Sync for pert_ui_runtime::PresentationRequest
+impl core::marker::Unpin for pert_ui_runtime::PresentationRequest
+impl core::marker::UnsafeUnpin for pert_ui_runtime::PresentationRequest
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::PresentationRequest
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::PresentationRequest
+pub struct pert_ui_runtime::host::Runtime
+impl pert_ui_runtime::Runtime
+pub const pert_ui_runtime::Runtime::MAX_BACKGROUND_TASKS: usize
+pub const pert_ui_runtime::Runtime::MAX_INTERVALS: usize
+pub fn pert_ui_runtime::Runtime::keep_alive<T: 'static>(&mut self, T)
+pub fn pert_ui_runtime::Runtime::last_failure(&self) -> core::option::Option<pert_ui_runtime::FailureSite>
+pub fn pert_ui_runtime::Runtime::spawn<T: core::marker::Send + 'static>(&mut self, impl core::ops::function::FnOnce() -> T + core::marker::Send + 'static, impl core::ops::function::FnOnce(T) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::BackgroundTask, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::start_interval(&mut self, core::time::Duration, impl core::ops::function::FnMut(&mut pert_ui_runtime::Runtime) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::IntervalTimer, pert_ui_runtime::RuntimeError>
+impl pert_ui_runtime::Runtime
+pub const pert_ui_runtime::Runtime::MAX_FLUSH_WAVES: usize
+pub const pert_ui_runtime::Runtime::MAX_OVERLAY_BOXES: usize
+pub const pert_ui_runtime::Runtime::MAX_OVERLAY_MARKERS: usize
+pub fn pert_ui_runtime::Runtime::can_focus(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::clear_profile(&self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::clipboard_text(&self) -> core::result::Result<alloc::string::String, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::debug_overlay(&self) -> pert_ui_runtime::DebugOverlay
+pub fn pert_ui_runtime::Runtime::event<R>(&mut self, &pert_ui_runtime::WidgetId, impl core::ops::function::FnOnce(&mut pert_ui_runtime::EventContext) -> R) -> core::result::Result<R, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::flush(&mut self, core::time::Duration) -> core::result::Result<pert_ui_runtime::FlushReport, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::focus(&mut self, &pert_ui_runtime::WidgetId) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::focused(&self) -> core::option::Option<pert_ui_runtime::WidgetId>
+pub fn pert_ui_runtime::Runtime::inspection_service(&self, pert_ui_core::live::Capacity) -> core::result::Result<pert_ui_runtime::InspectionService, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::key_input(&mut self, pert_ui_runtime::KeyCode, pert_ui_runtime::KeyAction) -> core::result::Result<pert_ui_runtime::KeyEvent, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::keyboard(&self) -> &pert_ui_runtime::KeyboardState
+pub fn pert_ui_runtime::Runtime::live_waker(&self) -> pert_ui_runtime::LiveWaker
+pub fn pert_ui_runtime::Runtime::mailbox<T: core::marker::Send + 'static>(&self, pert_ui_core::live::Capacity, impl core::ops::function::FnMut(T) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::Mailbox<T>, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::new() -> Self
+pub fn pert_ui_runtime::Runtime::next_deadline(&self) -> core::option::Option<core::time::Duration>
+pub fn pert_ui_runtime::Runtime::now(&self) -> core::time::Duration
+pub fn pert_ui_runtime::Runtime::profile(&self) -> pert_ui_runtime::ProfileSnapshot
+pub fn pert_ui_runtime::Runtime::series_source<T: pert_ui_core::live::item::LiveItem>(&self, pert_ui_core::live::series::SeriesConsumer<T>, pert_ui_runtime::Delivery) -> pert_ui_runtime::SeriesSource<T>
+pub fn pert_ui_runtime::Runtime::set_clipboard_text(&self, &str) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::set_debug_mode(&self, pert_ui_runtime::DebugMode)
+pub fn pert_ui_runtime::Runtime::set_debug_overlay(&self, pert_ui_runtime::DebugOverlay)
+pub fn pert_ui_runtime::Runtime::set_profiling(&self, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::set_viewport(&self, pert_ui_runtime::Viewport) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::set_visible(&mut self, &pert_ui_runtime::WidgetId, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::signal<T>(&self, T) -> pert_ui_runtime::Signal<T>
+pub fn pert_ui_runtime::Runtime::text_command(&mut self, &pert_ui_runtime::WidgetId, pert_ui_runtime::TextCommand) -> core::result::Result<pert_ui_runtime::TextCommandOutcome, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::text_input(&mut self, &str) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::try_event<R, E: core::fmt::Display>(&mut self, &pert_ui_runtime::WidgetId, impl core::ops::function::FnOnce(&mut pert_ui_runtime::EventContext) -> core::result::Result<R, E>) -> core::result::Result<core::result::Result<R, E>, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::unmount(&mut self, &pert_ui_runtime::WidgetId) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::validation_report(&self) -> pert_ui_runtime::ValidationReport
+impl pert_ui_runtime::Runtime
+pub const pert_ui_runtime::Runtime::MAX_PENDING_CAPTURES: usize
+pub fn pert_ui_runtime::Runtime::request_capture(&self, pert_ui_runtime::CaptureRequest) -> pert_ui_runtime::Pending<core::result::Result<pert_ui_runtime::Capture, pert_ui_runtime::CaptureError>>
+pub fn pert_ui_runtime::Runtime::set_capture_support(&self, bool)
+impl pert_ui_runtime::Runtime
+pub const pert_ui_runtime::Runtime::MAX_QUEUED_COMMANDS: usize
+impl pert_ui_runtime::Runtime
+pub const pert_ui_runtime::Runtime::MAX_REVEAL_REQUESTS: usize
+pub fn pert_ui_runtime::Runtime::reveal(&mut self, &pert_ui_runtime::WidgetId) -> core::result::Result<pert_ui_runtime::RevealOutcome, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::reveal_and_focus(&mut self, &pert_ui_runtime::WidgetId) -> core::result::Result<pert_ui_runtime::RevealOutcome, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::reveal_child(&mut self, &pert_ui_runtime::WidgetId, &str) -> core::result::Result<pert_ui_runtime::ChildReveal, pert_ui_runtime::RuntimeError>
+impl pert_ui_runtime::Runtime
+pub const pert_ui_runtime::Runtime::MAX_TASKS: usize
+pub fn pert_ui_runtime::Runtime::defer(&self, impl core::ops::function::FnOnce(&mut Self) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
+impl pert_ui_runtime::Runtime
+pub const pert_ui_runtime::Runtime::MAX_WINDOW_REQUESTS: usize
+pub fn pert_ui_runtime::Runtime::read_signal<T: core::clone::Clone + 'static>(&self, &pert_ui_runtime::ReadSignal<T>) -> core::result::Result<T, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::request_close(&self, &pert_ui_runtime::NativeWindowId) -> core::result::Result<pert_ui_runtime::PresentationReceipt, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::request_detach(&self, &pert_ui_runtime::WidgetId, pert_ui_runtime::NativeWindowOptions) -> core::result::Result<pert_ui_runtime::PresentationReceipt, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::request_redock(&self, &pert_ui_runtime::NativeWindowId) -> core::result::Result<pert_ui_runtime::PresentationReceipt, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::request_window_title(&self, &pert_ui_runtime::NativeWindowId, impl core::convert::Into<alloc::string::String>) -> core::result::Result<pert_ui_runtime::PresentationReceipt, pert_ui_runtime::RuntimeError>
+impl pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::Runtime::bounds(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<core::option::Option<pert_ui_runtime::Rect>, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::children(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<alloc::vec::Vec<pert_ui_runtime::WidgetId>, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::find(&self, &pert_ui_runtime::WidgetId, &[&str]) -> core::result::Result<core::option::Option<pert_ui_runtime::WidgetId>, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::find_descendant(&self, &pert_ui_runtime::WidgetId, &str) -> core::result::Result<core::option::Option<pert_ui_runtime::WidgetId>, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::inspection_id(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<u64, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::key(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<&str, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::mount_tree(&mut self, pert_ui_runtime::Element) -> core::result::Result<pert_ui_runtime::WidgetId, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::reconcile_children(&mut self, &pert_ui_runtime::WidgetId, alloc::vec::Vec<pert_ui_runtime::Element>) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::reparent(&mut self, &pert_ui_runtime::WidgetId, &pert_ui_runtime::WidgetId, usize) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+impl pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::Runtime::capture_workspace(&self) -> core::result::Result<pert_ui_runtime::Workspace, pert_ui_runtime::WorkspaceError>
+pub fn pert_ui_runtime::Runtime::restore_workspace(&mut self, &pert_ui_runtime::Workspace) -> core::result::Result<pert_ui_runtime::WorkspaceReport, pert_ui_runtime::WorkspaceError>
+pub fn pert_ui_runtime::Runtime::workspace_report(&self) -> &pert_ui_runtime::WorkspaceReport
+impl pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::Runtime::clear_event_history(&self)
+pub fn pert_ui_runtime::Runtime::inspect(&self) -> pert_ui_runtime::InspectionSnapshot
+pub fn pert_ui_runtime::Runtime::inspect_with(&self, impl core::ops::function::FnOnce() -> alloc::collections::btree::map::BTreeMap<alloc::string::String, pert_ui_runtime::InspectValue>) -> pert_ui_runtime::InspectionSnapshot
+pub fn pert_ui_runtime::Runtime::query(&self, &pert_ui_runtime::InspectionQuery) -> pert_ui_runtime::QueryResult
+pub fn pert_ui_runtime::Runtime::query_with(&self, &pert_ui_runtime::InspectionQuery, impl core::ops::function::FnOnce() -> alloc::collections::btree::map::BTreeMap<alloc::string::String, pert_ui_runtime::InspectValue>) -> pert_ui_runtime::QueryResult
+impl pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::Runtime::command_context(&self, pert_ui_runtime::CommandSource) -> pert_ui_runtime::CommandContext
+pub fn pert_ui_runtime::Runtime::command_enabled(&mut self, &pert_ui_runtime::CommandId, impl core::ops::function::Fn(&pert_ui_runtime::Runtime, &pert_ui_runtime::CommandContext) -> core::result::Result<bool, pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::command_enabled_binding(&self, &pert_ui_runtime::CommandId) -> core::result::Result<core::option::Option<pert_ui_runtime::ReadSignal<bool>>, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::command_in_modals(&mut self, &pert_ui_runtime::CommandId, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::command_info(&mut self, &pert_ui_runtime::CommandId, &pert_ui_runtime::CommandContext) -> core::result::Result<pert_ui_runtime::CommandInfo, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::command_key_input(&mut self, pert_ui_runtime::CommandKeyInput) -> core::result::Result<pert_ui_runtime::KeyDispatch, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::command_name(&self, &pert_ui_runtime::CommandId) -> core::result::Result<&str, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::command_repeats(&mut self, &pert_ui_runtime::CommandId, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::command_shortcuts(&self, &pert_ui_runtime::CommandId) -> core::result::Result<pert_ui_runtime::ReadSignal<alloc::vec::Vec<pert_ui_runtime::KeyChord>>, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::commands_for(&mut self, &pert_ui_runtime::CommandContext) -> core::result::Result<alloc::vec::Vec<pert_ui_runtime::CommandEntry>, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::invoke_command(&mut self, &pert_ui_runtime::CommandId, pert_ui_runtime::CommandContext) -> core::result::Result<pert_ui_runtime::CommandOutcome, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::rebind_command(&mut self, &pert_ui_runtime::CommandId, alloc::vec::Vec<pert_ui_runtime::KeyChord>) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::register_command(&mut self, impl core::convert::Into<alloc::string::String>, pert_ui_runtime::CommandScope, alloc::vec::Vec<pert_ui_runtime::KeyChord>, impl core::ops::function::FnMut(&mut pert_ui_runtime::Runtime, &pert_ui_runtime::CommandContext) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::CommandId, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::set_command_target(&mut self, core::option::Option<&pert_ui_runtime::WidgetId>) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::unregister_command(&mut self, &pert_ui_runtime::CommandId) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+impl pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::Runtime::command_enabled_signal(&mut self, &pert_ui_runtime::CommandId, impl core::convert::Into<pert_ui_runtime::ReadSignal<bool>>) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+impl pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::Runtime::contains_window(&self, &pert_ui_runtime::NativeWindowId) -> bool
+pub fn pert_ui_runtime::Runtime::detached_view(&self) -> core::option::Option<pert_ui_runtime::WidgetId>
+pub fn pert_ui_runtime::Runtime::native_windows(&self) -> alloc::vec::Vec<pert_ui_runtime::NativeWindowId>
+pub fn pert_ui_runtime::Runtime::primary_window(&self) -> pert_ui_runtime::NativeWindowId
+pub fn pert_ui_runtime::Runtime::window_of(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<pert_ui_runtime::NativeWindowId, pert_ui_runtime::RuntimeError>
+impl pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::Runtime::content_search(&self, pert_ui_runtime::ContentQuery) -> pert_ui_runtime::ContentSearch
+pub fn pert_ui_runtime::Runtime::jump_to_content(&mut self, &pert_ui_runtime::ContentTarget) -> core::result::Result<pert_ui_runtime::ContentJump, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::resume_content_jump(&mut self, &pert_ui_runtime::PendingJump) -> core::result::Result<pert_ui_runtime::ContentJump, pert_ui_runtime::RuntimeError>
+impl pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::Runtime::drag_active(&self) -> bool
+impl pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::Runtime::focus_next(&mut self, pert_ui_runtime::FocusDirection) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::pointer_input(&mut self, pert_ui_runtime::PointerEvent) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError>
+impl pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::Runtime::fonts(&self) -> pert_ui_runtime::FontManager
+pub fn pert_ui_runtime::Runtime::icons(&self) -> pert_ui_runtime::IconManager
+impl pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::Runtime::native_modifiers(&mut self, pert_ui_runtime::Modifiers) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+impl pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::Runtime::paint(&mut self) -> core::result::Result<pert_ui_runtime::DisplayList, pert_ui_runtime::DrawError>
+impl pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::Runtime::parameter<T: pert_ui_core::family::ParameterValue>(&mut self, pert_ui_core::parameter_id::ParameterId, pert_ui_core::parameter::ParameterSpec<T>) -> core::result::Result<(pert_ui_runtime::Parameter<T>, pert_ui_runtime::ParameterHost<T>), pert_ui_runtime::RuntimeError>
+impl pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::Runtime::parameter_any(&mut self, pert_ui_core::parameter_id::ParameterId, pert_ui_core::erased::AnySpec) -> core::result::Result<(pert_ui_runtime::AnyParameter, pert_ui_runtime::AnyParameterHost), pert_ui_runtime::RuntimeError>
+impl pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::Runtime::register_held_input(&mut self, &pert_ui_runtime::WidgetId, alloc::vec::Vec<pert_ui_runtime::KeyCode>, pert_ui_runtime::Modifiers, impl core::ops::function::FnMut(pert_ui_runtime::KeyCode, pert_ui_runtime::KeyTransition, &pert_ui_runtime::CommandContext) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError> + 'static, impl core::ops::function::FnMut(pert_ui_runtime::KeyCode, pert_ui_runtime::HeldCancellation) + 'static) -> core::result::Result<pert_ui_runtime::HeldInputId, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::unregister_held_input(&mut self, &pert_ui_runtime::HeldInputId) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+impl pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::Runtime::remote_parameter<T: pert_ui_core::family::ParameterValue>(&mut self, pert_ui_core::parameter_id::ParameterId, pert_ui_core::parameter::ParameterSpec<T>) -> core::result::Result<(pert_ui_runtime::Parameter<T>, pert_ui_runtime::RemoteHost<T>), pert_ui_runtime::RuntimeError>
+impl pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::Runtime::shutdown(&mut self)
+impl pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::Runtime::theme(&self) -> pert_ui_runtime::ThemeManager
+impl pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::Runtime::ui_settings(&self) -> pert_ui_runtime::UiSettings
+pub fn pert_ui_runtime::Runtime::viewport(&self) -> pert_ui_runtime::Viewport
+impl core::default::Default for pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::Runtime::default() -> Self
+impl core::fmt::Debug for pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::Runtime::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::ops::drop::Drop for pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::Runtime::drop(&mut self)
+impl pert_ui_runtime::StateOwner for pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::Runtime::signal<T>(&self, T) -> pert_ui_runtime::Signal<T>
+pub fn pert_ui_runtime::Runtime::ui_settings(&self) -> pert_ui_runtime::UiSettings
+impl pert_ui_runtime::host::HostIntegration for pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::Runtime::application_deadline(&self) -> core::option::Option<core::time::Duration>
+pub fn pert_ui_runtime::Runtime::cancel_input(&mut self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::capture_scene(&mut self, &pert_ui_runtime::CaptureJob) -> core::result::Result<pert_ui_runtime::DisplayList, pert_ui_runtime::CaptureError>
+pub fn pert_ui_runtime::Runtime::captures_supported(&self) -> bool
+pub fn pert_ui_runtime::Runtime::clear_focus(&mut self)
+pub fn pert_ui_runtime::Runtime::close_detached_window(&mut self) -> core::result::Result<pert_ui_runtime::PresentationStatus, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::commit_detach(&mut self, pert_ui_runtime::PreparedDetach) -> core::result::Result<pert_ui_runtime::NativeWindowId, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::complete_capture(&self, &pert_ui_runtime::CaptureJob, core::result::Result<pert_ui_runtime::FrameImage, pert_ui_runtime::CaptureError>) -> bool
+pub fn pert_ui_runtime::Runtime::current_window(&self) -> pert_ui_runtime::NativeWindowId
+pub fn pert_ui_runtime::Runtime::cursor_icon(&self) -> pert_ui_runtime::CursorIcon
+pub fn pert_ui_runtime::Runtime::flush_commands(&mut self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::flush_windows(&mut self, core::time::Duration) -> core::result::Result<pert_ui_runtime::FlushReport, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::has_command_requests(&self) -> bool
+pub fn pert_ui_runtime::Runtime::has_presentation_requests(&self) -> bool
+pub fn pert_ui_runtime::Runtime::interval_deadline(&self) -> core::option::Option<core::time::Duration>
+pub fn pert_ui_runtime::Runtime::invalidate(&self, &pert_ui_runtime::WidgetId, pert_ui_runtime::Invalidation) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::native_window_options(&self) -> core::option::Option<&pert_ui_runtime::NativeWindowOptions>
+pub fn pert_ui_runtime::Runtime::needs_paint(&self) -> bool
+pub fn pert_ui_runtime::Runtime::pending_captures(&self) -> alloc::vec::Vec<pert_ui_runtime::CaptureJob>
+pub fn pert_ui_runtime::Runtime::prepare_detach(&mut self, &pert_ui_runtime::WidgetId, pert_ui_runtime::NativeWindowOptions) -> core::result::Result<pert_ui_runtime::PreparedDetach, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::presentation_rate(&self) -> core::option::Option<pert_ui_runtime::PresentationRate>
+pub fn pert_ui_runtime::Runtime::redock(&mut self, &pert_ui_runtime::NativeWindowId) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::select_window(&mut self, &pert_ui_runtime::NativeWindowId) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::service_inspection(&mut self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::service_intervals(&mut self, core::time::Duration) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::set_clipboard(&mut self, impl pert_ui_runtime::Clipboard + 'static) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::set_presentation_rate(&self, core::option::Option<pert_ui_runtime::PresentationRate>) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::set_wake_delivery(&self, impl core::ops::function::Fn() -> bool + core::marker::Send + core::marker::Sync + 'static)
+pub fn pert_ui_runtime::Runtime::set_window_visible(&mut self, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::take_presentation_requests(&self) -> core::result::Result<alloc::vec::Vec<pert_ui_runtime::PresentationRequest>, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::take_shutdown_errors(&mut self) -> alloc::vec::Vec<pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::text_input_state(&self) -> core::option::Option<(pert_ui_runtime::WidgetId, pert_ui_runtime::TextInputState)>
+pub fn pert_ui_runtime::Runtime::text_preedit(&mut self, &pert_ui_runtime::TextPreedit) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+impl !core::marker::Freeze for pert_ui_runtime::Runtime
+impl !core::marker::Send for pert_ui_runtime::Runtime
+impl !core::marker::Sync for pert_ui_runtime::Runtime
+impl core::marker::Unpin for pert_ui_runtime::Runtime
+impl core::marker::UnsafeUnpin for pert_ui_runtime::Runtime
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Runtime
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Runtime
+pub struct pert_ui_runtime::host::TextInputState
+pub pert_ui_runtime::host::TextInputState::caret: pert_ui_runtime::Rect
+pub pert_ui_runtime::host::TextInputState::session: u64
+impl core::clone::Clone for pert_ui_runtime::TextInputState
+pub fn pert_ui_runtime::TextInputState::clone(&self) -> pert_ui_runtime::TextInputState
+impl core::cmp::PartialEq for pert_ui_runtime::TextInputState
+pub fn pert_ui_runtime::TextInputState::eq(&self, &pert_ui_runtime::TextInputState) -> bool
+impl core::fmt::Debug for pert_ui_runtime::TextInputState
+pub fn pert_ui_runtime::TextInputState::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::TextInputState
+impl core::marker::StructuralPartialEq for pert_ui_runtime::TextInputState
+impl core::marker::Freeze for pert_ui_runtime::TextInputState
+impl core::marker::Send for pert_ui_runtime::TextInputState
+impl core::marker::Sync for pert_ui_runtime::TextInputState
+impl core::marker::Unpin for pert_ui_runtime::TextInputState
+impl core::marker::UnsafeUnpin for pert_ui_runtime::TextInputState
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::TextInputState
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::TextInputState
+pub struct pert_ui_runtime::host::TextPreedit
+impl pert_ui_runtime::TextPreedit
+pub fn pert_ui_runtime::TextPreedit::cursor_byte_range(&self) -> core::option::Option<core::ops::range::Range<usize>>
+pub fn pert_ui_runtime::TextPreedit::new(impl core::convert::Into<alloc::string::String>, core::option::Option<core::ops::range::Range<usize>>) -> core::result::Result<Self, pert_ui_runtime::TextEditError>
+pub fn pert_ui_runtime::TextPreedit::text(&self) -> &str
+impl core::clone::Clone for pert_ui_runtime::TextPreedit
+pub fn pert_ui_runtime::TextPreedit::clone(&self) -> pert_ui_runtime::TextPreedit
+impl core::cmp::Eq for pert_ui_runtime::TextPreedit
+impl core::cmp::PartialEq for pert_ui_runtime::TextPreedit
+pub fn pert_ui_runtime::TextPreedit::eq(&self, &pert_ui_runtime::TextPreedit) -> bool
+impl core::fmt::Debug for pert_ui_runtime::TextPreedit
+pub fn pert_ui_runtime::TextPreedit::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::TextPreedit
+impl core::marker::Freeze for pert_ui_runtime::TextPreedit
+impl core::marker::Send for pert_ui_runtime::TextPreedit
+impl core::marker::Sync for pert_ui_runtime::TextPreedit
+impl core::marker::Unpin for pert_ui_runtime::TextPreedit
+impl core::marker::UnsafeUnpin for pert_ui_runtime::TextPreedit
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::TextPreedit
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::TextPreedit
+pub struct pert_ui_runtime::host::Viewport
+impl pert_ui_runtime::Viewport
+pub fn pert_ui_runtime::Viewport::frame_extent(self) -> pert_ui_runtime::PhysicalExtent
+pub fn pert_ui_runtime::Viewport::from_physical(pert_ui_runtime::PhysicalExtent, f64) -> core::result::Result<Self, pert_ui_runtime::GeometryError>
+pub const fn pert_ui_runtime::Viewport::height(self) -> f32
+pub fn pert_ui_runtime::Viewport::new(f32, f32, f64) -> core::result::Result<Self, pert_ui_runtime::GeometryError>
+pub const fn pert_ui_runtime::Viewport::physical(self) -> core::option::Option<pert_ui_runtime::PhysicalExtent>
+pub const fn pert_ui_runtime::Viewport::scale(self) -> f64
+pub fn pert_ui_runtime::Viewport::to_logical(self, f64, f64) -> core::result::Result<pert_ui_runtime::Point, pert_ui_runtime::GeometryError>
+pub const fn pert_ui_runtime::Viewport::width(self) -> f32
+impl core::clone::Clone for pert_ui_runtime::Viewport
+pub fn pert_ui_runtime::Viewport::clone(&self) -> pert_ui_runtime::Viewport
+impl core::cmp::PartialEq for pert_ui_runtime::Viewport
+pub fn pert_ui_runtime::Viewport::eq(&self, &pert_ui_runtime::Viewport) -> bool
+impl core::default::Default for pert_ui_runtime::Viewport
+pub fn pert_ui_runtime::Viewport::default() -> Self
+impl core::fmt::Debug for pert_ui_runtime::Viewport
+pub fn pert_ui_runtime::Viewport::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::Viewport
+impl core::marker::StructuralPartialEq for pert_ui_runtime::Viewport
+impl core::marker::Freeze for pert_ui_runtime::Viewport
+impl core::marker::Send for pert_ui_runtime::Viewport
+impl core::marker::Sync for pert_ui_runtime::Viewport
+impl core::marker::Unpin for pert_ui_runtime::Viewport
+impl core::marker::UnsafeUnpin for pert_ui_runtime::Viewport
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Viewport
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Viewport
+pub struct pert_ui_runtime::host::WidgetId(_)
+impl core::clone::Clone for pert_ui_runtime::WidgetId
+pub fn pert_ui_runtime::WidgetId::clone(&self) -> pert_ui_runtime::WidgetId
+impl core::cmp::Eq for pert_ui_runtime::WidgetId
+impl core::cmp::PartialEq for pert_ui_runtime::WidgetId
+pub fn pert_ui_runtime::WidgetId::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::WidgetId
+pub fn pert_ui_runtime::WidgetId::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::WidgetId
+pub fn pert_ui_runtime::WidgetId::hash<H: core::hash::Hasher>(&self, &mut H)
+impl core::marker::Freeze for pert_ui_runtime::WidgetId
+impl !core::marker::Send for pert_ui_runtime::WidgetId
+impl !core::marker::Sync for pert_ui_runtime::WidgetId
+impl core::marker::Unpin for pert_ui_runtime::WidgetId
+impl core::marker::UnsafeUnpin for pert_ui_runtime::WidgetId
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::WidgetId
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::WidgetId
+pub trait pert_ui_runtime::host::Clipboard
+pub fn pert_ui_runtime::host::Clipboard::read_text(&mut self) -> core::result::Result<alloc::string::String, pert_ui_runtime::ClipboardError>
+pub fn pert_ui_runtime::host::Clipboard::write_text(&mut self, &str) -> core::result::Result<(), pert_ui_runtime::ClipboardError>
+pub trait pert_ui_runtime::host::HostIntegration: pert_ui_runtime::host::sealed::HostIntegrationSeal
+pub fn pert_ui_runtime::host::HostIntegration::application_deadline(&self) -> core::option::Option<core::time::Duration>
+pub fn pert_ui_runtime::host::HostIntegration::cancel_input(&mut self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::host::HostIntegration::capture_scene(&mut self, &pert_ui_runtime::CaptureJob) -> core::result::Result<pert_ui_runtime::DisplayList, pert_ui_runtime::CaptureError>
+pub fn pert_ui_runtime::host::HostIntegration::captures_supported(&self) -> bool
+pub fn pert_ui_runtime::host::HostIntegration::clear_focus(&mut self)
+pub fn pert_ui_runtime::host::HostIntegration::close_detached_window(&mut self) -> core::result::Result<pert_ui_runtime::PresentationStatus, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::host::HostIntegration::commit_detach(&mut self, pert_ui_runtime::PreparedDetach) -> core::result::Result<pert_ui_runtime::NativeWindowId, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::host::HostIntegration::complete_capture(&self, &pert_ui_runtime::CaptureJob, core::result::Result<pert_ui_runtime::FrameImage, pert_ui_runtime::CaptureError>) -> bool
+pub fn pert_ui_runtime::host::HostIntegration::current_window(&self) -> pert_ui_runtime::NativeWindowId
+pub fn pert_ui_runtime::host::HostIntegration::cursor_icon(&self) -> pert_ui_runtime::CursorIcon
+pub fn pert_ui_runtime::host::HostIntegration::flush_commands(&mut self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::host::HostIntegration::flush_windows(&mut self, core::time::Duration) -> core::result::Result<pert_ui_runtime::FlushReport, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::host::HostIntegration::has_command_requests(&self) -> bool
+pub fn pert_ui_runtime::host::HostIntegration::has_presentation_requests(&self) -> bool
+pub fn pert_ui_runtime::host::HostIntegration::interval_deadline(&self) -> core::option::Option<core::time::Duration>
+pub fn pert_ui_runtime::host::HostIntegration::invalidate(&self, &pert_ui_runtime::WidgetId, pert_ui_runtime::Invalidation) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::host::HostIntegration::native_window_options(&self) -> core::option::Option<&pert_ui_runtime::NativeWindowOptions>
+pub fn pert_ui_runtime::host::HostIntegration::needs_paint(&self) -> bool
+pub fn pert_ui_runtime::host::HostIntegration::pending_captures(&self) -> alloc::vec::Vec<pert_ui_runtime::CaptureJob>
+pub fn pert_ui_runtime::host::HostIntegration::prepare_detach(&mut self, &pert_ui_runtime::WidgetId, pert_ui_runtime::NativeWindowOptions) -> core::result::Result<pert_ui_runtime::PreparedDetach, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::host::HostIntegration::presentation_rate(&self) -> core::option::Option<pert_ui_runtime::PresentationRate>
+pub fn pert_ui_runtime::host::HostIntegration::redock(&mut self, &pert_ui_runtime::NativeWindowId) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::host::HostIntegration::select_window(&mut self, &pert_ui_runtime::NativeWindowId) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::host::HostIntegration::service_inspection(&mut self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::host::HostIntegration::service_intervals(&mut self, core::time::Duration) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::host::HostIntegration::set_clipboard(&mut self, impl pert_ui_runtime::Clipboard + 'static) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::host::HostIntegration::set_presentation_rate(&self, core::option::Option<pert_ui_runtime::PresentationRate>) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::host::HostIntegration::set_wake_delivery(&self, impl core::ops::function::Fn() -> bool + core::marker::Send + core::marker::Sync + 'static)
+pub fn pert_ui_runtime::host::HostIntegration::set_window_visible(&mut self, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::host::HostIntegration::take_presentation_requests(&self) -> core::result::Result<alloc::vec::Vec<pert_ui_runtime::PresentationRequest>, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::host::HostIntegration::take_shutdown_errors(&mut self) -> alloc::vec::Vec<pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::host::HostIntegration::text_input_state(&self) -> core::option::Option<(pert_ui_runtime::WidgetId, pert_ui_runtime::TextInputState)>
+pub fn pert_ui_runtime::host::HostIntegration::text_preedit(&mut self, &pert_ui_runtime::TextPreedit) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+impl pert_ui_runtime::host::HostIntegration for pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::Runtime::application_deadline(&self) -> core::option::Option<core::time::Duration>
+pub fn pert_ui_runtime::Runtime::cancel_input(&mut self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::capture_scene(&mut self, &pert_ui_runtime::CaptureJob) -> core::result::Result<pert_ui_runtime::DisplayList, pert_ui_runtime::CaptureError>
+pub fn pert_ui_runtime::Runtime::captures_supported(&self) -> bool
+pub fn pert_ui_runtime::Runtime::clear_focus(&mut self)
+pub fn pert_ui_runtime::Runtime::close_detached_window(&mut self) -> core::result::Result<pert_ui_runtime::PresentationStatus, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::commit_detach(&mut self, pert_ui_runtime::PreparedDetach) -> core::result::Result<pert_ui_runtime::NativeWindowId, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::complete_capture(&self, &pert_ui_runtime::CaptureJob, core::result::Result<pert_ui_runtime::FrameImage, pert_ui_runtime::CaptureError>) -> bool
+pub fn pert_ui_runtime::Runtime::current_window(&self) -> pert_ui_runtime::NativeWindowId
+pub fn pert_ui_runtime::Runtime::cursor_icon(&self) -> pert_ui_runtime::CursorIcon
+pub fn pert_ui_runtime::Runtime::flush_commands(&mut self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::flush_windows(&mut self, core::time::Duration) -> core::result::Result<pert_ui_runtime::FlushReport, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::has_command_requests(&self) -> bool
+pub fn pert_ui_runtime::Runtime::has_presentation_requests(&self) -> bool
+pub fn pert_ui_runtime::Runtime::interval_deadline(&self) -> core::option::Option<core::time::Duration>
+pub fn pert_ui_runtime::Runtime::invalidate(&self, &pert_ui_runtime::WidgetId, pert_ui_runtime::Invalidation) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::native_window_options(&self) -> core::option::Option<&pert_ui_runtime::NativeWindowOptions>
+pub fn pert_ui_runtime::Runtime::needs_paint(&self) -> bool
+pub fn pert_ui_runtime::Runtime::pending_captures(&self) -> alloc::vec::Vec<pert_ui_runtime::CaptureJob>
+pub fn pert_ui_runtime::Runtime::prepare_detach(&mut self, &pert_ui_runtime::WidgetId, pert_ui_runtime::NativeWindowOptions) -> core::result::Result<pert_ui_runtime::PreparedDetach, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::presentation_rate(&self) -> core::option::Option<pert_ui_runtime::PresentationRate>
+pub fn pert_ui_runtime::Runtime::redock(&mut self, &pert_ui_runtime::NativeWindowId) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::select_window(&mut self, &pert_ui_runtime::NativeWindowId) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::service_inspection(&mut self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::service_intervals(&mut self, core::time::Duration) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::set_clipboard(&mut self, impl pert_ui_runtime::Clipboard + 'static) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::set_presentation_rate(&self, core::option::Option<pert_ui_runtime::PresentationRate>) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::set_wake_delivery(&self, impl core::ops::function::Fn() -> bool + core::marker::Send + core::marker::Sync + 'static)
+pub fn pert_ui_runtime::Runtime::set_window_visible(&mut self, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::take_presentation_requests(&self) -> core::result::Result<alloc::vec::Vec<pert_ui_runtime::PresentationRequest>, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::take_shutdown_errors(&mut self) -> alloc::vec::Vec<pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::text_input_state(&self) -> core::option::Option<(pert_ui_runtime::WidgetId, pert_ui_runtime::TextInputState)>
+pub fn pert_ui_runtime::Runtime::text_preedit(&mut self, &pert_ui_runtime::TextPreedit) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub mod pert_ui_runtime::inspection
 #[non_exhaustive] pub enum pert_ui_runtime::inspection::CaptureError
 pub pert_ui_runtime::inspection::CaptureError::Backend(alloc::string::String)
@@ -18587,10 +20000,8 @@ pub struct pert_ui_runtime::prelude::Runtime
 impl pert_ui_runtime::Runtime
 pub const pert_ui_runtime::Runtime::MAX_BACKGROUND_TASKS: usize
 pub const pert_ui_runtime::Runtime::MAX_INTERVALS: usize
-pub fn pert_ui_runtime::Runtime::interval_deadline(&self) -> core::option::Option<core::time::Duration>
 pub fn pert_ui_runtime::Runtime::keep_alive<T: 'static>(&mut self, T)
 pub fn pert_ui_runtime::Runtime::last_failure(&self) -> core::option::Option<pert_ui_runtime::FailureSite>
-pub fn pert_ui_runtime::Runtime::service_intervals(&mut self, core::time::Duration) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::spawn<T: core::marker::Send + 'static>(&mut self, impl core::ops::function::FnOnce() -> T + core::marker::Send + 'static, impl core::ops::function::FnOnce(T) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::BackgroundTask, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::start_interval(&mut self, core::time::Duration, impl core::ops::function::FnMut(&mut pert_ui_runtime::Runtime) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::IntervalTimer, pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::Runtime
@@ -18598,8 +20009,6 @@ pub const pert_ui_runtime::Runtime::MAX_FLUSH_WAVES: usize
 pub const pert_ui_runtime::Runtime::MAX_OVERLAY_BOXES: usize
 pub const pert_ui_runtime::Runtime::MAX_OVERLAY_MARKERS: usize
 pub fn pert_ui_runtime::Runtime::can_focus(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Runtime::cancel_input(&mut self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Runtime::clear_focus(&mut self)
 pub fn pert_ui_runtime::Runtime::clear_profile(&self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::clipboard_text(&self) -> core::result::Result<alloc::string::String, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::debug_overlay(&self) -> pert_ui_runtime::DebugOverlay
@@ -18608,40 +20017,29 @@ pub fn pert_ui_runtime::Runtime::flush(&mut self, core::time::Duration) -> core:
 pub fn pert_ui_runtime::Runtime::focus(&mut self, &pert_ui_runtime::WidgetId) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::focused(&self) -> core::option::Option<pert_ui_runtime::WidgetId>
 pub fn pert_ui_runtime::Runtime::inspection_service(&self, pert_ui_core::live::Capacity) -> core::result::Result<pert_ui_runtime::InspectionService, pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Runtime::invalidate(&self, &pert_ui_runtime::WidgetId, pert_ui_runtime::Invalidation) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::key_input(&mut self, pert_ui_runtime::KeyCode, pert_ui_runtime::KeyAction) -> core::result::Result<pert_ui_runtime::KeyEvent, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::keyboard(&self) -> &pert_ui_runtime::KeyboardState
 pub fn pert_ui_runtime::Runtime::live_waker(&self) -> pert_ui_runtime::LiveWaker
 pub fn pert_ui_runtime::Runtime::mailbox<T: core::marker::Send + 'static>(&self, pert_ui_core::live::Capacity, impl core::ops::function::FnMut(T) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::Mailbox<T>, pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Runtime::mount(&mut self, impl core::convert::Into<alloc::string::String>, impl pert_ui_runtime::Component + 'static) -> core::result::Result<pert_ui_runtime::WidgetId, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::new() -> Self
 pub fn pert_ui_runtime::Runtime::next_deadline(&self) -> core::option::Option<core::time::Duration>
 pub fn pert_ui_runtime::Runtime::now(&self) -> core::time::Duration
 pub fn pert_ui_runtime::Runtime::profile(&self) -> pert_ui_runtime::ProfileSnapshot
 pub fn pert_ui_runtime::Runtime::series_source<T: pert_ui_core::live::item::LiveItem>(&self, pert_ui_core::live::series::SeriesConsumer<T>, pert_ui_runtime::Delivery) -> pert_ui_runtime::SeriesSource<T>
-pub fn pert_ui_runtime::Runtime::service_inspection(&mut self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Runtime::set_clipboard(&mut self, impl pert_ui_runtime::Clipboard + 'static) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::set_clipboard_text(&self, &str) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::set_debug_mode(&self, pert_ui_runtime::DebugMode)
 pub fn pert_ui_runtime::Runtime::set_debug_overlay(&self, pert_ui_runtime::DebugOverlay)
 pub fn pert_ui_runtime::Runtime::set_profiling(&self, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::set_viewport(&self, pert_ui_runtime::Viewport) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::set_visible(&mut self, &pert_ui_runtime::WidgetId, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Runtime::set_wake_delivery(&self, impl core::ops::function::Fn() -> bool + core::marker::Send + core::marker::Sync + 'static)
 pub fn pert_ui_runtime::Runtime::signal<T>(&self, T) -> pert_ui_runtime::Signal<T>
 pub fn pert_ui_runtime::Runtime::text_command(&mut self, &pert_ui_runtime::WidgetId, pert_ui_runtime::TextCommand) -> core::result::Result<pert_ui_runtime::TextCommandOutcome, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::text_input(&mut self, &str) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Runtime::text_input_state(&self) -> core::option::Option<(pert_ui_runtime::WidgetId, pert_ui_runtime::TextInputState)>
-pub fn pert_ui_runtime::Runtime::text_preedit(&mut self, &pert_ui_runtime::TextPreedit) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::try_event<R, E: core::fmt::Display>(&mut self, &pert_ui_runtime::WidgetId, impl core::ops::function::FnOnce(&mut pert_ui_runtime::EventContext) -> core::result::Result<R, E>) -> core::result::Result<core::result::Result<R, E>, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::unmount(&mut self, &pert_ui_runtime::WidgetId) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::validation_report(&self) -> pert_ui_runtime::ValidationReport
 impl pert_ui_runtime::Runtime
 pub const pert_ui_runtime::Runtime::MAX_PENDING_CAPTURES: usize
-pub fn pert_ui_runtime::Runtime::capture_scene(&mut self, &pert_ui_runtime::CaptureJob) -> core::result::Result<pert_ui_runtime::DisplayList, pert_ui_runtime::CaptureError>
-pub fn pert_ui_runtime::Runtime::captures_supported(&self) -> bool
-pub fn pert_ui_runtime::Runtime::complete_capture(&self, &pert_ui_runtime::CaptureJob, core::result::Result<pert_ui_runtime::FrameImage, pert_ui_runtime::CaptureError>) -> bool
-pub fn pert_ui_runtime::Runtime::pending_captures(&self) -> alloc::vec::Vec<pert_ui_runtime::CaptureJob>
 pub fn pert_ui_runtime::Runtime::request_capture(&self, pert_ui_runtime::CaptureRequest) -> pert_ui_runtime::Pending<core::result::Result<pert_ui_runtime::Capture, pert_ui_runtime::CaptureError>>
 pub fn pert_ui_runtime::Runtime::set_capture_support(&self, bool)
 impl pert_ui_runtime::Runtime
@@ -18656,23 +20054,16 @@ pub const pert_ui_runtime::Runtime::MAX_TASKS: usize
 pub fn pert_ui_runtime::Runtime::defer(&self, impl core::ops::function::FnOnce(&mut Self) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::Runtime
 pub const pert_ui_runtime::Runtime::MAX_WINDOW_REQUESTS: usize
-pub fn pert_ui_runtime::Runtime::close_detached_window(&mut self) -> core::result::Result<pert_ui_runtime::PresentationStatus, pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Runtime::has_presentation_requests(&self) -> bool
 pub fn pert_ui_runtime::Runtime::read_signal<T: core::clone::Clone + 'static>(&self, &pert_ui_runtime::ReadSignal<T>) -> core::result::Result<T, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::request_close(&self, &pert_ui_runtime::NativeWindowId) -> core::result::Result<pert_ui_runtime::PresentationReceipt, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::request_detach(&self, &pert_ui_runtime::WidgetId, pert_ui_runtime::NativeWindowOptions) -> core::result::Result<pert_ui_runtime::PresentationReceipt, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::request_redock(&self, &pert_ui_runtime::NativeWindowId) -> core::result::Result<pert_ui_runtime::PresentationReceipt, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::request_window_title(&self, &pert_ui_runtime::NativeWindowId, impl core::convert::Into<alloc::string::String>) -> core::result::Result<pert_ui_runtime::PresentationReceipt, pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Runtime::take_presentation_requests(&self) -> core::result::Result<alloc::vec::Vec<pert_ui_runtime::PresentationRequest>, pert_ui_runtime::RuntimeError>
-impl pert_ui_runtime::Runtime
-pub fn pert_ui_runtime::Runtime::application_deadline(&self) -> core::option::Option<core::time::Duration>
-pub fn pert_ui_runtime::Runtime::flush_windows(&mut self, core::time::Duration) -> core::result::Result<pert_ui_runtime::FlushReport, pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::Runtime
 pub fn pert_ui_runtime::Runtime::bounds(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<core::option::Option<pert_ui_runtime::Rect>, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::children(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<alloc::vec::Vec<pert_ui_runtime::WidgetId>, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::find(&self, &pert_ui_runtime::WidgetId, &[&str]) -> core::result::Result<core::option::Option<pert_ui_runtime::WidgetId>, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::find_descendant(&self, &pert_ui_runtime::WidgetId, &str) -> core::result::Result<core::option::Option<pert_ui_runtime::WidgetId>, pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Runtime::find_path(&self, &pert_ui_runtime::WidgetId, &[&str]) -> core::result::Result<core::option::Option<pert_ui_runtime::WidgetId>, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::inspection_id(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<u64, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::key(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<&str, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::mount_tree(&mut self, pert_ui_runtime::Element) -> core::result::Result<pert_ui_runtime::WidgetId, pert_ui_runtime::RuntimeError>
@@ -18706,46 +20097,32 @@ pub fn pert_ui_runtime::Runtime::set_command_target(&mut self, core::option::Opt
 pub fn pert_ui_runtime::Runtime::unregister_command(&mut self, &pert_ui_runtime::CommandId) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::Runtime
 pub fn pert_ui_runtime::Runtime::command_enabled_signal(&mut self, &pert_ui_runtime::CommandId, impl core::convert::Into<pert_ui_runtime::ReadSignal<bool>>) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Runtime::flush_commands(&mut self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Runtime::has_command_requests(&self) -> bool
 impl pert_ui_runtime::Runtime
-pub fn pert_ui_runtime::Runtime::commit_detach(&mut self, pert_ui_runtime::PreparedDetach) -> core::result::Result<pert_ui_runtime::NativeWindowId, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::contains_window(&self, &pert_ui_runtime::NativeWindowId) -> bool
-pub fn pert_ui_runtime::Runtime::current_window(&self) -> pert_ui_runtime::NativeWindowId
 pub fn pert_ui_runtime::Runtime::detached_view(&self) -> core::option::Option<pert_ui_runtime::WidgetId>
-pub fn pert_ui_runtime::Runtime::native_window_options(&self) -> core::option::Option<&pert_ui_runtime::NativeWindowOptions>
 pub fn pert_ui_runtime::Runtime::native_windows(&self) -> alloc::vec::Vec<pert_ui_runtime::NativeWindowId>
-pub fn pert_ui_runtime::Runtime::prepare_detach(&mut self, &pert_ui_runtime::WidgetId, pert_ui_runtime::NativeWindowOptions) -> core::result::Result<pert_ui_runtime::PreparedDetach, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::primary_window(&self) -> pert_ui_runtime::NativeWindowId
-pub fn pert_ui_runtime::Runtime::redock(&mut self, &pert_ui_runtime::NativeWindowId) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Runtime::select_window(&mut self, &pert_ui_runtime::NativeWindowId) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Runtime::set_window_visible(&mut self, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::window_of(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<pert_ui_runtime::NativeWindowId, pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::Runtime
 pub fn pert_ui_runtime::Runtime::content_search(&self, pert_ui_runtime::ContentQuery) -> pert_ui_runtime::ContentSearch
 pub fn pert_ui_runtime::Runtime::jump_to_content(&mut self, &pert_ui_runtime::ContentTarget) -> core::result::Result<pert_ui_runtime::ContentJump, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::resume_content_jump(&mut self, &pert_ui_runtime::PendingJump) -> core::result::Result<pert_ui_runtime::ContentJump, pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::Runtime
-pub fn pert_ui_runtime::Runtime::cursor_icon(&self) -> pert_ui_runtime::CursorIcon
+pub fn pert_ui_runtime::Runtime::drag_active(&self) -> bool
+impl pert_ui_runtime::Runtime
 pub fn pert_ui_runtime::Runtime::focus_next(&mut self, pert_ui_runtime::FocusDirection) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::pointer_input(&mut self, pert_ui_runtime::PointerEvent) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError>
-impl pert_ui_runtime::Runtime
-pub fn pert_ui_runtime::Runtime::drag_active(&self) -> bool
 impl pert_ui_runtime::Runtime
 pub fn pert_ui_runtime::Runtime::fonts(&self) -> pert_ui_runtime::FontManager
 pub fn pert_ui_runtime::Runtime::icons(&self) -> pert_ui_runtime::IconManager
 impl pert_ui_runtime::Runtime
 pub fn pert_ui_runtime::Runtime::native_modifiers(&mut self, pert_ui_runtime::Modifiers) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::Runtime
-pub fn pert_ui_runtime::Runtime::needs_paint(&self) -> bool
 pub fn pert_ui_runtime::Runtime::paint(&mut self) -> core::result::Result<pert_ui_runtime::DisplayList, pert_ui_runtime::DrawError>
 impl pert_ui_runtime::Runtime
 pub fn pert_ui_runtime::Runtime::parameter<T: pert_ui_core::family::ParameterValue>(&mut self, pert_ui_core::parameter_id::ParameterId, pert_ui_core::parameter::ParameterSpec<T>) -> core::result::Result<(pert_ui_runtime::Parameter<T>, pert_ui_runtime::ParameterHost<T>), pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::Runtime
 pub fn pert_ui_runtime::Runtime::parameter_any(&mut self, pert_ui_core::parameter_id::ParameterId, pert_ui_core::erased::AnySpec) -> core::result::Result<(pert_ui_runtime::AnyParameter, pert_ui_runtime::AnyParameterHost), pert_ui_runtime::RuntimeError>
-impl pert_ui_runtime::Runtime
-pub fn pert_ui_runtime::Runtime::presentation_rate(&self) -> core::option::Option<pert_ui_runtime::PresentationRate>
-pub fn pert_ui_runtime::Runtime::set_presentation_rate(&self, core::option::Option<pert_ui_runtime::PresentationRate>) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::Runtime
 pub fn pert_ui_runtime::Runtime::register_held_input(&mut self, &pert_ui_runtime::WidgetId, alloc::vec::Vec<pert_ui_runtime::KeyCode>, pert_ui_runtime::Modifiers, impl core::ops::function::FnMut(pert_ui_runtime::KeyCode, pert_ui_runtime::KeyTransition, &pert_ui_runtime::CommandContext) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError> + 'static, impl core::ops::function::FnMut(pert_ui_runtime::KeyCode, pert_ui_runtime::HeldCancellation) + 'static) -> core::result::Result<pert_ui_runtime::HeldInputId, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::unregister_held_input(&mut self, &pert_ui_runtime::HeldInputId) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
@@ -18753,7 +20130,6 @@ impl pert_ui_runtime::Runtime
 pub fn pert_ui_runtime::Runtime::remote_parameter<T: pert_ui_core::family::ParameterValue>(&mut self, pert_ui_core::parameter_id::ParameterId, pert_ui_core::parameter::ParameterSpec<T>) -> core::result::Result<(pert_ui_runtime::Parameter<T>, pert_ui_runtime::RemoteHost<T>), pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::Runtime
 pub fn pert_ui_runtime::Runtime::shutdown(&mut self)
-pub fn pert_ui_runtime::Runtime::take_shutdown_errors(&mut self) -> alloc::vec::Vec<pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::Runtime
 pub fn pert_ui_runtime::Runtime::theme(&self) -> pert_ui_runtime::ThemeManager
 impl pert_ui_runtime::Runtime
@@ -18768,6 +20144,40 @@ pub fn pert_ui_runtime::Runtime::drop(&mut self)
 impl pert_ui_runtime::StateOwner for pert_ui_runtime::Runtime
 pub fn pert_ui_runtime::Runtime::signal<T>(&self, T) -> pert_ui_runtime::Signal<T>
 pub fn pert_ui_runtime::Runtime::ui_settings(&self) -> pert_ui_runtime::UiSettings
+impl pert_ui_runtime::host::HostIntegration for pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::Runtime::application_deadline(&self) -> core::option::Option<core::time::Duration>
+pub fn pert_ui_runtime::Runtime::cancel_input(&mut self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::capture_scene(&mut self, &pert_ui_runtime::CaptureJob) -> core::result::Result<pert_ui_runtime::DisplayList, pert_ui_runtime::CaptureError>
+pub fn pert_ui_runtime::Runtime::captures_supported(&self) -> bool
+pub fn pert_ui_runtime::Runtime::clear_focus(&mut self)
+pub fn pert_ui_runtime::Runtime::close_detached_window(&mut self) -> core::result::Result<pert_ui_runtime::PresentationStatus, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::commit_detach(&mut self, pert_ui_runtime::PreparedDetach) -> core::result::Result<pert_ui_runtime::NativeWindowId, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::complete_capture(&self, &pert_ui_runtime::CaptureJob, core::result::Result<pert_ui_runtime::FrameImage, pert_ui_runtime::CaptureError>) -> bool
+pub fn pert_ui_runtime::Runtime::current_window(&self) -> pert_ui_runtime::NativeWindowId
+pub fn pert_ui_runtime::Runtime::cursor_icon(&self) -> pert_ui_runtime::CursorIcon
+pub fn pert_ui_runtime::Runtime::flush_commands(&mut self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::flush_windows(&mut self, core::time::Duration) -> core::result::Result<pert_ui_runtime::FlushReport, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::has_command_requests(&self) -> bool
+pub fn pert_ui_runtime::Runtime::has_presentation_requests(&self) -> bool
+pub fn pert_ui_runtime::Runtime::interval_deadline(&self) -> core::option::Option<core::time::Duration>
+pub fn pert_ui_runtime::Runtime::invalidate(&self, &pert_ui_runtime::WidgetId, pert_ui_runtime::Invalidation) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::native_window_options(&self) -> core::option::Option<&pert_ui_runtime::NativeWindowOptions>
+pub fn pert_ui_runtime::Runtime::needs_paint(&self) -> bool
+pub fn pert_ui_runtime::Runtime::pending_captures(&self) -> alloc::vec::Vec<pert_ui_runtime::CaptureJob>
+pub fn pert_ui_runtime::Runtime::prepare_detach(&mut self, &pert_ui_runtime::WidgetId, pert_ui_runtime::NativeWindowOptions) -> core::result::Result<pert_ui_runtime::PreparedDetach, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::presentation_rate(&self) -> core::option::Option<pert_ui_runtime::PresentationRate>
+pub fn pert_ui_runtime::Runtime::redock(&mut self, &pert_ui_runtime::NativeWindowId) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::select_window(&mut self, &pert_ui_runtime::NativeWindowId) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::service_inspection(&mut self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::service_intervals(&mut self, core::time::Duration) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::set_clipboard(&mut self, impl pert_ui_runtime::Clipboard + 'static) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::set_presentation_rate(&self, core::option::Option<pert_ui_runtime::PresentationRate>) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::set_wake_delivery(&self, impl core::ops::function::Fn() -> bool + core::marker::Send + core::marker::Sync + 'static)
+pub fn pert_ui_runtime::Runtime::set_window_visible(&mut self, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::take_presentation_requests(&self) -> core::result::Result<alloc::vec::Vec<pert_ui_runtime::PresentationRequest>, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::take_shutdown_errors(&mut self) -> alloc::vec::Vec<pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::text_input_state(&self) -> core::option::Option<(pert_ui_runtime::WidgetId, pert_ui_runtime::TextInputState)>
+pub fn pert_ui_runtime::Runtime::text_preedit(&mut self, &pert_ui_runtime::TextPreedit) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 impl !core::marker::Freeze for pert_ui_runtime::Runtime
 impl !core::marker::Send for pert_ui_runtime::Runtime
 impl !core::marker::Sync for pert_ui_runtime::Runtime
@@ -21462,6 +22872,74 @@ impl core::marker::Unpin for pert_ui_runtime::Viewport
 impl core::marker::UnsafeUnpin for pert_ui_runtime::Viewport
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Viewport
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Viewport
+pub trait pert_ui_runtime::testing::HostIntegration: pert_ui_runtime::host::sealed::HostIntegrationSeal
+pub fn pert_ui_runtime::testing::HostIntegration::application_deadline(&self) -> core::option::Option<core::time::Duration>
+pub fn pert_ui_runtime::testing::HostIntegration::cancel_input(&mut self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::testing::HostIntegration::capture_scene(&mut self, &pert_ui_runtime::CaptureJob) -> core::result::Result<pert_ui_runtime::DisplayList, pert_ui_runtime::CaptureError>
+pub fn pert_ui_runtime::testing::HostIntegration::captures_supported(&self) -> bool
+pub fn pert_ui_runtime::testing::HostIntegration::clear_focus(&mut self)
+pub fn pert_ui_runtime::testing::HostIntegration::close_detached_window(&mut self) -> core::result::Result<pert_ui_runtime::PresentationStatus, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::testing::HostIntegration::commit_detach(&mut self, pert_ui_runtime::PreparedDetach) -> core::result::Result<pert_ui_runtime::NativeWindowId, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::testing::HostIntegration::complete_capture(&self, &pert_ui_runtime::CaptureJob, core::result::Result<pert_ui_runtime::FrameImage, pert_ui_runtime::CaptureError>) -> bool
+pub fn pert_ui_runtime::testing::HostIntegration::current_window(&self) -> pert_ui_runtime::NativeWindowId
+pub fn pert_ui_runtime::testing::HostIntegration::cursor_icon(&self) -> pert_ui_runtime::CursorIcon
+pub fn pert_ui_runtime::testing::HostIntegration::flush_commands(&mut self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::testing::HostIntegration::flush_windows(&mut self, core::time::Duration) -> core::result::Result<pert_ui_runtime::FlushReport, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::testing::HostIntegration::has_command_requests(&self) -> bool
+pub fn pert_ui_runtime::testing::HostIntegration::has_presentation_requests(&self) -> bool
+pub fn pert_ui_runtime::testing::HostIntegration::interval_deadline(&self) -> core::option::Option<core::time::Duration>
+pub fn pert_ui_runtime::testing::HostIntegration::invalidate(&self, &pert_ui_runtime::WidgetId, pert_ui_runtime::Invalidation) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::testing::HostIntegration::native_window_options(&self) -> core::option::Option<&pert_ui_runtime::NativeWindowOptions>
+pub fn pert_ui_runtime::testing::HostIntegration::needs_paint(&self) -> bool
+pub fn pert_ui_runtime::testing::HostIntegration::pending_captures(&self) -> alloc::vec::Vec<pert_ui_runtime::CaptureJob>
+pub fn pert_ui_runtime::testing::HostIntegration::prepare_detach(&mut self, &pert_ui_runtime::WidgetId, pert_ui_runtime::NativeWindowOptions) -> core::result::Result<pert_ui_runtime::PreparedDetach, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::testing::HostIntegration::presentation_rate(&self) -> core::option::Option<pert_ui_runtime::PresentationRate>
+pub fn pert_ui_runtime::testing::HostIntegration::redock(&mut self, &pert_ui_runtime::NativeWindowId) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::testing::HostIntegration::select_window(&mut self, &pert_ui_runtime::NativeWindowId) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::testing::HostIntegration::service_inspection(&mut self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::testing::HostIntegration::service_intervals(&mut self, core::time::Duration) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::testing::HostIntegration::set_clipboard(&mut self, impl pert_ui_runtime::Clipboard + 'static) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::testing::HostIntegration::set_presentation_rate(&self, core::option::Option<pert_ui_runtime::PresentationRate>) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::testing::HostIntegration::set_wake_delivery(&self, impl core::ops::function::Fn() -> bool + core::marker::Send + core::marker::Sync + 'static)
+pub fn pert_ui_runtime::testing::HostIntegration::set_window_visible(&mut self, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::testing::HostIntegration::take_presentation_requests(&self) -> core::result::Result<alloc::vec::Vec<pert_ui_runtime::PresentationRequest>, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::testing::HostIntegration::take_shutdown_errors(&mut self) -> alloc::vec::Vec<pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::testing::HostIntegration::text_input_state(&self) -> core::option::Option<(pert_ui_runtime::WidgetId, pert_ui_runtime::TextInputState)>
+pub fn pert_ui_runtime::testing::HostIntegration::text_preedit(&mut self, &pert_ui_runtime::TextPreedit) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+impl pert_ui_runtime::host::HostIntegration for pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::Runtime::application_deadline(&self) -> core::option::Option<core::time::Duration>
+pub fn pert_ui_runtime::Runtime::cancel_input(&mut self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::capture_scene(&mut self, &pert_ui_runtime::CaptureJob) -> core::result::Result<pert_ui_runtime::DisplayList, pert_ui_runtime::CaptureError>
+pub fn pert_ui_runtime::Runtime::captures_supported(&self) -> bool
+pub fn pert_ui_runtime::Runtime::clear_focus(&mut self)
+pub fn pert_ui_runtime::Runtime::close_detached_window(&mut self) -> core::result::Result<pert_ui_runtime::PresentationStatus, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::commit_detach(&mut self, pert_ui_runtime::PreparedDetach) -> core::result::Result<pert_ui_runtime::NativeWindowId, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::complete_capture(&self, &pert_ui_runtime::CaptureJob, core::result::Result<pert_ui_runtime::FrameImage, pert_ui_runtime::CaptureError>) -> bool
+pub fn pert_ui_runtime::Runtime::current_window(&self) -> pert_ui_runtime::NativeWindowId
+pub fn pert_ui_runtime::Runtime::cursor_icon(&self) -> pert_ui_runtime::CursorIcon
+pub fn pert_ui_runtime::Runtime::flush_commands(&mut self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::flush_windows(&mut self, core::time::Duration) -> core::result::Result<pert_ui_runtime::FlushReport, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::has_command_requests(&self) -> bool
+pub fn pert_ui_runtime::Runtime::has_presentation_requests(&self) -> bool
+pub fn pert_ui_runtime::Runtime::interval_deadline(&self) -> core::option::Option<core::time::Duration>
+pub fn pert_ui_runtime::Runtime::invalidate(&self, &pert_ui_runtime::WidgetId, pert_ui_runtime::Invalidation) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::native_window_options(&self) -> core::option::Option<&pert_ui_runtime::NativeWindowOptions>
+pub fn pert_ui_runtime::Runtime::needs_paint(&self) -> bool
+pub fn pert_ui_runtime::Runtime::pending_captures(&self) -> alloc::vec::Vec<pert_ui_runtime::CaptureJob>
+pub fn pert_ui_runtime::Runtime::prepare_detach(&mut self, &pert_ui_runtime::WidgetId, pert_ui_runtime::NativeWindowOptions) -> core::result::Result<pert_ui_runtime::PreparedDetach, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::presentation_rate(&self) -> core::option::Option<pert_ui_runtime::PresentationRate>
+pub fn pert_ui_runtime::Runtime::redock(&mut self, &pert_ui_runtime::NativeWindowId) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::select_window(&mut self, &pert_ui_runtime::NativeWindowId) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::service_inspection(&mut self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::service_intervals(&mut self, core::time::Duration) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::set_clipboard(&mut self, impl pert_ui_runtime::Clipboard + 'static) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::set_presentation_rate(&self, core::option::Option<pert_ui_runtime::PresentationRate>) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::set_wake_delivery(&self, impl core::ops::function::Fn() -> bool + core::marker::Send + core::marker::Sync + 'static)
+pub fn pert_ui_runtime::Runtime::set_window_visible(&mut self, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::take_presentation_requests(&self) -> core::result::Result<alloc::vec::Vec<pert_ui_runtime::PresentationRequest>, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::take_shutdown_errors(&mut self) -> alloc::vec::Vec<pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::text_input_state(&self) -> core::option::Option<(pert_ui_runtime::WidgetId, pert_ui_runtime::TextInputState)>
+pub fn pert_ui_runtime::Runtime::text_preedit(&mut self, &pert_ui_runtime::TextPreedit) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub mod pert_ui_runtime::windowing
 pub use pert_ui_runtime::windowing::NormalizedValue
 pub enum pert_ui_runtime::windowing::DetachedClosePolicy
@@ -33611,7 +35089,7 @@ pub fn pert_ui_runtime::Painter::icon(&mut self, impl core::convert::Into<pert_u
 pub fn pert_ui_runtime::Painter::icon_turned(&mut self, impl core::convert::Into<pert_ui_runtime::IconSource>, pert_ui_runtime::Rect, pert_ui_runtime::Color, pert_ui_runtime::QuarterTurn) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Painter::metric(&self, pert_ui_runtime::MetricRole) -> f32
 pub fn pert_ui_runtime::Painter::rich_text(&self, &pert_ui_runtime::RichText, core::option::Option<f32>, pert_ui_runtime::TextStyle) -> core::result::Result<pert_ui_runtime::TextLayout, pert_ui_runtime::DrawError>
-pub const fn pert_ui_runtime::Painter::size(&self) -> core::option::Option<pert_ui_runtime::Size>
+pub const fn pert_ui_runtime::Painter::size(&self) -> pert_ui_runtime::Size
 pub fn pert_ui_runtime::Painter::text(&self, &str, core::option::Option<f32>, pert_ui_runtime::TextStyle) -> core::result::Result<pert_ui_runtime::TextLayout, pert_ui_runtime::DrawError>
 pub const fn pert_ui_runtime::Painter::view_scale(&self) -> f32
 pub const fn pert_ui_runtime::Painter::viewport(&self) -> pert_ui_runtime::Viewport
@@ -35022,10 +36500,8 @@ pub struct pert_ui_runtime::Runtime
 impl pert_ui_runtime::Runtime
 pub const pert_ui_runtime::Runtime::MAX_BACKGROUND_TASKS: usize
 pub const pert_ui_runtime::Runtime::MAX_INTERVALS: usize
-pub fn pert_ui_runtime::Runtime::interval_deadline(&self) -> core::option::Option<core::time::Duration>
 pub fn pert_ui_runtime::Runtime::keep_alive<T: 'static>(&mut self, T)
 pub fn pert_ui_runtime::Runtime::last_failure(&self) -> core::option::Option<pert_ui_runtime::FailureSite>
-pub fn pert_ui_runtime::Runtime::service_intervals(&mut self, core::time::Duration) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::spawn<T: core::marker::Send + 'static>(&mut self, impl core::ops::function::FnOnce() -> T + core::marker::Send + 'static, impl core::ops::function::FnOnce(T) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::BackgroundTask, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::start_interval(&mut self, core::time::Duration, impl core::ops::function::FnMut(&mut pert_ui_runtime::Runtime) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::IntervalTimer, pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::Runtime
@@ -35033,8 +36509,6 @@ pub const pert_ui_runtime::Runtime::MAX_FLUSH_WAVES: usize
 pub const pert_ui_runtime::Runtime::MAX_OVERLAY_BOXES: usize
 pub const pert_ui_runtime::Runtime::MAX_OVERLAY_MARKERS: usize
 pub fn pert_ui_runtime::Runtime::can_focus(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Runtime::cancel_input(&mut self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Runtime::clear_focus(&mut self)
 pub fn pert_ui_runtime::Runtime::clear_profile(&self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::clipboard_text(&self) -> core::result::Result<alloc::string::String, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::debug_overlay(&self) -> pert_ui_runtime::DebugOverlay
@@ -35043,40 +36517,29 @@ pub fn pert_ui_runtime::Runtime::flush(&mut self, core::time::Duration) -> core:
 pub fn pert_ui_runtime::Runtime::focus(&mut self, &pert_ui_runtime::WidgetId) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::focused(&self) -> core::option::Option<pert_ui_runtime::WidgetId>
 pub fn pert_ui_runtime::Runtime::inspection_service(&self, pert_ui_core::live::Capacity) -> core::result::Result<pert_ui_runtime::InspectionService, pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Runtime::invalidate(&self, &pert_ui_runtime::WidgetId, pert_ui_runtime::Invalidation) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::key_input(&mut self, pert_ui_runtime::KeyCode, pert_ui_runtime::KeyAction) -> core::result::Result<pert_ui_runtime::KeyEvent, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::keyboard(&self) -> &pert_ui_runtime::KeyboardState
 pub fn pert_ui_runtime::Runtime::live_waker(&self) -> pert_ui_runtime::LiveWaker
 pub fn pert_ui_runtime::Runtime::mailbox<T: core::marker::Send + 'static>(&self, pert_ui_core::live::Capacity, impl core::ops::function::FnMut(T) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::Mailbox<T>, pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Runtime::mount(&mut self, impl core::convert::Into<alloc::string::String>, impl pert_ui_runtime::Component + 'static) -> core::result::Result<pert_ui_runtime::WidgetId, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::new() -> Self
 pub fn pert_ui_runtime::Runtime::next_deadline(&self) -> core::option::Option<core::time::Duration>
 pub fn pert_ui_runtime::Runtime::now(&self) -> core::time::Duration
 pub fn pert_ui_runtime::Runtime::profile(&self) -> pert_ui_runtime::ProfileSnapshot
 pub fn pert_ui_runtime::Runtime::series_source<T: pert_ui_core::live::item::LiveItem>(&self, pert_ui_core::live::series::SeriesConsumer<T>, pert_ui_runtime::Delivery) -> pert_ui_runtime::SeriesSource<T>
-pub fn pert_ui_runtime::Runtime::service_inspection(&mut self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Runtime::set_clipboard(&mut self, impl pert_ui_runtime::Clipboard + 'static) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::set_clipboard_text(&self, &str) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::set_debug_mode(&self, pert_ui_runtime::DebugMode)
 pub fn pert_ui_runtime::Runtime::set_debug_overlay(&self, pert_ui_runtime::DebugOverlay)
 pub fn pert_ui_runtime::Runtime::set_profiling(&self, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::set_viewport(&self, pert_ui_runtime::Viewport) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::set_visible(&mut self, &pert_ui_runtime::WidgetId, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Runtime::set_wake_delivery(&self, impl core::ops::function::Fn() -> bool + core::marker::Send + core::marker::Sync + 'static)
 pub fn pert_ui_runtime::Runtime::signal<T>(&self, T) -> pert_ui_runtime::Signal<T>
 pub fn pert_ui_runtime::Runtime::text_command(&mut self, &pert_ui_runtime::WidgetId, pert_ui_runtime::TextCommand) -> core::result::Result<pert_ui_runtime::TextCommandOutcome, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::text_input(&mut self, &str) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Runtime::text_input_state(&self) -> core::option::Option<(pert_ui_runtime::WidgetId, pert_ui_runtime::TextInputState)>
-pub fn pert_ui_runtime::Runtime::text_preedit(&mut self, &pert_ui_runtime::TextPreedit) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::try_event<R, E: core::fmt::Display>(&mut self, &pert_ui_runtime::WidgetId, impl core::ops::function::FnOnce(&mut pert_ui_runtime::EventContext) -> core::result::Result<R, E>) -> core::result::Result<core::result::Result<R, E>, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::unmount(&mut self, &pert_ui_runtime::WidgetId) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::validation_report(&self) -> pert_ui_runtime::ValidationReport
 impl pert_ui_runtime::Runtime
 pub const pert_ui_runtime::Runtime::MAX_PENDING_CAPTURES: usize
-pub fn pert_ui_runtime::Runtime::capture_scene(&mut self, &pert_ui_runtime::CaptureJob) -> core::result::Result<pert_ui_runtime::DisplayList, pert_ui_runtime::CaptureError>
-pub fn pert_ui_runtime::Runtime::captures_supported(&self) -> bool
-pub fn pert_ui_runtime::Runtime::complete_capture(&self, &pert_ui_runtime::CaptureJob, core::result::Result<pert_ui_runtime::FrameImage, pert_ui_runtime::CaptureError>) -> bool
-pub fn pert_ui_runtime::Runtime::pending_captures(&self) -> alloc::vec::Vec<pert_ui_runtime::CaptureJob>
 pub fn pert_ui_runtime::Runtime::request_capture(&self, pert_ui_runtime::CaptureRequest) -> pert_ui_runtime::Pending<core::result::Result<pert_ui_runtime::Capture, pert_ui_runtime::CaptureError>>
 pub fn pert_ui_runtime::Runtime::set_capture_support(&self, bool)
 impl pert_ui_runtime::Runtime
@@ -35091,23 +36554,16 @@ pub const pert_ui_runtime::Runtime::MAX_TASKS: usize
 pub fn pert_ui_runtime::Runtime::defer(&self, impl core::ops::function::FnOnce(&mut Self) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::Runtime
 pub const pert_ui_runtime::Runtime::MAX_WINDOW_REQUESTS: usize
-pub fn pert_ui_runtime::Runtime::close_detached_window(&mut self) -> core::result::Result<pert_ui_runtime::PresentationStatus, pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Runtime::has_presentation_requests(&self) -> bool
 pub fn pert_ui_runtime::Runtime::read_signal<T: core::clone::Clone + 'static>(&self, &pert_ui_runtime::ReadSignal<T>) -> core::result::Result<T, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::request_close(&self, &pert_ui_runtime::NativeWindowId) -> core::result::Result<pert_ui_runtime::PresentationReceipt, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::request_detach(&self, &pert_ui_runtime::WidgetId, pert_ui_runtime::NativeWindowOptions) -> core::result::Result<pert_ui_runtime::PresentationReceipt, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::request_redock(&self, &pert_ui_runtime::NativeWindowId) -> core::result::Result<pert_ui_runtime::PresentationReceipt, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::request_window_title(&self, &pert_ui_runtime::NativeWindowId, impl core::convert::Into<alloc::string::String>) -> core::result::Result<pert_ui_runtime::PresentationReceipt, pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Runtime::take_presentation_requests(&self) -> core::result::Result<alloc::vec::Vec<pert_ui_runtime::PresentationRequest>, pert_ui_runtime::RuntimeError>
-impl pert_ui_runtime::Runtime
-pub fn pert_ui_runtime::Runtime::application_deadline(&self) -> core::option::Option<core::time::Duration>
-pub fn pert_ui_runtime::Runtime::flush_windows(&mut self, core::time::Duration) -> core::result::Result<pert_ui_runtime::FlushReport, pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::Runtime
 pub fn pert_ui_runtime::Runtime::bounds(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<core::option::Option<pert_ui_runtime::Rect>, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::children(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<alloc::vec::Vec<pert_ui_runtime::WidgetId>, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::find(&self, &pert_ui_runtime::WidgetId, &[&str]) -> core::result::Result<core::option::Option<pert_ui_runtime::WidgetId>, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::find_descendant(&self, &pert_ui_runtime::WidgetId, &str) -> core::result::Result<core::option::Option<pert_ui_runtime::WidgetId>, pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Runtime::find_path(&self, &pert_ui_runtime::WidgetId, &[&str]) -> core::result::Result<core::option::Option<pert_ui_runtime::WidgetId>, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::inspection_id(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<u64, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::key(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<&str, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::mount_tree(&mut self, pert_ui_runtime::Element) -> core::result::Result<pert_ui_runtime::WidgetId, pert_ui_runtime::RuntimeError>
@@ -35141,46 +36597,32 @@ pub fn pert_ui_runtime::Runtime::set_command_target(&mut self, core::option::Opt
 pub fn pert_ui_runtime::Runtime::unregister_command(&mut self, &pert_ui_runtime::CommandId) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::Runtime
 pub fn pert_ui_runtime::Runtime::command_enabled_signal(&mut self, &pert_ui_runtime::CommandId, impl core::convert::Into<pert_ui_runtime::ReadSignal<bool>>) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Runtime::flush_commands(&mut self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Runtime::has_command_requests(&self) -> bool
 impl pert_ui_runtime::Runtime
-pub fn pert_ui_runtime::Runtime::commit_detach(&mut self, pert_ui_runtime::PreparedDetach) -> core::result::Result<pert_ui_runtime::NativeWindowId, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::contains_window(&self, &pert_ui_runtime::NativeWindowId) -> bool
-pub fn pert_ui_runtime::Runtime::current_window(&self) -> pert_ui_runtime::NativeWindowId
 pub fn pert_ui_runtime::Runtime::detached_view(&self) -> core::option::Option<pert_ui_runtime::WidgetId>
-pub fn pert_ui_runtime::Runtime::native_window_options(&self) -> core::option::Option<&pert_ui_runtime::NativeWindowOptions>
 pub fn pert_ui_runtime::Runtime::native_windows(&self) -> alloc::vec::Vec<pert_ui_runtime::NativeWindowId>
-pub fn pert_ui_runtime::Runtime::prepare_detach(&mut self, &pert_ui_runtime::WidgetId, pert_ui_runtime::NativeWindowOptions) -> core::result::Result<pert_ui_runtime::PreparedDetach, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::primary_window(&self) -> pert_ui_runtime::NativeWindowId
-pub fn pert_ui_runtime::Runtime::redock(&mut self, &pert_ui_runtime::NativeWindowId) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Runtime::select_window(&mut self, &pert_ui_runtime::NativeWindowId) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::Runtime::set_window_visible(&mut self, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::window_of(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<pert_ui_runtime::NativeWindowId, pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::Runtime
 pub fn pert_ui_runtime::Runtime::content_search(&self, pert_ui_runtime::ContentQuery) -> pert_ui_runtime::ContentSearch
 pub fn pert_ui_runtime::Runtime::jump_to_content(&mut self, &pert_ui_runtime::ContentTarget) -> core::result::Result<pert_ui_runtime::ContentJump, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::resume_content_jump(&mut self, &pert_ui_runtime::PendingJump) -> core::result::Result<pert_ui_runtime::ContentJump, pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::Runtime
-pub fn pert_ui_runtime::Runtime::cursor_icon(&self) -> pert_ui_runtime::CursorIcon
+pub fn pert_ui_runtime::Runtime::drag_active(&self) -> bool
+impl pert_ui_runtime::Runtime
 pub fn pert_ui_runtime::Runtime::focus_next(&mut self, pert_ui_runtime::FocusDirection) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::pointer_input(&mut self, pert_ui_runtime::PointerEvent) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError>
-impl pert_ui_runtime::Runtime
-pub fn pert_ui_runtime::Runtime::drag_active(&self) -> bool
 impl pert_ui_runtime::Runtime
 pub fn pert_ui_runtime::Runtime::fonts(&self) -> pert_ui_runtime::FontManager
 pub fn pert_ui_runtime::Runtime::icons(&self) -> pert_ui_runtime::IconManager
 impl pert_ui_runtime::Runtime
 pub fn pert_ui_runtime::Runtime::native_modifiers(&mut self, pert_ui_runtime::Modifiers) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::Runtime
-pub fn pert_ui_runtime::Runtime::needs_paint(&self) -> bool
 pub fn pert_ui_runtime::Runtime::paint(&mut self) -> core::result::Result<pert_ui_runtime::DisplayList, pert_ui_runtime::DrawError>
 impl pert_ui_runtime::Runtime
 pub fn pert_ui_runtime::Runtime::parameter<T: pert_ui_core::family::ParameterValue>(&mut self, pert_ui_core::parameter_id::ParameterId, pert_ui_core::parameter::ParameterSpec<T>) -> core::result::Result<(pert_ui_runtime::Parameter<T>, pert_ui_runtime::ParameterHost<T>), pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::Runtime
 pub fn pert_ui_runtime::Runtime::parameter_any(&mut self, pert_ui_core::parameter_id::ParameterId, pert_ui_core::erased::AnySpec) -> core::result::Result<(pert_ui_runtime::AnyParameter, pert_ui_runtime::AnyParameterHost), pert_ui_runtime::RuntimeError>
-impl pert_ui_runtime::Runtime
-pub fn pert_ui_runtime::Runtime::presentation_rate(&self) -> core::option::Option<pert_ui_runtime::PresentationRate>
-pub fn pert_ui_runtime::Runtime::set_presentation_rate(&self, core::option::Option<pert_ui_runtime::PresentationRate>) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::Runtime
 pub fn pert_ui_runtime::Runtime::register_held_input(&mut self, &pert_ui_runtime::WidgetId, alloc::vec::Vec<pert_ui_runtime::KeyCode>, pert_ui_runtime::Modifiers, impl core::ops::function::FnMut(pert_ui_runtime::KeyCode, pert_ui_runtime::KeyTransition, &pert_ui_runtime::CommandContext) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError> + 'static, impl core::ops::function::FnMut(pert_ui_runtime::KeyCode, pert_ui_runtime::HeldCancellation) + 'static) -> core::result::Result<pert_ui_runtime::HeldInputId, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::unregister_held_input(&mut self, &pert_ui_runtime::HeldInputId) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
@@ -35188,7 +36630,6 @@ impl pert_ui_runtime::Runtime
 pub fn pert_ui_runtime::Runtime::remote_parameter<T: pert_ui_core::family::ParameterValue>(&mut self, pert_ui_core::parameter_id::ParameterId, pert_ui_core::parameter::ParameterSpec<T>) -> core::result::Result<(pert_ui_runtime::Parameter<T>, pert_ui_runtime::RemoteHost<T>), pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::Runtime
 pub fn pert_ui_runtime::Runtime::shutdown(&mut self)
-pub fn pert_ui_runtime::Runtime::take_shutdown_errors(&mut self) -> alloc::vec::Vec<pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::Runtime
 pub fn pert_ui_runtime::Runtime::theme(&self) -> pert_ui_runtime::ThemeManager
 impl pert_ui_runtime::Runtime
@@ -35203,6 +36644,40 @@ pub fn pert_ui_runtime::Runtime::drop(&mut self)
 impl pert_ui_runtime::StateOwner for pert_ui_runtime::Runtime
 pub fn pert_ui_runtime::Runtime::signal<T>(&self, T) -> pert_ui_runtime::Signal<T>
 pub fn pert_ui_runtime::Runtime::ui_settings(&self) -> pert_ui_runtime::UiSettings
+impl pert_ui_runtime::host::HostIntegration for pert_ui_runtime::Runtime
+pub fn pert_ui_runtime::Runtime::application_deadline(&self) -> core::option::Option<core::time::Duration>
+pub fn pert_ui_runtime::Runtime::cancel_input(&mut self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::capture_scene(&mut self, &pert_ui_runtime::CaptureJob) -> core::result::Result<pert_ui_runtime::DisplayList, pert_ui_runtime::CaptureError>
+pub fn pert_ui_runtime::Runtime::captures_supported(&self) -> bool
+pub fn pert_ui_runtime::Runtime::clear_focus(&mut self)
+pub fn pert_ui_runtime::Runtime::close_detached_window(&mut self) -> core::result::Result<pert_ui_runtime::PresentationStatus, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::commit_detach(&mut self, pert_ui_runtime::PreparedDetach) -> core::result::Result<pert_ui_runtime::NativeWindowId, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::complete_capture(&self, &pert_ui_runtime::CaptureJob, core::result::Result<pert_ui_runtime::FrameImage, pert_ui_runtime::CaptureError>) -> bool
+pub fn pert_ui_runtime::Runtime::current_window(&self) -> pert_ui_runtime::NativeWindowId
+pub fn pert_ui_runtime::Runtime::cursor_icon(&self) -> pert_ui_runtime::CursorIcon
+pub fn pert_ui_runtime::Runtime::flush_commands(&mut self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::flush_windows(&mut self, core::time::Duration) -> core::result::Result<pert_ui_runtime::FlushReport, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::has_command_requests(&self) -> bool
+pub fn pert_ui_runtime::Runtime::has_presentation_requests(&self) -> bool
+pub fn pert_ui_runtime::Runtime::interval_deadline(&self) -> core::option::Option<core::time::Duration>
+pub fn pert_ui_runtime::Runtime::invalidate(&self, &pert_ui_runtime::WidgetId, pert_ui_runtime::Invalidation) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::native_window_options(&self) -> core::option::Option<&pert_ui_runtime::NativeWindowOptions>
+pub fn pert_ui_runtime::Runtime::needs_paint(&self) -> bool
+pub fn pert_ui_runtime::Runtime::pending_captures(&self) -> alloc::vec::Vec<pert_ui_runtime::CaptureJob>
+pub fn pert_ui_runtime::Runtime::prepare_detach(&mut self, &pert_ui_runtime::WidgetId, pert_ui_runtime::NativeWindowOptions) -> core::result::Result<pert_ui_runtime::PreparedDetach, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::presentation_rate(&self) -> core::option::Option<pert_ui_runtime::PresentationRate>
+pub fn pert_ui_runtime::Runtime::redock(&mut self, &pert_ui_runtime::NativeWindowId) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::select_window(&mut self, &pert_ui_runtime::NativeWindowId) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::service_inspection(&mut self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::service_intervals(&mut self, core::time::Duration) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::set_clipboard(&mut self, impl pert_ui_runtime::Clipboard + 'static) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::set_presentation_rate(&self, core::option::Option<pert_ui_runtime::PresentationRate>) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::set_wake_delivery(&self, impl core::ops::function::Fn() -> bool + core::marker::Send + core::marker::Sync + 'static)
+pub fn pert_ui_runtime::Runtime::set_window_visible(&mut self, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::take_presentation_requests(&self) -> core::result::Result<alloc::vec::Vec<pert_ui_runtime::PresentationRequest>, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::take_shutdown_errors(&mut self) -> alloc::vec::Vec<pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::text_input_state(&self) -> core::option::Option<(pert_ui_runtime::WidgetId, pert_ui_runtime::TextInputState)>
+pub fn pert_ui_runtime::Runtime::text_preedit(&mut self, &pert_ui_runtime::TextPreedit) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 impl !core::marker::Freeze for pert_ui_runtime::Runtime
 impl !core::marker::Send for pert_ui_runtime::Runtime
 impl !core::marker::Sync for pert_ui_runtime::Runtime

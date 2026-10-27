@@ -1,4 +1,5 @@
 //! Global change delivery preserves ownership, errors and bounded followups.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{
     cell::{Cell, RefCell},

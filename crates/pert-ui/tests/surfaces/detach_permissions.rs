@@ -3,6 +3,7 @@
 //! reads its current value when a detach is asked for, the strip's drag
 //! affordance follows a binding, revocation during a drag-out forbids the
 //! drop, and an already detached view keeps its window.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::time::Duration;
 

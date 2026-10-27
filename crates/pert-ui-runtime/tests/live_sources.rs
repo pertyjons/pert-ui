@@ -2,6 +2,7 @@
 //! without change, hidden suspension and resume, notified delivery, teardown
 //! and inspection, all headless.
 
+use pert_ui_runtime::testing::HostIntegration;
 use std::{
     cell::RefCell,
     rc::Rc,
@@ -80,8 +81,9 @@ fn settle(runtime: &mut Runtime, now: Duration) -> Result<usize, RuntimeError> {
 #[test]
 fn a_visible_subscriber_starts_drains_and_only_changes_update_it() -> TestResult {
     let mut runtime = Runtime::new();
+    runtime.set_viewport(Viewport::new(100.0, 100.0, 1.0)?)?;
     let (mut endpoint, _source, reader, seen) = series(&runtime, 4, Delivery::Polled)?;
-    let id = runtime.mount("meter", reader)?;
+    let id = runtime.mount_tree(Element::new("meter", reader))?;
     // Before anything subscribes, the source needs nothing.
     let _ = endpoint.publish(2, Timestamp::new(1));
     assert_eq!(runtime.next_deadline(), Some(Duration::ZERO));
@@ -155,8 +157,9 @@ fn a_visible_subscriber_starts_drains_and_only_changes_update_it() -> TestResult
 #[test]
 fn a_quiet_resume_keeps_the_window_and_a_lossy_one_clears_it() -> TestResult {
     let mut runtime = Runtime::new();
+    runtime.set_viewport(Viewport::new(100.0, 100.0, 1.0)?)?;
     let (mut endpoint, source, reader, seen) = series(&runtime, 8, Delivery::Polled)?;
-    let id = runtime.mount("meter", reader)?;
+    let id = runtime.mount_tree(Element::new("meter", reader))?;
     settle(&mut runtime, Duration::ZERO)?;
     assert_eq!(
         endpoint.publish(4, Timestamp::new(1)),
@@ -220,8 +223,9 @@ fn shutdown_closes_the_waker_permanently() -> TestResult {
 #[test]
 fn a_series_subscriber_sees_the_window_and_the_losses() -> TestResult {
     let mut runtime = Runtime::new();
+    runtime.set_viewport(Viewport::new(100.0, 100.0, 1.0)?)?;
     let (mut endpoint, source, reader, seen) = series(&runtime, 2, Delivery::Polled)?;
-    runtime.mount("trace", reader)?;
+    runtime.mount_tree(Element::new("trace", reader))?;
     settle(&mut runtime, Duration::ZERO)?;
     for tick in 1..=3 {
         let _ = endpoint.publish(tick * 10, Timestamp::new(tick));
@@ -270,9 +274,10 @@ fn invalid_only_drains_report_changes_without_refreshing_the_retained_value() ->
         }
     }
     let mut runtime = Runtime::new();
+    runtime.set_viewport(Viewport::new(100.0, 100.0, 1.0)?)?;
     let (mut endpoint, consumer) = series_bridge(SeriesConfig::new(Capacity::new(4)?));
     let source = runtime.series_source(consumer, Delivery::Polled);
-    runtime.mount("reader", FloatReader(source.clone()))?;
+    runtime.mount_tree(Element::new("reader", FloatReader(source.clone())))?;
     settle(&mut runtime, Duration::ZERO)?;
     assert_eq!(
         endpoint.publish(2.0, Timestamp::new(1)),
@@ -312,8 +317,9 @@ fn invalid_only_drains_report_changes_without_refreshing_the_retained_value() ->
 #[test]
 fn dropping_the_endpoint_is_observed_once_and_ends_scheduling_work() -> TestResult {
     let mut runtime = Runtime::new();
+    runtime.set_viewport(Viewport::new(100.0, 100.0, 1.0)?)?;
     let (mut endpoint, source, reader, seen) = series(&runtime, 4, Delivery::Polled)?;
-    runtime.mount("meter", reader)?;
+    runtime.mount_tree(Element::new("meter", reader))?;
     settle(&mut runtime, Duration::ZERO)?;
     let _ = endpoint.publish(4, Timestamp::new(1));
     drop(endpoint);
@@ -330,6 +336,7 @@ fn dropping_the_endpoint_is_observed_once_and_ends_scheduling_work() -> TestResu
 #[test]
 fn a_notified_source_drains_on_wakes_and_coalesces_them() -> TestResult {
     let mut runtime = Runtime::new();
+    runtime.set_viewport(Viewport::new(100.0, 100.0, 1.0)?)?;
     let delivered = Arc::new(AtomicUsize::new(0));
     let counter = Arc::clone(&delivered);
     runtime.set_wake_delivery(move || {
@@ -337,7 +344,7 @@ fn a_notified_source_drains_on_wakes_and_coalesces_them() -> TestResult {
         true
     });
     let (mut endpoint, _source, reader, seen) = series(&runtime, 4, Delivery::Notified)?;
-    runtime.mount("meter", reader)?;
+    runtime.mount_tree(Element::new("meter", reader))?;
     settle(&mut runtime, Duration::ZERO)?;
     assert_eq!(
         runtime.next_deadline(),
@@ -416,11 +423,12 @@ fn installing_delivery_reopens_a_waker_whose_delivery_failed() -> TestResult {
 #[test]
 fn inspection_lists_sources_with_their_schedule() -> TestResult {
     let mut runtime = Runtime::new();
+    runtime.set_viewport(Viewport::new(100.0, 100.0, 1.0)?)?;
     let (_meter_endpoint, _meter_source, meter_reader, _) = series(&runtime, 4, Delivery::Polled)?;
     let (_trace_endpoint, _trace_source, trace_reader, _) =
         series(&runtime, 4, Delivery::Notified)?;
-    runtime.mount("meter", meter_reader)?;
-    runtime.mount("trace", trace_reader)?;
+    runtime.mount_tree(Element::new("meter", meter_reader))?;
+    runtime.mount_tree(Element::new("trace", trace_reader))?;
     settle(&mut runtime, Duration::ZERO)?;
     let snapshot = runtime.inspect();
     assert_eq!(snapshot.schema_version, 15);
@@ -452,7 +460,7 @@ fn a_source_of_another_runtime_is_rejected() -> TestResult {
     let mut runtime = Runtime::new();
     let other = Runtime::new();
     let (_endpoint, _source, reader, _) = series(&other, 4, Delivery::Polled)?;
-    runtime.mount("meter", reader)?;
+    runtime.mount_tree(Element::new("meter", reader))?;
     assert_eq!(
         runtime.flush(Duration::ZERO),
         Err(RuntimeError::ForeignRuntime)
@@ -530,9 +538,10 @@ fn subscribers_in_two_native_roots_see_one_drain_for_one_time() -> TestResult {
 #[test]
 fn a_notified_source_observes_a_restart_and_a_drop_that_no_publish_follows() -> TestResult {
     let mut runtime = Runtime::new();
+    runtime.set_viewport(Viewport::new(100.0, 100.0, 1.0)?)?;
     runtime.set_wake_delivery(|| true);
     let (mut endpoint, _source, reader, seen) = series(&runtime, 4, Delivery::Notified)?;
-    runtime.mount("meter", reader)?;
+    runtime.mount_tree(Element::new("meter", reader))?;
     settle(&mut runtime, Duration::ZERO)?;
     let waker = runtime.live_waker();
     let _ = endpoint.publish(3, Timestamp::new(1));
@@ -578,8 +587,9 @@ fn a_notified_source_observes_a_restart_and_a_drop_that_no_publish_follows() -> 
 #[test]
 fn same_time_hide_deadline_show_settles_and_restarts_at_display_rate() -> TestResult {
     let mut runtime = Runtime::new();
+    runtime.set_viewport(Viewport::new(100.0, 100.0, 1.0)?)?;
     let (_endpoint, _source, reader, _seen) = series(&runtime, 8, Delivery::Polled)?;
-    let id = runtime.mount("reader", reader)?;
+    let id = runtime.mount_tree(Element::new("reader", reader))?;
     settle(&mut runtime, Duration::ZERO)?;
     runtime.set_visible(&id, false)?;
     let _ = runtime.next_deadline();
@@ -599,8 +609,9 @@ fn same_time_hide_deadline_show_settles_and_restarts_at_display_rate() -> TestRe
 #[test]
 fn a_lossy_resume_can_advance_revision_again_at_the_same_time() -> TestResult {
     let mut runtime = Runtime::new();
+    runtime.set_viewport(Viewport::new(100.0, 100.0, 1.0)?)?;
     let (mut endpoint, source, reader, _) = series(&runtime, 4, Delivery::Polled)?;
-    let id = runtime.mount("reader", reader)?;
+    let id = runtime.mount_tree(Element::new("reader", reader))?;
     settle(&mut runtime, Duration::ZERO)?;
     assert_eq!(
         endpoint.publish(5, Timestamp::new(1)),
@@ -632,7 +643,7 @@ fn a_shared_source_uses_the_fastest_presented_window() -> TestResult {
     let mut ui = Runtime::new();
     ui.set_viewport(Viewport::new(100.0, 100.0, 1.0)?)?;
     let (_endpoint, source, reader, seen) = series(&ui, 8, Delivery::Polled)?;
-    let primary_reader = ui.mount("primary-reader", reader)?;
+    let primary_reader = ui.mount_tree(Element::new("primary-reader", reader))?;
     let view = ui.mount_tree(Element::new(
         "detachable",
         pert_ui_runtime::Label::new("Window"),
@@ -641,7 +652,7 @@ fn a_shared_source_uses_the_fastest_presented_window() -> TestResult {
     let detached = ui.commit_detach(prepared)?;
     ui.select_window(&detached)?;
     ui.set_presentation_rate(Some(PresentationRate::new(120.0)?))?;
-    ui.mount("second-reader", SeriesReader { source, seen })?;
+    ui.mount_tree(Element::new("second-reader", SeriesReader { source, seen }))?;
     for _ in 0..3 {
         ui.flush_windows(Duration::ZERO)?;
     }
@@ -709,9 +720,10 @@ fn live_publication_does_not_update_a_clipped_subscriber_of_an_active_source() -
 #[test]
 fn a_wake_at_the_instant_of_the_last_drain_still_drains() -> TestResult {
     let mut runtime = Runtime::new();
+    runtime.set_viewport(Viewport::new(100.0, 100.0, 1.0)?)?;
     runtime.set_wake_delivery(|| true);
     let (mut endpoint, _source, reader, seen) = series(&runtime, 4, Delivery::Notified)?;
-    runtime.mount("meter", reader)?;
+    runtime.mount_tree(Element::new("meter", reader))?;
     settle(&mut runtime, Duration::ZERO)?;
     let waker = runtime.live_waker();
     let at = Duration::from_secs(1);
@@ -758,9 +770,10 @@ fn a_delivery_callback_that_panicked_does_not_swallow_later_wakes() -> TestResul
 #[test]
 fn a_wake_flushed_while_the_window_is_read_is_served_later() -> TestResult {
     let mut runtime = Runtime::new();
+    runtime.set_viewport(Viewport::new(100.0, 100.0, 1.0)?)?;
     runtime.set_wake_delivery(|| true);
     let (mut endpoint, source, reader, seen) = series(&runtime, 4, Delivery::Notified)?;
-    runtime.mount("meter", reader)?;
+    runtime.mount_tree(Element::new("meter", reader))?;
     settle(&mut runtime, Duration::ZERO)?;
     let _ = endpoint.publish(5, Timestamp::new(1));
     runtime.live_waker().notify()?;

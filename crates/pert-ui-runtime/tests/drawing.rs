@@ -87,7 +87,7 @@ fn unchanged_components_keep_drawing_across_other_updates_and_exposure() -> Test
     let counts = [Rc::new(Cell::new(0)), Rc::new(Cell::new(0))];
     let mut ids = Vec::new();
     for (index, signal) in [&value, &other].into_iter().enumerate() {
-        ids.push(ui.mount(
+        ids.push(ui.mount_tree(Element::new(
             index.to_string(),
             Rectangle {
                 value: signal.read_only(),
@@ -95,7 +95,7 @@ fn unchanged_components_keep_drawing_across_other_updates_and_exposure() -> Test
                 writer: signal.clone(),
                 fail: Rc::new(Cell::new(false)),
             },
-        )?);
+        ))?);
     }
     assert_eq!(ui.paint(), Err(DrawError::PendingUpdates));
     ui.flush(Duration::ZERO)?;
@@ -129,7 +129,7 @@ fn failed_paint_is_retryable_and_restores_write_phase() -> TestResult {
     let value = ui.signal(0);
     let fail = Rc::new(Cell::new(true));
     let paints = Rc::new(Cell::new(0));
-    ui.mount(
+    ui.mount_tree(Element::new(
         "rectangle",
         Rectangle {
             value: value.read_only(),
@@ -137,7 +137,7 @@ fn failed_paint_is_retryable_and_restores_write_phase() -> TestResult {
             writer: value.clone(),
             fail: fail.clone(),
         },
-    )?;
+    ))?;
     ui.flush(Duration::ZERO)?;
     assert_eq!(ui.paint(), Err(DrawError::InvalidColor));
     value.set(1)?;

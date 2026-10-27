@@ -7,6 +7,7 @@
 //!
 //! The thread publishes only while a Run toggle of one of the two pages is on
 //! and is parked otherwise, so a gallery whose pages are stopped wakes nothing.
+use pert_ui::host::HostIntegration;
 use pert_ui::*;
 use std::{
     cell::RefCell,
@@ -493,9 +494,7 @@ impl Component for PlotBackground {
         Ok(Size::from([480, 120]))
     }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = painter.size() else {
-            return Ok(());
-        };
+        let size = painter.size();
         painter.fill_rect(Rect::from_size(size), painter.color(ColorRole::Surface));
         for line in 1..4 {
             painter.fill_rect(
@@ -613,9 +612,7 @@ impl Component for LiveVisual {
         })
     }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = painter.size() else {
-            return Ok(());
-        };
+        let size = painter.size();
         if size.width() == 0.0 || size.height() == 0.0 {
             return Ok(());
         }

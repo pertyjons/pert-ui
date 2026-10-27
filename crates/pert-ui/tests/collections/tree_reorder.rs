@@ -4,6 +4,7 @@
 //! among siblings, dropping into a node that takes children, the level chosen
 //! by the pointer after a last child, the forbidden drop into a dragged node's
 //! own subtree, the insertion line's indent and the outline's keyboard moves.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::RefCell, collections::BTreeMap, rc::Rc, time::Duration};
 

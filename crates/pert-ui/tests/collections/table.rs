@@ -1,5 +1,6 @@
 //! The table as a consumer of the virtualized list and the shared selection:
 //! columns, a header that does not scroll, sorting by callback and resizing.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::RefCell, rc::Rc, time::Duration};
 

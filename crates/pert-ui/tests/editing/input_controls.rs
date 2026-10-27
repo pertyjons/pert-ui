@@ -1,4 +1,5 @@
 //! Public text, focus and activation contracts without native backend imports.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::Cell, rc::Rc, time::Duration};
 

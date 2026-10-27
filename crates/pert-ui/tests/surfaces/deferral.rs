@@ -7,6 +7,7 @@
 //! the rules of layering part L4a do, and name the assertion that a compiling
 //! mutation restoring the old rule makes fail; **contract** tests check rules
 //! the part keeps.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{
     cell::{Cell, RefCell},

@@ -994,7 +994,8 @@ pub(crate) fn answer(
 /// with its owned runtime cause in [`InspectionReply::flush_error`]. A host that
 /// withholds flushes, such as the native `App` while a window is minimized,
 /// answers from the last flushed state with
-/// [`Runtime::service_inspection`], so a request is never stranded.
+/// [`HostIntegration::service_inspection`](crate::host::HostIntegration::service_inspection), so a
+/// request is never stranded.
 ///
 /// Dropping the service, calling [`Self::close`] or shutting the runtime down
 /// closes it: queued requests resolve as [`WaitError::Cancelled`] and later

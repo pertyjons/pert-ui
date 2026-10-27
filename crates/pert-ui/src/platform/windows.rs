@@ -1,6 +1,7 @@
 //! Native window presentation: selecting a window's state, detach, re-dock and
 //! activation requests, and close admission.
 use super::*;
+use crate::host::HostIntegration;
 
 impl Runner {
     pub(super) fn select_native(&mut self, id: WindowId) -> Result<bool, AppError> {

@@ -452,9 +452,7 @@ impl Component for Breadcrumb {
         Ok(())
     }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = painter.size() else {
-            return Ok(());
-        };
+        let size = painter.size();
         if let Some(chevron) = self.chevron.borrow().as_ref() {
             let color = painter.color(ColorRole::Muted);
             for x in self.separators.borrow().iter() {
@@ -583,9 +581,7 @@ impl Component for Crumb {
         self.input.reset();
     }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = painter.size() else {
-            return Ok(());
-        };
+        let size = painter.size();
         let Some(text) = self.prepared.borrow().clone() else {
             return Ok(());
         };

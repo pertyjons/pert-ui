@@ -1,6 +1,7 @@
 //! The shell: every page, the category strips, the settings menu, zoom and
 //! detachable strips.
 use super::support::*;
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::time::Duration;
 

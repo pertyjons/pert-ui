@@ -21,7 +21,7 @@ fn scene(
 ) -> Result<DisplayList, DrawError> {
     let mut ui = Runtime::new();
     ui.set_viewport(Viewport::new(64.0, 64.0, scale)?)?;
-    ui.mount("draw", Draw(draw))?;
+    ui.mount_tree(Element::new("draw", Draw(draw)))?;
     ui.flush(Duration::ZERO)?;
     ui.paint()?.rasterized()
 }
@@ -83,7 +83,8 @@ fn a_fill_covers_whole_pixels_fully_and_split_pixels_by_area() -> TestResult {
     })?;
     let (rect, clip, image) = mask(&list);
     assert_eq!(rect.values(), [8.0, 8.0, 16.0, 16.0]);
-    assert_eq!(clip, None);
+    // Only the root's own allocation, the whole window, clips the mask.
+    assert_eq!(clip, Some(Rect::new(0.0, 0.0, 64.0, 64.0)?));
     assert_eq!((image.width(), image.height()), (16, 16));
     assert!(image.pixels().iter().all(|&alpha| alpha == 255));
 
@@ -332,10 +333,10 @@ fn oversized_rasters_are_rejected_and_the_clip_bounds_the_work() -> TestResult {
     let huge = || Path::polygon(square(0.0, 0.0, 5000.0, true));
     let mut ui = Runtime::new();
     ui.set_viewport(Viewport::new(5000.0, 5000.0, 1.0)?)?;
-    ui.mount(
+    ui.mount_tree(Element::new(
         "large",
         Draw(move |p: &mut Painter| p.fill_path(&huge()?, FillRule::NonZero, color())),
-    )?;
+    ))?;
     ui.flush(Duration::ZERO)?;
     let preserved = ui.paint()?;
     assert_eq!(preserved.vectors().len(), 1);
@@ -515,7 +516,7 @@ fn empty_nested_clips_omit_vector_commands_and_resources_before_rasterization() 
     for visible in [false, true] {
         let mut ui = Runtime::new();
         ui.set_viewport(Viewport::new(64.0, 64.0, 1.25)?)?;
-        ui.mount(
+        ui.mount_tree(Element::new(
             "draw",
             Draw(move |p: &mut Painter| {
                 p.with_clip(Rect::new(1.0, 1.0, 4.0, 4.0)?, |p| {
@@ -536,7 +537,7 @@ fn empty_nested_clips_omit_vector_commands_and_resources_before_rasterization() 
                 }
                 Ok(())
             }),
-        )?;
+        ))?;
         ui.flush(ui.now())?;
         let scene = ui.paint()?;
         assert_eq!(scene.commands().len(), usize::from(visible));
@@ -548,7 +549,8 @@ fn empty_nested_clips_omit_vector_commands_and_resources_before_rasterization() 
                 panic!("visible vector must survive")
             };
             assert!(scene.vector(vector).is_some());
-            assert!(clip.is_none());
+            // Only the root's own allocation, the whole window, clips it.
+            assert_eq!(clip, Some(Rect::new(0.0, 0.0, 64.0, 64.0)?));
         }
     }
     Ok(())
@@ -559,7 +561,7 @@ fn huge_uncropped_strokes_render_all_visible_rows_without_index_overflow() -> Te
     for height in [100.0, 100000.0] {
         let mut ui = Runtime::new();
         ui.set_viewport(Viewport::new(10.0, height, 1.0)?)?;
-        ui.mount(
+        ui.mount_tree(Element::new(
             "draw",
             Draw(|painter: &mut Painter| {
                 painter.stroke_polyline(
@@ -568,7 +570,7 @@ fn huge_uncropped_strokes_render_all_visible_rows_without_index_overflow() -> Te
                     painter.color(ColorRole::Primary),
                 )
             }),
-        )?;
+        ))?;
         ui.flush(Duration::ZERO)?;
         let list = ui.paint()?.rasterized()?;
         let (rect, _, image) = mask(&list);

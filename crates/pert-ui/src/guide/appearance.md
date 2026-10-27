@@ -123,7 +123,8 @@ or override `Primary` or the status role. Without a secondary seed,
 makes both gray.
 
 Custom graphics adapters must clear to `DisplayList::background()` before drawing
-its commands. Custom hosts check `Runtime::needs_paint()` after events/flushes;
+its commands. Custom hosts check
+[`HostIntegration::needs_paint`](crate::host::HostIntegration::needs_paint) after events/flushes;
 a background-only edit can require presentation without component updates.
 An unchanged runtime schedules no theme timer. `needs_paint` scans mounted entries
 for visible drawing damage. Theme writes compare the fixed palette and visit
@@ -262,20 +263,18 @@ impl Component for CustomPanel {
     fn focusable(&self) -> bool { true }
     fn cursor(&self, _: Point) -> Option<CursorIcon> { Some(CursorIcon::Default) }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        if let Some(size) = painter.size() {
-            let rect = Rect::from_size(size);
-            let radius = Length::new(painter.metric(MetricRole::CornerRadius))?;
-            let width = Length::new(painter.metric(MetricRole::BorderWidth))?;
-            let role = if painter.focus_within() { ColorRole::Primary } else { ColorRole::PanelBorder };
-            painter.fill_shape(rect, Shape::Rounded(radius), painter.color(ColorRole::Surface))?;
-            painter.fill_triangle(
-                [Point::new(4.0, 4.0)?,
-                 Point::new(16.0, 10.0)?,
-                 Point::new(4.0, 16.0)?],
-                painter.color(ColorRole::Primary),
-            )?;
-            painter.stroke_shape(rect, Shape::Rounded(radius), width, painter.color(role))?;
-        }
+        let rect = Rect::from_size(painter.size());
+        let radius = Length::new(painter.metric(MetricRole::CornerRadius))?;
+        let width = Length::new(painter.metric(MetricRole::BorderWidth))?;
+        let role = if painter.focus_within() { ColorRole::Primary } else { ColorRole::PanelBorder };
+        painter.fill_shape(rect, Shape::Rounded(radius), painter.color(ColorRole::Surface))?;
+        painter.fill_triangle(
+            [Point::new(4.0, 4.0)?,
+             Point::new(16.0, 10.0)?,
+             Point::new(4.0, 16.0)?],
+            painter.color(ColorRole::Primary),
+        )?;
+        painter.stroke_shape(rect, Shape::Rounded(radius), width, painter.color(role))?;
         Ok(())
     }
 }

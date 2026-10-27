@@ -1,4 +1,5 @@
 //! Mailboxes: owned values from other threads reach a UI-thread handler.
+use pert_ui_runtime::testing::HostIntegration;
 use pert_ui_runtime::{Capacity, Runtime, RuntimeError, SendError};
 use std::{
     cell::RefCell,

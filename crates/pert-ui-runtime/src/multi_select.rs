@@ -613,9 +613,7 @@ impl<T: Clone + Eq + Hash + 'static> Component for ChoiceRow<T> {
         self.pressed = false;
     }
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = p.size() else {
-            return Ok(());
-        };
+        let size = p.size();
         let highlighted = self.highlighted && self.active();
         if highlighted {
             p.fill_rect(Rect::from_size(size), p.color(ColorRole::Primary));
@@ -815,7 +813,7 @@ impl<T: Clone + Eq + Hash + 'static> Component for Panel<T> {
         if self.count > 0 {
             return Ok(());
         }
-        let (Some(size), Some(text)) = (p.size(), self.empty.borrow().clone()) else {
+        let (size, Some(text)) = (p.size(), self.empty.borrow().clone()) else {
             return Ok(());
         };
         let row = p.metric(MetricRole::ControlHeight);
@@ -1043,9 +1041,7 @@ impl<T: Clone + Eq + Hash + 'static> Component for Trigger<T> {
         self.input.reset();
     }
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
-        let Some(s) = p.size() else {
-            return Ok(());
-        };
+        let s = p.size();
         let frame = Rect::from_size(s);
         p.fill_shape(
             frame,

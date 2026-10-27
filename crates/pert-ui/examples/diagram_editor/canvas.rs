@@ -764,9 +764,7 @@ impl Component for Canvas {
     }
 
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = painter.size() else {
-            return Ok(());
-        };
+        let size = painter.size();
         let background = painter.color(ColorRole::Background);
         painter.fill_rect(Rect::from_size(size), background);
         // A dot grid every 20 diagram units, at least 8 pixels apart.
@@ -903,9 +901,7 @@ impl Component for NodeView {
     }
 
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = painter.size() else {
-            return Ok(());
-        };
+        let size = painter.size();
         let rect = Rect::from_size(size);
         let border = painter.color(ColorRole::OnSurface);
         let width = Length::new(1.5)?;

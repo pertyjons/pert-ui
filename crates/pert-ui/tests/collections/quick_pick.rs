@@ -3,6 +3,7 @@
 //! results that resolve or are superseded, disabled items still chosen, the
 //! callback replaced on re-description and the reported names.
 use crate::support;
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::RefCell, rc::Rc};
 use support::{key, settle};

@@ -31,7 +31,7 @@ fn arc(
 ) -> Result<DisplayList, DrawError> {
     let mut ui = Runtime::new();
     ui.set_viewport(Viewport::new(64.0, 64.0, scale)?).unwrap();
-    ui.mount(
+    ui.mount_tree(Element::new(
         "arc",
         Arc {
             start,
@@ -39,7 +39,7 @@ fn arc(
             radius,
             width,
         },
-    )
+    ))
     .unwrap();
     ui.flush(Duration::ZERO).unwrap();
     ui.paint()

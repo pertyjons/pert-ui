@@ -518,7 +518,8 @@ impl Element {
     /// Defaults to permitted, which by itself changes nothing: no library gesture
     /// detaches a view unless a container offers one, and the only container that
     /// does is `Tabs::detachable`. A denial is a refusal that both that gesture
-    /// and [`crate::Runtime::request_detach`], [`crate::Runtime::prepare_detach`]
+    /// and [`crate::Runtime::request_detach`],
+    /// [`HostIntegration::prepare_detach`](crate::host::HostIntegration::prepare_detach)
     /// and [`crate::EventContext::detach_view`] honor, returning
     /// `RuntimeError::NotDetachable` instead of moving the view. The runtime
     /// reads the permission's current value when a detach is asked for, so a
@@ -533,6 +534,7 @@ impl Element {
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::testing::HostIntegration;
     /// use pert_ui::{Element, Label, NativeWindowOptions, Runtime, RuntimeError};
     /// let mut ui = Runtime::new();
     /// let view = ui.mount_tree(

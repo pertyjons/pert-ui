@@ -1,4 +1,5 @@
 //! ToolWindows center focus must not cover retained floating panels.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::RefCell, rc::Rc, time::Duration};
 struct Body {
@@ -45,7 +46,7 @@ impl Component for Body {
         Ok(InputOutcome::Handled)
     }
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
-        p.fill_rect(Rect::from_size(p.size().unwrap_or(Size::ZERO)), self.color);
+        p.fill_rect(Rect::from_size(p.size()), self.color);
         Ok(())
     }
 }

@@ -1,4 +1,5 @@
 //! Public routing, identity and sustained-key contracts across window roots.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::RefCell, rc::Rc, time::Duration};
 
@@ -395,7 +396,7 @@ fn view_pointer_selects_target_without_focus_or_registered_view_bindings()
 #[test]
 fn queued_button_uses_same_disabled_and_modal_admission_path() -> Result<(), RuntimeError> {
     let mut ui = Runtime::new();
-    let owner = ui.mount("owner", Label::new("Owner"))?;
+    let owner = ui.mount_tree(Element::new("owner", Label::new("Owner")))?;
     let id = ui.register_command("Disabled", CommandScope::Application, vec![], |_, _| {
         panic!("disabled button invoked")
     })?;
@@ -551,7 +552,7 @@ fn command_info_and_invocation_use_same_window_and_sanitized_optional_focus()
 #[test]
 fn queued_command_finishes_when_every_native_root_is_hidden() -> Result<(), RuntimeError> {
     let mut ui = Runtime::new();
-    let owner = ui.mount("owner", Label::new("Owner"))?;
+    let owner = ui.mount_tree(Element::new("owner", Label::new("Owner")))?;
     let id = ui.register_command(
         "Hidden action",
         CommandScope::Application,
@@ -723,7 +724,7 @@ fn a_command_needs_a_nonblank_name() {
 fn the_command_queue_refuses_beyond_its_capacity_and_receipts_are_identities()
 -> Result<(), RuntimeError> {
     let mut ui = Runtime::new();
-    let owner = ui.mount("owner", Label::new("Owner"))?;
+    let owner = ui.mount_tree(Element::new("owner", Label::new("Owner")))?;
     let id = ui.register_command("Queued", CommandScope::Application, vec![], |_, _| Ok(()))?;
     let receipts = ui.try_event(&owner, |cx| {
         let mut receipts = Vec::new();
@@ -756,7 +757,7 @@ fn the_command_queue_refuses_beyond_its_capacity_and_receipts_are_identities()
 fn a_batch_finishes_every_receipt_when_an_action_shuts_the_runtime_down() -> Result<(), RuntimeError>
 {
     let mut ui = Runtime::new();
-    let owner = ui.mount("owner", Label::new("Owner"))?;
+    let owner = ui.mount_tree(Element::new("owner", Label::new("Owner")))?;
     let quit = ui.register_command("Quit", CommandScope::Application, vec![], |ui, _| {
         ui.shutdown();
         Ok(())
@@ -788,7 +789,7 @@ fn a_batch_finishes_every_receipt_when_an_action_shuts_the_runtime_down() -> Res
 #[test]
 fn shutdown_cancels_queued_invocations_observably() -> Result<(), RuntimeError> {
     let mut ui = Runtime::new();
-    let owner = ui.mount("owner", Label::new("Owner"))?;
+    let owner = ui.mount_tree(Element::new("owner", Label::new("Owner")))?;
     let id = ui.register_command("Never", CommandScope::Application, vec![], |_, _| {
         panic!("ran after shutdown")
     })?;

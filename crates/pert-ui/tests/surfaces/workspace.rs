@@ -1,5 +1,6 @@
 //! Workspace persistence through the public facade: what a capture addresses,
 //! what a document rejects, and what a restore does with every entry.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::Cell, rc::Rc, time::Duration};
 
@@ -48,7 +49,7 @@ fn malformed_duplicate_fields_and_invalid_public_maps_cannot_round_trip() {
         ),
     ] {
         assert_eq!(
-            Workspace::decode(&format!("pert-ui-workspace 1\n{body}\n")),
+            Workspace::decode(&format!("pert-ui-workspace 2\n{body}\n")),
             Err(WorkspaceError::Malformed(reason.into())),
             "{body}"
         );
@@ -569,7 +570,7 @@ fn restores_a_selection_a_proportion_and_an_offset() {
     ui.flush(Duration::ZERO).unwrap();
     assert!(visible(&ui, "a") && !visible(&ui, "b"));
     let document = concat!(
-        "pert-ui-workspace 1\n",
+        "pert-ui-workspace 2\n",
         "entry \"main/split\" split extent=0.25 rule=\"ratio\"\n",
         "entry \"main/tabs\" tabs selected=\"scope\"\n",
     );
@@ -605,7 +606,7 @@ fn a_restored_split_extent_captures_back_exactly() {
         .unwrap();
         ui.flush(Duration::ZERO).unwrap();
         let document =
-            format!("pert-ui-workspace 1\nentry \"main\" split extent={extent} rule=\"{rule}\"\n");
+            format!("pert-ui-workspace 2\nentry \"main\" split extent={extent} rule=\"{rule}\"\n");
         let report = ui
             .restore_workspace(&Workspace::decode(&document).unwrap())
             .unwrap();
@@ -624,7 +625,7 @@ fn structure_drift_is_reported_per_entry_while_the_rest_applies() {
         .unwrap();
     ui.flush(Duration::ZERO).unwrap();
     let document = concat!(
-        "pert-ui-workspace 1\n",
+        "pert-ui-workspace 2\n",
         "entry \"main/tabs\" tabs selected=\"scope\"\n",
         "entry \"main/gone\" scroll x=0.0 y=12.0\n",
         "entry \"main\" split extent=0.5 rule=\"ratio\"\n",
@@ -677,7 +678,7 @@ fn a_participant_rejects_what_it_cannot_resolve_without_changing_itself() {
             RestoreRejection::Value("selected".to_owned()),
         ),
     ] {
-        let text = format!("pert-ui-workspace 1\n{document}");
+        let text = format!("pert-ui-workspace 2\n{document}");
         let report = ui
             .restore_workspace(&Workspace::decode(&text).unwrap())
             .unwrap();
@@ -697,7 +698,7 @@ fn a_kind_that_no_longer_matches_is_ignored_rather_than_applied() {
     ui.mount_tree(Element::new("main", Column::new([tabs()])))
         .unwrap();
     ui.flush(Duration::ZERO).unwrap();
-    let document = "pert-ui-workspace 1\nentry \"main/tabs\" split extent=0.25 rule=\"ratio\"\n";
+    let document = "pert-ui-workspace 2\nentry \"main/tabs\" split extent=0.25 rule=\"ratio\"\n";
     let report = ui
         .restore_workspace(&Workspace::decode(document).unwrap())
         .unwrap();
@@ -718,7 +719,7 @@ fn a_later_mount_takes_its_entry_once_and_only_once() {
         .mount_tree(Element::new("main", Column::new([])))
         .unwrap();
     ui.flush(Duration::ZERO).unwrap();
-    let document = "pert-ui-workspace 1\nentry \"main/late\" scroll x=0.0 y=40.0\n";
+    let document = "pert-ui-workspace 2\nentry \"main/late\" scroll x=0.0 y=40.0\n";
     let report = ui
         .restore_workspace(&Workspace::decode(document).unwrap())
         .unwrap();
@@ -764,7 +765,7 @@ fn a_view_that_mounts_during_a_drag_reports_its_entry_busy() {
         .mount_tree(Element::new("main", Column::new([strip()])))
         .unwrap();
     ui.flush(Duration::ZERO).unwrap();
-    let document = "pert-ui-workspace 1\nentry \"main/late\" scroll x=0.0 y=40.0\n";
+    let document = "pert-ui-workspace 2\nentry \"main/late\" scroll x=0.0 y=40.0\n";
     let report = ui
         .restore_workspace(&Workspace::decode(document).unwrap())
         .unwrap();
@@ -807,18 +808,18 @@ fn a_document_that_violates_the_schema_changes_nothing() {
     let before = ui.capture_workspace().unwrap();
     for (text, expected) in [
         (
-            "pert-ui-workspace 2\nentry \"main/tabs\" tabs selected=\"scope\"\n",
+            "pert-ui-workspace 3\nentry \"main/tabs\" tabs selected=\"scope\"\n",
             WorkspaceError::UnsupportedVersion {
-                found: 2,
-                supported: 1,
+                found: 3,
+                supported: 2,
             },
         ),
         (
-            "pert-ui-workspace 1\nentry \"main/tabs\" tabs selected=\"scope\n",
+            "pert-ui-workspace 2\nentry \"main/tabs\" tabs selected=\"scope\n",
             WorkspaceError::Malformed("unterminated text".into()),
         ),
         (
-            "pert-ui-workspace 1\nentry \"main/tabs\" tabs selected=\"a\"\nentry \"main/tabs\" tabs selected=\"b\"\n",
+            "pert-ui-workspace 2\nentry \"main/tabs\" tabs selected=\"a\"\nentry \"main/tabs\" tabs selected=\"b\"\n",
             WorkspaceError::DuplicatePath("main/tabs".into()),
         ),
     ] {
@@ -841,7 +842,7 @@ fn saved_geometry_is_a_preference_that_layout_clamps() {
     ))
     .unwrap();
     ui.flush(Duration::ZERO).unwrap();
-    let document = "pert-ui-workspace 1\nentry \"main/kept\" scroll x=0.0 y=100000.0\n";
+    let document = "pert-ui-workspace 2\nentry \"main/kept\" scroll x=0.0 y=100000.0\n";
     let report = ui
         .restore_workspace(&Workspace::decode(document).unwrap())
         .unwrap();
@@ -910,7 +911,7 @@ fn restoring_a_hidden_view_schedules_no_work_for_it() {
     .unwrap();
     ui.flush(Duration::ZERO).unwrap();
     assert!(!visible(&ui, "hidden"));
-    let document = "pert-ui-workspace 1\nentry \"main/second/hidden\" scroll x=0.0 y=8.0\n";
+    let document = "pert-ui-workspace 2\nentry \"main/second/hidden\" scroll x=0.0 y=8.0\n";
     let report = ui
         .restore_workspace(&Workspace::decode(document).unwrap())
         .unwrap();
@@ -1423,4 +1424,73 @@ fn every_workspace_value_is_built_through_a_checking_constructor() {
     let number = WorkspaceValue::number(0.5).unwrap();
     assert_eq!(number.as_number(), Some(0.5));
     assert_eq!(WorkspaceValue::flag(true).as_flag(), Some(true));
+}
+
+/// An item of a default `Each`: a short scroll area over tall content, keyed
+/// `scroll`, so a saved offset is visible.
+fn scrolling_item(task: &str) -> Element {
+    Container::new(Element::new(
+        "scroll",
+        ScrollArea::new(Element::new(
+            "body",
+            Container::default().preferred_size(Size::from([100, 400])),
+        )),
+    ))
+    .size_limits(SizeLimits::exact(Size::from([100, 40])))
+    .key(task)
+}
+
+/// New-behavior test. Named assertions: the capture records each item's
+/// participant at `tasks/<key>/scroll`, with no `items` segment, and a
+/// document with that address scrolls the same item, also one that mounts
+/// after the restore.
+#[test]
+fn a_participant_in_an_each_item_is_addressed_below_the_each() {
+    let mut ui = runtime();
+    let tasks = ui.signal(vec!["write".to_owned(), "ship".to_owned()]);
+    ui.mount_tree(Each::new(&tasks, Clone::clone, |_, task| scrolling_item(task)).key("tasks"))
+        .unwrap();
+    ui.flush(Duration::ZERO).unwrap();
+    assert_eq!(
+        paths(&ui.capture_workspace().unwrap()),
+        ["tasks/ship/scroll", "tasks/write/scroll"]
+    );
+    let document = "pert-ui-workspace 2\nentry \"tasks/ship/scroll\" scroll x=0.0 y=30.0\nentry \"tasks/late/scroll\" scroll x=0.0 y=20.0\n";
+    let report = ui
+        .restore_workspace(&Workspace::decode(document).unwrap())
+        .unwrap();
+    assert_eq!(
+        report
+            .applied()
+            .map(ToString::to_string)
+            .collect::<Vec<_>>(),
+        ["tasks/ship/scroll"]
+    );
+    assert_eq!(report.pending().count(), 1);
+    ui.flush(Duration::ZERO).unwrap();
+    let captured = ui.capture_workspace().unwrap();
+    assert_eq!(entry(&captured, "tasks/ship/scroll").number("y"), Ok(30.0));
+    assert_eq!(entry(&captured, "tasks/write/scroll").number("y"), Ok(0.0));
+    // An item that mounts later takes its pending entry.
+    tasks.update(|tasks| tasks.push("late".to_owned())).unwrap();
+    ui.flush(Duration::ZERO).unwrap();
+    assert_eq!(ui.workspace_report().pending().count(), 0);
+    let captured = ui.capture_workspace().unwrap();
+    assert_eq!(entry(&captured, "tasks/late/scroll").number("y"), Ok(20.0));
+}
+
+/// New-behavior test. Named assertion: a revision-1 document is rejected
+/// with `UnsupportedVersion { found: 1, supported: 2 }` before any entry is
+/// read, so a path written under the old addressing is never reinterpreted.
+#[test]
+fn a_revision_one_document_is_rejected() {
+    let document = "pert-ui-workspace 1\nentry \"list/items/7/scroll\" scroll x=0.0 y=10.0\n";
+    assert_eq!(
+        Workspace::decode(document),
+        Err(WorkspaceError::UnsupportedVersion {
+            found: 1,
+            supported: 2,
+        })
+    );
+    assert_eq!(Workspace::SCHEMA_VERSION, 2);
 }

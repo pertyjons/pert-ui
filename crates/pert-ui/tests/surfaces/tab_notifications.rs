@@ -1,5 +1,6 @@
 //! `Tabs::on_select`: every selection change is reported once, after it took
 //! effect, with its origin, in order, from an event phase of the flush.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::RefCell, rc::Rc, time::Duration};
 
@@ -44,7 +45,7 @@ fn at(ui: &Runtime, root: &WidgetId, path: &[&str]) -> WidgetId {
 }
 
 fn restore(ui: &mut Runtime, path: &str, key: &str) {
-    let document = format!("pert-ui-workspace 1\nentry \"{path}\" tabs selected=\"{key}\"\n");
+    let document = format!("pert-ui-workspace 2\nentry \"{path}\" tabs selected=\"{key}\"\n");
     let report = ui
         .restore_workspace(&Workspace::decode(&document).unwrap())
         .unwrap();
@@ -459,7 +460,7 @@ fn changes_of_two_strips_arrive_in_the_order_they_happened() {
     // First restores, then second, then first changes again: three changes
     // before one flush delivers them.
     let document = concat!(
-        "pert-ui-workspace 1\n",
+        "pert-ui-workspace 2\n",
         "entry \"root/first\" tabs selected=\"b\"\n",
         "entry \"root/second\" tabs selected=\"b\"\n",
     );

@@ -202,7 +202,7 @@ it under the default [`DetachedClosePolicy`].
 Detachment is permitted per item, and nothing is detachable by accident: a strip
 offers the gesture only after `Tabs::detachable(true)`, and `Tab::detachable(false)`
 excludes one title from a strip that does. Both are [`Element::with_detachable`],
-which any view can set. A refusal is enforced centrally, so `prepare_detach`,
+which any view can set. A refusal is enforced centrally, so a host's `prepare_detach`,
 `request_detach` and `detach_view` all return [`RuntimeError::NotDetachable`] instead
 of moving the view, and [`Tabs`] offers that title no marker, no Move cursor and no
 drag-out. Reconciliation updates the permission without remounting; an already
@@ -211,7 +211,8 @@ metadata through [`ChildInfo::detachable`].
 
 With the `desktop` feature, [`App`] opens and closes the native windows these
 requests describe; a custom host takes them with
-[`Runtime::take_presentation_requests`] and completes each one. A detached tab or
+[`HostIntegration::take_presentation_requests`](crate::host::HostIntegration::take_presentation_requests)
+and completes each one. A detached tab or
 tool window whose title changes asks for its open window to be retitled with
 `PresentationAction::Retitle` ([`EventContext::set_window_title`]); a custom host
 sets the native title and completes the request. Native multi-window support is
@@ -415,7 +416,7 @@ let root = ui.mount_tree(view.key("content"))?;
 ui.flush(Duration::ZERO)?;
 tasks.update(|tasks| tasks.push("Ship it".to_owned()))?;
 ui.flush(Duration::ZERO)?;
-assert!(ui.find(&root, &["tasks", "items", "Ship it"])?.is_some());
+assert!(ui.find(&root, &["tasks", "Ship it"])?.is_some());
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
 

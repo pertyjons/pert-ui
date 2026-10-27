@@ -106,7 +106,7 @@ impl Runtime {
             .ok_or(RuntimeError::Exhausted)?;
         let start = self.serial;
         let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            self.mount_description(element, None, true)
+            self.mount_description(element, None)
         }));
         match result {
             Ok(Ok(id)) => {
@@ -148,73 +148,20 @@ impl Runtime {
             .collect())
     }
 
-    /// Finds the descendant of `root` reached by the full internal path of
-    /// sibling keys, one key per level, including the keys built-in composites
-    /// give the parts they create; an empty path returns `root` itself.
-    ///
-    /// This is the lookup for code that knows how the built-ins it passes
-    /// through are composed, such as a test of a composite's internal parts.
-    /// Ordinary lookups use [`Self::find`], which names only the addressable
-    /// segments that inspection reports, or [`Self::find_descendant`] for one
-    /// application key. It follows logical children, including hidden ones and those presented
-    /// in a detached window, exactly as `children` lists them. Each level scans
-    /// that parent's children, so the cost grows with the path length times the
-    /// sibling counts; retain the returned `WidgetId` rather than looking it up
-    /// for every event.
-    ///
-    /// # Errors
-    /// Rejects a foreign or unmounted `root`. A path that does not resolve is
-    /// `Ok(None)`, not an error.
-    ///
-    /// ```
-    /// # use pert_ui_runtime as pert_ui;
-    /// use pert_ui::prelude::*;
-    ///
-    /// let mut ui = Runtime::new();
-    /// let root = ui.mount_tree(Element::new("root", Column::new([Element::new(
-    ///     "settings",
-    ///     Row::new([Element::new("apply", Label::new("Apply"))]),
-    /// )])))?;
-    /// let apply = ui.find_path(&root, &["settings", "apply"])?.ok_or("not mounted")?;
-    /// assert_eq!(ui.key(&apply)?, "apply");
-    /// assert!(ui.find_path(&root, &["settings", "missing"])?.is_none());
-    /// assert_eq!(ui.find_path(&root, &[])?, Some(root.clone()));
-    /// # Ok::<(), Box<dyn std::error::Error>>(())
-    /// ```
-    pub fn find_path(
-        &self,
-        root: &WidgetId,
-        path: &[&str],
-    ) -> Result<Option<WidgetId>, RuntimeError> {
-        self.check(root)?;
-        let mut serial = root.0.serial;
-        for key in path {
-            let Some(child) = self.entries[&serial]
-                .children
-                .iter()
-                .copied()
-                .find(|child| self.entries[child].key == *key)
-            else {
-                return Ok(None);
-            };
-            serial = child;
-        }
-        Ok(Some(WidgetId(self.entries[&serial].node.clone())))
-    }
-
     /// Finds the unique descendant of `ancestor` whose key is `key`, at any
     /// depth below it.
     ///
-    /// [`Self::find_path`] needs every key on the way down, including the keys that
-    /// built-in composites give the parts they create, such as a dialog's
-    /// anchor, a scroll area's viewport or a group's content. This lookup names
+    /// Walking [`Self::children`] and [`Self::key`] level by level needs every
+    /// key on the way down, including the keys that built-in composites give
+    /// the parts they create, such as a dialog's anchor, a scroll area's
+    /// viewport or a group's content. This lookup names
     /// only the key the application chose, so a host can find its own
     /// component without knowing how the built-ins in between are composed.
     /// Keys are unique only among siblings, so the lookup never picks one of
     /// several matches: if more than one descendant carries `key`, it fails
     /// with [`RuntimeError::AmbiguousKey`]. Narrow the search by first finding
     /// a uniquely keyed ancestor and searching below it, name the addressable
-    /// path with [`Self::find`], or use [`Self::find_path`] with a full path.
+    /// path with [`Self::find`], or walk [`Self::children`] and [`Self::key`].
     /// A common cause is a container keyed like the control it holds, such as
     /// a [`ToolGroup`](crate::ToolGroup) named after its only control; give
     /// the container a key of its own. `ancestor` itself is not a candidate.
@@ -298,7 +245,8 @@ impl Runtime {
     /// the address relative to `root`: the segments contributed by the
     /// elements strictly below `root` on the way down to the target, so a
     /// titled group's content is `["form"]` below the group's key, not the
-    /// frame and body levels [`Self::find_path`] would have to name. The match is
+    /// frame and body levels a walk of [`Self::children`] would have to name.
+    /// The match is
     /// the element that introduces the last segment; structural wrappers
     /// beneath it share its address but are not matches. A drag preview
     /// never matches.
@@ -398,8 +346,8 @@ impl Runtime {
 
     /// Returns the most recent allocated window-coordinate bounds, if laid out.
     ///
-    /// Bounds may describe the last successful layout while a new layout is pending.
-    /// Legacy roots have no allocation. Hidden components retain their last bounds.
+    /// Bounds may describe the last successful layout while a new layout is pending,
+    /// and are absent before the first. Hidden components retain their last bounds.
     ///
     /// # Errors
     /// Returns `ForeignRuntime` for an ID of another runtime and `Unmounted` for an
@@ -476,7 +424,7 @@ impl Runtime {
     /// Rejects invalid IDs, duplicate/empty keys (including a key that names a
     /// child moved here from a parent that still describes it), changed
     /// surviving component types,
-    /// identity exhaustion, legacy parents, children described for a surviving
+    /// identity exhaustion, children described for a surviving
     /// component that manages its own (`LayoutError::InvalidChild`, except for
     /// [`Component::retain_initial_children`]) or forbidden phases before mutation.
     pub fn reconcile_children(
@@ -503,9 +451,6 @@ impl Runtime {
             .span(crate::ProfileOperation::Reconcile, None, "");
         self.shared.writable()?;
         self.check(parent)?;
-        if !self.entries[&parent.0.serial].composed {
-            return Err(LayoutError::InvalidChild.into());
-        }
         self.discard_owned_descriptions(parent.0.serial, &mut children, trail)?;
         let count = validate_traced(&children, trail)?;
         self.serial
@@ -719,8 +664,8 @@ impl Runtime {
     /// ```
     ///
     /// # Errors
-    /// Rejects foreign or unmounted handles, a legacy (non-composed) mount on
-    /// either side, a parent inside the moved subtree, and a key already used by
+    /// Rejects foreign or unmounted handles, a parent inside the moved subtree
+    /// (`LayoutError::InvalidChild`), and a key already used by
     /// another child of `parent` or by a child `parent` describes elsewhere
     /// (`DuplicateKey`). Returns `NotMovable` when the move would leave the
     /// subtree's native presentation root, when the subtree contains a detached
@@ -743,11 +688,7 @@ impl Runtime {
         self.check(parent)?;
         let serial = child.0.serial;
         let target = parent.0.serial;
-        if serial == target
-            || !child.0.composed
-            || !self.entries[&target].composed
-            || self.owns(serial, target)
-        {
+        if serial == target || self.owns(serial, target) {
             return Err(LayoutError::InvalidChild.into());
         }
         if !Rc::ptr_eq(&child.0.window(), &parent.0.window())
@@ -1106,7 +1047,7 @@ impl Runtime {
                 properties.push((serial, element.reconcile, element.component));
                 serial
             } else {
-                self.mount_description(element, Some(parent), true)
+                self.mount_description(element, Some(parent))
                     .inspect_err(|_| trail.push(key.clone()))?
                     .0
                     .serial
@@ -1165,7 +1106,6 @@ impl Runtime {
         &mut self,
         element: Element,
         parent: Option<u64>,
-        composed: bool,
     ) -> Result<WidgetId, RuntimeError> {
         self.shared.writable()?;
         if element.key.trim().is_empty() {
@@ -1219,7 +1159,6 @@ impl Runtime {
             local_visible: Cell::new(true),
             parent: RefCell::new(parent_node.as_ref().map(Rc::downgrade)),
             parent_serial: Cell::new(parent),
-            composed,
             layout_dirty: Cell::new(true),
             measured: Cell::new(None),
             limits: Cell::new(None),
@@ -1266,7 +1205,6 @@ impl Runtime {
             children: Vec::new(),
             raised_children: Vec::new(),
             kind: element.kind,
-            composed,
             home: parent,
         };
         self.serial = serial;
@@ -1300,7 +1238,7 @@ impl Runtime {
                 crate::EventStatus::Succeeded
             });
         for child in element.children {
-            let id = self.mount_description(child, Some(serial), true)?;
+            let id = self.mount_description(child, Some(serial))?;
             self.entries
                 .get_mut(&serial)
                 .ok_or(RuntimeError::Unmounted)?
@@ -1544,7 +1482,7 @@ impl Runtime {
                     .as_ref()
                     .is_some_and(|id| id.0.serial == serial)
                 {
-                    self.window.restore_focus |= node.composed;
+                    self.window.restore_focus = true;
                     self.window.focus_fallback = Self::focus_fallback_of(&node);
                     node.invalidate_focus_path();
                     self.window.focus = None;
@@ -1561,7 +1499,7 @@ impl Runtime {
             self.note_drag_layout_change();
             #[cfg(debug_assertions)]
             {
-                if visible && node.composed {
+                if visible {
                     self.validator.unmeasured(serial);
                 }
                 self.validator.flags(serial, visible, false);
@@ -1647,7 +1585,7 @@ impl Runtime {
             .as_ref()
             .is_some_and(|id| id.0.serial == serial)
         {
-            self.window.restore_focus |= entry.composed;
+            self.window.restore_focus = true;
             self.window.focus_fallback = Self::focus_fallback_of(&entry.node);
             entry.node.invalidate_focus_path();
             self.window.focus = None;
@@ -1972,7 +1910,7 @@ impl Runtime {
         let preview = self.drag_preview_root();
         for serial in self.root_order() {
             let entry = &self.entries[&serial];
-            if !entry.composed || !entry.node.visible.get() {
+            if !entry.node.visible.get() {
                 continue;
             }
             if Some(serial) == preview {

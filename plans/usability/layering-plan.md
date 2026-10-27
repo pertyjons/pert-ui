@@ -594,6 +594,57 @@ All six were decided on 2026-10-26 as recommended.
     `component`; this plan's membership bullet records the approved
     rule. Verified in L3's review.
 
+- **L3 (0.3.74), implemented 2026-10-27:** commit and review to be
+  recorded. One way where history left two, by
+  [the approved design](layering-design-L3.md) (revision 4; D1
+  `HostIntegration`, D2 workspace schema 2 with versioned rejection, D3
+  `Painter::size` returning `Size`).
+  - **N3:** the sealed `HostIntegration` trait in `host` holds the 33
+    host-integration methods, which are crate-private inherent methods the
+    trait forwards to; the seven methods tests use stay on `Runtime`. The
+    runtime and facade `host` modules re-export the host vocabulary, and
+    both `testing` modules re-export the trait, so test programs need no
+    further import. The facade's `host` page carries the custom-host
+    example.
+  - **N6 and lookups:** `Runtime::mount` and its legacy roots are removed,
+    every user moved to `mount_tree` with the design's named exceptions
+    (the `Place` fixtures, the gallery probes, the diagnostics box);
+    `find_path` is removed, with `find` or a test `key_path` helper in its
+    place.
+  - **N7:** `Each`'s default container is structural, so an item's address
+    is its key under the `Each`; addressing is fixed at mount; the naming
+    consequences are documented; the workspace schema is 2 and version-1
+    documents are rejected in text and serde; the inspection schema stays
+    15.
+  - **D3:** `Painter::size` returns `Size`; compose refuses an entry
+    without an allocation.
+  - **Tests:** each new-behavior test failed under its mutation (a public
+    inherent host method, the `testing` re-export dropped, the supertrait
+    removed, a host vocabulary name dropped, `.structural()` removed, the
+    schema back to 1), and the contract mutations failed their tests.
+  - **Checks:** the public-API row (formatting, Clippy, workspace tests, the
+    five headless example sessions, doctests, rustdoc, the diagnostics
+    snapshots with `k01` updated and `h01` added, the API listing gate), the
+    dependency row (release tests, every CI feature configuration, the
+    headless gallery, library packaging, and an isolated packaged consumer
+    running the custom-host example and a custom widget), MSRV (the pinned
+    toolchain) and `git diff --check`. **Not run:** the native checks (no
+    desktop session); the native smokes, the wgpu native checks and the
+    gallery's interaction and restart probes changed, so NATIVE-04 and
+    Windows and macOS evidence remain open.
+  - **Deviations (test-side, no library behavior change):** tests that had
+    no viewport now set one, because a laid-out root in an empty viewport
+    is not presented (`live_sources`, `runtime`, `theme`, a number-input
+    test, `platform/schedule`); three unclipped-command assertions expect
+    the root's allocation as the clip; a `parameter_delivery` test asserts
+    delivery through `on_outcome` because removing a focused laid-out root
+    schedules focus restoration; the `validation` `Place` fixture places
+    children by key; the `h01` snapshot also holds rustc's E0046 before the
+    seal message.
+  - **Out of scope, noted:** `FailureSite` description trails still name
+    the structural container in their key trail; a TODO.md entry records
+    the yanked `clipboard-win` in the lockfile.
+
 ## Review record
 
 - **Revision 1, Codex evaluation (2026-10-26):** needs revision, with one

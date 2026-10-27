@@ -942,13 +942,13 @@ fn refused_navigation_neither_queues_nor_dispatches_a_request() {
         let before = stage.controller.current().get().unwrap();
         let probe = stage
             .ui
-            .mount(
+            .mount_tree(Element::new(
                 "probe",
                 NavigateInUpdate {
                     controller: stage.controller.clone(),
                     directory: PathBuf::from(directory),
                 },
-            )
+            ))
             .unwrap();
         settle(&mut stage.ui);
         assert_eq!(stage.controller.current().get().unwrap(), before);

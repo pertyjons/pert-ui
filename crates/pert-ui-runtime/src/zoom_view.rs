@@ -725,7 +725,7 @@ impl Component for ZoomView {
         }
     }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        let (Some(spacing), Some(size)) = (self.grid, painter.size()) else {
+        let (Some(spacing), size) = (self.grid, painter.size()) else {
             return Ok(());
         };
         // The view draws in its own space, so it maps the content grid itself.
@@ -749,7 +749,7 @@ impl Component for ZoomView {
         Ok(())
     }
     fn paint_foreground(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        let (true, Some(size)) = (self.focused, painter.size()) else {
+        let (true, size) = (self.focused, painter.size()) else {
             return Ok(());
         };
         painter.focus_ring(Rect::from_size(size), Shape::Rectangle)

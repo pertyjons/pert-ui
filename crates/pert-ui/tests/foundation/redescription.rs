@@ -1,6 +1,7 @@
 //! Re-describing mounted editors through the public facade: a new description
 //! with another binding, options or callbacks is applied, not ignored.
 use crate::support;
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::RefCell, rc::Rc};
 use support::{frame, key};

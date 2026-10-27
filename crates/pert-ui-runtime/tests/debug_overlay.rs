@@ -1,17 +1,11 @@
 //! The development overlay is part of the scene, so its contract is asserted on
 //! the scene: what it draws, what bounds it, and that it costs nothing idle.
+use pert_ui_runtime::testing::HostIntegration;
 use pert_ui_runtime::*;
 use std::{cell::RefCell, rc::Rc, time::Duration};
 
 #[derive(Clone, Default)]
 struct Observed(Rc<RefCell<ComponentDetails>>);
-impl Observed {
-    fn at(bounds: [f32; 4]) -> Self {
-        let observed = Self::default();
-        observed.0.borrow_mut().box_model.border_box = Some(bounds);
-        observed
-    }
-}
 impl Component for Observed {
     fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
         Ok(())
@@ -21,6 +15,53 @@ impl Component for Observed {
     }
 }
 type TestResult = Result<(), Box<dyn std::error::Error>>;
+
+/// The rectangle each child of a [`Place`] is placed at, by child index; a
+/// test moves a child by changing its rectangle and invalidating the layout.
+type Rects = Rc<RefCell<Vec<Rect>>>;
+
+/// Places each child at its listed rectangle, so a fixture's geometry is set
+/// by real layout, and clipped by it, rather than reported by the component.
+struct Place {
+    children: Vec<Element>,
+    rects: Rects,
+}
+impl Component for Place {
+    fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+        Ok(())
+    }
+    fn take_children(&mut self) -> Vec<Element> {
+        std::mem::take(&mut self.children)
+    }
+    fn arrange(&self, cx: &mut ArrangeContext<'_>, _: Size) -> Result<(), RuntimeError> {
+        for (index, rect) in self.rects.borrow().iter().enumerate() {
+            cx.place(index, *rect)?;
+        }
+        Ok(())
+    }
+}
+
+/// Mounts one `Place` root holding `children` at their rectangles.
+fn place(
+    runtime: &mut Runtime,
+    children: Vec<(String, Observed, [f32; 4])>,
+) -> Result<(WidgetId, Rects), Box<dyn std::error::Error>> {
+    let mut elements = Vec::new();
+    let mut rects = Vec::new();
+    for (key, component, [x, y, width, height]) in children {
+        elements.push(Element::new(key, component));
+        rects.push(Rect::new(x, y, width, height)?);
+    }
+    let rects = Rc::new(RefCell::new(rects));
+    let root = runtime.mount_tree(Element::new(
+        "place",
+        Place {
+            children: elements,
+            rects: rects.clone(),
+        },
+    ))?;
+    Ok((root, rects))
+}
 
 #[cfg(debug_assertions)]
 const RED: [f32; 4] = [1.0, 0.0, 0.0, 1.0];
@@ -38,13 +79,17 @@ fn rects(scene: &DisplayList) -> Vec<(Rect, Color)> {
 }
 
 /// Two overlapping peers: one issue, two markers.
-fn overlapping(runtime: &mut Runtime) -> Result<(Observed, WidgetId), RuntimeError> {
-    runtime.set_viewport(Viewport::new(200.0, 100.0, 2.0).expect("valid viewport"))?;
-    runtime.mount("a", Observed::at([10.0, 10.0, 40.0, 20.0]))?;
-    let second = Observed::at([30.0, 10.0, 40.0, 20.0]);
-    let id = runtime.mount("b", second.clone())?;
+fn overlapping(runtime: &mut Runtime) -> Result<(WidgetId, Rects), Box<dyn std::error::Error>> {
+    runtime.set_viewport(Viewport::new(200.0, 100.0, 2.0)?)?;
+    let placed = place(
+        runtime,
+        vec![
+            ("a".into(), Observed::default(), [10.0, 10.0, 40.0, 20.0]),
+            ("b".into(), Observed::default(), [30.0, 10.0, 40.0, 20.0]),
+        ],
+    )?;
     runtime.flush(Duration::ZERO)?;
-    Ok((second, id))
+    Ok(placed)
 }
 
 #[test]
@@ -66,7 +111,7 @@ fn off_draws_nothing_and_release_builds_draw_nothing_in_any_mode() -> TestResult
 #[test]
 fn issues_outline_each_marker_inside_its_bounds_two_physical_pixels_wide() -> TestResult {
     let mut runtime = Runtime::new();
-    let (second, id) = overlapping(&mut runtime)?;
+    let (root, placed) = overlapping(&mut runtime)?;
     runtime.set_debug_overlay(DebugOverlay::Issues);
     let scene = runtime.paint()?;
     let drawn = rects(&scene);
@@ -79,8 +124,8 @@ fn issues_outline_each_marker_inside_its_bounds_two_physical_pixels_wide() -> Te
     assert_eq!(left.values(), [10.0, 11.0, 1.0, 18.0]);
 
     // A fix removes the outlines on the next paint, which the fix requested.
-    second.0.borrow_mut().box_model.border_box = Some([60.0, 10.0, 40.0, 20.0]);
-    runtime.invalidate(&id, Invalidation::Layout)?;
+    placed.borrow_mut()[1] = Rect::new(60.0, 10.0, 40.0, 20.0)?;
+    runtime.invalidate(&root, Invalidation::Layout)?;
     runtime.flush(Duration::ZERO)?;
     assert!(runtime.validation_report().issues.is_empty());
     assert!(runtime.needs_paint());
@@ -133,19 +178,28 @@ fn the_overlay_never_schedules_frames_or_changes_what_inspection_reports() -> Te
 #[test]
 fn outlines_stop_at_the_cap_and_the_badge_counts_the_rest() -> TestResult {
     let mut runtime = Runtime::new();
-    runtime.set_viewport(Viewport::new(200.0, 100.0, 1.0)?)?;
+    // Tall enough that every marker keeps a drawable rectangle under layout's
+    // clipping, so the outlines reach the cap.
+    runtime.set_viewport(Viewport::new(200.0, 700.0, 1.0)?)?;
     runtime.set_debug_overlay(DebugOverlay::Issues);
     // Every component carries its own issue, so each gets a marker.
     let extra = 3;
+    let mut children = Vec::new();
     for index in 0..Runtime::MAX_OVERLAY_MARKERS + extra {
-        let component = Observed::at([0.0, index as f32 * 10.0, 8.0, 8.0]);
+        let component = Observed::default();
         component.0.borrow_mut().box_model.padding = Some([-1.0; 4]);
-        runtime.mount(format!("c{index}"), component)?;
+        children.push((
+            format!("c{index}"),
+            component,
+            [0.0, index as f32 * 10.0, 8.0, 8.0],
+        ));
     }
-    // Never measured: it has an issue and a marker, but no rectangle to outline.
+    // Placed at an empty rectangle: it has an issue and a marker, but no
+    // visible rectangle to outline.
     let unmeasured = Observed::default();
     unmeasured.0.borrow_mut().box_model.padding = Some([-1.0; 4]);
-    runtime.mount("unmeasured", unmeasured)?;
+    children.push(("unmeasured".into(), unmeasured, [0.0; 4]));
+    place(&mut runtime, children)?;
     runtime.flush(Duration::ZERO)?;
     let report = runtime.validation_report();
     assert_eq!(
@@ -176,18 +230,32 @@ fn outlines_stop_at_the_cap_and_the_badge_counts_the_rest() -> TestResult {
 fn boxes_outline_border_and_content_boxes_without_markers() -> TestResult {
     let mut runtime = Runtime::new();
     runtime.set_viewport(Viewport::new(200.0, 100.0, 1.0)?)?;
-    let padded = Observed::at([10.0, 10.0, 40.0, 20.0]);
+    let padded = Observed::default();
     padded.0.borrow_mut().box_model.padding = Some([2.0, 4.0, 2.0, 4.0]);
-    runtime.mount("padded", padded)?;
-    runtime.mount("plain", Observed::at([60.0, 10.0, 40.0, 20.0]))?;
+    place(
+        &mut runtime,
+        vec![
+            ("padded".into(), padded, [10.0, 10.0, 40.0, 20.0]),
+            (
+                "plain".into(),
+                Observed::default(),
+                [60.0, 10.0, 40.0, 20.0],
+            ),
+        ],
+    )?;
     runtime.flush(Duration::ZERO)?;
     assert!(runtime.validation_report().issues.is_empty());
     runtime.set_debug_overlay(DebugOverlay::Boxes);
     let drawn = rects(&runtime.paint()?);
-    assert_eq!(drawn.len(), 12, "border and content box, then a border box");
-    assert_eq!(drawn[0].0.values(), [10.0, 10.0, 40.0, 1.0]);
-    assert_eq!(drawn[4].0.values(), [14.0, 12.0, 32.0, 1.0]);
-    assert_ne!(drawn[0].1, drawn[4].1);
+    // The laid-out root is outlined too, first.
+    assert_eq!(
+        drawn.len(),
+        16,
+        "the root's border box, a border and content box, then a border box"
+    );
+    assert_eq!(drawn[4].0.values(), [10.0, 10.0, 40.0, 1.0]);
+    assert_eq!(drawn[8].0.values(), [14.0, 12.0, 32.0, 1.0]);
+    assert_ne!(drawn[4].1, drawn[8].1);
     assert!(drawn.iter().all(|(_, color)| color.channels() != RED));
     Ok(())
 }
@@ -198,14 +266,18 @@ fn boxes_stop_at_their_cap() -> TestResult {
     let mut runtime = Runtime::new();
     runtime.set_viewport(Viewport::new(400.0, 400.0, 1.0)?)?;
     let extra = 3;
+    let mut children = Vec::new();
     for index in 0..Runtime::MAX_OVERLAY_BOXES + extra {
         // Small, separate cells in a grid, so every box is a plain border box.
         let (column, row) = ((index % 64) as f32, (index / 64) as f32);
-        runtime.mount(
+        children.push((
             format!("c{index}"),
-            Observed::at([column * 6.0, row * 6.0, 4.0, 4.0]),
-        )?;
+            Observed::default(),
+            [column * 6.0, row * 6.0, 4.0, 4.0],
+        ));
     }
+    // The root is one of the outlined boxes; the cap still holds.
+    place(&mut runtime, children)?;
     runtime.flush(Duration::ZERO)?;
     runtime.set_debug_overlay(DebugOverlay::Boxes);
     let drawn = rects(&runtime.paint()?);

@@ -66,17 +66,8 @@ impl From<PresentationRate> for f64 {
     }
 }
 impl Runtime {
-    /// Supplies the display's presentation ceiling for the selected window.
-    ///
-    /// `None` records that the rate is unknown and uses the deterministic 60 Hz
-    /// fallback. The native `App` supplies this automatically on native event
-    /// turns. Custom hosts may supply an intentional cap instead. Animation and
-    /// polled live sources share this ceiling; notified sources drain on wakes.
-    /// A polled source shared across windows follows its fastest presented subscriber. One-shot event timers are unaffected.
-    ///
-    /// # Errors
-    /// Returns only a runtime phase error (see [`Runtime`]).
-    pub fn set_presentation_rate(
+    // Documented on `crate::host::HostIntegration::set_presentation_rate`.
+    pub(crate) fn set_presentation_rate(
         &self,
         rate: Option<PresentationRate>,
     ) -> Result<(), RuntimeError> {
@@ -105,9 +96,8 @@ impl Runtime {
         self.shared.repace_sources();
         Ok(())
     }
-    /// The supplied ceiling for this window, absent when unknown. Unlike the
-    /// scheduling fallback, this query never invents a measured display rate.
-    pub fn presentation_rate(&self) -> Option<PresentationRate> {
+    // Documented on `crate::host::HostIntegration::presentation_rate`.
+    pub(crate) fn presentation_rate(&self) -> Option<PresentationRate> {
         self.window.shared.presentation_rate.get()
     }
 }

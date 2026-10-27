@@ -2,6 +2,7 @@
 //! own native windows, their permissions, change reports and workspace
 //! persistence. Native windows are driven headlessly: the test plays the
 //! host, taking the runtime's presentation requests and committing them.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::RefCell, rc::Rc, time::Duration};
 
@@ -893,7 +894,10 @@ fn tool_controller_rejects_update_writes_before_changing_the_model() -> TestResu
     ui.mount_tree(Element::new("frame", layout().controller(&controller)))?;
     flush(&mut ui);
     let before = ui.capture_workspace()?;
-    let probe = ui.mount("probe", MutateToolsInUpdate(controller.clone()))?;
+    let probe = ui.mount_tree(Element::new(
+        "probe",
+        MutateToolsInUpdate(controller.clone()),
+    ))?;
     flush(&mut ui);
     assert_eq!(ui.capture_workspace()?, before);
     ui.unmount(&probe)?;

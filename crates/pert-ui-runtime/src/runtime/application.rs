@@ -285,7 +285,9 @@ impl Runtime {
     /// that runs late does not catch up: the next one is due one `period`
     /// after the late one ran, if its scheduled time has passed. A failing
     /// tick keeps the timer running; its error is returned from that flush, or
-    /// from [`Self::service_intervals`]. A running timer keeps the
+    /// from
+    /// [`HostIntegration::service_intervals`](crate::host::HostIntegration::service_intervals). A
+    /// running timer keeps the
     /// application's next deadline set, so use it only for work that needs it.
     ///
     /// ```
@@ -349,11 +351,9 @@ impl Runtime {
         Ok(IntervalTimer { cancelled })
     }
 
-    /// The earliest due time of a running interval timer, for a host that
-    /// schedules its own wakeups; [`Self::next_deadline`] and
-    /// [`Self::application_deadline`] include it.
+    // Documented on `crate::host::HostIntegration::interval_deadline`.
     #[must_use]
-    pub fn interval_deadline(&self) -> Option<Duration> {
+    pub(crate) fn interval_deadline(&self) -> Option<Duration> {
         self.intervals
             .values()
             .filter(|interval| !interval.cancelled.get())
@@ -361,17 +361,8 @@ impl Runtime {
             .min()
     }
 
-    /// Runs the interval timers due at `now` outside a flush, for a host that
-    /// cannot flush a window, such as one whose redraw the window system
-    /// withholds. An ordinary flush runs due timers itself. Advances the
-    /// runtime's time to `now`.
-    ///
-    /// # Errors
-    /// `TimeReversed` for a time before the runtime's current one, `Closed`
-    /// after shutdown and the phase errors of a write from inside update,
-    /// layout, paint, inspection or delivery, then the first error a tick
-    /// returns; later due timers run in the next call or flush.
-    pub fn service_intervals(&mut self, now: Duration) -> Result<(), RuntimeError> {
+    // Documented on `crate::host::HostIntegration::service_intervals`.
+    pub(crate) fn service_intervals(&mut self, now: Duration) -> Result<(), RuntimeError> {
         if now < self.shared.now.get() {
             return Err(RuntimeError::TimeReversed);
         }
@@ -438,7 +429,9 @@ impl Runtime {
     /// application's default error report, names it beside the error.
     ///
     /// Each outermost [`Self::flush`], [`Self::paint`],
-    /// [`Self::flush_windows`] and [`Self::service_intervals`] starts without
+    /// [`HostIntegration::flush_windows`](crate::host::HostIntegration::flush_windows) and
+    /// [`HostIntegration::service_intervals`](crate::host::HostIntegration::service_intervals)
+    /// starts without
     /// a site once it is admitted, so `None` means the latest one succeeded or
     /// failed outside any component, for example in a deferred task. A call
     /// refused at entry (a time before the runtime's current one, a forbidden

@@ -1,5 +1,6 @@
 //! Public in-view window identity, geometry, input, and lifecycle contracts.
 use crate::support;
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::Cell, rc::Rc, time::Duration};
 use support::{settle, widget};

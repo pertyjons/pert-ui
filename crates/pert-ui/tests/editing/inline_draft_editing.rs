@@ -2,6 +2,7 @@
 //! presses on the row's chrome, the wheel during a composition, outcomes and
 //! re-description.
 use crate::support;
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::Cell, rc::Rc};
 use support::{find, frame};

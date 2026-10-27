@@ -392,9 +392,7 @@ impl Component for Chip {
         self.hovered_remove = false;
     }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        let Some(size) = painter.size() else {
-            return Ok(());
-        };
+        let size = painter.size();
         let rect = Rect::from_size(size);
         let shape = Shape::Rounded(Length::new(size.height() / 2.0)?);
         painter.fill_shape(rect, shape, painter.color(ColorRole::SecondaryContainer))?;

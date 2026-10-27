@@ -947,7 +947,7 @@ impl Runner {
                     }
                     self.app
                         .runtime
-                        .mount("persistent-paint-error", FailingPaint)?;
+                        .mount_tree(crate::Element::new("persistent-paint-error", FailingPaint))?;
                 }
                 _ => (),
             }
@@ -976,12 +976,11 @@ impl Component for Rectangle {
     }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
         self.0.set(self.0.get() + 1);
-        if let Some(size) = painter.size() {
-            painter.fill_rect(
-                Rect::new(-10.0, -10.0, size.width() + 20.0, size.height() + 20.0)?,
-                Color::ACCENT,
-            );
-        }
+        let size = painter.size();
+        painter.fill_rect(
+            Rect::new(-10.0, -10.0, size.width() + 20.0, size.height() + 20.0)?,
+            Color::ACCENT,
+        );
         Ok(())
     }
 }

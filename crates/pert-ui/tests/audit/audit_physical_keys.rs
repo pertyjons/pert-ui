@@ -1,4 +1,5 @@
 //! Distinct native physical ownership and press-time control meanings.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::Cell, cell::RefCell, rc::Rc, time::Duration};
 

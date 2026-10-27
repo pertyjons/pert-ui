@@ -330,8 +330,8 @@ simultaneous-key actions. A key bubbles from the focused component through its
 ancestors until one returns `Handled` from `keyboard_event`; the default returns
 `Ignored` after calling `key_input`, so a component that only observes keys never
 swallows Escape or shortcuts. `input_reset` releases component-owned actions on
-context loss, called by the default `cancel_input`; `clear_focus` also clears
-window keys. Committed UTF-8 text uses `text_input`,
+context loss, called by the default `cancel_input`; a host's
+`HostIntegration::clear_focus` also clears window keys. Committed UTF-8 text uses `text_input`,
 independently of physical key positions. The default native adapter maps physical
 keys and delivers native committed text and IME preedit through the public text
 input contract.
@@ -653,7 +653,7 @@ it under the default `DetachedClosePolicy`.
 Detachment is permitted per item, and nothing is detachable by accident: a strip
 offers the gesture only after `Tabs::detachable(true)`, and `Tab::detachable(false)`
 excludes one title from a strip that does. Both are `Element::with_detachable`,
-which any view can set. A refusal is enforced centrally, so `prepare_detach`,
+which any view can set. A refusal is enforced centrally, so a host's `prepare_detach`,
 `request_detach` and `detach_view` all return `RuntimeError::NotDetachable` instead
 of moving the view, and `Tabs` offers that title no marker, no Move cursor and no
 drag-out. Reconciliation updates the permission without remounting; an already
@@ -804,7 +804,7 @@ drawing. `Label::color_role` and `Container::background_role` select roles, whil
 The last literal/role builder wins. Existing `Color` constants stay fixed.
 
 Custom graphics adapters must clear to `DisplayList::background()` before drawing
-its commands. Custom hosts check `Runtime::needs_paint()` after events/flushes;
+its commands. Custom hosts check `HostIntegration::needs_paint()` after events/flushes;
 a background-only edit can require presentation without component updates.
 An unchanged runtime schedules no theme timer. `needs_paint` scans mounted entries
 for visible drawing damage. Theme writes compare the fixed palette and visit
@@ -904,14 +904,12 @@ impl Component for CustomPanel {
     fn focusable(&self) -> bool { true }
     fn cursor(&self, _: Point) -> Option<CursorIcon> { Some(CursorIcon::Default) }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
-        if let Some(size) = painter.size() {
-            let rect = Rect::from_size(size);
-            let radius = Length::new(painter.metric(MetricRole::CornerRadius))?;
-            let width = Length::new(painter.metric(MetricRole::BorderWidth))?;
-            let role = if painter.focus_within() { ColorRole::Primary } else { ColorRole::PanelBorder };
-            painter.fill_shape(rect, Shape::Rounded(radius), painter.color(ColorRole::Surface))?;
-            painter.stroke_shape(rect, Shape::Rounded(radius), width, painter.color(role))?;
-        }
+        let rect = Rect::from_size(painter.size());
+        let radius = Length::new(painter.metric(MetricRole::CornerRadius))?;
+        let width = Length::new(painter.metric(MetricRole::BorderWidth))?;
+        let role = if painter.focus_within() { ColorRole::Primary } else { ColorRole::PanelBorder };
+        painter.fill_shape(rect, Shape::Rounded(radius), painter.color(ColorRole::Surface))?;
+        painter.stroke_shape(rect, Shape::Rounded(radius), width, painter.color(role))?;
         Ok(())
     }
 }
@@ -952,7 +950,7 @@ ui.key_input(KeyCode::ArrowUp, KeyAction::Release)?;
 assert_eq!(count.get()?, 12); // draft only
 ui.focus(&fields[1])?; // saves count
 assert_eq!(count.get()?, 13);
-ui.clear_focus(); // unchanged rounded display preserves the full amount
+ui.focus(&fields[0])?; // unchanged rounded display preserves the full amount
 assert_eq!(amount.get()?, 1.234567);
 # Ok::<(), pert_ui_runtime::RuntimeError>(())
 ```
@@ -963,7 +961,7 @@ assert_eq!(amount.get()?, 1.234567);
 including internal focus/hover/layout follow-ups. `RuntimeError::UpdateLimit`
 preserves pending work for repair and explicit retry; development validation names
 pending components. This does not bound the duration of a user callback or tree depth.
-Custom hosts can call `Runtime::cancel_input` after a failed operation to clear
+Custom hosts can call `HostIntegration::cancel_input` after a failed operation to clear
 held actions and capture while preserving focus and numeric drafts without saving.
 
 Escape in a text field cancels composition first, or collapses a selection and

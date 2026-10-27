@@ -4,6 +4,7 @@
 //! and what a pan and a zoom cost, as described in
 //! [transforms](../../../docs/rendering-platform.md).
 use crate::support;
+use pert_ui::testing::HostIntegration;
 
 use pert_ui::*;
 use std::{cell::Cell, rc::Rc};

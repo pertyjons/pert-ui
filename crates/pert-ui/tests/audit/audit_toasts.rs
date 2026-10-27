@@ -1,4 +1,5 @@
 //! Toast identity, scheduling and transparent notification gaps through the facade.
+use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::Cell, rc::Rc, time::Duration};
 
@@ -251,7 +252,7 @@ fn batched_expiry_prefers_surviving_neighbor_over_a_newly_promoted_toast() {
         ..
     } = fixture(2);
     let outside = ui
-        .mount("outside", Button::new("Outside", |_| Ok(())))
+        .mount_tree(Element::new("outside", Button::new("Outside", |_| Ok(()))))
         .unwrap();
     ui.focus(&outside).unwrap();
     ui.flush(Duration::from_secs(1)).unwrap();

@@ -1,6 +1,7 @@
 //! Selection notifications through the facade: lists, trees and tables report
 //! each change of their `ListSelection` with its origin, after the flush
 //! settles, and the application can follow the user's choice.
+use crate::support;
 use pert_ui::*;
 use std::{cell::RefCell, rc::Rc, time::Duration};
 
@@ -101,7 +102,7 @@ fn the_initial_selection_is_no_change_and_user_input_reports_user() -> TestResul
     assert!(f.log.borrow().is_empty());
     f.ui.focus(&f.list)?;
     press(&mut f.ui, KeyCode::ArrowDown)?;
-    let pear = f.ui.find_path(&f.list, &["pear"])?.ok_or("mounted")?;
+    let pear = support::key_path(&f.ui, &f.list, &["pear"]).ok_or("mounted")?;
     click(&mut f.ui, &pear)?;
     assert_eq!(
         origins(&f.log),
@@ -207,9 +208,7 @@ fn collections_sharing_a_selection_report_a_user_choice_as_the_users() -> TestRe
         .key("row"),
     )?;
     ui.flush(Duration::ZERO)?;
-    let pear = ui
-        .find_path(&row, &["left-frame", "left", "pear"])?
-        .ok_or("mounted")?;
+    let pear = support::key_path(&ui, &row, &["left-frame", "left", "pear"]).ok_or("mounted")?;
     click(&mut ui, &pear)?;
     let expected = [(Some("pear".to_owned()), ChangeOrigin::User)];
     assert_eq!(origins(&left_log), expected);

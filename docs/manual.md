@@ -61,8 +61,9 @@ Save it as `src/main.rs` and run `cargo run` in the application. The same
 program is maintained as the compiled package example
 [`getting_started.rs`](../crates/pert-ui/examples/getting_started.rs). For a
 headless host, disable default features and use `Runtime` directly; it does
-not require a window or GPU. A custom Runtime host calls `shutdown` before
-releasing its platform resources and drains `take_shutdown_errors` before dropping
+not require a window or GPU. A custom Runtime host imports
+`pert_ui::host::HostIntegration`, calls `shutdown` before releasing its platform
+resources and drains `HostIntegration::take_shutdown_errors` before dropping
 the runtime. Shutdown delivers drag cancellation while participants are mounted;
 cleanup failures remain typed even after a detached window is retired. The native
 `App::run` drains this report automatically: `AppError::Shutdown` retains its

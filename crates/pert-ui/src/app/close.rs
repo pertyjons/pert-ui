@@ -5,6 +5,7 @@
 //!
 //! [`HeadlessApp`]: crate::testing::HeadlessApp
 //! [`App::on_close`]: crate::App::on_close
+use crate::host::HostIntegration;
 use crate::{InspectionQuery, NativeWindowId, Runtime, RuntimeError, WidgetId};
 use std::time::Duration;
 
@@ -29,7 +30,7 @@ pub(crate) fn affected_roots(runtime: &Runtime, window: &NativeWindowId) -> Vec<
     }
 }
 
-/// Releases focus in each of `affected` through `Runtime::clear_focus`, as a
+/// Releases focus in each of `affected` through `HostIntegration::clear_focus`, as a
 /// window deactivation does, so each editor applies its focus-loss policy
 /// before the close policy runs; then, when `settle`, flushes them at `now`:
 /// every root through `flush_windows` for the main window, or the detached
