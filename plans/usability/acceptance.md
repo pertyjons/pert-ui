@@ -61,3 +61,21 @@ library's cross-thread facility, not shared UI objects; cancellation stops
 the worker; a failure shows in the row and as a notification; sorting by
 every column; no repaint while idle, as far as the library's profiling or
 inspection shows it.
+
+**6. Notes editor (reserved).** The list is read from the folder at startup
+(the author's own folder, with a non-`.txt` file and names out of creation
+order, gives the listed names and order through inspection), and reopening
+an open note leaves the tab count unchanged and makes its tab active; the
+text is edited in the library's text editor through simulated typing,
+including line breaks, and the modified marker and the status line's line
+and word counts are read from inspection, not from the tester's own fields;
+Ctrl+S, Ctrl+N and Ctrl+W go through the library's key or command path and
+the menu items through simulated clicks in the menu bar, with the saved
+file's contents compared on disk; a save into a removed folder appears as a
+notification in inspection while the marker stays; the New note dialog is a
+library dialog whose refusal text is visible in inspection while no file is
+created, and a valid name both creates the file and opens its tab; for a
+modified tab Cancel keeps tab and text, Discard leaves the file unchanged on
+disk and Save writes it before the tab disappears, and an unmodified tab
+closes with no dialog in the snapshot; the PNG comes from the CPU renderer
+and shows two tabs, one with the marker.

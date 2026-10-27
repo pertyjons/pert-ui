@@ -14,7 +14,7 @@ directory; they get a prepared kit, the brief and one task.
 | `check-probe.py` | The tester probe's shell network and write checks, read from the log of the script the session runs, and its tool checks |
 | `tester-brief.md`, `friction-log.md` | Given to every tester |
 | `tasks/` | Tasks 1 to 4, given one per run through the prompt |
-| `reserved/` | Task 5, unused until round 2 |
+| `reserved/` | Task 5, unused until round 2, and task 6, the sealed holdout for round 3 with the prompt its author was given |
 | `task4-app/` | The application task 4 tests, copied into `/work/bookmarks` of task 4's runs only |
 | `acceptance.md` | The author's acceptance checks, never shown to testers |
 | `author-notes.md` | Author observations made before any run, checked in slice 3's triage |
@@ -28,7 +28,8 @@ plans/usability/run.sh launch  ~/pert-ui-usability/kit-<commit> ~/pert-ui-usabil
 python3 -I plans/usability/summarize.py ~/pert-ui-usability/r<round>-<task>-<tester>
 ```
 
-Task 5 is passed by path (`plans/usability/reserved/5-job-monitor.md`).
+Tasks 5 and 6 are passed by path (`plans/usability/reserved/5-job-monitor.md`,
+`plans/usability/reserved/6-notes-editor.md`).
 `summarize.py` rewrites a run's `summary.md`, so a kept record under
 `runs/` is summarized again only as a copy. It reads the API listings and
 task 4's fixture at the kit's commit from this checkout's history.
