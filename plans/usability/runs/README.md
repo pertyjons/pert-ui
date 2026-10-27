@@ -251,3 +251,14 @@ For a later round's kit; none affected a result:
   should be written into them before task 5 is run again.
 - **Tester tooling:** Codex's tool environment refused an `rm -f` in
   r2-5-r1-codex-2; the tester noted it as unrelated to pert-ui. No change.
+
+## Round 3 preparation
+
+- **Task 6 sealed** in a81449f (2026-10-28), before any part of the
+  [round 2 fix plan](../round-2-fix-plan.md) landed:
+  [the task](../reserved/6-notes-editor.md), its acceptance check (the task
+  6 entry in [the acceptance checks](../acceptance.md)) and
+  [the prompt its author was given](../reserved/6-author-prompt.md). The
+  author was a fresh agent session that saw only the facade README, the
+  crate root page, tasks 1 to 5, the tester brief and the acceptance
+  format. None of these files changes afterwards.
