@@ -385,7 +385,7 @@ Inputs from later plans and the 2026-10-20 audit:
 - The same probe found inspection bounds only under
   `details.box_model.border_box`. The diagnostics guide should say where a
   component's bounds are.
-- The [developer-usability plan](developer-usability.md#round-1-findings)'s
+- The [developer-usability plan](archive/developer-usability.md#round-1-findings)'s
   blind tests (2026-10-21) added discovery evidence, which has left this
   list: background work from a callback (F13) with the API audit's part 6f2
   (0.3.69), which added `EventContext::spawn`, used by the guide's worker

@@ -3,7 +3,7 @@
 Part 6f3 of [the fix plan](fix-plan.md#6f3-controlled-controls) adds public
 API, so its shape is settled here before any code. Codex reviews it, then
 the maintainer approves it. It closes round 1's F16
-([the round 1 table](../../developer-usability.md)). The evidence is
+([the round 1 table](../../archive/developer-usability.md)). The evidence is
 triage [group C](../runs/triage/group-C.md) (r1-2-claude#4,
 pilot-2-claude#3, merged finding 2).
 

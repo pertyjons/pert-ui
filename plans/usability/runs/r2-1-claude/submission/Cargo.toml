@@ -1,0 +1,9 @@
+[package]
+name = "settings_editor"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+pert-ui = { version = "0.3.75", features = ["cpu"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

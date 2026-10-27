@@ -2,7 +2,7 @@
 
 Measured 2026-10-26 at commit 6219dda (0.3.69, branch
 `developer-usability`), before part 6f3 and round 2 (slice 7 of
-[the developer-usability plan](../developer-usability.md)). It is the
+[the developer-usability plan](../archive/developer-usability.md)). It is the
 evidence base for a possible subtraction pass. It is a dated measurement
 record, so it states counts; they describe this commit only.
 
@@ -422,7 +422,7 @@ were 17 *understand*, 8 *discover*, 6 *compile*, 6 *docs-wrong*, 6
 *runtime* and 1 *missing*; no tester read library source.
 
 Classification of the 36 findings
-([round 1 table](../developer-usability.md), lines 412-447) by their
+([round 1 table](../archive/developer-usability.md#round-1-findings)) by their
 primary cause:
 
 | Cause | Findings | Count |

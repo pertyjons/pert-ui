@@ -1,6 +1,6 @@
 # API audit fix plan
 
-Slices 5 and 6 of [the developer-usability plan](../../developer-usability.md),
+Slices 5 and 6 of [the developer-usability plan](../../archive/developer-usability.md),
 proposed 2026-10-22 after the joint checkpoint. The maintainer chose to fix
 every finding of [the API audit](findings.md), approved every [policy
 decision](decisions.md) as recommended, and extended the scope to every

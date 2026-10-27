@@ -1,0 +1,970 @@
+{
+  "windows": [
+    {
+      "id": 1,
+      "viewport": {
+        "width": 640.0,
+        "height": 420.0,
+        "scale": 1.0,
+        "physical": null
+      },
+      "presentable": true,
+      "focused": 5,
+      "command_target": null,
+      "next_deadline": null
+    }
+  ],
+  "schema_version": 15,
+  "sources": [],
+  "mode": "Off",
+  "overlay": "Off",
+  "drag": null,
+  "at": {
+    "secs": 0,
+    "nanos": 384000000
+  },
+  "next_deadline": null,
+  "components": [
+    {
+      "id": 1,
+      "key": "app",
+      "path": [
+        "app"
+      ],
+      "parent": null,
+      "presentation_parent": null,
+      "window": 1,
+      "view_scale": 1.0,
+      "visible": true,
+      "focused": false,
+      "dirty": null,
+      "subscriptions": 0,
+      "next_deadline": null,
+      "labelled_by": null,
+      "details": {
+        "semantics": null,
+        "validation": {
+          "overlap": "Disallow",
+          "clip": [
+            0.0,
+            0.0,
+            640.0,
+            420.0
+          ],
+          "interactive": false,
+          "shortcuts": []
+        },
+        "box_model": {
+          "border_box": [
+            0.0,
+            0.0,
+            640.0,
+            420.0
+          ],
+          "margin": null,
+          "padding": [
+            24.0,
+            24.0,
+            24.0,
+            24.0
+          ],
+          "foreground": null,
+          "background": null,
+          "border": null
+        },
+        "properties": {}
+      }
+    },
+    {
+      "id": 2,
+      "key": "content",
+      "path": [
+        "app",
+        "content"
+      ],
+      "parent": 1,
+      "presentation_parent": 1,
+      "window": 1,
+      "view_scale": 1.0,
+      "visible": true,
+      "focused": false,
+      "dirty": null,
+      "subscriptions": 0,
+      "next_deadline": null,
+      "labelled_by": null,
+      "details": {
+        "semantics": null,
+        "validation": {
+          "overlap": "Disallow",
+          "clip": [
+            24.0,
+            24.0,
+            592.0,
+            372.0
+          ],
+          "interactive": false,
+          "shortcuts": []
+        },
+        "box_model": {
+          "border_box": [
+            24.0,
+            24.0,
+            592.0,
+            372.0
+          ],
+          "margin": null,
+          "padding": null,
+          "foreground": null,
+          "background": null,
+          "border": null
+        },
+        "properties": {}
+      }
+    },
+    {
+      "id": 3,
+      "key": "title",
+      "path": [
+        "app",
+        "content",
+        "title"
+      ],
+      "parent": 2,
+      "presentation_parent": 2,
+      "window": 1,
+      "view_scale": 1.0,
+      "visible": true,
+      "focused": false,
+      "dirty": null,
+      "subscriptions": 0,
+      "next_deadline": null,
+      "labelled_by": null,
+      "details": {
+        "semantics": {
+          "role": "Label",
+          "name": "Point picker",
+          "description": null,
+          "value": null,
+          "actions": [],
+          "items": [],
+          "disabled": false,
+          "read_only": false,
+          "invalid": false,
+          "warning": false,
+          "expanded": null,
+          "required": false,
+          "protected": false,
+          "names_children": false
+        },
+        "validation": {
+          "overlap": "Disallow",
+          "clip": [
+            24.0,
+            24.0,
+            78.0,
+            20.0
+          ],
+          "interactive": false,
+          "shortcuts": []
+        },
+        "box_model": {
+          "border_box": [
+            24.0,
+            24.0,
+            78.0,
+            20.0
+          ],
+          "margin": null,
+          "padding": null,
+          "foreground": null,
+          "background": null,
+          "border": null
+        },
+        "properties": {
+          "text": {
+            "Text": "Point picker"
+          }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "key": "body",
+      "path": [
+        "app",
+        "content",
+        "body"
+      ],
+      "parent": 2,
+      "presentation_parent": 2,
+      "window": 1,
+      "view_scale": 1.0,
+      "visible": true,
+      "focused": false,
+      "dirty": null,
+      "subscriptions": 0,
+      "next_deadline": null,
+      "labelled_by": null,
+      "details": {
+        "semantics": null,
+        "validation": {
+          "overlap": "Disallow",
+          "clip": [
+            24.0,
+            52.0,
+            508.0,
+            260.0
+          ],
+          "interactive": false,
+          "shortcuts": []
+        },
+        "box_model": {
+          "border_box": [
+            24.0,
+            52.0,
+            508.0,
+            260.0
+          ],
+          "margin": null,
+          "padding": null,
+          "foreground": null,
+          "background": null,
+          "border": null
+        },
+        "properties": {}
+      }
+    },
+    {
+      "id": 5,
+      "key": "picker",
+      "path": [
+        "app",
+        "content",
+        "body",
+        "picker"
+      ],
+      "parent": 4,
+      "presentation_parent": 4,
+      "window": 1,
+      "view_scale": 1.0,
+      "visible": true,
+      "focused": true,
+      "dirty": null,
+      "subscriptions": 2,
+      "next_deadline": null,
+      "labelled_by": null,
+      "details": {
+        "semantics": {
+          "role": "Slider",
+          "name": "Point picker",
+          "description": "Arrow keys move by 0.01; Shift moves by 0.1; Escape cancels a drag",
+          "value": {
+            "Text": "x=0.500, y=0.500"
+          },
+          "actions": [],
+          "items": [],
+          "disabled": false,
+          "read_only": false,
+          "invalid": false,
+          "warning": false,
+          "expanded": null,
+          "required": false,
+          "protected": false,
+          "names_children": false
+        },
+        "validation": {
+          "overlap": "Disallow",
+          "clip": [
+            24.0,
+            52.0,
+            260.0,
+            260.0
+          ],
+          "interactive": false,
+          "shortcuts": []
+        },
+        "box_model": {
+          "border_box": [
+            24.0,
+            52.0,
+            260.0,
+            260.0
+          ],
+          "margin": null,
+          "padding": null,
+          "foreground": null,
+          "background": null,
+          "border": null
+        },
+        "properties": {
+          "x": {
+            "Number": 0.5
+          },
+          "y": {
+            "Number": 0.5
+          }
+        }
+      }
+    },
+    {
+      "id": 6,
+      "key": "fields",
+      "path": [
+        "app",
+        "content",
+        "body",
+        "fields"
+      ],
+      "parent": 4,
+      "presentation_parent": 4,
+      "window": 1,
+      "view_scale": 1.0,
+      "visible": true,
+      "focused": false,
+      "dirty": null,
+      "subscriptions": 0,
+      "next_deadline": null,
+      "labelled_by": null,
+      "details": {
+        "semantics": null,
+        "validation": {
+          "overlap": "Disallow",
+          "clip": [
+            292.0,
+            98.0,
+            240.0,
+            168.0
+          ],
+          "interactive": false,
+          "shortcuts": []
+        },
+        "box_model": {
+          "border_box": [
+            292.0,
+            98.0,
+            240.0,
+            168.0
+          ],
+          "margin": null,
+          "padding": null,
+          "foreground": null,
+          "background": null,
+          "border": null
+        },
+        "properties": {}
+      }
+    },
+    {
+      "id": 7,
+      "key": "x-label",
+      "path": [
+        "app",
+        "content",
+        "body",
+        "fields",
+        "x-label"
+      ],
+      "parent": 6,
+      "presentation_parent": 6,
+      "window": 1,
+      "view_scale": 1.0,
+      "visible": true,
+      "focused": false,
+      "dirty": null,
+      "subscriptions": 0,
+      "next_deadline": null,
+      "labelled_by": null,
+      "details": {
+        "semantics": {
+          "role": "Label",
+          "name": "X · horizontal",
+          "description": null,
+          "value": null,
+          "actions": [],
+          "items": [],
+          "disabled": false,
+          "read_only": false,
+          "invalid": false,
+          "warning": false,
+          "expanded": null,
+          "required": false,
+          "protected": false,
+          "names_children": false
+        },
+        "validation": {
+          "overlap": "Disallow",
+          "clip": [
+            292.0,
+            98.0,
+            86.0,
+            20.0
+          ],
+          "interactive": false,
+          "shortcuts": []
+        },
+        "box_model": {
+          "border_box": [
+            292.0,
+            98.0,
+            86.0,
+            20.0
+          ],
+          "margin": null,
+          "padding": null,
+          "foreground": null,
+          "background": null,
+          "border": null
+        },
+        "properties": {
+          "text": {
+            "Text": "X · horizontal"
+          }
+        }
+      }
+    },
+    {
+      "id": 8,
+      "key": "x",
+      "path": [
+        "app",
+        "content",
+        "body",
+        "fields",
+        "x"
+      ],
+      "parent": 6,
+      "presentation_parent": 6,
+      "window": 1,
+      "view_scale": 1.0,
+      "visible": true,
+      "focused": false,
+      "dirty": null,
+      "subscriptions": 1,
+      "next_deadline": null,
+      "labelled_by": null,
+      "details": {
+        "semantics": {
+          "role": "NumberInput",
+          "name": null,
+          "description": null,
+          "value": {
+            "Number": {
+              "value": 0.5,
+              "minimum": 0.0,
+              "maximum": 1.0
+            }
+          },
+          "actions": [
+            "SetValue",
+            "Increment",
+            "Decrement"
+          ],
+          "items": [],
+          "disabled": false,
+          "read_only": false,
+          "invalid": false,
+          "warning": false,
+          "expanded": null,
+          "required": false,
+          "protected": false,
+          "names_children": false
+        },
+        "validation": {
+          "overlap": "Disallow",
+          "clip": [
+            292.0,
+            126.0,
+            240.0,
+            32.0
+          ],
+          "interactive": true,
+          "shortcuts": []
+        },
+        "box_model": {
+          "border_box": [
+            292.0,
+            126.0,
+            240.0,
+            32.0
+          ],
+          "margin": null,
+          "padding": null,
+          "foreground": null,
+          "background": null,
+          "border": null
+        },
+        "properties": {
+          "composing": {
+            "Bool": false
+          },
+          "dirty": {
+            "Bool": false
+          },
+          "display_value": {
+            "Text": "0.50"
+          },
+          "enabled": {
+            "Bool": true
+          },
+          "inline": {
+            "Bool": false
+          },
+          "multiline": {
+            "Bool": false
+          },
+          "read_only": {
+            "Bool": false
+          },
+          "scroll_x": {
+            "Number": 0.0
+          },
+          "scroll_y": {
+            "Number": 0.0
+          },
+          "selection": {
+            "Text": "0..0"
+          },
+          "shows_display": {
+            "Bool": false
+          },
+          "stepper": {
+            "Bool": false
+          },
+          "text": {
+            "Text": "0.50"
+          },
+          "text_editing": {
+            "Bool": false
+          },
+          "typography": {
+            "Text": "Body"
+          },
+          "unit": {
+            "Text": ""
+          },
+          "valid": {
+            "Bool": true
+          },
+          "value": {
+            "Text": "0.5"
+          }
+        }
+      }
+    },
+    {
+      "id": 9,
+      "key": "y-label",
+      "path": [
+        "app",
+        "content",
+        "body",
+        "fields",
+        "y-label"
+      ],
+      "parent": 6,
+      "presentation_parent": 6,
+      "window": 1,
+      "view_scale": 1.0,
+      "visible": true,
+      "focused": false,
+      "dirty": null,
+      "subscriptions": 0,
+      "next_deadline": null,
+      "labelled_by": null,
+      "details": {
+        "semantics": {
+          "role": "Label",
+          "name": "Y · vertical",
+          "description": null,
+          "value": null,
+          "actions": [],
+          "items": [],
+          "disabled": false,
+          "read_only": false,
+          "invalid": false,
+          "warning": false,
+          "expanded": null,
+          "required": false,
+          "protected": false,
+          "names_children": false
+        },
+        "validation": {
+          "overlap": "Disallow",
+          "clip": [
+            292.0,
+            166.0,
+            67.0,
+            20.0
+          ],
+          "interactive": false,
+          "shortcuts": []
+        },
+        "box_model": {
+          "border_box": [
+            292.0,
+            166.0,
+            67.0,
+            20.0
+          ],
+          "margin": null,
+          "padding": null,
+          "foreground": null,
+          "background": null,
+          "border": null
+        },
+        "properties": {
+          "text": {
+            "Text": "Y · vertical"
+          }
+        }
+      }
+    },
+    {
+      "id": 10,
+      "key": "y",
+      "path": [
+        "app",
+        "content",
+        "body",
+        "fields",
+        "y"
+      ],
+      "parent": 6,
+      "presentation_parent": 6,
+      "window": 1,
+      "view_scale": 1.0,
+      "visible": true,
+      "focused": false,
+      "dirty": null,
+      "subscriptions": 1,
+      "next_deadline": null,
+      "labelled_by": null,
+      "details": {
+        "semantics": {
+          "role": "NumberInput",
+          "name": null,
+          "description": null,
+          "value": {
+            "Number": {
+              "value": 0.5,
+              "minimum": 0.0,
+              "maximum": 1.0
+            }
+          },
+          "actions": [
+            "SetValue",
+            "Increment",
+            "Decrement"
+          ],
+          "items": [],
+          "disabled": false,
+          "read_only": false,
+          "invalid": false,
+          "warning": false,
+          "expanded": null,
+          "required": false,
+          "protected": false,
+          "names_children": false
+        },
+        "validation": {
+          "overlap": "Disallow",
+          "clip": [
+            292.0,
+            194.0,
+            240.0,
+            32.0
+          ],
+          "interactive": true,
+          "shortcuts": []
+        },
+        "box_model": {
+          "border_box": [
+            292.0,
+            194.0,
+            240.0,
+            32.0
+          ],
+          "margin": null,
+          "padding": null,
+          "foreground": null,
+          "background": null,
+          "border": null
+        },
+        "properties": {
+          "composing": {
+            "Bool": false
+          },
+          "dirty": {
+            "Bool": false
+          },
+          "display_value": {
+            "Text": "0.50"
+          },
+          "enabled": {
+            "Bool": true
+          },
+          "inline": {
+            "Bool": false
+          },
+          "multiline": {
+            "Bool": false
+          },
+          "read_only": {
+            "Bool": false
+          },
+          "scroll_x": {
+            "Number": 0.0
+          },
+          "scroll_y": {
+            "Number": 0.0
+          },
+          "selection": {
+            "Text": "0..0"
+          },
+          "shows_display": {
+            "Bool": false
+          },
+          "stepper": {
+            "Bool": false
+          },
+          "text": {
+            "Text": "0.50"
+          },
+          "text_editing": {
+            "Bool": false
+          },
+          "typography": {
+            "Text": "Body"
+          },
+          "unit": {
+            "Text": ""
+          },
+          "valid": {
+            "Bool": true
+          },
+          "value": {
+            "Text": "0.5"
+          }
+        }
+      }
+    },
+    {
+      "id": 11,
+      "key": "reset",
+      "path": [
+        "app",
+        "content",
+        "body",
+        "fields",
+        "reset"
+      ],
+      "parent": 6,
+      "presentation_parent": 6,
+      "window": 1,
+      "view_scale": 1.0,
+      "visible": true,
+      "focused": false,
+      "dirty": null,
+      "subscriptions": 0,
+      "next_deadline": null,
+      "labelled_by": null,
+      "details": {
+        "semantics": {
+          "role": "Button",
+          "name": "Reset",
+          "description": null,
+          "value": null,
+          "actions": [
+            "Activate"
+          ],
+          "items": [],
+          "disabled": false,
+          "read_only": false,
+          "invalid": false,
+          "warning": false,
+          "expanded": null,
+          "required": false,
+          "protected": false,
+          "names_children": false
+        },
+        "validation": {
+          "overlap": "Disallow",
+          "clip": [
+            292.0,
+            234.0,
+            64.0,
+            32.0
+          ],
+          "interactive": true,
+          "shortcuts": []
+        },
+        "box_model": {
+          "border_box": [
+            292.0,
+            234.0,
+            64.0,
+            32.0
+          ],
+          "margin": null,
+          "padding": null,
+          "foreground": null,
+          "background": null,
+          "border": null
+        },
+        "properties": {
+          "enabled": {
+            "Bool": true
+          },
+          "text": {
+            "Text": "Reset"
+          }
+        }
+      }
+    },
+    {
+      "id": 12,
+      "key": "help",
+      "path": [
+        "app",
+        "content",
+        "help"
+      ],
+      "parent": 2,
+      "presentation_parent": 2,
+      "window": 1,
+      "view_scale": 1.0,
+      "visible": true,
+      "focused": false,
+      "dirty": null,
+      "subscriptions": 0,
+      "next_deadline": null,
+      "labelled_by": null,
+      "details": {
+        "semantics": {
+          "role": "Label",
+          "name": "Drag · Arrows: 0.01 · Shift: 0.1 · Escape: cancel",
+          "description": null,
+          "value": null,
+          "actions": [],
+          "items": [],
+          "disabled": false,
+          "read_only": false,
+          "invalid": false,
+          "warning": false,
+          "expanded": null,
+          "required": false,
+          "protected": false,
+          "names_children": false
+        },
+        "validation": {
+          "overlap": "Disallow",
+          "clip": [
+            24.0,
+            320.0,
+            298.0,
+            20.0
+          ],
+          "interactive": false,
+          "shortcuts": []
+        },
+        "box_model": {
+          "border_box": [
+            24.0,
+            320.0,
+            298.0,
+            20.0
+          ],
+          "margin": null,
+          "padding": null,
+          "foreground": null,
+          "background": null,
+          "border": null
+        },
+        "properties": {
+          "text": {
+            "Text": "Drag · Arrows: 0.01 · Shift: 0.1 · Escape: cancel"
+          }
+        }
+      }
+    },
+    {
+      "id": 13,
+      "key": "status",
+      "path": [
+        "app",
+        "content",
+        "status"
+      ],
+      "parent": 2,
+      "presentation_parent": 2,
+      "window": 1,
+      "view_scale": 1.0,
+      "visible": true,
+      "focused": false,
+      "dirty": null,
+      "subscriptions": 1,
+      "next_deadline": null,
+      "labelled_by": null,
+      "details": {
+        "semantics": {
+          "role": "Label",
+          "name": "Last picker input: 0.16, 0.80",
+          "description": null,
+          "value": null,
+          "actions": [],
+          "items": [],
+          "disabled": false,
+          "read_only": false,
+          "invalid": false,
+          "warning": false,
+          "expanded": null,
+          "required": false,
+          "protected": false,
+          "names_children": false
+        },
+        "validation": {
+          "overlap": "Disallow",
+          "clip": [
+            24.0,
+            348.0,
+            180.0,
+            20.0
+          ],
+          "interactive": false,
+          "shortcuts": []
+        },
+        "box_model": {
+          "border_box": [
+            24.0,
+            348.0,
+            180.0,
+            20.0
+          ],
+          "margin": null,
+          "padding": null,
+          "foreground": null,
+          "background": null,
+          "border": null
+        },
+        "properties": {
+          "text": {
+            "Text": "Last picker input: 0.16, 0.80"
+          }
+        }
+      }
+    }
+  ],
+  "parameters": [],
+  "pressed_keys": [],
+  "application": {},
+  "events": [],
+  "dropped_events": 0,
+  "history_generation": 0,
+  "validation": {
+    "logging_error": null,
+    "enabled": true,
+    "pending": false,
+    "issues": [],
+    "markers": []
+  }
+}

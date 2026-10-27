@@ -1,0 +1,118 @@
+The triage needs revision before it supports the round 2 comparison. I made no edits and ran no Cargo commands; runtime evidence below comes from the recorded acceptance checks and probes, not a new execution.
+
+Codex (`gpt-6.1-sol`) produced half the runs. Below, **X identifies a Codex-produced run**, C a Claude run; H means task 5 on aca8df3, B task 5 on 359122e. G1–G4 refer to the four triage files.
+
+1. **Misclassifications and unsupported conclusions**
+
+   - **G3 NF-6 is F3 recurring, not new.** Missing `Semantics` from `testing::*`, the guide’s sufficiency promise and rustc’s unusable suggestion are precisely the evidence G1 uses for F3. G3 instead calls this new and leaves H-C2’s F3 cell `not reached`. **Verdict: change H-C2 F3 to `recurred`, merge the entry into reopened F3, remove NF-6 from the new findings.** Evidence: G1:40 (`~/pert-ui-usability/triage-r2/group-1.md:40`), G3:99 (`~/pert-ui-usability/triage-r2/group-3.md:99`), H-C2 diagnostics:25 (`~/pert-ui-usability/r2-5-head-claude-2/diagnostics.md:25`).
+
+   - **G2’s F33 recurrence conflates two constructors.** F33 originally concerned fallible `SizeLimits::new`; the Codex-produced T3-X submission actually uses the new infallible `SizeLimits::exact`. Its `unwrap` constructs the *Size*. `Size::from([260, 260])` already provides an infallible alternative. The `exact` example could demonstrate that better, but the original missing constructor has been supplied. **Verdict: T3-X F33 should be `passed`; retain a separate author-found documentation improvement, not reopened F33.** Evidence: original F33 (`plans/developer-usability.md:448`), submission:85 (`~/pert-ui-usability/r2-3-codex/work/src/picker.rs:85`), infallible Size conversion:129 (`~/pert-ui-usability/kit-aca8df3/vendor/pert-ui-runtime-0.3.75/src/layout.rs:129`), G2 author row:52 (`~/pert-ui-usability/triage-r2/group-2.md:52`).
+
+   - **G1 overstates what L4a did to G2-8.** L4a removed cancellation when the originating widget disappears from ordinary `defer`/`spawn`. It did **not** remove otherwise unreported cancellation: shutdown still cancels queued operations, and unwinding can produce `Cancelled`. The receipt’s current reason remains accurate. **Verdict: retain the observed warning and optional request to explain deliberate receipt disposal; downgrade “L4a removed the premise” from a verified justification for removing `must_use` to a design argument. This is not F19 recurring.** This also concerns Codex-produced T1-X and T2-X. Evidence: G1:44 (`~/pert-ui-usability/triage-r2/group-1.md:44`), G2-8’s general rule:699 (`plans/usability/api-audit/decisions.md:699`), current cancellation cases:12 (`~/pert-ui-usability/kit-aca8df3/vendor/pert-ui-runtime-0.3.75/src/runtime/tasks.rs:12`), shutdown and unwind behavior:145 (`~/pert-ui-usability/kit-aca8df3/vendor/pert-ui-runtime-0.3.75/src/runtime/tasks.rs:145`).
+
+   - **G2 gives the wrong numeric semantic-value rule.** It says `Text` is reported while the draft does not parse. The implementation branches on `self.saved`: with a saved number, even an invalid draft reports that saved number. G1 describes this correctly. **Verdict: keep the documentation finding, correct its verified description and proposed documentation before merging it.** Evidence: G2:27 (`~/pert-ui-usability/triage-r2/group-2.md:27`), G1:42 (`~/pert-ui-usability/triage-r2/group-1.md:42`), implementation:2119 (`~/pert-ui-usability/kit-aca8df3/vendor/pert-ui-runtime-0.3.75/src/text_fields/number_inputs.rs:2119`).
+
+   - **“No projection of a struct signal” needs qualification.** `map` supplies a read-only projection. What is absent is a writable field projection suitable for an editor binding. **Verdict: retain the ergonomics finding, narrow the assertion.** Both T1 submissions, including Codex-produced T1-X, demonstrate the chained-combine cost. Evidence: G1:57 (`~/pert-ui-usability/triage-r2/group-1.md:57`), `ReadSignal::map`:734 (`~/pert-ui-usability/kit-aca8df3/vendor/pert-ui-runtime-0.3.75/src/signal.rs:734`).
+
+2. **Recurrence-matrix corrections**
+
+   | Cells | Verdict and evidence |
+   |---|---|
+   | **G3 F3, H-C2: not reached → recurred** | The missing `Semantics` diagnostic is recorded explicitly; see point 1. |
+   | **G1 F3, T1-X: passed → not reached** | This Codex-produced run’s successful globs do not demonstrate the problematic names. Its code uses none of `Modifiers`, `KeyChord`, `CommandKey`, `CommandScope`, `ListDrop`, `Semantics`, `SemanticRole`, `InspectValue` or `ThemeMode` as Rust names. “Compiled with the globs” is insufficient, particularly when G3 applies this narrower test to H-X1. Compare G1:122 (`~/pert-ui-usability/triage-r2/group-1.md:122`), T1-X inspection helper:309 (`~/pert-ui-usability/r2-1-codex/work/src/main.rs:309`), G3:181 (`~/pert-ui-usability/triage-r2/group-3.md:181`). |
+   | **G2 F33, T3-X: recurred → passed** | This Codex-produced run uses `SizeLimits::exact`; retain the separate documentation improvement described above. |
+   | **G1 F11, all four: not reached → passed under the triage’s existing criterion** | Each initializer propagates a library error into `AppError`, the same evidence G2 accepts as a pass. Examples: T1-C:126 (`~/pert-ui-usability/r2-1-claude/work/src/lib.rs:126`), T1-X:264 (`~/pert-ui-usability/r2-1-codex/work/src/main.rs:264`), T2-C:279 (`~/pert-ui-usability/r2-2-claude/work/src/lib.rs:279`), T2-X:297 (`~/pert-ui-usability/r2-2-codex/work/src/main.rs:297`). The X runs are Codex-produced. |
+   | **G3 F11, H-C1/H-X1/H-X2: not reached → passed under that same criterion** | The assertion that these never convert library errors into `AppError` is false: H-C1:445 (`~/pert-ui-usability/r2-5-head-claude-1/work/src/lib.rs:445`), H-X1:3 (`~/pert-ui-usability/r2-5-head-codex-1/work/src/main.rs:3`), H-X2:326 (`~/pert-ui-usability/r2-5-head-codex-2/work/src/main.rs:326`). Both X runs are Codex-produced. Successful conversion does not, however, test the formerly misleading *rejection diagnostic*. |
+   | **G2 F19, both task 4 runs: not reached → passed by execution/build** | The fixture drops `register_command`’s result, and both runs build and exercise that command without the old warning. This includes Codex-produced T4-X. Fixture:121 (`~/pert-ui-usability/r2-4-codex/work/bookmarks/src/lib.rs:121`), acceptance:59 (`~/pert-ui-usability/r2-4-codex/acceptance.md:59`). |
+   | **G2 F28, both task 4 runs: not reached → passed by execution/build** | The custom `Bookmark` derives `PartialEq`, and the Remove callback updates `Signal<Vec<Bookmark>>`. The relevant path is exercised, although the tester inherited its implementation. Fixture:11 (`~/pert-ui-usability/r2-4-codex/work/bookmarks/src/lib.rs:11`), update:113 (`~/pert-ui-usability/r2-4-codex/work/bookmarks/src/lib.rs:113`). This includes Codex-produced T4-X. |
+   | **G3 F29, H-X1/H-X2: passed → not reached** | These Codex-produced runs put empty labels inside fixed-height table rows. That does not establish the labels’ intrinsic height. G4 correctly uses exactly this reason for B-X2’s `not reached`. Compare G3:217 (`~/pert-ui-usability/triage-r2/group-3.md:217`) with G4:176 (`~/pert-ui-usability/triage-r2/group-4.md:176`). |
+
+   **Two further rows need a consistent policy for “by use.”** G4 counts F3 as recurring without an import failure because the old prelude demonstrably lacks a used type. Under that presence-based standard, **B-C2 F23 should recur**, because it actually encounters the unnamed `AmbiguousKey`; knowing the key already does not change the error. Similarly, **G4’s F20 cells should record recurrence by exposure**: the runs read pages whose examples still import implementation crates. G4 itself verifies both facts. If the intended matrix instead records only *experienced friction*, those `passed` cells can describe “no complaint,” but F3’s inferred recurrences must be distinguished from reported ones. **Verdict: resolve this policy inconsistency before aggregating cells.** Evidence: G4 F3 reasons:121 (`~/pert-ui-usability/triage-r2/group-4.md:121`), F20/F23 reasons:154 (`~/pert-ui-usability/triage-r2/group-4.md:154`). The F3 and some F20 classifications concern Codex-produced runs.
+
+   I retain the other `recurred` classifications: G1/G2’s missing-glob names, G4’s checkout instructions and hand-built headless helpers, B-X1’s capture borrow problem, and F16 across both task 5 versions. The corresponding reasons are supported by G1:119 (`~/pert-ui-usability/triage-r2/group-1.md:119`), G2:114 (`~/pert-ui-usability/triage-r2/group-2.md:114`), G4:107 (`~/pert-ui-usability/triage-r2/group-4.md:107`) and G3:204 (`~/pert-ui-usability/triage-r2/group-3.md:204`). X classifications here concern Codex-produced runs.
+
+3. **Missed friction and incomplete accounting**
+
+   - **H-X2’s `TaskReceipt` warning has no entry.** This Codex-produced run has the same warning G1 records as N4, then adopts `_receipt`. **Verdict: add it to that issue’s run coverage**, irrespective of whether the proposed policy change is accepted. Diagnostic:16 (`~/pert-ui-usability/r2-5-head-codex-2/diagnostics.md:16`), final workaround:215 (`~/pert-ui-usability/r2-5-head-codex-2/work/src/main.rs:215`).
+
+   - **H-C2’s `ApplicationError::new(error.to_string())` failure is omitted.** rustc supplies the precise correction: pass the original `io::Error`. **Verdict: add an annoyance-level tester-error row, not a library finding or F11 recurrence.** Diagnostic:4 (`~/pert-ui-usability/r2-5-head-claude-2/diagnostics.md:4`).
+
+   - **T3-C discards a failed cancellation restore.** G2 mentions this inside the justification for a pass but never classifies the implementation error. The documented route explicitly requires recording the failure and requesting notification. **Verdict: add a tester implementation-error row; do not describe the submission as fully following that contract.** The ordinary successful restore can still support the documentation-related F12 pass; the failure path was not tested. Submission:229 (`~/pert-ui-usability/r2-3-claude/work/src/picker.rs:229`), contract:2530 (`~/pert-ui-usability/kit-aca8df3/vendor/pert-ui-runtime-0.3.75/src/runtime.rs:2530`), G2:119 (`~/pert-ui-usability/triage-r2/group-2.md:119`).
+
+   - **G1 N1’s workaround appears in more runs than its list records.** T3-C, H-C1 and H-C2 also export initializer state through application-built slots. **Verdict: add these as code-derived occurrences, separately from reported friction.** T3-C:10 (`~/pert-ui-usability/r2-3-claude/work/tests/headless.rs:10`), H-C1:21 (`~/pert-ui-usability/r2-5-head-claude-1/work/tests/app.rs:21`), H-C2:423 (`~/pert-ui-usability/r2-5-head-claude-2/work/src/lib.rs:423`).
+
+   - **Table-header testing friction also appears at head.** H-C2 derives a header click position from a row cell’s bounds and table geometry. **Verdict: add it as a code-derived occurrence of G4 N5**, rather than making that issue look confined to the baseline. Head submission:230 (`~/pert-ui-usability/r2-5-head-claude-2/work/tests/headless.rs:230`).
+
+   - **The idle-query acceptance lead includes H-X1.** G3 discusses that Codex-produced run’s missing paint check but omits it from NF-5’s run list. **Verdict: include H-X1 as acceptance-derived evidence, not tester-reported discovery friction.** Acceptance:51 (`~/pert-ui-usability/r2-5-head-codex-1/acceptance.md:51`), G3 summary:254 (`~/pert-ui-usability/triage-r2/group-3.md:254`).
+
+4. **Proposed merged new-findings list**
+
+   This is the issue list I would use after the corrections above. “Code” distinguishes observed workarounds from logged complaints. X entries are **Codex-produced runs**. A finding observed only at head is not automatically introduced there.
+
+   | Merged issue | Runs / provenance | Existing rows |
+   |---|---|---|
+   | Initializer state/root handback requires application plumbing | T1-C/X, T2-C; T3-C, H-C1/C2 by code | G1 N1:214 (`~/pert-ui-usability/triage-r2/group-1.md:214`), additional evidence above |
+   | Form Revert needs explicit draft disposal | T1-C fails acceptance; T1-X works around it | G1 N2:215 (`~/pert-ui-usability/triage-r2/group-1.md:215`) |
+   | Multi-field derivation requires chained combines; no writable field projection | T1-C/X | G1 N3:216 (`~/pert-ui-usability/triage-r2/group-1.md:216`) |
+   | Receipt-disposal warning/recipe reconsideration | T1-C/X, T2-C/X, H-X2 | G1 N4:217 (`~/pert-ui-usability/triage-r2/group-1.md:217`); retain as an optional design/documentation request |
+   | Numeric editor inspection contract: saved value versus draft, role and property keys | T1-C/X, T3-C | Merge G1 N5/N6:218 (`~/pert-ui-usability/triage-r2/group-1.md:218`) and G2 N6:135 (`~/pert-ui-usability/triage-r2/group-2.md:135`) |
+   | Reading collection rows in display order needs a complete recipe | T2-C; T2-X acceptance; T4-C/X | Merge G1 N7:220 (`~/pert-ui-usability/triage-r2/group-1.md:220`) and G2 N1:130 (`~/pert-ui-usability/triage-r2/group-2.md:130`), retaining separate `VirtualList`/`Each` cases |
+   | In-place editor focus/draft child is hard to find | T2-C | G1 N8:221 (`~/pert-ui-usability/triage-r2/group-1.md:221`) |
+   | Collection key-consumption documentation | T2-C/X | G1 N9:222 (`~/pert-ui-usability/triage-r2/group-1.md:222`) |
+   | Checkbox/Toggle documentation lacks a hidden-label pointer | T2-C | G1 N10:223 (`~/pert-ui-usability/triage-r2/group-1.md:223`) |
+   | Explicit modifier-chord example missing | T2-X | G1 N11:224 (`~/pert-ui-usability/triage-r2/group-1.md:224`) |
+   | Clearing test focus is insufficiently discoverable | T4-C; T4-X found the route | G2 N2:131 (`~/pert-ui-usability/triage-r2/group-2.md:131`) |
+   | Testing capture recipe stops before PNG encoding | T4-C | G2 N3:132 (`~/pert-ui-usability/triage-r2/group-2.md:132`) |
+   | Empty-label semantic-name normalization needs a nearby explanation | T4-X | G2 N4:133 (`~/pert-ui-usability/triage-r2/group-2.md:133`) |
+   | Custom-widget import recipe yields a redundant glob | T3-C/X | G2 N5:134 (`~/pert-ui-usability/triage-r2/group-2.md:134`) |
+   | Complete custom value-control gesture recipe | T3-C/X | G2 N7:136 (`~/pert-ui-usability/triage-r2/group-2.md:136`) |
+   | Rendered serde impls lack feature information | T3-X | G2 N8:137 (`~/pert-ui-usability/triage-r2/group-2.md:137`) |
+   | Integer conversion inconsistency between `Spacing` and `Length` | T3-X | G2 N9:138 (`~/pert-ui-usability/triage-r2/group-2.md:138`) |
+   | Appearance guide contradicts root-glob advice | Author-found | G2 N10:139 (`~/pert-ui-usability/triage-r2/group-2.md:139`) |
+   | Fixed-size example should demonstrate infallible Size construction | Author-found from T3-X code | Reclassify G2:52 (`~/pert-ui-usability/triage-r2/group-2.md:52`) |
+
+   The remaining merged issues concern task 5:
+
+   | Merged issue | Runs that hit it | Presence in the two libraries |
+   |---|---|---|
+   | Toast messages absent from inspection | H-C1/C2, B-C1/C2 | **Both.** Merge G3 NF-1:229 (`~/pert-ui-usability/triage-r2/group-3.md:229`) with G4 N3:189 (`~/pert-ui-usability/triage-r2/group-4.md:189`). |
+   | ProgressBar plus percentage overflows a narrow Row | H-C2/X1/X2, B-C1/C2 | **Both.** Merge G3 NF-2:236 (`~/pert-ui-usability/triage-r2/group-3.md:236`) with G4 N1:187 (`~/pert-ui-usability/triage-r2/group-4.md:187`). |
+   | Table cell addressing/wrapper keys and structural traversal need documentation | H-C2/X2; H-C1 by code; B-C1/C2 | **Both.** Merge G3 NF-3:243 (`~/pert-ui-usability/triage-r2/group-3.md:243`) with G4 N2:188 (`~/pert-ui-usability/triage-r2/group-4.md:188`). |
+   | Fixed table row height lacks control-fitting guidance | H-C1/C2 | **Both**, although reported only at head. The baseline already documents a fixed height and clips cells: old constructor:1436 (`~/pert-ui-usability/kit-359122e-r2/vendor/pert-ui-runtime-0.3.52/src/table.rs:1436`), old clipping:1025 (`~/pert-ui-usability/kit-359122e-r2/vendor/pert-ui-runtime-0.3.52/src/table.rs:1025`); G3 NF-4:250 (`~/pert-ui-usability/triage-r2/group-3.md:250`). |
+   | Idle-paint testing recipe is missing | H-C2/X2; H-X1 acceptance | **Both lack the recipe; only aca8df3 relocates the method behind `HostIntegration`.** G3 P6:63 (`~/pert-ui-usability/triage-r2/group-3.md:63`), old inherent method:322 (`~/pert-ui-usability/kit-359122e-r2/vendor/pert-ui-runtime-0.3.52/src/runtime/compose.rs:322`). |
+   | Toast pages lack a persistent-notification pointer/lifetime option | H-X1/X2 | **Both.** G3 NF-7:263 (`~/pert-ui-usability/triage-r2/group-3.md:263`), old Toast contract:128 (`~/pert-ui-usability/kit-359122e-r2/vendor/pert-ui-runtime-0.3.52/src/notifications.rs:128`). |
+   | Terminal progress statuses lose the reached fraction | H-C1, B-C2 | **Both.** Merge G3 NF-8:269 (`~/pert-ui-usability/triage-r2/group-3.md:269`) with G4 N4:190 (`~/pert-ui-usability/triage-r2/group-4.md:190`). |
+   | Header titles lack directly addressable test geometry | B-C1/C2; H-C2 by code | **Both.** G4 N5:191 (`~/pert-ui-usability/triage-r2/group-4.md:191`), head workaround cited above. |
+   | `Pending::wait` UI-thread prohibition contradicts examples | B-C2 reported it | **Both.** G4 N6:192 (`~/pert-ui-usability/triage-r2/group-4.md:192`). |
+
+   Keep F3 and F16 out of this new list. Keep the HTML-reading issue in a separate **kit** list: G1 already notes it for T2-C, while G3 records it for H-C2 (G1:48 (`~/pert-ui-usability/triage-r2/group-1.md:48`), G3:93 (`~/pert-ui-usability/triage-r2/group-3.md:93`)).
+
+5. **Other verification qualifications**
+
+   - **Toast inspection is adequately established without the unverified ancillary claims.** However, “content search searches semantics only” is false: it also searches unmounted collection rows through `ContentRows`. **Verdict: remove that generalization; retain the toast conclusion.** G3:89 (`~/pert-ui-usability/triage-r2/group-3.md:89`), search contract:13 (`~/pert-ui-usability/kit-aca8df3/vendor/pert-ui-runtime-0.3.75/src/runtime/content_search.rs:13`). `DrawCommand` indeed contains drawing primitives rather than recoverable text strings (definition:1100 (`~/pert-ui-usability/kit-aca8df3/vendor/pert-ui-runtime-0.3.75/src/drawing.rs:1100`)).
+
+   - **A deferred cancellation error is not guaranteed to survive removal.** The Codex-produced T3-X submission follows the documented notifier route, but the documentation explicitly says removed components never deliver that error. **Verdict: qualify the successful-conformance claim; do not imply removal-error reporting was verified.** Submission:148 (`~/pert-ui-usability/r2-3-codex/work/src/picker.rs:148`), documented limitation:2535 (`~/pert-ui-usability/kit-aca8df3/vendor/pert-ui-runtime-0.3.75/src/runtime.rs:2535`).
+
+   - **Tester severities and merged-issue severities must remain distinguishable.** The same bar-layout issue is “annoyance” in baseline runs and “slow” in head runs. Those are valid recorded experiences, not evidence that the unchanged layout behavior regressed. **Verdict: preserve per-run severity and declare how merged severity is selected.** G4 N1:187 (`~/pert-ui-usability/triage-r2/group-4.md:187`), G3 NF-2:236 (`~/pert-ui-usability/triage-r2/group-3.md:236`).
+
+6. **Verdicts on the explicitly flagged judgement calls**
+
+   - **F9 versus G2 N1: retain the distinction.** F9 concerned the unexpected address segment and overwritten element key. Both task 4 runs successfully use the corrected addresses; their remaining trouble is discovering rows in display order through structural children. **Verdict: F9 passed; N1 is new, merged with G1’s collection-order recipe gap.** This includes Codex-produced T4-X. Original F9 (`plans/developer-usability.md:424`), current Each contract:274 (`~/pert-ui-usability/kit-aca8df3/vendor/pert-ui-runtime-0.3.75/src/described.rs:274`), T4-X traversal:76 (`~/pert-ui-usability/r2-4-codex/work/bookmarks/tests/ui.rs:76`).
+
+   - **G4 F3 “by use”: defensible under round 1’s standard.** The Codex-produced B-X1/X2 submissions use `Modifiers`, which genuinely lies outside the old prelude. Round 1 also counted this kind of evidence. **Verdict: retain, label it inferred from use, and apply the same policy consistently to other cells.** Round 1 import analysis:50 (`plans/usability/runs/triage/group-A.md:50`), G4 reasons:121 (`~/pert-ui-usability/triage-r2/group-4.md:121`).
+
+   - **ProgressBar binding-only construction as F16: retain.** The underlying problem remains per-row controls requiring signals when the application already owns row values. A display-only control changes the remedy, not that finding’s underlying cause. **Verdict: F16 recurs on both commits, including all four Codex-produced task 5 runs; describe the remaining display-control case explicitly.** Original F16 (`plans/developer-usability.md:431`), G4:38 (`~/pert-ui-usability/triage-r2/group-4.md:38`), G3 P7:75 (`~/pert-ui-usability/triage-r2/group-3.md:75`).
+
+   - **The two plain-Label notifications: categorical tester error is unsupported by the frozen brief.** Both are Codex-produced X2 runs. The task requires a failure “as a notification,” but never requires a particular component or `Alert` semantics. Both acceptance files themselves acknowledge this judgement. **Verdict: record an acceptance-policy ambiguity, not an unqualified task-reading error.** If the intended criterion requires a notification surface, apply that explicit interpretation equally; under the literal visible-message criterion both runs meet it. The head run additionally supplies real evidence for the missing Toast→Banner pointer; the baseline run does not. Frozen requirement:15 (`plans/usability/reserved/5-job-monitor.md:15`), baseline qualification:48 (`~/pert-ui-usability/r2-5-r1-codex-2/acceptance.md:48`), head qualification:49 (`~/pert-ui-usability/r2-5-head-codex-2/acceptance.md:49`).
+
+   - **L4a/G2-8:** owner disappearance stopped cancelling ordinary application deferrals; the broader silent-cancellation premise remains. **Verdict: optional policy reconsideration, not a verified obsolete attribute.**
+
+7. **What a face-value task 5 comparison would get wrong**
+
+   It would count H-C2’s F3 recurrence as a new head-only issue; credit two masked empty-label uses as F29 passes; use inconsistent F11 reachability; and treat several unchanged baseline capabilities as new head problems merely because only head testers reported them. The merged version table above corrects those errors.
+
+   It must also avoid interpreting a `passed` cell as proof that the corresponding fix was exercised. For example, both versions start workers successfully through mailboxes and ordinary threads; that does not demonstrate adoption of the F13 `EventContext::spawn` improvement (baseline reasoning:141 (`~/pert-ui-usability/triage-r2/group-4.md:141`), head reasoning:199 (`~/pert-ui-usability/triage-r2/group-3.md:199`)).
+
+   Finally, the label-notification judgement makes **both** X2 runs “partly accepted,” so neither has an accepted-completion time. That result depends on the same unstated interpretation on both versions, not a demonstrated library regression (baseline summary:9 (`~/pert-ui-usability/r2-5-r1-codex-2/summary.md:9`), head summary:9 (`~/pert-ui-usability/r2-5-head-codex-2/summary.md:9`)).
+
+**Overall verdict: needs revision — blocking points are inconsistent recurrence classification, unsupported reach/pass cells, duplicate new findings, incorrect verified claims, and the unstated notification acceptance rule.**

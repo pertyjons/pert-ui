@@ -3,7 +3,7 @@
 Part 6f1 of [the fix plan](fix-plan.md#6f1-testing-and-window-close) adds
 public API, so its shape is settled here before any code: reviewed by Codex,
 then approved by the maintainer. It closes round 1's F2, F4, F5 and F34
-([the round 1 table](../../developer-usability.md)); the evidence is triage
+([the round 1 table](../../archive/developer-usability.md)); the evidence is triage
 [group E](../runs/triage/group-E.md). Decision G5-32 allowed a testing module
 once it owns F2's helpers; this part gives it those helpers.
 

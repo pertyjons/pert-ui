@@ -1,0 +1,4 @@
+   Compiling job-monitor v0.1.0 (/work)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.78s
+     Running `target/debug/job-monitor --headless`
+Headless checks passed: progress, completion, summary, cancellation, failure notification, all column sorts, idle. Capture: jobs.png

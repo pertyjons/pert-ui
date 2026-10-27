@@ -1,0 +1,10 @@
+[package]
+name = "todo"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+pert-ui = "0.3.75"
+
+[dev-dependencies]
+pert-ui = { version = "0.3.75", features = ["cpu"] }

@@ -1,6 +1,6 @@
 # Blind-test kit
 
-The harness for [the developer-usability plan](../developer-usability.md).
+The harness for [the developer-usability plan](../archive/developer-usability.md).
 It is unpackaged and lives only in the repository. Testers never see this
 directory; they get a prepared kit, the brief and one task.
 

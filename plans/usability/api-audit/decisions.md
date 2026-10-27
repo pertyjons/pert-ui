@@ -2,7 +2,7 @@
 
 The maintainer's decisions on the policy questions and consistency
 proposals in [the audit findings](findings.md), slice 4 of [the
-developer-usability plan](../../developer-usability.md).
+developer-usability plan](../../archive/developer-usability.md).
 
 **How the recommendations were drafted:** a fresh Claude agent per rubric
 group read the rows, the reports, the contracts and the source, and counted

@@ -13,7 +13,7 @@ on 2026-10-26** ([decisions](#decisions-for-the-maintainer)).
 
 This plan runs after the API audit fix plan's last part (6f3, 0.3.70) is
 closed and before slice 7 of [the developer-usability
-plan](../developer-usability.md) (blind test round 2). Its evidence is the
+plan](../archive/developer-usability.md) (blind test round 2). Its evidence is the
 [complexity inventory](complexity-inventory.md) (eb0591b, measured at
 6219dda).
 

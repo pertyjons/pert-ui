@@ -1,6 +1,6 @@
 # API audit findings
 
-Slice 4 of [the developer-usability plan](../../developer-usability.md):
+Slice 4 of [the developer-usability plan](../../archive/developer-usability.md):
 the merged result of the API consistency audit, audited at commit d4ba108.
 [The rubric](rubric.md) defines the items, the rule kinds and the finding
 record.

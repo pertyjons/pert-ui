@@ -1,0 +1,28 @@
+Temporary mutation: store entered_name without trim().
+Command: cargo test --offline --test ui add_appends_and_trims_the_name -- --exact
+Exit status: 101
+
+   Compiling bookmarks v0.1.0 (/work/bookmarks)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.95s
+     Running tests/ui.rs (target/debug/deps/ui-d0d7da750068f4ff)
+
+running 1 test
+test add_appends_and_trims_the_name ... FAILED
+
+failures:
+
+---- add_appends_and_trims_the_name stdout ----
+
+thread 'add_appends_and_trims_the_name' (241) panicked at tests/ui.rs:91:9:
+assertion `left == right` failed
+  left: "  Guide  "
+ right: "Guide"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    add_appends_and_trims_the_name
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.03s
+
+error: test failed, to rerun pass `--test ui`

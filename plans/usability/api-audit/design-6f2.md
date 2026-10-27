@@ -3,7 +3,7 @@
 Part 6f2 of [the fix plan](fix-plan.md#6f2-editing-and-collection-capabilities)
 adds public API, so its shape is settled here before any code. Codex reviews
 it, then the maintainer approves it. It closes round 1's F7b, F13, F15 and
-F27 ([the round 1 table](../../developer-usability.md)). The evidence is
+F27 ([the round 1 table](../../archive/developer-usability.md)). The evidence is
 triage [group B](../runs/triage/group-B.md) (F13) and
 [group C](../runs/triage/group-C.md) (F7b, F15, F27).
 

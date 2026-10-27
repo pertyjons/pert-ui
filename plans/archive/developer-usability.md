@@ -1,19 +1,27 @@
 # Plan: blind developer tests and public API review
 
-Status: proposed 2026-10-21 and revised after a Codex review. Slice 0 is
-done on branch `developer-usability`: both tester probes passed, both
-pilots were accepted (the kit's README has the evidence), and the
-maintainer approved the checkpoint on 2026-10-21, keeping the tasks and
-their 90-minute budget. Slice 1 is done: the API listings are under
-`api/` with their CI job, on Rust 1.99.1 (0.3.52); its CI run waits for
-an authorized push. Slice 2 is done: round 1's eight runs are recorded in
-`plans/usability/runs/`. Slice 3 is done: 36 findings are ranked in the
-round 1 findings table. Slice 4 is done: the API audit's 127 findings and
-two surveys are recorded. At the joint checkpoint (2026-10-22) the
-maintainer chose to fix every audit finding and approved all [policy
-decisions](usability/api-audit/decisions.md) as recommended. Slices 5 and 6
-follow [the fix plan](usability/api-audit/fix-plan.md). Every tool, file and check named below as new is a
-proposal until a slice implements it.
+Status: **closed 2026-10-27 and archived**, every slice done on branch
+`developer-usability`. Proposed 2026-10-21 and revised after a Codex
+review. Slice 0 is done: both tester probes passed, both pilots were
+accepted (the kit's README has the evidence), and the maintainer approved
+the checkpoint on 2026-10-21, keeping the tasks and their 90-minute budget.
+Slice 1 is done: the API listings are under `api/` with their CI job, on
+Rust 1.99.1 (0.3.52); its CI run waits for an authorized push. Slice 2 is
+done: round 1's eight runs are recorded in `plans/usability/runs/`. Slice 3
+is done: 36 findings are ranked in the round 1 findings table. Slice 4 is
+done: the API audit's 127 findings and two surveys are recorded. At the
+joint checkpoint (2026-10-22) the maintainer chose to fix every audit
+finding and approved all [policy
+decisions](../usability/api-audit/decisions.md) as recommended. Slices 5
+and 6 are done as [the fix plan](../usability/api-audit/fix-plan.md)'s
+parts 5a to 6f3 (0.3.53 to 0.3.70), followed by [the layering
+pass](../usability/layering-plan.md) (0.3.71 to 0.3.75). Slice 7 is done:
+round 2's sixteen runs are recorded in `plans/usability/runs/`, and
+[its results](#round-2-results) reopen F3, F9 and F16 and add 28 new
+findings (R2-1 to R2-28). The maintainer decided on 2026-10-27 that every
+reopened and new finding is fixed in a round 2 fix plan, with breaking API
+changes allowed. The slices below keep their proposed text; each outcome
+says what was decided and done.
 
 ## Background
 
@@ -39,10 +47,10 @@ This plan adds two kinds of evidence:
   API.
 
 App-author slice 9 (tutorial, prelude and module layout) stays in
-[its plan](app-author-improvements.md). This plan feeds it: round 1's
+[its plan](../app-author-improvements.md). This plan feeds it: round 1's
 findings on discovery and the prelude become slice 9 inputs. Slice 9's
 prelude and module layout landed on this branch before round 2 as
-layering part L2 (0.3.73, [design](usability/layering-design-L2.md)), so
+layering part L2 (0.3.73, [design](../usability/layering-design-L2.md)), so
 round 2 meets the smaller prelude and the thematic modules. Its tutorial
 does not exist yet; round 2's findings on it become inputs to slice 9's own
 evaluation.
@@ -53,7 +61,7 @@ among human developers, and every record of it says so.
 
 ## Working rules
 
-The [app-author working rules](app-author-improvements.md#working-rules)
+The [app-author working rules](../app-author-improvements.md#working-rules)
 apply, with these specifics:
 
 - One branch, `developer-usability`, from `main`. One commit per slice,
@@ -97,7 +105,7 @@ Design checkpoint first. It decides and records:
 
 - **Isolation.** Each run gets a consumer directory outside the checkout,
   built like the packaged-consumer check in
-  [verification](../docs/verification.md): the library packages from
+  [verification](../../docs/verification.md): the library packages from
   `cargo package`, extracted and resolved without workspace paths, plus
   vendored third-party dependencies so the run builds offline. The
   directory holds the crates' README files and rendered documentation of
@@ -166,7 +174,7 @@ Design checkpoint first. It decides and records:
 
 Checkpoint outcome, approved by the maintainer on 2026-10-21 and recorded
 with its evidence in the
-[kit's README](usability/README.md#checkpoint-decisions-slice-0): a
+[kit's README](../usability/README.md#checkpoint-decisions-slice-0): a
 bubblewrap sandbox per run with a cleared environment and only loopback,
 and a host-side proxy that admits the model and authentication hosts only,
 reached through a loopback bridge whose socket the tester cannot open.
@@ -363,11 +371,11 @@ Documentation only, no version.
   drops in one of its own runs is also checked by a fresh Claude agent.
 - Record the outcome in a findings table in this plan, and the metrics in a
   new "Developer usability" section of
-  [verification](../docs/verification.md). Discovery and prelude findings
+  [verification](../../docs/verification.md). Discovery and prelude findings
   are added to app-author slice 9's inputs. Verified deviations, defects
   and concrete improvements outside this plan's fix scope go to TODO.md;
   optional capabilities that need an application to show the need go to
-  [follow-ups](follow-ups.md).
+  [follow-ups](../follow-ups.md).
 - State in the findings table and the verification section that the
   evidence is exploratory, and which model family tested, triaged and
   reviewed each part.
@@ -383,7 +391,7 @@ separately).
 - **Verification:** five fresh Claude agents checked every entry against
   the rustdoc, the guide and the code, with throwaway probes for runtime
   claims. Their per-entry tables are in
-  [`usability/runs/triage/`](usability/runs/triage/).
+  [`usability/runs/triage/`](../usability/runs/triage/).
 - **Merging and ranking:** the author (Claude) merged and ranked the
   entries, and spot-checked the decisive claims in the source.
 - **Review:** Codex reviewed the triage, including the runs it produced
@@ -395,7 +403,7 @@ separately).
 The 64 friction entries resolve as follows:
 - 36 findings in the table below. F1 is a kit issue today. F30 to F34
   were found while verifying, not by a tester.
-- Kit issues, listed in [the runs' README](usability/runs/README.md#kit-fixes-found-in-round-1).
+- Kit issues, listed in [the runs' README](../usability/runs/README.md#kit-fixes-found-in-round-1).
 - Tester errors: r1-1-codex#5, r1-2-codex#2 (its guesses, not its prelude
   part), r1-3-claude#4 and pilot-2-codex#5.
 - Notes with no problem: r1-4-claude#6–#9, r1-4-codex#4–#5.
@@ -406,7 +414,7 @@ their code and acceptance notes, then by the worst severity a tester gave.
 **"If not fixed"** is where a finding goes if the joint checkpoint after
 slice 4 does not choose it:
 - **S9:** app-author slice 9's inputs.
-- **FU:** [follow-ups](follow-ups.md).
+- **FU:** [follow-ups](../follow-ups.md).
 - **TODO:** TODO.md.
 
 | # | Finding | Class | Item or page | Runs (pilot) | Worst | If not fixed |
@@ -481,7 +489,7 @@ slice 3's misleading diagnostics, and wait for slice 3.
 
 Design checkpoint first: the rubric, which Codex reviews before the audit.
 Its sources are the project's own conventions (AGENTS.md's component API
-conventions and Rust invariants, [contracts](../docs/contracts.md)) and the
+conventions and Rust invariants, [contracts](../../docs/contracts.md)) and the
 Rust API Guidelines checklist. It covers at least:
 
 - **Construction.** `new`, `bound` and `for_parameter` used as the
@@ -505,10 +513,10 @@ Rust API Guidelines checklist. It covers at least:
 Inventories for each rubric item are generated from the `api/` listing
 with a small unpackaged script in `plans/usability/`. Two auditors work
 independently, Codex and a fresh Claude agent, as the
-[plan audit](plan-audit-repairs.md#background) did; findings only one
+[plan audit](../plan-audit-repairs.md#background) did; findings only one
 reports are verified by the other.
 
-Checkpoint proposal (2026-10-21): [the rubric](usability/api-audit/rubric.md),
+Checkpoint proposal (2026-10-21): [the rubric](../usability/api-audit/rubric.md),
 with its sources, the inventory method, two independent auditors with
 cross-verification, the rubric items (construction, builders and
 callbacks, names, types, discovery) and the survey procedures. Codex
@@ -540,19 +548,19 @@ audit together, and the maintainer's choice of what slices 5 and 6 fix.
 Findings not chosen keep slice 3's destinations, with the reason: verified
 deviations and concrete improvements go to TODO.md, and optional
 capabilities waiting for an application's need go to
-[follow-ups](follow-ups.md). Not choosing a fix does not change where a
+[follow-ups](../follow-ups.md). Not choosing a fix does not change where a
 finding goes.
 
 #### API audit findings
 
 Outcome of slice 4 (2026-10-21), audited at d4ba108. The merged table holds
 127 findings, one row each with the record's fields. It lives in [the
-findings record](usability/api-audit/findings.md) rather than here, because
+findings record](../usability/api-audit/findings.md) rather than here, because
 the plan could not hold it. This section gives the ranking and the
 questions for the checkpoint.
 
 **How it ran:**
-- **Inputs:** [`inventory.py`](usability/api-audit/inventory.py) froze the
+- **Inputs:** [`inventory.py`](../usability/api-audit/inventory.py) froze the
   inputs, checked byte for byte against every `api/` listing.
 - **Audit:** Codex and a fresh Claude agent audited each of the five
   rubric groups independently.
@@ -617,13 +625,13 @@ questions for the checkpoint.
   - **`#[must_use]` on receipts:** with F19 (G2-8).
 
 **Surveys:**
-- **[Lints](usability/api-audit/lints/survey.md):**
+- **[Lints](../usability/api-audit/lints/survey.md):**
   - Deny now: `return_self_not_must_use`, `fn_params_excessive_bools` and
     `missing_panics_doc`, the last with one `#[expect]`.
   - Deny `missing_debug_implementations` together with G4-1.
   - Decide `must_use_candidate` as a getter policy.
   - Leave `unreachable_pub` and `struct_excessive_bools` off.
-- **[Diagnostics](usability/api-audit/diagnostics/survey.md):**
+- **[Diagnostics](../usability/api-audit/diagnostics/survey.md):**
   - `#[diagnostic::on_unimplemented]` improves every unsatisfied
     pert-ui trait bound, the sealed `StateOwner` included.
   - `#[diagnostic::do_not_recommend]` on `AppError`'s blanket `From`
@@ -644,6 +652,9 @@ Each row of the record names its destination.
 
 ### 5. Documentation and guide fixes
 
+Status: done 2026-10-22 as [the fix plan](../usability/api-audit/fix-plan.md)'s
+parts 5a to 5d (0.3.53 to 0.3.56), each reviewed by Codex.
+
 Rustdoc and the packaged guide; a version.
 
 The documentation gaps and errors chosen at the checkpoint. Each fix names
@@ -652,6 +663,9 @@ doctests. Gate: the rustdoc row of the AGENTS.md table, plus the headless
 sessions of affected examples.
 
 ### 6. API fixes
+
+Status: done 2026-10-26 as [the fix plan](../usability/api-audit/fix-plan.md)'s
+parts 6a1 to 6f3 (0.3.57 to 0.3.70), each reviewed by Codex.
 
 Public API; one version per sub-slice, which the checkpoint fixes. Probable
 sub-slices, each shaped by what is chosen:
@@ -673,6 +687,9 @@ dependency row if a sub-slice adds a dev-dependency such as `trybuild`.
 
 ### 7. Blind test, round 2, and records
 
+Status: done 2026-10-27: the runs, records, triage and review below;
+the plan archived the same day.
+
 Documentation only, no version.
 
 - Run tasks 1 to 4 again on the branch head, with new tester sessions,
@@ -692,7 +709,7 @@ Documentation only, no version.
 
 Decided by the maintainer on 2026-10-27, before any round 2 run. Round 2
 is an exploratory comparison of everything since round 1: the fix plan,
-6f3 and [the layering pass](usability/layering-plan.md). Nothing in it is
+6f3 and [the layering pass](../usability/layering-plan.md). Nothing in it is
 a pass mark.
 
 - **Round 1's measures, unchanged:**
@@ -702,7 +719,8 @@ a pass mark.
   - friction entries, source reading and acceptance.
 
   `summarize.py` computes them as it did in round 1.
-- **Recurrence of F1 to F36 is the main outcome.** Each run records each
+- **Recurrence of round 1's 36 findings (F1 to F34, F7 in three
+  parts) is the main outcome.** Each run records each
   finding as *recurred*, *passed without friction* or *not reached*. A
   finding that recurs is reopened, never counted as partly fixed.
 - **New findings,** counted by severity, triaged as round 1's were: fresh
@@ -735,6 +753,280 @@ a pass mark.
   1, so the two task 5 kits differ only in the library; the kit's `dirty`
   count records the overlay.
 
+#### Round 2 results
+
+Outcome of slice 7 (2026-10-27). The evidence is exploratory: two AI
+testers, one run per task each for tasks 1 to 4 and two per commit for
+task 5. It shows observed failures and successful implementations, not
+their prevalence among human developers, and nothing in it is a pass mark.
+The records are in [the runs' README](../usability/runs/README.md#round-2),
+the triage in [`usability/runs/triage-r2/`](../usability/runs/triage-r2/).
+Below, a run is named without its `r2-` prefix (`1-claude`,
+`5-head-codex-2`); `head` is aca8df3 (0.3.75) and `r1` is 359122e (0.3.52).
+
+**Who did what:**
+- **Testing:** Claude Code 2.1.311 with `claude-opus-5-5` at high effort,
+  and Codex CLI 0.164.0 with `gpt-6.1-sol` requested at medium effort, in
+  two queues the maintainer ran in parallel, one per tester, in an order
+  that mixes task 5's two commits. The kits and isolation are in the runs'
+  README.
+- **Acceptance:** fresh Claude agents applied the acceptance procedure: one
+  per task for tasks 1 to 4, judging both testers' runs, and two for task 5,
+  one per tester, each judging that tester's runs on both commits with the
+  same criteria. The maintainer decided task 5's notification criterion.
+- **Verification:** four fresh Claude agents, one per group (tasks 1 and 2,
+  tasks 3 and 4, task 5 on aca8df3, task 5 on 359122e), checked every
+  friction entry, acceptance lead and relevant diagnostic against the kits'
+  vendored sources and rendered documentation, with throwaway probes for
+  runtime claims in groups 1, 3 and 4, and filled one recurrence matrix
+  each.
+- **Review:** Codex reviewed the triage, including the runs it produced, and
+  found it needed revision. After the revisions a fresh Claude agent
+  checked Codex's changes to its own runs, the author decided the matrix
+  rules, and Codex's recheck found the triage ready.
+- **Merging:** the author (Claude) merged the groups' new findings, starting
+  from the list in Codex's review as the revisions corrected it.
+
+**Matrix rules**, decided by the author after the Claude check and applied
+to every cell:
+- *Recurred* needs the problem or its workaround in the friction log, the
+  code, the diagnostics or the acceptance. Reading an affected page without
+  a visible effect is not recurrence. A recurrence shown by code alone is
+  marked as inferred from code.
+- *Passed* needs evidence that the run exercised the area. An acceptance
+  check run on the submission's code counts both ways. Code the tester did
+  not write, task 4's fixture, counts for neither.
+- F11 is *not reached* where a run only converted an error with a `?` that
+  succeeded: F11 is the diagnostic of a failed conversion, and such
+  conversions worked the same at 0.3.52.
+- F9's scope includes `Each`'s implicit items container and the guide's
+  only ordered example using `within`, not only the address segment.
+
+**Acceptance**, against round 1:
+
+| Task | Round 1: Claude | Round 1: Codex | Round 2: Claude | Round 2: Codex |
+|---|---|---|---|---|
+| 1 settings editor | partly met | partly met | partly met: Revert leaves a refused draft shown (R2-2) | met |
+| 2 task list | partly met | met | met | met |
+| 3 custom control | met | met | met | met |
+| 4 testing an existing app | met | met | met | met |
+| 5 job monitor on 359122e | not run | not run | met, met | met, met by decision |
+| 5 job monitor on aca8df3 | not run | not run | met, met | met, met by decision |
+
+The behaviors behind round 1's three partly met runs were met in round 2
+(F4, F5 and F7c passed). Task 1's partly met item is new: round 1's
+acceptance did not test Revert after a refused value. "By decision":
+5-head-codex-2 and 5-r1-codex-2 showed the failure in a plain `Label`
+outside the row. The maintainer decided on 2026-10-27 that
+a failure message visible outside the row meets the task's "as a
+notification", the literal reading of the frozen brief, so both runs are
+met; the missing pointer from `Toast` to `Banner` is R2-25. Both commits
+are judged by the same rule. Every run ended inside its 90-minute budget,
+and an accepted run's completion time equals its session time.
+
+**Task 5, the round 1 library against the branch head** (Claude runs, then
+Codex runs):
+
+| Measure | 359122e (0.3.52) | aca8df3 (0.3.75) |
+|---|---|---|
+| Session (min) | 10.3, 9.1; 3.2, 4.7 | 9.6, 11.6; 4.6, 4.2 |
+| First build (min) | 4.3, 2.6; 0.8, 0.5 | 1.7, 2.0; 1.5, 1.2 |
+| Builds (failed) | 38 (8), 20 (4); 5 (2), 7 (1) | 21 (2), 41 (5); 5 (0), 7 (3) |
+| Friction entries | 6, 7; 2, 2 | 5, 12; 4, 6 |
+| Round 1 findings that recurred | F1, F2 and F16 in every run, F3 in both Codex runs (inferred from code), F10 in 5-r1-codex-1, F23 in 5-r1-claude-2: 16 occurrences of 6 findings | F16 in every run, F3 in 5-head-claude-2: 5 occurrences of 2 findings |
+| Code lines (application + test) | 739 + 230, 578 + 389; 582 + 7, 597 + 7 | 543 + 363, 530 + 326; 334 + 199, 504 + 7 |
+
+On the round 1 library every task 5 run built its own test helpers (F2)
+and met the checkout-only dependency instructions (F1); at the head none
+did. Session times and build counts moved in no common direction. The head
+runs logged more friction entries (27 against 17), 16 of them on new
+findings that are present on both commits, three of which only head
+testers reported (R2-23 to R2-25). A *passed* cell does not prove that a
+fix was exercised: no task 5 run used `EventContext::spawn`, so F13's
+passes show that starting work from a callback works, not that the
+addition was adopted.
+
+**Recurrence of round 1's findings**, occurrences (finding and run pairs,
+code-inferred ones included) from the four matrices, as
+[Codex's recheck](../usability/runs/triage-r2/codex-recheck.md) counted
+them:
+
+| Finding | Tasks 1 to 4, aca8df3 (8 runs) | Task 5, aca8df3 (4 runs) | Task 5, 359122e (4 runs) |
+|---|---|---|---|
+| F1 | 0 | 0 | 4 |
+| F2 | 0 | 0 | 4 |
+| F3 | 4 | 1 | 2 (inferred from code) |
+| F9 | 2 | 0 | 0 |
+| F10 | 0 | 0 | 1 |
+| F16 | 0 | 4 | 4 |
+| F23 | 0 | 0 | 1 |
+| Total | 6 | 5 | 16 |
+
+Every other finding (F4 to F8 with F7a, F7b and F7c, F11 to F15, F17 to
+F22 and F24 to F34) recurred in no run. Recurring in no run is not proof of
+a fix: the matrices also show where a finding was *not reached*. F1, F2,
+F10 and F23 recurred only on 359122e, which lacks their fixes. F3, F9 and
+F16 recurred at the head and are **reopened**:
+
+- **F3, prelude and glob membership.** F3's own names (the keyboard and
+  command types, `ListDrop`) passed wherever a run wrote them (2-claude,
+  2-codex, 5-head-claude-1, 5-head-codex-2). What recurred are names that
+  layering part L2 and fix-plan part 6f1 moved or left out, with rustc
+  offering no `use pert_ui::…`:
+  - `Semantics`, which `Driver::semantics` returns, is in neither the
+    prelude nor `testing` (it is at the root and in `component` and
+    `inspection`), although the testing chapter says one `use` block covers
+    a test (1-claude, 5-head-claude-2);
+  - `InspectValue`, which a test compares properties with, is not in
+    `testing` (1-claude, 3-claude, 3-codex);
+  - `SemanticRole` is not in `testing`, and because `testing` re-exports
+    `SemanticValue`, rustc suggests the wrong enum (`SemanticValue::Slider`,
+    `SemanticValue::Button`) (3-claude, 4-codex);
+  - `ThemeMode` left the prelude in L2 (decision D2), so a theme switch
+    needs a root import (3-claude, 3-codex).
+
+  On 359122e both Codex runs used `Modifiers` from the root (inferred from
+  code).
+- **F9, `Each` rows in display order.** The address part is fixed: both
+  task 4 runs addressed rows as `list/<key>`. Both still had to read an
+  `Each`'s rows in display order without `within`: 4-claude walked the
+  descendants and sorted them by bounds, 4-codex read the children of the
+  implicit `items` container and asserted its key. The guide's only ordered
+  example uses `within`. What `Runtime::children` says about structural
+  wrappers is R2-6.
+- **F16, per-row state.** 6f3's controlled `Checkbox` and `InlineText`
+  passed in both task 2 runs. It recurred in all eight task 5 runs, on both
+  commits: `ProgressBar` and the other display controls take only a binding,
+  with neither a fixed nor a controlled form, and `TableItems::cell` gets no
+  state owner, so every run kept a `Signal<ProgressStatus>` per job (or a
+  `sibling` per cell build) beside the row data it republished.
+
+**New findings.** The groups' new findings merge into the table below,
+starting from Codex's merged list as the revisions corrected it: its NF-6
+(`Semantics` missing from `testing`) is F3, group 2's N1 is reduced to the
+structural-wrapper residue (the ordered-row recipe under `Each` is F9),
+2-codex is not an occurrence of the `VirtualList` order gap, and the
+`SizeLimits::exact` row is a documentation improvement, not F33 (which
+3-codex passed with `SizeLimits::exact`). "Worst" is the worst severity any
+tester gave; the groups keep each run's own. "Task 5" says on which commit
+the problem is present; "after round 1" names the part that caused it. The
+destination of every reopened and new finding is the round 2 fix plan, by
+the maintainer's decision of 2026-10-27; the groups' "destination if not
+fixed" columns are superseded.
+
+| # | Finding | Class | Worst | Runs | Task 5 | After round 1 | Destination |
+|---|---|---|---|---|---|---|---|
+| R2-1 | An `App` initializer's content and state reach `on_close` and tests only through an application-built slot (`Rc<RefCell<Option<_>>>`, as the guide teaches); `HeadlessApp` has no accessor for what the initializer mounted. | API ergonomics | annoyance | 1-claude, 1-codex; by code 2-claude, 3-claude, 5-head-claude-1, 5-head-claude-2 | aca8df3 by code; 359122e not assessed | — | round 2 fix plan |
+| R2-2 | A form Revert that writes the applied values back leaves a refused draft shown, because an equal write is no change. Ending it needs `TextCommand::DiscardDraft` per editor with its `WidgetId`; there is no form-level discard and no recipe. | API ergonomics | partly met acceptance | 1-claude (author check fails), 1-codex (worked around) | — | — | round 2 fix plan |
+| R2-3 | Dirty state over several fields needs chained `ReadSignal::combine` calls building tuples: no n-ary derivation and no writable field projection (`map` projects read-only). | API ergonomics | acceptance lead | 1-claude, 1-codex | — | — | round 2 fix plan |
+| R2-4 | `TaskReceipt` stays `#[must_use]` on `EventContext::spawn` and `defer`, so callbacks write `let _receipt`, although failures surface from the flush; only a shutdown or panic cancellation is reported in the receipt alone. An optional design question, not an obsolete attribute. | API ergonomics (optional) | annoyance | 1-claude, 1-codex, 2-claude, 2-codex, 5-head-codex-2 | aca8df3 (one run); `TaskReceipt` was `#[must_use]` at 359122e too | — | round 2 fix plan |
+| R2-5 | The number inputs' inspection is undocumented: `Semantics::value` carries the saved number with the range, also while a draft is pending, and the draft's text only when nothing is saved (`TextField` reports the draft); their role and property keys (`unit`, `display_value`, `shows_display`, `text`) are not listed. | documentation gap | annoyance | 1-claude, 1-codex, 3-claude | — | — | round 2 fix plan |
+| R2-6 | `Runtime::children` does not say what a collection's children are: a `VirtualList`'s are its mounted rows in display order, and structural wrappers such as `Each`'s container are listed although addresses skip them. | documentation gap | annoyance | 2-claude (`VirtualList`); 4-claude, 4-codex (structural wrapper) | — | — | round 2 fix plan |
+| R2-7 | `InlineText`'s editing child `"editor"`, which holds focus and the draft, is described mid-paragraph; the testing chapter has no in-place editor section. | documentation gap | annoyance | 2-claude | — | — | round 2 fix plan |
+| R2-8 | `VirtualList::reorderable` and `on_activate` do not say that the list consumes Alt with an arrow and Enter before application commands; `CommandScope`'s variants have one-line docs. | documentation gap | annoyance | 2-claude, 2-codex (acceptance) | — | — | round 2 fix plan |
+| R2-9 | `Checkbox` and `Toggle` do not point to `Field::hide_label` for a control named by text shown elsewhere. | documentation gap | annoyance | 2-claude | — | — | round 2 fix plan |
+| R2-10 | `KeyChord::new` has no example of an explicit Control or Alt chord; the field syntax is shown only on `Modifiers`. | documentation gap | annoyance | 2-codex | — | — | round 2 fix plan |
+| R2-11 | Clearing focus in a test is hidden on `HostIntegration::clear_focus`: the testing chapter does not mention it and `Driver` has no such method. | documentation gap | annoyance | 4-claude (missed a case), 4-codex (found it) | — | L3 (N3 made the inherent method crate-private) | round 2 fix plan |
+| R2-12 | The testing chapter's capture example stops before `FrameImage::encode_png`. | documentation gap | annoyance | 4-claude | — | — | round 2 fix plan |
+| R2-13 | An empty label has no semantic name (`None`), which neither `Label` nor the testing chapter's sentence on reading names says. | documentation gap | annoyance | 4-codex | — | — | round 2 fix plan |
+| R2-14 | The custom-widgets guide says a widget globs `prelude` and `component`; a widget module that uses only `component`'s names gets an unused-import warning. | documentation gap | annoyance | 3-claude, 3-codex (warning only) | — | L2 (`component` membership) against 6e's guide rule | round 2 fix plan |
+| R2-15 | A value-editing custom control's gesture contract (live writes or commit, Escape in `keyboard_event`, restore in `cancel_input`, what `on_change` reports, the focus ring) has no single recipe; the focus-ring recipe is only on `ColorRole::FocusRing`. | documentation gap | annoyance | 3-claude, 3-codex | — | — | round 2 fix plan |
+| R2-16 | Feature-gated `Serialize` impls show on the rendered pages without a feature note. | documentation gap | annoyance | 3-codex | — | — | round 2 fix plan |
+| R2-17 | `Spacing` takes no integer although `Length` does, so `.padding(24)` fails. | API ergonomics | annoyance | 3-codex | — | — | round 2 fix plan |
+| R2-18 | guide/appearance.md globs the crate root against the prelude page's advice. | documentation error | author-found | none (found verifying 3-claude) | — | — | round 2 fix plan |
+| R2-19 | `SizeLimits::exact`'s example builds its `Size` fallibly and does not point to the infallible `Size::from([u16; 2])`. | documentation gap | author-found | none (from 3-codex's code) | — | — | round 2 fix plan |
+| R2-20 | Toast messages are not in inspection or anywhere else a test can read; `ToastHost`'s page does not say what inspection reports. | missing capability; documentation gap | slow | 5-head-claude-1, 5-head-claude-2, 5-r1-claude-1, 5-r1-claude-2 | both | — | round 2 fix plan |
+| R2-21 | A `ProgressBar` keeps its 192 px preference in a `Row`, which never shrinks a growing child, so a bar beside its percentage overflows a narrow table cell (`EscapesParent`). | API ergonomics (layout); documentation gap | slow (annoyance on 359122e) | 5-head-claude-2, 5-head-codex-1, 5-head-codex-2, 5-r1-claude-1, 5-r1-claude-2 | both | — | round 2 fix plan |
+| R2-22 | A table cell's address (`<table>/<row>/<column>/<content>`) is undocumented: content keyed like its column collides with the cell wrapper in `find_descendant`, the structural `body` and `content` levels show in `Runtime::key` and `children` but not in paths, and `TestError::NotFound` names the whole path. | documentation gap | slow | 5-head-claude-2, 5-head-codex-2, 5-r1-claude-1, 5-r1-claude-2; by code 5-head-claude-1 | both; at aca8df3 `AmbiguousKey` names the key (6c1) | — | round 2 fix plan |
+| R2-23 | `Table::new`'s fixed row height has no guidance for fitting controls, and a too-tall control is clipped without a validation report. | documentation gap | annoyance | 5-head-claude-1, 5-head-claude-2 | both, reported only at aca8df3 | — | round 2 fix plan |
+| R2-24 | The testing docs name no idle check (`paint`, then `needs_paint`, `next_deadline`, `FlushReport::components_updated`). | documentation gap | annoyance | 5-head-claude-2, 5-head-codex-2; by acceptance 5-head-codex-1 | both lack the recipe | L3 (N3 moved `needs_paint` behind `HostIntegration`, harder to find) | round 2 fix plan |
+| R2-25 | A `Toast` lives a fixed five seconds and its pages do not point to `Banner` for a notification that stays. | documentation gap; a lifetime option is an optional capability | annoyance | 5-head-codex-1, 5-head-codex-2 | both, reported only at aca8df3 | — | round 2 fix plan |
+| R2-26 | `ProgressStatus::Failed` and `Cancelled` draw a full track and lose the fraction reached (documented). | missing capability (optional) | annoyance | 5-head-claude-1, 5-r1-claude-2 | both | — | round 2 fix plan |
+| R2-27 | Table header titles cannot be addressed in a headless test, so pointer sorting needs positions computed from the application's own geometry. | API ergonomics (testing) | annoyance | 5-r1-claude-2; by code 5-r1-claude-1, 5-head-claude-1, 5-head-claude-2 | both | — | round 2 fix plan |
+| R2-28 | `Pending::wait` forbids the UI thread, while the guide's and the CPU examples wait on it there after the reply arrived. | documentation error | annoyance | 5-r1-claude-2 | both, reported only at 359122e | — | round 2 fix plan |
+
+By class: 17 documentation gaps, 2 documentation errors, 7 API ergonomics
+findings and 2 missing capabilities (the class listed first). By worst
+severity: none is a blocker; 3 are slow (R2-20 to R2-22), 1 partly met an
+acceptance (R2-2), 21 are annoyances, 1 is an acceptance lead without a
+tester severity (R2-3) and 2 were found by the verifiers (R2-18, R2-19).
+All nine task 5 findings are present on both commits; the layering pass
+caused or worsened three findings (R2-11, R2-14, R2-24) and F3's
+recurrence.
+
+**Listed separately**, not for the fix plan:
+- **Kit issues**, in [the runs' README](../usability/runs/README.md#kit-issues-found-in-round-2):
+  reading the rendered HTML without a browser (2-claude#1,
+  5-head-claude-2#1), task 5's undefined notification criterion, and a
+  Codex tool refusal (5-r1-codex-2#2).
+- **Tester errors:** 1-codex#1's guessed `NativeWindowId::root` and
+  `App::size(w, h)`, 1-codex#2 (a guessed `FieldInspection` page),
+  1-codex#3 and 3-codex#3 (`SemanticValue::Number`'s shape), 3-claude#2
+  (an assumed missing `From<NumberInputError>`), 3-codex#acc-1 (a hand-drawn
+  focus ring instead of the documented recipe; the pointer gap is in
+  R2-15), 3-claude's discarded failed cancellation restore, 4-codex#2's
+  `clear_focus()?`, 5-head-claude-2's `ApplicationError::new` with a
+  `String`, 5-head-codex-2#3 (`Runtime::shutdown`'s result) and #6 (a test
+  timing assumption), 5-r1-claude-1#4 (`Rect`'s fields), 5-r1-claude-2#7's
+  `CaptureError::Unsupported` part, 5-r1-codex-1#2's guesses
+  (`ListRevealStatus`, `Modifiers::ALT`, `clear_focus`'s result) and
+  5-r1-codex-2#1's `TableRow`.
+- The other entries are notes with no problem, positive ones among them.
+
+**Compile diagnostics that misled testers:**
+- `SemanticRole` not found: rustc suggests `SemanticValue::Slider` or
+  `SemanticValue::Button`, the wrong enum, because `testing` re-exports
+  `SemanticValue` (F3).
+- `Semantics` not found in a helper's return type: rustc suggests a type
+  parameter, not an import (F3).
+- `ThemeMode` and `InspectValue` not found: no suggestion (F3).
+
+The others led straight to the fix: `.padding(24)` (rustc listed
+`Spacing`'s conversions), `SemanticValue::Number`'s fields (E0533's help),
+`ApplicationError::new` with a `String` (rustc said to pass the
+`io::Error`), `CaptureTarget::window`'s borrow on 359122e, `Rect`'s
+accessors and `clear_focus()?`.
+
+**Code size and API surface**, `summarize.py`'s frozen measures (round 1's
+records counted on copies), tasks 1 to 4:
+
+| Run | Code lines, round 1 → 2 | Distinct types, round 1 → 2 | Import paths: prelude / root / module, round 1 → 2 |
+|---|---|---|---|
+| 1-claude | 550 → 568 | 32 → 31 | 1 / 28 / 1 → 1 / 3 / 1 |
+| 1-codex | 577 → 482 | 31 → 24 | 1 / 1 / 0 → 1 / 1 / 1 |
+| 2-claude | 660 → 535 | 36 → 31 | 1 / 13 / 1 → 1 / 14 / 1 |
+| 2-codex | 659 → 493 | 38 → 28 | 1 / 15 / 0 → 1 / 5 / 1 |
+| 3-claude | 644 → 505 | 43 → 43 | 0 / 52 / 2 → 1 / 5 / 3 |
+| 3-codex | 478 → 426 | 42 → 41 | 0 / 2 / 1 → 1 / 2 / 2 |
+| 4-claude | 326 → 257 | 25 → 21 | 0 / 12 / 1 → 0 / 0 / 1 |
+| 4-codex | 287 → 230 | 25 → 20 | 0 / 17 / 1 → 0 / 1 / 1 |
+| Sum | 4,181 → 3,496 | 272 → 239 | root 140 → 31 |
+
+- **Code lines:** 16% fewer in round 2, application 2,215 → 1,883 and test
+  1,966 → 1,613; seven of the eight runs wrote fewer. Task 5 wrote 3,129
+  lines on 359122e and 2,806 at the head (application 2,496 → 1,911, test
+  633 → 895).
+- **Distinct types:** 239 against 272 in tasks 1 to 4; in task 5, 147 at
+  the head against 134 on 359122e. The head runs' tests name more types:
+  the per-run test counts sum to 39 against 16, the application counts to
+  116 against 125.
+- **Import routes:** round 1's modules were `cpu` (and r1-3-claude's
+  `check_redescription`); round 2's are `testing` in every run and
+  `component` in task 3. Two round 1 runs globbed the crate root
+  (`pert_ui::*`); no round 2 run on the head did. In task 5 the root paths
+  fell from 79 on 359122e to 44 at the head.
+- **Limitations of the frozen definitions:** code lines split application
+  and test by where the code sits, so a `#[test]` outside `#[cfg(test)]`
+  is application code (3-codex has 0 test lines) and so is a headless mode
+  in the binary (the Codex task 5 runs); totals are the primary size
+  measure. The type list is a candidate list: an enum variant named like a
+  type counts (`SemanticRole::Slider` adds `Slider`), and so does std's
+  `Path`, because pert-ui has one. The routes count distinct paths, so a run
+  importing root items one by one counts each where a glob counts once, and
+  any lowercase first segment is a module, so a root function such as
+  `pert_ui::check_redescription` counts as one. Task 4 counts only lines
+  that differ from the fixture at each kit's commit.
+
 ## Not in this plan
 
 - Property, model-based and fuzz testing, mutation testing and visual
@@ -742,7 +1034,7 @@ a pass mark.
 - Native evidence on Windows and macOS (TODO.md NATIVE-01 to NATIVE-05).
 - `cargo-semver-checks` against a published baseline. It becomes useful
   after the first publication and is recorded in
-  [follow-ups](follow-ups.md) if slice 1 does not adopt it.
+  [follow-ups](../follow-ups.md) if slice 1 does not adopt it.
 - Implementing app-author slice 9. This plan only adds inputs to it.
 - Publication, or recruiting external developers. Both need the
   maintainer's decision.
@@ -893,3 +1185,39 @@ maintainer approved all decisions as recommended and chose to fix every
 audit finding and every round 1 finding. Codex reviewed the fix plan and
 approved it after two rechecks (per-part versions, platform gates, the
 trybuild exclusion, F7b's default, the survey cases m06 and l06).
+
+Slice 7: the round 2 measures were decided by the maintainer before any
+run, and the frozen code-size definitions are in `summarize.py`. Codex
+reviewed round 2's triage (`codex exec -s read-only`, static: no Cargo, no
+probe), including the runs it produced, and found that it needed revision:
+- a recurrence recorded as new: 5-head-claude-2's missing `Semantics` (NF-6)
+  is F3;
+- an F33 recurrence that conflated `SizeLimits` with `Size`, now a
+  documentation improvement (R2-19);
+- a premise that L4a made `TaskReceipt`'s `#[must_use]` obsolete, although
+  a shutdown or panic cancellation is still reported only in the receipt;
+- a wrong account of the number inputs' semantic value, and an
+  unqualified "no projection" of a struct signal;
+- inconsistent pass and reach criteria: F3 passed by compiling the globs,
+  F11 by successful conversions, F19 and F28 by task 4's fixture, F29
+  behind fixed row heights, and F20 and F23 by exposure;
+- missed occurrences: 5-head-codex-2's receipt warning, 5-head-claude-2's
+  `ApplicationError::new` failure, 3-claude's discarded restore, and the
+  initializer slots, header geometry and idle check at the head;
+- duplicate new findings across the groups, merged severities that hid the
+  runs' own, and the unstated notification criterion.
+
+The groups were revised. A fresh Claude agent then checked Codex's changes
+to its own runs, as slice 3's rule asks. It agreed with most of them, and
+found Codex lenient on its own runs in F9 (kept passed, although 4-codex
+worked around the implicit container), F11 (passes for conversions that
+also succeeded on the unfixed library) and F19 and F28 (passes from code
+the tester did not write); it also corrected the attribution of the
+`VirtualList` order gap to 2-codex. The author decided the matrix rules
+recorded in the results, which set those cells the other way and kept F20's
+exposure out, and the maintainer decided the notification criterion.
+Codex's recheck found every point resolved or rejected with adequate
+evidence and the triage ready. It left one nonblocking wording residue,
+which group 3's record keeps: it places `Semantics` only in `inspection`,
+while the root and `component` export it too, as the results say. Slice 7
+changes only plans and `docs/`; no workspace or native check applies.

@@ -1,6 +1,6 @@
 # API consistency audit: rubric
 
-Slice 4 of [the developer-usability plan](../../developer-usability.md). The
+Slice 4 of [the developer-usability plan](../../archive/developer-usability.md). The
 rubric says what the audit checks, where each rule comes from, how its
 candidates are found and what counts as a finding. Codex reviews it and the
 maintainer approves it before the audit starts.

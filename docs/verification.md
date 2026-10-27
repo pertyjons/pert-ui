@@ -127,15 +127,16 @@ themselves. No hand check of them is claimed.
 
 ## Developer usability
 
-[The developer-usability plan](../plans/developer-usability.md) runs blind
-tests: AI testers build small applications from the packaged documentation
-in a sandbox with no network beyond the model hosts and no access to the
-repository. The kit holds the packaged crates, whose source a tester may
-read if it logs it; none did.
+[The developer-usability plan](../plans/archive/developer-usability.md)
+ran blind tests: AI testers build small applications from the packaged
+documentation in a sandbox with no network beyond the model hosts and no
+access to the repository. The kit holds the packaged crates, whose source a
+tester may read if it logs it; none did in round 1, and two round 2 runs
+each read one file.
 
-The evidence is exploratory. There are two testers, one run per task each,
-so the times and counts describe how each tester worked, not a usability
-score. Who did what:
+The evidence is exploratory. There are two testers, one run per task each
+and, in round 2, two per commit for task 5, so the times and counts
+describe how each tester worked, not a usability score. Who did what:
 
 - **Testing:** Claude Code with Opus 5.5 at high effort, and Codex CLI with
   `gpt-6.1-sol` requested at medium effort (Codex's effective model is not
@@ -168,7 +169,7 @@ Each run's records are in
 with the acceptance notes and what verification turned up, resolve into 36
 findings (one of them, the getting-started dependency, a kit issue today),
 ranked in
-[the plan's findings table](../plans/developer-usability.md#round-1-findings).
+[the plan's findings table](../plans/archive/developer-usability.md#round-1-findings).
 The most frequent are:
 - the getting-started dependency instructions, an artifact of the
   unpublished library;
@@ -181,6 +182,54 @@ Defects found:
 - `check_redescription` reports a false overlap with a viewport set;
 - `CollectionFilter`'s documented `filter` key collides with its search
   field (found while verifying, not by a tester).
+
+Round 2 ran on 2026-10-27 against 0.3.75 (commit aca8df3, Rust 1.99.1),
+after the API audit fix plan and the layering pass, with Claude Code
+2.1.311 and Codex CLI 0.164.0 and the same models and efforts. Task 5,
+held back from round 1, ran twice per tester on round 1's commit 359122e
+and twice on aca8df3. Acceptance and triage were again by fresh Claude
+agents; Codex reviewed the triage, a fresh Claude agent checked Codex's
+changes to its own runs, and Codex's recheck found it ready. The records
+are in [`plans/usability/runs/`](../plans/usability/runs/README.md#round-2),
+the results in [the plan's round 2
+results](../plans/archive/developer-usability.md#round-2-results):
+
+| Task | Claude: session, acceptance (round 1 → 2) | Codex: session, acceptance (round 1 → 2) |
+|---|---|---|
+| 1 settings editor | 5.5 → 7.2 min, partly met → partly met | 6.3 → 3.5 min, partly met → met |
+| 2 task list | 7.6 → 6.8 min, partly met → met | 6.9 → 3.0 min, met → met |
+| 3 custom control | 8.0 → 6.3 min, met → met | 3.8 → 3.6 min, met → met |
+| 4 testing an existing app | 4.5 → 3.8 min, met → met | 4.2 → 3.1 min, met → met |
+| 5 job monitor, 359122e | 10.3 and 9.1 min, met | 3.2 and 4.7 min, met |
+| 5 job monitor, aca8df3 | 9.6 and 11.6 min, met | 4.6 and 4.2 min, met |
+
+**Round 2 results:**
+- Every run finished well inside its 90-minute budget. The one partly met
+  run left a refused value's draft shown after Revert, a case round 1 did
+  not test. The second Codex run on each task 5 commit showed the failure
+  in a plain label; the maintainer accepted any failure message visible
+  outside the row as the task's notification, the literal reading of the
+  brief, for both commits.
+- Recurrence of round 1's 36 findings: at the head, tasks 1 to 4 hit 2
+  findings 6 times and task 5 hit 2 findings 5 times; on 359122e task 5 hit
+  6 findings 16 times. Three recurred at the head and are reopened: F3
+  (names layering L2 and part 6f1 left outside the prelude and `testing`
+  globs, with rustc suggesting no import or the wrong enum), F9 (reading an
+  `Each`'s rows in display order) and F16 (a `ProgressBar` in a table row
+  takes only a binding). Every other finding recurred in no run.
+- 28 new findings, none a blocker. Three slowed testers down: toast
+  messages absent from inspection, a progress bar beside its percentage
+  overflowing a narrow row, and undocumented table cell addresses. All nine
+  task 5 findings are present on both commits. The layering pass caused or
+  worsened three of them.
+- Code size, by `summarize.py`'s frozen definitions: tasks 1 to 4's
+  submissions have 3,496 code lines against 4,181 in round 1, 239 distinct
+  type candidates against 272 and 31 root import paths against 140. Task
+  5's have 2,806 lines at the head against 3,129 on 359122e. The type list
+  is a candidate list and the application and test split follows where the
+  code sits, so the totals are the primary measure.
+- The maintainer decided that every reopened and new finding is fixed in a
+  round 2 fix plan, breaking API changes allowed.
 
 ## Thin outlines at fractional zoom
 
