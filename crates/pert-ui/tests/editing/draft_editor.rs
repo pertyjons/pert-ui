@@ -1205,3 +1205,245 @@ fn a_failed_replacement_keeps_the_composition() -> TestResult {
     );
     Ok(())
 }
+
+/// New-behavior test 9: `set_read_only` keeps the session. Named assertion:
+/// after typing two edits, locking, unlocking and one undo, the text is the
+/// one after the first edit. Mutation checked: implementing `set_read_only`
+/// as `end` followed by a new `begin` loses the undo history.
+#[test]
+fn set_read_only_keeps_the_session_and_its_undo_history() -> TestResult {
+    let mut f = Fixture::new(DraftAlign::Start, None)?;
+    f.press(KeyCode::Enter);
+    f.ui.text_input("1")?;
+    f.ui.text_input("2")?;
+    assert_eq!(f.draft.text(), "12");
+    let edits = f.log.borrow().edits.len();
+    f.draft.set_read_only(true);
+    assert!(f.draft.is_read_only());
+    f.ui.text_input("3")?;
+    assert_eq!(f.draft.text(), "12", "typing is refused");
+    assert_eq!(f.log.borrow().edits.len(), edits, "on_edit does not run");
+    f.draft.set_read_only(true); // idempotent
+    f.draft.set_read_only(false);
+    assert!(!f.draft.is_read_only());
+    f.chord(KeyCode::primary(), KeyCode::KeyZ);
+    assert_eq!(f.draft.text(), "1", "undo restores the first edit");
+    f.ui.text_input("5")?;
+    assert_eq!(f.draft.text(), "15");
+    Ok(())
+}
+
+/// Records the pointer events that reach it.
+struct Probe(Rc<RefCell<Vec<PointerKind>>>);
+impl Component for Probe {
+    fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+        Ok(())
+    }
+    fn measure(&self, _: &MeasureContext<'_>, _: Constraints) -> Result<Size, RuntimeError> {
+        Ok(Size::new(240.0, 40.0)?)
+    }
+    fn pointer_input(
+        &mut self,
+        _: &mut EventContext,
+        event: PointerEvent,
+    ) -> Result<InputOutcome, RuntimeError> {
+        self.0.borrow_mut().push(event.kind());
+        Ok(InputOutcome::Handled)
+    }
+}
+
+/// New-behavior test 9, capture release. Named assertion: with the primary
+/// button still held after locking during a selection drag, a move over a
+/// sibling reaches the sibling. Mutation checked: without the capture
+/// release the move goes to the captured editor.
+#[test]
+fn set_read_only_releases_the_drags_pointer_capture() -> TestResult {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(400.0, 200.0, 1.0)?)?;
+    let value = ui.signal(120.0);
+    let draft = DraftEditorController::new();
+    let seen = Rc::new(RefCell::new(Vec::new()));
+    let root = ui.mount_tree(Element::new(
+        "root",
+        Column::new([
+            Element::new(
+                "row",
+                Row {
+                    value: value.clone(),
+                    draft: draft.clone(),
+                    editor: None,
+                    log: Rc::default(),
+                    script: None,
+                    children: vec![Element::new("editor", DraftEditor::new(draft.clone()))],
+                },
+            ),
+            Element::new("probe", Probe(seen.clone())),
+        ]),
+    ))?;
+    frame(&mut ui);
+    let row = find(&ui, &root, "row").ok_or("no row")?;
+    ui.focus(&row)?;
+    key(&mut ui, KeyCode::Enter);
+    frame(&mut ui);
+    assert!(draft.is_active());
+    let editor = find(&ui, &row, "editor").ok_or("no editor")?;
+    let point = center(&ui, &editor)?;
+    pointer(&mut ui, point, PointerKind::Press(PointerButton::Primary))?;
+    pointer(
+        &mut ui,
+        Point::new(point.x() - 20.0, point.y())?,
+        PointerKind::Move,
+    )?;
+    draft.set_read_only(true);
+    let probe = find(&ui, &root, "probe").ok_or("no probe")?;
+    let over = center(&ui, &probe)?;
+    seen.borrow_mut().clear();
+    pointer(&mut ui, over, PointerKind::Move)?;
+    assert!(
+        seen.borrow().contains(&PointerKind::Move),
+        "the probe receives the move while the button is held: {:?}",
+        seen.borrow()
+    );
+    pointer(&mut ui, over, PointerKind::Release(PointerButton::Primary))?;
+    assert!(draft.is_active());
+    Ok(())
+}
+
+/// A clipboard service that runs `during` while serving a paste.
+struct Serving(Box<dyn FnMut()>);
+impl Clipboard for Serving {
+    fn read_text(&mut self) -> Result<String, ClipboardError> {
+        (self.0)();
+        Ok("9".into())
+    }
+    fn write_text(&mut self, _: &str) -> Result<(), ClipboardError> {
+        Ok(())
+    }
+}
+
+/// New-behavior test 9, deferred calls. Named assertions: a lock requested
+/// by the clipboard service while it serves a paste keeps the pasted text,
+/// `on_edit` runs once and already sees the session read-only, and a later
+/// input is refused; a deferred `end` wins over it. Mutations checked:
+/// applying the lock before the edit's publication (`on_edit` does not run),
+/// and letting the lock survive the deferred `end` (a later `begin` starts
+/// read-only).
+#[test]
+fn a_lock_requested_while_pasting_applies_before_on_edit() -> TestResult {
+    let mut f = Fixture::new(DraftAlign::Start, None)?;
+    let observed = Rc::new(RefCell::new(Vec::new()));
+    let (draft, record) = (f.draft.clone(), observed.clone());
+    f.draft.on_edit(move |_, text, _| {
+        record
+            .borrow_mut()
+            .push((text.to_owned(), draft.is_read_only()));
+        Ok(())
+    });
+    let lock = f.draft.clone();
+    f.ui.set_clipboard(Serving(Box::new(move || lock.set_read_only(true))))?;
+    f.press(KeyCode::Enter);
+    f.chord(KeyCode::primary(), KeyCode::KeyV);
+    assert_eq!(f.draft.text(), "9", "the pasted text stays");
+    assert_eq!(*observed.borrow(), [("9".to_owned(), true)]);
+    assert!(f.draft.is_read_only());
+    f.ui.text_input("1")?;
+    assert_eq!(f.draft.text(), "9", "a following input is refused");
+
+    // A deferred end wins: the session ends, on_edit does not run, and the
+    // next session starts editable.
+    let mut f = Fixture::new(DraftAlign::Start, None)?;
+    let observed = Rc::new(RefCell::new(Vec::new()));
+    let record = observed.clone();
+    f.draft.on_edit(move |_, text, _| {
+        record.borrow_mut().push(text.to_owned());
+        Ok(())
+    });
+    let lock = f.draft.clone();
+    f.ui.set_clipboard(Serving(Box::new(move || {
+        lock.set_read_only(true);
+        lock.end();
+    })))?;
+    f.press(KeyCode::Enter);
+    f.chord(KeyCode::primary(), KeyCode::KeyV);
+    assert!(!f.draft.is_active());
+    assert!(observed.borrow().is_empty());
+    f.ui.focus(&f.row)?;
+    frame(&mut f.ui);
+    f.press(KeyCode::Enter);
+    assert!(f.draft.is_active());
+    assert!(
+        !f.draft.is_read_only(),
+        "the dropped lock touches no later session"
+    );
+    Ok(())
+}
+
+/// New-behavior test 9, precedence. Named assertions: `on_edit` unlocking a
+/// lock the service requested leaves the session editable, and `on_edit`
+/// ending and beginning again starts an editable session. Mutation checked:
+/// applying the recorded state after `on_edit` leaves both read-only.
+#[test]
+fn calls_on_edit_makes_supersede_a_recorded_lock() -> TestResult {
+    let mut f = Fixture::new(DraftAlign::Start, None)?;
+    let draft = f.draft.clone();
+    f.draft.on_edit(move |_, _, _| {
+        draft.set_read_only(false);
+        Ok(())
+    });
+    let lock = f.draft.clone();
+    f.ui.set_clipboard(Serving(Box::new(move || lock.set_read_only(true))))?;
+    f.press(KeyCode::Enter);
+    f.chord(KeyCode::primary(), KeyCode::KeyV);
+    assert!(!f.draft.is_read_only());
+    f.ui.text_input("1")?;
+    assert_eq!(f.draft.text(), "91");
+
+    let mut f = Fixture::new(DraftAlign::Start, None)?;
+    let draft = f.draft.clone();
+    let restarted = Rc::new(RefCell::new(false));
+    let once = restarted.clone();
+    f.draft.on_edit(move |cx, _, _| {
+        if !once.replace(true) {
+            draft.end();
+            draft.begin(cx, "5", None, DraftSelection::End)?;
+        }
+        Ok(())
+    });
+    let lock = f.draft.clone();
+    f.ui.set_clipboard(Serving(Box::new(move || lock.set_read_only(true))))?;
+    f.press(KeyCode::Enter);
+    f.chord(KeyCode::primary(), KeyCode::KeyV);
+    assert!(*restarted.borrow());
+    assert!(f.draft.is_active());
+    assert!(!f.draft.is_read_only(), "the new session is editable");
+    assert_eq!(f.draft.text(), "5");
+    Ok(())
+}
+
+/// New-behavior test 9, callback error. Named assertion: the paste returns
+/// the callback's error once while the pasted text and the lock stay.
+/// Mutation checked: skipping the recorded state when `on_edit` fails leaves
+/// the session editable.
+#[test]
+fn a_failing_on_edit_keeps_the_paste_and_the_lock() -> TestResult {
+    let mut f = Fixture::new(DraftAlign::Start, None)?;
+    f.draft.on_edit(|_, _, _| Err(RuntimeError::Exhausted));
+    let lock = f.draft.clone();
+    f.ui.set_clipboard(Serving(Box::new(move || lock.set_read_only(true))))?;
+    f.press(KeyCode::Enter);
+    let primary = KeyCode::primary();
+    f.ui.key_input(primary, KeyAction::Press)?;
+    let pasted = f.ui.key_input(KeyCode::KeyV, KeyAction::Press).map(|_| ());
+    assert_eq!(pasted, Err(RuntimeError::Exhausted));
+    assert_eq!(f.draft.text(), "9");
+    assert!(
+        f.draft.is_read_only(),
+        "applied before the failing callback"
+    );
+    f.ui.key_input(KeyCode::KeyV, KeyAction::Release)?;
+    f.ui.key_input(primary, KeyAction::Release)?;
+    frame(&mut f.ui);
+    assert_eq!(f.draft.text(), "9");
+    assert!(f.draft.is_read_only());
+    Ok(())
+}

@@ -433,7 +433,12 @@ Ranges and keyboard steps are optional; Up/Down edits the draft. Decimal display
 precision does not round the stored value, and both `.` and `,` are accepted as
 decimal separators (no grouping). These are local signals, not host edit sessions;
 [`IntegerInput::for_parameter`] edits a stepped parameter instead, validating drafts
-exactly against its step and cancelling them on focus loss.
+exactly against its step and cancelling them on focus loss. Disabling a field or
+making it read-only keeps a typed draft unsaved, as a [`TextField`] keeps one, and
+[`IntegerInput::on_modified`] reports it; [`TextCommand::DiscardDraft`] discards
+it without touching the binding. The
+[draft policy](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#draft-policy)
+states these rules for every built-in editor.
 
 ```rust
 use pert_ui::{Column, DecimalInput, Element, IntegerInput, KeyAction, KeyCode, Runtime};
@@ -654,7 +659,12 @@ decided from the final allocation during layout and applied in the same flush
 through [`ArrangeContext::request_update`], a public hook custom containers can use
 for the same purpose.
 
-Disabling SearchField discards a pending debounced query without publishing it.
-Disabling TextField/TextArea retains an unsaved draft but never saves it on focus
-loss while disabled; reenabling permits a subsequent save. Read-only selection
-and copying remain separate from enablement.
+Disabling a standalone editor (TextField, TextArea, IntegerInput, DecimalInput)
+keeps an unsaved draft but never saves it while disabled, also not on the focus
+loss; reenabling permits a subsequent save. An in-place editor (InlineText, an
+inline row's text mode) ends its draft unsaved, a parameter draft is cancelled,
+and SearchField discards a pending debounced query without publishing it.
+[`TextCommand::DiscardDraft`] discards a kept draft. Read-only selection and
+copying remain separate from enablement. The
+[draft policy](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#draft-policy)
+states every editor's rules in one place.

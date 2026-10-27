@@ -622,3 +622,152 @@ fn disabled_redescription_discards_query_before_due_timer_or_focus_loss() {
         assert_eq!(text(&ui), "");
     }
 }
+
+#[derive(Clone, Default)]
+struct Memory(Rc<RefCell<String>>);
+impl Clipboard for Memory {
+    fn read_text(&mut self) -> Result<String, ClipboardError> {
+        Ok(self.0.borrow().clone())
+    }
+    fn write_text(&mut self, text: &str) -> Result<(), ClipboardError> {
+        text.clone_into(&mut self.0.borrow_mut());
+        Ok(())
+    }
+}
+
+/// New-behavior test 10 (draft policy rule 8), focus loss. Named assertion:
+/// after editing is revoked and focus leaves, no query is pending and the
+/// field shows the bound query. Mutation checked: keeping the query pending
+/// when the write is refused (as before) leaves `pending` true.
+#[test]
+fn focus_leaving_while_editing_is_denied_discards_a_pending_query() {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(320.0, 160.0, 1.0).unwrap())
+        .unwrap();
+    let query = ui.signal(String::new());
+    let editable = ui.signal(true);
+    let field = ui
+        .mount_tree(Element::new(
+            "search",
+            SearchField::new(query.clone())
+                .debounce(Duration::from_millis(300))
+                .editable(&editable),
+        ))
+        .unwrap();
+    ui.focus(&field).unwrap();
+    frame(&mut ui);
+    ui.text_input("abc").unwrap();
+    frame(&mut ui);
+    assert_eq!(property(&ui, "pending"), InspectValue::Bool(true));
+    editable.set(false).unwrap();
+    frame(&mut ui);
+    assert_eq!(
+        property(&ui, "pending"),
+        InspectValue::Bool(true),
+        "kept while focused"
+    );
+    ui.clear_focus();
+    frame(&mut ui);
+    assert_eq!(property(&ui, "pending"), InspectValue::Bool(false));
+    assert_eq!(text(&ui), "");
+    ui.flush(ui.now() + Duration::from_millis(400)).unwrap();
+    assert_eq!(query.get().unwrap(), "");
+    editable.set(true).unwrap();
+    frame(&mut ui);
+    ui.flush(ui.now() + Duration::from_millis(400)).unwrap();
+    assert_eq!(query.get().unwrap(), "", "nothing replays");
+}
+
+/// Sends a paste to its target from its own delivery when `go` turns true.
+struct Paster {
+    target: Rc<RefCell<Option<WidgetId>>>,
+    go: Signal<bool>,
+    sent: bool,
+    notifier: Option<Notifier>,
+}
+impl Component for Paster {
+    fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
+        let notifier = self.notifier.get_or_insert_with(|| cx.notifier()).clone();
+        if cx.read(&self.go)? && !self.sent {
+            notifier.request();
+        }
+        Ok(())
+    }
+    fn deliver_notifications(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
+        let target = self.target.borrow().clone();
+        if let Some(target) = target
+            && !self.sent
+        {
+            self.sent = true;
+            cx.request_text_command(&target, TextCommand::Paste)?;
+        }
+        Ok(())
+    }
+}
+
+/// New-behavior test 10, edits without focus. Named assertion: a paste sent
+/// to an unfocused debounced field writes the query by the time the call
+/// returns, with nothing pending. Mutation checked: arming the debounce for
+/// unfocused edits (as before) leaves the query empty and `pending` true.
+#[test]
+fn an_edit_without_focus_writes_the_query_at_once() {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(320.0, 160.0, 1.0).unwrap())
+        .unwrap();
+    let memory = Memory::default();
+    "abc".clone_into(&mut memory.0.borrow_mut());
+    ui.set_clipboard(memory).unwrap();
+    let query = ui.signal(String::new());
+    let editable = ui.signal(true);
+    let go = ui.signal(false);
+    let target: Rc<RefCell<Option<WidgetId>>> = Rc::default();
+    let root = ui
+        .mount_tree(Element::new(
+            "root",
+            Column::new([
+                Element::new(
+                    "search",
+                    SearchField::new(query.clone())
+                        .debounce(Duration::from_millis(300))
+                        .editable(&editable),
+                ),
+                Element::new(
+                    "paster",
+                    Paster {
+                        target: target.clone(),
+                        go: go.clone(),
+                        sent: false,
+                        notifier: None,
+                    },
+                ),
+            ]),
+        ))
+        .unwrap();
+    frame(&mut ui);
+    let field = ui.find_descendant(&root, "search").unwrap().unwrap();
+    assert_eq!(ui.focused(), None);
+    ui.text_command(&field, TextCommand::Paste).unwrap();
+    assert_eq!(
+        query.get().unwrap(),
+        "abc",
+        "written by the time the call returns"
+    );
+    frame(&mut ui);
+    assert_eq!(property(&ui, "pending"), InspectValue::Bool(false));
+    editable.set(false).unwrap();
+    frame(&mut ui);
+    ui.flush(ui.now() + Duration::from_millis(400)).unwrap();
+    assert_eq!(query.get().unwrap(), "abc");
+    editable.set(true).unwrap();
+    frame(&mut ui);
+
+    // The same through `EventContext::request_text_command`, written in the
+    // flush that delivers it.
+    query.set(String::new()).unwrap();
+    frame(&mut ui);
+    *target.borrow_mut() = Some(field.clone());
+    go.set(true).unwrap();
+    frame(&mut ui);
+    assert_eq!(query.get().unwrap(), "abc");
+    assert_eq!(property(&ui, "pending"), InspectValue::Bool(false));
+}

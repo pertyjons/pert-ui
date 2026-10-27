@@ -663,3 +663,522 @@ fn a_detached_windows_failed_focus_loss_aborts_closing_the_main_window() -> Test
     app.shutdown()?;
     Ok(())
 }
+
+/// A page whose editors feed a `FormFields` from `on_modified`, for a close
+/// policy that keeps the window open while any field is unsaved.
+struct Unsaved {
+    form: FormFields,
+    root: WidgetId,
+    count: Signal<i64>,
+    enabled: Signal<bool>,
+    name: Signal<String>,
+}
+fn unsaved_page(ui: &mut Runtime) -> Result<Unsaved, RuntimeError> {
+    let form = FormFields::new(ui);
+    let count = ui.signal(7_i64);
+    let enabled = ui.signal(true);
+    let name = ui.signal("Bass".to_owned());
+    let (count_field, name_field) = (form.field("count")?, form.field("name")?);
+    let root = ui.mount_tree(Element::new(
+        "page",
+        Column::new([
+            IntegerInput::new(count.clone())
+                .enabled(&enabled)
+                .on_modified(move |_, modified| count_field.set_modified(modified).map(|_| ()))
+                .key("count"),
+            InlineText::new(name.clone())
+                .normalize(|text: String| {
+                    if text.trim().is_empty() {
+                        Err(InputRejection::new("Enter a name"))
+                    } else {
+                        Ok(text)
+                    }
+                })
+                .on_modified(move |_, modified| name_field.set_modified(modified).map(|_| ()))
+                .key("name"),
+            Button::new("Other", |_| Ok(())).key("other"),
+        ]),
+    ))?;
+    Ok(Unsaved {
+        form,
+        root,
+        count,
+        enabled,
+        name,
+    })
+}
+/// Keeps the window open while any field reports an unsaved draft.
+fn while_unsaved() -> Policy<Unsaved> {
+    Box::new(|_, page: &Unsaved| {
+        Ok(if page.form.summary().get()?.modified() > 0 {
+            NativeCloseAction::KeepOpen
+        } else {
+            NativeCloseAction::Close
+        })
+    })
+}
+fn text_property(ui: &Runtime, id: &WidgetId, name: &str) -> Option<String> {
+    let inspection = ui.inspection_id(id).ok()?;
+    match ui
+        .inspect()
+        .components
+        .into_iter()
+        .find(|c| c.id == inspection)?
+        .details
+        .properties
+        .get(name)
+    {
+        Some(InspectValue::Text(text)) => Some(text.clone()),
+        _ => None,
+    }
+}
+
+/// New-behavior test 19: the close policy sees a disabled field's kept
+/// draft. Named assertion: `KeepOpen`, and the field still shows the draft.
+/// Mutation checked: test 1's (the draft discarded on revocation).
+#[test]
+fn the_close_policy_sees_a_disabled_fields_kept_draft() -> TestResult {
+    let (mut app, page) = start(unsaved_page, while_unsaved())?;
+    let field = app.runtime().find(&page.root, &["count"])?.ok_or("count")?;
+    Driver::new(app.runtime_mut()).replace_text(&field, "42")?;
+    page.enabled.set(false)?;
+    Driver::new(app.runtime_mut()).settle()?;
+    let main = app.main_window();
+    assert!(matches!(
+        app.admit_close(&main)?,
+        NativeCloseAction::KeepOpen
+    ));
+    assert_eq!(
+        text_property(app.runtime(), &field, "text").as_deref(),
+        Some("42")
+    );
+    assert_eq!(page.count.get()?, 7);
+    app.shutdown()?;
+    Ok(())
+}
+
+/// New-behavior test 19, test 2's sequence: an unfocused refused draft, a
+/// pointer move over it and a bound revocation before the close. Named
+/// assertion: `KeepOpen`. Mutation checked: test 2's.
+#[test]
+fn the_close_policy_sees_an_unfocused_refused_draft_after_revocation() -> TestResult {
+    let (mut app, page) = start(unsaved_page, while_unsaved())?;
+    let field = app.runtime().find(&page.root, &["count"])?.ok_or("count")?;
+    let other = app.runtime().find(&page.root, &["other"])?.ok_or("other")?;
+    Driver::new(app.runtime_mut()).replace_text(&field, "4x")?;
+    app.runtime_mut().focus(&other)?;
+    let [x, y, w, h] = app.runtime().bounds(&field)?.ok_or("bounds")?.values();
+    let point = Point::new(x + w / 2.0, y + h / 2.0)?;
+    app.runtime_mut()
+        .pointer_input(PointerEvent::new(point, PointerKind::Move))?;
+    page.enabled.set(false)?;
+    Driver::new(app.runtime_mut()).settle()?;
+    let main = app.main_window();
+    assert!(matches!(
+        app.admit_close(&main)?,
+        NativeCloseAction::KeepOpen
+    ));
+    assert_eq!(
+        text_property(app.runtime(), &field, "text").as_deref(),
+        Some("4x")
+    );
+    app.shutdown()?;
+    Ok(())
+}
+
+/// New-behavior test 19: focused editors with refused drafts. Named
+/// assertion: `KeepOpen`, and the released editor (for `InlineText` its
+/// child editor) is focused again. Mutation checked: removing the delivery
+/// request of `on_modified` lets the window close.
+#[test]
+fn the_close_policy_sees_focused_refused_drafts() -> TestResult {
+    // An integer field with an invalid draft.
+    let (mut app, page) = start(unsaved_page, while_unsaved())?;
+    let field = app.runtime().find(&page.root, &["count"])?.ok_or("count")?;
+    Driver::new(app.runtime_mut()).replace_text(&field, "4x")?;
+    let main = app.main_window();
+    assert!(matches!(
+        app.admit_close(&main)?,
+        NativeCloseAction::KeepOpen
+    ));
+    assert_eq!(app.runtime().focused(), Some(field));
+    app.shutdown()?;
+
+    // An editable label whose normalizer refuses the draft.
+    let (mut app, page) = start(unsaved_page, while_unsaved())?;
+    let label = app.runtime().find(&page.root, &["name"])?.ok_or("name")?;
+    app.runtime_mut()
+        .text_command(&label, TextCommand::BeginEdit)?;
+    Driver::new(app.runtime_mut()).settle()?;
+    Driver::new(app.runtime_mut()).type_text(" ")?;
+    let editor = app.runtime().focused().ok_or("the label's editor")?;
+    let main = app.main_window();
+    assert!(matches!(
+        app.admit_close(&main)?,
+        NativeCloseAction::KeepOpen
+    ));
+    assert_eq!(page.name.get()?, "Bass");
+    assert_eq!(app.runtime().focused(), Some(editor));
+    app.shutdown()?;
+    Ok(())
+}
+
+/// A table whose quantity cells edit with a `DecimalInput` that feeds the
+/// edited cell's modified count.
+struct Ledger {
+    form: FormFields,
+    root: WidgetId,
+    state: TableController,
+    amounts: Vec<Signal<f64>>,
+}
+struct LedgerRows(Vec<Signal<f64>>);
+impl TableItems for LedgerRows {
+    fn len(&self) -> usize {
+        self.0.len()
+    }
+    fn key(&self, index: usize) -> Option<String> {
+        (index < self.0.len()).then(|| format!("r{index}"))
+    }
+    fn cell(&self, index: usize, _: &str) -> Option<Element> {
+        let amount = self.0.get(index)?.get().ok()?;
+        Some(Element::new("amount", Label::new(amount.to_string())))
+    }
+}
+fn ledger(ui: &mut Runtime) -> Result<Ledger, RuntimeError> {
+    let form = FormFields::new(ui);
+    let amounts = vec![ui.signal(1.0_f64), ui.signal(2.0_f64)];
+    let state = TableController::new(
+        ui,
+        ListSelection::new(ui, SelectionMode::Single),
+        [TableColumn::new("amount", "Amount").editable(true)],
+        TableSource::new(LedgerRows(amounts.clone())),
+    )?;
+    let handles: Vec<FieldHandle> = (0..amounts.len())
+        .map(|index| form.field(format!("r{index}")))
+        .collect::<Result<_, _>>()?;
+    let rows = amounts.clone();
+    let table = Table::new(&state, 24.0)?.cell_editor(move |edit| {
+        let index: usize = edit.row().trim_start_matches('r').parse().unwrap_or(0);
+        let handle = handles[index].clone();
+        Ok(Element::new(
+            "editor",
+            DecimalInput::new(rows[index].clone())
+                .step(0.5)
+                .map_err(|_| RuntimeError::Exhausted)?
+                .stepper(true)
+                .on_modified(move |_, modified| handle.set_modified(modified).map(|_| ()))
+                .session(edit.session()),
+        ))
+    });
+    let root = ui.mount_tree(Element::new(
+        "page",
+        Column::new([Element::new("table", table).with_grow(1)]),
+    ))?;
+    Ok(Ledger {
+        form,
+        root,
+        state,
+        amounts,
+    })
+}
+
+/// New-behavior test 19: a table's cell with a valid typed draft, and with a
+/// held step button, at close. Named assertions: the model holds the value
+/// when the policy runs, the table has closed the edit, the count is zero
+/// and the decision is `Close`. Mutations checked: test 6's for the held
+/// press, and requesting the modified report after the session report (the
+/// count stays one and the decision is `KeepOpen`).
+#[test]
+fn a_table_cell_saved_by_admission_leaves_nothing_unsaved() -> TestResult {
+    for held in [false, true] {
+        let seen = Rc::new(RefCell::new(None));
+        let record = seen.clone();
+        let (mut app, page) = start(
+            ledger,
+            Box::new(move |ui, page: &Ledger| {
+                let open = ui.find_descendant(&page.root, "editor")?.is_some();
+                *record.borrow_mut() = Some((page.amounts[0].get()?, open));
+                Ok(if page.form.summary().get()?.modified() > 0 {
+                    NativeCloseAction::KeepOpen
+                } else {
+                    NativeCloseAction::Close
+                })
+            }),
+        )?;
+        let ui = app.runtime_mut();
+        ui.set_viewport(Viewport::new(320.0, 200.0, 1.0)?)?;
+        Driver::new(ui).settle()?;
+        page.state.selection().set_active(Some("r0".into()))?;
+        page.state.set_active_column(Some("amount".into()))?;
+        let body = ui.find_descendant(&page.root, "body")?.ok_or("body")?;
+        ui.focus(&body)?;
+        Driver::new(ui).key(KeyCode::Enter)?;
+        let editor = ui.find_descendant(&page.root, "editor")?.ok_or("editor")?;
+        ui.text_command(&editor, TextCommand::SelectAll)?;
+        Driver::new(ui).type_text("3.5")?;
+        if held {
+            let [x, y, w, h] = ui.bounds(&editor)?.ok_or("bounds")?.values();
+            let metrics = ui.theme().metrics(pert_ui::Density::Standard)?;
+            let plus = Point::new(
+                x + w
+                    - metrics.metric(MetricRole::ControlPaddingX)
+                    - metrics.metric(MetricRole::IconSize) / 2.0,
+                y + h / 2.0,
+            )?;
+            ui.pointer_input(PointerEvent::new(
+                plus,
+                PointerKind::Press(PointerButton::Primary),
+            ))?;
+            Driver::new(ui).settle()?;
+        }
+        assert_eq!(page.form.summary().get()?.modified(), 1, "held {held}");
+        let main = app.main_window();
+        let decision = app.admit_close(&main)?;
+        let expected = if held { 4.0 } else { 3.5 };
+        assert_eq!(*seen.borrow(), Some((expected, false)), "held {held}");
+        assert_eq!(page.form.summary().get()?.modified(), 0, "held {held}");
+        assert!(matches!(decision, NativeCloseAction::Close), "held {held}");
+        app.shutdown()?;
+    }
+    Ok(())
+}
+
+/// Close admission and focused in-place and search editors (contract).
+#[test]
+fn admission_applies_the_focus_loss_rule_of_focused_in_place_editors() -> TestResult {
+    struct Page {
+        root: WidgetId,
+        name: Signal<String>,
+        model: Rc<RefCell<String>>,
+        count: Signal<i64>,
+        gain: Parameter<f32>,
+        _host: ParameterHost<f32>,
+        outcomes: Rc<RefCell<Vec<String>>>,
+        _monitor: DeliveryMonitor<f32>,
+        query: Signal<String>,
+        searchable: Signal<bool>,
+    }
+    fn page(ui: &mut Runtime) -> Result<Page, RuntimeError> {
+        let name = ui.signal("Bass".to_owned());
+        let model = Rc::new(RefCell::new("Bass".to_owned()));
+        let count = ui.signal(8_i64);
+        let (gain, host) = ui.parameter(
+            ParameterId::new(1, 1, "gain")?,
+            ParameterSpec::new("Gain", 0.0, 1.0, 0.25)?,
+        )?;
+        let outcomes = Rc::new(RefCell::new(Vec::new()));
+        let sink = outcomes.clone();
+        let monitor = host.on_outcome(move |event| {
+            sink.borrow_mut().push(format!("{:?}", event.outcome));
+            Ok(())
+        })?;
+        let query = ui.signal(String::new());
+        let searchable = ui.signal(true);
+        let store = model.clone();
+        let root = ui.mount_tree(Element::new(
+            "page",
+            Column::new([
+                InlineText::new(name.clone()).key("bound"),
+                InlineText::controlled("Bass", move |_, text| {
+                    text.clone_into(&mut store.borrow_mut());
+                    Ok(())
+                })
+                .key("controlled"),
+                InlineInteger::new(count.clone()).key("count"),
+                InlineSlider::new(gain.clone()).key("gain"),
+                SearchField::new(query.clone())
+                    .debounce(Duration::from_millis(300))
+                    .editable(&searchable)
+                    .key("search"),
+            ]),
+        ))?;
+        Ok(Page {
+            root,
+            name,
+            model,
+            count,
+            gain,
+            _host: host,
+            outcomes,
+            _monitor: monitor,
+            query,
+            searchable,
+        })
+    }
+    type Check = fn(&Page) -> Result<(), Box<dyn std::error::Error>>;
+    let cases: [(&str, &str, Check); 5] = [
+        ("bound", "Lead", |p| {
+            assert_eq!(p.name.get()?, "Lead");
+            Ok(())
+        }),
+        ("controlled", "Lead", |p| {
+            assert_eq!(*p.model.borrow(), "Lead", "the proposal reached the model");
+            Ok(())
+        }),
+        ("count", "42", |p| {
+            assert_eq!(p.count.get()?, 42);
+            Ok(())
+        }),
+        ("gain", "0.75", |p| {
+            assert_eq!(
+                p.gain.snapshot().get()?.base,
+                0.25,
+                "cancelled, not committed"
+            );
+            assert_eq!(*p.outcomes.borrow(), ["Cancelled"]);
+            Ok(())
+        }),
+        ("search", "abc", |p| {
+            assert_eq!(p.query.get()?, "abc", "the pending query is written");
+            Ok(())
+        }),
+    ];
+    for (key, draft, check) in cases {
+        let checked = Rc::new(RefCell::new(None));
+        let record = checked.clone();
+        let (mut app, page) = start(
+            page,
+            Box::new(move |_, page: &Page| {
+                *record.borrow_mut() = Some(check(page).map_err(|error| error.to_string()));
+                Ok(NativeCloseAction::Close)
+            }),
+        )?;
+        let ui = app.runtime_mut();
+        let id = ui.find(&page.root, &[key])?.ok_or("the editor")?;
+        ui.focus(&id)?;
+        Driver::new(ui).settle()?;
+        if key != "search" {
+            ui.text_command(&id, TextCommand::BeginEdit)?;
+            Driver::new(ui).settle()?;
+        }
+        Driver::new(ui).type_text(draft)?;
+        let main = app.main_window();
+        app.admit_close(&main)?;
+        assert_eq!(*checked.borrow(), Some(Ok(())), "{key}");
+        app.shutdown()?;
+    }
+
+    // A read-only search field discards its pending query.
+    let (mut app, page) = start(page, Box::new(|_, _: &Page| Ok(NativeCloseAction::Close)))?;
+    let ui = app.runtime_mut();
+    let search = ui.find(&page.root, &["search"])?.ok_or("search")?;
+    ui.focus(&search)?;
+    Driver::new(ui).type_text("abc")?;
+    page.searchable.set(false)?;
+    Driver::new(ui).settle()?;
+    let main = app.main_window();
+    app.admit_close(&main)?;
+    assert_eq!(page.query.get()?, "");
+    assert_eq!(
+        text_property(app.runtime(), &search, "text").as_deref(),
+        Some("")
+    );
+    app.shutdown()?;
+    Ok(())
+}
+
+/// Close admission and a table's session editor (contract): a valid draft
+/// reports `(FocusLeft, Saved)` and the table closes the edit within
+/// admission; a refused one stays open and `KeepOpen` focuses it again.
+#[test]
+fn admission_completes_a_table_cells_session() -> TestResult {
+    struct Names {
+        root: WidgetId,
+        state: TableController,
+        names: Vec<Signal<String>>,
+        ends: Rc<RefCell<Vec<String>>>,
+    }
+    struct NameRows(Vec<Signal<String>>);
+    impl TableItems for NameRows {
+        fn len(&self) -> usize {
+            self.0.len()
+        }
+        fn key(&self, index: usize) -> Option<String> {
+            (index < self.0.len()).then(|| format!("r{index}"))
+        }
+        fn cell(&self, index: usize, _: &str) -> Option<Element> {
+            Some(Element::new(
+                "name",
+                Label::new(self.0.get(index)?.get().ok()?),
+            ))
+        }
+    }
+    fn names(ui: &mut Runtime) -> Result<Names, RuntimeError> {
+        let names = vec![ui.signal("Cable".to_owned()), ui.signal("Mouse".to_owned())];
+        let state = TableController::new(
+            ui,
+            ListSelection::new(ui, SelectionMode::Single),
+            [TableColumn::new("name", "Name").editable(true)],
+            TableSource::new(NameRows(names.clone())),
+        )?;
+        let ends = Rc::new(RefCell::new(Vec::new()));
+        let (rows, sink) = (names.clone(), ends.clone());
+        let table = Table::new(&state, 24.0)?
+            .cell_editor(move |edit| {
+                let index: usize = edit.row().trim_start_matches('r').parse().unwrap_or(0);
+                Ok(Element::new(
+                    "editor",
+                    TextField::new(rows[index].clone())
+                        .normalize(|text: String| {
+                            if text.trim().is_empty() {
+                                Err(InputRejection::new("A name is required"))
+                            } else {
+                                Ok(text)
+                            }
+                        })
+                        .session(edit.session()),
+                ))
+            })
+            .on_edit_end(move |_, end| {
+                sink.borrow_mut().push(format!("{:?}", end.reason()));
+                Ok(())
+            });
+        let root = ui.mount_tree(Element::new(
+            "page",
+            Column::new([Element::new("table", table).with_grow(1)]),
+        ))?;
+        Ok(Names {
+            root,
+            state,
+            names,
+            ends,
+        })
+    }
+    for refused in [false, true] {
+        let (mut app, page) = start(
+            names,
+            Box::new(|_, _: &Names| Ok(NativeCloseAction::KeepOpen)),
+        )?;
+        let ui = app.runtime_mut();
+        ui.set_viewport(Viewport::new(320.0, 200.0, 1.0)?)?;
+        Driver::new(ui).settle()?;
+        page.state.selection().set_active(Some("r0".into()))?;
+        page.state.set_active_column(Some("name".into()))?;
+        let body = ui.find_descendant(&page.root, "body")?.ok_or("body")?;
+        ui.focus(&body)?;
+        Driver::new(ui).key(KeyCode::Enter)?;
+        let editor = ui.find_descendant(&page.root, "editor")?.ok_or("editor")?;
+        if refused {
+            Driver::new(ui).key(KeyCode::Backspace)?;
+        } else {
+            Driver::new(ui).type_text("Laptop")?;
+        }
+        let main = app.main_window();
+        app.admit_close(&main)?;
+        let ui = app.runtime();
+        if refused {
+            assert!(page.ends.borrow().is_empty(), "the refused edit stays open");
+            assert_eq!(ui.focused(), Some(editor), "KeepOpen focuses it again");
+            assert_eq!(page.names[0].get()?, "Cable");
+        } else {
+            assert_eq!(
+                *page.ends.borrow(),
+                ["Completed(EditorCompletion { trigger: FocusLeft, outcome: Saved })"]
+            );
+            assert_eq!(page.names[0].get()?, "Laptop");
+            assert!(ui.find_descendant(&page.root, "editor")?.is_none());
+        }
+        app.shutdown()?;
+    }
+    Ok(())
+}

@@ -538,7 +538,26 @@ impl NumericControl {
         if command == TextCommand::BeginEdit && self.field.inline {
             return self.begin_command(cx);
         }
+        if command == TextCommand::DiscardDraft && self.field.inline {
+            return Ok(self.discard_command(cx));
+        }
         self.field.command(cx, command)
+    }
+    /// [`TextCommand::DiscardDraft`]: cancels an open text mode and its edit
+    /// as Escape does, whether or not the row's editor holds focus; one that
+    /// holds focus returns it to the row. A resting row has no draft.
+    fn discard_command(&mut self, cx: &mut EventContext) -> TextCommandOutcome {
+        if !self.field.editing {
+            return TextCommandOutcome::Unavailable;
+        }
+        let refocus = self.field.drafting() && self.field.focused;
+        self.input_reset();
+        cx.release_pointer();
+        if refocus {
+            cx.request_focus();
+        }
+        cx.invalidate(Invalidation::Paint);
+        TextCommandOutcome::Handled
     }
     /// [`TextCommand::BeginEdit`]: text mode begins exactly where Enter and F2
     /// begin it. They do nothing during a gesture (a pressed value, a drag or

@@ -2281,6 +2281,7 @@ impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::TaskStatus
 pub pert_ui_runtime::component::TextCommand::BeginEdit
 pub pert_ui_runtime::component::TextCommand::Copy
 pub pert_ui_runtime::component::TextCommand::Cut
+pub pert_ui_runtime::component::TextCommand::DiscardDraft
 pub pert_ui_runtime::component::TextCommand::Paste
 pub pert_ui_runtime::component::TextCommand::PasteAfter
 pub pert_ui_runtime::component::TextCommand::PasteBefore
@@ -2872,6 +2873,7 @@ pub fn pert_ui_runtime::DraftEditorController<P>::new() -> Self
 pub fn pert_ui_runtime::DraftEditorController<P>::on_edit(&self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, &str, core::option::Option<P>) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static)
 pub fn pert_ui_runtime::DraftEditorController<P>::payload(&self) -> core::option::Option<P>
 pub fn pert_ui_runtime::DraftEditorController<P>::replace(&self, &mut pert_ui_runtime::EventContext, &str, core::option::Option<P>) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::DraftEditorController<P>::set_read_only(&self, bool)
 pub fn pert_ui_runtime::DraftEditorController<P>::text(&self) -> alloc::string::String
 impl<P: core::marker::Copy + core::cmp::PartialEq + 'static> core::default::Default for pert_ui_runtime::DraftEditorController<P>
 pub fn pert_ui_runtime::DraftEditorController<P>::default() -> Self
@@ -13526,6 +13528,29 @@ impl core::marker::Unpin for pert_ui_runtime::Align
 impl core::marker::UnsafeUnpin for pert_ui_runtime::Align
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Align
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Align
+#[non_exhaustive] pub enum pert_ui_runtime::prelude::CellEditEndReason
+pub pert_ui_runtime::prelude::CellEditEndReason::Cancelled
+pub pert_ui_runtime::prelude::CellEditEndReason::Completed(pert_ui_runtime::EditorCompletion)
+pub pert_ui_runtime::prelude::CellEditEndReason::Failed
+pub pert_ui_runtime::prelude::CellEditEndReason::Hidden
+pub pert_ui_runtime::prelude::CellEditEndReason::Replaced
+pub pert_ui_runtime::prelude::CellEditEndReason::RowLeft
+impl core::clone::Clone for pert_ui_runtime::CellEditEndReason
+pub fn pert_ui_runtime::CellEditEndReason::clone(&self) -> pert_ui_runtime::CellEditEndReason
+impl core::cmp::Eq for pert_ui_runtime::CellEditEndReason
+impl core::cmp::PartialEq for pert_ui_runtime::CellEditEndReason
+pub fn pert_ui_runtime::CellEditEndReason::eq(&self, &pert_ui_runtime::CellEditEndReason) -> bool
+impl core::fmt::Debug for pert_ui_runtime::CellEditEndReason
+pub fn pert_ui_runtime::CellEditEndReason::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::CellEditEndReason
+impl core::marker::StructuralPartialEq for pert_ui_runtime::CellEditEndReason
+impl core::marker::Freeze for pert_ui_runtime::CellEditEndReason
+impl core::marker::Send for pert_ui_runtime::CellEditEndReason
+impl core::marker::Sync for pert_ui_runtime::CellEditEndReason
+impl core::marker::Unpin for pert_ui_runtime::CellEditEndReason
+impl core::marker::UnsafeUnpin for pert_ui_runtime::CellEditEndReason
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::CellEditEndReason
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::CellEditEndReason
 #[non_exhaustive] pub enum pert_ui_runtime::prelude::ChangeOrigin
 pub pert_ui_runtime::prelude::ChangeOrigin::Application
 pub pert_ui_runtime::prelude::ChangeOrigin::Presentation
@@ -13760,6 +13785,52 @@ impl core::marker::Unpin for pert_ui_runtime::DropOperation
 impl core::marker::UnsafeUnpin for pert_ui_runtime::DropOperation
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::DropOperation
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::DropOperation
+#[non_exhaustive] pub enum pert_ui_runtime::prelude::EditorOutcome
+pub pert_ui_runtime::prelude::EditorOutcome::Cancelled
+pub pert_ui_runtime::prelude::EditorOutcome::Refused
+pub pert_ui_runtime::prelude::EditorOutcome::Saved
+pub pert_ui_runtime::prelude::EditorOutcome::Unchanged
+impl pert_ui_runtime::EditorOutcome
+pub fn pert_ui_runtime::EditorOutcome::is_terminal(self) -> bool
+impl core::clone::Clone for pert_ui_runtime::EditorOutcome
+pub fn pert_ui_runtime::EditorOutcome::clone(&self) -> pert_ui_runtime::EditorOutcome
+impl core::cmp::Eq for pert_ui_runtime::EditorOutcome
+impl core::cmp::PartialEq for pert_ui_runtime::EditorOutcome
+pub fn pert_ui_runtime::EditorOutcome::eq(&self, &pert_ui_runtime::EditorOutcome) -> bool
+impl core::fmt::Debug for pert_ui_runtime::EditorOutcome
+pub fn pert_ui_runtime::EditorOutcome::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::EditorOutcome
+impl core::marker::StructuralPartialEq for pert_ui_runtime::EditorOutcome
+impl core::marker::Freeze for pert_ui_runtime::EditorOutcome
+impl core::marker::Send for pert_ui_runtime::EditorOutcome
+impl core::marker::Sync for pert_ui_runtime::EditorOutcome
+impl core::marker::Unpin for pert_ui_runtime::EditorOutcome
+impl core::marker::UnsafeUnpin for pert_ui_runtime::EditorOutcome
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::EditorOutcome
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::EditorOutcome
+#[non_exhaustive] pub enum pert_ui_runtime::prelude::EditorTrigger
+pub pert_ui_runtime::prelude::EditorTrigger::Choice
+pub pert_ui_runtime::prelude::EditorTrigger::Enter
+pub pert_ui_runtime::prelude::EditorTrigger::Escape
+pub pert_ui_runtime::prelude::EditorTrigger::FocusLeft
+pub pert_ui_runtime::prelude::EditorTrigger::Tab
+pub pert_ui_runtime::prelude::EditorTrigger::Tab::direction: pert_ui_runtime::FocusDirection
+impl core::clone::Clone for pert_ui_runtime::EditorTrigger
+pub fn pert_ui_runtime::EditorTrigger::clone(&self) -> pert_ui_runtime::EditorTrigger
+impl core::cmp::Eq for pert_ui_runtime::EditorTrigger
+impl core::cmp::PartialEq for pert_ui_runtime::EditorTrigger
+pub fn pert_ui_runtime::EditorTrigger::eq(&self, &pert_ui_runtime::EditorTrigger) -> bool
+impl core::fmt::Debug for pert_ui_runtime::EditorTrigger
+pub fn pert_ui_runtime::EditorTrigger::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::EditorTrigger
+impl core::marker::StructuralPartialEq for pert_ui_runtime::EditorTrigger
+impl core::marker::Freeze for pert_ui_runtime::EditorTrigger
+impl core::marker::Send for pert_ui_runtime::EditorTrigger
+impl core::marker::Sync for pert_ui_runtime::EditorTrigger
+impl core::marker::Unpin for pert_ui_runtime::EditorTrigger
+impl core::marker::UnsafeUnpin for pert_ui_runtime::EditorTrigger
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::EditorTrigger
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::EditorTrigger
 #[non_exhaustive] pub enum pert_ui_runtime::prelude::EntryKind
 pub pert_ui_runtime::prelude::EntryKind::Directory
 pub pert_ui_runtime::prelude::EntryKind::File
@@ -13855,6 +13926,27 @@ impl core::marker::Unpin for pert_ui_runtime::FilterTarget
 impl core::marker::UnsafeUnpin for pert_ui_runtime::FilterTarget
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FilterTarget
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FilterTarget
+pub enum pert_ui_runtime::prelude::FocusDirection
+pub pert_ui_runtime::prelude::FocusDirection::Backward
+pub pert_ui_runtime::prelude::FocusDirection::Forward
+impl core::clone::Clone for pert_ui_runtime::FocusDirection
+pub fn pert_ui_runtime::FocusDirection::clone(&self) -> pert_ui_runtime::FocusDirection
+impl core::cmp::Eq for pert_ui_runtime::FocusDirection
+impl core::cmp::PartialEq for pert_ui_runtime::FocusDirection
+pub fn pert_ui_runtime::FocusDirection::eq(&self, &pert_ui_runtime::FocusDirection) -> bool
+impl core::fmt::Debug for pert_ui_runtime::FocusDirection
+pub fn pert_ui_runtime::FocusDirection::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::FocusDirection
+pub fn pert_ui_runtime::FocusDirection::hash<__H: core::hash::Hasher>(&self, &mut __H)
+impl core::marker::Copy for pert_ui_runtime::FocusDirection
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FocusDirection
+impl core::marker::Freeze for pert_ui_runtime::FocusDirection
+impl core::marker::Send for pert_ui_runtime::FocusDirection
+impl core::marker::Sync for pert_ui_runtime::FocusDirection
+impl core::marker::Unpin for pert_ui_runtime::FocusDirection
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FocusDirection
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FocusDirection
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FocusDirection
 #[non_exhaustive] pub enum pert_ui_runtime::prelude::HiddenActive
 pub pert_ui_runtime::prelude::HiddenActive::Clear
 pub pert_ui_runtime::prelude::HiddenActive::Keep
@@ -14809,6 +14901,7 @@ impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::TextColor
 pub pert_ui_runtime::prelude::TextCommand::BeginEdit
 pub pert_ui_runtime::prelude::TextCommand::Copy
 pub pert_ui_runtime::prelude::TextCommand::Cut
+pub pert_ui_runtime::prelude::TextCommand::DiscardDraft
 pub pert_ui_runtime::prelude::TextCommand::Paste
 pub pert_ui_runtime::prelude::TextCommand::PasteAfter
 pub pert_ui_runtime::prelude::TextCommand::PasteBefore
@@ -15415,6 +15508,26 @@ impl<'a> core::marker::Unpin for pert_ui_runtime::CellEdit<'a>
 impl<'a> core::marker::UnsafeUnpin for pert_ui_runtime::CellEdit<'a>
 impl<'a> !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::CellEdit<'a>
 impl<'a> !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::CellEdit<'a>
+#[non_exhaustive] pub struct pert_ui_runtime::prelude::CellEditEnd
+impl pert_ui_runtime::CellEditEnd
+pub fn pert_ui_runtime::CellEditEnd::column(&self) -> &str
+pub fn pert_ui_runtime::CellEditEnd::reason(&self) -> pert_ui_runtime::CellEditEndReason
+pub fn pert_ui_runtime::CellEditEnd::row(&self) -> &str
+impl core::clone::Clone for pert_ui_runtime::CellEditEnd
+pub fn pert_ui_runtime::CellEditEnd::clone(&self) -> pert_ui_runtime::CellEditEnd
+impl core::cmp::Eq for pert_ui_runtime::CellEditEnd
+impl core::cmp::PartialEq for pert_ui_runtime::CellEditEnd
+pub fn pert_ui_runtime::CellEditEnd::eq(&self, &pert_ui_runtime::CellEditEnd) -> bool
+impl core::fmt::Debug for pert_ui_runtime::CellEditEnd
+pub fn pert_ui_runtime::CellEditEnd::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::CellEditEnd
+impl core::marker::Freeze for pert_ui_runtime::CellEditEnd
+impl core::marker::Send for pert_ui_runtime::CellEditEnd
+impl core::marker::Sync for pert_ui_runtime::CellEditEnd
+impl core::marker::Unpin for pert_ui_runtime::CellEditEnd
+impl core::marker::UnsafeUnpin for pert_ui_runtime::CellEditEnd
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::CellEditEnd
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::CellEditEnd
 pub struct pert_ui_runtime::prelude::Checkbox(_)
 impl pert_ui_runtime::Checkbox
 pub fn pert_ui_runtime::Checkbox::controlled(bool, impl core::convert::Into<pert_ui_runtime::TextSource>, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
@@ -16296,6 +16409,7 @@ impl pert_ui_runtime::DecimalInput
 pub fn pert_ui_runtime::DecimalInput::for_parameter(pert_ui_runtime::Parameter<f32>) -> Self
 impl pert_ui_runtime::DecimalInput
 pub fn pert_ui_runtime::DecimalInput::new(impl core::convert::Into<pert_ui_runtime::Signal<f64>>) -> Self
+pub fn pert_ui_runtime::DecimalInput::on_modified(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::DecimalInput::session(self, &pert_ui_runtime::EditorSession) -> Self
 impl core::fmt::Debug for pert_ui_runtime::DecimalInput
 pub fn pert_ui_runtime::DecimalInput::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
@@ -16801,6 +16915,25 @@ impl<T> core::marker::Unpin for pert_ui_runtime::Each<T>
 impl<T> core::marker::UnsafeUnpin for pert_ui_runtime::Each<T>
 impl<T> !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Each<T>
 impl<T> !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Each<T>
+#[non_exhaustive] pub struct pert_ui_runtime::prelude::EditorCompletion
+pub pert_ui_runtime::prelude::EditorCompletion::outcome: pert_ui_runtime::EditorOutcome
+pub pert_ui_runtime::prelude::EditorCompletion::trigger: pert_ui_runtime::EditorTrigger
+impl core::clone::Clone for pert_ui_runtime::EditorCompletion
+pub fn pert_ui_runtime::EditorCompletion::clone(&self) -> pert_ui_runtime::EditorCompletion
+impl core::cmp::Eq for pert_ui_runtime::EditorCompletion
+impl core::cmp::PartialEq for pert_ui_runtime::EditorCompletion
+pub fn pert_ui_runtime::EditorCompletion::eq(&self, &pert_ui_runtime::EditorCompletion) -> bool
+impl core::fmt::Debug for pert_ui_runtime::EditorCompletion
+pub fn pert_ui_runtime::EditorCompletion::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::EditorCompletion
+impl core::marker::StructuralPartialEq for pert_ui_runtime::EditorCompletion
+impl core::marker::Freeze for pert_ui_runtime::EditorCompletion
+impl core::marker::Send for pert_ui_runtime::EditorCompletion
+impl core::marker::Sync for pert_ui_runtime::EditorCompletion
+impl core::marker::Unpin for pert_ui_runtime::EditorCompletion
+impl core::marker::UnsafeUnpin for pert_ui_runtime::EditorCompletion
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::EditorCompletion
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::EditorCompletion
 pub struct pert_ui_runtime::prelude::Element
 impl pert_ui_runtime::Element
 pub fn pert_ui_runtime::Element::children(self, impl core::iter::traits::collect::IntoIterator<Item = Self>) -> Self
@@ -17878,6 +18011,7 @@ pub fn pert_ui_runtime::InlineDecimal::for_parameter(pert_ui_runtime::Parameter<
 impl pert_ui_runtime::InlineDecimal
 pub fn pert_ui_runtime::InlineDecimal::label(self, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
 pub fn pert_ui_runtime::InlineDecimal::new(impl core::convert::Into<pert_ui_runtime::Signal<f64>>) -> Self
+pub fn pert_ui_runtime::InlineDecimal::on_modified(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 impl core::fmt::Debug for pert_ui_runtime::InlineDecimal
 pub fn pert_ui_runtime::InlineDecimal::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl pert_ui_runtime::Component for pert_ui_runtime::InlineDecimal
@@ -17971,6 +18105,7 @@ pub fn pert_ui_runtime::InlineInteger::for_parameter(pert_ui_runtime::Parameter<
 impl pert_ui_runtime::InlineInteger
 pub fn pert_ui_runtime::InlineInteger::label(self, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
 pub fn pert_ui_runtime::InlineInteger::new(impl core::convert::Into<pert_ui_runtime::Signal<i64>>) -> Self
+pub fn pert_ui_runtime::InlineInteger::on_modified(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 impl core::fmt::Debug for pert_ui_runtime::InlineInteger
 pub fn pert_ui_runtime::InlineInteger::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl pert_ui_runtime::Component for pert_ui_runtime::InlineInteger
@@ -18218,6 +18353,7 @@ pub fn pert_ui_runtime::InlineText::enabled(self, impl core::convert::Into<pert_
 pub fn pert_ui_runtime::InlineText::in_row(self, bool) -> Self
 pub fn pert_ui_runtime::InlineText::new(impl core::convert::Into<pert_ui_runtime::Signal<alloc::string::String>>) -> Self
 pub fn pert_ui_runtime::InlineText::normalize(self, impl core::ops::function::Fn(alloc::string::String) -> core::result::Result<alloc::string::String, pert_ui_runtime::InputRejection> + 'static) -> Self
+pub fn pert_ui_runtime::InlineText::on_modified(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::InlineText::on_rejection(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, core::option::Option<&pert_ui_runtime::InputRejection>) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::InlineText::on_save(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, &str) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::InlineText::placeholder(self, impl core::convert::Into<alloc::string::String>) -> Self
@@ -18419,6 +18555,7 @@ impl pert_ui_runtime::IntegerInput
 pub fn pert_ui_runtime::IntegerInput::for_parameter(pert_ui_runtime::Parameter<i64>) -> Self
 impl pert_ui_runtime::IntegerInput
 pub fn pert_ui_runtime::IntegerInput::new(impl core::convert::Into<pert_ui_runtime::Signal<i64>>) -> Self
+pub fn pert_ui_runtime::IntegerInput::on_modified(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::IntegerInput::session(self, &pert_ui_runtime::EditorSession) -> Self
 impl core::fmt::Debug for pert_ui_runtime::IntegerInput
 pub fn pert_ui_runtime::IntegerInput::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
@@ -20926,6 +21063,7 @@ pub fn pert_ui_runtime::Table::cell_editor(self, impl core::ops::function::FnMut
 pub fn pert_ui_runtime::Table::cell_tab_stops(self, bool) -> Self
 pub fn pert_ui_runtime::Table::new(&pert_ui_runtime::TableController, f32) -> core::result::Result<Self, pert_ui_runtime::GeometryError>
 pub fn pert_ui_runtime::Table::on_activate(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, &str, core::option::Option<&str>) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
+pub fn pert_ui_runtime::Table::on_edit_end(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, &pert_ui_runtime::CellEditEnd) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::Table::on_selection_change(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, &pert_ui_runtime::ListSelectionChange) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::Table::on_sort(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, &pert_ui_runtime::TableSort) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::Table::reorder_permission(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
@@ -24208,6 +24346,29 @@ impl core::marker::Unpin for pert_ui_runtime::CaptureTarget
 impl core::marker::UnsafeUnpin for pert_ui_runtime::CaptureTarget
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::CaptureTarget
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::CaptureTarget
+#[non_exhaustive] pub enum pert_ui_runtime::CellEditEndReason
+pub pert_ui_runtime::CellEditEndReason::Cancelled
+pub pert_ui_runtime::CellEditEndReason::Completed(pert_ui_runtime::EditorCompletion)
+pub pert_ui_runtime::CellEditEndReason::Failed
+pub pert_ui_runtime::CellEditEndReason::Hidden
+pub pert_ui_runtime::CellEditEndReason::Replaced
+pub pert_ui_runtime::CellEditEndReason::RowLeft
+impl core::clone::Clone for pert_ui_runtime::CellEditEndReason
+pub fn pert_ui_runtime::CellEditEndReason::clone(&self) -> pert_ui_runtime::CellEditEndReason
+impl core::cmp::Eq for pert_ui_runtime::CellEditEndReason
+impl core::cmp::PartialEq for pert_ui_runtime::CellEditEndReason
+pub fn pert_ui_runtime::CellEditEndReason::eq(&self, &pert_ui_runtime::CellEditEndReason) -> bool
+impl core::fmt::Debug for pert_ui_runtime::CellEditEndReason
+pub fn pert_ui_runtime::CellEditEndReason::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::CellEditEndReason
+impl core::marker::StructuralPartialEq for pert_ui_runtime::CellEditEndReason
+impl core::marker::Freeze for pert_ui_runtime::CellEditEndReason
+impl core::marker::Send for pert_ui_runtime::CellEditEndReason
+impl core::marker::Sync for pert_ui_runtime::CellEditEndReason
+impl core::marker::Unpin for pert_ui_runtime::CellEditEndReason
+impl core::marker::UnsafeUnpin for pert_ui_runtime::CellEditEndReason
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::CellEditEndReason
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::CellEditEndReason
 #[non_exhaustive] pub enum pert_ui_runtime::ChangeOrigin
 pub pert_ui_runtime::ChangeOrigin::Application
 pub pert_ui_runtime::ChangeOrigin::Presentation
@@ -28033,6 +28194,7 @@ impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::TextColor
 pub pert_ui_runtime::TextCommand::BeginEdit
 pub pert_ui_runtime::TextCommand::Copy
 pub pert_ui_runtime::TextCommand::Cut
+pub pert_ui_runtime::TextCommand::DiscardDraft
 pub pert_ui_runtime::TextCommand::Paste
 pub pert_ui_runtime::TextCommand::PasteAfter
 pub pert_ui_runtime::TextCommand::PasteBefore
@@ -29480,6 +29642,26 @@ impl<'a> core::marker::Unpin for pert_ui_runtime::CellEdit<'a>
 impl<'a> core::marker::UnsafeUnpin for pert_ui_runtime::CellEdit<'a>
 impl<'a> !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::CellEdit<'a>
 impl<'a> !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::CellEdit<'a>
+#[non_exhaustive] pub struct pert_ui_runtime::CellEditEnd
+impl pert_ui_runtime::CellEditEnd
+pub fn pert_ui_runtime::CellEditEnd::column(&self) -> &str
+pub fn pert_ui_runtime::CellEditEnd::reason(&self) -> pert_ui_runtime::CellEditEndReason
+pub fn pert_ui_runtime::CellEditEnd::row(&self) -> &str
+impl core::clone::Clone for pert_ui_runtime::CellEditEnd
+pub fn pert_ui_runtime::CellEditEnd::clone(&self) -> pert_ui_runtime::CellEditEnd
+impl core::cmp::Eq for pert_ui_runtime::CellEditEnd
+impl core::cmp::PartialEq for pert_ui_runtime::CellEditEnd
+pub fn pert_ui_runtime::CellEditEnd::eq(&self, &pert_ui_runtime::CellEditEnd) -> bool
+impl core::fmt::Debug for pert_ui_runtime::CellEditEnd
+pub fn pert_ui_runtime::CellEditEnd::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::CellEditEnd
+impl core::marker::Freeze for pert_ui_runtime::CellEditEnd
+impl core::marker::Send for pert_ui_runtime::CellEditEnd
+impl core::marker::Sync for pert_ui_runtime::CellEditEnd
+impl core::marker::Unpin for pert_ui_runtime::CellEditEnd
+impl core::marker::UnsafeUnpin for pert_ui_runtime::CellEditEnd
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::CellEditEnd
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::CellEditEnd
 pub struct pert_ui_runtime::Checkbox(_)
 impl pert_ui_runtime::Checkbox
 pub fn pert_ui_runtime::Checkbox::controlled(bool, impl core::convert::Into<pert_ui_runtime::TextSource>, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
@@ -30788,6 +30970,7 @@ impl pert_ui_runtime::DecimalInput
 pub fn pert_ui_runtime::DecimalInput::for_parameter(pert_ui_runtime::Parameter<f32>) -> Self
 impl pert_ui_runtime::DecimalInput
 pub fn pert_ui_runtime::DecimalInput::new(impl core::convert::Into<pert_ui_runtime::Signal<f64>>) -> Self
+pub fn pert_ui_runtime::DecimalInput::on_modified(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::DecimalInput::session(self, &pert_ui_runtime::EditorSession) -> Self
 impl core::fmt::Debug for pert_ui_runtime::DecimalInput
 pub fn pert_ui_runtime::DecimalInput::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
@@ -31274,6 +31457,7 @@ pub fn pert_ui_runtime::DraftEditorController<P>::new() -> Self
 pub fn pert_ui_runtime::DraftEditorController<P>::on_edit(&self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, &str, core::option::Option<P>) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static)
 pub fn pert_ui_runtime::DraftEditorController<P>::payload(&self) -> core::option::Option<P>
 pub fn pert_ui_runtime::DraftEditorController<P>::replace(&self, &mut pert_ui_runtime::EventContext, &str, core::option::Option<P>) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::DraftEditorController<P>::set_read_only(&self, bool)
 pub fn pert_ui_runtime::DraftEditorController<P>::text(&self) -> alloc::string::String
 impl<P: core::marker::Copy + core::cmp::PartialEq + 'static> core::default::Default for pert_ui_runtime::DraftEditorController<P>
 pub fn pert_ui_runtime::DraftEditorController<P>::default() -> Self
@@ -32980,6 +33164,7 @@ pub fn pert_ui_runtime::InlineDecimal::for_parameter(pert_ui_runtime::Parameter<
 impl pert_ui_runtime::InlineDecimal
 pub fn pert_ui_runtime::InlineDecimal::label(self, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
 pub fn pert_ui_runtime::InlineDecimal::new(impl core::convert::Into<pert_ui_runtime::Signal<f64>>) -> Self
+pub fn pert_ui_runtime::InlineDecimal::on_modified(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 impl core::fmt::Debug for pert_ui_runtime::InlineDecimal
 pub fn pert_ui_runtime::InlineDecimal::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl pert_ui_runtime::Component for pert_ui_runtime::InlineDecimal
@@ -33073,6 +33258,7 @@ pub fn pert_ui_runtime::InlineInteger::for_parameter(pert_ui_runtime::Parameter<
 impl pert_ui_runtime::InlineInteger
 pub fn pert_ui_runtime::InlineInteger::label(self, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
 pub fn pert_ui_runtime::InlineInteger::new(impl core::convert::Into<pert_ui_runtime::Signal<i64>>) -> Self
+pub fn pert_ui_runtime::InlineInteger::on_modified(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 impl core::fmt::Debug for pert_ui_runtime::InlineInteger
 pub fn pert_ui_runtime::InlineInteger::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl pert_ui_runtime::Component for pert_ui_runtime::InlineInteger
@@ -33403,6 +33589,7 @@ pub fn pert_ui_runtime::InlineText::enabled(self, impl core::convert::Into<pert_
 pub fn pert_ui_runtime::InlineText::in_row(self, bool) -> Self
 pub fn pert_ui_runtime::InlineText::new(impl core::convert::Into<pert_ui_runtime::Signal<alloc::string::String>>) -> Self
 pub fn pert_ui_runtime::InlineText::normalize(self, impl core::ops::function::Fn(alloc::string::String) -> core::result::Result<alloc::string::String, pert_ui_runtime::InputRejection> + 'static) -> Self
+pub fn pert_ui_runtime::InlineText::on_modified(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::InlineText::on_rejection(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, core::option::Option<&pert_ui_runtime::InputRejection>) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::InlineText::on_save(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, &str) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::InlineText::placeholder(self, impl core::convert::Into<alloc::string::String>) -> Self
@@ -33735,6 +33922,7 @@ impl pert_ui_runtime::IntegerInput
 pub fn pert_ui_runtime::IntegerInput::for_parameter(pert_ui_runtime::Parameter<i64>) -> Self
 impl pert_ui_runtime::IntegerInput
 pub fn pert_ui_runtime::IntegerInput::new(impl core::convert::Into<pert_ui_runtime::Signal<i64>>) -> Self
+pub fn pert_ui_runtime::IntegerInput::on_modified(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::IntegerInput::session(self, &pert_ui_runtime::EditorSession) -> Self
 impl core::fmt::Debug for pert_ui_runtime::IntegerInput
 pub fn pert_ui_runtime::IntegerInput::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
@@ -37810,6 +37998,7 @@ pub fn pert_ui_runtime::Table::cell_editor(self, impl core::ops::function::FnMut
 pub fn pert_ui_runtime::Table::cell_tab_stops(self, bool) -> Self
 pub fn pert_ui_runtime::Table::new(&pert_ui_runtime::TableController, f32) -> core::result::Result<Self, pert_ui_runtime::GeometryError>
 pub fn pert_ui_runtime::Table::on_activate(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, &str, core::option::Option<&str>) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
+pub fn pert_ui_runtime::Table::on_edit_end(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, &pert_ui_runtime::CellEditEnd) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::Table::on_selection_change(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, &pert_ui_runtime::ListSelectionChange) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::Table::on_sort(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, &pert_ui_runtime::TableSort) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::Table::reorder_permission(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self

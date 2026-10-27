@@ -78,9 +78,15 @@ impl NumberInputError {
 /// can close on it. Empty,
 /// incomplete, invalid and out-of-range text stays editable with an error outline,
 /// including after an unsuccessful save; the binding retains its previous value.
-/// Hiding and unmount discard drafts without saving. Input/clipboard errors and
-/// geometry changes clear transient input state while preserving a focused draft.
-/// External changed values win over drafts and clear composition/undo.
+/// Hiding and unmount discard drafts without saving. Revoking
+/// [`Self::enabled`] or [`Self::editable`] keeps a typed or stepped draft
+/// unsaved, focused or not, as the
+/// [draft policy](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#draft-policy)
+/// states for every standalone editor, and [`Self::on_modified`] reports it;
+/// [`TextCommand::DiscardDraft`] discards it without touching the binding.
+/// Input/clipboard errors and geometry changes clear transient input state
+/// and keep the draft. External changed values win over drafts and clear
+/// composition/undo.
 ///
 /// An external value the editor does not accept (outside the bounds, off a
 /// parameter's step, or a non-finite decimal) is refused by the field rather than
@@ -137,7 +143,10 @@ impl NumberInputError {
 /// against its lattice: off-step text is marked invalid, never rounded. Enter
 /// commits a changed valid draft as one begin/commit pair at the observed
 /// revision; an unchanged draft creates no edit. Unlike the local editor,
-/// focus loss, hiding and removal *cancel* a parameter draft. An external
+/// focus loss, revoked enablement, hiding and removal *cancel* a parameter
+/// draft. A refused admission (another edit holds the parameter, or it is
+/// stale or read-only) or a refused commit replaces the draft with the
+/// parameter's value and calls no `on_save`. An external
 /// base or metadata change discards the draft before anything can commit it.
 /// Shift keeps the parameter's step, since no finer lattice exists. Inline
 /// gestures and parameter step buttons own one session from activation:
@@ -240,8 +249,13 @@ description_debug!(DecimalInput);
 /// focus-loss save, Escape cancel, IME, clipboard and undo rules of
 /// [`IntegerInput`], including its text commands; outside text mode the row
 /// answers [`TextCommand::BeginEdit`] by entering text mode as Enter/F2 does,
-/// read-only text mode included, and every other text command with
-/// [`TextCommandOutcome::NotAnEditor`]. `BeginEdit` answers
+/// read-only text mode included, [`TextCommand::DiscardDraft`] by ending
+/// text mode unsaved whether or not it holds focus, and every other text
+/// command with [`TextCommandOutcome::NotAnEditor`]. An open text mode
+/// follows [`Self::editable`]: revoking it makes the text mode read-only,
+/// keeping its draft, selection and undo history (Enter then saves nothing
+/// and text mode stays), and allowing editing again makes it editable;
+/// revoking [`Self::enabled`] ends text mode unsaved. `BeginEdit` answers
 /// [`TextCommandOutcome::Unavailable`] while the row is disabled, has had no
 /// valid value since it mounted, or is in a step gesture (a step drag, a
 /// pressed stepper or a held step key, which then ends on its release as
@@ -842,6 +856,12 @@ struct NumberEditor<T> {
     notifier: Option<crate::Notifier>,
     /// A start delivery is requested and not yet made.
     start_pending: bool,
+    /// The application's callback when the draft starts or stops differing
+    /// from the value the field shows at rest, delivered through `notifier`.
+    modified: ModifiedReporter,
+    /// The report each requested delivery is for, oldest first: one entry per
+    /// notifier request, so each delivery makes its own report in order.
+    reports: RefCell<std::collections::VecDeque<Report>>,
 }
 impl<T: Number> NumberEditor<T> {
     fn new(source: Box<dyn NumberSource<T>>, inline: bool) -> Self {
@@ -870,7 +890,51 @@ impl<T: Number> NumberEditor<T> {
             pending_trigger: None,
             notifier: None,
             start_pending: false,
+            modified: ModifiedReporter::default(),
+            reports: RefCell::new(std::collections::VecDeque::new()),
         }
+    }
+    /// Whether the field follows the local draft policy of a standalone
+    /// field: bound to a signal and not an inline row. Such a field keeps a
+    /// typed or stepped draft through revocation and input cancellation; a
+    /// parameter's draft and an inline row's gestures are cancelled instead.
+    fn local_standalone(&self) -> bool {
+        !self.source.is_parameter() && !self.field.inline
+    }
+    /// Whether a draft differs from the value the field shows at rest: a
+    /// standalone field's typed or stepped draft, or an inline row's text
+    /// mode draft. A value drag or held step at rest is a gesture, not a draft.
+    fn modified_now(&self) -> bool {
+        (!self.field.inline || self.field.editing) && self.dirty()
+    }
+    /// Requests one delivery to the modified callback when the modified state
+    /// differs from the state last delivered. Callable in any phase.
+    fn note_modified(&self) {
+        if let Some(notifier) = &self.notifier
+            && self.modified.wants(self.modified_now())
+        {
+            self.reports.borrow_mut().push_back(Report::Modified);
+            notifier.request();
+        }
+    }
+    /// Makes the report the oldest requested delivery is for.
+    fn deliver(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
+        let report = self.reports.borrow_mut().pop_front();
+        match report {
+            Some(Report::Start) => self.apply_start(cx),
+            Some(Report::Modified) => {
+                let modified = self.modified_now();
+                self.modified.deliver(cx, modified)
+            }
+            Some(Report::Refusal) | None => Ok(()),
+        }
+    }
+    /// Ends the gestures in progress without touching the draft: a held step
+    /// key, a held step button and its pressed look. The caller releases the
+    /// pointer capture and the repeat timer, or has them released.
+    fn end_gestures(&mut self) {
+        self.held_key = None;
+        self.stop_hold();
     }
     /// The session this field reports into: only a plain field over a local
     /// signal takes part, so an inline row or a parameter ignores it.
@@ -879,11 +943,15 @@ impl<T: Number> NumberEditor<T> {
             .as_ref()
             .filter(|_| !self.field.inline && !self.source.is_parameter())
     }
-    /// Reports the outcome of the commit in progress, once.
+    /// Reports the outcome of the commit in progress, once. Every completion
+    /// goes through here: the modified report is requested first, so a host
+    /// that ends the edit and removes the field in its own delivery does so
+    /// after the field's report.
     fn report_session(&mut self, outcome: EditorOutcome) {
         if let Some(trigger) = self.pending_trigger.take()
             && let Some(session) = self.session()
         {
+            self.note_modified();
             session.report(trigger, outcome);
         }
     }
@@ -893,7 +961,9 @@ impl<T: Number> NumberEditor<T> {
         cx: &mut EventContext,
         trigger: EditorTrigger,
     ) -> Result<(), RuntimeError> {
-        self.pending_trigger = Some(trigger);
+        // A disabled field reports nothing: its draft stays unsaved and the
+        // edit open, as when the revocation released its focus.
+        self.pending_trigger = self.field.editor.enabled.then_some(trigger);
         let result = self.commit(cx);
         // A commit that failed before reaching its outcome reports nothing.
         self.pending_trigger = None;
@@ -937,9 +1007,8 @@ impl<T: Number> NumberEditor<T> {
                     self.sync(self.source.current()?)?;
                     self.cancel();
                     self.field.editor.changed(cx);
-                    if let Some(session) = self.session() {
-                        session.report(EditorTrigger::Escape, EditorOutcome::Cancelled);
-                    }
+                    self.pending_trigger = Some(EditorTrigger::Escape);
+                    self.report_session(EditorOutcome::Cancelled);
                     self.report.clear(cx)?;
                 }
                 Ok(Some(InputOutcome::Handled))
@@ -1010,6 +1079,8 @@ impl<T: Number> NumberEditor<T> {
         self.field
             .editor
             .set_owner_lock(!self.editable || self.refused.is_some());
+        // An open text mode follows the effective state without ending.
+        self.field.set_text_read_only(self.field.editor.read_only);
     }
     /// Whether a step gesture, a held key or a pressed stepper is in progress.
     fn held(&self) -> bool {
@@ -1186,7 +1257,12 @@ impl<T: Number> NumberEditor<T> {
         Ok(())
     }
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
-        if self.session.is_some() && self.notifier.is_none() {
+        self.update_inner(cx)?;
+        self.note_modified();
+        Ok(())
+    }
+    fn update_inner(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
+        if (self.session.is_some() || self.modified.installed()) && self.notifier.is_none() {
             self.notifier = Some(cx.notifier());
         }
         if !self.start_pending
@@ -1194,6 +1270,7 @@ impl<T: Number> NumberEditor<T> {
             && let Some(notifier) = &self.notifier
         {
             self.start_pending = true;
+            self.reports.borrow_mut().push_back(Report::Start);
             notifier.request();
         }
         let reading = self.source.read(cx)?;
@@ -1208,22 +1285,31 @@ impl<T: Number> NumberEditor<T> {
             self.lattice = true;
         }
         self.editable = reading.editable;
+        // The permissions are read first, so the lock an open text mode
+        // follows is never a stale one.
+        let disabled = self.field.editor.read_permissions(cx)?.disabled;
         self.lock();
         // A revoked permission ends the edit as disabling by redescription does.
-        if self.field.editor.read_permissions(cx)?.disabled {
+        if disabled {
             self.cancel_pending = true;
         }
         self.name = reading.name;
-        // A parameter's base or metadata change discards the draft before
-        // anything can commit it.
         let lost = (!self.field.editor.enabled || self.field.editor.read_only)
             && (self.held_key.is_some() || self.hold.is_some() || self.field.pressed());
         if self.cancel_pending || lost {
             self.cancel_pending = false;
             cx.cancel_input();
-            self.source.abandon();
-            self.reset_draft();
+            if self.local_standalone() {
+                // A local field keeps its typed or stepped draft unsaved
+                // (the draft policy): only the gestures end.
+                self.end_gestures();
+            } else {
+                self.source.abandon();
+                self.reset_draft();
+            }
         }
+        // A parameter's base or metadata change discards the draft before
+        // anything can commit it.
         if reading.revision != self.revision {
             self.revision = reading.revision;
             if self.saved.is_some() && self.source.is_parameter() {
@@ -1371,8 +1457,14 @@ impl<T: Number> NumberEditor<T> {
             .editor
             .adopt_permissions(next.field.editor.enablement, next.field.editor.editability);
         if availability.disabled || (availability.locked && held) {
-            self.source.abandon();
-            self.reset_draft();
+            if self.local_standalone() {
+                // A local field keeps its draft; the update releases the
+                // gesture's capture and timer.
+                self.end_gestures();
+            } else {
+                self.source.abandon();
+                self.reset_draft();
+            }
             self.cancel_pending = true;
         }
         if availability.changed {
@@ -1408,6 +1500,11 @@ impl<T: Number> NumberEditor<T> {
         self.session = next.session;
         self.report.adopt(next.report);
         self.saved_report.adopt(next.saved_report);
+        if !self.modified.installed() && next.modified.installed() {
+            // The update that registers the notifier reports a draft already held.
+            invalidation = invalidation.or(Some(Invalidation::Paint));
+        }
+        self.modified.adopt(next.modified);
         invalidation
     }
     /// Whether the draft differs from the saved value or its presentation.
@@ -1664,6 +1761,9 @@ impl<T: Number> NumberEditor<T> {
         if command == TextCommand::BeginEdit {
             return self.begin_command(cx);
         }
+        if command == TextCommand::DiscardDraft {
+            return self.discard_command(cx);
+        }
         if self.field.inline && !self.field.editing {
             return Ok(TextCommandOutcome::NotAnEditor);
         }
@@ -1677,6 +1777,39 @@ impl<T: Number> NumberEditor<T> {
             return Ok(TextCommandOutcome::NotAnEditor);
         }
         self.field.editor.command(cx, command)
+    }
+    /// [`TextCommand::DiscardDraft`]: discards the draft as Escape does, also
+    /// while the field is disabled or read-only and whether or not it holds
+    /// focus. An inline row answers it itself, so an open text mode ends
+    /// unsaved; a parameter draft and its gesture are cancelled; a held step
+    /// ends. `Unavailable` when there is no draft, gesture or text mode.
+    fn discard_command(
+        &mut self,
+        cx: &mut EventContext,
+    ) -> Result<TextCommandOutcome, RuntimeError> {
+        self.sync(self.source.current()?)?;
+        let draft =
+            self.dirty() || self.held() || self.field.editing || self.source.owns_preview()?;
+        if !draft {
+            return Ok(TextCommandOutcome::Unavailable);
+        }
+        // An in-place session holding focus returns it to the row, as Escape does.
+        let refocus = self.field.drafting() && self.field.focused;
+        if self.hold.is_some() || self.held_key.is_some() || self.field.pressed() {
+            cx.cancel_timer();
+            cx.release_pointer();
+        }
+        self.cancel();
+        self.field.editor.cancel_composition();
+        self.field.editor.dragging = false;
+        self.field.error = self.draft().err();
+        self.field.editor.changed(cx);
+        if refocus {
+            cx.request_focus();
+        }
+        cx.invalidate(Invalidation::Paint);
+        self.report.clear(cx)?;
+        Ok(TextCommandOutcome::Handled)
     }
     /// [`TextCommand::BeginEdit`]: a resting inline row enters text mode as
     /// Enter and F2 do, read-only text mode included, but not during a step
@@ -2070,11 +2203,16 @@ macro_rules! number_shared {
             ///
             /// While editing is denied the field keeps focus, selection and
             /// copying. Revoking it, observed at the next update, cancels a
-            /// composition, a held step, a stepper press and a drag; a
+            /// composition, a held step, a stepper press and a drag; a local
+            /// field keeps the steps it saved and its stepped draft, and a
             /// parameter gesture in progress is cancelled without committing.
             /// A typed draft stays but is not saved while editing is denied,
-            /// also not on focus loss. Allowing editing again replays nothing.
-            /// A binding from another runtime fails the update with
+            /// also not on focus loss; with a session, a confirmation reports
+            /// [`EditorOutcome::Refused`](crate::EditorOutcome::Refused). An
+            /// inline row's open text mode becomes read-only, keeping its
+            /// draft, selection and undo history, and becomes editable again
+            /// when editing is allowed. Allowing editing again replays
+            /// nothing. A binding from another runtime fails the update with
             /// [`RuntimeError::ForeignRuntime`].
             pub fn editable(mut self, permission: impl Into<Permission>) -> Self {
                 self.0.field.editor.restrict_editing(permission.into());
@@ -2091,13 +2229,20 @@ macro_rules! number_shared {
             /// permission with the new description's. A disabled field still
             /// follows its binding.
             ///
-            /// Revoking it, observed at the next update, ends the edit in
-            /// progress as disabling by redescription does: the field becomes
-            /// unfocusable and releases focus, a composition, held step, stepper
-            /// press or drag is cancelled, a parameter gesture is cancelled
-            /// without committing, and a typed draft is discarded unsaved; the
-            /// field shows the bound value again. Enabling it again replays
-            /// nothing. A binding from another runtime fails the update with
+            /// Revoking it, observed at the next update, acts as disabling by
+            /// redescription does: the field becomes unfocusable and releases
+            /// focus as cancelled input, not as focus loss, and a
+            /// composition, held step, stepper press or drag is cancelled. A
+            /// field bound to a signal keeps a typed or stepped draft unsaved,
+            /// whether or not it held focus, showing it with its error
+            /// outline; enabling it again makes it editable with the draft,
+            /// replays nothing, and a later save attempt saves it. With a
+            /// session nothing is reported and the edit stays open. An inline
+            /// row's text mode ends unsaved, as Escape ends it, and a
+            /// parameter gesture or draft is cancelled without committing.
+            /// [`TextCommand::DiscardDraft`] discards a kept draft. See the
+            /// [draft policy](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#draft-policy).
+            /// A binding from another runtime fails the update with
             /// [`RuntimeError::ForeignRuntime`].
             pub fn enabled(mut self, permission: impl Into<Permission>) -> Self {
                 self.0.field.editor.restrict_enablement(permission.into());
@@ -2128,8 +2273,10 @@ macro_rules! number_shared {
             /// [`Self::step`], fine with Shift, to the draft's value. Local
             /// bindings save that value immediately, including a typed draft.
             /// Holding applies another step after 400 ms and every 80 ms through
-            /// an event-phase timer. Escape, focus loss, hiding and removal stop
-            /// local repeats while keeping steps already saved. Parameter-bound
+            /// an event-phase timer. Escape, focus loss, revoked permissions,
+            /// hiding and removal stop local repeats while keeping steps
+            /// already saved; with a session the stepped draft stays, and
+            /// focus loss then saves it as without a press. Parameter-bound
             /// steps preview until matched release; Escape or context loss cancels
             /// the entire preview session. Steps never pass the bounds.
             /// A [normalizer](Self::normalize) adjusts each local step as it
@@ -2283,7 +2430,7 @@ macro_rules! number_shared {
                 self.0.update(cx)
             }
             fn deliver_notifications(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
-                self.0.apply_start(cx)
+                self.0.deliver(cx)
             }
             fn tab_navigation(
                 &mut self,
@@ -2291,7 +2438,9 @@ macro_rules! number_shared {
                 direction: crate::FocusDirection,
                 transition: crate::KeyTransition,
             ) -> Result<InputOutcome, RuntimeError> {
-                self.0.session_tab(cx, direction, transition)
+                let outcome = self.0.session_tab(cx, direction, transition);
+                self.0.note_modified();
+                outcome
             }
             fn measure(
                 &self,
@@ -2337,18 +2486,20 @@ macro_rules! number_shared {
                 if self.0.field.drafting() {
                     // The keys the row's editor leaves to it, answered in the
                     // text phase so capture bindings never take them.
-                    return Ok(
-                        if self.0.text_key(cx, input, transition, keys)? == InputOutcome::Handled {
-                            TextKeyOutcome::Handled
-                        } else {
-                            TextKeyOutcome::Ignored
-                        },
-                    );
+                    let outcome = self.0.text_key(cx, input, transition, keys);
+                    self.0.note_modified();
+                    return Ok(if outcome? == InputOutcome::Handled {
+                        TextKeyOutcome::Handled
+                    } else {
+                        TextKeyOutcome::Ignored
+                    });
                 }
                 if self.0.field.inline && !self.0.field.editing {
                     return Ok(TextKeyOutcome::NotAnEditor);
                 }
-                if self.0.text_key(cx, input, transition, keys)? == InputOutcome::Handled {
+                let outcome = self.0.text_key(cx, input, transition, keys);
+                self.0.note_modified();
+                if outcome? == InputOutcome::Handled {
                     return Ok(TextKeyOutcome::Handled);
                 }
                 Ok(unhandled_text_key(cx, input, transition))
@@ -2359,15 +2510,20 @@ macro_rules! number_shared {
                 e: KeyEvent,
                 keys: &KeyboardState,
             ) -> Result<InputOutcome, RuntimeError> {
-                self.0
-                    .key(cx, e, keys.control_key(e), keys.chord_modifiers(e))
+                let outcome = self
+                    .0
+                    .key(cx, e, keys.control_key(e), keys.chord_modifiers(e));
+                self.0.note_modified();
+                outcome
             }
             fn text_command(
                 &mut self,
                 cx: &mut EventContext,
                 command: TextCommand,
             ) -> Result<TextCommandOutcome, RuntimeError> {
-                self.0.command(cx, command)
+                let outcome = self.0.command(cx, command);
+                self.0.note_modified();
+                outcome
             }
             fn text_input(
                 &mut self,
@@ -2377,7 +2533,9 @@ macro_rules! number_shared {
                 if self.0.field.inline && !self.0.field.editing {
                     return Ok(());
                 }
-                self.0.field.editor.insert(cx, text).map(|_| ())
+                let outcome = self.0.field.editor.insert(cx, text).map(|_| ());
+                self.0.note_modified();
+                outcome
             }
             fn text_preedit(
                 &mut self,
@@ -2394,14 +2552,18 @@ macro_rules! number_shared {
                 cx: &mut EventContext,
                 e: PointerEvent,
             ) -> Result<InputOutcome, RuntimeError> {
-                self.0.pointer(cx, e)
+                let outcome = self.0.pointer(cx, e);
+                self.0.note_modified();
+                outcome
             }
             fn focus_lost(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
                 if self.0.field.drafting() {
                     // Focus moved into the row's own editor.
                     return Ok(());
                 }
-                self.0.focus_left(cx)
+                let outcome = self.0.focus_left(cx);
+                self.0.note_modified();
+                outcome
             }
             fn focus_within_changed(
                 &mut self,
@@ -2411,34 +2573,52 @@ macro_rules! number_shared {
                 if within || !self.0.field.drafting() {
                     return Ok(());
                 }
-                self.0.focus_left(cx)
+                let outcome = self.0.focus_left(cx);
+                self.0.note_modified();
+                outcome
             }
             fn visibility_changed(&mut self, visible: bool) {
-                if !visible && self.0.field.drafting() {
+                // Hiding discards a draft unsaved: a standalone local
+                // field's, which input cancellation keeps, and text mode.
+                if !visible && (self.0.field.drafting() || self.0.local_standalone()) {
                     self.0.cancel();
                 }
+                self.0.note_modified();
             }
             fn input_reset(&mut self) {
                 self.0.cancel();
+                self.0.note_modified();
             }
             fn timer_elapsed(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
-                self.0.repeat_hold(cx)
+                let outcome = self.0.repeat_hold(cx);
+                self.0.note_modified();
+                outcome
             }
             fn cancel_input(&mut self, cx: &mut EventContext) {
-                // Failed clipboard/key operations and geometry changes must not
-                // discard text in a field that still owns focus, directly or
-                // through its child editor. Escape restores explicitly in key();
-                // hiding/removal already relinquish focus.
-                if (cx.focused() || self.0.field.drafting())
+                if self.0.local_standalone() {
+                    // Input cancellation (a revocation, a pointer gesture's
+                    // loss, a failed operation, a geometry change) ends
+                    // gestures and a composition and never discards a local
+                    // draft; hiding discards it in `visibility_changed`.
+                    cx.cancel_timer();
+                    cx.release_pointer();
+                    self.0.end_gestures();
+                    self.0.field.editor.reset();
+                } else if (cx.focused() || self.0.field.drafting())
                     && !self.0.field.pressed()
                     && self.0.hold.is_none()
                     && self.0.held_key.is_none()
                 {
+                    // Failed clipboard/key operations and geometry changes must not
+                    // discard text in a row that still owns focus, directly or
+                    // through its child editor. Escape restores explicitly in key();
+                    // hiding/removal already relinquish focus.
                     self.0.field.editor.reset();
                 } else {
                     self.0.cancel();
                 }
                 cx.invalidate(Invalidation::Paint);
+                self.0.note_modified();
             }
             fn inspect(&self) -> ComponentDetails {
                 self.0.inspect()
@@ -2447,9 +2627,17 @@ macro_rules! number_shared {
     };
 }
 impl<T: Number> NumberEditor<T> {
-    /// Applies the focus-loss policy: a parameter draft is cancelled; a local
-    /// draft is saved.
+    /// Applies the focus-loss policy: a parameter draft and an inline row's
+    /// gesture are cancelled; a local draft is saved.
     fn focus_left(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
+        if self.local_standalone() && self.hold.is_some() {
+            // A held step button ends, keeping the steps it took; the
+            // focus-loss save attempt follows as without a press.
+            cx.cancel_timer();
+            cx.release_pointer();
+            self.stop_hold();
+            cx.invalidate(Invalidation::Paint);
+        }
         let result = if self.field.pressed() || self.hold.is_some() || self.source.is_parameter() {
             self.cancel();
             Ok(())
@@ -2488,13 +2676,86 @@ macro_rules! field_api {
             /// steps changed; during a held step every key is consumed and
             /// nothing is reported. A field that refused its bound value has
             /// nothing to correct and reports `Unchanged`. Focus leaving
-            /// reports `FocusLeft` with its save's outcome, delivered once a
-            /// hidden native window is shown again. Disabling the field
-            /// reports nothing: it releases focus as cancelled input, so the
-            /// draft stays unsaved and the edit open. A field bound to
-            /// a parameter ignores the session. Replaces an earlier session.
+            /// reports `FocusLeft` with its save's outcome, also during a
+            /// held step, which ends first; it is delivered once a hidden
+            /// native window is shown again. Disabling the field reports
+            /// nothing: it releases focus as cancelled input, so the draft
+            /// stays unsaved and the edit open, and a focus loss that reaches
+            /// a field disabled by a description before the next flush
+            /// reports nothing either. A field bound to a parameter ignores
+            /// the session. Replaces an earlier session.
             pub fn session(mut self, session: &crate::EditorSession) -> Self {
                 self.0.session = Some(session.attach());
+                self
+            }
+            /// Calls `modified` in the event phase with `true` when the
+            /// field's draft starts to differ from the value it shows at rest
+            /// and `false` when it stops: after a save, Escape,
+            /// [`TextCommand::DiscardDraft`], an application write that
+            /// discards the draft, hiding, or an edit back to the saved value,
+            /// and for a parameter after a commit, a cancellation or a
+            /// protocol refusal that replaces the draft. A refused save keeps
+            /// it `true`.
+            ///
+            /// Timing class: [after settling](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#after-settling).
+            ///
+            /// The draft is the field's typed or stepped text, including
+            /// text a [`TextCommand`] put there while the field did not hold
+            /// focus. A field bound to a signal keeps it unsaved while it is
+            /// disabled or read-only, focused or not, so a close policy that
+            /// counts unsaved fields sees it (the
+            /// [draft policy](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#draft-policy)).
+            /// Each change is delivered once and in order, changes made in an
+            /// update later in the same flush; the callback may write
+            /// signals, for example
+            /// [`FieldHandle::set_modified`](crate::FieldHandle::set_modified)
+            /// so a [`FormFields`](crate::FormFields) counts unsaved fields.
+            /// Its error is returned from the flush or input call that
+            /// delivered it and is not replayed. A removed field reports
+            /// nothing. With a [session](Self::session) the report of a
+            /// completion is requested before the session's, so a host that
+            /// closes the edit and removes the field does so after the
+            /// field's `false`. A later call replaces the callback, and so
+            /// does each description.
+            ///
+            /// ```
+            /// # use pert_ui_runtime as pert_ui;
+            /// use pert_ui::*;
+            /// use std::time::Duration;
+            /// let mut ui = Runtime::new();
+            /// let form = FormFields::new(&ui);
+            /// let handle = form.field("count")?;
+            #[doc = concat!(" let value = ui.signal(7 as ", stringify!($ty), ");")]
+            /// let enabled = ui.signal(true);
+            /// let report = handle.clone();
+            #[doc = concat!(" let field = ui.mount_tree(Element::new(\"count\", ", stringify!($name), "::new(value.clone())")]
+            ///     .enabled(enabled.read_only())
+            ///     .on_modified(move |_, modified| report.set_modified(modified).map(|_| ()))))?;
+            /// ui.flush(Duration::ZERO)?;
+            /// ui.focus(&field)?;
+            /// ui.text_command(&field, TextCommand::SelectAll)?;
+            /// ui.text_input("42")?;
+            /// ui.flush(Duration::ZERO)?;
+            /// assert_eq!(form.summary().get()?.modified(), 1);
+            /// // Disabled, the field keeps its draft unsaved and still counts.
+            /// enabled.set(false)?;
+            /// ui.flush(Duration::ZERO)?;
+            /// assert_eq!(form.summary().get()?.modified(), 1);
+            #[doc = concat!(" assert_eq!(value.get()?, 7 as ", stringify!($ty), ");")]
+            /// // Enabled again, Escape discards it.
+            /// enabled.set(true)?;
+            /// ui.flush(Duration::ZERO)?;
+            /// ui.focus(&field)?;
+            /// ui.key_input(KeyCode::Escape, KeyAction::Press)?;
+            /// ui.key_input(KeyCode::Escape, KeyAction::Release)?;
+            /// assert_eq!(form.summary().get()?.modified(), 0);
+            /// # Ok::<(), RuntimeError>(())
+            /// ```
+            pub fn on_modified(
+                mut self,
+                modified: impl FnMut(&mut EventContext, bool) -> Result<(), RuntimeError> + 'static,
+            ) -> Self {
+                self.0.modified.set(Box::new(modified));
                 self
             }
         }
@@ -2522,6 +2783,60 @@ macro_rules! inline_api {
             /// with the same binding keeps the text already read.
             pub fn label(mut self, label: impl Into<TextSource>) -> Self {
                 self.0.field.caption = crate::Caption::new(label);
+                self
+            }
+            /// Calls `modified` in the event phase with `true` when the
+            /// text mode's draft starts to differ from the value the row
+            /// shows at rest and `false` when it stops: after a save, Escape,
+            /// [`TextCommand::DiscardDraft`], an application write that ends
+            /// text mode, hiding, revoked enablement, or an edit back to the
+            /// saved value, and for a parameter after a commit, a
+            /// cancellation or a protocol refusal. A refused save keeps it
+            /// `true`, also when the save was focus leaving and text mode
+            /// stays open.
+            ///
+            /// Timing class: [after settling](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#after-settling).
+            ///
+            /// Only text mode holds a draft. A value drag, a held step key or
+            /// a step button at rest is a gesture, saved or committed as it
+            /// ends, and reports nothing. Each change is delivered once and
+            /// in order; the callback may write signals, such as
+            /// [`FieldHandle::set_modified`](crate::FieldHandle::set_modified).
+            /// Its error is returned from the flush or input call that
+            /// delivered it and is not replayed. A removed row reports
+            /// nothing. A later call replaces the callback, and so does each
+            /// description.
+            ///
+            /// ```
+            /// # use pert_ui_runtime as pert_ui;
+            /// use pert_ui::*;
+            /// use std::{cell::RefCell, rc::Rc, time::Duration};
+            /// let mut ui = Runtime::new();
+            #[doc = concat!(" let value = ui.signal(8 as ", stringify!($ty), ");")]
+            /// let reports = Rc::new(RefCell::new(Vec::new()));
+            /// let seen = reports.clone();
+            #[doc = concat!(" let row = ui.mount_tree(Element::new(\"volume\", ", stringify!($name), "::new(value.clone())")]
+            ///     .on_modified(move |_, modified| {
+            ///         seen.borrow_mut().push(modified);
+            ///         Ok(())
+            ///     })))?;
+            /// ui.flush(Duration::ZERO)?;
+            /// ui.focus(&row)?;
+            /// ui.key_input(KeyCode::ArrowUp, KeyAction::Press)?; // a resting step saves
+            /// assert!(reports.borrow().is_empty());
+            /// ui.key_input(KeyCode::F2, KeyAction::Press)?; // text mode
+            /// ui.text_input("42")?;
+            /// ui.flush(Duration::ZERO)?;
+            /// ui.key_input(KeyCode::Enter, KeyAction::Press)?;
+            #[doc = concat!(" assert_eq!(value.get()?, 42 as ", stringify!($ty), ");")]
+            /// assert_eq!(*reports.borrow(), [true, false]);
+            /// # Ok::<(), RuntimeError>(())
+            /// ```
+            pub fn on_modified(
+                mut self,
+                modified: impl FnMut(&mut EventContext, bool) -> Result<(), RuntimeError> + 'static,
+            ) -> Self {
+                self.0.modified.set(Box::new(modified));
                 self
             }
         }

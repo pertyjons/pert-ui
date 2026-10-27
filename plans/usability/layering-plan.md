@@ -645,6 +645,44 @@ All six were decided on 2026-10-26 as recommended.
     the structural container in their key trail; a TODO.md entry records
     the yanked `clipboard-win` in the lockfile.
 
+- **L4b (0.3.75), implemented 2026-10-27:** commit and review to be
+  recorded. One draft policy, by [the approved design](layering-design-L4b.md)
+  (revision 4, D1 to D4 as recommended).
+  - **Policy:** contracts.md's "Draft policy" (scope, save attempts, busy
+    editors, eleven rules, the event table, the parameter-outcome table,
+    `InlineSlider`, table completions) replaces the per-editor lists.
+  - **Behavior changes:** a signal-bound number field keeps its draft when
+    disabled; input cancellation no longer discards an unfocused draft, and
+    hiding does; a held step press ends without discarding; a disabled
+    session field reports nothing; every session completion, Escape
+    included, requests the modified report first; inline rows apply a
+    revoked editability to an open text mode; `SearchField` keeps no query
+    pending without focus.
+  - **API:** `on_modified` on `IntegerInput`, `DecimalInput`,
+    `InlineInteger`, `InlineDecimal` and `InlineText`;
+    `DraftEditorController::set_read_only`; `TextCommand::DiscardDraft`;
+    `Table::on_edit_end` with `CellEditEnd` and `CellEditEndReason`,
+    delivered one payload per request through a crate-private reporter
+    child. The six names L2's closure requires are in the prelude, with a
+    prelude-only fixture.
+  - **Tests:** the design's new-behavior tests, each failing under its
+    compiling mutation (two mutations strengthened after a first attempt
+    went undetected), and the contract tests (the policy table, parameter
+    outcomes, `InlineSlider`, inputs that make no save attempt, close
+    admission for focused editors and table sessions).
+  - **Checks:** the public-API row (formatting, Clippy, workspace tests, the
+    five headless example sessions, doctests, rustdoc, the diagnostics
+    suite, the API listing gate: additions only, runtime listings), the
+    headless gallery and `git diff --check`. Native checks were not run.
+  - **Deviations:** the facade listings do not change (they record the
+    runtime's root and prelude as globs); `InlineSlider` answers
+    `DiscardDraft` in text mode, as every built-in editor does; discarding
+    an in-place session that holds focus returns focus to its control, as
+    Escape does; test 17's hidden-window case hides the primary window;
+    test 18 holds an end back through a failing probe callback.
+  - **Records:** a TODO.md entry for the `diagram_editor` close policy that
+    ignores a refused inspector draft.
+
 ## Review record
 
 - **Revision 1, Codex evaluation (2026-10-26):** needs revision, with one

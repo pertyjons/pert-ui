@@ -110,6 +110,11 @@ pub struct InlineText {
     /// Whether the label handled the primary press that the next release
     /// ends, so the release answers alike.
     handled_press: bool,
+    /// The application's callback when the draft starts or stops differing
+    /// from the text at rest, delivered through `notifier`.
+    modified: ModifiedReporter,
+    /// Asks for `deliver_notifications`, kept from the first update.
+    notifier: Option<crate::Notifier>,
 }
 description_debug!(InlineText);
 
@@ -224,6 +229,8 @@ impl InlineText {
             clicks: crate::ClickCounter::new(),
             in_row: false,
             handled_press: false,
+            modified: ModifiedReporter::default(),
+            notifier: None,
         }
     }
     /// Shows muted text while the bound value is empty and editing is not active.
@@ -463,6 +470,139 @@ impl InlineText {
         self.saved.set(Box::new(saved));
         self
     }
+    /// Calls `modified` in the event phase with `true` when the draft of an
+    /// open editing session starts to differ from the text the label shows at
+    /// rest and `false` when it stops: after a save or proposal, Escape,
+    /// [`TextCommand::DiscardDraft`], a changed binding or controlled text
+    /// that ends the session, hiding, disabling, or an edit back to that
+    /// text. Beginning to edit reports nothing, and a refused save keeps it
+    /// `true`, also when focus left and the session stays open for
+    /// correction.
+    ///
+    /// Timing class: [after settling](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#after-settling).
+    ///
+    /// Each change is delivered once and in order, changes made in an update
+    /// later in the same flush; the callback may write signals, for example
+    /// [`FieldHandle::set_modified`](crate::FieldHandle::set_modified) so a
+    /// [`FormFields`](crate::FormFields) counts unsaved fields, as a close
+    /// policy does. Its error is returned from the flush or input call that
+    /// delivered it and is not replayed. A removed label reports nothing. A
+    /// later call replaces the callback, and so does each description.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::*;
+    /// use std::{cell::RefCell, rc::Rc, time::Duration};
+    /// let mut ui = Runtime::new();
+    /// let name = ui.signal(String::from("Bass"));
+    /// let reports = Rc::new(RefCell::new(Vec::new()));
+    /// let seen = reports.clone();
+    /// let root = ui.mount_tree(Column::new([
+    ///     InlineText::new(name.clone())
+    ///         .normalize(|text| {
+    ///             if text.trim().is_empty() {
+    ///                 Err(InputRejection::new("Enter a name"))
+    ///             } else {
+    ///                 Ok(text)
+    ///             }
+    ///         })
+    ///         .on_modified(move |_, modified| {
+    ///             seen.borrow_mut().push(modified);
+    ///             Ok(())
+    ///         })
+    ///         .key("name"),
+    ///     TextField::new(ui.signal(String::new())).key("other"),
+    /// ]).key("form"))?;
+    /// ui.flush(Duration::ZERO)?;
+    /// let label = ui.find(&root, &["name"])?.ok_or("the label")?;
+    /// let other = ui.find(&root, &["other"])?.ok_or("the other field")?;
+    /// ui.text_command(&label, TextCommand::BeginEdit)?;
+    /// ui.flush(Duration::ZERO)?;
+    /// ui.text_input(" ")?; // replaces the selected name
+    /// ui.focus(&other)?; // the save is refused: the session stays open
+    /// ui.flush(Duration::ZERO)?;
+    /// assert_eq!(name.get()?, "Bass");
+    /// assert_eq!(*reports.borrow(), [true]);
+    /// assert_eq!(ui.text_command(&label, TextCommand::DiscardDraft)?, TextCommandOutcome::Handled);
+    /// ui.flush(Duration::ZERO)?;
+    /// assert_eq!(*reports.borrow(), [true, false]);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn on_modified(
+        mut self,
+        modified: impl FnMut(&mut EventContext, bool) -> Result<(), RuntimeError> + 'static,
+    ) -> Self {
+        self.modified.set(Box::new(modified));
+        self
+    }
+    /// Whether an open session's draft differs from the text at rest.
+    fn dirty(&self) -> bool {
+        self.editing() && self.slot.draft.text() != self.text
+    }
+    /// Requests one delivery to the modified callback when the modified state
+    /// differs from the state last delivered. Callable in any phase.
+    fn note_modified(&self) {
+        if let Some(notifier) = &self.notifier
+            && self.modified.wants(self.dirty())
+        {
+            notifier.request();
+        }
+    }
+    /// [`TextCommand::DiscardDraft`]: ends an open session unsaved, as
+    /// Escape does, whether or not it holds focus; a session holding focus
+    /// returns it as Escape does. `Unavailable` without a session.
+    fn discard_command(
+        &mut self,
+        cx: &mut EventContext,
+    ) -> Result<TextCommandOutcome, RuntimeError> {
+        if !self.editing() {
+            return Ok(TextCommandOutcome::Unavailable);
+        }
+        if self.focused {
+            self.end_by_key(cx);
+        } else {
+            self.discard(None);
+            cx.invalidate(Invalidation::Layout);
+        }
+        self.report.clear(cx)?;
+        Ok(TextCommandOutcome::Handled)
+    }
+    /// The update's own work: permissions, the editor child and the text.
+    fn update_inner(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
+        let enabled = self.enablement.read_paint(cx)?;
+        if enabled != self.enabled {
+            self.enabled = enabled;
+            if !enabled {
+                // A revoked permission ends the draft as disabling does.
+                self.discard(None);
+                self.reset_row_series();
+                cx.cancel_input();
+            }
+            cx.request_layout();
+        }
+        self.slot.update(cx);
+        self.focused = cx.focus_within();
+        let text = match &self.value {
+            Source::Bound(value) => cx.read_paint(value)?,
+            Source::Controlled(text) => text.clone(),
+        };
+        // Refused text is kept out of the label rather than failing every
+        // flush: the label keeps its previous text and marks the refusal, and
+        // an open draft ends unsaved so it never overwrites the value.
+        if let Err(error) = check_text(&text, false) {
+            self.rejected = Some(error);
+            self.discard(None);
+            return Ok(());
+        }
+        self.rejected = None;
+        if text != self.text {
+            self.text = text;
+            // External writes win over drafts.
+            self.discard(None);
+            cx.request_layout();
+        }
+        Ok(())
+    }
     /// The refusal of the current draft, if the last save refused this draft.
     fn current_rejection(&self) -> Option<&EntryError> {
         let (edits, error) = self.rejection.as_ref()?;
@@ -675,6 +815,12 @@ impl Component for InlineText {
         self.normalizer = next.normalizer;
         self.report.adopt(next.report);
         self.saved.adopt(next.saved);
+        if !self.modified.installed() && next.modified.installed() {
+            // The update that registers the notifier reports a draft already held.
+            invalidation = invalidation.max(Some(Invalidation::Paint));
+        }
+        self.modified.adopt(next.modified);
+        self.note_modified();
         invalidation
     }
     fn focusable(&self) -> bool {
@@ -699,39 +845,16 @@ impl Component for InlineText {
         }
     }
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
-        let enabled = self.enablement.read_paint(cx)?;
-        if enabled != self.enabled {
-            self.enabled = enabled;
-            if !enabled {
-                // A revoked permission ends the draft as disabling does.
-                self.discard(None);
-                self.reset_row_series();
-                cx.cancel_input();
-            }
-            cx.request_layout();
+        if self.modified.installed() && self.notifier.is_none() {
+            self.notifier = Some(cx.notifier());
         }
-        self.slot.update(cx);
-        self.focused = cx.focus_within();
-        let text = match &self.value {
-            Source::Bound(value) => cx.read_paint(value)?,
-            Source::Controlled(text) => text.clone(),
-        };
-        // Refused text is kept out of the label rather than failing every
-        // flush: the label keeps its previous text and marks the refusal, and
-        // an open draft ends unsaved so it never overwrites the value.
-        if let Err(error) = check_text(&text, false) {
-            self.rejected = Some(error);
-            self.discard(None);
-            return Ok(());
-        }
-        self.rejected = None;
-        if text != self.text {
-            self.text = text;
-            // External writes win over drafts.
-            self.discard(None);
-            cx.request_layout();
-        }
-        Ok(())
+        let result = self.update_inner(cx);
+        self.note_modified();
+        result
+    }
+    fn deliver_notifications(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
+        let dirty = self.dirty();
+        self.modified.deliver(cx, dirty)
     }
     fn measure(&self, cx: &MeasureContext<'_>, _: Constraints) -> Result<Size, RuntimeError> {
         let pad = cx.metric(MetricRole::ControlPaddingX) * 0.5;
@@ -823,11 +946,14 @@ impl Component for InlineText {
         match control {
             KeyCode::Escape if e.transition == KeyTransition::Pressed => {
                 self.end_by_key(cx);
+                self.note_modified();
                 self.report.clear(cx)?;
                 Ok(InputOutcome::Handled)
             }
             KeyCode::Enter if e.transition == KeyTransition::Pressed => {
-                if self.save(cx)? && !self.in_row {
+                let saved = self.save(cx);
+                self.note_modified();
+                if saved? && !self.in_row {
                     cx.request_focus();
                 }
                 Ok(InputOutcome::Handled)
@@ -863,6 +989,13 @@ impl Component for InlineText {
         cx: &mut EventContext,
         command: TextCommand,
     ) -> Result<TextCommandOutcome, RuntimeError> {
+        if command == TextCommand::DiscardDraft {
+            // The label owns the session's policy, so it answers itself,
+            // whether or not its editor holds focus.
+            let outcome = self.discard_command(cx);
+            self.note_modified();
+            return outcome;
+        }
         if command != TextCommand::BeginEdit {
             // While editing the runtime passes the command on to the editor.
             return Ok(TextCommandOutcome::NotAnEditor);
@@ -885,6 +1018,7 @@ impl Component for InlineText {
         }
         self.clicks.reset();
         let result = self.save(cx).map(|_| ());
+        self.note_modified();
         cx.invalidate(Invalidation::Paint);
         result
     }
@@ -899,6 +1033,7 @@ impl Component for InlineText {
             // Hiding discards the draft.
             self.discard(None);
             self.reset_row_series();
+            self.note_modified();
         }
     }
     fn input_reset(&mut self) {

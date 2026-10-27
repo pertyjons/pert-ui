@@ -100,6 +100,14 @@ impl<T: Copy + PartialEq + 'static> InlineField<T> {
     pub(crate) fn set_read_only(&mut self) {
         self.editor.read_only = true;
     }
+    /// Makes an open text mode read-only, or editable again, without ending
+    /// it, as its owner's effective editability changes: the draft,
+    /// selection and undo history stay. Without text mode it does nothing.
+    pub(crate) fn set_text_read_only(&self, read_only: bool) {
+        if let Some(slot) = &self.draft_slot {
+            slot.draft.set_read_only(read_only);
+        }
+    }
     /// Overrides the value typography.
     pub(crate) fn set_style(&mut self, style: TextStyle) {
         self.editor.style = style;

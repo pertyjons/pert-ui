@@ -1,5 +1,104 @@
 # Changelog
 
+## 0.3.75 (2026-10-27)
+
+One draft policy (layering plan, part L4b, N5 in the complexity inventory,
+from its approved design checkpoint `plans/usability/layering-design-L4b.md`,
+revision 4). What saving, refusal, application writes, revocation, hiding,
+removal, close admission and text commands do to a draft is now one set of
+rules for every built-in editor, in contracts.md's new "Draft policy"
+section, which replaces the per-editor lists in the permissions and close
+sections. The editors that broke it follow it, and every built-in editor that
+can keep a draft without focus reports it.
+
+- Breaking (N5): revoking `enabled` on an `IntegerInput` or `DecimalInput`
+  bound to a signal keeps a typed or stepped draft unsaved, focused or not, as
+  `TextField` does, instead of discarding it, by a bound permission or a fixed
+  `disabled()` description; with an `EditorSession` the edit stays open with
+  it, and nothing is reported. Input cancellation other than hiding and
+  removal (a pointer gesture's loss, a failed clipboard operation, a geometry
+  change) no longer discards such a field's draft, focused or not; hiding
+  still discards it. Replacement usage: `TextCommand::DiscardDraft` through
+  `Runtime::text_command` or `EventContext::request_text_command` discards the
+  draft without touching the binding. This makes `IntegerInput::session`'s,
+  contracts.md's and `ColorPicker::enabled`'s documentation true: a picker's
+  channel fields now keep their drafts as its hex field does.
+- Breaking (N5): a held step button on such a field no longer discards the
+  draft when editing is revoked or focus leaves: the press ends and keeps the
+  steps it took; focus loss then saves as without a press, and a session field
+  reports `FocusLeft` with the outcome (it reported nothing and lost the
+  stepped draft). Replacement usage: Escape, or `TextCommand::DiscardDraft`,
+  restores the saved value.
+- Breaking (N5): an open text mode of `InlineInteger` and `InlineDecimal`
+  (signal or parameter) becomes read-only when its editing permission is
+  revoked, keeping its draft, selection and undo history, and editable again
+  when it is allowed; it stayed editable with saves refused. Replacement
+  usage: `TextCommand::DiscardDraft` ends it.
+- Breaking (N5): `SearchField` writes an edit it receives without focus (a
+  text command, direct or queued, including its own clipboard menu's) at
+  once, as without a debounce, and discards a pending debounced query when
+  focus leaves while editing is denied; it armed the debounce without focus
+  and kept a refused query pending after focus left. Replacement usage: none
+  needed.
+- Breaking (N5): a session field (`TextField`, `IntegerInput`, `DecimalInput`)
+  that a focus loss reaches while disabled, between a fixed `disabled()`
+  description and the next flush, reports nothing; it reported `Refused`.
+  Replacement usage: none needed; the edit stays open, as after a bound
+  revocation.
+- Changed: a session field's `on_modified` report is requested before each
+  completion it reports to its `EditorSession`, Escape included (Escape
+  reported directly before), so a host that closes the edit and removes the
+  field does so after the field's `false`, and an application count of unsaved
+  fields returns to zero.
+- Changed: a `Table` has a second, invisible child after its body, keyed
+  `edit end reporter` and structural (no workspace state), which delivers
+  `on_edit_end`; it has no extent, paints nothing, takes no focus or hits and
+  has no semantics. `Runtime::children` and inspection list it. The body stays
+  the first child.
+- Added (F6): `on_modified` on `IntegerInput`, `DecimalInput`,
+  `InlineInteger`, `InlineDecimal` and `InlineText`, reporting when a draft
+  starts or stops differing from the value the editor shows at rest (an
+  inline row's text mode only; a value drag or held step at rest is a gesture
+  and reports nothing), after settling, so a close policy and `FormFields`
+  see the drafts these fields keep.
+- Added: `Table::on_edit_end`, with `CellEditEnd` (`row`, `column`, `reason`)
+  and `CellEditEndReason` (`Completed(EditorCompletion)`, `Cancelled`,
+  `Replaced`, `RowLeft`, `Failed`, `Hidden`), reporting every cell edit's end,
+  including those the table ends itself, one notification per end in the
+  global request order; removing the table reports nothing, and removing the
+  callback discards ends not yet delivered.
+- Added: to the prelude, `CellEditEnd`, `CellEditEndReason`,
+  `EditorCompletion`, `EditorOutcome`, `EditorTrigger` and `FocusDirection`,
+  the names an edit-end callback matches; `CellEditEnd` and
+  `CellEditEndReason` are also at the crate root. No import an L2 program
+  writes changes.
+- Added: `DraftEditorController::set_read_only`, which makes the active
+  session read-only or editable again without ending it (the draft, payload,
+  selection and undo history stay), releases a drag's pointer capture, and,
+  called while the editor serves a clipboard request, applies when that
+  operation completes, before `on_edit`; `TextCommand::DiscardDraft`,
+  answered by every built-in editor also while disabled or read-only:
+  `Handled` with Escape's effect and no write when there was a draft (an
+  in-place session, including `InlineSlider`'s text mode, ends; a parameter
+  draft is cancelled; a search query is dropped), `Unavailable` otherwise.
+  A `DraftEditor` answers it `Unavailable`; the command is aimed at the
+  control that owns the draft.
+- Documentation: contracts.md's "Draft policy" (scope, save attempts, rules
+  1 to 11, the event, parameter-outcome and table-completion tables),
+  replacing the per-editor lists in "Permissions and availability" and
+  "Closing a window"; editor sessions and table cell edits state the
+  ordering and `on_edit_end`. `App::on_close` step 3 links the policy; the
+  rustdoc of the number fields' `enabled`, `editable`, `stepper` and
+  `session`, `InlineInteger`, `SearchField::editable` and `debounce`,
+  `TextField::session` and `on_modified`, `DraftEditor`'s owner contract and
+  `Table`'s cell editing are rewritten to it. The guide's controls, testing
+  and custom-widgets chapters and the manual name the policy, `on_modified`
+  on the added types and `DiscardDraft`.
+- API listings: `api/pert-ui-runtime/default.txt` and `serde.txt` add the
+  items above (the six prelude names and the two new types also under
+  `prelude`). The facade's listings are unchanged: they record its root and
+  prelude as glob re-exports of the runtime's.
+
 ## 0.3.74 (2026-10-27)
 
 One way where history left two (layering plan, part L3, from its approved design

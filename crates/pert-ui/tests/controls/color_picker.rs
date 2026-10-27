@@ -1676,3 +1676,76 @@ fn a_handler_replaced_while_the_popover_is_open_receives_the_commit() {
     key(&mut ui, KeyCode::ArrowRight);
     assert_eq!((first.borrow().len(), second.borrow().len()), (0, 1));
 }
+
+/// The `text` an entry field's inspection reports.
+fn shown_text(ui: &Runtime, id: &WidgetId) -> String {
+    let inspection = ui.inspection_id(id).unwrap();
+    match ui
+        .inspect()
+        .components
+        .into_iter()
+        .find(|c| c.id == inspection)
+        .unwrap()
+        .details
+        .properties
+        .get("text")
+    {
+        Some(InspectValue::Text(text)) => text.clone(),
+        other => panic!("no text: {other:?}"),
+    }
+}
+
+/// New-behavior test 5 (draft policy rule 5): revoking the picker's
+/// permission keeps a channel field's typed draft, as the hex field keeps
+/// its own. Named assertion: the channel field's text is the draft.
+/// Mutation checked: discarding a number field's draft on revocation (as
+/// before) shows the channel's value again.
+#[test]
+fn revoking_the_picker_keeps_its_fields_drafts() {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(500.0, 600.0, 1.0).unwrap())
+        .unwrap();
+    let color = ui.signal(Color::from_hex("#ff0000").unwrap());
+    let enabled = ui.signal(true);
+    let root = ui
+        .mount_tree(Element::new(
+            "page",
+            Column::new([
+                Element::new("picker", ColorPicker::new(color.clone()).enabled(&enabled)),
+                Element::new("other", Button::new("Other", |_| Ok(()))),
+            ]),
+        ))
+        .unwrap();
+    settle(&mut ui);
+    let hex_field = find(&ui, &find(&ui, &root, "hex"), "input");
+    ui.focus(&hex_field).unwrap();
+    ui.text_command(&hex_field, TextCommand::SelectAll).unwrap();
+    ui.text_input("#00ff00").unwrap();
+    settle(&mut ui);
+    let red = find(&ui, &find(&ui, &root, "r"), "input");
+    ui.focus(&red).unwrap();
+    settle(&mut ui);
+    // The hex field saved on focus loss; type it a new draft unfocused.
+    ui.text_command(&red, TextCommand::SelectAll).unwrap();
+    ui.text_input("12").unwrap();
+    settle(&mut ui);
+    let saved = hex(&color);
+    enabled.set(false).unwrap();
+    settle(&mut ui);
+    settle(&mut ui);
+    assert_eq!(shown_text(&ui, &red), "12", "the channel keeps its draft");
+    assert_eq!(hex(&color), saved, "nothing was saved");
+    // The hex field keeps its draft too.
+    enabled.set(true).unwrap();
+    settle(&mut ui);
+    ui.focus(&hex_field).unwrap();
+    settle(&mut ui);
+    ui.text_command(&hex_field, TextCommand::SelectAll).unwrap();
+    ui.text_input("#0000ff").unwrap();
+    settle(&mut ui);
+    enabled.set(false).unwrap();
+    settle(&mut ui);
+    settle(&mut ui);
+    assert_eq!(shown_text(&ui, &hex_field), "#0000ff");
+    assert_eq!(shown_text(&ui, &red), "12");
+}

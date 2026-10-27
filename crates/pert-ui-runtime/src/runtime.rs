@@ -1008,6 +1008,13 @@ impl Node {
             .borrow_mut()
             .insert((deadline, self.serial), Rc::downgrade(self));
     }
+    /// Releases the pointer capture this component holds, as context loss
+    /// does, leaving its timer and other input state alone.
+    pub(crate) fn release_capture(&self) {
+        if self.window().capture.get() == Some(self.serial) {
+            self.window().capture.set(None);
+        }
+    }
     fn lose_context(&self) {
         self.stop_timer();
         if self.shared.drag_source.get() == Some(self.serial) {

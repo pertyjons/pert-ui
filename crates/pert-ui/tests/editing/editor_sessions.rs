@@ -1868,3 +1868,224 @@ fn direction(reverse: bool) -> FocusDirection {
         FocusDirection::Forward
     }
 }
+
+/// The center of the plus button of the session editor in `s`.
+fn plus_point(s: &Setup) -> Point {
+    let editor = s.ui.find_descendant(&s.root, "editor").unwrap().unwrap();
+    let [x, y, w, h] = s.ui.bounds(&editor).unwrap().unwrap().values();
+    let metrics = s.ui.theme().metrics(Density::Standard).unwrap();
+    let (pad, side) = (
+        metrics.metric(MetricRole::ControlPaddingX),
+        metrics.metric(MetricRole::IconSize),
+    );
+    Point::new(x + w - pad - side / 2.0, y + h / 2.0).unwrap()
+}
+
+/// New-behavior test 3 (draft policy rule 5). Named assertion: after
+/// revocation and re-enabling, Enter reports `(Enter, Saved)` with the typed
+/// value. Mutation checked: discarding the draft on revocation (`abandon`
+/// and `reset_draft` restored) reports `Unchanged` and keeps 27.
+#[test]
+fn disabling_a_session_number_field_keeps_the_edit_and_the_draft() {
+    let ui = Runtime::new();
+    let value = ui.signal(27_i64);
+    let enabled = ui.signal(true);
+    let (bound, gate) = (value.clone(), enabled.clone());
+    let mut s = Setup::new(ui, EditorStart::SelectAll, move |session| {
+        Element::new(
+            "editor",
+            IntegerInput::new(bound.clone())
+                .enabled(&gate)
+                .session(session),
+        )
+    });
+    s.type_text("42");
+    enabled.set(false).unwrap();
+    s.settle();
+    assert_ne!(s.focused().as_deref(), Some("editor"));
+    assert!(s.log().is_empty(), "a revoked editor reports nothing");
+    assert_eq!(value.get().unwrap(), 27);
+    assert_eq!(s.text(), InspectValue::Text("42".into()));
+    enabled.set(true).unwrap();
+    s.settle();
+    let editor = s.ui.find_descendant(&s.root, "editor").unwrap().unwrap();
+    s.ui.focus(&editor).unwrap();
+    s.settle();
+    s.key(KeyCode::Enter, false, false);
+    assert_eq!(s.log(), [(EditorTrigger::Enter, EditorOutcome::Saved)]);
+    assert_eq!(value.get().unwrap(), 42);
+}
+
+/// New-behavior test 6. Named assertion: focus leaving during a held step
+/// button reports `(FocusLeft, Saved)` with the stepped value. Mutation
+/// checked: cancelling on a held press in `focus_left` (as before) reports
+/// nothing and keeps 2.
+#[test]
+fn focus_loss_during_a_held_step_saves_a_session_fields_draft() {
+    let ui = Runtime::new();
+    let value = ui.signal(2.0_f64);
+    let bound = value.clone();
+    let mut s = Setup::new(ui, EditorStart::SelectAll, move |session| {
+        Element::new(
+            "editor",
+            DecimalInput::new(bound.clone())
+                .step(0.5)
+                .unwrap()
+                .stepper(true)
+                .session(session),
+        )
+    });
+    let plus = plus_point(&s);
+    s.ui.pointer_input(PointerEvent::new(
+        plus,
+        PointerKind::Press(PointerButton::Primary),
+    ))
+    .unwrap();
+    s.ui.flush(s.ui.now() + std::time::Duration::from_millis(450))
+        .unwrap();
+    assert_eq!(s.text(), InspectValue::Text("3".into()), "two steps");
+    assert_eq!(
+        value.get().unwrap(),
+        2.0,
+        "a session's steps edit the draft"
+    );
+    s.ui.clear_focus();
+    s.settle();
+    assert_eq!(s.log(), [(EditorTrigger::FocusLeft, EditorOutcome::Saved)]);
+    assert_eq!(value.get().unwrap(), 3.0);
+    s.ui.pointer_input(PointerEvent::new(
+        plus,
+        PointerKind::Release(PointerButton::Primary),
+    ))
+    .unwrap();
+    s.ui.flush(s.ui.now() + std::time::Duration::from_millis(500))
+        .unwrap();
+    assert_eq!(value.get().unwrap(), 3.0, "no step after the press ended");
+}
+
+/// New-behavior test 7. Named assertion: after editing is revoked during a
+/// held step, the stepped draft `29` is shown and Enter reports `Refused`.
+/// Mutation checked: resetting the draft for the lost press (as before)
+/// shows 27.
+#[test]
+fn revoked_editability_during_a_held_step_keeps_the_stepped_draft() {
+    let ui = Runtime::new();
+    let value = ui.signal(27_i64);
+    let editable = ui.signal(true);
+    let (bound, gate) = (value.clone(), editable.clone());
+    let mut s = Setup::new(ui, EditorStart::SelectAll, move |session| {
+        Element::new(
+            "editor",
+            IntegerInput::new(bound.clone())
+                .stepper(true)
+                .editable(&gate)
+                .session(session),
+        )
+    });
+    let plus = plus_point(&s);
+    s.ui.pointer_input(PointerEvent::new(
+        plus,
+        PointerKind::Press(PointerButton::Primary),
+    ))
+    .unwrap();
+    s.ui.flush(s.ui.now() + std::time::Duration::from_millis(450))
+        .unwrap();
+    assert_eq!(s.text(), InspectValue::Text("29".into()));
+    editable.set(false).unwrap();
+    s.settle();
+    assert_eq!(s.text(), InspectValue::Text("29".into()));
+    s.ui.pointer_input(PointerEvent::new(
+        plus,
+        PointerKind::Release(PointerButton::Primary),
+    ))
+    .unwrap();
+    s.settle();
+    s.key(KeyCode::Enter, false, false);
+    assert_eq!(s.log(), [(EditorTrigger::Enter, EditorOutcome::Refused)]);
+    assert_eq!(value.get().unwrap(), 27);
+    editable.set(true).unwrap();
+    s.settle();
+    s.key(KeyCode::Enter, false, false);
+    assert_eq!(value.get().unwrap(), 29);
+    assert_eq!(
+        s.log(),
+        [
+            (EditorTrigger::Enter, EditorOutcome::Refused),
+            (EditorTrigger::Enter, EditorOutcome::Saved),
+        ]
+    );
+}
+
+/// New-behavior test 11. Named assertion: a focus loss that reaches a field
+/// a description disabled, before the next flush, leaves the log empty.
+/// Mutation checked: reporting `Refused` from `complete` for a disabled
+/// field (as before) logs `(FocusLeft, Refused)`.
+#[test]
+fn a_disabled_session_fields_focus_loss_reports_nothing() {
+    for number in [false, true] {
+        let ui = Runtime::new();
+        let text = ui.signal("Cable".to_owned());
+        let count = ui.signal(27_i64);
+        let current: Rc<RefCell<Option<EditorSession>>> = Rc::default();
+        let (bound_text, bound_count, slot) = (text.clone(), count.clone(), current.clone());
+        let describe = move |session: &EditorSession, disabled: bool| {
+            if number {
+                let field = IntegerInput::new(bound_count.clone()).session(session);
+                Element::new("editor", if disabled { field.disabled() } else { field })
+            } else {
+                let field = TextField::new(bound_text.clone()).session(session);
+                Element::new("editor", if disabled { field.disabled() } else { field })
+            }
+        };
+        let build = describe.clone();
+        let mut s = Setup::new(ui, EditorStart::SelectAll, move |session| {
+            *slot.borrow_mut() = Some(session.clone());
+            build(session, false)
+        });
+        s.type_text(if number { "42" } else { "Laptop" });
+        let host = s.ui.find_descendant(&s.root, "host").unwrap().unwrap();
+        let session = current.borrow().clone().unwrap();
+        s.ui.reconcile_children(&host, vec![describe(&session, true)])
+            .unwrap();
+        s.ui.clear_focus();
+        s.settle();
+        assert!(s.log().is_empty(), "number {number}: {:?}", s.log());
+        assert_eq!(text.get().unwrap(), "Cable");
+        assert_eq!(count.get().unwrap(), 27);
+    }
+}
+
+/// New-behavior test 13, a failing callback: the input call that delivered
+/// the failing `false` returns its error once, a later flush calls nothing
+/// again, and the session's completion still reaches its host.
+#[test]
+fn a_failing_modified_report_does_not_lose_the_completion() {
+    let ui = Runtime::new();
+    let value = ui.signal(27_i64);
+    let calls = Rc::new(RefCell::new(Vec::new()));
+    let (bound, counted) = (value.clone(), calls.clone());
+    let mut s = Setup::new(ui, EditorStart::SelectAll, move |session| {
+        let counted = counted.clone();
+        Element::new(
+            "editor",
+            IntegerInput::new(bound.clone())
+                .on_modified(move |_, modified| {
+                    counted.borrow_mut().push(modified);
+                    if modified {
+                        Ok(())
+                    } else {
+                        Err(RuntimeError::Exhausted)
+                    }
+                })
+                .session(session),
+        )
+    });
+    s.type_text("42");
+    let pressed = s.ui.key_input(KeyCode::Enter, KeyAction::Press).map(|_| ());
+    assert_eq!(pressed, Err(RuntimeError::Exhausted));
+    s.ui.key_input(KeyCode::Enter, KeyAction::Release).unwrap();
+    s.settle();
+    assert_eq!(value.get().unwrap(), 42);
+    assert_eq!(*calls.borrow(), [true, false]);
+    assert_eq!(s.log(), [(EditorTrigger::Enter, EditorOutcome::Saved)]);
+}

@@ -11,6 +11,7 @@ mod support;
 mod begin_edit;
 mod binding_refusal;
 mod draft_editor;
+mod draft_policy;
 mod editor_permissions;
 mod editor_sessions;
 mod inline_controls;

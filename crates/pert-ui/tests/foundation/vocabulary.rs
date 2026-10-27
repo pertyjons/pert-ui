@@ -355,6 +355,23 @@ mod collections {
             })
             .cell_editor(|edit: &mut CellEdit<'_>| {
                 Ok(Label::new(edit.row().to_owned()).key("editor"))
+            })
+            // An edit-end callback matches what the prelude holds.
+            .on_edit_end(|_, end: &CellEditEnd| {
+                match end.reason() {
+                    CellEditEndReason::Completed(EditorCompletion {
+                        trigger:
+                            EditorTrigger::Tab {
+                                direction: FocusDirection::Backward,
+                            },
+                        outcome: EditorOutcome::Saved,
+                        ..
+                    }) => {}
+                    CellEditEndReason::Hidden | CellEditEndReason::RowLeft => {}
+                    _ => {}
+                }
+                let _ = (end.row(), end.column());
+                Ok(())
             });
         let tree_controller = TreeController::new(
             &ui,

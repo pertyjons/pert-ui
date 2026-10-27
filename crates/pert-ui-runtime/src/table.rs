@@ -18,8 +18,8 @@ use std::{
 };
 
 mod editing;
-pub use editing::CellEdit;
-use editing::{CellEditorFn, Editing};
+pub use editing::{CellEdit, CellEditEnd, CellEditEndReason};
+use editing::{CellEditorFn, EditEndFn, EditEndReporter, Editing};
 
 /// One column of a [`Table`]: identity, title, width and what its header offers.
 ///
@@ -1331,7 +1331,15 @@ enum HeaderGesture {
 ///   closes with its draft discarded and the body takes focus if the editor
 ///   had it; the selection is not pruned. Hiding or unmounting the table
 ///   closes the edit. Escape on the body cancels an open edit whose editor
-///   does not hold focus, such as a disabled one.
+///   does not hold focus, such as a disabled one, which keeps its draft
+///   unsaved until then (the
+///   [draft policy](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#draft-policy)).
+/// - **Reports.** [`Table::on_edit_end`] reports each edit's end with a
+///   [`CellEditEnd`]: the editor's own terminal completion, after the
+///   editor's `on_modified` report, and each end the table performs itself
+///   (body Escape, another edit beginning, the row leaving, a failed
+///   editor callback, hiding), where the removed editor reports nothing.
+///   Removing the table reports nothing.
 ///
 /// Tab looks for the next eligible cell row by row, asking
 /// [`TableItems::index_of`] and [`TableItems::editable`] for each, so a table
@@ -1401,6 +1409,8 @@ pub struct Table {
     body: Option<VirtualList>,
     /// The editor callback until the mounted table installs it.
     cell_editor: Option<CellEditorFn>,
+    /// The edit-end callback until the mounted table installs it.
+    on_edit_end: Option<EditEndFn>,
     /// Whether cell content is a Tab stop, installed by the mounted table.
     cell_stops: bool,
     /// The mounted body, which a header press focuses so Escape reaches the
@@ -1526,6 +1536,7 @@ impl Table {
             resize_original: None,
             body_id: None,
             cell_editor: None,
+            on_edit_end: None,
             cell_stops: true,
             body: Some(
                 VirtualList::new(controller.0.items.read_only(), row_height)?
@@ -1666,6 +1677,66 @@ impl Table {
         editor: impl FnMut(&mut CellEdit<'_>) -> Result<Element, RuntimeError> + 'static,
     ) -> Self {
         self.cell_editor = Some(Box::new(editor));
+        self
+    }
+    /// Calls `ended` once for each cell edit that ends, however it ended,
+    /// after the editor's own reports: a terminal completion the editor
+    /// reported ([`CellEditEndReason::Completed`]), and each edit the table
+    /// ends itself, which removes the editor without a report of its own:
+    /// Escape on the body while the editor does not hold focus, another edit
+    /// beginning, the edited row leaving the rows by deletion or a filter, a
+    /// failed [cell editor](Self::cell_editor) and the table hiding.
+    /// [`CellEditEnd`] names the cell and the [`CellEditEndReason`].
+    ///
+    /// Timing class: [after settling](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#after-settling).
+    ///
+    /// This is where an application clears what it tracks per edit, such as
+    /// the unsaved count a cell editor's `on_modified` feeds: the callback
+    /// runs in an event phase and may write signals, including
+    /// [`FieldHandle::set_modified`](crate::FieldHandle::set_modified),
+    /// which the cell editor callback cannot, since it runs in an update.
+    /// Each end is one notification request of its own, so ends keep their
+    /// place in the order of every component's notifications; an end can
+    /// therefore arrive after a later edit's cell editor callback ran, as
+    /// for a replacement begun from F2. A hidden table in a visible window is
+    /// still delivered to; a hidden native window holds the reports until it
+    /// is shown. The callback's error is returned from the flush that
+    /// delivered it; that end is not reported again, and the others still
+    /// are.
+    ///
+    /// The callback's [`EventContext`] is that of an invisible child of the
+    /// table that delivers the reports, so [`EventContext::id`] names that
+    /// child and [`EventContext::request_focus`] does not focus the table's
+    /// body. Removing the table reports nothing, as for any removed
+    /// component, and drops ends not yet delivered. Describing the table
+    /// again with another callback replaces it, and ends not yet delivered
+    /// go to the new one; describing it without one removes it and discards
+    /// them. Ends recorded while no callback is installed are never reported.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
+    ///
+    /// # fn example(table: Table, drafts: FieldHandle) -> Table {
+    /// table.on_edit_end(move |_, end| {
+    ///     match end.reason() {
+    ///         CellEditEndReason::Completed(EditorCompletion {
+    ///             trigger: EditorTrigger::Tab { direction: FocusDirection::Backward },
+    ///             outcome: EditorOutcome::Saved,
+    ///             ..
+    ///         }) => { /* saved, moving back */ }
+    ///         CellEditEndReason::Hidden | CellEditEndReason::RowLeft => {}
+    ///         _ => {}
+    ///     }
+    ///     drafts.set_modified(false).map(|_| ())
+    /// })
+    /// # }
+    /// ```
+    pub fn on_edit_end(
+        mut self,
+        ended: impl FnMut(&mut EventContext, &CellEditEnd) -> Result<(), RuntimeError> + 'static,
+    ) -> Self {
+        self.on_edit_end = Some(Box::new(ended));
         self
     }
     /// Whether interactive content inside cells, such as a checkbox, is a
@@ -2189,11 +2260,21 @@ impl Component for Table {
         Ok(Invalidation::Layout)
     }
     fn take_children(&mut self) -> Vec<Element> {
-        self.body
-            .take()
-            .map(|body| Element::new("body", body).structural())
-            .into_iter()
-            .collect()
+        // The body stays the first child; the reporter that delivers edit
+        // ends follows it.
+        let Some(body) = self.body.take() else {
+            return Vec::new();
+        };
+        vec![
+            Element::new("body", body).structural(),
+            Element::new(
+                editing::REPORTER_KEY,
+                EditEndReporter {
+                    shared: self.state.0.shared.clone(),
+                },
+            )
+            .structural(),
+        ]
     }
     fn reconcile(&mut self, next: Self) -> Option<Invalidation> {
         // The controller, row height and body stay. The callbacks follow the
@@ -2209,6 +2290,10 @@ impl Component for Table {
         // description's callback not yet installed is replaced too.
         self.cell_editor = None;
         *self.state.0.shared.editing.editor.borrow_mut() = next.cell_editor;
+        // A new edit-end callback receives the ends not yet delivered; none
+        // removes the callback and discards them.
+        self.on_edit_end = None;
+        self.state.0.shared.editing.ends.describe(next.on_edit_end);
         // The update this schedules reads the new restrictions and cancels a
         // gesture they deny.
         let mut update = false;
@@ -2228,6 +2313,9 @@ impl Component for Table {
         // installs its editor callback itself.
         if let Some(editor) = self.cell_editor.take() {
             *editing.editor.borrow_mut() = Some(editor);
+        }
+        if let Some(ended) = self.on_edit_end.take() {
+            editing.ends.describe(Some(ended));
         }
         editing.cell_stops.set(self.cell_stops);
         if editing.notifier.borrow().is_none() {
@@ -2374,9 +2462,11 @@ impl Component for Table {
         Ok(Size::new(body.width(), body.height() + header)?)
     }
     fn arrange(&self, cx: &mut ArrangeContext<'_>, size: Size) -> Result<(), RuntimeError> {
-        if cx.len() != 1 {
+        // The body, then the edit-end reporter, which has no extent.
+        if cx.len() != 2 {
             return Err(LayoutError::InvalidChild.into());
         }
+        cx.place(1, Rect::new(0.0, 0.0, 0.0, 0.0)?)?;
         let header = cx
             .measurement()
             .metric(MetricRole::ControlHeight)
@@ -2787,7 +2877,7 @@ impl Component for Table {
     fn visibility_changed(&mut self, visible: bool) {
         // No edit survives hiding; the plain cell returns at the next delivery.
         if !visible {
-            self.state.0.shared.editing.close_quietly();
+            self.state.0.shared.editing.close_quietly(true);
         }
     }
     fn unmounted(&mut self) {
@@ -2795,7 +2885,8 @@ impl Component for Table {
         // brings its own options; the callback goes, so a capture of the
         // controller in it cannot keep the controller alive.
         let editing = &self.state.0.shared.editing;
-        editing.close_quietly();
+        editing.close_quietly(false);
+        editing.ends.clear();
         editing.stale.set(false);
         let editor = editing.editor.borrow_mut().take();
         drop(editor);

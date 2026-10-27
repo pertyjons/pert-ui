@@ -124,3 +124,12 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   crates.io. Update it with `cargo update -p clipboard-win` to a non-yanked
   compatible release and run the dependency gate, including the Windows
   native clipboard check.
+- [ ] 2026-10-27 `crates/pert-ui/examples/diagram_editor/app.rs`
+  `close_requested` — draft policy (contracts.md "Draft policy", rule 10):
+  the close policy asks only whether the document is dirty, so a draft the
+  inspector's label `TextField` or a `DecimalInput` refuses
+  (`app.rs:452-498`) stays unsaved through admission and is lost with the
+  window without a prompt. The fields now report kept drafts through
+  `on_modified`: feed a `FormFields` from them and keep the window open, or
+  ask, while `FormSummary::modified` is non-zero, with a test through
+  `HeadlessApp::admit_close`.

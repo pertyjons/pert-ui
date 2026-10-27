@@ -8,13 +8,163 @@ use crate::{
 };
 use std::{
     cell::{Cell, RefCell},
+    collections::VecDeque,
     rc::Rc,
 };
 
 pub(super) type CellEditorFn = Box<dyn FnMut(&mut CellEdit<'_>) -> Result<Element, RuntimeError>>;
+pub(super) type EditEndFn =
+    Box<dyn FnMut(&mut EventContext, &CellEditEnd) -> Result<(), RuntimeError>>;
 
 /// The key of the host component in an edited cell.
 pub(super) const HOST_KEY: &str = "cell editor";
+/// The key of the invisible child that delivers edit ends.
+pub(super) const REPORTER_KEY: &str = "edit end reporter";
+
+/// One ended cell edit, as [`Table::on_edit_end`](super::Table::on_edit_end)
+/// reports it: which cell, and how the edit ended.
+#[derive(Clone, Debug, PartialEq, Eq)]
+#[non_exhaustive]
+pub struct CellEditEnd {
+    row: String,
+    column: String,
+    reason: CellEditEndReason,
+}
+impl CellEditEnd {
+    /// The edited row's key.
+    #[must_use]
+    pub fn row(&self) -> &str {
+        &self.row
+    }
+    /// The edited column's key.
+    #[must_use]
+    pub fn column(&self) -> &str {
+        &self.column
+    }
+    /// How the edit ended.
+    #[must_use]
+    pub fn reason(&self) -> CellEditEndReason {
+        self.reason
+    }
+}
+
+/// How a cell edit ended. See [`CellEditEnd`].
+///
+/// [`Self::Completed`] is the editor's own terminal report; the other
+/// reasons are edits the table ended itself, removing the editor, which then
+/// reports nothing of its own.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum CellEditEndReason {
+    /// The editor reported a terminal completion: a save, an unchanged
+    /// confirmation, Escape or focus leaving with a terminal outcome.
+    Completed(EditorCompletion),
+    /// Escape on the table's body ended an edit whose editor did not hold
+    /// focus, such as a disabled one.
+    Cancelled,
+    /// Another edit began, discarding this one's draft.
+    Replaced,
+    /// The edited row left the rows, by deletion or a
+    /// [filter](super::TableController::filter).
+    RowLeft,
+    /// The [cell editor callback](super::Table::cell_editor) failed.
+    Failed,
+    /// The table was hidden.
+    Hidden,
+}
+
+/// The ends the table records for [`Table::on_edit_end`](super::Table::on_edit_end):
+/// one payload per notification request of the reporter child, delivered in
+/// order, one per delivery.
+pub(super) struct EditEnds {
+    /// The application's callback, taken out while it runs.
+    callback: RefCell<Option<EditEndFn>>,
+    /// Whether a callback is installed; ends recorded without one get no
+    /// payload.
+    installed: Cell<bool>,
+    /// Advanced when the callback is removed, so payloads recorded for the
+    /// removed callback deliver nothing.
+    generation: Cell<u64>,
+    /// Recorded ends not yet delivered, each tagged with its generation.
+    queue: RefCell<VecDeque<(u64, CellEditEnd)>>,
+    /// The reporter child's notifier, registered by its update.
+    notifier: RefCell<Option<Notifier>>,
+}
+impl EditEnds {
+    fn new() -> Self {
+        Self {
+            callback: RefCell::new(None),
+            installed: Cell::new(false),
+            generation: Cell::new(0),
+            queue: RefCell::new(VecDeque::new()),
+            notifier: RefCell::new(None),
+        }
+    }
+    /// Installs a description's callback: a new one replaces the current
+    /// one, which keeps the payloads not yet delivered; none removes it and
+    /// discards them.
+    pub(super) fn describe(&self, callback: Option<EditEndFn>) {
+        match callback {
+            Some(callback) => {
+                *self.callback.borrow_mut() = Some(callback);
+                self.installed.set(true);
+            }
+            None if self.installed.get() => {
+                self.callback.borrow_mut().take();
+                self.installed.set(false);
+                self.generation.set(self.generation.get().wrapping_add(1));
+            }
+            None => {}
+        }
+    }
+    /// Forgets everything on unmount: the callback, payloads not yet
+    /// delivered and the notifier.
+    pub(super) fn clear(&self) {
+        self.callback.borrow_mut().take();
+        self.installed.set(false);
+        self.generation.set(self.generation.get().wrapping_add(1));
+        self.queue.borrow_mut().clear();
+        self.notifier.borrow_mut().take();
+    }
+    /// Records an ended edit: one payload and one delivery request, from any
+    /// phase, when a callback is installed and the reporter is mounted.
+    fn record(&self, row: &str, column: &str, reason: CellEditEndReason) {
+        if !self.installed.get() {
+            return;
+        }
+        let Some(notifier) = self.notifier.borrow().clone() else {
+            return;
+        };
+        self.queue.borrow_mut().push_back((
+            self.generation.get(),
+            CellEditEnd {
+                row: row.to_owned(),
+                column: column.to_owned(),
+                reason,
+            },
+        ));
+        notifier.request();
+    }
+    /// Delivers the payload the oldest request was made for, if its callback
+    /// is still the installed one.
+    fn deliver(&self, cx: &mut EventContext) -> Result<(), RuntimeError> {
+        let Some((generation, end)) = self.queue.borrow_mut().pop_front() else {
+            return Ok(());
+        };
+        if generation != self.generation.get() {
+            return Ok(());
+        }
+        let Some(mut callback) = self.callback.borrow_mut().take() else {
+            return Ok(());
+        };
+        let result = callback(cx, &end);
+        let mut slot = self.callback.borrow_mut();
+        if slot.is_none() && self.installed.get() && generation == self.generation.get() {
+            *slot = Some(callback);
+        }
+        result
+    }
+}
 
 /// One cell edit as the editor callback of [`Table::cell_editor`](super::Table::cell_editor)
 /// sees it: which cell, how the edit began, the session to pass to the
@@ -113,6 +263,8 @@ pub(super) struct Editing {
     /// An edit closed where the rows could not be published again (hiding);
     /// the table's next delivery publishes them.
     pub(super) stale: Cell<bool>,
+    /// The ends reported to `on_edit_end`.
+    pub(super) ends: EditEnds,
 }
 impl Editing {
     pub(super) fn new(ui: &impl crate::StateOwner) -> Self {
@@ -127,6 +279,7 @@ impl Editing {
             cell_stops: Cell::new(true),
             active_cells: RefCell::new(Vec::new()),
             stale: Cell::new(false),
+            ends: EditEnds::new(),
         }
     }
     /// The host for the cell of `row` and `column` while it is edited.
@@ -159,10 +312,15 @@ impl Editing {
     }
     /// Closes the open edit without publishing the rows, where signal writes
     /// are not allowed (hiding, unmounting): the host drops its editor and
-    /// the table's next delivery restores the plain cell.
-    pub(super) fn close_quietly(&self) {
+    /// the table's next delivery restores the plain cell. Hiding reports the
+    /// end; unmounting, the application's own act, reports nothing.
+    pub(super) fn close_quietly(&self, report: bool) {
         if let Some(open) = self.open.borrow_mut().take() {
             open.session.end();
+            if report {
+                self.ends
+                    .record(&open.row, &open.column, CellEditEndReason::Hidden);
+            }
             self.row.publish_trusted(None);
             self.stale.set(true);
             if let Some(notifier) = &*self.notifier.borrow() {
@@ -236,8 +394,12 @@ impl TableController {
         let Some(notifier) = editing.notifier.borrow().clone() else {
             return Ok(false);
         };
-        if let Some(old) = editing.open.borrow_mut().take() {
+        let replaced = editing.open.borrow_mut().take();
+        if let Some(old) = replaced {
             old.session.end();
+            editing
+                .ends
+                .record(&old.row, &old.column, CellEditEndReason::Replaced);
         }
         let session = EditorSession::new(notifier);
         session.begin(start.clone());
@@ -258,13 +420,15 @@ impl TableController {
         self.republish()?;
         Ok(true)
     }
-    /// Closes the open edit and restores the plain cell; returns it.
-    fn close_edit(&self) -> Result<Option<OpenEdit>, RuntimeError> {
+    /// Closes the open edit, records its end with `reason`, and restores the
+    /// plain cell; returns it.
+    fn close_edit(&self, reason: CellEditEndReason) -> Result<Option<OpenEdit>, RuntimeError> {
         let editing = &self.0.shared.editing;
         let Some(open) = editing.open.borrow_mut().take() else {
             return Ok(None);
         };
         open.session.end();
+        editing.ends.record(&open.row, &open.column, reason);
         editing.row.set(None)?;
         self.republish()?;
         Ok(Some(open))
@@ -284,7 +448,7 @@ impl TableController {
         if !self.0.shared.editing.open_unfocused() {
             return Ok(false);
         }
-        self.close_edit()?;
+        self.close_edit(CellEditEndReason::Cancelled)?;
         Ok(true)
     }
     /// The table's delivery: a begin a row asked for, an edit whose row left
@@ -300,12 +464,16 @@ impl TableController {
         }
         let items = self.0.items.get()?;
         if editing.row_gone(&*items) {
-            let focused = editing
+            let (focused, failed) = editing
                 .open
                 .borrow()
                 .as_ref()
-                .is_some_and(|open| open.focused);
-            self.close_edit()?;
+                .map_or((false, false), |open| (open.focused, open.failed));
+            self.close_edit(if failed {
+                CellEditEndReason::Failed
+            } else {
+                CellEditEndReason::RowLeft
+            })?;
             if focused {
                 self.focus_body(cx)?;
             }
@@ -333,7 +501,7 @@ impl TableController {
         if !done.outcome.is_terminal() {
             return Ok(());
         }
-        self.close_edit()?;
+        self.close_edit(CellEditEndReason::Completed(done))?;
         let present = self.0.items.get()?.index_of(&row).is_some();
         // A report delivered after focus left the editor never moves focus.
         if !focused || !present {
@@ -552,5 +720,31 @@ impl Component for EditHost {
             cx.place(0, Rect::from_size(size))?;
         }
         Ok(())
+    }
+}
+
+/// The table's invisible child that delivers [`CellEditEnd`]s: one payload
+/// per request of its own notifier, so each end keeps its place in the
+/// global notification order. A structural leaf of zero extent that paints
+/// nothing, takes no focus or hits and has no semantics or workspace state.
+pub(super) struct EditEndReporter {
+    pub(super) shared: Rc<Shared>,
+}
+impl Component for EditEndReporter {
+    fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
+        let mut notifier = self.shared.editing.ends.notifier.borrow_mut();
+        if notifier.is_none() {
+            *notifier = Some(cx.notifier());
+        }
+        Ok(())
+    }
+    fn deliver_notifications(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
+        self.shared.editing.ends.deliver(cx)
+    }
+    fn measure(&self, _: &MeasureContext<'_>, _: Constraints) -> Result<Size, RuntimeError> {
+        Ok(Size::ZERO)
+    }
+    fn hit_test(&self, _: crate::Point) -> bool {
+        false
     }
 }

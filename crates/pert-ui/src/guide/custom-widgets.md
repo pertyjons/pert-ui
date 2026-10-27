@@ -236,8 +236,12 @@ To edit text in place, embed a [`DraftEditor`]: its
 ([`DraftSelection::All`]) or the caret at the end, the editor leaves Enter and
 Escape to its owner, and the owner commits or discards the draft, reports
 itself unfocusable while editing and applies its own policy when
-[`Component::focus_within_changed`] reports that focus left. A [`TextField`]
-instead writes a binding and suits a form.
+[`Component::focus_within_changed`] reports that focus left. The policy is the
+owner's own: the built-in inline controls follow the library's draft policy,
+and a custom owner chooses what to save, refuse or discard. To follow its own
+editing permission without ending the session, the owner calls
+[`DraftEditorController::set_read_only`], which keeps the draft, selection and
+undo history. A [`TextField`] instead writes a binding and suits a form.
 
 A composite control decides how Tab moves through it. Returning false from
 [`Component::descendant_tab_stops`] keeps its content out of traversal, so a

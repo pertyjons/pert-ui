@@ -43,7 +43,10 @@ pub enum SearchKey {
 /// - **The query is committed text.** The binding receives what the user has
 ///   typed, pasted or committed through an IME, never composition (preedit)
 ///   text. By default every committed edit writes the binding at once; with
-///   [`Self::debounce`] edits wait until the user pauses.
+///   [`Self::debounce`] edits wait until the user pauses, but only while the
+///   field holds focus: an edit it receives without focus, such as a
+///   [`TextCommand`], is written at once, and no query stays pending after
+///   focus leaves.
 /// - **Escape clears.** A fresh Escape press with a non-empty query (or a
 ///   pending debounced edit) clears the text and writes the empty query at
 ///   once. During IME composition Escape cancels the composition instead,
@@ -174,9 +177,11 @@ impl SearchField {
     /// While editing is denied the field keeps focus, selection and copying,
     /// and still reports the owner keys. Revoking it, observed at the next
     /// update, cancels a composition and a selection drag; a pending
-    /// debounced edit is not written while editing is denied and waits for
-    /// the next edit, Enter or focus loss once it is allowed again. A binding
-    /// from another runtime fails the update with
+    /// debounced edit is not written while editing is denied and, while the
+    /// field keeps focus, waits for the next edit or Enter once it is allowed
+    /// again. Focus leaving while editing is denied discards it, showing the
+    /// bound query, so no query stays pending without focus. A binding from
+    /// another runtime fails the update with
     /// [`RuntimeError::ForeignRuntime`].
     pub fn editable(mut self, permission: impl Into<Permission>) -> Self {
         self.editor.restrict_editing(permission.into());
@@ -241,11 +246,20 @@ impl SearchField {
     /// edited text and inspection reports `pending`. The edit is written at
     /// once, cancelling the deadline, by a fresh Enter press (before
     /// [`SearchKey::Submit`] is reported), by focus transfer or window focus
-    /// loss, and by clearing. Hiding the field, or an application write to
-    /// the binding, discards a pending edit, and the field shows the bound
-    /// text again. A pending edit whose deadline is cancelled by input
-    /// cancellation while the field keeps focus waits for the next edit,
-    /// Enter or focus loss. Undo and redo are edits like any other.
+    /// loss, and by clearing. Hiding the field, an application write to the
+    /// binding or [`TextCommand::DiscardDraft`] discards a pending edit, and
+    /// the field shows the bound text again. A pending edit whose deadline
+    /// is cancelled by input cancellation while the field keeps focus waits
+    /// for the next edit, Enter or focus loss. Undo and redo are edits like
+    /// any other.
+    ///
+    /// Only a field that holds focus keeps a pending edit. An edit it
+    /// receives without focus, such as a [`TextCommand`] from
+    /// [`Runtime::text_command`] or
+    /// [`EventContext::request_text_command`] (including its own clipboard
+    /// menu's), is written at once, and focus leaving while editing is
+    /// denied discards a pending edit instead of keeping it; see the
+    /// [draft policy](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#draft-policy).
     ///
     /// `Duration::ZERO`, the default, writes every edit at once.
     pub fn debounce(mut self, delay: Duration) -> Self {
@@ -313,11 +327,20 @@ impl SearchField {
         Ok(())
     }
     /// Starts or stops the debounce deadline after an event that may have
-    /// edited the text.
+    /// edited the text. A pending query exists only while the field holds
+    /// focus: an edit the field receives without focus, such as a text
+    /// command, is written at once, as without a debounce.
     fn edited(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
         let Some(delay) = self.debounce else {
             return Ok(());
         };
+        if !cx.focused() {
+            if self.editor.text != self.editor.observed || self.pending {
+                self.pending = true;
+                self.write_or_discard(cx)?;
+            }
+            return Ok(());
+        }
         if self.editor.text == self.editor.observed {
             if self.pending {
                 self.pending = false;
@@ -329,6 +352,19 @@ impl SearchField {
             self.pending = true;
             self.armed.clone_from(&self.editor.text);
             cx.set_timer(delay)?;
+        }
+        Ok(())
+    }
+    /// Writes a pending edit at once, or discards it when editing is denied,
+    /// so no unwritten query outlives the field's focus.
+    fn write_or_discard(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
+        self.flush(cx)?;
+        if self.pending {
+            // Kept by `flush` only for lack of editability.
+            self.pending = false;
+            cx.cancel_timer();
+            self.discard();
+            cx.invalidate(Invalidation::Paint);
         }
         Ok(())
     }
@@ -642,6 +678,19 @@ impl Component for SearchField {
         cx: &mut EventContext,
         command: TextCommand,
     ) -> Result<TextCommandOutcome, RuntimeError> {
+        if command == TextCommand::DiscardDraft {
+            // The pending query is the field's draft; dropped unwritten, also
+            // while the field is disabled or read-only.
+            if !self.pending {
+                return Ok(TextCommandOutcome::Unavailable);
+            }
+            self.pending = false;
+            cx.cancel_timer();
+            self.editor.cancel_composition();
+            self.discard();
+            cx.invalidate(Invalidation::Paint);
+            return Ok(TextCommandOutcome::Handled);
+        }
         let outcome = self.editor.command(cx, command)?;
         self.edited(cx)?;
         Ok(outcome)
@@ -690,7 +739,7 @@ impl Component for SearchField {
         self.editor.reset();
         self.clear_hover = false;
         cx.invalidate(Invalidation::Paint);
-        self.flush(cx)
+        self.write_or_discard(cx)
     }
     fn timer_elapsed(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
         self.flush(cx)

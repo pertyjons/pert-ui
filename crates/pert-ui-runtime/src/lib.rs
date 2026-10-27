@@ -63,8 +63,8 @@ mod navigation_history;
 mod table;
 mod tree;
 pub use table::{
-    CellEdit, SortDirection, Table, TableColumn, TableController, TableItems, TableSort,
-    TableSource,
+    CellEdit, CellEditEnd, CellEditEndReason, SortDirection, Table, TableColumn, TableController,
+    TableItems, TableSort, TableSource,
 };
 mod described;
 mod editor_session;
@@ -457,11 +457,12 @@ pub mod prelude {
         PickItem, PickMatcher, PickPending, PickStatus, Point, QuickPickController,
         SurfaceDismissal, Toast, ToastController, ToastReceipt, ToastStatus,
     };
-    // Vocabulary: collections.
+    // Vocabulary: collections, with what an edit-end callback matches.
     #[doc(no_inline)]
     pub use crate::{
-        CellEdit, DropOperation, DropOperations, FilterCounts, FilterMatcher, FilterOutcome,
-        FilterTarget, HiddenActive, ListController, ListDrop, ListDropMark, ListDropPlacement,
+        CellEdit, CellEditEnd, CellEditEndReason, DropOperation, DropOperations, EditorCompletion,
+        EditorOutcome, EditorTrigger, FilterCounts, FilterMatcher, FilterOutcome, FilterTarget,
+        FocusDirection, HiddenActive, ListController, ListDrop, ListDropMark, ListDropPlacement,
         ListDropPoint, ListDropPosition, ListFilter, ListItems, ListRevealReceipt,
         ListRevealStatus, ListSelection, ListSelectionChange, ListSource, SelectionMode,
         SortDirection, TableColumn, TableController, TableItems, TableSort, TableSource,

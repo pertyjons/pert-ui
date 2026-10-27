@@ -97,6 +97,13 @@ struct Shared<P> {
     on_edit: RefCell<Option<EditCallback<P>>>,
     /// `end` was called while `core` was borrowed; applied when it is released.
     end_requested: Cell<bool>,
+    /// Counts the sessions begun, so a deferred change applies only to the
+    /// session it was requested in.
+    session: Cell<u64>,
+    /// `set_read_only` was called while `core` was borrowed: the session it
+    /// was requested in and the last state requested, applied when the
+    /// borrow is released unless an `end` was requested too.
+    lock_requested: Cell<Option<(u64, bool)>>,
 }
 
 impl<P: Copy + PartialEq> Shared<P> {
@@ -117,10 +124,34 @@ impl<P: Copy + PartialEq> Shared<P> {
             core.invalidate(Invalidation::Paint, Some(Invalidation::Layout));
         }
     }
-    /// Applies an `end` that arrived while `core` was borrowed.
+    /// Makes the active session in `core` read-only or editable again,
+    /// keeping its draft, payload, selection and undo history. Locking ends a
+    /// composition and a selection drag and releases the pointer capture the
+    /// editor holds for that drag. Publishes the new state and invalidates the
+    /// editor and its owner for paint. Without a session, or in the requested
+    /// state already, it does nothing.
+    fn apply_lock(&self, core: &mut Core<P>, read_only: bool) {
+        if !core.editor.active || core.editor.read_only == read_only {
+            return;
+        }
+        core.editor.set_owner_lock(read_only);
+        if read_only && let Some(node) = core.node.upgrade() {
+            node.release_capture();
+        }
+        self.publish(core);
+        core.invalidate(Invalidation::Paint, Some(Invalidation::Paint));
+    }
+    /// Applies what arrived while `core` was borrowed: an `end`, which wins
+    /// over a recorded lock, or else the last recorded lock of the session
+    /// still active.
     fn settle(&self, core: &mut Core<P>) {
+        let lock = self.lock_requested.take();
         if self.end_requested.take() {
             self.end_in(core);
+        } else if let Some((session, read_only)) = lock
+            && session == self.session.get()
+        {
+            self.apply_lock(core, read_only);
         }
     }
 }
@@ -197,6 +228,8 @@ impl<P: Copy + PartialEq + 'static> DraftEditorController<P> {
                 }),
                 on_edit: RefCell::new(None),
                 end_requested: Cell::new(false),
+                session: Cell::new(0),
+                lock_requested: Cell::new(None),
             }),
         }
     }
@@ -255,6 +288,10 @@ impl<P: Copy + PartialEq + 'static> DraftEditorController<P> {
         editor.active = true;
         editor.set_owner_lock(read_only);
         self.shared.end_requested.set(false);
+        self.shared.lock_requested.set(None);
+        self.shared
+            .session
+            .set(self.shared.session.get().wrapping_add(1));
         self.shared.publish(&core);
         if core.node.upgrade().is_some() {
             core.invalidate(Invalidation::Layout, Some(Invalidation::Layout));
@@ -362,6 +399,109 @@ impl<P: Copy + PartialEq + 'static> DraftEditorController<P> {
         match self.shared.core.try_borrow_mut() {
             Ok(mut core) => self.shared.end_in(&mut core),
             Err(_) => self.shared.end_requested.set(true),
+        }
+    }
+
+    /// Makes the active session read-only, or editable again, without ending
+    /// it: the draft, payload, selection and undo history stay.
+    ///
+    /// Read-only, the user can select and copy but not edit, as in a session
+    /// begun with [`Self::begin_read_only`]: a composition and a selection
+    /// drag end, and the pointer capture the editor holds for that drag is
+    /// released; the IME receives no text input state, and [`Self::on_edit`]
+    /// does not run. The owner can still change the text with
+    /// [`Self::replace`]. Editable again, typing, the IME and `on_edit`
+    /// resume with the kept draft, selection and undo history. An owner calls
+    /// it when its own editing permission changes, as the built-in inline
+    /// rows do when [`IntegerInput::editable`](crate::IntegerInput::editable)
+    /// is revoked or restored; [`Self::begin_read_only`] stays the way to
+    /// start a fresh read-only session.
+    ///
+    /// Without an active session it does nothing; a later [`Self::begin`] or
+    /// [`Self::begin_read_only`] chooses again. Setting the state the session
+    /// already has does nothing. [`Self::is_read_only`] reports the new state
+    /// at once, and the editor and its owner are repainted. It takes no
+    /// context, like [`Self::end`], so an owner can call it from `update`.
+    ///
+    /// Called while the editor runs an operation, which only the
+    /// application's clipboard service can do, the call is recorded and
+    /// applied when the operation completes, as `end` is: repeated calls keep
+    /// the last state requested; the request belongs to the session it was
+    /// made in and is dropped if that session ends, and a deferred `end` wins
+    /// over it. Otherwise the state is applied, and published, before
+    /// `on_edit` runs, so an operation that began while the session was
+    /// editable completes as an edit: its text stays and `on_edit` reports it
+    /// once, the one case in which `on_edit` runs for a session that is
+    /// read-only by then. Calls `on_edit` makes apply at once, after the
+    /// recorded state, so they supersede it.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{component::*, prelude::*};
+    /// use pert_ui::testing::*;
+    ///
+    /// struct Owner {
+    ///     draft: DraftEditorController,
+    ///     editor: Option<WidgetId>,
+    ///     children: Vec<Element>,
+    /// }
+    /// impl Component for Owner {
+    ///     fn take_children(&mut self) -> Vec<Element> {
+    ///         std::mem::take(&mut self.children)
+    ///     }
+    ///     fn child_visible(&self, _key: &str) -> bool {
+    ///         self.draft.is_active()
+    ///     }
+    ///     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
+    ///         self.editor = cx.children().first().map(|child| child.id().clone());
+    ///         Ok(())
+    ///     }
+    ///     fn keyboard_event(
+    ///         &mut self,
+    ///         cx: &mut EventContext,
+    ///         event: KeyEvent,
+    ///         _: &KeyboardState,
+    ///     ) -> Result<InputOutcome, RuntimeError> {
+    ///         if event.code == KeyCode::F2 && event.transition == KeyTransition::Pressed {
+    ///             self.draft.begin(cx, "120", None, DraftSelection::End)?;
+    ///             if let Some(editor) = &self.editor {
+    ///                 cx.request_focus_for(editor)?;
+    ///             }
+    ///             return Ok(InputOutcome::Handled);
+    ///         }
+    ///         Ok(InputOutcome::Ignored)
+    ///     }
+    /// }
+    ///
+    /// let mut ui = Runtime::new();
+    /// ui.set_viewport(Viewport::new(400.0, 100.0, 1.0)?)?;
+    /// let draft = DraftEditorController::new();
+    /// let owner = ui.mount_tree(Element::new("owner", Owner {
+    ///     draft: draft.clone(),
+    ///     editor: None,
+    ///     children: vec![Element::new("editor", DraftEditor::new(draft.clone()))],
+    /// }))?;
+    /// ui.flush(ui.now())?;
+    /// ui.focus(&owner)?;
+    /// ui.key_input(KeyCode::F2, KeyAction::Press)?;
+    /// ui.flush(ui.now())?;
+    /// ui.text_input("8")?;
+    /// draft.set_read_only(true);
+    /// assert!(draft.is_read_only());
+    /// ui.text_input("9")?; // refused, the draft stays
+    /// assert_eq!(draft.text(), "1208");
+    /// draft.set_read_only(false);
+    /// ui.text_input("9")?;
+    /// assert_eq!(draft.text(), "12089");
+    /// # Ok::<(), RuntimeError>(())
+    /// ```
+    pub fn set_read_only(&self, read_only: bool) {
+        match self.shared.core.try_borrow_mut() {
+            Ok(mut core) => self.shared.apply_lock(&mut core, read_only),
+            Err(_) => self
+                .shared
+                .lock_requested
+                .set(Some((self.shared.session.get(), read_only))),
         }
     }
 
@@ -486,6 +626,18 @@ impl<P: Copy + PartialEq + 'static> DraftEditorController<P> {
 ///   different controllers.
 /// - **Naming.** The editor reports `TextInput` semantics without a name. An
 ///   owner that names it declares [`Semantics::names_children`].
+/// - **Policy.** The owner chooses what happens to a draft: when it saves,
+///   refuses, cancels or keeps it. The built-in owners ([`InlineText`] and
+///   the text mode of the inline number rows) follow the library's
+///   [draft policy](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#draft-policy);
+///   a custom owner keeps its own, for example discarding on focus loss a
+///   draft it refuses on Enter. To follow its own editing permission without
+///   ending the session, it calls [`DraftEditorController::set_read_only`].
+///   [`TextCommand::DiscardDraft`] is aimed at the owner, which decides what
+///   discarding means: the editor answers it `Unavailable`, so an owner that
+///   wants the command answers it in its own
+///   [`Component::text_command`], for example with
+///   [`DraftEditorController::end`].
 ///
 /// The owner is re-evaluated whenever a session begins or ends and after each
 /// edit the user makes, so its `child_visible`, `focusable` and painting can
@@ -705,15 +857,21 @@ impl<P: Copy + PartialEq + 'static> DraftEditor<P> {
     ) -> Result<R, RuntimeError> {
         let mut core = self.shared.core.borrow_mut();
         let before = (core.editor.text.clone(), core.editor.payload);
+        // The state the operation ran under decides whether it was an edit,
+        // so a lock requested during it does not hide the edit it made.
+        let ran_read_only = core.editor.read_only;
         let result = operation(&mut core.editor, cx);
         self.shared.publish(&core);
         if self.shared.end_requested.get() {
             self.shared.settle(&mut core);
             return result;
         }
+        // A lock requested meanwhile applies before `on_edit`, so calls that
+        // callback makes supersede it.
+        self.shared.settle(&mut core);
         let result = result?;
         let changed = before.0 != core.editor.text || before.1 != core.editor.payload;
-        if !changed || core.editor.read_only {
+        if !changed || ran_read_only {
             return Ok(result);
         }
         core.invalidate(Invalidation::Paint, Some(Invalidation::Paint));
@@ -855,6 +1013,11 @@ impl<P: Copy + PartialEq + 'static> Component for DraftEditor<P> {
         cx: &mut EventContext,
         command: TextCommand,
     ) -> Result<TextCommandOutcome, RuntimeError> {
+        if command == TextCommand::DiscardDraft {
+            // The owner decides what discarding its session means; the
+            // command is aimed at it, and the editor changes nothing.
+            return Ok(TextCommandOutcome::Unavailable);
+        }
         if !self.live() {
             return Ok(TextCommandOutcome::NotAnEditor);
         }

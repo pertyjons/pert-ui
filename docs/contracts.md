@@ -38,6 +38,7 @@ guarantee this document does not state.
   - [Runtime shutdown](#runtime-shutdown)
   - [Calling the runtime from callbacks](#calling-the-runtime-from-callbacks)
 - [Text and draft editing](#text-and-draft-editing)
+  - [Draft policy](#draft-policy)
 - [Theme palettes](#theme-palettes)
 - [Workspace persistence](#workspace-persistence)
 - [Inspection and diagnostics](#inspection-and-diagnostics)
@@ -358,12 +359,10 @@ cancels like the fixed setting.
 
 Revoked enablement releases focus and cancels
 composition, selection drags, held keys and step repeats; a parameter session
-is cancelled, never committed; TextField and TextArea keep their draft without
-saving it, also on the focus loss the revocation causes, while number inputs
-and InlineText end their edit as disabling them always did; SearchField
-discards a pending query, including a debounce already due. Revoked editability
-keeps focus, selection and copying, cancels composition and editing gestures and
-saves nothing. InlineText has no separate read-only state.
+is cancelled, never committed. Revoked editability keeps focus, selection and
+copying, cancels composition and editing gestures and saves nothing. What
+either does to an editor's draft is the [draft policy](#draft-policy)'s.
+InlineText has no separate read-only state.
 
 Slider, Knob,
 InlineSlider, ColorSwatch, ColorPicker, Collapsible and Accordion take an
@@ -544,7 +543,7 @@ callback's rustdoc names its class and states those properties.
 | Class | When it runs | For example |
 |---|---|---|
 | [In the input](#in-the-input) | inside the input or focus change that caused it | a button's action, `on_change`, `on_save`, `on_activate` |
-| [After settling](#after-settling) | in an event phase once the flush's updates and layout have settled | `Tabs::on_select`, `on_selection_change`, `on_scroll`, `on_modified` |
+| [After settling](#after-settling) | in an event phase once the flush's updates and layout have settled | `Tabs::on_select`, `on_selection_change`, `on_scroll`, `on_modified`, `Table::on_edit_end` |
 | [At the next flush](#at-the-next-flush) | at the start of a later flush, before components update | deferred tasks, mailbox handlers, background results, interval ticks |
 | [At parameter delivery](#at-parameter-delivery) | when the runtime delivers a parameter edit's event | `ParameterHost::on_outcome`, `RemoteHost::on_submit` |
 | [Evaluation](#evaluation) | whenever the runtime needs the value it computes | `ReadSignal::map`, `Dynamic`, filter rules, number formats |
@@ -1051,16 +1050,13 @@ application. Admission releases each affected window's focus through
 `HostIntegration::clear_focus`, as a deactivation does, and selects the previously
 selected window again; each recipient's `focus_lost` runs and queues its error
 in its window, and the runtime-wide held keys and held-input registrations end.
-Each editor applies its own focus-loss policy, which closing does not change: a
-plain text editor has already written its text and drops a composition; a
-drafting text field saves a changed draft its rules accept and keeps it unsaved
-when they refuse it, when it is read-only or disabled; a local number input
-saves a valid changed draft, keeps an invalid or read-only one and cancels a
-step gesture; a parameter-bound number input cancels its draft, since
-parameter authority commits only on an explicit commit; a `DraftEditor`
-follows its owner's policy; an `EditorSession` reports `FocusLeft` with the
-save's outcome unless the edit already ended, and nothing when its field is
-disabled.
+Each focused editor makes the [draft policy](#draft-policy)'s focus-loss
+save attempt, which closing does not change: a local draft its rules accept is
+saved, a refused one stays, a parameter draft is cancelled, and an
+`EditorSession` reports `FocusLeft` with the outcome unless the edit already
+ended. Drafts kept elsewhere, such as by a disabled or unfocused field, are
+untouched; the editors' `on_modified` reports them, so a close policy can
+count them.
 
 When no window is in component-error backoff, admission then flushes the
 affected windows: the detached window alone, or every window through
@@ -1185,8 +1181,8 @@ composition. `DraftEditor` embeds a text session within an existing component;
 numeric and inline controls can show formatted values while keeping the same
 mounted identity during an edit. Preedit is separate from committed text.
 Escape cancels a draft; confirmation parses and validates it before committing.
-External binding changes and focus loss follow each control's documented
-conflict and cancellation rules.
+External binding changes, focus loss, revocation, hiding and close admission
+follow the [draft policy](#draft-policy).
 
 An editor's `on_rejection` reports each refused save with an `InputRejection`,
 whatever refused it: the application's normalizer, a `TextField` or
@@ -1201,6 +1197,161 @@ phase after the flush settles, as `on_modified` reports a draft's state; it is
 never a user-write callback, and refused typing and normalizer rejections do
 not call it.
 
+### Draft policy
+
+These rules bind the built-in editors: `TextField`, `TextArea`,
+`SearchField`, `InlineText`, `IntegerInput`, `DecimalInput`,
+`InlineInteger`, `InlineDecimal`, `InlineSlider`, and the `Table` as a
+session host. A custom component that owns a `DraftEditor` keeps its own
+policy: `DraftEditor` keeps its session when hidden, and an owner may, for
+example, discard on focus loss a draft it refuses on Enter.
+`DraftEditorController::set_read_only` lets such an owner follow its own
+editing permission without ending the session.
+
+A **draft** is text or a value the user changed in an editor that the editor
+has not written, saved or proposed; it may arise without focus, through a
+text command. A **local** editor is bound to a signal or shows a controlled
+value; a **parameter** editor is bound to a `Parameter` (see [parameters and
+gestures](#parameters-and-gestures)). A **built-in in-place** editor shows
+its value at rest and a draft only while an editing session is open:
+`InlineText` and the text mode of `InlineInteger`, `InlineDecimal` and
+`InlineSlider`.
+
+A **save attempt** is the editor checking a draft and then writing, saving,
+proposing or committing it, or refusing it. These inputs initiate one, and
+nothing else does:
+
+- **Enter**, a fresh press outside IME composition, in `TextField`, the
+  number fields, `InlineText` and an inline row's text mode. In `TextArea`
+  Enter inserts a line break and initiates nothing; a `TextArea` saves only
+  on focus loss.
+- **Tab and Shift+Tab** in a field with an [editor session](#editor-sessions).
+- **Focus loss**, including window deactivation and close admission.
+- **A step** of a local field without a session (a step button, held or not)
+  and an inline row's resting step or drag release, each a save of the
+  stepped value.
+
+With a session, Enter and Tab while a composition or a selection drag is
+active are kept without a save attempt and without a report, and Escape ends
+only the composition or drag. Without a session, Enter during a composition
+commits the composition, not the draft.
+
+1. **Saving.** A save attempt saves a changed local draft its rules accept;
+   focus loss cancels a parameter draft instead, which commits only on an
+   explicit commit. Nothing else saves, commits or proposes: no revocation,
+   re-enabling, hiding, removal, description or text command.
+2. **Refusal.** A save attempt the editor's checks or the normalizer refuse
+   writes nothing and keeps the draft for correction, with the error
+   outline, whichever input initiated it; `on_rejection` reports it where
+   the editor has one, and a session receives `Refused`. A built-in in-place
+   editor keeps its session open after a refused focus-loss attempt. A
+   parameter's protocol refusal is not this rule: it replaces the draft with
+   the authoritative value (below).
+3. **Application writes win.** A changed bound value, a changed controlled
+   value or a parameter base or metadata change discards a draft unsaved; a
+   session's next completion reports `Unchanged`. Writing the value the
+   editor already shows changes nothing.
+4. **Revoked editability** keeps focus, selection and copying, cancels a
+   composition and editing gestures (a selection drag, a held step, a pressed
+   stepper), keeps the draft unsaved and refuses every save attempt, with
+   `Refused` to a session. An open built-in in-place session becomes
+   read-only and editable again when editing is allowed, keeping its draft,
+   selection and undo history; ending a held step keeps a typed or stepped
+   draft.
+5. **Revoked enablement** releases focus, if held, as cancelled input, not as
+   focus loss, and cancels a composition and gestures. A local editor that
+   shows its draft at rest (`TextField`, `TextArea`, `IntegerInput`,
+   `DecimalInput`) keeps the draft unsaved, whether or not it held focus;
+   re-enabling makes it editable and replays nothing; a session receives
+   nothing and its edit stays open. The exceptions: a parameter draft is
+   cancelled (authority); a built-in in-place session ends unsaved, as Escape
+   ends it, since at rest the editor shows the value and has no disabled
+   editing state; `SearchField` discards a pending query, since its owner
+   shows results for the committed query.
+6. **A revoked editor reports nothing to a session**, also when a focus loss
+   reaches a field a description disabled before the next flush applied it.
+7. **Hiding and removal** discard a draft unsaved and cancel a parameter
+   draft, focused or not; a session receives nothing, since its host hid or
+   removed the editor or is hidden or removed with it. Cancellation of input
+   for any other reason (a pointer gesture's loss, an input failure, a
+   geometry change) never discards a local draft.
+8. **A pending search query exists only while the field holds focus.** An
+   edit a `SearchField` receives without focus, such as a text command, is
+   written at once, as without a debounce, when editing is allowed; focus
+   loss writes a pending query when editing is allowed and otherwise
+   discards it. So no `SearchField` holds an unwritten query without focus.
+9. **Close admission adds no rule.** It is a focus loss for each affected
+   window's focused editor (rule 1); drafts kept elsewhere (rules 2, 4 and 5)
+   are untouched, which rule 10 makes visible to a close policy.
+10. **Every built-in editor that can keep a draft without focus reports it.**
+    `on_modified` on `TextField`, `TextArea`, `InlineText`, `IntegerInput`,
+    `DecimalInput`, `InlineInteger` and `InlineDecimal` reports `true` when a
+    draft starts to differ from the value the editor shows at rest and
+    `false` when it stops, after settling. `SearchField` (rule 8) and
+    `InlineSlider` (rule 1) cannot keep one. Every completion an editor
+    reports to a session, Escape included, requests its modified report
+    first, so a host that closes the edit and removes the editor in its
+    delivery does so after the editor's report: the terminal `false` of a
+    save, an unchanged confirmation or Escape always reaches the application.
+    A draft that removal ends reports nothing, as for every removed
+    component's notifications; an edit the `Table` ends itself is reported by
+    the table (rule 11).
+11. **The `Table` reports every edit's end.** Besides the editor's own
+    completions, it ends edits itself: Escape on its body while the editor
+    does not hold focus, another edit beginning, the edited row leaving the
+    rows by deletion or a filter, a failed cell editor callback and the table
+    hiding. Each end, of either kind, reaches `Table::on_edit_end` once,
+    after settling, through a notification request of its own, so ends keep
+    their place in the global request order. An end recorded while no
+    callback is installed is not reported later, and removing the callback
+    discards ends not yet delivered. Removing the table itself reports
+    nothing: it is the application's own act.
+
+`TextCommand::DiscardDraft` is how an application drops a kept draft without
+touching application data: the editor discards it as Escape does, also
+while disabled or read-only, reports `on_modified(false)`, and a session's
+edit stays open (its next completion reports `Unchanged`). It is aimed at the
+control that owns the draft; a `DraftEditor` answers it `Unavailable`.
+Describing a field with another binding also discards a draft, at the cost
+of a second signal holding the same value; describing it under another key
+remounts it, losing focus, undo and retained layout.
+
+For the built-in editors:
+
+| Event | Local draft | Parameter draft | In-place session | Session report |
+|---|---|---|---|---|
+| Save attempt by Enter, Tab or a step | saved if accepted, else kept | the parameter outcomes below; `InlineSlider` its own | saved or proposed, else kept open | `Saved`, `Unchanged` or `Refused` |
+| Save attempt by focus loss | saved if accepted, else kept | cancelled | as a local or parameter draft | `FocusLeft` with the outcome |
+| Enter in `TextArea`; Enter or Tab while busy | no save attempt | no save attempt | no save attempt | nothing |
+| Application write | discarded | discarded | ended | `Unchanged` at the next completion |
+| Editability revoked | kept, save attempts refused | kept, save attempts refused | read-only, save attempts refused | `Refused` at a confirmation |
+| Enablement revoked | kept unsaved, focused or not | cancelled | ended unsaved | nothing; the edit stays open |
+| Hiding, removal | discarded | cancelled | ended | nothing |
+| Close admission | as focus loss when focused, else untouched | as focus loss | as focus loss when focused, else untouched | as focus loss |
+
+A parameter number field's save attempt has five outcomes:
+
+| Outcome | Draft afterwards | Callbacks and host |
+|---|---|---|
+| Validation refusal: does not parse, out of range, off the step lattice | kept with the outline | `on_rejection`; no `on_save`; the host sees nothing, or a gesture's `Cancelled` |
+| Refused admission: the edit cannot begin (busy, stale, read-only, unavailable, delivery fault) | replaced by the parameter's value; an inline row leaves text mode | `on_rejection(None)` clears a shown refusal; no `on_save`; no host outcome |
+| Terminal refusal of an admitted edit (conflict, rejection) | replaced by the parameter's value | no `on_save`; the host's outcome event reports the refusal |
+| Unchanged: the draft equals the base | replaced by the equal value | no `on_save`; no host outcome, or a gesture's `Cancelled` |
+| Accepted: committed, or submitted to a remote authority | replaced by the committed or submitted value | `on_save` with the value; the host's outcome event |
+
+`InlineSlider` begins its parameter edit when text mode opens (a refused
+admission opens no text mode), keeps unparsable text with the outline and the
+edit open, commits on Enter even when the value is unchanged, ends text mode
+on a terminal refusal, and cancels on Escape, focus loss, revocation, hiding
+and removal; it has no `on_rejection` or `on_save`, and the host's outcome
+events are its report.
+
+| Session completion | `Table` |
+|---|---|
+| `Saved`, `Unchanged`, `Cancelled` | closes the edit; after Enter, Tab or Escape focus goes to the body or the next cell; after a departure focus stays where it went |
+| `Refused` | keeps the edit open; after Enter focus stays in the editor; after a departure the editor stays unfocused until its cell is activated again |
+| Ended by the table (body Escape, replacement, row left, failed callback, hiding) | the editor is removed without a report of its own; `on_edit_end` reports the reason |
+
 ### Table cell edits
 
 A `Table` with a cell editor edits one cell at a time and hosts the editor
@@ -1211,8 +1362,12 @@ and the table acts on how the edit ended after the save's callbacks, so Tab's
 destination follows the order they left; an edit that ended after focus left
 the editor never moves focus. An edit closes when its row leaves the rows,
 when another edit begins (discarding a refused draft), and when the table is
-hidden or unmounted. Disabling the editor leaves its draft unsaved and the
-edit open until the table ends it, which it does on Escape on its body.
+hidden or unmounted. Disabling the editor, a text or a number field alike,
+leaves its draft unsaved and the edit open until the table ends it, which it
+does on Escape on its body. `Table::on_edit_end` reports each edit's end with
+a `CellEditEnd`, whether the editor completed it or the table ended it, as
+the [draft policy](#draft-policy) states (rule 11 and the completion table);
+removing the table reports nothing.
 
 ### Search field
 
@@ -1733,7 +1888,12 @@ editors ignore sessions, since a refused submission cannot be told from an
 unchanged value. Hiding and removal report nothing. Disabling an editor
 reports nothing either: revoking its enabled permission releases focus as
 cancelled input, not as focus loss, so its draft stays unsaved and the edit
-open until the host ends it (a table closes it on Escape on its body). A
+open until the host ends it (a table closes it on Escape on its body); a
+focus loss that reaches an editor a description disabled, before the next
+flush applies it, reports nothing too. An editor with `on_modified` requests
+its modified report before each completion it reports, Escape included, so
+the application hears the draft's end before a host that closes the edit
+removes the editor. A
 native window that hides clears focus and records `FocusLeft`, which is
 delivered once the window is shown again, as hidden windows hold
 notifications. A host never takes focus back after `FocusLeft`.

@@ -19,6 +19,8 @@ pub use draft::{DraftAlign, DraftEditor, DraftEditorController, DraftSelection};
 mod inline_text;
 mod spaced_paste;
 pub use inline_text::InlineText;
+mod modified;
+use modified::ModifiedReporter;
 mod normalize;
 pub use normalize::InputRejection;
 pub(crate) use normalize::{EntryError, Normalizer, RejectionReport, SaveReport, normalize_text};
@@ -561,8 +563,15 @@ macro_rules! editor_api {
             /// callback may write signals, for example
             /// [`FieldHandle::set_modified`](crate::FieldHandle::set_modified)
             /// so a [`FormFields`](crate::FormFields) counts unsaved fields.
-            /// Only an editor in draft mode ever reports `true`. Its error is
-            /// returned from the flush or input call that delivered it.
+            /// Only an editor in draft mode ever reports `true`; it keeps a
+            /// draft unsaved while disabled or read-only, which this reports,
+            /// as the [draft policy](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#draft-policy)
+            /// states. Its error is returned from the flush or input call
+            /// that delivered it and is not replayed; a removed field reports
+            /// nothing. With a [session](TextField::session) the report of a
+            /// completion is requested before the session's, so a host that
+            /// ends the edit and removes the field does so after the field's
+            /// `false`. Replaced by a later call and by each description.
             ///
             /// Timing class: [after settling](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#after-settling).
             ///
@@ -593,7 +602,7 @@ macro_rules! editor_api {
                 mut self,
                 modified: impl FnMut(&mut EventContext, bool) -> Result<(), RuntimeError> + 'static,
             ) -> Self {
-                self.0.modified = Some(Box::new(modified));
+                self.0.modified.set(Box::new(modified));
                 self
             }
             /// Reports when the field refuses a value the application wrote
@@ -870,7 +879,11 @@ impl TextField {
     ///   as hidden windows hold notifications. Hiding and removal of the
     ///   field itself report nothing, and so does disabling it: revoking
     ///   [`Self::enabled`] releases focus as cancelled input, which keeps the
-    ///   draft unsaved and the edit open for the host to end.
+    ///   draft unsaved and the edit open for the host to end. A focus loss
+    ///   that reaches a field a description disabled, before the next flush
+    ///   applies it, reports nothing either.
+    /// - [`TextCommand::DiscardDraft`] discards the draft without a report;
+    ///   the edit stays open and its next completion reports `Unchanged`.
     ///
     /// The report comes before `on_save` runs; see [`EditorSession`] for
     /// delivery. Replaces an earlier session. Ordinary bubbling, traversal
@@ -1308,11 +1321,7 @@ pub(super) struct Editor<M = ()> {
     modified_indicator: bool,
     /// The application's callback when the draft starts or stops differing
     /// from the saved value, delivered through `notifier`.
-    modified: Option<ModifiedReport>,
-    /// The modified state last delivered to `modified`.
-    modified_reported: bool,
-    /// A delivery is requested and not yet made.
-    modified_pending: Cell<bool>,
+    modified: ModifiedReporter,
     notifier: Option<crate::Notifier>,
     /// The table's description of an unsaved draft, read in update.
     modified_text: String,
@@ -1428,9 +1437,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             suffix: String::new(),
             suffix_rect: Cell::new(None),
             modified_indicator: false,
-            modified: None,
-            modified_reported: false,
-            modified_pending: Cell::new(false),
+            modified: ModifiedReporter::default(),
             notifier: None,
             modified_text: String::new(),
             refusal: None,
@@ -1559,12 +1566,9 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
     /// modified state differs from the state last delivered. Callable in any
     /// phase; the callback runs in the event phase of the same flush.
     fn note_modified(&self) {
-        if self.modified.is_some()
-            && !self.modified_pending.get()
-            && self.dirty() != self.modified_reported
-            && let Some(notifier) = &self.notifier
+        if let Some(notifier) = &self.notifier
+            && self.modified.wants(self.dirty())
         {
-            self.modified_pending.set(true);
             self.reports.borrow_mut().push_back(Report::Modified);
             notifier.request();
         }
@@ -1608,16 +1612,8 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
     }
     /// Delivers a changed modified state to the application's callback.
     fn deliver_modified(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
-        self.modified_pending.set(false);
-        let now = self.dirty();
-        if now == self.modified_reported {
-            return Ok(());
-        }
-        self.modified_reported = now;
-        match &mut self.modified {
-            Some(report) => report(cx, now),
-            None => Ok(()),
-        }
+        let dirty = self.dirty();
+        self.modified.deliver(cx, dirty)
     }
     /// Writes edited text to the binding, except in draft mode, where only a
     /// save writes.
@@ -1655,11 +1651,15 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
         self.save(cx)
     }
     /// Reports the outcome of the save in progress to the editor session,
-    /// once, when a session trigger is waiting for it.
+    /// once, when a session trigger is waiting for it. Every completion goes
+    /// through here: the modified report is requested first, from the draft's
+    /// state after the completion, so a host that ends the edit and removes
+    /// the editor in its own delivery does so after the editor's report.
     fn report_session(&mut self, outcome: EditorOutcome) {
         if let Some(trigger) = self.pending_trigger.take()
             && let Some(session) = &self.session
         {
+            self.note_modified();
             session.report(trigger, outcome);
         }
     }
@@ -1671,7 +1671,9 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
         cx: &mut EventContext,
         trigger: EditorTrigger,
     ) -> Result<bool, RuntimeError> {
-        self.pending_trigger = Some(trigger);
+        // A disabled field reports nothing: its draft stays unsaved and the
+        // edit open, as when the revocation released its focus.
+        self.pending_trigger = self.enabled.then_some(trigger);
         let result = if trigger == EditorTrigger::FocusLeft {
             self.save(cx)
         } else {
@@ -1706,9 +1708,8 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
                 if e.transition == KeyTransition::Pressed {
                     self.discard();
                     self.changed(cx);
-                    if let Some(session) = &self.session {
-                        session.report(EditorTrigger::Escape, EditorOutcome::Cancelled);
-                    }
+                    self.pending_trigger = Some(EditorTrigger::Escape);
+                    self.report_session(EditorOutcome::Cancelled);
                     self.report.clear(cx)?;
                 }
                 Ok(Some(InputOutcome::Handled))
@@ -1962,7 +1963,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             self.modified_indicator = next.modified_indicator;
             widen(Invalidation::Paint);
         }
-        self.modified = next.modified;
+        self.modified.adopt(next.modified);
         if self.refusal.is_none() && next.refusal.is_some() {
             // A newly installed callback learns of a refusal already in place,
             // which takes an update to notice.
@@ -2189,6 +2190,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             C::SelectAll => !self.text.is_empty(),
             // The editor is always editing; nothing begins.
             C::BeginEdit => false,
+            C::DiscardDraft => self.dirty(),
         }
     }
     /// Opens the clipboard menu, at a pointer position or anchored below the field
@@ -2264,6 +2266,11 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
         command: crate::TextCommand,
     ) -> Result<crate::TextCommandOutcome, RuntimeError> {
         use crate::{TextCommand as C, TextCommandOutcome as R};
+        if command == C::DiscardDraft {
+            // Changes no application data, so a disabled or read-only editor
+            // answers it too.
+            return self.discard_draft(cx);
+        }
         if !self.enabled {
             return Ok(R::Unavailable);
         }
@@ -2352,7 +2359,28 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             }
             // The editor has no resting state: it is always editing.
             C::BeginEdit => Ok(R::Unavailable),
+            C::DiscardDraft => self.discard_draft(cx),
         }
+    }
+    /// [`TextCommand::DiscardDraft`]: discards a draft as Escape does, ending
+    /// a composition and a selection drag first, without writing; `Unavailable`
+    /// without a draft. A session's edit stays open, and its next completion
+    /// reports `Unchanged`, as after an application write.
+    fn discard_draft(
+        &mut self,
+        cx: &mut EventContext,
+    ) -> Result<crate::TextCommandOutcome, RuntimeError> {
+        if !self.dirty() {
+            return Ok(crate::TextCommandOutcome::Unavailable);
+        }
+        self.cancel_composition();
+        if std::mem::take(&mut self.dragging) {
+            cx.release_pointer();
+        }
+        self.discard();
+        self.changed(cx);
+        self.report.clear(cx)?;
+        Ok(crate::TextCommandOutcome::Handled)
     }
     fn sync_text(&mut self, text: String) {
         if !self.initialized || text != self.text {
@@ -2369,7 +2397,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
     }
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
         self.update_inner(cx)?;
-        if (self.modified.is_some() || self.refusal.is_some() || self.session.is_some())
+        if (self.modified.installed() || self.refusal.is_some() || self.session.is_some())
             && self.notifier.is_none()
         {
             self.notifier = Some(cx.notifier());

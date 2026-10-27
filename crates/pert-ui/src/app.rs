@@ -535,24 +535,15 @@ impl App {
     ///    registrations; for a close the user started, the closing window has
     ///    native focus, so nothing else is held, but a programmatic close of an
     ///    inactive window also ends held input in the active one.
-    /// 3. Each focused editor applies its own focus-loss policy, unchanged by
-    ///    closing; the editors document theirs. The cases a close policy most
-    ///    often meets:
-    ///    - a plain `TextField` or `TextArea` has already written its text, and
-    ///      a composition is dropped;
-    ///    - a field that drafts (a normalizer, a length limit or an
-    ///      `EditorSession`) saves a changed draft its rules accept, and keeps
-    ///      it unsaved when they refuse it, when the field is read-only or when
-    ///      it is disabled;
-    ///    - a local number input saves a valid changed draft, keeps an invalid
-    ///      or read-only one unsaved, and cancels a pressed or held step
-    ///      gesture;
-    ///    - a parameter-bound number input cancels its draft, valid or not:
-    ///      parameter authority commits only on an explicit commit;
-    ///    - a `DraftEditor` follows its owner's save or cancel policy;
-    ///    - an `EditorSession` reports `FocusLeft` with the save's outcome
-    ///      unless the edit already ended, and reports nothing when the field
-    ///      is disabled.
+    /// 3. Each focused editor makes the focus-loss save attempt of the
+    ///    [draft policy](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#draft-policy),
+    ///    which closing does not change: a local draft its rules accept is
+    ///    saved, a refused one is kept unsaved, a parameter draft is cancelled
+    ///    (parameter authority commits only on an explicit commit), and an
+    ///    `EditorSession` reports `FocusLeft` with the outcome. Drafts kept
+    ///    elsewhere, such as by a disabled or unfocused field, are untouched;
+    ///    the editors' `on_modified` reports them, so the policy can count
+    ///    them with a [`FormFields`](crate::FormFields).
     ///
     ///    So the policy sees a saved value only where that editor saves on
     ///    focus loss.

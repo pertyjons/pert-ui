@@ -425,9 +425,15 @@ these hooks. A concealed `TextField` shows one dot per grapheme and keeps its
 text out of the clipboard, the IME, inspection and event history. A
 `TextField` can carry a clear button, a leading icon and suffix text, all
 inside its single Tab stop. An editor in draft mode reports when its draft
-starts or stops differing from the saved value through `on_modified`, and
-`FieldHandle::set_modified` lets a `FormFields` count unsaved fields in
-`FormSummary::modified`. `FieldStatus` (normal, warning, error or a pending
+starts or stops differing from the saved value through `on_modified`, as do
+`IntegerInput`, `DecimalInput`, `InlineText` and the text mode of
+`InlineInteger` and `InlineDecimal`, and `FieldHandle::set_modified` lets a
+`FormFields` count unsaved fields in `FormSummary::modified`; a `Table`
+reports the end of each cell edit through `on_edit_end`, where such a count is
+cleared for an edit the table ended itself. What revocation, hiding and a
+window close do to a draft is the draft policy in
+[contracts.md](contracts.md#draft-policy); `TextCommand::DiscardDraft`
+discards a draft a field keeps. `FieldStatus` (normal, warning, error or a pending
 check) and `FormFields` can present and navigate application-supplied statuses
 without giving any one control special ownership of validation.
 

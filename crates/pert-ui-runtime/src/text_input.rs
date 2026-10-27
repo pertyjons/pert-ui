@@ -224,6 +224,76 @@ pub enum TextCommand {
     /// # Ok::<(), pert_ui::RuntimeError>(())
     /// ```
     BeginEdit,
+    /// Discards the editor's draft, as Escape does, without writing.
+    ///
+    /// The shown text returns to the value at rest; nothing is written, saved
+    /// or proposed, and the local undo history is cleared as after Escape. A
+    /// composition and a selection drag end first. An in-place editing
+    /// session ([`InlineText`](crate::InlineText), the text mode of
+    /// [`InlineInteger`](crate::InlineInteger),
+    /// [`InlineDecimal`](crate::InlineDecimal) and
+    /// [`InlineSlider`](crate::InlineSlider)) ends unsaved; a parameter draft
+    /// and its gesture are cancelled; a [`SearchField`](crate::SearchField)'s
+    /// pending debounced query is dropped unwritten. The editor's
+    /// `on_modified` reports `false`, and `on_rejection` reports `None` when
+    /// a refusal was shown. An [`EditorSession`](crate::EditorSession)
+    /// receives nothing and its edit stays open, as after an application
+    /// write: its next completion reports
+    /// [`EditorOutcome::Unchanged`](crate::EditorOutcome::Unchanged).
+    ///
+    /// It is how an application drops a draft a field keeps, for example one
+    /// a disabled field holds (see the
+    /// [draft policy](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#draft-policy)),
+    /// without touching the binding: writing the bound value the field
+    /// already shows changes nothing. Because it changes no application data,
+    /// an editor answers it also while it is disabled or read-only. It
+    /// answers `Handled` when there was a draft and `Unavailable` when there
+    /// was none; [`TextField`](crate::TextField) and
+    /// [`TextArea`](crate::TextArea) hold one only in draft mode.
+    /// [`SelectableText`](crate::SelectableText) answers `Unavailable` and
+    /// a component without a text-command handler `NotAnEditor`.
+    ///
+    /// [`Runtime::text_command`](crate::Runtime::text_command) and
+    /// [`EventContext::request_text_command`](crate::EventContext::request_text_command)
+    /// deliver it without focus, so it reaches an unfocused or disabled
+    /// field. It moves no focus out of the control: an in-place session that
+    /// holds focus returns it to its control, as Escape does.
+    ///
+    /// The command belongs to the control that owns the draft, which decides
+    /// what discarding means; aim it at that control. The in-place controls
+    /// answer it themselves, whether or not their session holds focus. A
+    /// [`DraftEditor`](crate::DraftEditor) answers `Unavailable` and changes
+    /// nothing, so a command aimed at the focused editor inside a control
+    /// does nothing, and a custom owner of a `DraftEditor` keeps its own
+    /// policy unless its [`text_command`](crate::Component::text_command)
+    /// answers this command, for example with
+    /// [`DraftEditorController::end`](crate::DraftEditorController::end).
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Element, IntegerInput, InspectValue, Runtime, TextCommand, TextCommandOutcome};
+    /// use std::time::Duration;
+    /// let mut ui = Runtime::new();
+    /// let count = ui.signal(7_i64);
+    /// let enabled = ui.signal(true);
+    /// let field = ui.mount_tree(Element::new("count",
+    ///     IntegerInput::new(count.clone()).enabled(enabled.read_only())))?;
+    /// ui.flush(Duration::ZERO)?;
+    /// ui.focus(&field)?;
+    /// ui.text_command(&field, TextCommand::SelectAll)?;
+    /// ui.text_input("42")?;
+    /// enabled.set(false)?;
+    /// ui.flush(Duration::ZERO)?; // the disabled field keeps its draft unsaved
+    /// let text = |ui: &Runtime| ui.inspect().components.into_iter()
+    ///     .find(|c| c.key == "count").map(|c| c.details.properties["text"].clone());
+    /// assert_eq!(text(&ui), Some(InspectValue::Text("42".into())));
+    /// let outcome = ui.text_command(&field, TextCommand::DiscardDraft)?;
+    /// assert_eq!(outcome, TextCommandOutcome::Handled);
+    /// assert_eq!(count.get()?, 7); // nothing was written
+    /// assert_eq!(text(&ui), Some(InspectValue::Text("7".into())));
+    /// # Ok::<(), pert_ui::RuntimeError>(())
+    /// ```
+    DiscardDraft,
 }
 
 /// Outcome of a [`TextCommand`] delivered to a component.

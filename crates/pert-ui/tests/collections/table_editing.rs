@@ -1067,3 +1067,652 @@ fn unmounting_with_an_open_edit_leaves_no_session() {
         assert_eq!(f.text(), "Cable");
     }
 }
+
+/// How a tracked table reports edit ends.
+#[derive(Clone, Copy, PartialEq)]
+enum Ends {
+    /// No `on_edit_end`.
+    Off,
+    /// Logs each end and, when `clear`, clears its cell's modified count.
+    Log { clear: bool },
+}
+
+/// What the tracked table's callbacks share.
+#[derive(Clone)]
+struct Tracking {
+    items: Rc<RefCell<Vec<Item>>>,
+    form: FormFields,
+    handles: Rc<Vec<(String, FieldHandle)>>,
+    order: Rc<RefCell<Vec<String>>>,
+    quantity_enabled: Signal<bool>,
+    fail_end: Rc<Cell<bool>>,
+    /// Each cell's modified state as last set.
+    states: Rc<RefCell<Vec<(String, bool)>>>,
+}
+impl Tracking {
+    /// Sets a cell's modified state in the form and in `states`.
+    fn set_modified(&self, row: &str, column: &str, modified: bool) -> Result<(), RuntimeError> {
+        let key = format!("{row}/{column}");
+        let mut states = self.states.borrow_mut();
+        states.retain(|(name, _)| *name != key);
+        states.push((key, modified));
+        drop(states);
+        self.handle(row, column).set_modified(modified).map(|_| ())
+    }
+    fn modified(&self, row: &str, column: &str) -> bool {
+        let key = format!("{row}/{column}");
+        self.states
+            .borrow()
+            .iter()
+            .any(|(name, modified)| *name == key && *modified)
+    }
+    fn handle(&self, row: &str, column: &str) -> FieldHandle {
+        let key = format!("{row}/{column}");
+        self.handles
+            .iter()
+            .find(|(name, _)| *name == key)
+            .map(|(_, handle)| handle.clone())
+            .unwrap()
+    }
+    /// A table whose name and quantity editors feed their cell's modified
+    /// count, with edit ends reported as `ends` says.
+    fn table(&self, state: &TableController, ends: Ends) -> Table {
+        let tracking = self.clone();
+        let table = Table::new(state, ROW).unwrap().cell_editor(move |edit| {
+            let item = tracking
+                .items
+                .borrow()
+                .iter()
+                .find(|item| item.key == edit.row())
+                .cloned()
+                .ok_or(RuntimeError::Exhausted)?;
+            let (cells, order, row, column) = (
+                tracking.clone(),
+                tracking.order.clone(),
+                edit.row().to_owned(),
+                edit.column().to_owned(),
+            );
+            let modified = move |_: &mut EventContext, modified: bool| {
+                order
+                    .borrow_mut()
+                    .push(format!("modified {row}/{column} {modified}"));
+                cells.set_modified(&row, &column, modified)
+            };
+            Ok(match edit.column() {
+                "name" => Element::new(
+                    "editor",
+                    TextField::new(item.name.clone())
+                        .normalize(|text: String| {
+                            if text.trim().is_empty() {
+                                Err(InputRejection::new("A name is required"))
+                            } else {
+                                Ok(text)
+                            }
+                        })
+                        .on_modified(modified)
+                        .session(edit.session()),
+                ),
+                _ => Element::new(
+                    "editor",
+                    IntegerInput::new(item.quantity.clone())
+                        .range(0, 1000)
+                        .unwrap()
+                        .enabled(&tracking.quantity_enabled)
+                        .on_modified(modified)
+                        .session(edit.session()),
+                ),
+            })
+        });
+        match ends {
+            Ends::Off => table,
+            Ends::Log { clear } => {
+                let tracking = self.clone();
+                table.on_edit_end(move |_, end| {
+                    tracking.order.borrow_mut().push(format!(
+                        "end {}/{} {:?}",
+                        end.row(),
+                        end.column(),
+                        end.reason()
+                    ));
+                    if tracking.fail_end.get() {
+                        return Err(RuntimeError::Exhausted);
+                    }
+                    if clear {
+                        tracking.set_modified(end.row(), end.column(), false)?;
+                    }
+                    Ok(())
+                })
+            }
+        }
+    }
+}
+
+/// A component beside the table that records its own notifications in the
+/// shared order, requested by the test through its notifier.
+struct Probe {
+    order: Rc<RefCell<Vec<String>>>,
+    notifier: Rc<RefCell<Option<Notifier>>>,
+    /// Each change requests one delivery from the probe's update.
+    trigger: ReadSignal<u32>,
+    seen: u32,
+    /// Fails the probe's next delivery once, which ends that flush before
+    /// requests made during it are delivered.
+    fail: Rc<Cell<bool>>,
+}
+impl Component for Probe {
+    fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
+        let notifier = self
+            .notifier
+            .borrow_mut()
+            .get_or_insert_with(|| cx.notifier())
+            .clone();
+        let trigger = cx.read(&self.trigger)?;
+        if trigger != self.seen {
+            self.seen = trigger;
+            notifier.request();
+        }
+        Ok(())
+    }
+    fn deliver_notifications(&mut self, _: &mut EventContext) -> Result<(), RuntimeError> {
+        self.order.borrow_mut().push("probe".to_owned());
+        if self.fail.replace(false) {
+            return Err(RuntimeError::Exhausted);
+        }
+        Ok(())
+    }
+}
+
+/// The probe's notifier slot, failure switch and trigger.
+type ProbeParts<'a> = (
+    &'a Rc<RefCell<Option<Notifier>>>,
+    &'a Rc<Cell<bool>>,
+    &'a Signal<u32>,
+);
+
+struct Tracked {
+    ui: Runtime,
+    root: WidgetId,
+    state: TableController,
+    tracking: Tracking,
+    shown: Signal<bool>,
+    probe: Rc<RefCell<Option<Notifier>>>,
+    fail_probe: Rc<Cell<bool>>,
+    trigger: Signal<u32>,
+}
+impl Tracked {
+    fn new(ends: Ends) -> Self {
+        let mut ui = Runtime::new();
+        ui.set_viewport(Viewport::new(480.0, 160.0, 1.0).unwrap())
+            .unwrap();
+        let items = make_items(&ui, 3);
+        let state = controller(&ui, &items);
+        let form = FormFields::new(&ui);
+        let handles = items
+            .iter()
+            .flat_map(|item| ["name", "quantity"].map(|column| format!("{}/{column}", item.key)))
+            .map(|key| {
+                let handle = form.field(key.clone()).unwrap();
+                (key, handle)
+            })
+            .collect();
+        let tracking = Tracking {
+            items: Rc::new(RefCell::new(items)),
+            form,
+            handles: Rc::new(handles),
+            order: Rc::default(),
+            quantity_enabled: ui.signal(true),
+            fail_end: Rc::default(),
+            states: Rc::default(),
+        };
+        let shown = ui.signal(true);
+        let fail_probe = Rc::<Cell<bool>>::default();
+        let trigger = ui.signal(0_u32);
+        let probe = Rc::<RefCell<Option<Notifier>>>::default();
+        let root = ui
+            .mount_tree(Element::new(
+                "root",
+                Column::new(Self::describe(
+                    &tracking,
+                    &state,
+                    &shown,
+                    (&probe, &fail_probe, &trigger),
+                    ends,
+                )),
+            ))
+            .unwrap();
+        let mut tracked = Self {
+            ui,
+            root,
+            state,
+            tracking,
+            shown,
+            probe,
+            fail_probe,
+            trigger,
+        };
+        tracked.settle();
+        tracked
+    }
+    fn describe(
+        tracking: &Tracking,
+        state: &TableController,
+        shown: &Signal<bool>,
+        (probe, fail, trigger): ProbeParts<'_>,
+        ends: Ends,
+    ) -> Vec<Element> {
+        vec![
+            Element::new(
+                "view",
+                View::new(Element::new("table", tracking.table(state, ends)))
+                    .visible_signal(shown.clone()),
+            )
+            .with_grow(1),
+            Element::new(
+                "probe",
+                Probe {
+                    order: tracking.order.clone(),
+                    notifier: probe.clone(),
+                    trigger: trigger.read_only(),
+                    seen: 0,
+                    fail: fail.clone(),
+                },
+            ),
+            Element::new("other", Button::new("Other", |_| Ok(()))),
+        ]
+    }
+    /// Describes the page again with `ends`.
+    fn redescribe(&mut self, ends: Ends) {
+        let children = Self::describe(
+            &self.tracking,
+            &self.state,
+            &self.shown,
+            (&self.probe, &self.fail_probe, &self.trigger),
+            ends,
+        );
+        self.ui.reconcile_children(&self.root, children).unwrap();
+    }
+    fn settle(&mut self) {
+        for _ in 0..3 {
+            support::frame(&mut self.ui);
+        }
+    }
+    fn body(&self) -> WidgetId {
+        self.ui
+            .find_descendant(&self.root, "body")
+            .unwrap()
+            .unwrap()
+    }
+    fn activate(&mut self, row: &str, column: &str) {
+        self.state
+            .selection()
+            .set_active(Some(row.to_owned()))
+            .unwrap();
+        self.state
+            .set_active_column(Some(column.to_owned()))
+            .unwrap();
+        let body = self.body();
+        self.ui.focus(&body).unwrap();
+        self.settle();
+    }
+    fn key(&mut self, code: KeyCode) {
+        self.ui.key_input(code, KeyAction::Press).unwrap();
+        self.ui.key_input(code, KeyAction::Release).unwrap();
+        self.settle();
+    }
+    fn type_text(&mut self, text: &str) {
+        self.ui.text_input(text).unwrap();
+        self.settle();
+    }
+    fn count(&self) -> usize {
+        self.tracking.form.summary().get().unwrap().modified()
+    }
+    fn editor(&self) -> Option<WidgetId> {
+        self.ui.find_descendant(&self.body(), "editor").unwrap()
+    }
+    fn editor_text(&self) -> String {
+        let editor = self.editor().expect("an editor");
+        let id = self.ui.inspection_id(&editor).unwrap();
+        match &self
+            .ui
+            .inspect()
+            .components
+            .into_iter()
+            .find(|c| c.id == id)
+            .unwrap()
+            .details
+            .properties["text"]
+        {
+            InspectValue::Text(text) => text.clone(),
+            other => panic!("not text: {other:?}"),
+        }
+    }
+    fn ends(&self) -> Vec<String> {
+        self.tracking
+            .order
+            .borrow()
+            .iter()
+            .filter(|entry| entry.starts_with("end "))
+            .cloned()
+            .collect()
+    }
+    fn quantity(&self, row: &str) -> i64 {
+        self.tracking
+            .items
+            .borrow()
+            .iter()
+            .find(|item| item.key == row)
+            .unwrap()
+            .quantity
+            .get()
+            .unwrap()
+    }
+    /// Leaves a refused name draft open in row `a`, its editor focused.
+    fn refused(&mut self) {
+        self.activate("a", "name");
+        self.key(KeyCode::Enter);
+        self.key(KeyCode::Backspace);
+        self.key(KeyCode::Enter);
+        assert!(self.editor().is_some(), "the refused edit stays open");
+        assert_eq!(self.count(), 1);
+    }
+}
+
+/// New-behavior test 4. Named assertion: activating the cell again focuses
+/// the editor, whose text is the draft typed before it was disabled.
+/// Mutation checked: discarding a number field's draft on revocation shows
+/// the quantity again.
+#[test]
+fn a_disabled_number_cell_keeps_its_draft() {
+    let mut t = Tracked::new(Ends::Off);
+    t.activate("a", "quantity");
+    t.key(KeyCode::Enter);
+    t.type_text("42");
+    t.tracking.quantity_enabled.set(false).unwrap();
+    t.settle();
+    assert!(t.editor().is_some(), "the edit stays open");
+    assert_eq!(t.quantity("a"), 10);
+    t.tracking.quantity_enabled.set(true).unwrap();
+    t.settle();
+    t.activate("a", "quantity");
+    t.key(KeyCode::Enter);
+    assert_eq!(t.editor_text(), "42");
+    t.key(KeyCode::Enter);
+    assert_eq!(t.quantity("a"), 42);
+    assert!(t.editor().is_none());
+}
+
+/// New-behavior test 14. Named assertion: after Escape the editor's own
+/// `false` has reached the application, so the count is zero, although the
+/// table removed the editor. Mutation checked: reporting Escape's
+/// completion before requesting the modified report leaves the count at
+/// one.
+#[test]
+fn escape_reaches_the_application_before_the_table_removes_the_editor() {
+    for column in ["name", "quantity"] {
+        let mut t = Tracked::new(Ends::Log { clear: false });
+        t.activate("a", column);
+        t.key(KeyCode::Enter);
+        t.type_text(if column == "name" { "Lamp" } else { "42" });
+        assert_eq!(t.count(), 1, "{column}");
+        t.key(KeyCode::Escape);
+        assert_eq!(t.count(), 0, "{column}");
+        assert!(t.editor().is_none(), "{column}: the edit is closed");
+        assert_eq!(
+            t.ends(),
+            [format!(
+                "end a/{column} Completed(EditorCompletion {{ trigger: Escape, outcome: Cancelled }})"
+            )]
+        );
+        let order = t.tracking.order.borrow();
+        let modified = order
+            .iter()
+            .position(|entry| *entry == format!("modified a/{column} false"))
+            .unwrap();
+        let ended = order
+            .iter()
+            .position(|entry| entry.starts_with("end "))
+            .unwrap();
+        assert!(modified < ended, "{column}: {order:?}");
+    }
+}
+
+/// New-behavior test 15 (rule 11). Named assertion for each end the table
+/// performs itself: `on_edit_end` ran once with its reason and the count is
+/// zero. Mutations checked: not recording `cancel_unfocused`'s end leaves
+/// the body-Escape count at one; dropping the hidden end in
+/// `close_quietly` leaves the hiding count at one.
+#[test]
+fn the_table_reports_the_edits_it_ends() {
+    // A terminal completion is reported after the editor's own `false`.
+    let mut t = Tracked::new(Ends::Log { clear: true });
+    t.activate("a", "name");
+    t.key(KeyCode::Enter);
+    t.type_text("Lamp");
+    t.key(KeyCode::Enter);
+    assert_eq!(
+        *t.tracking.order.borrow(),
+        [
+            "modified a/name true",
+            "modified a/name false",
+            "end a/name Completed(EditorCompletion { trigger: Enter, outcome: Saved })",
+        ]
+    );
+
+    // Escape on the body ends an edit whose editor does not hold focus.
+    let mut t = Tracked::new(Ends::Log { clear: true });
+    t.refused();
+    let body = t.body();
+    t.ui.focus(&body).unwrap();
+    t.settle();
+    assert!(
+        t.editor().is_some(),
+        "a refused departure keeps the edit open"
+    );
+    t.key(KeyCode::Escape);
+    assert_eq!(t.ends(), ["end a/name Cancelled"]);
+    assert_eq!(t.count(), 0);
+
+    // A filter that hides the edited row.
+    let mut t = Tracked::new(Ends::Log { clear: true });
+    t.refused();
+    t.state.filter("Tape", &FilterMatcher::substring()).unwrap();
+    t.settle();
+    assert_eq!(t.ends(), ["end a/name RowLeft"]);
+    assert_eq!(t.count(), 0);
+
+    // Deleting the row.
+    let mut t = Tracked::new(Ends::Log { clear: true });
+    t.refused();
+    let rest: Vec<Item> = t
+        .tracking
+        .items
+        .borrow()
+        .iter()
+        .filter(|item| item.key != "a")
+        .cloned()
+        .collect();
+    t.state.set_source(TableSource::new(Rows(rest))).unwrap();
+    t.settle();
+    assert_eq!(t.ends(), ["end a/name RowLeft"]);
+    assert_eq!(t.count(), 0);
+
+    // Hiding the table.
+    let mut t = Tracked::new(Ends::Log { clear: true });
+    t.refused();
+    t.shown.set(false).unwrap();
+    t.settle();
+    assert_eq!(t.ends(), ["end a/name Hidden"]);
+    assert_eq!(t.count(), 0);
+}
+
+/// New-behavior test 16. Named assertion: exactly one `Replaced` for the
+/// first cell whichever way the second edit begins, and the counts follow
+/// each cell. Mutation checked: recording the replacement twice fails the
+/// "exactly one" assertion.
+#[test]
+fn replacement_is_reported_once_after_settling() {
+    for double_click in [false, true] {
+        let mut t = Tracked::new(Ends::Log { clear: true });
+        t.refused();
+        if double_click {
+            let row = t.ui.find_descendant(&t.body(), "c").unwrap().unwrap();
+            let cell = t.ui.find_descendant(&row, "name").unwrap().unwrap();
+            let [x, y, w, h] = t.ui.bounds(&cell).unwrap().unwrap().values();
+            let point = Point::new(x + w / 2.0, y + h / 2.0).unwrap();
+            for _ in 0..2 {
+                for kind in [
+                    PointerKind::Press(PointerButton::Primary),
+                    PointerKind::Release(PointerButton::Primary),
+                ] {
+                    t.ui.pointer_input(PointerEvent::new(point, kind)).unwrap();
+                }
+            }
+            t.settle();
+        } else {
+            t.activate("c", "name");
+            t.key(KeyCode::F2);
+        }
+        let context = format!("double click {double_click}");
+        assert_eq!(t.ends(), ["end a/name Replaced"], "{context}");
+        assert!(!t.tracking.modified("a", "name"), "{context}");
+        assert_eq!(t.count(), 0, "{context}");
+        t.type_text("x");
+        assert_eq!(t.count(), 1, "{context}");
+        assert!(t.tracking.modified("c", "name"), "{context}");
+    }
+}
+
+/// New-behavior test 17. Named assertion: in one flush with a refused
+/// completion, another component's request and the table hiding, the order
+/// is the probe's callback, then `Hidden`. Mutation checked: delivering
+/// ends from the table's own delivery puts `Hidden` before the probe.
+#[test]
+fn edit_ends_keep_the_global_notification_order() {
+    let prepare = |t: &mut Tracked| {
+        t.refused();
+        t.tracking.order.borrow_mut().clear();
+        // In one flush: the editor's refused departure, the probe's request
+        // and the table hiding.
+        t.ui.clear_focus();
+        t.probe.borrow().as_ref().unwrap().request();
+        t.shown.set(false).unwrap();
+    };
+    let mut t = Tracked::new(Ends::Log { clear: true });
+    prepare(&mut t);
+    t.ui.flush(t.ui.now()).unwrap();
+    t.settle();
+    assert_eq!(
+        t.tracking.order.borrow()[..2],
+        ["probe", "end a/name Hidden"],
+        "nothing about the edit before the probe"
+    );
+
+    // A failing edit-end callback: the flush returns the error once, the
+    // probe still ran, and nothing is delivered again.
+    let mut t = Tracked::new(Ends::Log { clear: true });
+    t.tracking.fail_end.set(true);
+    prepare(&mut t);
+    let flushed = t.ui.flush(t.ui.now()).map(|_| ());
+    assert_eq!(flushed, Err(RuntimeError::Exhausted));
+    t.settle();
+    assert_eq!(
+        t.tracking.order.borrow()[..2],
+        ["probe", "end a/name Hidden"]
+    );
+    assert_eq!(t.ends(), ["end a/name Hidden"], "not delivered again");
+
+    // In a hidden window nothing is delivered until it is shown.
+    use pert_ui::testing::HostIntegration;
+    let mut t = Tracked::new(Ends::Log { clear: true });
+    prepare(&mut t);
+    t.ui.set_window_visible(false).unwrap();
+    t.ui.flush(t.ui.now()).unwrap();
+    assert!(t.tracking.order.borrow().is_empty(), "held while hidden");
+    t.ui.set_window_visible(true).unwrap();
+    t.settle();
+    assert_eq!(
+        t.tracking.order.borrow()[..2],
+        ["probe", "end a/name Hidden"]
+    );
+}
+
+/// New-behavior test 18. Named assertion: describing the table without
+/// `on_edit_end` and again with a new callback before delivery reports
+/// nothing for the recorded end, while the table closed the edit. Mutation
+/// checked: keeping undelivered payloads across removal hands the old end to
+/// the reinstalled callback.
+#[test]
+fn removing_the_callback_discards_pending_ends() {
+    // Records the end of an edit whose row a filter hides, and ends the
+    // flush before delivering it: the table's delivery records the end, and
+    // the probe's delivery after it in the same round fails, so the flush
+    // returns before the next round would deliver the end.
+    let pending = || {
+        let mut t = Tracked::new(Ends::Log { clear: false });
+        t.refused();
+        t.tracking.order.borrow_mut().clear();
+        t.state.filter("Tape", &FilterMatcher::substring()).unwrap();
+        t.fail_probe.set(true);
+        let next = t.trigger.get().unwrap() + 1;
+        t.trigger.set(next).unwrap();
+        let flushed = t.ui.flush(t.ui.now()).map(|_| ());
+        assert_eq!(flushed, Err(RuntimeError::Exhausted));
+        assert_eq!(
+            *t.tracking.order.borrow(),
+            ["probe"],
+            "the end is held back"
+        );
+        t
+    };
+    let mut t = pending();
+    t.redescribe(Ends::Off);
+    t.redescribe(Ends::Log { clear: false });
+    t.settle();
+    assert!(t.ends().is_empty(), "{:?}", t.tracking.order.borrow());
+    assert!(t.editor().is_none(), "the edit is closed all the same");
+    // A later end reaches the new callback.
+    t.state.filter("", &FilterMatcher::substring()).unwrap();
+    t.settle();
+    t.activate("c", "name");
+    t.key(KeyCode::Enter);
+    t.key(KeyCode::Escape);
+    assert_eq!(
+        t.ends(),
+        ["end c/name Completed(EditorCompletion { trigger: Escape, outcome: Cancelled })"]
+    );
+
+    // Replacing the callback instead hands it the pending end.
+    let mut t = pending();
+    t.redescribe(Ends::Log { clear: true });
+    t.settle();
+    assert_eq!(t.ends(), ["end a/name RowLeft"]);
+    assert_eq!(t.count(), 0, "the new callback cleared it");
+}
+
+/// New-behavior test 12 in a table: `DiscardDraft` aimed at a session
+/// editor discards its draft, reports nothing to the session and keeps the
+/// edit open.
+#[test]
+fn discard_draft_keeps_a_cells_edit_open() {
+    let mut t = Tracked::new(Ends::Log { clear: false });
+    t.activate("a", "quantity");
+    t.key(KeyCode::Enter);
+    t.type_text("42");
+    assert_eq!(t.count(), 1);
+    let editor = t.editor().unwrap();
+    assert_eq!(
+        t.ui.text_command(&editor, TextCommand::DiscardDraft)
+            .unwrap(),
+        TextCommandOutcome::Handled
+    );
+    t.settle();
+    assert_eq!(t.count(), 0);
+    assert!(t.editor().is_some(), "the edit stays open");
+    assert!(t.ends().is_empty());
+    t.key(KeyCode::Enter);
+    assert_eq!(
+        t.ends(),
+        ["end a/quantity Completed(EditorCompletion { trigger: Enter, outcome: Unchanged })"]
+    );
+    assert_eq!(t.quantity("a"), 10);
+}

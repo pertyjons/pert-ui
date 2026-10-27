@@ -342,6 +342,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 confirmation and reads the decision signal with [`Runtime::read_signal`]. Each
 call runs the policy again.
 
+Admission saves only what a focused editor's focus loss saves. A draft a field
+keeps otherwise, such as a disabled field's typed text or a refused draft left
+in a field that lost focus earlier, is not saved; a close policy that should
+keep such a window open counts the unsaved fields with `on_modified` and a
+[`FormFields`], as [`IntegerInput::on_modified`]'s example does, and reads
+[`FormSummary::modified`].
+
 # A capture
 
 With the `cpu` feature, [`CpuRenderer`] renders a capture without a GPU. Declare
