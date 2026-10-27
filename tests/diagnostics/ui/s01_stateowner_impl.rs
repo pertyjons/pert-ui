@@ -1,5 +1,5 @@
 // Implementing the sealed StateOwner for an own context.
-use pert_ui::prelude::*;
+use pert_ui::{UiSettings, prelude::*};
 struct MyOwner(Runtime);
 impl StateOwner for MyOwner {
     fn signal<T>(&self, value: T) -> Signal<T> { self.0.signal(value) }

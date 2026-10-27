@@ -225,6 +225,7 @@ impl EventContext {
     /// ```
     /// # use pert_ui_runtime as pert_ui;
     /// use pert_ui::prelude::*;
+    /// use pert_ui::testing::*;
     /// use pert_ui::{Tab, Tabs};
     /// use std::time::Duration;
     ///
@@ -336,6 +337,7 @@ impl Runtime {
     /// ```
     /// # use pert_ui_runtime as pert_ui;
     /// use pert_ui::prelude::*;
+    /// use pert_ui::testing::*;
     /// use pert_ui::{RevealOutcome, Tab, Tabs};
     ///
     /// let mut ui = Runtime::new();
@@ -386,6 +388,7 @@ impl Runtime {
     /// ```
     /// # use pert_ui_runtime as pert_ui;
     /// use pert_ui::prelude::*;
+    /// use pert_ui::testing::*;
     /// use pert_ui::{CommandOutcome, CommandScope, CommandSource, Tab, Tabs};
     /// use std::time::Duration;
     ///
@@ -433,7 +436,8 @@ impl Runtime {
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
-    /// use pert_ui::prelude::*;
+    /// use pert_ui::{component::*, prelude::*};
+    /// use pert_ui::testing::*;
     /// use pert_ui::{Tab, Tabs};
     ///
     /// let mut ui = Runtime::new();

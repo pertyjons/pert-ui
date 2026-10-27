@@ -4,9 +4,9 @@
 //! `KeepOpen`, and admission's errors come back directly.
 #![cfg(feature = "native")]
 
-use pert_ui::prelude::*;
-use pert_ui::testing::{Driver, HeadlessApp};
+use pert_ui::testing::*;
 use pert_ui::{InspectValue, NativeWindowOptions, ParameterId, ParameterSpec};
+use pert_ui::{component::*, parameter::*, prelude::*, windowing::*};
 use std::{cell::Cell, cell::RefCell, rc::Rc, time::Duration};
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;

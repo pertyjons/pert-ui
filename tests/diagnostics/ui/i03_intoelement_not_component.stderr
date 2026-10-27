@@ -22,7 +22,7 @@ note: the trait `pert_ui::Component` must be implemented
   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   = help: items from traits can only be used if the trait is implemented and in scope
   = note: the following traits define an item `key`, perhaps you need to implement one of them:
-          candidate #1: `pert_ui::ContentRows`
+          candidate #1: `ContentRows`
           candidate #2: `pert_ui::IntoElement`
           candidate #3: `pert_ui::ListItems`
           candidate #4: `pert_ui::TableItems`

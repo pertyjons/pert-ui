@@ -1,11 +1,11 @@
 //! Contracts of the headless test driver, `testing::Driver`, and its
 //! `TestError`: each action's effect, each refusal, and the cleanup that
 //! releases what an action pressed when a step fails.
-use pert_ui_runtime::testing::{Driver, TestError};
+use pert_ui_runtime::testing::*;
 use pert_ui_runtime::{
     ApplicationError, CommandKey, KeyEvent, KeyTransition, KeyboardState, NativeWindowOptions,
     ReadSignal, RevealRefusal, SemanticValue, Show, Signal, Tab, Tabs, TextCommand,
-    TextCommandOutcome, prelude::*,
+    TextCommandOutcome, component::*, prelude::*,
 };
 use std::{cell::Cell, cell::RefCell, rc::Rc, time::Duration};
 

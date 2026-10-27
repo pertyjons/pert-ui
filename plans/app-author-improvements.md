@@ -357,12 +357,12 @@ stays window-free.
   chapter on headless testing and CPU captures exists: the API audit's part
   6f1 (0.3.68) added "Testing an application" with the `testing` module's
   driver and `HeadlessApp`.
-- A smaller application prelude and thematic modules for the docs.rs index,
-  as a separate public-API branch: removing a prelude name can break
-  consumers. The API audit's part 6e (0.3.67) grew the prelude by about
-  seventy names under its decided membership rule and added the
-  `component` module for component authors; whether the prelude shrinks
-  stays this slice's decision, on its own breaking branch.
+- Met by layering part L2 (0.3.73): the smaller application prelude and the
+  thematic modules (`parameter`, `commands`, `windowing`, `inspection` and
+  the live-data module `live`) exist, so they have left this slice's inputs
+  (`usability/layering-design-L2.md`). The tutorial and application-shaped
+  examples stay; L2 reshaped the guide's representative examples as an
+  application part with the test in `fn main`.
 
 Inputs from later plans and the 2026-10-20 audit:
 
@@ -377,9 +377,11 @@ Inputs from later plans and the 2026-10-20 audit:
   `CommandScope`, `KeyChord`, `CommandSource`, `LevelMeter`, `Trace`,
   `MeterAxis` and `EditOutcome` joined it in the API audit's part 6e
   (0.3.67). `series_bridge`, `SeriesConfig`, `SeriesSource`, `Delivery` and
-  `Timestamp` stay at the crate root by decision G5-11, which leaves a
-  thematic live-data module to this slice. A smaller prelude still needs
-  the names that joined, or thematic modules that make them easy to find.
+  `Timestamp` stayed at the crate root by decision G5-11, which left a
+  thematic live-data module to this slice. Layering part L2 (0.3.73) met
+  this input: `pert_ui::live` holds the bridge, `SeriesSource`, the
+  mailboxes and the live widgets, `commands` the command names beyond a
+  shortcut's chord and scope, and `parameter` `EditOutcome`.
 - The same probe found inspection bounds only under
   `details.box_model.border_box`. The diagnostics guide should say where a
   component's bounds are.

@@ -511,7 +511,8 @@ impl<P: Copy + PartialEq + 'static> DraftEditorController<P> {
 ///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
-/// use pert_ui::prelude::*;
+/// use pert_ui::{component::*, prelude::*};
+/// use pert_ui::testing::*;
 ///
 /// struct Row {
 ///     value: Signal<String>,

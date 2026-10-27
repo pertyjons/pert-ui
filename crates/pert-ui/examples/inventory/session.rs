@@ -4,7 +4,7 @@
 use crate::app::{self, Inventory};
 use crate::model::{Category, Field, ItemId};
 use pert_ui::prelude::*;
-use pert_ui::testing::{Detail, Driver, InspectionQuery, Selector};
+use pert_ui::testing::*;
 use pert_ui::{Clipboard, ClipboardError, InspectValue};
 use std::{
     cell::RefCell,

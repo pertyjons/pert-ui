@@ -1,7 +1,7 @@
 //! Consumer contract exercised exclusively through the public facade.
 
 use pert_ui::NormalizedValueError;
-use pert_ui::prelude::*;
+use pert_ui::parameter::*;
 
 #[test]
 fn a_consumer_can_validate_and_report_input_errors() -> Result<(), NormalizedValueError> {

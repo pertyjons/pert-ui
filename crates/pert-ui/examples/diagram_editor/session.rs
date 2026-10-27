@@ -6,7 +6,8 @@ use crate::app::{self, DiagramApp};
 use crate::editor::Tool;
 use crate::model::{Diagram, NodeId};
 use pert_ui::prelude::*;
-use pert_ui::testing::Driver;
+use pert_ui::testing::*;
+use pert_ui::windowing::*;
 use pert_ui::{
     CommandKey, CommandKeyInput, CommandSource, KeyAction, KeyCode, ViewTransform, Viewport,
 };

@@ -55,7 +55,7 @@ Here two sliders share one local parameter. The host owner stays alive for the
 whole example; dropping it removes the parameter.
 
 ```
-use pert_ui::prelude::*;
+use pert_ui::{parameter::*, prelude::*};
 use std::time::Duration;
 let mut ui = Runtime::new();
 let (amount, host) = ui.parameter(
@@ -86,7 +86,8 @@ its own schema version; it contains settings and supported container state,
 not application data, focus, active gestures or detached native windows.
 
 ```
-use pert_ui::prelude::*;
+use pert_ui::{prelude::*, windowing::*};
+use pert_ui::Workspace;
 let mut ui = Runtime::new();
 ui.mount_tree(Element::new("workspace", SplitPane::new(
     SplitAxis::LeftRight,
@@ -116,8 +117,7 @@ as built-in controls. This indicator records only a colored rectangle. Its
 binding affects paint, so the update uses `read_paint` and retains that value.
 
 ```
-use pert_ui::{ColorRole, Component, Constraints, DrawError, Element, MeasureContext,
-    MetricRole, Painter, ReadSignal, Rect, Runtime, RuntimeError, Size, UpdateContext};
+use pert_ui::{component::*, prelude::*};
 use std::time::Duration;
 
 struct Indicator { source: ReadSignal<bool>, active: bool }

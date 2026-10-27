@@ -69,6 +69,10 @@ fn guide_dependency_lines_name_the_current_release() {
             include_str!("../../src/guide/diagnostics.md"),
         ),
         ("state.md", include_str!("../../src/guide/state.md")),
+        (
+            "authoritative-values.md",
+            include_str!("../../src/guide/authoritative-values.md"),
+        ),
         ("layout.md", include_str!("../../src/guide/layout.md")),
         ("controls.md", include_str!("../../src/guide/controls.md")),
         ("surfaces.md", include_str!("../../src/guide/surfaces.md")),

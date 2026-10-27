@@ -484,14 +484,14 @@ pub(crate) struct Shared {
     stretched: RefCell<Vec<Weak<Node>>>,
     text: Rc<crate::text::TextCache>,
     clipboard: RefCell<Option<Box<dyn crate::Clipboard>>>,
-    sources: RefCell<Vec<Weak<dyn crate::live::Drainable>>>,
-    active_sources: RefCell<BTreeMap<usize, Weak<dyn crate::live::Drainable>>>,
+    sources: RefCell<Vec<Weak<dyn crate::live_source::Drainable>>>,
+    active_sources: RefCell<BTreeMap<usize, Weak<dyn crate::live_source::Drainable>>>,
     source_visibility_dirty: Cell<bool>,
     source_serial: Cell<u64>,
-    pub(crate) wake: crate::live::Wake,
+    pub(crate) wake: crate::live_source::Wake,
     /// Mailboxes from other threads, delivered at the start of each flush.
     mailboxes: RefCell<Vec<Weak<dyn crate::mailbox::Deliverable>>>,
-    inspection_services: RefCell<Vec<Weak<crate::inspection::ServiceInner>>>,
+    inspection_services: RefCell<Vec<Weak<crate::inspection_service::ServiceInner>>>,
     /// Depth of answering boundaries in progress: an outermost `flush` or
     /// `flush_windows`. Everything nested inside one, including the
     /// `flush_windows` a queued command runs before its action, answers
@@ -543,11 +543,11 @@ impl Shared {
             window.scene_dirty.set(true);
         }
     }
-    pub(crate) fn activate_source(&self, source: Weak<dyn crate::live::Drainable>) {
+    pub(crate) fn activate_source(&self, source: Weak<dyn crate::live_source::Drainable>) {
         let key = source.as_ptr() as *const () as usize;
         self.active_sources.borrow_mut().insert(key, source);
     }
-    fn scheduled_sources(&self) -> Vec<Rc<dyn crate::live::Drainable>> {
+    fn scheduled_sources(&self) -> Vec<Rc<dyn crate::live_source::Drainable>> {
         if self.source_visibility_dirty.replace(false) {
             for source in self.sources.borrow().iter() {
                 self.activate_source(source.clone());
@@ -599,7 +599,7 @@ impl Shared {
             Err(RuntimeError::UpdateLimit)
         }
     }
-    pub(crate) fn register_source(&self, source: Weak<dyn crate::live::Drainable>) {
+    pub(crate) fn register_source(&self, source: Weak<dyn crate::live_source::Drainable>) {
         let mut sources = self.sources.borrow_mut();
         sources.retain(|weak| weak.strong_count() > 0);
         sources.push(source);
@@ -657,7 +657,7 @@ impl Shared {
             services.retain(|weak| weak.strong_count() > 0);
             services.iter().filter_map(Weak::upgrade).collect()
         };
-        crate::inspection::answer(&services, runtime, flush_error);
+        crate::inspection_service::answer(&services, runtime, flush_error);
     }
     /// The earliest drain any active source needs, or `now` when a wake is
     /// pending or a source has a visible subscriber but is not yet active.
@@ -2970,7 +2970,7 @@ impl UpdateContext {
         }
         let _ = self.read_kind(
             &source.revision_signal().read_only(),
-            crate::live::READ_KIND,
+            crate::live_source::READ_KIND,
         )?;
         source.activate();
         source.with_window(f)
@@ -4309,7 +4309,7 @@ impl Runtime {
             active_sources: RefCell::new(BTreeMap::new()),
             source_visibility_dirty: Cell::new(false),
             source_serial: Cell::new(0),
-            wake: crate::live::Wake::default(),
+            wake: crate::live_source::Wake::default(),
             mailboxes: RefCell::new(Vec::new()),
             inspection_services: RefCell::new(Vec::new()),
             answer_depth: Cell::new(0),
@@ -4669,6 +4669,7 @@ impl Runtime {
     /// ```
     /// # use pert_ui_runtime as pert_ui;
     /// use pert_ui::prelude::*;
+    /// use pert_ui::testing::*;
     /// use std::time::Duration;
     ///
     /// let mut ui = Runtime::new();
@@ -6821,7 +6822,7 @@ mod active_source_tests {
         checks: Cell<usize>,
         serviced: Cell<usize>,
     }
-    impl crate::live::Drainable for Source {
+    impl crate::live_source::Drainable for Source {
         fn eligible(&self) -> bool {
             self.checks.set(self.checks.get() + 1);
             self.eligible.get()
@@ -6847,8 +6848,9 @@ mod active_source_tests {
                     checks: Cell::new(0),
                     serviced: Cell::new(0),
                 });
-                ui.shared
-                    .register_source(Rc::downgrade(&source) as Weak<dyn crate::live::Drainable>);
+                ui.shared.register_source(
+                    Rc::downgrade(&source) as Weak<dyn crate::live_source::Drainable>
+                );
                 source
             })
             .collect();

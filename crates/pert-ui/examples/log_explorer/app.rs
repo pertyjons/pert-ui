@@ -1,13 +1,13 @@
 //! The explorer: two tables over one application-owned store, filters, a
 //! tree grouped by source, a detail pane, background loading and a live tail.
 use crate::model::{self, Entry, Level, LineId, Parsed, Store};
-use pert_ui::prelude::*;
 use pert_ui::{
     Capacity, CollectionFilter, CommandId, CommandScope, FilterMatcher, KeyChord,
     ListRevealReceipt, ListRevealStatus, Mailbox, NormalizedValue, ProgressBar, ProgressStatus,
     SendError, SortDirection, TableColumn, TableController, TableItems, TableSort, TableSource,
     TreeController, TreeItems, TreeSource, UiSender,
 };
+use pert_ui::{prelude::*, windowing::*};
 use std::{
     cell::{Cell, OnceCell, RefCell},
     cmp::Ordering,

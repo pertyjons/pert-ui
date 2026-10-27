@@ -1,6 +1,7 @@
 //! Public headless runtime, subscriptions, input and edit-lifecycle contracts.
 use pert_ui_runtime::{
-    BindingError, EditError, EditOutcome, InputOutcome, RuntimeError, prelude::*,
+    BindingError, EditError, EditOutcome, InputOutcome, RuntimeError, component::*, parameter::*,
+    prelude::*,
 };
 use std::{
     cell::{Cell, RefCell},

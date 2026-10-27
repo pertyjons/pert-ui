@@ -1,5 +1,121 @@
 # Changelog
 
+## 0.3.73 (2026-10-27)
+
+A layered prelude (layering plan, part L2, from its approved design checkpoint
+`plans/usability/layering-design-L2.md`). The prelude holds what an
+application's first program writes, and thematic modules gather the rest by
+need. Every name stays at the crate root; no signature, behavior, persisted
+format or real-time endpoint changes.
+
+- Breaking: the prelude (`pert_ui::prelude`, `pert_ui_runtime::prelude`) holds
+  the names an application's first program writes: the names the guide's
+  representative programs write in their application part, every built-in
+  component outside the thematic modules with the types its constructors and
+  builders take, the callback values an application matches and the values it
+  keeps, and the application-wide names (`Runtime`, `Signal`, `ReadSignal`,
+  `StateOwner`, `Element`, `IntoElement`, `WidgetId`, `EventContext`,
+  `Permission`, `RuntimeError`, `ApplicationError`). The names below leave it,
+  by replacement import; each stays at the crate root.
+- Breaking: a custom component adds `use pert_ui::component::*;` for
+  `ArrangeContext`, `ChildInfo`, `ChildReveal`, `Component`, `ContentRows`,
+  `DisplayList`, `DraftAlign`, `DraftEditor`, `DraftEditorController`,
+  `DraftSelection`, `DragEvent`, `DragOutcome`, `DragPayload`, `DragPhase`,
+  `DragRole`, `DrawCommand`, `DrawError`, `DropResponse`, `EditorSession`,
+  `EditorStart`, `FillRule`, `IconSource`, `ImageId`, `KeyTransition`,
+  `KeyboardState`, `LineCap`, `LineJoin`, `Magnification`, `MaskId`,
+  `MaskImage`, `MeasureContext`, `MotionPreference`, `Notifier`, `Painter`,
+  `Path`, `PathBuilder`, `RestoreRejection`, `Shape`, `StrokeStyle`,
+  `SurfaceKind`, `TextCommandOutcome`, `TextInputState`, `TextKeyOutcome`,
+  `TextLayout`, `TextPreedit`, `UpdateContext`, `VectorGeometry`, `VectorId`,
+  `ViewState`, `WorkspaceError`, `WorkspaceValue`.
+- Breaking: a test adds `use pert_ui::testing::*;` for `CommandKeyInput`,
+  `FocusDirection`, `InputOutcome`, `KeyAction`, `PointerButton`,
+  `PointerEvent`, `PointerKind`, `Viewport`, which `component` also holds.
+- Breaking: the authoring names that inspection records carry,
+  `ComponentDetails`, `Invalidation`, `KeyEvent`, `Rect`, are in `use
+  pert_ui::component::*;` and `use pert_ui::inspection::*;` (and `Rect` in
+  `windowing`).
+- Breaking: command names other than `CommandScope`, `KeyChord`, `CommandKey`,
+  `KeyCode` and `Modifiers`, which stay in the prelude, need `use
+  pert_ui::commands::*;`: `CommandContext`, `CommandEntry`, `CommandId`,
+  `CommandMatcher`, `CommandOutcome`, `CommandPalette`,
+  `CommandPaletteController`, `CommandPaletteStatus`, `CommandReceipt`,
+  `CommandSource`, `CommandStatus`, `HeldCancellation`, `HeldInputId` (the
+  last six also in `component`).
+- Breaking: parameter and authority names, `Slider`, `Knob` and `InlineSlider`
+  need `use pert_ui::parameter::*;`: `AnyDeliveryMonitor`, `AnyParameter`,
+  `AnyParameterHost`, `AnyParameterSnapshot`, `AnyPreviewEvent`, `AnySpec`,
+  `AnyTerminalEvent`, `AnyValue`, `ArcOrigin`, `AuthorityReceipt`,
+  `AuthorityResponse`, `AuthorityStatus`, `ChoiceId`, `ChoiceOption`,
+  `DeliveryMonitor`, `DeliveryResolution`, `DeliverySnapshot`,
+  `DeliveryStatus`, `EditOutcome`, `EditSession`, `EditToken`, `InlineSlider`,
+  `Knob`, `NormalizedValue`, `Parameter`, `ParameterFamily`, `ParameterHost`,
+  `ParameterId`, `ParameterMapping`, `ParameterSnapshot`, `ParameterSpec`,
+  `ParameterValue`, `PowerExponent`, `PreviewEvent`, `PreviewOutcome`,
+  `RemoteCommit`, `RemoteHost`, `ResponseDisposition`, `Revision`,
+  `SinkError`, `SinkErrorKind`, `Slider`, `SubmissionDelivery`,
+  `TerminalEvent` (`ParameterSpec` also in `live`, `NormalizedValue` also in
+  `windowing`).
+- Breaking: windows, regions, splits and tool windows need `use
+  pert_ui::windowing::*;`: `EdgeMode`, `Expansion`, `FloatingWindow`,
+  `RegionEdge`, `RegionLayout`, `SplitAxis`, `SplitPane`, `SplitRule`,
+  `SplitSizing`, `StripeGroup`, `ToolEdge`, `ToolWindow`, `ToolWindowChange`,
+  `ToolWindowChangeKind`, `ToolWindowController`, `ToolWindowLayout`,
+  `ToolWindowMode`, `WindowCloseAction`, `WindowController`, `WindowLayer`,
+  `WindowPlacement`, `WindowStatus`.
+- Breaking: the live widgets need `use pert_ui::live::*;`: `LevelMeter`,
+  `MeterAxis`, `Trace`.
+- Breaking: theme, settings, fonts, strings, the workspace document,
+  `DescribeContext`, `HexColorError`, `PhysicalExtent` and `VirtualAxis` are
+  imported by name from the root, for example `use pert_ui::{ThemeMode,
+  Workspace};`: `Density`, `DescribeContext`, `FontData`, `FontId`,
+  `FontManager`, `FontRole`, `HexColorError`, `IconGlyph`, `IconManager`,
+  `IgnoredEntry`, `NumberLocale`, `OpaqueColor`, `Palette`, `PhysicalExtent`,
+  `StringRole`, `TextRenderingMode`, `TextSource`, `ThemeManager`,
+  `ThemeMetrics`, `ThemeMode`, `UiMessage`, `UiSettings`, `UiStrings`,
+  `UiZoom`, `VirtualAxis`, `Workspace`, `WorkspacePath`, `WorkspaceReport`,
+  `WorkspaceSettings`.
+- Added: the modules `parameter` (authoritative values: parameters, edit
+  gestures, hosts, external authority and the parameter-only controls),
+  `commands` (commands, shortcuts and the command palette), `windowing`
+  (windows inside a view and native windows, regions, splits and tool windows;
+  not `windows`, which would collide with the `windows` crate under a
+  crate-root glob), `inspection` (inspection, capture, profiling and
+  validation) and `live` (live series and mailboxes, with the live widgets) in
+  `pert-ui-runtime` and `pert-ui`, each closed one level over its members'
+  constructors, builders, payloads and fields. `NumberInputError` joins the
+  prelude. `testing` gains `Viewport`, `KeyAction`, `FocusDirection`,
+  `PointerEvent`, `PointerKind`, `PointerButton`, `CommandKeyInput`,
+  `InputOutcome`, `SemanticValue` and `ClickCounter`; `component` gains
+  `ClickCounter`, `DraftAlign`, `DraftEditor`, `DraftEditorController` and
+  `DraftSelection`. The runtime's private modules `inspection` and `live` are
+  renamed `inspection_service` and `live_source`; no public path changes.
+- Documentation: the guide's new "Authoritative values" chapter
+  (`guide::authoritative_values`, after the state chapter, now titled "State")
+  holds the parameter sections moved from the state chapter unchanged in
+  substance; links to `guide::state#parameters` and its sibling anchors move
+  to `guide::authoritative_values`. The prelude pages state the membership
+  rule, the guarantee by audience, the paths that need another import and
+  where every other name is, replacing "Root names to add"; the `component`,
+  `testing` and crate pages, the runtime README and the custom-widgets
+  chapter's imports describe the globs by audience. The guide's representative
+  examples (the first window, the editable list of records, the dialogs, the
+  menu bar with a command and the background work) are an application part
+  importing only the prelude and a test in `fn main` adding `testing`.
+- Migrated: the packaged examples, the gallery, the facade and runtime tests,
+  the doc examples and the diagnostics fixtures import the modules they need.
+  The `diagram_editor` canvas imports only `component`, and the `ContentRows`
+  fixture `component`; the `i03` snapshot's candidate list names `ContentRows`
+  unqualified now that the prelude does not hold it.
+- Tests: the facade's foundation area rewrites `prelude` (a component from
+  `prelude` and `component`, driven from `prelude` and `testing`, and a check
+  that each representative program imports only its audience's globs) and adds
+  `vocabulary` (each vocabulary group configured from the prelude alone) and
+  `modules` (every promised name of every module, each thematic module's
+  sufficiency, and every glob combined with the crate root resolving every
+  exported name).
+
 ## 0.3.72 (2026-10-27)
 
 One deferral call for application callbacks (layering plan, part L4a, from

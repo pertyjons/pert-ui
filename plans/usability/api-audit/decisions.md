@@ -1487,6 +1487,9 @@ covers both.
 - **Depends on:** G5-10 (the widgets join the prelude). G5-26: `UpdateContext::read_series` takes
   `&SeriesSource`, so the closure must let the live-data exclusion win, which the rule under
   G5-26 does. G5-32 (thematic modules).
+- **Resolved by layering part L2 (0.3.73):** the thematic live-data module exists.
+  `pert_ui::live` holds `SeriesSource`, the series bridge, the mailboxes and the live
+  widgets, which leave the prelude (`plans/usability/layering-design-L2.md`, section 2.3).
 
 ### G5-16 `ParameterHost`'s sink and monitor types: "hosts" or "host integration"
 
@@ -1608,6 +1611,8 @@ covers both.
   under D: `App::on_close` still needs `NativeWindowId` in the facade prelude); slice 9 (it
   names the module and decides, on its breaking branch, whether component-only names leave
   the prelude).
+- **Superseded in part:** the application-prelude rule is superseded by layering part L2
+  (0.3.73, `plans/usability/layering-design-L2.md`); the `component` rule stays.
 
 ### G5-30 `WindowError` in the facade prelude
 

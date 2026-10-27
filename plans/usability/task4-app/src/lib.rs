@@ -4,7 +4,6 @@
 //! [`build`] mounts the whole user interface into a [`Runtime`], so the
 //! native window (`main.rs`) and a headless test mount the same content.
 use pert_ui::prelude::*;
-use pert_ui::{CommandScope, KeyChord};
 use std::{cell::Cell, rc::Rc};
 
 /// One saved link. `id` identifies the bookmark for its whole life and keys

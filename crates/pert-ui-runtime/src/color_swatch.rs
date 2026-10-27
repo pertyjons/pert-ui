@@ -70,6 +70,7 @@ pub(crate) fn paint_checkerboard(painter: &mut Painter, rect: Rect) -> Result<()
 /// ```
 /// # use pert_ui_runtime as pert_ui;
 /// use pert_ui::prelude::*;
+/// use pert_ui::testing::*;
 /// use pert_ui::{KeyAction, KeyCode};
 /// use std::time::Duration;
 ///

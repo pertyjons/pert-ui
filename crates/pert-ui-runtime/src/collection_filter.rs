@@ -593,6 +593,7 @@ struct Parts {
 /// ```
 /// # use pert_ui_runtime as pert_ui;
 /// use pert_ui::prelude::*;
+/// use pert_ui::testing::*;
 /// use pert_ui::{CollectionFilter, ListFilter, ListItems, ListSource, VirtualList};
 /// use std::time::Duration;
 ///
@@ -771,6 +772,7 @@ impl CollectionFilter {
     /// ```
     /// # use pert_ui_runtime as pert_ui;
     /// use pert_ui::prelude::*;
+    /// use pert_ui::testing::*;
     /// use pert_ui::{HiddenActive, ListItems, ListSource};
     /// use std::time::Duration;
     ///

@@ -36,29 +36,33 @@ fn main() -> Result<(), pert_ui::AppError> {
 
 Continue with the [guide](crate::guide), starting at
 [getting started](crate::guide::getting_started). Everything the guide and this
-page name is exported from the crate root; [`prelude`] holds the common imports,
-including what a custom [`Component`] that lays out, draws and handles input
-names, and its page lists the root names other code most often adds. A
-component that also describes itself for inspection, starts a drag, keeps a
-receipt or presents in its own window globs [`component`] as well, which holds
-every name implementing [`Component`] writes.
+page name is exported from the crate root. Application code globs
+[`prelude`], which holds what an application's first program writes: the
+built-in components with their configuration types and the names an
+application uses everywhere. Code that implements [`Component`] also globs
+[`component`], and a headless test globs [`testing`]. The thematic modules
+gather the rest by need: [`parameter`] for authoritative values, [`commands`]
+for commands and the command palette, [`windowing`] for windows, regions,
+splits and tool windows, [`inspection`] for inspection, capture and
+profiling, and [`live`] for data from other threads. The prelude's page says
+where every other name is.
 
 Most items are re-exported from the backend-independent `pert-ui-runtime`
 crate, which documents them. Their examples import `pert_ui::…`, as an
 application writes them: an application depends on `pert-ui` alone, every such
 item is at this crate's root, `pert_ui::prelude` is
 `pert_ui_runtime::prelude` plus native startup and the facade's own
-feature widgets (`Svg` with `svg`), and `pert_ui::component` is
-`pert_ui_runtime::component`.
+feature widgets (`Svg` with `svg`), and `pert_ui::component` and the thematic
+modules re-export their `pert_ui_runtime` namesakes.
 
 # Map of the library
 
 | Area | Start with | Guide |
 |---|---|---|
 | Native application | [`App`], [`Runtime`], [`Element`], [`Component`] | [getting started](crate::guide::getting_started) |
-| Local state and derived values | [`Signal`], [`ReadSignal`], [`UpdateContext::read`] | [state and parameters](crate::guide::state) |
-| Parameters and host edits | [`ParameterSpec`], [`Runtime::parameter`], [`ParameterHost`], [`Runtime::remote_parameter`] | [state and parameters](crate::guide::state) |
-| Worker results and live data | [`Runtime::mailbox`], [`SeriesSource`], [`Telemetry`], [`series_bridge`], [`LevelMeter`], [`Trace`] | [state and parameters](crate::guide::state) |
+| Local state and derived values | [`Signal`], [`ReadSignal`], [`UpdateContext::read`] | [state](crate::guide::state) |
+| Parameters and host edits | [`ParameterSpec`], [`Runtime::parameter`], [`ParameterHost`], [`Runtime::remote_parameter`] | [authoritative values](crate::guide::authoritative_values) |
+| Worker results and live data | [`Runtime::mailbox`], [`SeriesSource`], [`Telemetry`], [`series_bridge`], [`LevelMeter`], [`Trace`] | [state](crate::guide::state) |
 | Layout and views | [`Column`], [`Row`], [`Element::with_grow`], [`Justify`], [`Align`], [`Grid`], [`Form`], [`View`], [`ScrollArea`], [`RegionLayout`], [`SplitPane`], [`Tabs`] | [layout and views](crate::guide::layout) |
 | Windows and workspaces | [`FloatingWindow`], [`Runtime::request_detach`], [`NativeWindowOptions`], [`Workspace`] | [layout and views](crate::guide::layout) |
 | Children from values | [`Dynamic`], [`Show`], [`Each`] | [layout and views](crate::guide::layout) |

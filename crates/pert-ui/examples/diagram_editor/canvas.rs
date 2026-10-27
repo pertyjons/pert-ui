@@ -5,12 +5,7 @@
 //! them, and owns a retained `DraftEditor` for renaming a node in place.
 use crate::editor::{Editor, Tool};
 use crate::model::{Diagram, EdgeId, MAX_LABEL, Node, NodeId, NodeShape};
-use pert_ui::prelude::*;
-use pert_ui::{
-    ClickCounter, ComponentDetails, CursorIcon, DraftEditor, DraftEditorController, DraftSelection,
-    KeyCode, KeyEvent, KeyTransition, KeyboardState, Length, PathBuilder, PointerEvent,
-    SemanticRole, Semantics, StrokeStyle, ViewTransform,
-};
+use pert_ui::component::*;
 use std::{cell::Cell, collections::BTreeSet, rc::Rc};
 
 /// A press must move this far, in window pixels, before it drags.

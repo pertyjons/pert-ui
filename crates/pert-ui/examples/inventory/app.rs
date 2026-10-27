@@ -1,13 +1,13 @@
 //! The inventory editor: a table edited in place, a toolbar of commands,
 //! filters and a summary over an application-owned store and undo history.
 use crate::model::{self, Category, EditError, Field, Item, ItemId, Op, Store, Value};
-use pert_ui::prelude::*;
 use pert_ui::{
     ApplicationError, CellEdit, CollectionFilter, CommandId, CommandScope, FilterMatcher, Icon,
     InlineInteger, InlineReadout, InlineSelect, InlineText, InlineToggle, InputRejection, KeyChord,
     SortDirection, TableColumn, TableController, TableItems, TableSort, TableSource, ToolGroup,
     Toolbar, Tooltip,
 };
+use pert_ui::{prelude::*, windowing::*};
 use std::{
     cell::RefCell,
     collections::HashMap,

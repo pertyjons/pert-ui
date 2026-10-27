@@ -1,9 +1,12 @@
 pub mod pert_ui
 pub use pert_ui::<<pert_ui_runtime::*>>
+pub mod pert_ui::commands
+pub use pert_ui::commands::<<pert_ui_runtime::commands::*>>
 pub mod pert_ui::component
 pub use pert_ui::component::<<pert_ui_runtime::component::*>>
 pub mod pert_ui::guide
 pub mod pert_ui::guide::appearance
+pub mod pert_ui::guide::authoritative_values
 pub mod pert_ui::guide::controls
 pub mod pert_ui::guide::custom_widgets
 pub mod pert_ui::guide::diagnostics
@@ -12,6 +15,12 @@ pub mod pert_ui::guide::layout
 pub mod pert_ui::guide::state
 pub mod pert_ui::guide::surfaces
 pub mod pert_ui::guide::testing
+pub mod pert_ui::inspection
+pub use pert_ui::inspection::<<pert_ui_runtime::inspection::*>>
+pub mod pert_ui::live
+pub use pert_ui::live::<<pert_ui_runtime::live::*>>
+pub mod pert_ui::parameter
+pub use pert_ui::parameter::<<pert_ui_runtime::parameter::*>>
 pub mod pert_ui::prelude
 pub use pert_ui::prelude::<<pert_ui_runtime::prelude::*>>
 pub use pert_ui::prelude::NativeWindowId
@@ -182,12 +191,22 @@ pub fn pert_ui::svg::rasterize_mask(&[u8], u32, u32) -> core::result::Result<per
 pub mod pert_ui::testing
 pub use pert_ui::testing::CaptureRequest
 pub use pert_ui::testing::CaptureTarget
+pub use pert_ui::testing::ClickCounter
+pub use pert_ui::testing::CommandKeyInput
 pub use pert_ui::testing::Detail
 pub use pert_ui::testing::Driver
+pub use pert_ui::testing::FocusDirection
 pub use pert_ui::testing::FrameImage
+pub use pert_ui::testing::InputOutcome
 pub use pert_ui::testing::InspectionQuery
+pub use pert_ui::testing::KeyAction
+pub use pert_ui::testing::PointerButton
+pub use pert_ui::testing::PointerEvent
+pub use pert_ui::testing::PointerKind
 pub use pert_ui::testing::Selector
+pub use pert_ui::testing::SemanticValue
 pub use pert_ui::testing::TestError
+pub use pert_ui::testing::Viewport
 pub struct pert_ui::testing::HeadlessApp
 impl pert_ui::testing::HeadlessApp
 pub fn pert_ui::testing::HeadlessApp::admit_close(&mut self, &pert_ui_runtime::runtime::native_windows::NativeWindowId) -> core::result::Result<pert_ui::NativeCloseAction, pert_ui::AppError>
@@ -204,6 +223,8 @@ impl core::marker::Unpin for pert_ui::testing::HeadlessApp
 impl core::marker::UnsafeUnpin for pert_ui::testing::HeadlessApp
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui::testing::HeadlessApp
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui::testing::HeadlessApp
+pub mod pert_ui::windowing
+pub use pert_ui::windowing::<<pert_ui_runtime::windowing::*>>
 #[non_exhaustive] pub enum pert_ui::AppError
 pub pert_ui::AppError::DeviceLost(alloc::string::String)
 pub pert_ui::AppError::Drawing(pert_ui_runtime::drawing::DrawError)

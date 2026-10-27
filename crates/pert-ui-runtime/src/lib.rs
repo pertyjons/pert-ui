@@ -226,8 +226,8 @@ pub use capture::{
     Capture, CaptureError, CaptureJob, CaptureRequest, CaptureTarget, FrameError, FrameImage,
 };
 mod diagnostics;
-mod inspection;
-pub use inspection::{
+mod inspection_service;
+pub use inspection_service::{
     Depth, Detail, DiagnosticCommand, EventHistory, InspectionClient, InspectionQuery,
     InspectionReply, InspectionService, Pending, QueryResult, RequestError, Selector, WaitError,
 };
@@ -237,7 +237,7 @@ mod serde_float;
 pub use profiling::{ProfileOperation, ProfileSample, ProfileSnapshot, ProfileStats};
 mod drag;
 mod input;
-mod live;
+mod live_source;
 mod mailbox;
 pub use drag::{
     DRAG_THRESHOLD, DragEvent, DragInspection, DragOutcome, DragPayload, DragPhase, DragPreview,
@@ -301,7 +301,7 @@ pub use diagnostics::{
 pub use input::{
     FocusDirection, KeyAction, KeyCode, KeyEvent, KeyTransition, KeyboardState, Modifiers,
 };
-pub use live::{
+pub use live_source::{
     Delivery, Freshness, LiveWaker, SeriesSource, SourceInspection, Telemetry, WakeError,
 };
 pub use mailbox::{Mailbox, SendError, UiSender};
@@ -326,263 +326,166 @@ pub use pert_ui_core::{
     series_bridge,
 };
 
-/// The names ordinary application code and a custom component write, for
+/// The names an application's first program writes, for
 /// `use pert_ui_runtime::prelude::*`.
 ///
 /// # Membership
 ///
-/// The prelude holds, and both this prelude and `pert_ui::prelude` follow one
-/// rule:
+/// The prelude is the glob for application code. It holds:
 ///
-/// - the widgets, containers and surfaces, with the types their builders take
-///   and their controllers and status values return;
-/// - state and parameters: [`Runtime`], signals, parameter specifications and
-///   their values, bindings with the outcomes and status values they return,
-///   hosts, local ([`ParameterHost`]) and remote ([`RemoteHost`]), with the
-///   types their sink, response and recovery methods take and return and the
-///   receipts and status values they hand out, and the workspace document
-///   with its settings, values and report entries;
-/// - layout, theme, typography, keyboard, command and shape types an
-///   application configures;
-/// - the [`Component`] trait together with every type its method signatures
-///   name, the enums a component matches on to read its events, and the drawing
-///   types [`Painter`] records and a test reads back ([`DisplayList`],
-///   [`DrawCommand`], [`Viewport`] and the images, masks, vectors and text
-///   layouts a display list refers to).
+/// - every name the application part of the guide's representative programs
+///   writes: a first window, a settings form, an editable list of records,
+///   dialogs, a menu bar with a command, a form with a list from data and a
+///   shortcut, and background work started from a button;
+/// - every built-in component that belongs to no module below, is not a
+///   building block for custom components and can be constructed without a
+///   thematic family's names;
+/// - the names an application writes everywhere: [`Runtime`], [`Signal`],
+///   [`ReadSignal`], [`StateOwner`], [`Element`], [`IntoElement`],
+///   [`WidgetId`], [`EventContext`], [`Permission`], [`RuntimeError`] and the
+///   [`ApplicationError`] an application constructs;
+/// - what those members need to be configured, applied again to every name it
+///   adds: each type their constructors and builders take, each callback value
+///   an application matches, each returned value it keeps, and each enum
+///   payload or public field it constructs.
 ///
-/// The prelude includes errors returned by [`Component`] method
-/// signatures: [`RuntimeError`], [`DrawError`], the
-/// [`WorkspaceError`] of [`Component::workspace_state`] and the
-/// [`RestoreRejection`] of [`Component::restore_workspace_state`]. Widget
-/// configuration also brings [`HexColorError`], [`ListingError`] and
-/// [`InputRejection`] into the prelude, and so do the errors an application
-/// constructs to report its own failure: a host sink's [`SinkError`] and
-/// [`ApplicationError`]. Other error types stay at the crate root, where code
-/// names them to match specific failures; `?` converts the leaf errors wrapped
-/// by `RuntimeError` into it. Inspection queries and records, profiling,
-/// capture, live-data plumbing and host transport ([`Mailbox`], [`UiSender`]
-/// and the series bridge) also stay at the crate root. A live widget's
-/// [`SeriesSource`], and the bridge that feeds it, stay with the live-data
-/// plumbing; the widgets and their builder types are in the prelude.
+/// A name is written when a program constructs it, matches it or keeps it; a
+/// value only passed on, such as a closure's context, is not.
 ///
-/// The `pert-ui` facade's prelude re-exports this one and adds only its native
+/// # Guarantee
+///
+/// The application part of each representative program compiles with this
+/// glob alone, its tests add [`testing`], and a custom component adds
+/// [`component`]. An application configures every component the prelude
+/// holds through the prelude alone, except along the paths below.
+///
+/// # Paths that need another import
+///
+/// - The `for_parameter` constructors take a [`Parameter`], and a choice
+///   control's options are [`ChoiceId`]s: [`parameter`].
+/// - `Button::command`, `MenuItem::command` and `Tooltip::command` take a
+///   [`CommandId`], and a component that runs a command keeps a
+///   [`CommandReceipt`]: [`commands`]. `CommandScope::Window` names a
+///   [`NativeWindowId`], which [`commands`] and [`windowing`] hold.
+/// - The editors' `session` builders take an [`EditorSession`]: [`component`].
+/// - Arguments taken as `impl Into<TextSource>` or `impl Into<IconSource>` are
+///   written as strings, signals and [`Icon`]s; [`TextSource`] is at the crate
+///   root and [`IconSource`] in [`component`].
+/// - The [`DescribeContext`] an [`Each`], [`Dynamic`] or [`Show`] closure
+///   receives is inferred; code that names it imports it from the crate root.
+/// - [`TextEditError`], which `on_binding_refusal` reports, and the other
+///   error types stay at the crate root, where code names them to match a
+///   failure; `?` converts the leaf errors [`RuntimeError`] wraps into it.
+/// - Services: [`NumberFormat`]'s localized constructors take a
+///   [`NumberLocale`], and [`TextSpan::font`] and [`TextSpan::font_role`] take
+///   a [`FontId`] and a [`FontRole`]; they are at the crate root.
+/// - [`ProgressStatus::of`] builds progress from counts; a fraction is a
+///   [`NormalizedValue`] from [`parameter`].
+/// - [`Runtime`] and [`EventContext`] have methods for every family; a
+///   method's arguments are in that family's module.
+///
+/// # Where the other names are
+///
+/// | Names | Import |
+/// |---|---|
+/// | Implementing [`Component`]: contexts, drawing, input events, drag and drop, receipts, editor sessions and the embedded draft editor | `use pert_ui_runtime::component::*` ([`component`]) |
+/// | A headless test: the driver, the viewport, key and pointer input, queries and captures | `use pert_ui_runtime::testing::*` ([`testing`]) |
+/// | Authoritative values: parameters, edit gestures, hosts, external authority, and [`Slider`], [`Knob`] and [`InlineSlider`] | `use pert_ui_runtime::parameter::*` ([`parameter`]) |
+/// | Commands beyond a shortcut's chord and scope, held input and the command palette | `use pert_ui_runtime::commands::*` ([`commands`]) |
+/// | Windows inside a view, native windows, regions, splits and tool windows | `use pert_ui_runtime::windowing::*` ([`windowing`]) |
+/// | Inspection, capture, profiling and validation | `use pert_ui_runtime::inspection::*` ([`inspection`]) |
+/// | Data from other threads: live series, mailboxes, [`LevelMeter`] and [`Trace`] | `use pert_ui_runtime::live::*` ([`live`]) |
+/// | Theme, UI settings, fonts and icons, strings and locale, the workspace document, other errors, [`DescribeContext`], [`PhysicalExtent`] and [`VirtualAxis`] | by name from the crate root, such as `use pert_ui_runtime::{ThemeMode, Workspace};` |
+///
+/// A name can be in the prelude and in a module, or in several modules: each
+/// re-exports the same crate-root item, so the globs combine without
+/// conflict. Glob the prelude and the modules rather than the crate root: a
+/// crate-root glob also brings in the module names, which can collide with a
+/// dependency crate of the same name.
+///
+/// The `pert-ui` facade's prelude re-exports this one and adds its native
 /// startup types (`App` and everything it reports, errors included) and the
-/// widgets its own features provide (`Svg` with `svg`). A custom
-/// component that lays out, draws and handles input can be written from
-/// `use pert_ui::prelude::*` alone. One that describes itself for inspection,
-/// starts a drag, keeps a receipt, presents in its own native window or hosts
-/// an editor session also globs [`component`], which holds every name
-/// implementing [`Component`] writes. The re-exports are `#[doc(no_inline)]`:
-/// each item is documented once, at the crate root.
-///
-/// # Root names to add
-///
-/// These are the crate-root names code most often adds to the glob:
-///
-/// - live data: [`SeriesSource`], [`series_bridge`], [`SeriesConfig`] and
-///   [`Timestamp`];
-/// - a custom component's inspection description, drag preview, receipts and
-///   native windows: `use pert_ui::component::*` (see [`component`]);
-/// - a headless test's driver, inspection queries and capture:
-///   `use pert_ui::testing::*` (see [`testing`]).
+/// widgets its own features provide (`Svg` with `svg`). The re-exports are
+/// `#[doc(no_inline)]`: each item is documented once, at the crate root.
 pub mod prelude {
-    #[doc(no_inline)]
-    pub use crate::ApplicationError;
-    #[doc(no_inline)]
-    pub use crate::NumberFormat;
-    #[doc(no_inline)]
-    pub use crate::{Accordion, Collapsible, ExpandMode, Section};
-    #[doc(no_inline)]
-    pub use crate::{AlertDialog, Dialog, DialogController, DialogOutcome, DialogStatus};
+    // Application-wide names.
     #[doc(no_inline)]
     pub use crate::{
-        Align, Column, Container, Element, Grid, IntoElement, Justify, Length, Row, Size, Track,
-        Wrap,
+        ApplicationError, Element, EventContext, IntoElement, Permission, ReadSignal, Runtime,
+        RuntimeError, Signal, StateOwner, WidgetId,
     };
+    // Built-in components outside the thematic modules.
     #[doc(no_inline)]
     pub use crate::{
-        AnyDeliveryMonitor, AnyParameter, AnyParameterHost, AnyParameterSnapshot, AnyPreviewEvent,
-        AnySpec, AnyTerminalEvent, AnyValue,
+        Accordion, AlertDialog, Banner, Breadcrumb, Button, Checkbox, Chip, Collapsible,
+        CollectionFilter, ColorPicker, ColorSwatch, Column, Container, ContextMenu, DecimalInput,
+        Dialog, Divider, Dynamic, Each, Field, FileBrowser, Form, Grid, Group, HistoryButtons,
+        HistoryNavigator, Image, InlineChoice, InlineDecimal, InlineInteger, InlineReadout,
+        InlineSelect, InlineText, InlineToggle, IntegerInput, Label, Link, Menu, MenuBar,
+        MultiSelect, Popover, ProgressBar, PropertyGrid, QuickPick, RadioGroup, Row, ScrollArea,
+        SearchField, SegmentedControl, Select, SelectableText, Show, Spinner, Table, Tabs,
+        TextArea, TextField, ToastHost, Toggle, Toolbar, Tooltip, Tree, View, VirtualList, Wrap,
+        ZoomView,
     };
-    #[doc(no_inline)]
-    pub use crate::{ArcOrigin, InlineSlider, Knob, Orientation, Slider};
+    // Vocabulary: layout containers.
     #[doc(no_inline)]
     pub use crate::{
-        ArrangeContext, ChangeOrigin, ChildInfo, ChildReveal, ComponentDetails, Constraints,
-        ContentRows, MeasureContext, Notifier, RestoreRejection, SelectionChange, SizeLimits,
-        ViewTransform, WidgetId,
+        Align, ChangeOrigin, Color, ColorRole, Constraints, CursorIcon, Justify, Length,
+        MetricRole, ScrollAxes, Size, SizeLimits, Spacing, Track,
     };
+    // Vocabulary: text, labels and editors.
     #[doc(no_inline)]
     pub use crate::{
-        AuthorityReceipt, AuthorityResponse, RemoteCommit, RemoteHost, ResponseDisposition,
-        SubmissionDelivery,
+        Icon, InputRejection, LinkUnderline, NumberFormat, NumberInputError, QuarterTurn, RichText,
+        SearchKey, TextColor, TextOverflow, TextSpan, TextStyle,
     };
+    // Vocabulary: choice and value controls.
+    #[doc(no_inline)]
+    pub use crate::{Choice, MultiSelectCommit, Orientation};
+    // Vocabulary: disclosure and tabs.
+    #[doc(no_inline)]
+    pub use crate::{ExpandMode, ExpansionChange, Section, SelectionChange, Tab};
+    // Vocabulary: forms.
+    #[doc(no_inline)]
+    pub use crate::{FieldHandle, FieldStatus, FormFields, FormSummary, Property};
+    // Vocabulary: surfaces.
     #[doc(no_inline)]
     pub use crate::{
-        AuthorityStatus, DeliveryMonitor, DeliveryResolution, DeliverySnapshot, DeliveryStatus,
-        PreviewEvent, SinkError, SinkErrorKind, TerminalEvent,
+        ContextMenuController, DialogController, DialogOutcome, DialogStatus, MenuItem, PickChoice,
+        PickItem, PickMatcher, PickPending, PickStatus, Point, QuickPickController,
+        SurfaceDismissal, Toast, ToastController, ToastReceipt, ToastStatus,
     };
-    #[doc(no_inline)]
-    pub use crate::{Banner, Toast, ToastController, ToastHost, ToastReceipt, ToastStatus};
+    // Vocabulary: collections.
     #[doc(no_inline)]
     pub use crate::{
-        Breadcrumb, BreadcrumbSegment, ContextMenu, ContextMenuController, Menu, MenuBar, MenuItem,
-        MultiSelect, MultiSelectCommit, Select,
+        CellEdit, DropOperation, DropOperations, FilterCounts, FilterMatcher, FilterOutcome,
+        FilterTarget, HiddenActive, ListController, ListDrop, ListDropMark, ListDropPlacement,
+        ListDropPoint, ListDropPosition, ListFilter, ListItems, ListRevealReceipt,
+        ListRevealStatus, ListSelection, ListSelectionChange, ListSource, SelectionMode,
+        SortDirection, TableColumn, TableController, TableItems, TableSort, TableSource,
+        TreeController, TreeItems, TreeSource,
     };
+    // Vocabulary: files.
     #[doc(no_inline)]
     pub use crate::{
-        Button, Checkbox, Chip, Choice, Label, Link, LinkUnderline, RadioGroup, SegmentedControl,
-        SelectableText, TextOverflow, TextStyle, Toggle,
+        DirectoryEntry, DirectoryRequest, DirectoryResponse, EntryKind, FileBrowserController,
+        LinkTarget, ListingDelivery, ListingError, ListingErrorKind,
     };
+    // Vocabulary: navigation.
     #[doc(no_inline)]
     pub use crate::{
-        CellEdit, SortDirection, Table, TableColumn, TableController, TableItems, TableSort,
-        TableSource,
+        BreadcrumbSegment, HistoryEntry, HistoryEntryId, HistorySnapshot, NavigationHistory,
+        ToolGroup, ToolbarOverflow,
     };
+    // Vocabulary: media and progress.
     #[doc(no_inline)]
-    pub use crate::{
-        ChoiceId, ChoiceOption, NormalizedValue, ParameterId, ParameterMapping, ParameterSpec,
-    };
+    pub use crate::{ImageFit, ImageSampling, ProgressStatus, RasterImage};
+    // Vocabulary: zoom.
     #[doc(no_inline)]
-    pub use crate::{CollectionFilter, FilterMatcher, HiddenActive, ListFilter};
+    pub use crate::{ScaleLimits, ViewScale, ViewTransform, WheelGesture, ZoomController};
+    // Commands and keys a shortcut writes, and the text command a rename begins.
     #[doc(no_inline)]
-    pub use crate::{
-        Color, ColorPicker, ColorSwatch, DisplayList, DrawCommand, DrawError, HexColorError,
-        Painter, PhysicalExtent, Rect, Viewport,
-    };
-    #[doc(no_inline)]
-    pub use crate::{
-        ColorRole, Density, MetricRole, Palette, Spacing, ThemeManager, ThemeMetrics, ThemeMode,
-    };
-    #[doc(no_inline)]
-    pub use crate::{
-        CommandContext, CommandEntry, CommandId, CommandKey, CommandOutcome, CommandReceipt,
-        CommandScope, CommandSource, CommandStatus, KeyChord, Modifiers,
-    };
-    #[doc(no_inline)]
-    pub use crate::{
-        CommandKeyInput, TextCommand, TextCommandOutcome, TextInputState, TextKeyOutcome,
-        TextPreedit,
-    };
-    #[doc(no_inline)]
-    pub use crate::{
-        CommandMatcher, CommandPalette, CommandPaletteController, CommandPaletteStatus,
-    };
-    #[doc(no_inline)]
-    pub use crate::{
-        Component, EventContext, Invalidation, Permission, ReadSignal, Runtime, RuntimeError,
-        Signal, StateOwner, UpdateContext,
-    };
-    #[doc(no_inline)]
-    pub use crate::{
-        CursorIcon, Divider, MotionPreference, RegionEdge, RegionLayout, Shape, TextRenderingMode,
-        UiSettings, UiZoom,
-    };
-    #[doc(no_inline)]
-    pub use crate::{
-        DecimalInput, DraftAlign, DraftEditor, DraftEditorController, DraftSelection,
-        InlineDecimal, InlineInteger, InputRejection, IntegerInput, SearchField, SearchKey,
-        TextArea, TextField,
-    };
-    #[doc(no_inline)]
-    pub use crate::{DescribeContext, Dynamic, Each, Group, ScrollArea, ScrollAxes, Show, View};
-    #[doc(no_inline)]
-    pub use crate::{
-        DirectoryEntry, DirectoryRequest, DirectoryResponse, EntryKind, FileBrowser,
-        FileBrowserController, ListingDelivery, ListingError,
-    };
-    #[doc(no_inline)]
-    pub use crate::{
-        DragEvent, DragOutcome, DragPayload, DragPhase, DragRole, DropOperation, DropOperations,
-        DropResponse,
-    };
-    #[doc(no_inline)]
-    pub use crate::{
-        EdgeMode, StripeGroup, ToolEdge, ToolWindow, ToolWindowChange, ToolWindowChangeKind,
-        ToolWindowController, ToolWindowLayout, ToolWindowMode,
-    };
-    #[doc(no_inline)]
-    pub use crate::{
-        EditOutcome, EditToken, ParameterFamily, ParameterSnapshot, ParameterValue, PowerExponent,
-        PreviewOutcome, Revision,
-    };
-    #[doc(no_inline)]
-    pub use crate::{EditSession, Parameter, ParameterHost};
-    #[doc(no_inline)]
-    pub use crate::{EditorSession, EditorStart};
-    #[doc(no_inline)]
-    pub use crate::{Expansion, ExpansionChange, WindowPlacement};
-    #[doc(no_inline)]
-    pub use crate::{
-        Field, FieldHandle, FieldStatus, Form, FormFields, FormSummary, Property, PropertyGrid,
-    };
-    #[doc(no_inline)]
-    pub use crate::{FillRule, LineCap, LineJoin, Path, PathBuilder, StrokeStyle};
-    #[doc(no_inline)]
-    pub use crate::{FilterCounts, FilterOutcome, FilterTarget};
-    #[doc(no_inline)]
-    pub use crate::{
-        FloatingWindow, WindowCloseAction, WindowController, WindowLayer, WindowStatus,
-    };
-    #[doc(no_inline)]
-    pub use crate::{FocusDirection, HeldCancellation, HeldInputId};
-    #[doc(no_inline)]
-    pub use crate::{FontData, FontId, FontRole, Icon, IconSource, RichText, TextColor, TextSpan};
-    #[doc(no_inline)]
-    pub use crate::{FontManager, IconGlyph, IconManager};
-    #[doc(no_inline)]
-    pub use crate::{
-        HistoryButtons, HistoryEntry, HistoryEntryId, HistoryNavigator, HistorySnapshot,
-        NavigationHistory,
-    };
-    #[doc(no_inline)]
-    pub use crate::{IgnoredEntry, WorkspaceSettings, WorkspaceValue};
-    #[doc(no_inline)]
-    pub use crate::{Image, ImageFit, ImageSampling, RasterImage};
-    #[doc(no_inline)]
-    pub use crate::{ImageId, MaskId, MaskImage, TextLayout, VectorGeometry, VectorId};
-    #[doc(no_inline)]
-    pub use crate::{InlineChoice, InlineReadout, InlineSelect, InlineText, InlineToggle};
-    #[doc(no_inline)]
-    pub use crate::{InputOutcome, Magnification, Point, PointerButton, PointerEvent, PointerKind};
-    #[doc(no_inline)]
-    pub use crate::{KeyAction, KeyCode, KeyEvent, KeyTransition, KeyboardState};
-    #[doc(no_inline)]
-    pub use crate::{LevelMeter, MeterAxis, Trace};
-    #[doc(no_inline)]
-    pub use crate::{LinkTarget, ListingErrorKind};
-    #[doc(no_inline)]
-    pub use crate::{
-        ListController, ListItems, ListRevealReceipt, ListRevealStatus, ListSource, VirtualList,
-    };
-    #[doc(no_inline)]
-    pub use crate::{ListDrop, ListDropMark, ListDropPlacement, ListDropPoint, ListDropPosition};
-    #[doc(no_inline)]
-    pub use crate::{ListSelection, ListSelectionChange, SelectionMode, VirtualAxis};
-    #[doc(no_inline)]
-    pub use crate::{NumberLocale, StringRole, TextSource, UiMessage, UiStrings};
-    #[doc(no_inline)]
-    pub use crate::{OpaqueColor, QuarterTurn, ViewScale};
-    #[doc(no_inline)]
-    pub use crate::{
-        PickChoice, PickItem, PickMatcher, PickPending, PickStatus, QuickPick, QuickPickController,
-    };
-    #[doc(no_inline)]
-    pub use crate::{Popover, SurfaceDismissal, SurfaceKind, Tooltip};
-    #[doc(no_inline)]
-    pub use crate::{ProgressBar, ProgressStatus, Spinner};
-    #[doc(no_inline)]
-    pub use crate::{ScaleLimits, WheelGesture, ZoomController, ZoomView};
-    #[doc(no_inline)]
-    pub use crate::{SplitAxis, SplitPane, SplitRule, SplitSizing};
-    #[doc(no_inline)]
-    pub use crate::{Tab, Tabs};
-    #[doc(no_inline)]
-    pub use crate::{ToolGroup, Toolbar, ToolbarOverflow};
-    #[doc(no_inline)]
-    pub use crate::{Tree, TreeController, TreeItems, TreeSource};
-    #[doc(no_inline)]
-    pub use crate::{ViewState, Workspace, WorkspaceError, WorkspacePath, WorkspaceReport};
+    pub use crate::{CommandKey, CommandScope, KeyChord, KeyCode, Modifiers, TextCommand};
 }
 
 /// The names implementing [`Component`] writes, for
@@ -595,9 +498,11 @@ pub mod prelude {
 ///
 /// # Membership
 ///
-/// The module holds [`Component`], its contexts and every name an
-/// implementation has to write. A name is a member when using the trait, a
-/// context or a value they hand out requires writing it:
+/// The module holds [`Component`], its contexts, every name an
+/// implementation has to write, and the built-in editor a component embeds
+/// ([`DraftEditor`] with its controller, alignment and selection). A name is
+/// a member when using the trait, a context or a value they hand out
+/// requires writing it:
 ///
 /// - an argument the component constructs, such as a [`DragPreview`] or the
 ///   [`NativeWindowOptions`] of [`EventContext::detach_view`];
@@ -613,12 +518,14 @@ pub mod prelude {
 ///   to keep it: the receipts ([`TaskReceipt`], [`RevealReceipt`],
 ///   [`PresentationReceipt`], [`CommandReceipt`]) and the
 ///   [`EditorAttachment`] through which a hosted editor reports the end of
-///   its edit.
+///   its edit, and the [`ClickCounter`] a component that counts presses
+///   stores.
 ///
 /// A value only passed on, compared or converted in the call that returned
-/// it, such as [`FittedText`], is not required. The excluded families stay
-/// at the crate root: profiling ([`ProfileSnapshot`]), capture, inspection
-/// queries and records, live-data plumbing and host transport. The
+/// it, such as [`FittedText`], is not required. The excluded families are in
+/// their own modules: profiling, capture and inspection queries and records
+/// in [`inspection`], live-data plumbing and mailboxes in [`live`]; host
+/// transport stays at the crate root. The
 /// description a component returns from [`Component::inspect`] is not an
 /// inspection record and is here. The re-exports are `#[doc(no_inline)]`:
 /// each item is documented once, at the crate root.
@@ -703,6 +610,8 @@ pub mod component {
         ValidationHints,
     };
     #[doc(no_inline)]
+    pub use crate::{ClickCounter, DraftAlign, DraftEditor, DraftEditorController, DraftSelection};
+    #[doc(no_inline)]
     pub use crate::{
         Color, ColorRole, DisplayList, DrawCommand, FillRule, Icon, IconSource, ImageId,
         ImageSampling, Length, LineCap, LineJoin, MaskId, MaskImage, MetricRole, Painter, Path,
@@ -743,6 +652,308 @@ pub mod component {
     pub use crate::{Element, MotionPreference, ReadSignal, Signal};
     #[doc(no_inline)]
     pub use crate::{RestoreRejection, ViewState, WorkspaceError, WorkspaceValue};
+}
+
+/// Authoritative values, for `use pert_ui_runtime::parameter::*`: parameters,
+/// edit gestures, hosts, external authority and the parameter-only controls.
+///
+/// An application whose values a host validates, revisions and observes,
+/// rather than UI-local [`Signal`]s, globs this module beside the
+/// [`prelude`]. The [`Slider`], [`Knob`] and [`InlineSlider`] controls are
+/// here because their only constructors take a [`Parameter`].
+///
+/// # Membership
+///
+/// The module holds the parameter specifications, identities and values, the
+/// bindings, gestures and their outcomes, local ([`ParameterHost`]) and
+/// external ([`RemoteHost`]) hosts with their delivery and authority records,
+/// the parameter-only controls, and the family's errors, which a host
+/// matches. It is closed one level: each argument of a member's constructors
+/// and builders, and each enum payload or public field type of a member, is
+/// here or in the prelude. [`ParameterInspection`] is an inspection record
+/// and is in [`inspection`]; a control's [`Choice`] is in the prelude.
+///
+/// A name can also be in the prelude or another module, such as
+/// [`ParameterSpec`], which [`live`] holds for a meter's range; each glob
+/// re-exports the same crate-root item, so the globs combine. The
+/// re-exports are `#[doc(no_inline)]`: each item is documented once, at the
+/// crate root.
+///
+/// # Example
+///
+/// ```
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{parameter::*, prelude::*};
+/// use std::time::Duration;
+///
+/// let amount = ParameterSpec::new("Amount", -100.0, 100.0, 0.0)?;
+/// let position = NormalizedValue::try_from(0.75)?;
+/// assert_eq!(amount.denormalize(position), 50.0);
+/// assert_eq!(amount.normalize(&f32::NAN), Err(ParameterError::NonFinite));
+///
+/// let mut ui = Runtime::new();
+/// // The host owner must stay alive: dropping it removes the parameter.
+/// let (value, host) = ui.parameter(ParameterId::new(1, 42, "amount")?, amount)?;
+/// ui.mount_tree(Element::new("amount", Slider::new(value.clone())))?;
+/// ui.flush(Duration::ZERO)?;
+/// host.write_base(25.0)?;
+/// assert_eq!(value.snapshot().get()?.base, 25.0);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+pub mod parameter {
+    #[doc(no_inline)]
+    pub use crate::{
+        AnyDeliveryMonitor, AnyParameter, AnyParameterHost, AnyParameterSnapshot, AnyPreviewEvent,
+        AnySpec, AnyTerminalEvent, AnyValue, ArcOrigin, AuthorityReceipt, AuthorityResponse,
+        AuthorityStatus, BindingError, ChoiceId, ChoiceOption, DeliveryError, DeliveryMonitor,
+        DeliveryResolution, DeliverySnapshot, DeliveryStatus, EditError, EditOutcome, EditSequence,
+        EditSession, EditSource, EditToken, HostValue, InlineSlider, Knob, NormalizedValue,
+        NormalizedValueError, Parameter, ParameterError, ParameterFamily, ParameterHost,
+        ParameterId, ParameterIdError, ParameterMapping, ParameterSnapshot, ParameterSpec,
+        ParameterState, ParameterValue, PowerExponent, PreviewEvent, PreviewOutcome, RemoteCommit,
+        RemoteHost, ResponseDisposition, Revision, SinkError, SinkErrorKind, Slider,
+        SubmissionDelivery, TerminalEvent,
+    };
+}
+
+/// Commands, shortcuts and the command palette, for
+/// `use pert_ui_runtime::commands::*`.
+///
+/// The prelude already holds what registering a shortcut writes: a
+/// [`CommandScope`] and a [`KeyChord`] with its [`CommandKey`], [`KeyCode`]
+/// and [`Modifiers`]. An application that keeps a command's [`CommandId`],
+/// invokes a command, reads its [`CommandInfo`] or [`CommandOutcome`], lists
+/// commands or shows a [`CommandPalette`] globs this module beside the
+/// [`prelude`].
+///
+/// # Membership
+///
+/// The module holds the command registry's identities, contexts, sources,
+/// outcomes and receipts, held-input cancellation, the shortcut chords and
+/// the command palette with its controller. It is closed one level: each
+/// argument of a member's constructors and builders, and each enum payload or
+/// public field type of a member, is here or in the prelude, so it adds the
+/// [`NativeWindowId`] of `CommandScope::Window` and
+/// [`CommandContext::window`]. Raw key events and a host's key entry
+/// ([`KeyEvent`], [`KeyAction`], [`KeyTransition`], [`KeyboardState`],
+/// [`KeyDispatch`], [`CommandKeyInput`], [`TextKeyOutcome`]) are in
+/// [`component`], [`testing`] or at the crate root, and shortcut validation
+/// records in [`inspection`].
+///
+/// A name can also be in the prelude or another module; each glob re-exports
+/// the same crate-root item, so the globs combine. The re-exports are
+/// `#[doc(no_inline)]`: each item is documented once, at the crate root.
+///
+/// # Example
+///
+/// ```
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{commands::*, prelude::*};
+///
+/// let mut ui = Runtime::new();
+/// let deleted = ui.signal(0);
+/// let count = deleted.clone();
+/// let delete: CommandId = ui.register_command(
+///     "Delete",
+///     CommandScope::Application,
+///     vec![KeyChord::named(KeyCode::Delete)],
+///     move |_, _| count.update(|n| *n += 1),
+/// )?;
+/// let context = ui.command_context(CommandSource::Programmatic);
+/// let info: CommandInfo = ui.command_info(&delete, &context)?;
+/// assert!(info.enabled);
+/// let outcome = ui.invoke_command(&delete, context)?;
+/// assert!(matches!(outcome, CommandOutcome::Invoked));
+/// assert_eq!(deleted.get()?, 1);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+pub mod commands {
+    #[doc(no_inline)]
+    pub use crate::{
+        CommandContext, CommandEntry, CommandId, CommandInfo, CommandKey, CommandMatcher,
+        CommandOutcome, CommandPalette, CommandPaletteController, CommandPaletteStatus,
+        CommandReceipt, CommandScope, CommandSource, CommandStatus, HeldCancellation, HeldInputId,
+        KeyChord, KeyCode, Modifiers, NativeWindowId,
+    };
+}
+
+/// Windows inside a view and native windows, regions, splits and tool
+/// windows, for `use pert_ui_runtime::windowing::*`.
+///
+/// An application that arranges its content in movable windows, a
+/// [`RegionLayout`], a [`SplitPane`] or a [`ToolWindowLayout`], or presents a
+/// view in its own native window, globs this module beside the [`prelude`].
+///
+/// # Membership
+///
+/// The module holds the window layer and its windows, native window
+/// identities, options and presentation receipts, regions, splits and tool
+/// windows with their controllers, changes and modes, and [`WindowError`].
+/// It is closed one level: each argument of a member's constructors and
+/// builders, and each enum payload or public field type of a member, is here
+/// or in the prelude, so it adds the [`NormalizedValue`] of
+/// `SplitRule::Ratio` and the [`Rect`] of a tool window's floating bounds. A
+/// host's presentation plumbing ([`PresentationRequest`],
+/// [`PresentationAction`], [`PreparedDetach`], [`PresentationRate`]) stays at
+/// the crate root, and the error payload of `WindowError::Drawing` is
+/// [`DrawError`] in [`component`].
+///
+/// The name is `windowing`, not `windows`: a crate that globs the crate root
+/// and depends on the `windows` crate would otherwise find the name
+/// ambiguous. A name can also be in the prelude or another module; each glob
+/// re-exports the same crate-root item, so the globs combine. The re-exports
+/// are `#[doc(no_inline)]`: each item is documented once, at the crate root.
+///
+/// # Example
+///
+/// ```
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{prelude::*, windowing::*};
+/// use std::time::Duration;
+///
+/// let mut ui = Runtime::new();
+/// let split = SplitPane::new(
+///     SplitAxis::LeftRight,
+///     Element::new("navigation", Label::new("Navigation")),
+///     Element::new("editor", Label::new("Editor")),
+/// )
+/// .sizing(SplitSizing::ratio(0.25)?);
+/// ui.mount_tree(Element::new("main", split))?;
+/// ui.flush(Duration::ZERO)?;
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+pub mod windowing {
+    #[doc(no_inline)]
+    pub use crate::{
+        DetachedClosePolicy, EdgeMode, Expansion, FloatingWindow, NativeWindowId,
+        NativeWindowOptions, NormalizedValue, PresentationReceipt, PresentationStatus, Rect,
+        RegionEdge, RegionLayout, SplitAxis, SplitPane, SplitRule, SplitSizing, StripeGroup,
+        ToolEdge, ToolWindow, ToolWindowChange, ToolWindowChangeKind, ToolWindowController,
+        ToolWindowLayout, ToolWindowMode, WindowCloseAction, WindowController, WindowError,
+        WindowLayer, WindowPlacement, WindowStatus,
+    };
+}
+
+/// Inspection, capture, profiling and validation, for an application's own
+/// tooling and tests, for `use pert_ui_runtime::inspection::*`.
+///
+/// An application that serves its own diagnostic tool, reads inspection
+/// snapshots and event history, captures frames, profiles or validates its
+/// tree globs this module beside the [`prelude`]. A headless test reaches the
+/// common queries and captures through [`testing`].
+///
+/// # Membership
+///
+/// The module holds queries and their replies, the inspection service and
+/// client, snapshots and component records with their semantics, event
+/// history, capture requests and frames, profiling records and validation
+/// reports. It is closed one level: each argument of a member's constructors
+/// and builders, and each enum payload or public field type of a member, is
+/// here or in the prelude, so it adds the [`Rect`] and [`NativeWindowId`] of
+/// `CaptureTarget::region`, the [`ComponentDetails`] and [`Invalidation`] of
+/// a [`ComponentInspection`], the [`KeyEvent`] of `EventKind::KeyInput` and
+/// the [`Viewport`] of a [`WindowInspection`]. A host's [`CaptureJob`] stays
+/// at the crate root, the error payload of `CaptureError::Drawing` is
+/// [`DrawError`] in [`component`], and the fields records take from another
+/// family are in that family's module: the parameter names of a
+/// [`ParameterInspection`] and an [`EventRecord`] in [`parameter`], and the
+/// [`Delivery`] and [`Freshness`] of a [`SourceInspection`] in [`live`].
+///
+/// A name can also be in the prelude or another module; each glob re-exports
+/// the same crate-root item, so the globs combine. The re-exports are
+/// `#[doc(no_inline)]`: each item is documented once, at the crate root.
+///
+/// # Example
+///
+/// ```
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{inspection::*, prelude::*};
+/// use std::time::Duration;
+///
+/// let mut ui = Runtime::new();
+/// ui.set_viewport(Viewport::new(300.0, 100.0, 1.0)?)?;
+/// ui.mount_tree(Element::new("title", Label::new("Profile")))?;
+/// ui.flush(Duration::ZERO)?;
+/// let query = InspectionQuery::components(Selector::key("title")).detail(Detail::Semantics);
+/// let result: QueryResult = ui.query(&query);
+/// let semantics: &Semantics = result.components[0]
+///     .details
+///     .semantics
+///     .as_ref()
+///     .ok_or("the label has semantics")?;
+/// assert_eq!(semantics.name.as_deref(), Some("Profile"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+pub mod inspection {
+    #[doc(no_inline)]
+    pub use crate::{
+        BorderInspection, BoxModelInspection, Capture, CaptureError, CaptureRequest, CaptureTarget,
+        ComponentDetails, ComponentInspection, DebugMode, DebugOverlay, Depth, Detail,
+        DiagnosticCommand, DragInspection, EventHistory, EventKind, EventRecord, EventStatus,
+        FailurePhase, FailureSite, FlushReport, FrameError, FrameImage, InspectValue,
+        InspectionClient, InspectionQuery, InspectionReply, InspectionService, InspectionSnapshot,
+        Invalidation, KeyEvent, LimitError, NativeWindowId, OverlapPolicy, ParameterInspection,
+        Pending, ProfileOperation, ProfileSample, ProfileSnapshot, ProfileStats, QueryResult, Rect,
+        RequestError, ResourceKind, Selector, SemanticAction, SemanticItem, SemanticRole,
+        SemanticValue, Semantics, ShortcutBinding, ShortcutScope, SourceInspection, ValidationCode,
+        ValidationHints, ValidationIssue, ValidationMarker, ValidationReport, Viewport, WaitError,
+        WindowInspection,
+    };
+}
+
+/// Data from other threads, for `use pert_ui_runtime::live::*`: lossy live
+/// series and owned values through mailboxes.
+///
+/// An application whose producer publishes high-rate, lossy data, or whose
+/// worker thread hands owned results to the UI thread, globs this module
+/// beside the [`prelude`]. The live widgets [`LevelMeter`] and [`Trace`] are
+/// here with the [`SeriesSource`] they read.
+///
+/// # Membership
+///
+/// The module holds the series bridge ([`series_bridge`], its endpoint,
+/// consumer, configuration and items), the UI-thread [`SeriesSource`] with
+/// its delivery, freshness and wake-up names, the live widgets, and the
+/// mailbox family ([`Mailbox`], [`UiSender`], [`SendError`]), which shares
+/// [`Capacity`]. It is closed one level: each argument of a member's
+/// constructors and builders, and each enum payload or public field type of a
+/// member, is here or in the prelude, so it adds the [`ParameterSpec`] that
+/// [`LevelMeter::new`] and [`Trace::new`] take for their range; that
+/// specification's own builders' names are in [`parameter`]. The handles of
+/// `spawn` and `start_interval` ([`BackgroundTask`], [`IntervalTimer`],
+/// [`TaskReceipt`]) stay at the crate root, and [`SourceInspection`] is in
+/// [`inspection`].
+///
+/// A name can also be in the prelude or another module; each glob re-exports
+/// the same crate-root item, so the globs combine. The re-exports are
+/// `#[doc(no_inline)]`: each item is documented once, at the crate root.
+///
+/// # Example
+///
+/// ```
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{live::*, prelude::*};
+/// use std::time::Duration;
+///
+/// let mut ui = Runtime::new();
+/// // The endpoint is `Send`: a producer thread publishes through it with
+/// // bounded work and no allocation.
+/// let (mut endpoint, consumer) = series_bridge::<f32>(SeriesConfig::new(Capacity::new(64)?));
+/// let source = ui.series_source(consumer, Delivery::Polled);
+/// let scale = ParameterSpec::new("Level", 0.0, 1.0, 0.0)?;
+/// ui.mount_tree(Element::new("meter", LevelMeter::new(source, scale)))?;
+/// ui.flush(Duration::ZERO)?;
+/// endpoint.publish(0.5, Timestamp::new(1));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+pub mod live {
+    #[doc(no_inline)]
+    pub use crate::{
+        Capacity, Delivery, DrainReport, Freshness, Incarnation, LevelMeter, LiveError, LiveItem,
+        LiveWaker, Mailbox, MeterAxis, ParameterSpec, PublishOutcome, Sample, SampleWindow,
+        SampleWindowEntry, SendError, Sequence, SeriesConfig, SeriesConsumer, SeriesEndpoint,
+        SeriesSource, Telemetry, Timestamp, Trace, UiSender, WakeError, WakeFlag, series_bridge,
+    };
 }
 
 pub use runtime::held::{HeldCancellation, HeldInputId};

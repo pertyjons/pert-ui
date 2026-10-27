@@ -2,8 +2,9 @@
 //! form, and a button that resets both through their bindings.
 //!
 //! Needs the default `desktop` feature: `cargo run -p pert-ui --example getting_started`.
-fn main() -> Result<(), pert_ui::AppError> {
-    use pert_ui::prelude::*;
+use pert_ui::prelude::*;
+
+fn main() -> Result<(), AppError> {
     App::new("Profile", |ui| {
         let name = ui.signal("Ada".to_owned());
         let city = ui.signal("Stockholm".to_owned());

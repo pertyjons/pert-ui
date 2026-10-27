@@ -7,7 +7,7 @@
 //! writes. `every_name` imports each promised name on its own, so a removed
 //! re-export fails even where the probe does not use it. The test driving it is ordinary application code and globs the
 //! prelude.
-use pert_ui::{ComponentInspection, OverlapPolicy, SemanticRole, prelude::*};
+use pert_ui::{ComponentInspection, OverlapPolicy, SemanticRole, prelude::*, testing::*};
 use std::time::Duration;
 
 mod widget {

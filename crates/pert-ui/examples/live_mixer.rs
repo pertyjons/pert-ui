@@ -21,13 +21,13 @@
 //! checks its results, which needs no window:
 //! `cargo run -p pert-ui --example live_mixer --no-default-features`. With the
 //! `native` feature, `--window` opens it in a native window instead.
-use pert_ui::prelude::*;
 use pert_ui::{
     Capacity, CommandReceipt, CommandScope, Delivery, DeliveryMonitor, DeliverySnapshot,
-    EditOutcome, InspectValue, KeyAction, KeyChord, KeyCode, LevelMeter, Mailbox, MeterAxis,
-    MetricRole, Orientation, PowerExponent, SeriesConfig, SeriesEndpoint, SinkError, SinkErrorKind,
-    Timestamp, UiSender, Workspace, series_bridge,
+    EditOutcome, InspectValue, KeyChord, KeyCode, LevelMeter, Mailbox, MeterAxis, MetricRole,
+    Orientation, PowerExponent, SeriesConfig, SeriesEndpoint, SinkError, SinkErrorKind, Timestamp,
+    UiSender, Workspace, series_bridge,
 };
+use pert_ui::{parameter::*, prelude::*, windowing::*};
 use std::{
     cell::{Cell, RefCell},
     rc::Rc,
@@ -589,6 +589,7 @@ fn level(ui: &Runtime, channel: usize) -> f64 {
 
 /// The deterministic session: every step waits, bounded, for what it checks.
 fn headless() -> Result<(), Box<dyn std::error::Error>> {
+    use pert_ui::testing::*;
     let start = Instant::now();
     let mut ui = Runtime::new();
     ui.set_viewport(Viewport::new(900.0, 520.0, 1.0)?)?;

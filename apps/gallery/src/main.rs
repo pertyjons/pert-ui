@@ -21,7 +21,7 @@ mod tests;
 mod workspace_check;
 use pert_ui::{
     ComponentDetails, DebugMode, EditOutcome, InspectValue, ParameterSnapshot, RuntimeError,
-    prelude::*,
+    component::*, parameter::*, prelude::*,
 };
 use std::{
     collections::BTreeMap, error::Error, ffi::OsString, io::Write, path::PathBuf,

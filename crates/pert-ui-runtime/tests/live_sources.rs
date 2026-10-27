@@ -14,7 +14,7 @@ use std::{
 
 use pert_ui_runtime::{
     Capacity, Delivery, Freshness, PublishOutcome, RuntimeError, SeriesConfig, SeriesEndpoint,
-    SeriesSource, Telemetry, Timestamp, WakeError, prelude::*, series_bridge,
+    SeriesSource, Telemetry, Timestamp, WakeError, component::*, prelude::*, series_bridge,
 };
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;

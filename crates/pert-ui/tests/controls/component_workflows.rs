@@ -1,5 +1,5 @@
 //! Consumer workflows for the component API review, using only the public facade.
-use pert_ui::prelude::*;
+use pert_ui::{component::*, parameter::*, prelude::*};
 use std::time::Duration;
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;

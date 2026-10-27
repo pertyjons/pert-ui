@@ -12,13 +12,12 @@ or open it with `cargo run -p pert-ui --example diagram_editor --features cpu --
 
 # Imports
 
-Application code globs [`prelude`], and a widget that lays
-out, draws and handles input needs nothing more. A widget that describes
-itself for inspection, starts a drag, keeps a receipt such as a
-[`TaskReceipt`], presents in its own native window or hosts an editor session
-also globs [`component`], which holds every name
-implementing [`Component`] writes. Both globs can be used together, since
-they re-export the same items:
+Application code globs [`prelude`]; a widget globs [`prelude`] and
+[`component`]. The component module holds every name implementing
+[`Component`] writes: its contexts, drawing, input events, drag and drop,
+receipts such as a [`TaskReceipt`], native windows, editor sessions and the
+[`DraftEditor`] a widget embeds. Both globs can be used together, since they
+re-export the same items:
 
 ```
 use pert_ui::{component::*, prelude::*};
@@ -40,7 +39,7 @@ impl Component for Marker {
 ```
 
 The [`component`] page has an example that mounts such a
-widget. The examples in this chapter glob the crate root, which holds every
+widget. Most examples in this chapter glob the crate root, which holds every
 name.
 
 # A component that follows a binding
@@ -51,7 +50,7 @@ not while it is hidden:
 
 ```rust
 use std::time::Duration;
-use pert_ui::prelude::*;
+use pert_ui::{component::*, prelude::*};
 
 // A custom component that follows a text binding.
 struct Status {

@@ -1,9 +1,9 @@
 //! Public contracts of text commands, key routing, key-path lookup and
 //! observable presentation settings.
 use pert_ui_runtime::{
-    DebugOverlay, InputOutcome, InspectionQuery, KeyAction, KeyCode, KeyEvent, KeyTransition,
-    KeyboardState, Modifiers, MotionPreference, RuntimeError, Selector, TextCommand,
-    TextCommandOutcome, UiZoom, Viewport, WidgetId, prelude::*,
+    DebugOverlay, Density, InputOutcome, InspectionQuery, KeyAction, KeyCode, KeyEvent,
+    KeyTransition, KeyboardState, Modifiers, MotionPreference, RuntimeError, Selector, TextCommand,
+    TextCommandOutcome, ThemeMode, UiZoom, Viewport, WidgetId, component::*, prelude::*,
 };
 use std::{cell::Cell, rc::Rc, time::Duration};
 

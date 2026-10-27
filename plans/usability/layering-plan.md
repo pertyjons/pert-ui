@@ -538,6 +538,47 @@ All six were decided on 2026-10-26 as recommended.
     reviewed matches are recorded above. Both are documentation fixes made
     by the author, verified in L2's review.
 
+- **L2 (0.3.73), implemented 2026-10-27:** commit and review to be
+  recorded. A layered prelude, by [the approved design](layering-design-L2.md)
+  (revision 3; D1 the widened membership rule, D2 services root-only).
+  - **Membership:** the prelude holds 195 names, closed under what its
+    members' constructors, builders, matched enums and kept values need;
+    174 names left it for the crate root and a thematic module, and
+    `NumberInputError` joined. `component` and `testing` gained the names
+    their programs write. The modules `parameter`, `commands`,
+    `windowing`, `inspection` and `live` are complete for their families
+    one level deep; the private modules became `inspection_service` and
+    `live_source`. Checked by name against the new `api/` listing.
+  - **Guide:** the "Authoritative values" chapter holds the parameter
+    sections moved out of the state chapter; the representative programs
+    are reshaped into an application part and a test.
+  - **Tests:** `foundation/prelude.rs` (a custom component on `prelude` and
+    `component`, its driving test on `prelude` and `testing`), an import
+    check of every representative program and custom component,
+    `vocabulary.rs` (every vocabulary name built from the prelude alone),
+    and `modules.rs` (one exhaustive list per module, one sufficiency test
+    per module, and a fixture resolving every exported name across all
+    globs). Removal checks, each reverted, failed where the design says
+    (for example `DraftEditor` removed from `component` fails the
+    diagram canvas). The deliberate-conflict check (`commands::Driver`)
+    fails with E0659 in `modules.rs`.
+  - **Diagnostics:** `i03`'s snapshot changed by one line (a candidate path
+    no longer carries the crate prefix); `r01` and `s01` keep their
+    snapshots.
+  - **Checks:** the public-API row (formatting, Clippy, workspace tests, the
+    five headless example sessions, doctests, rustdoc, the diagnostics
+    suite, the API listing gate), the facade's Clippy, tests and rustdoc in
+    the default, `--no-default-features`, `desktop-cpu`, `svg` and `cpu`
+    configurations, a build of `task4-app` against the workspace, and
+    `git diff --check`.
+  - **Deviations:** the diagram canvas and the `r01` fixture glob
+    `component` alone, because every name they write is there and a second
+    glob would be unused; the gallery and `component_workflows` reach
+    `KeyAction` through `component`; R3 to R5's application parts are
+    functions returning the handles their tests need.
+  - **Out of scope, recorded:** a TODO.md entry for the facade's root `svg`
+    module (the same glob ambiguity as `windows`).
+
 ## Review record
 
 - **Revision 1, Codex evaluation (2026-10-26):** needs revision, with one

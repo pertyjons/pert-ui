@@ -1,5 +1,5 @@
 // content_rows returning a type that does not implement ContentRows.
-use pert_ui::prelude::*;
+use pert_ui::component::*;
 use std::rc::Rc;
 struct Lines(Vec<String>);
 struct Log(Rc<Lines>);

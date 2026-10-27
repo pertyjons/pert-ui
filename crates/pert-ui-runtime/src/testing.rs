@@ -12,10 +12,22 @@
 //! use pert_ui::testing::*;
 //! ```
 //!
+//! - [`Viewport`], which every harness sets with [`Runtime::set_viewport`];
+//! - [`KeyAction`] and [`FocusDirection`], for key input and focus movement
+//!   by hand through [`Runtime::key_input`] and [`Runtime::focus_next`];
+//! - [`PointerEvent`], [`PointerKind`] and [`PointerButton`] for
+//!   [`Runtime::pointer_input`], [`CommandKeyInput`] for
+//!   [`Runtime::command_key_input`], and the [`InputOutcome`] that pointer
+//!   and key input return;
+//! - [`SemanticValue`], for asserting what a component's semantics report,
+//!   and [`ClickCounter`], whose interval separates single clicks;
 //! - [`InspectionQuery`], [`Selector`] and [`Detail`], for reading what the
 //!   runtime shows through [`Runtime::query`];
 //! - [`CaptureRequest`], [`CaptureTarget`] and [`FrameImage`], for a
 //!   rendered capture.
+//!
+//! The key names a chord writes ([`KeyCode`], [`Modifiers`], [`CommandKey`])
+//! and [`Point`] are in the prelude.
 //!
 //! These names stay at the crate root too; the module only gathers them. The
 //! `pert-ui` facade's `testing` module re-exports this one and adds its CPU
@@ -29,7 +41,6 @@
 //! # use pert_ui_runtime as pert_ui;
 //! use pert_ui::prelude::*;
 //! use pert_ui::testing::*;
-//! use pert_ui::SemanticValue;
 //!
 //! let mut ui = Runtime::new();
 //! ui.set_viewport(Viewport::new(400.0, 200.0, 1.0)?)?;
@@ -55,14 +66,17 @@
 //! # Ok::<(), Box<dyn std::error::Error>>(())
 //! ```
 use crate::{
-    CommandKey, CommandKeyInput, FlushReport, InputOutcome, KeyAction, KeyChord, KeyCode,
-    Modifiers, Point, PointerButton, PointerEvent, PointerKind, RevealOutcome, RevealRefusal,
+    CommandKey, FlushReport, KeyChord, KeyCode, Modifiers, Point, RevealOutcome, RevealRefusal,
     Runtime, RuntimeError, Semantics, TextCommand, TextCommandOutcome, WidgetId,
 };
 use std::time::{Duration, Instant};
 
 #[doc(no_inline)]
-pub use crate::{CaptureRequest, CaptureTarget, Detail, FrameImage, InspectionQuery, Selector};
+pub use crate::{
+    CaptureRequest, CaptureTarget, ClickCounter, CommandKeyInput, Detail, FocusDirection,
+    FrameImage, InputOutcome, InspectionQuery, KeyAction, PointerButton, PointerEvent, PointerKind,
+    Selector, SemanticValue, Viewport,
+};
 
 /// Drives a runtime as a user would, one settled step at a time.
 ///
@@ -125,7 +139,7 @@ pub use crate::{CaptureRequest, CaptureTarget, Detail, FrameImage, InspectionQue
 /// ```
 /// # use pert_ui_runtime as pert_ui;
 /// use pert_ui::prelude::*;
-/// use pert_ui::testing::Driver;
+/// use pert_ui::testing::*;
 ///
 /// let mut ui = Runtime::new();
 /// ui.set_viewport(Viewport::new(300.0, 100.0, 1.0)?)?;
@@ -449,7 +463,7 @@ impl<'a> Driver<'a> {
     /// ```
     /// # use pert_ui_runtime as pert_ui;
     /// use pert_ui::prelude::*;
-    /// use pert_ui::testing::Driver;
+    /// use pert_ui::testing::*;
     ///
     /// let mut ui = Runtime::new();
     /// ui.set_viewport(Viewport::new(300.0, 100.0, 1.0)?)?;
@@ -517,7 +531,7 @@ impl<'a> Driver<'a> {
     /// ```
     /// # use pert_ui_runtime as pert_ui;
     /// use pert_ui::prelude::*;
-    /// use pert_ui::testing::Driver;
+    /// use pert_ui::testing::*;
     ///
     /// let mut ui = Runtime::new();
     /// ui.set_viewport(Viewport::new(300.0, 100.0, 1.0)?)?;

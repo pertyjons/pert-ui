@@ -4,9 +4,10 @@
 //! contracts, a saved workspace and a custom widget. The other chapters can be
 //! read in any order:
 //!
-//! - [State and parameters](state): which way to choose, signals and controls,
-//!   parameter gestures and host notifications, worker results, live data and
-//!   recovery.
+//! - [State](state): which way to choose, signals and controls, worker
+//!   results, live data and recovery.
+//! - [Authoritative values](authoritative_values): parameters, local edit
+//!   gestures, host notifications, effective overlays and external authority.
 //! - [Layout and views](layout): which way to choose for children from data,
 //!   region layouts, splits, tabs, floating and native windows, workspaces,
 //!   large collections, an editable list of records, zoomable content and
@@ -62,10 +63,27 @@ pub mod getting_started {
 }
 
 pub mod state {
-    //! State and parameters: which way to choose, signals and controls,
-    //! parameter edits, worker results, live data and recovery.
+    //! State: which way to choose, signals and controls, worker results, live
+    //! data and recovery.
     //!
     #![doc = include_str!("guide/state.md")]
+    #![cfg_attr(feature = "native", doc = include_str!("guide/links/desktop.md"))]
+    #![cfg_attr(not(feature = "native"), doc = include_str!("guide/links/no-desktop.md"))]
+    #![cfg_attr(feature = "images", doc = include_str!("guide/links/images.md"))]
+    #![cfg_attr(not(feature = "images"), doc = include_str!("guide/links/no-images.md"))]
+    #![cfg_attr(feature = "svg", doc = include_str!("guide/links/svg.md"))]
+    #![cfg_attr(not(feature = "svg"), doc = include_str!("guide/links/no-svg.md"))]
+    #![cfg_attr(feature = "cpu", doc = include_str!("guide/links/cpu.md"))]
+    #![cfg_attr(not(feature = "cpu"), doc = include_str!("guide/links/no-cpu.md"))]
+    #[allow(unused_imports)]
+    use crate::*;
+}
+
+pub mod authoritative_values {
+    //! Authoritative values: parameters, local edit gestures, host
+    //! notifications, effective overlays and external authority.
+    //!
+    #![doc = include_str!("guide/authoritative-values.md")]
     #![cfg_attr(feature = "native", doc = include_str!("guide/links/desktop.md"))]
     #![cfg_attr(not(feature = "native"), doc = include_str!("guide/links/no-desktop.md"))]
     #![cfg_attr(feature = "images", doc = include_str!("guide/links/images.md"))]

@@ -11,7 +11,7 @@ pub(super) struct PendingCapture {
     request: crate::CaptureRequest,
     /// The error of the flush that admitted it, carried into the reply.
     flush_error: Option<crate::RuntimeError>,
-    handle: crate::inspection::ReplyHandle<Result<crate::Capture, crate::CaptureError>>,
+    handle: crate::inspection_service::ReplyHandle<Result<crate::Capture, crate::CaptureError>>,
     /// This request's identity, which every job listed for it shares.
     token: std::sync::Arc<()>,
 }
@@ -61,7 +61,7 @@ impl Runtime {
         &self,
         request: crate::CaptureRequest,
     ) -> crate::Pending<Result<crate::Capture, crate::CaptureError>> {
-        let (handle, pending) = crate::inspection::ReplyHandle::new(None);
+        let (handle, pending) = crate::inspection_service::ReplyHandle::new(None);
         self.admit_capture(request, handle, None);
         pending
     }
@@ -74,7 +74,7 @@ impl Runtime {
     pub(crate) fn admit_capture(
         &self,
         request: crate::CaptureRequest,
-        handle: crate::inspection::ReplyHandle<Result<crate::Capture, crate::CaptureError>>,
+        handle: crate::inspection_service::ReplyHandle<Result<crate::Capture, crate::CaptureError>>,
         flush_error: Option<&crate::RuntimeError>,
     ) {
         // A closed runtime has no host left to render; the dropped handle

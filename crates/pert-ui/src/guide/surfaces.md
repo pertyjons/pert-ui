@@ -119,47 +119,57 @@ no mnemonics and no native OS menus; see the
 [menus design note](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md).
 
 ```rust
-use pert_ui::*;
-use std::time::Duration;
+use pert_ui::prelude::*;
 
-let mut ui = Runtime::new();
-ui.set_viewport(Viewport::new(640.0, 480.0, 1.0)?)?;
-let saved = ui.signal(false);
-let write = saved.clone();
-let save = ui.register_command("Save", CommandScope::Application,
-    vec![KeyChord::primary('s')], move |_, _| write.set(true))?;
-let grid = ui.signal(true);
-let zoom = ui.signal(100u32);
-let bar = MenuBar::new(&ui, vec![
-    MenuItem::submenu("file", "File", vec![
-        MenuItem::command(&ui, "save", &save, |_, _| Ok(()))?,
-        MenuItem::separator(),
-        MenuItem::new("close", "Close", |_| Ok(())),
-    ]),
-    MenuItem::submenu("view", "View", vec![
-        MenuItem::toggle("grid", grid.clone(), "Show grid"),
-        MenuItem::separator(),
-        MenuItem::radio("normal", zoom.clone(), 100, "100%"),
-        MenuItem::radio("large", zoom.clone(), 200, "200%"),
-    ]),
-])?
-.content(Element::new("document", Button::new("Document", |_| Ok(()))));
-let root = ui.mount_tree(Element::new("window", Column::new([Element::new("bar", bar)])))?;
-ui.flush(Duration::ZERO)?;
-
-// Focus the document, then F10, Down and Enter choose File › Save.
-ui.focus_next(FocusDirection::Forward)?;
-for key in [KeyCode::F10, KeyCode::ArrowDown, KeyCode::Enter] {
-    ui.key_input(key, KeyAction::Press)?;
-    ui.key_input(key, KeyAction::Release)?;
-    ui.flush(Duration::ZERO)?;
+/// A document under a menu bar whose File › Save runs a command that the
+/// primary modifier with S also runs; returns whether Save ran.
+fn build(ui: &mut Runtime) -> Result<Signal<bool>, RuntimeError> {
+    let saved = ui.signal(false);
+    let write = saved.clone();
+    let save = ui.register_command("Save", CommandScope::Application,
+        vec![KeyChord::primary('s')], move |_, _| write.set(true))?;
+    let grid = ui.signal(true);
+    let zoom = ui.signal(100u32);
+    let bar = MenuBar::new(ui, vec![
+        MenuItem::submenu("file", "File", vec![
+            MenuItem::command(ui, "save", &save, |_, _| Ok(()))?,
+            MenuItem::separator(),
+            MenuItem::new("close", "Close", |_| Ok(())),
+        ]),
+        MenuItem::submenu("view", "View", vec![
+            MenuItem::toggle("grid", grid.clone(), "Show grid"),
+            MenuItem::separator(),
+            MenuItem::radio("normal", zoom.clone(), 100, "100%"),
+            MenuItem::radio("large", zoom.clone(), 200, "200%"),
+        ]),
+    ])?
+    .content(Element::new("document", Button::new("Document", |_| Ok(()))));
+    ui.mount_tree(Element::new("window", Column::new([Element::new("bar", bar)])))?;
+    Ok(saved)
 }
-ui.flush(Duration::ZERO)?;
-assert!(saved.get()?);
-assert_eq!(ui.focused().map(|id| ui.key(&id).map(str::to_owned)).transpose()?.as_deref(),
-    Some("document"));
-# let _ = root;
-# Ok::<(), Box<dyn std::error::Error>>(())
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    use pert_ui::testing::*;
+    use std::time::Duration;
+
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(640.0, 480.0, 1.0)?)?;
+    let saved = build(&mut ui)?;
+    ui.flush(Duration::ZERO)?;
+
+    // Focus the document, then F10, Down and Enter choose File › Save.
+    ui.focus_next(FocusDirection::Forward)?;
+    for key in [KeyCode::F10, KeyCode::ArrowDown, KeyCode::Enter] {
+        ui.key_input(key, KeyAction::Press)?;
+        ui.key_input(key, KeyAction::Release)?;
+        ui.flush(Duration::ZERO)?;
+    }
+    ui.flush(Duration::ZERO)?;
+    assert!(saved.get()?);
+    assert_eq!(ui.focused().map(|id| ui.key(&id).map(str::to_owned)).transpose()?.as_deref(),
+        Some("document"));
+    Ok(())
+}
 ```
 
 A toggle or radio row reports a user's choice through [`MenuItem::on_change`],
@@ -217,28 +227,39 @@ acceptance, owner removal and failed admission remain distinguishable. Native
 focus loss keeps dialogs open. No task action or I/O is implicit in dismissal.
 
 ```rust
-use pert_ui::*;
-use std::time::Duration;
+use pert_ui::prelude::*;
 
-let mut ui = Runtime::new();
-ui.set_viewport(Viewport::new(640.0, 480.0, 1.0)?)?;
-let confirmation = DialogController::new(&ui);
-let show = confirmation.clone();
-let root = ui.mount_tree(Element::new("confirmation", AlertDialog::new(
-    confirmation.clone(),
-    Element::new("open", Button::new("Delete item…", move |_| show.open())),
-    "Delete item?", "This action requires confirmation.", "Delete",
-)))?;
-ui.flush(Duration::ZERO)?;
-confirmation.open()?;
-ui.flush(Duration::ZERO)?;
-// Cancel is the initial focus target. Outside clicks do not dismiss.
-ui.key_input(KeyCode::Escape, KeyAction::Press)?;
-ui.key_input(KeyCode::Escape, KeyAction::Release)?;
-ui.flush(Duration::ZERO)?;
-assert_eq!(confirmation.take_outcome()?, Some(DialogOutcome::Cancelled));
-ui.unmount(&root)?;
-# Ok::<(), Box<dyn std::error::Error>>(())
+/// A delete button that asks for confirmation first; returns the dialog's
+/// controller and the mounted root.
+fn build(ui: &mut Runtime) -> Result<(DialogController, WidgetId), RuntimeError> {
+    let confirmation = DialogController::new(ui);
+    let show = confirmation.clone();
+    let root = ui.mount_tree(Element::new("confirmation", AlertDialog::new(
+        confirmation.clone(),
+        Element::new("open", Button::new("Delete item…", move |_| show.open())),
+        "Delete item?", "This action requires confirmation.", "Delete",
+    )))?;
+    Ok((confirmation, root))
+}
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    use pert_ui::testing::*;
+    use std::time::Duration;
+
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(640.0, 480.0, 1.0)?)?;
+    let (confirmation, root) = build(&mut ui)?;
+    ui.flush(Duration::ZERO)?;
+    confirmation.open()?;
+    ui.flush(Duration::ZERO)?;
+    // Cancel is the initial focus target. Outside clicks do not dismiss.
+    ui.key_input(KeyCode::Escape, KeyAction::Press)?;
+    ui.key_input(KeyCode::Escape, KeyAction::Release)?;
+    ui.flush(Duration::ZERO)?;
+    assert_eq!(confirmation.take_outcome()?, Some(DialogOutcome::Cancelled));
+    ui.unmount(&root)?;
+    Ok(())
+}
 ```
 
 For arbitrary forms, use `Dialog::new(state, owner_content, dialog_content)`.
@@ -252,32 +273,41 @@ Custom containers use the same public [`Component::child_surface`] contract and
 notifications; physical held keys are never replayed on focus transfer.
 
 ```rust
-use pert_ui::*;
-use std::time::Duration;
+use pert_ui::prelude::*;
 
-let mut ui = Runtime::new();
-ui.set_viewport(Viewport::new(640.0, 480.0, 1.0)?)?;
-let state = DialogController::new(&ui);
-let open = state.clone();
-let cancel = state.clone();
-let accept = state.clone();
-let draft = ui.signal("Draft".to_owned());
-ui.mount_tree(Element::new("view", Dialog::new(
-    state,
-    Element::new("owner", Column::new([
-        Element::new("heading", Label::new("One independently blocked view")),
-        Element::new("open", Button::new("Edit…", move |_| open.open())),
-    ])),
-    Element::new("form", Column::new([
-        Element::new("draft", TextField::new(draft)),
-        Element::new("actions", Row::new([
-            Element::new("cancel", Button::new("Cancel", move |_| cancel.cancel().map(|_| ()))),
-            Element::new("accept", Button::new("Accept", move |_| accept.accept().map(|_| ()))),
+/// A view whose Edit… button opens a form that blocks only that view.
+fn build(ui: &mut Runtime) -> Result<WidgetId, RuntimeError> {
+    let state = DialogController::new(ui);
+    let open = state.clone();
+    let cancel = state.clone();
+    let accept = state.clone();
+    let draft = ui.signal("Draft".to_owned());
+    ui.mount_tree(Element::new("view", Dialog::new(
+        state,
+        Element::new("owner", Column::new([
+            Element::new("heading", Label::new("One independently blocked view")),
+            Element::new("open", Button::new("Edit…", move |_| open.open())),
         ])),
-    ])),
-).view_modal()))?;
-ui.flush(Duration::ZERO)?;
-# Ok::<(), Box<dyn std::error::Error>>(())
+        Element::new("form", Column::new([
+            Element::new("draft", TextField::new(draft)),
+            Element::new("actions", Row::new([
+                Element::new("cancel", Button::new("Cancel", move |_| cancel.cancel().map(|_| ()))),
+                Element::new("accept", Button::new("Accept", move |_| accept.accept().map(|_| ()))),
+            ])),
+        ])),
+    ).view_modal()))
+}
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    use pert_ui::testing::*;
+    use std::time::Duration;
+
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(640.0, 480.0, 1.0)?)?;
+    build(&mut ui)?;
+    ui.flush(Duration::ZERO)?;
+    Ok(())
+}
 ```
 
 # Notifications

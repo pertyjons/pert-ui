@@ -389,6 +389,7 @@ impl InlineText {
     /// ```
     /// # use pert_ui_runtime as pert_ui;
     /// use pert_ui::prelude::*;
+    /// use pert_ui::testing::*;
     /// use pert_ui::{ListItems, ListSource, PointerButton, PointerEvent, PointerKind};
     /// use std::time::Duration;
     ///

@@ -8,12 +8,12 @@
 use crate::canvas::{Canvas, Shared};
 use crate::editor::{Editor, Shown, Tool};
 use crate::model::{Diagram, MAX_LABEL, MAX_SIDE, MIN_SIDE, NodeId, NodeShape};
-use pert_ui::prelude::*;
 use pert_ui::{
     Capacity, CommandId, CommandReceipt, CommandScope, CommandStatus, DialogOutcome, DialogStatus,
     DirectoryEntry, DirectoryResponse, HeldInputId, KeyChord, KeyCode, KeyTransition, ListItems,
     ListSource, Mailbox, MetricRole, Modifiers, ViewScale, ViewTransform, Workspace,
 };
+use pert_ui::{commands::*, component::*, prelude::*, windowing::*};
 use std::{path::PathBuf, rc::Rc};
 
 /// The document a new window starts with.

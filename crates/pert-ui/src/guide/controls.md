@@ -191,6 +191,7 @@ editability remains an additional restriction.
 
 ```rust
 use pert_ui::prelude::*;
+use pert_ui::testing::*;
 use std::time::Duration;
 let mut ui = Runtime::new();
 ui.set_viewport(Viewport::new(320.0, 100.0, 1.0)?)?;
@@ -214,7 +215,7 @@ Dynamic option changes cancel pending activation, including remove/recreate.
 These constructors bind local signals. [`Checkbox::for_parameter`],
 [`Toggle::for_parameter`] and [`RadioGroup::for_parameter`] bind a boolean or choice
 parameter instead, so each activation is a committed host edit; see
-[parameter families](crate::guide::state#parameter-families-and-host-notifications).
+[parameter families](crate::guide::authoritative_values#parameter-families-and-host-notifications).
 [`Checkbox::controlled`] and [`Toggle::controlled`] take a value from the
 application's own model and report each toggle as a proposal without writing
 anything, as [an editable list of records](crate::guide::layout#an-editable-list-of-records)

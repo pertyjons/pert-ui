@@ -80,7 +80,8 @@ A custom container does the same with the size its
 [`Component::arrange`] receives.
 
 ```rust
-use pert_ui::prelude::*;
+use pert_ui::{parameter::*, prelude::*};
+use pert_ui::testing::*;
 use pert_ui::Orientation;
 use std::time::Duration;
 let mut ui = Runtime::new();
@@ -538,10 +539,8 @@ or a retained row component, which makes its binding once and writes each
 new value to it, so a draft survives.
 
 ```rust
-use std::{mem, time::Duration};
 use pert_ui::prelude::*;
-use pert_ui::testing::Driver;
-use pert_ui::{ListDrop, ListDropPosition};
+use std::mem;
 
 // Signal values are compared when written and cloned when read.
 #[derive(Clone, PartialEq)]
@@ -603,109 +602,133 @@ fn reorder(store: &Signal<Vec<Task>>, drop: &ListDrop<'_>) -> Result<bool, Runti
     Ok(true)
 }
 
-let mut ui = Runtime::new();
-ui.set_viewport(Viewport::new(400.0, 300.0, 1.0)?)?;
-let task = |id, title: &str| Task { id, title: title.to_owned(), done: false };
-let tasks = ui.signal(vec![task(1, "Buy milk"), task(2, "Write the plan"), task(3, "Ship it")]);
-let store = tasks.clone();
-let source = tasks.map(move |all| {
-    ListSource::new(Rows { tasks: all.clone(), store: store.clone() })
-})?;
-let selection = ListSelection::new(&ui, SelectionMode::Single);
-let filter = ListFilter::new(&ui, source)?.selection(selection.clone());
-let selected_shown = filter.items().combine(&selection.active(), |rows, active| {
-    active.as_deref().is_some_and(|key| rows.index_of(key).is_some())
-})?;
-let (order, remove, active) = (tasks.clone(), tasks.clone(), selection.active());
-let list = VirtualList::new(filter.items(), 32.0)?
-    .selection(selection.clone())
-    // Enter renames the active row. The callback's context is the list's, and
-    // the row's title is found below it by the row's key.
-    .on_activate(|cx, key| {
-        let (list, key) = (cx.id(), key.to_owned());
-        let _receipt = cx.defer(move |ui| {
-            let Some(title) = ui.find(&list, &[key.as_str(), "title"])? else {
-                return Ok(());
-            };
-            ui.text_command(&title, TextCommand::BeginEdit).map(|_| ())
-        })?;
-        Ok(())
+/// What the test below reaches: the records, the mounted root, the selection,
+/// the filter and whether the active row is shown.
+struct TaskList {
+    tasks: Signal<Vec<Task>>,
+    root: WidgetId,
+    selection: ListSelection,
+    filter: ListFilter,
+    selected_shown: ReadSignal<bool>,
+}
+
+fn build(ui: &mut Runtime) -> Result<TaskList, RuntimeError> {
+    let task = |id, title: &str| Task { id, title: title.to_owned(), done: false };
+    let tasks = ui.signal(vec![
+        task(1, "Buy milk"),
+        task(2, "Write the plan"),
+        task(3, "Ship it"),
+    ]);
+    let store = tasks.clone();
+    let source = tasks.map(move |all| {
+        ListSource::new(Rows { tasks: all.clone(), store: store.clone() })
+    })?;
+    let selection = ListSelection::new(ui, SelectionMode::Single);
+    let filter = ListFilter::new(ui, source)?.selection(selection.clone());
+    let selected_shown = filter.items().combine(&selection.active(), |rows, active| {
+        active.as_deref().is_some_and(|key| rows.index_of(key).is_some())
+    })?;
+    let (order, remove, active) = (tasks.clone(), tasks.clone(), selection.active());
+    let list = VirtualList::new(filter.items(), 32.0)?
+        .selection(selection.clone())
+        // Enter renames the active row. The callback's context is the list's, and
+        // the row's title is found below it by the row's key.
+        .on_activate(|cx, key| {
+            let (list, key) = (cx.id(), key.to_owned());
+            let _receipt = cx.defer(move |ui| {
+                let Some(title) = ui.find(&list, &[key.as_str(), "title"])? else {
+                    return Ok(());
+                };
+                ui.text_command(&title, TextCommand::BeginEdit).map(|_| ())
+            })?;
+            Ok(())
+        })
+        .reorderable(move |_, drop| reorder(&order, drop));
+    let delete = Button::new("Delete", move |_| {
+        let Some(key) = active.get()? else { return Ok(()) };
+        remove.update(|tasks| tasks.retain(|task| task.id.to_string() != key))
     })
-    .reorderable(move |_, drop| reorder(&order, drop));
-let delete = Button::new("Delete", move |_| {
-    let Some(key) = active.get()? else { return Ok(()) };
-    remove.update(|tasks| tasks.retain(|task| task.id.to_string() != key))
-})
-.enabled(&selected_shown);
-let root = ui.mount_tree(Column::new([
-    CollectionFilter::new(&ui, filter.clone(), Element::new("list", list))
-        .hidden_active(HiddenActive::Clear)
-        .key("tasks")
-        .with_grow(1),
-    delete.key("delete"),
-]).key("app"))?;
-ui.flush(Duration::ZERO)?;
-let press = |ui: &mut Runtime, key| -> Result<(), RuntimeError> {
-    ui.key_input(key, KeyAction::Press)?;
-    ui.key_input(key, KeyAction::Release)?;
+    .enabled(&selected_shown);
+    let root = ui.mount_tree(Column::new([
+        CollectionFilter::new(ui, filter.clone(), Element::new("list", list))
+            .hidden_active(HiddenActive::Clear)
+            .key("tasks")
+            .with_grow(1),
+        delete.key("delete"),
+    ]).key("app"))?;
+    Ok(TaskList { tasks, root, selection, filter, selected_shown })
+}
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    use pert_ui::testing::*;
+    use std::time::Duration;
+
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(400.0, 300.0, 1.0)?)?;
+    let TaskList { tasks, root, selection, filter, selected_shown } = build(&mut ui)?;
+    ui.flush(Duration::ZERO)?;
+    let press = |ui: &mut Runtime, key| -> Result<(), RuntimeError> {
+        ui.key_input(key, KeyAction::Press)?;
+        ui.key_input(key, KeyAction::Release)?;
+        Ok(())
+    };
+    let ids = |tasks: &Signal<Vec<Task>>| -> Result<Vec<u64>, RuntimeError> {
+        Ok(tasks.get()?.iter().map(|task| task.id).collect())
+    };
+
+    // Select the first row and move it down with Alt+Down.
+    let list = ui.find(&root, &["tasks", "list"])?.ok_or("the list")?;
+    ui.focus(&list)?;
+    press(&mut ui, KeyCode::ArrowDown)?;
+    ui.key_input(KeyCode::AltLeft, KeyAction::Press)?;
+    press(&mut ui, KeyCode::ArrowDown)?;
+    ui.key_input(KeyCode::AltLeft, KeyAction::Release)?;
+    assert_eq!(ids(&tasks)?, [2, 1, 3]);
+
+    // Enter renames the active row once the next flush runs the deferred
+    // command. The draft survives a change to another record, and Enter saves
+    // it and gives focus back to the list.
+    press(&mut ui, KeyCode::Enter)?;
+    ui.flush(Duration::ZERO)?;
+    ui.text_input("Buy oat milk")?; // replaces the selected title
+    edit(&tasks, 3, |task| task.done = true)?;
+    ui.flush(Duration::ZERO)?;
+    press(&mut ui, KeyCode::Enter)?;
+    ui.flush(Duration::ZERO)?;
+    assert_eq!(tasks.get()?[1].title, "Buy oat milk");
+    assert_eq!(ui.focused(), Some(list.clone()));
+
+    // The checkbox proposes the change, which its callback writes to the record.
+    let check = ui.find(&root, &["tasks", "list", "1", "done"])?.ok_or("a checkbox")?;
+    ui.focus(&check)?;
+    press(&mut ui, KeyCode::Space)?;
+    assert!(tasks.get()?[1].done);
+
+    // A press on another row's title selects that row; a double click on a
+    // title renames it. The driver's clicks are one frame apart.
+    let title = |ui: &Runtime, key| ui.find(&root, &["tasks", "list", key, "title"]);
+    let write = title(&ui, "2")?.ok_or("a title")?;
+    let ship = title(&ui, "3")?.ok_or("a title")?;
+    let mut driver = Driver::new(&mut ui);
+    driver.click(&write)?;
+    assert_eq!(selection.active().get()?.as_deref(), Some("2"));
+    driver.click(&ship)?;
+    driver.click(&ship)?;
+    driver.type_text("Ship it today")?;
+    driver.key(KeyCode::Enter)?;
+    assert_eq!(tasks.get()?[2].title, "Ship it today");
+    assert_eq!(selection.active().get()?.as_deref(), Some("3"));
+
+    // Typing in the field hides the active row, which leaves no row active,
+    // so Delete is disabled.
+    let field = driver.find(&root, &["tasks", "filter-field", "filter"])?;
+    driver.runtime_mut().focus(&field)?;
+    driver.type_text("milk")?;
+    assert_eq!(filter.counts().get()?.shown, 1);
+    assert_eq!(selection.active().get()?, None);
+    assert!(!selected_shown.get()?);
     Ok(())
-};
-let ids = |tasks: &Signal<Vec<Task>>| -> Result<Vec<u64>, RuntimeError> {
-    Ok(tasks.get()?.iter().map(|task| task.id).collect())
-};
-
-// Select the first row and move it down with Alt+Down.
-let list = ui.find(&root, &["tasks", "list"])?.ok_or("the list")?;
-ui.focus(&list)?;
-press(&mut ui, KeyCode::ArrowDown)?;
-ui.key_input(KeyCode::AltLeft, KeyAction::Press)?;
-press(&mut ui, KeyCode::ArrowDown)?;
-ui.key_input(KeyCode::AltLeft, KeyAction::Release)?;
-assert_eq!(ids(&tasks)?, [2, 1, 3]);
-
-// Enter renames the active row once the next flush runs the deferred
-// command. The draft survives a change to another record, and Enter saves
-// it and gives focus back to the list.
-press(&mut ui, KeyCode::Enter)?;
-ui.flush(Duration::ZERO)?;
-ui.text_input("Buy oat milk")?; // replaces the selected title
-edit(&tasks, 3, |task| task.done = true)?;
-ui.flush(Duration::ZERO)?;
-press(&mut ui, KeyCode::Enter)?;
-ui.flush(Duration::ZERO)?;
-assert_eq!(tasks.get()?[1].title, "Buy oat milk");
-assert_eq!(ui.focused(), Some(list.clone()));
-
-// The checkbox proposes the change, which its callback writes to the record.
-let check = ui.find(&root, &["tasks", "list", "1", "done"])?.ok_or("a checkbox")?;
-ui.focus(&check)?;
-press(&mut ui, KeyCode::Space)?;
-assert!(tasks.get()?[1].done);
-
-// A press on another row's title selects that row; a double click on a
-// title renames it. The driver's clicks are one frame apart.
-let title = |ui: &Runtime, key| ui.find(&root, &["tasks", "list", key, "title"]);
-let write = title(&ui, "2")?.ok_or("a title")?;
-let ship = title(&ui, "3")?.ok_or("a title")?;
-let mut driver = Driver::new(&mut ui);
-driver.click(&write)?;
-assert_eq!(selection.active().get()?.as_deref(), Some("2"));
-driver.click(&ship)?;
-driver.click(&ship)?;
-driver.type_text("Ship it today")?;
-driver.key(KeyCode::Enter)?;
-assert_eq!(tasks.get()?[2].title, "Ship it today");
-assert_eq!(selection.active().get()?.as_deref(), Some("3"));
-
-// Typing in the field hides the active row, which leaves no row active,
-// so Delete is disabled.
-let field = driver.find(&root, &["tasks", "filter-field", "filter"])?;
-driver.runtime_mut().focus(&field)?;
-driver.type_text("milk")?;
-assert_eq!(filter.counts().get()?.shown, 1);
-assert_eq!(selection.active().get()?, None);
-assert!(!selected_shown.get()?);
-# Ok::<(), Box<dyn std::error::Error>>(())
+}
 ```
 
 A single press on a title selects its row, a double click renames it, and

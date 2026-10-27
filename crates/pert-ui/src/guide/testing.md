@@ -10,8 +10,10 @@ use pert_ui::testing::*;
 
 [`testing`](crate::testing) holds [`Driver`](crate::testing::Driver), which
 clicks, types, presses keys and chords and settles after each step, its
-[`TestError`](crate::testing::TestError), and the inspection-query and capture
-names a test writes; with `cpu` it adds [`CpuRenderer`] and with `native` it
+[`TestError`](crate::testing::TestError), and the other names a test writes:
+the [`Viewport`] every harness sets, key, focus and pointer input by hand,
+[`SemanticValue`], [`ClickCounter`], and the inspection-query and capture
+names; with `cpu` it adds [`CpuRenderer`] and with `native` it
 adds [`HeadlessApp`].
 
 # Reading what the runtime shows
@@ -26,7 +28,6 @@ the semantic name; an editable or stateful control's content is the value.
 ```rust
 use pert_ui::prelude::*;
 use pert_ui::testing::*;
-use pert_ui::SemanticValue;
 
 let mut ui = Runtime::new();
 ui.set_viewport(Viewport::new(400.0, 200.0, 1.0)?)?;
@@ -73,7 +74,6 @@ interval between them:
 ```rust
 use pert_ui::prelude::*;
 use pert_ui::testing::*;
-use pert_ui::ClickCounter;
 use std::time::Duration;
 
 let mut ui = Runtime::new();

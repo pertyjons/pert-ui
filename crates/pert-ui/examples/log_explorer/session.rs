@@ -5,7 +5,7 @@
 use crate::app::{self, Explorer, Kind};
 use crate::model::{self, Level, LineId, MALFORMED_EVERY};
 use pert_ui::prelude::*;
-use pert_ui::testing::Driver;
+use pert_ui::testing::*;
 use pert_ui::{
     Capacity, Clipboard, ClipboardError, ContentQuery, ListRevealStatus, ProgressStatus,
     SortDirection, TableSort, TextCommand, ValidationCode,

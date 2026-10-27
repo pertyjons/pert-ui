@@ -16,8 +16,18 @@ consuming its owned `DisplayList`. Retained layout, standard controls, text/nume
 notifications and a separately versioned `Workspace` document for the
 arrangement are available.
 
+Application code globs `prelude`, which holds what an application's first
+program writes: the built-in components with their configuration types and
+the names an application uses everywhere. Code that implements `Component`
+also globs `component`, and a headless test globs `testing`. The thematic
+modules gather the rest by need: `parameter` for authoritative values,
+`commands` for commands and the command palette, `windowing` for windows,
+regions, splits and tool windows, `inspection` for inspection, capture and
+profiling, and `live` for data from other threads. Every name also stays at
+the crate root.
+
 ```rust
-use pert_ui_runtime::prelude::*;
+use pert_ui_runtime::{parameter::*, prelude::*};
 use pert_ui_runtime::ParameterError;
 
 let amount = ParameterSpec::new("Amount", -100.0, 100.0, 0.0)?;
@@ -49,7 +59,7 @@ once and gives controls a shared binding plus a separate authoritative host owne
 
 ```rust
 use std::time::Duration;
-use pert_ui_runtime::prelude::*;
+use pert_ui_runtime::{component::*, prelude::*};
 
 struct Label {
     text: ReadSignal<String>,
@@ -221,7 +231,7 @@ for the pixel format, sampling and budgets.
 
 ```rust
 use std::time::Duration;
-use pert_ui_runtime::{prelude::*, EditOutcome, RuntimeError};
+use pert_ui_runtime::{component::*, parameter::*, prelude::*, EditOutcome, RuntimeError};
 
 struct Control;
 impl Component for Control {
@@ -267,7 +277,7 @@ delivered once after the new state is published.
 
 ```rust
 use std::{cell::RefCell, rc::Rc};
-use pert_ui_runtime::prelude::*;
+use pert_ui_runtime::{parameter::*, prelude::*};
 use pert_ui_runtime::{EditOutcome, KeyAction, KeyCode};
 
 let mut ui = Runtime::new();

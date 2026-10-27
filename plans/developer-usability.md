@@ -40,10 +40,12 @@ This plan adds two kinds of evidence:
 
 App-author slice 9 (tutorial, prelude and module layout) stays in
 [its plan](app-author-improvements.md). This plan feeds it: round 1's
-findings on discovery and the prelude become slice 9 inputs. Round 2
-measures slice 9's result only if slice 9 lands on `main` before round 2
-runs and the branch is rebased onto it; otherwise round 2's findings become
-inputs to slice 9's own evaluation.
+findings on discovery and the prelude become slice 9 inputs. Slice 9's
+prelude and module layout landed on this branch before round 2 as
+layering part L2 (0.3.73, [design](usability/layering-design-L2.md)), so
+round 2 meets the smaller prelude and the thematic modules. Its tutorial
+does not exist yet; round 2's findings on it become inputs to slice 9's own
+evaluation.
 
 The evidence is exploratory: two AI testers, a few runs per task. It shows
 observed failures and successful implementations, not their prevalence

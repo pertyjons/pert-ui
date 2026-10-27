@@ -317,6 +317,7 @@ impl Runtime {
     /// ```
     /// # use pert_ui_runtime as pert_ui;
     /// use pert_ui::prelude::*;
+    /// use pert_ui::testing::*;
     /// use std::time::Duration;
     ///
     /// let mut ui = Runtime::new();

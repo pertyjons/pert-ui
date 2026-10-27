@@ -110,3 +110,11 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   is opened for editing. A `Center` variant (the enum is `#[non_exhaustive]`)
   would let in-place editors keep a centered label where it was; test the
   placement and caret scrolling for narrow and wide text.
+- [ ] 2026-10-27 `crates/pert-ui/src/lib.rs` `pub mod svg` — collision review
+  (layering part L2, `plans/usability/layering-design-L2.md` section 4): a
+  consumer that globs the crate root (`use pert_ui::*`) and depends on the
+  `svg` crate gets E0659 "`svg` is ambiguous" in a `use svg::…` path, as L2
+  avoided for `windows` by naming the module `windowing`. The prelude page
+  already says to glob the prelude and modules rather than the root; rename
+  the feature module (for example `svg_image`) or document the `::svg`
+  spelling on the `svg` module page, with a scratch-crate check.
