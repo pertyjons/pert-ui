@@ -1941,8 +1941,12 @@ plan closes.
   focus; the limitation says a press at an item's centre may land on a
   control or beside it, since at default metrics it lands about 2 px from
   the action button. No `api/` change, no schema step. Mutation evidence
-  (`target/p9-evidence/`): each of seven mutations failed at its named
-  outcome assertion. Gate (fresh): fmt, workspace Clippy, workspace tests,
+  (`target/p9-evidence/`): each of eight mutation variants (seven numbered
+  plus the bounds-omission variant) failed at its named outcome assertion. Gate (fresh): fmt, workspace Clippy, workspace tests,
   doctests, the five headless sessions, rustdoc `-D warnings`, the
   diagnostics snapshots, the API listing gate, `git diff --check`. Native
-  evidence: not applicable. Codex review: pending.
+  evidence: not applicable. Codex review (2026-10-28): ready, two nits:
+  the mutation count (corrected here) and the TODO entry's wording (text
+  exposed only through semantic items is not searched; a tab's selected
+  title is, through its choice value), corrected by the author after
+  P8's open fix. **P9 done.**
