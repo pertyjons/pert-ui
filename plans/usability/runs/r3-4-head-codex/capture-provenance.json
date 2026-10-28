@@ -1,0 +1,9 @@
+{
+  "bookmarks.png": {
+    "original_relative_path": "bookmarks/captures/bookmarks.png",
+    "original_sha256": "657f2534d2bdec34cd33273f710f958bfe51797a1072de2f448050880cb2adfb",
+    "archived_sha256": "54fb38209c57cc551ef29d54c2a6010c8f577ba693ac5920a9a5dac085c79db2",
+    "identical_decoded_IDAT_sha256": "7d60683a33be9eee1cd81eb6dfb6fe642333c59ffee18acc28a3defc850b0178",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  }
+}

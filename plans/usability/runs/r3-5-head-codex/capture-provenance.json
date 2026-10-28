@@ -1,0 +1,8 @@
+{
+  "jobs.png": {
+    "original_sha256": "2f7c275f661b8f7e5457e07b6566b54ae7e39fadd966d0cf4f3e55e64fcbe54f",
+    "archived_sha256": "6c632020ed28ffbaef824874f4c72de73833fb03287d501e53081f9522e7dbbc",
+    "identical_decoded_IDAT_sha256": "2b07de6afc50c19af3485190cf77f3ed6266ce78da353f9dc6c049a07c3f15d9",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  }
+}

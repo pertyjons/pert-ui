@@ -1,0 +1,24 @@
+   Compiling bookmarks v0.1.0 (/work/bookmarks)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.08s
+     Running tests/ui.rs (bookmarks/target/debug/deps/ui-3063b8ea806a76eb)
+
+running 1 test
+test add_appends_and_trims_name ... FAILED
+
+failures:
+
+---- add_appends_and_trims_name stdout ----
+
+thread 'add_appends_and_trims_name' (291) panicked at tests/ui.rs:92:9:
+assertion `left == right` failed
+  left: "  Docs  "
+ right: "Docs"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    add_appends_and_trims_name
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `--test ui`

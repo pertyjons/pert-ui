@@ -1,0 +1,14 @@
+{
+  "conditions.env": "4975aa5f5caa3e1db55556b4aeee22d29bce1311ad5e413b4e389ec9c3f18784",
+  "summary.md": "11ee14e997e2621e2e3d2753327e1f8fef052d465ecd26fb2d32261e704ddb87",
+  "diagnostics.md": "a643808a7f42d99c524948d20d5d27df6e06762003b6ca59617f18206935cbd0",
+  "FRICTION.md": "5d53bbd654eece2fdd216c018357c0b28a0d9312ec71e4ac7744f7e1f9c484d4",
+  "capture-provenance.json": "24eb704c1acdc631ba8dbd5f83a3567065a385c7c5edfef98f2de3be76beb559",
+  "submission/.gitignore": "44c92e3a70ad3307b7056871c2bdb096d8bfa9373f5bf06a79bb6324a20ff2fb",
+  "submission/Cargo.toml": "9a6e2d293bf91ac7941467878014beb32a8dcc383c8eeb3e3e798ef8e0b943de",
+  "submission/README.md": "bf0bd7b6a0d9ca1fd953e02d5eef96cfb26765a9b7040841f85c4d35e3626b45",
+  "captures/jobs.png": "6c632020ed28ffbaef824874f4c72de73833fb03287d501e53081f9522e7dbbc",
+  "submission/src/main.rs": "16f4f3b25b46738ee8cc88e71f2221554c46e08efdfeaf8a0140ba1f108ca060",
+  "submission/src/lib.rs": "b3366fbbcc639ffaf4fe5cf34204b49be046964b148220d10718f6fcd0848a31",
+  "submission/tests/headless.rs": "40272ff2595ecbaf7fb800549424b54d5fdbe934c9fbd34684c90d0017aeaa62"
+}

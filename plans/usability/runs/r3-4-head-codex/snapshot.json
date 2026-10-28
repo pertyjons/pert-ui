@@ -1,0 +1,14 @@
+{
+  "conditions.env": "e01dcb5c843907670be142795f26c35c8be13355b9201d8e1e56bec7f31076af",
+  "summary.md": "4eb9cac5e976cd21d49a2bc4a40b30cb1247656d0505261ac3a6677233194ae3",
+  "diagnostics.md": "e13b0d1b2770d744182eb0395cf5263b3c8becd5167846941e46528404adb38e",
+  "FRICTION.md": "b1a56038408da846a0034b68bd12d6f06758002824360c20c79c426dda96822c",
+  "capture-provenance.json": "ff9abb20c6d37f38f9c6e864cf785b2018a18e263d5f24e1eb796b1ac8b6bf45",
+  "captures/bookmarks.png": "54fb38209c57cc551ef29d54c2a6010c8f577ba693ac5920a9a5dac085c79db2",
+  "evidence/mutation-test.log": "e94c887a248759087f6790f12c40264545ae08922c67f58bc0bf7ae0578bc920",
+  "submission/bookmarks/README.md": "b96b6ccc00510c049c39e143bb7544ca0e72ada08abddda3c7b309984bf8ba40",
+  "submission/bookmarks/Cargo.toml": "2d2c8529b908fb97c8612d229f31ce2b2874f2973ba9835fd42360903c6972e6",
+  "submission/bookmarks/src/lib.rs": "242b409eab123c76aa1c9180addd31d6d82d402527644520f9c7f33ebbcc504a",
+  "submission/bookmarks/src/main.rs": "8ba4002ad491086f1a099fab0f60420ec2468cb28c749b0e072197e038132ac2",
+  "submission/bookmarks/tests/ui.rs": "31ab3ae43cd64055a7721dca1e51cbd905e4bb589c6e28b32d4d112b983ab7c5"
+}

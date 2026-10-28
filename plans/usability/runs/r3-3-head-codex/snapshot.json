@@ -1,0 +1,17 @@
+{
+  "conditions.env": "a904b649f36d42e7dfdba5075d8ab3606c65d77bda15fd95a2eeddd1078af2cb",
+  "summary.md": "b9334b8cff2d215df73328cd67d63f772c14c6f680271bee8307d3446e1fc5c6",
+  "diagnostics.md": "6965e2f7c45d522c461364694e1a8f922913ee2516564af47d0dd5de68e503c1",
+  "FRICTION.md": "5d30d53244c84553beea80698d98068529387618c21c197fd91be391147aa4fe",
+  "capture-provenance.json": "2d0834f9fc67bdb59e465c6421a532d1b7659526e16929d73494adb8dc91984e",
+  "submission/.gitignore": "44c92e3a70ad3307b7056871c2bdb096d8bfa9373f5bf06a79bb6324a20ff2fb",
+  "submission/Cargo.toml": "ff322c39bdd28bfc3e7e3ac7a56e34b82c08f50ffa47000c0cceb104c4e22a9b",
+  "submission/README.md": "d8574221f3938f9fd92315a0c01c253f5d17e83412f686e9a03d8fecd86a4914",
+  "captures/dark.png": "a3456a29ce9ba0283e10eb643f9e2e889e40a30f79c26b09cb343b63bdb61ed7",
+  "captures/light.png": "fa689829a948a6bbf938a9c6f3eb0694151cd2e0be5cafe5505ca056c892a506",
+  "submission/src/main.rs": "f32ca8ba2b83a17c1068a65acb4bc9d4a07d1883416bd0f59f28ed8f5a89d734",
+  "submission/src/picker.rs": "fae4e4145561b8a5b6e33251d4386cc7a644e5daf3a45de19964df4135e3b91f",
+  "submission/src/lib.rs": "cf061f97609c5b513c890c4c6e12cde0b7d9adb6fb1163af50a8dba9433e13fc",
+  "submission/tests/headless.rs": "7f17e40f0a3992a5ccff7db2a392c6880fa6858807573ff0f105043391c00c98",
+  "submission/artifacts/inspection.json": "297db680b5171596767f1e2712303a06b5b36b6331a3bb3cef868fa67d8dc66c"
+}

@@ -1,0 +1,14 @@
+{
+  "conditions.env": "7b15499cc3f9fbae581525c85fdd21441d0d0a282c81206eb0e5c11b66aa7d53",
+  "summary.md": "e05753c8a98e7c2500f4381d1b4e1905f898db844513a44c4c0e99106926c9ad",
+  "diagnostics.md": "85c339a8893a40dd39cc9e26702224fe635979b8d9fa127f227cb74c61802e1a",
+  "FRICTION.md": "bd2703327863296e4a1e266066af7f00f54a0ee2ae6b9c5af9adea24dd5f7810",
+  "capture-provenance.json": "994f864408a877f479526b4aa58a3b17165b9ba2e970322295c1ca9b30f97c3c",
+  "submission/.gitignore": "44c92e3a70ad3307b7056871c2bdb096d8bfa9373f5bf06a79bb6324a20ff2fb",
+  "submission/Cargo.toml": "79195d494cb877325b75d8ebf48caab766ee42e50acad5db0bdfdefe15542ccd",
+  "submission/README.md": "f86b64d77156d7799868b0936f8dd672ef47191c6002350266e9e633fdb31b7f",
+  "captures/notes.png": "1f3974b10bcab5ebd8c3981ef3a6c981c6ec690368ca9dd9e3575ec611051d71",
+  "submission/src/main.rs": "9f47dc9bcb64c1bc7bbb21699e888209aa435621b4e99c70aa897be0f57f9342",
+  "submission/src/lib.rs": "95f592e667538ba8dd5db66fa792f86ed9cebea966d784f6104f5c8cde1d1cda",
+  "submission/tests/headless.rs": "bf4aa422ccd9711826014c810a7475f614ee1b7f5bed93ba0d3fd9da35e4306a"
+}
