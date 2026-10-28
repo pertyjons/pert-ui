@@ -49,6 +49,10 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   Run them by hand on Linux, Windows and macOS (pointer selection and
   copying, double-click and F2 editing, Tab through a scoped table, IME into
   a cell editor) and record the results.
+  Partial Linux evidence, 2026-10-28: the diagram editor window's close
+  policy (moved node, refused inspector draft) and the gallery's Note cell
+  editing at three densities were hand-checked (`docs/verification.md`,
+  0.3.83, 0.3.86, 0.3.87); the rest of this entry stays open.
 - [ ] **TOOL-01** 2026-10-20 `crates/pert-ui-runtime/src/tool_windows/mod.rs`
   `ToolWindow::mode` — State and interaction contracts (found by
   plan-audit-repairs slice 6): `ToolWindow::mode` promises where the tool
