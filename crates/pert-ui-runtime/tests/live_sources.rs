@@ -431,7 +431,7 @@ fn inspection_lists_sources_with_their_schedule() -> TestResult {
     runtime.mount_tree(Element::new("trace", trace_reader))?;
     settle(&mut runtime, Duration::ZERO)?;
     let snapshot = runtime.inspect();
-    assert_eq!(snapshot.schema_version, 15);
+    assert_eq!(snapshot.schema_version, 16);
     let schedules: Vec<_> = snapshot
         .sources
         .iter()

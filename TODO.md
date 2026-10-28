@@ -177,3 +177,24 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   object-safe keyless row value (a breaking change to every
   implementation), and drop the placeholder keys from the examples. Found
   by round 2 part P5's checkpoint.
+- [ ] 2026-10-28 `crates/pert-ui-runtime/src/virtual_list.rs` rows (and so
+  `Tree` rows) — development validation (the same kind as R2-23, which round
+  2 part P8 resolved for `Table` cells with `ValidationHints::fixed_height`):
+  each row is placed with `place_clipped(child, slot, slot)`, so a row whose
+  minimum height exceeds the list's row height is cut off with no report.
+  The hint does not fit there, since the slot rather than the list gives the
+  fixed height; give the list's rows the check, for example by comparing
+  each row's measurement with its slot, and test it with a button in a short
+  row. Found by round 2 part P8's checkpoint.
+- [ ] 2026-10-28 built-in item reporters without rectangles — testing
+  (R2-27's improvement for other controls): `Tabs` titles
+  (`crates/pert-ui-runtime/src/tabs.rs`), `Accordion` and `Collapsible`
+  headers (`collapsible.rs`), the choice controls (`choice_controls.rs`),
+  `Select` and its list (`select.rs`), `MultiSelect` (`multi_select.rs`),
+  `QuickPick` (`quick_pick.rs`) and the tool-window stripe
+  (`tool_windows/stripe.rs`) report `SemanticItem`s without
+  `SemanticItem::local_bounds`, so `Driver::click_item` refuses them with
+  `ItemWithoutBounds`. Each that draws its rows could give their rectangles
+  from the geometry its painting and hit testing use, as the table's titles
+  do since 0.3.83, with a test that clicks one. Found by round 2 part P8's
+  checkpoint.

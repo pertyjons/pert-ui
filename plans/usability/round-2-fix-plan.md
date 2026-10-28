@@ -1867,3 +1867,42 @@ plan closes.
   (`target/p7-evidence/`). Fixes gate (fresh): as above, with the
   `--release` foundation run. Codex's recheck: every point resolved, no
   regressions: ready. **P7 done** (native evidence missing).
+
+- **P8 Tables in tests (0.3.83), 2026-10-28.** Implemented by a fresh
+  agent from the approved design (`round-2-design-P8.md`, revision 5):
+  cell addresses documented on `Table`, `TableItems`, `find_descendant` and
+  the testing chapter's new "Tables" section; `TestError::NotFound`'s
+  `resolved` prefix; `SemanticItem::bounds` and `local_bounds` with the
+  committed scale, window and failed-layout guards (P8-D1, D2, D4); the
+  table's header titles as the first item rectangles; `Driver::click_item`
+  with `NoItem` and `ItemWithoutBounds`; inspection schema 16 with
+  version-checked decoding of both envelopes; `ValidationHints::fixed_height`
+  and `ValidationCode::ExceedsFixedHeight` with the debug-only per-window
+  measurement sets (P8-D3); `inventory` and the gallery migrated to row
+  heights from ControlHeight. Same kind: the update-time validator record
+  withholds geometry committed in another window; the validator's
+  relocate and unmeasured paths clear the measured height. TODO.md: two
+  entries (rows of `VirtualList` and `Tree` clipped without a report;
+  other item reporters without rectangles). **Deviations, accepted by the
+  author:** a measurement change is recorded when the latest cached
+  measurement changes, also on a cache hit that brings another of P7's
+  retained entries to the front; the facade listings do not change (they
+  show the runtime's items as re-exports; no listing shows the schema
+  constant or field order); test 10 drives the failure through signals,
+  since a viewport change lays the table out again and hid one mutation;
+  test 14 uses a `#[cfg(test)]` failure switch on `republish`; test
+  placement and setup details (a new `collections/table_items.rs` module,
+  a zero-size leaf in 16c, a flexible column in the grip contract test,
+  keyboard reorder for test 13, a `>= 15` assertion). Mutation evidence:
+  every named mutation failed its assertion; for test 8 only the
+  custom-component half fails (the table has no resolved columns before
+  its first arrangement). Existing facade tests with checkboxes or editors
+  in 24 px rows now log `ExceedsFixedHeight` without asserting it. No
+  fixture check. Gate (fresh): fmt, workspace Clippy, workspace tests and
+  doctests, the five headless sessions (no `ExceedsFixedHeight`), rustdoc
+  `-D warnings`, the diagnostics snapshots, the serde configurations
+  (Clippy, tests, rustdoc; no-default Clippy and tests), the headless
+  gallery, the API listing gate, `git diff --check`. **Native evidence:
+  missing** (pointer sorting, row heights at every density, Note editing:
+  the maintainer's Linux hand check, in `docs/verification.md`). Codex
+  review: pending.

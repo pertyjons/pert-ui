@@ -203,6 +203,15 @@ and a non-finite diagnostic number is written as `"NaN"`, `"inf"` or `"-inf"`
 rather than lost. Enable it with `pert-ui = { version = "0.3", features = ["serde"] }`;
 the [feature table](crate#cargo-features) lists every feature.
 
+A snapshot or a [`QueryResult`] of another schema revision than
+[`InspectionSnapshot::SCHEMA_VERSION`] does not decode: deserializing it fails
+with "inspection schema version N is not supported", so a tool built against
+another release captures again rather than reading reinterpreted fields. The
+version is the first field a serializer that keeps field order, such as
+`serde_json`, writes, and decoding such a document checks it first; a document
+whose fields were reordered can fail on a field of the other revision first. A
+tool that reads several revisions compares `schema_version` before decoding.
+
 ```
 # #[cfg(feature = "serde")]
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -217,6 +226,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let snapshot: InspectionSnapshot = serde_json::from_str(&text)?;
     assert_eq!(snapshot.schema_version, InspectionSnapshot::SCHEMA_VERSION);
     assert!(snapshot.components.iter().any(|c| c.key == "title"));
+    // A document of another revision is rejected, not reinterpreted.
+    let current = format!("{{\"schema_version\":{}", InspectionSnapshot::SCHEMA_VERSION);
+    let older = text.replacen(&current, "{\"schema_version\":1", 1);
+    let error = serde_json::from_str::<InspectionSnapshot>(&older).unwrap_err();
+    assert!(error.to_string().contains("inspection schema version 1 is not supported"));
     Ok(())
 }
 # #[cfg(not(feature = "serde"))]

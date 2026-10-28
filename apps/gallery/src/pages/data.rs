@@ -6,6 +6,7 @@ use crate::gallery::{label, page, section, stage};
 use crate::samples::{ReceiptReadout, VectorShapes};
 pub(crate) use drag_and_drop::drag_and_drop;
 pub(crate) use files::file_browser;
+use pert_ui::Density;
 use pert_ui::images;
 use pert_ui::prelude::*;
 use std::{cell::RefCell, rc::Rc};
@@ -315,6 +316,14 @@ impl TableItems for Measurements {
 }
 
 pub(crate) fn collections(ui: &Runtime) -> Result<Element, RuntimeError> {
+    // The gallery switches density on this mounted page, and a mounted table
+    // keeps its row height, so its rows hold the Note editor at the largest
+    // ControlHeight of the densities the gallery offers.
+    let theme = ui.theme();
+    let mut row_height = 0.0_f32;
+    for density in [Density::Compact, Density::Standard, Density::Comfortable] {
+        row_height = row_height.max(theme.metrics(density)?.metric(MetricRole::ControlHeight));
+    }
     const ROWS: u32 = 100_000;
     // A selection's active key is an `Option<String>`; mapping it to text
     // gives an ordinary bound label that follows the selection.
@@ -482,7 +491,7 @@ pub(crate) fn collections(ui: &Runtime) -> Result<Element, RuntimeError> {
                             table_state.clone(),
                             Element::new(
                                 "collections-table",
-                                Table::new(&table_state, 28.0)?
+                                Table::new(&table_state, row_height)?
                                     .on_selection_change(report_table)
                                     .on_sort(move |_, sort| {
                                         order.set(sort.direction == SortDirection::Descending);

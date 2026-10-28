@@ -10,6 +10,9 @@ use crate::{BoxModelInspection, KeyCode, Modifiers};
 pub(crate) struct NodeData {
     /// A virtualized collection's extent, for `UnboundedCollection`.
     pub(crate) collection: Option<CollectionExtent>,
+    /// The height the component was last measured at, by the parent that
+    /// laid it out, in window pixels; for `ExceedsFixedHeight`.
+    pub(crate) measured_height: Option<f32>,
     pub(crate) window: u64,
     pub(crate) parent: Option<u64>,
     pub(crate) key: String,
@@ -78,6 +81,7 @@ impl Validator {
             node.parent = parent;
             node.box_model.border_box = None;
             node.hints.clip = None;
+            node.measured_height = None;
             self.dirty = true;
         }
     }
@@ -96,29 +100,45 @@ impl Validator {
         if let Some(node) = self.nodes.get_mut(&id) {
             node.box_model.border_box = None;
             node.hints.clip = None;
+            node.measured_height = None;
             self.dirty = true;
         }
     }
-    /// Commits a node's arranged geometry, with a collection's extents as
-    /// that arrangement left them: an arrangement can change its viewport or
-    /// estimated content without another update.
+    /// Commits a node's arranged geometry and the height its parent last
+    /// measured it at, with a collection's extents as that arrangement left
+    /// them: an arrangement can change its viewport or estimated content
+    /// without another update.
     pub(crate) fn geometry(
         &mut self,
         id: u64,
         bounds: [f32; 4],
         clip: [f32; 4],
+        measured_height: Option<f32>,
         collection: Option<CollectionExtent>,
     ) {
         if let Some(node) = self.nodes.get_mut(&id) {
             if node.box_model.border_box == Some(bounds)
                 && node.hints.clip == Some(clip)
+                && same_height(node.measured_height, measured_height)
                 && same_collection(node.collection, collection)
             {
                 return;
             }
             node.box_model.border_box = Some(bounds);
             node.hints.clip = Some(clip);
+            node.measured_height = measured_height;
             node.collection = collection;
+            self.dirty = true;
+        }
+    }
+    /// Records a measurement that changed without the node being arranged or
+    /// updated again: a parent measured it under new constraints and placed
+    /// it where it was.
+    pub(crate) fn measured(&mut self, id: u64, height: Option<f32>) {
+        if let Some(node) = self.nodes.get_mut(&id)
+            && !same_height(node.measured_height, height)
+        {
+            node.measured_height = height;
             self.dirty = true;
         }
     }
@@ -396,6 +416,7 @@ fn geometric(code: ValidationCode) -> bool {
             | ValidationCode::EscapesParent
             | ValidationCode::CollapsedParent
             | ValidationCode::UnboundedCollection
+            | ValidationCode::ExceedsFixedHeight
     )
 }
 
@@ -416,6 +437,10 @@ fn same_collection(a: Option<CollectionExtent>, b: Option<CollectionExtent>) -> 
     }
 }
 
+fn same_height(a: Option<f32>, b: Option<f32>) -> bool {
+    a.map(f32::to_bits) == b.map(f32::to_bits)
+}
+
 fn same_array(a: Option<[f32; 4]>, b: Option<[f32; 4]>) -> bool {
     a.map(|v| v.map(f32::to_bits)) == b.map(|v| v.map(f32::to_bits))
 }
@@ -427,6 +452,7 @@ fn same_border(a: Option<crate::BorderInspection>, b: Option<crate::BorderInspec
 
 fn same_node(a: &NodeData, b: &NodeData) -> bool {
     same_collection(a.collection, b.collection)
+        && same_height(a.measured_height, b.measured_height)
         && a.window == b.window
         && a.parent == b.parent
         && a.key == b.key
@@ -442,6 +468,7 @@ fn same_node(a: &NodeData, b: &NodeData) -> bool {
         && a.hints.overlap == b.hints.overlap
         && a.hints.interactive == b.hints.interactive
         && a.hints.shortcuts == b.hints.shortcuts
+        && a.hints.fixed_height == b.hints.fixed_height
 }
 
 #[derive(Clone, Copy)]
@@ -492,6 +519,12 @@ const OVERLAP_TOLERANCE: f64 = 1.0 / 32.0;
 /// one for [`OVERLAP_TOLERANCE`]: sums of fractional coordinates differ by
 /// amounts that can never become a pixel.
 const GEOMETRY_TOLERANCE: f64 = OVERLAP_TOLERANCE;
+
+/// A length for a message: at most two decimals, without trailing zeros.
+fn pixels(value: f64) -> String {
+    let text = format!("{value:.2}");
+    text.trim_end_matches('0').trim_end_matches('.').to_owned()
+}
 
 fn visible_rect(node: &NodeData) -> Option<Rect> {
     if !node.visible {
@@ -674,6 +707,39 @@ fn check(nodes: &BTreeMap<u64, NodeData>) -> Vec<ValidationIssue> {
                 );
             }
         }
+        if node.visible
+            && let Some(parent_id) = node.parent
+            && let Some(parent) = nodes.get(&parent_id)
+            && parent.hints.fixed_height
+            && parent.window == node.window
+            && parent.visible
+            && let Some(outer) = parent.box_model.border_box.and_then(Rect::new)
+            && outer.w > 0.0
+            && outer.h > 0.0
+            && let Some(inner) = node.box_model.border_box.and_then(Rect::new)
+        {
+            // The parent compresses or cuts its children to its height, so
+            // the child's own measurement tells what it needed.
+            let height = node
+                .measured_height
+                .filter(|height| height.is_finite())
+                .map_or(inner.h, |measured| inner.h.max(f64::from(measured)));
+            if inner.y + height > outer.y + outer.h + GEOMETRY_TOLERANCE
+                || inner.y < outer.y - GEOMETRY_TOLERANCE
+            {
+                issues.push(ValidationIssue {
+                    code: ValidationCode::ExceedsFixedHeight,
+                    components: vec![id, parent_id],
+                    message: format!(
+                        "Component {:?} (#{id}): measured {} px tall in {:?} (#{parent_id}), which gives its children a fixed {} px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content",
+                        node.key,
+                        pixels(height),
+                        parent.key,
+                        pixels(outer.h),
+                    ),
+                });
+            }
+        }
     }
     let peers: Vec<_> = nodes
         .iter()
@@ -729,6 +795,7 @@ mod tests {
     fn node() -> NodeData {
         NodeData {
             collection: None,
+            measured_height: None,
             window: 1,
             parent: None,
             key: "control".into(),

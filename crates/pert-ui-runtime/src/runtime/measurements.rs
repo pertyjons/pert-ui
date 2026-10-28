@@ -39,6 +39,12 @@ impl Measurements {
         self.entries[..=position].rotate_right(1);
         self.entries[0] = Some((constraints, size));
     }
+    /// The most recently used measurement's size: the one the last
+    /// measurement returned.
+    #[cfg(debug_assertions)]
+    pub(crate) fn latest(&self) -> Option<Size> {
+        self.entries[0].map(|(_, size)| size)
+    }
     /// Whether no measurement is retained.
     #[cfg(test)]
     pub(crate) fn is_empty(&self) -> bool {

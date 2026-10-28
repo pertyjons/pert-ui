@@ -1,6 +1,7 @@
 //! Driving an application in a headless test, as a user would.
 //!
-//! [`Driver`] clicks a component, replaces or types text, presses keys and
+//! [`Driver`] clicks a component or an item a component draws itself, such
+//! as a table's column title, replaces or types text, presses keys and
 //! chords, clears focus, settles the runtime after each step, checks that a
 //! window stays quiet over an interval ([`QuietReport`]), finds a
 //! component's [`Semantics`] and lists the components one address segment
@@ -207,9 +208,9 @@ pub use crate::{
 /// Input goes where [`Runtime`]'s input methods send it: to the selected
 /// window. The driver never selects another window itself, so a click followed
 /// by typing stays in one place. A test of a detached window selects it with
-/// [`HostIntegration::select_window`] first; [`Self::click`] and
-/// [`Self::replace_text`] refuse a target in another window
-/// ([`TestError::OtherWindow`]).
+/// [`HostIntegration::select_window`] first; [`Self::click`],
+/// [`Self::click_item`] and [`Self::replace_text`] refuse a target in another
+/// window ([`TestError::OtherWindow`]).
 ///
 /// # Synthetic keys
 ///
@@ -226,13 +227,13 @@ pub use crate::{
 ///
 /// # Neutral input and cleanup
 ///
-/// [`Self::key`], [`Self::chord`], [`Self::replace_text`] and [`Self::click`]
-/// require that no key is held and no modifier is reported
+/// [`Self::key`], [`Self::chord`], [`Self::replace_text`], [`Self::click`]
+/// and [`Self::click_item`] require that no key is held and no modifier is reported
 /// ([`Runtime::keyboard`]), and report [`TestError::InputHeld`] otherwise, so
 /// a helper never releases a press the test made through the low-level
 /// methods. The runtime exposes no pointer-button state: a test that pressed a
 /// button through [`Runtime::pointer_input`] releases it before
-/// [`Self::click`].
+/// [`Self::click`] or [`Self::click_item`].
 ///
 /// A compound action releases everything it pressed, even when a step fails:
 /// a key or button whose press returned an error is still released, because
@@ -599,16 +600,61 @@ impl<'a> Driver<'a> {
     /// The component at the key path `path` below `from`, as
     /// [`Runtime::find`] resolves it.
     ///
+    /// When nothing is mounted there, the error names the path and the
+    /// longest leading part of it that does resolve below `from`, so a test
+    /// sees which segment failed. A prefix resolves when `find` returns a
+    /// component for it or refuses it as ambiguous, since `find` refuses
+    /// only several matches of the last segment. Only the failure path looks
+    /// for it, with at most one further lookup per shorter prefix.
+    ///
     /// # Errors
-    /// [`TestError::NotFound`] naming the path when nothing is mounted there,
-    /// and the errors of [`Runtime::find`] as [`TestError::Runtime`], such as
-    /// `AmbiguousKey`.
+    /// [`TestError::NotFound`] with the path and its resolved prefix when
+    /// nothing is mounted there, and the errors of [`Runtime::find`] as
+    /// [`TestError::Runtime`], such as `AmbiguousKey`.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::testing::*;
+    ///
+    /// let mut ui = Runtime::new();
+    /// let root = ui.mount_tree(Element::new("form", Column::new([
+    ///     Element::new("r1", Row::new([Element::new("name", Label::new("Name"))])),
+    /// ])))?;
+    /// let driver = Driver::new(&mut ui);
+    /// let error = driver.find(&root, &["r1", "missing"]).unwrap_err();
+    /// assert!(matches!(&error, TestError::NotFound { resolved, .. } if resolved == &["r1"]));
+    /// assert_eq!(
+    ///     error.to_string(),
+    ///     "no component is mounted at r1/missing; the path resolves as far as r1",
+    /// );
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     pub fn find(&self, from: &WidgetId, path: &[&str]) -> Result<WidgetId, TestError> {
-        self.runtime
-            .find(from, path)?
-            .ok_or_else(|| TestError::NotFound {
-                path: path.iter().map(|segment| (*segment).to_owned()).collect(),
-            })
+        if let Some(found) = self.runtime.find(from, path)? {
+            return Ok(found);
+        }
+        let mut resolved = &path[..0];
+        for length in (1..path.len()).rev() {
+            match self.runtime.find(from, &path[..length]) {
+                Ok(Some(_)) | Err(RuntimeError::AmbiguousKey(_)) => {
+                    resolved = &path[..length];
+                    break;
+                }
+                Ok(None) => {}
+                Err(error) => return Err(error.into()),
+            }
+        }
+        let owned = |segments: &[&str]| -> Vec<String> {
+            segments
+                .iter()
+                .map(|segment| (*segment).to_owned())
+                .collect()
+        };
+        Err(TestError::NotFound {
+            path: owned(path),
+            resolved: owned(resolved),
+        })
     }
 
     /// The components one address segment below `parent`, in child order,
@@ -776,6 +822,140 @@ impl<'a> Driver<'a> {
         steps.finish()?;
         self.settle()?;
         Ok(())
+    }
+
+    /// Clicks the middle of the visible part of item `index` of `id`'s
+    /// [`Semantics::items`] with the primary button, then settles.
+    ///
+    /// An item is a row a component draws itself rather than a child
+    /// component, such as a [`Table`](crate::Table)'s column title, a menu
+    /// command or a tab title; a component that gives an item its rectangle
+    /// ([`SemanticItem::local_bounds`]) reports it as
+    /// [`SemanticItem::bounds`], and only such an item can be clicked. Among
+    /// the built-in components, a table's column titles do.
+    ///
+    /// The items are read with [`Self::semantics`]; the component is then
+    /// revealed with [`Runtime::reveal`], as [`Self::click`] does, and its
+    /// items are read again, since revealing flushes and may scroll. The press
+    /// and release go through [`Runtime::pointer_input`] at the middle of the
+    /// item's bounds, the visible part of the item.
+    ///
+    /// This is pointer input, not a semantic action: what the press does is
+    /// the component's, and whether it reaches the component is not checked.
+    /// On a table title, a press within the resize grip of a column's
+    /// trailing edge starts a resize rather than a sort, and the middle of a
+    /// title that horizontal scrolling leaves only a narrow visible part of
+    /// can fall there. The driver does not scroll a component's own content
+    /// to the item: a table column scrolled out of view has no bounds; bring
+    /// it into view with Left or Right on the focused table, which scroll the
+    /// active cell's column into view, or with a horizontal wheel through
+    /// [`Runtime::pointer_input`]. A column can also be sorted from the
+    /// keyboard, with Alt and Up or Down on the active column.
+    ///
+    /// The clock moves only by the settle, so two `click_item`s are
+    /// [`Self::FRAME`] apart and a component that counts clicks sees a double
+    /// click, as for [`Self::click`]; put [`Self::advance`] beyond its
+    /// interval between them for two single clicks.
+    ///
+    /// Requires neutral keyboard input and no pointer button held; see
+    /// [neutral input](Self#neutral-input-and-cleanup).
+    ///
+    /// # Errors
+    /// Before any input, with nothing changed: `ForeignRuntime` or
+    /// `Unmounted` as [`TestError::Runtime`]; [`TestError::OtherWindow`] for
+    /// a target outside the selected window; [`TestError::InputHeld`];
+    /// [`TestError::NoSemantics`] for a component that reports none and
+    /// [`TestError::NoItem`] for an index it reports no item at. Then
+    /// [`TestError::NotRevealed`] with the refusal of a reveal that stopped,
+    /// `Unmounted` as [`TestError::Runtime`] for a target the reveal
+    /// unmounted, `NoSemantics` or `NoItem` again when the reveal changed the
+    /// items, [`TestError::ItemWithoutBounds`] for an item without bounds,
+    /// and the errors of [`Runtime::reveal`], [`Runtime::pointer_input`] and
+    /// the settle, with [cleanup](Self#neutral-input-and-cleanup) as
+    /// described.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::testing::*;
+    /// use std::{cell::RefCell, rc::Rc};
+    ///
+    /// struct Files;
+    /// impl TableItems for Files {
+    ///     fn len(&self) -> usize { 2 }
+    ///     fn key(&self, index: usize) -> Option<String> {
+    ///         (index < 2).then(|| format!("file{index}"))
+    ///     }
+    ///     fn cell(&self, index: usize, column: &str) -> Option<Element> {
+    ///         let text = match column {
+    ///             "name" => ["b.txt", "a.txt"].get(index)?,
+    ///             _ => ["2 KB", "1 KB"].get(index)?,
+    ///         };
+    ///         Some(Element::new("text", Label::new(*text)))
+    ///     }
+    /// }
+    /// let mut ui = Runtime::new();
+    /// ui.set_viewport(Viewport::new(320.0, 200.0, 1.0)?)?;
+    /// let controller = TableController::new(
+    ///     &ui,
+    ///     ListSelection::new(&ui, SelectionMode::Single),
+    ///     [
+    ///         TableColumn::new("name", "Name").sortable(true),
+    ///         TableColumn::new("size", "Size").sortable(true),
+    ///     ],
+    ///     TableSource::new(Files),
+    /// )?;
+    /// let requests = Rc::new(RefCell::new(Vec::new()));
+    /// let seen = requests.clone();
+    /// let table = ui.mount_tree(Element::new("files", Table::new(&controller, 24.0)?
+    ///     .on_sort(move |_, sort| {
+    ///         seen.borrow_mut().push((sort.column.clone(), sort.direction));
+    ///         Ok(())
+    ///     })))?;
+    /// let mut driver = Driver::new(&mut ui);
+    /// driver.settle()?;
+    /// driver.click_item(&table, 1)?;
+    /// assert_eq!(*requests.borrow(), [("size".to_owned(), SortDirection::Ascending)]);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn click_item(&mut self, id: &WidgetId, index: usize) -> Result<(), TestError> {
+        let key = self.key_of(id)?;
+        self.require_selected(id, &key)?;
+        self.require_neutral()?;
+        self.item(id, &key, index)?;
+        match self.runtime.reveal(id)? {
+            RevealOutcome::Refused(refusal) => {
+                return Err(TestError::NotRevealed { key, refusal });
+            }
+            RevealOutcome::Unmounted => return Err(RuntimeError::Unmounted.into()),
+            _ => {}
+        }
+        let [x, y, width, height] = self
+            .item(id, &key, index)?
+            .bounds
+            .ok_or(TestError::ItemWithoutBounds { key, index })?;
+        let at = Point::new(x + width / 2.0, y + height / 2.0).map_err(RuntimeError::from)?;
+        let mut steps = Steps::default();
+        steps.step(self.pointer(at, PointerKind::Press(PointerButton::Primary)));
+        steps.cleanup(self.pointer(at, PointerKind::Release(PointerButton::Primary)));
+        steps.finish()?;
+        self.settle()?;
+        Ok(())
+    }
+
+    /// Item `index` of `id`'s semantics, as an inspection reports it now.
+    fn item(&self, id: &WidgetId, key: &str, index: usize) -> Result<SemanticItem, TestError> {
+        let mut items = self.semantics(id)?.items;
+        let count = items.len();
+        if index < count {
+            Ok(items.swap_remove(index))
+        } else {
+            Err(TestError::NoItem {
+                key: key.to_owned(),
+                index,
+                count,
+            })
+        }
     }
 
     /// Replaces the whole text of the editor `id` with `text`, then settles.
@@ -1211,10 +1391,42 @@ pub enum TestError {
     #[error(transparent)]
     Runtime(#[from] RuntimeError),
     /// No component is mounted at this key path ([`Driver::find`]).
-    #[error("no component is mounted at {}", path.join("/"))]
+    #[error(
+        "no component is mounted at {}; {}",
+        path.join("/"),
+        if resolved.is_empty() {
+            "not even its first segment resolves".to_owned()
+        } else {
+            format!("the path resolves as far as {}", resolved.join("/"))
+        }
+    )]
     NotFound {
         /// The path that was looked up, one key per segment.
         path: Vec<String>,
+        /// The longest leading part of `path`, shorter than it, that resolves
+        /// below the component the lookup started from: [`Runtime::find`]
+        /// returns a component for it or refuses it as ambiguous. Empty when
+        /// not even the first segment does.
+        resolved: Vec<String>,
+    },
+    /// The component reports no item at this index ([`Driver::click_item`]).
+    #[error("`{key}` reports {count} items, none at index {index}")]
+    NoItem {
+        /// The component's key.
+        key: String,
+        /// The index asked for.
+        index: usize,
+        /// How many items the component reports.
+        count: usize,
+    },
+    /// The item has no visible rectangle to click ([`Driver::click_item`]):
+    /// its component gives it none, or it is scrolled or clipped out of view.
+    #[error("item {index} of `{key}` has no visible bounds")]
+    ItemWithoutBounds {
+        /// The component's key.
+        key: String,
+        /// The item's index.
+        index: usize,
     },
     /// The target is in another window than the selected one, which receives
     /// the driver's input. Nothing changed; select the target's window with
@@ -1224,7 +1436,8 @@ pub enum TestError {
         /// The target's key.
         key: String,
     },
-    /// Revealing the target before a click stopped ([`Driver::click`]).
+    /// Revealing the target before a click stopped ([`Driver::click`],
+    /// [`Driver::click_item`]).
     #[error("`{key}` could not be revealed: {refusal:?}")]
     NotRevealed {
         /// The target's key.
@@ -1248,7 +1461,8 @@ pub enum TestError {
         /// The target's key.
         key: String,
     },
-    /// The component reports no semantics ([`Driver::semantics`]).
+    /// The component reports no semantics ([`Driver::semantics`],
+    /// [`Driver::click_item`]).
     #[error("`{key}` reports no semantics")]
     NoSemantics {
         /// The component's key.
@@ -1267,7 +1481,8 @@ pub enum TestError {
     ClockOverflow,
     /// A key is held or a modifier is reported, so the driver's keys would not
     /// be what it sends ([`Driver::key`], [`Driver::chord`],
-    /// [`Driver::replace_text`], [`Driver::click`]). Release them first.
+    /// [`Driver::replace_text`], [`Driver::click`], [`Driver::click_item`]).
+    /// Release them first.
     #[error("a key or modifier is held; release it before driving input")]
     InputHeld,
     /// A step failed, and releasing what the action had pressed failed too.

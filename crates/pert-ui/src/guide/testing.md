@@ -9,7 +9,8 @@ use pert_ui::testing::*;
 ```
 
 [`testing`](crate::testing) holds [`Driver`](crate::testing::Driver), which
-clicks, types, presses keys and chords, clears focus and settles after each
+clicks a component or an item a component draws itself, such as a table's
+column title, types, presses keys and chords, clears focus and settles after each
 step, checks that a window stays quiet over an interval and lists a list's
 rows in order, its
 [`TestError`](crate::testing::TestError), and the other names a test writes:
@@ -468,6 +469,117 @@ assert_eq!(segments, ["cable", "mouse", "laptop"]);
 [`Runtime::children`] stays the structure walk for hosts and custom
 components: it lists structural wrappers too, such as an `Each`'s default
 container and a table's body.
+
+# Tables
+
+A [`Table`] cell is a component keyed by its column, below the row, and the
+content [`TableItems::cell`] returns is below the cell under its own key, so
+a cell's content is at `<table>/<row key>/<column key>/<content key>`; the
+table's [addresses and tests](Table#addresses-and-tests) describe them. Content
+keyed like its column is allowed, since keys are unique only among siblings,
+but [`Runtime::find_descendant`] below the row then sees the cell and the
+content and refuses the lookup; the full address finds the content.
+
+The column titles are the table's [semantic items](Semantics::items), and each
+has the [bounds](SemanticItem::bounds) of its visible part of the header, in
+window coordinates.
+[`Driver::click_item`](crate::testing::Driver::click_item) clicks the middle
+of one, as a pointer would, so a sortable column asks for its sort; the
+keyboard route is Alt with Up or Down on the active column. The row height
+comes from the theme's ControlHeight when a row holds controls, so
+development validation reports nothing taller than a row:
+
+```rust
+use pert_ui::prelude::*;
+use pert_ui::testing::*;
+use std::rc::Rc;
+
+#[derive(Clone)]
+struct Job {
+    name: &'static str,
+    status: ProgressStatus,
+}
+struct Jobs(Rc<Vec<Job>>);
+impl TableItems for Jobs {
+    fn len(&self) -> usize {
+        self.0.len()
+    }
+    fn key(&self, index: usize) -> Option<String> {
+        self.0.get(index).map(|job| job.name.to_owned())
+    }
+    fn cell(&self, index: usize, column: &str) -> Option<Element> {
+        let job = self.0.get(index)?;
+        Some(match column {
+            // Keyed like its column, which the full address tells apart.
+            "name" => Label::new(job.name).key("name"),
+            "progress" => Row::new([
+                ProgressBar::new(job.status).key("bar").with_grow(1),
+                Label::new(match job.status.fraction() {
+                    Some(done) => format!("{:.0}%", done.get() * 100.0),
+                    None => String::new(),
+                })
+                .key("percent"),
+            ])
+            .key("cell"),
+            _ => return None,
+        })
+    }
+}
+
+let mut ui = Runtime::new();
+ui.set_viewport(Viewport::new(400.0, 200.0, 1.0)?)?;
+let jobs = Rc::new(vec![
+    Job { name: "upload", status: ProgressStatus::of(100, 100) },
+    Job { name: "render", status: ProgressStatus::of(42, 100) },
+]);
+let controller = TableController::new(
+    &ui,
+    ListSelection::new(&ui, SelectionMode::Single),
+    [
+        TableColumn::new("name", "Job").width(Length::from(120)).sortable(true),
+        TableColumn::new("progress", "Progress").width(Length::from(160)),
+    ],
+    TableSource::new(Jobs(jobs.clone())),
+)?;
+let theme = ui.theme();
+let row_height = theme.metrics(theme.density()?)?.metric(MetricRole::ControlHeight);
+let republish = controller.clone();
+let table = Table::new(&controller, row_height)?.on_sort(move |_, sort| {
+    let mut sorted = (*jobs).clone();
+    sorted.sort_by_key(|job| job.name);
+    if sort.direction == SortDirection::Descending {
+        sorted.reverse();
+    }
+    republish.set_source(TableSource::new(Jobs(Rc::new(sorted))))
+});
+let table = ui.mount_tree(Element::new("jobs", table))?;
+let mut driver = Driver::new(&mut ui);
+driver.settle()?;
+
+let rows = |driver: &Driver<'_>| -> Result<Vec<String>, TestError> {
+    Ok(driver.address_children(&table)?.into_iter().map(|row| row.segment).collect())
+};
+assert_eq!(rows(&driver)?, ["upload", "render"]);
+let percent = driver.find(&table, &["render", "progress", "cell", "percent"])?;
+assert_eq!(driver.semantics(&percent)?.name.as_deref(), Some("42%"));
+let name = driver.find(&table, &["render", "name", "name"])?;
+let row = driver.find(&table, &["render"])?;
+assert_eq!(
+    driver.runtime().find_descendant(&row, "name"),
+    Err(RuntimeError::AmbiguousKey("name".into())),
+);
+assert_eq!(driver.runtime().key(&name)?, "name");
+
+let titles = driver.semantics(&table)?.items;
+assert_eq!(titles[0].name.as_deref(), Some("Job"));
+let [_, _, width, _] = titles[0].bounds.ok_or("the title is in view")?;
+assert_eq!(width, 120.0);
+driver.click_item(&table, 0)?;
+assert_eq!(rows(&driver)?, ["render", "upload"]);
+#[cfg(debug_assertions)]
+assert!(driver.runtime().validation_report().issues.is_empty());
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
 
 # Background work
 

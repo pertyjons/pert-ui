@@ -108,6 +108,10 @@ pub enum InspectValue {
 )]
 pub struct BoxModelInspection {
     /// Border-box `[x, y, width, height]` in root/window logical pixels.
+    /// The runtime reports the component's last committed allocation, and
+    /// none while that allocation is from another window than the one the
+    /// component is now presented in (after a detach or redock, until that
+    /// window's layout commits it).
     #[cfg_attr(
         feature = "serde",
         serde(default, with = "crate::serde_float::option_array4")
@@ -358,19 +362,28 @@ pub enum SemanticAction {
 /// such as an option, a menu command or a tab title.
 ///
 /// Rows of this kind are drawn by one component and are not components, so they
-/// have no identity, bounds or focus of their own in the snapshot; their order is
-/// their presentation order. A component whose rows are real child components
-/// reports none and lets the children describe themselves.
+/// have no identity or focus of their own; their order is their presentation
+/// order. A component may give each its rectangle
+/// ([`local_bounds`](Self::local_bounds)), which an inspection reports in window
+/// coordinates as [`bounds`](Self::bounds); a component gives bounds only where
+/// it reports them, and among the built-in components only a
+/// [`Table`](crate::Table)'s column titles do. A component whose rows are real
+/// child components reports none and lets the children describe themselves.
 ///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
-/// use pert_ui::{SemanticAction, SemanticItem, SemanticRole, Semantics};
+/// use pert_ui::{Rect, SemanticAction, SemanticItem, SemanticRole, Semantics};
 /// let semantics = Semantics::new(SemanticRole::Menu).items([
-///     SemanticItem::new("Copy").action(SemanticAction::Activate),
+///     SemanticItem::new("Copy")
+///         .action(SemanticAction::Activate)
+///         .local_bounds(Rect::new(0.0, 0.0, 120.0, 24.0)?),
 ///     SemanticItem::new("Paste").disabled(true).action(SemanticAction::Activate),
 /// ]);
 /// assert_eq!(semantics.items[0].actions, [SemanticAction::Activate]);
 /// assert!(semantics.items[1].disabled && semantics.items[1].actions.is_empty());
+/// // Window bounds are the runtime's to fill when it inspects the component.
+/// assert_eq!(semantics.items[0].bounds, None);
+/// # Ok::<(), pert_ui::GeometryError>(())
 /// ```
 ///
 /// With the `serde` feature it implements `Serialize` and `Deserialize`.
@@ -399,6 +412,48 @@ pub struct SemanticItem {
     pub shortcut: Option<String>,
     /// What can currently be done to this row, sorted and without duplicates.
     pub actions: Vec<SemanticAction>,
+    /// The visible part of the row, `[x, y, width, height]` in the logical
+    /// pixels of the component's window
+    /// ([`ComponentInspection::window`]), the coordinates of
+    /// [`BoxModelInspection::border_box`].
+    ///
+    /// The runtime fills it when an inspection describes the component with
+    /// semantics ([`Runtime::inspect`](crate::Runtime::inspect),
+    /// [`Runtime::inspect_with`](crate::Runtime::inspect_with), and
+    /// [`Runtime::query`](crate::Runtime::query) at
+    /// [`Detail::Semantics`](crate::Detail::Semantics) or
+    /// [`Detail::Full`](crate::Detail::Full)), from the rectangle the
+    /// component gave with [`local_bounds`](Self::local_bounds): moved by the
+    /// component's committed border-box origin, scaled by its
+    /// [`ComponentInspection::view_scale`] and intersected with its committed
+    /// clip ([`ValidationHints::clip`](crate::ValidationHints::clip)), the
+    /// values the same record reports. It therefore follows view scaling,
+    /// ancestor clipping, promoted surfaces and detached windows as the
+    /// component's own geometry does.
+    ///
+    /// It is absent, never a guess, when the component gave the row no
+    /// rectangle; before the component's first layout; while its committed
+    /// geometry is from another window than the one it is now in (after a
+    /// detach or redock, until that window's layout succeeds); while it is
+    /// not presented (hidden, its window hidden, or clipped away entirely),
+    /// although its border box keeps its last bounds; when the visible part
+    /// is empty, as for a row scrolled or clipped out of view; and after a
+    /// failed layout that arranged the component, until a layout succeeds.
+    /// A change not yet laid out shows here as late as it shows in the
+    /// border box; state the component changes outside layout, such as a
+    /// scroll offset, shows at once.
+    ///
+    /// A value a component assigns here directly is replaced: an inspection
+    /// carries window bounds only. Schema 16 added this field.
+    #[cfg_attr(
+        feature = "serde",
+        serde(default, with = "crate::serde_float::option_array4")
+    )]
+    pub bounds: Option<[f32; 4]>,
+    /// The rectangle `local_bounds` gave, in the reporting component's local
+    /// coordinates; the runtime transforms it into `bounds` and clears it.
+    #[cfg_attr(feature = "serde", serde(skip))]
+    local: Option<crate::Rect>,
 }
 impl SemanticItem {
     /// Creates an enabled, unselected row; empty text leaves the name absent.
@@ -412,7 +467,84 @@ impl SemanticItem {
             checked: None,
             shortcut: None,
             actions: Vec::new(),
+            bounds: None,
+            local: None,
         }
+    }
+    /// Gives the row a rectangle in the reporting component's own local
+    /// coordinates: the origin at its top-left, in local logical pixels, the
+    /// space its [`paint`](crate::Component::paint) draws in and
+    /// [`EventContext::to_local`](crate::EventContext::to_local) maps a pointer
+    /// position to.
+    ///
+    /// The rectangle is the one the component's painting and pointer handling
+    /// use for the row now: computed from the geometry its last `arrange`
+    /// retained and from state it changes outside layout that its painting
+    /// and hit testing read, such as a scroll offset. The runtime transforms
+    /// it into window coordinates and cuts it to the component's visible part
+    /// when it inspects the component, as [`bounds`](Self::bounds) describes;
+    /// a row without one has no bounds.
+    ///
+    /// A custom segmented control reporting both segments, mounted at an
+    /// offset, reads their window bounds through the test driver:
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::component::*;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::testing::*;
+    /// use pert_ui::GeometryError;
+    ///
+    /// /// Two segments side by side, each half of the control.
+    /// struct Segments;
+    /// impl Component for Segments {
+    ///     fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+    ///         Ok(())
+    ///     }
+    ///     fn measure(&self, _: &MeasureContext<'_>, _: Constraints) -> Result<Size, RuntimeError> {
+    ///         Ok(Size::new(200.0, 30.0)?)
+    ///     }
+    ///     fn inspect(&self) -> ComponentDetails {
+    ///         let segment = |name: &str, x: f32| {
+    ///             Ok::<_, GeometryError>(SemanticItem::new(name)
+    ///                 .action(SemanticAction::Select)
+    ///                 .local_bounds(Rect::new(x, 0.0, 100.0, 30.0)?))
+    ///         };
+    ///         let items = [segment("Day", 0.0), segment("Week", 100.0)];
+    ///         ComponentDetails {
+    ///             semantics: Some(Semantics::new(SemanticRole::Group)
+    ///                 .items(items.into_iter().filter_map(Result::ok))),
+    ///             ..ComponentDetails::default()
+    ///         }
+    ///     }
+    /// }
+    ///
+    /// let mut ui = Runtime::new();
+    /// ui.set_viewport(Viewport::new(400.0, 200.0, 1.0)?)?;
+    /// let root = ui.mount_tree(Element::new("page", Column::new([
+    ///     Element::new("title", Label::new("Range")),
+    ///     Element::new("segments", Segments),
+    /// ])))?;
+    /// let mut driver = Driver::new(&mut ui);
+    /// driver.settle()?;
+    /// let segments = driver.find(&root, &["segments"])?;
+    /// let [x, y, ..] = driver.runtime().bounds(&segments)?.ok_or("laid out")?.values();
+    /// let items = driver.semantics(&segments)?.items;
+    /// assert_eq!(items[0].bounds, Some([x, y, 100.0, 30.0]));
+    /// assert_eq!(items[1].bounds, Some([x + 100.0, y, 100.0, 30.0]));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub const fn local_bounds(mut self, rect: crate::Rect) -> Self {
+        self.local = Some(rect);
+        self
+    }
+    /// Takes the local rectangle `local_bounds` gave, leaving none, and
+    /// clears any window bounds assigned directly; the runtime sets
+    /// [`Self::bounds`] from what it returns.
+    pub(crate) fn take_local(&mut self) -> Option<crate::Rect> {
+        self.bounds = None;
+        self.local.take()
     }
     /// Marks the row as the chosen or highlighted one.
     #[must_use]
@@ -533,7 +665,10 @@ pub struct Semantics {
     /// What can currently be done to it, sorted and without duplicates.
     pub actions: Vec<SemanticAction>,
     /// The rows this component presents itself, in presentation order; empty
-    /// when it has none or when its rows are child components.
+    /// when it has none or when its rows are child components. Rows have no
+    /// identity or focus of their own; a component may give each its
+    /// rectangle ([`SemanticItem::local_bounds`]), which an inspection reports
+    /// in window coordinates as [`SemanticItem::bounds`].
     pub items: Vec<SemanticItem>,
     /// Whether interaction is unavailable. A disabled component offers no actions.
     pub disabled: bool,
@@ -813,9 +948,18 @@ pub struct ComponentInspection {
     pub presentation_parent: Option<u64>,
     /// Native presentation root incarnation. Bounds and clips use its coordinates.
     pub window: u64,
-    /// Accumulated [view scale](crate::ViewTransform) of this component's local
-    /// space, 1 outside any view transform. Bounds and clips stay window-logical,
-    /// the actual rendered frame. Schema 11 added this field.
+    /// Accumulated [view scale](crate::ViewTransform) of the committed
+    /// geometry this record reports: the scale
+    /// [`details.box_model.border_box`](BoxModelInspection::border_box), the
+    /// [clip](crate::ValidationHints::clip) and every item's
+    /// [bounds](SemanticItem::bounds) are in, from the same successful
+    /// layout; 1 outside any view transform. Bounds and clips stay
+    /// window-logical, the actual rendered frame. Before the component's first
+    /// layout, and while its committed geometry is from another window than
+    /// the one it is now in (after a detach or redock, until that window's
+    /// layout succeeds, when `border_box` and the clip are absent too), it is
+    /// the scale the component will be laid out at. Schema 11 added this
+    /// field; schema 16 made it the committed layout's scale.
     #[cfg_attr(feature = "serde", serde(with = "crate::serde_float::f32"))]
     pub view_scale: f32,
     /// Whether presentation is enabled for this mount.
@@ -993,11 +1137,18 @@ pub struct EventRecord {
     serde(deny_unknown_fields)
 )]
 pub struct InspectionSnapshot {
+    /// Snapshot schema revision, independent of crate versions. Snapshots
+    /// captured by this runtime carry [`InspectionSnapshot::SCHEMA_VERSION`],
+    /// and deserializing one with another revision fails. It is the first
+    /// field, so a serializer that keeps field order writes it first. Schema
+    /// 16 made it the first field.
+    #[cfg_attr(
+        feature = "serde",
+        serde(deserialize_with = "crate::diagnostics::current_schema")
+    )]
+    pub schema_version: u32,
     /// Native presentation roots, including known hidden roots, in creation order.
     pub windows: Vec<WindowInspection>,
-    /// Snapshot schema revision, independent of crate versions. Snapshots
-    /// captured by this runtime carry [`InspectionSnapshot::SCHEMA_VERSION`].
-    pub schema_version: u32,
     /// Live-data sources adopted by the runtime, in creation order, with their
     /// schedule, freshness and loss totals. Schema 5 added this field.
     pub sources: Vec<crate::SourceInspection>,
@@ -1040,13 +1191,47 @@ impl InspectionSnapshot {
     /// [`schema_version`](Self::schema_version).
     ///
     /// It changes when a field is added, removed or reinterpreted, not with the
-    /// crate version. An external inspector compares it before decoding a
-    /// snapshot and treats an unknown revision as unsupported rather than
-    /// reinterpreting it.
-    pub const SCHEMA_VERSION: u32 = 15;
+    /// crate version. With the `serde` feature, deserializing a snapshot or a
+    /// [`QueryResult`](crate::QueryResult) whose `schema_version` is any other
+    /// revision fails with the message "inspection schema version 15 is not
+    /// supported (this build writes 16)", naming the version found; unknown
+    /// fields are rejected as before. A document whose version is not its
+    /// first field, as a format or an intermediate map may reorder it, can
+    /// fail on an unknown or missing field of the other revision first. An
+    /// external inspector that reads several revisions compares the version
+    /// before decoding and treats an unknown revision as unsupported rather
+    /// than reinterpreting it.
+    pub const SCHEMA_VERSION: u32 = 16;
     /// The most events history retains. Recording one more evicts the oldest
     /// and counts it in [`Self::dropped_events`].
     pub const MAX_EVENTS: usize = 256;
+}
+
+/// A document of an inspection schema revision this build does not read.
+#[cfg(feature = "serde")]
+#[derive(Debug, thiserror::Error)]
+#[error("inspection schema version {found} is not supported (this build writes {supported})")]
+struct UnsupportedSchema {
+    found: u32,
+    supported: u32,
+}
+
+/// Reads an envelope's `schema_version`, rejecting every revision other than
+/// [`InspectionSnapshot::SCHEMA_VERSION`].
+#[cfg(feature = "serde")]
+pub(crate) fn current_schema<'de, D>(deserializer: D) -> Result<u32, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let found = <u32 as serde::Deserialize>::deserialize(deserializer)?;
+    if found == InspectionSnapshot::SCHEMA_VERSION {
+        Ok(found)
+    } else {
+        Err(serde::de::Error::custom(UnsupportedSchema {
+            found,
+            supported: InspectionSnapshot::SCHEMA_VERSION,
+        }))
+    }
 }
 
 #[derive(Default)]

@@ -186,7 +186,8 @@ pub enum Detail {
     /// has produced them. The default.
     #[default]
     Geometry,
-    /// Geometry plus the typed semantics.
+    /// Geometry plus the typed semantics, with each item's window bounds
+    /// ([`SemanticItem::bounds`](crate::SemanticItem::bounds)).
     Semantics,
     /// Everything [`Runtime::inspect`] reports: box model, properties and
     /// validation hints included.
@@ -388,7 +389,13 @@ pub struct EventHistory {
     serde(deny_unknown_fields)
 )]
 pub struct QueryResult {
-    /// The snapshot schema the records follow.
+    /// The snapshot schema the records follow. Deserializing a result of
+    /// another revision fails, as for
+    /// [`InspectionSnapshot::SCHEMA_VERSION`].
+    #[cfg_attr(
+        feature = "serde",
+        serde(deserialize_with = "crate::diagnostics::current_schema")
+    )]
     pub schema_version: u32,
     /// The runtime clock at capture.
     pub at: Duration,

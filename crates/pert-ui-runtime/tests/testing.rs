@@ -280,7 +280,8 @@ fn find_names_a_missing_path_and_semantics_reads_one_component() -> TestResult {
     assert_eq!(
         driver.find(&root, &["missing", "child"]),
         Err(TestError::NotFound {
-            path: vec!["missing".into(), "child".into()]
+            path: vec!["missing".into(), "child".into()],
+            resolved: vec![],
         })
     );
     assert_eq!(driver.semantics(&title)?.name.as_deref(), Some("Profile"));
@@ -2123,4 +2124,157 @@ mod address_children {
         );
         Ok(())
     }
+}
+
+#[test]
+fn not_found_names_the_longest_prefix_that_resolves() -> TestResult {
+    let mut ui = runtime()?;
+    // Two structural wrappers, each holding an `a`: the prefix `a` is
+    // ambiguous, which still reaches the path's level.
+    let root = ui.mount_tree(Element::new(
+        "root",
+        Column::new([
+            Element::new("r1", Row::new([Element::new("name", Label::new("Name"))])),
+            Element::new("left", Column::new([Element::new("a", Label::new("A"))])).structural(),
+            Element::new("right", Column::new([Element::new("a", Label::new("A"))])).structural(),
+        ]),
+    ))?;
+    let driver = Driver::new(&mut ui);
+    let missing = driver.find(&root, &["r1", "missing"]);
+    assert_eq!(
+        missing,
+        Err(TestError::NotFound {
+            path: vec!["r1".into(), "missing".into()],
+            resolved: vec!["r1".into()],
+        })
+    );
+    assert_eq!(
+        missing.unwrap_err().to_string(),
+        "no component is mounted at r1/missing; the path resolves as far as r1"
+    );
+    let unknown = driver.find(&root, &["r9", "name"]);
+    assert_eq!(
+        unknown,
+        Err(TestError::NotFound {
+            path: vec!["r9".into(), "name".into()],
+            resolved: vec![],
+        })
+    );
+    assert_eq!(
+        unknown.unwrap_err().to_string(),
+        "no component is mounted at r9/name; not even its first segment resolves"
+    );
+    assert_eq!(
+        driver.find(&root, &["a", "x"]),
+        Err(TestError::NotFound {
+            path: vec!["a".into(), "x".into()],
+            resolved: vec!["a".into()],
+        })
+    );
+    Ok(())
+}
+
+/// A leaf that reports no semantics.
+struct Plain;
+impl Component for Plain {
+    fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+        Ok(())
+    }
+    fn measure(&self, _: &MeasureContext<'_>, _: Constraints) -> Result<Size, RuntimeError> {
+        Ok(Size::new(40.0, 20.0)?)
+    }
+}
+
+#[test]
+fn click_item_refuses_before_any_input_and_names_what_it_cannot_click() -> TestResult {
+    let mut ui = runtime()?;
+    let (clicks, action) = counter(&mut ui);
+    let root = ui.mount_tree(Element::new(
+        "root",
+        Column::new([
+            Element::new("plain", Plain),
+            Element::new("label", Label::new("Label")),
+            Element::new(
+                "tabs",
+                Tabs::new([
+                    Tab::new("one", "One", Element::new("first", Label::new("First"))),
+                    Tab::new("two", "Two", Element::new("second", Label::new("Second"))),
+                ]),
+            ),
+            Element::new(
+                "panel",
+                View::new(Element::new("away", Button::new("Away", action))),
+            ),
+        ]),
+    ))?;
+    ui.flush(Duration::ZERO)?;
+    let panel = ui.find(&root, &["panel"])?.ok_or("panel")?;
+    let prepared = ui.prepare_detach(&panel, NativeWindowOptions::new("Panel")?)?;
+    let _detached = ui.commit_detach(prepared)?;
+    ui.flush(Duration::ZERO)?;
+    let primary = ui.primary_window();
+    ui.select_window(&primary)?;
+    let mut driver = Driver::new(&mut ui);
+    driver.settle()?;
+    let id = |driver: &Driver<'_>, key: &str| driver.find(&root, &[key]);
+
+    let away = driver.find(&root, &["panel", "away"])?;
+    assert_eq!(
+        driver.click_item(&away, 0),
+        Err(TestError::OtherWindow { key: "away".into() })
+    );
+    let plain = id(&driver, "plain")?;
+    assert_eq!(
+        driver.click_item(&plain, 0),
+        Err(TestError::NoSemantics {
+            key: "plain".into()
+        })
+    );
+    let label = id(&driver, "label")?;
+    assert_eq!(
+        driver.click_item(&label, 0),
+        Err(TestError::NoItem {
+            key: "label".into(),
+            index: 0,
+            count: 0
+        })
+    );
+    // A tab title is an item the tabs give no rectangle.
+    let tabs = id(&driver, "tabs")?;
+    assert_eq!(driver.semantics(&tabs)?.items.len(), 2);
+    assert_eq!(
+        driver.click_item(&tabs, 1),
+        Err(TestError::ItemWithoutBounds {
+            key: "tabs".into(),
+            index: 1
+        })
+    );
+    assert_eq!(
+        TestError::ItemWithoutBounds {
+            key: "tabs".into(),
+            index: 1
+        }
+        .to_string(),
+        "item 1 of `tabs` has no visible bounds"
+    );
+    assert_eq!(
+        TestError::NoItem {
+            key: "label".into(),
+            index: 0,
+            count: 0
+        }
+        .to_string(),
+        "`label` reports 0 items, none at index 0"
+    );
+    // A held key refuses before anything changes, and stays held.
+    driver
+        .runtime_mut()
+        .key_input(KeyCode::KeyA, KeyAction::Press)?;
+    assert_eq!(driver.click_item(&tabs, 0), Err(TestError::InputHeld));
+    assert!(driver.runtime().keyboard().is_pressed(KeyCode::KeyA));
+    driver
+        .runtime_mut()
+        .key_input(KeyCode::KeyA, KeyAction::Release)?;
+    assert_eq!(clicks.get()?, 0);
+    Ok(())
 }

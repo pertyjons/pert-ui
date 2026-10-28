@@ -228,6 +228,17 @@ row out of view; the table does not follow it, so call
 commands from the rows the action can reach:
 `ListSelection` keeps selected keys that a filtered source no longer shows.
 
+A table's row height is fixed and a cell gives its content at most that
+height, so choose it for the tallest content: at least the theme's
+ControlHeight with controls or an editable column, since every single-line
+control and editor measures that, or one line of body text for text with
+`TextOverflow::Ellipsis`; an application that switches density uses the
+largest preset's ControlHeight, because a mounted table keeps its height. In
+debug builds validation reports content that measured or is laid out taller
+than its row as `ExceedsFixedHeight`. A cell's content is addressed as
+`<table>/<row key>/<column key>/<content key>`, and a test clicks a column
+title with `Driver::click_item`.
+
 `FileBrowser` shows directory navigation and selection over a
 `FileBrowserController`: a path bar, a filter, a folder tree and the current
 folder's entries. The browser performs no filesystem I/O. Create the controller

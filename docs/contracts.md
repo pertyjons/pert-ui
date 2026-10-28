@@ -1502,9 +1502,38 @@ and a parent's warning (`Semantics::warning`) replace it, so a `Field`'s error
 or warning reaches its control ([inspection in custom
 components](#inspection-in-custom-components)). Snapshots carry
 `InspectionSnapshot::SCHEMA_VERSION`, which advances whenever a field is added,
-removed or reinterpreted; the serialized form is closed, so a snapshot of
-another revision does not decode as this one.
-Unknown geometry remains absent until measured. Development validation checks
+removed or reinterpreted; the serialized form is closed, and deserializing an
+`InspectionSnapshot` or a `QueryResult` checks `schema_version` itself and
+rejects every other revision ("inspection schema version N is not
+supported"), so a snapshot of another revision does not decode as this one.
+The version is a snapshot's first field, so an order-keeping serializer writes
+it first; a tool that reads several revisions compares it before decoding.
+Unknown geometry remains absent until measured.
+
+A record's geometry is the last successful layout's. Layout stages every
+arrangement and commits bounds, clip and the view scale they were computed at
+only when the whole pass succeeds; `ComponentInspection::view_scale` is that
+committed scale, the one `border_box`, the clip and the item bounds are in,
+and before a component's first layout the scale it will be laid out at. While
+a component's committed geometry is from another window than the one it is
+now presented in, after a detach or a redock until that window's layout
+commits it, the record has no `border_box`, clip or item bounds, and
+`view_scale` is again the scale it will be laid out at. A row a component
+draws itself, a `SemanticItem`, has window `bounds` when the component gives
+it a rectangle in its own local coordinates (`SemanticItem::local_bounds`),
+from the geometry its painting and hit testing use: the runtime moves it by
+the committed origin, scales it by the committed scale and cuts it to the
+committed clip, so it follows view scaling, ancestor clipping, promoted
+surfaces and detached windows exactly as the border box does. Item bounds are
+absent before the first layout, while the component is not presented, when
+nothing of the row is visible, and after a failed layout that arranged the
+component: that arrangement already replaced the component's retained
+geometry, so the runtime arranges every component a failed pass arranged
+again at the next layout, which pairs the two again. A change not yet laid
+out shows in neither, as for the border box; state a component changes
+outside layout, such as a scroll offset, shows at once. A value a component
+assigns to `bounds` directly is replaced, and inspection never arranges or
+schedules anything for it. Development validation checks
 geometry only for a native window whose latest layout ran with a viewport that
 has area: before a host supplies the first viewport, and while a window's
 viewport is empty, layout assigns empty boxes that are reported by inspection
@@ -1981,7 +2010,13 @@ Custom components reach the [naming precedence](#inspection-and-diagnostics)
 through the public `Semantics` fields: a naming parent
 (`Semantics::names_children`) describes its children, and its error and
 warning replace a child's own description. A component that conceals its
-input reports it through `Component::conceals_input`.
+input reports it through `Component::conceals_input`. The table uses only
+public extension points for what tests and validation read about it: its
+column titles give their rectangles with `SemanticItem::local_bounds`, which
+`Driver::click_item` clicks, and its cells report
+`ValidationHints::fixed_height`, so development validation reports content
+that measured or is laid out taller than the row
+(`ValidationCode::ExceedsFixedHeight`); an external grid does the same.
 
 ### Custom hosts
 

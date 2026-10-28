@@ -33,6 +33,11 @@ pub(super) struct WindowShared {
     pub(super) pending: RefCell<BTreeMap<u64, Weak<Node>>>,
     pub(super) deadlines: RefCell<BTreeMap<(Duration, u64), Weak<Node>>>,
     pub(super) timers: RefCell<BTreeMap<(Duration, u64), Weak<Node>>>,
+    /// The nodes of this window whose last measurement changed since its last
+    /// successful layout, which development validation records after the
+    /// next one. Bounded by the window's mounted nodes.
+    #[cfg(debug_assertions)]
+    pub(super) measure_changes: RefCell<std::collections::BTreeSet<u64>>,
 }
 
 pub(super) struct WindowData {
@@ -93,6 +98,8 @@ impl WindowData {
                 pending: RefCell::new(BTreeMap::new()),
                 deadlines: RefCell::new(BTreeMap::new()),
                 timers: RefCell::new(BTreeMap::new()),
+                #[cfg(debug_assertions)]
+                measure_changes: RefCell::new(std::collections::BTreeSet::new()),
             }),
             focus_errors: std::collections::VecDeque::new(),
             focus_within: Vec::new(),
@@ -650,6 +657,11 @@ impl Runtime {
             let node = &self.entries[&serial].node;
             let old = node.window();
             old.pending.borrow_mut().remove(&serial);
+            // The destination does not inherit a queued measurement: the
+            // invalidation below empties the node's measurements, so its
+            // next one there counts as changed.
+            #[cfg(debug_assertions)]
+            old.measure_changes.borrow_mut().remove(&serial);
             old.scene_dirty.set(true);
             old.layout_pending.set(true);
             node.stop_deadline();

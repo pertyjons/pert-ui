@@ -3695,6 +3695,7 @@ impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::RichText
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::RichText
 #[non_exhaustive] pub struct pert_ui_runtime::component::SemanticItem
 pub pert_ui_runtime::component::SemanticItem::actions: alloc::vec::Vec<pert_ui_runtime::SemanticAction>
+pub pert_ui_runtime::component::SemanticItem::bounds: core::option::Option<[f32; 4]>
 pub pert_ui_runtime::component::SemanticItem::checked: core::option::Option<bool>
 pub pert_ui_runtime::component::SemanticItem::disabled: bool
 pub pert_ui_runtime::component::SemanticItem::expanded: core::option::Option<bool>
@@ -3706,6 +3707,7 @@ pub fn pert_ui_runtime::SemanticItem::action(self, pert_ui_runtime::SemanticActi
 pub const fn pert_ui_runtime::SemanticItem::checked(self, bool) -> Self
 pub fn pert_ui_runtime::SemanticItem::disabled(self, bool) -> Self
 pub const fn pert_ui_runtime::SemanticItem::expanded(self, bool) -> Self
+pub const fn pert_ui_runtime::SemanticItem::local_bounds(self, pert_ui_runtime::Rect) -> Self
 pub fn pert_ui_runtime::SemanticItem::new(impl core::convert::Into<alloc::string::String>) -> Self
 pub const fn pert_ui_runtime::SemanticItem::selected(self, bool) -> Self
 pub fn pert_ui_runtime::SemanticItem::shortcut(self, impl core::convert::Into<alloc::string::String>) -> Self
@@ -4075,6 +4077,7 @@ impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::UpdateContext
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::UpdateContext
 pub struct pert_ui_runtime::component::ValidationHints
 pub pert_ui_runtime::component::ValidationHints::clip: core::option::Option<[f32; 4]>
+pub pert_ui_runtime::component::ValidationHints::fixed_height: bool
 pub pert_ui_runtime::component::ValidationHints::interactive: bool
 pub pert_ui_runtime::component::ValidationHints::overlap: pert_ui_runtime::OverlapPolicy
 pub pert_ui_runtime::component::ValidationHints::shortcuts: alloc::vec::Vec<pert_ui_runtime::ShortcutBinding>
@@ -11398,6 +11401,7 @@ pub pert_ui_runtime::inspection::ValidationCode::CollapsedParent
 pub pert_ui_runtime::inspection::ValidationCode::DuplicateKey
 pub pert_ui_runtime::inspection::ValidationCode::EmptyHitArea
 pub pert_ui_runtime::inspection::ValidationCode::EscapesParent
+pub pert_ui_runtime::inspection::ValidationCode::ExceedsFixedHeight
 pub pert_ui_runtime::inspection::ValidationCode::InvalidBorderWidth
 pub pert_ui_runtime::inspection::ValidationCode::InvalidBounds
 pub pert_ui_runtime::inspection::ValidationCode::InvalidClip
@@ -12044,6 +12048,7 @@ impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Rect
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Rect
 #[non_exhaustive] pub struct pert_ui_runtime::inspection::SemanticItem
 pub pert_ui_runtime::inspection::SemanticItem::actions: alloc::vec::Vec<pert_ui_runtime::SemanticAction>
+pub pert_ui_runtime::inspection::SemanticItem::bounds: core::option::Option<[f32; 4]>
 pub pert_ui_runtime::inspection::SemanticItem::checked: core::option::Option<bool>
 pub pert_ui_runtime::inspection::SemanticItem::disabled: bool
 pub pert_ui_runtime::inspection::SemanticItem::expanded: core::option::Option<bool>
@@ -12055,6 +12060,7 @@ pub fn pert_ui_runtime::SemanticItem::action(self, pert_ui_runtime::SemanticActi
 pub const fn pert_ui_runtime::SemanticItem::checked(self, bool) -> Self
 pub fn pert_ui_runtime::SemanticItem::disabled(self, bool) -> Self
 pub const fn pert_ui_runtime::SemanticItem::expanded(self, bool) -> Self
+pub const fn pert_ui_runtime::SemanticItem::local_bounds(self, pert_ui_runtime::Rect) -> Self
 pub fn pert_ui_runtime::SemanticItem::new(impl core::convert::Into<alloc::string::String>) -> Self
 pub const fn pert_ui_runtime::SemanticItem::selected(self, bool) -> Self
 pub fn pert_ui_runtime::SemanticItem::shortcut(self, impl core::convert::Into<alloc::string::String>) -> Self
@@ -12173,6 +12179,7 @@ impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::SourceInspecti
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::SourceInspection
 pub struct pert_ui_runtime::inspection::ValidationHints
 pub pert_ui_runtime::inspection::ValidationHints::clip: core::option::Option<[f32; 4]>
+pub pert_ui_runtime::inspection::ValidationHints::fixed_height: bool
 pub pert_ui_runtime::inspection::ValidationHints::interactive: bool
 pub pert_ui_runtime::inspection::ValidationHints::overlap: pert_ui_runtime::OverlapPolicy
 pub pert_ui_runtime::inspection::ValidationHints::shortcuts: alloc::vec::Vec<pert_ui_runtime::ShortcutBinding>
@@ -23088,12 +23095,20 @@ pub pert_ui_runtime::testing::TestError::Cleanup::error: alloc::boxed::Box<pert_
 pub pert_ui_runtime::testing::TestError::ClockOverflow
 pub pert_ui_runtime::testing::TestError::Draw(pert_ui_runtime::DrawError)
 pub pert_ui_runtime::testing::TestError::InputHeld
+pub pert_ui_runtime::testing::TestError::ItemWithoutBounds
+pub pert_ui_runtime::testing::TestError::ItemWithoutBounds::index: usize
+pub pert_ui_runtime::testing::TestError::ItemWithoutBounds::key: alloc::string::String
+pub pert_ui_runtime::testing::TestError::NoItem
+pub pert_ui_runtime::testing::TestError::NoItem::count: usize
+pub pert_ui_runtime::testing::TestError::NoItem::index: usize
+pub pert_ui_runtime::testing::TestError::NoItem::key: alloc::string::String
 pub pert_ui_runtime::testing::TestError::NoSemantics
 pub pert_ui_runtime::testing::TestError::NoSemantics::key: alloc::string::String
 pub pert_ui_runtime::testing::TestError::NotAnEditor
 pub pert_ui_runtime::testing::TestError::NotAnEditor::key: alloc::string::String
 pub pert_ui_runtime::testing::TestError::NotFound
 pub pert_ui_runtime::testing::TestError::NotFound::path: alloc::vec::Vec<alloc::string::String>
+pub pert_ui_runtime::testing::TestError::NotFound::resolved: alloc::vec::Vec<alloc::string::String>
 pub pert_ui_runtime::testing::TestError::NotLaidOut
 pub pert_ui_runtime::testing::TestError::NotLaidOut::key: alloc::string::String
 pub pert_ui_runtime::testing::TestError::NotRevealed
@@ -23132,6 +23147,7 @@ pub pert_ui_runtime::testing::ValidationCode::CollapsedParent
 pub pert_ui_runtime::testing::ValidationCode::DuplicateKey
 pub pert_ui_runtime::testing::ValidationCode::EmptyHitArea
 pub pert_ui_runtime::testing::ValidationCode::EscapesParent
+pub pert_ui_runtime::testing::ValidationCode::ExceedsFixedHeight
 pub pert_ui_runtime::testing::ValidationCode::InvalidBorderWidth
 pub pert_ui_runtime::testing::ValidationCode::InvalidBounds
 pub pert_ui_runtime::testing::ValidationCode::InvalidClip
@@ -23362,6 +23378,7 @@ pub fn pert_ui_runtime::testing::Driver<'a>::advance(&mut self, core::time::Dura
 pub fn pert_ui_runtime::testing::Driver<'a>::chord(&mut self, pert_ui_runtime::KeyChord, pert_ui_runtime::KeyCode) -> core::result::Result<(), pert_ui_runtime::testing::TestError>
 pub fn pert_ui_runtime::testing::Driver<'a>::clear_focus(&mut self) -> core::result::Result<(), pert_ui_runtime::testing::TestError>
 pub fn pert_ui_runtime::testing::Driver<'a>::click(&mut self, &pert_ui_runtime::WidgetId) -> core::result::Result<(), pert_ui_runtime::testing::TestError>
+pub fn pert_ui_runtime::testing::Driver<'a>::click_item(&mut self, &pert_ui_runtime::WidgetId, usize) -> core::result::Result<(), pert_ui_runtime::testing::TestError>
 pub fn pert_ui_runtime::testing::Driver<'a>::find(&self, &pert_ui_runtime::WidgetId, &[&str]) -> core::result::Result<pert_ui_runtime::WidgetId, pert_ui_runtime::testing::TestError>
 pub fn pert_ui_runtime::testing::Driver<'a>::key(&mut self, pert_ui_runtime::KeyCode) -> core::result::Result<(), pert_ui_runtime::testing::TestError>
 pub fn pert_ui_runtime::testing::Driver<'a>::new(&'a mut pert_ui_runtime::Runtime) -> Self
@@ -23648,6 +23665,7 @@ impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Rect
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Rect
 #[non_exhaustive] pub struct pert_ui_runtime::testing::SemanticItem
 pub pert_ui_runtime::testing::SemanticItem::actions: alloc::vec::Vec<pert_ui_runtime::SemanticAction>
+pub pert_ui_runtime::testing::SemanticItem::bounds: core::option::Option<[f32; 4]>
 pub pert_ui_runtime::testing::SemanticItem::checked: core::option::Option<bool>
 pub pert_ui_runtime::testing::SemanticItem::disabled: bool
 pub pert_ui_runtime::testing::SemanticItem::expanded: core::option::Option<bool>
@@ -23659,6 +23677,7 @@ pub fn pert_ui_runtime::SemanticItem::action(self, pert_ui_runtime::SemanticActi
 pub const fn pert_ui_runtime::SemanticItem::checked(self, bool) -> Self
 pub fn pert_ui_runtime::SemanticItem::disabled(self, bool) -> Self
 pub const fn pert_ui_runtime::SemanticItem::expanded(self, bool) -> Self
+pub const fn pert_ui_runtime::SemanticItem::local_bounds(self, pert_ui_runtime::Rect) -> Self
 pub fn pert_ui_runtime::SemanticItem::new(impl core::convert::Into<alloc::string::String>) -> Self
 pub const fn pert_ui_runtime::SemanticItem::selected(self, bool) -> Self
 pub fn pert_ui_runtime::SemanticItem::shortcut(self, impl core::convert::Into<alloc::string::String>) -> Self
@@ -29502,6 +29521,7 @@ pub pert_ui_runtime::ValidationCode::CollapsedParent
 pub pert_ui_runtime::ValidationCode::DuplicateKey
 pub pert_ui_runtime::ValidationCode::EmptyHitArea
 pub pert_ui_runtime::ValidationCode::EscapesParent
+pub pert_ui_runtime::ValidationCode::ExceedsFixedHeight
 pub pert_ui_runtime::ValidationCode::InvalidBorderWidth
 pub pert_ui_runtime::ValidationCode::InvalidBounds
 pub pert_ui_runtime::ValidationCode::InvalidClip
@@ -38152,6 +38172,7 @@ impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::SelectionChang
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::SelectionChange
 #[non_exhaustive] pub struct pert_ui_runtime::SemanticItem
 pub pert_ui_runtime::SemanticItem::actions: alloc::vec::Vec<pert_ui_runtime::SemanticAction>
+pub pert_ui_runtime::SemanticItem::bounds: core::option::Option<[f32; 4]>
 pub pert_ui_runtime::SemanticItem::checked: core::option::Option<bool>
 pub pert_ui_runtime::SemanticItem::disabled: bool
 pub pert_ui_runtime::SemanticItem::expanded: core::option::Option<bool>
@@ -38163,6 +38184,7 @@ pub fn pert_ui_runtime::SemanticItem::action(self, pert_ui_runtime::SemanticActi
 pub const fn pert_ui_runtime::SemanticItem::checked(self, bool) -> Self
 pub fn pert_ui_runtime::SemanticItem::disabled(self, bool) -> Self
 pub const fn pert_ui_runtime::SemanticItem::expanded(self, bool) -> Self
+pub const fn pert_ui_runtime::SemanticItem::local_bounds(self, pert_ui_runtime::Rect) -> Self
 pub fn pert_ui_runtime::SemanticItem::new(impl core::convert::Into<alloc::string::String>) -> Self
 pub const fn pert_ui_runtime::SemanticItem::selected(self, bool) -> Self
 pub fn pert_ui_runtime::SemanticItem::shortcut(self, impl core::convert::Into<alloc::string::String>) -> Self
@@ -40505,6 +40527,7 @@ impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::UpdateContext
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::UpdateContext
 pub struct pert_ui_runtime::ValidationHints
 pub pert_ui_runtime::ValidationHints::clip: core::option::Option<[f32; 4]>
+pub pert_ui_runtime::ValidationHints::fixed_height: bool
 pub pert_ui_runtime::ValidationHints::interactive: bool
 pub pert_ui_runtime::ValidationHints::overlap: pert_ui_runtime::OverlapPolicy
 pub pert_ui_runtime::ValidationHints::shortcuts: alloc::vec::Vec<pert_ui_runtime::ShortcutBinding>

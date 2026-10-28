@@ -11,6 +11,8 @@ struct Staged {
     size: Size,
     clip: Rect,
     children_clip: Rect,
+    /// The accumulated view scale `bounds` was computed at.
+    scale: f32,
     /// The component's `child_transform` offset used for this arrangement.
     view_offset: crate::Point,
     /// The visible children the component's `arrange` placed in this pass, with
@@ -182,8 +184,11 @@ impl Runtime {
     /// a uniquely keyed ancestor and searching below it, name the addressable
     /// path with [`Self::find`], or walk [`Self::children`] and [`Self::key`].
     /// A common cause is a container keyed like the control it holds, such as
-    /// a [`ToolGroup`](crate::ToolGroup) named after its only control; give
-    /// the container a key of its own. `ancestor` itself is not a candidate.
+    /// a [`ToolGroup`](crate::ToolGroup) named after its only control, or
+    /// table content keyed like its column, below the cell the table keys by
+    /// the column ([`Table`](crate::Table#addresses-and-tests)); give the
+    /// container a key of its own, or name the full address with
+    /// [`Self::find`]. `ancestor` itself is not a candidate.
     ///
     /// It follows logical children, including hidden ones and those presented
     /// in a detached window, exactly as [`Self::children`] lists them. It
@@ -1227,6 +1232,9 @@ impl Runtime {
             arranged_children: RefCell::new(Vec::new()),
             clip: Cell::new(None),
             children_clip: Cell::new(None),
+            committed_scale: Cell::new(None),
+            committed_window: Cell::new(None),
+            arranged_uncommitted: Cell::new(false),
             dirty: Cell::new(None),
             deadline: Cell::new(None),
             presentation_suspended: Cell::new(false),
@@ -1646,7 +1654,14 @@ impl Runtime {
             self.window.shared.focus_node.borrow_mut().take();
         }
         #[cfg(debug_assertions)]
-        self.validator.remove(serial);
+        {
+            self.validator.remove(serial);
+            self.window
+                .shared
+                .measure_changes
+                .borrow_mut()
+                .remove(&serial);
+        }
         entry.subscriptions.clear();
         entry.component.cancel_input(&mut EventContext {
             node: entry.node.clone(),
@@ -1713,8 +1728,12 @@ impl Runtime {
     ) -> Result<Size, RuntimeError> {
         let entry = &self.entries[&serial];
         let mut measured = entry.node.measured.get();
+        #[cfg(debug_assertions)]
+        let latest = measured.latest();
         if let Some(size) = measured.get(available) {
             entry.node.measured.set(measured);
+            #[cfg(debug_assertions)]
+            self.note_measure_change(&entry.node, latest, size);
             return Ok(size);
         }
         let _timing =
@@ -1741,9 +1760,29 @@ impl Runtime {
             .inspect_err(|_| self.note_failure(serial, crate::FailurePhase::Measure))?;
         let size = limits.constrain(size);
         let mut measured = entry.node.measured.get();
+        #[cfg(debug_assertions)]
+        let latest = measured.latest();
         measured.insert(available, size);
         entry.node.measured.set(measured);
+        #[cfg(debug_assertions)]
+        self.note_measure_change(&entry.node, latest, size);
         Ok(size)
+    }
+
+    /// Queues `node` for development validation's record of its measurement
+    /// when the size it was last measured at changed, a hit on another
+    /// retained measurement included: a parent can measure a clean child
+    /// under new constraints and place it where it was, so neither the
+    /// commit nor an update would record the change. Drained after the next
+    /// successful layout of the node's window.
+    #[cfg(debug_assertions)]
+    fn note_measure_change(&self, node: &Node, latest: Option<Size>, size: Size) {
+        if latest != Some(size) {
+            node.window()
+                .measure_changes
+                .borrow_mut()
+                .insert(node.serial);
+        }
     }
 
     /// Arranges `serial` at a window origin with a size in its own local pixels,
@@ -1771,7 +1810,12 @@ impl Runtime {
         };
         let changed =
             entry.node.bounds.get() != Some(bounds) || entry.node.size.get() != Some(size);
+        // A changed scale with unchanged bounds, as for a component of zero
+        // size, is still staged, so the committed scale follows it; it takes
+        // the leaf shortcut or the retained placements below when nothing
+        // else changed, so no component arranges for it.
         if !changed
+            && entry.node.committed_scale.get() == Some(scale)
             && !entry.node.layout_dirty.get()
             && entry.node.clip.get() == Some(clip)
             && entry.node.children_clip.get() == Some(children_clip)
@@ -1791,6 +1835,7 @@ impl Runtime {
                 size,
                 clip,
                 children_clip,
+                scale,
                 view_offset: entry.node.view_offset.get(),
                 arranged: None,
             });
@@ -1835,6 +1880,9 @@ impl Runtime {
                     placements: vec![None; children.len()],
                     clips: vec![None; children.len()],
                 };
+                // The component's own retained geometry follows this call
+                // whether or not the pass commits.
+                entry.node.arranged_uncommitted.set(true);
                 entry
                     .component
                     .arrange(&mut context, size)
@@ -1940,6 +1988,7 @@ impl Runtime {
             size,
             clip,
             children_clip,
+            scale,
             view_offset: entry.component.child_transform().offset(),
             arranged,
         });
@@ -1961,8 +2010,29 @@ impl Runtime {
         };
         let viewport = self.window.shared.viewport.get();
         let size = Size::new(viewport.width(), viewport.height())?;
-        let root = Rect::from_size(size);
         let mut staged = Vec::new();
+        if let Err(error) = self.arrange_roots(size, &mut staged) {
+            // The components the failed pass arranged already hold its
+            // retained geometry, while their committed bounds stay older.
+            // Arranging them again next time keeps the two from being paired
+            // by inspection, painting or hit testing.
+            for entry in self.entries.values() {
+                if entry.node.arranged_uncommitted.get() {
+                    entry.node.invalidate_layout();
+                }
+            }
+            return Err(error);
+        }
+        self.commit(staged);
+        #[cfg(debug_assertions)]
+        self.drain_measure_changes();
+        Ok(())
+    }
+
+    /// Measures and arranges every visible root of the selected window,
+    /// staging each arrangement.
+    fn arrange_roots(&self, size: Size, staged: &mut Vec<Staged>) -> Result<(), RuntimeError> {
+        let root = Rect::from_size(size);
         let preview = self.drag_preview_root();
         for serial in self.root_order() {
             let entry = &self.entries[&serial];
@@ -1980,12 +2050,17 @@ impl Runtime {
                     preferred.width(),
                     preferred.height(),
                 )?;
-                self.arrange_node(serial, placement, root, &mut staged)?;
+                self.arrange_node(serial, placement, root, staged)?;
                 continue;
             }
             self.measure_node(serial, Constraints::bounded(size))?;
-            self.arrange_node(serial, root, root, &mut staged)?;
+            self.arrange_node(serial, root, root, staged)?;
         }
+        Ok(())
+    }
+
+    /// Applies a successful pass's arrangements to their nodes.
+    fn commit(&mut self, staged: Vec<Staged>) {
         let mut moved = false;
         for Staged {
             serial,
@@ -1993,6 +2068,7 @@ impl Runtime {
             size,
             clip,
             children_clip,
+            scale,
             view_offset,
             arranged,
         } in staged
@@ -2027,6 +2103,12 @@ impl Runtime {
             }
             entry.node.clip.set(Some(clip));
             entry.node.children_clip.set(Some(children_clip));
+            entry.node.committed_scale.set(Some(scale));
+            entry
+                .node
+                .committed_window
+                .set(Some(entry.node.window().serial));
+            entry.node.arranged_uncommitted.set(false);
             entry.node.layout_dirty.set(false);
             if !entry.node.is_presented() {
                 if entry.node.deadline.get().is_some() {
@@ -2037,20 +2119,42 @@ impl Runtime {
                 entry.node.invalidate(Invalidation::Paint);
             }
             #[cfg(debug_assertions)]
-            self.validator.geometry(
-                serial,
-                bounds.values(),
-                clip.values(),
-                (entry.component.as_ref() as &dyn std::any::Any)
-                    .downcast_ref::<crate::VirtualList>()
-                    .map(crate::VirtualList::extent_for_validation),
-            );
+            {
+                let measured_height = entry.node.measured_height();
+                self.validator.geometry(
+                    serial,
+                    bounds.values(),
+                    clip.values(),
+                    measured_height,
+                    (entry.component.as_ref() as &dyn std::any::Any)
+                        .downcast_ref::<crate::VirtualList>()
+                        .map(crate::VirtualList::extent_for_validation),
+                );
+            }
         }
         self.window.shared.layout_pending.set(false);
         if moved {
             self.note_drag_layout_change();
         }
-        Ok(())
+    }
+
+    /// Records for development validation the measurements that changed in
+    /// the selected window since its last successful layout, of the nodes
+    /// still mounted and still in it, and empties its queue.
+    #[cfg(debug_assertions)]
+    fn drain_measure_changes(&mut self) {
+        let window = self.window.shared.clone();
+        let changed = std::mem::take(&mut *window.measure_changes.borrow_mut());
+        for serial in changed {
+            let Some(entry) = self.entries.get(&serial) else {
+                continue;
+            };
+            if !Rc::ptr_eq(&entry.node.window(), &window) {
+                continue;
+            }
+            let height = entry.node.measured_height();
+            self.validator.measured(serial, height);
+        }
     }
 }
 
@@ -2376,6 +2480,197 @@ mod tests {
                 );
             }
         }
+        Ok(())
+    }
+
+    /// A 200 × 20 parent that measures its child at the width `width` holds
+    /// and places it at its own rectangle, clipped, reporting a fixed height.
+    struct Strip {
+        child: Option<Element>,
+        width: ReadSignal<f32>,
+        measure_at: f32,
+    }
+    impl Component for Strip {
+        fn take_children(&mut self) -> Vec<Element> {
+            self.child.take().into_iter().collect()
+        }
+        fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
+            self.measure_at = cx.read(&self.width)?;
+            Ok(())
+        }
+        fn measure(&self, _: &MeasureContext<'_>, _: Constraints) -> Result<Size, RuntimeError> {
+            Ok(Size::new(200.0, 20.0)?)
+        }
+        fn arrange(&self, cx: &mut ArrangeContext<'_>, size: Size) -> Result<(), RuntimeError> {
+            if cx.is_empty() {
+                return Ok(());
+            }
+            cx.measure(0, Constraints::new(Some(self.measure_at), None)?)?;
+            let own = Rect::from_size(size);
+            cx.place_clipped(0, own, own)
+        }
+        fn inspect(&self) -> ComponentDetails {
+            let mut details = ComponentDetails::default();
+            details.validation.fixed_height = true;
+            details
+        }
+    }
+
+    /// A leaf that fails to arrange while `fail` holds true.
+    struct Failing {
+        fail: ReadSignal<bool>,
+        failing: bool,
+    }
+    impl Component for Failing {
+        fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
+            self.failing = cx.read(&self.fail)?;
+            Ok(())
+        }
+        fn measure(&self, _: &MeasureContext<'_>, _: Constraints) -> Result<Size, RuntimeError> {
+            Ok(Size::new(20.0, 20.0)?)
+        }
+        fn arrange(&self, _: &mut ArrangeContext<'_>, _: Size) -> Result<(), RuntimeError> {
+            if self.failing {
+                Err(LayoutError::InvalidChild.into())
+            } else {
+                Ok(())
+            }
+        }
+    }
+
+    struct Moving {
+        ui: Runtime,
+        view: WidgetId,
+        label: u64,
+        width: Signal<f32>,
+        outside: Signal<bool>,
+        inside: Signal<bool>,
+    }
+    /// A view holding a strip around a label and a failing leaf, beside a
+    /// failing leaf outside it.
+    fn moving() -> Result<Moving, Box<dyn std::error::Error>> {
+        let mut ui = Runtime::new();
+        resize(&mut ui, 400.0)?;
+        let (width, outside, inside) = (ui.signal(400.0_f32), ui.signal(false), ui.signal(false));
+        let failing = |key: &str, fail: &Signal<bool>| {
+            Element::new(
+                key,
+                Failing {
+                    fail: fail.read_only(),
+                    failing: false,
+                },
+            )
+        };
+        let root = ui.mount_tree(Element::new(
+            "page",
+            Column::new([
+                Element::new(
+                    "view",
+                    View::new(Element::new(
+                        "content",
+                        Column::new([
+                            Element::new(
+                                "strip",
+                                Strip {
+                                    child: Some(Element::new(
+                                        "label",
+                                        Label::new("alpha beta gamma"),
+                                    )),
+                                    width: width.read_only(),
+                                    measure_at: 0.0,
+                                },
+                            ),
+                            failing("inside", &inside),
+                        ]),
+                    )),
+                ),
+                failing("outside", &outside),
+            ]),
+        ))?;
+        ui.flush(ui.now())?;
+        let view = ui.find(&root, &["view"])?.ok_or("view")?;
+        let label = ui
+            .find(&view, &["content", "strip", "label"])?
+            .ok_or("label")?
+            .0
+            .serial;
+        Ok(Moving {
+            ui,
+            view,
+            label,
+            width,
+            outside,
+            inside,
+        })
+    }
+
+    fn queued(window: &NativeWindowId, serial: u64) -> bool {
+        window.0.measure_changes.borrow().contains(&serial)
+    }
+
+    #[test]
+    fn a_move_takes_queued_measurements_out_of_the_source_window()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let Moving {
+            mut ui,
+            view,
+            label,
+            width,
+            outside,
+            inside,
+        } = moving()?;
+        let primary = ui.primary_window();
+        width.set(60.0)?;
+        outside.set(true)?;
+        assert!(ui.flush(ui.now()).is_err());
+        assert!(queued(&primary, label), "queued by the failed layout");
+        let prepared = ui.prepare_detach(&view, NativeWindowOptions::new("Strip")?)?;
+        let detached = ui.commit_detach(prepared)?;
+        assert!(!queued(&primary, label), "the detach took it out");
+        width.set(400.0)?;
+        inside.set(true)?;
+        assert!(ui.flush(ui.now()).is_err());
+        assert!(queued(&detached, label), "queued in the detached window");
+        ui.redock(&detached)?;
+        assert!(!queued(&detached, label), "the redock took it out");
+        Ok(())
+    }
+
+    #[test]
+    fn an_unmount_takes_a_queued_measurement_out_of_its_window()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let Moving {
+            mut ui,
+            view,
+            label,
+            width,
+            outside,
+            ..
+        } = moving()?;
+        let primary = ui.primary_window();
+        width.set(60.0)?;
+        outside.set(true)?;
+        assert!(ui.flush(ui.now()).is_err());
+        assert!(queued(&primary, label));
+        let strip = ui.find(&view, &["content", "strip"])?.ok_or("strip")?;
+        ui.unmount(&strip)?;
+        assert!(!queued(&primary, label));
+        Ok(())
+    }
+
+    #[test]
+    fn idle_flushes_after_a_measurement_change_run_no_validation_pass()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let Moving { mut ui, width, .. } = moving()?;
+        for at in [60.0, 400.0, 60.0] {
+            width.set(at)?;
+            ui.flush(ui.now())?;
+        }
+        let passes = ui.validator.passes;
+        for _ in 0..3 {
+            ui.flush(ui.now())?;
+        }
+        assert_eq!(ui.validator.passes, passes);
         Ok(())
     }
 }

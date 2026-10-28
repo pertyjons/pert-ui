@@ -627,3 +627,77 @@ fn a_snapshot_keeps_the_builders_invariants_for_directly_assigned_fields() {
         "a disabled component offers none"
     );
 }
+
+/// A 200 × 40 leaf reporting the items `items` builds, at an offset from its
+/// window's origin when mounted below a title.
+struct Rows(fn() -> Vec<SemanticItem>);
+impl Component for Rows {
+    fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+        Ok(())
+    }
+    fn measure(&self, _: &MeasureContext<'_>, _: Constraints) -> Result<Size, RuntimeError> {
+        Ok(Size::new(200.0, 40.0)?)
+    }
+    fn inspect(&self) -> ComponentDetails {
+        ComponentDetails {
+            semantics: Some(Semantics::new(SemanticRole::Group).items((self.0)())),
+            ..ComponentDetails::default()
+        }
+    }
+}
+
+fn mount_rows(ui: &mut Runtime, items: fn() -> Vec<SemanticItem>) -> WidgetId {
+    let root = ui
+        .mount_tree(Element::new(
+            "page",
+            Column::new([
+                Element::new("title", Label::new("Rows")),
+                Element::new("rows", Rows(items)),
+            ]),
+        ))
+        .unwrap();
+    ui.find(&root, &["rows"]).unwrap().unwrap()
+}
+
+fn rect(x: f32, y: f32, width: f32, height: f32) -> Rect {
+    Rect::new(x, y, width, height).unwrap()
+}
+
+#[test]
+fn item_rectangles_are_reported_in_window_coordinates_cut_to_the_component() {
+    let mut ui = ui();
+    let rows = mount_rows(&mut ui, || {
+        vec![
+            SemanticItem::new("first").local_bounds(rect(0.0, 0.0, 100.0, 20.0)),
+            // Partly outside the component: cut to it.
+            SemanticItem::new("wide").local_bounds(rect(150.0, 20.0, 100.0, 40.0)),
+            SemanticItem::new("none"),
+        ]
+    });
+    // Before the first layout nothing is guessed.
+    assert!(
+        semantics(&ui, "rows")
+            .items
+            .iter()
+            .all(|item| item.bounds.is_none())
+    );
+    ui.flush(Duration::ZERO).unwrap();
+    let [x, y, ..] = ui.bounds(&rows).unwrap().unwrap().values();
+    assert!(y > 0.0, "the title is above");
+    let items = semantics(&ui, "rows").items;
+    assert_eq!(items[0].bounds, Some([x, y, 100.0, 20.0]));
+    assert_eq!(items[1].bounds, Some([x + 150.0, y + 20.0, 50.0, 20.0]));
+    assert_eq!(items[2].bounds, None);
+}
+
+#[test]
+fn a_directly_assigned_item_bounds_is_replaced_by_the_runtime() {
+    let mut ui = ui();
+    mount_rows(&mut ui, || {
+        let mut item = SemanticItem::new("assigned");
+        item.bounds = Some([1.0, 2.0, 3.0, 4.0]);
+        vec![item]
+    });
+    ui.flush(Duration::ZERO).unwrap();
+    assert_eq!(semantics(&ui, "rows").items[0].bounds, None);
+}

@@ -681,8 +681,7 @@ fn capture_types_round_trip() -> TestResult {
 #[test]
 fn a_warning_description_round_trips_and_is_a_required_field() -> TestResult {
     // Added with inspection schema 15.
-    assert_eq!(InspectionSnapshot::SCHEMA_VERSION, 15);
-    assert_eq!(Runtime::new().inspect().schema_version, 15);
+    assert!(Runtime::new().inspect().schema_version >= 15);
     let warned = Semantics::new(SemanticRole::Field)
         .description("Looks unusual")
         .warning(true);
@@ -712,4 +711,182 @@ fn a_revision_one_json_workspace_is_rejected() {
         error.starts_with("workspace schema version 1 is not supported (this build writes 2)"),
         "{error}"
     );
+}
+
+/// A 200 × 40 leaf reporting two items, the first with a rectangle.
+struct TwoRows;
+impl Component for TwoRows {
+    fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+        Ok(())
+    }
+    fn measure(&self, _: &MeasureContext<'_>, _: Constraints) -> Result<Size, RuntimeError> {
+        Ok(Size::new(200.0, 40.0)?)
+    }
+    fn inspect(&self) -> ComponentDetails {
+        let first =
+            SemanticItem::new("first").local_bounds(Rect::new(0.0, 0.0, 100.0, 20.0).unwrap());
+        ComponentDetails {
+            semantics: Some(
+                Semantics::new(SemanticRole::Group).items([first, SemanticItem::new("second")]),
+            ),
+            ..ComponentDetails::default()
+        }
+    }
+}
+
+/// `text` with its leading `schema_version` replaced by `version`.
+fn with_version(text: &str, version: u32) -> String {
+    let current = format!(
+        r#"{{"schema_version":{}"#,
+        InspectionSnapshot::SCHEMA_VERSION
+    );
+    assert!(text.starts_with(&current), "{text}");
+    text.replacen(&current, &format!(r#"{{"schema_version":{version}"#), 1)
+}
+
+fn rejects_other_revisions<T: serde::de::DeserializeOwned + std::fmt::Debug>(text: &str) {
+    for version in [15, 17] {
+        let error = serde_json::from_str::<T>(&with_version(text, version))
+            .expect_err("another revision is rejected")
+            .to_string();
+        assert!(
+            error.starts_with(&format!(
+                "inspection schema version {version} is not supported (this build writes 16)"
+            )),
+            "{error}"
+        );
+    }
+}
+
+#[test]
+fn snapshots_and_query_results_carry_item_bounds_and_decode_only_schema_16() -> TestResult {
+    assert_eq!(InspectionSnapshot::SCHEMA_VERSION, 16);
+    let mut ui = ui()?;
+    let rows = ui.mount_tree(Element::new("rows", TwoRows))?;
+    ui.flush(Duration::ZERO)?;
+    let snapshot = ui.inspect();
+    assert_eq!(snapshot.schema_version, 16);
+    let items = |components: &[ComponentInspection]| -> Vec<Option<[f32; 4]>> {
+        components
+            .iter()
+            .find(|component| component.key == "rows")
+            .and_then(|component| component.details.semantics.as_ref())
+            .map(|semantics| semantics.items.iter().map(|item| item.bounds).collect())
+            .unwrap_or_default()
+    };
+    let expected = [Some([0.0, 0.0, 100.0, 20.0]), None];
+    assert_eq!(items(&round_trip(&snapshot)?.components), expected);
+    let query = ui.query(
+        &InspectionQuery::components(Selector::id(ui.inspection_id(&rows)?))
+            .detail(Detail::Semantics),
+    );
+    assert_eq!(items(&round_trip(&query)?.components), expected);
+
+    // Empty envelopes decode at 16, and no other revision does.
+    let empty = serde_json::to_string(&Runtime::new().inspect())?;
+    assert_eq!(
+        serde_json::from_str::<InspectionSnapshot>(&empty)?.schema_version,
+        16
+    );
+    rejects_other_revisions::<InspectionSnapshot>(&empty);
+    let empty_query = serde_json::to_string(&ui.query(&InspectionQuery::new()))?;
+    assert!(
+        serde_json::from_str::<QueryResult>(&empty_query)?
+            .components
+            .is_empty()
+    );
+    rejects_other_revisions::<QueryResult>(&empty_query);
+    let unknown = empty.replacen(r#""windows""#, r#""tool":1,"windows""#, 1);
+    assert!(serde_json::from_str::<InspectionSnapshot>(&unknown).is_err());
+
+    // An item written without the field has no bounds.
+    let text = serde_json::to_string(&query)?;
+    let without = text.replacen(r#","bounds":null"#, "", 1);
+    assert_ne!(without, text);
+    let decoded: QueryResult = serde_json::from_str(&without)?;
+    assert_eq!(items(&decoded.components), expected);
+    Ok(())
+}
+
+#[test]
+fn the_schema_version_is_written_first_and_read_wherever_it_is() -> TestResult {
+    let mut ui = ui()?;
+    ui.mount_tree(Element::new("rows", TwoRows))?;
+    ui.flush(Duration::ZERO)?;
+    let snapshot = serde_json::to_string(&ui.inspect())?;
+    let query = serde_json::to_string(
+        &ui.query(&InspectionQuery::components(Selector::key("rows")).detail(Detail::Semantics)),
+    )?;
+    for text in [&snapshot, &query] {
+        assert!(text.starts_with(r#"{"schema_version":16,"#), "{text}");
+    }
+    // Moved to the end, the version is still checked.
+    let moved = |text: &str, version: u32| {
+        let body = text.replacen(r#""schema_version":16,"#, "", 1);
+        format!(
+            r#"{},"schema_version":{version}}}"#,
+            body.strip_suffix('}').unwrap_or(&body)
+        )
+    };
+    assert!(serde_json::from_str::<InspectionSnapshot>(&moved(&snapshot, 16)).is_ok());
+    assert!(serde_json::from_str::<QueryResult>(&moved(&query, 16)).is_ok());
+    assert!(serde_json::from_str::<InspectionSnapshot>(&moved(&snapshot, 15)).is_err());
+    assert!(serde_json::from_str::<QueryResult>(&moved(&query, 15)).is_err());
+    Ok(())
+}
+
+/// Rows of a button, lower than the button's height.
+struct Buttons;
+impl TableItems for Buttons {
+    fn len(&self) -> usize {
+        2
+    }
+    fn key(&self, index: usize) -> Option<String> {
+        (index < 2).then(|| format!("r{index}"))
+    }
+    fn cell(&self, _: usize, _: &str) -> Option<Element> {
+        Some(Element::new("button", Button::new("Go", |_| Ok(()))))
+    }
+}
+
+#[cfg(debug_assertions)]
+#[test]
+fn a_fixed_height_hint_and_its_issue_round_trip_and_the_hint_is_required() -> TestResult {
+    let mut ui = ui()?;
+    let controller = TableController::new(
+        &ui,
+        ListSelection::new(&ui, SelectionMode::Single),
+        [TableColumn::new("go", "Go")],
+        TableSource::new(Buttons),
+    )?;
+    ui.mount_tree(Element::new("table", Table::new(&controller, 28.0)?))?;
+    ui.flush(Duration::ZERO)?;
+    let snapshot = ui.inspect();
+    assert!(
+        snapshot
+            .components
+            .iter()
+            .any(|component| component.details.validation.fixed_height)
+    );
+    let issue = snapshot
+        .validation
+        .issues
+        .iter()
+        .find(|issue| issue.code == ValidationCode::ExceedsFixedHeight)
+        .ok_or("the row is lower than the button")?;
+    assert!(
+        snapshot
+            .validation
+            .markers
+            .iter()
+            .any(|marker| marker.component == issue.components[0]
+                && marker.codes.contains(&ValidationCode::ExceedsFixedHeight))
+    );
+    let back = round_trip(&snapshot)?;
+    assert_eq!(back.validation, snapshot.validation);
+    let text = serde_json::to_string(&snapshot)?;
+    let without = text.replacen(r#","fixed_height":false"#, "", 1);
+    assert_ne!(without, text);
+    assert!(serde_json::from_str::<InspectionSnapshot>(&without).is_err());
+    Ok(())
 }

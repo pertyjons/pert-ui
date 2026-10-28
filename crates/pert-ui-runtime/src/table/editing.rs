@@ -721,6 +721,11 @@ impl Component for EditHost {
         }
         Ok(())
     }
+    fn inspect(&self) -> crate::ComponentDetails {
+        // The host gives the editor the row's fixed height in the cell's
+        // place, so an editor taller than the row is reported once.
+        super::fixed_height()
+    }
 }
 
 /// The table's invisible child that delivers [`CellEditEnd`]s: one payload

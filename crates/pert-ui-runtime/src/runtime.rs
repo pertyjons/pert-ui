@@ -890,6 +890,21 @@ pub(crate) struct Node {
     arranged_children: RefCell<Vec<u64>>,
     clip: Cell<Option<crate::Rect>>,
     children_clip: Cell<Option<crate::Rect>>,
+    /// The accumulated view scale `bounds` and `clip` were computed at, from
+    /// the same successful layout; `None` before the first. Inspection
+    /// reports geometry at this scale, not at `scale`, which can change
+    /// before a layout commits.
+    committed_scale: Cell<Option<f32>>,
+    /// The serial of the window this node was in when a layout last committed
+    /// its geometry; `None` before the first. A move to another window
+    /// changes `window` at once, and the geometry stays the source's until
+    /// the destination's layout commits it.
+    committed_window: Cell<Option<u64>>,
+    /// Set immediately before a layout calls the component's `arrange` and
+    /// cleared when that layout commits the node, so a failed layout's
+    /// arrangement, which already replaced the component's retained geometry,
+    /// is never paired with older committed bounds.
+    arranged_uncommitted: Cell<bool>,
     dirty: Cell<Option<Invalidation>>,
     deadline: Cell<Option<Duration>>,
     presentation_suspended: Cell<bool>,
@@ -907,6 +922,22 @@ impl Node {
         self.visible.get()
             && self.window().visible.get()
             && !self.clip.get().is_some_and(crate::Rect::is_empty)
+    }
+    /// The scale of the geometry the last successful layout committed, when
+    /// that layout committed it in the window this node is now in; `None`
+    /// before the first layout and after a move to another window until a
+    /// layout there commits the node.
+    pub(crate) fn committed_geometry(&self) -> Option<f32> {
+        (self.committed_window.get() == Some(self.window().serial))
+            .then(|| self.committed_scale.get())
+            .flatten()
+    }
+    /// The height this node was last measured at, in window pixels at its
+    /// committed scale, for development validation's fixed-height check.
+    #[cfg(debug_assertions)]
+    pub(crate) fn measured_height(&self) -> Option<f32> {
+        let height = self.measured.get().latest()?.height();
+        Some(height * self.committed_scale.get().unwrap_or(self.scale.get()))
     }
     pub(crate) fn presentation_interval(&self) -> Duration {
         self.window().presentation_interval.get()
@@ -2149,6 +2180,18 @@ pub trait Component: std::any::Any {
     /// Release flushing never calls this method automatically.
     /// Do not mutate application state or perform I/O. Signal/parameter writes
     /// are rejected in this phase. Unknown geometry must remain absent.
+    ///
+    /// A component that draws rows of its own, reported as
+    /// [`Semantics::items`](crate::Semantics::items), may give each its
+    /// rectangle with [`SemanticItem::local_bounds`](crate::SemanticItem::local_bounds),
+    /// in its own local coordinates and from the geometry its painting and
+    /// hit testing use: what its last `arrange` retained and state it changes
+    /// outside layout, such as a scroll offset. The runtime transforms and
+    /// clips that rectangle into the item's window
+    /// [`bounds`](crate::SemanticItem::bounds); after a failed layout that
+    /// arranged the component, its items have none until a layout succeeds.
+    /// A component that gives its children a fixed height they must fit
+    /// reports [`ValidationHints::fixed_height`](crate::ValidationHints::fixed_height).
     fn inspect(&self) -> crate::ComponentDetails {
         crate::ComponentDetails::default()
     }
@@ -6153,11 +6196,19 @@ impl Runtime {
                 if promoted {
                     details.validation.overlap = crate::OverlapPolicy::Allow;
                 }
-                details.box_model.border_box = entry.node.bounds.get().map(crate::Rect::values);
-                details.validation.clip = entry.node.clip.get().map(crate::Rect::values);
+                // Geometry committed in another window, before a move's
+                // destination lays the node out, is not this window's, as
+                // the move's relocation already recorded.
+                let committed = entry.node.committed_geometry();
+                details.box_model.border_box =
+                    committed.and_then(|_| entry.node.bounds.get().map(crate::Rect::values));
+                details.validation.clip =
+                    committed.and_then(|_| entry.node.clip.get().map(crate::Rect::values));
+                let measured_height = entry.node.measured_height();
                 self.validator.update(
                     serial,
                     crate::validation::development::NodeData {
+                        measured_height,
                         collection: (entry.component.as_ref() as &dyn std::any::Any)
                             .downcast_ref::<crate::VirtualList>()
                             .map(crate::VirtualList::extent_for_validation),

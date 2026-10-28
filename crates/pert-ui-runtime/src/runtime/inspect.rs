@@ -183,9 +183,27 @@ impl Runtime {
                 details.validation.overlap = crate::OverlapPolicy::Allow;
             }
         }
+        // Geometry is reported as the last successful layout committed it,
+        // and only while that layout was of the window the component is in.
+        let committed = entry.node.committed_geometry();
         if detail >= crate::Detail::Geometry {
-            details.box_model.border_box = entry.node.bounds.get().map(crate::Rect::values);
-            details.validation.clip = entry.node.clip.get().map(crate::Rect::values);
+            details.box_model.border_box =
+                committed.and_then(|_| entry.node.bounds.get().map(crate::Rect::values));
+            details.validation.clip =
+                committed.and_then(|_| entry.node.clip.get().map(crate::Rect::values));
+        }
+        if let Some(semantics) = details.semantics.as_mut() {
+            let geometry = committed
+                .filter(|_| entry.node.is_presented() && !entry.node.arranged_uncommitted.get())
+                .and_then(|scale| Some((entry.node.bounds.get()?, scale, entry.node.clip.get()?)));
+            for item in &mut semantics.items {
+                let local = item.take_local();
+                item.bounds = local
+                    .zip(geometry)
+                    .and_then(|(local, (bounds, scale, clip))| {
+                        item_bounds(local, bounds, scale, clip)
+                    });
+            }
         }
         crate::ComponentInspection {
             labelled_by: None,
@@ -197,7 +215,7 @@ impl Runtime {
             focused: entry.node.window().focused.get() == Some(serial),
             window: entry.node.window().serial,
             presentation_parent: entry.node.presentation_parent_serial(),
-            view_scale: entry.node.scale.get(),
+            view_scale: committed.unwrap_or_else(|| entry.node.scale.get()),
             dirty: entry.node.dirty.get(),
             subscriptions: entry.subscriptions.len(),
             next_deadline: match (entry.node.deadline.get(), entry.node.timer.get()) {
@@ -521,4 +539,31 @@ fn name_children(
         }
         semantics.invalid |= invalid;
     }
+}
+
+/// An item's window rectangle: `local` in the component's own coordinates,
+/// moved by its committed origin, scaled by its committed scale and cut to its
+/// committed clip, all in `f64`; `None` when nothing of it is visible or the
+/// arithmetic is not finite.
+fn item_bounds(
+    local: crate::Rect,
+    bounds: crate::Rect,
+    scale: f32,
+    clip: crate::Rect,
+) -> Option<[f32; 4]> {
+    let [x, y, w, h] = local.values().map(f64::from);
+    let [bx, by, _, _] = bounds.values().map(f64::from);
+    let [cx, cy, cw, ch] = clip.values().map(f64::from);
+    let scale = f64::from(scale);
+    let (left, top) = (bx + scale * x, by + scale * y);
+    let (right, bottom) = (left + scale * w, top + scale * h);
+    let (left, top) = (left.max(cx), top.max(cy));
+    let (right, bottom) = (right.min(cx + cw), bottom.min(cy + ch));
+    let visible = [left, top, right - left, bottom - top];
+    if !visible.iter().all(|value| value.is_finite()) || visible[2] <= 0.0 || visible[3] <= 0.0 {
+        return None;
+    }
+    let visible = visible.map(|value| value as f32);
+    (visible.iter().all(|value| value.is_finite()) && visible[2] > 0.0 && visible[3] > 0.0)
+        .then_some(visible)
 }

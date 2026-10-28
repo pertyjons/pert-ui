@@ -236,7 +236,12 @@ pub struct TableSort {
 ///
 /// The rules of [`ListItems`] apply: keys are row identity, no two rows share one,
 /// and the table never iterates every row. `cell` returns the content for one row
-/// and column; the element's own key is free, since the table wraps each cell.
+/// and column under a key of the application's choosing: the table wraps it in
+/// a cell keyed by the column, so the content is at `<table>/<row key>/<column
+/// key>/<content key>` ([`Table`](crate::Table#addresses-and-tests)). Content
+/// may be keyed like its column, which
+/// [`Runtime::find_descendant`](crate::Runtime::find_descendant) below the row
+/// then refuses as ambiguous, while the full address resolves it.
 /// A row exists when `key` answers for its index; its cells may be missing.
 /// The order of rows is the application's: the table never sorts them.
 /// An implementation is `'static`, as [`TableSource::new`] requires: it owns its
@@ -257,7 +262,9 @@ pub trait TableItems {
     /// Stable key of the row at `index`, or `None` past the end.
     fn key(&self, index: usize) -> Option<String>;
     /// The content of row `index` in the column with key `column`, or `None`
-    /// for an empty cell, which the table draws as its padding alone.
+    /// for an empty cell, which the table draws as its padding alone. It is
+    /// addressed by its own key below the cell, at `<table>/<row key>/<column
+    /// key>/<content key>`.
     ///
     /// Like [`ListItems::build`], it is called again for every mounted row
     /// each time the table describes its rows, on a source replacement and
@@ -521,9 +528,13 @@ impl ListItems for Rows {
                 // The edited cell holds the editor's host instead. Content
                 // keyed like the host sits in a wrapper of the table's, so
                 // the two never meet under one key.
-                let content = Editing::host(&self.shared, &key, &column.key).or_else(|| {
+                let host = Editing::host(&self.shared, &key, &column.key);
+                let wrapped = host.is_some();
+                let mut content_wrapped = false;
+                let content = host.or_else(|| {
                     self.source.0.cell(index, &column.key).map(|content| {
                         if content.key() == editing::HOST_KEY {
+                            content_wrapped = true;
                             Element::new(CONTENT_KEY, CellContent(Some(content))).structural()
                         } else {
                             content
@@ -534,6 +545,7 @@ impl ListItems for Rows {
                     column.key.clone(),
                     TableCell {
                         content,
+                        wrapped: wrapped || content_wrapped,
                         column: column.key.clone(),
                         shared: self.shared.clone(),
                     },
@@ -704,6 +716,10 @@ impl TableController {
     // Publishes the rows again, so mounted rows rebuild their cells in the
     // current column order.
     fn republish(&self) -> Result<(), RuntimeError> {
+        #[cfg(test)]
+        if tests::FAIL_REPUBLISH.with(|fail| fail.replace(false)) {
+            return Err(RuntimeError::BorrowConflict);
+        }
         let source = self.0.source.borrow().clone();
         self.publish(source)
     }
@@ -930,12 +946,29 @@ impl Component for CellContent {
     fn arrange(&self, cx: &mut ArrangeContext<'_>, size: Size) -> Result<(), RuntimeError> {
         cx.place(0, Rect::from_size(size))
     }
+    fn inspect(&self) -> ComponentDetails {
+        // The innermost table component around the content gives the row's
+        // fixed height, so development validation names the content once.
+        fixed_height()
+    }
+}
+
+/// Inspection details with only [`ValidationHints::fixed_height`](crate::ValidationHints::fixed_height):
+/// a cell's content must fit the row's height.
+pub(super) fn fixed_height() -> ComponentDetails {
+    let mut details = ComponentDetails::default();
+    details.validation.fixed_height = true;
+    details
 }
 
 /// One cell: the application's content inset by ControlPaddingX and clipped to
 /// its column, centered vertically in the row.
 struct TableCell {
     content: Option<Element>,
+    /// Whether the content is wrapped by the table, in the editor's host or
+    /// in [`CellContent`], which then reports the row's fixed height in this
+    /// cell's place.
+    wrapped: bool,
     /// The column's key, whose current title names the cell.
     column: String,
     shared: Rc<Shared>,
@@ -943,6 +976,12 @@ struct TableCell {
 impl Component for TableCell {
     fn take_children(&mut self) -> Vec<Element> {
         self.content.take().into_iter().collect()
+    }
+    fn reconcile(&mut self, next: Self) -> Option<Invalidation> {
+        // An edit beginning or ending changes the cell's child; the update
+        // this schedules makes development validation read the hint again.
+        (std::mem::replace(&mut self.wrapped, next.wrapped) != next.wrapped)
+            .then_some(Invalidation::Paint)
     }
     fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
         Ok(())
@@ -1011,10 +1050,12 @@ impl Component for TableCell {
             .iter()
             .find(|column| column.key == self.column)
             .map_or("", |column| column.title.as_str());
-        ComponentDetails {
+        let mut details = ComponentDetails {
             semantics: Some(Semantics::new(SemanticRole::Cell).name(title)),
             ..ComponentDetails::default()
-        }
+        };
+        details.validation.fixed_height = !self.wrapped;
+        details
     }
 }
 
@@ -1270,16 +1311,11 @@ enum HeaderGesture {
 /// ui.flush(std::time::Duration::ZERO)?;
 /// let body = ui.children(&table)?[0].clone();
 /// assert!(ui.children(&body)?.len() < 40, "rows are virtualized");
+/// // Row "n3", column "square", the content keyed "value".
+/// let nine = ui.find(&table, &["n3", "square", "value"])?.ok_or("not mounted")?;
+/// assert_eq!(ui.key(&nine)?, "value");
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
-///
-/// The body is internal structure, and so is the component that reports edit
-/// ends, which has no children: addresses skip both, so a row's address is
-/// the table's followed by the row's key.
-/// [`Driver::address_children(&table)`](crate::testing::Driver::address_children)
-/// lists the mounted rows in source order with their keys, including the
-/// offscreen ones the body retains; [`TableController::reveal`] mounts
-/// another.
 ///
 /// Describing a mounted table again keeps its controller, row height and
 /// [`cell_tab_stops`](Self::cell_tab_stops): the table's data, columns and
@@ -1300,6 +1336,50 @@ enum HeaderGesture {
 /// builds every column of each mounted row, including columns scrolled out of
 /// view, and an active [filter](TableController::filter) reads every row's text
 /// again whenever the source is replaced.
+///
+/// The row height is fixed: a cell gives its content at most that height,
+/// centered, and cuts off the rest. Choose it for the tallest content, as
+/// [`Table::new`] describes. Development validation reports content that
+/// measured or is laid out taller than its row as
+/// [`ValidationCode::ExceedsFixedHeight`](crate::ValidationCode::ExceedsFixedHeight),
+/// once per mounted cell, naming the content and the component that gives it
+/// the row's height: the cell, or, for content keyed like the editor's host
+/// and for an open edit's editor, the table's wrapper around it, keyed
+/// `content` or `cell editor`.
+///
+/// # Addresses and tests
+///
+/// The body is internal structure, and so is the component that reports edit
+/// ends, which has no children: addresses skip both. A row is addressed by its
+/// key below the table, a cell by its column's key below the row, and the
+/// content [`TableItems::cell`] returned by its own key below the cell:
+/// `<table>/<row key>/<column key>/<content key>`, as
+/// `ui.find(&table, &["n3", "square", "value"])` in the first example. The
+/// wrappers a cell may hold around its content or an editor add no segment,
+/// so an edited cell's editor is at `<table>/<row key>/<column key>/<editor
+/// key>`. Content may be keyed like its column, since keys are unique only
+/// among siblings; [`Runtime::find_descendant`](crate::Runtime::find_descendant)
+/// below the row then sees the cell and its content and fails with
+/// [`RuntimeError::AmbiguousKey`], while the full address resolves the
+/// content.
+///
+/// [`Driver::address_children(&table)`](crate::testing::Driver::address_children)
+/// lists the mounted rows in source order with their keys, including the
+/// offscreen ones the body retains; [`TableController::reveal`] mounts
+/// another. [`Runtime::children`](crate::Runtime::children) of the table
+/// lists the body and the reporter instead.
+///
+/// The column titles are the table's [semantic items](crate::Semantics::items),
+/// in the current column order, each named by its title, selected while the
+/// table is sorted by it and offering the actions its column allows. Each
+/// title's [`bounds`](crate::SemanticItem::bounds) are its visible rectangle
+/// in the header, in window coordinates, and absent for a title scrolled
+/// entirely out of view.
+/// [`Driver::click_item(&table, index)`](crate::testing::Driver::click_item)
+/// presses and releases at the middle of that rectangle as a pointer would,
+/// so it sorts a sortable column; a middle within the resize grip of a
+/// column's trailing edge starts a resize instead. From the keyboard, Alt
+/// with Up or Down sorts the active column.
 ///
 /// # Cell editing
 ///
@@ -1381,7 +1461,10 @@ enum HeaderGesture {
 ///     TableSource::new(Items(names.clone())),
 /// )?;
 /// let (rows, republish) = (names.clone(), state.clone());
-/// let table = Table::new(&state, 24.0)?.cell_editor(move |edit| {
+/// // The row holds the editor, a text field of ControlHeight.
+/// let theme = ui.theme();
+/// let row = theme.metrics(theme.density()?)?.metric(MetricRole::ControlHeight);
+/// let table = Table::new(&state, row)?.cell_editor(move |edit| {
 ///     let index: usize = edit.row().trim_start_matches("item").parse().unwrap_or(0);
 ///     let (name, rows, republish) = (rows[index].clone(), rows.clone(), republish.clone());
 ///     Ok(Element::new(
@@ -1522,6 +1605,59 @@ impl Table {
         self
     }
     /// Creates a table over a controller with a fixed logical row height.
+    ///
+    /// The row is fixed, and a cell gives its content at most that height, so
+    /// choose it for the tallest content. Every single-line control, such as
+    /// a button, a text field or a checkbox, measures at least the theme's
+    /// ControlHeight, so a row with controls, or with an
+    /// [editable](TableColumn::editable) column, is at least ControlHeight
+    /// tall; text-only rows fit one line of body text with
+    /// [`TextOverflow::Ellipsis`](crate::TextOverflow::Ellipsis); a larger
+    /// control, such as a [`Knob`](crate::Knob), needs its own height.
+    /// Development validation reports content taller than the row as
+    /// [`ValidationCode::ExceedsFixedHeight`](crate::ValidationCode::ExceedsFixedHeight).
+    ///
+    /// A mounted table keeps the height it was created with, also across a
+    /// density change and when described again. An application that lets the
+    /// user switch density gives the table the height of the largest preset
+    /// it offers: the largest ControlHeight over those
+    /// [`Density`](crate::Density) values, 40 logical pixels for
+    /// `Comfortable` with the default metrics.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::Density;
+    ///
+    /// struct Tasks;
+    /// impl TableItems for Tasks {
+    ///     fn len(&self) -> usize { 1 }
+    ///     fn key(&self, index: usize) -> Option<String> {
+    ///         (index == 0).then(|| "task0".to_owned())
+    ///     }
+    ///     fn cell(&self, _: usize, _: &str) -> Option<Element> {
+    ///         Some(Element::new("done", Checkbox::controlled(false, "Done", |_, _| Ok(()))))
+    ///     }
+    /// }
+    /// let mut ui = Runtime::new();
+    /// let controller = TableController::new(
+    ///     &ui,
+    ///     ListSelection::new(&ui, SelectionMode::Single),
+    ///     [TableColumn::new("done", "Done")],
+    ///     TableSource::new(Tasks),
+    /// )?;
+    /// // The row holds the checkbox at the density in effect.
+    /// let theme = ui.theme();
+    /// let row = theme.metrics(theme.density()?)?.metric(MetricRole::ControlHeight);
+    /// // At every density the application offers, the largest preset's.
+    /// let mut largest = 0.0_f32;
+    /// for density in [Density::Compact, Density::Standard, Density::Comfortable] {
+    ///     largest = largest.max(theme.metrics(density)?.metric(MetricRole::ControlHeight));
+    /// }
+    /// assert!(largest >= row);
+    /// ui.mount_tree(Element::new("tasks", Table::new(&controller, row)?))?;
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     ///
     /// # Errors
     /// Returns [`GeometryError::NonFinite`](crate::GeometryError::NonFinite)
@@ -2267,6 +2403,11 @@ impl Component for Table {
             *shared.user_sized.borrow_mut() = previous_user_sized;
             return Err(RestoreRejection::Runtime(error));
         }
+        // Only now that the restore cannot fail: the resolved columns follow
+        // the new order at once, as after a move, so nothing pairs `columns`
+        // and `resolved` by index across the reorder, while a rejected restore
+        // above keeps the resolved columns and the offset `resolve` clamps.
+        shared.resolve(shared.width.get());
         drop(previous_rows);
         Ok(Invalidation::Layout)
     }
@@ -3041,6 +3182,11 @@ impl Component for Table {
         // The headers are rows of this one component, so they are items; the
         // selected one is the sorted column. The rows are the body's to describe,
         // and the body, which has no label of its own, takes the table's name.
+        // Each title's rectangle is the one painting fills and `column_at`
+        // finds it in.
+        let resolved = self.state.0.shared.resolved.borrow();
+        let offset = self.state.0.shared.offset.get();
+        let header = self.header.get();
         details.semantics = Some(
             Semantics::new(SemanticRole::Table)
                 .names_children()
@@ -3049,7 +3195,7 @@ impl Component for Table {
                     minimum: Some(0.0),
                     maximum: None,
                 })
-                .items(columns.iter().map(|column| {
+                .items(columns.iter().enumerate().map(|(index, column)| {
                     let item = SemanticItem::new(column.title.as_str()).selected(
                         self.sort
                             .as_ref()
@@ -3065,14 +3211,141 @@ impl Component for Table {
                     } else {
                         item
                     };
-                    if self.resize_allowed && column.resizable {
+                    let item = if self.resize_allowed && column.resizable {
                         item.action(SemanticAction::Resize)
                     } else {
                         item
+                    };
+                    match resolved.get(index).and_then(|(start, width)| {
+                        Rect::new(start - offset, 0.0, *width, header).ok()
+                    }) {
+                        Some(rect) => item.local_bounds(rect),
+                        None => item,
                     }
                 }))
                 .enabled_actions(self.overflows().then_some(SemanticAction::Scroll)),
         );
         details
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{
+        Detail, InspectValue, InspectionQuery, Length, ListSelection, RestoreRejection, Runtime,
+        SelectionMode, Selector, Viewport, WidgetId,
+    };
+
+    thread_local! {
+        /// Makes the next republication fail, as a rejected signal write
+        /// would; a test's signal borrow cannot reach the controller's items.
+        pub(super) static FAIL_REPUBLISH: Cell<bool> = const { Cell::new(false) };
+    }
+
+    struct Rows;
+    impl TableItems for Rows {
+        fn len(&self) -> usize {
+            3
+        }
+        fn key(&self, index: usize) -> Option<String> {
+            (index < 3).then(|| format!("r{index}"))
+        }
+        fn cell(&self, _: usize, column: &str) -> Option<Element> {
+            Some(Element::new("text", crate::Label::new(column)))
+        }
+    }
+
+    /// Three movable 200 px columns in a 300 px table.
+    fn mounted() -> Result<(Runtime, TableController, WidgetId), Box<dyn std::error::Error>> {
+        let mut ui = Runtime::new();
+        ui.set_viewport(Viewport::new(300.0, 200.0, 1.0)?)?;
+        let controller = TableController::new(
+            &ui,
+            ListSelection::new(&ui, SelectionMode::Single),
+            ["a", "b", "c"].map(|key| {
+                TableColumn::new(key, key.to_uppercase())
+                    .width(Length::new(200.0).unwrap())
+                    .movable(true)
+            }),
+            TableSource::new(Rows),
+        )?;
+        let table = ui.mount_tree(Element::new("table", Table::new(&controller, 24.0)?))?;
+        ui.flush(ui.now())?;
+        Ok((ui, controller, table))
+    }
+
+    /// The scroll offset, the column widths and the title bounds inspection
+    /// reports.
+    fn presented(
+        ui: &Runtime,
+        table: &WidgetId,
+    ) -> (InspectValue, InspectValue, Vec<Option<[f32; 4]>>) {
+        let id = ui.inspection_id(table).unwrap();
+        let mut record = ui
+            .query(&InspectionQuery::components(Selector::id(id)).detail(Detail::Full))
+            .components
+            .remove(0);
+        let property = |name: &str| record.details.properties[name].clone();
+        let (offset, widths) = (property("scroll_x"), property("column_widths"));
+        let bounds = record
+            .details
+            .semantics
+            .take()
+            .map(|semantics| {
+                semantics
+                    .items
+                    .into_iter()
+                    .map(|item| item.bounds)
+                    .collect()
+            })
+            .unwrap_or_default();
+        (offset, widths, bounds)
+    }
+
+    #[test]
+    fn a_rejected_restore_keeps_the_resolved_columns_and_the_offset()
+    -> Result<(), Box<dyn std::error::Error>> {
+        // An entry that reorders the columns and narrows two of them, so the
+        // scroll range it would give is shorter than the offset below.
+        let (mut source, controller, _) = mounted()?;
+        controller.0.shared.move_to(0, 3)?;
+        controller.set_column_width("b", Length::new(100.0)?)?;
+        controller.set_column_width("c", Length::new(100.0)?)?;
+        source.flush(source.now())?;
+        let entry = source.capture_workspace()?;
+
+        // Scrolled to a nonzero offset, with a width change waiting for
+        // layout; the twin gets the same and no restore.
+        let prepare = |ui: &mut Runtime, controller: &TableController| {
+            controller.0.shared.scroll_to(250.0)?;
+            ui.flush(ui.now())?;
+            controller.set_column_width("a", Length::new(300.0)?)
+        };
+        let (mut ui, controller, table) = mounted()?;
+        prepare(&mut ui, &controller)?;
+        let (mut twin, twin_controller, twin_table) = mounted()?;
+        prepare(&mut twin, &twin_controller)?;
+
+        FAIL_REPUBLISH.with(|fail| fail.set(true));
+        let report = ui.restore_workspace(&entry);
+        FAIL_REPUBLISH.with(|fail| fail.set(false));
+        let report = report?;
+        assert!(
+            report
+                .rejected()
+                .any(|(_, reason)| matches!(reason, RestoreRejection::Runtime(_))),
+            "{report:?}"
+        );
+        assert_eq!(presented(&ui, &table), presented(&twin, &twin_table));
+        ui.flush(ui.now())?;
+        twin.flush(twin.now())?;
+        assert_eq!(presented(&ui, &table), presented(&twin, &twin_table));
+        assert_eq!(
+            presented(&ui, &table).0,
+            InspectValue::Number(250.0),
+            "the offset was kept"
+        );
+        Ok(())
     }
 }

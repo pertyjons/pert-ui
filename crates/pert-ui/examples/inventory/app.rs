@@ -624,7 +624,13 @@ pub fn build(ui: &mut Runtime, items: usize) -> Result<(Rc<Inventory>, Commands,
     let commands = Commands::register(ui, &inventory)?;
 
     let (sorting, editing) = (inventory.clone(), Rc::downgrade(&inventory));
-    let table = Table::new(&inventory.table, 28.0)?
+    // The rows hold the Active checkbox and the editors, which measure the
+    // theme's ControlHeight; the example offers no density switch.
+    let theme = ui.theme();
+    let row_height = theme
+        .metrics(theme.density()?)?
+        .metric(MetricRole::ControlHeight);
+    let table = Table::new(&inventory.table, row_height)?
         // One Tab stop: F2 reaches the Active checkbox, Tab leaves the table.
         .cell_tab_stops(false)
         .on_sort(move |_, sort| sorting.sort(Some(sort.clone())))

@@ -1,5 +1,103 @@
 # Changelog
 
+## 0.3.83 (2026-10-28)
+
+Tables in tests (round 2 fix plan, part P8, R2-22, R2-23 and R2-27 by
+decision D8, from its approved design checkpoint
+`plans/usability/round-2-design-P8.md`, revision 5, with decisions P8-D1 to
+P8-D4).
+
+- Added (R2-27): `SemanticItem::local_bounds` and `SemanticItem::bounds`: a
+  component gives an item a rectangle in its own coordinates and an
+  inspection reports its visible part in window coordinates, following the
+  view scale, clips, promoted surfaces and detached windows; the table's
+  header titles report theirs. `Driver::click_item`, with
+  `TestError::NoItem` (`key`, `index`, `count`) and
+  `TestError::ItemWithoutBounds` (`key`, `index`). Item bounds are absent
+  before a component's first layout, while it is not presented, when nothing
+  of the item is visible, after a failed layout that arranged the component
+  and while its committed geometry is from another window; a value a
+  component assigns to `bounds` directly is replaced.
+- Added (R2-23): `ValidationHints::fixed_height` and
+  `ValidationCode::ExceedsFixedHeight`: development validation reports a
+  table cell's content that measured or is laid out taller than its row,
+  such as a checkbox, a text field or an editor in a row lower than
+  ControlHeight, once per mounted cell, naming the content and the table
+  component that gives it the row's height (the cell, or the wrapper keyed
+  `content` or `cell editor` around content keyed like the editor's host and
+  around an open edit's editor). The measurement is the one the parent
+  obtained during layout; a measurement that changes while the child keeps
+  its rectangle is recorded after the next successful layout of its window.
+  An external grid sets the same hint.
+- Breaking (R2-22): `TestError::NotFound` gains `resolved`, the longest
+  prefix of the path that resolves (a prefix `Runtime::find` refuses as
+  ambiguous counts), and its message says how far the path resolves.
+  Replacement usage: match `TestError::NotFound { path, .. }`; a test that
+  builds the value adds `resolved`.
+- Breaking (R2-27, persistence): inspection schema 16
+  (`InspectionSnapshot::SCHEMA_VERSION`); deserializing an
+  `InspectionSnapshot` or `QueryResult` of another revision fails with
+  "inspection schema version N is not supported (this build writes 16)",
+  `schema_version` is a snapshot's first field, and
+  `ComponentInspection::view_scale` is the scale of the committed layout the
+  record's geometry is from (before the first layout, and while the
+  committed geometry is from another window, the scale the component will be
+  laid out at). Replacement usage: capture snapshots again with this
+  runtime; a tool that reads several revisions compares `schema_version`
+  before decoding. `Workspace::SCHEMA_VERSION` stays 2.
+- Breaking: `ValidationHints` has a new public field. Replacement usage:
+  build it from `..ValidationHints::default()`, as its page says.
+- Changed (same kind): after a failed layout, the next layout arranges again
+  every component the failed one arranged, so their painting and hit testing
+  no longer keep the failed pass's retained geometry when a later pass would
+  skip them; a restored workspace resolves the table's columns once it
+  succeeds, so nothing pairs the restored order with the previous widths
+  (a rejected restore keeps the resolved columns and the scroll offset);
+  after a detach or redock, inspection reports no `border_box` or clip for a
+  moved component until its new window's layout commits it, and development
+  validation's record after a component's update does the same; a changed
+  view scale is staged at the next layout even when the window bounds do
+  not change, as for a component of no size in a continuing zoom.
+- Changed (R2-23): `inventory`'s table takes its row height from
+  ControlHeight, which its checkboxes and editors measure, and the gallery's
+  from the largest ControlHeight of the densities it offers (40 px with the
+  default metrics), since a mounted table keeps its row height across a
+  density change. The `Table` editing example takes its row height from
+  ControlHeight.
+- Documentation (R2-22, R2-23, R2-27): the cell address on `Table` (a new
+  section "Addresses and tests" with the header items, `click_item` and the
+  keyboard route), `TableItems` and `TableItems::cell`, and on
+  `Runtime::find_descendant`; the row height on `Table` and `Table::new`
+  (with the metric lookup); `Driver::find`'s resolved prefix; the `testing`
+  module page; `Component::inspect`, `BoxModelInspection::border_box`,
+  `ValidationHints::clip` and `Detail::Semantics`; the testing chapter's new
+  "Tables" section; the diagnostics chapter's decoder check;
+  `docs/contracts.md` ("Inspection and diagnostics", "Inspection in custom
+  components"), `docs/manual.md` and the native evidence record.
+- Tests: the runtime's `testing` binary covers the resolved prefix and
+  `click_item`'s refusals; its `validation` binary covers a custom
+  fixed-height parent, the hint alone, the measurement alone and a
+  measurement queued across a detach and a redock; its unit tests cover the
+  queue's move and unmount cleanup, idle flushes and a rejected restore. The
+  facade's `collections` binary adds `table_items` (header bounds and
+  sorting, horizontal clipping, a view scale, a title out of view, refusals
+  before and after a scrolling reveal, before the first, pending and failed
+  layouts, a hidden table, a promoted surface and a detached window, a
+  restore, a reparent and a failed zoom, moves before a layout, a zero-size
+  component in a continuing zoom, the cell address and the row-height
+  reports); `foundation` covers custom item rectangles and the schema-16
+  envelopes; the gallery tests the Note editor after a density switch. Each
+  new-behavior test was shown to fail under its named mutation.
+- API listings: `api/pert-ui-runtime/default.txt` and `serde.txt` add
+  `SemanticItem::bounds`, `SemanticItem::local_bounds`,
+  `ValidationHints::fixed_height`, `ValidationCode::ExceedsFixedHeight`,
+  `Driver::click_item`, `TestError::NoItem` and
+  `TestError::ItemWithoutBounds` with their fields, and
+  `TestError::NotFound::resolved`, each at every path the listing shows; the
+  `api/pert-ui/*.txt` listings show the runtime's items as re-exports and do
+  not change, and no listing shows `SCHEMA_VERSION`'s value or the
+  snapshot's field order.
+
 ## 0.3.82 (2026-10-28)
 
 Rows that shrink (round 2 fix plan, part P7, R2-21 by decision D7, from its

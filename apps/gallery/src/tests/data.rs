@@ -4,7 +4,7 @@ use pert_ui::inspection::*;
 use pert_ui::prelude::*;
 use pert_ui::testing::HostIntegration;
 use pert_ui::testing::*;
-use pert_ui::{Capacity, DrawCommand};
+use pert_ui::{Capacity, Density, DrawCommand};
 use std::time::Duration;
 
 #[test]
@@ -223,6 +223,44 @@ fn the_collections_page_navigates_a_grid_a_lazy_tree_and_a_sorted_table() {
     }
     assert!(ui.validation_report().issues.is_empty());
     assert!(ui.next_deadline().is_none());
+}
+
+#[test]
+fn the_collections_table_holds_the_note_editor_after_a_density_switch() {
+    let (mut ui, root) = mounted();
+    ui.set_viewport(Viewport::new(960.0, 2000.0, 1.0).unwrap())
+        .unwrap();
+    assert_eq!(ui.theme().density().unwrap(), Density::Standard);
+    open(&mut ui, &root, "collections");
+    // The page is mounted at Standard and switched to Comfortable, whose
+    // ControlHeight is the tallest the gallery offers.
+    ui.theme().set_density(Density::Comfortable).unwrap();
+    settle(&mut ui);
+    let table = find(&ui, &root, "collections-table");
+    let body = ui.children(&table).unwrap()[0].clone();
+    ui.focus(&body).unwrap();
+    for code in [KeyCode::End]
+        .into_iter()
+        .chain(std::iter::repeat_n(KeyCode::ArrowRight, 6))
+        .chain([KeyCode::Enter])
+    {
+        press(&mut ui, code);
+    }
+    let row = find(&ui, &body, "sample-100000");
+    let editor = find(&ui, &find(&ui, &row, "note"), "note-editor");
+    let comfortable = ui
+        .theme()
+        .metrics(Density::Comfortable)
+        .unwrap()
+        .metric(MetricRole::ControlHeight);
+    assert_eq!(ui.bounds(&editor).unwrap().unwrap().height(), comfortable);
+    let issues = ui.validation_report().issues;
+    assert!(
+        !issues
+            .iter()
+            .any(|issue| issue.code == ValidationCode::ExceedsFixedHeight),
+        "{issues:?}"
+    );
 }
 
 #[test]

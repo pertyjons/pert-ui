@@ -102,7 +102,10 @@ pub struct ValidationHints {
     /// Intentional intersection policy for peer components.
     pub overlap: OverlapPolicy,
     /// Actual effective ancestor clip `[x, y, width, height]` in root logical pixels.
-    /// `None` means no additional known clip, not a fabricated viewport.
+    /// `None` means no additional known clip, not a fabricated viewport. The
+    /// runtime reports none while the component's committed geometry is from
+    /// another window than the one it is now presented in (after a detach or
+    /// redock, until that window's layout commits it).
     #[cfg_attr(
         feature = "serde",
         serde(default, with = "crate::serde_float::option_array4")
@@ -112,13 +115,30 @@ pub struct ValidationHints {
     pub interactive: bool,
     /// Declared keyboard bindings; inactive scopes do not conflict.
     pub shortcuts: Vec<ShortcutBinding>,
+    /// Whether this component gives its children a fixed height they must
+    /// fit, with no way to scroll to the rest, as a [`Table`](crate::Table)
+    /// cell gives its row's. Default false.
+    ///
+    /// Development validation then reports a visible child that measured or
+    /// is laid out taller than this component, or starts above it, as
+    /// [`ValidationCode::ExceedsFixedHeight`], although this component
+    /// compresses or cuts it off. The measurement is the one this component
+    /// obtained for the child through
+    /// [`MeasureContext::measure`](crate::MeasureContext::measure) during
+    /// layout, so a child that measures taller than the height it is placed
+    /// at, such as a single-line control in a shorter row, is reported too; a
+    /// child this component never measured is checked by its bounds alone.
+    /// Set it on the innermost component that gives the fixed height, so one
+    /// problem is reported once. Schema 16 added this field.
+    pub fixed_height: bool,
 }
 
 /// Stable diagnostic classification. Codes describe development issues, not errors
 /// that a runtime may safely ignore when enforcing identity or numeric invariants.
 ///
 /// Codes about measured geometry (bounds, clips, padding against the box, empty
-/// hit areas, collapsed parents, escaping children and overlaps) are reported
+/// hit areas, collapsed parents, escaping children, children taller than a
+/// fixed height and overlaps) are reported
 /// only for windows laid out with a viewport that has area; see
 /// [`Runtime::validation_report`](crate::Runtime::validation_report).
 ///
@@ -177,6 +197,12 @@ pub enum ValidationCode {
     InvalidShortcut,
     /// Two enabled bindings compete for the same key/modifier chord.
     ShortcutConflict,
+    /// A visible component measured or is laid out taller than a parent whose
+    /// [`ValidationHints::fixed_height`] is set, or starts above it, such as a
+    /// control in a [`Table`](crate::Table) row lower than ControlHeight, so
+    /// the parent compresses or cuts it off. The issue names the component and
+    /// the parent. Schema 16 added this code.
+    ExceedsFixedHeight,
 }
 
 /// One actionable development error, referring to every affected component.
