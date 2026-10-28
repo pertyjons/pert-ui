@@ -120,6 +120,7 @@ pub fn pert_ui::svg_images::intrinsic_size(&[u8]) -> core::result::Result<pert_u
 pub fn pert_ui::svg_images::rasterize(&[u8], u32, u32) -> core::result::Result<pert_ui_runtime::resources::RasterImage, pert_ui::svg_images::SvgError>
 pub fn pert_ui::svg_images::rasterize_mask(&[u8], u32, u32) -> core::result::Result<pert_ui_runtime::drawing::MaskImage, pert_ui::svg_images::SvgError>
 pub mod pert_ui::testing
+pub use pert_ui::testing::AddressChild
 pub use pert_ui::testing::Capture
 pub use pert_ui::testing::CaptureError
 pub use pert_ui::testing::CaptureRequest

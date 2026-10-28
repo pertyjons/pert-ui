@@ -373,12 +373,7 @@ fn described_trees_format_as_keys_without_bound_values() -> TestResult {
     let rows = ui.signal(vec![Unformattable]);
     let tree = Column::new([
         Label::new("Title").key("title"),
-        Each::new(
-            &rows,
-            |_| "row".to_owned(),
-            |_, _| Label::new("Row").key("row"),
-        )
-        .key("rows"),
+        Each::new(&rows, |_| "row".to_owned(), |_, _| Label::new("Row")).key("rows"),
     ])
     .key("content");
     let text = format!("{tree:?}");

@@ -1487,3 +1487,604 @@ fn a_queued_reveal_in_a_step_runs_another_windows_due_work_uncounted() -> TestRe
     assert_eq!(driver.runtime().current_window(), primary);
     Ok(())
 }
+
+/// `Driver::address_children`: the components one address segment below a
+/// parent, in child order, each as `Runtime::find` resolves it.
+///
+/// Each new-behavior test names the assertion that detects a wrong walk and
+/// the mutation of `Runtime::address_children_of` it fails under; the
+/// contract tests check the rules the walk shares with `find`.
+mod address_children {
+    use super::*;
+
+    fn segments(rows: &[AddressChild]) -> Vec<&str> {
+        rows.iter().map(|row| row.segment.as_str()).collect()
+    }
+
+    /// The definition: each row's segment resolves to it from `parent`, or
+    /// `find` refuses it as ambiguous because another row has the segment.
+    fn agrees_with_find(ui: &Runtime, parent: &WidgetId, rows: &[AddressChild]) -> TestResult {
+        for row in rows {
+            let shared = rows
+                .iter()
+                .filter(|other| other.segment == row.segment)
+                .count()
+                > 1;
+            let found = ui.find(parent, &[row.segment.as_str()]);
+            if shared {
+                assert_eq!(
+                    found,
+                    Err(RuntimeError::AmbiguousKey(row.segment.clone())),
+                    "{}",
+                    row.segment
+                );
+            } else {
+                assert_eq!(found, Ok(Some(row.id.clone())), "{}", row.segment);
+            }
+        }
+        Ok(())
+    }
+
+    /// The incarnations `Selector::children(path)` matches, sorted.
+    fn selector_children(ui: &Runtime, path: &[&str]) -> Vec<u64> {
+        let mut ids: Vec<u64> = ui
+            .query(&InspectionQuery::components(Selector::children(
+                path.iter().copied(),
+            )))
+            .components
+            .iter()
+            .map(|component| component.id)
+            .collect();
+        ids.sort_unstable();
+        ids
+    }
+
+    /// The restricted relation, for an `Own`-marked parent whose path no
+    /// other component has: the same set as `Selector::children`.
+    fn agrees_with_selector(ui: &Runtime, path: &[&str], rows: &[AddressChild]) -> TestResult {
+        let mut ids = rows
+            .iter()
+            .map(|row| ui.inspection_id(&row.id))
+            .collect::<Result<Vec<_>, _>>()?;
+        ids.sort_unstable();
+        assert_eq!(ids, selector_children(ui, path));
+        Ok(())
+    }
+
+    fn strings(values: &[&str]) -> Vec<String> {
+        values.iter().map(|value| (*value).to_owned()).collect()
+    }
+
+    /// Rows over a list of keys, each a label, or a button with `buttons`.
+    struct Keys {
+        keys: Vec<String>,
+        buttons: bool,
+    }
+    impl ListItems for Keys {
+        fn len(&self) -> usize {
+            self.keys.len()
+        }
+        fn key(&self, index: usize) -> Option<String> {
+            self.keys.get(index).cloned()
+        }
+        fn build(&self, index: usize) -> Option<Element> {
+            let key = self.keys.get(index)?;
+            Some(if self.buttons {
+                Element::new(key.clone(), Button::new(key.as_str(), |_| Ok(())))
+            } else {
+                Element::new(key.clone(), Label::new(key.as_str()))
+            })
+        }
+    }
+    fn labels(keys: &[&str]) -> ListSource {
+        ListSource::new(Keys {
+            keys: strings(keys),
+            buttons: false,
+        })
+    }
+
+    /// New-behavior test 1. Named assertion: after a reorder the segments are
+    /// `["ship", "write"]` and the ids are `find`'s. Fails when the walk
+    /// returns `Runtime::children` (one `items` child), descends below an
+    /// `Own` element (the labels appear), pops without reversing or sorts by
+    /// incarnation (`["write", "ship"]` both).
+    #[test]
+    fn an_each_lists_its_rows_in_list_order_after_a_reorder() -> TestResult {
+        let mut ui = runtime()?;
+        let tasks = ui.signal(strings(&["write", "ship"]));
+        let each = ui.mount_tree(
+            Each::new(&tasks, Clone::clone, |_, task| {
+                Row::new([
+                    Label::new(task.as_str()).key("name"),
+                    Label::new(format!("https://{task}")).key("url"),
+                ])
+            })
+            .key("tasks"),
+        )?;
+        let mut driver = Driver::new(&mut ui);
+        driver.settle()?;
+        tasks.set(strings(&["ship", "write"]))?;
+        driver.settle()?;
+        let rows = driver.address_children(&each)?;
+        assert_eq!(segments(&rows), ["ship", "write"]);
+        assert_eq!(rows[0].id, driver.find(&each, &["ship"])?);
+        assert_eq!(rows[1].id, driver.find(&each, &["write"])?);
+        agrees_with_find(driver.runtime(), &each, &rows)?;
+        agrees_with_selector(driver.runtime(), &["tasks"], &rows)?;
+        Ok(())
+    }
+
+    /// New-behavior test 2. Named assertion: the `Each` lists one child,
+    /// `tags`, and the container lists the rows. Fails when the walk descends
+    /// below a returned `Own` element (the rows appear at the first level).
+    #[test]
+    fn an_each_within_a_container_lists_the_container_and_it_the_rows() -> TestResult {
+        let mut ui = runtime()?;
+        let tags = ui.signal(strings(&["red", "green"]));
+        let each = ui.mount_tree(
+            Each::new(&tags, Clone::clone, |_, tag| Label::new(tag.as_str()))
+                .within(|tags| Wrap::new(tags).key("tags"))
+                .key("tag-list"),
+        )?;
+        let mut driver = Driver::new(&mut ui);
+        driver.settle()?;
+        let first = driver.address_children(&each)?;
+        assert_eq!(segments(&first), ["tags"]);
+        let container = driver.find(&each, &["tags"])?;
+        assert_eq!(first[0].id, container);
+        let rows = driver.address_children(&container)?;
+        assert_eq!(segments(&rows), ["red", "green"]);
+        agrees_with_find(driver.runtime(), &each, &first)?;
+        agrees_with_find(driver.runtime(), &container, &rows)?;
+        Ok(())
+    }
+
+    /// New-behavior test 3. Named assertion: a source republished as
+    /// `[c, a, b]` lists `["c", "a", "b"]`. Fails when the walk sorts by
+    /// incarnation (`["a", "b", "c"]`).
+    #[test]
+    fn a_reordered_virtual_list_lists_its_rows_in_index_order() -> TestResult {
+        let mut ui = runtime()?;
+        let items = ui.signal(labels(&["a", "b", "c"]));
+        let list = ui.mount_tree(Element::new(
+            "list",
+            VirtualList::new(items.read_only(), 20.0)?,
+        ))?;
+        let mut driver = Driver::new(&mut ui);
+        driver.settle()?;
+        items.set(labels(&["c", "a", "b"]))?;
+        driver.settle()?;
+        let rows = driver.address_children(&list)?;
+        assert_eq!(segments(&rows), ["c", "a", "b"]);
+        agrees_with_find(driver.runtime(), &list, &rows)?;
+        agrees_with_selector(driver.runtime(), &["list"], &rows)?;
+        Ok(())
+    }
+
+    /// Whether a row's 20-pixel line, which starts at the top of the row's
+    /// bounds, overlaps the list's frame. A button is taller than its line,
+    /// which clips it, so its bounds' own height would overstate the line.
+    fn meets(row: Rect, frame: Rect) -> bool {
+        row.y() < frame.y() + frame.height() && frame.y() < row.y() + 20.0
+    }
+
+    /// New-behavior test 4. Named assertion: scrolled to row 40, the list
+    /// lists row 0 (focused), the rows whose bounds meet the list's with one
+    /// overscan line on each side and row 60 (`keep_mounted`), in index
+    /// order, and no row 80, which a reveal then mounts and lists. Fails when
+    /// the walk keeps only the rows whose bounds meet the list's.
+    #[test]
+    fn a_scrolled_virtual_list_lists_its_retained_rows_and_a_revealed_one() -> TestResult {
+        let mut ui = Runtime::new();
+        ui.set_viewport(Viewport::new(200.0, 100.0, 1.0)?)?;
+        let keys: Vec<String> = (0..100).map(|index| format!("row-{index}")).collect();
+        let items = ui.signal(ListSource::new(Keys {
+            keys,
+            buttons: true,
+        }));
+        let controller = ListController::new(&ui);
+        let kept = ui.signal(Some("row-60".to_owned()));
+        let list = ui.mount_tree(Element::new(
+            "list",
+            VirtualList::new(items.read_only(), 20.0)?
+                .overscan(1)
+                .controller(controller.clone())
+                .keep_mounted(kept.read_only()),
+        ))?;
+        let mut driver = Driver::new(&mut ui);
+        driver.settle()?;
+        let first = driver.find(&list, &["row-0"])?;
+        driver.runtime_mut().focus(&first)?;
+        let scrolled = controller.reveal("row-40")?;
+        driver.settle()?;
+        assert!(matches!(scrolled.status(), ListRevealStatus::Mounted(_)));
+        assert_eq!(driver.runtime().focused(), Some(first));
+
+        let frame = driver.runtime().bounds(&list)?.ok_or("laid out")?;
+        let rows = driver.address_children(&list)?;
+        let mut visible = Vec::new();
+        for row in &rows {
+            let bounds = driver.runtime().bounds(&row.id)?.ok_or("laid out")?;
+            if meets(bounds, frame) {
+                let index: usize = row.segment.trim_start_matches("row-").parse()?;
+                visible.push(index);
+            }
+        }
+        let (low, high) = (
+            *visible.iter().min().ok_or("a visible row")?,
+            *visible.iter().max().ok_or("a visible row")?,
+        );
+        assert!(low > 2 && high < 58, "{visible:?}");
+        let mut expected = vec!["row-0".to_owned()];
+        expected.extend((low - 1..=high + 1).map(|index| format!("row-{index}")));
+        expected.push("row-60".to_owned());
+        assert_eq!(segments(&rows), expected);
+        assert!(!segments(&rows).contains(&"row-80"));
+        agrees_with_find(driver.runtime(), &list, &rows)?;
+
+        let revealed = controller.reveal("row-80")?;
+        driver.settle()?;
+        assert!(matches!(revealed.status(), ListRevealStatus::Mounted(_)));
+        let rows = driver.address_children(&list)?;
+        assert!(segments(&rows).contains(&"row-80"), "{:?}", segments(&rows));
+        agrees_with_find(driver.runtime(), &list, &rows)?;
+        Ok(())
+    }
+
+    /// Table rows over a list of names, each row keyed by its name.
+    struct Names(Vec<&'static str>);
+    impl TableItems for Names {
+        fn len(&self) -> usize {
+            self.0.len()
+        }
+        fn key(&self, index: usize) -> Option<String> {
+            self.0.get(index).map(|name| (*name).to_owned())
+        }
+        fn cell(&self, index: usize, _: &str) -> Option<Element> {
+            self.0
+                .get(index)
+                .map(|name| Element::new("name", Label::new(*name)))
+        }
+    }
+
+    /// New-behavior test 5. Named assertion: the segments are the row keys in
+    /// source order, and neither `body` nor the edit-end reporter appears.
+    /// Fails when the walk returns `Runtime::children`.
+    #[test]
+    fn a_table_lists_its_rows_not_its_body_or_reporter() -> TestResult {
+        let mut ui = runtime()?;
+        let state = TableController::new(
+            &ui,
+            ListSelection::new(&ui, SelectionMode::Single),
+            [TableColumn::new("name", "Name")],
+            TableSource::new(Names(vec!["cable", "mouse", "laptop"])),
+        )?;
+        let table = ui.mount_tree(Element::new("parts", Table::new(&state, 24.0)?))?;
+        let mut driver = Driver::new(&mut ui);
+        driver.settle()?;
+        let rows = driver.address_children(&table)?;
+        assert_eq!(segments(&rows), ["cable", "mouse", "laptop"]);
+        assert!(!segments(&rows).contains(&"body"));
+        agrees_with_find(driver.runtime(), &table, &rows)?;
+        Ok(())
+    }
+
+    /// New-behavior test 6. Named assertion: from the `Each`'s structural
+    /// default container the result equals the `Each`'s. Fails when the walk
+    /// is computed as `Selector::children` of the parent's own path, which a
+    /// structural parent does not have (empty).
+    #[test]
+    fn a_structural_parent_lists_what_find_resolves_from_it() -> TestResult {
+        let mut ui = runtime()?;
+        let tasks = ui.signal(strings(&["write", "ship"]));
+        let each = ui.mount_tree(
+            Each::new(&tasks, Clone::clone, |_, task| Label::new(task.as_str())).key("tasks"),
+        )?;
+        let mut driver = Driver::new(&mut ui);
+        driver.settle()?;
+        let container = driver
+            .runtime()
+            .find_descendant(&each, "items")?
+            .ok_or("the default container")?;
+        let rows = driver.address_children(&container)?;
+        assert_eq!(rows, driver.address_children(&each)?);
+        assert_eq!(segments(&rows), ["write", "ship"]);
+        agrees_with_find(driver.runtime(), &container, &rows)?;
+        Ok(())
+    }
+
+    /// A root keyed `root` holding a part `panel` (an element keyed `frame`)
+    /// with a label keyed `row`.
+    fn part_tree(ui: &mut Runtime) -> Result<WidgetId, RuntimeError> {
+        ui.mount_tree(Element::new(
+            "root",
+            Column::new([
+                Element::new("frame", Column::new([Label::new("Row").key("row")])).part("panel"),
+            ]),
+        ))
+    }
+
+    /// New-behavior test 7. Named assertions: the root lists `[panel, row]`
+    /// in that order, as `find` resolves both, and the part lists `[row]`.
+    /// Fails when the walk does not descend a part (`row` missing) or
+    /// descends one without returning it (`panel` missing).
+    #[test]
+    fn a_part_is_listed_and_so_are_its_descendants() -> TestResult {
+        let mut ui = runtime()?;
+        let root = part_tree(&mut ui)?;
+        let mut driver = Driver::new(&mut ui);
+        driver.settle()?;
+        let rows = driver.address_children(&root)?;
+        assert_eq!(segments(&rows), ["panel", "row"]);
+        let panel = driver.find(&root, &["panel"])?;
+        assert_eq!(rows[0].id, panel);
+        assert_eq!(rows[1].id, driver.find(&root, &["row"])?);
+        assert_eq!(driver.runtime().key(&panel)?, "frame");
+        let below = driver.address_children(&panel)?;
+        assert_eq!(segments(&below), ["row"]);
+        agrees_with_find(driver.runtime(), &root, &rows)?;
+        agrees_with_find(driver.runtime(), &panel, &below)?;
+        Ok(())
+    }
+
+    /// New-behavior test 8. Named assertion: two children keyed `a` under two
+    /// structural wrappers are both listed, in order, and `find` refuses the
+    /// address. Fails when the walk keeps the first of each segment.
+    #[test]
+    fn two_children_with_one_segment_are_both_listed() -> TestResult {
+        let mut ui = runtime()?;
+        let root = ui.mount_tree(Element::new(
+            "root",
+            Column::new([
+                Column::new([Label::new("First").key("a")])
+                    .key("s1")
+                    .structural(),
+                Column::new([Label::new("Second").key("a")])
+                    .key("s2")
+                    .structural(),
+            ]),
+        ))?;
+        let mut driver = Driver::new(&mut ui);
+        driver.settle()?;
+        let rows = driver.address_children(&root)?;
+        assert_eq!(segments(&rows), ["a", "a"]);
+        assert_ne!(rows[0].id, rows[1].id);
+        assert_eq!(
+            driver.semantics(&rows[0].id)?.name.as_deref(),
+            Some("First")
+        );
+        assert_eq!(
+            driver.runtime().find(&root, &["a"]),
+            Err(RuntimeError::AmbiguousKey("a".into()))
+        );
+        agrees_with_find(driver.runtime(), &root, &rows)?;
+        Ok(())
+    }
+
+    /// New-behavior test 9. Named assertion: a slot keyed `internal` is
+    /// listed once under its slot name `left`, which `find` resolves, and its
+    /// child is not listed. Fails when the walk uses `Runtime::key` as the
+    /// segment or treats a slot as structural.
+    #[test]
+    fn a_slot_is_listed_under_its_slot_name() -> TestResult {
+        let mut ui = runtime()?;
+        let root = ui.mount_tree(Element::new(
+            "root",
+            Column::new([Column::new([Label::new("Inside").key("inside")])
+                .key("internal")
+                .slot("left")]),
+        ))?;
+        let mut driver = Driver::new(&mut ui);
+        driver.settle()?;
+        let rows = driver.address_children(&root)?;
+        assert_eq!(segments(&rows), ["left"]);
+        assert_eq!(rows[0].id, driver.find(&root, &["left"])?);
+        assert_eq!(driver.runtime().key(&rows[0].id)?, "internal");
+        agrees_with_find(driver.runtime(), &root, &rows)?;
+        Ok(())
+    }
+
+    /// New-behavior test 11. Named assertion: the part lists `[row]`, which
+    /// `find` resolves from it, while `Selector::children` of the part's
+    /// path matches nothing, since `row`'s path is `["root", "row"]`. Fails
+    /// when the walk is computed as `Selector::children` of the parent's
+    /// path (empty).
+    #[test]
+    fn below_a_part_the_selector_finds_none_of_the_children() -> TestResult {
+        let mut ui = runtime()?;
+        let root = part_tree(&mut ui)?;
+        let mut driver = Driver::new(&mut ui);
+        driver.settle()?;
+        let panel = driver.find(&root, &["panel"])?;
+        let rows = driver.address_children(&panel)?;
+        assert_eq!(segments(&rows), ["row"]);
+        assert_eq!(rows[0].id, driver.find(&panel, &["row"])?);
+        assert!(selector_children(driver.runtime(), &["root", "panel"]).is_empty());
+        Ok(())
+    }
+
+    /// New-behavior test 12. Named assertion: two lists sharing the path
+    /// `["root", "list"]` each list their own child, while
+    /// `Selector::children` of that path matches both. Fails when the walk is
+    /// computed as `Selector::children` of the parent's path (the first list
+    /// also gets `b`).
+    #[test]
+    fn a_shared_path_pools_the_selector_but_not_the_walk() -> TestResult {
+        let mut ui = runtime()?;
+        let root = ui.mount_tree(Element::new(
+            "root",
+            Column::new([
+                Column::new([Column::new([Label::new("A").key("a")]).key("list")])
+                    .key("s1")
+                    .structural(),
+                Column::new([Column::new([Label::new("B").key("b")]).key("list")])
+                    .key("s2")
+                    .structural(),
+            ]),
+        ))?;
+        let mut driver = Driver::new(&mut ui);
+        driver.settle()?;
+        let lists = driver.address_children(&root)?;
+        assert_eq!(segments(&lists), ["list", "list"]);
+        let first = driver.address_children(&lists[0].id)?;
+        let second = driver.address_children(&lists[1].id)?;
+        assert_eq!(segments(&first), ["a"]);
+        assert_eq!(segments(&second), ["b"]);
+        let mut both = vec![
+            driver.runtime().inspection_id(&first[0].id)?,
+            driver.runtime().inspection_id(&second[0].id)?,
+        ];
+        both.sort_unstable();
+        assert_eq!(selector_children(driver.runtime(), &["root", "list"]), both);
+        agrees_with_find(driver.runtime(), &lists[0].id, &first)?;
+        agrees_with_find(driver.runtime(), &lists[1].id, &second)?;
+        Ok(())
+    }
+
+    /// Contract test: a leaf lists nothing; an unmounted parent and one of
+    /// another runtime are refused as `Runtime::children` refuses them.
+    #[test]
+    fn a_leaf_is_empty_and_a_foreign_or_unmounted_parent_is_refused() -> TestResult {
+        let mut ui = runtime()?;
+        let leaf = ui.mount_tree(Element::new("leaf", Label::new("Leaf")))?;
+        let gone = ui.mount_tree(Element::new("gone", Column::new([])))?;
+        ui.unmount(&gone)?;
+        let mut other = runtime()?;
+        let foreign = other.mount_tree(Element::new("foreign", Label::new("Other")))?;
+        let mut driver = Driver::new(&mut ui);
+        driver.settle()?;
+        assert_eq!(driver.address_children(&leaf)?, []);
+        assert_eq!(
+            driver.address_children(&gone),
+            Err(TestError::Runtime(RuntimeError::Unmounted))
+        );
+        assert_eq!(
+            driver.address_children(&foreign),
+            Err(TestError::Runtime(RuntimeError::ForeignRuntime))
+        );
+        Ok(())
+    }
+
+    /// Contract test: a hidden child and a panel presented in a detached
+    /// window are listed, as `find` resolves them.
+    #[test]
+    fn hidden_and_detached_children_are_listed() -> TestResult {
+        let mut ui = runtime()?;
+        let shown = ui.signal(false);
+        let root = ui.mount_tree(Element::new(
+            "root",
+            Column::new([
+                Element::new(
+                    "hidden",
+                    View::new(Element::new("inside", Label::new("Hidden")))
+                        .visible_signal(shown.read_only()),
+                ),
+                Element::new(
+                    "panel",
+                    View::new(Element::new("away", Button::new("Away", |_| Ok(())))),
+                ),
+            ]),
+        ))?;
+        ui.flush(Duration::ZERO)?;
+        let panel = ui.find(&root, &["panel"])?.ok_or("panel")?;
+        let prepared = ui.prepare_detach(&panel, NativeWindowOptions::new("Panel")?)?;
+        let _detached = ui.commit_detach(prepared)?;
+        let mut driver = Driver::new(&mut ui);
+        driver.settle()?;
+        let rows = driver.address_children(&root)?;
+        assert_eq!(segments(&rows), ["hidden", "panel"]);
+        assert_eq!(rows[1].id, panel);
+        assert_eq!(
+            segments(&driver.address_children(&panel)?),
+            ["away"],
+            "the detached panel's content"
+        );
+        agrees_with_find(driver.runtime(), &root, &rows)?;
+        Ok(())
+    }
+
+    /// Contract test: an `Each` row the application marks structural is
+    /// looked through: its keyed children are listed in its place, and their
+    /// shared key is ambiguous to `find`.
+    #[test]
+    fn a_structural_row_is_looked_through() -> TestResult {
+        let mut ui = runtime()?;
+        let tasks = ui.signal(strings(&["write", "ship"]));
+        let each = ui.mount_tree(
+            Each::new(&tasks, Clone::clone, |_, task| {
+                Row::new([Label::new(task.as_str()).key("name")])
+                    .key("row")
+                    .structural()
+            })
+            .key("tasks"),
+        )?;
+        let mut driver = Driver::new(&mut ui);
+        driver.settle()?;
+        let rows = driver.address_children(&each)?;
+        assert_eq!(segments(&rows), ["name", "name"]);
+        assert_eq!(driver.semantics(&rows[1].id)?.name.as_deref(), Some("ship"));
+        assert_eq!(
+            driver.runtime().find(&each, &["name"]),
+            Err(RuntimeError::AmbiguousKey("name".into()))
+        );
+        agrees_with_find(driver.runtime(), &each, &rows)?;
+        Ok(())
+    }
+
+    /// Contract test: while a list row is dragged with a preview, which is
+    /// mounted as a root of its own, the list and its parent list what they
+    /// listed before the drag.
+    #[test]
+    fn a_drag_preview_changes_nothing_that_is_listed() -> TestResult {
+        let mut ui = runtime()?;
+        let items = ui.signal(labels(&["a", "b", "c"]));
+        let root = ui.mount_tree(Element::new(
+            "root",
+            Column::new([Element::new(
+                "list",
+                VirtualList::new(items.read_only(), 20.0)?.reorderable(|_, _| Ok(true)),
+            )]),
+        ))?;
+        let mut driver = Driver::new(&mut ui);
+        driver.settle()?;
+        let list = driver.find(&root, &["list"])?;
+        let before = (
+            driver.address_children(&root)?,
+            driver.address_children(&list)?,
+        );
+        assert_eq!(segments(&before.1), ["a", "b", "c"]);
+        let row = driver.find(&list, &["a"])?;
+        let bounds = driver.runtime().bounds(&row)?.ok_or("laid out")?;
+        let start = Point::new(bounds.x() + 10.0, bounds.y() + 10.0)?;
+        let ui = driver.runtime_mut();
+        ui.pointer_input(PointerEvent::new(
+            start,
+            PointerKind::Press(PointerButton::Primary),
+        ))?;
+        ui.pointer_input(PointerEvent::new(
+            Point::new(start.x() + 40.0, start.y() + 40.0)?,
+            PointerKind::Move,
+        ))?;
+        ui.flush(ui.now())?;
+        let preview = ui
+            .inspect()
+            .drag
+            .and_then(|drag| drag.preview)
+            .ok_or("a drag with a preview")?;
+        assert!(
+            ui.inspect()
+                .components
+                .iter()
+                .any(|component| component.id == preview)
+        );
+        let driver = Driver::new(ui);
+        assert_eq!(
+            (
+                driver.address_children(&root)?,
+                driver.address_children(&list)?
+            ),
+            before
+        );
+        Ok(())
+    }
+}

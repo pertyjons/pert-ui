@@ -200,7 +200,7 @@ fn a_duplicated_key_from_each_names_the_owner_and_the_key() -> TestResult {
         Column::new([Each::new(
             &items,
             |_| "dup".to_owned(),
-            |_, item| Label::new(item.as_str()).key("x"),
+            |_, item| Label::new(item.as_str()),
         )
         .key("each")])
         .key("root"),

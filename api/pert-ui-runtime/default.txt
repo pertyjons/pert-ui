@@ -3040,6 +3040,7 @@ impl core::convert::From<pert_ui_runtime::Tab> for pert_ui_runtime::Element
 pub fn pert_ui_runtime::Element::from(pert_ui_runtime::Tab) -> Self
 impl core::fmt::Debug for pert_ui_runtime::Element
 pub fn pert_ui_runtime::Element::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl pert_ui_runtime::EachItem for pert_ui_runtime::Element
 impl core::marker::Freeze for pert_ui_runtime::Element
 impl !core::marker::Send for pert_ui_runtime::Element
 impl !core::marker::Sync for pert_ui_runtime::Element
@@ -16887,7 +16888,7 @@ impl<T> !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Dynamic<T>
 impl<T> !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Dynamic<T>
 pub struct pert_ui_runtime::prelude::Each<T>
 impl<T: core::clone::Clone + 'static> pert_ui_runtime::Each<T>
-pub fn pert_ui_runtime::Each<T>::new(impl core::convert::Into<pert_ui_runtime::ReadSignal<alloc::vec::Vec<T>>>, impl core::ops::function::Fn(&T) -> alloc::string::String + 'static, impl core::ops::function::Fn(&pert_ui_runtime::DescribeContext<'_>, &T) -> pert_ui_runtime::Element + 'static) -> Self
+pub fn pert_ui_runtime::Each<T>::new<R: pert_ui_runtime::EachItem>(impl core::convert::Into<pert_ui_runtime::ReadSignal<alloc::vec::Vec<T>>>, impl core::ops::function::Fn(&T) -> alloc::string::String + 'static, impl core::ops::function::Fn(&pert_ui_runtime::DescribeContext<'_>, &T) -> R + 'static) -> Self
 pub fn pert_ui_runtime::Each<T>::within(self, impl core::ops::function::Fn(alloc::vec::Vec<pert_ui_runtime::Element>) -> pert_ui_runtime::Element + 'static) -> Self
 impl<T: core::clone::Clone + 'static> pert_ui_runtime::Component for pert_ui_runtime::Each<T>
 pub fn pert_ui_runtime::Each<T>::arrange(&self, &mut pert_ui_runtime::ArrangeContext<'_>, pert_ui_runtime::Size) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
@@ -17012,6 +17013,7 @@ impl core::convert::From<pert_ui_runtime::Tab> for pert_ui_runtime::Element
 pub fn pert_ui_runtime::Element::from(pert_ui_runtime::Tab) -> Self
 impl core::fmt::Debug for pert_ui_runtime::Element
 pub fn pert_ui_runtime::Element::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl pert_ui_runtime::EachItem for pert_ui_runtime::Element
 impl core::marker::Freeze for pert_ui_runtime::Element
 impl !core::marker::Send for pert_ui_runtime::Element
 impl !core::marker::Sync for pert_ui_runtime::Element
@@ -23182,6 +23184,24 @@ impl core::marker::Unpin for pert_ui_runtime::WaitError
 impl core::marker::UnsafeUnpin for pert_ui_runtime::WaitError
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::WaitError
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::WaitError
+#[non_exhaustive] pub struct pert_ui_runtime::testing::AddressChild
+pub pert_ui_runtime::testing::AddressChild::id: pert_ui_runtime::WidgetId
+pub pert_ui_runtime::testing::AddressChild::segment: alloc::string::String
+impl core::clone::Clone for pert_ui_runtime::testing::AddressChild
+pub fn pert_ui_runtime::testing::AddressChild::clone(&self) -> pert_ui_runtime::testing::AddressChild
+impl core::cmp::Eq for pert_ui_runtime::testing::AddressChild
+impl core::cmp::PartialEq for pert_ui_runtime::testing::AddressChild
+pub fn pert_ui_runtime::testing::AddressChild::eq(&self, &pert_ui_runtime::testing::AddressChild) -> bool
+impl core::fmt::Debug for pert_ui_runtime::testing::AddressChild
+pub fn pert_ui_runtime::testing::AddressChild::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::testing::AddressChild
+impl core::marker::Freeze for pert_ui_runtime::testing::AddressChild
+impl !core::marker::Send for pert_ui_runtime::testing::AddressChild
+impl !core::marker::Sync for pert_ui_runtime::testing::AddressChild
+impl core::marker::Unpin for pert_ui_runtime::testing::AddressChild
+impl core::marker::UnsafeUnpin for pert_ui_runtime::testing::AddressChild
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::testing::AddressChild
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::testing::AddressChild
 pub struct pert_ui_runtime::testing::Capture
 pub pert_ui_runtime::testing::Capture::at: core::time::Duration
 pub pert_ui_runtime::testing::Capture::clipped: bool
@@ -23332,6 +23352,7 @@ impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ComponentInspecti
 pub struct pert_ui_runtime::testing::Driver<'a>
 impl<'a> pert_ui_runtime::testing::Driver<'a>
 pub const pert_ui_runtime::testing::Driver<'a>::FRAME: core::time::Duration
+pub fn pert_ui_runtime::testing::Driver<'a>::address_children(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<alloc::vec::Vec<pert_ui_runtime::testing::AddressChild>, pert_ui_runtime::testing::TestError>
 pub fn pert_ui_runtime::testing::Driver<'a>::advance(&mut self, core::time::Duration) -> core::result::Result<pert_ui_runtime::FlushReport, pert_ui_runtime::testing::TestError>
 pub fn pert_ui_runtime::testing::Driver<'a>::chord(&mut self, pert_ui_runtime::KeyChord, pert_ui_runtime::KeyCode) -> core::result::Result<(), pert_ui_runtime::testing::TestError>
 pub fn pert_ui_runtime::testing::Driver<'a>::clear_focus(&mut self) -> core::result::Result<(), pert_ui_runtime::testing::TestError>
@@ -32433,7 +32454,7 @@ impl<T> !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Dynamic<T>
 impl<T> !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Dynamic<T>
 pub struct pert_ui_runtime::Each<T>
 impl<T: core::clone::Clone + 'static> pert_ui_runtime::Each<T>
-pub fn pert_ui_runtime::Each<T>::new(impl core::convert::Into<pert_ui_runtime::ReadSignal<alloc::vec::Vec<T>>>, impl core::ops::function::Fn(&T) -> alloc::string::String + 'static, impl core::ops::function::Fn(&pert_ui_runtime::DescribeContext<'_>, &T) -> pert_ui_runtime::Element + 'static) -> Self
+pub fn pert_ui_runtime::Each<T>::new<R: pert_ui_runtime::EachItem>(impl core::convert::Into<pert_ui_runtime::ReadSignal<alloc::vec::Vec<T>>>, impl core::ops::function::Fn(&T) -> alloc::string::String + 'static, impl core::ops::function::Fn(&pert_ui_runtime::DescribeContext<'_>, &T) -> R + 'static) -> Self
 pub fn pert_ui_runtime::Each<T>::within(self, impl core::ops::function::Fn(alloc::vec::Vec<pert_ui_runtime::Element>) -> pert_ui_runtime::Element + 'static) -> Self
 impl<T: core::clone::Clone + 'static> pert_ui_runtime::Component for pert_ui_runtime::Each<T>
 pub fn pert_ui_runtime::Each<T>::arrange(&self, &mut pert_ui_runtime::ArrangeContext<'_>, pert_ui_runtime::Size) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
@@ -32612,6 +32633,7 @@ impl core::convert::From<pert_ui_runtime::Tab> for pert_ui_runtime::Element
 pub fn pert_ui_runtime::Element::from(pert_ui_runtime::Tab) -> Self
 impl core::fmt::Debug for pert_ui_runtime::Element
 pub fn pert_ui_runtime::Element::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl pert_ui_runtime::EachItem for pert_ui_runtime::Element
 impl core::marker::Freeze for pert_ui_runtime::Element
 impl !core::marker::Send for pert_ui_runtime::Element
 impl !core::marker::Sync for pert_ui_runtime::Element
@@ -46402,6 +46424,9 @@ pub fn pert_ui_runtime::ContentRows::mounted_rows_current(&self) -> bool
 pub fn pert_ui_runtime::ContentRows::reveal(&self, &str) -> core::result::Result<pert_ui_runtime::ListRevealReceipt, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::ContentRows::revision(&self) -> u64
 pub fn pert_ui_runtime::ContentRows::text(&self, usize) -> core::option::Option<alloc::string::String>
+pub trait pert_ui_runtime::EachItem: pert_ui_runtime::described::sealed::EachItemSeal
+impl pert_ui_runtime::EachItem for pert_ui_runtime::Element
+impl<C: pert_ui_runtime::Component + 'static> pert_ui_runtime::EachItem for C
 pub trait pert_ui_runtime::IntoElement: pert_ui_runtime::Component + core::marker::Sized + 'static
 pub fn pert_ui_runtime::IntoElement::key(self, impl core::convert::Into<alloc::string::String>) -> pert_ui_runtime::Element
 impl<C: pert_ui_runtime::Component + 'static> pert_ui_runtime::IntoElement for C

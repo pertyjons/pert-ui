@@ -402,8 +402,7 @@ let tasks = ui.signal(vec!["Write the plan".to_owned()]);
 let details = ui.signal(false);
 let (add, toggle) = (tasks.clone(), details.clone());
 let view = Column::new([
-    Each::new(&tasks, Clone::clone, |_, task| Label::new(task.as_str()).key("task"))
-        .key("tasks"),
+    Each::new(&tasks, Clone::clone, |_, task| Label::new(task.as_str())).key("tasks"),
     Show::new(&details, |_| Label::new("Details are shown").key("text")).key("details"),
     // A task's text is its key here, so each new task gets distinct text.
     Button::new("Add", move |_| {

@@ -76,7 +76,7 @@ pub use render_limits::{LimitError, ResourceKind};
 mod views;
 mod virtual_axis;
 mod virtual_list;
-pub use described::{DescribeContext, Dynamic, Each, Show};
+pub use described::{DescribeContext, Dynamic, Each, EachItem, Show};
 pub use history_navigator::{HistoryButtons, HistoryNavigator};
 pub use list_selection::{ListSelection, ListSelectionChange, SelectionMode};
 pub use navigation_history::{HistoryEntry, HistoryEntryId, HistorySnapshot, NavigationHistory};
@@ -375,7 +375,8 @@ pub use pert_ui_core::{
 ///   written as strings, signals and [`Icon`]s; [`TextSource`] is at the crate
 ///   root and [`IconSource`] in [`component`].
 /// - The [`DescribeContext`] an [`Each`], [`Dynamic`] or [`Show`] closure
-///   receives is inferred; code that names it imports it from the crate root.
+///   receives, and the [`EachItem`] an [`Each`]'s `build` returns, are
+///   inferred; code that names either imports it from the crate root.
 /// - [`TextEditError`], which `on_binding_refusal` reports, and the other
 ///   error types stay at the crate root, where code names them to match a
 ///   failure; `?` converts the leaf errors [`RuntimeError`] wraps into it.
@@ -399,7 +400,7 @@ pub use pert_ui_core::{
 /// | Windows inside a view, native windows, regions, splits and tool windows | `use pert_ui_runtime::windowing::*` ([`windowing`]) |
 /// | Inspection, capture, profiling and validation | `use pert_ui_runtime::inspection::*` ([`inspection`]) |
 /// | Data from other threads: live series, mailboxes, [`LevelMeter`] and [`Trace`] | `use pert_ui_runtime::live::*` ([`live`]) |
-/// | Theme, UI settings, fonts and icons, strings and locale, the workspace document, other errors, [`DescribeContext`], [`PhysicalExtent`] and [`VirtualAxis`] | by name from the crate root, such as `use pert_ui_runtime::{Palette, Workspace};` |
+/// | Theme, UI settings, fonts and icons, strings and locale, the workspace document, other errors, [`DescribeContext`], [`EachItem`], [`PhysicalExtent`] and [`VirtualAxis`] | by name from the crate root, such as `use pert_ui_runtime::{Palette, Workspace};` |
 ///
 /// A name can be in the prelude and in a module, or in several modules: each
 /// re-exports the same crate-root item, so the globs combine without

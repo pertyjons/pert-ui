@@ -79,17 +79,22 @@ mod every_name {
         #[cfg(feature = "native")]
         use pert_ui::testing::HeadlessApp;
         use pert_ui::testing::{
-            Capture, CaptureError, CaptureRequest, CaptureTarget, ClickCounter, CommandKeyInput,
-            ComponentDetails, ComponentInspection, Depth, Detail, DrawError, Driver, FlushReport,
-            FocusDirection, FrameImage, HostIntegration, InputOutcome, InspectValue,
-            InspectionQuery, InspectionReply, KeyAction, Magnification, NativeWindowId, Pending,
-            PointerButton, PointerEvent, PointerKind, QueryResult, QuietReport, Rect,
-            RevealRefusal, Selector, SemanticAction, SemanticItem, SemanticRole, SemanticValue,
-            Semantics, TestError, ValidationCode, ValidationIssue, ValidationMarker,
+            AddressChild, Capture, CaptureError, CaptureRequest, CaptureTarget, ClickCounter,
+            CommandKeyInput, ComponentDetails, ComponentInspection, Depth, Detail, DrawError,
+            Driver, FlushReport, FocusDirection, FrameImage, HostIntegration, InputOutcome,
+            InspectValue, InspectionQuery, InspectionReply, KeyAction, Magnification,
+            NativeWindowId, Pending, PointerButton, PointerEvent, PointerKind, QueryResult,
+            QuietReport, Rect, RevealRefusal, Selector, SemanticAction, SemanticItem, SemanticRole,
+            SemanticValue, Semantics, TestError, ValidationCode, ValidationIssue, ValidationMarker,
             ValidationReport, Viewport, WaitError,
         };
         #[cfg(feature = "cpu")]
         use pert_ui::testing::{CpuRenderError, CpuRenderer};
+    }
+    /// Names only the crate root holds, such as the item an `Each`'s
+    /// `build` returns.
+    mod root_names {
+        use pert_ui::EachItem;
     }
     mod host_names {
         use pert_ui::host::{
@@ -172,9 +177,9 @@ mod every_glob_combines {
     #[cfg(feature = "svg")]
     use self::Svg as _;
     use self::{
-        Accordion as _, AlertDialog as _, Align as _, AnyDeliveryMonitor as _, AnyParameter as _,
-        AnyParameterHost as _, AnyParameterSnapshot as _, AnyPreviewEvent as _, AnySpec as _,
-        AnyTerminalEvent as _, AnyValue as _, ApplicationError as _, ArcOrigin as _,
+        Accordion as _, AddressChild as _, AlertDialog as _, Align as _, AnyDeliveryMonitor as _,
+        AnyParameter as _, AnyParameterHost as _, AnyParameterSnapshot as _, AnyPreviewEvent as _,
+        AnySpec as _, AnyTerminalEvent as _, AnyValue as _, ApplicationError as _, ArcOrigin as _,
         ArrangeContext as _, AuthorityReceipt as _, AuthorityResponse as _, AuthorityStatus as _,
         Banner as _, BindingError as _, BorderInspection as _, BoxModelInspection as _,
         Breadcrumb as _, BreadcrumbSegment as _, Button as _, Capacity as _, Capture as _,
@@ -198,13 +203,13 @@ mod every_glob_combines {
         DraftEditorController as _, DraftSelection as _, DragEvent as _, DragInspection as _,
         DragOutcome as _, DragPayload as _, DragPhase as _, DragPreview as _, DragRole as _,
         DrainReport as _, DrawCommand as _, DrawError as _, Driver as _, DropOperation as _,
-        DropOperations as _, DropResponse as _, Dynamic as _, Each as _, EdgeMode as _,
-        EditError as _, EditOutcome as _, EditSequence as _, EditSession as _, EditSource as _,
-        EditToken as _, EditorAttachment as _, EditorCompletion as _, EditorOutcome as _,
-        EditorSession as _, EditorStart as _, EditorTrigger as _, Element as _, EntryKind as _,
-        EventContext as _, EventHistory as _, EventKind as _, EventRecord as _, EventStatus as _,
-        ExpandMode as _, Expansion as _, ExpansionChange as _, FailurePhase as _, FailureSite as _,
-        Field as _, FieldHandle as _, FieldStatus as _, FileBrowser as _,
+        DropOperations as _, DropResponse as _, Dynamic as _, Each as _, EachItem as _,
+        EdgeMode as _, EditError as _, EditOutcome as _, EditSequence as _, EditSession as _,
+        EditSource as _, EditToken as _, EditorAttachment as _, EditorCompletion as _,
+        EditorOutcome as _, EditorSession as _, EditorStart as _, EditorTrigger as _, Element as _,
+        EntryKind as _, EventContext as _, EventHistory as _, EventKind as _, EventRecord as _,
+        EventStatus as _, ExpandMode as _, Expansion as _, ExpansionChange as _, FailurePhase as _,
+        FailureSite as _, Field as _, FieldHandle as _, FieldStatus as _, FileBrowser as _,
         FileBrowserController as _, FillRule as _, FilterCounts as _, FilterMatcher as _,
         FilterOutcome as _, FilterTarget as _, FloatingWindow as _, FlushReport as _,
         FocusDirection as _, Form as _, FormFields as _, FormSummary as _, FrameError as _,

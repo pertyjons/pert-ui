@@ -127,6 +127,14 @@ impl Runtime {
     /// Reads a mounted component's stable sibling key.
     /// The key is for logical structure discovery; retain `WidgetId` for event targets.
     ///
+    /// Every component has a key, but not every key is an address segment:
+    /// a structural wrapper's key is no segment at all, and a slot's or a
+    /// part's segment is its slot or part name, not this key. The segment
+    /// [`Self::find`] takes for each component one level below a parent is
+    /// what
+    /// [`Driver::address_children`](crate::testing::Driver::address_children)
+    /// lists.
+    ///
     /// # Errors
     /// Returns `ForeignRuntime` for an ID of another runtime and `Unmounted` for an
     /// unmounted one.
@@ -135,6 +143,17 @@ impl Runtime {
         Ok(&self.entries[&id.0.serial].key)
     }
     /// Returns ordered immediate children, including locally or ancestrally hidden ones.
+    ///
+    /// These are the logical children in description order, structure
+    /// included: a structural wrapper, such as an [`Each`](crate::Each)'s
+    /// default container or a [`Table`](crate::Table)'s body, is listed
+    /// although addresses skip it. A virtualized collection, such as a
+    /// [`VirtualList`](crate::VirtualList), lists the rows it has mounted, in
+    /// index order, including the offscreen ones it retains; a row that is
+    /// not mounted is not listed. This is the structure walk for hosts and
+    /// custom components. For the components one address segment below a
+    /// parent, as [`Self::find`] resolves them, a test uses
+    /// [`Driver::address_children`](crate::testing::Driver::address_children).
     ///
     /// # Errors
     /// Returns [`RuntimeError::ForeignRuntime`] for a parent of another runtime
@@ -297,7 +316,6 @@ impl Runtime {
         root: &WidgetId,
         segments: &[&str],
     ) -> Result<Option<WidgetId>, RuntimeError> {
-        use crate::layout::Addressing;
         self.check(root)?;
         let Some(last) = segments.len().checked_sub(1) else {
             return Ok(Some(root.clone()));
@@ -316,12 +334,7 @@ impl Runtime {
                 continue;
             }
             let entry = &self.entries[&serial];
-            let (own, inherited) = match &entry.addressing {
-                Addressing::Own => (Some(entry.key.as_str()), true),
-                Addressing::Slot(name) => (Some(name.as_str()), true),
-                Addressing::Part(name) => (Some(name.as_str()), false),
-                Addressing::Structural => (None, false),
-            };
+            let (own, inherited) = address_segment(entry);
             let hit = own.is_some_and(|segment| segment == segments[matched]);
             if hit && matched == last {
                 if found.is_some() {
@@ -342,6 +355,46 @@ impl Runtime {
             pending.extend(entry.children.iter().map(|child| (*child, next)));
         }
         Ok(found.map(|serial| WidgetId(self.entries[&serial].node.clone())))
+    }
+
+    /// The components one address segment below `parent`, in child order,
+    /// each with the segment [`Self::find`] resolves it by: the walk `find`
+    /// makes for a one-segment path, collecting every component that
+    /// introduces a segment instead of matching one.
+    ///
+    /// Depth first in pre-order over logical children: an element or a slot
+    /// is returned and not descended, a part is returned and descended, a
+    /// structural element is descended only, and the drag preview is
+    /// skipped, as in `find`.
+    pub(crate) fn address_children_of(
+        &self,
+        parent: &WidgetId,
+    ) -> Result<Vec<(String, WidgetId)>, RuntimeError> {
+        self.check(parent)?;
+        let preview = self.drag_preview_root();
+        let mut found = Vec::new();
+        // Children are pushed in reverse so that popping visits them in order.
+        let mut pending: Vec<u64> = self.entries[&parent.0.serial]
+            .children
+            .iter()
+            .rev()
+            .copied()
+            .collect();
+        while let Some(serial) = pending.pop() {
+            if Some(serial) == preview {
+                continue;
+            }
+            let entry = &self.entries[&serial];
+            let (own, inherited) = address_segment(entry);
+            if let Some(segment) = own {
+                found.push((segment.to_owned(), WidgetId(entry.node.clone())));
+                if inherited {
+                    continue;
+                }
+            }
+            pending.extend(entry.children.iter().rev().copied());
+        }
+        Ok(found)
     }
 
     /// Returns the most recent allocated window-coordinate bounds, if laid out.
@@ -1995,6 +2048,22 @@ impl Runtime {
             self.note_drag_layout_change();
         }
         Ok(())
+    }
+}
+
+/// The segment `entry` contributes to an address, if any, and whether its
+/// descendants inherit it: an element's key and a slot's name are inherited,
+/// a part's name addresses only the part, and a structural element
+/// contributes nothing. [`Runtime::find`] and
+/// [`Runtime::address_children_of`] share it so that the two walks cannot
+/// disagree.
+fn address_segment(entry: &Entry) -> (Option<&str>, bool) {
+    use crate::layout::Addressing;
+    match &entry.addressing {
+        Addressing::Own => (Some(entry.key.as_str()), true),
+        Addressing::Slot(name) => (Some(name.as_str()), true),
+        Addressing::Part(name) => (Some(name.as_str()), false),
+        Addressing::Structural => (None, false),
     }
 }
 

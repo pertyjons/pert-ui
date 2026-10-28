@@ -1,6 +1,8 @@
 //! How an `Each`'s items are addressed: the default container is internal
-//! structure, a container given with `within` keeps its key, and the
-//! addressing a container mounted with survives a new description.
+//! structure, a container given with `within` keeps its key, the
+//! addressing a container mounted with survives a new description, and an
+//! item `build` returns as a bare component or an `Element` is keyed by the
+//! item.
 //!
 //! Each test is marked as a new-behavior test, which names the assertion that
 //! detects the earlier `items` segment, or as a contract test of a rule this
@@ -21,18 +23,17 @@ fn tasks(ui: &Runtime) -> Signal<Vec<String>> {
     ui.signal(vec!["write".to_owned(), "ship".to_owned()])
 }
 
-/// An item: a label keyed by the item, whatever key its element had.
-fn label(task: &str) -> Element {
-    Label::new(task).key("task")
+/// An item: a label, which `Each` keys by the item.
+fn label(task: &str) -> Label {
+    Label::new(task)
 }
 
 /// An item holding a workspace participant, a scroll area keyed `scroll`.
-fn scrolling(task: &str) -> Element {
+fn scrolling(task: &str) -> Column {
     Column::new([Element::new(
         "scroll",
         ScrollArea::new(Element::new("body", Label::new(task))),
     )])
-    .key("task")
 }
 
 /// The workspace paths a capture records, sorted.
@@ -420,4 +421,80 @@ fn an_ordinary_item_is_not_named_by_the_each_or_a_field_above_it() -> TestResult
         );
     }
     Ok(())
+}
+
+/// What an `Each`'s `build` returns, written with the prelude alone: a bare
+/// component, keyed by the item, or an `Element`, whose key the item's
+/// replaces.
+mod items {
+    use pert_ui::prelude::*;
+    use std::time::Duration;
+
+    type TestResult = Result<(), Box<dyn std::error::Error>>;
+
+    /// New-behavior test 10. Named assertion: after the first flush the one
+    /// item, a bare `Label`, resolves under its item key `ship`, and its key
+    /// is `ship`. Fails when the component conversion keys with a fixed
+    /// string instead of the item's key (`find` returns `None`).
+    #[test]
+    fn a_bare_component_is_addressed_by_the_item_key() -> TestResult {
+        let mut ui = Runtime::new();
+        let tasks = ui.signal(vec!["ship".to_owned()]);
+        let each = ui.mount_tree(
+            Each::new(&tasks, Clone::clone, |_, task| Label::new(task.as_str())).key("tasks"),
+        )?;
+        ui.flush(Duration::ZERO)?;
+        let ship = ui.find(&each, &["ship"])?.ok_or("the item")?;
+        assert_eq!(ui.key(&ship)?, "ship");
+        Ok(())
+    }
+
+    /// Contract test: a closure returning `Element`s of two component types
+    /// compiles and addresses each by its item key; the elements' own key
+    /// does not resolve.
+    #[test]
+    fn elements_of_two_component_types_are_addressed_by_item_key() -> TestResult {
+        let mut ui = Runtime::new();
+        let entries = ui.signal(vec!["Notes".to_owned(), "+".to_owned()]);
+        let each = ui.mount_tree(
+            Each::new(&entries, Clone::clone, |_, entry| -> Element {
+                if entry == "+" {
+                    Button::new("Add", |_| Ok(())).key("entry")
+                } else {
+                    Label::new(entry.as_str()).key("entry")
+                }
+            })
+            .key("entries"),
+        )?;
+        ui.flush(Duration::ZERO)?;
+        assert!(ui.find(&each, &["Notes"])?.is_some());
+        assert!(ui.find(&each, &["+"])?.is_some());
+        assert_eq!(ui.find(&each, &["entry"])?, None);
+        Ok(())
+    }
+
+    /// Contract test: a duplicate item key among bare components fails the
+    /// flush and keeps the previous items, and a valid list recovers.
+    #[test]
+    fn a_duplicate_key_among_bare_components_keeps_the_previous_items() -> TestResult {
+        let mut ui = Runtime::new();
+        let items = ui.signal(vec!["a".to_owned()]);
+        let each = ui.mount_tree(
+            Each::new(&items, Clone::clone, |_, item| Label::new(item.as_str())).key("each"),
+        )?;
+        ui.flush(Duration::ZERO)?;
+        let a = ui.find(&each, &["a"])?.ok_or("mounted")?;
+        items.set(vec!["a".to_owned(), "a".to_owned()])?;
+        assert!(ui.flush(Duration::ZERO).is_err());
+        assert_eq!(
+            ui.find(&each, &["a"])?,
+            Some(a.clone()),
+            "the previous items stay"
+        );
+        items.set(vec!["a".to_owned(), "b".to_owned()])?;
+        ui.flush(Duration::ZERO)?;
+        assert_eq!(ui.find(&each, &["a"])?, Some(a));
+        assert!(ui.find(&each, &["b"])?.is_some());
+        Ok(())
+    }
 }

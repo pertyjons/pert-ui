@@ -258,10 +258,11 @@ type BuildItem<T> = Rc<dyn Fn(&DescribeContext<'_>, &T) -> Element>;
 /// One child per item of a binding's list, each under the key the item gives,
 /// inside a container.
 ///
-/// `key` gives each item's stable key and `build` its element, which `Each`
-/// keys with that key, replacing the element's own. The items' elements go
-/// into a container: a [`Column`] by default, or what [`Self::within`]
-/// describes, so the container's own layout and builders apply. When the list changes, every item
+/// `key` gives each item's stable key and `build` its content: a component,
+/// which `Each` describes under that key, or an [`Element`], whose own key
+/// `Each` replaces with it ([`EachItem`]). The items go into a container: a
+/// [`Column`] by default, or what [`Self::within`] describes, so the
+/// container's own layout and builders apply. When the list changes, every item
 /// is described again: an item whose
 /// key stays keeps its component and state, also when it moves, a new key
 /// mounts and a removed key unmounts. Keys identify items, not positions, so
@@ -287,13 +288,39 @@ type BuildItem<T> = Rc<dyn Fn(&DescribeContext<'_>, &T) -> Element>;
 /// let mut ui = Runtime::new();
 /// let tasks = ui.signal(vec!["write".to_owned(), "ship".to_owned()]);
 /// let root = ui.mount_tree(
-///     Each::new(&tasks, |task| task.clone(), |_, task| Label::new(task.as_str()).key("task"))
-///         .key("tasks"),
+///     Each::new(&tasks, |task| task.clone(), |_, task| Label::new(task.as_str())).key("tasks"),
 /// )?;
 /// ui.flush(Duration::ZERO)?;
 /// assert!(ui.find(&root, &["ship"])?.is_some());
-/// // The element's own key, "task", was replaced by the item's key.
-/// assert!(ui.find(&root, &["task"])?.is_none());
+/// # Ok::<(), pert_ui::RuntimeError>(())
+/// ```
+///
+/// Items of different component types are returned as [`Element`]s, which one
+/// closure can return for all of them; so is an item that needs an element
+/// builder, such as [`Element::with_grow`]. An element needs a key to exist,
+/// and `Each` replaces it with the item's:
+///
+/// ```
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Button, Each, Element, IntoElement, Label, Runtime};
+/// use std::time::Duration;
+/// let mut ui = Runtime::new();
+/// let entries = ui.signal(vec!["Notes".to_owned(), "+".to_owned()]);
+/// let root = ui.mount_tree(
+///     Each::new(&entries, Clone::clone, |_, entry| -> Element {
+///         if entry == "+" {
+///             Button::new("Add", |_| Ok(())).key("entry")
+///         } else {
+///             Label::new(entry.as_str()).key("entry")
+///         }
+///     })
+///     .key("entries"),
+/// )?;
+/// ui.flush(Duration::ZERO)?;
+/// assert!(ui.find(&root, &["Notes"])?.is_some());
+/// assert!(ui.find(&root, &["+"])?.is_some());
+/// // The elements' own key, "entry", was replaced by each item's key.
+/// assert!(ui.find(&root, &["entry"])?.is_none());
 /// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
 ///
@@ -307,7 +334,7 @@ type BuildItem<T> = Rc<dyn Fn(&DescribeContext<'_>, &T) -> Element>;
 /// let mut ui = Runtime::new();
 /// let tags = ui.signal(vec!["red".to_owned(), "green".to_owned()]);
 /// let root = ui.mount_tree(
-///     Each::new(&tags, |tag| tag.clone(), |_, tag| Label::new(tag.as_str()).key("tag"))
+///     Each::new(&tags, |tag| tag.clone(), |_, tag| Label::new(tag.as_str()))
 ///         .within(|tags| Wrap::new(tags).key("tags"))
 ///         .key("tag-list"),
 /// )?;
@@ -326,6 +353,10 @@ type BuildItem<T> = Rc<dyn Fn(&DescribeContext<'_>, &T) -> Element>;
 /// its addressing, so the items keep their identities, state and addresses;
 /// a container of another type under the same key fails the flush with
 /// [`RuntimeError::ChildTypeChanged`].
+///
+/// A test reads the items in order, each with its address segment, with
+/// [`Driver::address_children`](crate::testing::Driver::address_children),
+/// which looks through the default container.
 #[must_use]
 pub struct Each<T> {
     inner: Described<Vec<T>>,
@@ -335,23 +366,37 @@ pub struct Each<T> {
 description_debug!(Each<T>);
 
 impl<T: Clone + 'static> Each<T> {
-    /// Describes one element per item of `items`, keyed by `key`, in a
-    /// [`Column`]. The column is internal structure, transparent to addresses
+    /// Describes one child per item of `items`, keyed by `key`, in a
+    /// [`Column`]. `build` returns the item's content, any component or an
+    /// [`Element`] ([`EachItem`]): a component is described under the item's
+    /// key, and an element keeps everything but its key, which the item's
+    /// replaces. The column is internal structure, transparent to addresses
     /// and naming: an item's address is this element's address followed by
     /// the item's key.
     ///
     /// Timing class of `key` and `build`: [evaluation](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#evaluation).
-    pub fn new(
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
+    /// let mut ui = Runtime::new();
+    /// let tasks = ui.signal(vec!["write".to_owned()]);
+    /// let list = ui.mount_tree(
+    ///     Each::new(&tasks, Clone::clone, |_, task| Label::new(task.as_str())).key("tasks"),
+    /// )?;
+    /// ui.flush(std::time::Duration::ZERO)?;
+    /// let row = ui.find(&list, &["write"])?.ok_or("not mounted")?;
+    /// assert_eq!(ui.key(&row)?, "write");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn new<R: EachItem>(
         items: impl Into<ReadSignal<Vec<T>>>,
         key: impl Fn(&T) -> String + 'static,
-        build: impl Fn(&DescribeContext<'_>, &T) -> Element + 'static,
+        build: impl Fn(&DescribeContext<'_>, &T) -> R + 'static,
     ) -> Self {
         let items: ReadSignal<Vec<T>> = items.into();
-        let item: BuildItem<T> = Rc::new(move |cx, value| {
-            let mut element = build(cx, value);
-            element.key = key(value);
-            element
-        });
+        let item: BuildItem<T> =
+            Rc::new(move |cx, value| build(cx, value).into_item(key(value), sealed::Token::new()));
         let within: Within = Rc::new(|children| Column::new(children).key("items").structural());
         Self {
             inner: Described::new(items.clone(), Self::describe(item.clone(), within)),
@@ -381,6 +426,121 @@ impl<T: Clone + 'static> Each<T> {
         Rc::new(move |cx, values| {
             vec![within(values.iter().map(|value| item(cx, value)).collect())]
         })
+    }
+}
+
+/// What an [`Each`]'s `build` returns for one item: any component, which
+/// `Each` describes under the item's key, or an [`Element`], whose own key
+/// `Each` replaces with the item's.
+///
+/// A component becomes `Element::new(item_key, component)`, exactly what
+/// `component.key(item_key)` describes, so return the component itself, with
+/// no `.key(..)`. An `Element` keeps everything but its key: its label, its
+/// grow factor and its addressing marking. Return one for items of different
+/// component types, which one closure can only return as `Element`, or for an
+/// item that needs an element builder, such as [`Element::with_grow`] or
+/// [`Element::structural`]; such an element still needs some key to exist,
+/// and `Each` replaces it.
+///
+/// The trait is sealed and its conversion is the library's: code never
+/// names or implements it or calls its conversion, it only returns a
+/// component or an element from `build`, where the type is inferred.
+/// Nothing else can be an item:
+///
+/// ```compile_fail
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::EachItem;
+/// struct Row;
+/// impl EachItem for Row {}
+/// ```
+///
+/// ```compile_fail
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::prelude::*;
+/// let ui = Runtime::new();
+/// let tasks = ui.signal(vec!["write".to_owned()]);
+/// // A `String` is not a component.
+/// let _ = Each::new(&tasks, Clone::clone, |_, task| task.clone());
+/// ```
+///
+/// A generic function cannot call the conversion either, without or with an
+/// argument for the private token it requires:
+///
+/// ```compile_fail
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{EachItem, Element};
+/// fn convert<R: EachItem>(value: R) -> Element {
+///     value.into_item("chosen".to_owned())
+/// }
+/// ```
+///
+/// ```compile_fail
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{EachItem, Element};
+/// fn convert<R: EachItem>(value: R) -> Element {
+///     value.into_item("chosen".to_owned(), Default::default())
+/// }
+/// ```
+///
+/// Returning the component compiles and addresses the item by its key:
+///
+/// ```
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::prelude::*;
+/// let mut ui = Runtime::new();
+/// let tags = ui.signal(vec!["red".to_owned()]);
+/// let list = ui.mount_tree(
+///     Each::new(&tags, Clone::clone, |_, tag| Label::new(tag.as_str())).key("tags"),
+/// )?;
+/// ui.flush(std::time::Duration::ZERO)?;
+/// assert!(ui.find(&list, &["red"])?.is_some());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+#[diagnostic::on_unimplemented(
+    message = "`{Self}` cannot be an `Each` item",
+    label = "an `Each` item is a component or an `Element`",
+    note = "return the component itself, such as `Label::new(text)`, or an `Element` for items of different component types"
+)]
+pub trait EachItem: sealed::EachItemSeal {}
+/// Every component is an item, described under the item's key.
+#[diagnostic::do_not_recommend]
+impl<C: Component + 'static> EachItem for C {}
+/// An element is an item, with its key replaced by the item's.
+impl EachItem for Element {}
+
+mod sealed {
+    use crate::{Component, Element};
+
+    /// Proof that the conversion is called from this crate: the field is
+    /// private, only [`Self::new`] constructs one and nothing outside the
+    /// crate can name, construct, default or duplicate it, so no code
+    /// outside it can call [`EachItemSeal::into_item`].
+    #[derive(Debug)]
+    pub struct Token(());
+    impl Token {
+        pub(crate) fn new() -> Self {
+            Self(())
+        }
+    }
+
+    /// Seals [`EachItem`](super::EachItem) and carries its conversion. The
+    /// distinct name keeps rustc from pointing at a dependency's own
+    /// `Sealed` trait when code tries to implement `EachItem`.
+    pub trait EachItemSeal {
+        /// The item's element under `key`.
+        fn into_item(self, key: String, token: Token) -> Element;
+    }
+    #[diagnostic::do_not_recommend]
+    impl<C: Component + 'static> EachItemSeal for C {
+        fn into_item(self, key: String, _: Token) -> Element {
+            Element::new(key, self)
+        }
+    }
+    impl EachItemSeal for Element {
+        fn into_item(mut self, key: String, _: Token) -> Element {
+            self.key = key;
+            self
+        }
     }
 }
 

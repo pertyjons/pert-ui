@@ -125,16 +125,6 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   `on_modified`: feed a `FormFields` from them and keep the window open, or
   ask, while `FormSummary::modified` is non-zero, with a test through
   `HeadlessApp::admit_close`.
-- [ ] 2026-10-27 `crates/pert-ui-runtime/src/described.rs` `Each::new` —
-  developer usability (round 1 finding F9, triage group E r1-4-claude#4):
-  `build` returns an `Element`, and the only way from a component
-  to an `Element` is a key, which `Each` then replaces with the item's key.
-  Every caller writes a placeholder key that never takes effect: `Each`'s own
-  rustdoc (`.key("task")`), the guide's layout and testing chapters and the
-  round 2 fixture (`plans/usability/task4-app/src/lib.rs`, `.key("row")`,
-  which round 1's triage took for a dead key the kit could drop). Let
-  `build` return any component, or give `Element` a keyless form that `Each`
-  keys, and drop the placeholder keys from the examples.
 - [ ] 2026-10-27 `crates/pert-ui-wgpu/src/native_smoke.rs` (pixel readback,
   realtime workload probe) and `crates/pert-ui/src/platform/smoke.rs`
   (`persistent-paint-error`) — Verification and review: layering L3 migrated
@@ -174,3 +164,16 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   that does not exist. Change the link text to
   `HostIntegration::clear_focus` (a test reaches it as
   `Driver::clear_focus`). Found by round 2 part P4's checkpoint.
+- [ ] 2026-10-28 `crates/pert-ui-runtime/src/virtual_list.rs` `ListItems::build`
+  and `crates/pert-ui-runtime/src/tree.rs` `TreeItems::build` — developer
+  usability (the same kind as the `Each::new` placeholder key that round 2
+  part P5 resolved with `EachItem`): both return an `Element` whose key the
+  collection replaces with the row's, so an implementation writes a
+  placeholder key that never takes effect, as the diagram editor's rows do
+  (`crates/pert-ui/examples/diagram_editor/app.rs`, `.key("row")`), or
+  computes the key a second time to build the element
+  (`apps/gallery/src/pages/data.rs`). They are trait-object methods, so a
+  generic return such as `EachItem`'s does not apply. Give the traits an
+  object-safe keyless row value (a breaking change to every
+  implementation), and drop the placeholder keys from the examples. Found
+  by round 2 part P5's checkpoint.

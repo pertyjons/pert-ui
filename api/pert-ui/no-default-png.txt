@@ -129,6 +129,7 @@ pub use pert_ui::parameter::<<pert_ui_runtime::parameter::*>>
 pub mod pert_ui::prelude
 pub use pert_ui::prelude::<<pert_ui_runtime::prelude::*>>
 pub mod pert_ui::testing
+pub use pert_ui::testing::AddressChild
 pub use pert_ui::testing::Capture
 pub use pert_ui::testing::CaptureError
 pub use pert_ui::testing::CaptureRequest

@@ -2,8 +2,10 @@
 //!
 //! [`Driver`] clicks a component, replaces or types text, presses keys and
 //! chords, clears focus, settles the runtime after each step, checks that a
-//! window stays quiet over an interval ([`QuietReport`]) and finds a
-//! component's [`Semantics`]; [`TestError`] names what a step could not do.
+//! window stays quiet over an interval ([`QuietReport`]), finds a
+//! component's [`Semantics`] and lists the components one address segment
+//! below a parent in order ([`AddressChild`]); [`TestError`] names what a
+//! step could not do.
 //! Neither needs a window, a GPU or an operating-system service. The module
 //! also re-exports what a headless test writes besides the driver and the
 //! prelude, so one glob covers it:
@@ -25,8 +27,9 @@
 //!   clicks;
 //! - what the driver's steps return: [`FlushReport`], which
 //!   [`Driver::settle`] and [`Driver::advance`] return, the
-//!   [`RevealRefusal`] that [`TestError::NotRevealed`] carries, and the
-//!   [`DrawError`] that [`TestError::Draw`] carries;
+//!   [`RevealRefusal`] that [`TestError::NotRevealed`] carries, the
+//!   [`DrawError`] that [`TestError::Draw`] carries, and each
+//!   [`AddressChild`] that [`Driver::address_children`] lists;
 //! - semantics: [`Semantics`], which [`Driver::semantics`] returns, with
 //!   [`SemanticRole`], [`SemanticValue`], [`SemanticAction`] and
 //!   [`SemanticItem`];
@@ -598,6 +601,90 @@ impl<'a> Driver<'a> {
             })
     }
 
+    /// The components one address segment below `parent`, in child order,
+    /// each with the segment [`Runtime::find`] resolves it by.
+    ///
+    /// A component is listed with segment `s` exactly when
+    /// `Runtime::find(parent, &[s])` matches it: `find` returns it, or
+    /// refuses with [`RuntimeError::AmbiguousKey`] because a second listed
+    /// component has the same segment. Both are then listed, in child
+    /// order, and `find` refuses that address. The walk goes through
+    /// structural levels in child order: an element contributes its key and
+    /// a slot its slot name, and nothing below either is listed; a part
+    /// contributes its part name and its descendants are listed too, since
+    /// they address without it.
+    ///
+    /// The result is relative to `parent`, as `find` resolves from it, so a
+    /// structural parent, a slot or a part is a valid parent. It includes
+    /// hidden components, components presented in a detached window and
+    /// every row a virtualized collection has mounted, offscreen retained
+    /// ones included. A row that is not mounted is not listed: the
+    /// collection's controller mounts it, such as
+    /// [`ListController::reveal`](crate::ListController::reveal) or
+    /// [`TableController::reveal`](crate::TableController::reveal), and the
+    /// next settle lists it.
+    ///
+    /// | Parent | Result |
+    /// |---|---|
+    /// | An [`Each`](crate::Each) with its default container | its rows in list order, each under its item key: the container is structural |
+    /// | An `Each` with [`within`](crate::Each::within) | the one container, under its key; `address_children(&driver.find(&each, &["tags"])?)` lists the rows |
+    /// | A [`VirtualList`](crate::VirtualList) | every mounted row in index order: the visible lines, the overscan, a row pinned by focus or a pointer gesture and the `keep_mounted` row |
+    /// | A [`Table`](crate::Table) | its mounted rows in source order, with the same retention; its body and edit-end reporter are structural |
+    /// | A row the application marks [`Element::structural`](crate::Element::structural) | the row is looked through: its addressable children appear in its place |
+    ///
+    /// Child order is description order. For every built-in collection that
+    /// is display order, reading order for a lane grid, and for an external
+    /// container it is whatever order the container describes. An `Each`
+    /// item keeps the addressing its element had; `Each` replaces only its
+    /// key.
+    ///
+    /// [`Selector::children`] of `parent`'s path matches the same set only
+    /// when `parent` is an element or a slot whose path no other element or
+    /// slot has, and its results are in incarnation order. Below a part,
+    /// whose name its descendants do not carry, it finds none of what this
+    /// lists, and when two components share a path it also returns the
+    /// other one's children. [`Runtime::children`] stays the structure walk for hosts and
+    /// custom components: it lists structural wrappers too.
+    ///
+    /// The call only reads: it flushes nothing and moves no clock. It visits
+    /// each component reachable from `parent` through structural and part
+    /// levels once.
+    ///
+    /// # Errors
+    /// `ForeignRuntime` or `Unmounted` as [`TestError::Runtime`] for a
+    /// `parent` that is not a mounted component of this runtime, as
+    /// [`Runtime::children`]. A leaf lists nothing.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::testing::*;
+    ///
+    /// let mut ui = Runtime::new();
+    /// ui.set_viewport(Viewport::new(300.0, 200.0, 1.0)?)?;
+    /// let tasks = ui.signal(vec!["write".to_owned(), "ship".to_owned()]);
+    /// let list = ui.mount_tree(
+    ///     Each::new(&tasks, Clone::clone, |_, task| Label::new(task.as_str())).key("tasks"),
+    /// )?;
+    /// let mut driver = Driver::new(&mut ui);
+    /// driver.settle()?;
+    /// tasks.set(vec!["ship".to_owned(), "write".to_owned()])?;
+    /// driver.settle()?;
+    /// let rows = driver.address_children(&list)?;
+    /// let segments: Vec<&str> = rows.iter().map(|row| row.segment.as_str()).collect();
+    /// assert_eq!(segments, ["ship", "write"]);
+    /// assert_eq!(rows[0].id, driver.find(&list, &["ship"])?);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn address_children(&self, parent: &WidgetId) -> Result<Vec<AddressChild>, TestError> {
+        Ok(self
+            .runtime
+            .address_children_of(parent)?
+            .into_iter()
+            .map(|(segment, id)| AddressChild { segment, id })
+            .collect())
+    }
+
     /// The semantics `id` reports now, through one [`Runtime::query`] with
     /// [`Selector::id`] at [`Detail::Semantics`].
     ///
@@ -1080,6 +1167,23 @@ impl QuietReport {
             && self.next_deadline.is_none()
             && !self.needs_paint
     }
+}
+
+/// One component one address segment below a parent, as
+/// [`Driver::address_children`] lists it.
+///
+/// `segment` is what [`Runtime::find`] and [`Driver::find`] take for this
+/// component below the parent: an element's key, but a slot's or a part's
+/// name, which is not what [`Runtime::key`] reads for it. Only the driver
+/// constructs one; a test reads its fields.
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[non_exhaustive]
+pub struct AddressChild {
+    /// The address segment this component introduces below the parent: an
+    /// element's key, or a slot's or a part's name.
+    pub segment: String,
+    /// The component.
+    pub id: WidgetId,
 }
 
 /// Why a [`Driver`] step could not do what it was asked.

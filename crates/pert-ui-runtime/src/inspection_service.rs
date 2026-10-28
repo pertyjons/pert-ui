@@ -66,6 +66,15 @@ pub enum Selector {
     Path(Vec<String>),
     /// Every addressable child of the component at this path: each component
     /// whose path is this one plus one segment.
+    ///
+    /// The match compares absolute paths across the runtime, and results are
+    /// in incarnation order, as every query's are. A part's descendants
+    /// address without the part's name, so they are not children of the
+    /// part's path, and two components with one path, such as two lists
+    /// under structural wrappers keyed alike, pool their children.
+    /// [`Driver::address_children`](crate::testing::Driver::address_children)
+    /// lists one parent's children in child order, relative to it as
+    /// [`Runtime::find`](crate::Runtime::find) resolves them.
     Children(Vec<String>),
     /// Every addressable descendant of the component at this path.
     Descendants(Vec<String>),
@@ -99,7 +108,10 @@ impl Selector {
     pub fn path(segments: impl IntoIterator<Item = impl Into<String>>) -> Self {
         Self::Path(segments.into_iter().map(Into::into).collect())
     }
-    /// Every addressable child of the component at this path.
+    /// Every addressable child of the component at this path, in
+    /// incarnation order, matched by absolute path; see
+    /// [`Self::Children`] for how that differs from one parent's children
+    /// in child order.
     pub fn children(segments: impl IntoIterator<Item = impl Into<String>>) -> Self {
         Self::Children(segments.into_iter().map(Into::into).collect())
     }

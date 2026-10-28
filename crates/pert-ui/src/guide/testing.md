@@ -10,7 +10,8 @@ use pert_ui::testing::*;
 
 [`testing`](crate::testing) holds [`Driver`](crate::testing::Driver), which
 clicks, types, presses keys and chords, clears focus and settles after each
-step, and checks that a window stays quiet over an interval, its
+step, checks that a window stays quiet over an interval and lists a list's
+rows in order, its
 [`TestError`](crate::testing::TestError), and the other names a test writes:
 the [`Viewport`] every harness sets, key, focus and pointer input by hand,
 what the driver's steps return, semantics, the query names and the
@@ -316,12 +317,15 @@ assert_eq!(length.get()?, 3);
 
 # List rows
 
-Each row of an [`Each`] is keyed by its item's key, not by the key its
-element had, and its address is the `Each` element's address followed by
-that key: the default container that holds the rows is internal structure
-and adds no segment. [`Driver::find`](crate::testing::Driver::find) takes the
-row's key below the `Each`, and [`Selector::children`] of the `Each`'s path
-returns the rows with their semantics in one query:
+[`Driver::address_children`](crate::testing::Driver::address_children) lists
+the components one address segment below a parent, in child order, each with
+the segment [`Driver::find`](crate::testing::Driver::find) takes for it. Each
+row of an [`Each`] is keyed by its item's key, and its address is the `Each`
+element's address followed by that key: the default container that holds the
+rows is internal structure and adds no segment, so the `Each`'s address
+children are its rows, in list order. [`Selector::children`] of the `Each`'s
+path returns the same rows with their semantics in one query, in incarnation
+order rather than list order:
 
 ```rust
 use pert_ui::prelude::*;
@@ -331,14 +335,16 @@ let mut ui = Runtime::new();
 ui.set_viewport(Viewport::new(300.0, 200.0, 1.0)?)?;
 let tasks = ui.signal(vec!["write".to_owned(), "ship".to_owned()]);
 let root = ui.mount_tree(
-    // The row's own key, "task", is replaced by the item's key.
-    Each::new(&tasks, |task| task.clone(), |_, task| Label::new(task.as_str()).key("task"))
-        .key("tasks"),
+    Each::new(&tasks, Clone::clone, |_, task| Label::new(task.as_str())).key("tasks"),
 )?;
 let mut driver = Driver::new(&mut ui);
 driver.settle()?;
-let ship = driver.find(&root, &["ship"])?;
-assert_eq!(driver.semantics(&ship)?.name.as_deref(), Some("ship"));
+tasks.set(vec!["ship".to_owned(), "write".to_owned()])?;
+driver.settle()?;
+let rows = driver.address_children(&root)?;
+let segments: Vec<&str> = rows.iter().map(|row| row.segment.as_str()).collect();
+assert_eq!(segments, ["ship", "write"]);
+assert_eq!(driver.semantics(&rows[0].id)?.name.as_deref(), Some("ship"));
 
 let result = driver.runtime().query(
     &InspectionQuery::components(Selector::children(["tasks"])).detail(Detail::Semantics),
@@ -347,9 +353,9 @@ assert_eq!(result.components.len(), 2);
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
 
-For the rows in display order, name the container with `within`: a
-container the application gives keeps its key in the rows' addresses, so
-[`Runtime::children`] of that container lists the mounted rows in order:
+A container the application gives with `within` keeps its key in the rows'
+addresses, so the `Each` has one address child, the container, and the rows
+are the container's:
 
 ```rust
 use pert_ui::prelude::*;
@@ -359,20 +365,109 @@ let mut ui = Runtime::new();
 ui.set_viewport(Viewport::new(300.0, 200.0, 1.0)?)?;
 let tasks = ui.signal(vec!["write".to_owned(), "ship".to_owned()]);
 let root = ui.mount_tree(
-    Each::new(&tasks, |task| task.clone(), |_, task| Label::new(task.as_str()).key("task"))
+    Each::new(&tasks, Clone::clone, |_, task| Label::new(task.as_str()))
         .within(|rows| Column::new(rows).key("rows"))
         .key("tasks"),
 )?;
 let mut driver = Driver::new(&mut ui);
 driver.settle()?;
-let rows = driver.find(&root, &["rows"])?;
-let keys: Vec<String> = driver.runtime().children(&rows)?.iter()
-    .map(|row| driver.runtime().key(row).map(str::to_owned))
-    .collect::<Result<_, _>>()?;
-assert_eq!(keys, ["write", "ship"]);
-assert!(driver.find(&root, &["rows", "ship"]).is_ok());
+let container = driver.find(&root, &["rows"])?;
+assert_eq!(driver.address_children(&root)?[0].id, container);
+let segments: Vec<String> = driver.address_children(&container)?
+    .into_iter()
+    .map(|row| row.segment)
+    .collect();
+assert_eq!(segments, ["write", "ship"]);
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
+
+A [`VirtualList`] mounts only the rows near its viewport, its overscan and the
+rows it keeps mounted for focus, a pointer gesture or `keep_mounted`, and its
+address children are exactly those, in index order. A row that is not mounted
+is not listed: reveal it with the list's [`ListController`], settle, and it is:
+
+```rust
+use pert_ui::prelude::*;
+use pert_ui::testing::*;
+
+struct Numbers;
+impl ListItems for Numbers {
+    fn len(&self) -> usize {
+        100
+    }
+    fn key(&self, index: usize) -> Option<String> {
+        (index < 100).then(|| format!("row-{index}"))
+    }
+    fn build(&self, index: usize) -> Option<Element> {
+        self.key(index).map(|key| Element::new(key, Label::new(format!("Row {index}"))))
+    }
+}
+
+let mut ui = Runtime::new();
+ui.set_viewport(Viewport::new(300.0, 100.0, 1.0)?)?;
+let controller = ListController::new(&ui);
+let items = ui.signal(ListSource::new(Numbers));
+let list = ui.mount_tree(Element::new(
+    "numbers",
+    VirtualList::new(items.read_only(), 20.0)?.controller(controller.clone()),
+))?;
+let mut driver = Driver::new(&mut ui);
+driver.settle()?;
+let mounted = |driver: &Driver<'_>| -> Result<Vec<String>, TestError> {
+    Ok(driver.address_children(&list)?.into_iter().map(|row| row.segment).collect())
+};
+assert_eq!(mounted(&driver)?[0], "row-0");
+assert!(!mounted(&driver)?.contains(&"row-80".to_owned()));
+let revealed = controller.reveal("row-80")?;
+driver.settle()?;
+assert!(matches!(revealed.status(), ListRevealStatus::Mounted(_)));
+assert!(mounted(&driver)?.contains(&"row-80".to_owned()));
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
+A [`Table`]'s body and the component that reports edit ends are internal
+structure, so the table's address children are its mounted rows, in source
+order, with the same retention as a list's:
+
+```rust
+use pert_ui::prelude::*;
+use pert_ui::testing::*;
+
+struct Items(Vec<&'static str>);
+impl TableItems for Items {
+    fn len(&self) -> usize {
+        self.0.len()
+    }
+    fn key(&self, index: usize) -> Option<String> {
+        self.0.get(index).map(|name| name.to_lowercase())
+    }
+    fn cell(&self, index: usize, _column: &str) -> Option<Element> {
+        self.0.get(index).map(|name| Element::new("name", Label::new(*name)))
+    }
+}
+
+let mut ui = Runtime::new();
+ui.set_viewport(Viewport::new(320.0, 200.0, 1.0)?)?;
+let state = TableController::new(
+    &ui,
+    ListSelection::new(&ui, SelectionMode::Single),
+    [TableColumn::new("name", "Name")],
+    TableSource::new(Items(vec!["Cable", "Mouse", "Laptop"])),
+)?;
+let table = ui.mount_tree(Element::new("parts", Table::new(&state, 24.0)?))?;
+let mut driver = Driver::new(&mut ui);
+driver.settle()?;
+let segments: Vec<String> = driver.address_children(&table)?
+    .into_iter()
+    .map(|row| row.segment)
+    .collect();
+assert_eq!(segments, ["cable", "mouse", "laptop"]);
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
+[`Runtime::children`] stays the structure walk for hosts and custom
+components: it lists structural wrappers too, such as an `Each`'s default
+container and a table's body.
 
 # Background work
 

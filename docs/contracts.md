@@ -248,9 +248,9 @@ type, a new key mounts, and a removed key unmounts with its subscriptions.
 which retains it. The description callback runs during update, where writes
 are rejected; an invalid description fails the flush and keeps the previous
 children until a later value or description is valid. `Each` keys each item's
-element with the key it gives and places the elements in a container it
-describes, a `Column` unless `within` says otherwise. The default `Column` is
-internal structure (`Element::structural`): it adds no segment to an item's
+content, a component or an element, with the key it gives and places the items
+in a container it describes, a `Column` unless `within` says otherwise. The
+default `Column` is internal structure (`Element::structural`): it adds no segment to an item's
 address, which is the `Each` element's address followed by the item's key, and
 like any structural wrapper it is transparent to naming, so an item the
 application marks structural takes its name from the `Each`'s label or a

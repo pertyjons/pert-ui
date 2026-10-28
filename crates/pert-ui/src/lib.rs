@@ -99,7 +99,8 @@ pub use svg_images::component::Svg;
 ///   written as strings, signals and [`Icon`]s; [`TextSource`] is at the crate
 ///   root and [`IconSource`] in [`component`].
 /// - The [`DescribeContext`] an [`Each`], [`Dynamic`] or [`Show`] closure
-///   receives is inferred; code that names it imports it from the crate root.
+///   receives, and the [`EachItem`] an [`Each`]'s `build` returns, are
+///   inferred; code that names either imports it from the crate root.
 /// - [`TextEditError`], which `on_binding_refusal` reports, and the other
 ///   error types stay at the crate root, where code names them to match a
 ///   failure; `?` converts the leaf errors [`RuntimeError`] wraps into it.
@@ -125,7 +126,7 @@ pub use svg_images::component::Svg;
 /// | Windows inside a view, native windows, regions, splits and tool windows | `use pert_ui::windowing::*` ([`windowing`]) |
 /// | Inspection, capture, profiling and validation | `use pert_ui::inspection::*` ([`inspection`]) |
 /// | Data from other threads: live series, mailboxes, [`LevelMeter`] and [`Trace`] | `use pert_ui::live::*` ([`live`]) |
-/// | Theme, UI settings, fonts and icons, strings and locale, the workspace document, other errors, [`DescribeContext`], [`PhysicalExtent`] and [`VirtualAxis`] | by name from the crate root, such as `use pert_ui::{Palette, Workspace};` |
+/// | Theme, UI settings, fonts and icons, strings and locale, the workspace document, other errors, [`DescribeContext`], [`EachItem`], [`PhysicalExtent`] and [`VirtualAxis`] | by name from the crate root, such as `use pert_ui::{Palette, Workspace};` |
 ///
 /// A name can be in the prelude and in a module, or in several modules: each
 /// re-exports the same crate-root item, so the globs combine without
@@ -203,9 +204,10 @@ pub mod component {
 /// [`Driver`](testing::Driver) clicks a component, replaces or types text,
 /// presses keys and chords, clears focus, settles the runtime after each step,
 /// checks that a window stays quiet over an interval
-/// ([`QuietReport`](testing::QuietReport)) and finds a component's
-/// [`Semantics`]; [`TestError`](testing::TestError) names what a step could
-/// not do. Neither needs a window or a GPU. The module also
+/// ([`QuietReport`](testing::QuietReport)), finds a component's
+/// [`Semantics`] and lists the components one address segment below a parent
+/// in order ([`AddressChild`](testing::AddressChild));
+/// [`TestError`](testing::TestError) names what a step could not do. Neither needs a window or a GPU. The module also
 /// re-exports what a headless test writes besides the driver and the
 /// prelude:
 ///
@@ -217,8 +219,10 @@ pub mod component {
 /// - what the driver's steps return: [`FlushReport`], which
 ///   [`Driver::settle`](testing::Driver::settle) and
 ///   [`Driver::advance`](testing::Driver::advance) return, the
-///   [`RevealRefusal`] a `TestError::NotRevealed` carries and the
-///   [`DrawError`] a `TestError::Draw` carries;
+///   [`RevealRefusal`] a `TestError::NotRevealed` carries, the
+///   [`DrawError`] a `TestError::Draw` carries and each
+///   [`AddressChild`](testing::AddressChild) that
+///   [`Driver::address_children`](testing::Driver::address_children) lists;
 /// - semantics: [`Semantics`] with [`SemanticRole`], [`SemanticValue`],
 ///   [`SemanticAction`] and [`SemanticItem`];
 /// - queries: [`InspectionQuery`], [`Selector`], [`Detail`] and [`Depth`] for
@@ -346,6 +350,8 @@ pub mod testing {
     pub use pert_ui_runtime::testing::HostIntegration;
     // Each name of `pert_ui_runtime::testing`, listed so the page shows them;
     // pert-ui-diagnostics' closure check keeps the two lists equal.
+    #[doc(inline)]
+    pub use pert_ui_runtime::testing::{AddressChild, Driver, QuietReport, TestError};
     #[doc(no_inline)]
     pub use pert_ui_runtime::testing::{
         Capture, CaptureError, CaptureRequest, CaptureTarget, ClickCounter, CommandKeyInput,
@@ -356,8 +362,6 @@ pub mod testing {
         SemanticRole, SemanticValue, Semantics, ValidationCode, ValidationIssue, ValidationMarker,
         ValidationReport, Viewport, WaitError,
     };
-    #[doc(inline)]
-    pub use pert_ui_runtime::testing::{Driver, QuietReport, TestError};
 
     #[cfg(feature = "native")]
     pub use crate::app::HeadlessApp;

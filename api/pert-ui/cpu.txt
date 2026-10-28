@@ -177,6 +177,7 @@ impl core::marker::UnsafeUnpin for pert_ui::AppShutdownError
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui::AppShutdownError
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui::AppShutdownError
 pub mod pert_ui::testing
+pub use pert_ui::testing::AddressChild
 pub use pert_ui::testing::Capture
 pub use pert_ui::testing::CaptureError
 pub use pert_ui::testing::CaptureRequest

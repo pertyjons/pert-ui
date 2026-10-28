@@ -409,6 +409,13 @@ impl ListController {
 /// component and state, and one that leaves and returns is built again from
 /// [`ListItems::build`].
 ///
+/// The list's children are its mounted rows, which
+/// [`Runtime::children`](crate::Runtime::children) lists in index order: the
+/// visible lines and the overscan, with a row pinned by focus or a pointer
+/// gesture and the [`keep_mounted`](Self::keep_mounted) row included wherever
+/// they are. A test lists them with their keys through
+/// [`Driver::address_children`](crate::testing::Driver::address_children).
+///
 /// [`VirtualList::lanes`] makes it a grid: items fill lanes in order, each line
 /// holds that many items, and every item gets an equal share of the cross extent.
 /// [`VirtualList::orientation`] makes it scroll along x instead, with the same

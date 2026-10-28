@@ -1271,6 +1271,14 @@ enum HeaderGesture {
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 ///
+/// The body is internal structure, and so is the component that reports edit
+/// ends, which has no children: addresses skip both, so a row's address is
+/// the table's followed by the row's key.
+/// [`Driver::address_children(&table)`](crate::testing::Driver::address_children)
+/// lists the mounted rows in source order with their keys, including the
+/// offscreen ones the body retains; [`TableController::reveal`] mounts
+/// another.
+///
 /// Describing a mounted table again keeps its controller, row height and
 /// [`cell_tab_stops`](Self::cell_tab_stops): the table's data, columns and
 /// state belong to its controller, so change them through it, or give the

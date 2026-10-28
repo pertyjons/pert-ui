@@ -5,7 +5,7 @@ edition = "2024"
 publish = false
 
 [dependencies]
-pert-ui = { version = "0.3.75", features = ["cpu"] }
+pert-ui = { version = "0.3.80", features = ["cpu"] }
 
 # Not a member of any enclosing workspace.
 [workspace]

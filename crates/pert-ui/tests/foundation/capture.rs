@@ -669,10 +669,9 @@ fn an_each_item_is_captured_at_its_address_below_the_each() -> TestResult {
     let tasks = ui.signal(vec!["write".to_owned(), "ship".to_owned()]);
     let root = ui.mount_tree(Element::new(
         "main",
-        Column::new([Each::new(&tasks, Clone::clone, |_, task| {
-            Label::new(task.as_str()).key("task")
-        })
-        .key("tasks")]),
+        Column::new([
+            Each::new(&tasks, Clone::clone, |_, task| Label::new(task.as_str())).key("tasks"),
+        ]),
     ))?;
     ui.flush(Duration::ZERO)?;
     ui.set_capture_support(true);

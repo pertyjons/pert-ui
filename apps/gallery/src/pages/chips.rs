@@ -66,11 +66,9 @@ fn chips_section(ui: &Runtime, status: &Signal<String>) -> Result<Element, Runti
                 "The same tags as a list: Each keeps one row per tag by its key, and \
                  Show adds a note only while no tag is left.",
             ),
-            Each::new(&tags, Clone::clone, |_, tag| {
-                Label::new(format!("• {tag}")).key("label")
-            })
-            .within(|rows| Column::new(rows).key("rows"))
-            .key("tag-list"),
+            Each::new(&tags, Clone::clone, |_, tag| Label::new(format!("• {tag}")))
+                .within(|rows| Column::new(rows).key("rows"))
+                .key("tag-list"),
             Show::new(none_left, |_| label("note", "Every tag was removed.")).key("no-tags-note"),
         ],
     ))

@@ -1722,3 +1722,28 @@ plan closes.
   workspace and `cpu` doctests, rustdoc `-D warnings`, the diagnostics
   snapshots, the API listing gate, `git diff --check`. Native evidence: not
   applicable. Codex review: pending.
+
+- **P5 Rows in display order (0.3.80), 2026-10-28.** Implemented by a
+  fresh agent from the approved design (`round-2-design-P5.md`, revision
+  3): `Driver::address_children` with `AddressChild` (in both `testing`
+  modules), built on a crate-private `Runtime::address_children_of` that
+  shares `find`'s per-component classification; the sealed `EachItem`
+  with its token, `Each::new` generic over it (Breaking, by inference
+  only), diagnostics case `e01`; the docs of section 5; the manifest's
+  consumers (gallery, guide, tests, the task 4 fixture at 0.3.80);
+  TODO.md: `Each::new` entry removed, `ListItems::build`/`TreeItems::build`
+  placeholder-key entry added. **Deviations, accepted by the author:** the
+  seal trait is `EachItemSeal` (the repository's naming convention); the
+  facade listings gain only `AddressChild`, since `EachItem` reaches the
+  root through the runtime glob, which the listings do not expand; test 4
+  judges visibility from the row line, not a `Button`'s taller bounds;
+  `every_name` gains a `root_names` list for `EachItem`; the guide's
+  `VirtualList` example asserts its reveal receipt. Mutation evidence
+  (`target/p5-evidence/`): every new-behavior test failed under its named
+  mutation, with the outputs recorded. Fixture: compiled and tested
+  against the workspace by path in a scratch copy; the kit-based check
+  follows below. Gate (fresh): fmt, workspace Clippy, workspace tests
+  (with `testing_closure`), the five headless sessions, doctests, rustdoc
+  `-D warnings`, the diagnostics snapshots (new `e01`, no other change),
+  the API listing gate, `git diff --check`. Native evidence: not
+  applicable. Codex review: pending.

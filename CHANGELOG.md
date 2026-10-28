@@ -1,5 +1,78 @@
 # Changelog
 
+## 0.3.80 (2026-10-28)
+
+Rows in display order (round 2 fix plan, part P5, F9 and R2-6 by decision
+D4 and its sub-decision on `Each::new`'s placeholder key, from its approved
+design checkpoint `plans/usability/round-2-design-P5.md`, revision 3).
+
+- Added (F9): `Driver::address_children` and `AddressChild` (`segment`,
+  `id`; `#[non_exhaustive]`, `Clone`, `Debug`, `Eq`, `PartialEq`), in
+  `pert_ui_runtime::testing` and `pert_ui::testing`: the components one
+  address segment below a parent, in child order, each as `Runtime::find`
+  resolves it (decision P5-D1). A component is listed with segment `s`
+  exactly when `find(parent, &[s])` matches it, so an `Each`'s rows come
+  without its default container, an `Each` with `within` lists its
+  container, and a `VirtualList`'s and a `Table`'s mounted rows come in
+  index order, offscreen retained rows included and unmounted rows left to
+  the collection's controller. A part is listed under its name and its
+  descendants are listed too; two components with one segment are both
+  listed, and `find` refuses that address. The walk shares `find`'s
+  per-component classification, so the two cannot drift.
+- Breaking (TODO.md, `Each::new`'s placeholder key): `Each::new`'s `build`
+  returns any `EachItem` (`pub fn new<R: EachItem>(.., build: impl
+  Fn(&DescribeContext<'_>, &T) -> R + 'static)`): a component, which `Each`
+  describes under the item's key, exactly as `component.key(item_key)`
+  would, or an `Element`, whose key it replaces as before. Every closure that
+  returned an `Element` compiles unchanged; one whose return type was
+  inferred only from the expected `Element`, such as `|_, item|
+  make(item).into()`, needs its type named (`-> Element`). Replacement
+  usage: return the component, `|_, task| Label::new(task.as_str())`,
+  without `.key(..)`; return `Element`s for items of different component
+  types or for an item that needs an element builder.
+- Added: `EachItem`, at the crate roots, sealed with an uncallable
+  conversion (decision P5-D2) and implemented for every `Component` and for
+  `Element`. A `build` returning anything else reports "`T` cannot be an
+  `Each` item" with a note naming the two kinds.
+- Documentation (R2-6): `Runtime::children` says that it lists structural
+  wrappers, such as an `Each`'s default container and a `Table`'s body, and
+  a virtualized collection's mounted rows in index order, and points to the
+  driver for the address children; `Runtime::key` says that a structural
+  wrapper's key is no address segment and that a slot's or part's segment
+  is its name; `VirtualList` and `Table` say what their children are, and
+  `Selector::Children` and `Selector::children` that their results are in
+  incarnation order and match absolute paths, so a part's descendants are
+  not the part's children and two components with one path pool theirs.
+  The testing chapter's "List rows" reads an `Each`, an `Each` with
+  `within`, a `VirtualList` with a revealed row and a `Table` in order, and
+  its introduction says the driver lists rows in order. `Each`, `Each::new`,
+  the layout chapter, `docs/contracts.md` and `docs/manual.md` describe an
+  item as a component; the prelude pages name `EachItem` beside
+  `DescribeContext` as inferred; the `testing` pages list `AddressChild`.
+- Migrated: the placeholder keys in `Each`'s rustdoc, the guide, the
+  gallery's tag list, the facade's tests and the task 4 fixture
+  (`plans/usability/task4-app`, which now requires 0.3.80) are gone; the
+  tests whose subject is the `Element` path keep their elements.
+- Tests (F9, R2-6): the runtime's driver tests cover an `Each` after a
+  reorder, an `Each` with `within`, a reordered and a scrolled
+  `VirtualList` (focus, overscan, `keep_mounted`, a revealed row), a
+  `Table`, a structural parent, a part, a shared segment, a slot, the two
+  cases where `Selector::children` differs, a leaf and refused parents,
+  hidden and detached children, a structural row and a drag preview. The
+  facade's `foundation` binary covers a bare component as an item, mixed
+  `Element` items and a duplicate key with bare components, written with
+  the prelude alone; `compile_fail` doctests on `EachItem` cover an
+  external implementation, a `String` item and a generic call of the
+  conversion without and with a token; the diagnostics snapshots gain
+  `e01_each_item_not_component`. TODO.md gains the same placeholder key in
+  `ListItems::build` and `TreeItems::build`, which are trait-object methods.
+- API listings: `pert-ui-runtime` adds `testing::AddressChild` with its
+  fields and impls, `testing::Driver::address_children`, `EachItem` with
+  its two implementations (the `Element` one also listed on `Element`), and
+  changes `Each::new`'s signature; every `pert-ui` listing adds
+  `pub use pert_ui::testing::AddressChild`, and `EachItem` reaches the
+  facade's root through its glob re-export.
+
 ## 0.3.79 (2026-10-28)
 
 Focus and idle in the driver (round 2 fix plan, part P4, R2-11 and R2-24 by

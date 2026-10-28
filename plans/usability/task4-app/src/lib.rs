@@ -114,7 +114,6 @@ pub fn build(ui: &mut Runtime) -> Result<WidgetId, RuntimeError> {
                 })
                 .key("remove"),
             ])
-            .key("row")
         },
     );
 

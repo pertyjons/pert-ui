@@ -249,10 +249,7 @@ fn a_duplicate_key_fails_the_flush_and_a_valid_list_recovers() -> TestResult {
     let mut ui = runtime()?;
     let items = ui.signal(vec!["a".to_owned()]);
     let root = ui.mount_tree(
-        Each::new(&items, Clone::clone, |_, item| {
-            Label::new(item.as_str()).key("item")
-        })
-        .key("each"),
+        Each::new(&items, Clone::clone, |_, item| Label::new(item.as_str())).key("each"),
     )?;
     ui.flush(Duration::ZERO)?;
     let a = ui.find(&root, &["a"])?.ok_or("mounted")?;
@@ -276,7 +273,7 @@ fn each_places_items_in_the_container_it_is_given() -> TestResult {
     let items = ui.signal(vec![1, 2]);
     let root = ui.mount_tree(
         Each::new(&items, ToString::to_string, |_, item| {
-            Label::new(item.to_string()).key("item")
+            Label::new(item.to_string())
         })
         .within(|items| Row::new(items).key("row"))
         .key("each"),
@@ -438,7 +435,7 @@ fn redescribing_show_and_each_matches_a_fresh_mount() -> TestResult {
     let (few, more) = (ui.signal(vec![1]), ui.signal(vec![1, 2]));
     let each = |items: &Signal<Vec<i32>>| {
         Each::new(items, ToString::to_string, |_, item| {
-            Label::new(item.to_string()).key("item")
+            Label::new(item.to_string())
         })
         .key("each")
     };

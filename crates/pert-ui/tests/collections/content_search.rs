@@ -1059,7 +1059,7 @@ fn a_field_names_an_ordinary_item_of_a_structural_each_in_content_search() {
                 Each::new(
                     &entries,
                     |_| "entry".to_owned(),
-                    |cx, _| TextField::new(cx.signal(String::new())).key("x"),
+                    |cx, _| TextField::new(cx.signal(String::new())),
                 )
                 .key("entries")
                 .structural(),

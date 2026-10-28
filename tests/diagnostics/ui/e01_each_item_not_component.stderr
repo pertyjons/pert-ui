@@ -1,0 +1,18 @@
+error[E0277]: `String` cannot be an `Each` item
+ --> ui/e01_each_item_not_component.rs:6:13
+  |
+6 |     let _ = Each::new(&tasks, Clone::clone, |_, task| task.clone());
+  |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ an `Each` item is a component or an `Element`
+  |
+  = help: the trait `EachItem` is not implemented for `String`
+  = note: return the component itself, such as `Label::new(text)`, or an `Element` for items of different component types
+help: the trait `EachItem` is implemented for `pert_ui::Element`
+ --> $WORKSPACE/crates/pert-ui-runtime/src/described.rs
+  |
+  | impl EachItem for Element {}
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^
+note: required by a bound in `pert_ui::Each::<T>::new`
+ --> $WORKSPACE/crates/pert-ui-runtime/src/described.rs
+  |
+  |     pub fn new<R: EachItem>(
+  |                   ^^^^^^^^ required by this bound in `Each::<T>::new`
