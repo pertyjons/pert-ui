@@ -658,7 +658,7 @@ fn check(nodes: &BTreeMap<u64, NodeData>) -> Vec<ValidationIssue> {
                 emit(
                     ValidationCode::UnboundedCollection,
                     &format!(
-                        "this collection{owner} was given its whole content extent ({:.0} px), so it mounts all {} rows and cannot scroll itself, while only {:.0}% of it is visible; give it a bounded extent (a SplitPane pane, Tab::fixed, RegionLayout::fixed, View::fixed or a grown child of a bounded Column) instead of a scrolling ancestor; see VirtualList's bounded extent.",
+                        "this collection{owner} was given its whole content extent ({:.0} px), so it mounts all {} rows and cannot scroll itself, while only {:.0}% of it is visible; give it a bounded extent (a SplitPane pane, Tab::fixed, RegionLayout::fixed, View::fixed or a grown child of a bounded Column, or of a bounded Row for a horizontal collection) instead of a scrolling ancestor; see VirtualList's bounded extent.",
                         collection.allocated,
                         collection.rows,
                         100.0 * shown / whole

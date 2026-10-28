@@ -608,11 +608,21 @@ impl Element {
     /// container's own allocation leaves: a column in a vertical scroll area
     /// is given at least the visible height, so a growing child fills the
     /// visible space the content leaves, and nothing once the content is
-    /// taller. In a column whose height is bounded, a growing child also takes
-    /// its share of a shortfall: when the natural heights do not fit, growing
-    /// children give up the difference by weight, down to each one's minimum,
-    /// so a growing list or editor fills what the others leave instead of
-    /// keeping its whole natural height. Rows never shrink a child.
+    /// taller. In a row whose width or a column whose height is bounded, a
+    /// growing child also takes its share of a shortfall: when the natural
+    /// lengths do not fit, growing children give up the difference by weight,
+    /// down to each one's minimum, so a growing list or editor fills what the
+    /// others leave instead of keeping its whole natural length, and a growing
+    /// bar or label beside fixed content fits a narrow cell. A row measures
+    /// each child it shrank again at its final width, so a label that wraps
+    /// gets the height of its new lines and the row grows to it, and a label
+    /// with [`TextOverflow::Ellipsis`](crate::TextOverflow::Ellipsis)
+    /// truncates. Children without a weight keep their natural length, so a
+    /// container whose ungrown children and grown minimums exceed it still
+    /// overflows, which development validation reports as
+    /// [`ValidationCode::EscapesParent`](crate::ValidationCode::EscapesParent);
+    /// a child that must keep a width keeps it as a minimum, for example
+    /// through [`Container::size_limits`](crate::Container::size_limits).
     /// [`Wrap`](crate::Wrap) and other containers ignore the
     /// weight unless they document otherwise; a custom container reads it
     /// with [`MeasureContext::grow`]. Reconciliation updates it without
@@ -637,6 +647,32 @@ impl Element {
     /// let bounds = ui.bounds(&body)?.ok_or("laid out")?;
     /// // The text area takes the column's spare height, down to the window edge.
     /// assert_eq!(bounds.y() + bounds.height(), 300.0);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// A growing bar gives up width so the percentage beside it stays in a
+    /// window narrower than the bar's preferred 192 pixels plus the label:
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{IntoElement, Label, ProgressBar, ProgressStatus, Row, Runtime, Viewport};
+    /// use std::time::Duration;
+    /// let mut ui = Runtime::new();
+    /// ui.set_viewport(Viewport::new(120.0, 40.0, 1.0)?)?;
+    /// let root = ui.mount_tree(
+    ///     Row::new([
+    ///         ProgressBar::new(ProgressStatus::of(1, 2)).key("bar").with_grow(1),
+    ///         Label::new("50%").key("percent"),
+    ///     ])
+    ///     .key("status"),
+    /// )?;
+    /// ui.flush(Duration::ZERO)?;
+    /// let percent = ui.find(&root, &["percent"])?.ok_or("mounted")?;
+    /// let bounds = ui.bounds(&percent)?.ok_or("laid out")?;
+    /// // Its allocation ends inside the window, not only its clipped bounds.
+    /// assert!(bounds.x() + bounds.width() <= 120.0);
+    /// let bar = ui.find(&root, &["bar"])?.ok_or("mounted")?;
+    /// assert!(ui.bounds(&bar)?.ok_or("laid out")?.width() < 192.0);
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     pub fn with_grow(mut self, weight: u16) -> Self {
@@ -1015,7 +1051,9 @@ impl MeasureContext<'_> {
     pub fn is_empty(&self) -> bool {
         self.children.is_empty()
     }
-    /// Measures a child under available space.
+    /// Measures a child under available space, reusing one of the child's
+    /// four most recent measurements at equal constraints, as
+    /// [`Component::measure`] describes.
     ///
     /// # Errors
     /// Returns [`RuntimeError::Layout`] with [`LayoutError::InvalidChild`] for an index
@@ -1063,7 +1101,8 @@ impl ArrangeContext<'_> {
     pub fn is_empty(&self) -> bool {
         self.measure.is_empty()
     }
-    /// Measures a child, reusing its cache when constraints match.
+    /// Measures a child, reusing one of the child's four most recent
+    /// measurements at equal constraints, as [`Component::measure`] describes.
     ///
     /// # Errors
     /// As [`MeasureContext::measure`].

@@ -216,7 +216,11 @@ const SEGMENT: f32 = 0.3;
 ///
 /// The track is [`MetricRole::ProgressHeight`] tall (6 logical pixels at
 /// Standard) in the Outline role, three themed ControlWidths wide by preference,
-/// and fills the width it is given. The fill uses Primary while running, Success,
+/// and fills the width it is given. With a growth weight in a [`Row`](crate::Row)
+/// it takes the width the row's other children leave, wider or narrower than its
+/// preference and down to none, so a bar beside its percentage fits a narrow
+/// table cell; see [`Element::with_grow`](crate::Element::with_grow).
+/// The fill uses Primary while running, Success,
 /// Error or Muted once finished, and nothing while idle. A finished status fills
 /// the whole track, except a failure or cancellation that carries the fraction
 /// it reached, which fills the track that far. Beside a partial fill

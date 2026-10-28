@@ -482,31 +482,12 @@ fn flow_rects(
     style: FlowStyle,
 ) -> Result<(Size, Vec<Rect>), RuntimeError> {
     let gap = style.gap;
-    // Ordinary children keep the offered height, including bounded viewports.
-    // Separators first contribute their natural height, then fill the resolved
-    // row. Only opted-in children need a second measurement constraint.
+    // A row's children: each one's final allocated width and height, and the
+    // shortfall it took from its grown children, if one applied.
     let mut row_sizes = Vec::new();
+    let mut row_shortfall = None;
     if matches!(flow, Flow::Row) {
-        let mut height = 0.0f32;
-        for index in 0..cx.len() {
-            let offered = Constraints::new(
-                None,
-                if cx.fills_row_height(index)? {
-                    None
-                } else {
-                    available.height()
-                },
-            )?;
-            let size = cx.measure(index, offered)?;
-            height = height.max(size.height());
-            row_sizes.push(size);
-        }
-        let height = available.height().map_or(height, |limit| height.min(limit));
-        for (index, size) in row_sizes.iter_mut().enumerate() {
-            if cx.fills_row_height(index)? {
-                *size = cx.measure(index, Constraints::new(None, Some(height))?)?;
-            }
-        }
+        (row_sizes, row_shortfall) = row_sizes_of(cx, available, gap)?;
     }
     let mut out = Vec::with_capacity(cx.len());
     let mut row_start = 0;
@@ -558,18 +539,215 @@ fn flow_rects(
     if matches!(flow, Flow::Wrap) {
         return Ok((natural, out));
     }
-    let size = flex(cx, available, flow, style, natural, &mut out)?;
+    let shortfall = match flow {
+        Flow::Column => match available.height() {
+            Some(limit) => {
+                let heights: Vec<f32> = out.iter().map(|bounds| bounds.height()).collect();
+                take_shortfall(cx, &heights, gap, limit, Axis::Vertical)?
+            }
+            None => None,
+        },
+        _ => row_shortfall,
+    };
+    let size = flex(cx, available, flow, style, natural, shortfall, &mut out)?;
     Ok((size, out))
 }
 
+/// The axis a shortfall is taken along: a row's width or a column's height.
+#[derive(Clone, Copy)]
+enum Axis {
+    Horizontal,
+    Vertical,
+}
+
+/// One grown child that can give up main-axis length to a shortfall.
+struct Shrinkable {
+    index: usize,
+    length: f64,
+    weight: f64,
+    minimum: f64,
+}
+
+/// What a bounded row or column whose natural lengths overflow took from its
+/// grown children.
+struct Shortfall {
+    /// Each child's final main-axis length where it gave some up.
+    lengths: Vec<Option<f32>>,
+    /// Whether the whole deficit was taken, so the container is exactly its
+    /// limit. A row clears it when a fill child's width changed at its fill
+    /// height, since its final allocations then no longer sum to the limit.
+    absorbed: bool,
+}
+
+/// Takes `deficit` from the grown children by weight, none below its
+/// minimum, sharing what a minimum stops again among the others. The
+/// arithmetic is in f64 and yields final lengths: a natural length of hundreds
+/// of millions of pixels less nearly as much would otherwise lose the few
+/// hundred that remain to f32 cancellation.
+fn shortfall(mut deficit: f64, count: usize, mut shrinking: Vec<Shrinkable>) -> Shortfall {
+    let mut taken = vec![0.0f64; count];
+    let mut lengths = vec![0.0f64; count];
+    for child in &shrinking {
+        lengths[child.index] = child.length;
+    }
+    let mut absorbed = false;
+    while !shrinking.is_empty() {
+        let total: f64 = shrinking.iter().map(|child| child.weight).sum();
+        // How much each may still give before its minimum.
+        let rooms: Vec<f64> = shrinking
+            .iter()
+            .map(|child| (child.length - taken[child.index] - child.minimum).max(0.0))
+            .collect();
+        let share = |weight: f64| deficit * (weight / total);
+        let capped: Vec<usize> = (0..shrinking.len())
+            .filter(|&position| share(shrinking[position].weight) >= rooms[position])
+            .collect();
+        if capped.is_empty() {
+            for child in &shrinking {
+                taken[child.index] += share(child.weight);
+            }
+            absorbed = true;
+            break;
+        }
+        for position in capped.into_iter().rev() {
+            let child = shrinking.remove(position);
+            taken[child.index] += rooms[position];
+            deficit -= rooms[position];
+        }
+        if deficit <= 0.0 {
+            absorbed = true;
+            break;
+        }
+    }
+    Shortfall {
+        lengths: taken
+            .into_iter()
+            .zip(lengths)
+            .map(|(taken, length)| (taken > 0.0).then_some((length - taken) as f32))
+            .collect(),
+        absorbed,
+    }
+}
+
+/// The shortfall of a bounded row or column whose children's natural
+/// main-axis `lengths` and gaps exceed `limit`, taken from its grown children;
+/// `None` when they fit or no child grows.
+fn take_shortfall(
+    cx: &MeasureContext<'_>,
+    lengths: &[f32],
+    gap: f32,
+    limit: f32,
+    axis: Axis,
+) -> Result<Option<Shortfall>, RuntimeError> {
+    let count = lengths.len();
+    let mut shrinking = Vec::new();
+    for (index, length) in lengths.iter().enumerate() {
+        let weight = cx.grow(index)?;
+        if weight > 0 {
+            let minimum = cx.limits(index)?.minimum();
+            let minimum = match axis {
+                Axis::Horizontal => minimum.width(),
+                Axis::Vertical => minimum.height(),
+            };
+            shrinking.push(Shrinkable {
+                index,
+                length: f64::from(*length),
+                weight: f64::from(weight),
+                minimum: f64::from(minimum),
+            });
+        }
+    }
+    if shrinking.is_empty() {
+        return Ok(None);
+    }
+    let used = lengths.iter().map(|length| f64::from(*length)).sum::<f64>()
+        + f64::from(gap) * count.saturating_sub(1) as f64;
+    let deficit = used - f64::from(limit);
+    Ok((deficit > 0.0).then(|| shortfall(deficit, count, shrinking)))
+}
+
+/// Measures a row's children and returns each one's final allocated width and
+/// height, with the shortfall the row took when its natural widths overflow
+/// a bounded width.
+///
+/// Ordinary children are measured at the offered height and fill children
+/// without one; whether the row shrinks, and by how much, is decided once from
+/// those natural widths. Each ordinary child that gave up width is measured
+/// again at its final width, which gives its height. Fill children are then
+/// measured at the tallest resolved height, capped by the offered height: at
+/// their final width when they gave some up, and otherwise unbounded, keeping
+/// the width they report there.
+fn row_sizes_of(
+    cx: &MeasureContext<'_>,
+    available: Constraints,
+    gap: f32,
+) -> Result<(Vec<Size>, Option<Shortfall>), RuntimeError> {
+    let mut sizes = Vec::with_capacity(cx.len());
+    let mut fills = Vec::with_capacity(cx.len());
+    for index in 0..cx.len() {
+        let fill = cx.fills_row_height(index)?;
+        let offered = Constraints::new(None, if fill { None } else { available.height() })?;
+        sizes.push(cx.measure(index, offered)?);
+        fills.push(fill);
+    }
+    let mut shortfall = match available.width() {
+        Some(limit) => {
+            let widths: Vec<f32> = sizes.iter().map(|size| size.width()).collect();
+            take_shortfall(cx, &widths, gap, limit, Axis::Horizontal)?
+        }
+        None => None,
+    };
+    let finals = |index: usize| {
+        shortfall
+            .as_ref()
+            .and_then(|shortfall| shortfall.lengths[index])
+    };
+    for (index, size) in sizes.iter_mut().enumerate() {
+        if !fills[index]
+            && let Some(width) = finals(index)
+        {
+            let measured = cx.measure(index, Constraints::new(Some(width), available.height())?)?;
+            *size = Size::new(width, measured.height())?;
+        }
+    }
+    // The fill offer: the tallest provisional height, capped by the offer.
+    let tallest = sizes
+        .iter()
+        .fold(0.0f32, |tallest, size| tallest.max(size.height()));
+    let height = available
+        .height()
+        .map_or(tallest, |limit| tallest.min(limit));
+    let mut kept = true;
+    for (index, size) in sizes.iter_mut().enumerate() {
+        if fills[index] {
+            let width = finals(index);
+            let measured = cx.measure(index, Constraints::new(width, Some(height))?)?;
+            *size = match width {
+                Some(width) => Size::new(width, measured.height())?,
+                None => {
+                    kept &= measured.width() == size.width();
+                    measured
+                }
+            };
+        }
+    }
+    if let Some(shortfall) = shortfall.as_mut() {
+        shortfall.absorbed &= kept;
+    }
+    Ok((sizes, shortfall))
+}
+
 /// Grows, justifies and aligns the naturally placed children of a row or
-/// column, returning the container's size.
+/// column, returning the container's size. `shortfall` is what the container
+/// took from its grown children when their natural lengths overflow its
+/// bounded main axis; a row's `out` already holds its final widths.
 fn flex(
     cx: &MeasureContext<'_>,
     available: Constraints,
     flow: Flow,
     style: FlowStyle,
     natural: Size,
+    shortfall: Option<Shortfall>,
     out: &mut [Rect],
 ) -> Result<Size, RuntimeError> {
     let column = matches!(flow, Flow::Column);
@@ -590,6 +768,18 @@ fn flex(
         available.width()
     };
     let mut spare = limit.map_or(0.0, |limit| (limit - used).max(0.0));
+    // A row that shrank grows no child back. Its spare space, which
+    // `Justify` places, is what its final widths leave: none when the whole
+    // deficit was taken, and otherwise only what a fill child gave up at its
+    // fill height.
+    let row_shrank = !column && shortfall.is_some();
+    if row_shrank
+        && shortfall
+            .as_ref()
+            .is_some_and(|shortfall| shortfall.absorbed)
+    {
+        spare = 0.0;
+    }
     let mut extra = vec![0.0f32; count];
     let mut growing = Vec::new();
     for index in 0..count {
@@ -605,6 +795,9 @@ fn flex(
         }
     }
     let grows = !growing.is_empty();
+    if row_shrank {
+        growing.clear();
+    }
     // Share the spare space by weight; a child that reaches its maximum takes
     // only its room, and the rest is shared again among the others.
     while spare > 0.0 && !growing.is_empty() {
@@ -637,74 +830,17 @@ fn flex(
         }
         spare = spare.max(0.0);
     }
-    // A bounded column whose natural heights overflow takes the deficit from
-    // its grown children by weight, none below its minimum, so a grown child
-    // fills the rest instead of keeping its whole natural height (which for a
-    // collection is its whole content). Rows keep their lengths: a narrower
-    // child could wrap to another height, which their measurement does not
-    // repeat. The arithmetic is in f64 and yields final lengths: a natural
-    // height of hundreds of millions of pixels less nearly as much would
-    // otherwise lose the few hundred that remain to f32 cancellation.
-    let mut shrunk: Vec<Option<f32>> = vec![None; count];
-    // Whether the whole deficit was absorbed, so the column is exactly its limit.
-    let mut absorbed = false;
-    if column
-        && grows
-        && let Some(limit) = limit
-    {
-        let used = lengths.iter().map(|length| f64::from(*length)).sum::<f64>()
-            + f64::from(style.gap) * count.saturating_sub(1) as f64;
-        let mut deficit = used - f64::from(limit);
-        let mut shrinking: Vec<(usize, f64, f64)> = Vec::new();
-        for index in 0..count {
-            let weight = cx.grow(index)?;
-            if weight > 0 {
-                let minimum = f64::from(cx.limits(index)?.minimum().height());
-                shrinking.push((index, f64::from(weight), minimum));
-            }
-        }
-        if deficit > 0.0 {
-            let mut taken = vec![0.0f64; count];
-            loop {
-                if shrinking.is_empty() {
-                    break;
-                }
-                let total: f64 = shrinking.iter().map(|(_, weight, _)| weight).sum();
-                // How much each may still give before its minimum.
-                let rooms: Vec<f64> = shrinking
-                    .iter()
-                    .map(|(index, _, minimum)| {
-                        (f64::from(lengths[*index]) - taken[*index] - minimum).max(0.0)
-                    })
-                    .collect();
-                let share = |weight: f64| deficit * (weight / total);
-                let capped: Vec<usize> = (0..shrinking.len())
-                    .filter(|&position| share(shrinking[position].1) >= rooms[position])
-                    .collect();
-                if capped.is_empty() {
-                    for (index, weight, _) in &shrinking {
-                        taken[*index] += share(*weight);
-                    }
-                    absorbed = true;
-                    break;
-                }
-                for position in capped.into_iter().rev() {
-                    let (index, _, _) = shrinking.remove(position);
-                    taken[index] += rooms[position];
-                    deficit -= rooms[position];
-                }
-                if deficit <= 0.0 {
-                    absorbed = true;
-                    break;
-                }
-            }
-            for (index, taken) in taken.into_iter().enumerate() {
-                if taken > 0.0 {
-                    shrunk[index] = Some((f64::from(lengths[index]) - taken) as f32);
-                }
-            }
-        }
-    }
+    // A bounded row or column whose natural lengths overflow took the deficit
+    // from its grown children by weight, none below its minimum, so a grown
+    // child fills the rest instead of keeping its whole natural length (which
+    // for a collection is its whole content). A row measured each child it
+    // shrank again at its final width, so a child that wraps has the height
+    // of its new lines; a column's shrunk children keep the widths they were
+    // measured at.
+    let (shrunk, absorbed) = match shortfall {
+        Some(shortfall) => (shortfall.lengths, shortfall.absorbed),
+        None => (vec![None; count], false),
+    };
     let (start, spacing) = match style.justify {
         Justify::Start => (0.0, style.gap),
         Justify::Center => (spare / 2.0, style.gap),
@@ -761,9 +897,11 @@ fn flex(
     // A container that grows or places children by its spare space fills its
     // bounded main axis; otherwise it keeps its natural size.
     let fills = grows || style.justify != Justify::Start;
-    // A column that shrank is its limit when the deficit was absorbed, and
+    // A container that shrank is its limit when the deficit was absorbed (a
+    // row's only while every fill child kept its natural width), and
     // otherwise the sum of its final lengths: its floor (ungrown natural
-    // heights, grown minimums and gaps) exceeds the limit.
+    // lengths, grown minimums, a row's fill widths and the gaps) exceeds the
+    // limit, or a row's fill child narrowed at its fill height.
     let placed = if absorbed {
         limit.unwrap_or(used)
     } else if shrunk.iter().any(Option::is_some) {
@@ -903,7 +1041,7 @@ macro_rules! flow_component {
 flow_component!(
     Row,
     Row,
-    "One horizontal row with the theme item gap (8 logical pixels at Standard). Children receive the offered height; children opting into Component::fills_row_height contribute their natural height first, then fill the resolved content height up to the offered height. Children are vertically centered against the tallest resolved child, aligning labels with taller controls; with Align::Stretch they instead fill the height the row is allocated. Otherwise unused height below the row remains empty; overflow never implicitly wraps."
+    "One horizontal row with the theme item gap (8 logical pixels at Standard). Children receive the offered height; children opting into Component::fills_row_height contribute their natural height first, then fill the resolved content height up to the offered height. Children are vertically centered against the tallest resolved child, aligning labels with taller controls; with Align::Stretch they instead fill the height the row is allocated. Otherwise unused height below the row remains empty; overflow never implicitly wraps. Children with an [`Element::with_grow`] weight share the spare width, and give up width, down to their minimums, when the natural widths overflow a bounded width; a child that gave up width is measured again at its final width."
 );
 flow_component!(
     Column,

@@ -67,7 +67,7 @@ invalidates that component's drawing cache, including geometry-dependent foregro
 Unchanged branches retain layout/drawing. Focus traversal skips targets that remain
 fully clipped after a reveal attempt. No periodic timer powers scrolling.
 
-# Growing and stretching rows and columns
+# Growing, shrinking and stretching rows and columns
 
 [`Element::with_grow`] gives a child of a [`Row`] or [`Column`] a share of the
 space the container's allocation leaves over, and [`Align::Stretch`] makes
@@ -78,6 +78,14 @@ measured height stays its tallest child's, so it fills what its parent gives
 without asking for more; children keep their own maximum and minimum heights.
 A custom container does the same with the size its
 [`Component::arrange`] receives.
+
+When a row's width or a column's height is bounded and the natural lengths do
+not fit, the grown children give up the difference, by weight and down to each
+one's minimum. A row measures a child it shrank again at its final width, so
+wrapped text makes the row taller and an ellipsis label truncates. Children
+without a weight keep their length, so a row of fixed content still overflows,
+which development validation reports. [A progress column](#a-progress-column)
+puts a bar beside its percentage in a narrow table cell.
 
 ```rust
 use pert_ui::{parameter::*, prelude::*};
@@ -455,8 +463,9 @@ other children leave, so a toolbar above a grown collection works. Default
 they scroll content at its natural size, which for a collection is its whole
 content; in debug builds validation reports such a collection as
 [`ValidationCode::UnboundedCollection`]. A bounded [`Row`] offers its height
-to every child, so it bounds a vertical collection beside other children, but
-it does not shrink their widths, so it never bounds a horizontal one.
+to every child, so it bounds a vertical collection beside other children, and
+a grown horizontal collection gives up the width its siblings need, so a
+bounded row bounds a grown horizontal one too.
 
 # Large data
 
@@ -759,6 +768,68 @@ it. The [inventory
 example](https://github.com/pertyjons/pert-ui/blob/main/crates/pert-ui/examples/inventory/main.rs)
 applies the controlled checkbox to a table's checkbox column, and a
 [`Table`] edits text cells in place through its own editor instead.
+
+# A progress column
+
+A [`ProgressBar`] prefers three themed control widths, 192 logical pixels at
+Standard, which a table cell is often narrower than once a percentage sits
+beside it. With a growth weight in a [`Row`] beside the label, the bar takes
+what the label leaves and, in a narrower cell, gives up the difference down to
+no width, so the percentage stays in the cell. The cell describes the record's
+status with [`ProgressBar::new`], since [`TableItems::cell`] runs again
+whenever the table describes its rows.
+
+```rust
+use pert_ui::prelude::*;
+use pert_ui::Viewport;
+use std::time::Duration;
+
+struct Jobs(Vec<(&'static str, u64)>);
+impl TableItems for Jobs {
+    fn len(&self) -> usize { self.0.len() }
+    fn key(&self, index: usize) -> Option<String> {
+        self.0.get(index).map(|(name, _)| (*name).to_owned())
+    }
+    fn cell(&self, index: usize, column: &str) -> Option<Element> {
+        let (name, done) = *self.0.get(index)?;
+        Some(match column {
+            "name" => Label::new(name).key("title"),
+            "progress" => Row::new([
+                ProgressBar::new(ProgressStatus::of(done, 100)).key("bar").with_grow(1),
+                Label::new(format!("{done}%")).key("percent"),
+            ])
+            .key("cell"),
+            _ => return None,
+        })
+    }
+}
+let mut ui = Runtime::new();
+ui.set_viewport(Viewport::new(400.0, 200.0, 1.0)?)?;
+let jobs = TableController::new(
+    &ui,
+    ListSelection::new(&ui, SelectionMode::Single),
+    [
+        TableColumn::new("name", "Job").width(Length::from(120)),
+        TableColumn::new("progress", "Progress").width(Length::from(160)),
+    ],
+    TableSource::new(Jobs(vec![("render", 42), ("upload", 100)])),
+)?;
+let table = ui.mount_tree(Element::new("jobs", Table::new(&jobs, 28.0)?))?;
+ui.flush(Duration::ZERO)?;
+let row = ui.find_descendant(&table, "render")?.ok_or("mounted")?;
+// The width and the right edge of a component of the row.
+let span = |key: &str| -> Result<(f32, f32), Box<dyn std::error::Error>> {
+    let id = ui.find_descendant(&row, key)?.ok_or("mounted")?;
+    let bounds = ui.bounds(&id)?.ok_or("laid out")?;
+    Ok((bounds.width(), bounds.x() + bounds.width()))
+};
+let ((_, cell_end), (bar, _), (_, percent_end)) = (span("cell")?, span("bar")?, span("percent")?);
+assert!(bar < 192.0, "the bar gave up width");
+assert!(percent_end <= cell_end, "the percentage stays in the cell");
+#[cfg(debug_assertions)]
+assert!(ui.validation_report().issues.is_empty(), "nothing escapes its cell");
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
 
 # Zoomable content
 

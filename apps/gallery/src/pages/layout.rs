@@ -137,11 +137,11 @@ fn flex() -> Result<Element, RuntimeError> {
         [
             label(
                 "help",
-                "The middle tile grows into the spare width and the spacer pushes Help to the end. Below, Justify::SpaceBetween spreads fixed tiles, Align::Stretch fills a row's height, and a column grows its body into the stage.",
+                "The middle tile grows into the spare width and the spacer pushes Help to the end. In a narrow window the growing tile gives up width and wraps, and Help stays at the end. Below, Justify::SpaceBetween spreads fixed tiles, Align::Stretch fills a row's height, and a column grows its body into the stage.",
             ),
             stage(
                 "grow-row",
-                56,
+                88,
                 Row::new([
                     tile("name", "Name"),
                     tile("grows", "Grows into the spare width").with_grow(1),

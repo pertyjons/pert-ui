@@ -270,6 +270,20 @@ impl TableItems for Measurements {
         self.number(index).map(|number| format!("sample-{number}"))
     }
     fn cell(&self, index: usize, column: &str) -> Option<Element> {
+        if column == "progress" {
+            // A growing bar beside its percentage: in a narrow column the bar
+            // gives up width so the percentage stays in the cell.
+            let percent = self.number(index)? % 101;
+            return Some(
+                Row::new([
+                    ProgressBar::new(ProgressStatus::of(u64::from(percent), 100))
+                        .key("bar")
+                        .with_grow(1),
+                    Label::new(format!("{percent}%")).key("percent"),
+                ])
+                .key("cell"),
+            );
+        }
         let text = self.text(index, column)?;
         Some(Element::new("text", Label::new(text)))
     }
@@ -284,6 +298,7 @@ impl TableItems for Measurements {
             "square" => (u64::from(number) * u64::from(number)).to_string(),
             "cube" => (u64::from(number).pow(3)).to_string(),
             "parity" => (if number % 2 == 0 { "even" } else { "odd" }).to_owned(),
+            "progress" => format!("{}%", number % 101),
             _ => return None,
         })
     }
@@ -373,6 +388,9 @@ pub(crate) fn collections(ui: &Runtime) -> Result<Element, RuntimeError> {
             TableColumn::new("note", "Note")
                 .width(Length::new(200.0)?)
                 .editable(true),
+            TableColumn::new("progress", "Progress")
+                .width(Length::new(160.0)?)
+                .resizable(true),
         ],
         TableSource::new(Measurements {
             count: ROWS,
@@ -452,7 +470,7 @@ pub(crate) fn collections(ui: &Runtime) -> Result<Element, RuntimeError> {
             [
                 label(
                     "table-help",
-                    "Click Sample to sort; the gallery reorders its own data and hands it back. Drag a column edge to resize it. Drag the titles from Square root to Parity to reorder those columns, or press Alt with Left or Right on a cell; Sample and Note stay where they are. The columns need more than the table's width, so header and rows scroll together: use a horizontal wheel, the bar along the bottom, or move the active cell with Left and Right, which scrolls its column into view. Click a cell or use the arrows, then press Enter. Note is edited in place: Enter, F2, a double-click or typing edits it, Enter saves, Escape cancels and Tab saves and moves to the next row's note.",
+                    "Click Sample to sort; the gallery reorders its own data and hands it back. Drag a column edge to resize it. Drag the titles from Square root to Parity to reorder those columns, or press Alt with Left or Right on a cell; Sample and Note stay where they are. The columns need more than the table's width, so header and rows scroll together: use a horizontal wheel, the bar along the bottom, or move the active cell with Left and Right, which scrolls its column into view. Click a cell or use the arrows, then press Enter. Note is edited in place: Enter, F2, a double-click or typing edits it, Enter saves, Escape cancels and Tab saves and moves to the next row's note. The last column, Progress, draws a bar beside its percentage: drag its edge narrower and the bar gives up width so the percentage stays in the cell.",
                 ),
                 stage(
                     "table-stage",

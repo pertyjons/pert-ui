@@ -1807,3 +1807,32 @@ plan closes.
   bar's reached fill) is recorded in `docs/verification.md` as the
   maintainer's, not yet done; Windows and macOS missing. Codex review:
   pending.
+
+- **P7 Rows that shrink (0.3.82), 2026-10-28.** Implemented by a fresh
+  agent from the approved design (`round-2-design-P7.md`, revision 5):
+  a bounded row's growing children give up width by weight down to their
+  minimums, decided once from the natural widths, shrunk ordinary children
+  measured again at their final width; final allocations drive the
+  reported width, overflow and justification; rows and columns share one
+  crate-private shortfall function (column results unchanged); P7-D1's
+  four-entry measurement store per node (`runtime/measurements.rs`) with
+  dependency bits kept until `invalidate_layout`. Same kind: today's
+  per-miss mask reset removed. **Deviations, accepted by the author:**
+  clearing the masks in `invalidate_layout` also clears ancestors' masks
+  as invalidation propagates, so the theme and font notifiers now collect
+  every matching subscriber before invalidating (keeps today's
+  invalidated set; CHANGELOG `Fixed:`); contracts.md says "is still
+  measured" instead of "keeps today's rule"; some mutations fail at an
+  earlier named assertion than the design cites (2(b), 6(a)); seven
+  mutation runs were first filtered wrongly and rerun. Mutation evidence
+  (`target/p7-evidence/`): every mutation failed. Captures
+  (`target/p7-captures/README.txt`): all gallery pages at ead18dc and at
+  P7; 37 identical, `layout` (help text, the 88 px stage) and
+  `collections` (scrollbar thumb, longer help) differ as expected. No
+  `api/` change. No fixture check (no growth weight in the fixture). Gate
+  (fresh): fmt, workspace Clippy, workspace tests, the five headless
+  sessions and the headless gallery, doctests, rustdoc `-D warnings`, the
+  diagnostics snapshots, the `--release` foundation run, the API listing
+  gate, `git diff --check`. **Native evidence: missing** (the Linux hand
+  check of narrow rows and the gallery's Progress column, recorded in
+  `docs/verification.md` as the maintainer's). Codex review: pending.

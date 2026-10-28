@@ -226,6 +226,28 @@ fn the_collections_page_navigates_a_grid_a_lazy_tree_and_a_sorted_table() {
 }
 
 #[test]
+fn the_collections_table_fits_a_bar_beside_its_percentage_in_the_progress_column() {
+    let (mut ui, root) = mounted();
+    ui.set_viewport(Viewport::new(960.0, 2000.0, 1.0).unwrap())
+        .unwrap();
+    open(&mut ui, &root, "collections");
+    let table = find(&ui, &root, "collections-table");
+    let body = ui.children(&table).unwrap()[0].clone();
+    let row = find(&ui, &body, "sample-1");
+    let progress = find(&ui, &row, "progress");
+    let bounds = |key: &str| ui.bounds(&find(&ui, &progress, key)).unwrap().unwrap();
+    let (cell, bar, percent) = (bounds("cell"), bounds("bar"), bounds("percent"));
+    // The 160 px column's content is narrower than the bar's preferred 192
+    // pixels, so the bar gives up width and the percentage stays inside.
+    assert!(bar.width() < 192.0, "{bar:?}");
+    assert!(
+        percent.x() + percent.width() <= cell.x() + cell.width(),
+        "{percent:?} in {cell:?}"
+    );
+    assert!(ui.validation_report().issues.is_empty());
+}
+
+#[test]
 fn the_images_page_decodes_its_png_and_shares_one_upload_per_image() {
     let (mut ui, root) = mounted();
     ui.set_viewport(Viewport::new(960.0, 1200.0, 1.0).unwrap())

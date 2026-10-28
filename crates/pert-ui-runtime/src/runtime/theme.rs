@@ -967,6 +967,10 @@ impl State {
         if changed == 0 {
             return;
         }
+        // Every subscriber's reads are judged before any is invalidated: a
+        // layout invalidation clears the measurement reads of the node and its
+        // ancestors, which would otherwise hide an ancestor's own reads.
+        let mut invalidated = Vec::new();
         self.metric_subscribers.retain(|_, weak| {
             let Some(node) = weak.upgrade() else {
                 return false;
@@ -976,15 +980,18 @@ impl State {
                 .iter()
                 .any(|reads| reads.get() & changed != 0)
             {
-                if node.visible.get() {
-                    node.window().theme_geometry_change.set(true);
-                }
-                node.invalidate(Invalidation::Layout);
+                invalidated.push((node, Invalidation::Layout));
             } else if node.metric_paint.get() & changed != 0 {
-                node.invalidate(Invalidation::Paint);
+                invalidated.push((node, Invalidation::Paint));
             }
             true
         });
+        for (node, kind) in invalidated {
+            if kind == Invalidation::Layout && node.visible.get() {
+                node.window().theme_geometry_change.set(true);
+            }
+            node.invalidate(kind);
+        }
     }
 
     pub(super) fn active(&self) -> Palette {

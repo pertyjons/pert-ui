@@ -1,4 +1,4 @@
-//! A grown child of a bounded column shrinks to the space left, so a
+//! A grown child of a bounded row or column shrinks to the space left, so a
 //! collection below a toolbar mounts only the rows it shows; and the
 //! development diagnostic for a collection that was given its whole extent.
 use pert_ui::*;
@@ -417,34 +417,91 @@ fn nested_columns_shrink_at_every_bounded_level() -> TestResult {
     Ok(())
 }
 
+fn width(ui: &Runtime, root: &WidgetId, key: &str) -> Result<f32, Box<dyn std::error::Error>> {
+    let id = ui.find_descendant(root, key)?.ok_or(format!("no {key}"))?;
+    Ok(ui.bounds(&id)?.ok_or("laid out")?.width())
+}
+/// A leaf 20 px high with a natural width and a minimum width.
+fn wide(key: &str, width: f32, minimum: f32) -> Element {
+    Leaf {
+        natural: (width, 20.0),
+        minimum: (minimum, 0.0),
+    }
+    .key(key)
+}
+
 #[test]
-fn rows_keep_their_lengths() -> TestResult {
+fn grown_children_of_a_bounded_row_shrink_by_weight_down_to_their_minimums() -> TestResult {
+    // Two grown 300 px children of a 400 px row each give up half the deficit.
     let (ui, root) = mount(
         400.0,
         100.0,
         Row::new([
-            Leaf {
-                natural: (300.0, 20.0),
-                minimum: (0.0, 0.0),
-            }
-            .key("a")
-            .with_grow(1),
-            Leaf {
-                natural: (300.0, 20.0),
-                minimum: (0.0, 0.0),
-            }
-            .key("b")
-            .with_grow(1),
+            wide("a", 300.0, 0.0).with_grow(1),
+            wide("b", 300.0, 0.0).with_grow(1),
         ])
         .gap(Length::new(0.0)?)
         .key("row"),
     )?;
-    let width = |key: &str| -> Result<f32, Box<dyn std::error::Error>> {
-        let id = ui.find_descendant(&root, key)?.ok_or("child")?;
-        Ok(ui.bounds(&id)?.ok_or("laid out")?.width())
-    };
-    assert_eq!(width("a")?, 300.0);
-    assert_eq!(width("b")?, 300.0);
+    assert_eq!(width(&ui, &root, "a")?, 200.0);
+    assert_eq!(width(&ui, &root, "b")?, 200.0);
+    // The column's shortfall, transposed: 700 natural in 400, the 300 deficit
+    // goes 1:3, 75 and 225.
+    let (ui, root) = mount(
+        400.0,
+        100.0,
+        Row::new([
+            wide("fixed", 100.0, 0.0),
+            wide("one", 300.0, 0.0).with_grow(1),
+            wide("three", 300.0, 0.0).with_grow(3),
+        ])
+        .gap(Length::new(0.0)?)
+        .key("page"),
+    )?;
+    assert_eq!(width(&ui, &root, "fixed")?, 100.0);
+    assert_eq!(width(&ui, &root, "one")?, 225.0);
+    assert_eq!(width(&ui, &root, "three")?, 75.0);
+    // A minimum stops one; the other gives the rest.
+    let (ui, root) = mount(
+        400.0,
+        100.0,
+        Row::new([
+            wide("fixed", 100.0, 0.0),
+            wide("one", 300.0, 0.0).with_grow(1),
+            wide("three", 300.0, 250.0).with_grow(3),
+        ])
+        .gap(Length::new(0.0)?)
+        .key("page"),
+    )?;
+    assert_eq!(width(&ui, &root, "three")?, 250.0);
+    assert_eq!(width(&ui, &root, "one")?, 50.0);
+    Ok(())
+}
+
+#[test]
+fn a_bounded_row_bounds_a_grown_horizontal_list() -> TestResult {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(300.0, 100.0, 1.0)?)?;
+    let items = ui.signal(ListSource::new(Rows(200)));
+    let list = VirtualList::new(items.read_only(), 24.0)?
+        .orientation(Orientation::Horizontal)
+        .key("list")
+        .with_grow(1);
+    let root = ui.mount_tree(
+        Row::new([wide("side", 100.0, 0.0), list])
+            .gap(Length::new(0.0)?)
+            .key("row"),
+    )?;
+    for step in 0..3 {
+        ui.flush(Duration::from_millis(step))?;
+    }
+    // Its natural width is its whole 4800 px extent; the row gives it what
+    // the side leaves.
+    assert_eq!(width(&ui, &root, "list")?, 200.0);
+    let mounted = mounted_rows(&ui);
+    assert!(mounted < 30, "{mounted} items mounted");
+    #[cfg(debug_assertions)]
+    assert!(unbounded(&ui).is_empty());
     Ok(())
 }
 

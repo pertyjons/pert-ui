@@ -433,13 +433,30 @@ heights in both measurement and arrangement, including unbounded measurement.
 Row and Column give every child its natural size first, then divide the space
 their own allocation leaves over among children with an `Element::with_grow`
 weight, in proportion to the weights and up to each child's maximum, sharing
-what a maximum stops among the others. When a column's height is bounded
-and its children's natural heights do not fit, the grown children give up the
-difference instead, in proportion to their weights and down to each one's
-minimum, so a grown child fills what the others leave; the column then
-overflows only past the ungrown children's natural heights plus the grown
-children's minimums. Rows do not shrink: a narrower child could wrap to a
-height their measurement does not repeat. The weight is element metadata that
+what a maximum stops among the others. When a row's width or a column's
+height is bounded and its children's natural lengths do not fit, the grown
+children give up the difference instead, in proportion to their weights and
+down to each one's minimum, so a grown child fills what the others leave; the
+container then overflows only past the ungrown children's lengths plus the
+grown children's minimums (for a row, the children's final widths where they
+were not shrunk: any unshrunk fill child, grown or not, counts with its width
+at its fill height, which may differ from its natural one, and every other
+ungrown child with its natural width). A row measures each child it shrank
+again at its final width and takes its height from those measurements, so a
+child that wraps gets the height of its new line count; a column's shrunk
+children keep the widths they were measured at. A fill child is still
+measured at the row's resolved height, capped by the offered height, and its
+result counts in the row's height. Whether a row shrinks, and
+by how much, is decided once from the natural widths; the row's reported
+width, its overflow and the space `Justify` places are computed from the final
+allocations. A fill child the row did not shrink is allocated the width it
+reports at its fill height; one the row shrank keeps its final width. When the
+natural widths fit, growing children share the space left after the final
+allocations, as before; after a shrink no child grows back, even if a fill
+child narrowed. The runtime keeps a component's four most recently used
+measurements, and every theme or font value they read stays a dependency
+until its layout is invalidated; measuring and arranging such a row again
+reuses them. The weight is element metadata that
 reconciliation updates without remounting, and hidden children take no share.
 `Justify` places the space no child takes, and `Align` places children across
 the main axis: a column within its width, a row within its tallest child,

@@ -1213,7 +1213,7 @@ impl Runtime {
             parent: RefCell::new(parent_node.as_ref().map(Rc::downgrade)),
             parent_serial: Cell::new(parent),
             layout_dirty: Cell::new(true),
-            measured: Cell::new(None),
+            measured: Cell::new(measurements::Measurements::default()),
             limits: Cell::new(None),
             bounds: Cell::new(None),
             size: Cell::new(None),
@@ -1712,9 +1712,9 @@ impl Runtime {
         available: Constraints,
     ) -> Result<Size, RuntimeError> {
         let entry = &self.entries[&serial];
-        if let Some((cached, size)) = entry.node.measured.get()
-            && cached == available
-        {
+        let mut measured = entry.node.measured.get();
+        if let Some(size) = measured.get(available) {
+            entry.node.measured.set(measured);
             return Ok(size);
         }
         let _timing =
@@ -1723,8 +1723,9 @@ impl Runtime {
                 .span(crate::ProfileOperation::Measure, Some(serial), &entry.key);
         let children = self.visible_children(serial);
         let limits = self.child_limits(serial)?;
-        entry.node.metric_layout[1].set(0);
-        entry.node.font_layout[1].set(0);
+        // The measurement masks are not reset here: they accumulate the reads
+        // of every retained measurement, evicted ones included, until the
+        // component's layout is invalidated.
         let size = entry
             .component
             .measure(
@@ -1739,7 +1740,9 @@ impl Runtime {
             )
             .inspect_err(|_| self.note_failure(serial, crate::FailurePhase::Measure))?;
         let size = limits.constrain(size);
-        entry.node.measured.set(Some((available, size)));
+        let mut measured = entry.node.measured.get();
+        measured.insert(available, size);
+        entry.node.measured.set(measured);
         Ok(size)
     }
 
@@ -2196,6 +2199,57 @@ mod tests {
         );
         assert!(ui.validation_report().issues.is_empty());
         assert_eq!(ui.validator.logged_lines, 0);
+        Ok(())
+    }
+
+    /// Reads `ControlWidth` at the first width it is measured at and
+    /// `IconSize` at every other.
+    struct TwoReads;
+    impl Component for TwoReads {
+        fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+            Ok(())
+        }
+        fn measure(
+            &self,
+            cx: &MeasureContext<'_>,
+            available: Constraints,
+        ) -> Result<Size, RuntimeError> {
+            let width = available.width().unwrap_or(0.0);
+            let role = if width == 1.0 {
+                MetricRole::ControlWidth
+            } else {
+                MetricRole::IconSize
+            };
+            Ok(Size::new(width, cx.metric(role))?)
+        }
+    }
+
+    #[test]
+    fn measurement_reads_outlive_an_evicted_entry_until_layout_is_invalidated()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let mut ui = Runtime::new();
+        resize(&mut ui, 400.0)?;
+        let root = ui.mount_tree(Element::new("probe", TwoReads))?;
+        ui.flush(ui.now())?;
+        let node = root.0.clone();
+        node.invalidate_layout();
+        let width = |value: f32| Constraints::new(Some(value), None);
+        // Five widths: the first, which read `ControlWidth`, is evicted.
+        for value in [1.0, 2.0, 3.0, 4.0, 5.0] {
+            ui.measure_node(node.serial, width(value)?)?;
+        }
+        let mut measured = node.measured.get();
+        assert!(
+            measured.get(width(1.0)?).is_none(),
+            "the first was replaced"
+        );
+        let reads = node.metric_layout[1].get();
+        assert_ne!(reads & MetricRole::ControlWidth.mask(), 0, "its read stays");
+        assert_ne!(reads & MetricRole::IconSize.mask(), 0);
+        node.invalidate_layout();
+        assert!(node.measured.get().is_empty());
+        assert_eq!(node.metric_layout[1].get(), 0);
+        assert_eq!(node.font_layout[1].get(), 0);
         Ok(())
     }
 }

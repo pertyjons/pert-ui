@@ -12,20 +12,27 @@ impl FontSubscribers {
         if changed == 0 {
             return;
         }
+        // Every subscriber's reads are judged before any is invalidated: a
+        // layout invalidation clears the measurement reads of the node and its
+        // ancestors, which would otherwise hide an ancestor's own reads.
+        let mut invalidated = Vec::new();
         self.0.retain(|_, weak| {
             let Some(node) = weak.upgrade() else {
                 return false;
             };
             if node.font_layout.iter().any(|r| r.get() & changed != 0) {
-                if node.visible.get() {
-                    node.window().theme_geometry_change.set(true);
-                }
-                node.invalidate(Invalidation::Layout);
+                invalidated.push((node, Invalidation::Layout));
             } else if node.font_paint.get() & changed != 0 {
-                node.invalidate(Invalidation::Paint);
+                invalidated.push((node, Invalidation::Paint));
             }
             true
         });
+        for (node, kind) in invalidated {
+            if kind == Invalidation::Layout && node.visible.get() {
+                node.window().theme_geometry_change.set(true);
+            }
+            node.invalidate(kind);
+        }
     }
 }
 /// UI-thread-only access to one runtime's font registry. Clones are weak handles.

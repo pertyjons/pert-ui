@@ -7,6 +7,7 @@ mod drag;
 pub(crate) mod fonts;
 pub(crate) mod held;
 mod inspect;
+mod measurements;
 pub(crate) mod native_windows;
 pub(crate) mod notify;
 #[cfg(debug_assertions)]
@@ -855,7 +856,9 @@ pub(crate) struct Node {
     parent: RefCell<Option<Weak<Node>>>,
     parent_serial: Cell<Option<u64>>,
     layout_dirty: Cell<bool>,
-    measured: Cell<Option<(crate::Constraints, crate::Size)>>,
+    /// The component's most recently used measurements, kept until its layout
+    /// is invalidated.
+    measured: Cell<measurements::Measurements>,
     limits: Cell<Option<crate::SizeLimits>>,
     bounds: Cell<Option<crate::Rect>>,
     /// Allocated size in this component's own local pixels. `bounds` is the same
@@ -977,7 +980,12 @@ impl Node {
     }
     fn invalidate_layout(&self) {
         self.layout_dirty.set(true);
-        self.measured.set(None);
+        self.measured.set(measurements::Measurements::default());
+        // Every measurement's dependencies stay until here, also those of an
+        // evicted entry an ancestor's retained result may have been computed
+        // from.
+        self.metric_layout[1].set(0);
+        self.font_layout[1].set(0);
         self.limits.set(None);
         if self.visible.get() {
             self.window().layout_pending.set(true);
@@ -1738,11 +1746,22 @@ pub trait Component: std::any::Any {
     /// The query reads retained properties during layout; changing the answer
     /// requires layout invalidation. It must not write state or schedule work.
     /// Opting in requests two measurement constraints in each row layout pass,
-    /// for both measurement and arrangement. The runtime keeps one measurement
-    /// cache per component, so implementations should keep measurement cheap
-    /// and retain expensive preparation by its actual inputs. Ordinary siblings
-    /// keep their unchanged constraints and caches; a settled row schedules no
-    /// work through this preference.
+    /// for both measurement and arrangement. The runtime keeps a component's
+    /// four most recently used measurements (see [`Component::measure`]), so
+    /// implementations should keep measurement cheap and retain expensive
+    /// preparation by its actual inputs. Ordinary siblings keep their
+    /// unchanged constraints and caches; a settled row schedules no work
+    /// through this preference.
+    /// When the row shrinks a fill child, its fill measurement uses its final
+    /// width; its natural measurement stays the unbounded one, so it is still
+    /// asked for two constraints. Whether the row shrinks, and by how much, is
+    /// decided from the natural widths. A fill child the row did not shrink
+    /// takes the width it reports at its fill height, and that width counts in
+    /// the row's reported width, its overflow and the space
+    /// [`Justify`](crate::Justify) places; a fill child the row shrank keeps
+    /// its final width whatever its fill measurement reports. When the natural
+    /// widths fit, growing children share the space left after those widths,
+    /// as before; after a shrink, no child grows back.
     /// Other containers can read this preference through
     /// [`MeasureContext::fills_row_height`](crate::MeasureContext::fills_row_height).
     ///
@@ -1858,6 +1877,16 @@ pub trait Component: std::any::Any {
     /// Default reports the largest child extent, or zero for a leaf. Implementations
     /// must use retained data, return validated finite sizes, and not write state.
     /// Measurements can exceed available space to preserve intrinsic minimums.
+    ///
+    /// A container may measure a child at several constraints in one layout
+    /// pass, as a [`Row`](crate::Row) measures a child it shrinks at its natural
+    /// and at its final width. The runtime keeps a component's four most
+    /// recently used measurements until its layout is invalidated and reuses
+    /// one for equal constraints, so a measurement must depend only on the
+    /// constraints, retained data and the theme and font values it reads;
+    /// every value any of its measurements read stays a dependency until the
+    /// component's layout is invalidated. A component asked for more than four
+    /// constraints is measured again, with the same result.
     ///
     /// # Errors
     /// An implementation returns an error when measuring fails; layout stays pending and

@@ -394,14 +394,16 @@ impl ListController {
 /// pane, a [`Container`](crate::Container) or [`CollectionFilter`](crate::CollectionFilter)
 /// with a bounded allocation, a [`Tab::fixed`](crate::Tab::fixed) tab, a
 /// [`RegionLayout::fixed`](crate::RegionLayout::fixed) region, a
-/// [`View::fixed`](crate::View::fixed) view and a grown child of a bounded
-/// [`Column`](crate::Column), which shrinks to what its siblings leave, bound
-/// it. The default [`Tab::new`](crate::Tab::new) and
+/// [`View::fixed`](crate::View::fixed) view, a grown child of a bounded
+/// [`Column`](crate::Column), which shrinks to what its siblings leave, and a
+/// grown child of a bounded [`Row`](crate::Row), along a horizontal axis,
+/// bound it. The default [`Tab::new`](crate::Tab::new) and
 /// [`RegionLayout`](crate::RegionLayout) content and a
 /// [`ScrollArea`](crate::ScrollArea) do not, since they scroll their content at
 /// its natural size. A bounded [`Row`](crate::Row) bounds a vertical list's
-/// height, which it offers to every child, but not a horizontal list's width:
-/// a row's children keep their natural widths. In debug builds validation reports a list of at least 100 rows that
+/// height, which it offers to every child, and a grown horizontal list's
+/// width, which gives up what its siblings need; an ungrown horizontal list
+/// keeps its natural width, its whole content. In debug builds validation reports a list of at least 100 rows that
 /// was given its whole extent while less than half of it is visible, as
 /// [`ValidationCode::UnboundedCollection`](crate::ValidationCode::UnboundedCollection).
 ///

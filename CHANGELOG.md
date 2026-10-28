@@ -1,5 +1,74 @@
 # Changelog
 
+## 0.3.82 (2026-10-28)
+
+Rows that shrink (round 2 fix plan, part P7, R2-21 by decision D7, from its
+approved design checkpoint `plans/usability/round-2-design-P7.md`,
+revision 5, with decision P7-D1).
+
+- Breaking (R2-21, behavior): a grown child of a row whose width is bounded
+  now gives up width when the children's natural widths do not fit, by
+  weight and down to its minimum, as a grown child of a bounded column gives
+  up height since 0.3.25. The row measures each child it shrank again at its
+  final width, so a wrapping label gets its new height and the row grows to
+  it, and an ellipsis label truncates; a grown horizontal collection in a
+  bounded row is now bounded. The row overflows only past its ungrown
+  children's natural widths plus its grown children's minimums, where any
+  fill child the row did not shrink, grown or not, counts with its width at
+  its fill height instead; development validation still reports that
+  overflow as `EscapesParent`. Whether the row shrinks, and by how much, is
+  decided once from the natural widths; its reported width, overflow and
+  justified spare space are computed from the final allocations. An
+  unshrunk fill child is allocated the width it reports at its fill height;
+  a shrunk one keeps its final width. Growth when the natural widths fit
+  works as before; after a shrink no child grows back. Rows that fit, rows
+  without a growing child and rows offered an unbounded width are
+  unchanged. Replacement for a layout that relied on a grown child keeping
+  its natural width: drop its growth weight, or keep a minimum with
+  `Container::new(child).size_limits(SizeLimits::at_least(..))` or the
+  component's own `size_limits`. Rows and columns share one crate-private
+  shortfall computation; a column's results are unchanged.
+- Changed (P7-D1): each component keeps its four most recently used
+  measurements instead of one, so a row that measures a shrunk child at its
+  natural and its final width, measured and arranged at one height or two,
+  reuses them; more than four constraints are measured again, with the same
+  result. `Component::measure`, `Component::fills_row_height`,
+  `MeasureContext::measure` and `ArrangeContext::measure` say so.
+- Fixed (same kind, P7-D1): a component's theme and font dependencies from
+  its measurements stay recorded until its layout is invalidated. Before,
+  they were reset before each new measurement, so an ancestor's cached
+  measurement computed from an earlier result of the component could miss a
+  metric or font change that only that result had read. The theme and font
+  notifiers now judge every subscriber's reads before invalidating any, since
+  a layout invalidation clears the measurement reads of a component and its
+  ancestors.
+- Documentation (R2-21): `Element::with_grow` (with a row example), `Row`,
+  `ProgressBar` (a grown bar beside its percentage), `VirtualList`'s
+  bounded extent and the `UnboundedCollection` message, `docs/contracts.md`,
+  `docs/manual.md`, and guide/layout.md: "Growing, shrinking and stretching
+  rows and columns", the collections paragraph and the new "A progress
+  column".
+- Gallery: the Collections table's Progress column, a growing bar beside its
+  percentage; the Layout page's growth stage is taller and says what a
+  narrow window shows. The gallery README says both.
+- Tests (R2-21, P7-D1): the facade's `foundation` binary replaces
+  `rows_keep_their_lengths`, which encoded the old rule, with the row's
+  weights and minimums (the column test transposed) and adds a grown
+  horizontal list bounded by a row, the bar beside its percentage in a
+  167 px cell, a shrunk child measured again (and the row's uncapped
+  tallest-child height), a fill child following the wrapped height and
+  counting with its fill height, an ellipsis label, residual overflow
+  reported for ungrown children and for a grown minimum, fill children wider
+  and narrower at their fill height with and without a shortfall, the
+  measurement counts of nested shrinking rows, a fitting row, a shrunk fill
+  child, a row in a column redescribed with a new `Justify` and more than
+  four constraints, and metric and font dependencies of an evicted
+  measurement; the runtime adds unit tests of the store and of the sticky
+  dependency bits; the gallery tests the Progress column. Each
+  new-behavior test was shown to fail under its named mutation.
+- No public item is added, removed or changed: the `api/` listings do not
+  change.
+
 ## 0.3.81 (2026-10-28)
 
 Display controls take values (round 2 fix plan, part P6, F16 by decision D1
