@@ -14,6 +14,10 @@ result.
   dependencies, as docs.rs would show it. Start at
   `/kit/doc/pert_ui/index.html`. The library's guide is part of that
   documentation.
+- To read an HTML page in the terminal, use
+  `pandoc -f html -t plain /kit/doc/pert_ui/index.html` (replace the path
+  with the page you need). `pandoc` is available in the sandbox; keep the
+  HTML paths for following links.
 - `/kit/readme`: the README of each `pert-ui` crate.
 - `/kit/friction-log.md`: the template for your friction log.
 - Crates come from an offline registry. Depend on `pert-ui` as an ordinary

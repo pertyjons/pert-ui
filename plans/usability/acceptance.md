@@ -58,7 +58,9 @@ change to the app is listed and does not change behavior.
 
 **5. Background job monitor (reserved).** Progress reaches the UI through the
 library's cross-thread facility, not shared UI objects; cancellation stops
-the worker; a failure shows in the row and as a notification; sorting by
+the worker; a failure shows in the row and as a notification (any failure
+message visible outside the row qualifies, including a plain label, as the
+maintainer decided on 2026-10-27; no particular component is required); sorting by
 every column; no repaint while idle, as far as the library's profiling or
 inspection shows it.
 
