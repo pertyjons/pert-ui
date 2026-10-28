@@ -318,6 +318,22 @@ impl ThemeMetrics {
 
 /// A local spacing override: a live theme role or a fixed logical length.
 /// Fixed lengths still follow DPI and UI zoom, but not density changes.
+///
+/// Builders such as `Container::padding`, `Group::padding`, `Row::gap` and
+/// `Divider::spacing` take `impl Into<Spacing>`, so they accept a
+/// [`MetricRole`], a validated [`Length`](crate::Length) or a whole number of
+/// logical pixels as a `u16`, which is [`Spacing::Fixed`]. An integer literal
+/// such as `24` is unambiguous: `u16` is the only integer type `Spacing`
+/// converts from.
+///
+/// ```
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Container, Element, Label, Length, MetricRole, Row, Spacing};
+/// let card = Container::new(Element::new("title", Label::new("Mixer"))).padding(24);
+/// let row = Row::new([Element::new("card", card)]).gap(MetricRole::ItemGap);
+/// assert_eq!(Spacing::from(24), Spacing::Fixed(Length::from(24)));
+/// # let _ = row;
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Spacing {
     /// Resolve this theme measurement whenever layout changes.
@@ -336,6 +352,12 @@ impl Spacing {
 impl From<crate::Length> for Spacing {
     fn from(value: crate::Length) -> Self {
         Self::Fixed(value)
+    }
+}
+/// A whole number of logical pixels, as [`Spacing::Fixed`].
+impl From<u16> for Spacing {
+    fn from(value: u16) -> Self {
+        Self::Fixed(crate::Length::from(value))
     }
 }
 impl From<MetricRole> for Spacing {

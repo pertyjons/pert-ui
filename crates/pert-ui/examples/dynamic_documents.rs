@@ -24,8 +24,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let target = target.clone();
             let (owned, opened, id, spec) =
                 (owned.clone(), opened.clone(), id.clone(), spec.clone());
-            // Retain this receipt when the application needs to inspect cancellation.
-            let _operation = cx.defer(move |ui| {
+            cx.defer(move |ui| {
                 let (parameter, host) = ui.remote_parameter(id, spec)?;
                 let parent = target.borrow().clone().ok_or(RuntimeError::Unmounted)?;
                 ui.reconcile_children(

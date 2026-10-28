@@ -641,7 +641,7 @@ pub(crate) fn images(ui: &Runtime) -> Result<Element, AppError> {
         let (generation, current) = (latest.get(), latest.clone());
         let (target, status) = (target.clone(), status.clone());
         status.set("Decoding…".to_owned())?;
-        let _task = cx.spawn(
+        cx.spawn(
             || images::decode(BADGE),
             move |result| {
                 if generation != current.get() {

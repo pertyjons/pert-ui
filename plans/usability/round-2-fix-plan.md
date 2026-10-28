@@ -1666,3 +1666,28 @@ plan closes.
   third recheck: no findings, ready (its replayed binary was stale; the
   author ran the closure test at 61c88be against HEAD's listings: 25
   passed). **P2 done.**
+
+- **P3 Small ergonomics (0.3.78), 2026-10-28.** Implemented by a fresh
+  agent from this section (interrupted once by a usage limit and resumed
+  from its tree): `ShownTaskReceipt` (`#[must_use]`, at the root and in
+  `component`, not in the prelude: L2 section 1.2 treats `EventContext` as a
+  hub, and `TaskReceipt` is not there either) returned by
+  `defer_while_shown`; `TaskReceipt` without the attribute; `let _receipt`
+  and the like removed from rustdoc, guide, packaged examples, gallery and
+  tests (same-kind: `let _ =`, `let _task`, `let _enter`, `let _input`
+  bindings of `defer`); `From<u16> for Spacing`; `CaptureError::Unsupported`'s
+  message, pinned by a unit test; `docs/contracts.md` and the G2-8 addendum.
+  Additions beyond the section: `ui.defer(...)?;` in the deny test, a
+  `ShownTaskReceipt` case in the receipt contract test, a shared `Receipt`
+  test helper. Left as they are: `let _task = ui.spawn(..)` bindings, whose
+  `BackgroundTask` is outside D11. Mutation evidence: removing the
+  `Spacing` conversion fails its doctest (E0277); `#[must_use]` back on
+  `TaskReceipt` fails the `foundation` binary at its three unbound calls;
+  removing it from `ShownTaskReceipt` makes the `compile_fail` doctest
+  compile; the old message fails its unit test. No fixture check: the
+  task 4 fixture uses none of these. Gate (fresh): fmt, workspace Clippy,
+  workspace tests (with `testing_closure`), the five headless sessions,
+  doctests, rustdoc `-D warnings`, the diagnostics snapshots, the API
+  listing gate (runtime listings only: the new type, the return type, the
+  conversion), `git diff --check`. Native evidence: not applicable. Codex
+  review: pending.

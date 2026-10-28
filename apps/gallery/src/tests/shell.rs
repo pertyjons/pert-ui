@@ -715,13 +715,12 @@ fn the_gallery_search_lists_content_and_commands_and_jumps_to_a_choice() {
     );
     // Enter arrives from inside a flush, as a native check's driver delivers
     // it, so the picker closes before the jump's task is delivered.
-    let _enter = ui
-        .defer(|ui| {
-            ui.key_input(KeyCode::Enter, KeyAction::Press)?;
-            ui.key_input(KeyCode::Enter, KeyAction::Release)?;
-            Ok(())
-        })
-        .unwrap();
+    ui.defer(|ui| {
+        ui.key_input(KeyCode::Enter, KeyAction::Press)?;
+        ui.key_input(KeyCode::Enter, KeyAction::Release)?;
+        Ok(())
+    })
+    .unwrap();
     settle(&mut ui);
     // The choice queued the jump during that flush; the next one delivers it.
     settle(&mut ui);

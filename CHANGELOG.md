@@ -1,5 +1,59 @@
 # Changelog
 
+## 0.3.78 (2026-10-28)
+
+Small ergonomics (round 2 fix plan, part P3, R2-4 by decision D11 and
+R2-17; no design checkpoint, D11 settles the shape).
+
+- Breaking (R2-4): `EventContext::defer_while_shown` returns
+  `Result<ShownTaskReceipt, RuntimeError>` instead of
+  `Result<TaskReceipt, RuntimeError>`. Replacement usage: name the new type
+  where the receipt is stored, such as
+  `Rc<RefCell<Option<ShownTaskReceipt>>>`; it has the same `status` and
+  `status_binding` over `TaskStatus`, `Clone`, `Eq` and `Debug`. Code that
+  only calls `status()` on the result needs no change.
+- Added (R2-4): `ShownTaskReceipt`, at the crate root and in `component`,
+  the `#[must_use]` receipt of `defer_while_shown`, the one deferral that
+  hiding or removing its component also cancels, which nothing else
+  reports. The attribute is on the type, so `cx.defer_while_shown(...)?;`
+  with the receipt discarded still warns. Not in the prelude: L2's closure
+  treats `EventContext` as a hub whose methods' types belong to their
+  families, and `TaskReceipt` is not there either.
+- Changed (R2-4): `TaskReceipt`, returned by `EventContext::defer`,
+  `EventContext::spawn` and `Runtime::defer`, is no longer `#[must_use]`:
+  only shutdown, or a panic as the operation unwinds, cancels those before
+  delivery, and failures propagate from the flush. `cx.defer(...)?;` and
+  `cx.spawn(...)?;` compile without a warning, and `let _receipt` left the
+  rustdoc examples, the guide (`state.md`, `layout.md`), the packaged
+  examples (`dynamic_documents`, `diagram_editor`), the gallery and the
+  facade's tests. `docs/contracts.md`'s receipt rule and deferral section,
+  the rustdoc of both receipts and the three deferral methods, and the API
+  audit's G2-8 record (an addendum) say which receipt must be used and why.
+- Added (R2-17): `impl From<u16> for Spacing`, as `Spacing::Fixed`, matching
+  `Length`, so `.padding(24)`, `.gap(8)` and `Divider::spacing(4)` compile.
+  An integer literal stays unambiguous, since `u16` is the only integer type
+  `Spacing` converts from. `Spacing`, `Container::padding` and
+  `Group::padding` say so, with a `.padding(24)` example.
+- Changed: `CaptureError::Unsupported`'s message names
+  `Runtime::set_capture_support(true)` and, for a test, the CPU renderer's
+  `CpuRenderer::serve_captures` (the `cpu` feature); a unit test pins it.
+  Moved from P1 (a round 2 tester error, 5-r1-claude-2#7).
+- Tests: the facade's `foundation` binary has a module under
+  `#![deny(unused_must_use)]` that queues with `cx.defer(...)?;`,
+  `cx.spawn(...)?;` and `ui.defer(...)?;` unbound; a `compile_fail` doctest
+  on `ShownTaskReceipt` denies `cx.defer_while_shown(...)?;` under the same
+  lint; the receipt contract test covers `ShownTaskReceipt`; the facade
+  tests share a `Receipt` helper for code that queues with every call.
+
+The `api/` diff: in `api/pert-ui-runtime/default.txt` and `serde.txt`,
+`EventContext::defer_while_shown`'s return type, the item blocks of
+`pert_ui_runtime::ShownTaskReceipt` and
+`pert_ui_runtime::component::ShownTaskReceipt`, and
+`impl From<u16> for Spacing`. The facade's listings do not change: they
+list its root and `component` globs, not the runtime's items. The listings
+record no `#[must_use]` attributes, so the tests above check their
+placement.
+
 ## 0.3.77 (2026-10-28)
 
 Glob membership (round 2 fix plan, part P2, F3 by decision D3 and the

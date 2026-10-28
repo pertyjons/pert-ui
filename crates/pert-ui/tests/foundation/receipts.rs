@@ -162,3 +162,34 @@ fn authority_receipt_binding_follows_the_response_and_status_survives_shutdown()
     ));
     Ok(())
 }
+
+/// `ShownTaskReceipt` follows the same contract over `TaskStatus`, including
+/// the cancellation by hiding that only it reports.
+#[test]
+fn shown_task_receipt_status_follows_cancellation_and_survives_shutdown() -> TestResult {
+    let mut ui = Runtime::new();
+    let owner = ui.mount_tree(Element::new("owner", Owner))?;
+    ui.flush(Duration::ZERO)?;
+    let ran = ui.event(&owner, |cx| cx.defer_while_shown(|_| Ok(())))??;
+    assert_eq!(ran, ran.clone());
+    assert_eq!(ran.status_binding().get()?, TaskStatus::Pending);
+    ui.flush(Duration::ZERO)?;
+    assert_eq!(ran.status(), TaskStatus::Succeeded);
+    let hidden = ui.event(&owner, |cx| cx.defer_while_shown(|_| Ok(())))??;
+    assert_ne!(ran, hidden);
+    ui.set_visible(&owner, false)?;
+    ui.flush(Duration::ZERO)?;
+    assert_eq!(
+        hidden.status(),
+        TaskStatus::Cancelled,
+        "hidden before delivery"
+    );
+    assert_eq!(hidden.status_binding().get()?, TaskStatus::Cancelled);
+    ui.set_visible(&owner, true)?;
+    let discarded = ui.event(&owner, |cx| cx.defer_while_shown(|_| Ok(())))??;
+    ui.shutdown();
+    assert_eq!(discarded.status(), TaskStatus::Cancelled, "shutdown");
+    assert_eq!(ran.status(), TaskStatus::Succeeded);
+    assert_eq!(discarded.status_binding().get(), Err(RuntimeError::Closed));
+    Ok(())
+}

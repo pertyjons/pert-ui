@@ -169,8 +169,16 @@ impl CaptureRequest {
 #[non_exhaustive]
 pub enum CaptureError {
     /// No host has declared that it renders captures; a headless runtime, or
-    /// a custom host that has not called `Runtime::set_capture_support`.
-    #[error("this host does not render captures")]
+    /// a custom host that has not called `Runtime::set_capture_support`. The
+    /// message names that call and, for a test, the CPU renderer's
+    /// `CpuRenderer::serve_captures` (the facade's `cpu` feature), which
+    /// renders the pending captures without a display or GPU once support is
+    /// declared.
+    #[error(
+        "this host does not render captures; a host that renders them calls \
+         `Runtime::set_capture_support(true)`, and a test without a display does that and \
+         then serves them with `CpuRenderer::serve_captures` (the `cpu` feature)"
+    )]
     Unsupported,
     /// The window, component or path does not name a mounted target.
     #[error("the capture target is not mounted")]
@@ -759,6 +767,18 @@ mod png {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// The refusal a test meets without a capture host names the call that
+    /// declares support and the CPU renderer's route.
+    #[test]
+    fn unsupported_names_the_declaration_and_the_cpu_route() {
+        assert_eq!(
+            CaptureError::Unsupported.to_string(),
+            "this host does not render captures; a host that renders them calls \
+             `Runtime::set_capture_support(true)`, and a test without a display does that \
+             and then serves them with `CpuRenderer::serve_captures` (the `cpu` feature)"
+        );
+    }
 
     /// Premultiplies one straight channel the way `RasterImage` does.
     fn premultiply(straight: u8, alpha: u8) -> u8 {

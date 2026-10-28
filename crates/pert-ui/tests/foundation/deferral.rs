@@ -6,6 +6,7 @@
 //! the rules of layering part L4a do, and name the assertion that a compiling
 //! mutation restoring the old rule makes fail; **contract** tests check rules
 //! the part keeps.
+use crate::support::Receipt;
 use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{
@@ -112,7 +113,7 @@ fn defer_while_shown_is_cancelled_when_its_widget_or_window_is_hidden() -> TestR
 }
 
 /// The results of queuing with each `EventContext` form from `cancel_input`.
-type Attempts = Rc<RefCell<Vec<Result<TaskReceipt, RuntimeError>>>>;
+type Attempts = Rc<RefCell<Vec<Result<Receipt, RuntimeError>>>>;
 
 /// Queues one operation of each `EventContext` form whenever its input is
 /// cancelled, which removal does, and keeps the latest results.
@@ -123,9 +124,9 @@ impl Component for QueuesOnCancel {
     }
     fn cancel_input(&mut self, cx: &mut EventContext) {
         *self.0.borrow_mut() = vec![
-            cx.defer(|_| Ok(())),
-            cx.defer_while_shown(|_| Ok(())),
-            cx.spawn(|| (), |()| Ok(())),
+            cx.defer(|_| Ok(())).map(Receipt::from),
+            cx.defer_while_shown(|_| Ok(())).map(Receipt::from),
+            cx.spawn(|| (), |()| Ok(())).map(Receipt::from),
         ];
     }
 }
@@ -171,7 +172,8 @@ fn the_three_calls_run_in_enqueue_order() -> TestResult {
         ["defer", "runtime", "shown", "defer again", "runtime again"]
     );
     assert_eq!(skipped.status(), TaskStatus::Cancelled);
-    for receipt in [first, second, third, fourth, fifth] {
+    assert_eq!(third.status(), TaskStatus::Succeeded);
+    for receipt in [first, second, fourth, fifth] {
         assert_eq!(receipt.status(), TaskStatus::Succeeded);
     }
     Ok(())
@@ -187,14 +189,17 @@ fn capacity_is_shared_by_the_three_calls() -> TestResult {
     let mut receipts = Vec::new();
     for index in 0..Runtime::MAX_TASKS {
         receipts.push(match index % 3 {
-            0 => ui.event(&a, |cx| cx.defer(|_| Ok(())))??,
-            1 => ui.event(&a, |cx| cx.defer_while_shown(|_| Ok(())))??,
-            _ => ui.defer(|_| Ok(()))?,
+            0 => Receipt::from(ui.event(&a, |cx| cx.defer(|_| Ok(())))??),
+            1 => Receipt::from(ui.event(&a, |cx| cx.defer_while_shown(|_| Ok(())))??),
+            _ => Receipt::from(ui.defer(|_| Ok(()))?),
         });
     }
     let full = Err(RuntimeError::TaskQueueFull);
     assert_eq!(ui.event(&a, |cx| cx.defer(|_| Ok(())))?, full);
-    assert_eq!(ui.event(&a, |cx| cx.defer_while_shown(|_| Ok(())))?, full);
+    assert_eq!(
+        ui.event(&a, |cx| cx.defer_while_shown(|_| Ok(())))?,
+        Err(RuntimeError::TaskQueueFull)
+    );
     assert_eq!(ui.event(&a, |cx| cx.spawn(|| (), |()| Ok(())))?, full);
     assert_eq!(ui.defer(|_| Ok(())), full);
 
@@ -212,7 +217,7 @@ fn capacity_is_shared_by_the_three_calls() -> TestResult {
         assert_eq!(receipt.status(), expected, "operation {index}");
     }
     for _ in 0..Runtime::MAX_TASKS {
-        let _receipt = ui.defer(|_| Ok(()))?;
+        ui.defer(|_| Ok(()))?;
     }
     Ok(())
 }
@@ -240,7 +245,8 @@ fn a_nested_flush_keeps_the_order_of_every_form() -> TestResult {
     let fourth = ui.event(&a, |cx| cx.defer(logging(&log, "fourth")))??;
     ui.flush(Duration::ZERO)?;
     assert_eq!(*log.borrow(), ["first", "second", "third", "fourth"]);
-    for receipt in [&first, &second, &third, &fourth] {
+    assert_eq!(second.status(), TaskStatus::Succeeded);
+    for receipt in [&first, &third, &fourth] {
         assert_eq!(receipt.status(), TaskStatus::Succeeded);
     }
     let inner = inner.borrow_mut().take().ok_or("queued inside")?;
@@ -287,14 +293,14 @@ fn shutdown_cancels_every_form() -> TestResult {
     let mut ui = Runtime::new();
     let (a, _) = buttons(&mut ui)?;
     let receipts = [
-        ui.event(&a, |cx| cx.defer(|_| panic!("shutdown must cancel")))??,
-        ui.event(&a, |cx| {
+        Receipt::from(ui.event(&a, |cx| cx.defer(|_| panic!("shutdown must cancel")))??),
+        Receipt::from(ui.event(&a, |cx| {
             cx.defer_while_shown(|_| panic!("shutdown must cancel"))
-        })??,
-        ui.event(&a, |cx| {
+        })??),
+        Receipt::from(ui.event(&a, |cx| {
             cx.spawn(|| panic!("shutdown must cancel the start"), |()| Ok(()))
-        })??,
-        ui.defer(|_| panic!("shutdown must cancel"))?,
+        })??),
+        Receipt::from(ui.defer(|_| panic!("shutdown must cancel"))?),
     ];
     ui.shutdown();
     for receipt in &receipts {

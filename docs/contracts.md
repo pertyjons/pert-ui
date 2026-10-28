@@ -1157,6 +1157,9 @@ the callback closes or redocks: the work runs after the closure, and an
 operation whose targets are gone reports their error, such as `Unmounted`,
 from the flush instead of disappearing. `defer_while_shown` serves a
 component's work on itself, which ends with the component as its timer does.
+Its `ShownTaskReceipt` is `#[must_use]`, since nothing else reports that
+cancellation; the `TaskReceipt` the other two calls return may be dropped, as
+`cx.defer(...)?;` does.
 Routing never cancels a task or fails; a window that is not open is skipped,
 and after the task the earlier selection is restored while its window is
 open. Work that must address the window the event came from captures
@@ -1688,9 +1691,14 @@ Collection selection remains application-owned and addressed by stable key.
 A `*Receipt` reports one queued request through an owned `status()` and a
 `status_binding()` for reactive UI. A receipt is `#[must_use]` when dropping
 it can hide an outcome that nothing else reports, a failure or a
-cancellation: `TaskReceipt` is the only report of a `Cancelled` operation,
-while a `ToastReceipt`'s failing action also propagates and its expiry or
-dismissal is presentation, so it carries no attribute. A cross-thread reply
+cancellation: `ShownTaskReceipt` is the only report of a `defer_while_shown`
+operation cancelled because its component was hidden or removed. A
+`TaskReceipt`'s failure also propagates from the flush and its only
+cancellations, shutdown and a panic as the operation unwinds, are events the
+application sees itself, and a `ToastReceipt`'s failing action also
+propagates and its expiry or dismissal is presentation, so neither carries
+the attribute. The attribute is on the receipt type, not on the method: a
+`#[must_use]` method returning `Result` would be satisfied by `?`. A cross-thread reply
 that carries its answer and is consumed once, such as the `Pending<T>` an
 `InspectionClient` request returns, is not a receipt. A `*Outcome` is the
 non-error result of an interaction or operation, distinct from `Result` as an error carrier. A

@@ -7,6 +7,7 @@
 //! the rules of layering part L4a do, and name the assertion that a compiling
 //! mutation restoring the old rule makes fail; **contract** tests check rules
 //! the part keeps.
+use crate::support::Receipt;
 use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{
@@ -63,7 +64,7 @@ fn viewport(ui: &Runtime) -> TestResult {
 /// Then checks that the callback's widget is hidden or unmounted, delivers
 /// the operation in a second flush and returns the probe's status.
 fn choose_then_deliver(ui: &mut Runtime, code: KeyCode, probe: &Probe) -> TestResult {
-    let _input = ui.defer(move |ui| {
+    ui.defer(move |ui| {
         ui.key_input(code, KeyAction::Press)?;
         ui.key_input(code, KeyAction::Release)?;
         Ok(())
@@ -270,7 +271,7 @@ fn record(seen: &Seen) -> impl FnOnce(&mut Runtime) -> Result<(), RuntimeError> 
 fn close_before_the_flush(
     policy: DetachedClosePolicy,
     shown_only: bool,
-) -> TestResult<(TaskReceipt, Option<NativeWindowId>, NativeWindowId, Runtime)> {
+) -> TestResult<(Receipt, Option<NativeWindowId>, NativeWindowId, Runtime)> {
     let mut ui = Runtime::new();
     let flushing = other_window(&mut ui)?;
     let (view, child) = view(&mut ui)?;
@@ -280,9 +281,9 @@ fn close_before_the_flush(
     ui.select_window(&window)?;
     let receipt = ui.event(&child, |cx| {
         if shown_only {
-            cx.defer_while_shown(record(&seen))
+            cx.defer_while_shown(record(&seen)).map(Receipt::from)
         } else {
-            cx.defer(record(&seen))
+            cx.defer(record(&seen)).map(Receipt::from)
         }
     })??;
     assert_eq!(ui.close_detached_window()?, PresentationStatus::Closed);
@@ -396,9 +397,9 @@ fn deferred_work_follows_its_widget_into_a_new_window() -> TestResult {
         let seen = Seen::default();
         let receipt = ui.event(&child, |cx| {
             if shown_only {
-                cx.defer_while_shown(record(&seen))
+                cx.defer_while_shown(record(&seen)).map(Receipt::from)
             } else {
-                cx.defer(record(&seen))
+                cx.defer(record(&seen)).map(Receipt::from)
             }
         })??;
         let window = detach(&mut ui, &view, DetachedClosePolicy::Redock)?;

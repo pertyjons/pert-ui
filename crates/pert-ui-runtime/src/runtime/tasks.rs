@@ -18,7 +18,8 @@ pub enum TaskStatus {
     Failed(RuntimeError),
 }
 
-/// UI-local receipt for one deferred application operation.
+/// UI-local receipt for one operation queued with [`EventContext::defer`],
+/// [`EventContext::spawn`] or [`Runtime::defer`].
 ///
 /// [`Self::status`] reads the owned status, which stays readable after runtime
 /// shutdown, where [`TaskStatus::Cancelled`] reports an operation the shutdown
@@ -26,10 +27,34 @@ pub enum TaskStatus {
 /// runtime lives. Retaining a receipt does not retain the originating widget or
 /// runtime.
 ///
+/// Dropping the receipt loses no report the application does not already
+/// have, so the type is not `#[must_use]` and a callback writes
+/// `cx.defer(...)?;` without binding it. A failure also propagates from the
+/// flush that delivers the operation, and only runtime shutdown, or a panic
+/// as the operation unwinds, cancels it before it completes: events the
+/// application sees itself. Keep the receipt to show progress, or to tell a
+/// shutdown's cancellation from success afterwards, such as for a save. The
+/// operation a component queues with [`EventContext::defer_while_shown`],
+/// which hiding or removal also cancels, returns a [`ShownTaskReceipt`]
+/// instead.
+///
 /// Receipts compare equal when they report the same operation.
+///
+/// ```
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Runtime, TaskStatus};
+/// use std::time::Duration;
+/// let mut ui = Runtime::new();
+/// let saved = ui.signal(false);
+/// let writer = saved.clone();
+/// let receipt = ui.defer(move |_ui| writer.set(true))?;
+/// assert_eq!(receipt.status(), TaskStatus::Pending);
+/// ui.flush(Duration::ZERO)?;
+/// assert_eq!(receipt.status(), TaskStatus::Succeeded);
+/// assert!(saved.get()?);
+/// # Ok::<(), pert_ui::RuntimeError>(())
+/// ```
 #[derive(Clone)]
-#[must_use = "the receipt is the only report of a `Cancelled` operation; failures also \
-              propagate from flush"]
 pub struct TaskReceipt(ReceiptStatus<TaskStatus>);
 impl TaskReceipt {
     /// Current admission/delivery outcome, including cancellation after teardown.
@@ -61,6 +86,68 @@ impl std::fmt::Debug for TaskReceipt {
     }
 }
 
+/// UI-local receipt for one operation a component queued on its own behalf
+/// with [`EventContext::defer_while_shown`].
+///
+/// It reads like a [`TaskReceipt`]: [`Self::status`] is the owned status,
+/// readable after runtime shutdown, and [`Self::status_binding`] mirrors it as
+/// a binding while the runtime lives. Retaining it does not retain the
+/// component or the runtime. Receipts compare equal when they report the same
+/// operation.
+///
+/// The type is `#[must_use]` because it is the only report of the
+/// cancellation this operation alone has: [`TaskStatus::Cancelled`] when the
+/// component is hidden or removed before delivery, which no flush and no
+/// other call reports. A failure also propagates from the flush, as for
+/// every queued operation. Because the attribute is on the receipt and not on
+/// the `Result` that carries it, discarding the receipt after `?` still warns;
+/// bind it as `let _receipt` only where skipping the operation silently is the
+/// intent.
+///
+/// ```compile_fail
+/// #![deny(unused_must_use)]
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{EventContext, RuntimeError};
+/// fn refresh(cx: &EventContext) -> Result<(), RuntimeError> {
+///     cx.defer_while_shown(|_ui| Ok(()))?; // denied: the receipt is discarded
+///     Ok(())
+/// }
+/// ```
+#[derive(Clone)]
+#[must_use = "the receipt is the only report of a `Cancelled` operation, including the \
+              cancellation by hiding or removing its component; failures also propagate \
+              from flush"]
+pub struct ShownTaskReceipt(ReceiptStatus<TaskStatus>);
+impl ShownTaskReceipt {
+    /// Current admission/delivery outcome, including cancellation by hiding,
+    /// removal or teardown. Reading creates no subscription or timer.
+    #[must_use]
+    pub fn status(&self) -> TaskStatus {
+        self.0.get()
+    }
+    /// The same status as a binding, so a component that reads it during
+    /// update is invalidated when the operation finishes or is cancelled. Like
+    /// every binding it reads `Err(RuntimeError::Closed)` after runtime
+    /// shutdown; use [`Self::status`] then.
+    pub fn status_binding(&self) -> ReadSignal<TaskStatus> {
+        self.0.binding()
+    }
+}
+impl PartialEq for ShownTaskReceipt {
+    fn eq(&self, other: &Self) -> bool {
+        self.0.same(&other.0)
+    }
+}
+impl Eq for ShownTaskReceipt {}
+/// Shows the current status, as [`ShownTaskReceipt::status`] reads it.
+impl std::fmt::Debug for ShownTaskReceipt {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ShownTaskReceipt")
+            .field("status", &self.status())
+            .finish()
+    }
+}
+
 type Action = Box<dyn FnOnce(&mut Runtime) -> Result<(), RuntimeError>>;
 /// What a queued operation's delivery and routing depend on.
 enum Owner {
@@ -81,16 +168,20 @@ enum Owner {
 pub(super) struct Queued {
     owner: Owner,
     action: Option<Action>,
-    receipt: TaskReceipt,
+    receipt: ReceiptStatus<TaskStatus>,
 }
 impl Drop for Queued {
     fn drop(&mut self) {
-        if self.receipt.status() == TaskStatus::Pending {
-            self.receipt.0.set(TaskStatus::Cancelled);
+        if self.receipt.get() == TaskStatus::Pending {
+            self.receipt.set(TaskStatus::Cancelled);
         }
     }
 }
-fn enqueue(shared: &Rc<Shared>, owner: Owner, action: Action) -> Result<TaskReceipt, RuntimeError> {
+fn enqueue(
+    shared: &Rc<Shared>,
+    owner: Owner,
+    action: Action,
+) -> Result<ReceiptStatus<TaskStatus>, RuntimeError> {
     // Shutdown clears the queue early in teardown; an operation queued after
     // that, such as from a `cancel_input` that removal calls, would never be
     // delivered or cancelled.
@@ -102,7 +193,7 @@ fn enqueue(shared: &Rc<Shared>, owner: Owner, action: Action) -> Result<TaskRece
     if queue.len() >= Runtime::MAX_TASKS {
         return Err(RuntimeError::TaskQueueFull);
     }
-    let receipt = TaskReceipt(ReceiptStatus::new(shared.clone(), TaskStatus::Pending));
+    let receipt = ReceiptStatus::new(shared.clone(), TaskStatus::Pending);
     queue.push_back(Queued {
         owner,
         action: Some(action),
@@ -150,9 +241,11 @@ impl EventContext {
     /// it unwinds, and the operations behind it stay queued until the next
     /// delivery or shutdown.
     ///
-    /// A dropped receipt still surfaces `Failed` through the flush, but
-    /// `Cancelled` only through the receipt, so keep it when a skipped
-    /// operation matters, such as a save. Focus/capture are not transferred
+    /// The [`TaskReceipt`] may be dropped, as `cx.defer(...)?;` does: a
+    /// failure also propagates from the flush, and the only cancellations,
+    /// shutdown and a panic as the operation unwinds, are events the
+    /// application sees itself. Keep it to tell a shutdown's cancellation
+    /// from success afterwards, such as for a save. Focus/capture are not transferred
     /// to replacement widgets. New operations queued during delivery wait for
     /// the next flush. Errors propagate from flush and remain in the receipt;
     /// partial application work is not rolled back or replayed. A returned
@@ -189,7 +282,7 @@ impl EventContext {
     ///             // Answering `Pending` closes the picker, which hides the row
     ///             // this callback runs for; the queued work still runs.
     ///             let (result, key) = (writer.clone(), item.key.clone());
-    ///             let _receipt = cx.defer(move |_ui| {
+    ///             cx.defer(move |_ui| {
     ///                 // Work that flushes, such as revealing a page, goes here.
     ///                 result.set(Some(key))
     ///             })?;
@@ -225,6 +318,7 @@ impl EventContext {
             },
             Box::new(action),
         )
+        .map(TaskReceipt)
     }
 
     /// Queues an operation on this component's behalf, cancelled when the
@@ -237,26 +331,31 @@ impl EventContext {
     ///
     /// Timing class: [at the next flush](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#at-the-next-flush).
     ///
-    /// The receipt reads `Cancelled` without running the operation when, at
-    /// delivery, the component is unmounted or not effectively visible: hidden
-    /// itself or through an ancestor, on a surface that has closed, or in a
-    /// native window that is hidden. Runtime shutdown also cancels it.
-    /// Otherwise it runs with the component's window at delivery selected,
-    /// wherever detaching or redocking has moved it. Delivery order, receipts,
-    /// errors, nested flushes and capacity match [`Self::defer`], with which
-    /// it shares one queue.
+    /// The [`ShownTaskReceipt`] reads `Cancelled` without running the
+    /// operation when, at delivery, the component is unmounted or not
+    /// effectively visible: hidden itself or through an ancestor, on a surface
+    /// that has closed, or in a native window that is hidden. Runtime shutdown
+    /// also cancels it. Otherwise it runs with the component's window at
+    /// delivery selected, wherever detaching or redocking has moved it.
+    /// Delivery order, statuses, errors, nested flushes and capacity match
+    /// [`Self::defer`], with which it shares one queue.
+    ///
+    /// Nothing but the receipt reports a cancellation by hiding or removal,
+    /// so its type is `#[must_use]` and discarding it after `?` warns, unlike
+    /// [`Self::defer`]'s [`TaskReceipt`]. Keep it, or bind it as
+    /// `let _receipt` where skipping the work silently is the intent.
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
     /// use pert_ui::{
     ///     Component, Element, EventContext, InputOutcome, KeyAction, KeyCode, KeyEvent,
-    ///     KeyTransition, KeyboardState, Runtime, RuntimeError, TaskReceipt, TaskStatus,
+    ///     KeyTransition, KeyboardState, Runtime, RuntimeError, ShownTaskReceipt, TaskStatus,
     ///     UpdateContext,
     /// };
     /// use std::{cell::RefCell, rc::Rc, time::Duration};
     ///
     /// /// Refreshes its own content one flush after Enter, while it is shown.
-    /// struct Refreshing(Rc<RefCell<Option<TaskReceipt>>>);
+    /// struct Refreshing(Rc<RefCell<Option<ShownTaskReceipt>>>);
     /// impl Component for Refreshing {
     ///     fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> { Ok(()) }
     ///     fn focusable(&self) -> bool { true }
@@ -282,7 +381,7 @@ impl EventContext {
     /// // Hidden before the flush delivers it: the refresh is skipped.
     /// ui.set_visible(&id, false)?;
     /// ui.flush(Duration::ZERO)?;
-    /// let status = receipt.borrow().as_ref().map(TaskReceipt::status);
+    /// let status = receipt.borrow().as_ref().map(ShownTaskReceipt::status);
     /// assert_eq!(status, Some(TaskStatus::Cancelled));
     /// # Ok::<(), RuntimeError>(())
     /// ```
@@ -294,12 +393,13 @@ impl EventContext {
     pub fn defer_while_shown(
         &self,
         action: impl FnOnce(&mut Runtime) -> Result<(), RuntimeError> + 'static,
-    ) -> Result<TaskReceipt, RuntimeError> {
+    ) -> Result<ShownTaskReceipt, RuntimeError> {
         enqueue(
             &self.node.shared,
             Owner::Shown(Rc::downgrade(&self.node)),
             Box::new(action),
         )
+        .map(ShownTaskReceipt)
     }
 
     /// Starts `work` on a background thread from a callback and hands its
@@ -319,7 +419,7 @@ impl EventContext {
     /// [`RuntimeError::BackgroundPanicked`], and nothing is delivered after
     /// shutdown.
     ///
-    /// The receipt reports the start, not the result:
+    /// The [`TaskReceipt`] reports the start, not the result:
     ///
     /// - [`TaskStatus::Succeeded`]: the thread started.
     /// - [`TaskStatus::Failed`]: [`Runtime::spawn`] refused with that error
@@ -328,6 +428,9 @@ impl EventContext {
     ///   the operating system's reason, or `Exhausted`. As for every queued
     ///   operation, the error also propagates from that flush.
     /// - [`TaskStatus::Cancelled`]: the runtime shut down before the start.
+    ///
+    /// It may be dropped, as `cx.spawn(...)?;` does, for the reasons
+    /// [`Self::defer`] gives.
     ///
     /// There is no handle to cancel the delivery. Code that must discard a
     /// result that has not been delivered, or tie the start to a component,
@@ -349,7 +452,7 @@ impl EventContext {
     ///     // Real work would read a file; the result carries any failure.
     ///     let text = String::from("one two three");
     ///     let shown = shown.clone();
-    ///     let _receipt = cx.spawn(
+    ///     cx.spawn(
     ///         move || text.split_whitespace().count(),
     ///         move |words| shown.set(format!("{words} words")),
     ///     )?;
@@ -391,8 +494,9 @@ impl Runtime {
 
     /// Queues an application-owned operation, independent of a widget lifetime.
     /// Delivery, receipts, errors and capacity match [`EventContext::defer`],
-    /// including that only runtime shutdown cancels it before delivery and
-    /// that nothing cancels it once it executes. The selection is not changed:
+    /// including that only runtime shutdown cancels it before delivery, that
+    /// nothing cancels it once it executes and that its [`TaskReceipt`] may be
+    /// dropped. The selection is not changed:
     /// the operation runs with whichever window the delivering flush has
     /// selected; select one explicitly for window-specific work.
     ///
@@ -405,7 +509,7 @@ impl Runtime {
         &self,
         action: impl FnOnce(&mut Self) -> Result<(), RuntimeError> + 'static,
     ) -> Result<TaskReceipt, RuntimeError> {
-        enqueue(&self.shared, Owner::Application, Box::new(action))
+        enqueue(&self.shared, Owner::Application, Box::new(action)).map(TaskReceipt)
     }
 
     pub(super) fn dispatch_tasks(&mut self) -> Result<(), RuntimeError> {
@@ -473,7 +577,7 @@ impl Runtime {
                 Ok(()) => TaskStatus::Succeeded,
                 Err(e) => TaskStatus::Failed(e.clone()),
             };
-            task.receipt.0.set(status);
+            task.receipt.set(status);
             result?;
         }
         Ok(())

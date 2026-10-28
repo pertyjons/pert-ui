@@ -51,6 +51,7 @@ mod sink_follow_ups;
 mod standard_traits;
 mod startup_viewport;
 mod state_owner;
+mod task_receipts;
 mod transforms;
 mod unbounded_collections;
 mod vector_geometry;

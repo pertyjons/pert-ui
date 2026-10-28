@@ -3159,7 +3159,7 @@ pub fn pert_ui_runtime::EventContext::command_context(&self, pert_ui_runtime::Co
 pub fn pert_ui_runtime::EventContext::invoke_command(&self, &pert_ui_runtime::CommandId, pert_ui_runtime::CommandContext) -> core::result::Result<pert_ui_runtime::CommandReceipt, pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::EventContext
 pub fn pert_ui_runtime::EventContext::defer(&self, impl core::ops::function::FnOnce(&mut pert_ui_runtime::Runtime) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::EventContext::defer_while_shown(&self, impl core::ops::function::FnOnce(&mut pert_ui_runtime::Runtime) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::EventContext::defer_while_shown(&self, impl core::ops::function::FnOnce(&mut pert_ui_runtime::Runtime) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::ShownTaskReceipt, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::EventContext::spawn<T: core::marker::Send + 'static>(&self, impl core::ops::function::FnOnce() -> T + core::marker::Send + 'static, impl core::ops::function::FnOnce(T) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::EventContext
 pub fn pert_ui_runtime::EventContext::drag_active(&self) -> bool
@@ -3878,6 +3878,24 @@ impl core::marker::Unpin for pert_ui_runtime::ShortcutBinding
 impl core::marker::UnsafeUnpin for pert_ui_runtime::ShortcutBinding
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ShortcutBinding
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ShortcutBinding
+pub struct pert_ui_runtime::component::ShownTaskReceipt(_)
+impl pert_ui_runtime::ShownTaskReceipt
+pub fn pert_ui_runtime::ShownTaskReceipt::status(&self) -> pert_ui_runtime::TaskStatus
+pub fn pert_ui_runtime::ShownTaskReceipt::status_binding(&self) -> pert_ui_runtime::ReadSignal<pert_ui_runtime::TaskStatus>
+impl core::clone::Clone for pert_ui_runtime::ShownTaskReceipt
+pub fn pert_ui_runtime::ShownTaskReceipt::clone(&self) -> pert_ui_runtime::ShownTaskReceipt
+impl core::cmp::Eq for pert_ui_runtime::ShownTaskReceipt
+impl core::cmp::PartialEq for pert_ui_runtime::ShownTaskReceipt
+pub fn pert_ui_runtime::ShownTaskReceipt::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::ShownTaskReceipt
+pub fn pert_ui_runtime::ShownTaskReceipt::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for pert_ui_runtime::ShownTaskReceipt
+impl !core::marker::Send for pert_ui_runtime::ShownTaskReceipt
+impl !core::marker::Sync for pert_ui_runtime::ShownTaskReceipt
+impl core::marker::Unpin for pert_ui_runtime::ShownTaskReceipt
+impl core::marker::UnsafeUnpin for pert_ui_runtime::ShownTaskReceipt
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ShownTaskReceipt
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ShownTaskReceipt
 pub struct pert_ui_runtime::component::Signal<T>
 impl pert_ui_runtime::Signal<bool>
 pub fn pert_ui_runtime::Signal<bool>::toggle(&self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
@@ -15197,6 +15215,8 @@ impl core::convert::From<pert_ui_runtime::Length> for pert_ui_runtime::Spacing
 pub fn pert_ui_runtime::Spacing::from(pert_ui_runtime::Length) -> Self
 impl core::convert::From<pert_ui_runtime::MetricRole> for pert_ui_runtime::Spacing
 pub fn pert_ui_runtime::Spacing::from(pert_ui_runtime::MetricRole) -> Self
+impl core::convert::From<u16> for pert_ui_runtime::Spacing
+pub fn pert_ui_runtime::Spacing::from(u16) -> Self
 impl core::fmt::Debug for pert_ui_runtime::Spacing
 pub fn pert_ui_runtime::Spacing::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Copy for pert_ui_runtime::Spacing
@@ -17409,7 +17429,7 @@ pub fn pert_ui_runtime::EventContext::command_context(&self, pert_ui_runtime::Co
 pub fn pert_ui_runtime::EventContext::invoke_command(&self, &pert_ui_runtime::CommandId, pert_ui_runtime::CommandContext) -> core::result::Result<pert_ui_runtime::CommandReceipt, pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::EventContext
 pub fn pert_ui_runtime::EventContext::defer(&self, impl core::ops::function::FnOnce(&mut pert_ui_runtime::Runtime) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::EventContext::defer_while_shown(&self, impl core::ops::function::FnOnce(&mut pert_ui_runtime::Runtime) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::EventContext::defer_while_shown(&self, impl core::ops::function::FnOnce(&mut pert_ui_runtime::Runtime) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::ShownTaskReceipt, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::EventContext::spawn<T: core::marker::Send + 'static>(&self, impl core::ops::function::FnOnce() -> T + core::marker::Send + 'static, impl core::ops::function::FnOnce(T) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::EventContext
 pub fn pert_ui_runtime::EventContext::drag_active(&self) -> bool
@@ -29112,6 +29132,8 @@ impl core::convert::From<pert_ui_runtime::Length> for pert_ui_runtime::Spacing
 pub fn pert_ui_runtime::Spacing::from(pert_ui_runtime::Length) -> Self
 impl core::convert::From<pert_ui_runtime::MetricRole> for pert_ui_runtime::Spacing
 pub fn pert_ui_runtime::Spacing::from(pert_ui_runtime::MetricRole) -> Self
+impl core::convert::From<u16> for pert_ui_runtime::Spacing
+pub fn pert_ui_runtime::Spacing::from(u16) -> Self
 impl core::fmt::Debug for pert_ui_runtime::Spacing
 pub fn pert_ui_runtime::Spacing::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Copy for pert_ui_runtime::Spacing
@@ -33158,7 +33180,7 @@ pub fn pert_ui_runtime::EventContext::command_context(&self, pert_ui_runtime::Co
 pub fn pert_ui_runtime::EventContext::invoke_command(&self, &pert_ui_runtime::CommandId, pert_ui_runtime::CommandContext) -> core::result::Result<pert_ui_runtime::CommandReceipt, pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::EventContext
 pub fn pert_ui_runtime::EventContext::defer(&self, impl core::ops::function::FnOnce(&mut pert_ui_runtime::Runtime) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
-pub fn pert_ui_runtime::EventContext::defer_while_shown(&self, impl core::ops::function::FnOnce(&mut pert_ui_runtime::Runtime) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::EventContext::defer_while_shown(&self, impl core::ops::function::FnOnce(&mut pert_ui_runtime::Runtime) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::ShownTaskReceipt, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::EventContext::spawn<T: core::marker::Send + 'static>(&self, impl core::ops::function::FnOnce() -> T + core::marker::Send + 'static, impl core::ops::function::FnOnce(T) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> core::result::Result<pert_ui_runtime::TaskReceipt, pert_ui_runtime::RuntimeError>
 impl pert_ui_runtime::EventContext
 pub fn pert_ui_runtime::EventContext::drag_active(&self) -> bool
@@ -38868,6 +38890,24 @@ impl core::marker::Unpin for pert_ui_runtime::Show
 impl core::marker::UnsafeUnpin for pert_ui_runtime::Show
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Show
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Show
+pub struct pert_ui_runtime::ShownTaskReceipt(_)
+impl pert_ui_runtime::ShownTaskReceipt
+pub fn pert_ui_runtime::ShownTaskReceipt::status(&self) -> pert_ui_runtime::TaskStatus
+pub fn pert_ui_runtime::ShownTaskReceipt::status_binding(&self) -> pert_ui_runtime::ReadSignal<pert_ui_runtime::TaskStatus>
+impl core::clone::Clone for pert_ui_runtime::ShownTaskReceipt
+pub fn pert_ui_runtime::ShownTaskReceipt::clone(&self) -> pert_ui_runtime::ShownTaskReceipt
+impl core::cmp::Eq for pert_ui_runtime::ShownTaskReceipt
+impl core::cmp::PartialEq for pert_ui_runtime::ShownTaskReceipt
+pub fn pert_ui_runtime::ShownTaskReceipt::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::ShownTaskReceipt
+pub fn pert_ui_runtime::ShownTaskReceipt::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for pert_ui_runtime::ShownTaskReceipt
+impl !core::marker::Send for pert_ui_runtime::ShownTaskReceipt
+impl !core::marker::Sync for pert_ui_runtime::ShownTaskReceipt
+impl core::marker::Unpin for pert_ui_runtime::ShownTaskReceipt
+impl core::marker::UnsafeUnpin for pert_ui_runtime::ShownTaskReceipt
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ShownTaskReceipt
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ShownTaskReceipt
 pub struct pert_ui_runtime::Signal<T>
 impl pert_ui_runtime::Signal<bool>
 pub fn pert_ui_runtime::Signal<bool>::toggle(&self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>

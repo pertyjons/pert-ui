@@ -10,7 +10,37 @@
 //! reports the calling line.
 #![allow(dead_code)]
 
-use pert_ui::{KeyAction, KeyCode, Runtime, WidgetId};
+use pert_ui::{KeyAction, KeyCode, Runtime, ShownTaskReceipt, TaskReceipt, TaskStatus, WidgetId};
+
+/// Either deferral receipt, so a test that queues with every call reads their
+/// statuses through one type: [`TaskReceipt`] from `defer`, `spawn` and
+/// `Runtime::defer`, [`ShownTaskReceipt`] from `defer_while_shown`.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum Receipt {
+    /// From `EventContext::defer`, `EventContext::spawn` or `Runtime::defer`.
+    Task(TaskReceipt),
+    /// From `EventContext::defer_while_shown`.
+    Shown(ShownTaskReceipt),
+}
+impl Receipt {
+    /// The receipt's owned status.
+    pub fn status(&self) -> TaskStatus {
+        match self {
+            Self::Task(receipt) => receipt.status(),
+            Self::Shown(receipt) => receipt.status(),
+        }
+    }
+}
+impl From<TaskReceipt> for Receipt {
+    fn from(receipt: TaskReceipt) -> Self {
+        Self::Task(receipt)
+    }
+}
+impl From<ShownTaskReceipt> for Receipt {
+    fn from(receipt: ShownTaskReceipt) -> Self {
+        Self::Shown(receipt)
+    }
+}
 
 /// The descendant of `root` reached by `keys`, one key per level and every
 /// level named, including the keys built-in composites give the parts they

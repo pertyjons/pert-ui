@@ -156,7 +156,8 @@ impl Group {
         }
     }
     /// Uses equal padding: a fixed [`Length`] in logical pixels, retained
-    /// across densities, or a [`MetricRole`] resolved from the theme, as
+    /// across densities and written as a `u16` such as `.padding(24)` or a
+    /// validated [`Length`], or a [`MetricRole`] resolved from the theme, as
     /// [`Spacing`] describes. The default is `MetricRole::GroupPadding`. The
     /// inward border occupies this padding; zero permits content up to the
     /// edge. Each call replaces the earlier padding.

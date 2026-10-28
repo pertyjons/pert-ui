@@ -564,7 +564,7 @@ fn an_earlier_site_of_the_same_flush_stays_authoritative() -> TestResult {
     let switch = support::key_path(&ui, &root, &["switch"]).ok_or("mounted")?;
     let repair = failing.clone();
     let outer_dup = dup.clone();
-    let _task = ui.defer(move |ui| {
+    ui.defer(move |ui| {
         repair.set(true);
         ui.invalidate(&switch, Invalidation::Layout)?;
         assert!(ui.flush(Duration::ZERO).is_err());

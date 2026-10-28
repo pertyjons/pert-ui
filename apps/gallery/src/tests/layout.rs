@@ -752,13 +752,12 @@ fn the_navigation_page_moves_back_and_forward_through_its_history() {
     settle(&mut ui);
     // Native check drivers may deliver Enter during a flush. Closing the
     // choosing row must not cancel the demo's queued restoration.
-    let _enter = ui
-        .defer(|ui| {
-            ui.key_input(KeyCode::Enter, KeyAction::Press)?;
-            ui.key_input(KeyCode::Enter, KeyAction::Release)?;
-            Ok(())
-        })
-        .unwrap();
+    ui.defer(|ui| {
+        ui.key_input(KeyCode::Enter, KeyAction::Press)?;
+        ui.key_input(KeyCode::Enter, KeyAction::Release)?;
+        Ok(())
+    })
+    .unwrap();
     settle(&mut ui);
     settle(&mut ui);
     assert_eq!(text(&ui, "history-shown"), ["Showing Gamma".to_owned()]);

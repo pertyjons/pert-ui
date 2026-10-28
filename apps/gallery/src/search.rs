@@ -108,7 +108,7 @@ pub(crate) fn search_picker(
                 // jump is refused.
                 let outcome = cx.signal(None::<Result<(), String>>);
                 let writer = outcome.clone();
-                let _ = cx.defer(move |ui| {
+                cx.defer(move |ui| {
                     let result = match ui.jump_to_content(&target) {
                         Ok(jump) => describe_jump(&jump),
                         Err(error) => Err(error.to_string()),

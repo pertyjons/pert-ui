@@ -1148,7 +1148,7 @@ fn clock(ui: &Runtime) -> Element {
             return Ok(());
         }
         let (counter, running) = (counter.clone(), running.clone());
-        let _task = cx.defer(move |ui| {
+        cx.defer(move |ui| {
             // A second Start queued before this task ran finds the clock
             // running and starts nothing.
             if running.borrow().is_some() {

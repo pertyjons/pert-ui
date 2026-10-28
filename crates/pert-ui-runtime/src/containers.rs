@@ -166,8 +166,9 @@ impl Container {
         self
     }
     /// Uses equal padding on all four sides: a fixed [`Length`] in logical
-    /// pixels, or a [`MetricRole`] resolved from the theme at each layout, as
-    /// [`Spacing`] describes. The default is none; no margin is implicit, and
+    /// pixels, written as a `u16` such as `.padding(24)` or a validated
+    /// [`Length`], or a [`MetricRole`] resolved from the theme at each layout,
+    /// as [`Spacing`] describes. The default is none; no margin is implicit, and
     /// `MetricRole::ContentMargin` suits an outer content boundary. Each call
     /// replaces the earlier padding.
     pub fn padding(mut self, padding: impl Into<Spacing>) -> Self {

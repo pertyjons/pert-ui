@@ -109,7 +109,7 @@ fn build(ui: &mut Runtime) -> Result<(Signal<String>, WidgetId), RuntimeError> {
         // Real work would read a file; the result carries any failure.
         let text = String::from("one two three");
         let shown = shown.clone();
-        let _receipt = cx.spawn(
+        cx.spawn(
             move || text.split_whitespace().count(),
             move |words| shown.set(format!("{words} words")),
         )?;

@@ -636,7 +636,7 @@ fn build(ui: &mut Runtime) -> Result<TaskList, RuntimeError> {
         // the row's title is found below it by the row's key.
         .on_activate(|cx, key| {
             let (list, key) = (cx.id(), key.to_owned());
-            let _receipt = cx.defer(move |ui| {
+            cx.defer(move |ui| {
                 let Some(title) = ui.find(&list, &[key.as_str(), "title"])? else {
                     return Ok(());
                 };

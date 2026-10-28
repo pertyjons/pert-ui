@@ -14,9 +14,9 @@ or open it with `cargo run -p pert-ui --example diagram_editor --features cpu --
 
 Application code globs [`prelude`]. A widget module globs [`component`],
 which holds every name implementing [`Component`] writes: its contexts,
-drawing, input events, drag and drop, receipts such as a [`TaskReceipt`],
-native windows, editor sessions, the [`DraftEditor`] a widget embeds,
-[`Element`] and the signals. A module that also uses built-in components or
+drawing, input events, drag and drop, receipts such as a
+[`ShownTaskReceipt`], native windows, editor sessions, the [`DraftEditor`] a
+widget embeds, [`Element`] and the signals. A module that also uses built-in components or
 runs a [`Runtime`], such as a container that describes built-in controls or
 the widget's tests, adds [`prelude`]; the two globs combine, since they
 re-export the same items. A module globs only what it uses: a glob none of

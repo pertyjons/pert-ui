@@ -187,12 +187,11 @@ fn a_shutdown_during_the_check_returns_the_original_cause() {
     // cannot arise while a helper holds `&mut Runtime` outside a phase, so the
     // `Cleanup` variant has no public trigger today.
     let mut ui = Runtime::new();
-    let _task = ui
-        .defer(|ui| {
-            ui.shutdown();
-            Err(ApplicationError::from("task failed").into())
-        })
-        .unwrap();
+    ui.defer(|ui| {
+        ui.shutdown();
+        Err(ApplicationError::from("task failed").into())
+    })
+    .unwrap();
     let label = || Element::new("c", Label::new("Caption"));
     let error = redescribe(&mut ui, label(), label()).unwrap_err();
     assert!(

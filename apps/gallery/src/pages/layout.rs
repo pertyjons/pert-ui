@@ -561,7 +561,7 @@ fn nested_tabs(ui: &Runtime) -> Result<Element, RuntimeError> {
                     .into_iter()
                     .map(Tab::into_element)
                     .collect();
-                let _task = cx.defer(move |ui| ui.reconcile_children(&strip, tabs))?;
+                cx.defer(move |ui| ui.reconcile_children(&strip, tabs))?;
                 Ok(true)
             }),
     ))

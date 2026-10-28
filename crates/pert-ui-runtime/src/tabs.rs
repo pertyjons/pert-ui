@@ -534,7 +534,7 @@ impl Tabs {
     ///         order.insert(boundary - usize::from(from < boundary), moved);
     ///         let strip = cx.id();
     ///         let tabs = order.iter().map(|key| tab(key).into_element()).collect();
-    ///         let _task = cx.defer(move |ui| ui.reconcile_children(&strip, tabs))?;
+    ///         cx.defer(move |ui| ui.reconcile_children(&strip, tabs))?;
     ///         Ok(true)
     ///     },
     /// );

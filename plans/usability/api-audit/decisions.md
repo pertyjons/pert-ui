@@ -725,6 +725,17 @@ in index order.
   - Slice 6, with G2-7 and F19.
 - **Depends on:** G2-7 (F19, `CommandId`) and G3-21 (the receipt rule for
   `Pending<T>`).
+- **Addendum (2026-10-28, round 2 fix plan D11, 0.3.78):** the rule holds
+  unchanged; its application to `TaskReceipt` changed with the facts. Since
+  layering part L4a only shutdown, and a panic as the operation unwinds,
+  cancel `EventContext::defer`, `EventContext::spawn` and `Runtime::defer`
+  before delivery: events the application already knows, while failures
+  propagate from the flush. Hiding or removal cancels only
+  `EventContext::defer_while_shown`. That method now returns its own
+  `#[must_use]` `ShownTaskReceipt`, and `TaskReceipt` loses the attribute,
+  so `cx.defer(...)?;` needs no `let _receipt`. The attribute is on the
+  type because one on the method would apply to the `Result`, which `?`
+  consumes (round 2 finding R2-4).
 
 ### G2-13 Reconciliation that publishes signals
 

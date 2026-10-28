@@ -139,13 +139,12 @@ fn the_history_list_searches_and_returns_to_a_place() {
     settle(&mut ui);
     // Enter arrives from inside a flush, as a native check's driver delivers
     // it, so the list closes before the restoration's task is delivered.
-    let _enter = ui
-        .defer(|ui| {
-            ui.key_input(KeyCode::Enter, KeyAction::Press)?;
-            ui.key_input(KeyCode::Enter, KeyAction::Release)?;
-            Ok(())
-        })
-        .unwrap();
+    ui.defer(|ui| {
+        ui.key_input(KeyCode::Enter, KeyAction::Press)?;
+        ui.key_input(KeyCode::Enter, KeyAction::Release)?;
+        Ok(())
+    })
+    .unwrap();
     settle(&mut ui);
     // The choice queued the restoration during that flush; the next one
     // delivers it.

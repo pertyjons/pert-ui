@@ -270,7 +270,7 @@ pub use runtime::native_windows::{
 pub use runtime::notify::{ChangeOrigin, Notifier, SelectionChange};
 pub use runtime::presentation::PresentationRate;
 pub use runtime::reveal::{ChildReveal, RevealOutcome, RevealReceipt, RevealRefusal, RevealStatus};
-pub use runtime::tasks::{TaskReceipt, TaskStatus};
+pub use runtime::tasks::{ShownTaskReceipt, TaskReceipt, TaskStatus};
 mod geometry_report;
 mod permission;
 pub use permission::Permission;
@@ -523,8 +523,8 @@ pub mod prelude {
 ///   [`BoxModelInspection`] and [`InspectValue`] parts of the
 ///   [`ComponentDetails`] that [`Component::inspect`] returns;
 /// - a value it keeps past the call that returned it, where the rustdoc says
-///   to keep it: the receipts ([`TaskReceipt`], [`RevealReceipt`],
-///   [`PresentationReceipt`], [`CommandReceipt`]) and the
+///   to keep it: the receipts ([`TaskReceipt`], [`ShownTaskReceipt`],
+///   [`RevealReceipt`], [`PresentationReceipt`], [`CommandReceipt`]) and the
 ///   [`EditorAttachment`] through which a hosted editor reports the end of
 ///   its edit, and the [`ClickCounter`] a component that counts presses
 ///   stores.
@@ -649,8 +649,8 @@ pub mod component {
     #[doc(no_inline)]
     pub use crate::{
         DetachedClosePolicy, NativeWindowId, NativeWindowOptions, PresentationReceipt,
-        PresentationStatus, RevealOutcome, RevealReceipt, RevealRefusal, RevealStatus, TaskReceipt,
-        TaskStatus,
+        PresentationStatus, RevealOutcome, RevealReceipt, RevealRefusal, RevealStatus,
+        ShownTaskReceipt, TaskReceipt, TaskStatus,
     };
     #[doc(no_inline)]
     pub use crate::{DrawError, RuntimeError};

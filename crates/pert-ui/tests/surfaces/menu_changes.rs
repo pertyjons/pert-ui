@@ -226,7 +226,7 @@ fn context_menus_and_menu_bar_titles_report_too_and_deferred_work_survives() {
         vec![
             MenuItem::toggle("wrap", wrap.clone(), "Wrap").on_change(move |cx, _| {
                 let done = done.clone();
-                let _receipt = cx.defer(move |_| done.set(true))?;
+                cx.defer(move |_| done.set(true))?;
                 Ok(())
             }),
         ],

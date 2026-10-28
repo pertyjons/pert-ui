@@ -17,7 +17,7 @@ mod widget {
     /// What the probe recorded, shared with the test.
     #[derive(Default)]
     pub struct Record {
-        pub task: Option<TaskReceipt>,
+        pub task: Option<ShownTaskReceipt>,
         pub drags: Vec<DragOutcome>,
         pub tabs: Vec<FocusDirection>,
     }
@@ -173,11 +173,11 @@ mod every_name {
         PresentationStatus, QuarterTurn, RasterImage, ReadSignal, Rect, RestoreRejection,
         RevealOutcome, RevealReceipt, RevealRefusal, RevealStatus, RichText, RuntimeError,
         SemanticAction, SemanticItem, SemanticRole, SemanticValue, Semantics, Shape,
-        ShortcutBinding, ShortcutScope, Signal, Size, SizeLimits, StrokeStyle, SurfaceDismissal,
-        SurfaceKind, TaskReceipt, TaskStatus, TextCommand, TextCommandOutcome, TextInputState,
-        TextKeyOutcome, TextLayout, TextOverflow, TextPreedit, TextStyle, Transform2D,
-        UpdateContext, ValidationHints, VectorGeometry, VectorId, ViewScale, ViewState,
-        ViewTransform, Viewport, WidgetId, WorkspaceError, WorkspaceValue,
+        ShortcutBinding, ShortcutScope, ShownTaskReceipt, Signal, Size, SizeLimits, StrokeStyle,
+        SurfaceDismissal, SurfaceKind, TaskReceipt, TaskStatus, TextCommand, TextCommandOutcome,
+        TextInputState, TextKeyOutcome, TextLayout, TextOverflow, TextPreedit, TextStyle,
+        Transform2D, UpdateContext, ValidationHints, VectorGeometry, VectorId, ViewScale,
+        ViewState, ViewTransform, Viewport, WidgetId, WorkspaceError, WorkspaceValue,
     };
 }
 
