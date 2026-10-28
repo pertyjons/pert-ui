@@ -1721,6 +1721,19 @@ impl Runtime {
         entry.node.limits.set(Some(limits));
         Ok(limits)
     }
+    /// The constraints `node`'s `measure` was last called with: the ones it
+    /// was last measured under, within its resolved size limits, as
+    /// [`Self::measure_node`] passes them to the component.
+    #[cfg(debug_assertions)]
+    pub(crate) fn forwarded_constraints(
+        &self,
+        node: &Node,
+    ) -> Result<Option<Constraints>, RuntimeError> {
+        let Some(constraints) = node.measured_constraints() else {
+            return Ok(None);
+        };
+        Ok(Some(self.child_limits(node.serial)?.available(constraints)))
+    }
     pub(crate) fn measure_node(
         &self,
         serial: u64,

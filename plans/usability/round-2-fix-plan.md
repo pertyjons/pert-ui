@@ -1934,8 +1934,15 @@ plan closes.
   globs only is tested through both width cycles (fails with the call
   removed); the TODO entry is removed; CHANGELOG 0.3.83 `Added`. P2's
   closure rules add nothing (`ArrangeContext` is in `component`; the
-  method names only prelude types). Gate (fresh) as above. Second
-  recheck: pending.
+  method names only prelude types). Gate (fresh) as above. Codex's second
+  recheck: one should-fix, the refresh used the retained constraints
+  without the component's size limits, so a forwarding wrapper with a
+  maximum width refreshed its child too wide; it now refreshes under the
+  constraints passed through the component's resolved limits, as
+  `measure_node` does, with maximum- and minimum-width external-wrapper
+  regressions failing under the unlimited mutation. Gate (fresh, from a
+  clean cache after the disk was cleared) as above. Third recheck:
+  pending.
 
 - **P9 Notifications in inspection (0.3.84), 2026-10-28.** Implemented by
   a fresh agent from this section (no checkpoint: D6 approved as

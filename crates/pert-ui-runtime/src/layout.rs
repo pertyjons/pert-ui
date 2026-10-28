@@ -1109,9 +1109,15 @@ impl ArrangeContext<'_> {
     pub fn measure(&self, index: usize, available: Constraints) -> Result<Size, RuntimeError> {
         self.measure.measure(index, available)
     }
-    /// Measures child `index` again under the constraints this component was
-    /// last measured under, so the child's latest measurement is the one this
-    /// component's own measurement was computed from.
+    /// Measures child `index` again under the space this component's own
+    /// [`Component::measure`] was last given, so the child's latest
+    /// measurement is the one this component's measurement was computed from.
+    /// That space is the constraints this component was last measured under,
+    /// within its resolved size limits
+    /// ([`Component::measure_limits`]), exactly
+    /// as the runtime passes them to `measure`: a component with a maximum
+    /// width refreshes its child at that width, not at the wider space its
+    /// parent offered.
     ///
     /// It is for a component that forwards a child's measurement, whose
     /// [`Component::measure`] returns what `cx.measure(index, space)` gives
@@ -1171,13 +1177,18 @@ impl ArrangeContext<'_> {
     /// # Errors
     /// Returns [`RuntimeError::Layout`] with [`LayoutError::InvalidChild`] for
     /// an index outside the visible children, and in development builds
-    /// forwards the errors of [`MeasureContext::measure`].
+    /// forwards the errors of this component's [`Component::measure_limits`]
+    /// and of [`MeasureContext::measure`].
     pub fn refresh_forwarded(&self, index: usize) -> Result<(), RuntimeError> {
         if index >= self.len() {
             return Err(LayoutError::InvalidChild.into());
         }
         #[cfg(debug_assertions)]
-        if let Some(constraints) = self.measure.node.measured_constraints() {
+        if let Some(constraints) = self
+            .measure
+            .runtime
+            .forwarded_constraints(self.measure.node)?
+        {
             self.measure.measure(index, constraints)?;
         }
         Ok(())

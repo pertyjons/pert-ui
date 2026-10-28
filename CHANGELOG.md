@@ -150,8 +150,9 @@ P8-D4).
   after the next successful layout of its window. An external grid sets the
   same hint.
 - Added (R2-23): `ArrangeContext::refresh_forwarded`, which measures a child
-  again under the constraints the arranging component was last measured
-  under. A fixed-height component that forwards its child's measurement calls
+  again under the space the arranging component's own `measure` was last
+  given: the constraints it was last measured under, within its resolved
+  size limits. A fixed-height component that forwards its child's measurement calls
   it in `arrange`, so a measurement the runtime answers from its retained
   results, such as a column returning to an earlier width, leaves no stale
   child height for `ExceedsFixedHeight`; it measures nothing in release
@@ -217,7 +218,7 @@ P8-D4).
   component in a continuing zoom, the cell address, the row-height reports
   and width cycles through wide and narrow columns for wrapped content and an
   editor); `foundation` covers an external forwarding wrapper through both
-  width cycles, custom item rectangles and the schema-16
+  width cycles and with a maximum and a minimum width, custom item rectangles and the schema-16
   envelopes, including unknown fields in both; the gallery tests the Note
   editor after a density switch. Each new-behavior test was shown to fail
   under its named mutation, at an assertion of its outcome.
