@@ -1,7 +1,8 @@
 //! The file browser over a synthetic sample library, answered through a
 //! mailbox as a host answers from a worker thread.
 use crate::gallery::{label, page, section, stage, toggle};
-use pert_ui::*;
+use pert_ui::live::*;
+use pert_ui::prelude::*;
 use std::{
     cell::{OnceCell, RefCell},
     path::Path,

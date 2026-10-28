@@ -42,7 +42,9 @@ pub(crate) fn adorned_content<'a>(
 /// remains. [`Show`](crate::Show) removes it entirely.
 ///
 /// Inspection reports a [`SemanticRole::Label`] whose name is the label's
-/// text. Static text is a name, so the label reports no
+/// text. An empty label has no name: [`Semantics::name`](crate::Semantics::name)
+/// leaves it absent, so `name` is `None`, not `Some("")`, while the `text`
+/// property is the empty text. Static text is a name, so the label reports no
 /// [`SemanticValue`](crate::SemanticValue): a value is the content of an
 /// editable or stateful control.
 ///

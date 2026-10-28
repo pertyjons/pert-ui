@@ -46,7 +46,8 @@ struct Press {
 ///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
-/// use pert_ui::*;
+/// use pert_ui::prelude::*;
+/// use pert_ui::{ClickCounter, GeometryError, PointerButton};
 /// use std::time::Duration;
 ///
 /// let mut clicks = ClickCounter::new();

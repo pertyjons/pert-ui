@@ -9,6 +9,8 @@ use std::{
 /// Measured UI work. Durations include preemption/waiting; they are not CPU usage
 /// percentages or GPU execution times. Nested work is included in total time and
 /// excluded from self time. Cache hits do not count as component callback work.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum ProfileOperation {
@@ -80,6 +82,8 @@ pub enum ProfileOperation {
 
 /// Aggregate for an operation and runtime-local component incarnation.
 /// Keys are diagnostic labels truncated to [`Self::MAX_KEY_CHARS`] characters, not target identities.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "serde",
@@ -105,6 +109,8 @@ pub struct ProfileStats {
 }
 /// One recently completed timing scope; separate from semantic event history.
 /// Completion does not imply success. Event history retains operation outcomes.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "serde",
@@ -128,6 +134,8 @@ pub struct ProfileSample {
 /// precede outer scopes), and scopes nested deeper than [`Self::MAX_NESTING`] are
 /// omitted. Aggregates survive hiding/removal without retargeting IDs. Clear
 /// explicitly between runs.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Debug, Default, PartialEq)]
 #[cfg_attr(
     feature = "serde",

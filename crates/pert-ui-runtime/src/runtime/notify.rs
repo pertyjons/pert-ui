@@ -212,7 +212,7 @@ impl SelectionChange {
 ///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
-/// use pert_ui::*;
+/// use pert_ui::{component::*, prelude::*};
 /// use std::{cell::RefCell, rc::Rc, time::Duration};
 ///
 /// /// Reports each update to the application from an event phase.

@@ -1,7 +1,10 @@
 //! Navigation and input helpers the gallery tests share: mounting the
 //! gallery, finding components by key, opening pages and driving input.
 use crate::gallery::Gallery;
-use pert_ui::*;
+use pert_ui::parameter::*;
+use pert_ui::prelude::*;
+use pert_ui::testing::*;
+use pert_ui::{DrawCommand, InspectValue, Palette};
 use std::time::Duration;
 
 pub(super) fn mounted() -> (Runtime, WidgetId) {

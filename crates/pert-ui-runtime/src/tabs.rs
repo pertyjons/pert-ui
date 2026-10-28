@@ -408,7 +408,8 @@ impl Tabs {
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
-    /// use pert_ui::*;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::{LayoutError, Viewport};
     /// use std::time::Duration;
     /// fn tab(key: &str) -> Tab {
     ///     Tab::new(key, key, Element::new("body", Label::new(key)))
@@ -509,7 +510,8 @@ impl Tabs {
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
-    /// use pert_ui::*;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::{KeyAction, Viewport};
     /// use std::{cell::RefCell, rc::Rc, time::Duration};
     /// fn tab(key: &str) -> Tab {
     ///     Tab::new(key, key, Element::new("body", Label::new(key)))
@@ -605,7 +607,8 @@ impl Tabs {
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
-    /// use pert_ui::*;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::Viewport;
     /// use std::{cell::RefCell, rc::Rc, time::Duration};
     /// fn tab(key: &str) -> Tab {
     ///     Tab::new(key, key, Element::new("body", Label::new(key)))

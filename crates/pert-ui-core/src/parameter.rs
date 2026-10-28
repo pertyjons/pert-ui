@@ -8,6 +8,8 @@ use crate::{
 /// How a continuous domain maps to a control position, independent of units.
 ///
 /// The set grows as general mappings are added, so matches need a wildcard arm.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[non_exhaustive]

@@ -5,7 +5,9 @@
 //! The tests move with the Go to commands, each exactly one visit; opening a
 //! page through the keyboard would also visit every tab the arrows pass.
 use super::support::*;
-use pert_ui::*;
+use pert_ui::prelude::*;
+use pert_ui::testing::*;
+use pert_ui::{CommandOutcome, CommandSource, ComponentInspection, InspectValue};
 
 /// The category and page the gallery shows, from the strips' selections.
 fn shown(ui: &Runtime) -> (String, String) {

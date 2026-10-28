@@ -1,6 +1,7 @@
 //! Facade-only three-window fixture. Synthetic motion is UI data, not an audio tap.
 use crate::samples::ReceiptReadout;
-use pert_ui::*;
+use pert_ui::component::*;
+use pert_ui::prelude::*;
 use std::time::Duration;
 
 struct Motion {

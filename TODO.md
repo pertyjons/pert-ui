@@ -158,3 +158,19 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   validation errors. Separately, consider whether development validation
   should cap or summarize overlap reports, since it writes one line per
   overlapping pair.
+- [ ] 2026-10-28 rustdoc and guide examples with unused imports — public
+  examples (round 2 finding R2-14's rule that an example needs exactly what
+  it imports): a run with `#![doc(test(attr(deny(unused_imports))))]` added
+  for the run to `pert-ui-runtime`'s and `pert-ui`'s crate roots fails the
+  examples of `CommandPalette`, `Runtime::content_search`,
+  `Runtime::reveal_child`, `Runtime::capture_workspace`, the `testing`
+  module, `TextField::on_binding_refusal` and `TextArea::on_binding_refusal`
+  (one macro), `DraftEditor`, `DraftEditorController::set_read_only`, four
+  blocks of `crates/pert-ui-runtime/README.md`, and the guide's
+  authoritative-values, appearance and controls chapters (one, one and two
+  blocks), each with an import it does not use; doctests allow unused code,
+  so nothing reports it. The testing chapter's opening block, the two globs
+  alone, is meant that way. Remove the unused imports, then consider keeping
+  that attribute so the doctests report them (a lint configuration change to
+  discuss with the maintainer); the opening block would then carry a hidden
+  `#![allow(unused_imports)]`.

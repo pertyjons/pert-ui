@@ -3,7 +3,8 @@
 //! The custom components here are written as a consumer would write them: a drag
 //! source and two drop targets, using only public extension points.
 use crate::gallery::{label, page, section};
-use pert_ui::*;
+use pert_ui::component::*;
+use pert_ui::prelude::*;
 use std::{cell::RefCell, collections::BTreeMap, rc::Rc};
 
 /// An application's ordered track names, shown as padded rows.

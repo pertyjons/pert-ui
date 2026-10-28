@@ -1347,7 +1347,8 @@ enum HeaderGesture {
 ///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
-/// use pert_ui::*;
+/// use pert_ui::prelude::*;
+/// use pert_ui::{KeyAction, Viewport};
 /// use std::rc::Rc;
 /// struct Items(Rc<Vec<Signal<String>>>);
 /// impl TableItems for Items {

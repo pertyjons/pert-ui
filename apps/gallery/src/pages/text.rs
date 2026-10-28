@@ -1,6 +1,7 @@
 //! The Text category: text and number input, fonts and icons.
 use crate::gallery::{label, page, section, stage};
-use pert_ui::*;
+use pert_ui::prelude::*;
+use pert_ui::{FontData, FontRole, GeometryError, RegionLayout, TextRenderingMode};
 
 pub(crate) fn text_rendering_page(ui: &Runtime) -> Result<Element, AppError> {
     let settings = ui.ui_settings();

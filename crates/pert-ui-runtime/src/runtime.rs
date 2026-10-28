@@ -36,6 +36,8 @@ use capture::PendingCapture;
 pub(crate) const PRESENTATION_INTERVAL: Duration = Duration::from_nanos(16_666_667);
 
 /// Work a component must refresh. Layout invalidation also requires paint.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum Invalidation {
@@ -1234,7 +1236,7 @@ pub trait Component: std::any::Any {
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
-    /// use pert_ui::*;
+    /// use pert_ui::{component::*, prelude::*};
     /// use std::time::Duration;
     /// struct Layers(Vec<Element>);
     /// impl Component for Layers {
@@ -1313,7 +1315,7 @@ pub trait Component: std::any::Any {
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
-    /// use pert_ui::*;
+    /// use pert_ui::{component::*, prelude::*};
     /// struct Magnifier(ViewTransform, Vec<Element>);
     /// impl Component for Magnifier {
     ///     fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> { Ok(()) }
@@ -1522,7 +1524,7 @@ pub trait Component: std::any::Any {
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
-    /// use pert_ui::*;
+    /// use pert_ui::{component::*, prelude::*};
     /// use std::time::Duration;
     /// struct Board { item: Vec<Element>, at: (f32, f32), drag: Option<(Point, (f32, f32))> }
     /// impl Component for Board {
@@ -2221,7 +2223,7 @@ pub trait Component: std::any::Any {
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
-    /// use pert_ui::*;
+    /// use pert_ui::{component::*, prelude::*};
     /// struct Hollow;
     /// impl Component for Hollow {
     ///     fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
@@ -2253,7 +2255,7 @@ pub trait Component: std::any::Any {
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
-    /// use pert_ui::*;
+    /// use pert_ui::{component::*, prelude::*};
     /// struct Overlay;
     /// impl Component for Overlay {
     ///     fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
@@ -3106,7 +3108,7 @@ impl EventContext {
     /// ```
     /// # use pert_ui_runtime as pert_ui;
     /// use pert_ui::testing::HostIntegration;
-    /// use pert_ui::*;
+    /// use pert_ui::{component::*, prelude::*};
     /// use std::{cell::Cell, rc::Rc, time::Duration};
     /// struct Clicks { last: Option<Duration>, doubles: Rc<Cell<u32>> }
     /// impl Component for Clicks {
@@ -3163,7 +3165,7 @@ impl EventContext {
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
-    /// # use pert_ui::*;
+    /// # use pert_ui::component::*;
     /// # struct W;
     /// # impl Component for W {
     /// # fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> { Ok(()) }
@@ -5135,7 +5137,8 @@ impl Runtime {
     /// ```
     /// # use pert_ui_runtime as pert_ui;
     /// use pert_ui::testing::HostIntegration;
-    /// use pert_ui::*;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::{Clipboard, ClipboardError, CommandSource};
     /// struct Memory(std::rc::Rc<std::cell::RefCell<String>>);
     /// impl Clipboard for Memory {
     ///     fn read_text(&mut self) -> Result<String, ClipboardError> { Ok(self.0.borrow().clone()) }

@@ -923,6 +923,8 @@ impl Default for Viewport {
 /// geometry: every [`Rect`], [`Point`](crate::Point) and [`Size`](crate::Size)
 /// stays in logical pixels. Every pair of values is valid; a zero width or height
 /// is what a minimized or zero-sized window reports, and suspends presentation.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 #[cfg_attr(
     feature = "serde",
@@ -1623,7 +1625,7 @@ impl Painter {
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
-    /// # use pert_ui::*;
+    /// # use pert_ui::{component::*, prelude::*};
     /// struct Swatch(RasterImage);
     /// impl Component for Swatch {
     ///     fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {

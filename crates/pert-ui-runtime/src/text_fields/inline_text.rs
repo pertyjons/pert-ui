@@ -14,19 +14,16 @@ use crate::layout::{centered, rect};
 /// Double-click (two primary presses as [`ClickCounter`](crate::ClickCounter)
 /// counts them: within 500 ms and four logical pixels), Enter or F2 enters
 /// editing with the text selected, and so does [`TextCommand::BeginEdit`] sent
-/// from code, which does not depend on the keyboard's state. Editing
-/// happens in a [`DraftEditor`] the label mounts as its child under the key
-/// `"editor"`, with the validation, 16 KiB limit, selection, clipboard chord,
-/// IME and 32-edit undo rules of [`TextField`]; focus moves into it and returns
-/// to the label when editing ends by key ([in a row](Self::in_row), to the
-/// row's list). While editing,
+/// from code, which does not depend on the keyboard's state. Editing happens
+/// in the label's editing child, described [below](#the-editing-child), with
+/// the validation, 16 KiB limit, selection, clipboard chord, IME and 32-edit
+/// undo rules of [`TextField`]. While editing,
 /// [`Runtime::text_command`](crate::Runtime::text_command) on the label and
 /// [`EventContext::request_text_command`] act on the draft as the chords do,
 /// and `BeginEdit` answers [`TextCommandOutcome::Unavailable`]. At rest the
 /// control answers `BeginEdit` by beginning to edit, with `Handled`, or with
 /// `Unavailable` while it is disabled or refuses its binding, and every other
-/// command with [`TextCommandOutcome::NotAnEditor`]. Inspection reports
-/// editing as the `editing` property. The label has no
+/// command with [`TextCommandOutcome::NotAnEditor`]. The label has no
 /// clipboard context menu. Each editing session starts with an empty undo
 /// history. Up and Down are consumed while editing. Editing is a draft:
 /// Enter and focus leaving the label save it to the binding (on a controlled
@@ -79,6 +76,26 @@ use crate::layout::{centered, rect};
 /// Re-describing the field under the same key applies its binding, enablement,
 /// style, placeholder, normalizer, row mode and callbacks; a new binding, a
 /// changed controlled text, another path or disabling discards an open draft.
+///
+/// # The editing child
+///
+/// The label mounts a [`DraftEditor`] as its child under the key `"editor"`,
+/// so its address is the label's followed by `"editor"`. The child stays
+/// mounted with the label, hidden at rest and shown while editing. Beginning
+/// to edit moves focus into it: [`Runtime::focused`](crate::Runtime::focused)
+/// is then the child, not the label, and typed text and editing keys go to
+/// it. Focus returns to the label when editing ends by key
+/// ([in a row](Self::in_row), to the row's list).
+///
+/// The draft is the child's text. The child's semantic value and `text`
+/// property are the draft, while the label's semantic value and `text`
+/// property stay the text at rest until the draft is saved. The label also
+/// reports `editing` and, while editing, the draft as its `draft` property.
+/// A test therefore begins editing on the label, types into the focused
+/// child and reads the draft from either. The label is not itself an editor:
+/// [`Driver::replace_text`](crate::testing::Driver::replace_text) on it
+/// reports [`TestError::NotAnEditor`](crate::testing::TestError::NotAnEditor),
+/// and while editing it takes the child.
 #[must_use]
 pub struct InlineText {
     value: Source,
@@ -491,7 +508,8 @@ impl InlineText {
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
-    /// use pert_ui::*;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::TextCommandOutcome;
     /// use std::{cell::RefCell, rc::Rc, time::Duration};
     /// let mut ui = Runtime::new();
     /// let name = ui.signal(String::from("Bass"));

@@ -18,6 +18,8 @@ use crate::{
 /// How a source learns that its producer published.
 ///
 /// The default is [`Self::Polled`].
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum Delivery {
@@ -38,6 +40,8 @@ pub enum Delivery {
 /// The classification is source-level, so every subscriber sees the same
 /// answer for one drain. A component that wants "changed since my previous
 /// read" compares [`Telemetry::revision`] with the value it kept.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[cfg_attr(
     feature = "serde",
@@ -272,6 +276,8 @@ fn lock_delivery<R>(
 
 /// One live-data source as captured by
 /// [`Runtime::inspect`](crate::Runtime::inspect).
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Debug, PartialEq)]
 #[non_exhaustive]
 #[cfg_attr(

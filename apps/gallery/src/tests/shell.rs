@@ -1,8 +1,15 @@
 //! The shell: every page, the category strips, the settings menu, zoom and
 //! detachable strips.
 use super::support::*;
+use pert_ui::commands::*;
+use pert_ui::inspection::*;
+use pert_ui::prelude::*;
 use pert_ui::testing::HostIntegration;
-use pert_ui::*;
+use pert_ui::testing::*;
+use pert_ui::{
+    ContentHit, ContentJump, ContentQuery, ContentTarget, Density, DrawCommand, PresentationAction,
+    PresentationStatus, RevealOutcome, TextRenderingMode, ThemeMode, UiZoom,
+};
 use std::time::Duration;
 
 #[test]

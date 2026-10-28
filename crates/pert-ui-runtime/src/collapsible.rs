@@ -441,7 +441,8 @@ fn visible_index(cx: &MeasureContext<'_>, key: &str) -> Result<Option<usize>, Ru
 ///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
-/// use pert_ui::*;
+/// use pert_ui::prelude::*;
+/// use pert_ui::{KeyAction, Viewport};
 /// use std::time::Duration;
 /// let mut ui = Runtime::new();
 /// ui.set_viewport(Viewport::new(320.0, 240.0, 1.0)?)?;
@@ -930,7 +931,8 @@ impl From<Section> for Element {
 ///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
-/// use pert_ui::*;
+/// use pert_ui::prelude::*;
+/// use pert_ui::{KeyAction, Viewport};
 /// use std::time::Duration;
 /// let mut ui = Runtime::new();
 /// ui.set_viewport(Viewport::new(320.0, 400.0, 1.0)?)?;

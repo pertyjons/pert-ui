@@ -257,7 +257,7 @@ impl CpuRenderer {
     /// ui.flush(Duration::ZERO)?;
     /// let mut renderer = CpuRenderer::new();
     /// assert_eq!(renderer.serve_captures(&mut ui), 1);
-    /// let capture = pending.wait()?.value?;
+    /// let capture = pending.try_reply()?.value?; // answered by `serve_captures`
     /// assert_eq!(capture.scale, 2.0);
     /// assert!(capture.image.encode_png().starts_with(b"\x89PNG"));
     /// # Ok::<(), Box<dyn std::error::Error>>(())

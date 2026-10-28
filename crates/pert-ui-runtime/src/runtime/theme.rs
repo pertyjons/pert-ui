@@ -9,6 +9,8 @@ use std::{
 mod seed;
 
 /// Explicit color scheme. Dark is the default; OS preference detection is not implicit.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum ThemeMode {
@@ -20,6 +22,8 @@ pub enum ThemeMode {
 }
 
 /// Independent spacing preset. Standard is the default, in both color modes.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum Density {

@@ -3,6 +3,8 @@ use std::collections::BTreeMap;
 use crate::{ParameterError, ParameterId, ParameterSpec, ParameterValue};
 
 /// An authoritative parameter revision, scoped to one parameter incarnation.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(
     feature = "serde",
@@ -50,6 +52,8 @@ impl EditSequence {
 /// directly chooses its own numbers; the `pert-ui` runtime assigns each
 /// component's mount serial, so outcomes can be routed back to the control
 /// that began the edit. The value has no meaning beyond equality.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 #[cfg_attr(
     feature = "serde",
@@ -261,7 +265,7 @@ struct Active<T> {
 ///
 /// ```
 /// # use pert_ui_core as pert_ui;
-/// use pert_ui::*;
+/// use pert_ui::{EditSequence, EditSource, ParameterId, ParameterSpec, ParameterState, Revision};
 /// let mut state = ParameterState::new(
 ///     ParameterId::new(1, 2, "amount")?, ParameterSpec::new("Amount", 0.0, 10.0, 2.0)?,
 /// );

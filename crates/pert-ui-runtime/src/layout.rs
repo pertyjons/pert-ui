@@ -203,14 +203,18 @@ impl SizeLimits {
     /// Equal bounds cannot be inverted, so unlike [`SizeLimits::new`] this
     /// cannot fail, and a fixed-size component can return it from
     /// [`Component::size_limits`](crate::Component::size_limits) directly.
+    /// A size in whole logical pixels is built infallibly with
+    /// `Size::from([width, height])`; [`Size::new`] takes fractional values
+    /// and fails on a negative or non-finite one.
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
-    /// # use pert_ui::{Constraints, Size, SizeLimits};
-    /// let size = Size::new(260.0, 260.0)?;
+    /// use pert_ui::{Constraints, Size, SizeLimits};
+    /// let size = Size::from([260, 260]); // the infallible form
     /// let fixed = SizeLimits::exact(size);
     /// assert_eq!(fixed, SizeLimits::new(size, Constraints::bounded(size))?);
-    /// assert_eq!(fixed.constrain(Size::new(400.0, 10.0)?), size);
+    /// assert_eq!(fixed.constrain(Size::from([400, 10])), size);
+    /// assert_eq!(size, Size::new(260.0, 260.0)?);
     /// # Ok::<(), pert_ui::GeometryError>(())
     /// ```
     #[must_use]

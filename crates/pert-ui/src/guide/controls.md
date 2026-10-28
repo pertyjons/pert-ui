@@ -278,7 +278,7 @@ with another look builds on the same public parameter binding and on
 exactly like the built-in geometry, as the example below does.
 
 ```rust
-use pert_ui::*;
+use pert_ui::{parameter::*, prelude::*};
 let mut ui = Runtime::new();
 let (amount, host) = ui.parameter(
     ParameterId::new(1, 1, "amount")?,
@@ -298,7 +298,7 @@ reserved allocation. This ASCII readout grows only when its capacity changes;
 ordinary updates retain layout and cached text is shared with measurement:
 
 ```rust
-use pert_ui::*;
+use pert_ui::{component::*, prelude::*};
 struct Readout { source: ReadSignal<String>, text: String, columns: usize }
 impl Component for Readout {
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {

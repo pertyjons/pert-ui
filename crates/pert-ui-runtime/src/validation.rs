@@ -6,6 +6,8 @@ use crate::{KeyCode, Modifiers};
 pub(crate) mod development;
 
 /// Whether a component intentionally intersects peer components in its layer.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum OverlapPolicy {
@@ -18,6 +20,8 @@ pub enum OverlapPolicy {
 }
 
 /// Dispatch scope of a declared shortcut, used to identify active competitors.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum ShortcutScope {
@@ -35,6 +39,8 @@ pub enum ShortcutScope {
 /// `Runtime::register_command` are validated by the command registry instead. The
 /// declaration must describe its actual input handling; arbitrary code inside
 /// `key_input` cannot be inferred.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(
     feature = "serde",
@@ -84,6 +90,8 @@ impl ShortcutBinding {
 /// A component builds it from [`Default`], with `..ValidationHints::default()`
 /// in a struct expression or by assigning fields of a default value, so a field
 /// added in a later version does not break it.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Debug, Default, PartialEq)]
 #[cfg_attr(
     feature = "serde",
@@ -113,6 +121,8 @@ pub struct ValidationHints {
 /// hit areas, collapsed parents, escaping children and overlaps) are reported
 /// only for windows laid out with a viewport that has area; see
 /// [`Runtime::validation_report`](crate::Runtime::validation_report).
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[non_exhaustive]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
@@ -170,6 +180,8 @@ pub enum ValidationCode {
 }
 
 /// One actionable development error, referring to every affected component.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Debug, Eq, PartialEq)]
 #[non_exhaustive]
 #[cfg_attr(
@@ -188,6 +200,8 @@ pub struct ValidationIssue {
 
 /// Development error marker consumed by inspection and drawn by
 /// [`DebugOverlay::Issues`](crate::DebugOverlay::Issues).
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Debug, PartialEq)]
 #[non_exhaustive]
 #[cfg_attr(
@@ -218,6 +232,8 @@ pub struct ValidationMarker {
 /// Default release builds report `enabled = false` and empty collections. The
 /// development engine/logger/cache are absent from those builds. Runtime validity
 /// checks (for example rejecting duplicate mounts) still protect all builds.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Debug, Default, PartialEq)]
 #[non_exhaustive]
 #[cfg_attr(

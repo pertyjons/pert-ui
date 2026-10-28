@@ -1,7 +1,9 @@
 //! The Controls category's pages.
 use super::support::*;
+use pert_ui::inspection::*;
+use pert_ui::prelude::*;
 use pert_ui::testing::HostIntegration;
-use pert_ui::*;
+use pert_ui::{AnyValue, ChoiceId, CommandKeyInput, KeyAction};
 use std::time::Duration;
 
 #[test]

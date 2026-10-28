@@ -632,7 +632,7 @@ impl Painter {
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
-    /// use pert_ui::*;
+    /// use pert_ui::{component::*, prelude::*};
     /// struct Badge;
     /// impl Component for Badge {
     ///     fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
@@ -738,7 +738,7 @@ impl Painter {
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
-    /// use pert_ui::*;
+    /// use pert_ui::{component::*, prelude::*};
     /// struct Trace(Vec<Point>);
     /// impl Component for Trace {
     ///     fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {

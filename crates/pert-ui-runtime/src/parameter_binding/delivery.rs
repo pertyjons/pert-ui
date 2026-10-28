@@ -172,6 +172,8 @@ pub struct PreviewEvent<T> {
 /// Recovery methods stay with the [`ParameterHost`]; availability after removal
 /// is reported separately by the parameter snapshot. Pending engine work in an
 /// adapter is not inferred from this local status.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum DeliveryStatus {

@@ -1,7 +1,10 @@
 //! The Appearance & tools category: themes, the workspace document, the
 //! profiler and the debug overlay.
 use crate::gallery::{label, page, section, stage};
-use pert_ui::*;
+use pert_ui::prelude::*;
+use pert_ui::{
+    OpaqueColor, Palette, ProfileSnapshot, SplitAxis, SplitPane, ThemeManager, ThemeMode, Workspace,
+};
 
 /// The Violet palette preset used by the theme page and screenshot mode.
 pub(crate) const VIOLET_SEED: [f32; 3] = [0.35, 0.06, 0.60];

@@ -423,6 +423,8 @@ impl fmt::Display for WorkspacePath {
 ///
 /// A host that already persists these applies its own values after restoring;
 /// the last write wins, and that ordering is the documented one.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 #[cfg_attr(
     feature = "serde",

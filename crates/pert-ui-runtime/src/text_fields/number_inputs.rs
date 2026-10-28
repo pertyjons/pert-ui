@@ -108,6 +108,35 @@ impl NumberInputError {
 /// state, not an authoritative parameter gesture or application undo transaction.
 /// All handles and callbacks belong to the UI thread.
 ///
+/// ```
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{Element, IntegerInput, KeyAction, KeyCode, Runtime};
+/// let mut ui = Runtime::new();
+/// let count = ui.signal(0_i64);
+/// let field = ui.mount_tree(Element::new("count",
+///     IntegerInput::new(count.clone()).range(0, 100)?.step(5)?))?;
+/// ui.focus(&field)?;
+/// ui.text_input("42")?;
+/// assert_eq!(count.get()?, 0); // still a draft ("420")
+/// ui.key_input(KeyCode::Escape, KeyAction::Press)?;
+/// ui.key_input(KeyCode::Escape, KeyAction::Release)?;
+/// ui.key_input(KeyCode::ArrowUp, KeyAction::Press)?;
+/// ui.key_input(KeyCode::Enter, KeyAction::Press)?;
+/// assert_eq!(count.get()?, 5);
+/// # Ok::<(), pert_ui::RuntimeError>(())
+/// ```
+///
+/// While focused and editable, each nonzero vertical wheel event over the field
+/// steps the draft once: upward increases, downward decreases, clamped to bounds.
+/// Holding Shift divides keyboard/wheel steps by ten (integer division for integers,
+/// minimum 1; decimals retain at least the smallest positive `f64`). Control,
+/// Alt and Super chords of the arrow keys do not step; they are left to the
+/// editor and to command bindings.
+/// Wheel magnitude is not a multiplier. Invalid drafts, IME composition and active
+/// selection drags are preserved; those focused wheel events are consumed. Other
+/// wheel input follows normal text scrolling/bubbling. Wheel steps save on Enter
+/// or focus loss, share keyboard-step undo and can be canceled with Escape.
+///
 /// # Formatting
 ///
 /// Without a [`NumberFormat`] or unit the field always shows its editing text.
@@ -115,6 +144,68 @@ impl NumberInputError {
 /// followed by the unit while it is unfocused and holds the unchanged bound
 /// value; focus or a changed draft shows the editing text, the number alone.
 /// Switching between them never changes the value.
+///
+/// # Inspection
+///
+/// The semantics have the role [`SemanticRole::NumberInput`] and, as the
+/// value, the saved number: [`SemanticValue::Number`] with the range as its
+/// minimum and maximum, also while a draft is pending, so a test or tool
+/// reads the number in effect. The draft is the `text` property. Only a field
+/// that has read no valid value since it mounted, such as one refusing its
+/// first bound value, reports its text as [`SemanticValue::Text`] instead.
+/// An `i64` beyond 2^53 loses precision as an `f64`; the `value` property
+/// keeps it exact. A text editor such as [`TextField`] reports its current
+/// text, the draft, as its value instead. The name is the label of a
+/// [`Field`](crate::Field) around the field, or of an inline row, or a
+/// parameter's name.
+///
+/// The properties, beside the editor's `selection`, `composing`,
+/// `multiline`, `read_only`, `enabled`, `typography`, `scroll_x` and
+/// `scroll_y` (an inline row in text mode reports `selection` and
+/// `composing` on its editing child):
+///
+/// - `text`: the editing text, which is the draft while one is pending.
+/// - `value`: the saved number as exact text; absent while there is none.
+/// - `display_value`: the formatted resting text, without the unit.
+/// - `shows_display`: whether the field paints the resting text and unit
+///   rather than the editing text (see [Formatting](#formatting)); not
+///   reported by inline rows.
+/// - `unit`: the unit shown, empty without one.
+/// - `valid`, `dirty`: whether the editing text parses to an accepted
+///   number, and whether it differs from the saved value.
+/// - `validation_error`: why the editing text is not a valid number, while
+///   it is not; `binding_error`: why the bound value was refused, while it is.
+/// - `inline`, `text_editing`, `stepper`: whether this is an inline row,
+///   whether such a row is in text mode, and whether [`Self::stepper`] shows
+///   step buttons.
+///
+/// ```
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::prelude::*;
+/// use pert_ui::testing::*;
+/// use pert_ui::{InspectValue, SemanticRole};
+///
+/// let mut ui = Runtime::new();
+/// ui.set_viewport(Viewport::new(300.0, 100.0, 1.0)?)?;
+/// let count = ui.signal(3_i64);
+/// let field = ui.mount_tree(Element::new("count",
+///     IntegerInput::new(count.clone()).range(0, 10)?))?;
+/// let mut driver = Driver::new(&mut ui);
+/// driver.replace_text(&field, "7")?; // a draft until Enter or focus loss
+/// let semantics = driver.semantics(&field)?;
+/// assert_eq!(semantics.role, SemanticRole::NumberInput);
+/// assert_eq!(semantics.value, Some(SemanticValue::Number {
+///     value: 3.0, minimum: Some(0.0), maximum: Some(10.0),
+/// }));
+/// let id = driver.runtime().inspection_id(&field)?;
+/// let result = driver.runtime().query(
+///     &InspectionQuery::components(Selector::id(id)).detail(Detail::Full));
+/// let properties = &result.components[0].details.properties;
+/// assert_eq!(properties.get("text"), Some(&InspectValue::Text("7".into())));
+/// assert_eq!(properties.get("value"), Some(&InspectValue::Text("3".into())));
+/// assert_eq!(properties.get("dirty"), Some(&InspectValue::Bool(true)));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// # Normalization
 ///
@@ -158,35 +249,6 @@ impl NumberInputError {
 /// is pending, unknown or disconnected. A normalizer is
 /// refused with `ParameterDomain`: the specification's step lattice defines the
 /// values.
-///
-/// ```
-/// # use pert_ui_runtime as pert_ui;
-/// use pert_ui::{Element, IntegerInput, KeyAction, KeyCode, Runtime};
-/// let mut ui = Runtime::new();
-/// let count = ui.signal(0_i64);
-/// let field = ui.mount_tree(Element::new("count",
-///     IntegerInput::new(count.clone()).range(0, 100)?.step(5)?))?;
-/// ui.focus(&field)?;
-/// ui.text_input("42")?;
-/// assert_eq!(count.get()?, 0); // still a draft ("420")
-/// ui.key_input(KeyCode::Escape, KeyAction::Press)?;
-/// ui.key_input(KeyCode::Escape, KeyAction::Release)?;
-/// ui.key_input(KeyCode::ArrowUp, KeyAction::Press)?;
-/// ui.key_input(KeyCode::Enter, KeyAction::Press)?;
-/// assert_eq!(count.get()?, 5);
-/// # Ok::<(), pert_ui::RuntimeError>(())
-/// ```
-///
-/// While focused and editable, each nonzero vertical wheel event over the field
-/// steps the draft once: upward increases, downward decreases, clamped to bounds.
-/// Holding Shift divides keyboard/wheel steps by ten (integer division for integers,
-/// minimum 1; decimals retain at least the smallest positive `f64`). Control,
-/// Alt and Super chords of the arrow keys do not step; they are left to the
-/// editor and to command bindings.
-/// Wheel magnitude is not a multiplier. Invalid drafts, IME composition and active
-/// selection drags are preserved; those focused wheel events are consumed. Other
-/// wheel input follows normal text scrolling/bubbling. Wheel steps save on Enter
-/// or focus loss, share keyboard-step undo and can be canceled with Escape.
 #[must_use]
 pub struct IntegerInput(NumberEditor<i64>);
 description_debug!(IntegerInput);
@@ -206,7 +268,12 @@ description_debug!(IntegerInput);
 /// draft, displaying the configured precision while retaining its exact value in
 /// local undo/redo. Typed text remains unrestricted by display precision.
 /// Other editing, focus,
-/// cancellation, validation, ownership and scheduling rules follow [`IntegerInput`].
+/// cancellation, validation, ownership and scheduling rules follow [`IntegerInput`],
+/// and so does [inspection](IntegerInput#inspection): the role
+/// [`SemanticRole::NumberInput`], the saved number as the semantic value also
+/// while a draft is pending, the draft as the `text` property, and the
+/// properties listed there, with `value` as the saved `f64` written as text
+/// that reads back to the same number.
 ///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
@@ -2722,7 +2789,8 @@ macro_rules! field_api {
             ///
             /// ```
             /// # use pert_ui_runtime as pert_ui;
-            /// use pert_ui::*;
+            /// use pert_ui::prelude::*;
+            /// use pert_ui::KeyAction;
             /// use std::time::Duration;
             /// let mut ui = Runtime::new();
             /// let form = FormFields::new(&ui);
@@ -2811,7 +2879,8 @@ macro_rules! inline_api {
             ///
             /// ```
             /// # use pert_ui_runtime as pert_ui;
-            /// use pert_ui::*;
+            /// use pert_ui::prelude::*;
+            /// use pert_ui::KeyAction;
             /// use std::{cell::RefCell, rc::Rc, time::Duration};
             /// let mut ui = Runtime::new();
             #[doc = concat!(" let value = ui.signal(8 as ", stringify!($ty), ");")]

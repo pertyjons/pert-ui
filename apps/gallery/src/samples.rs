@@ -1,5 +1,5 @@
 //! Small consumer-authored components using the same public contract as built-ins.
-use pert_ui::*;
+use pert_ui::component::*;
 use std::{cell::RefCell, time::Duration};
 
 /// Status text in body typography, drawn by the components below.

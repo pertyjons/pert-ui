@@ -28,6 +28,8 @@ use std::time::Duration;
 /// request for the old one is answered [`CaptureError::UnknownTarget`].
 /// Whole-display capture is a separate operating-system service that this
 /// library does not provide; a whole window is [`Self::Window`].
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "serde",
@@ -113,6 +115,8 @@ impl CaptureTarget {
 /// let request = CaptureRequest::new(CaptureTarget::Path(vec!["mixer".into()])).include_overlay(true);
 /// assert!(request.overlay_included());
 /// ```
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "serde",
@@ -223,6 +227,8 @@ pub enum CaptureError {
 ///
 /// Each variant names the dimensions involved, in physical pixels, so a host
 /// can tell its own read-back mistake apart without parsing text.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, thiserror::Error)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[non_exhaustive]
@@ -494,6 +500,8 @@ impl FrameImage {
 }
 
 /// A finished screenshot.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "serde",

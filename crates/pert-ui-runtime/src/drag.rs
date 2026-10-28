@@ -70,6 +70,8 @@ impl std::fmt::Debug for DragPayload {
 }
 
 /// What a completed drop does with the payload.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum DropOperation {
@@ -349,6 +351,8 @@ pub enum DragOutcome {
 
 /// Owned observations of the active drag session, captured on the UI thread.
 /// The payload itself is never included.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Debug, PartialEq)]
 #[non_exhaustive]
 #[cfg_attr(

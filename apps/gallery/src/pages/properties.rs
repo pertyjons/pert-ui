@@ -1,7 +1,8 @@
 //! The Controls › Property grid page: an inspector of labeled editors in
 //! accordion sections whose grids share one label column width.
 use crate::gallery::{label, page, section};
-use pert_ui::*;
+use pert_ui::parameter::*;
+use pert_ui::prelude::*;
 
 /// The sample object's rendering modes, shown by the mode chooser.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

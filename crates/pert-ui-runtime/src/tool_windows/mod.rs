@@ -127,7 +127,9 @@ pub enum EdgeMode {
 /// ```
 /// # use pert_ui_runtime as pert_ui;
 /// use pert_ui::testing::HostIntegration;
-/// use pert_ui::*;
+/// use pert_ui::prelude::*;
+/// use pert_ui::windowing::*;
+/// use pert_ui::{PresentationAction, Viewport};
 /// use std::time::Duration;
 ///
 /// let mut ui = Runtime::new();
@@ -737,7 +739,9 @@ fn floating_frame(frame: Option<Rect>, size: Size) -> Result<Rect, RuntimeError>
 ///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
-/// use pert_ui::*;
+/// use pert_ui::prelude::*;
+/// use pert_ui::windowing::*;
+/// use pert_ui::Viewport;
 /// use std::time::Duration;
 ///
 /// let mut ui = Runtime::new();

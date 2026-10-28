@@ -19,7 +19,13 @@ use crate::pages::{
     tools::{debug_overlay, profiling, themes, workspace_page},
 };
 use crate::search::{SearchTargets, search_items, search_picker};
-use pert_ui::*;
+use pert_ui::commands::*;
+use pert_ui::prelude::*;
+use pert_ui::windowing::*;
+use pert_ui::{
+    DebugOverlay, Density, MotionPreference, ParameterId, ParameterSpec, TextRenderingMode,
+    TextSource, ThemeMode, UiStrings, UiZoom,
+};
 use std::{cell::RefCell, rc::Rc};
 
 /// The gallery's strip of categories, found once by its key below the root.

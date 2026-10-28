@@ -1603,7 +1603,9 @@ macro_rules! readout_api {
             ///
             /// ```
             /// # use pert_ui_runtime as pert_ui;
-            /// use pert_ui::*;
+            /// use pert_ui::prelude::*;
+            /// use pert_ui::parameter::*;
+            /// use pert_ui::{InspectValue, Viewport};
             /// let mut ui = Runtime::new();
             /// ui.set_viewport(Viewport::new(300.0, 100.0, 1.0)?)?;
             /// let (amount, _host) = ui.parameter(

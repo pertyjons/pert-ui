@@ -537,7 +537,7 @@ pub trait HostIntegration: sealed::HostIntegrationSeal {
     /// ```
     /// # use pert_ui_runtime as pert_ui;
     /// use pert_ui::host::HostIntegration;
-    /// use pert_ui::*;
+    /// use pert_ui::{component::*, prelude::*};
     /// struct Source;
     /// impl Component for Source {
     ///     fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> { Ok(()) }

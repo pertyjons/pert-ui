@@ -2,7 +2,10 @@
 //! the toolbar, field status, adaptive forms, progress and colors.
 use crate::gallery::{action, counter, label, page, section, stage};
 use crate::samples::{Canvas, KeyPad};
-use pert_ui::*;
+use pert_ui::IntervalTimer;
+use pert_ui::parameter::*;
+use pert_ui::prelude::*;
+use pert_ui::windowing::*;
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 fn inline_section(ui: &mut Runtime, id: ParameterId) -> Result<Element, AppError> {

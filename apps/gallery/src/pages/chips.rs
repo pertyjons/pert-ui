@@ -1,7 +1,7 @@
 //! The Controls › Chips & breadcrumbs page: static and removable chips owned
 //! by application data, and breadcrumbs over a sample folder path.
 use crate::gallery::{label, page, section};
-use pert_ui::*;
+use pert_ui::prelude::*;
 
 const TAGS: [&str; 5] = ["Draft", "Review", "Urgent", "Shared", "Archived"];
 

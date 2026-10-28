@@ -1,7 +1,8 @@
 //! The Appearance & tools category's pages.
 use super::support::*;
+use pert_ui::prelude::*;
 use pert_ui::testing::HostIntegration;
-use pert_ui::*;
+use pert_ui::{DebugOverlay, Palette, TextEditError, ThemeMode, ValidationCode, Workspace};
 
 #[test]
 fn profiler_controls_capture_pause_clear_and_do_not_poll() {

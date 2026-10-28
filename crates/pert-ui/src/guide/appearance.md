@@ -166,7 +166,7 @@ Compact and Comfortable change spacing and control sizes while retaining text
 sizes. Local fixed lengths ignore density; theme role overrides remain live.
 
 ```rust
-use pert_ui::*;
+use pert_ui::{Density, prelude::*};
 let mut ui = Runtime::new();
 let theme = ui.theme();
 theme.set_density(Density::Compact)?;
@@ -208,7 +208,7 @@ The workspace document captures the zoom; hosts decide when to store it and own
 any zoom keyboard shortcuts.
 
 ```rust
-use pert_ui::*;
+use pert_ui::{UiZoom, Viewport, prelude::*};
 let mut ui = Runtime::new();
 ui.set_viewport(Viewport::new(800.0, 600.0, 1.5)?)?; // native size/DPI, before zoom
 let settings = ui.ui_settings();
@@ -235,7 +235,7 @@ text on both CPU and GPU, belongs to one runtime, and is not persisted by the
 library. Switching repaints text while retaining its layout and caret geometry.
 
 ```rust
-use pert_ui::*;
+use pert_ui::{TextRenderingMode, Viewport, prelude::*};
 let mut ui = Runtime::new();
 ui.set_viewport(Viewport::new(480.0, 120.0, 1.0)?)?;
 ui.mount_tree(Element::new("sample", Label::new("Compare text rendering")))?;
@@ -253,7 +253,7 @@ runtime caches shape coverage separately from its color, bounded to 128 entries
 and 16 MiB. Cached display lists may retain evicted masks. This is UI-thread work.
 
 ```rust
-use pert_ui::*;
+use pert_ui::{component::*, prelude::*};
 struct CustomPanel;
 impl Component for CustomPanel {
     fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> { Ok(()) }

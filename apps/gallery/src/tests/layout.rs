@@ -1,7 +1,10 @@
 //! The Layout category's pages.
 use super::support::*;
+use pert_ui::inspection::*;
+use pert_ui::prelude::*;
 use pert_ui::testing::HostIntegration;
-use pert_ui::*;
+use pert_ui::testing::*;
+use pert_ui::{Magnification, NativeWindowOptions, PresentationAction, PresentationStatus};
 use std::time::Duration;
 
 #[test]

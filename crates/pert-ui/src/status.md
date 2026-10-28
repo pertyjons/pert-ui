@@ -26,7 +26,7 @@ scope.
 | `images` | no | The `images` module without any decoder; every format feature implies it. |
 | `svg` | no | The `svg` module: SVG icons and graphics rasterized with resvg. SVG text is not rendered. |
 | `cpu` | no | The `cpu` module: rendering scenes and serving capture requests on the CPU, with no window or GPU; with `desktop`, `App::software_rendering` presents CPU frames in native windows instead of the GPU's. |
-| `serde` | no | `Serialize`/`Deserialize` for inspection snapshots, profiles, validation reports and workspace documents, and everything they carry. |
+| `serde` | no | `Serialize`/`Deserialize` for [inspection snapshots][serde-snapshot], [profiles][serde-profile], [validation reports][serde-validation] and [workspace documents][serde-workspace], and everything they carry; the page of each such type says that it needs this feature. |
 
 Drawing images needs no feature: `RasterImage::from_srgba8` accepts pixels an
 application decoded or generated itself.

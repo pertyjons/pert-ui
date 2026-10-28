@@ -5,6 +5,8 @@ use std::collections::{BTreeMap, BTreeSet};
 /// Letter names describe conventional physical positions, not text input.
 /// A platform adapter translates native codes into these owned identifiers.
 /// Additional keys use an opaque platform-scoped native code; do not persist it.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[non_exhaustive]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
@@ -215,6 +217,8 @@ pub enum KeyAction {
 }
 
 /// Classified transition after consulting the complete pressed-key set.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum KeyTransition {
@@ -235,6 +239,8 @@ pub enum KeyTransition {
 /// it, and [`EditorTrigger::Tab`](crate::EditorTrigger::Tab) reports it. Tab
 /// moves [`Forward`](Self::Forward) and Shift+Tab
 /// [`Backward`](Self::Backward).
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum FocusDirection {
@@ -254,6 +260,8 @@ impl FocusDirection {
 ///
 /// This is not a text insertion. OS repetition is identified through the pressed
 /// set; a component decides whether repeats are meaningful for its own action.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[cfg_attr(
     feature = "serde",
@@ -315,6 +323,8 @@ impl KeyEvent {
 /// assert!(control_shift.control && control_shift.shift);
 /// assert_eq!(control == Modifiers::PRIMARY, !cfg!(target_os = "macos"));
 /// ```
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 #[cfg_attr(
     feature = "serde",

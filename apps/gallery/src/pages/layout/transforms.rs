@@ -1,7 +1,9 @@
 //! The Transforms page: the built-in `ZoomView`, a consumer-written timeline
 //! that zooms each axis through an `AxisMapping`, and mapped shapes.
 use crate::gallery::{label, page, section, stage};
-use pert_ui::*;
+use pert_ui::component::*;
+use pert_ui::prelude::*;
+use pert_ui::{AxisMapping, ProfileOperation, ProfileSnapshot};
 
 /// A timeline that zooms and pans in time while its rows keep their height,
 /// written as a consumer would write one.

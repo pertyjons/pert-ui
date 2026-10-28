@@ -1,7 +1,8 @@
 //! The gallery's navigation history. A place is a category and page pair;
 //! the user's own page changes are visits, and back, forward and the history
 //! list reveal a place again without recording it.
-use pert_ui::*;
+use pert_ui::ChildReveal;
+use pert_ui::prelude::*;
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 /// A place in the gallery: a category key and a page key.

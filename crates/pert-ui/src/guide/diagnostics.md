@@ -104,7 +104,7 @@ overlay, profiling, clearing) are refused unless the application enables them,
 and nothing the application owns can be changed through it.
 
 ```
-use pert_ui::{Capacity, Column, Depth, Detail, Element, InspectionQuery, Label, Runtime, Selector};
+use pert_ui::{Capacity, Column, Detail, Element, InspectionQuery, Label, Runtime, Selector};
 use std::time::Duration;
 let mut ui = Runtime::new();
 ui.mount_tree(Element::new(
@@ -121,7 +121,8 @@ let pending = std::thread::spawn(move || {
 // The request woke the host; a headless host sees it in `next_deadline` and flushes.
 assert_eq!(ui.next_deadline(), Some(Duration::ZERO));
 ui.flush(Duration::ZERO)?;
-let reply = pending.wait()?;
+// This flush answered the request; on the UI thread take the reply, never wait.
+let reply = pending.try_reply()?;
 assert_eq!(reply.value.components[0].key, "title");
 assert_eq!(reply.value.components[0].path.as_deref(), Some(["main".to_owned(), "title".to_owned()].as_slice()));
 # Ok::<(), Box<dyn std::error::Error>>(())
@@ -139,8 +140,10 @@ key path ([`CaptureTarget::Path`]). On the UI thread,
 [`CaptureTarget::window`] builds a window target from a borrowed
 [`NativeWindowId`], so the main window is
 `CaptureTarget::window(&ui.primary_window())` ([`Runtime::primary_window`]),
-and [`Runtime::request_capture`] asks for the same capture; never wait for its
-reply there, since the frame is rendered between flushes. The [`App`] renders the frame
+and [`Runtime::request_capture`] asks for the same capture. The frame is
+rendered between flushes, so [`Pending::wait`] on the UI thread blocks forever
+when the host has not served the request yet; take the reply there with
+[`Pending::try_reply`] once it has. The [`App`] renders the frame
 offscreen with the same renderer that presents; a headless runtime answers
 [`CaptureError::Unsupported`] unless a host declares that it renders captures
 with [`Runtime::set_capture_support`] and completes the jobs
@@ -167,7 +170,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     ])));
     ui.flush(Duration::ZERO)?;
     CpuRenderer::new().serve_captures(&mut ui);
-    let capture = pending.wait()?.value?;
+    let capture = pending.try_reply()?.value?; // served above
     std::fs::write(std::env::temp_dir().join("title.png"), capture.image.encode_png())?;
     // The whole main window.
     let pending = ui.request_capture(CaptureRequest::new(CaptureTarget::window(
@@ -175,7 +178,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     )));
     ui.flush(Duration::ZERO)?;
     CpuRenderer::new().serve_captures(&mut ui);
-    let window = pending.wait()?.value?;
+    let window = pending.try_reply()?.value?;
     assert_eq!((window.image.width(), window.image.height()), (300, 200));
     Ok(())
 }

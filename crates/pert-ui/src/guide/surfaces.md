@@ -29,7 +29,7 @@ dialogs are described below. The library draws its own surfaces and provides no
 native OS dialogs.
 
 ```rust
-use pert_ui::*;
+use pert_ui::prelude::*;
 let mut ui = Runtime::new();
 let selection = ui.signal("one");
 let status = ui.signal("Ready".to_owned());
@@ -85,7 +85,7 @@ context menu. A [`Popover`] reports why the framework closed it through
 `on_dismiss`; closing it by writing its signal reports nothing.
 
 ```rust
-use pert_ui::*;
+use pert_ui::{Viewport, prelude::*};
 use std::time::Duration;
 
 let mut ui = Runtime::new();
@@ -181,7 +181,7 @@ a retained [`ThemeManager`], has no signal for the row to write: build the row w
 [`MenuItem::checked_signal`].
 
 ```rust
-use pert_ui::*;
+use pert_ui::{Density, KeyAction, Viewport, prelude::*};
 use std::time::Duration;
 
 let mut ui = Runtime::new();
@@ -325,7 +325,7 @@ keyboard selection. Enter/Space activates the selected action, Delete dismisses;
 failed actions close once and report both `ActionFailed` and the runtime error.
 
 ```rust
-use pert_ui::*;
+use pert_ui::{Viewport, prelude::*};
 use std::time::Duration;
 
 let mut ui = Runtime::new();

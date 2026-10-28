@@ -577,7 +577,8 @@ macro_rules! editor_api {
             ///
             /// ```
             /// # use pert_ui_runtime as pert_ui;
-            /// use pert_ui::*;
+            /// use pert_ui::prelude::*;
+            /// use pert_ui::KeyAction;
             /// let mut ui = Runtime::new();
             /// let form = FormFields::new(&ui);
             /// let handle = form.field("name")?;

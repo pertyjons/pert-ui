@@ -24,6 +24,7 @@ A test holds the [`WidgetId`] its code mounted, or finds one by key path with
 search of a whole snapshot. [`Driver::semantics`](crate::testing::Driver::semantics)
 is that query for the [`Semantics`]. Static text, a label's or a button's, is
 the semantic name; an editable or stateful control's content is the value.
+Empty text is no name: an empty label's `name` is `None`, not `Some("")`.
 
 ```rust
 use pert_ui::prelude::*;
@@ -125,6 +126,44 @@ driver.replace_text(&field, " Reports ")?;
 assert_eq!(tag.get()?, "draft"); // a draft until Enter or focus loss
 driver.key(KeyCode::Enter)?;
 assert_eq!(tag.get()?, "reports");
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
+# In-place editors
+
+An in-place editor, such as [`InlineText`], shows its text at rest and edits
+it in a child it mounts under the key `"editor"`. A test begins editing on the
+label, with F2 or Enter through [`Driver::key`](crate::testing::Driver::key),
+a double click, or [`TextCommand::BeginEdit`]. Focus then moves to the child
+and typed text goes there: the child's semantic value is the draft, while the
+label's stays the saved text until Enter or focus loss saves the draft. The
+label is not itself an editor, so
+[`Driver::replace_text`](crate::testing::Driver::replace_text) takes the
+child, and on the label reports
+[`TestError::NotAnEditor`](crate::testing::TestError::NotAnEditor).
+
+```rust
+use pert_ui::prelude::*;
+use pert_ui::testing::*;
+
+let mut ui = Runtime::new();
+ui.set_viewport(Viewport::new(300.0, 100.0, 1.0)?)?;
+let name = ui.signal(String::from("Draft"));
+let label = ui.mount_tree(Element::new("name", InlineText::new(name.clone())))?;
+let mut driver = Driver::new(&mut ui);
+driver.settle()?;
+driver.runtime_mut().focus(&label)?;
+driver.key(KeyCode::F2)?; // begins editing with the text selected
+let editor = driver.find(&label, &["editor"])?;
+assert_eq!(driver.runtime().focused(), Some(editor.clone()));
+driver.type_text("Final")?;
+assert_eq!(driver.semantics(&editor)?.value, Some(SemanticValue::Text("Final".into())));
+assert_eq!(driver.semantics(&label)?.value, Some(SemanticValue::Text("Draft".into())));
+assert!(matches!(driver.replace_text(&label, "Other"), Err(TestError::NotAnEditor { .. })));
+driver.replace_text(&editor, "Done")?;
+driver.key(KeyCode::Enter)?; // saves the draft; focus returns to the label
+assert_eq!(name.get()?, "Done");
+assert_eq!(driver.runtime().focused(), Some(label));
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
 
@@ -354,7 +393,13 @@ keep such a window open counts the unsaved fields with `on_modified` and a
 With the `cpu` feature, [`CpuRenderer`] renders a capture without a GPU. Declare
 capture support, request the capture, flush and let the renderer serve the
 pending jobs; the [diagnostics chapter](crate::guide::diagnostics) describes the
-capture targets.
+capture targets. The renderer answers the request on the test's own thread, so
+the test takes the reply with [`Pending::try_reply`] once it has served it:
+[`Pending::wait`] there would block forever on a reply that has not arrived.
+[`FrameImage::encode_png`] encodes the image for a file. Cargo gives an
+integration test a scratch directory in the compile-time variable
+`CARGO_TARGET_TMPDIR`; a doctest has none, so this example falls back to the
+system's temporary directory.
 
 ```rust
 # #[cfg(feature = "cpu")]
@@ -373,9 +418,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     ));
     driver.settle()?;
     CpuRenderer::new().serve_captures(driver.runtime_mut());
-    let capture = pending.wait()?.value?;
+    let capture = pending.try_reply()?.value?; // served above
     let image: &FrameImage = &capture.image;
     assert_eq!((image.width(), image.height()), (300, 200));
+
+    let directory = option_env!("CARGO_TARGET_TMPDIR")
+        .map_or_else(std::env::temp_dir, std::path::PathBuf::from);
+    let file = directory.join("hello.png");
+    std::fs::write(&file, image.encode_png())?;
+    assert!(std::fs::read(&file)?.starts_with(b"\x89PNG"));
     Ok(())
 }
 # #[cfg(not(feature = "cpu"))]

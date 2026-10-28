@@ -21,10 +21,11 @@
 //! - [Diagnostics](diagnostics): keyboard input, inspection, screenshots,
 //!   serialization and profiling.
 //! - [Testing an application](testing): reading what a headless runtime
-//!   shows, clicks, text, keys and chords, settling, list rows, background
-//!   work, the close policy and a CPU capture.
+//!   shows, clicks, text, in-place editors, keys and chords, settling, list
+//!   rows, background work, the close policy and a CPU capture.
 //! - [Custom widgets](custom_widgets): a component that follows a binding,
-//!   phases and writes, pointer gestures that converge, clicks, held keys,
+//!   phases and writes, pointer gestures that converge, a control that edits
+//!   a value, clicks, held keys,
 //!   described children, inspection, an inspector over an application
 //!   document and building an application.
 //!

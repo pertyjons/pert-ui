@@ -84,7 +84,8 @@ const MENU: [(TextCommand, &str, StringRole); 2] = [
 /// ```
 /// # use pert_ui_runtime as pert_ui;
 /// use pert_ui::testing::HostIntegration;
-/// use pert_ui::*;
+/// use pert_ui::prelude::*;
+/// use pert_ui::{Clipboard, ClipboardError, TextCommandOutcome};
 /// use std::{cell::RefCell, rc::Rc, time::Duration};
 /// struct Memory(Rc<RefCell<String>>);
 /// impl Clipboard for Memory {

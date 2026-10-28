@@ -1,6 +1,7 @@
 //! The Controls › Chips & breadcrumbs page.
 use super::support::*;
-use pert_ui::*;
+use pert_ui::prelude::*;
+use pert_ui::{InspectValue, KeyAction};
 
 #[test]
 fn removable_chips_report_removal_and_focus_moves_along_the_row() {

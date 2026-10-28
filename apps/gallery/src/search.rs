@@ -9,7 +9,9 @@
 //! choose callback runs inside an event; the task runs after answering
 //! `Pending` has closed the picker. Choosing a command invokes it.
 use crate::{history::GalleryHistory, pages::layout::describe_outcome};
-use pert_ui::*;
+use pert_ui::commands::*;
+use pert_ui::prelude::*;
+use pert_ui::{ContentField, ContentJump, ContentQuery, ContentTarget};
 use std::{cell::RefCell, rc::Rc};
 
 /// The most content rows the search lists. The picker filters them as the

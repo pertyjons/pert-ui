@@ -1,7 +1,8 @@
 //! The Tool windows page: stripes along the edges that expand docked panels,
 //! a locked and an open configuration with shared sample content, and a nested layout.
 use crate::gallery::{label, page, section, toggle};
-use pert_ui::*;
+use pert_ui::prelude::*;
+use pert_ui::windowing::*;
 
 const HELP: &str = "Both layouts show the same sample workspace and share its selected file. Change the selection in either layout and watch the main view and Properties in both layouts update. The layouts differ in what the user can rearrange.";
 const OPEN_HELP: &str = "Open: Files starts expanded. Open Search from the left stripe, resize a docked panel by dragging its divider, and use a panel's three-dot menu to move, overlay, float or open it in its own window. Notes on the bottom stripe is an overlay: it covers the main view and hides when focus leaves. Escape from a panel returns focus to the main view.";

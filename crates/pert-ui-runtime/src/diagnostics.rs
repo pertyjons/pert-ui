@@ -9,6 +9,8 @@ use std::{
 /// Recording is independent of what is drawn: [`DebugOverlay`] switches the
 /// development overlay, so a host that records history sees no markers and a
 /// host that wants markers records nothing.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum DebugMode {
@@ -36,6 +38,8 @@ pub enum DebugMode {
 /// anything: the scene is marked for one repaint when the setting changes and
 /// when a completed validation pass changes what the overlay shows, so an idle
 /// window with stable issues stays idle.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum DebugOverlay {
@@ -66,6 +70,8 @@ pub enum DebugOverlay {
 /// A transport adapter chooses serialization and must represent non-finite numbers
 /// explicitly if a host reports them. These are diagnostic observations, not
 /// accepted input values or a project persistence schema.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum InspectValue {
@@ -92,6 +98,8 @@ pub enum InspectValue {
 /// `..BoxModelInspection::default()` in a struct expression or by assigning
 /// fields of a default value, so a field added in a later version does not
 /// break it.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Debug, Default, PartialEq)]
 #[cfg_attr(
     feature = "serde",
@@ -138,6 +146,8 @@ pub struct BoxModelInspection {
 /// Absence means no border was painted, not a zero-width border. Containers
 /// report the stroke of the last paint, so a role change is visible only after
 /// the next paint.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Copy, Debug, PartialEq)]
 #[cfg_attr(
     feature = "serde",
@@ -161,6 +171,8 @@ pub struct BorderInspection {
 /// interfaces expect, so that a later adapter maps roles instead of guessing
 /// them from drawing, but no such adapter or platform dependency exists yet.
 /// Layout-only containers report no semantics at all rather than a generic role.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
@@ -260,6 +272,8 @@ pub enum SemanticRole {
 /// [`InspectValue::Number`] property per component in
 /// [`ComponentDetails::properties`], as [`ColorPicker`](crate::ColorPicker)
 /// reports its hex text with `hue`, `saturation`, `value` and `alpha`.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Debug, PartialEq)]
 #[non_exhaustive]
 #[cfg_attr(
@@ -308,6 +322,8 @@ pub enum SemanticValue {
 /// component offers fewer. Inspection is read-only, so listing an action does not
 /// provide a way to invoke it: tools drive components through the same input the
 /// runtime accepts from a host.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[non_exhaustive]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
@@ -356,6 +372,8 @@ pub enum SemanticAction {
 /// assert_eq!(semantics.items[0].actions, [SemanticAction::Activate]);
 /// assert!(semantics.items[1].disabled && semantics.items[1].actions.is_empty());
 /// ```
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Debug, PartialEq)]
 #[non_exhaustive]
 #[cfg_attr(
@@ -488,6 +506,8 @@ impl SemanticItem {
 /// without a description is dropped, a [protected](Self::protected)
 /// value is withdrawn, and actions are sorted, distinct and absent while
 /// disabled, for the component and each of its [`SemanticItem`] rows.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Debug, PartialEq)]
 #[non_exhaustive]
 #[cfg_attr(
@@ -593,6 +613,14 @@ impl Semantics {
     /// Sets the `value` field, the content of an editable or stateful control;
     /// static text is the name instead. A [protected](Self::protected) value
     /// stays absent.
+    ///
+    /// Which content an editor reports while an edit is pending is the
+    /// editor's rule, stated on its page: a text editor such as
+    /// [`TextField`](crate::TextField) reports its current text, the draft,
+    /// while [`IntegerInput`](crate::IntegerInput) and
+    /// [`DecimalInput`](crate::DecimalInput) report the saved number and keep
+    /// the draft in their `text` property
+    /// ([inspection](crate::IntegerInput#inspection)).
     #[must_use]
     pub fn value(mut self, value: SemanticValue) -> Self {
         if !self.protected {
@@ -736,6 +764,8 @@ fn normalize_actions(actions: &mut Vec<SemanticAction>, disabled: bool) {
 /// A component builds it from [`Default`], with `..ComponentDetails::default()`
 /// in a struct expression or by assigning fields of a default value, so a field
 /// added in a later version does not break it.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Debug, Default, PartialEq)]
 #[cfg_attr(
     feature = "serde",
@@ -757,6 +787,8 @@ pub struct ComponentDetails {
 }
 
 /// One retained component in the inspection tree/registry.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Debug, PartialEq)]
 #[non_exhaustive]
 #[cfg_attr(
@@ -809,6 +841,8 @@ pub struct ComponentInspection {
 }
 
 /// One still-owned local parameter, including availability after removal.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Debug, PartialEq)]
 #[non_exhaustive]
 #[cfg_attr(
@@ -827,6 +861,8 @@ pub struct ParameterInspection {
 }
 
 /// Recorded framework operation category, independent of any external transport.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[non_exhaustive]
 #[cfg_attr(
@@ -892,6 +928,8 @@ pub enum EventKind {
 }
 
 /// Outcome of a recorded operation. Success means accepted by this local contract.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum EventStatus {
@@ -913,6 +951,8 @@ impl EventStatus {
 }
 
 /// One chronological diagnostic event in a bounded in-memory history.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Debug, Eq, PartialEq)]
 #[non_exhaustive]
 #[cfg_attr(
@@ -943,6 +983,8 @@ pub struct EventRecord {
 /// explicitly contributes additional app state through `Runtime::inspect_with`.
 /// The library starts no server, network listener or transport; an application
 /// that offers MCP or another protocol implements it on top of this snapshot.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Debug, PartialEq)]
 #[non_exhaustive]
 #[cfg_attr(
@@ -1056,6 +1098,8 @@ impl History {
 }
 
 /// Owned observations of one native presentation root, captured on the UI thread.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Debug, PartialEq)]
 #[non_exhaustive]
 #[cfg_attr(

@@ -1,7 +1,8 @@
 //! The Text category's pages.
 use super::support::*;
+use pert_ui::prelude::*;
 use pert_ui::testing::HostIntegration;
-use pert_ui::*;
+use pert_ui::{InspectValue, KeyAction};
 use std::time::Duration;
 
 #[test]

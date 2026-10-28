@@ -1566,3 +1566,29 @@ plan closes.
   maintainer's decisions.
 
 ## Progress
+
+- **P1 Documentation (0.3.76), 2026-10-28.** Implemented by a fresh agent
+  from this section; R2-5, R2-7 to R2-10, R2-12 to R2-16, R2-18, R2-19 and
+  R2-28 as listed (CHANGELOG 0.3.76). Deviations: R2-15's failed restore is
+  a refusal by the control itself (the application lowers the limit below
+  the pre-drag value), since probes showed a restore to a UI-local `Signal`
+  never fails in `cancel_input`; R2-12 uses `option_env!` with the system
+  temporary directory as fallback, since a doctest has no
+  `CARGO_TARGET_TMPDIR`; R2-16's feature-table row links the four
+  serialized documents and each type's page carries the note; R2-14 changed
+  the facade's `representative_programs_import_only_their_globs`, which
+  encoded the old rule. Each new doctest was shown to fail under a
+  temporary mutation of its claim. **Same kind, fixed here** (the author's
+  review sent back three entries the agent had put in TODO.md): every
+  runtime and core rustdoc example that globbed the crate root, the
+  packaged `dynamic_documents` example and the gallery's root globs now
+  import `prelude`, modules and named items; the `IntegerInput` page's
+  local-signal example moved out from under "Parameter binding"; an
+  unused-imports pass over the rewritten examples removed unused imports
+  and fixed `KeyChord::named`'s self-comparison. **TODO.md:** one entry
+  for the untouched examples with unused imports and the proposal to deny
+  them in doctests. Gate (fresh): fmt, workspace Clippy, workspace
+  doctests, the facade and gallery tests, the five headless sessions and
+  the headless gallery, rustdoc `-D warnings` (default and `serde`), the
+  diagnostics snapshots, the API listing gate (no `api/` diff), `git diff
+  --check`. Native evidence: not applicable. Codex review: pending.

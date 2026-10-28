@@ -1,5 +1,7 @@
 //! Dynamic resources and external acceptance through the public facade.
-use pert_ui::*;
+use pert_ui::parameter::*;
+use pert_ui::prelude::*;
+use pert_ui::{Capacity, KeyAction, TaskStatus, Viewport};
 use std::{cell::RefCell, rc::Rc, time::Duration};
 
 type Document = (WidgetId, Parameter<f32>, Rc<RemoteHost<f32>>);

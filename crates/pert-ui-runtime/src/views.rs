@@ -387,7 +387,8 @@ impl ScrollArea {
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
-    /// use pert_ui::*;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::{KeyAction, Viewport};
     /// use std::{cell::RefCell, rc::Rc, time::Duration};
     ///
     /// let mut ui = Runtime::new();

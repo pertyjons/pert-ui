@@ -1,6 +1,6 @@
 //! The Surfaces category's pages.
 use super::support::*;
-use pert_ui::*;
+use pert_ui::prelude::*;
 
 #[test]
 fn floating_window_dialog_uses_the_properties_view_as_its_modal_area() {

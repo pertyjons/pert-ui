@@ -123,7 +123,7 @@ struct SessionInner {
 /// ```
 /// # use pert_ui_runtime as pert_ui;
 /// use pert_ui::{EditorOutcome, EditorSession, EditorStart, EditorTrigger};
-/// # use pert_ui::*;
+/// # use pert_ui::{component::*, prelude::*};
 /// # use std::{cell::RefCell, rc::Rc, time::Duration};
 /// # struct Host(Option<EditorSession>, Rc<RefCell<Vec<EditorTrigger>>>);
 /// # impl Component for Host {

@@ -998,7 +998,8 @@ impl Tree {
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
-    /// use pert_ui::*;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::{PointerButton, PointerEvent, PointerKind, Viewport};
     /// use std::{cell::RefCell, collections::BTreeMap, rc::Rc, time::Duration};
     /// // Children per parent; "" holds the top level.
     /// type Model = Rc<RefCell<BTreeMap<String, Vec<String>>>>;

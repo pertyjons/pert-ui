@@ -1,5 +1,77 @@
 # Changelog
 
+## 0.3.76 (2026-10-28)
+
+Documentation from the round 2 blind test (round 2 fix plan, part P1):
+rustdoc and guide only, with no behavior or public API change. Each item
+answers a finding the testers met (`plans/archive/developer-usability.md`,
+"Round 2 results").
+
+- R2-5 (decision D14): `Semantics::value` says which content an editor
+  reports while an edit is pending. `IntegerInput` has an "Inspection"
+  section: the role `NumberInput`, the saved number as
+  `SemanticValue::Number` with the range also while a draft is pending, the
+  draft in the `text` property, the text value only before any valid value,
+  and the inspection properties (`text`, `value`, `display_value`,
+  `shows_display`, `unit`, `valid`, `dirty`, `validation_error`,
+  `binding_error`, `inline`, `text_editing`, `stepper`), with an example;
+  `DecimalInput` points to it.
+- R2-7: `InlineText` has a section on its editing child `"editor"`: its
+  address, that it stays mounted and is shown while editing, that focus and
+  typing move into it, and where the draft is reported (the child's value and
+  `text`, the label's `draft`). The testing chapter has an "In-place editors"
+  section that edits through the child.
+- R2-8: `VirtualList::on_activate` and `VirtualList::reorderable` say that
+  the list consumes Enter and Alt with an arrow in ordinary bubbling, before
+  `View`, `Window` and `Application` command bindings, and link
+  `Runtime::command_key_input`'s routing order; `CommandScope` and each
+  variant say where its bindings sit in that order.
+- R2-9: `Checkbox` and `Toggle` point to `Field::hide_label` for a control
+  named by text shown elsewhere.
+- R2-10: `KeyChord::new` has an example of explicit Control+Alt and Alt
+  chords written with `Modifiers`' fields, run through `Driver::chord`.
+- R2-12: the testing chapter's capture ends by writing
+  `FrameImage::encode_png` to a file under `CARGO_TARGET_TMPDIR`, with the
+  system temporary directory where Cargo does not set it (a doctest).
+- R2-13: `Label`, `Driver::semantics` and the testing chapter say that an
+  empty label has no name (`None`).
+- R2-14: the custom-widgets chapter's imports say that a widget module globs
+  `component`, adding `prelude` when it also uses built-in components or runs
+  a runtime, and its first example globs only `component`, as the facade's
+  prelude test now checks.
+- R2-15: the custom-widgets chapter has "A control that edits a value": a
+  complete control with live writes, Escape's restore in `keyboard_event`,
+  the restore in `cancel_input`, what `on_change` reports, a failed restore
+  recorded and reported through a `Notifier` while the control stays mounted
+  (and the stated limit: a restore that fails during removal is not
+  reported), and the focus ring by `ColorRole::FocusRing`'s recipe. Its
+  doctest runs both a failed restore while mounted and one during removal.
+- R2-16: every type whose `Serialize` and `Deserialize` are behind the
+  `serde` feature says so on its page, and the feature table of the crate
+  page and the README links the documents it serializes.
+- R2-18: the appearance chapter's examples, and the surfaces, controls and
+  custom-widgets chapters' examples that did the same, import the prelude,
+  the modules and named items instead of globbing the crate root. Same kind,
+  fixed here: every rustdoc example of `pert-ui-runtime` and `pert-ui-core`
+  that globbed the crate root (only `pert-ui`'s `compile_fail` example that
+  shows the root glob lacks `HostIntegration` keeps it), the packaged
+  `dynamic_documents` example and the gallery's modules and tests. The
+  examples touched lose imports they did not use (`EventContext::to_local`,
+  `VirtualList::on_selection_change`, the diagnostics chapter's query), and
+  `KeyChord::named`'s example compares it with the `KeyChord::new` form its
+  text names. `IntegerInput`'s local-signal example and its wheel and Shift
+  paragraph move before the page's headings, out of "Parameter binding".
+- R2-19: `SizeLimits::exact`'s example builds its size with the infallible
+  `Size::from([260, 260])` and says so.
+- R2-28: `Pending::wait` says that on the UI thread it blocks forever unless
+  the reply has already arrived, and to take the reply with `try_reply`
+  there; `Runtime::request_capture` and the diagnostics chapter say the
+  same, and the UI-thread examples of the diagnostics and testing chapters,
+  the `cpu` module and `CpuRenderer::serve_captures` use `try_reply` after the
+  flush or the serve that answers the request.
+
+The `api/` listings are unchanged.
+
 ## 0.3.75 (2026-10-27)
 
 One draft policy (layering plan, part L4b, N5 in the complexity inventory,

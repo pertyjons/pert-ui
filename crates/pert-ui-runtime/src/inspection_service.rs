@@ -52,6 +52,8 @@ use crate::{
 /// let every_tab = Selector::children(["main", "tabs"]);
 /// assert_ne!(save, every_tab);
 /// ```
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "serde",
@@ -140,6 +142,8 @@ impl Selector {
 }
 
 /// Which components around a match a query returns.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum Depth {
@@ -158,6 +162,8 @@ pub enum Depth {
 /// for the returned components (plus the immediate parent that names one), so
 /// a query costs in proportion to what it returns rather than to the
 /// interface.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Copy, Debug, Default, Eq, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum Detail {
@@ -192,6 +198,8 @@ pub enum Detail {
 ///     .events_after(120);
 /// assert_eq!(query.limit_value(), Some(64));
 /// ```
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Debug, Default, PartialEq)]
 #[cfg_attr(
     feature = "serde",
@@ -332,6 +340,8 @@ impl InspectionQuery {
 }
 
 /// The retained events after a cursor, with what a poller needs to trust them.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "serde",
@@ -357,6 +367,8 @@ pub struct EventHistory {
 /// A result describes one flush's state, like a snapshot: `at` is the runtime
 /// clock of the capture and `schema_version` the
 /// [`InspectionSnapshot::SCHEMA_VERSION`] its records follow.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "serde",
@@ -394,6 +406,8 @@ pub struct QueryResult {
 /// when the application enabled them with
 /// [`InspectionService::allow_diagnostic_commands`]. None touches a
 /// parameter, a signal, a setting the application owns or its project.
+///
+/// With the `serde` feature it implements `Serialize` and `Deserialize`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum DiagnosticCommand {
@@ -581,8 +595,14 @@ impl<T> fmt::Debug for Pending<T> {
 }
 
 impl<T> Pending<T> {
-    /// Blocks until the reply arrives or the request is cancelled. Never call
-    /// this on the UI thread: the reply comes from that thread's next flush.
+    /// Blocks until the reply arrives or the request is cancelled.
+    ///
+    /// On the UI thread it blocks forever unless the reply has already
+    /// arrived, since the reply comes from that thread's flush and, for a
+    /// capture, from the host rendering the frame after it. There, take the
+    /// reply with [`Self::try_reply`] after the flush that serves the request
+    /// (and for a capture after the host has served it), which reports
+    /// [`WaitError::Timeout`] instead of blocking if it has not arrived.
     ///
     /// # Errors
     /// [`WaitError::Cancelled`] when the service or runtime closed first, and

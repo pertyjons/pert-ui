@@ -2,7 +2,10 @@
 //! jumping across the gallery.
 use crate::gallery::{find_at, gallery_tabs, label, page, page_address, section, toggle};
 use crate::samples::ReceiptReadout;
-use pert_ui::*;
+use pert_ui::FontRole;
+use pert_ui::commands::*;
+use pert_ui::component::*;
+use pert_ui::prelude::*;
 use std::{cell::RefCell, collections::BTreeMap, rc::Rc};
 
 /// The identities the page's actions reveal. A widget has no identity until

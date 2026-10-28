@@ -7,8 +7,12 @@
 //!
 //! The thread publishes only while a Run toggle of one of the two pages is on
 //! and is parked otherwise, so a gallery whose pages are stopped wakes nothing.
+use pert_ui::component::*;
 use pert_ui::host::HostIntegration;
-use pert_ui::*;
+use pert_ui::live::*;
+use pert_ui::prelude::*;
+use pert_ui::windowing::*;
+use pert_ui::{ProfileOperation, ProfileSnapshot};
 use std::{
     cell::RefCell,
     io::Write,

@@ -48,8 +48,11 @@ impl Runtime {
 
     /// Asks for a screenshot from the UI thread; the reply arrives once the
     /// host has rendered the frame, or at once with the error that refused
-    /// the request. Never wait for it on the UI thread: the frame is
-    /// rendered between this thread's flushes. From another thread, use
+    /// the request. The frame is rendered between this thread's flushes, so
+    /// [`Pending::wait`](crate::Pending::wait) here would block forever
+    /// before the host has served the request: take the reply with
+    /// [`Pending::try_reply`](crate::Pending::try_reply) once it has. From
+    /// another thread, use
     /// [`InspectionClient::capture`](crate::InspectionClient::capture).
     ///
     /// Admission checks that a host renders captures and that the target is

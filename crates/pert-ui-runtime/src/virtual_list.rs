@@ -958,8 +958,9 @@ impl VirtualList {
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
-    /// use pert_ui::*;
-    /// use std::{cell::RefCell, rc::Rc, time::Duration};
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::{KeyAction, Viewport};
+    /// use std::time::Duration;
     /// struct Fruit;
     /// impl ListItems for Fruit {
     ///     fn len(&self) -> usize { 3 }
@@ -1083,6 +1084,17 @@ impl VirtualList {
     /// The callback receives the item's key and may write bindings; failures
     /// propagate through input routing.
     ///
+    /// With this callback the list consumes the press of Enter, with any
+    /// modifiers, while it has an active item, in ordinary bubbling (stage 10
+    /// of [`Runtime::command_key_input`](crate::Runtime::command_key_input)'s
+    /// routing order). A command bound to Enter in a
+    /// [`View`](crate::CommandScope::View),
+    /// [`Window`](crate::CommandScope::Window) or
+    /// [`Application`](crate::CommandScope::Application) scope therefore does
+    /// not run while focus is in the list or in a row that leaves Enter to
+    /// it; only a [`Capture`](crate::CommandScope::Capture) binding runs
+    /// first. Without the callback the list leaves Enter to them.
+    ///
     /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
     pub fn on_activate(
         mut self,
@@ -1118,6 +1130,17 @@ impl VirtualList {
     /// A drag is never the only way: with a [`ListSelection`], Alt with an arrow
     /// along the list moves the active item, or the selection containing it, by
     /// one place through the same callback.
+    ///
+    /// The list consumes that chord, Alt alone with an arrow along its axis,
+    /// in ordinary bubbling (stage 10 of
+    /// [`Runtime::command_key_input`](crate::Runtime::command_key_input)'s
+    /// routing order), also while [`Self::reorder_permission`] denies
+    /// reordering, when it moves the active item instead. A command bound to
+    /// it in a [`View`](crate::CommandScope::View),
+    /// [`Window`](crate::CommandScope::Window) or
+    /// [`Application`](crate::CommandScope::Application) scope therefore does
+    /// not run while focus is in the list; only a
+    /// [`Capture`](crate::CommandScope::Capture) binding runs first.
     pub fn reorderable(
         mut self,
         on_drop: impl FnMut(&mut EventContext, &ListDrop<'_>) -> Result<bool, RuntimeError> + 'static,
@@ -1168,7 +1191,8 @@ impl VirtualList {
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
-    /// use pert_ui::*;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::GeometryError;
     /// struct Groups;
     /// impl ListItems for Groups {
     ///     fn len(&self) -> usize { 2 }

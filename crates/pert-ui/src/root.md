@@ -84,3 +84,10 @@ modules re-export their `pert_ui_runtime` namesakes.
 Custom widgets implement [`Component`] and use the same public measurement,
 binding, input and [`Painter`] contracts as the built-in widgets; the guide's
 chapters each end with the extension points of their area.
+
+<!-- Targets of the feature table's links in status.md; README.md defines the
+same labels with docs.rs addresses. -->
+[serde-snapshot]: crate::InspectionSnapshot
+[serde-profile]: crate::ProfileSnapshot
+[serde-validation]: crate::ValidationReport
+[serde-workspace]: crate::Workspace

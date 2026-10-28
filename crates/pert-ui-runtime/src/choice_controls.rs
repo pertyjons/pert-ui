@@ -516,6 +516,13 @@ macro_rules! boolean_widget {
         /// applies its label, binding and enabled state, cancelling a pending
         /// activation when the binding, the path or a controlled value changes.
         ///
+        /// A control named by text shown elsewhere, such as a column header
+        /// or a [`PropertyGrid`](crate::PropertyGrid) row's label, takes an
+        /// empty label and goes in a [`Field`](crate::Field) with that text as
+        /// the label and [`Field::hide_label`](crate::Field::hide_label): the
+        /// text then names the control in inspection and accessibility without
+        /// being drawn twice.
+        ///
         #[doc = concat!(
             "```\n",
             "# use pert_ui_runtime as pert_ui;\n",

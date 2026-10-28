@@ -1,5 +1,7 @@
 //! Two-process native restart check through the same public API as applications.
-use pert_ui::*;
+use pert_ui::component::*;
+use pert_ui::prelude::*;
+use pert_ui::{Density, ThemeMode, UiZoom, Workspace, WorkspaceReport, WorkspaceSettings};
 use std::{
     cell::{Cell, RefCell},
     collections::BTreeMap,

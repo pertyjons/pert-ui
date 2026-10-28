@@ -1,6 +1,6 @@
 //! The Sections page: collapsible sections and accordions.
 use crate::gallery::{label, page, section, toggle};
-use pert_ui::*;
+use pert_ui::prelude::*;
 
 const HELP: &str = "Click a header, or focus it with Tab and press Enter or Space, to show or hide its content. Collapsed content keeps its state: type in the note, collapse and expand again. The first section remembers its expansion in a saved workspace; the second follows the application's switch instead and is not saved.";
 

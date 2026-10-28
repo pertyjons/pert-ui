@@ -17,8 +17,12 @@
 //! the adapter's translation of them are not exercised here; the drag smoke
 //! and the input probe cover that path. The run is evidence for exactly the
 //! steps in [`steps`], on the platform where it ran.
+#[cfg(test)]
+use pert_ui::PresentationAction;
+use pert_ui::component::*;
 use pert_ui::host::HostIntegration;
-use pert_ui::*;
+use pert_ui::prelude::*;
+use pert_ui::{AnyParameterSnapshot, ComponentInspection, ParameterId};
 use std::{
     cell::{Cell, RefCell},
     io::{self, Write},

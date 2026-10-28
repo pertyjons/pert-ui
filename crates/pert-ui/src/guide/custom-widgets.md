@@ -12,15 +12,19 @@ or open it with `cargo run -p pert-ui --example diagram_editor --features cpu --
 
 # Imports
 
-Application code globs [`prelude`]; a widget globs [`prelude`] and
-[`component`]. The component module holds every name implementing
-[`Component`] writes: its contexts, drawing, input events, drag and drop,
-receipts such as a [`TaskReceipt`], native windows, editor sessions and the
-[`DraftEditor`] a widget embeds. Both globs can be used together, since they
-re-export the same items:
+Application code globs [`prelude`]. A widget module globs [`component`],
+which holds every name implementing [`Component`] writes: its contexts,
+drawing, input events, drag and drop, receipts such as a [`TaskReceipt`],
+native windows, editor sessions, the [`DraftEditor`] a widget embeds,
+[`Element`] and the signals. A module that also uses built-in components or
+runs a [`Runtime`], such as a container that describes built-in controls or
+the widget's tests, adds [`prelude`]; the two globs combine, since they
+re-export the same items. A module globs only what it uses: a glob none of
+whose names the module uses is an `unused import` warning. This widget needs
+only [`component`]:
 
 ```
-use pert_ui::{component::*, prelude::*};
+use pert_ui::component::*;
 
 struct Marker;
 
@@ -38,9 +42,9 @@ impl Component for Marker {
 # let _ = Marker;
 ```
 
-The [`component`] page has an example that mounts such a
-widget. Most examples in this chapter glob the crate root, which holds every
-name.
+The [`component`] page has an example that mounts such a widget, with both
+globs. The examples below glob the modules they use and import the few other
+names they write from the crate root by name, never by a crate-root glob.
 
 # A component that follows a binding
 
@@ -120,7 +124,7 @@ writes. Prefer a control's own user-write callback where it has one (such as
 [`ColorPicker::on_change`]), which reports only the user's writes:
 
 ```
-use pert_ui::*;
+use pert_ui::{component::*, prelude::*};
 use std::{cell::RefCell, rc::Rc, time::Duration};
 
 /// Copies each new value of `source` into an application log, from an event phase.
@@ -188,7 +192,220 @@ that cleanup is skipped, and only the consumer's own lifecycle cleans up:
 cancelling a drag releases its source's capture and reports the cancellation
 to [`Component::drag_finished`], and closing a surface hides what it showed,
 which calls `cancel_input` on each hidden widget. A widget whose gesture
-Escape should cancel cancels it in `keyboard_event`, as [`ColorPicker`] does.
+Escape should cancel cancels it in `keyboard_event`, as [`ColorPicker`] does
+and the next section's control does.
+
+# A control that edits a value
+
+A control that edits a binding decides first when it writes. With **live
+writes** each step of a gesture writes the binding, so everything bound to the
+value follows the drag, and the control remembers the value from before the
+gesture to write it back when the gesture is cancelled. With a **commit** the
+gesture changes only a preview the control keeps and writes once at its end,
+as [`ColorPicker`] does; cancelling then drops the preview and has nothing to
+restore. The control below writes live and follows the rest of the gesture
+contract:
+
+- **Escape** reaches it as an ordinary key in [`Component::keyboard_event`],
+  after the runtime has ended its pointer capture; the control restores the
+  value there, in an event phase, and a failed restore is returned from the
+  key's input call.
+- **[`Component::cancel_input`]** restores it as well. The runtime calls it
+  when the control loses its input context, such as on hiding, removal, focus
+  loss or a modal surface, and it is the only restore that also runs on
+  removal. It must not run application actions, so it never calls
+  `on_change`.
+- **`on_change`** reports each write the control makes from an input
+  callback: a drag step, a key step and Escape's restore. The restore in
+  `cancel_input` is not reported; an owner that must see every change follows
+  the binding itself.
+- **A restore can fail,** with the errors of [`Signal::set`], or be refused by
+  the control, as here when the application lowered the limit during the drag
+  below the value it started from. `cancel_input` returns nothing, so it
+  records the error and requests a [`Notifier`], and
+  [`Component::deliver_notifications`] returns it from a later flush. That
+  route reports only while the control stays mounted: a removed control is not
+  called there, so a restore that fails during removal is not reported.
+- **The focus ring** is the built-in one, drawn as
+  [`ColorRole::FocusRing`] describes: [`Painter::stroke_shape`] on the
+  control's bounds at [`MetricRole::FocusWidth`] while
+  [`Painter::focus_within`] holds.
+
+```
+use pert_ui::{component::*, prelude::*};
+use std::{cell::RefCell, rc::Rc, time::Duration};
+
+/// Edits `value` from 0 up to `limit`, which the application may lower.
+struct Level {
+    value: Signal<f32>,
+    limit: ReadSignal<f32>,
+    shown: (f32, f32),
+    /// The value from before the drag, while one is open.
+    origin: Option<f32>,
+    /// A restore `cancel_input` could not make, for `deliver_notifications`.
+    failed: Option<RuntimeError>,
+    on_change: Box<dyn FnMut(&mut EventContext, f32) -> Result<(), RuntimeError>>,
+}
+impl Level {
+    /// Writes a user's value and reports it; called only from input callbacks.
+    fn write(&mut self, cx: &mut EventContext, value: f32) -> Result<(), RuntimeError> {
+        if self.value.set_changed(value)? {
+            (self.on_change)(cx, value)?;
+        }
+        Ok(())
+    }
+    /// Ends the drag and writes the value from before it back, if it still fits.
+    fn restore(&mut self) -> Result<Option<f32>, RuntimeError> {
+        let Some(origin) = self.origin.take() else { return Ok(None) };
+        if origin > self.shown.1 {
+            return Err(ApplicationError::from("the value before the drag exceeds the limit").into());
+        }
+        self.value.set(origin)?;
+        Ok(Some(origin))
+    }
+    fn at(&self, cx: &EventContext, event: PointerEvent) -> Option<f32> {
+        let (local, size) = (cx.to_local(event.position())?, cx.size()?);
+        Some((local.x() / size.width()).clamp(0.0, self.shown.1))
+    }
+}
+impl Component for Level {
+    fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
+        self.shown = (cx.read(&self.value.read_only())?, cx.read(&self.limit)?);
+        Ok(())
+    }
+    fn measure(&self, cx: &MeasureContext<'_>, _: Constraints) -> Result<Size, RuntimeError> {
+        Ok(Size::new(160.0, cx.metric(MetricRole::ControlHeight))?)
+    }
+    fn focusable(&self) -> bool { true }
+    fn pointer_input(&mut self, cx: &mut EventContext, event: PointerEvent)
+        -> Result<InputOutcome, RuntimeError> {
+        match event.kind() {
+            PointerKind::Press(PointerButton::Primary) => {
+                cx.capture_pointer()?;
+                cx.request_focus();
+                self.origin = Some(self.value.get()?);
+            }
+            PointerKind::Move if self.origin.is_some() => {}
+            PointerKind::Release(PointerButton::Primary) if self.origin.is_some() => {
+                self.origin = None; // the drag's last write stands
+                cx.release_pointer();
+                return Ok(InputOutcome::Handled);
+            }
+            _ => return Ok(InputOutcome::Ignored),
+        }
+        if let Some(value) = self.at(cx, event) {
+            self.write(cx, value)?; // a repeated position writes nothing
+        }
+        Ok(InputOutcome::Handled)
+    }
+    fn keyboard_event(&mut self, cx: &mut EventContext, event: KeyEvent, _: &KeyboardState)
+        -> Result<InputOutcome, RuntimeError> {
+        if event.transition == KeyTransition::Released {
+            return Ok(InputOutcome::Ignored);
+        }
+        let current = self.value.get()?;
+        match event.code {
+            KeyCode::Escape => match self.restore()? {
+                Some(origin) => (self.on_change)(cx, origin)?, // the user's write too
+                None => return Ok(InputOutcome::Ignored),
+            },
+            KeyCode::ArrowLeft => self.write(cx, (current - 0.1).max(0.0))?,
+            KeyCode::ArrowRight => self.write(cx, (current + 0.1).min(self.shown.1))?,
+            _ => return Ok(InputOutcome::Ignored),
+        }
+        Ok(InputOutcome::Handled)
+    }
+    fn cancel_input(&mut self, cx: &mut EventContext) {
+        if let Err(error) = self.restore() {
+            self.failed = Some(error);
+            cx.notifier().request();
+        }
+        self.input_reset();
+        cx.invalidate(Invalidation::Paint);
+    }
+    fn deliver_notifications(&mut self, _: &mut EventContext) -> Result<(), RuntimeError> {
+        self.failed.take().map_or(Ok(()), Err)
+    }
+    fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
+        let bounds = Rect::from_size(painter.size());
+        painter.fill_rect(bounds, painter.color(ColorRole::Surface));
+        let filled = Rect::new(0.0, 0.0, bounds.width() * self.shown.0, bounds.height())?;
+        painter.fill_rect(filled, painter.color(ColorRole::Primary));
+        if painter.focus_within() {
+            let width = Length::new(painter.metric(MetricRole::FocusWidth))?;
+            painter.stroke_shape(bounds, Shape::Rectangle, width, painter.color(ColorRole::FocusRing))?;
+        }
+        Ok(())
+    }
+    fn inspect(&self) -> ComponentDetails {
+        ComponentDetails {
+            semantics: Some(Semantics::new(SemanticRole::Slider).name("Level")
+                .value(SemanticValue::Number {
+                    value: f64::from(self.shown.0),
+                    minimum: Some(0.0),
+                    maximum: Some(f64::from(self.shown.1)),
+                })
+                .actions([SemanticAction::Increment, SemanticAction::Decrement])),
+            ..ComponentDetails::default()
+        }
+    }
+}
+
+let mut ui = Runtime::new();
+ui.set_viewport(Viewport::new(200.0, 100.0, 1.0)?)?;
+let (value, limit) = (ui.signal(0.8_f32), ui.signal(1.0_f32));
+let reported = Rc::new(RefCell::new(Vec::new()));
+let level = |reported: Rc<RefCell<Vec<f32>>>| Level {
+    value: value.clone(), limit: limit.read_only(), shown: (0.0, 0.0), origin: None, failed: None,
+    on_change: Box::new(move |_, value| Ok(reported.borrow_mut().push(value))),
+};
+let root = ui.mount_tree(Element::new("form", Column::new([
+    Element::new("level", level(reported.clone())),
+    Element::new("other", TextField::new(ui.signal(String::new()))),
+])))?;
+ui.flush(Duration::ZERO)?;
+let control = ui.find(&root, &["level"])?.ok_or("the level")?;
+let other = ui.find(&root, &["other"])?.ok_or("the field")?;
+let [x, y, ..] = ui.bounds(&control)?.ok_or("laid out")?.values();
+let at = |dx: f32, kind| Point::new(x + dx, y + 4.0).map(|point| PointerEvent::new(point, kind));
+let press = |dx| at(dx, PointerKind::Press(PointerButton::Primary));
+
+// A drag writes live; Escape writes the value from before it back.
+ui.pointer_input(press(80.0)?)?;
+ui.pointer_input(at(40.0, PointerKind::Move)?)?;
+assert_eq!(value.get()?, 0.25);
+ui.key_input(KeyCode::Escape, KeyAction::Press)?;
+assert_eq!(value.get()?, 0.8);
+assert_eq!(*reported.borrow(), [0.5, 0.25, 0.8]);
+ui.key_input(KeyCode::Escape, KeyAction::Release)?;
+ui.flush(Duration::ZERO)?;
+ui.paint()?; // the focused control draws the focus ring
+
+// Focus loss restores in `cancel_input`, which reports nothing to `on_change`.
+ui.pointer_input(press(40.0)?)?;
+ui.focus(&other)?;
+assert_eq!(value.get()?, 0.8);
+assert_eq!(reported.borrow().len(), 4);
+
+// A restore that fails while the control stays mounted is reported by a later flush.
+ui.pointer_input(press(40.0)?)?;
+limit.set(0.5)?;
+ui.flush(Duration::ZERO)?; // the control reads the lower limit
+ui.focus(&other)?;
+assert!(ui.flush(Duration::ZERO).is_err());
+assert_eq!(value.get()?, 0.25); // the drag's value stands
+ui.flush(Duration::ZERO)?; // reported once
+
+// One that fails while the control is removed is not reported.
+value.set(0.5)?;
+ui.pointer_input(press(40.0)?)?;
+limit.set(0.4)?;
+ui.flush(Duration::ZERO)?;
+ui.unmount(&control)?;
+ui.flush(Duration::ZERO)?;
+assert_eq!(value.get()?, 0.25);
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
 
 # Clicks and double clicks
 
@@ -300,7 +517,7 @@ by the field's own focus-loss rules, so close admission sees it as an unsaved
 change; a test checks the policy with [`HeadlessApp::admit_close`].
 
 ```
-use pert_ui::*;
+use pert_ui::{KeyAction, Viewport, prelude::*};
 use std::{cell::RefCell, rc::Rc, time::Duration};
 
 #[derive(Clone, PartialEq)]

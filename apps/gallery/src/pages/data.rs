@@ -6,7 +6,8 @@ use crate::gallery::{label, page, section, stage};
 use crate::samples::{ReceiptReadout, VectorShapes};
 pub(crate) use drag_and_drop::drag_and_drop;
 pub(crate) use files::file_browser;
-use pert_ui::*;
+use pert_ui::images;
+use pert_ui::prelude::*;
 use std::{cell::RefCell, rc::Rc};
 
 /// One hundred thousand rows, of which only the ones near the viewport exist.

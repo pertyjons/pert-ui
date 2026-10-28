@@ -526,10 +526,12 @@ fn representative_programs_import_only_their_globs() {
         COMPONENT,
         false,
     );
+    // A widget module that only implements `Component` globs `component`
+    // alone; the guide's rule adds `prelude` only where elements are built.
     check(
         "the custom-widgets Marker",
         &block(custom, "Imports", 0),
-        COMPONENT,
+        &["pert_ui::component::*"],
         false,
     );
     check(

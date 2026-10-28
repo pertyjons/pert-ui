@@ -368,7 +368,8 @@ impl<'a> Driver<'a> {
     /// [`Selector::id`] at [`Detail::Semantics`].
     ///
     /// Static text, such as a label's or a button's, is the name; an editable
-    /// or stateful control's content is the value.
+    /// or stateful control's content is the value. Empty text is no name: an
+    /// empty label's `name` is `None`.
     ///
     /// # Errors
     /// [`TestError::NoSemantics`] for a component that reports none, and

@@ -31,6 +31,38 @@ pub struct KeyChord {
 }
 impl KeyChord {
     /// Creates an exact chord using modifier-free layout identity.
+    ///
+    /// The chord matches only `modifiers`: set the [`Modifiers`] fields it
+    /// needs and leave the rest at their defaults. `control` and `alt` are
+    /// those keys on every platform; [`Self::primary`] instead takes the
+    /// platform's primary modifier. A letter matches in either case.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::testing::Driver;
+    ///
+    /// // Control+Alt+K on every platform, and Alt+Delete.
+    /// let control_alt = Modifiers { control: true, alt: true, ..Modifiers::default() };
+    /// let alt = Modifiers { alt: true, ..Modifiers::default() };
+    /// let insert = KeyChord::new(CommandKey::Character('K'), control_alt);
+    /// let remove = KeyChord::new(CommandKey::Named(KeyCode::Delete), alt);
+    ///
+    /// let mut ui = Runtime::new();
+    /// let runs = ui.signal(0);
+    /// let counter = runs.clone();
+    /// ui.register_command("Insert link", CommandScope::Application, vec![insert, remove],
+    ///     move |_, _| counter.update(|n| *n += 1))?;
+    /// let mut driver = Driver::new(&mut ui);
+    /// driver.chord(KeyChord::new(CommandKey::Character('k'), control_alt), KeyCode::KeyK)?;
+    /// driver.chord(remove, KeyCode::Delete)?;
+    /// assert_eq!(runs.get()?, 2);
+    /// // Exact: an extra Shift is another chord.
+    /// let shifted = Modifiers { shift: true, ..control_alt };
+    /// driver.chord(KeyChord::new(CommandKey::Character('k'), shifted), KeyCode::KeyK)?;
+    /// assert_eq!(runs.get()?, 2);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     pub fn new(key: CommandKey, modifiers: Modifiers) -> Self {
         Self {
             key: key.normalized(),
@@ -47,7 +79,7 @@ impl KeyChord {
     /// use pert_ui::{CommandKey, KeyChord, KeyCode, Modifiers};
     /// assert_eq!(
     ///     KeyChord::named(KeyCode::Space),
-    ///     KeyChord::named(KeyCode::Space),
+    ///     KeyChord::new(CommandKey::Named(KeyCode::Space), Modifiers::default()),
     /// );
     /// ```
     pub fn named(key: KeyCode) -> Self {
@@ -339,15 +371,35 @@ pub enum TextKeyOutcome {
     InsertText,
 }
 /// Registration scope, resolved once for the invoking window and content target.
+///
+/// The scope decides where a binding sits in the key routing order that
+/// [`Runtime::command_key_input`] lists: a `Capture` binding before the
+/// focused control, and the others after it, so a control that consumes a
+/// key in ordinary bubbling, such as a [`VirtualList`](crate::VirtualList)
+/// with Enter or Alt with an arrow, keeps it from them.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum CommandScope {
     /// Explicit application capture after text editing, before ordinary controls.
+    ///
+    /// Stage 7 of the routing order: after the text phase, so a focused
+    /// editor keeps the keys it edits with, and before held-input
+    /// registrations, Escape's dismissal, Tab traversal and the focused
+    /// component's [`keyboard_event`](crate::Component::keyboard_event).
     Capture,
     /// Application fallback, available from every eligible window.
+    ///
+    /// Stage 11, last: after the focused component and its ancestors left the
+    /// key, and after the `View` and `Window` bindings.
     Application,
     /// Bindings confined to one native window incarnation.
+    ///
+    /// Stage 11, after the `View` bindings and before the `Application`
+    /// ones, for keys pressed in that window.
     Window(crate::NativeWindowId),
     /// Bindings for this retained presentation subtree. They follow detachment.
+    ///
+    /// Stage 11, first: the views containing the command target, innermost
+    /// outward, after the focused component and its ancestors left the key.
     View(WidgetId),
 }
 /// Source of a shared command invocation.

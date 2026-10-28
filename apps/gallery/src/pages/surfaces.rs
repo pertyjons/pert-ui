@@ -2,7 +2,9 @@
 //! the menu bar.
 use crate::gallery::{label, page, section, stage};
 use crate::samples::Canvas;
-use pert_ui::*;
+use pert_ui::commands::*;
+use pert_ui::prelude::*;
+use pert_ui::windowing::*;
 
 /// An application menu bar over a small document: command rows with live
 /// shortcuts and enablement, submenus, separators, check and radio settings and

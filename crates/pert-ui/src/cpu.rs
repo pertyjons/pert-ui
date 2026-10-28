@@ -32,7 +32,8 @@
 //! }));
 //! ui.flush(Duration::ZERO)?;
 //! CpuRenderer::new().serve_captures(&mut ui);
-//! let png = pending.wait()?.value?.image.encode_png();
+//! // Served on this thread: take the reply, never wait for it here.
+//! let png = pending.try_reply()?.value?.image.encode_png();
 //! assert!(png.starts_with(b"\x89PNG"));
 //! # Ok::<(), Box<dyn std::error::Error>>(())
 //! ```

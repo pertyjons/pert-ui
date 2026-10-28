@@ -23,7 +23,7 @@ use std::{
 ///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
-/// use pert_ui::*;
+/// use pert_ui::prelude::*;
 /// let mut ui = Runtime::new();
 /// let name = ui.signal(String::from("Channel 1"));
 /// let row = Property::new("name", "Name", Element::new("input", TextField::new(name)))
@@ -210,7 +210,8 @@ enum Session {
 ///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
-/// use pert_ui::*;
+/// use pert_ui::prelude::*;
+/// use pert_ui::{InspectValue, Viewport};
 /// use std::time::Duration;
 /// let mut ui = Runtime::new();
 /// ui.set_viewport(Viewport::new(480.0, 320.0, 1.0)?)?;

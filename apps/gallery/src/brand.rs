@@ -1,6 +1,8 @@
 //! The pert-ui mark at the left of the gallery's menu bar, a consumer-authored
 //! button built on the public component contract.
-use pert_ui::*;
+use pert_ui::ThemeMode;
+use pert_ui::component::*;
+use pert_ui::prelude::*;
 
 /// The compact mark for light backgrounds, drawn in the light theme.
 const ICON_LIGHT: &[u8] = include_bytes!("../../../assets/brand/pert-ui-icon.svg");
