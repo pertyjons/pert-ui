@@ -124,6 +124,9 @@ struct Index {
     declared: BTreeMap<String, BTreeSet<String>>,
     types: BTreeMap<TypeKey, TypeInfo>,
     modules: BTreeMap<String, ModuleEntry>,
+    /// The names of free functions and constants: the listing's `pub fn`
+    /// and `pub const` lines outside any type, which are no seeds.
+    values: BTreeSet<String>,
     /// Parse, resolution and ambiguity failures.
     problems: Vec<String>,
 }
@@ -146,12 +149,6 @@ fn is_pert(segment: &str) -> bool {
 
 fn is_ident_byte(byte: u8) -> bool {
     byte.is_ascii_alphanumeric() || byte == b'_'
-}
-
-/// A type's name: upper camel case, unlike a constant's `UPPER_CASE` or a
-/// function's `snake_case`.
-fn type_like(name: &str) -> bool {
-    upper(name) && name.contains(|c: char| c.is_ascii_lowercase())
 }
 
 fn upper(segment: &str) -> bool {
@@ -586,8 +583,11 @@ impl Index {
                 let edges = self.edges(&key.name, target, false, raw);
                 self.add_edges(&key, edges);
                 *group = Some(key);
+            } else {
+                // Free functions and constants are not types; the check
+                // skips them as seeds, by this record of their kind.
+                self.values.insert(segments[last].clone());
             }
-            // Free functions and constants are not types; the check skips them.
             return;
         };
         let via = segments[at..].join("::");
@@ -756,13 +756,14 @@ fn check(
                     queue.push_back((key, String::new()));
                 }
             }
-            // A type name (functions and constants are not seeds) that no
-            // declaration defines, such as a re-export renamed with `as`:
-            // its closure would go unchecked, so it fails.
-            None if type_like(name) => outcome.problems.push(format!(
+            // A function or constant, by its listing line, is no seed.
+            None if index.values.contains(name) => {}
+            // Anything else that no declaration defines, such as a re-export
+            // renamed with `as`, would leave its closure unchecked, so it
+            // fails.
+            None => outcome.problems.push(format!(
                 "`testing` member `{name}` resolves to no declared type"
             )),
-            None => {}
         }
     }
     let mut frontier: Vec<(&Edge, String, bool)> = Vec::new();
@@ -1351,9 +1352,18 @@ mod rules {
     fn a_testing_member_without_a_declaration_fails() {
         // A re-export renamed with `as`: the module lists the new name, while
         // the declaration index knows only the defining one.
-        let core = "pub mod pert_ui_core\npub struct pert_ui_core::Original\n";
+        // A single-letter type name fails too, while a function and a
+        // constant, known by their listing lines in the defining package, do
+        // not.
+        let core = "pub mod pert_ui_core\n\
+                    pub struct pert_ui_core::Original\n\
+                    pub fn pert_ui_core::helper() -> u8\n\
+                    pub const pert_ui_core::LIMIT: usize\n";
         let runtime = format!(
-            "{HEAD}pub use pert_ui_runtime::testing::Renamed\npub use pert_ui_runtime::testing::helper\n"
+            "{HEAD}pub use pert_ui_runtime::testing::B\n\
+             pub use pert_ui_runtime::testing::LIMIT\n\
+             pub use pert_ui_runtime::testing::Renamed\n\
+             pub use pert_ui_runtime::testing::helper\n"
         );
         let outcome = check(
             &[&runtime, core],
@@ -1364,7 +1374,10 @@ mod rules {
         );
         assert_eq!(
             outcome.problems,
-            ["`testing` member `Renamed` resolves to no declared type"]
+            [
+                "`testing` member `B` resolves to no declared type",
+                "`testing` member `Renamed` resolves to no declared type",
+            ]
         );
     }
 

@@ -1630,4 +1630,8 @@ plan closes.
   three self-tests, each failing with its fix reverted; a
   `PERT_UI_API_DIR` override runs it against other listings: on the
   committed ones it passes, on 84bb60f's it reports exactly the original
-  23-name evidence. Recheck: pending.
+  23-name evidence. Codex's recheck: one should-fix, a single-letter
+  type export (`B`) that resolves to nothing was still skipped by the
+  spelling rule; non-type exports are now recognized by their listing kind
+  (`pub fn`/`pub const` lines), with `B`, a renamed type, a function and a
+  constant in the self-test. Second recheck: pending.
