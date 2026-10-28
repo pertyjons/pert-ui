@@ -15,9 +15,9 @@ result.
   `/kit/doc/pert_ui/index.html`. The library's guide is part of that
   documentation.
 - To read an HTML page in the terminal, use
-  `pandoc -f html -t plain /kit/doc/pert_ui/index.html` (replace the path
-  with the page you need). `pandoc` is available in the sandbox; keep the
-  HTML paths for following links.
+  `pandoc -f html -t gfm-raw_html /kit/doc/pert_ui/index.html` (replace the
+  path with the page you need). `pandoc` is available in the sandbox; its
+  Markdown output preserves link targets relative to the HTML page.
 - `/kit/readme`: the README of each `pert-ui` crate.
 - `/kit/friction-log.md`: the template for your friction log.
 - Crates come from an offline registry. Depend on `pert-ui` as an ordinary
@@ -39,7 +39,8 @@ result.
    you resolved quickly still gets an entry. Be concrete: what you tried,
    the exact item or page you read, the exact diagnostic.
 4. Do not look for anything outside `/work`, `/kit` and the Rust
-   toolchain.
+   toolchain. You may use installed system tools such as `pandoc` to read
+   these files.
 5. You have a fixed time budget. Work in small steps and keep the log and
    the code in a buildable state, because the run may end at any time.
 
