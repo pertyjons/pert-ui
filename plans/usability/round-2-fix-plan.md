@@ -1998,4 +1998,5 @@ plan closes.
   fixes, the kit check (then pending, now recorded above) and a nit (a
   test name and a CHANGELOG line said an equal result is not evaluated;
   it is, and only the component update is suppressed), to be corrected
-  with P8's open fix. Recheck: pending.
+  with P8's open fix; corrected by the author (test renamed, CHANGELOG
+  line reworded). Recheck: pending.

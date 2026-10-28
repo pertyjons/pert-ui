@@ -48,7 +48,7 @@ fn observe<T: Clone + 'static>(
 }
 
 #[test]
-fn five_inputs_evaluate_once_per_batch_and_not_on_an_equal_result() -> Result {
+fn five_inputs_evaluate_once_per_batch_and_an_equal_result_updates_no_component() -> Result {
     let mut ui = Runtime::new();
     let prefix = ui.signal("img".to_owned());
     let format = ui.signal(1_u8);

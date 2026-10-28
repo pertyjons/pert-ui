@@ -53,7 +53,7 @@ decision D10, from its approved design checkpoint
   `plans/follow-ups.md`'s "Writable model projection" records round 2's
   evidence.
 - Tests: the facade's `foundation` binary adds `combine` (five inputs
-  evaluated once per batch and not on an equal result; inputs and function
+  evaluated once per batch, an equal result updating no component; inputs and function
   retained and released with the last result; `ForeignRuntime` before
   anything runs, also for a dirty derived input; a write inside the
   function refused at every evaluation; an update may combine and a paint
