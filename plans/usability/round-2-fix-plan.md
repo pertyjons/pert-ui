@@ -1690,4 +1690,6 @@ plan closes.
   doctests, rustdoc `-D warnings`, the diagnostics snapshots, the API
   listing gate (runtime listings only: the new type, the return type, the
   conversion), `git diff --check`. Native evidence: not applicable. Codex
-  review: pending.
+  review (2026-10-28): ready, with one nit (the CHANGELOG and the G2-8
+  addendum said a panic cancels before delivery; it cancels the operation
+  whose callback unwinds), corrected by the author. **P3 done.**

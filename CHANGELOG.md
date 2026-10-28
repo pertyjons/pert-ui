@@ -21,8 +21,9 @@ R2-17; no design checkpoint, D11 settles the shape).
   families, and `TaskReceipt` is not there either.
 - Changed (R2-4): `TaskReceipt`, returned by `EventContext::defer`,
   `EventContext::spawn` and `Runtime::defer`, is no longer `#[must_use]`:
-  only shutdown, or a panic as the operation unwinds, cancels those before
-  delivery, and failures propagate from the flush. `cx.defer(...)?;` and
+  only shutdown cancels those before delivery, and a panic cancels the
+  operation whose callback unwinds (operations queued behind it stay
+  queued); failures propagate from the flush. `cx.defer(...)?;` and
   `cx.spawn(...)?;` compile without a warning, and `let _receipt` left the
   rustdoc examples, the guide (`state.md`, `layout.md`), the packaged
   examples (`dynamic_documents`, `diagram_editor`), the gallery and the

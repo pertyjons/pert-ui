@@ -727,9 +727,10 @@ in index order.
   `Pending<T>`).
 - **Addendum (2026-10-28, round 2 fix plan D11, 0.3.78):** the rule holds
   unchanged; its application to `TaskReceipt` changed with the facts. Since
-  layering part L4a only shutdown, and a panic as the operation unwinds,
-  cancel `EventContext::defer`, `EventContext::spawn` and `Runtime::defer`
-  before delivery: events the application already knows, while failures
+  layering part L4a only shutdown cancels `EventContext::defer`,
+  `EventContext::spawn` and `Runtime::defer` before delivery, and a panic
+  cancels the operation whose callback unwinds (those queued behind it stay
+  queued): events the application already knows, while failures
   propagate from the flush. Hiding or removal cancels only
   `EventContext::defer_while_shown`. That method now returns its own
   `#[must_use]` `ShownTaskReceipt`, and `TaskReceipt` loses the attribute,
