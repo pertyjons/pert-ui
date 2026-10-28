@@ -1983,4 +1983,12 @@ plan closes.
   tests (with `testing_closure`), the five headless sessions, doctests,
   rustdoc `-D warnings`, the diagnostics snapshots (new `d01`, `d02`), the
   API listing gate, `git diff --check`. Native evidence: not applicable.
-  Codex review: pending.
+  **Kit fixture check** (author, 2026-10-28): `run.sh prepare` from a clean
+  worktree at b22cd50 (dirty 0, version 0.3.85), the fixture copied into a
+  fresh run directory and `cargo test --offline` run through `run.sh exec`:
+  builds against the packaged 0.3.85 (its lock file names pert-ui 0.3.85)
+  and passes (no tests of its own). Codex review (2026-10-28): needs
+  fixes, the kit check (then pending, now recorded above) and a nit (a
+  test name and a CHANGELOG line said an equal result is not evaluated;
+  it is, and only the component update is suppressed), to be corrected
+  with P8's open fix. Recheck: pending.
