@@ -10,8 +10,14 @@ found it ready for the maintainer's decisions
 session as [round 3](#round-3-proposal) describes; the parts land on the
 branch `round-2-fixes`; the design checkpoints are approved by the author and
 Codex once Codex finds them ready, with the recommended options, under the
-maintainer's delegation of 2026-10-28, and recorded as such. Each part's
-state is in [Progress](#progress). Written against `developer-usability` at 26e6b5a (0.3.75); the
+maintainer's delegation of 2026-10-28, and recorded as such. **All
+twelve parts are done (2026-10-28),** each reviewed by Codex until ready
+([Progress](#progress)); the workspace gate passed at cdb0f83 (the
+workspace tests once rerun after a deleted `target/tmp`, TODO.md). Native
+evidence still missing: the maintainer's Linux hand checks for P6, P7, P8,
+P11 and P12 (listed in `docs/verification.md`), and Windows and macOS
+throughout. Round 3 is not started: its kit fixes come first
+([Round 3](#round-3-proposal)). Written against `developer-usability` at 26e6b5a (0.3.75); the
 library code is unchanged at ceb5dc7, which Codex's recheck read.
 
 ## Purpose

@@ -197,3 +197,11 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   comparing, and above a threshold summarize per parent, for example "N
   components overlap under <parent>; first pairs: ...", with a test of the
   summary, the threshold and the issues the report still lists.
+- [ ] 2026-10-28 `crates/pert-ui/tests/presentation/svg.rs`
+  `an_image_element_reads_no_file_and_no_embedded_data` — verification
+  (tests independent of leftover build state): the test writes into
+  `env!("CARGO_TARGET_TMPDIR")` without creating it; Cargo creates that
+  directory when it builds the test, so deleting `target/tmp` after a build
+  (as a disk cleanup did on 2026-10-28) makes the next run of the unchanged
+  binary fail with `NotFound`. Call `std::fs::create_dir_all` on the
+  directory first.
