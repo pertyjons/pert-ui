@@ -201,8 +201,9 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
 - [ ] 2026-10-28 `crates/pert-ui-runtime/src/runtime/content_search.rs`
   `Runtime::content_search` — testing and search (round 2 decision D6):
   content search matches a component's semantic name and value only
-  (`content_hit`), not its `Semantics::items`, so a toast's message, a menu
-  command or a tab title drawn by its component is never a hit, and a test
+  (`content_hit`), not its `Semantics::items`, so text exposed only through
+  items (a toast's message, a menu command, a tab title other than the
+  selected one, which its choice value carries) is never a hit, and a test
   or an application search cannot find a visible toast by its text. Extend
   the search to items (a hit naming the component and the item's index, with
   `jump_to_content` revealing and focusing the component), document it in
