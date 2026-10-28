@@ -131,14 +131,15 @@ impl<S: 'static> App<S> {
         if let Err(error) = viewport(&mut self.host.runtime, size) {
             return crate::platform::finish_runtime(&mut self.host.runtime, Err(error));
         }
-        let (mut host, bound) = self.start()?;
-        if let Err(error) = settle(&mut host.runtime) {
-            let ended = crate::platform::finish_runtime(&mut host.runtime, Err(error));
-            // The state goes after the runtime has shut down.
-            drop(bound);
-            return ended;
+        let (host, bound) = self.start()?;
+        // The application owns both before anything can panic, so unwinding
+        // drops the runtime before the state, as a normal return does.
+        let mut app = HeadlessApp { host, bound };
+        if let Err(error) = settle(&mut app.host.runtime) {
+            // Returning drops the state after the runtime has shut down.
+            return crate::platform::finish_runtime(&mut app.host.runtime, Err(error));
         }
-        Ok(HeadlessApp { host, bound })
+        Ok(app)
     }
 }
 
@@ -315,11 +316,9 @@ impl<S: 'static> HeadlessApp<S> {
     /// # Errors
     /// [`AppError::Shutdown`] with the runtime's cleanup failures, in
     /// [`HostIntegration::take_shutdown_errors`](crate::host::HostIntegration::take_shutdown_errors) order.
-    pub fn shutdown(self) -> Result<(), AppError> {
-        let Self { mut host, bound } = self;
-        let ended = crate::platform::finish_runtime(&mut host.runtime, Ok(()));
-        // The state goes after the runtime has shut down.
-        drop(bound);
-        ended
+    pub fn shutdown(mut self) -> Result<(), AppError> {
+        // Returning drops the state after the runtime has shut down, and
+        // unwinding from a panic in the shutdown drops the runtime first.
+        crate::platform::finish_runtime(&mut self.host.runtime, Ok(()))
     }
 }

@@ -1266,6 +1266,37 @@ impl Drop for Observed {
 /// `fail` queues a focus-loss failure for the first flush. Returns the
 /// application and what each observer records.
 fn observed(fail: bool) -> (App<Observed>, Record, Record) {
+    observed_with(if fail {
+        Start::FailFlush
+    } else {
+        Start::Normal
+    })
+}
+
+/// How [`observed_with`]'s initializer ends.
+#[derive(Clone, Copy)]
+enum Start {
+    /// It returns the state.
+    Normal,
+    /// It returns the state after queueing a failure for the first flush.
+    FailFlush,
+    /// It returns the state after mounting a component whose update
+    /// panics, so the first flush panics.
+    PanicFlush,
+    /// It panics after the captured observer has its signal.
+    PanicInit,
+}
+
+/// A component whose update panics.
+struct PanickingUpdate;
+impl Component for PanickingUpdate {
+    fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+        panic!("update panicked");
+    }
+}
+
+/// [`observed`], with the initializer ending as `start` says.
+fn observed_with(start: Start) -> (App<Observed>, Record, Record) {
     let (state, captured) = (Rc::new(Cell::new(None)), Rc::new(Cell::new(None)));
     let captured_signal = Rc::new(RefCell::new(None));
     let kept = Observed {
@@ -1276,8 +1307,13 @@ fn observed(fail: bool) -> (App<Observed>, Record, Record) {
     let app = App::new("Observed", move |ui| {
         let signal = ui.signal(0);
         *captured_signal.borrow_mut() = Some(signal.clone());
-        if fail {
-            queue_failure(ui)?;
+        match start {
+            Start::Normal => {}
+            Start::FailFlush => queue_failure(ui)?,
+            Start::PanicFlush => {
+                ui.mount_tree(Element::new("panicking", PanickingUpdate))?;
+            }
+            Start::PanicInit => panic!("initializer panicked"),
         }
         Ok(Observed {
             signal: Rc::new(RefCell::new(Some(signal))),
@@ -1329,4 +1365,32 @@ fn the_state_is_dropped_after_the_runtime_has_shut_down() -> TestResult {
     drop(app);
     assert_eq!((state.get(), captured.get()), (None, None), "never started");
     Ok(())
+}
+
+/// The drop order holds while a panic unwinds out of `App::headless` too:
+/// from the first flush, where the state exists, and from the initializer,
+/// where only the callbacks' captured values do. Named assertion: the
+/// observers record `Some(true)`, the state's `None` for the panicking
+/// initializer. Mutations checked: settling with `host` and `bound` as
+/// separate locals, and running the initializer with `host` and `handlers`
+/// as separate locals, each record `Some(false)`.
+#[test]
+fn the_state_is_dropped_after_the_runtime_when_a_start_panics() {
+    let (app, state, captured) = observed_with(Start::PanicFlush);
+    let panicked = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| app.headless()));
+    assert!(panicked.is_err(), "the first flush panics");
+    assert_eq!(
+        (state.get(), captured.get()),
+        (Some(true), Some(true)),
+        "a panic in the first flush"
+    );
+
+    let (app, state, captured) = observed_with(Start::PanicInit);
+    let panicked = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| app.headless()));
+    assert!(panicked.is_err(), "the initializer panics");
+    assert_eq!(
+        (state.get(), captured.get()),
+        (None, Some(true)),
+        "a panic in the initializer"
+    );
 }

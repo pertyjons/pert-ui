@@ -386,6 +386,14 @@ pub(crate) struct Host {
     pub(crate) software: bool,
 }
 
+/// An application while its initializer runs: the host is declared before
+/// the callbacks, so dropping it, also while a panic unwinds, drops the
+/// runtime first.
+struct Starting<S> {
+    host: Host,
+    handlers: Handlers<S>,
+}
+
 /// The lifecycle callbacks an application installed, typed in its state.
 struct Handlers<S> {
     error: Option<ErrorHandler<S>>,
@@ -609,13 +617,20 @@ impl<S: 'static> App<S> {
     /// captured values are dropped after that shutdown.
     pub(crate) fn start(self) -> Result<(Host, Bound<S>), AppError> {
         let Self {
-            mut host,
+            host,
             initialize,
             handlers,
         } = self;
-        match initialize(&mut host.runtime) {
-            Ok(state) => Ok((host, Bound { state, handlers })),
-            Err(error) => crate::platform::finish_runtime(&mut host.runtime, Err(error)),
+        // One owner, the host first, across every call that can panic, so
+        // unwinding drops the runtime before the callbacks' captured values,
+        // as a normal return does.
+        let mut starting = Starting { host, handlers };
+        match initialize(&mut starting.host.runtime) {
+            Ok(state) => {
+                let Starting { host, handlers } = starting;
+                Ok((host, Bound { state, handlers }))
+            }
+            Err(error) => crate::platform::finish_runtime(&mut starting.host.runtime, Err(error)),
         }
     }
     /// Sets the main window's initial logical size, before user zoom and native

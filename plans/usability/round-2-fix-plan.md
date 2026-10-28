@@ -2045,7 +2045,14 @@ plan closes.
   (2026-10-28): needs fixes, one should-fix in the code (a panic during
   the first settle or the initializer drops the state and handler
   captures before the runtime, reversing the promised order) and the
-  gate's missing configurations (run above). Fix: pending.
+  gate's missing configurations (run above). Fix: a private `Starting`
+  owner holds the host before the handlers while the initializer runs;
+  `HeadlessApp` is built before the first settle and `shutdown` keeps it
+  whole, so the field order drops the runtime first also while a panic
+  unwinds; a `catch_unwind` regression test (a panicking first flush, a
+  panicking initializer) fails under both former orders
+  (`target/p11-evidence/m6-*.log`, `m7-*.log`). Fixes gate (fresh): fmt,
+  workspace Clippy, workspace tests, doctests, rustdoc. Recheck: pending.
 
 - **P12 Form drafts and the settings recipe (0.3.87), 2026-10-28.**
   Implemented by a fresh agent from the approved design

@@ -129,7 +129,8 @@ P11-D2 and P11-D3).
 - Changed (R2-1): the state, and the values the callbacks capture, drop
   after the runtime has shut down on every path: the end of `App::run`,
   `HeadlessApp::shutdown`, a dropped `HeadlessApp` and an `App::headless`
-  whose first flush failed; the order captured callback values already
+  whose first flush failed, also while a panic unwinds out of the
+  initializer or the first flush; the order captured callback values already
   had. The native runner stays non-generic: `App::run` runs the
   initializer where it did, after the event loop exists, and erases the
   state into a private owner (P11-D1), so a call that cannot run still
@@ -160,7 +161,8 @@ P11-D2 and P11-D3).
   and changes the state the initializer returned, read and reset through
   `state` and `state_mut`, and that the state and a callback's captured
   value are dropped after the runtime has shut down (shutdown, drop, a
-  failed first flush, never started); the runner's unit tests drive
+  failed first flush, never started, and while a panic unwinds out of the
+  first flush or the initializer); the runner's unit tests drive
   `on_error` with state through component recovery, repair and exit, and
   drop the erased owner with its runtime open. Each was shown to fail
   under its named mutation. The `close` tests read `state` and
