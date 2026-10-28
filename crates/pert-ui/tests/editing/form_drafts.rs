@@ -262,6 +262,8 @@ fn revert_discards_what_its_equal_write_keeps() {
     assert!(matches!(case.calls.borrow()[0].0, Ok(2)));
     assert_eq!(case.number.get().unwrap(), 7);
     assert!(!invalid(&ui, &number));
+    assert_eq!(shown(&ui, &number), "7");
+    assert_eq!(property(&ui, &number, "validation_error"), None);
     assert_eq!(modified(&case.form), 0);
     assert!(
         status(&case.number_field).is_error(),
@@ -720,4 +722,72 @@ fn a_modal_blocked_target_spends_its_request() {
         invalid(&ui, &outside_id),
         "nothing delivers the spent request"
     );
+}
+
+/// Regression test (found by this part's Revert with a changed value): a
+/// changed application write that ends a refused draft in an ordinary
+/// `IntegerInput` or `DecimalInput` leaves valid text and no
+/// `validation_error`, while the reported refusal's `None` stays pending
+/// for the next Escape. Mutation checked: without refreshing the error in
+/// the write's synchronization, `validation_error` stays.
+#[test]
+fn a_changed_write_ending_a_refused_number_draft_leaves_no_error() {
+    for decimal in [false, true] {
+        let context = if decimal { "decimal" } else { "integer" };
+        let mut ui = Runtime::new();
+        ui.set_viewport(Viewport::new(400.0, 200.0, 1.0).unwrap())
+            .unwrap();
+        let rejections: Rc<RefCell<Vec<bool>>> = Rc::default();
+        let log = rejections.clone();
+        let report = move |_: &mut EventContext, refusal: Option<&InputRejection>| {
+            log.borrow_mut().push(refusal.is_some());
+            Ok(())
+        };
+        let (count, amount) = (ui.signal(7_i64), ui.signal(7.0_f64));
+        let field = if decimal {
+            DecimalInput::new(&amount)
+                .range(1.0, 99.0)
+                .unwrap()
+                .on_rejection(report)
+                .key("field")
+        } else {
+            IntegerInput::new(&count)
+                .range(1, 99)
+                .unwrap()
+                .on_rejection(report)
+                .key("field")
+        };
+        let root = ui.mount_tree(Column::new([field]).key("root")).unwrap();
+        settle(&mut ui);
+        let id = widget(&ui, &root, "field");
+        type_over(&mut ui, &id, "150");
+        press(&mut ui, KeyCode::Enter);
+        assert!(invalid(&ui, &id), "{context}");
+        assert!(
+            property(&ui, &id, "validation_error").is_some(),
+            "{context}"
+        );
+        assert_eq!(rejections.borrow().last(), Some(&true), "{context}");
+
+        if decimal {
+            amount.set(8.0).unwrap();
+        } else {
+            count.set(8).unwrap();
+        }
+        settle(&mut ui);
+        assert!(!invalid(&ui, &id), "{context}");
+        assert_eq!(
+            property(&ui, &id, "validation_error"),
+            None,
+            "{context}: the ended draft's error is gone"
+        );
+        assert_eq!(shown(&ui, &id), "8", "{context}");
+        assert_eq!(rejections.borrow().last(), Some(&true), "{context}");
+        press(&mut ui, KeyCode::Escape);
+        assert_eq!(
+            rejections.borrow().last(),
+            Some(&false),
+            "{context}: the pending None arrives at Escape"
+        );
+    }
 }

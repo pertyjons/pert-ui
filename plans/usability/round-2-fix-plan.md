@@ -2083,4 +2083,11 @@ plan closes.
   surface). Found by the part and to be fixed in it (author's decision,
   same kind in touched code): an application write of a changed value
   that ends a refused draft leaves `IntegerInput`/`DecimalInput`'s
-  `validation_error` beside `valid: true`. Codex review: pending.
+  `validation_error` beside `valid: true`. **Codex review** (2026-10-28):
+  ready except that defect, which it confirms in scope. Fixed: `accept`
+  refreshes the field's error after synchronizing, the pending rejection
+  notification unchanged; a regression test for `IntegerInput` and
+  `DecimalInput` and the extended changed-value assertion fail with the
+  line removed; the TODO entry removed; CHANGELOG `Fixed`. Fixes gate
+  (fresh): fmt, workspace Clippy, workspace tests, the five headless
+  sessions, doctests, rustdoc, `git diff --check`. Recheck: pending.

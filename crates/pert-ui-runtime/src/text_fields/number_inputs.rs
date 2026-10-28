@@ -1314,6 +1314,10 @@ impl<T: Number> NumberEditor<T> {
         self.field.editor.cancel_composition();
         self.field.editor.undo.clear();
         self.field.editor.redo.clear();
+        // The text is the accepted value now, so a refused draft's error ends
+        // with it; a reported refusal's `None` stays pending for the next
+        // save or Escape, as `on_rejection` documents.
+        self.field.error = self.draft().err();
         Ok(())
     }
     fn sync(&mut self, value: T) -> Result<(), RuntimeError> {

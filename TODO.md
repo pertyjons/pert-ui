@@ -197,16 +197,3 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   comparing, and above a threshold summarize per parent, for example "N
   components overlap under <parent>; first pairs: ...", with a test of the
   summary, the threshold and the issues the report still lists.
-- [ ] 2026-10-28 `crates/pert-ui-runtime/src/text_fields/number_inputs.rs`
-  `accept` — inspection contract (`IntegerInput`'s inspection properties:
-  `validation_error` is "why the editing text is not a valid number"): an
-  application write of a changed value that ends
-  a refused draft in an ordinary `IntegerInput` or `DecimalInput` leaves
-  `field.error` set, so inspection still reports `validation_error` ("number
-  is outside the allowed range") beside `valid: true` until the next edit;
-  `discard_command` and the edit paths recompute `field.error`, `accept` does
-  not. The ordinary field paints from `draft()` and is unaffected; an inline
-  row clears the error in `stop_text`. Recompute `field.error` in `accept`
-  (or clear it when the draft ends), with a test that a changed write after
-  a refused draft leaves no `validation_error`. Found by round 2 part P12's
-  form-draft tests (Revert writing a changed value).

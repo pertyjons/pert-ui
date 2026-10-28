@@ -82,10 +82,16 @@ P12-D2 and P12-D3).
   `close_admission` step, was shown to fail under its named mutation.
 - Follow-up recorded in `plans/follow-ups.md`: a form discard from a
   command action, which receives `&mut Runtime` (P12-D3).
-- TODO.md: the diagram editor's `close_requested` entry is removed; a new
-  entry records that an ordinary number field keeps reporting
-  `validation_error` in inspection after a changed application write ended
-  its refused draft.
+- Fixed (R2-2, same kind, the Revert path above): a changed application
+  write that ends a refused draft in an ordinary `IntegerInput` or
+  `DecimalInput` no longer leaves the draft's error behind, so inspection
+  no longer reports `validation_error` beside `valid: true` until the next
+  edit; the reported refusal's `None` still stays pending until the next
+  save or Escape. Tests: the `editing` binary's
+  `a_changed_write_ending_a_refused_number_draft_leaves_no_error` for both
+  editors, and the form-draft test's changed-value case, both shown to fail
+  with the fix removed.
+- TODO.md: the diagram editor's `close_requested` entry is removed.
 - API listings: `api/pert-ui-runtime/default.txt` and `serde.txt` list
   `pub fn pert_ui_runtime::FormFields::discard_drafts(&self, &mut
   pert_ui_runtime::EventContext) -> core::result::Result<usize,
