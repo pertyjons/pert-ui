@@ -497,7 +497,7 @@ a mapped snapshot.
 | `ProgressBar` | `ProgressBar::new(status)` or `ProgressBar::bound(read_signal)` | Determinate or indeterminate progress, and how a task ended, with the fraction it reached. |
 | `Spinner` | `Spinner::new(busy)` or `Spinner::bound(read_signal)` | Activity while a task is active. |
 | `Banner` | `Banner::new(message, actions)` | Persistent in-view feedback. |
-| `ToastHost` | `ToastHost::new(controller, content)` with `ToastController::new(&ui)` | Bounded transient notifications; enqueue `Toast::new(message)` through the controller. |
+| `ToastHost` | `ToastHost::new(controller, content)` with `ToastController::new(&ui)` | Bounded transient notifications, which expire (use `Banner` for one that stays); enqueue `Toast::new(message)` through the controller. A test reads the visible toasts as the stack's semantic items and activates one with the stack's keys. |
 | `Tooltip` | `Tooltip::new(anchor, text)` | Delayed, noninteractive help. |
 | `Popover` | `Popover::new(open_signal, anchor, content)`; `.on_dismiss(handler)` reports the framework's closes | Anchored, interactive nonmodal content. |
 | `QuickPick` | Create `QuickPickController::new(&ui)`, wrap content in `QuickPick::new(controller, content, choose)` and open it with `controller.open(items)` from an event or command action | Choosing one of the application's own items (pages, history entries, search results, named values) from a searchable list. Each `PickItem` has a key, label, optional detail and kind; the `choose` callback answers `Done`, `Refused(message)` or `Pending` for a result that finishes later. Modal by default; `nonmodal()` closes when focus leaves. |

@@ -23,6 +23,7 @@ mod tab_notifications;
 mod tab_reorder;
 mod tab_selection;
 mod tabs;
+mod toast_items;
 mod tool_window_modes;
 mod tool_window_moves;
 mod tool_windows;

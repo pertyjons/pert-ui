@@ -832,7 +832,10 @@ impl<'a> Driver<'a> {
     /// command or a tab title; a component that gives an item its rectangle
     /// ([`SemanticItem::local_bounds`]) reports it as
     /// [`SemanticItem::bounds`], and only such an item can be clicked. Among
-    /// the built-in components, a table's column titles do.
+    /// the built-in components, a table's column titles do, and a toast
+    /// stack's toasts, whose rectangle is the whole toast rather than its
+    /// action or Dismiss control, so a test activates a toast through the
+    /// stack's keys ([`ToastHost`](crate::ToastHost#inspection-and-tests)).
     ///
     /// The items are read with [`Self::semantics`]; the component is then
     /// revealed with [`Runtime::reveal`], as [`Self::click`] does, and its

@@ -1034,11 +1034,13 @@ destination registry.
 Content search reads what components already report: their semantic names and
 values, under the inspection phase, and the rows a collection such as
 `VirtualList` offers beyond its mounted children ([content search
-hooks](#content-search-hooks)). Lists expose their current bound source even when
-hidden after an earlier presentation, and search reads current source rows
-without updating, laying out or mounting presentation. After a requested
-reconciliation of a collection's rows fails, search skips its retained row
-children until a later child request succeeds.
+hooks](#content-search-hooks)). It does not read semantic items
+(`Semantics::items`), the rows a component draws itself, such as a toast
+stack's toasts or a table's column titles. Lists expose their current bound
+source even when hidden after an earlier presentation, and search reads
+current source rows without updating, laying out or mounting presentation.
+After a requested reconciliation of a collection's rows fails, search skips
+its retained row children until a later child request succeeds.
 Unavailable bound rows propagate their typed read error, rather than exposing
 obsolete children. It keeps no index and schedules nothing; a held cursor retains
 the owned row sources it has visited until it is dropped. A search is

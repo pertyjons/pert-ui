@@ -141,6 +141,9 @@ type ToastAction = Box<dyn FnMut(&mut EventContext) -> Result<(), RuntimeError>>
 /// [`TextEditError::MAX_TEXT_BYTES`](crate::TextEditError::MAX_TEXT_BYTES)
 /// fails the host's update with [`RuntimeError::TextEdit`] and keeps the last
 /// shown text.
+///
+/// A toast always expires. For a notification that stays until the
+/// application or the user removes it, use a [`Banner`] in the layout.
 #[must_use]
 pub struct Toast {
     message: TextSource,
@@ -319,6 +322,9 @@ impl ToastController {
     /// after the host was removed; `ToastFull` at the visible plus pending capacity; and
     /// `Exhausted` when toast identities run out. A rejected toast is dropped; existing
     /// items and receipts are intact.
+    ///
+    /// The toast expires five seconds of unpaused time after it is first
+    /// shown; a notification that must stay belongs in a [`Banner`].
     pub fn push(&self, toast: Toast) -> Result<ToastReceipt, RuntimeError> {
         self.revision.read_only().shared().writable()?;
         let too_large = |text: &TextSource| {
@@ -399,6 +405,87 @@ impl ToastController {
 /// shows a host's toasts, while the first host is mounted, and with
 /// [`RuntimeError::Unmounted`] once the first host's removal has closed the
 /// queue, as for any host mounted with a closed queue.
+///
+/// Every toast expires; a notification that stays until the application or
+/// the user removes it is a [`Banner`] in the layout.
+///
+/// # Inspection and tests
+///
+/// The stack, the part keyed `"toasts"`, reports semantics with the role
+/// [`SemanticRole::Notifications`], the number of visible toasts as its value
+/// and [`SemanticAction::Dismiss`] while one is visible. Each visible toast is
+/// one of its [items](Semantics::items), in display order, since the stack
+/// draws the toasts itself:
+///
+/// - **name:** the message's plain text, as currently shown, so a bound
+///   message's change is in the next inspection after the stack's update;
+/// - **actions:** [`SemanticAction::Activate`] for a toast with an action, and
+///   [`SemanticAction::Dismiss`];
+/// - **selected:** the toast the stack's keys act on, which its focus ring
+///   marks while the stack has keyboard focus;
+/// - **bounds:** the visible part of the whole toast in window coordinates, as
+///   [`SemanticItem::bounds`] describes.
+///
+/// The stack's `action_labels` property lists the action labels in the items'
+/// order, with empty text for a toast without an action. A pending toast is
+/// not an item until it is shown, and an expired, dismissed or activated one
+/// leaves the items.
+///
+/// Two limitations:
+///
+/// - **Content search does not find toast messages:**
+///   [`Runtime::content_search`](crate::Runtime::content_search) reads a
+///   component's semantic name and value, not its items, so a test reads the
+///   messages from the stack's items.
+/// - **An item's rectangle is the toast, not its controls:** the stack hit
+///   tests the action and Dismiss controls separately, so a press at an item's
+///   center, which [`Driver::click_item`](crate::testing::Driver::click_item)
+///   makes, lands on one of its controls or beside them depending on the
+///   toast's layout, and is not a way to activate or dismiss it. A test does
+///   that through the stack's keyboard focus, with the keys above: Tab or
+///   [`Runtime::focus`](crate::Runtime::focus) reaches the stack, Up and Down
+///   select a toast, Enter activates its action (or dismisses a message-only
+///   toast) and Delete dismisses it.
+///
+/// ```
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::prelude::*;
+/// use pert_ui::testing::*;
+/// use std::{cell::Cell, rc::Rc};
+///
+/// let mut ui = Runtime::new();
+/// ui.set_viewport(Viewport::new(640.0, 480.0, 1.0)?)?;
+/// let queue = ToastController::new(&ui);
+/// let root = ui.mount_tree(Element::new("host", ToastHost::new(
+///     queue.clone(),
+///     Element::new("body", Label::new("Content")),
+/// )))?;
+/// let retries = Rc::new(Cell::new(0));
+/// let retry = retries.clone();
+/// queue.push(Toast::new("Saved"))?;
+/// let failed = queue.push(Toast::new("Upload failed").action("Retry", move |_| {
+///     retry.set(retry.get() + 1);
+///     Ok(())
+/// }))?;
+/// let mut driver = Driver::new(&mut ui);
+/// driver.settle()?;
+/// let stack = driver.find(&root, &["toasts"])?;
+/// let items = driver.semantics(&stack)?.items;
+/// let names: Vec<_> = items.iter().map(|item| item.name.as_deref()).collect();
+/// assert_eq!(names, [Some("Saved"), Some("Upload failed")]);
+/// assert_eq!(items[0].actions, [SemanticAction::Dismiss]);
+/// assert_eq!(items[1].actions, [SemanticAction::Activate, SemanticAction::Dismiss]);
+/// assert!(items[0].selected && items.iter().all(|item| item.bounds.is_some()));
+///
+/// // Tab reaches the stack, Down selects the second toast, Enter runs its action.
+/// driver.key(KeyCode::Tab)?;
+/// driver.key(KeyCode::ArrowDown)?;
+/// assert!(driver.semantics(&stack)?.items[1].selected);
+/// driver.key(KeyCode::Enter)?;
+/// assert_eq!((retries.get(), failed.status()), (1, ToastStatus::ActionSucceeded));
+/// assert_eq!(driver.semantics(&stack)?.items.len(), 1);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub struct ToastHost {
     queue: ToastController,
@@ -822,6 +909,36 @@ impl Component for ToastStack {
             "dismiss_label".into(),
             InspectValue::Text(self.dismiss.clone()),
         );
+        // One label per item, in the items' order; a toast without an action
+        // has empty text there and no `Activate`.
+        d.properties.insert(
+            "action_labels".into(),
+            InspectValue::List(
+                self.items
+                    .iter()
+                    .map(|item| InspectValue::Text(item.action.clone().unwrap_or_default()))
+                    .collect(),
+            ),
+        );
+        // The visible toasts are drawn by the stack, so they are its items, in
+        // display order. Each rectangle is the whole toast as the last
+        // arrangement placed it, paired with the toast by position as painting
+        // and hit testing pair them.
+        let prepared = self.prepared.borrow();
+        let items = self.items.iter().enumerate().map(|(index, item)| {
+            let row =
+                SemanticItem::new(item.message.as_str()).selected(self.selected == Some(item.id));
+            let row = if item.action.is_some() {
+                row.action(SemanticAction::Activate)
+            } else {
+                row
+            };
+            let row = row.action(SemanticAction::Dismiss);
+            match prepared.get(index) {
+                Some(toast) => row.local_bounds(toast.rect),
+                None => row,
+            }
+        });
         d.semantics = Some(
             Semantics::new(SemanticRole::Notifications)
                 .value(SemanticValue::Number {
@@ -829,6 +946,7 @@ impl Component for ToastStack {
                     minimum: Some(0.0),
                     maximum: None,
                 })
+                .items(items)
                 .enabled_actions((!self.items.is_empty()).then_some(SemanticAction::Dismiss)),
         );
         d

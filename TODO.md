@@ -211,3 +211,13 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   forwarding child itself on a cache hit), document it on `fixed_height`, and
   test it with an external wrapper. Found by the Codex review of round 2
   part P8.
+- [ ] 2026-10-28 `crates/pert-ui-runtime/src/runtime/content_search.rs`
+  `Runtime::content_search` — testing and search (round 2 decision D6):
+  content search matches a component's semantic name and value only
+  (`content_hit`), not its `Semantics::items`, so a toast's message, a menu
+  command or a tab title drawn by its component is never a hit, and a test
+  or an application search cannot find a visible toast by its text. Extend
+  the search to items (a hit naming the component and the item's index, with
+  `jump_to_content` revealing and focusing the component), document it in
+  `docs/contracts.md` ("Content search"), which states the limitation since
+  0.3.84, and test it with a toast and a menu. Found by round 2 part P9.

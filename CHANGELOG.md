@@ -1,5 +1,47 @@
 # Changelog
 
+## 0.3.84 (2026-10-28)
+
+Notifications in inspection (round 2 fix plan, part P9, R2-20 by decision
+D6 and R2-25 by decision D12; no design checkpoint, since P8 fixed the item
+shape and inspection schema 16, and D6 was approved without separate items
+for a toast's action and Dismiss controls).
+
+- Added (R2-20): a `ToastHost`'s stack reports one `SemanticItem` per
+  visible toast, in display order: named by its message's plain text as
+  shown, with `SemanticAction::Activate` when the toast has an action and
+  `SemanticAction::Dismiss`, `selected` on the toast the stack's keys act
+  on, and `SemanticItem::bounds` of the whole toast's visible part, from the
+  rectangle the stack's last arrangement gave it. The stack's new
+  `action_labels` property lists the action labels in the items' order, with
+  empty text for a toast without an action. A bound message's change is in
+  the next inspection after the stack's update; an expired, dismissed or
+  activated toast leaves the items. The stack keeps its role, value,
+  `Dismiss` action and other properties. Not breaking: the stack's semantics
+  gain items, inspection schema 16 is unchanged.
+- Documentation (R2-20): `ToastHost`'s new section "Inspection and tests"
+  describes the items, with a `Driver` example that reads them and
+  activates a toast's action with Tab, Down and Enter, and states two
+  limitations: content search does not find toast messages, and an item's
+  rectangle is the whole toast, not its controls, so a press at its center
+  (`Driver::click_item`) is not a way to activate or dismiss it.
+  `SemanticItem` and `Driver::click_item` name the toasts among the built-in
+  components that give item bounds; `docs/contracts.md` ("Content search")
+  says content search does not read semantic items; `docs/manual.md`'s
+  `ToastHost` row.
+- Documentation (R2-25): `Toast`, `ToastController::push` and `ToastHost`
+  point to `Banner` for a notification that stays, since every toast
+  expires.
+- Tests: the facade's `surfaces` binary adds `toast_items` (two toasts, one
+  with an action: names, actions, selection, order, bounds and
+  `action_labels`; a bound message change, also in the toast's height; an
+  expired toast leaving the items; Tab, Down, Enter and Delete through the
+  stack's focus). Each was shown to fail under its named mutation, at an
+  assertion of its outcome.
+- TODO.md: content search does not read semantic items (D6).
+- API listings: no change; the items and the property are behavior of
+  existing items.
+
 ## 0.3.83 (2026-10-28)
 
 Tables in tests (round 2 fix plan, part P8, R2-22, R2-23 and R2-27 by

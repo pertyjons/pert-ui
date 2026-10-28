@@ -366,8 +366,9 @@ pub enum SemanticAction {
 /// order. A component may give each its rectangle
 /// ([`local_bounds`](Self::local_bounds)), which an inspection reports in window
 /// coordinates as [`bounds`](Self::bounds); a component gives bounds only where
-/// it reports them, and among the built-in components only a
-/// [`Table`](crate::Table)'s column titles do. A component whose rows are real
+/// it reports them, and among the built-in components a
+/// [`Table`](crate::Table)'s column titles and a
+/// [`ToastHost`](crate::ToastHost)'s toasts do. A component whose rows are real
 /// child components reports none and lets the children describe themselves.
 ///
 /// ```

@@ -1924,3 +1924,25 @@ plan closes.
   is unaffected); widening the public API is left to the maintainer.
   Fixes gate (fresh): as above, with the serde configurations and the
   release build. Recheck: pending.
+
+- **P9 Notifications in inspection (0.3.84), 2026-10-28.** Implemented by
+  a fresh agent from this section (no checkpoint: D6 approved as
+  recommended): `ToastStack::inspect` reports one `SemanticItem` per
+  visible toast in display order (name the shown plain text, `Activate`
+  with an action plus `Dismiss`, `selected` on the toast the stack's keys
+  act on, `local_bounds` the toast's rectangle) and an `action_labels`
+  property; `ToastHost`'s "Inspection and tests" section with a runnable
+  `Driver` example and D6's two limitations; `Toast`, `push` and
+  `ToastHost` point to `Banner` (R2-25, D12); the `SemanticItem` and
+  `click_item` pages name toasts beside table titles; contracts.md's
+  content-search sentence and the manual row; TODO.md: content search does
+  not read semantic items. **Interpretations, accepted by the author:**
+  `selected` is the stack's keyboard selection whether or not it has
+  focus; the limitation says a press at an item's centre may land on a
+  control or beside it, since at default metrics it lands about 2 px from
+  the action button. No `api/` change, no schema step. Mutation evidence
+  (`target/p9-evidence/`): each of seven mutations failed at its named
+  outcome assertion. Gate (fresh): fmt, workspace Clippy, workspace tests,
+  doctests, the five headless sessions, rustdoc `-D warnings`, the
+  diagnostics snapshots, the API listing gate, `git diff --check`. Native
+  evidence: not applicable. Codex review: pending.
