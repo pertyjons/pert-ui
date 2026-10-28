@@ -285,3 +285,11 @@ Raw working directories and logs live under `~/pert-ui-usability/r3-*`.
 Completed submissions, per-run acceptance, summaries and friction logs will
 be preserved here using the same conventions as round 2. No result or final
 assessment is claimed yet.
+
+The original Codex queue is complete. Claude's authentication interruption
+and the exact fresh replacement mapping are recorded in
+[review-r3/auth-recovery.md](review-r3/auth-recovery.md); failed authenticated
+starts are infrastructure records, not usability results. Successful retries
+keep the `-retry1` suffix. The kits and task/acceptance criteria are unchanged.
+Initial triage is under [triage-r3/](triage-r3/initial-head-task6.md); independent
+acceptance and final results are still pending.

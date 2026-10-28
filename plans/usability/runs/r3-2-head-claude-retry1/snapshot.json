@@ -1,0 +1,11 @@
+{
+  "conditions.env": "5d878f91741cc2ca77e9f42735cf96c210a7c4c835734e9b39db29c95db6515e",
+  "summary.md": "c41b0b7281bec21814c82b08f650decd431b0da310491679b16391580f56754b",
+  "diagnostics.md": "e13b0d1b2770d744182eb0395cf5263b3c8becd5167846941e46528404adb38e",
+  "FRICTION.md": "28138aac67321ebb3c92ba1d45a4e969ad7ba7a9eb6a56b104b3975bc24c4c5a",
+  "submission/.gitignore": "44c92e3a70ad3307b7056871c2bdb096d8bfa9373f5bf06a79bb6324a20ff2fb",
+  "submission/Cargo.toml": "0e061aaf7385bfe482987946103940c01d4e684129fa44b415d9678459a59594",
+  "submission/src/main.rs": "e736c955c7a4a981f429fdc6cd9749c482a417341a16f4acadb98a1c59804945",
+  "submission/src/lib.rs": "03a44ff66825bd706ac7cbb01261ffb0e896f4524f4ef7c82c89a8aefc781e1e",
+  "submission/tests/headless.rs": "b140998c7b9bb27797ddac59a8b61e621ea04289593c40746860ce11e8e668d1"
+}

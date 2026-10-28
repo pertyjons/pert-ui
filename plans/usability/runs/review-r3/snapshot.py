@@ -32,6 +32,7 @@ if (run/'work/FRICTION.md').exists():
 
 def ignore(directory,names):
     excluded={'target','.git','.claude','.codex','Cargo.lock','FRICTION.md','docs-text'}
+    excluded.update(name for name in names if name.endswith('.log'))
     # Keep generated kit-documentation dumps in the raw run only. Preserve
     # application-authored docs: only a directory entirely of rustdoc-page
     # conversions is excluded here.

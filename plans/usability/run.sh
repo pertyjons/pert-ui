@@ -23,6 +23,9 @@
 # PERT_UI_USABILITY_CLAUDE_MODEL (default opus) and
 # PERT_UI_USABILITY_CLAUDE_EFFORT (default high); Codex uses the model and
 # effort of the maintainer's ~/.codex/config.toml. All are recorded per run.
+# PERT_UI_USABILITY_CLAUDE_CREDENTIALS optionally selects an explicit private
+# credential source instead of the host's default file. Each run still gets
+# a copy; changed credentials are never written back to that source.
 #
 # Kit and run directories must be on disk outside the checkout, never on a
 # RAM-backed tmpfs. Inside the sandbox the tester sees only /kit (read-only:
@@ -201,7 +204,7 @@ EOF
 # maintainer to reconcile explicitly; nothing is written to the host file.
 host_credentials() {
     case "$1" in
-        claude) echo "$HOME/.claude/.credentials.json" ;;
+        claude) echo "${PERT_UI_USABILITY_CLAUDE_CREDENTIALS:-$HOME/.claude/.credentials.json}" ;;
         codex) echo "$HOME/.codex/auth.json" ;;
     esac
 }
@@ -375,6 +378,11 @@ record_conditions() {
                 echo "cli=$(claude --version)"
                 echo "model=$CLAUDE_MODEL"
                 echo "effort=$CLAUDE_EFFORT"
+                if [ -n "${PERT_UI_USABILITY_CLAUDE_CREDENTIALS:-}" ]; then
+                    echo "credential_source=explicit-copy"
+                else
+                    echo "credential_source=host-default"
+                fi
                 ;;
             codex)
                 echo "cli=$(codex --version)"

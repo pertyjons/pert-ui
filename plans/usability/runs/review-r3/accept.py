@@ -64,7 +64,8 @@ prompt=(root/'plans/usability/runs/review-r3/acceptance-prompt.md').read_text().
 config=acceptance/'verifier-config'
 config.mkdir(mode=0o700)
 credentials=config/'.credentials.json'
-shutil.copyfile(Path.home()/'.claude/.credentials.json',credentials)
+credential_source=Path(os.environ.get('PERT_UI_USABILITY_CLAUDE_CREDENTIALS',str(Path.home()/'.claude/.credentials.json')))
+shutil.copyfile(credential_source,credentials)
 credentials.chmod(0o600)
 credential_hash=hashlib.sha256(credentials.read_bytes()).hexdigest()
 child_env=dict(os.environ,CLAUDE_CONFIG_DIR=str(config),DISABLE_AUTOUPDATER='1',

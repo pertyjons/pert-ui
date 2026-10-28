@@ -132,3 +132,26 @@ are run where available; missing platforms remain explicit.
   Acceptance builds wait until both blind queues finish to avoid adding
   compilation load to the timed experiment. A read-only initial triage of
   the completed head task 6 run is underway; no final finding is claimed yet.
+
+- Original Codex queue finished with all planned submissions. Original Claude
+  queue had successful task 6 head/baseline first runs and task 1, then six
+  authenticated-start failures. They executed no model work or cargo command
+  and are excluded from usability outcomes, not silently discarded. Exact
+  conditions and fresh replacement mapping are preserved in
+  [auth-start-failures.json](runs/review-r3/auth-start-failures.json).
+- Authentication recovered with a retained refreshed tester credential copy,
+  verified by a tool-free isolated session; no global credential was replaced.
+  [Recovery record](runs/review-r3/auth-recovery.md) declares the minimal
+  authentication-only harness change after freeze, its SHA256 and the new
+  explicit-copy source metadata. Kits, reading aids, tasks, acceptance, model
+  settings and budgets are unchanged. A fresh replacement Claude queue resumes
+  the unsuccessful slots in original relative order with `-retry1` names,
+  using no earlier failed work or context. It stops on a subsequent session
+  failure instead of cascading through the queue.
+- Initial independent source/documentation triage and author dispositions
+  are in [triage-r3](runs/triage-r3/initial-head-task6.md), with public-API probe
+  sources prepared there (execution pending until timed runs finish).
+  Proposed item geometry and stable Select/menu part-address checkpoints
+  have fresh isolated Claude reviews in progress; neither is implemented or
+  called approved yet. Acceptance, full recurrence matrices, repairs, gates
+  and final review remain outstanding.
