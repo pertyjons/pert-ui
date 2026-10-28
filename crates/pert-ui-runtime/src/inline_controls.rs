@@ -541,8 +541,15 @@ pub(crate) fn shared_help_child(source: Rc<RefCell<String>>) -> Element {
 
 type Reader = Box<dyn FnMut(&mut UpdateContext) -> Result<(String, Option<String>), RuntimeError>>;
 
+/// What an [`InlineReadout`] shows: text from a [`TextSource`], or a typed
+/// value formatted by a reader.
+enum ReadoutSource {
+    Text(TextSource),
+    Formatted(Reader),
+}
+
 /// A read-only caption/value/unit row for status bars and toolbars, showing
-/// text from a binding or a formatted typed value.
+/// fixed or bound text, or a formatted typed value.
 ///
 /// The row shares the inline numeric presentation: a secondary
 /// [`TextStyle::Caption`] label, a [`TextStyle::Monospace`] value and a literal
@@ -581,15 +588,26 @@ type Reader = Box<dyn FnMut(&mut UpdateContext) -> Result<(String, Option<String
 /// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
 ///
-/// Re-describing the readout under the same key adopts its reader, hint, style,
-/// label and literal unit; the next update reads again, and text mode ends only
-/// if the shown text changes.
+/// Re-describing the readout under the same key adopts its source, hint,
+/// style, label and literal unit: a fixed text applies when the description is
+/// adopted; a binding, role or format is read again in the next update. Text
+/// mode ends only if the shown text changes. Text that cannot be shown (over
+/// [`TextEditError::MAX_TEXT_BYTES`] or holding a control character) is
+/// refused before anything changes: the readout keeps its last valid text, in
+/// inspection and semantics too, and its update returns the [`TextEditError`]
+/// in every flush until a valid text replaces it.
 #[must_use]
 pub struct InlineReadout {
     field: InlineField<()>,
-    reader: Reader,
+    source: ReadoutSource,
     literal_unit: String,
     text: String,
+    /// A fixed text refused at adoption, reported by every update until a
+    /// valid description replaces it.
+    refused: Option<TextEditError>,
+    /// A fixed text adopted while text mode was open changed the shown text:
+    /// the next update ends text mode, which ends the editor's draft slot.
+    end_text: bool,
     hint: Option<String>,
     /// The value typography chosen with [`Self::style`], if any.
     style: Option<TextStyle>,
@@ -597,23 +615,61 @@ pub struct InlineReadout {
 }
 description_debug!(InlineReadout);
 impl InlineReadout {
-    fn with_reader(reader: Reader) -> Self {
+    fn with_source(source: ReadoutSource) -> Self {
         let mut field = InlineField::new(true);
         field.set_read_only();
-        Self {
+        let mut readout = Self {
             field,
-            reader,
+            source: ReadoutSource::Text(TextSource::default()),
             literal_unit: String::new(),
             text: String::new(),
+            refused: None,
+            end_text: false,
             hint: None,
             style: None,
             focused: false,
-        }
+        };
+        readout.adopt(source);
+        readout
     }
-    /// Shows a bound string verbatim.
-    pub fn new(source: impl Into<ReadSignal<String>>) -> Self {
-        let source: ReadSignal<String> = source.into();
-        Self::with_reader(Box::new(move |cx| Ok((cx.read_paint(&source)?, None))))
+    /// Shows text verbatim: fixed text, a [`StringRole`] of the installed
+    /// string table or a binding, as a [`TextSource`] (a `&str`, `String`,
+    /// [`RichText`], or a `Signal` or `ReadSignal` of `String` or
+    /// [`RichText`]).
+    ///
+    /// The readout shows the source's plain text in its value style; spans,
+    /// colors and embedded icons of rich content are not drawn, and text mode
+    /// selects and copies the plain text. Fixed text applies when the
+    /// description is adopted, at mount or when the mounted readout is
+    /// described again, and is refused there, keeping the last valid text,
+    /// when it cannot be shown; a binding or role is read in the update, and
+    /// a refused read likewise keeps the last valid text.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::testing::InspectValue;
+    /// use std::time::Duration;
+    /// let mut ui = Runtime::new();
+    /// let position = ui.signal(String::from("001:01:000"));
+    /// ui.mount_tree(Row::new([
+    ///     InlineReadout::new("Ready").label("State").key("state"),
+    ///     InlineReadout::new(position.read_only()).label("Pos").key("position"),
+    /// ]).key("status"))?;
+    /// let text = |ui: &Runtime, key: &str| {
+    ///     let readout = ui.inspect().components.into_iter().find(|c| c.key == key).unwrap();
+    ///     readout.details.properties["text"].clone()
+    /// };
+    /// // Fixed text shows as soon as it is described, before any flush.
+    /// assert_eq!(text(&ui, "state"), InspectValue::Text("Ready".into()));
+    /// ui.flush(Duration::ZERO)?;
+    /// position.set("002:01:000".into())?;
+    /// ui.flush(Duration::ZERO)?;
+    /// assert_eq!(text(&ui, "position"), InspectValue::Text("002:01:000".into()));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn new(text: impl Into<TextSource>) -> Self {
+        Self::with_source(ReadoutSource::Text(text.into()))
     }
     /// Shows a bound value through a [`NumberFormat`]'s display callback and
     /// optional dynamic unit; the format's width example reserves the slot
@@ -624,13 +680,44 @@ impl InlineReadout {
     ) -> Self {
         let source: ReadSignal<T> = source.into();
         let hint = format.hint.clone();
-        let mut readout = Self::with_reader(Box::new(move |cx| {
+        let mut readout = Self::with_source(ReadoutSource::Formatted(Box::new(move |cx| {
             let value = cx.read_paint(&source)?;
             let unit = format.unit.as_ref().map(|unit| unit(value));
             Ok(((format.display)(value), unit))
-        }));
+        })));
         readout.hint = Some(hint);
         readout
+    }
+    /// Adopts a described source and returns whether the shown text changed.
+    /// Fixed text is checked and applied here, as [`TextSource`] promises; a
+    /// refused text changes nothing and is reported by the next update. A
+    /// binding, role or reader is read in the update.
+    fn adopt(&mut self, source: ReadoutSource) -> bool {
+        let fixed = match &source {
+            ReadoutSource::Text(text) => text.fixed().map(RichText::plain_text),
+            ReadoutSource::Formatted(_) => None,
+        };
+        self.source = source;
+        self.refused = None;
+        let Some(text) = fixed else {
+            return false;
+        };
+        if let Err(error) = self.field.check_display(&text, &self.field.unit) {
+            self.refused = Some(error);
+            return false;
+        }
+        if text == self.text {
+            return false;
+        }
+        // The check above is the one `display_value` applies, so this cannot
+        // fail; ending an open text mode is left to the update.
+        if self.field.display_value((), text.clone()).is_err() {
+            self.refused = Some(TextEditError::InvalidText);
+            return false;
+        }
+        self.end_text |= self.field.editing;
+        self.text = text;
+        true
     }
     /// Sets the leading caption, empty by default; its plain text is the
     /// readout's accessible name.
@@ -678,17 +765,16 @@ impl Component for InlineReadout {
     fn reconcile(&mut self, next: Self) -> Option<Invalidation> {
         let Self {
             field,
-            reader,
+            source,
             literal_unit,
             hint,
             style,
             text: _,
+            refused: _,
+            end_text: _,
             focused: _,
         } = next;
-        // A reader is a callback without identity: adopt it and let update
-        // re-read, which leaves text mode only if the shown text changes.
-        self.reader = reader;
-        let mut invalidation = Some(Invalidation::Paint);
+        let mut invalidation = None;
         let caption_changed = self.field.caption.reconcile(field.caption);
         if caption_changed
             || hint != self.hint
@@ -700,6 +786,22 @@ impl Component for InlineReadout {
             self.field.set_style(style.unwrap_or(TextStyle::Monospace));
             self.literal_unit = literal_unit;
             invalidation = Some(Invalidation::Layout);
+        }
+        // A reader is a callback without identity: adopt it and let update
+        // re-read. A text source is kept when it shows the same text; another
+        // one is adopted, fixed text at once.
+        let same = match (&self.source, &source) {
+            (ReadoutSource::Text(mine), ReadoutSource::Text(theirs)) => mine.same_as(theirs),
+            _ => false,
+        };
+        if !same {
+            let changed = self.adopt(source);
+            let relayout = changed && self.hint.is_none();
+            invalidation = invalidation.max(Some(if relayout {
+                Invalidation::Layout
+            } else {
+                Invalidation::Paint
+            }));
         }
         invalidation
     }
@@ -714,19 +816,31 @@ impl Component for InlineReadout {
         (!self.field.drafting() && self.field.local_value(point)).then_some(CursorIcon::Text)
     }
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
-        let (text, unit) = (self.reader)(cx)?;
+        if let Some(error) = self.refused {
+            return Err(error.into());
+        }
+        let (text, unit) = match &mut self.source {
+            // Fixed text was applied when it was adopted.
+            ReadoutSource::Text(source) if !source.is_bound() => (self.text.clone(), None),
+            ReadoutSource::Text(source) => (source.read_paint(cx)?.plain_text(), None),
+            ReadoutSource::Formatted(reader) => reader(cx)?,
+        };
         let unit = unit.unwrap_or_else(|| self.literal_unit.clone());
+        // Refused text changes nothing: not the text, the unit, inspection,
+        // the layout request or text mode.
+        self.field.check_display(&text, &unit)?;
         if unit != self.field.unit {
             self.field.unit = unit;
             cx.request_layout();
         }
-        if text != self.text {
+        if text != self.text || self.end_text {
             if self.field.editing {
                 self.field.stop_text();
             }
-            if self.hint.is_none() {
+            if text != self.text && self.hint.is_none() {
                 cx.request_layout();
             }
+            self.end_text = false;
             self.text = text;
         }
         self.field.display_value((), self.text.clone())?;

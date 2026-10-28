@@ -440,7 +440,9 @@ impl Explorer {
                 if load != self.load.get() {
                     return Ok(());
                 }
-                self.progress.set(ProgressStatus::Failed)?;
+                // The bar keeps the fraction the load reached.
+                let reached = self.progress.get()?.fraction();
+                self.progress.set(ProgressStatus::Failed(reached))?;
                 self.status.set(format!("Loading stopped: {error}"))?;
             }
             Message::Tail {
@@ -879,7 +881,11 @@ pub fn build(ui: &mut Runtime, path: PathBuf) -> Result<(Rc<Explorer>, WidgetId)
         Element::new("levels", levels),
         Element::new("all-sources", clear_source),
         Element::new("follow", follow),
-        Element::new("progress", ProgressBar::new(explorer.progress.read_only())).with_grow(1),
+        Element::new(
+            "progress",
+            ProgressBar::bound(explorer.progress.read_only()),
+        )
+        .with_grow(1),
         Element::new("shown", Label::new(explorer.shown.clone())),
     ])
     .align(Align::Center);

@@ -489,9 +489,10 @@ assert_eq!(value.get()?, 12);
 
 # Progress and activity
 
-[`ProgressBar`] presents a [`ProgressStatus`] binding the application writes: idle,
-indeterminate, a known fraction, or how the task ended. [`Spinner`] shows that
-something is running when nothing is known about how far. The library never
+[`ProgressBar`] presents a [`ProgressStatus`] it is described with, or a binding
+the application writes: idle, indeterminate, a known fraction, or how the task
+ended and how far it got. [`Spinner`] shows that something is running when
+nothing is known about how far, likewise from a described value or a binding. The library never
 advances or completes a task. Only indeterminate activity animates, and it stops
 scheduling when hidden, unmounted or finished, or under reduced motion.
 

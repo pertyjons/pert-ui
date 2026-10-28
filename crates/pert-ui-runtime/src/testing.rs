@@ -546,7 +546,7 @@ impl<'a> Driver<'a> {
     /// let mut ui = Runtime::new();
     /// ui.set_viewport(Viewport::new(300.0, 100.0, 1.0)?)?;
     /// let busy = ui.signal(true);
-    /// ui.mount_tree(Element::new("busy", Spinner::new(busy.clone())))?;
+    /// ui.mount_tree(Element::new("busy", Spinner::bound(busy.clone())))?;
     /// let mut driver = Driver::new(&mut ui);
     /// driver.settle()?;
     /// // A spinner steps every 100 ms.

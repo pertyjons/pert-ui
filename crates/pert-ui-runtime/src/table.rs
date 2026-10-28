@@ -262,11 +262,13 @@ pub trait TableItems {
     /// Like [`ListItems::build`], it is called again for every mounted row
     /// each time the table describes its rows, on a source replacement and
     /// when a scroll or resize changes which rows are mounted, and it gets no
-    /// state owner. A checkbox, toggle or editable label in a cell therefore
-    /// takes the record's value through its controlled form, such as
-    /// [`Checkbox::controlled`](crate::Checkbox::controlled); another control
-    /// binds a signal per row or from a retained cell component, with the
-    /// costs `build` describes. Text in an [editable](TableColumn::editable)
+    /// state owner. A display control in a cell therefore takes the record's
+    /// value itself, such as
+    /// [`ProgressBar::new(record.status)`](crate::ProgressBar::new); a
+    /// checkbox, toggle or editable label takes it through its controlled
+    /// form, such as [`Checkbox::controlled`](crate::Checkbox::controlled);
+    /// another editing control binds a signal per row or from a retained cell
+    /// component, with the costs `build` describes. Text in an [editable](TableColumn::editable)
     /// column is edited by the table's own editor instead.
     fn cell(&self, index: usize, column: &str) -> Option<Element>;
     /// Position of the row with `key`. The default scans every position.

@@ -1049,7 +1049,7 @@ const QUARTER: Duration = Duration::from_millis(250);
 fn a_spinning_spinner_is_busy_and_a_resting_one_idle() -> TestResult {
     let mut ui = runtime()?;
     let busy = ui.signal(true);
-    ui.mount_tree(Element::new("busy", Spinner::new(busy.clone())))?;
+    ui.mount_tree(Element::new("busy", Spinner::bound(busy.clone())))?;
     let mut driver = Driver::new(&mut ui);
     driver.settle()?;
     let report = driver.quiet_for(QUARTER)?;
@@ -1113,14 +1113,13 @@ fn a_toast_waiting_to_expire_keeps_a_deadline() -> TestResult {
 #[test]
 fn another_windows_spinner_does_not_make_the_selected_window_busy() -> TestResult {
     let mut ui = runtime()?;
-    let busy = ui.signal(true);
     let root = ui.mount_tree(Element::new(
         "root",
         Column::new([
             Element::new("here", Label::new("Here")),
             Element::new(
                 "panel",
-                View::new(Element::new("spinner", Spinner::new(busy.clone()))),
+                View::new(Element::new("spinner", Spinner::new(true))),
             ),
         ]),
     ))?;

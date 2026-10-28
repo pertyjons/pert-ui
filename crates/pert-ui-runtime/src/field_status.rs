@@ -434,15 +434,17 @@ struct Prepared {
 /// The control alone decides the field's preferred width, and the label, help
 /// and message wrap to it: text never widens the field, so a status change never
 /// resizes the control. The control fills the allocated width and keeps its own
-/// measured height, limited by what the label and message leave. Focus, input, cursor and the control's own disabled or
-/// read-only state are untouched: the field is not focusable and handles no
-/// input. Hiding the control with [`Runtime::set_visible`](crate::Runtime::set_visible) hides the label and
-/// the line below with it: the field then takes no space and paints nothing. The status is read from the application's binding on update and
-/// invalidates this field's layout only.
+/// measured height, limited by what the label and message leave. Focus, input,
+/// cursor and the control's own disabled or read-only state are untouched: the
+/// field is not focusable and handles no input. Hiding the control with
+/// [`Runtime::set_visible`](crate::Runtime::set_visible) hides the label and
+/// the line below with it: the field then takes no space and paints nothing.
+/// The status is described or read from the application's binding on update,
+/// and a change invalidates this field's layout only.
 ///
 /// Describing a mounted field again (through [`Runtime::reconcile_children`](crate::Runtime::reconcile_children))
-/// applies its new label, help text and status binding; the control keeps its
-/// identity and state.
+/// applies its new label, help text and status or status binding; the control
+/// keeps its identity and state.
 ///
 /// A [`FieldStatus::Pending`] check shows its message in Muted after a small
 /// spinner (IconSize, Primary dots) and outlines nothing. The spinner steps
@@ -450,9 +452,9 @@ struct Prepared {
 /// under reduced motion, and schedules nothing otherwise or while the field
 /// is hidden. A [required](Field::required) field shows " *" after its label.
 ///
-/// Bind the status with [`Field::status`], or with [`Field::form`] when a
-/// [`FormFields`] coordinates several fields; see [`FormFields`] for a complete
-/// example. Inspection reports `label`, `help`, `status`, `message` and
+/// Show a status with [`Field::status`], bind it with [`Field::status_signal`],
+/// or with [`Field::form`] when a [`FormFields`] coordinates several fields;
+/// see [`FormFields`] for a complete example. Inspection reports `label`, `help`, `status`, `message` and
 /// `required`. In semantics the label names the control, and the line below
 /// describes it unless the control describes itself; an error marks the
 /// control invalid, a warning marks the description as a
@@ -465,7 +467,7 @@ pub struct Field {
     label: Caption,
     label_hidden: bool,
     help: Caption,
-    source: Option<ReadSignal<FieldStatus>>,
+    source: Option<ValueSource<FieldStatus>>,
     target: Option<Rc<RefCell<Option<WidgetId>>>>,
     status: FieldStatus,
     required: bool,
@@ -476,7 +478,7 @@ pub struct Field {
     painted: Cell<bool>,
 }
 description_debug!(Field);
-use crate::progress::{DOTS as SPINNER_DOTS, STEP as SPINNER_STEP};
+use crate::progress::{DOTS as SPINNER_DOTS, STEP as SPINNER_STEP, ValueSource};
 impl Field {
     /// Wraps one control, with no label, no help text and a normal status.
     pub fn new(control: Element) -> Self {
@@ -534,17 +536,84 @@ impl Field {
         self.help = Caption::new(help);
         self
     }
-    /// Follows an application-owned status binding, replacing an earlier one.
-    pub fn status(mut self, status: impl Into<ReadSignal<FieldStatus>>) -> Self {
+    /// Shows `status`, as described, replacing an earlier status, status
+    /// binding or [form](Self::form); [`FormFields::focus_first_error`] then
+    /// no longer reaches this field. The status applies when the description
+    /// is adopted and changes only with a new description, so a collection row
+    /// describes its record's status this way. For a status the application
+    /// writes over time, use [`Self::status_signal`].
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::testing::{InspectValue, SemanticRole};
+    /// use std::time::Duration;
+    /// let mut ui = Runtime::new();
+    /// let name = TextField::new(ui.signal(String::new())).key("name");
+    /// let field = Field::new(name).label("Name").status(FieldStatus::error("Required"));
+    /// ui.mount_tree(field.key("field"))?;
+    /// ui.flush(Duration::ZERO)?;
+    /// let snapshot = ui.inspect();
+    /// let find = |key: &str| snapshot.components.iter().find(|c| c.key == key).unwrap();
+    /// assert_eq!(find("field").details.properties["message"], InspectValue::Text("Required".into()));
+    /// let control = find("name").details.semantics.clone().unwrap();
+    /// assert_eq!(control.role, SemanticRole::TextInput);
+    /// assert!(control.invalid);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn status(mut self, status: FieldStatus) -> Self {
+        self.status = status.clone();
+        self.source = Some(ValueSource::Fixed(status));
+        self.target = None;
+        self
+    }
+    /// Follows an application-owned status binding, replacing an earlier
+    /// status, status binding or [form](Self::form); [`FormFields::focus_first_error`]
+    /// then no longer reaches this field. The binding is read from the field's
+    /// next update; describing the field again with the same binding keeps the
+    /// status read.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::testing::InspectValue;
+    /// use std::time::Duration;
+    /// let mut ui = Runtime::new();
+    /// let field = |status: Field| status.label("Name").key("field");
+    /// let (name, checked) = (ui.signal(String::new()), ui.signal(FieldStatus::Normal));
+    /// let input = || TextField::new(name.clone()).key("name");
+    /// let root = ui.mount_tree(Column::new([
+    ///     field(Field::new(input()).status(FieldStatus::warning("Check the spelling"))),
+    /// ]).key("form"))?;
+    /// ui.flush(Duration::ZERO)?;
+    ///
+    /// // Described again with a binding the application checks into.
+    /// let bound = field(Field::new(input()).status_signal(checked.read_only()));
+    /// ui.reconcile_children(&root, vec![bound])?;
+    /// ui.flush(Duration::ZERO)?;
+    /// let status = |ui: &Runtime| {
+    ///     let field = ui.inspect().components.into_iter().find(|c| c.key == "field").unwrap();
+    ///     field.details.properties["status"].clone()
+    /// };
+    /// assert_eq!(status(&ui), InspectValue::Text("normal".into()));
+    /// checked.set(FieldStatus::error("Required"))?;
+    /// ui.flush(Duration::ZERO)?;
+    /// assert_eq!(status(&ui), InspectValue::Text("error".into()));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn status_signal(mut self, status: impl Into<ReadSignal<FieldStatus>>) -> Self {
         let status: ReadSignal<FieldStatus> = status.into();
-        self.source = Some(status);
+        self.status = FieldStatus::Normal;
+        self.source = Some(ValueSource::Bound(status));
         self.target = None;
         self
     }
     /// Follows a form's field, and lets [`FormFields::focus_first_error`] reach
-    /// this field's control while it is mounted. Replaces an earlier binding.
+    /// this field's control while it is mounted. Replaces an earlier status or
+    /// status binding.
     pub fn form(mut self, handle: &FieldHandle) -> Self {
-        self.source = Some(handle.status());
+        self.status = FieldStatus::Normal;
+        self.source = Some(ValueSource::Bound(handle.status()));
         self.target = Some(handle.control.clone());
         self
     }
@@ -615,14 +684,24 @@ impl Component for Field {
             (Some(a), Some(b)) => Rc::ptr_eq(a, b),
             _ => false,
         };
-        if !ReadSignal::same_optional(&self.source, &next.source) || !same_target {
+        // Sources are compared, not shown statuses: only an equal fixed
+        // status or the same binding keeps everything. A fixed status shows
+        // at once; a binding is read at update.
+        let same_source = match (&self.source, &next.source) {
+            (None, None) => true,
+            (Some(mine), Some(theirs)) => mine.same_as(theirs),
+            _ => false,
+        };
+        if !same_source || !same_target {
             if !same_target && let Some(target) = &self.target {
                 target.borrow_mut().take();
             }
             self.source = next.source;
             self.target = next.target;
-            if self.source.is_none() {
-                self.status = FieldStatus::Normal;
+            match &self.source {
+                None => self.status = FieldStatus::Normal,
+                Some(ValueSource::Fixed(status)) => self.status = status.clone(),
+                Some(ValueSource::Bound(_)) => {}
             }
             invalidation = Some(Invalidation::Layout);
         }
@@ -635,7 +714,7 @@ impl Component for Field {
         self.label.update(cx)?;
         self.help.update(cx)?;
         if let Some(source) = &self.source {
-            self.status = cx.read(source)?;
+            self.status = source.read(cx)?;
         }
         self.still = cx.motion() == crate::MotionPreference::Reduced;
         if self.status.is_pending() && !self.still {

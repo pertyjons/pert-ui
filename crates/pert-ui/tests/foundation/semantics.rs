@@ -155,7 +155,7 @@ fn a_field_names_describes_and_invalidates_the_control_it_wraps() {
                 ))
                 .label("Email")
                 .help("Used for receipts")
-                .status(status.read_only()),
+                .status_signal(status.read_only()),
             ),
             Element::new(
                 "agree-field",
@@ -231,7 +231,7 @@ fn a_field_error_or_warning_outranks_the_description_a_drafting_control_gives_it
                     ))
                     .label("Name")
                     .help("As on the card")
-                    .status(status.read_only()),
+                    .status_signal(status.read_only()),
                 ),
                 Element::new("other", Button::new("Other", |_| Ok(()))),
             ]),

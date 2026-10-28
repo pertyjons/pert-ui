@@ -14,10 +14,11 @@ need their last column names.
 
 | Way | Use it when |
 |---|---|
-| A `new` constructor with a [`Signal`], such as [`Checkbox::new`] | the value is UI-local state; the control writes it |
+| An editing control's `new` constructor with a [`Signal`], such as [`Checkbox::new`] | the value is UI-local state; the control writes it |
 | `controlled`: [`Checkbox::controlled`], [`Toggle::controlled`], [`InlineText::controlled`] | the application's model owns the value, as the records behind list rows and table cells do; the control proposes each change to a callback |
+| A value at construction: a display control's `new`, such as [`ProgressBar::new`], or a builder such as [`Field::status`] | the control shows the application's value and writes nothing, as a list row's progress does; `bound` ([`ProgressBar::bound`]) or the `_signal` builder follows a binding instead |
 | `for_parameter`, such as [`Checkbox::for_parameter`] | the value is authoritative: a host validates edits, keeps revisions and observes gestures ([authoritative values](crate::guide::authoritative_values)) |
-| Advanced: a per-row binding from [`Signal::sibling`] | a list row's control without a controlled form and without a draft; each description of the rows gives it a new binding |
+| Advanced: a per-row binding from [`Signal::sibling`] | a list row's editing control without a controlled form and without a draft; each description of the rows gives it a new binding |
 | Advanced: a retained row component | a list row's control without a controlled form that keeps a draft, such as a text editor; [`ListItems::build`] describes it |
 
 **Work in the background**

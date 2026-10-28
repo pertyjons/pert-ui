@@ -9,8 +9,9 @@ use crate::{IconSource, ReadSignal, RichText, RuntimeError, Signal, StringRole, 
 /// [`Label`](crate::Label), [`Button`](crate::Button), [`Link`](crate::Link),
 /// [`Chip`](crate::Chip), [`Tooltip`](crate::Tooltip),
 /// [`MenuItem`](crate::MenuItem), [`Menu`](crate::Menu),
-/// [`Checkbox`](crate::Checkbox), [`Toggle`](crate::Toggle) and
-/// [`InlineToggle`](crate::InlineToggle) take `impl Into<TextSource>`, as do
+/// [`Checkbox`](crate::Checkbox), [`Toggle`](crate::Toggle),
+/// [`InlineToggle`](crate::InlineToggle) and
+/// [`InlineReadout`](crate::InlineReadout)'s text take `impl Into<TextSource>`, as do
 /// titles, placeholders and the builders that replace a library text, such as
 /// a toast host's dismiss label; so `"Gain"`, a `String`, a [`RichText`], a
 /// read signal of either and a [`StringRole`] can be passed directly. A

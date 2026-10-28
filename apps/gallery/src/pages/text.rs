@@ -335,7 +335,7 @@ pub(crate) fn text_editing(ui: &Runtime) -> Result<Element, RuntimeError> {
                                     }),
                             ))
                             .label("Tag")
-                            .status(tag_status_view),
+                            .status_signal(tag_status_view),
                         ),
                         Element::new("tag-saved", Label::new(tag.read_only())),
                         label("notes-label", "Multiline — monospace by default"),
@@ -663,7 +663,6 @@ fn search_example(ui: &Runtime) -> Result<Element, RuntimeError> {
 // first field is live: its rule is the application's and runs on Enter. The rest
 // hold a fixed status so each presentation can be compared side by side.
 fn field_examples(ui: &Runtime) -> Element {
-    let fixed = |status: FieldStatus| ui.signal(status).read_only();
     let text = |value: &str| ui.signal(value.to_owned());
     let project = text("");
     let project_status = ui.signal(FieldStatus::Normal);
@@ -693,7 +692,7 @@ fn field_examples(ui: &Runtime) -> Element {
                 ))
                 .label("Project name — live")
                 .help("Press Enter to check: empty is an error, over 20 characters a warning.")
-                .status(project_status.read_only()),
+                .status_signal(project_status.read_only()),
             ),
             Element::new(
                 "field-normal",
@@ -712,9 +711,9 @@ fn field_examples(ui: &Runtime) -> Element {
                 ))
                 .label("Warning")
                 .help("This help text is replaced while the warning is set.")
-                .status(fixed(FieldStatus::warning(
+                .status(FieldStatus::warning(
                     "Accepted, but another project already uses this name",
-                ))),
+                )),
             ),
             Element::new(
                 "field-error",
@@ -724,7 +723,7 @@ fn field_examples(ui: &Runtime) -> Element {
                 ))
                 .label("Error")
                 .help("This help text is replaced while the error is set.")
-                .status(fixed(FieldStatus::error("A value is required"))),
+                .status(FieldStatus::error("A value is required")),
             ),
             Element::new(
                 "field-marked",
@@ -734,7 +733,7 @@ fn field_examples(ui: &Runtime) -> Element {
                 ))
                 .label("Error with an empty message")
                 .help("An empty message outlines the control and keeps the help line.")
-                .status(fixed(FieldStatus::error(""))),
+                .status(FieldStatus::error("")),
             ),
             Element::new(
                 "field-area",
@@ -745,9 +744,9 @@ fn field_examples(ui: &Runtime) -> Element {
                     )),
                 ))
                 .label("Multiline with a long warning")
-                .status(fixed(FieldStatus::warning(
+                .status(FieldStatus::warning(
                     "This message is deliberately long, to show that a status wraps to the width of its field and lengthens it rather than pushing the surrounding form wider than its container.",
-                ))),
+                )),
             ),
             Element::new(
                 "field-read-only",
@@ -764,7 +763,7 @@ fn field_examples(ui: &Runtime) -> Element {
                     "field-unlabelled-input",
                     TextField::new(text("No label, status only")),
                 ).with_label("Status-only field"))
-                .status(fixed(FieldStatus::error("A label is optional too"))),
+                .status(FieldStatus::error("A label is optional too")),
             ),
         ],
     )

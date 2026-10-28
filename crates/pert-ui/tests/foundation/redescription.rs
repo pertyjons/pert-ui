@@ -470,7 +470,7 @@ fn built_ins_present_a_new_description_like_a_fresh_mount() {
         Element::new("c", ColorSwatch::bound(s.read_only()))
     });
     conforms(false, true, |s| {
-        Element::new("c", Spinner::new(s.read_only()))
+        Element::new("c", Spinner::bound(s.read_only()))
     });
     // Options, not only bindings, follow the new description.
     let mut ui = Runtime::new();

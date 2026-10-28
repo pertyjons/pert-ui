@@ -15,7 +15,7 @@ fn setup(initial: ProgressStatus) -> (Runtime, Signal<ProgressStatus>, WidgetId)
     let root = ui
         .mount_tree(Element::new(
             "column",
-            Column::new([Element::new("bar", ProgressBar::new(status.read_only()))]),
+            Column::new([Element::new("bar", ProgressBar::bound(status.read_only()))]),
         ))
         .unwrap();
     ui.flush(Duration::ZERO).unwrap();
@@ -69,8 +69,8 @@ fn each_status_draws_its_own_fill_and_only_a_known_fraction_has_a_value() {
     );
     for (next, color) in [
         (ProgressStatus::Succeeded, ColorRole::Success),
-        (ProgressStatus::Failed, ColorRole::Error),
-        (ProgressStatus::Cancelled, ColorRole::Muted),
+        (ProgressStatus::Failed(None), ColorRole::Error),
+        (ProgressStatus::Cancelled(None), ColorRole::Muted),
     ] {
         status.set(next).unwrap();
         ui.flush(Duration::ZERO).unwrap();
@@ -168,7 +168,7 @@ fn counts_map_to_a_fraction_and_semantics_report_it() {
         .unwrap();
     ui.mount_tree(Element::new(
         "field",
-        Field::new(Element::new("bar", ProgressBar::new(status.read_only()))).label("Export"),
+        Field::new(Element::new("bar", ProgressBar::bound(status.read_only()))).label("Export"),
     ))
     .unwrap();
     ui.flush(Duration::ZERO).unwrap();
@@ -193,7 +193,7 @@ fn counts_map_to_a_fraction_and_semantics_report_it() {
     );
     assert!(now.actions.is_empty() && !now.invalid);
 
-    status.set(ProgressStatus::Failed).unwrap();
+    status.set(ProgressStatus::Failed(None)).unwrap();
     ui.flush(Duration::ZERO).unwrap();
     let failed = semantics(&ui);
     assert!(failed.invalid);
@@ -211,7 +211,7 @@ fn spinner(busy: bool) -> (Runtime, Signal<bool>, WidgetId) {
         .mount_tree(Element::new(
             "row",
             Row::new([
-                Element::new("spinner", Spinner::new(signal.read_only())),
+                Element::new("spinner", Spinner::bound(signal.read_only())),
                 Element::new("text", Label::new("Saving")),
             ]),
         ))
@@ -356,11 +356,10 @@ fn only_components_that_read_the_motion_preference_are_invalidated() {
     let mut ui = Runtime::new();
     ui.set_viewport(Viewport::new(400.0, 200.0, 1.0).unwrap())
         .unwrap();
-    let busy = ui.signal(false);
     ui.mount_tree(Element::new(
         "row",
         Row::new([
-            Element::new("spinner", Spinner::new(busy.read_only())),
+            Element::new("spinner", Spinner::new(false)),
             Element::new("text", Label::new("Saving")),
         ]),
     ))
@@ -425,14 +424,16 @@ fn a_fill_is_set_apart_from_its_track_on_every_neutral_background() {
             for status in [
                 ProgressStatus::Determinate(half),
                 ProgressStatus::Succeeded,
-                ProgressStatus::Failed,
-                ProgressStatus::Cancelled,
+                ProgressStatus::Failed(None),
+                ProgressStatus::Cancelled(None),
+                ProgressStatus::Failed(Some(half)),
+                ProgressStatus::Cancelled(Some(half)),
             ] {
                 let mut ui = Runtime::new();
                 ui.set_viewport(Viewport::new(400.0, 200.0, 1.0).unwrap())
                     .unwrap();
                 ui.theme().set_mode(mode).unwrap();
-                let bar = Element::new("bar", ProgressBar::new(ui.signal(status).read_only()));
+                let bar = Element::new("bar", ProgressBar::new(status));
                 let tree = match background {
                     None => bar,
                     Some(role) => Element::new(
@@ -451,8 +452,8 @@ fn a_fill_is_set_apart_from_its_track_on_every_neutral_background() {
                     &ui,
                     match status {
                         ProgressStatus::Succeeded => ColorRole::Success,
-                        ProgressStatus::Failed => ColorRole::Error,
-                        ProgressStatus::Cancelled => ColorRole::Muted,
+                        ProgressStatus::Failed(_) => ColorRole::Error,
+                        ProgressStatus::Cancelled(_) => ColorRole::Muted,
                         _ => ColorRole::Primary,
                     },
                 );
@@ -483,7 +484,9 @@ fn a_fill_is_set_apart_from_its_track_on_every_neutral_background() {
                     panic!("{case}: drew {drawn:?}");
                 };
                 let gap = fill.height() / 2.0;
-                let partial = matches!(status, ProgressStatus::Determinate(_));
+                let partial = status
+                    .fraction()
+                    .is_some_and(|fraction| fraction.get() < 1.0);
                 assert_eq!(
                     drawn.len(),
                     if partial { 2 } else { 1 },
@@ -595,4 +598,132 @@ fn the_gap_beside_a_fill_narrows_near_either_end_so_some_track_remains() {
             (start, segment, Primary),
         ],
     );
+}
+
+#[test]
+fn an_ended_task_fills_the_track_to_the_fraction_it_reached() {
+    let (mut ui, status, root) = setup(ProgressStatus::Idle);
+    let width = ui.bounds(&bar(&ui, &root)).unwrap().unwrap().width();
+    let gap = ThemeMetrics::default().metric(MetricRole::ProgressHeight) / 2.0;
+    let three_eighths = NormalizedValue::try_from(0.375).unwrap();
+    let semantics = |ui: &Runtime| {
+        ui.inspect()
+            .components
+            .into_iter()
+            .find(|component| component.key == "bar")
+            .unwrap()
+            .details
+    };
+    type Ended = fn(Option<NormalizedValue>) -> ProgressStatus;
+    for (ended, color, invalid) in [
+        (ProgressStatus::Failed as Ended, ColorRole::Error, true),
+        (ProgressStatus::Cancelled as Ended, ColorRole::Muted, false),
+    ] {
+        for reached in [NormalizedValue::MIN, three_eighths, NormalizedValue::MAX] {
+            let next = ended(Some(reached));
+            status.set(next).unwrap();
+            ui.flush(Duration::ZERO).unwrap();
+            let filled = width * reached.get();
+            let outline = role(&ui, ColorRole::Outline);
+            let scene = ui.paint().unwrap();
+            let drawn: Vec<(f32, f32, Color)> = scene
+                .commands()
+                .iter()
+                .filter_map(|command| match command {
+                    DrawCommand::FillRect { rect, color } => Some((rect.x(), rect.width(), *color)),
+                    _ => None,
+                })
+                .collect();
+            let expected: Vec<(f32, f32, Color)> = if reached == NormalizedValue::MIN {
+                // Zero leaves the track empty, as a determinate zero does.
+                vec![(0.0, width, outline)]
+            } else if reached == NormalizedValue::MAX {
+                vec![(0.0, width, role(&ui, color))]
+            } else {
+                vec![
+                    (filled + gap, width - filled - gap, outline),
+                    (0.0, filled, role(&ui, color)),
+                ]
+            };
+            assert_eq!(drawn.len(), expected.len(), "{next:?}: {drawn:?}");
+            for (a, b) in drawn.iter().zip(&expected) {
+                assert!(
+                    (a.0 - b.0).abs() < 1e-3 && (a.1 - b.1).abs() < 1e-3 && a.2 == b.2,
+                    "{next:?}: {drawn:?} vs {expected:?}"
+                );
+            }
+            let details = semantics(&ui);
+            let semantic = details.semantics.unwrap();
+            assert_eq!(
+                semantic.value,
+                Some(SemanticValue::Number {
+                    value: f64::from(reached.get()),
+                    minimum: Some(0.0),
+                    maximum: Some(1.0),
+                }),
+                "{next:?}"
+            );
+            assert_eq!(
+                details.properties.get("fraction"),
+                Some(&InspectValue::Number(f64::from(reached.get()))),
+                "{next:?}"
+            );
+            assert_eq!(semantic.invalid, invalid, "{next:?}");
+            assert!(next.is_finished() && !next.is_running());
+        }
+        // Without a fraction, the value and the property are gone.
+        status.set(ended(None)).unwrap();
+        ui.flush(Duration::ZERO).unwrap();
+        let details = semantics(&ui);
+        assert_eq!(details.semantics.unwrap().value, None);
+        assert_eq!(details.properties.get("fraction"), None);
+        assert_eq!(fill(&mut ui, color), Some((0.0, width)));
+    }
+}
+
+#[test]
+fn a_described_indeterminate_bar_animates_until_described_otherwise() {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(400.0, 200.0, 1.0).unwrap())
+        .unwrap();
+    let root = ui
+        .mount_tree(Element::new(
+            "column",
+            Column::new([Element::new(
+                "bar",
+                ProgressBar::new(ProgressStatus::Indeterminate),
+            )]),
+        ))
+        .unwrap();
+    ui.flush(Duration::ZERO).unwrap();
+    assert_eq!(ui.next_deadline(), Some(FRAME));
+    ui.reconcile_children(
+        &root,
+        vec![Element::new(
+            "bar",
+            ProgressBar::new(ProgressStatus::Succeeded),
+        )],
+    )
+    .unwrap();
+    ui.flush(FRAME).unwrap();
+    assert_eq!(ui.next_deadline(), None);
+}
+
+#[test]
+fn a_described_busy_spinner_steps_and_a_resting_one_schedules_nothing() {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(200.0, 100.0, 1.0).unwrap())
+        .unwrap();
+    let root = ui
+        .mount_tree(Element::new(
+            "row",
+            Row::new([Element::new("spinner", Spinner::new(true))]),
+        ))
+        .unwrap();
+    ui.flush(Duration::ZERO).unwrap();
+    assert_eq!(ui.next_deadline(), Some(STEP));
+    ui.reconcile_children(&root, vec![Element::new("spinner", Spinner::new(false))])
+        .unwrap();
+    ui.flush(Duration::from_millis(50)).unwrap();
+    assert_eq!(ui.next_deadline(), None);
 }

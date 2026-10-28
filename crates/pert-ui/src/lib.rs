@@ -109,7 +109,9 @@ pub use svg_images::component::Svg;
 /// - Services: [`NumberFormat`]'s localized constructors take a
 ///   [`NumberLocale`], and [`TextSpan::font`] and [`TextSpan::font_role`] take
 ///   a [`FontId`] and a [`FontRole`]; they are at the crate root.
-/// - [`ProgressStatus::of`] builds progress from counts; a fraction is a
+/// - [`ProgressStatus::of`] builds progress from counts and
+///   [`ProgressStatus::fraction`] carries a running task's fraction into
+///   `Failed` or `Cancelled`; a fraction written as a number is a
 ///   [`NormalizedValue`] from [`parameter`].
 /// - [`Runtime`] and [`EventContext`] have methods for every family; a
 ///   method's arguments are in that family's module.

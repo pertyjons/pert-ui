@@ -531,8 +531,11 @@ checkbox and title are therefore [controlled](Checkbox::controlled): each
 takes the record's value from the row's description and proposes the user's
 change to its callback, which writes it to the records. They bind nothing,
 so describing the row again with the same value leaves an open draft alone,
-and the changed record shows after the next flush. A control without a
-controlled form uses one of the two advanced forms [`ListItems::build`]
+and the changed record shows after the next flush. The row's
+[`ProgressBar`] is a display control: it takes the record's status with
+[`ProgressBar::new`] and needs neither a binding nor a callback, so a new
+status in the records shows after the next flush too. An editing control
+without a controlled form uses one of the two advanced forms [`ListItems::build`]
 describes: a per-row binding from [`Signal::sibling`], which suits a control
 without a draft, since every description of the rows gives it a new binding,
 or a retained row component, which makes its binding once and writes each
@@ -544,7 +547,7 @@ use std::mem;
 
 // Signal values are compared when written and cloned when read.
 #[derive(Clone, PartialEq)]
-struct Task { id: u64, title: String, done: bool }
+struct Task { id: u64, title: String, done: bool, progress: ProgressStatus }
 
 /// The records as rows: a copy for reading, and the signal to write back to.
 struct Rows { tasks: Vec<Task>, store: Signal<Vec<Task>> }
@@ -566,8 +569,14 @@ impl ListItems for Rows {
             edit(&store, id, |task| task.title = title.to_owned())
         })
         .in_row(true);
+        // A display control takes the record's value itself.
+        let progress = ProgressBar::new(task.progress);
         // The list keys the row with the task's key, replacing "row".
-        Some(Row::new([check.key("done"), title.key("title").with_grow(1)]).key("row"))
+        Some(Row::new([
+            check.key("done"),
+            title.key("title").with_grow(1),
+            progress.key("progress"),
+        ]).key("row"))
     }
     fn text(&self, index: usize) -> Option<String> {
         Some(self.tasks.get(index)?.title.clone())
@@ -613,7 +622,12 @@ struct TaskList {
 }
 
 fn build(ui: &mut Runtime) -> Result<TaskList, RuntimeError> {
-    let task = |id, title: &str| Task { id, title: title.to_owned(), done: false };
+    let task = |id, title: &str| Task {
+        id,
+        title: title.to_owned(),
+        done: false,
+        progress: ProgressStatus::Idle,
+    };
     let tasks = ui.signal(vec![
         task(1, "Buy milk"),
         task(2, "Write the plan"),
@@ -703,6 +717,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     ui.focus(&check)?;
     press(&mut ui, KeyCode::Space)?;
     assert!(tasks.get()?[1].done);
+
+    // A new status in the records shows in the row's bar after the flush.
+    edit(&tasks, 2, |task| task.progress = ProgressStatus::Succeeded)?;
+    ui.flush(Duration::ZERO)?;
+    let bar = ui.find(&list, &["2", "progress"])?.ok_or("a progress bar")?;
+    let described = Driver::new(&mut ui).semantics(&bar)?.description;
+    assert_eq!(described.as_deref(), Some("succeeded"));
 
     // A press on another row's title selects that row; a double click on a
     // title renames it. The driver's clicks are one frame apart.

@@ -169,7 +169,7 @@ mod forms {
             "Title",
             TextField::new(ui.signal(String::new())).key("title"),
         )
-        .status(name.status())]);
+        .status_signal(name.status())]);
         let form = Form::new([
             Field::new(TextField::new(ui.signal(String::new())).key("name"))
                 .label("Name")
@@ -488,8 +488,44 @@ mod media {
         let image = Image::new(pixels)
             .fit(ImageFit::Contain)
             .sampling(ImageSampling::Nearest);
-        let progress = ProgressBar::new(ui.signal(ProgressStatus::of(1, 2)));
-        ui.mount_tree(Column::new([image.key("image"), progress.key("progress")]).key("root"))?;
+        let progress = ProgressBar::new(ProgressStatus::of(1, 2));
+        // A running task's fraction carries into the status it ends in, and a
+        // match reads it back, without naming the fraction's type.
+        let running = ProgressStatus::of(3, 8);
+        let ended = ProgressStatus::Failed(running.fraction());
+        let reached = match ended {
+            ProgressStatus::Failed(reached) => reached.map(|r| r.get()),
+            _ => None,
+        };
+        assert_eq!(reached, Some(0.375));
+        let status = ui.signal(ProgressStatus::Indeterminate);
+        let busy = ui.signal(true);
+        let field_status = ui.signal(FieldStatus::Normal);
+        let grid = PropertyGrid::new([Property::new(
+            "title",
+            "Title",
+            TextField::new(ui.signal(String::new())).key("title"),
+        )
+        .status(FieldStatus::warning("Long"))]);
+        ui.mount_tree(
+            Column::new([
+                image.key("image"),
+                progress.key("progress"),
+                ProgressBar::new(ended).key("ended"),
+                ProgressBar::bound(&status).key("bound"),
+                Spinner::new(true).key("spinner"),
+                Spinner::bound(&busy).key("bound-spinner"),
+                InlineReadout::new("Ready").key("readout"),
+                Field::new(TextField::new(ui.signal(String::new())).key("name"))
+                    .status(FieldStatus::error("Required"))
+                    .key("fixed-field"),
+                Field::new(TextField::new(ui.signal(String::new())).key("other"))
+                    .status_signal(&field_status)
+                    .key("bound-field"),
+                grid.key("grid"),
+            ])
+            .key("root"),
+        )?;
         ui.flush(Duration::ZERO)?;
         Ok(())
     }

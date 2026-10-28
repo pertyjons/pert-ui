@@ -115,7 +115,7 @@ pub fn run(path: PathBuf, lines: u64) -> Result {
     let start = Instant::now();
     let (mut flushes, mut worst) = (0, Duration::ZERO);
     while s.explorer.progress.get()? != ProgressStatus::Succeeded {
-        if s.explorer.progress.get()? == ProgressStatus::Failed {
+        if matches!(s.explorer.progress.get()?, ProgressStatus::Failed(_)) {
             return Err(s.explorer.status.get()?.into());
         }
         worst = worst.max(s.settle()?);

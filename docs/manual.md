@@ -178,7 +178,7 @@ and `label` replaces it.
 | `Divider` | `Divider::new()` | A visual separator. |
 | `ScrollArea` | `ScrollArea::new(child).axes(ScrollAxes::Both)`; `.on_scroll(callback)` reports the committed offset | Overflow and focus reveal. Vertical scrolling is the default. |
 | `Form` | `Form::new(fields)` | Responsive field columns. |
-| `Field` | `Field::new(control).label(...).help(...)` | Label, help and status around any control; `required(true)` marks the label, and a `FieldStatus::Pending` check shows a spinner. |
+| `Field` | `Field::new(control).label(...).help(...)`, with `.status(FieldStatus)`, `.status_signal(read_signal)` or `.form(&handle)` | Label, help and status around any control; `required(true)` marks the label, and a `FieldStatus::Pending` check shows a spinner. |
 | `PropertyGrid` / `Property` | `PropertyGrid::new([Property::new(key, label, editor), ...])`; `.bind_label_width(signal)` aligns several grids; `.on_resize(callback)` reports the committed label width | Labeled editors in two aligned columns with a resizable label column; group rows by placing one grid per accordion section. |
 | `RegionLayout` | `RegionLayout::new().top(...).left(...).center(...)`; `.on_resize(callback)` reports a committed edge | Window-like regions; nest another region layout when needed. |
 | `SplitPane` | `SplitPane::new(axis, first, second)`; `.on_resize(callback)` reports the committed preference | Two independently sized regions with a movable divider. |
@@ -386,7 +386,7 @@ and register the platform's shortcuts from `KeyChord::navigate_back` and
 | `Knob` | `Knob::new(parameter)` | The slider's edit protocol, keyboard and wheel behavior in a rotary dial: vertical drag relative to the press, Shift for fine adjustment, Backspace or a double-click for the default. `show_value`, `unit`, `format` and `arc_origin` (fill the arc from the minimum or from the default) are builders. |
 | `IntegerInput`, `DecimalInput` | `IntegerInput::new(signal)` / `DecimalInput::new(signal)` | Local numeric text entry with validation. `stepper(true)` adds step buttons; `format` and `unit` set what the field shows at rest. |
 | `InlineInteger`, `InlineDecimal` | Construct from a numeric signal. | Compact editable value rows. |
-| `InlineReadout` | `InlineReadout::new(read_signal)` | A read-only compact value. |
+| `InlineReadout` | `InlineReadout::new(text)` with fixed or bound text, or `InlineReadout::formatted(read_signal, format)` | A read-only compact value. |
 | `InlineToggle`, `InlineChoice`, `InlineSelect` | `InlineToggle::new(bool_signal, name)`, `InlineChoice::new(signal, choices)?`, `InlineSelect::new(&ui, signal, choices)?` | Controls that fit a toolbar or dense row. |
 | `TextField`, `TextArea` | `TextField::new(string_signal)` / `TextArea::new(string_signal)` | Single-line and multiline editing with selection, clipboard and IME. `placeholder`, `required`, `min_length`/`max_length` with a `counter`; `TextField::concealed` for a password, with an optional `revealable` eye button; `TextField::clearable`, `leading_icon` and `suffix`; `modified_indicator` and `on_modified` for unsaved drafts; `on_binding_refusal` reports when the field refuses a value the application wrote. |
 | `SearchField` | `SearchField::new(string_signal)` | A query with a search icon and clear button. Escape clears; Up/Down, Page Up/Down and Enter go to `on_key` for a result list while focus stays in the field; `debounce` delays the query until typing pauses. |
@@ -483,8 +483,8 @@ a mapped snapshot.
 
 | Component | Build it with | Use it for |
 |---|---|---|
-| `ProgressBar` | `ProgressBar::new(status.read_only())` | Determinate or indeterminate progress. |
-| `Spinner` | `Spinner::new(busy.read_only())` | Activity while a task is active. |
+| `ProgressBar` | `ProgressBar::new(status)` or `ProgressBar::bound(read_signal)` | Determinate or indeterminate progress, and how a task ended, with the fraction it reached. |
+| `Spinner` | `Spinner::new(busy)` or `Spinner::bound(read_signal)` | Activity while a task is active. |
 | `Banner` | `Banner::new(message, actions)` | Persistent in-view feedback. |
 | `ToastHost` | `ToastHost::new(controller, content)` with `ToastController::new(&ui)` | Bounded transient notifications; enqueue `Toast::new(message)` through the controller. |
 | `Tooltip` | `Tooltip::new(anchor, text)` | Delayed, noninteractive help. |

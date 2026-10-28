@@ -1,5 +1,108 @@
 # Changelog
 
+## 0.3.81 (2026-10-28)
+
+Display controls take values (round 2 fix plan, part P6, F16 by decision D1
+and R2-26 by decision D13, from its approved design checkpoint
+`plans/usability/round-2-design-P6.md`, revision 3, with decision P6-D1).
+
+- Breaking (F16): `ProgressBar::new(ProgressStatus)` shows a described
+  status, which applies when the description is adopted (at mount or a
+  same-key reconcile) and changes only with a new description; a described
+  indeterminate status sweeps as a bound one does. `ProgressBar::bound`
+  (`impl Into<ReadSignal<ProgressStatus>>`) follows a binding, as `new` did.
+  Replacement usage: `ProgressBar::new(status.read_only())` becomes
+  `ProgressBar::bound(status.read_only())`, or
+  `ProgressBar::new(record.status)` in a collection row instead of a signal
+  per row.
+- Breaking (F16): `Spinner::new(bool)` and `Spinner::bound(impl
+  Into<ReadSignal<bool>>)`, with the same rules; a described busy spinner
+  steps every 100 ms on the runtime clock. Replacement usage:
+  `Spinner::bound(busy.read_only())`, or `Spinner::new(record.running)`.
+- Breaking (F16): `Field::status(FieldStatus)` shows a described status and
+  `Field::status_signal(impl Into<ReadSignal<FieldStatus>>)` follows a
+  binding; `Property::status(FieldStatus)` and
+  `Property::status_signal(..)` delegate to the row's field. `status`,
+  `status_signal` and `form` each replace the other two, and `status` and
+  `status_signal` clear the form target, so `FormFields::focus_first_error`
+  no longer reaches that field. Reconciliation compares sources, not shown
+  statuses: a binding replaced by an equal fixed status no longer drives the
+  field. Replacement usage: `.status(signal.read_only())` becomes
+  `.status_signal(signal.read_only())`, or `.status(FieldStatus::error(..))`
+  for a fixed status.
+- Breaking (F16): `InlineReadout::new` takes `impl Into<TextSource>`: fixed
+  or bound text, plain or rich (shown as its plain text), or a
+  `StringRole`. Fixed text applies when the description is adopted and is
+  refused there, keeping the last valid text, when it cannot be shown (the
+  next update returns the `TextEditError`); a binding or role is read in the
+  update, and a same-key description with the same binding or role keeps
+  the text read. Every argument the library converted before still
+  converts; a caller-defined conversion into `ReadSignal<String>` is
+  replaced by passing the `ReadSignal<String>`.
+- Breaking (R2-26): `ProgressStatus::Failed(Option<NormalizedValue>)` and
+  `ProgressStatus::Cancelled(Option<NormalizedValue>)`. `None` is the full
+  track in the Error or Muted role as before; `Some(reached)` fills the
+  track to `reached` (with the gap beside a partial fill; zero leaves the
+  track empty) and reports the fraction as the semantic value and the
+  `fraction` property. `invalid` stays set for every failure and never for
+  a cancellation. Replacement usage: `ProgressStatus::Failed(None)` for the
+  old full track, `ProgressStatus::Failed(last.fraction())` to keep the
+  fraction reached; patterns `Failed(_)` and `Cancelled(_)`.
+- Added (R2-26): `ProgressStatus::fraction`, the fraction a status carries
+  (`Determinate`, and `Failed` or `Cancelled` with `Some`), so a
+  prelude-only program writes `Failed(last.fraction())` without naming
+  `NormalizedValue` (decision P6-D1).
+- Fixed: an `InlineReadout` whose bound or formatted text is refused (over
+  `TextEditError::MAX_TEXT_BYTES` or holding a control character) keeps its
+  last valid text in inspection and its semantic value, keeps its unit and
+  stays in text mode; it no longer stores the refused text and ends text
+  mode before validating it (the same kind as P6's fixed-text rule, in
+  touched code). A same-key description with the same binding no longer
+  repaints the readout.
+- Documentation (F16): `docs/contracts.md` states the display-control rule
+  under "Ownership paths"; `ListItems::build` gains a "Described" way and
+  narrows the per-row and retained ways to editing controls, as do
+  `TableItems::cell` and `Signal::sibling`; guide/state.md's table gains a
+  row for a value at construction; the editable-list recipe in
+  guide/layout.md gains a progress column described from each record, with
+  a test of a written record; guide/controls.md, `docs/manual.md`, the
+  types' pages (`ProgressStatus`, `ProgressBar`, `Spinner`,
+  `InlineReadout`, `Field`, `Property`, `TextSource`'s list of takers) and
+  the prelude pages, whose `NormalizedValue` bullet now names
+  `ProgressStatus::fraction`; `plans/follow-ups.md` records round 2's
+  evidence for controlled forms of more controls.
+- Migrated: the gallery's progress page describes its fixed statuses and
+  gains "Failed at three of eight" and "Cancelled at three of eight", and
+  its Fail and Cancel end the live task at the fraction it reached; the
+  text page's fixed field statuses are described, retiring its `fixed`
+  helper; `log_explorer` binds its bar with `bound` and keeps the fraction
+  a failed load reached; the runtime's `quiet_for` example and driver tests,
+  and the facade's tests, use `bound`, `status_signal` or the fixed forms
+  as the design's manifest says.
+- Tests (F16, R2-26): the facade's `collections` binary gains
+  `display_rows` (a table republished through `TableController::set_source`
+  whose cells describe a bar and a spinner per record, and a `VirtualList`
+  row remounted by a scroll); `controls` covers every change of source for
+  the bar and the spinner through `check_redescription`, with the dropped
+  binding after bound to fixed, fixed values before any flush, fixed,
+  rich, rebound and role readout text, refused fixed, bound and formatted
+  text, the old readout conversions, a described field status, the builder
+  replacement rules and a form replaced by a fixed status; `presentation`
+  covers both terminal statuses at zero, three eighths and full, a
+  described indeterminate bar and a described busy spinner, and the
+  background-contrast test adds the partial terminal fills; `collections`
+  covers a property row's fixed status; the prelude fixture writes each
+  new form without a `parameter` import. Each new-behavior test was shown
+  to fail under its named mutation.
+- API listings: `pert-ui-runtime` (`default.txt` and `serde.txt`) changes
+  `ProgressBar::new`, `Spinner::new`, `InlineReadout::new`, `Field::status`
+  and `Property::status`, and `ProgressStatus::Failed` and
+  `ProgressStatus::Cancelled` (now tuple variants, listed at the root and in
+  the prelude), and adds `ProgressBar::bound`, `Spinner::bound`,
+  `Field::status_signal`, `Property::status_signal` and
+  `ProgressStatus::fraction`. The facade's listings do not change: they
+  re-export the runtime by glob.
+
 ## 0.3.80 (2026-10-28)
 
 Rows in display order (round 2 fix plan, part P5, F9 and R2-6 by decision

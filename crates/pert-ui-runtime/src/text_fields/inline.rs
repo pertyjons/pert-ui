@@ -160,6 +160,14 @@ impl<T: Copy + PartialEq + 'static> InlineField<T> {
             None
         }
     }
+    /// Checks a text and unit the field would show without a format, without
+    /// changing anything: the check [`Self::display_value`] applies. It is
+    /// pure, so an owner can refuse text before it commits it, and a
+    /// reconcile can refuse fixed text at adoption.
+    pub(crate) fn check_display(&self, display: &str, unit: &str) -> Result<(), TextEditError> {
+        check_text(display, self.editor.multi)?;
+        check_text(unit, self.editor.multi)
+    }
     pub(crate) fn display_value(&mut self, value: T, fallback: String) -> Result<(), RuntimeError> {
         let display = self
             .format

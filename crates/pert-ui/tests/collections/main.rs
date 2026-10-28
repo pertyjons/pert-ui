@@ -14,6 +14,7 @@ mod command_palette;
 mod commands;
 mod content_search;
 mod controlled_rows;
+mod display_rows;
 mod file_browser;
 mod filter_hidden_active;
 mod history_navigator;

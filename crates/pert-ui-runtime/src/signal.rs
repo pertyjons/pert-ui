@@ -353,13 +353,16 @@ impl<T> Signal<T> {
     ///
     /// A row of a collection gets no state owner in
     /// [`ListItems::build`](crate::ListItems::build) or
-    /// [`TableItems::cell`](crate::TableItems::cell). Its control should be
-    /// controlled where it can be: [`Checkbox::controlled`](crate::Checkbox::controlled),
+    /// [`TableItems::cell`](crate::TableItems::cell). A display control in a
+    /// row takes the record's value itself, such as
+    /// [`ProgressBar::new`](crate::ProgressBar::new), with no binding. An
+    /// editing control should be controlled where it can be:
+    /// [`Checkbox::controlled`](crate::Checkbox::controlled),
     /// [`Toggle::controlled`](crate::Toggle::controlled) and
     /// [`InlineText::controlled`](crate::InlineText::controlled) take the
-    /// record's value and propose each change, with no binding. For a control
-    /// without a controlled form, a per-row binding made here is the advanced
-    /// form: call it in `build` on a signal the rows hold, with the record's
+    /// record's value and propose each change, with no binding. For an
+    /// editing control without a controlled form, a per-row binding made here
+    /// is the advanced form: call it in `build` on a signal the rows hold, with the record's
     /// value, and write changes back to the records from the control's
     /// callback. Creating a signal is not a write, so any phase may. The cost
     /// is a new binding for every mounted row each time the collection

@@ -14570,13 +14570,14 @@ impl core::marker::UnsafeUnpin for pert_ui_runtime::PickStatus
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::PickStatus
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::PickStatus
 #[non_exhaustive] pub enum pert_ui_runtime::prelude::ProgressStatus
-pub pert_ui_runtime::prelude::ProgressStatus::Cancelled
+pub pert_ui_runtime::prelude::ProgressStatus::Cancelled(core::option::Option<pert_ui_core::normalized::NormalizedValue>)
 pub pert_ui_runtime::prelude::ProgressStatus::Determinate(pert_ui_core::normalized::NormalizedValue)
-pub pert_ui_runtime::prelude::ProgressStatus::Failed
+pub pert_ui_runtime::prelude::ProgressStatus::Failed(core::option::Option<pert_ui_core::normalized::NormalizedValue>)
 pub pert_ui_runtime::prelude::ProgressStatus::Idle
 pub pert_ui_runtime::prelude::ProgressStatus::Indeterminate
 pub pert_ui_runtime::prelude::ProgressStatus::Succeeded
 impl pert_ui_runtime::ProgressStatus
+pub const fn pert_ui_runtime::ProgressStatus::fraction(self) -> core::option::Option<pert_ui_core::normalized::NormalizedValue>
 pub const fn pert_ui_runtime::ProgressStatus::is_finished(self) -> bool
 pub const fn pert_ui_runtime::ProgressStatus::is_running(self) -> bool
 pub fn pert_ui_runtime::ProgressStatus::of(u64, u64) -> Self
@@ -17118,7 +17119,8 @@ pub fn pert_ui_runtime::Field::hide_label(self) -> Self
 pub fn pert_ui_runtime::Field::label(self, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
 pub fn pert_ui_runtime::Field::new(pert_ui_runtime::Element) -> Self
 pub fn pert_ui_runtime::Field::required(self, bool) -> Self
-pub fn pert_ui_runtime::Field::status(self, impl core::convert::Into<pert_ui_runtime::ReadSignal<pert_ui_runtime::FieldStatus>>) -> Self
+pub fn pert_ui_runtime::Field::status(self, pert_ui_runtime::FieldStatus) -> Self
+pub fn pert_ui_runtime::Field::status_signal(self, impl core::convert::Into<pert_ui_runtime::ReadSignal<pert_ui_runtime::FieldStatus>>) -> Self
 impl core::fmt::Debug for pert_ui_runtime::Field
 pub fn pert_ui_runtime::Field::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl pert_ui_runtime::Component for pert_ui_runtime::Field
@@ -18232,7 +18234,7 @@ pub struct pert_ui_runtime::prelude::InlineReadout
 impl pert_ui_runtime::InlineReadout
 pub fn pert_ui_runtime::InlineReadout::formatted<T: core::marker::Copy + 'static>(impl core::convert::Into<pert_ui_runtime::ReadSignal<T>>, pert_ui_runtime::NumberFormat<T>) -> Self
 pub fn pert_ui_runtime::InlineReadout::label(self, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
-pub fn pert_ui_runtime::InlineReadout::new(impl core::convert::Into<pert_ui_runtime::ReadSignal<alloc::string::String>>) -> Self
+pub fn pert_ui_runtime::InlineReadout::new(impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
 pub fn pert_ui_runtime::InlineReadout::style(self, pert_ui_runtime::TextStyle) -> Self
 pub fn pert_ui_runtime::InlineReadout::unit(self, impl core::convert::Into<alloc::string::String>) -> Self
 pub fn pert_ui_runtime::InlineReadout::width_hint(self, impl core::convert::Into<alloc::string::String>) -> Self
@@ -19642,7 +19644,8 @@ impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Popover
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Popover
 pub struct pert_ui_runtime::prelude::ProgressBar
 impl pert_ui_runtime::ProgressBar
-pub fn pert_ui_runtime::ProgressBar::new(impl core::convert::Into<pert_ui_runtime::ReadSignal<pert_ui_runtime::ProgressStatus>>) -> Self
+pub fn pert_ui_runtime::ProgressBar::bound(impl core::convert::Into<pert_ui_runtime::ReadSignal<pert_ui_runtime::ProgressStatus>>) -> Self
+pub fn pert_ui_runtime::ProgressBar::new(pert_ui_runtime::ProgressStatus) -> Self
 impl core::fmt::Debug for pert_ui_runtime::ProgressBar
 pub fn pert_ui_runtime::ProgressBar::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl pert_ui_runtime::Component for pert_ui_runtime::ProgressBar
@@ -19723,7 +19726,8 @@ pub fn pert_ui_runtime::Property::help(self, impl core::convert::Into<pert_ui_ru
 pub fn pert_ui_runtime::Property::into_element(self) -> pert_ui_runtime::Element
 pub fn pert_ui_runtime::Property::new(impl core::convert::Into<alloc::string::String>, impl core::convert::Into<pert_ui_runtime::TextSource>, pert_ui_runtime::Element) -> Self
 pub fn pert_ui_runtime::Property::required(self, bool) -> Self
-pub fn pert_ui_runtime::Property::status(self, impl core::convert::Into<pert_ui_runtime::ReadSignal<pert_ui_runtime::FieldStatus>>) -> Self
+pub fn pert_ui_runtime::Property::status(self, pert_ui_runtime::FieldStatus) -> Self
+pub fn pert_ui_runtime::Property::status_signal(self, impl core::convert::Into<pert_ui_runtime::ReadSignal<pert_ui_runtime::FieldStatus>>) -> Self
 impl core::convert::From<pert_ui_runtime::Property> for pert_ui_runtime::Element
 pub fn pert_ui_runtime::Element::from(pert_ui_runtime::Property) -> Self
 impl core::fmt::Debug for pert_ui_runtime::Property
@@ -21013,7 +21017,8 @@ impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::SizeLimits
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::SizeLimits
 pub struct pert_ui_runtime::prelude::Spinner
 impl pert_ui_runtime::Spinner
-pub fn pert_ui_runtime::Spinner::new(impl core::convert::Into<pert_ui_runtime::ReadSignal<bool>>) -> Self
+pub fn pert_ui_runtime::Spinner::bound(impl core::convert::Into<pert_ui_runtime::ReadSignal<bool>>) -> Self
+pub fn pert_ui_runtime::Spinner::new(bool) -> Self
 impl core::fmt::Debug for pert_ui_runtime::Spinner
 pub fn pert_ui_runtime::Spinner::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl pert_ui_runtime::Component for pert_ui_runtime::Spinner
@@ -27900,13 +27905,14 @@ impl core::marker::UnsafeUnpin for pert_ui_runtime::ProfileOperation
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ProfileOperation
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ProfileOperation
 #[non_exhaustive] pub enum pert_ui_runtime::ProgressStatus
-pub pert_ui_runtime::ProgressStatus::Cancelled
+pub pert_ui_runtime::ProgressStatus::Cancelled(core::option::Option<pert_ui_core::normalized::NormalizedValue>)
 pub pert_ui_runtime::ProgressStatus::Determinate(pert_ui_core::normalized::NormalizedValue)
-pub pert_ui_runtime::ProgressStatus::Failed
+pub pert_ui_runtime::ProgressStatus::Failed(core::option::Option<pert_ui_core::normalized::NormalizedValue>)
 pub pert_ui_runtime::ProgressStatus::Idle
 pub pert_ui_runtime::ProgressStatus::Indeterminate
 pub pert_ui_runtime::ProgressStatus::Succeeded
 impl pert_ui_runtime::ProgressStatus
+pub const fn pert_ui_runtime::ProgressStatus::fraction(self) -> core::option::Option<pert_ui_core::normalized::NormalizedValue>
 pub const fn pert_ui_runtime::ProgressStatus::is_finished(self) -> bool
 pub const fn pert_ui_runtime::ProgressStatus::is_running(self) -> bool
 pub fn pert_ui_runtime::ProgressStatus::of(u64, u64) -> Self
@@ -32799,7 +32805,8 @@ pub fn pert_ui_runtime::Field::hide_label(self) -> Self
 pub fn pert_ui_runtime::Field::label(self, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
 pub fn pert_ui_runtime::Field::new(pert_ui_runtime::Element) -> Self
 pub fn pert_ui_runtime::Field::required(self, bool) -> Self
-pub fn pert_ui_runtime::Field::status(self, impl core::convert::Into<pert_ui_runtime::ReadSignal<pert_ui_runtime::FieldStatus>>) -> Self
+pub fn pert_ui_runtime::Field::status(self, pert_ui_runtime::FieldStatus) -> Self
+pub fn pert_ui_runtime::Field::status_signal(self, impl core::convert::Into<pert_ui_runtime::ReadSignal<pert_ui_runtime::FieldStatus>>) -> Self
 impl core::fmt::Debug for pert_ui_runtime::Field
 pub fn pert_ui_runtime::Field::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl pert_ui_runtime::Component for pert_ui_runtime::Field
@@ -34136,7 +34143,7 @@ pub struct pert_ui_runtime::InlineReadout
 impl pert_ui_runtime::InlineReadout
 pub fn pert_ui_runtime::InlineReadout::formatted<T: core::marker::Copy + 'static>(impl core::convert::Into<pert_ui_runtime::ReadSignal<T>>, pert_ui_runtime::NumberFormat<T>) -> Self
 pub fn pert_ui_runtime::InlineReadout::label(self, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
-pub fn pert_ui_runtime::InlineReadout::new(impl core::convert::Into<pert_ui_runtime::ReadSignal<alloc::string::String>>) -> Self
+pub fn pert_ui_runtime::InlineReadout::new(impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
 pub fn pert_ui_runtime::InlineReadout::style(self, pert_ui_runtime::TextStyle) -> Self
 pub fn pert_ui_runtime::InlineReadout::unit(self, impl core::convert::Into<alloc::string::String>) -> Self
 pub fn pert_ui_runtime::InlineReadout::width_hint(self, impl core::convert::Into<alloc::string::String>) -> Self
@@ -36683,7 +36690,8 @@ impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ProfileStats
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ProfileStats
 pub struct pert_ui_runtime::ProgressBar
 impl pert_ui_runtime::ProgressBar
-pub fn pert_ui_runtime::ProgressBar::new(impl core::convert::Into<pert_ui_runtime::ReadSignal<pert_ui_runtime::ProgressStatus>>) -> Self
+pub fn pert_ui_runtime::ProgressBar::bound(impl core::convert::Into<pert_ui_runtime::ReadSignal<pert_ui_runtime::ProgressStatus>>) -> Self
+pub fn pert_ui_runtime::ProgressBar::new(pert_ui_runtime::ProgressStatus) -> Self
 impl core::fmt::Debug for pert_ui_runtime::ProgressBar
 pub fn pert_ui_runtime::ProgressBar::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl pert_ui_runtime::Component for pert_ui_runtime::ProgressBar
@@ -36764,7 +36772,8 @@ pub fn pert_ui_runtime::Property::help(self, impl core::convert::Into<pert_ui_ru
 pub fn pert_ui_runtime::Property::into_element(self) -> pert_ui_runtime::Element
 pub fn pert_ui_runtime::Property::new(impl core::convert::Into<alloc::string::String>, impl core::convert::Into<pert_ui_runtime::TextSource>, pert_ui_runtime::Element) -> Self
 pub fn pert_ui_runtime::Property::required(self, bool) -> Self
-pub fn pert_ui_runtime::Property::status(self, impl core::convert::Into<pert_ui_runtime::ReadSignal<pert_ui_runtime::FieldStatus>>) -> Self
+pub fn pert_ui_runtime::Property::status(self, pert_ui_runtime::FieldStatus) -> Self
+pub fn pert_ui_runtime::Property::status_signal(self, impl core::convert::Into<pert_ui_runtime::ReadSignal<pert_ui_runtime::FieldStatus>>) -> Self
 impl core::convert::From<pert_ui_runtime::Property> for pert_ui_runtime::Element
 pub fn pert_ui_runtime::Element::from(pert_ui_runtime::Property) -> Self
 impl core::fmt::Debug for pert_ui_runtime::Property
@@ -38586,7 +38595,8 @@ impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::SourceInspecti
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::SourceInspection
 pub struct pert_ui_runtime::Spinner
 impl pert_ui_runtime::Spinner
-pub fn pert_ui_runtime::Spinner::new(impl core::convert::Into<pert_ui_runtime::ReadSignal<bool>>) -> Self
+pub fn pert_ui_runtime::Spinner::bound(impl core::convert::Into<pert_ui_runtime::ReadSignal<bool>>) -> Self
+pub fn pert_ui_runtime::Spinner::new(bool) -> Self
 impl core::fmt::Debug for pert_ui_runtime::Spinner
 pub fn pert_ui_runtime::Spinner::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl pert_ui_runtime::Component for pert_ui_runtime::Spinner

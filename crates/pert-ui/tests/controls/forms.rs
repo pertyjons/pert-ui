@@ -213,7 +213,7 @@ fn field_messages_wrap_without_overlapping_the_next_row() {
                         TextField::new(ui.signal(String::new())),
                     ))
                     .label("Name")
-                    .status(status.read_only()),
+                    .status_signal(status.read_only()),
                 ),
                 field(&ui, "b"),
                 field(&ui, "c"),

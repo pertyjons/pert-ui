@@ -54,7 +54,7 @@ fn a_field_presents_label_help_and_status_around_any_control() {
             Field::new(Element::new("name", TextField::new(text)))
                 .label("Name")
                 .help("Shown on the title page")
-                .status(status.read_only()),
+                .status_signal(status.read_only()),
         ))
         .unwrap();
     let scene = draw(&mut ui);
@@ -141,7 +141,7 @@ fn a_bare_field_adds_nothing_and_a_message_adds_only_its_own_line() {
                 Element::new(
                     "field",
                     Field::new(Element::new("button", Button::new("Plain", |_| Ok(()))))
-                        .status(status.read_only()),
+                        .status_signal(status.read_only()),
                 ),
                 Element::new("bare", Button::new("Plain", |_| Ok(()))),
             ]),
@@ -169,7 +169,6 @@ fn a_bare_field_adds_nothing_and_a_message_adds_only_its_own_line() {
 #[test]
 fn hiding_only_the_control_collapses_its_field_without_a_layout_error() {
     let mut ui = ui();
-    let status = ui.signal(FieldStatus::error("Not allowed"));
     let root = ui
         .mount_tree(Element::new(
             "column",
@@ -179,7 +178,7 @@ fn hiding_only_the_control_collapses_its_field_without_a_layout_error() {
                     Field::new(Element::new("button", Button::new("Plain", |_| Ok(()))))
                         .label("Name")
                         .help("Help")
-                        .status(status.read_only()),
+                        .status(FieldStatus::error("Not allowed")),
                 ),
                 Element::new("after", Button::new("After", |_| Ok(()))),
             ]),
@@ -370,7 +369,7 @@ fn the_control_keeps_its_size_whatever_text_surrounds_it() {
                     Field::new(Element::new("input", TextField::new(ui.signal(String::new()))))
                         .label("A label that is considerably wider than any short message")
                         .help("A help line long enough to be wider than the text field it explains, by some margin.")
-                        .status(status.read_only()),
+                        .status_signal(status.read_only()),
                 ),
                 Element::new("bare", TextField::new(ui.signal(String::new()))),
             ]),
@@ -496,7 +495,7 @@ fn describing_a_field_again_applies_its_label_help_and_status_binding() {
             Field::new(Element::new("button", Button::new("Plain", |_| Ok(()))))
                 .label(label)
                 .help(help)
-                .status(status.read_only()),
+                .status_signal(status.read_only()),
         )
     };
     let root = ui
@@ -565,14 +564,13 @@ fn an_error_message_is_readable_on_every_neutral_background() {
         ] {
             let mut ui = ui();
             ui.theme().set_mode(mode).unwrap();
-            let status = ui.signal(FieldStatus::error("A name is required"));
             let field = Element::new(
                 "field",
                 Field::new(Element::new(
                     "name",
                     TextField::new(ui.signal(String::new())),
                 ))
-                .status(status.read_only()),
+                .status(FieldStatus::error("A name is required")),
             );
             let tree = match background {
                 None => field,
@@ -614,4 +612,213 @@ fn an_error_message_is_readable_on_every_neutral_background() {
             }
         }
     }
+}
+
+/// The semantics of the component keyed `key`.
+fn semantics(ui: &Runtime, key: &str) -> Semantics {
+    ui.inspect()
+        .components
+        .into_iter()
+        .find(|component| component.key == key)
+        .and_then(|component| component.details.semantics)
+        .unwrap()
+}
+fn text(value: &str) -> InspectValue {
+    InspectValue::Text(value.into())
+}
+
+#[test]
+fn a_field_with_a_described_status_names_its_error() {
+    let mut ui = ui();
+    let name = ui.signal(String::new());
+    let describe = |status: FieldStatus| {
+        Element::new(
+            "field",
+            Field::new(Element::new("name", TextField::new(name.clone())))
+                .label("Name")
+                .help("As on your passport")
+                .status(status),
+        )
+    };
+    let root = ui
+        .mount_tree(Element::new(
+            "column",
+            Column::new([describe(FieldStatus::error("Required"))]),
+        ))
+        .unwrap();
+    draw(&mut ui);
+    let control = semantics(&ui, "name");
+    assert!(control.invalid);
+    assert_eq!(control.description.as_deref(), Some("Required"));
+    assert_eq!(property(&ui, "field", "status"), text("error"));
+
+    ui.reconcile_children(&root, vec![describe(FieldStatus::Normal)])
+        .unwrap();
+    draw(&mut ui);
+    let control = semantics(&ui, "name");
+    assert!(!control.invalid);
+    assert_eq!(control.description.as_deref(), Some("As on your passport"));
+    assert_eq!(property(&ui, "field", "message"), text(""));
+}
+
+#[test]
+fn a_field_described_from_a_binding_to_an_equal_fixed_status_drops_the_binding() {
+    let mut ui = ui();
+    let old = ui.signal(FieldStatus::error("Required"));
+    let describe = |field: Field| Element::new("field", field.label("Name"));
+    let button = || Element::new("button", Button::new("Plain", |_| Ok(())));
+    let root = ui
+        .mount_tree(Element::new(
+            "column",
+            Column::new([describe(
+                Field::new(button()).status_signal(old.read_only()),
+            )]),
+        ))
+        .unwrap();
+    draw(&mut ui);
+    ui.reconcile_children(
+        &root,
+        vec![describe(
+            Field::new(button()).status(FieldStatus::error("Required")),
+        )],
+    )
+    .unwrap();
+    draw(&mut ui);
+    assert_eq!(property(&ui, "field", "status"), text("error"));
+    old.set(FieldStatus::Normal).unwrap();
+    let report = ui.flush(Duration::ZERO).unwrap();
+    assert_eq!(report.components_updated, 0, "the old binding is dropped");
+    assert_eq!(property(&ui, "field", "status"), text("error"));
+}
+
+/// Describes the form's children for a field handle.
+type Describe = Box<dyn Fn(&FieldHandle) -> Vec<Element>>;
+/// A form field and a Submit button that records whether
+/// `FormFields::focus_first_error` found a field to focus.
+struct Submitting {
+    root: WidgetId,
+    handle: FieldHandle,
+    found: Rc<RefCell<Option<bool>>>,
+    children: Describe,
+}
+fn form_and_submit(
+    ui: &mut Runtime,
+    field: impl Fn(&FieldHandle) -> Field + 'static,
+) -> Submitting {
+    let form = FormFields::new(ui);
+    let handle = form.field("name").unwrap();
+    let found: Rc<RefCell<Option<bool>>> = Rc::default();
+    let record = found.clone();
+    let children = move |handle: &FieldHandle| {
+        let (form, found) = (form.clone(), record.clone());
+        vec![
+            Element::new("field", field(handle)),
+            Element::new(
+                "submit",
+                Button::new("Submit", move |cx| {
+                    *found.borrow_mut() = Some(form.focus_first_error(cx)?);
+                    Ok(())
+                }),
+            ),
+        ]
+    };
+    let root = ui
+        .mount_tree(Element::new("column", Column::new(children(&handle))))
+        .unwrap();
+    draw(ui);
+    Submitting {
+        root,
+        handle,
+        found,
+        children: Box::new(children),
+    }
+}
+
+#[test]
+fn a_fixed_status_replacing_a_form_no_longer_takes_its_errors_focus() {
+    let mut ui = ui();
+    let name = ui.signal(String::new());
+    let fixed = Rc::new(RefCell::new(false));
+    let use_fixed = fixed.clone();
+    let Submitting {
+        root,
+        handle,
+        found,
+        children,
+    } = form_and_submit(&mut ui, move |handle| {
+        let field = Field::new(Element::new("name", TextField::new(name.clone())));
+        if *use_fixed.borrow() {
+            field.status(FieldStatus::error("Required"))
+        } else {
+            field.form(handle)
+        }
+    });
+    handle.set(FieldStatus::error("Required")).unwrap();
+    let submit = find(&ui, &root, "submit").unwrap();
+    // Through the form, Submit focuses the field's control.
+    press(&mut ui, &submit);
+    assert_eq!(*found.borrow(), Some(true));
+    assert_eq!(ui.focused(), find(&ui, &root, "name"));
+
+    *fixed.borrow_mut() = true;
+    ui.reconcile_children(&root, children(&handle)).unwrap();
+    draw(&mut ui);
+    assert_eq!(property(&ui, "field", "status"), text("error"));
+    press(&mut ui, &submit);
+    assert_eq!(*found.borrow(), Some(false), "the target is cleared");
+    assert_eq!(ui.focused(), Some(submit), "focus stays where it was");
+}
+
+#[test]
+fn status_builders_replace_each_other_and_the_form() {
+    fn warning() -> FieldStatus {
+        FieldStatus::warning("Check")
+    }
+    fn button() -> Element {
+        Element::new("button", Button::new("Plain", |_| Ok(())))
+    }
+
+    // A fixed status after a binding: the binding is gone.
+    let mut ui = self::ui();
+    let status = ui.signal(FieldStatus::error("Bound"));
+    ui.mount_tree(Element::new(
+        "field",
+        Field::new(button())
+            .status_signal(status.read_only())
+            .status(warning()),
+    ))
+    .unwrap();
+    draw(&mut ui);
+    assert_eq!(property(&ui, "field", "message"), text("Check"));
+    status.set(FieldStatus::error("Later")).unwrap();
+    draw(&mut ui);
+    assert_eq!(property(&ui, "field", "message"), text("Check"));
+
+    // A binding after a fixed status: the binding shows, and so do its writes.
+    let mut ui = self::ui();
+    let status = ui.signal(FieldStatus::error("Bound"));
+    ui.mount_tree(Element::new(
+        "field",
+        Field::new(button())
+            .status(warning())
+            .status_signal(status.read_only()),
+    ))
+    .unwrap();
+    draw(&mut ui);
+    assert_eq!(property(&ui, "field", "message"), text("Bound"));
+    status.set(FieldStatus::error("Later")).unwrap();
+    draw(&mut ui);
+    assert_eq!(property(&ui, "field", "message"), text("Later"));
+
+    // A fixed status after a form: the form's status and target are gone.
+    let mut ui = self::ui();
+    let submitting = form_and_submit(&mut ui, move |handle| {
+        Field::new(button()).form(handle).status(warning())
+    });
+    submitting.handle.set(FieldStatus::error("Form")).unwrap();
+    draw(&mut ui);
+    assert_eq!(property(&ui, "field", "message"), text("Check"));
+    let submit = find(&ui, &submitting.root, "submit").unwrap();
+    press(&mut ui, &submit);
+    assert_eq!(*submitting.found.borrow(), Some(false));
 }

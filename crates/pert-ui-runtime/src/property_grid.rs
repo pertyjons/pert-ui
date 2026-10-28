@@ -7,7 +7,7 @@ use std::{
 };
 
 /// One labeled row of a [`PropertyGrid`]: an application-supplied editor
-/// with its label, optional help text and an optional status binding.
+/// with its label, optional help text and an optional status.
 ///
 /// The key is the row's identity: it keys the editor among the grid's
 /// children, so an editor keeps its focus, draft and other local state while
@@ -63,10 +63,57 @@ impl Property {
         self.field = self.field.help(help);
         self
     }
-    /// Follows an application-owned status binding, as [`Field::status`].
-    pub fn status(mut self, status: impl Into<ReadSignal<FieldStatus>>) -> Self {
-        let status: ReadSignal<FieldStatus> = status.into();
+    /// Shows `status` below the editor, as [`Field::status`]: described, it
+    /// replaces an earlier status, status binding or form.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
+    /// use std::time::Duration;
+    /// let mut ui = Runtime::new();
+    /// let editor = TextField::new(ui.signal(String::from("Ch 1"))).key("input");
+    /// let row = Property::new("name", "Name", editor)
+    ///     .status(FieldStatus::warning("Shortened in the mixer"));
+    /// ui.mount_tree(PropertyGrid::new([row]).key("grid"))?;
+    /// ui.flush(Duration::ZERO)?;
+    /// let input = ui.inspect().components.into_iter().find(|c| c.key == "input").unwrap();
+    /// let semantics = input.details.semantics.unwrap();
+    /// assert_eq!(semantics.description.as_deref(), Some("Shortened in the mixer"));
+    /// assert!(semantics.warning);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn status(mut self, status: FieldStatus) -> Self {
         self.field = self.field.status(status);
+        self
+    }
+    /// Follows an application-owned status binding, as
+    /// [`Field::status_signal`], replacing an earlier status, status binding
+    /// or form.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
+    /// use std::time::Duration;
+    /// let mut ui = Runtime::new();
+    /// let (name, checked) = (ui.signal(String::from("Ch 1")), ui.signal(FieldStatus::Normal));
+    /// let editor = || TextField::new(name.clone()).key("input");
+    /// let grid = |row: Property| PropertyGrid::new([row]).key("grid");
+    /// let row = Property::new("name", "Name", editor()).status(FieldStatus::warning("Check"));
+    /// let root = ui.mount_tree(Column::new([grid(row)]).key("root"))?;
+    /// ui.flush(Duration::ZERO)?;
+    ///
+    /// let row = Property::new("name", "Name", editor()).status_signal(checked.read_only());
+    /// ui.reconcile_children(&root, vec![grid(row)])?;
+    /// checked.set(FieldStatus::error("Required"))?;
+    /// ui.flush(Duration::ZERO)?;
+    /// let input = ui.inspect().components.into_iter().find(|c| c.key == "input").unwrap();
+    /// let semantics = input.details.semantics.unwrap();
+    /// assert_eq!(semantics.description.as_deref(), Some("Required"));
+    /// assert!(semantics.invalid);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn status_signal(mut self, status: impl Into<ReadSignal<FieldStatus>>) -> Self {
+        self.field = self.field.status_signal(status);
         self
     }
     /// Marks the row's editor as required, as [`Field::required`]: " *"

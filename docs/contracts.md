@@ -672,6 +672,28 @@ The paths are distinct:
 | Live data sources | Bounded, possibly lossy producer data for presentation. Consumers observe freshness, sequence and gaps; it is never an edit authority. |
 | Described value with a change callback ([controlled controls](#controlled-controls)) | The application's model. The value arrives in the control's description and changes only by a new description; the control reports each user change as a proposal through its callback and never changes what it shows on its own. |
 
+**Display controls.** A control that presents one application value and
+writes nothing chooses the value's source at construction, as a choice
+control chooses its options' ([choice sources](#choice-sources)): `new`
+takes the value, which applies when the description is adopted and
+changes only with a new description, so a collection row describes its
+record's value directly; `bound` follows a `ReadSignal` from the
+control's next update, and a same-key description with the same binding
+keeps what was read. `ProgressBar`, `Spinner`, `ColorSwatch` and `Image`
+have both. A control that presents text takes a `TextSource`, which
+covers fixed and bound text (`Label::new`, `InlineReadout::new`);
+`InlineReadout::formatted` formats a bound number. A presentation builder
+takes the fixed value under its own name and a binding under its
+`_signal` name (`Field::status` and `Field::status_signal`,
+`Property::status` and `Property::status_signal`,
+`Container::background_role` and `Container::background_role_signal`),
+each replacing the other. `Permission`-typed builders follow the
+permission rules instead; bindings that switch presence or work
+(`View::visible_signal`, `ToolGroup::visible_signal`,
+`Banner::visible_signal`, `LevelMeter::running_signal`,
+`Trace::running_signal`) and an action row's mark
+(`MenuItem::checked_signal`, `selected_signal`) have no fixed form.
+
 ### Controlled controls
 
 `Checkbox::controlled`, `Toggle::controlled` and `InlineText::controlled` take

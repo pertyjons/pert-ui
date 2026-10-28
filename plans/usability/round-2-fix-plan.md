@@ -1771,3 +1771,35 @@ plan closes.
   `agrees_with_selector(.., &["parts"], ..)` and ran the test (passes),
   fmt and the runtime's test Clippy. Codex's recheck: both points resolved,
   ready. **P5 done.**
+
+- **P6 Display controls take values (0.3.81), 2026-10-28.** Implemented by
+  a fresh agent from the approved design (`round-2-design-P6.md`, revision
+  3): `ProgressBar::new`/`bound`, `Spinner::new`/`bound`,
+  `InlineReadout::new(impl Into<TextSource>)` with fixed text applied at
+  adoption, `Field::status`/`status_signal` and the same on `Property`,
+  over a crate-private `ValueSource<T>`; `ProgressStatus::Failed` and
+  `Cancelled` carry the reached fraction, `ProgressStatus::fraction`
+  (P6-D1); same kind: the readout validates bound, role and formatted
+  text before committing it (`Fixed:` entry). Every manifest consumer
+  migrated, plus `foundation/vocabulary.rs:167`, which the manifest's
+  search rule found and its table omitted; P4's quiet-interval example
+  and spinner test moved to `bound` and `new(true)`. **Deviations,
+  accepted by the author:** L2's "Not required" exception is extended on
+  the prelude pages, not by editing the approved L2 design; the listing
+  shows methods once under the root path (as `cargo-public-api` lists
+  impls); `status_signal` and `form` reset the shown status to `Normal`
+  until the first update; a same-key readout with the same binding or role
+  now reconciles to no invalidation (CHANGELOG); the gallery's live Fail
+  and Cancel captions say "where it was". Mutation evidence
+  (`target/p6-evidence/`): every new-behavior test failed under its
+  compiling mutation (a first T9c mutation sat on an unreached path and
+  survived; the corrected one fails, both outputs kept). No fixture check
+  (the task 4 fixture uses none of these). Gate (fresh): fmt, workspace
+  Clippy, workspace tests, the five headless sessions and the headless
+  gallery, doctests, rustdoc `-D warnings`, the diagnostics snapshots, the
+  API listing gate (runtime listings only), `git diff --check`. **Native
+  evidence: missing** — the Linux hand check of the gallery's Controls ›
+  Progress page (fixed Failed and Cancelled at three of eight, the live
+  bar's reached fill) is recorded in `docs/verification.md` as the
+  maintainer's, not yet done; Windows and macOS missing. Codex review:
+  pending.

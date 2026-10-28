@@ -643,7 +643,7 @@ fn help_and_status_appear_in_the_editor_column() -> TestResult {
         "grid",
         PropertyGrid::new([Property::new("name", "Name", button("name-editor"))
             .help("Shown in lists")
-            .status(status.read_only())]),
+            .status_signal(status.read_only())]),
     ))?;
     flush(&mut ui);
     assert_eq!(
@@ -661,6 +661,22 @@ fn help_and_status_appear_in_the_editor_column() -> TestResult {
     let field = details(&ui, "name").semantics.unwrap();
     assert!(field.invalid);
     assert_eq!(field.description.as_deref(), Some("Required"));
+    Ok(())
+}
+
+#[test]
+fn a_row_with_a_described_status_describes_its_editor() -> TestResult {
+    let mut ui = ui();
+    ui.mount_tree(Element::new(
+        "grid",
+        PropertyGrid::new([Property::new("name", "Name", button("name-editor"))
+            .help("Shown in lists")
+            .status(FieldStatus::warning("Shortened in the mixer"))]),
+    ))?;
+    flush(&mut ui);
+    let field = details(&ui, "name").semantics.unwrap();
+    assert_eq!(field.description.as_deref(), Some("Shortened in the mixer"));
+    assert!(field.warning && !field.invalid);
     Ok(())
 }
 

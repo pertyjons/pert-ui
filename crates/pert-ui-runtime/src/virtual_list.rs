@@ -64,8 +64,18 @@ pub trait ListItems {
     /// a resize that mounts or unmounts another row does. A row that stays
     /// mounted receives the new description on its retained components.
     /// `build` gets no state owner, so a control in the row shows the
-    /// record's value in one of three ways:
+    /// record's value in one of four ways:
     ///
+    /// - **Described.** A display control takes the record's value itself:
+    ///   [`ProgressBar::new(record.status)`](crate::ProgressBar::new),
+    ///   [`Spinner::new`](crate::Spinner::new),
+    ///   [`ColorSwatch::new`](crate::ColorSwatch::new),
+    ///   [`Image::new`](crate::Image::new), text through
+    ///   [`Label::new`](crate::Label::new) or
+    ///   [`InlineReadout::new`](crate::InlineReadout::new), and a status
+    ///   through [`Field::status`](crate::Field::status). It binds and writes
+    ///   nothing, so after the source is replaced the new description shows
+    ///   the changed record after the next flush.
     /// - **Controlled.** [`Checkbox::controlled`](crate::Checkbox::controlled),
     ///   [`Toggle::controlled`](crate::Toggle::controlled) and
     ///   [`InlineText::controlled`](crate::InlineText::controlled) take the
@@ -74,7 +84,7 @@ pub trait ListItems {
     ///   nothing, so describing the row again with the same value keeps an
     ///   open draft and a pending press, and the changed record shows after
     ///   the next flush. Use this form for these controls.
-    /// - **Per row.** For a control without a controlled form, create the
+    /// - **Per row.** For an editing control without a controlled form, create the
     ///   binding here with [`Signal::sibling`] from a
     ///   signal the source holds, and write changes back to the application's
     ///   records from the control's callback. Creating a signal is not a write,
@@ -83,7 +93,8 @@ pub trait ListItems {
     ///   ends its open draft when its binding changes, so with this form a
     ///   change to any record, or a scroll that mounts another row, discards
     ///   what the user is typing.
-    /// - **Retained.** Return a row component that creates its binding once,
+    /// - **Retained.** For an editing control without a controlled form,
+    ///   return a row component that creates its binding once,
     ///   in its first update, and requests the control as its child with
     ///   [`UpdateContext::request_children`]. It keeps the record's value from
     ///   each new description in [`Component::reconcile`] and, after a

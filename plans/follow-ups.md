@@ -65,6 +65,10 @@ until then if one is being written.
   inputs, and `TextField` have no controlled form; each is considered only
   with its refusal, presentation and callback timing specified, and
   `TextField`'s normalizer contract would then widen as `InlineText`'s did.
+  Round 2's evidence: F16 recurred only for display controls, which round 2
+  part P6 gave described values (`ProgressBar::new`, `Spinner::new`,
+  `Field::status`); no round 2 run needed an editing control without a
+  controlled form per row.
 
 - **Refusal for other captioned controls.** From
   [plan-audit-repairs](plan-audit-repairs.md) slice 2: `Label` and the

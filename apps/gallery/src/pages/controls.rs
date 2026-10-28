@@ -982,34 +982,32 @@ pub(crate) fn progress(ui: &Runtime) -> Element {
     // task: it spins exactly while the status says the task is running.
     let busy = ui.signal(false);
     let always = ui.signal(false);
-    let action = |key: &str, title: &str, next: fn(u64) -> (ProgressStatus, u64, String)| {
-        let (status, done, caption) = (status.clone(), done.clone(), caption.clone());
-        let busy = busy.clone();
-        Element::new(
-            key,
-            Button::new(title, move |_| {
-                let (next_status, next_done, text) = next(done.get()?);
-                done.set(next_done)?;
-                busy.set(next_status.is_running())?;
-                status.set(next_status)?;
-                caption.set(text)
-            }),
-        )
-    };
+    // Each action reads the steps done and the current status, so ending the
+    // task keeps the fraction it reached.
+    let action =
+        |key: &str, title: &str, next: fn(u64, ProgressStatus) -> (ProgressStatus, u64, String)| {
+            let (status, done, caption) = (status.clone(), done.clone(), caption.clone());
+            let busy = busy.clone();
+            Element::new(
+                key,
+                Button::new(title, move |_| {
+                    let (next_status, next_done, text) = next(done.get()?, status.get()?);
+                    done.set(next_done)?;
+                    busy.set(next_status.is_running())?;
+                    status.set(next_status)?;
+                    caption.set(text)
+                }),
+            )
+        };
+    // A status the page never changes is described, not bound.
     let fixed = |key: &str, title: &str, help: &str, value: ProgressStatus| {
-        let field = Field::new(Element::new(
-            format!("{key}-bar"),
-            ProgressBar::new(ui.signal(value).read_only()),
-        ))
-        .label(title)
-        .help(help);
+        let field = Field::new(Element::new(format!("{key}-bar"), ProgressBar::new(value)))
+            .label(title)
+            .help(help);
         Element::new(
             key,
-            if value == ProgressStatus::Failed {
-                field.status(
-                    ui.signal(FieldStatus::error("The disk is full"))
-                        .read_only(),
-                )
+            if matches!(value, ProgressStatus::Failed(_)) {
+                field.status(FieldStatus::error("The disk is full"))
             } else {
                 field
             },
@@ -1028,28 +1026,28 @@ pub(crate) fn progress(ui: &Runtime) -> Element {
                     "progress-live-field",
                     Field::new(Element::new(
                         "progress-live-bar",
-                        ProgressBar::new(status.read_only()),
+                        ProgressBar::bound(status.read_only()),
                     ))
                     .label("Export"),
                 ),
                 Element::new(
                     "progress-caption-row",
                     Row::new([
-                        Element::new("progress-spinner", Spinner::new(busy.read_only())),
+                        Element::new("progress-spinner", Spinner::bound(busy.read_only())),
                         Element::new("progress-caption", Label::new(caption.read_only())),
                     ]),
                 ),
                 Element::new(
                     "progress-actions",
                     Wrap::new([
-                        action("progress-start", "Start", |_| {
+                        action("progress-start", "Start", |_, _| {
                             (
                                 ProgressStatus::Indeterminate,
                                 0,
                                 "Running, extent unknown. Animating.".to_owned(),
                             )
                         }),
-                        action("progress-step", "Step", |done| {
+                        action("progress-step", "Step", |done, _| {
                             let done = (done + 1).min(STEPS);
                             (
                                 ProgressStatus::of(done, STEPS),
@@ -1059,16 +1057,24 @@ pub(crate) fn progress(ui: &Runtime) -> Element {
                                 ),
                             )
                         }),
-                        action("progress-succeed", "Succeed", |done| {
+                        action("progress-succeed", "Succeed", |done, _| {
                             (ProgressStatus::Succeeded, done, "Succeeded.".to_owned())
                         }),
-                        action("progress-fail", "Fail", |done| {
-                            (ProgressStatus::Failed, done, "Failed.".to_owned())
+                        action("progress-fail", "Fail", |done, current| {
+                            (
+                                ProgressStatus::Failed(current.fraction()),
+                                done,
+                                "Failed where it was.".to_owned(),
+                            )
                         }),
-                        action("progress-cancel", "Cancel", |done| {
-                            (ProgressStatus::Cancelled, done, "Cancelled.".to_owned())
+                        action("progress-cancel", "Cancel", |done, current| {
+                            (
+                                ProgressStatus::Cancelled(current.fraction()),
+                                done,
+                                "Cancelled where it was.".to_owned(),
+                            )
                         }),
-                        action("progress-reset", "Reset", |_| {
+                        action("progress-reset", "Reset", |_, _| {
                             (
                                 ProgressStatus::Idle,
                                 0,
@@ -1090,7 +1096,7 @@ pub(crate) fn progress(ui: &Runtime) -> Element {
                 Element::new(
                     "spinner-row",
                     Row::new([
-                        Element::new("spinner-demo", Spinner::new(always.read_only())),
+                        Element::new("spinner-demo", Spinner::bound(always.read_only())),
                         Element::new("spinner-toggle", Toggle::new(always.clone(), "Busy")),
                     ]),
                 ),
@@ -1121,14 +1127,26 @@ pub(crate) fn progress(ui: &Runtime) -> Element {
                 fixed(
                     "progress-failed",
                     "Failed",
-                    "The reason is the application's to present.",
-                    ProgressStatus::Failed,
+                    "A full track in the Error role, for a fraction nobody knows. The reason is the application's to present.",
+                    ProgressStatus::Failed(None),
+                ),
+                fixed(
+                    "progress-failed-partial",
+                    "Failed at three of eight",
+                    "The track filled to the fraction the task reached, in the Error role.",
+                    ProgressStatus::Failed(ProgressStatus::of(3, 8).fraction()),
                 ),
                 fixed(
                     "progress-cancelled",
                     "Cancelled",
                     "A full track in the Muted role.",
-                    ProgressStatus::Cancelled,
+                    ProgressStatus::Cancelled(None),
+                ),
+                fixed(
+                    "progress-cancelled-partial",
+                    "Cancelled at three of eight",
+                    "The track filled to the fraction the task reached, in the Muted role.",
+                    ProgressStatus::Cancelled(ProgressStatus::of(3, 8).fraction()),
                 ),
             ],
         ),

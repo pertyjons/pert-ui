@@ -273,17 +273,17 @@ fn rebuilt_choice_controls_gain_a_third_choice() -> TestResult {
 #[test]
 fn a_rebound_progress_bar_follows_the_new_status() -> TestResult {
     let mut ui = Runtime::new();
-    let failed = ui.signal(ProgressStatus::Failed);
+    let failed = ui.signal(ProgressStatus::Failed(None));
     let done = ui.signal(ProgressStatus::Succeeded);
     let (root, bar) = mount(
         &mut ui,
-        Element::new("bar", ProgressBar::new(failed.read_only())),
+        Element::new("bar", ProgressBar::bound(failed.read_only())),
     )?;
     redescribe(
         &mut ui,
         &root,
         &bar,
-        Element::new("bar", ProgressBar::new(done.read_only())),
+        Element::new("bar", ProgressBar::bound(done.read_only())),
     )?;
     assert_eq!(
         property(&ui, "bar", "status")?,
@@ -299,14 +299,14 @@ fn a_rebound_spinner_follows_the_new_busy_signal() -> TestResult {
     let busy = ui.signal(true);
     let (root, spinner) = mount(
         &mut ui,
-        Element::new("spinner", Spinner::new(idle.read_only())),
+        Element::new("spinner", Spinner::bound(idle.read_only())),
     )?;
     assert_eq!(property(&ui, "spinner", "busy")?, InspectValue::Bool(false));
     redescribe(
         &mut ui,
         &root,
         &spinner,
-        Element::new("spinner", Spinner::new(busy.read_only())),
+        Element::new("spinner", Spinner::bound(busy.read_only())),
     )?;
     assert_eq!(property(&ui, "spinner", "busy")?, InspectValue::Bool(true));
     // The replaced binding no longer drives it; the new one does.
@@ -396,5 +396,408 @@ fn a_redescribed_readout_adopts_its_reader_and_keeps_text_mode() -> TestResult {
         InspectValue::Bool(false),
         "changed text leaves text mode"
     );
+    Ok(())
+}
+
+/// A display control's source: a fixed value or a binding holding one.
+#[derive(Clone, Copy, Debug)]
+enum Source<T> {
+    Fixed(T),
+    Bound(T),
+}
+
+/// Re-describes a display control from `before` to `after` through
+/// `check_redescription`, checks the shown value, and, after a change from a
+/// binding to a fixed value, that a write to the old binding updates nothing.
+fn redescribe_display<T: Clone + PartialEq + 'static>(
+    (before, after): (Source<T>, Source<T>),
+    describe: fn(&Runtime, Source<T>, Option<&Signal<T>>) -> Element,
+    (property_name, shown): (&str, InspectValue),
+    other: T,
+) -> TestResult {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(600.0, 400.0, 1.0)?)?;
+    let old = match &before {
+        Source::Bound(value) => Some(ui.signal(value.clone())),
+        Source::Fixed(_) => None,
+    };
+    let new = match &after {
+        Source::Bound(value) => Some(ui.signal(value.clone())),
+        Source::Fixed(_) => None,
+    };
+    let first = describe(&ui, before.clone(), old.as_ref());
+    let second = describe(&ui, after.clone(), new.as_ref());
+    let fresh = describe(&ui, after.clone(), new.as_ref());
+    let result = check_redescription(&mut ui, first, second, fresh)?;
+    let key = ui.key(&result.component)?.to_owned();
+    assert_eq!(property(&ui, &key, property_name)?, shown);
+    if let (Some(old), Source::Fixed(_)) = (&old, &after) {
+        old.set(other)?;
+        let report = ui.flush(ui.now())?;
+        assert_eq!(report.components_updated, 0, "the old binding is dropped");
+        assert_eq!(property(&ui, &key, property_name)?, shown);
+    }
+    Ok(())
+}
+
+fn describe_bar(
+    _: &Runtime,
+    source: Source<ProgressStatus>,
+    signal: Option<&Signal<ProgressStatus>>,
+) -> Element {
+    let bar = match (source, signal) {
+        (Source::Fixed(status), _) => ProgressBar::new(status),
+        (Source::Bound(_), Some(signal)) => ProgressBar::bound(signal.read_only()),
+        (Source::Bound(_), None) => unreachable!("a bound case has its signal"),
+    };
+    Element::new("bar", bar)
+}
+
+fn describe_spinner(_: &Runtime, source: Source<bool>, signal: Option<&Signal<bool>>) -> Element {
+    let spinner = match (source, signal) {
+        (Source::Fixed(busy), _) => Spinner::new(busy),
+        (Source::Bound(_), Some(signal)) => Spinner::bound(signal.read_only()),
+        (Source::Bound(_), None) => unreachable!("a bound case has its signal"),
+    };
+    Element::new("spinner", spinner)
+}
+
+#[test]
+fn a_progress_bar_adopts_every_change_of_source() -> TestResult {
+    use ProgressStatus::{Failed, Succeeded};
+    let quarter = ProgressStatus::of(1, 4);
+    let status = |name: &str| ("status", InspectValue::Text(name.into()));
+    for (change, shown) in [
+        (
+            (Source::Fixed(quarter), Source::Fixed(Succeeded)),
+            "succeeded",
+        ),
+        (
+            (Source::Fixed(quarter), Source::Bound(Succeeded)),
+            "succeeded",
+        ),
+        (
+            (Source::Bound(quarter), Source::Fixed(Succeeded)),
+            "succeeded",
+        ),
+        // The shown value stays equal, but the binding is still dropped.
+        (
+            (Source::Bound(Failed(None)), Source::Fixed(Failed(None))),
+            "failed",
+        ),
+    ] {
+        redescribe_display(change, describe_bar, status(shown), ProgressStatus::Idle)
+            .map_err(|error| format!("{change:?}: {error}"))?;
+    }
+    Ok(())
+}
+
+#[test]
+fn a_spinner_adopts_every_change_of_source() -> TestResult {
+    let busy = |busy: bool| ("busy", InspectValue::Bool(busy));
+    for (change, shown) in [
+        ((Source::Fixed(true), Source::Fixed(false)), false),
+        ((Source::Fixed(true), Source::Bound(false)), false),
+        ((Source::Bound(false), Source::Fixed(true)), true),
+        ((Source::Bound(true), Source::Fixed(true)), true),
+    ] {
+        let other = match change.0 {
+            Source::Bound(value) | Source::Fixed(value) => !value,
+        };
+        redescribe_display(change, describe_spinner, busy(shown), other)
+            .map_err(|error| format!("{change:?}: {error}"))?;
+    }
+    Ok(())
+}
+
+#[test]
+fn fixed_values_apply_when_the_description_is_adopted() -> TestResult {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(600.0, 400.0, 1.0)?)?;
+    let name = ui.signal(String::new());
+    let children = |status: ProgressStatus, busy: bool, field: FieldStatus| {
+        vec![
+            Element::new("bar", ProgressBar::new(status)),
+            Element::new("spinner", Spinner::new(busy)),
+            Element::new(
+                "field",
+                Field::new(Element::new("name", TextField::new(name.clone()))).status(field),
+            ),
+        ]
+    };
+    let check = |ui: &Runtime, status: &str, busy: bool, field: (&str, &str)| -> TestResult {
+        assert_eq!(
+            property(ui, "bar", "status")?,
+            InspectValue::Text(status.into())
+        );
+        assert_eq!(property(ui, "spinner", "busy")?, InspectValue::Bool(busy));
+        assert_eq!(
+            property(ui, "field", "status")?,
+            InspectValue::Text(field.0.into())
+        );
+        assert_eq!(
+            property(ui, "field", "message")?,
+            InspectValue::Text(field.1.into())
+        );
+        Ok(())
+    };
+    let root = ui.mount_tree(Element::new(
+        "root",
+        Column::new(children(
+            ProgressStatus::of(1, 4),
+            true,
+            FieldStatus::error("Required"),
+        )),
+    ))?;
+    // Before any flush: the constructors applied the values.
+    check(&ui, "determinate", true, ("error", "Required"))?;
+    frame(&mut ui);
+    check(&ui, "determinate", true, ("error", "Required"))?;
+
+    ui.reconcile_children(
+        &root,
+        children(
+            ProgressStatus::Succeeded,
+            false,
+            FieldStatus::warning("Check"),
+        ),
+    )?;
+    // Before any flush: reconciliation applied them.
+    check(&ui, "succeeded", false, ("warning", "Check"))?;
+    frame(&mut ui);
+    check(&ui, "succeeded", false, ("warning", "Check"))?;
+    Ok(())
+}
+
+fn readout_text(
+    ui: &Runtime,
+) -> Result<(InspectValue, InspectValue, Option<SemanticValue>), Error> {
+    Ok((
+        property(ui, "readout", "text")?,
+        property(ui, "readout", "display_value")?,
+        details(ui, "readout")?.semantics.and_then(|s| s.value),
+    ))
+}
+fn shows(text: &str) -> (InspectValue, InspectValue, Option<SemanticValue>) {
+    (
+        InspectValue::Text(text.into()),
+        InspectValue::Text(text.into()),
+        Some(SemanticValue::Text(text.into())),
+    )
+}
+fn is_invalid_text(error: &RuntimeError) -> bool {
+    matches!(error, RuntimeError::TextEdit(TextEditError::InvalidText))
+}
+
+#[test]
+fn fixed_readout_text_applies_when_the_description_is_adopted() -> TestResult {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(600.0, 400.0, 1.0)?)?;
+    let describe = |text: TextSource| {
+        vec![Element::new(
+            "readout",
+            InlineReadout::new(text).label("Pos"),
+        )]
+    };
+    let root = ui.mount_tree(Element::new(
+        "root",
+        Row::new(describe("001:01:000".into())),
+    ))?;
+    assert_eq!(
+        readout_text(&ui)?,
+        shows("001:01:000"),
+        "before the first flush"
+    );
+    frame(&mut ui);
+    let readout = ui.children(&root)?[0].clone();
+    ui.reconcile_children(&root, describe("002:01:000".into()))?;
+    assert_eq!(readout_text(&ui)?, shows("002:01:000"), "before the flush");
+    frame(&mut ui);
+    assert_eq!(readout_text(&ui)?, shows("002:01:000"));
+
+    // Text mode stays open for an equal text and ends for a changed one.
+    ui.focus(&readout)?;
+    assert_eq!(
+        ui.text_command(&readout, TextCommand::BeginEdit)?,
+        TextCommandOutcome::Handled
+    );
+    frame(&mut ui);
+    let editing = |ui: &Runtime| property(ui, "readout", "text_editing");
+    assert_eq!(editing(&ui)?, InspectValue::Bool(true));
+    ui.reconcile_children(&root, describe("002:01:000".into()))?;
+    frame(&mut ui);
+    assert_eq!(editing(&ui)?, InspectValue::Bool(true), "an equal text");
+    ui.reconcile_children(&root, describe("003:01:000".into()))?;
+    frame(&mut ui);
+    assert_eq!(editing(&ui)?, InspectValue::Bool(false), "a changed text");
+    assert_eq!(readout_text(&ui)?, shows("003:01:000"));
+
+    // Text that cannot be shown is refused at adoption: the last valid text
+    // stays, and every flush reports the refusal until a valid one replaces it.
+    ui.reconcile_children(&root, describe("\u{7}".into()))?;
+    assert_eq!(readout_text(&ui)?, shows("003:01:000"));
+    let error = ui.flush(ui.now()).unwrap_err();
+    assert!(is_invalid_text(&error), "{error:?}");
+    let error = ui.flush(ui.now()).unwrap_err();
+    assert!(is_invalid_text(&error), "{error:?}");
+    assert_eq!(readout_text(&ui)?, shows("003:01:000"));
+    ui.reconcile_children(&root, describe("004:01:000".into()))?;
+    ui.flush(ui.now())?;
+    assert_eq!(readout_text(&ui)?, shows("004:01:000"));
+
+    // Rich content shows as its plain text.
+    ui.reconcile_children(&root, describe(RichText::from("12").text(" ms").into()))?;
+    frame(&mut ui);
+    assert_eq!(readout_text(&ui)?, shows("12 ms"));
+    assert_eq!(ui.children(&root)?[0], readout, "reconciled, not remounted");
+    Ok(())
+}
+
+#[test]
+fn a_readout_follows_rich_bindings_and_string_roles() -> TestResult {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(600.0, 400.0, 1.0)?)?;
+    let first = ui.signal(RichText::from("a"));
+    let second = ui.signal(RichText::from("b"));
+    let describe = |text: TextSource| vec![Element::new("readout", InlineReadout::new(text))];
+    let root = ui.mount_tree(Element::new("root", Row::new(describe((&first).into()))))?;
+    frame(&mut ui);
+    assert_eq!(readout_text(&ui)?, shows("a"));
+    first.set(RichText::from("one").text(" two"))?;
+    frame(&mut ui);
+    assert_eq!(readout_text(&ui)?, shows("one two"));
+
+    // Another binding replaces the first, whose writes no longer show.
+    ui.reconcile_children(&root, describe((&second).into()))?;
+    frame(&mut ui);
+    assert_eq!(readout_text(&ui)?, shows("b"));
+    first.set(RichText::from("ignored"))?;
+    frame(&mut ui);
+    assert_eq!(readout_text(&ui)?, shows("b"));
+    second.set(RichText::from("three"))?;
+    frame(&mut ui);
+    assert_eq!(readout_text(&ui)?, shows("three"));
+
+    // A role follows the installed string table.
+    let role = StringRole::SearchPlaceholder;
+    ui.reconcile_children(&root, describe(role.into()))?;
+    frame(&mut ui);
+    assert_eq!(readout_text(&ui)?, shows(UiStrings::english().text(role)));
+    ui.ui_settings()
+        .set_strings(UiStrings::english().with_text(role, "Suchen")?)?;
+    frame(&mut ui);
+    assert_eq!(readout_text(&ui)?, shows("Suchen"));
+    Ok(())
+}
+
+/// Mounts a readout, opens its text mode, and returns the root.
+fn readout_in_text_mode(ui: &mut Runtime, readout: InlineReadout) -> Result<WidgetId, Error> {
+    ui.set_viewport(Viewport::new(600.0, 400.0, 1.0)?)?;
+    let root = ui.mount_tree(Element::new(
+        "root",
+        Row::new([Element::new("readout", readout)]),
+    ))?;
+    frame(ui);
+    let id = ui.children(&root)?[0].clone();
+    ui.focus(&id)?;
+    ui.text_command(&id, TextCommand::BeginEdit)?;
+    frame(ui);
+    assert_eq!(
+        property(ui, "readout", "text_editing")?,
+        InspectValue::Bool(true)
+    );
+    Ok(root)
+}
+
+#[test]
+fn a_refused_bound_text_keeps_the_last_valid_presentation() -> TestResult {
+    let mut ui = Runtime::new();
+    let text = ui.signal(String::from("ok"));
+    readout_in_text_mode(&mut ui, InlineReadout::new(text.read_only()))?;
+    text.set("bad\u{7}".into())?;
+    let error = ui.flush(ui.now()).unwrap_err();
+    assert!(is_invalid_text(&error), "{error:?}");
+    assert_eq!(readout_text(&ui)?, shows("ok"));
+    assert_eq!(
+        property(&ui, "readout", "text_editing")?,
+        InspectValue::Bool(true),
+        "a refused text keeps text mode"
+    );
+    text.set("fine".into())?;
+    ui.flush(ui.now())?;
+    assert_eq!(readout_text(&ui)?, shows("fine"));
+    assert_eq!(
+        property(&ui, "readout", "text_editing")?,
+        InspectValue::Bool(false)
+    );
+    Ok(())
+}
+
+#[test]
+fn a_refused_formatted_text_keeps_the_last_valid_presentation() -> TestResult {
+    let mut ui = Runtime::new();
+    let value = ui.signal(1.0_f64);
+    // A display that returns a control character for a negative value.
+    let format = NumberFormat::new(
+        "00",
+        |v: f64| {
+            if v < 0.0 {
+                "\u{7}".to_owned()
+            } else {
+                format!("{v}")
+            }
+        },
+        |_| Err(NumberInputError::InvalidNumber),
+    );
+    readout_in_text_mode(&mut ui, InlineReadout::formatted(value.read_only(), format))?;
+    assert_eq!(readout_text(&ui)?, shows("1"));
+    value.set(-1.0)?;
+    let error = ui.flush(ui.now()).unwrap_err();
+    assert!(is_invalid_text(&error), "{error:?}");
+    assert_eq!(readout_text(&ui)?, shows("1"));
+    assert_eq!(
+        property(&ui, "readout", "text_editing")?,
+        InspectValue::Bool(true)
+    );
+    value.set(2.0)?;
+    ui.flush(ui.now())?;
+    assert_eq!(readout_text(&ui)?, shows("2"));
+    assert_eq!(
+        property(&ui, "readout", "text_editing")?,
+        InspectValue::Bool(false)
+    );
+    Ok(())
+}
+
+#[test]
+fn every_binding_the_readout_took_before_still_converts() -> TestResult {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(600.0, 400.0, 1.0)?)?;
+    let text = ui.signal(String::from("bound"));
+    let read = text.read_only();
+    ui.mount_tree(Element::new(
+        "root",
+        Column::new([
+            Element::new("read-owned", InlineReadout::new(read.clone())),
+            Element::new("read-borrowed", InlineReadout::new(&read)),
+            Element::new("signal-owned", InlineReadout::new(text.clone())),
+            Element::new("signal-borrowed", InlineReadout::new(&text)),
+        ]),
+    ))?;
+    frame(&mut ui);
+    text.set("written".into())?;
+    frame(&mut ui);
+    for key in [
+        "read-owned",
+        "read-borrowed",
+        "signal-owned",
+        "signal-borrowed",
+    ] {
+        assert_eq!(
+            property(&ui, key, "text")?,
+            InspectValue::Text("written".into()),
+            "{key}"
+        );
+    }
     Ok(())
 }
