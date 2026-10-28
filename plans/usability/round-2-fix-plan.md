@@ -2025,6 +2025,24 @@ plan closes.
   diagnostics snapshots, the API listing gate, release-profile tests,
   `pert-ui` no-default, `desktop-cpu` and `cpu` (Clippy, tests, rustdoc),
   the headless gallery, `cargo package` of the five libraries (dirty
-  tree; repackaged after the commit below), `git diff --check`. Native
-  suite, kit fixture check, consumer check and hand check: below. Codex
-  review: pending.
+  tree; repackaged after the commit below), `git diff --check`.
+  **Author's evidence at c5d3ce4** (clean worktree, logs in
+  `~/pert-ui-usability/p11-evidence/`): `cargo package` of the five
+  libraries passed; the packaged-consumer check (`consumer-check.sh
+  0.3.86`) passed after its consumer crate's imports were brought up to
+  L2 (`component::*` for the widget traits, `Viewport` by name; the script
+  had not run since 0.3.68); the kit fixture check passed against the
+  packaged 0.3.86; the native suite passed 19/19 on Linux x86_64 (Fedora
+  44, kernel 7.2.12, GNOME on Wayland, Intel UHD Graphics 770 with Mesa
+  26.2.5 on Vulkan, rustc 1.99.1, winit 0.30.13, wgpu 30.0.1) with no
+  `UnexpectedOverlap` line (500,503 in the 2026-10-27 run); the remaining
+  feature configurations of the dependency/platform row (Codex point 2
+  below) passed: Clippy, tests and rustdoc with `image-formats`, `svg` and
+  `serde`; Clippy and tests with no-default `png`, `images`, no-default
+  `svg`, no-default `serde`, and `pert-ui-core` with `serde`. The hand
+  check (diagram editor's close with unsaved state) is the maintainer's
+  and not yet done; Windows and macOS missing. **Codex review**
+  (2026-10-28): needs fixes, one should-fix in the code (a panic during
+  the first settle or the initializer drops the state and handler
+  captures before the runtime, reversing the promised order) and the
+  gate's missing configurations (run above). Fix: pending.
