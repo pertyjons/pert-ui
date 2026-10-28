@@ -166,3 +166,11 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   that attribute so the doctests report them (a lint configuration change to
   discuss with the maintainer); the opening block would then carry a hidden
   `#![allow(unused_imports)]`.
+- [ ] 2026-10-28 `crates/pert-ui-runtime/src/runtime/held.rs`
+  `HeldCancellation::FocusLost` — public API documentation: the link text
+  reads `` `Runtime::clear_focus` `` but targets
+  `HostIntegration::clear_focus`; since L3's N3 there is no public
+  `Runtime::clear_focus`, so the rendered name points readers to a method
+  that does not exist. Change the link text to
+  `HostIntegration::clear_focus` (a test reaches it as
+  `Driver::clear_focus`). Found by round 2 part P4's checkpoint.

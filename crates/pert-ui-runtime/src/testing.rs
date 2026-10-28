@@ -1,11 +1,12 @@
 //! Driving an application in a headless test, as a user would.
 //!
 //! [`Driver`] clicks a component, replaces or types text, presses keys and
-//! chords, settles the runtime after each step and finds a component's
-//! [`Semantics`]; [`TestError`] names what a step could not do. Neither needs a
-//! window, a GPU or an operating-system service. The module also re-exports
-//! what a headless test writes besides the driver and the prelude, so one glob
-//! covers it:
+//! chords, clears focus, settles the runtime after each step, checks that a
+//! window stays quiet over an interval ([`QuietReport`]) and finds a
+//! component's [`Semantics`]; [`TestError`] names what a step could not do.
+//! Neither needs a window, a GPU or an operating-system service. The module
+//! also re-exports what a headless test writes besides the driver and the
+//! prelude, so one glob covers it:
 //!
 //! ```
 //! # use pert_ui_runtime as pert_ui;
@@ -23,8 +24,9 @@
 //!   input return; and [`ClickCounter`], whose interval separates single
 //!   clicks;
 //! - what the driver's steps return: [`FlushReport`], which
-//!   [`Driver::settle`] and [`Driver::advance`] return, and the
-//!   [`RevealRefusal`] that [`TestError::NotRevealed`] carries;
+//!   [`Driver::settle`] and [`Driver::advance`] return, the
+//!   [`RevealRefusal`] that [`TestError::NotRevealed`] carries, and the
+//!   [`DrawError`] that [`TestError::Draw`] carries;
 //! - semantics: [`Semantics`], which [`Driver::semantics`] returns, with
 //!   [`SemanticRole`], [`SemanticValue`], [`SemanticAction`] and
 //!   [`SemanticItem`];
@@ -41,8 +43,9 @@
 //!   [`WaitError`], [`Capture`], [`CaptureError`] and [`FrameImage`] it
 //!   answers with;
 //! - [`HostIntegration`], whose methods a test calls where it stands in for
-//!   a host, such as selecting a native window, taking presentation requests
-//!   or clearing focus as a window's deactivation would.
+//!   a host, such as selecting a native window or taking presentation
+//!   requests. A test clears focus with [`Driver::clear_focus`] and checks
+//!   idleness with [`Driver::quiet_for`] beside the driver's other actions.
 //!
 //! The key names a chord writes ([`KeyCode`], [`Modifiers`], [`CommandKey`])
 //! and [`Point`] are in the prelude.
@@ -85,11 +88,15 @@
 //!   its viewport with [`Viewport::new`].
 //! - The [`DisplayList`](crate::DisplayList) that [`Runtime::paint`] returns
 //!   is passed on to a renderer, and is in [`component`](crate::component)
-//!   and [`host`](crate::host).
+//!   and [`host`](crate::host). The identities of its resources,
+//!   [`VectorId`](crate::VectorId), [`MaskId`](crate::MaskId) and
+//!   [`ImageId`](crate::ImageId), which [`DrawError::MissingVector`],
+//!   [`DrawError::MissingMask`] and [`DrawError::MissingImage`] hold, are in
+//!   [`component`](crate::component).
 //! - [`GeometryError`](crate::GeometryError), which [`Viewport::new`] and the
 //!   other value constructors return, is propagated with `?` and stays at the
 //!   crate root with the other errors; so does an error nested in another,
-//!   such as the [`DrawError`](crate::DrawError) of `CaptureError::Drawing`.
+//!   such as the [`PathError`](crate::PathError) of [`DrawError::Path`].
 //! - What the [`HostIntegration`] methods take and return, such as
 //!   presentation requests, capture jobs and the clipboard service, is the
 //!   [`host`](crate::host) module's vocabulary.
@@ -145,8 +152,8 @@
 //! # Ok::<(), Box<dyn std::error::Error>>(())
 //! ```
 use crate::{
-    CommandKey, KeyChord, KeyCode, Modifiers, Point, RevealOutcome, Runtime, RuntimeError,
-    TextCommand, TextCommandOutcome, WidgetId,
+    CommandKey, FailurePhase, KeyChord, KeyCode, Modifiers, Point, RevealOutcome, Runtime,
+    RuntimeError, TextCommand, TextCommandOutcome, WidgetId,
 };
 use std::time::{Duration, Instant};
 
@@ -155,7 +162,7 @@ pub use crate::host::HostIntegration;
 // Input by hand, the viewport and what the driver's steps return.
 #[doc(no_inline)]
 pub use crate::{
-    ClickCounter, CommandKeyInput, FlushReport, FocusDirection, InputOutcome, KeyAction,
+    ClickCounter, CommandKeyInput, DrawError, FlushReport, FocusDirection, InputOutcome, KeyAction,
     Magnification, PointerButton, PointerEvent, PointerKind, RevealRefusal, Viewport,
 };
 // Reading what the runtime shows: semantics, queries and validation.
@@ -188,7 +195,9 @@ pub use crate::{
 /// notifications the input requested, within [`Runtime::MAX_FLUSH_WAVES`]. It
 /// is not quiescence. Work a callback defers to a later flush, a background
 /// result not yet delivered and timers due after the new time stay pending;
-/// [`Self::wait_until`] and [`Self::advance`] reach them.
+/// [`Self::wait_until`] and [`Self::advance`] reach them. Whether anything is
+/// left, such as an animation or a timer that keeps running, is
+/// [`Self::quiet_for`]'s check.
 ///
 /// # Where input goes
 ///
@@ -434,6 +443,144 @@ impl<'a> Driver<'a> {
             }
             std::thread::sleep(Duration::from_millis(1));
         }
+    }
+
+    /// Paints the selected window, lets `interval` of runtime time pass in
+    /// [`Self::FRAME`] steps without painting, and reports what happened.
+    ///
+    /// This is the check that a window is idle: nothing updates, nothing is
+    /// scheduled and nothing needs painting. A test paints first so that
+    /// damage from before the call does not count, and lets time pass in
+    /// frames because one jump of the whole interval runs a periodic
+    /// component once, as [`Self::advance`] documents. The report's
+    /// [`QuietReport::is_idle`] is the usual assertion; its fields say which
+    /// kind of work remains.
+    ///
+    /// # The interval
+    ///
+    /// - **Baseline:** one [`Runtime::flush`] at the current
+    ///   [`Runtime::now`], then one [`Runtime::paint`], whose display list is
+    ///   dropped. Work already due when the call starts runs here and is not
+    ///   counted. The baseline does not move the clock, so the clock moves by
+    ///   exactly `interval`.
+    /// - **Steps:** the clock advances to `now + interval` in [`Self::FRAME`]
+    ///   steps, one [`Runtime::flush`] each, and nothing is painted between
+    ///   them, so damage made anywhere in the interval is still pending at its
+    ///   end. A final partial frame is one shorter step that lands exactly on
+    ///   the end: `quiet_for(40 ms)` flushes at 16, 32 and 40 ms past the
+    ///   start.
+    /// - **A zero interval** makes no step: the report holds the state right
+    ///   after the baseline, a check that nothing is scheduled now without
+    ///   letting time pass.
+    /// - **A refused baseline:** when the baseline flush leaves work queued,
+    ///   such as a command a notification queued, the runtime refuses the
+    ///   paint with [`DrawError::PendingUpdates`]. That work is activity, not
+    ///   an error: the interval runs from the unpainted state and
+    ///   [`QuietReport::baseline_painted`] is false, so the report is not
+    ///   idle. The refusal is told apart from a component that returns
+    ///   `PendingUpdates` itself by [`Runtime::last_failure`], which names no
+    ///   [`FailurePhase::Paint`] site after a refusal; a component's own
+    ///   error ends the call.
+    ///
+    /// # Scope
+    ///
+    /// The selected window's own updates, deadlines, timers and presentation,
+    /// as [`Self::settle`] covers them, plus the work all windows share that
+    /// [`Runtime::next_deadline`] includes: interval timers, view-scale
+    /// settling, polled live sources and pending background work, whichever
+    /// window they serve. Another window's own timer or animation does not
+    /// make the report non-idle, because the driver's flushes do not run it;
+    /// a test checks that window by selecting it with
+    /// [`HostIntegration::select_window`] and calling `quiet_for` again.
+    /// [`QuietReport::components_updated`] counts the notification followups
+    /// a step delivers in other visible windows, as [`FlushReport`] does.
+    ///
+    /// A runtime operation nested inside a step runs flushes of its own: a
+    /// queued command's admission flushes every eligible window, a queued
+    /// reveal flushes its target's window, and a deferred task or interval
+    /// tick may call any operation that flushes. Those flushes can run other
+    /// windows' due work, and their updates are not counted. Command admission
+    /// and reveals restore the selected window, so the final observations,
+    /// [`QuietReport::next_deadline`] and [`QuietReport::needs_paint`], stay
+    /// the selected window's.
+    ///
+    /// # Cost
+    ///
+    /// One flush per [`Self::FRAME`] of runtime time and no wall-clock sleep:
+    /// a second is 63 flushes. Choose an interval longer than the longest
+    /// period the test means to rule out: a [`Spinner`](crate::Spinner) steps
+    /// every 100 ms and a focused text field's caret blinks every 500 ms. A
+    /// deadline beyond the interval, such as a toast's expiry, still shows in
+    /// [`QuietReport::next_deadline`], so it is never mistaken for idleness.
+    ///
+    /// No input is sent, so neutral input is not required. A component-owned
+    /// held action that schedules work, such as a number field's held step
+    /// button, is activity the report shows.
+    ///
+    /// # Errors
+    /// [`TestError::ClockOverflow`] when `now + interval` overflows, checked
+    /// before anything is flushed or painted. A flush's error, of the baseline
+    /// or of a step, as [`TestError::Runtime`], ending the call with the clock
+    /// where that flush left it. A paint error other than the refusal above,
+    /// a component's own [`DrawError::PendingUpdates`] included, as
+    /// [`TestError::Draw`], or as [`TestError::Runtime`] for
+    /// [`DrawError::Runtime`].
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::testing::*;
+    /// use std::time::Duration;
+    ///
+    /// let mut ui = Runtime::new();
+    /// ui.set_viewport(Viewport::new(300.0, 100.0, 1.0)?)?;
+    /// let busy = ui.signal(true);
+    /// ui.mount_tree(Element::new("busy", Spinner::new(busy.clone())))?;
+    /// let mut driver = Driver::new(&mut ui);
+    /// driver.settle()?;
+    /// // A spinner steps every 100 ms.
+    /// let report = driver.quiet_for(Duration::from_millis(250))?;
+    /// assert!(!report.is_idle());
+    /// assert!(report.components_updated >= 2 && report.needs_paint);
+    /// busy.set(false)?;
+    /// assert!(driver.quiet_for(Duration::from_millis(250))?.is_idle());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn quiet_for(&mut self, interval: Duration) -> Result<QuietReport, TestError> {
+        let start = self.runtime.now();
+        let end = start
+            .checked_add(interval)
+            .ok_or(TestError::ClockOverflow)?;
+        self.runtime.flush(start)?;
+        let baseline_painted = match self.runtime.paint() {
+            Ok(_) => true,
+            // The runtime's refusal records no failure site; a component's
+            // own `PendingUpdates` records a paint site and is its error.
+            Err(DrawError::PendingUpdates)
+                if !self
+                    .runtime
+                    .last_failure()
+                    .is_some_and(|site| site.phase == FailurePhase::Paint) =>
+            {
+                false
+            }
+            Err(error) => return Err(error.into()),
+        };
+        let mut components_updated = 0_usize;
+        let mut at = start;
+        while at < end {
+            at = at
+                .checked_add(Self::FRAME)
+                .map_or(end, |next| next.min(end));
+            let report = self.runtime.flush(at)?;
+            components_updated = components_updated.saturating_add(report.components_updated);
+        }
+        Ok(QuietReport {
+            components_updated,
+            next_deadline: self.runtime.next_deadline(),
+            needs_paint: HostIntegration::needs_paint(&*self.runtime),
+            baseline_painted,
+        })
     }
 
     /// The component at the key path `path` below `from`, as
@@ -746,6 +893,68 @@ impl<'a> Driver<'a> {
         Ok(())
     }
 
+    /// Clears focus in the selected window as its deactivation does, then
+    /// settles.
+    ///
+    /// This is [`HostIntegration::clear_focus`], the call a native host makes
+    /// when a window loses focus, followed by [`Self::settle`], as every
+    /// action ends. Afterwards nothing in the selected window is focused.
+    ///
+    /// - **In the selected window:** nonmodal surfaces such as menus and
+    ///   popovers close and modal dialogs stay; pointer buttons, capture,
+    ///   hover and the pointer position are cleared; the focused component's
+    ///   `focus_lost` runs, so a focused editor applies its focus-loss rules
+    ///   and saves a valid draft, and focus-within notifications are
+    ///   delivered. Another window's focus is untouched: a test of a detached
+    ///   window selects it with [`HostIntegration::select_window`] first, as
+    ///   for input.
+    /// - **Runtime-wide:** pressed keys, command presses and reported
+    ///   modifiers are cleared, a drag in this window is cancelled, and every
+    ///   admitted held-input registration, in any window, is cancelled with
+    ///   [`HeldCancellation::FocusLost`](crate::HeldCancellation::FocusLost),
+    ///   because its releases may no longer arrive.
+    ///
+    /// Unlike [`Self::key`] and [`Self::click`], it does not require
+    /// [neutral input](Self#neutral-input-and-cleanup): releasing held keys
+    /// and modifiers is what a deactivation does. Input is neutral
+    /// afterwards, so the next action is admitted.
+    ///
+    /// # Errors
+    /// [`TestError::ClockOverflow`] when the settle's clock cannot advance. A
+    /// focus-loss or focus-within callback's error, which the deactivation
+    /// queues, is returned by the settle's flush as [`TestError::Runtime`];
+    /// that flush delivers queued parameter terminal notifications first and
+    /// returns the error before it runs commands, tasks, timers or
+    /// presentation, so a further [`Self::settle`] delivers the rest, and a
+    /// later queued error comes from that next flush. The other errors of
+    /// [`Runtime::flush`] as [`TestError::Runtime`].
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::testing::*;
+    ///
+    /// let mut ui = Runtime::new();
+    /// ui.set_viewport(Viewport::new(300.0, 100.0, 1.0)?)?;
+    /// let tag = ui.signal(String::new());
+    /// let field = ui.mount_tree(Element::new("tag",
+    ///     TextField::new(tag.clone()).normalize(|text| Ok(text.trim().to_owned()))))?;
+    /// let mut driver = Driver::new(&mut ui);
+    /// driver.settle()?;
+    /// driver.runtime_mut().focus(&field)?;
+    /// driver.type_text(" draft ")?;
+    /// assert_eq!(tag.get()?, ""); // a draft until Enter or focus loss
+    /// driver.clear_focus()?;
+    /// assert_eq!(tag.get()?, "draft");
+    /// assert_eq!(driver.runtime().focused(), None);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn clear_focus(&mut self) -> Result<(), TestError> {
+        HostIntegration::clear_focus(self.runtime);
+        self.settle()?;
+        Ok(())
+    }
+
     /// Presses `press`'s key and always releases it, recording both.
     fn tap(&mut self, press: CommandKeyInput) -> Result<(), TestError> {
         let mut steps = Steps::default();
@@ -784,6 +993,92 @@ impl<'a> Driver<'a> {
         } else {
             Err(TestError::InputHeld)
         }
+    }
+}
+
+/// What happened in the selected window over a [`Driver::quiet_for`]
+/// interval.
+///
+/// [`Self::is_idle`] is the usual assertion; the fields say which kind of
+/// work remains: components that updated during the interval, a deadline
+/// still scheduled at its end, a window that needs painting, or a baseline
+/// that could not be painted. It is not a [`FlushReport`]: it covers every
+/// flush of the interval and the window's paint need. Only the driver
+/// constructs it, and fields may be added.
+///
+/// The report is `#[must_use]`, so `driver.quiet_for(interval)?;`, which
+/// checks nothing, warns:
+///
+/// ```compile_fail
+/// #![deny(unused_must_use)]
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::testing::{Driver, TestError};
+/// use std::time::Duration;
+/// fn check(driver: &mut Driver<'_>) -> Result<(), TestError> {
+///     driver.quiet_for(Duration::from_millis(100))?; // denied: the report is discarded
+///     Ok(())
+/// }
+/// ```
+///
+/// Reading it compiles under the same lint:
+///
+/// ```
+/// #![deny(unused_must_use)]
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::testing::{Driver, TestError};
+/// use std::time::Duration;
+/// fn check(driver: &mut Driver<'_>) -> Result<(), TestError> {
+///     let report = driver.quiet_for(Duration::from_millis(100))?;
+///     assert!(report.is_idle());
+///     Ok(())
+/// }
+/// # let mut ui = pert_ui::Runtime::new();
+/// # check(&mut Driver::new(&mut ui))?;
+/// # Ok::<(), TestError>(())
+/// ```
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[non_exhaustive]
+#[must_use = "a quiet interval checks nothing unless its report is read"]
+pub struct QuietReport {
+    /// The components the interval's flushes updated: the saturating sum of
+    /// each step's [`FlushReport::components_updated`], including the
+    /// notification followups a step delivers in other visible windows. The
+    /// baseline flush's updates are not counted. A component of another
+    /// window that a binding change only marks pending is updated when that
+    /// window flushes, and is not counted. Nor are the updates of a flush
+    /// nested inside a step, such as a queued command's admission, a queued
+    /// reveal, or a deferred task or interval tick that flushes; a test that
+    /// needs them observes the components themselves.
+    pub components_updated: usize,
+    /// [`Runtime::next_deadline`] after the last step, or after the baseline
+    /// for a zero interval: absolute runtime time, as
+    /// [`FlushReport::next_deadline`] is, and the current time while
+    /// immediate work waits. It holds the selected window's update deadlines
+    /// and timers and the work all windows share (interval timers,
+    /// view-scale settling, polled live sources and pending background
+    /// work), not another window's own deadlines. `None` when nothing is
+    /// scheduled.
+    pub next_deadline: Option<Duration>,
+    /// [`HostIntegration::needs_paint`] after the last step, or after the
+    /// baseline for a zero interval: whether the selected window needs
+    /// painting at the interval's end. A capture waiting for this window keeps
+    /// it true.
+    pub needs_paint: bool,
+    /// Whether the baseline paint succeeded. False when the runtime refused
+    /// it with [`DrawError::PendingUpdates`] because the baseline flush left
+    /// work queued, which keeps the report from being idle; see
+    /// [`Driver::quiet_for`].
+    pub baseline_painted: bool,
+}
+impl QuietReport {
+    /// The baseline was painted, and then nothing updated, nothing is
+    /// scheduled and nothing needs painting.
+    #[must_use]
+    pub fn is_idle(&self) -> bool {
+        self.baseline_painted
+            && self.components_updated == 0
+            && self.next_deadline.is_none()
+            && !self.needs_paint
     }
 }
 
@@ -850,7 +1145,8 @@ pub enum TestError {
         waited: Duration,
     },
     /// The runtime clock cannot advance that far without overflowing
-    /// ([`Driver::advance`]).
+    /// ([`Driver::advance`], [`Driver::quiet_for`] and the settle every
+    /// action ends with).
     #[error("the runtime clock cannot advance that far")]
     ClockOverflow,
     /// A key is held or a modifier is reported, so the driver's keys would not
@@ -868,4 +1164,47 @@ pub enum TestError {
         #[source]
         cleanup: RuntimeError,
     },
+    /// Painting the selected window failed ([`Driver::quiet_for`]'s baseline
+    /// paint), such as a component whose paint returned
+    /// [`DrawError::TooComplex`].
+    ///
+    /// The driver and `From<DrawError> for TestError` report a runtime
+    /// failure as [`Self::Runtime`] instead, so neither produces
+    /// [`DrawError::Runtime`] here.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::testing::*;
+    ///
+    /// /// Flushes and paints the selected window, as a host's frame does.
+    /// fn frame(ui: &mut Runtime) -> Result<(), TestError> {
+    ///     ui.flush(ui.now())?;
+    ///     ui.paint()?;
+    ///     Ok(())
+    /// }
+    ///
+    /// let mut ui = Runtime::new();
+    /// ui.set_viewport(Viewport::new(300.0, 100.0, 1.0)?)?;
+    /// ui.mount_tree(Element::new("title", Label::new("Hello")))?;
+    /// frame(&mut ui)?;
+    /// assert_eq!(TestError::from(DrawError::TooComplex), TestError::Draw(DrawError::TooComplex));
+    /// let runtime = RuntimeError::Closed;
+    /// assert_eq!(TestError::from(DrawError::Runtime(runtime.clone())), TestError::Runtime(runtime));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[error(transparent)]
+    Draw(DrawError),
+}
+
+/// Keeps a runtime failure in its one form: [`DrawError::Runtime`] becomes
+/// [`TestError::Runtime`], every other variant [`TestError::Draw`]. A test
+/// helper that returns `TestError` applies `?` to [`Runtime::paint`].
+impl From<DrawError> for TestError {
+    fn from(error: DrawError) -> Self {
+        match error {
+            DrawError::Runtime(error) => Self::Runtime(error),
+            error => Self::Draw(error),
+        }
+    }
 }

@@ -1037,6 +1037,8 @@ impl core::convert::From<pert_ui_runtime::DrawError> for pert_ui_runtime::Captur
 pub fn pert_ui_runtime::CaptureError::from(pert_ui_runtime::DrawError) -> Self
 impl core::convert::From<pert_ui_runtime::DrawError> for pert_ui_runtime::WindowError
 pub fn pert_ui_runtime::WindowError::from(pert_ui_runtime::DrawError) -> Self
+impl core::convert::From<pert_ui_runtime::DrawError> for pert_ui_runtime::testing::TestError
+pub fn pert_ui_runtime::testing::TestError::from(pert_ui_runtime::DrawError) -> Self
 impl core::convert::From<pert_ui_runtime::FontError> for pert_ui_runtime::DrawError
 pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::FontError) -> Self
 impl core::convert::From<pert_ui_runtime::GeometryError> for pert_ui_runtime::DrawError
@@ -9568,6 +9570,8 @@ impl core::convert::From<pert_ui_runtime::DrawError> for pert_ui_runtime::Captur
 pub fn pert_ui_runtime::CaptureError::from(pert_ui_runtime::DrawError) -> Self
 impl core::convert::From<pert_ui_runtime::DrawError> for pert_ui_runtime::WindowError
 pub fn pert_ui_runtime::WindowError::from(pert_ui_runtime::DrawError) -> Self
+impl core::convert::From<pert_ui_runtime::DrawError> for pert_ui_runtime::testing::TestError
+pub fn pert_ui_runtime::testing::TestError::from(pert_ui_runtime::DrawError) -> Self
 impl core::convert::From<pert_ui_runtime::FontError> for pert_ui_runtime::DrawError
 pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::FontError) -> Self
 impl core::convert::From<pert_ui_runtime::GeometryError> for pert_ui_runtime::DrawError
@@ -23074,6 +23078,81 @@ impl core::marker::Unpin for pert_ui_runtime::Detail
 impl core::marker::UnsafeUnpin for pert_ui_runtime::Detail
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Detail
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Detail
+#[non_exhaustive] pub enum pert_ui_runtime::testing::DrawError
+pub pert_ui_runtime::testing::DrawError::CoverageTooLarge
+pub pert_ui_runtime::testing::DrawError::InvalidColor
+pub pert_ui_runtime::testing::DrawError::InvalidImage
+pub pert_ui_runtime::testing::DrawError::InvalidImage::bytes: usize
+pub pert_ui_runtime::testing::DrawError::InvalidImage::height: u32
+pub pert_ui_runtime::testing::DrawError::InvalidImage::width: u32
+pub pert_ui_runtime::testing::DrawError::MissingImage(pert_ui_runtime::ImageId)
+pub pert_ui_runtime::testing::DrawError::MissingMask(pert_ui_runtime::MaskId)
+pub pert_ui_runtime::testing::DrawError::MissingVector(pert_ui_runtime::VectorId)
+pub pert_ui_runtime::testing::DrawError::Path(pert_ui_runtime::PathError)
+pub pert_ui_runtime::testing::DrawError::PendingUpdates
+pub pert_ui_runtime::testing::DrawError::Runtime(pert_ui_runtime::RuntimeError)
+pub pert_ui_runtime::testing::DrawError::TooComplex
+impl core::clone::Clone for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::clone(&self) -> pert_ui_runtime::DrawError
+impl core::cmp::Eq for pert_ui_runtime::DrawError
+impl core::cmp::PartialEq for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::eq(&self, &pert_ui_runtime::DrawError) -> bool
+impl core::convert::From<pert_ui_core::edit::EditError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_core::edit::EditError) -> Self
+impl core::convert::From<pert_ui_core::live::LiveError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_core::live::LiveError) -> Self
+impl core::convert::From<pert_ui_core::normalized::NormalizedValueError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_core::normalized::NormalizedValueError) -> Self
+impl core::convert::From<pert_ui_core::parameter::ParameterError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_core::parameter::ParameterError) -> Self
+impl core::convert::From<pert_ui_core::parameter_id::ParameterIdError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_core::parameter_id::ParameterIdError) -> Self
+impl core::convert::From<pert_ui_runtime::ApplicationError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::ApplicationError) -> Self
+impl core::convert::From<pert_ui_runtime::BindingError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::BindingError) -> Self
+impl core::convert::From<pert_ui_runtime::ChoiceError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::ChoiceError) -> Self
+impl core::convert::From<pert_ui_runtime::ClipboardError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::ClipboardError) -> Self
+impl core::convert::From<pert_ui_runtime::DeliveryError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::DeliveryError) -> Self
+impl core::convert::From<pert_ui_runtime::DrawError> for pert_ui_runtime::CaptureError
+pub fn pert_ui_runtime::CaptureError::from(pert_ui_runtime::DrawError) -> Self
+impl core::convert::From<pert_ui_runtime::DrawError> for pert_ui_runtime::WindowError
+pub fn pert_ui_runtime::WindowError::from(pert_ui_runtime::DrawError) -> Self
+impl core::convert::From<pert_ui_runtime::DrawError> for pert_ui_runtime::testing::TestError
+pub fn pert_ui_runtime::testing::TestError::from(pert_ui_runtime::DrawError) -> Self
+impl core::convert::From<pert_ui_runtime::FontError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::FontError) -> Self
+impl core::convert::From<pert_ui_runtime::GeometryError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::GeometryError) -> Self
+impl core::convert::From<pert_ui_runtime::LayoutError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::LayoutError) -> Self
+impl core::convert::From<pert_ui_runtime::NumberInputError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::NumberInputError) -> Self
+impl core::convert::From<pert_ui_runtime::PathError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::PathError) -> Self
+impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::RuntimeError) -> Self
+impl core::convert::From<pert_ui_runtime::TextEditError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::TextEditError) -> Self
+impl core::convert::From<pert_ui_runtime::TextError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::TextError) -> Self
+impl core::error::Error for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::source(&self) -> core::option::Option<&(dyn core::error::Error + 'static)>
+impl core::fmt::Debug for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::DrawError
+impl core::marker::Freeze for pert_ui_runtime::DrawError
+impl core::marker::Send for pert_ui_runtime::DrawError
+impl core::marker::Sync for pert_ui_runtime::DrawError
+impl core::marker::Unpin for pert_ui_runtime::DrawError
+impl core::marker::UnsafeUnpin for pert_ui_runtime::DrawError
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::DrawError
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::DrawError
 pub enum pert_ui_runtime::testing::FocusDirection
 pub pert_ui_runtime::testing::FocusDirection::Backward
 pub pert_ui_runtime::testing::FocusDirection::Forward
@@ -23412,6 +23491,7 @@ pub pert_ui_runtime::testing::TestError::Cleanup
 pub pert_ui_runtime::testing::TestError::Cleanup::cleanup: pert_ui_runtime::RuntimeError
 pub pert_ui_runtime::testing::TestError::Cleanup::error: alloc::boxed::Box<pert_ui_runtime::testing::TestError>
 pub pert_ui_runtime::testing::TestError::ClockOverflow
+pub pert_ui_runtime::testing::TestError::Draw(pert_ui_runtime::DrawError)
 pub pert_ui_runtime::testing::TestError::InputHeld
 pub pert_ui_runtime::testing::TestError::NoSemantics
 pub pert_ui_runtime::testing::TestError::NoSemantics::key: alloc::string::String
@@ -23434,6 +23514,8 @@ pub fn pert_ui_runtime::testing::TestError::clone(&self) -> pert_ui_runtime::tes
 impl core::cmp::Eq for pert_ui_runtime::testing::TestError
 impl core::cmp::PartialEq for pert_ui_runtime::testing::TestError
 pub fn pert_ui_runtime::testing::TestError::eq(&self, &pert_ui_runtime::testing::TestError) -> bool
+impl core::convert::From<pert_ui_runtime::DrawError> for pert_ui_runtime::testing::TestError
+pub fn pert_ui_runtime::testing::TestError::from(pert_ui_runtime::DrawError) -> Self
 impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::testing::TestError
 pub fn pert_ui_runtime::testing::TestError::from(pert_ui_runtime::RuntimeError) -> Self
 impl core::error::Error for pert_ui_runtime::testing::TestError
@@ -23684,10 +23766,12 @@ impl<'a> pert_ui_runtime::testing::Driver<'a>
 pub const pert_ui_runtime::testing::Driver<'a>::FRAME: core::time::Duration
 pub fn pert_ui_runtime::testing::Driver<'a>::advance(&mut self, core::time::Duration) -> core::result::Result<pert_ui_runtime::FlushReport, pert_ui_runtime::testing::TestError>
 pub fn pert_ui_runtime::testing::Driver<'a>::chord(&mut self, pert_ui_runtime::KeyChord, pert_ui_runtime::KeyCode) -> core::result::Result<(), pert_ui_runtime::testing::TestError>
+pub fn pert_ui_runtime::testing::Driver<'a>::clear_focus(&mut self) -> core::result::Result<(), pert_ui_runtime::testing::TestError>
 pub fn pert_ui_runtime::testing::Driver<'a>::click(&mut self, &pert_ui_runtime::WidgetId) -> core::result::Result<(), pert_ui_runtime::testing::TestError>
 pub fn pert_ui_runtime::testing::Driver<'a>::find(&self, &pert_ui_runtime::WidgetId, &[&str]) -> core::result::Result<pert_ui_runtime::WidgetId, pert_ui_runtime::testing::TestError>
 pub fn pert_ui_runtime::testing::Driver<'a>::key(&mut self, pert_ui_runtime::KeyCode) -> core::result::Result<(), pert_ui_runtime::testing::TestError>
 pub fn pert_ui_runtime::testing::Driver<'a>::new(&'a mut pert_ui_runtime::Runtime) -> Self
+pub fn pert_ui_runtime::testing::Driver<'a>::quiet_for(&mut self, core::time::Duration) -> core::result::Result<pert_ui_runtime::testing::QuietReport, pert_ui_runtime::testing::TestError>
 pub fn pert_ui_runtime::testing::Driver<'a>::replace_text(&mut self, &pert_ui_runtime::WidgetId, &str) -> core::result::Result<(), pert_ui_runtime::testing::TestError>
 pub fn pert_ui_runtime::testing::Driver<'a>::runtime(&self) -> &pert_ui_runtime::Runtime
 pub fn pert_ui_runtime::testing::Driver<'a>::runtime_mut(&mut self) -> &mut pert_ui_runtime::Runtime
@@ -23929,6 +24013,29 @@ impl core::marker::Unpin for pert_ui_runtime::QueryResult
 impl core::marker::UnsafeUnpin for pert_ui_runtime::QueryResult
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::QueryResult
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::QueryResult
+#[non_exhaustive] pub struct pert_ui_runtime::testing::QuietReport
+pub pert_ui_runtime::testing::QuietReport::baseline_painted: bool
+pub pert_ui_runtime::testing::QuietReport::components_updated: usize
+pub pert_ui_runtime::testing::QuietReport::needs_paint: bool
+pub pert_ui_runtime::testing::QuietReport::next_deadline: core::option::Option<core::time::Duration>
+impl pert_ui_runtime::testing::QuietReport
+pub fn pert_ui_runtime::testing::QuietReport::is_idle(&self) -> bool
+impl core::clone::Clone for pert_ui_runtime::testing::QuietReport
+pub fn pert_ui_runtime::testing::QuietReport::clone(&self) -> pert_ui_runtime::testing::QuietReport
+impl core::cmp::Eq for pert_ui_runtime::testing::QuietReport
+impl core::cmp::PartialEq for pert_ui_runtime::testing::QuietReport
+pub fn pert_ui_runtime::testing::QuietReport::eq(&self, &pert_ui_runtime::testing::QuietReport) -> bool
+impl core::fmt::Debug for pert_ui_runtime::testing::QuietReport
+pub fn pert_ui_runtime::testing::QuietReport::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::testing::QuietReport
+impl core::marker::StructuralPartialEq for pert_ui_runtime::testing::QuietReport
+impl core::marker::Freeze for pert_ui_runtime::testing::QuietReport
+impl core::marker::Send for pert_ui_runtime::testing::QuietReport
+impl core::marker::Sync for pert_ui_runtime::testing::QuietReport
+impl core::marker::Unpin for pert_ui_runtime::testing::QuietReport
+impl core::marker::UnsafeUnpin for pert_ui_runtime::testing::QuietReport
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::testing::QuietReport
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::testing::QuietReport
 pub struct pert_ui_runtime::testing::Rect(_)
 impl pert_ui_runtime::Rect
 pub fn pert_ui_runtime::Rect::contains(self, pert_ui_runtime::Point) -> bool
@@ -26465,6 +26572,8 @@ impl core::convert::From<pert_ui_runtime::DrawError> for pert_ui_runtime::Captur
 pub fn pert_ui_runtime::CaptureError::from(pert_ui_runtime::DrawError) -> Self
 impl core::convert::From<pert_ui_runtime::DrawError> for pert_ui_runtime::WindowError
 pub fn pert_ui_runtime::WindowError::from(pert_ui_runtime::DrawError) -> Self
+impl core::convert::From<pert_ui_runtime::DrawError> for pert_ui_runtime::testing::TestError
+pub fn pert_ui_runtime::testing::TestError::from(pert_ui_runtime::DrawError) -> Self
 impl core::convert::From<pert_ui_runtime::FontError> for pert_ui_runtime::DrawError
 pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::FontError) -> Self
 impl core::convert::From<pert_ui_runtime::GeometryError> for pert_ui_runtime::DrawError

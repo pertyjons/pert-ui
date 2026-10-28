@@ -79,6 +79,12 @@ const EXCLUSIONS: &[(&str, &str)] = &[
     ("KeyTransition", "component"),
     // The scene `Runtime::paint` returns, passed on to the CPU renderer.
     ("DisplayList", "component and host"),
+    // The identities of a scene's resources, which `DrawError`'s
+    // `MissingVector`, `MissingMask` and `MissingImage` hold: a test matches
+    // the variant, and the identities come from a scene it does not build.
+    ("VectorId", "component"),
+    ("MaskId", "component"),
+    ("ImageId", "component"),
     // A constructor's validation error, propagated with `?`.
     ("GeometryError", "crate root"),
 ];

@@ -9,7 +9,8 @@ use pert_ui::testing::*;
 ```
 
 [`testing`](crate::testing) holds [`Driver`](crate::testing::Driver), which
-clicks, types, presses keys and chords and settles after each step, its
+clicks, types, presses keys and chords, clears focus and settles after each
+step, and checks that a window stays quiet over an interval, its
 [`TestError`](crate::testing::TestError), and the other names a test writes:
 the [`Viewport`] every harness sets, key, focus and pointer input by hand,
 what the driver's steps return, semantics, the query names and the
@@ -243,6 +244,44 @@ assert!(driver.runtime().keyboard().pressed().next().is_none());
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
 
+# Nothing focused
+
+[`Driver::clear_focus`](crate::testing::Driver::clear_focus) is the selected
+window's deactivation, as when the user switches to another application,
+followed by a settle. It ends what the window's focus held: pressed keys and
+reported modifiers, menus and popovers (modal dialogs stay), and the focused
+editor's edit, which applies its focus-loss rules, so a valid draft is saved
+as the [draft policy](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#draft-policy)
+says. Releasing held keys is what a deactivation does, so it needs no neutral
+input, and the next action needs no release first. Application commands still
+receive chords with nothing focused.
+
+```rust
+use pert_ui::prelude::*;
+use pert_ui::testing::*;
+
+let mut ui = Runtime::new();
+ui.set_viewport(Viewport::new(300.0, 100.0, 1.0)?)?;
+let tag = ui.signal(String::new());
+let field = ui.mount_tree(Element::new("tag",
+    TextField::new(tag.clone()).normalize(|text| Ok(text.trim().to_owned()))))?;
+let saves = ui.signal(0);
+let counter = saves.clone();
+ui.register_command("Save", CommandScope::Application, vec![KeyChord::primary('s')],
+    move |_, _| counter.update(|n| *n += 1))?;
+let mut driver = Driver::new(&mut ui);
+driver.settle()?;
+driver.runtime_mut().focus(&field)?;
+driver.type_text(" urgent ")?;
+assert_eq!(tag.get()?, ""); // a draft until Enter or focus loss
+driver.clear_focus()?;
+assert_eq!(tag.get()?, "urgent");
+assert_eq!(driver.runtime().focused(), None);
+driver.chord(KeyChord::primary('s'), KeyCode::KeyS)?;
+assert_eq!(saves.get()?, 1);
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
 # Settling
 
 Input is delivered to its component at once: a plain editor's binding is
@@ -356,6 +395,49 @@ let _task = ui.spawn(|| (1..=100).sum::<u64>(), move |sum| target.set(Some(sum))
 let mut driver = Driver::new(&mut ui);
 driver.wait_until(Duration::from_secs(5), |_| Ok(total.get()?.is_some()))?;
 assert_eq!(total.get()?, Some(5050));
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
+# Nothing scheduled while idle
+
+[`Driver::quiet_for`](crate::testing::Driver::quiet_for) checks that a window
+is idle: it paints the selected window, lets an interval of runtime time pass
+in 16 ms frames without painting, and returns a
+[`QuietReport`](crate::testing::QuietReport) whose `is_idle()` is the usual
+assertion. It paints first so that damage from before the call does not
+count, and it lets time pass in frames because one jump of the whole interval
+runs a periodic component once. The report's fields say what remains: the
+components updated during the interval (`components_updated`), the deadline
+still scheduled at its end (`next_deadline`), whether the window needs
+painting (`needs_paint`), and whether the baseline could be painted at all
+(`baseline_painted`, false while the runtime still had queued work to run).
+
+The check covers the selected window and the work all windows share, such as
+interval timers and background tasks; another window's own animation does not
+make it busy, and a test checks that window by selecting it and calling
+`quiet_for` again. Choose an interval longer than the longest period to rule
+out: a spinner steps every 100 ms and a focused text field's caret blinks
+every 500 ms. A later deadline, such as a toast's expiry, still shows in
+`next_deadline`. A zero interval checks that nothing is scheduled now without
+letting time pass.
+
+```rust
+use pert_ui::prelude::*;
+use pert_ui::testing::*;
+use std::time::Duration;
+
+let mut ui = Runtime::new();
+ui.set_viewport(Viewport::new(300.0, 100.0, 1.0)?)?;
+let field = ui.mount_tree(Element::new("name", TextField::new(ui.signal(String::new()))))?;
+let mut driver = Driver::new(&mut ui);
+driver.settle()?;
+driver.runtime_mut().focus(&field)?;
+// The focused field's caret blinks.
+let report = driver.quiet_for(Duration::from_secs(1))?;
+assert!(!report.is_idle());
+assert!(report.next_deadline.is_some());
+driver.clear_focus()?;
+assert!(driver.quiet_for(Duration::from_secs(1))?.is_idle());
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
 

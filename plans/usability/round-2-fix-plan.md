@@ -1693,3 +1693,32 @@ plan closes.
   review (2026-10-28): ready, with one nit (the CHANGELOG and the G2-8
   addendum said a panic cancels before delivery; it cancels the operation
   whose callback unwinds), corrected by the author. **P3 done.**
+
+- **P4 Driver: focus and idle (0.3.79), 2026-10-28.** Implemented by a
+  fresh agent from the approved design (`round-2-design-P4.md`, revision
+  3): `Driver::clear_focus`, `Driver::quiet_for` with `QuietReport`
+  (baseline flush and paint, frame steps with a final partial frame, a
+  refused baseline classified by provenance, P4-D2), `TestError::Draw` with
+  the hand-written `From<DrawError>`, `DrawError` and `QuietReport` in both
+  `testing` modules (P4-D1), the testing chapter's two sections and the
+  `host`, `testing`, `next_deadline` and `DecimalInput` text; TODO.md entry
+  for `held.rs`'s `FocusLost` link text. Not breaking. **Deviations,
+  accepted by the author:** (1) the design said removing `DrawError` from
+  `testing` fails the listing check because it sees `TestError::Draw`; P2's
+  check does not follow an error held by an error (P2 design 2.3), so
+  `DrawError` is in `testing` by P4-D1's choice, and its removal is caught
+  only through the exclusions below becoming unreached; (2) as a `testing`
+  member `DrawError` reaches `VectorId`, `MaskId` and `ImageId`, recorded
+  as reviewed exclusions (in `component`, like `DisplayList`) and listed
+  on both `testing` pages; (3) the nested-flush test arms its event timer
+  before the interval, since a notification's delivery settles every
+  visible window in the baseline; (4) test 9 uses a `Ticker` and also
+  asserts the update count and next deadline. Same kind: `ClockOverflow`'s
+  rustdoc, the `testing` pages' nested-error examples. Mutation evidence
+  (`target/p4-evidence/`): each of the 13 new-behavior tests and the
+  contract mutations failed as the design names. No fixture check (the
+  fixture uses none of these). Gate (fresh): fmt, workspace Clippy,
+  workspace tests (with `testing_closure`), the five headless sessions,
+  workspace and `cpu` doctests, rustdoc `-D warnings`, the diagnostics
+  snapshots, the API listing gate, `git diff --check`. Native evidence: not
+  applicable. Codex review: pending.

@@ -239,6 +239,7 @@ pub use pert_ui::testing::ComponentDetails
 pub use pert_ui::testing::ComponentInspection
 pub use pert_ui::testing::Depth
 pub use pert_ui::testing::Detail
+pub use pert_ui::testing::DrawError
 pub use pert_ui::testing::Driver
 pub use pert_ui::testing::FlushReport
 pub use pert_ui::testing::FocusDirection
@@ -256,6 +257,7 @@ pub use pert_ui::testing::PointerButton
 pub use pert_ui::testing::PointerEvent
 pub use pert_ui::testing::PointerKind
 pub use pert_ui::testing::QueryResult
+pub use pert_ui::testing::QuietReport
 pub use pert_ui::testing::Rect
 pub use pert_ui::testing::RevealRefusal
 pub use pert_ui::testing::Selector

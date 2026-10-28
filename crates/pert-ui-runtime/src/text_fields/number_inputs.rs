@@ -297,7 +297,7 @@ description_debug!(IntegerInput);
 ///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
-/// use pert_ui::testing::HostIntegration;
+/// use pert_ui::testing::Driver;
 /// use pert_ui::{DecimalInput, Element, KeyAction, KeyCode, Runtime};
 /// let mut ui = Runtime::new();
 /// let amount = ui.signal(1.234567_f64);
@@ -307,9 +307,9 @@ description_debug!(IntegerInput);
 /// ui.key_input(KeyCode::Enter, KeyAction::Press)?;
 /// assert_eq!(amount.get()?, 1.234567); // display precision is not storage precision
 /// ui.key_input(KeyCode::ArrowUp, KeyAction::Press)?;
-/// ui.clear_focus(); // saves the stepped draft
+/// Driver::new(&mut ui).clear_focus()?; // saves the stepped draft
 /// assert!((amount.get()? - 1.334567).abs() < 1e-12);
-/// # Ok::<(), pert_ui::RuntimeError>(())
+/// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 #[must_use]
 ///

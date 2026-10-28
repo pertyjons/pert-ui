@@ -3,9 +3,10 @@
 //! releases what an action pressed when a step fails.
 use pert_ui_runtime::testing::*;
 use pert_ui_runtime::{
-    ApplicationError, CommandKey, KeyEvent, KeyTransition, KeyboardState, NativeWindowOptions,
-    ReadSignal, RevealRefusal, SemanticValue, Show, Signal, Tab, Tabs, TextCommand,
-    TextCommandOutcome, component::*, prelude::*,
+    ApplicationError, CommandId, CommandKey, CommandSource, FailurePhase, HeldCancellation,
+    KeyEvent, KeyTransition, KeyboardState, NativeWindowOptions, ReadSignal, RevealRefusal,
+    SemanticValue, Show, Signal, Tab, Tabs, TextCommand, TextCommandOutcome, Toast,
+    ToastController, component::*, prelude::*,
 };
 use std::{cell::Cell, cell::RefCell, rc::Rc, time::Duration};
 
@@ -909,5 +910,580 @@ fn an_empty_replacements_backspace_is_released_after_its_press_fails() -> TestRe
         ]
     );
     assert!(driver.runtime().keyboard().pressed().next().is_none());
+    Ok(())
+}
+
+// `Driver::clear_focus`.
+
+#[test]
+fn clear_focus_saves_a_focused_draft_and_leaves_nothing_focused() -> TestResult {
+    let mut ui = runtime()?;
+    let tag = ui.signal(String::new());
+    let field = ui.mount_tree(Element::new(
+        "tag",
+        TextField::new(tag.clone()).normalize(|text| Ok(text.trim().to_owned())),
+    ))?;
+    let mut driver = Driver::new(&mut ui);
+    driver.settle()?;
+    driver.runtime_mut().focus(&field)?;
+    driver.type_text(" draft ")?;
+    assert_eq!(tag.get()?, "", "a draft until Enter or focus loss");
+    let before = driver.runtime().now();
+    driver.clear_focus()?;
+    assert_eq!(tag.get()?, "draft");
+    assert_eq!(driver.runtime().focused(), None);
+    assert_eq!(driver.runtime().now(), before + Driver::FRAME, "it settles");
+    Ok(())
+}
+
+#[test]
+fn clear_focus_returns_a_focus_loss_error() -> TestResult {
+    let mut ui = runtime()?;
+    let leaf = ui.mount_tree(Element::new("leaf", FailingFocusLoss))?;
+    ui.flush(Duration::ZERO)?;
+    ui.focus(&leaf)?;
+    let mut driver = Driver::new(&mut ui);
+    let error = driver.clear_focus().unwrap_err();
+    assert!(is_failure(&error, "focus loss failed"), "{error:?}");
+    assert_eq!(driver.runtime().focused(), None);
+    Ok(())
+}
+
+#[test]
+fn clear_focus_needs_no_neutral_input_and_leaves_it_neutral() -> TestResult {
+    let mut ui = runtime()?;
+    let mut driver = Driver::new(&mut ui);
+    driver
+        .runtime_mut()
+        .command_key_input(CommandKeyInput::new(
+            KeyCode::KeyA,
+            KeyAction::Press,
+            CommandKey::Named(KeyCode::KeyA),
+        ))?;
+    assert_eq!(driver.key(KeyCode::Tab), Err(TestError::InputHeld));
+    driver.clear_focus()?;
+    assert!(driver.runtime().keyboard().pressed().next().is_none());
+    assert_eq!(
+        driver.runtime().keyboard().modifiers(),
+        Modifiers::default()
+    );
+    driver.key(KeyCode::Tab)?;
+    Ok(())
+}
+
+/// What a setup helper returns, or why it failed.
+type Setup<T> = Result<T, Box<dyn std::error::Error>>;
+/// A count a component or callback shares with the test.
+type Count = Rc<Cell<u32>>;
+/// The cancellations a held-input registration received.
+type Cancellations = Rc<RefCell<Vec<HeldCancellation>>>;
+
+/// A runtime with a detached window whose text field owns a held-input
+/// registration for F8 that logs its cancellations. Returns the field and
+/// the detached window.
+fn held_in_a_detached_window() -> Setup<(Runtime, WidgetId, NativeWindowId, Cancellations)> {
+    let mut ui = runtime()?;
+    let root = ui.mount_tree(Element::new(
+        "root",
+        Column::new([
+            Element::new("here", Label::new("Here")),
+            Element::new(
+                "panel",
+                View::new(Element::new(
+                    "field",
+                    TextField::new(ui.signal(String::new())),
+                )),
+            ),
+        ]),
+    ))?;
+    ui.flush(Duration::ZERO)?;
+    let panel = ui.find(&root, &["panel"])?.ok_or("panel")?;
+    let prepared = ui.prepare_detach(&panel, NativeWindowOptions::new("Panel")?)?;
+    let detached = ui.commit_detach(prepared)?;
+    ui.set_viewport(Viewport::new(200.0, 100.0, 1.0)?)?;
+    ui.flush(Duration::ZERO)?;
+    let field = ui.find(&root, &["panel", "field"])?.ok_or("field")?;
+    let cancellations = Rc::new(RefCell::new(Vec::new()));
+    let log = cancellations.clone();
+    ui.register_held_input(
+        &field,
+        vec![KeyCode::F8],
+        Modifiers::default(),
+        |_, _, _| Ok(InputOutcome::Handled),
+        move |_, reason| log.borrow_mut().push(reason),
+    )?;
+    Ok((ui, field, detached, cancellations))
+}
+
+#[test]
+fn clear_focus_keeps_another_windows_focus_and_cancels_every_held_key() -> TestResult {
+    let (mut ui, field, detached, cancellations) = held_in_a_detached_window()?;
+    ui.select_window(&detached)?;
+    ui.focus(&field)?;
+    ui.command_key_input(CommandKeyInput::new(
+        KeyCode::F8,
+        KeyAction::Press,
+        CommandKey::Named(KeyCode::F8),
+    ))?;
+    assert!(cancellations.borrow().is_empty());
+    let primary = ui.primary_window();
+    ui.select_window(&primary)?;
+    let mut driver = Driver::new(&mut ui);
+    driver.clear_focus()?;
+    // The selected window's reach: the detached window keeps its focus.
+    driver.runtime_mut().select_window(&detached)?;
+    assert_eq!(driver.runtime().focused(), Some(field));
+    // The runtime-wide reach: the held registration was cancelled.
+    assert_eq!(*cancellations.borrow(), [HeldCancellation::FocusLost]);
+    Ok(())
+}
+
+// `Driver::quiet_for`.
+
+const QUARTER: Duration = Duration::from_millis(250);
+
+#[test]
+fn a_spinning_spinner_is_busy_and_a_resting_one_idle() -> TestResult {
+    let mut ui = runtime()?;
+    let busy = ui.signal(true);
+    ui.mount_tree(Element::new("busy", Spinner::new(busy.clone())))?;
+    let mut driver = Driver::new(&mut ui);
+    driver.settle()?;
+    let report = driver.quiet_for(QUARTER)?;
+    assert!(report.components_updated >= 2, "{report:?}");
+    assert!(report.next_deadline.is_some(), "{report:?}");
+    assert!(report.needs_paint, "{report:?}");
+    assert!(report.baseline_painted);
+    assert!(!report.is_idle());
+    busy.set(false)?;
+    let report = driver.quiet_for(QUARTER)?;
+    assert!(report.is_idle(), "{report:?}");
+    Ok(())
+}
+
+#[test]
+fn a_timer_the_test_installed_is_busy_until_it_is_cancelled() -> TestResult {
+    let mut ui = runtime()?;
+    let count = ui.signal(0_u32);
+    let shown = count.map(|n| n.to_string())?;
+    ui.mount_tree(Element::new("count", Label::new(shown)))?;
+    let target = count.clone();
+    let timer = ui.start_interval(Duration::from_millis(100), move |_| {
+        target.update(|n| *n += 1)
+    })?;
+    let mut driver = Driver::new(&mut ui);
+    driver.settle()?;
+    let report = driver.quiet_for(QUARTER)?;
+    assert_eq!(count.get()?, 2);
+    assert!(report.components_updated >= 2, "{report:?}");
+    assert!(report.needs_paint, "{report:?}");
+    assert!(report.next_deadline.is_some(), "{report:?}");
+    timer.cancel();
+    let report = driver.quiet_for(QUARTER)?;
+    assert!(report.is_idle(), "{report:?}");
+    Ok(())
+}
+
+#[test]
+fn a_toast_waiting_to_expire_keeps_a_deadline() -> TestResult {
+    let mut ui = runtime()?;
+    let queue = ToastController::new(&ui);
+    ui.mount_tree(Element::new(
+        "host",
+        ToastHost::new(queue.clone(), Element::new("body", Label::new("Body"))),
+    ))?;
+    let mut driver = Driver::new(&mut ui);
+    driver.settle()?;
+    let _toast = queue.push(Toast::new("Saved"))?;
+    driver.settle()?;
+    let report = driver.quiet_for(Duration::from_secs(1))?;
+    assert_eq!(report.components_updated, 0, "{report:?}");
+    assert!(!report.needs_paint, "{report:?}");
+    assert!(report.next_deadline.is_some(), "{report:?}");
+    assert!(!report.is_idle());
+    driver.advance(Duration::from_secs(10))?;
+    let report = driver.quiet_for(Duration::from_secs(1))?;
+    assert!(report.is_idle(), "{report:?}");
+    Ok(())
+}
+
+#[test]
+fn another_windows_spinner_does_not_make_the_selected_window_busy() -> TestResult {
+    let mut ui = runtime()?;
+    let busy = ui.signal(true);
+    let root = ui.mount_tree(Element::new(
+        "root",
+        Column::new([
+            Element::new("here", Label::new("Here")),
+            Element::new(
+                "panel",
+                View::new(Element::new("spinner", Spinner::new(busy.clone()))),
+            ),
+        ]),
+    ))?;
+    ui.flush(Duration::ZERO)?;
+    let panel = ui.find(&root, &["panel"])?.ok_or("panel")?;
+    let prepared = ui.prepare_detach(&panel, NativeWindowOptions::new("Panel")?)?;
+    let detached = ui.commit_detach(prepared)?;
+    ui.set_viewport(Viewport::new(200.0, 100.0, 1.0)?)?;
+    ui.flush(Duration::ZERO)?;
+    let primary = ui.primary_window();
+    ui.select_window(&primary)?;
+    let mut driver = Driver::new(&mut ui);
+    driver.settle()?;
+    let report = driver.quiet_for(QUARTER)?;
+    assert!(report.is_idle(), "{report:?}");
+    driver.runtime_mut().select_window(&detached)?;
+    let report = driver.quiet_for(QUARTER)?;
+    assert!(report.components_updated >= 2, "{report:?}");
+    assert!(report.next_deadline.is_some(), "{report:?}");
+    Ok(())
+}
+
+#[test]
+fn work_due_when_the_call_starts_runs_in_the_baseline_and_is_not_counted() -> TestResult {
+    let mut ui = runtime()?;
+    let text = ui.signal(String::from("Before"));
+    ui.mount_tree(Element::new("text", Label::new(text.clone())))?;
+    let mut driver = Driver::new(&mut ui);
+    driver.settle()?;
+    text.set("After".to_owned())?;
+    let report = driver.quiet_for(Duration::from_millis(100))?;
+    assert!(report.is_idle(), "{report:?}");
+    Ok(())
+}
+
+#[test]
+fn the_clock_moves_by_exactly_the_interval() -> TestResult {
+    let mut ui = runtime()?;
+    let ticks = Rc::new(Cell::new(0));
+    ui.mount_tree(Element::new("ticker", Ticker(ticks.clone())))?;
+    let mut driver = Driver::new(&mut ui);
+    assert_eq!(driver.runtime().now(), Duration::ZERO);
+    let report = driver.quiet_for(Duration::from_millis(40))?;
+    assert_eq!(driver.runtime().now(), Duration::from_millis(40));
+    // Flushes at 16, 32 and a final partial frame at 40 ms: the ticker,
+    // which wakes a frame after each update, ticks at 16 and 32 ms.
+    assert_eq!(report.components_updated, 2, "{report:?}");
+    assert_eq!(report.next_deadline, Some(Duration::from_millis(48)));
+    let report = driver.quiet_for(Duration::ZERO)?;
+    assert_eq!(driver.runtime().now(), Duration::from_millis(40));
+    assert_eq!(report.components_updated, 0, "{report:?}");
+    assert!(
+        report.next_deadline.is_some(),
+        "the ticker is still scheduled"
+    );
+    Ok(())
+}
+
+/// A leaf whose paint fails with a clone of its error.
+struct FailingPaint(DrawError);
+impl Component for FailingPaint {
+    fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+        Ok(())
+    }
+    fn measure(&self, _: &MeasureContext<'_>, _: Constraints) -> Result<Size, RuntimeError> {
+        Ok(Size::new(40.0, 20.0)?)
+    }
+    fn paint(&self, _: &mut Painter) -> Result<(), DrawError> {
+        Err(self.0.clone())
+    }
+}
+
+#[test]
+fn a_paint_failure_is_a_draw_error_and_a_runtime_failure_keeps_its_form() -> TestResult {
+    let mut ui = runtime()?;
+    ui.mount_tree(Element::new("leaf", FailingPaint(DrawError::TooComplex)))?;
+    let mut driver = Driver::new(&mut ui);
+    driver.settle()?;
+    assert_eq!(
+        driver.quiet_for(Duration::ZERO),
+        Err(TestError::Draw(DrawError::TooComplex))
+    );
+
+    let mut ui = runtime()?;
+    ui.mount_tree(Element::new(
+        "leaf",
+        FailingPaint(DrawError::Runtime(failure("paint failed"))),
+    ))?;
+    let mut driver = Driver::new(&mut ui);
+    driver.settle()?;
+    let error = driver.quiet_for(Duration::ZERO).unwrap_err();
+    assert!(is_failure(&error, "paint failed"), "{error:?}");
+    assert_eq!(error.to_string(), "paint failed");
+    Ok(())
+}
+
+#[test]
+fn a_components_own_pending_updates_is_its_paint_error() -> TestResult {
+    let mut ui = runtime()?;
+    ui.mount_tree(Element::new(
+        "leaf",
+        FailingPaint(DrawError::PendingUpdates),
+    ))?;
+    let mut driver = Driver::new(&mut ui);
+    driver.settle()?;
+    assert_eq!(
+        driver.quiet_for(Duration::ZERO),
+        Err(TestError::Draw(DrawError::PendingUpdates))
+    );
+    let site = driver.runtime().last_failure().ok_or("a failure site")?;
+    assert_eq!(site.path, ["leaf"]);
+    assert_eq!(site.phase, FailurePhase::Paint);
+    Ok(())
+}
+
+type Shared<T> = Rc<RefCell<Option<T>>>;
+
+/// Keeps the notifier of its first update for the test, and queues `command`
+/// each time a notification is delivered.
+struct QueuesOnNotification {
+    notifier: Shared<Notifier>,
+    command: CommandId,
+}
+impl Component for QueuesOnNotification {
+    fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
+        self.notifier
+            .borrow_mut()
+            .get_or_insert_with(|| cx.notifier());
+        Ok(())
+    }
+    fn deliver_notifications(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
+        let context = cx.command_context(CommandSource::Programmatic);
+        let _receipt = cx.invoke_command(&self.command, context)?;
+        Ok(())
+    }
+}
+
+/// A settled runtime whose next flush delivers a notification that queues a
+/// command counting its runs, after that flush dispatched its commands.
+fn queued_after_the_baseline_flush() -> Setup<(Runtime, Notifier, Count)> {
+    let mut ui = runtime()?;
+    let runs = Rc::new(Cell::new(0));
+    let counter = runs.clone();
+    let command =
+        ui.register_command("Count", CommandScope::Application, vec![], move |_, _| {
+            counter.set(counter.get() + 1);
+            Ok(())
+        })?;
+    let notifier = Shared::default();
+    ui.mount_tree(Element::new(
+        "queues",
+        QueuesOnNotification {
+            notifier: notifier.clone(),
+            command,
+        },
+    ))?;
+    ui.flush(Duration::ZERO)?;
+    let notifier = notifier.borrow_mut().take().ok_or("the notifier")?;
+    Ok((ui, notifier, runs))
+}
+
+#[test]
+fn a_refused_baseline_is_activity_not_an_error() -> TestResult {
+    let (mut ui, notifier, runs) = queued_after_the_baseline_flush()?;
+    // Requested outside an input entry point, so no flush delivers it yet.
+    notifier.request();
+    let mut driver = Driver::new(&mut ui);
+    let now = driver.runtime().now();
+    let report = driver.quiet_for(Duration::ZERO)?;
+    assert!(!report.baseline_painted, "{report:?}");
+    assert_eq!(report.next_deadline, Some(now), "{report:?}");
+    assert!(!report.is_idle());
+    assert_eq!(runs.get(), 0, "the command is still queued");
+    Ok(())
+}
+
+#[test]
+fn a_refused_baseline_is_never_idle_even_when_the_end_needs_no_paint() -> TestResult {
+    let (mut ui, notifier, runs) = queued_after_the_baseline_flush()?;
+    ui.paint()?;
+    notifier.request();
+    let mut driver = Driver::new(&mut ui);
+    let report = driver.quiet_for(Duration::from_millis(100))?;
+    assert_eq!(runs.get(), 1, "the first step ran the command");
+    assert_eq!(report.components_updated, 0, "{report:?}");
+    assert_eq!(report.next_deadline, None, "{report:?}");
+    assert!(!report.needs_paint, "{report:?}");
+    assert!(!report.baseline_painted, "{report:?}");
+    assert!(!report.is_idle());
+    Ok(())
+}
+
+#[test]
+fn an_overflowing_interval_is_refused_before_anything_runs() -> TestResult {
+    let mut ui = runtime()?;
+    let text = ui.signal(String::from("Before"));
+    ui.mount_tree(Element::new("text", Label::new(text.clone())))?;
+    let mut driver = Driver::new(&mut ui);
+    driver.advance(Duration::from_millis(1))?;
+    text.set("After".to_owned())?;
+    assert!(driver.runtime().needs_paint());
+    assert_eq!(
+        driver.quiet_for(Duration::MAX),
+        Err(TestError::ClockOverflow)
+    );
+    assert_eq!(driver.runtime().now(), Duration::from_millis(1));
+    assert!(
+        driver.runtime().needs_paint(),
+        "nothing was flushed or painted"
+    );
+    Ok(())
+}
+
+#[test]
+fn a_steps_flush_error_ends_the_call() -> TestResult {
+    let mut ui = runtime()?;
+    let trigger = ui.signal(false);
+    ui.mount_tree(Element::new(
+        "watcher",
+        Watcher {
+            trigger: trigger.read_only(),
+            failed: false,
+        },
+    ))?;
+    let target = trigger.clone();
+    let _timer = ui.start_interval(Duration::from_millis(100), move |_| target.set(true))?;
+    let mut driver = Driver::new(&mut ui);
+    driver.settle()?;
+    let error = driver.quiet_for(QUARTER).unwrap_err();
+    assert!(is_failure(&error, "update failed"), "{error:?}");
+    Ok(())
+}
+
+/// What a primary-window component does when its event timer elapses: queue
+/// a command, or reveal the component the test names once it is mounted.
+enum OnTimer {
+    Command(CommandId),
+    Reveal(Shared<WidgetId>),
+}
+
+/// Arms a 50 ms event timer when a notification is delivered, and counts its
+/// own updates.
+struct Arming {
+    notifier: Shared<Notifier>,
+    updates: Rc<Cell<u32>>,
+    on_timer: OnTimer,
+}
+impl Component for Arming {
+    fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
+        self.updates.set(self.updates.get() + 1);
+        self.notifier
+            .borrow_mut()
+            .get_or_insert_with(|| cx.notifier());
+        Ok(())
+    }
+    fn deliver_notifications(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
+        cx.set_timer(Duration::from_millis(50))
+    }
+    fn timer_elapsed(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
+        match &self.on_timer {
+            OnTimer::Command(command) => {
+                let context = cx.command_context(CommandSource::Programmatic);
+                let _receipt = cx.invoke_command(command, context)?;
+            }
+            OnTimer::Reveal(target) => {
+                let target = target
+                    .borrow()
+                    .clone()
+                    .ok_or_else(|| failure("no target"))?;
+                let _receipt = cx.request_reveal(&target)?;
+            }
+        }
+        Ok(())
+    }
+}
+
+/// An `Arming` component in the primary window and a `Ticker` in a detached
+/// one, the primary selected and settled and the timer armed, due 50 ms
+/// after the clock's zero. Returns the ticker's ticks, the `Arming` component's
+/// updates and the ticker.
+fn nested_flush_setup(ui: &mut Runtime, on_timer: OnTimer) -> Setup<(Count, Count, WidgetId)> {
+    let ticks = Rc::new(Cell::new(0));
+    let notifier = Shared::default();
+    let updates = Rc::new(Cell::new(0));
+    let root = ui.mount_tree(Element::new(
+        "root",
+        Column::new([
+            Element::new(
+                "arming",
+                Arming {
+                    notifier: notifier.clone(),
+                    updates: updates.clone(),
+                    on_timer,
+                },
+            ),
+            Element::new(
+                "panel",
+                View::new(Element::new("ticker", Ticker(ticks.clone()))),
+            ),
+        ]),
+    ))?;
+    ui.flush(Duration::ZERO)?;
+    let panel = ui.find(&root, &["panel"])?.ok_or("panel")?;
+    let ticker = ui.find(&root, &["panel", "ticker"])?.ok_or("ticker")?;
+    let prepared = ui.prepare_detach(&panel, NativeWindowOptions::new("Panel")?)?;
+    let _detached = ui.commit_detach(prepared)?;
+    ui.set_viewport(Viewport::new(200.0, 100.0, 1.0)?)?;
+    let primary = ui.primary_window();
+    ui.select_window(&primary)?;
+    ui.flush(Duration::ZERO)?;
+    // The delivery arms the timer, and settles presentation in every visible
+    // window, so it runs before the measured interval.
+    notifier.borrow().as_ref().ok_or("the notifier")?.request();
+    ui.flush(Duration::ZERO)?;
+    Ok((ticks, updates, ticker))
+}
+
+#[test]
+fn a_commands_admission_in_a_step_runs_another_windows_due_work_uncounted() -> TestResult {
+    let mut ui = runtime()?;
+    let runs = Rc::new(Cell::new(0));
+    let counter = runs.clone();
+    let command = ui.register_command("Noop", CommandScope::Application, vec![], move |_, _| {
+        counter.set(counter.get() + 1);
+        Ok(())
+    })?;
+    let (ticks, updates, _) = nested_flush_setup(&mut ui, OnTimer::Command(command))?;
+    let primary = ui.primary_window();
+    let mut driver = Driver::new(&mut ui);
+    let (ticks_before, updates_before) = (ticks.get(), updates.get());
+    let report = driver.quiet_for(QUARTER)?;
+    assert_eq!(runs.get(), 1, "the timer queued the command once");
+    assert!(
+        ticks.get() > ticks_before,
+        "the admission flushed the detached window"
+    );
+    assert_eq!(
+        report.components_updated,
+        (updates.get() - updates_before) as usize,
+        "{report:?}"
+    );
+    assert_eq!(report.next_deadline, None, "{report:?}");
+    assert_eq!(driver.runtime().current_window(), primary);
+    Ok(())
+}
+
+#[test]
+fn a_queued_reveal_in_a_step_runs_another_windows_due_work_uncounted() -> TestResult {
+    let mut ui = runtime()?;
+    let target = Shared::default();
+    let (ticks, updates, ticker) = nested_flush_setup(&mut ui, OnTimer::Reveal(target.clone()))?;
+    *target.borrow_mut() = Some(ticker);
+    let primary = ui.primary_window();
+    let mut driver = Driver::new(&mut ui);
+    let (ticks_before, updates_before) = (ticks.get(), updates.get());
+    let report = driver.quiet_for(QUARTER)?;
+    assert!(
+        ticks.get() > ticks_before,
+        "the reveal flushed the detached window"
+    );
+    assert_eq!(
+        report.components_updated,
+        (updates.get() - updates_before) as usize,
+        "{report:?}"
+    );
+    assert_eq!(report.next_deadline, None, "{report:?}");
+    assert_eq!(driver.runtime().current_window(), primary);
     Ok(())
 }

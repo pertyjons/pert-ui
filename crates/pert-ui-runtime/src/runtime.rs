@@ -5572,7 +5572,18 @@ impl Runtime {
         )
     }
 
-    /// Returns the earliest elapsed deadline, or `None` when the runtime can sleep.
+    /// Returns the earliest deadline of the selected window and of the work
+    /// all windows share, or `None` when the runtime can sleep.
+    ///
+    /// While immediate work waits, such as pending updates or layout, queued
+    /// commands, reveals and structure changes, deferred or background tasks,
+    /// queued focus errors, inspection requests or notifications, it is the
+    /// current [`Self::now`]. Otherwise it is the earliest of the selected
+    /// window's update deadlines and event timers and the shared work's
+    /// deadlines: interval timers, view-scale settling and polled live
+    /// sources. Another window's own deadlines are not included; a host that
+    /// drives every window reads
+    /// [`HostIntegration::application_deadline`](crate::host::HostIntegration::application_deadline).
     #[must_use]
     pub fn next_deadline(&self) -> Option<Duration> {
         if !self.shared.tasks.borrow().is_empty()

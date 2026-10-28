@@ -64,10 +64,9 @@ pub use crate::{
 /// A host is code that owns the event loop around a runtime: the facade's
 /// `App`, a custom host built on another window system or none, and a
 /// headless test that stands in for one, for example to select a native
-/// window, complete a presentation request or clear focus as a window's
-/// deactivation would. Applications that run under `App` never call these
-/// methods, so they are kept off [`Runtime`]'s own page and out of the
-/// prelude.
+/// window or complete a presentation request. Applications that run under
+/// `App` never call these methods, so they are kept off [`Runtime`]'s own
+/// page and out of the prelude.
 ///
 /// Import the trait to call its methods on a runtime:
 /// `use pert_ui::host::HostIntegration;` with the `pert-ui` facade (or
@@ -273,7 +272,15 @@ pub trait HostIntegration: sealed::HostIntegrationSeal {
     ///
     /// Custom hosts check this after events/flushes, then call `paint` after pending
     /// updates are flushed. Successful painting clears scene damage. Hidden component
-    /// dirtiness alone does not request presentation. This query creates no timers.
+    /// dirtiness alone does not request presentation. A capture waiting for this
+    /// window keeps it true until the capture is served. A queued command does not
+    /// make it true, although [`Runtime::paint`] refuses with
+    /// [`DrawError::PendingUpdates`] until a flush dispatches the command.
+    /// This query creates no timers.
+    ///
+    /// A test that checks idleness calls
+    /// [`Driver::quiet_for`](crate::testing::Driver::quiet_for), which paints a
+    /// baseline first.
     #[must_use]
     fn needs_paint(&self) -> bool;
     /// Invalidates a mount for external geometry/surface events.
@@ -423,6 +430,10 @@ pub trait HostIntegration: sealed::HostIntegrationSeal {
     /// cleanup. Other captured input and ancestor input handlers are canceled once
     /// per component, since key/pointer events may bubble. Late OS up notifications become
     /// `UnmatchedRelease`, preventing stuck-key actions.
+    ///
+    /// A headless test calls
+    /// [`Driver::clear_focus`](crate::testing::Driver::clear_focus), which also
+    /// settles.
     fn clear_focus(&mut self);
     /// Cancels active input after a host/component failure without transferring focus.
     ///

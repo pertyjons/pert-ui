@@ -201,9 +201,11 @@ pub mod component {
 /// Driving an application in a headless test, for `use pert_ui::testing::*`.
 ///
 /// [`Driver`](testing::Driver) clicks a component, replaces or types text,
-/// presses keys and chords, settles the runtime after each step and finds a
-/// component's [`Semantics`]; [`TestError`](testing::TestError) names what a
-/// step could not do. Neither needs a window or a GPU. The module also
+/// presses keys and chords, clears focus, settles the runtime after each step,
+/// checks that a window stays quiet over an interval
+/// ([`QuietReport`](testing::QuietReport)) and finds a component's
+/// [`Semantics`]; [`TestError`](testing::TestError) names what a step could
+/// not do. Neither needs a window or a GPU. The module also
 /// re-exports what a headless test writes besides the driver and the
 /// prelude:
 ///
@@ -214,8 +216,9 @@ pub mod component {
 ///   [`ClickCounter`];
 /// - what the driver's steps return: [`FlushReport`], which
 ///   [`Driver::settle`](testing::Driver::settle) and
-///   [`Driver::advance`](testing::Driver::advance) return, and the
-///   [`RevealRefusal`] a `TestError::NotRevealed` carries;
+///   [`Driver::advance`](testing::Driver::advance) return, the
+///   [`RevealRefusal`] a `TestError::NotRevealed` carries and the
+///   [`DrawError`] a `TestError::Draw` carries;
 /// - semantics: [`Semantics`] with [`SemanticRole`], [`SemanticValue`],
 ///   [`SemanticAction`] and [`SemanticItem`];
 /// - queries: [`InspectionQuery`], [`Selector`], [`Detail`] and [`Depth`] for
@@ -230,8 +233,11 @@ pub mod component {
 ///   [`InspectionReply`], [`WaitError`], [`Capture`], [`CaptureError`] and
 ///   [`FrameImage`] for [`Runtime::request_capture`];
 /// - [`HostIntegration`](host::HostIntegration), because a test that selects
-///   a native window, takes presentation requests or clears focus stands in
-///   for a [`host`].
+///   a native window or takes presentation requests stands in for a
+///   [`host`]. A test clears focus with
+///   [`Driver::clear_focus`](testing::Driver::clear_focus) and checks
+///   idleness with [`Driver::quiet_for`](testing::Driver::quiet_for) beside
+///   the driver's other actions.
 ///
 /// With the `cpu` feature it adds [`CpuRenderer`], which serves captures
 /// without a GPU, and the [`CpuRenderError`] its rendering returns, and with
@@ -270,11 +276,15 @@ pub mod component {
 /// - A host's [`PhysicalExtent`], for [`Viewport::from_physical`], is in
 ///   [`host`]; a test builds its viewport with [`Viewport::new`].
 /// - The [`DisplayList`] that [`Runtime::paint`] returns is passed on to a
-///   renderer, and is in [`component`] and [`host`].
+///   renderer, and is in [`component`] and [`host`]. The identities of its
+///   resources, [`VectorId`], [`MaskId`] and [`ImageId`], which
+///   `DrawError::MissingVector`, `MissingMask` and `MissingImage` hold, are
+///   in [`component`].
 /// - [`GeometryError`], which [`Viewport::new`] and the other value
 ///   constructors return, is propagated with `?` and stays at the crate root
 ///   with the other errors; so does an error nested in another, such as the
-///   [`DrawError`] of `CaptureError::Drawing` or of `CpuRenderError::Drawing`.
+///   [`PathError`] of `DrawError::Path` or the [`LimitError`] of
+///   `CaptureError::Limit`.
 /// - What the [`HostIntegration`](host::HostIntegration) methods take and
 ///   return, such as presentation requests, capture jobs and the clipboard
 ///   service, is the [`host`] module's vocabulary.
@@ -320,14 +330,11 @@ pub mod component {
 ///
 /// let mut ui = Runtime::new();
 /// ui.set_viewport(Viewport::new(300.0, 100.0, 1.0)?)?;
-/// let name = ui.mount_tree(Element::new("name", TextField::new(ui.signal(String::new()))))?;
+/// ui.mount_tree(Element::new("name", TextField::new(ui.signal(String::new()))))?;
 /// let main = ui.primary_window();
 /// ui.select_window(&main)?;
 /// // Nothing asked for a native window.
 /// assert!(ui.take_presentation_requests()?.is_empty());
-/// ui.focus(&name)?;
-/// ui.clear_focus(); // as the window's deactivation would
-/// assert_eq!(ui.focused(), None);
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 #[cfg_attr(feature = "native", doc = include_str!("guide/links/desktop.md"))]
@@ -342,15 +349,15 @@ pub mod testing {
     #[doc(no_inline)]
     pub use pert_ui_runtime::testing::{
         Capture, CaptureError, CaptureRequest, CaptureTarget, ClickCounter, CommandKeyInput,
-        ComponentDetails, ComponentInspection, Depth, Detail, FlushReport, FocusDirection,
-        FrameImage, InputOutcome, InspectValue, InspectionQuery, InspectionReply, KeyAction,
-        Magnification, NativeWindowId, Pending, PointerButton, PointerEvent, PointerKind,
-        QueryResult, Rect, RevealRefusal, Selector, SemanticAction, SemanticItem, SemanticRole,
-        SemanticValue, Semantics, ValidationCode, ValidationIssue, ValidationMarker,
+        ComponentDetails, ComponentInspection, Depth, Detail, DrawError, FlushReport,
+        FocusDirection, FrameImage, InputOutcome, InspectValue, InspectionQuery, InspectionReply,
+        KeyAction, Magnification, NativeWindowId, Pending, PointerButton, PointerEvent,
+        PointerKind, QueryResult, Rect, RevealRefusal, Selector, SemanticAction, SemanticItem,
+        SemanticRole, SemanticValue, Semantics, ValidationCode, ValidationIssue, ValidationMarker,
         ValidationReport, Viewport, WaitError,
     };
     #[doc(inline)]
-    pub use pert_ui_runtime::testing::{Driver, TestError};
+    pub use pert_ui_runtime::testing::{Driver, QuietReport, TestError};
 
     #[cfg(feature = "native")]
     pub use crate::app::HeadlessApp;
@@ -379,13 +386,12 @@ pub mod testing {
 /// trait's page lists). `App` drives the runtime through this same trait, so
 /// whatever it does, a custom host can do.
 ///
-/// A headless test stands in for a host when it selects a native window,
-/// takes presentation requests or clears focus as a window's deactivation
-/// would; it reaches the trait through [`testing`]. The module also
-/// re-exports what a host writes while it drives the runtime: input events
-/// and key entry, the viewport and its physical extent, the scene and its
-/// drawing error, presentation requests and their statuses, capture jobs and
-/// frames, and the clipboard service. Each name stays at the crate root too,
+/// A headless test stands in for a host when it selects a native window or
+/// takes presentation requests; it reaches the trait through [`testing`]. The
+/// module also re-exports what a host writes while it drives the runtime:
+/// input events and key entry, the viewport and its physical extent, the
+/// scene and its drawing error, presentation requests and their statuses,
+/// capture jobs and frames, and the clipboard service. Each name stays at the crate root too,
 /// except [`HostIntegration`](host::HostIntegration), which is reached
 /// through this module and [`testing`]. The re-exports are
 /// `#[doc(no_inline)]`: each item is documented once, at the crate root.

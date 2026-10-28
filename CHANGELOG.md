@@ -1,5 +1,78 @@
 # Changelog
 
+## 0.3.79 (2026-10-28)
+
+Focus and idle in the driver (round 2 fix plan, part P4, R2-11 and R2-24 by
+decision D5, from its approved design checkpoint
+`plans/usability/round-2-design-P4.md`, revision 3). Nothing breaks:
+`TestError` is `#[non_exhaustive]`, so its new variant changes no match.
+
+- Added (R2-11): `Driver::clear_focus`, the selected window's deactivation
+  (`HostIntegration::clear_focus`) followed by a settle, for "nothing
+  focused" in a test. A focused editor applies its focus-loss rules, so a
+  valid draft is saved; held keys and reported modifiers are released, so
+  it needs no neutral input and leaves input neutral. Its rustdoc states the
+  two reaches: focus, surfaces and pointer state are the selected window's,
+  while pressed keys, modifiers and every admitted held-input registration
+  are cleared runtime-wide.
+- Added (R2-24): `Driver::quiet_for` and `QuietReport` (`components_updated`,
+  `next_deadline`, `needs_paint`, `baseline_painted`, `is_idle`), in
+  `pert_ui_runtime::testing` and `pert_ui::testing`. It flushes at the
+  current clock and paints a baseline, then lets the interval pass in
+  `Driver::FRAME` steps without painting, a final partial frame landing
+  exactly on its end and a zero interval making no step, so the clock moves
+  by exactly the interval. The report covers the selected window and the
+  work windows share; another window's own timers do not make it busy. A
+  baseline the runtime refuses because the baseline flush left work queued
+  is activity (`baseline_painted: false`, never idle), told apart from a
+  component's own `DrawError::PendingUpdates` by `Runtime::last_failure`.
+  `QuietReport` is `#[must_use]`, so `driver.quiet_for(d)?;` warns.
+- Added (R2-24): `TestError::Draw(DrawError)`, which `quiet_for`'s baseline
+  paint returns, and `impl From<DrawError> for TestError`, which keeps a
+  runtime failure in its one form: `DrawError::Runtime` becomes
+  `TestError::Runtime`, every other variant `TestError::Draw`, so a test
+  helper returning `TestError` applies `?` to `Runtime::paint`. `DrawError`
+  joins both `testing` modules (decision P4-D1) and stays at the roots, in
+  `component` and in `host`.
+- Documentation (R2-11, R2-24): the testing chapter's "Nothing focused" and
+  "Nothing scheduled while idle", and its introduction;
+  `HostIntegration::clear_focus` and `HostIntegration::needs_paint` point
+  to the driver, and `needs_paint` says that a capture waiting for its
+  window keeps it true and that a queued command does not;
+  `Runtime::next_deadline` states its scope (the selected window's deadlines
+  and timers, the work windows share, the current time while work waits,
+  and `HostIntegration::application_deadline` for every window); the
+  `testing` and `host` pages and the trait's page no longer teach clearing
+  focus through the trait, and the facade's `testing` page drops its
+  `focus`/`clear_focus` lines; `Driver`'s "Settling" points to
+  `quiet_for`; `TestError::ClockOverflow` names the driver's other callers;
+  `DecimalInput`'s example clears focus with the driver. The `testing` pages
+  list `VectorId`, `MaskId` and `ImageId`, which `DrawError`'s variants
+  hold, among the names in `component`.
+- Tests (R2-11, R2-24): the runtime's driver tests cover a draft saved by
+  `clear_focus`, its returned focus-loss error, held input and its two
+  reaches; a spinner, a timer the test installed, a toast waiting to expire,
+  a spinner in another window, baseline work, the exact clock, paint
+  failures in both forms, a refused baseline at a zero and a nonzero
+  interval, a component's own `PendingUpdates`, the overflow check, a
+  step's flush error, and the uncounted nested flushes of a queued command's
+  admission and of a queued reveal into another window. A `compile_fail`
+  doctest under `#![deny(unused_must_use)]` discards a `QuietReport` after
+  `?`, beside one that reads it. The facade's module tests name
+  `QuietReport` and `DrawError` in `testing`, and the closure check lists
+  `VectorId`, `MaskId` and `ImageId` as reviewed exclusions (in
+  `component`).
+
+The `api/` diff: in `api/pert-ui-runtime/default.txt` and `serde.txt`,
+`Driver::clear_focus`, `Driver::quiet_for`, the item block of
+`pert_ui_runtime::testing::QuietReport` (its four fields, `is_idle` and its
+derived and auto trait impls), `TestError::Draw`,
+`impl From<DrawError> for TestError` (listed in the blocks of `TestError`,
+`DrawError` and each module that exports `DrawError`) and the item block of
+`pert_ui_runtime::testing::DrawError`; in every `api/pert-ui/*.txt`,
+`pub use pert_ui::testing::DrawError` and
+`pub use pert_ui::testing::QuietReport`.
+
 ## 0.3.78 (2026-10-28)
 
 Small ergonomics (round 2 fix plan, part P3, R2-4 by decision D11 and
