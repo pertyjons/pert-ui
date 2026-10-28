@@ -65,15 +65,16 @@ are run where available; missing platforms remain explicit.
   and the no-tester probe on each kit before task runs.
 - Apply task 6's sealed notification criterion identically: the UI must
   show a failure notification and inspection must expose that notification's
-  existence. A `ToastStack` count increase with an error role establishes
+  existence. A `ToastStack` count increase with its Notifications role establishes
   existence on either commit; do not require message text in inspection,
   which baseline toasts cannot provide. Source inspection plus a capture or
   the component description must establish that it displays the actual
-  failure. A visible outside-row failure message in another component also
+  failure. A visible failure message in another component also
   qualifies if inspection exposes it. Record message discoverability as a
   separate usability observation. Never weaken the requirement that the
   tab remains modified after failure.
 - Fresh Claude acceptance contexts apply the same procedure to both commits,
+  receiving the task 6 interpretation above alongside acceptance.md,
   adding checks to copies where required, with source and output preserved.
   Independently check acceptance and triage, particularly Codex submissions.
   Keep paired task 6 conclusions apart from head-only comparisons. Use
@@ -94,4 +95,8 @@ are run where available; missing platforms remain explicit.
   design checkpoints, independent roles and the sealed task 6 notification
   interpretation, preserved link targets in the reading command, pinned
   Claude's model and balanced queue order. Task 6 acceptance paragraph and
-  reserved files compared with a81449f: unchanged. Recheck pending.
+  reserved files compared with a81449f: unchanged. Recheck found only the
+  incorrect error-role wording (toasts have no severity) and requested
+  removing task 5's "outside-row" wording and giving acceptance agents this
+  interpretation. All three corrected; the reviewer explicitly found the
+  rest resolved and ready subject to these corrections and prelaunch checks.
