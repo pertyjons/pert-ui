@@ -2090,4 +2090,5 @@ plan closes.
   `DecimalInput` and the extended changed-value assertion fail with the
   line removed; the TODO entry removed; CHANGELOG `Fixed`. Fixes gate
   (fresh): fmt, workspace Clippy, workspace tests, the five headless
-  sessions, doctests, rustdoc, `git diff --check`. Recheck: pending.
+  sessions, doctests, rustdoc, `git diff --check`. Codex's recheck:
+  resolved, no regressions: ready. **P12 done** (native evidence missing).
