@@ -501,8 +501,10 @@ impl<'a> Driver<'a> {
     /// A background worker still computing is not observed: its thread runs
     /// outside the runtime until its result arrives, so a report can be idle
     /// while a worker of [`Runtime::spawn`] is blocked or busy. A result that
-    /// arrives during the interval is delivered by a step and shows as
-    /// activity, but one that arrives later is not foreseen. A test of
+    /// arrives during the interval is delivered by a step and can show as
+    /// activity through what its delivery changes, but delivery alone does
+    /// not make the report busy, and a result that arrives later is not
+    /// foreseen. A test of
     /// background work waits for its result with [`Self::wait_until`] first,
     /// then checks that the window is quiet.
     ///

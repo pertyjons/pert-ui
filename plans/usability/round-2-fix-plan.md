@@ -1733,7 +1733,11 @@ plan closes.
   reports, nested counts excluded); this entry's mutation claim (the three
   tests now assert their results explicitly and fail at named assertions,
   `target/p4-evidence/mutations-fix.txt`). Fixes gate (fresh): as above.
-  Recheck: pending.
+  Codex's recheck: the original points resolved; one should-fix, the new
+  sentence said an arriving result "shows as activity", but a delivery
+  that changes nothing leaves the report idle; the author qualified it
+  (it can show through what its delivery changes) and ran the runtime
+  doctests and rustdoc. **P4 done.**
 
 - **P5 Rows in display order (0.3.80), 2026-10-28.** Implemented by a
   fresh agent from the approved design (`round-2-design-P5.md`, revision
