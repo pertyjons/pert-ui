@@ -177,26 +177,50 @@ impl core::marker::UnsafeUnpin for pert_ui::AppShutdownError
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui::AppShutdownError
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui::AppShutdownError
 pub mod pert_ui::testing
+pub use pert_ui::testing::Capture
+pub use pert_ui::testing::CaptureError
 pub use pert_ui::testing::CaptureRequest
 pub use pert_ui::testing::CaptureTarget
 pub use pert_ui::testing::ClickCounter
 pub use pert_ui::testing::CommandKeyInput
+pub use pert_ui::testing::ComponentDetails
+pub use pert_ui::testing::ComponentInspection
+pub use pert_ui::testing::CpuRenderError
 pub use pert_ui::testing::CpuRenderer
+pub use pert_ui::testing::Depth
 pub use pert_ui::testing::Detail
 pub use pert_ui::testing::Driver
+pub use pert_ui::testing::FlushReport
 pub use pert_ui::testing::FocusDirection
 pub use pert_ui::testing::FrameImage
 pub use pert_ui::testing::HostIntegration
 pub use pert_ui::testing::InputOutcome
+pub use pert_ui::testing::InspectValue
 pub use pert_ui::testing::InspectionQuery
+pub use pert_ui::testing::InspectionReply
 pub use pert_ui::testing::KeyAction
+pub use pert_ui::testing::Magnification
+pub use pert_ui::testing::NativeWindowId
+pub use pert_ui::testing::Pending
 pub use pert_ui::testing::PointerButton
 pub use pert_ui::testing::PointerEvent
 pub use pert_ui::testing::PointerKind
+pub use pert_ui::testing::QueryResult
+pub use pert_ui::testing::Rect
+pub use pert_ui::testing::RevealRefusal
 pub use pert_ui::testing::Selector
+pub use pert_ui::testing::SemanticAction
+pub use pert_ui::testing::SemanticItem
+pub use pert_ui::testing::SemanticRole
 pub use pert_ui::testing::SemanticValue
+pub use pert_ui::testing::Semantics
 pub use pert_ui::testing::TestError
+pub use pert_ui::testing::ValidationCode
+pub use pert_ui::testing::ValidationIssue
+pub use pert_ui::testing::ValidationMarker
+pub use pert_ui::testing::ValidationReport
 pub use pert_ui::testing::Viewport
+pub use pert_ui::testing::WaitError
 pub struct pert_ui::testing::HeadlessApp
 impl pert_ui::testing::HeadlessApp
 pub fn pert_ui::testing::HeadlessApp::admit_close(&mut self, &pert_ui_runtime::runtime::native_windows::NativeWindowId) -> core::result::Result<pert_ui::NativeCloseAction, pert_ui::AppError>

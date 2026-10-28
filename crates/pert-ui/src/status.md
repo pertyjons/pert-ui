@@ -24,7 +24,7 @@ scope.
 | `bmp`, `ico`, `tiff`, `pnm`, `qoi` | no | BMP, ICO, TIFF, PBM/PGM/PPM/PAM and QOI decoding. |
 | `image-formats` | no | Every format feature above. |
 | `images` | no | The `images` module without any decoder; every format feature implies it. |
-| `svg` | no | The `svg` module: SVG icons and graphics rasterized with resvg. SVG text is not rendered. |
+| `svg` | no | The `svg_images` module: SVG icons and graphics rasterized with resvg. SVG text is not rendered. |
 | `cpu` | no | The `cpu` module: rendering scenes and serving capture requests on the CPU, with no window or GPU; with `desktop`, `App::software_rendering` presents CPU frames in native windows instead of the GPU's. |
 | `serde` | no | `Serialize`/`Deserialize` for [inspection snapshots][serde-snapshot], [profiles][serde-profile], [validation reports][serde-validation] and [workspace documents][serde-workspace], and everything they carry; the page of each such type says that it needs this feature. |
 

@@ -1,7 +1,7 @@
 //! SVG rasterization through the public facade: what a drawing becomes, when it
 //! is rasterized again, and what is deliberately not supported.
 #![cfg(feature = "svg")]
-use pert_ui::svg::{self, SvgError};
+use pert_ui::svg_images::{self, SvgError};
 use pert_ui::*;
 use std::time::Duration;
 
@@ -18,14 +18,14 @@ const WITH_TEXT: &[u8] = br##"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0
 #[test]
 fn extreme_raster_dimensions_are_rejected_before_allocation() {
     assert_eq!(
-        svg::rasterize(CHECK, u32::MAX, u32::MAX),
+        svg_images::rasterize(CHECK, u32::MAX, u32::MAX),
         Err(SvgError::TooLarge {
             width: u32::MAX,
             height: u32::MAX
         })
     );
     assert_eq!(
-        svg::rasterize_mask(CHECK, u32::MAX, u32::MAX),
+        svg_images::rasterize_mask(CHECK, u32::MAX, u32::MAX),
         Err(SvgError::TooLarge {
             width: u32::MAX,
             height: u32::MAX
@@ -59,17 +59,17 @@ fn coverage(mask: &MaskImage) -> usize {
 
 #[test]
 fn a_drawing_becomes_either_coverage_or_color() {
-    let mask = svg::rasterize_mask(CHECK, 32, 32).unwrap();
+    let mask = svg_images::rasterize_mask(CHECK, 32, 32).unwrap();
     assert_eq!((mask.width(), mask.height()), (32, 32));
     assert!(coverage(&mask) > 0, "the stroke left coverage");
     assert!(
         coverage(&mask) < 32 * 32,
         "an icon is a shape, not a filled square",
     );
-    let image = svg::rasterize(WIDE, 40, 10).unwrap();
+    let image = svg_images::rasterize(WIDE, 40, 10).unwrap();
     assert_eq!((image.width(), image.height()), (40, 10));
     assert_eq!(
-        svg::intrinsic_size(WIDE).unwrap(),
+        svg_images::intrinsic_size(WIDE).unwrap(),
         Size::new(40.0, 10.0).unwrap()
     );
 }
@@ -79,7 +79,7 @@ fn svg_text_is_not_rendered_and_says_so() {
     // The scope decision: no second font registry, so `<text>` contributes
     // nothing. It must not fail either, or an asset with a stray label would be
     // unusable as a whole.
-    let mask = svg::rasterize_mask(WITH_TEXT, 32, 32).unwrap();
+    let mask = svg_images::rasterize_mask(WITH_TEXT, 32, 32).unwrap();
     assert_eq!(coverage(&mask), 0, "text left no coverage");
 }
 
@@ -87,7 +87,7 @@ fn svg_text_is_not_rendered_and_says_so() {
 fn a_source_that_is_not_a_drawing_is_rejected_before_it_is_mounted() {
     assert!(matches!(Svg::new(b"not an svg"), Err(SvgError::Parse(_))));
     assert!(matches!(
-        svg::rasterize(CHECK, 0, 16),
+        svg_images::rasterize(CHECK, 0, 16),
         Err(SvgError::InvalidSize),
     ));
 }
@@ -275,7 +275,7 @@ fn switching_between_color_and_tint_rasterizes_the_other_kind() {
 fn an_oversized_raster_is_refused_before_it_is_rendered() {
     // A color image may hold 64 MiB, which 5000x5000 RGBA exceeds.
     assert_eq!(
-        svg::rasterize(CHECK, 5000, 5000).unwrap_err(),
+        svg_images::rasterize(CHECK, 5000, 5000).unwrap_err(),
         SvgError::TooLarge {
             width: 5000,
             height: 5000
@@ -283,20 +283,25 @@ fn an_oversized_raster_is_refused_before_it_is_rendered() {
     );
     // A mask may hold 16 Mi pixels; these would need gigabytes to render.
     assert_eq!(
-        svg::rasterize_mask(CHECK, 20000, 20000).unwrap_err(),
+        svg_images::rasterize_mask(CHECK, 20000, 20000).unwrap_err(),
         SvgError::TooLarge {
             width: 20000,
             height: 20000
         },
     );
     assert!(matches!(
-        svg::rasterize_mask(CHECK, 60000, 60000),
+        svg_images::rasterize_mask(CHECK, 60000, 60000),
         Err(SvgError::TooLarge { .. })
     ));
     // Exactly at each limit still rasterizes.
-    assert_eq!(svg::rasterize(CHECK, 4096, 4096).unwrap().width(), 4096);
     assert_eq!(
-        svg::rasterize_mask(CHECK, 4096, 4096).unwrap().width(),
+        svg_images::rasterize(CHECK, 4096, 4096).unwrap().width(),
+        4096
+    );
+    assert_eq!(
+        svg_images::rasterize_mask(CHECK, 4096, 4096)
+            .unwrap()
+            .width(),
         4096
     );
     // The component reports the limit rather than failing layout.
@@ -333,7 +338,7 @@ fn an_image_element_reads_no_file_and_no_embedded_data() {
   <image xlink:href="{href}" width="16" height="16"/>
 </svg>"#
         );
-        let mask = svg::rasterize_mask(source.as_bytes(), 16, 16).unwrap();
+        let mask = svg_images::rasterize_mask(source.as_bytes(), 16, 16).unwrap();
         assert_eq!(coverage(&mask), 0, "{href} drew nothing");
     }
 }
@@ -354,7 +359,8 @@ fn excessive_nesting_is_rejected_before_it_can_exhaust_the_stack() {
             .stack_size(2 << 20)
             .spawn(move || {
                 (
-                    svg::rasterize_mask(source.as_bytes(), 16, 16).map(|mask| coverage(&mask)),
+                    svg_images::rasterize_mask(source.as_bytes(), 16, 16)
+                        .map(|mask| coverage(&mask)),
                     Svg::new(source.as_bytes()).err(),
                 )
             })
@@ -362,7 +368,7 @@ fn excessive_nesting_is_rejected_before_it_can_exhaust_the_stack() {
             .join()
             .expect("parsing stays within the stack")
     };
-    let (deepest, _) = on_small_stack(nested(svg::MAX_NESTING));
+    let (deepest, _) = on_small_stack(nested(svg_images::MAX_NESTING));
     assert!(deepest.unwrap() > 0, "the deepest accepted drawing renders");
     // Entities without markup, as some editors declare namespaces, and tags
     // inside comments do not count.
@@ -371,13 +377,13 @@ fn excessive_nesting_is_rejected_before_it_can_exhaust_the_stack() {
 <!DOCTYPE svg [<!ENTITY ns_svg "http://www.w3.org/2000/svg">]>
 <!-- {} -->
 <svg xmlns="&ns_svg;" viewBox="0 0 16 16"><rect width="8" height="8"/></svg>"#,
-        "<g>".repeat(svg::MAX_NESTING * 2),
+        "<g>".repeat(svg_images::MAX_NESTING * 2),
     ));
     assert!(declared.unwrap() > 0);
 
-    let half = svg::MAX_NESTING / 2;
+    let half = svg_images::MAX_NESTING / 2;
     for source in [
-        nested(svg::MAX_NESTING + 1),
+        nested(svg_images::MAX_NESTING + 1),
         nested(20_000),
         // An entity's elements count where it is expanded.
         format!(
@@ -391,8 +397,8 @@ fn excessive_nesting_is_rejected_before_it_can_exhaust_the_stack() {
         // A chain of entities, each nearly as deep as allowed, expands the
         // deepest nesting the XML parser itself recurses through.
         {
-            let near = "<g>".repeat(svg::MAX_NESTING - 2);
-            let close = "</g>".repeat(svg::MAX_NESTING - 2);
+            let near = "<g>".repeat(svg_images::MAX_NESTING - 2);
+            let close = "</g>".repeat(svg_images::MAX_NESTING - 2);
             let entities: String = (0..9)
                 .map(|level| {
                     let inner = if level < 8 {

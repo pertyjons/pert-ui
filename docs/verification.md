@@ -355,6 +355,20 @@ block names, so the doctest passes for any compile error, a typo included. It
 proves a type-level restriction that must hold on every toolchain, such as
 `StateOwner` being sealed, not the message.
 
+The same package holds the `testing` module's closure check
+(`tests/testing_closure.rs`). It reads the committed API listings under
+`api/` for the runtime and for the facade's default, `cpu`, no-default and
+`desktop-cpu` configurations, starts from the types `testing` exports and the
+`Runtime` methods its names exist for, follows their methods, associated
+constants, fields and variant payloads across the pert-ui packages, and fails
+for every reached type that is neither in `testing`, nor in the prelude, nor
+on its reviewed exclusion list; it also fails on a listing line it does not
+recognize and on an unresolved or ambiguous type name. It is not ignored, so
+it runs in `cargo test --locked --workspace`. It does not run
+cargo-public-api: the API listing gate keeps its input current, so a change
+that forgets to regenerate the listings fails CI's `api-listing` job, not
+this test.
+
 Changes to the core live-data protocol additionally run the release-profile
 Loom models named in AGENTS.md. Dependency, feature, platform and release
 changes also need the feature configurations, release tests, MSRV, headless

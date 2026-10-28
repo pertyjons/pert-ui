@@ -1,5 +1,72 @@
 # Changelog
 
+## 0.3.77 (2026-10-28)
+
+Glob membership (round 2 fix plan, part P2, F3 by decision D3 and the
+TODO.md entry on the facade's `svg` module, from its approved design
+checkpoint `plans/usability/round-2-design-P2.md`, revision 3).
+
+- Breaking (TODO.md svg collision): the facade module `pert_ui::svg` is
+  `pert_ui::svg_images`, so a crate that globs the crate root and depends on
+  the `svg` crate no longer finds `svg` ambiguous in a `use` path or
+  resolves `svg::…` to the module elsewhere. Replacement usage:
+  `use pert_ui::svg_images::{SvgError, intrinsic_size, rasterize,
+  rasterize_mask};` and `svg_images::MAX_NESTING`; the `svg` feature and
+  `pert_ui::Svg` are unchanged, and `Svg::new` and `Svg::tinted` return
+  `pert_ui::svg_images::SvgError`.
+- Added (F3): to `pert_ui::testing` and `pert_ui_runtime::testing`,
+  `FlushReport` and `RevealRefusal` (what `Driver::settle`, `Driver::advance`
+  and `TestError::NotRevealed` hand a test); `Semantics`, `SemanticRole`,
+  `SemanticAction` and `SemanticItem`; `QueryResult`, `ComponentInspection`,
+  `ComponentDetails`, `InspectValue` and `Depth`; `ValidationReport`,
+  `ValidationIssue`, `ValidationCode` and `ValidationMarker` (development
+  validation, decision P2-D2); `Capture`, `CaptureError`, `Pending`,
+  `InspectionReply`, `WaitError`, `NativeWindowId` and `Rect`; and
+  `Magnification`. With `cpu`, `CpuRenderError` joins `pert_ui::testing`
+  beside `CpuRenderer`. A test that names what the driver, a query, the
+  validation report or a capture hands it needs only `prelude` and
+  `testing`. Each name stays where it was, so every existing path keeps
+  working.
+- Added (F3): `ThemeMode` to `pert_ui::prelude` and
+  `pert_ui_runtime::prelude`, the one exception to the layering plan's
+  decision D2 (L2): a theme switch is first-program code. `ThemeManager`,
+  `Palette` and the other theme services stay at the crate root.
+- Documentation (F3): the `testing` pages and the testing chapter state the
+  module's closure rule (every type its names take, return or hold is in
+  `testing` or the prelude) and list where the excluded records are; the
+  first example of each `testing` page and the chapter's "Reading what the
+  runtime shows" write helpers that return `Semantics` and read an
+  `InspectValue` from a `QueryResult`. The facade's `testing` page now names
+  `CpuRenderer`, `CpuRenderError` (in `cpu`) and `HeadlessApp` (only in
+  `testing`) beside `HostIntegration` as the names not at the crate root.
+  The prelude pages list `ThemeMode`, their testing row adds semantics,
+  query results and validation, and the root row's example is
+  `use pert_ui::{Palette, Workspace};`. The `svg_images` page says why it is
+  not named `svg`; the guide, the crate page, the README, the status table
+  and `docs/contracts.md` use the new name. `docs/verification.md`
+  describes the closure check.
+- Tests (F3): `pert-ui-diagnostics` checks from the committed API listings
+  that every type `testing`'s names hand a test is in `testing` or the
+  prelude, apart from a reviewed exclusion list, in the runtime and the
+  facade's default, `cpu`, no-default and `desktop-cpu` configurations;
+  that every exclusion is reached and is no member; that the facade's
+  `testing` holds every name of the runtime's; and that the `Runtime`
+  methods it starts from exist. It runs in the workspace tests. The facade's
+  module tests cover the `host` module (its names, and its glob combined
+  with the others, which now resolves every name the modules export) and
+  `HostIntegration` in `testing`, and a prelude-only program writes
+  `ThemeMode`.
+
+The `api/` diff: in `api/pert-ui-runtime/default.txt` and `serde.txt`, the
+item blocks of the 23 names above under `pert_ui_runtime::testing::` and
+`ThemeMode`'s under `pert_ui_runtime::prelude::`; in every
+`api/pert-ui/*.txt`, the 23 `pub use pert_ui::testing::…` lines, and in
+`cpu.txt` and `no-default-desktop-cpu.txt` also
+`pub use pert_ui::testing::CpuRenderError`; in `svg.txt` and
+`no-default-svg.txt`, `pub mod pert_ui::svg` and its items moved to
+`pert_ui::svg_images`, and `Svg::new` and `Svg::tinted` returning
+`pert_ui::svg_images::SvgError`.
+
 ## 0.3.76 (2026-10-28)
 
 Documentation from the round 2 blind test (round 2 fix plan, part P1):

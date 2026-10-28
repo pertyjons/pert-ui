@@ -2,3 +2,4 @@
 [`cpu`]: crate::cpu
 [`CpuRenderer`]: crate::cpu::CpuRenderer
 [`CpuRenderer::serve_captures`]: crate::cpu::CpuRenderer::serve_captures
+[`CpuRenderError`]: crate::cpu::CpuRenderError

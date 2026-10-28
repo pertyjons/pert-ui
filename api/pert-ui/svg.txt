@@ -176,9 +176,9 @@ pub struct pert_ui::prelude::Svg
 impl pert_ui::Svg
 pub fn pert_ui::Svg::description(self, impl core::convert::Into<alloc::string::String>) -> Self
 pub const fn pert_ui::Svg::intrinsic_size(&self) -> pert_ui_runtime::layout::Size
-pub fn pert_ui::Svg::new(&[u8]) -> core::result::Result<Self, pert_ui::svg::SvgError>
+pub fn pert_ui::Svg::new(&[u8]) -> core::result::Result<Self, pert_ui::svg_images::SvgError>
 pub const fn pert_ui::Svg::size(self, pert_ui_runtime::layout::Size) -> Self
-pub fn pert_ui::Svg::tinted(&[u8], pert_ui_runtime::runtime::theme::ColorRole) -> core::result::Result<Self, pert_ui::svg::SvgError>
+pub fn pert_ui::Svg::tinted(&[u8], pert_ui_runtime::runtime::theme::ColorRole) -> core::result::Result<Self, pert_ui::svg_images::SvgError>
 impl core::fmt::Debug for pert_ui::Svg
 pub fn pert_ui::Svg::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl pert_ui_runtime::runtime::Component for pert_ui::Svg
@@ -195,59 +195,82 @@ impl core::marker::Unpin for pert_ui::Svg
 impl core::marker::UnsafeUnpin for pert_ui::Svg
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui::Svg
 impl core::panic::unwind_safe::UnwindSafe for pert_ui::Svg
-pub mod pert_ui::svg
-#[non_exhaustive] pub enum pert_ui::svg::SvgError
-pub pert_ui::svg::SvgError::InvalidSize
-pub pert_ui::svg::SvgError::Parse(alloc::string::String)
-pub pert_ui::svg::SvgError::Resource(pert_ui_runtime::drawing::DrawError)
-pub pert_ui::svg::SvgError::TooLarge
-pub pert_ui::svg::SvgError::TooLarge::height: u32
-pub pert_ui::svg::SvgError::TooLarge::width: u32
-impl core::clone::Clone for pert_ui::svg::SvgError
-pub fn pert_ui::svg::SvgError::clone(&self) -> pert_ui::svg::SvgError
-impl core::cmp::Eq for pert_ui::svg::SvgError
-impl core::cmp::PartialEq for pert_ui::svg::SvgError
-pub fn pert_ui::svg::SvgError::eq(&self, &pert_ui::svg::SvgError) -> bool
-impl core::convert::From<pert_ui_runtime::drawing::DrawError> for pert_ui::svg::SvgError
-pub fn pert_ui::svg::SvgError::from(pert_ui_runtime::drawing::DrawError) -> Self
-impl core::error::Error for pert_ui::svg::SvgError
-pub fn pert_ui::svg::SvgError::source(&self) -> core::option::Option<&(dyn core::error::Error + 'static)>
-impl core::fmt::Debug for pert_ui::svg::SvgError
-pub fn pert_ui::svg::SvgError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
-impl core::fmt::Display for pert_ui::svg::SvgError
-pub fn pert_ui::svg::SvgError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
-impl core::marker::StructuralPartialEq for pert_ui::svg::SvgError
-impl core::marker::Freeze for pert_ui::svg::SvgError
-impl core::marker::Send for pert_ui::svg::SvgError
-impl core::marker::Sync for pert_ui::svg::SvgError
-impl core::marker::Unpin for pert_ui::svg::SvgError
-impl core::marker::UnsafeUnpin for pert_ui::svg::SvgError
-impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui::svg::SvgError
-impl !core::panic::unwind_safe::UnwindSafe for pert_ui::svg::SvgError
-pub const pert_ui::svg::MAX_NESTING: usize
-pub fn pert_ui::svg::intrinsic_size(&[u8]) -> core::result::Result<pert_ui_runtime::layout::Size, pert_ui::svg::SvgError>
-pub fn pert_ui::svg::rasterize(&[u8], u32, u32) -> core::result::Result<pert_ui_runtime::resources::RasterImage, pert_ui::svg::SvgError>
-pub fn pert_ui::svg::rasterize_mask(&[u8], u32, u32) -> core::result::Result<pert_ui_runtime::drawing::MaskImage, pert_ui::svg::SvgError>
+pub mod pert_ui::svg_images
+#[non_exhaustive] pub enum pert_ui::svg_images::SvgError
+pub pert_ui::svg_images::SvgError::InvalidSize
+pub pert_ui::svg_images::SvgError::Parse(alloc::string::String)
+pub pert_ui::svg_images::SvgError::Resource(pert_ui_runtime::drawing::DrawError)
+pub pert_ui::svg_images::SvgError::TooLarge
+pub pert_ui::svg_images::SvgError::TooLarge::height: u32
+pub pert_ui::svg_images::SvgError::TooLarge::width: u32
+impl core::clone::Clone for pert_ui::svg_images::SvgError
+pub fn pert_ui::svg_images::SvgError::clone(&self) -> pert_ui::svg_images::SvgError
+impl core::cmp::Eq for pert_ui::svg_images::SvgError
+impl core::cmp::PartialEq for pert_ui::svg_images::SvgError
+pub fn pert_ui::svg_images::SvgError::eq(&self, &pert_ui::svg_images::SvgError) -> bool
+impl core::convert::From<pert_ui_runtime::drawing::DrawError> for pert_ui::svg_images::SvgError
+pub fn pert_ui::svg_images::SvgError::from(pert_ui_runtime::drawing::DrawError) -> Self
+impl core::error::Error for pert_ui::svg_images::SvgError
+pub fn pert_ui::svg_images::SvgError::source(&self) -> core::option::Option<&(dyn core::error::Error + 'static)>
+impl core::fmt::Debug for pert_ui::svg_images::SvgError
+pub fn pert_ui::svg_images::SvgError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui::svg_images::SvgError
+pub fn pert_ui::svg_images::SvgError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui::svg_images::SvgError
+impl core::marker::Freeze for pert_ui::svg_images::SvgError
+impl core::marker::Send for pert_ui::svg_images::SvgError
+impl core::marker::Sync for pert_ui::svg_images::SvgError
+impl core::marker::Unpin for pert_ui::svg_images::SvgError
+impl core::marker::UnsafeUnpin for pert_ui::svg_images::SvgError
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui::svg_images::SvgError
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui::svg_images::SvgError
+pub const pert_ui::svg_images::MAX_NESTING: usize
+pub fn pert_ui::svg_images::intrinsic_size(&[u8]) -> core::result::Result<pert_ui_runtime::layout::Size, pert_ui::svg_images::SvgError>
+pub fn pert_ui::svg_images::rasterize(&[u8], u32, u32) -> core::result::Result<pert_ui_runtime::resources::RasterImage, pert_ui::svg_images::SvgError>
+pub fn pert_ui::svg_images::rasterize_mask(&[u8], u32, u32) -> core::result::Result<pert_ui_runtime::drawing::MaskImage, pert_ui::svg_images::SvgError>
 pub mod pert_ui::testing
+pub use pert_ui::testing::Capture
+pub use pert_ui::testing::CaptureError
 pub use pert_ui::testing::CaptureRequest
 pub use pert_ui::testing::CaptureTarget
 pub use pert_ui::testing::ClickCounter
 pub use pert_ui::testing::CommandKeyInput
+pub use pert_ui::testing::ComponentDetails
+pub use pert_ui::testing::ComponentInspection
+pub use pert_ui::testing::Depth
 pub use pert_ui::testing::Detail
 pub use pert_ui::testing::Driver
+pub use pert_ui::testing::FlushReport
 pub use pert_ui::testing::FocusDirection
 pub use pert_ui::testing::FrameImage
 pub use pert_ui::testing::HostIntegration
 pub use pert_ui::testing::InputOutcome
+pub use pert_ui::testing::InspectValue
 pub use pert_ui::testing::InspectionQuery
+pub use pert_ui::testing::InspectionReply
 pub use pert_ui::testing::KeyAction
+pub use pert_ui::testing::Magnification
+pub use pert_ui::testing::NativeWindowId
+pub use pert_ui::testing::Pending
 pub use pert_ui::testing::PointerButton
 pub use pert_ui::testing::PointerEvent
 pub use pert_ui::testing::PointerKind
+pub use pert_ui::testing::QueryResult
+pub use pert_ui::testing::Rect
+pub use pert_ui::testing::RevealRefusal
 pub use pert_ui::testing::Selector
+pub use pert_ui::testing::SemanticAction
+pub use pert_ui::testing::SemanticItem
+pub use pert_ui::testing::SemanticRole
 pub use pert_ui::testing::SemanticValue
+pub use pert_ui::testing::Semantics
 pub use pert_ui::testing::TestError
+pub use pert_ui::testing::ValidationCode
+pub use pert_ui::testing::ValidationIssue
+pub use pert_ui::testing::ValidationMarker
+pub use pert_ui::testing::ValidationReport
 pub use pert_ui::testing::Viewport
+pub use pert_ui::testing::WaitError
 pub struct pert_ui::testing::HeadlessApp
 impl pert_ui::testing::HeadlessApp
 pub fn pert_ui::testing::HeadlessApp::admit_close(&mut self, &pert_ui_runtime::runtime::native_windows::NativeWindowId) -> core::result::Result<pert_ui::NativeCloseAction, pert_ui::AppError>
@@ -377,9 +400,9 @@ pub struct pert_ui::Svg
 impl pert_ui::Svg
 pub fn pert_ui::Svg::description(self, impl core::convert::Into<alloc::string::String>) -> Self
 pub const fn pert_ui::Svg::intrinsic_size(&self) -> pert_ui_runtime::layout::Size
-pub fn pert_ui::Svg::new(&[u8]) -> core::result::Result<Self, pert_ui::svg::SvgError>
+pub fn pert_ui::Svg::new(&[u8]) -> core::result::Result<Self, pert_ui::svg_images::SvgError>
 pub const fn pert_ui::Svg::size(self, pert_ui_runtime::layout::Size) -> Self
-pub fn pert_ui::Svg::tinted(&[u8], pert_ui_runtime::runtime::theme::ColorRole) -> core::result::Result<Self, pert_ui::svg::SvgError>
+pub fn pert_ui::Svg::tinted(&[u8], pert_ui_runtime::runtime::theme::ColorRole) -> core::result::Result<Self, pert_ui::svg_images::SvgError>
 impl core::fmt::Debug for pert_ui::Svg
 pub fn pert_ui::Svg::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl pert_ui_runtime::runtime::Component for pert_ui::Svg

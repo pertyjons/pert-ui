@@ -75,7 +75,7 @@ modules re-export their `pert_ui_runtime` namesakes.
 | Toolbars and inline controls | [`Toolbar`], [`InlineSlider`], [`InlineToggle`], [`InlineSelect`] | [controls](crate::guide::controls) |
 | Menus, dialogs and notifications | [`Menu`], [`MenuBar`], [`ContextMenu`], [`Select`], [`Popover`], [`Tooltip`], [`Dialog`], [`ToastHost`], [`Runtime::register_command`] | [surfaces](crate::guide::surfaces) |
 | Themes, typography and graphics | [`ThemeManager`], [`UiSettings`], [`FontManager`], [`RichText`], [`Icon`], [`Painter`], [`Image`], [`RasterImage`] | [appearance](crate::guide::appearance) |
-| Image files and SVG | [`images`] (feature `images` or a format feature), [`svg`] (feature `svg`) | [appearance](crate::guide::appearance) |
+| Image files and SVG | [`images`] (feature `images` or a format feature), [`svg_images`] (feature `svg`) | [appearance](crate::guide::appearance) |
 | Keyboard, inspection and profiling | [`Runtime::command_key_input`], [`Runtime::key_input`], [`Runtime::inspect`], [`InspectionService`], [`Runtime::request_capture`], [`Runtime::set_profiling`] | [diagnostics](crate::guide::diagnostics) |
 | Headless tests | [`testing`]: [`testing::Driver`] clicks, types, presses keys and settles; [`HeadlessApp`] (feature `native`) runs an `App`'s close policy without a window | [testing an application](crate::guide::testing) |
 | Custom hosts | [`host`]: [`host::HostIntegration`] holds what a host that drives a [`Runtime`] in place of [`App`] calls, with a complete host loop | [diagnostics](crate::guide::diagnostics) |

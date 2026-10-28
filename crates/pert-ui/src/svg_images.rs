@@ -18,6 +18,10 @@
 //! `paint`. This module holds what works without the component: the
 //! rasterizers, the intrinsic size and their errors.
 //!
+//! The name is `svg_images`, not `svg`: a crate that globs the crate root
+//! and depends on the `svg` crate would otherwise find `svg` ambiguous in a
+//! `use` path and resolve it to this module elsewhere.
+//!
 //! # Unsupported: SVG text
 //!
 //! `<text>` elements are ignored. Rendering them would need a second font

@@ -348,7 +348,9 @@ pub use pert_ui_core::{
 /// - what those members need to be configured, applied again to every name it
 ///   adds: each type their constructors and builders take, each callback value
 ///   an application matches, each returned value it keeps, and each enum
-///   payload or public field it constructs.
+///   payload or public field it constructs;
+/// - [`ThemeMode`], which a theme switch writes; [`ThemeManager`] and
+///   [`Palette`] stay at the crate root.
 ///
 /// A name is written when a program constructs it, matches it or keeps it; a
 /// value only passed on, such as a closure's context, is not.
@@ -390,14 +392,14 @@ pub use pert_ui_core::{
 /// | Names | Import |
 /// |---|---|
 /// | Implementing [`Component`]: contexts, drawing, input events, drag and drop, receipts, editor sessions and the embedded draft editor | `use pert_ui_runtime::component::*` ([`component`]) |
-/// | A headless test: the driver, the viewport, key and pointer input, queries and captures | `use pert_ui_runtime::testing::*` ([`testing`]) |
+/// | A headless test: the driver, the viewport, key and pointer input, semantics, query results and validation, queries and captures | `use pert_ui_runtime::testing::*` ([`testing`]) |
 /// | A custom host that drives the runtime in place of the facade's `App`: [`HostIntegration`](host::HostIntegration) and the names a host writes | `use pert_ui_runtime::host::*` ([`host`]) |
 /// | Authoritative values: parameters, edit gestures, hosts, external authority, and [`Slider`], [`Knob`] and [`InlineSlider`] | `use pert_ui_runtime::parameter::*` ([`parameter`]) |
 /// | Commands beyond a shortcut's chord and scope, held input and the command palette | `use pert_ui_runtime::commands::*` ([`commands`]) |
 /// | Windows inside a view, native windows, regions, splits and tool windows | `use pert_ui_runtime::windowing::*` ([`windowing`]) |
 /// | Inspection, capture, profiling and validation | `use pert_ui_runtime::inspection::*` ([`inspection`]) |
 /// | Data from other threads: live series, mailboxes, [`LevelMeter`] and [`Trace`] | `use pert_ui_runtime::live::*` ([`live`]) |
-/// | Theme, UI settings, fonts and icons, strings and locale, the workspace document, other errors, [`DescribeContext`], [`PhysicalExtent`] and [`VirtualAxis`] | by name from the crate root, such as `use pert_ui_runtime::{ThemeMode, Workspace};` |
+/// | Theme, UI settings, fonts and icons, strings and locale, the workspace document, other errors, [`DescribeContext`], [`PhysicalExtent`] and [`VirtualAxis`] | by name from the crate root, such as `use pert_ui_runtime::{Palette, Workspace};` |
 ///
 /// A name can be in the prelude and in a module, or in several modules: each
 /// re-exports the same crate-root item, so the globs combine without
@@ -489,6 +491,9 @@ pub mod prelude {
     // Commands and keys a shortcut writes, and the text command a rename begins.
     #[doc(no_inline)]
     pub use crate::{CommandKey, CommandScope, KeyChord, KeyCode, Modifiers, TextCommand};
+    // The theme mode a theme switch writes; the theme services stay at the root.
+    #[doc(no_inline)]
+    pub use crate::ThemeMode;
 }
 
 /// The names implementing [`Component`] writes, for

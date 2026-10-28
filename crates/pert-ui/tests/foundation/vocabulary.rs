@@ -538,3 +538,23 @@ mod commands {
         Ok(())
     }
 }
+
+/// A theme switch: the mode it writes is in the prelude, the theme services
+/// stay at the crate root and `ui.theme()` returns the manager unnamed.
+mod theme {
+    use pert_ui::prelude::*;
+
+    #[test]
+    fn a_theme_switch_writes_the_mode_from_the_prelude() -> Result<(), Box<dyn std::error::Error>> {
+        let ui = Runtime::new();
+        ui.theme().set_mode(ThemeMode::Light)?;
+        ui.theme().set_mode(ThemeMode::Dark)?;
+        assert_eq!(ui.theme().mode()?, ThemeMode::Dark);
+        let next = match ui.theme().mode()? {
+            ThemeMode::Dark => ThemeMode::Light,
+            ThemeMode::Light => ThemeMode::Dark,
+        };
+        assert_eq!(next, ThemeMode::Light);
+        Ok(())
+    }
+}

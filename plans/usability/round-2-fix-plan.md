@@ -1592,3 +1592,34 @@ plan closes.
   the headless gallery, rustdoc `-D warnings` (default and `serde`), the
   diagnostics snapshots, the API listing gate (no `api/` diff), `git diff
   --check`. Native evidence: not applicable. Codex review: pending.
+
+- **P2 Glob membership (0.3.77), 2026-10-28.** Implemented by a fresh
+  agent from the approved design (`round-2-design-P2.md`, revision 3):
+  the 23 names in both `testing` modules and `CpuRenderError` in the
+  facade's with `cpu`; `ThemeMode` in both preludes; `pert_ui::svg`
+  renamed `pert_ui::svg_images` (TODO.md entry removed); the closure check
+  `tests/diagnostics/tests/testing_closure.rs` over the five
+  configurations with its 18 self-tests; `every_name` and
+  `every_glob_combines` over the full union including `host` (same-kind
+  fixes the design names). **Deviation:** design section 4 says a
+  member's owner is the deepest path segment naming a declared type; at
+  the base that misassigns 17 listing paths whose variant shares a type's
+  name (`SemanticValue::Choice::…`, `ContentTarget::Row::…`,
+  `EditorTrigger::Tab::…`), so the check uses the first type segment,
+  which is what the section's stated purpose requires (types do not nest);
+  a self-test covers it. Accepted by the author. Mutation evidence (kept in
+  `target/p2-evidence/`): the check over the pre-change listings reports
+  exactly the 23 names (22 plus `CpuRenderError` in the `cpu`
+  configurations, 22 without `NativeWindowId` in the default one) with no
+  parse or ambiguity failure; not following fields and variants drops the
+  eight names the design predicts; an unreached and a member exclusion
+  fail; a name removed from the facade's list only fails the facade-
+  contains-runtime assertion; the contract removals fail to compile; a
+  scratch crate reproduces E0659 at 84bb60f and compiles at P2. No fixture
+  check: the task 4 fixture uses none of the changed paths. Gate (fresh):
+  fmt, workspace Clippy, workspace tests, the five headless sessions,
+  doctests, rustdoc `-D warnings`, the diagnostics snapshots (no `.stderr`
+  change), Clippy, tests and rustdoc for `cpu`, no-default, `desktop-cpu`
+  and `svg`, Clippy and tests for no-default `svg`, the API listing gate,
+  `git diff --check`. Native evidence: not applicable. Codex review:
+  pending.

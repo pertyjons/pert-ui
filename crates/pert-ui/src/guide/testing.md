@@ -12,9 +12,16 @@ use pert_ui::testing::*;
 clicks, types, presses keys and chords and settles after each step, its
 [`TestError`](crate::testing::TestError), and the other names a test writes:
 the [`Viewport`] every harness sets, key, focus and pointer input by hand,
-[`SemanticValue`], [`ClickCounter`], and the inspection-query and capture
-names; with `cpu` it adds [`CpuRenderer`] and with `native` it
-adds [`HeadlessApp`].
+what the driver's steps return, semantics, the query names and the
+[`QueryResult`] a query returns, development validation, and the capture
+names; with `cpu` it adds [`CpuRenderer`] and its [`CpuRenderError`], and with
+`native` it adds [`HeadlessApp`]. The module is closed: every type those names
+take, return or hold is in `testing` or the prelude, so a test that writes such
+a type, such as a helper's return type, needs no other import. The exceptions
+are records a test reads by field or passes on: the window, event, parameter
+and source answers of a query are in [`inspection`](crate::inspection), and a
+host's records, such as its physical surface size and key routing, in
+[`host`](crate::host).
 
 # Reading what the runtime shows
 
@@ -30,20 +37,49 @@ Empty text is no name: an empty label's `name` is `None`, not `Some("")`.
 use pert_ui::prelude::*;
 use pert_ui::testing::*;
 
+/// The semantics of the component at `path` under `root`.
+fn semantics_at(
+    driver: &Driver<'_>,
+    root: &WidgetId,
+    path: &[&str],
+) -> Result<Semantics, TestError> {
+    driver.semantics(&driver.find(root, path)?)
+}
+
+/// One property of a component, from a query at full detail.
+fn property(
+    ui: &Runtime,
+    id: &WidgetId,
+    name: &str,
+) -> Result<Option<InspectValue>, Box<dyn std::error::Error>> {
+    let query = InspectionQuery::components(Selector::id(ui.inspection_id(id)?));
+    let result: QueryResult = ui.query(&query.detail(Detail::Full));
+    let component = result.components.first().ok_or("no such component")?;
+    Ok(component.details.properties.get(name).cloned())
+}
+
 let mut ui = Runtime::new();
 ui.set_viewport(Viewport::new(400.0, 200.0, 1.0)?)?;
 let name = ui.signal(String::from("Ada"));
+let age = ui.signal(36_i64);
 let root = ui.mount_tree(Element::new("form", Column::new([
     Element::new("title", Label::new("Profile")),
     Element::new("name", TextField::new(name.clone())),
+    Element::new("age", IntegerInput::new(age.clone()).range(0, 150)?),
 ])))?;
 let mut driver = Driver::new(&mut ui);
 driver.settle()?;
 
-let title = driver.find(&root, &["title"])?;
-assert_eq!(driver.semantics(&title)?.name.as_deref(), Some("Profile"));
+assert_eq!(semantics_at(&driver, &root, &["title"])?.name.as_deref(), Some("Profile"));
 let field = driver.find(&root, &["name"])?;
 assert_eq!(driver.semantics(&field)?.value, Some(SemanticValue::Text("Ada".into())));
+
+// A number input's draft is a property: typed, not yet committed.
+let age_field = driver.find(&root, &["age"])?;
+assert_eq!(semantics_at(&driver, &root, &["age"])?.role, SemanticRole::NumberInput);
+driver.replace_text(&age_field, "37")?;
+assert_eq!(property(driver.runtime(), &age_field, "dirty")?, Some(InspectValue::Bool(true)));
+assert_eq!(age.get()?, 36);
 
 // The same lookup by hand, at any detail.
 let id = driver.runtime().inspection_id(&field)?;

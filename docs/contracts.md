@@ -1595,7 +1595,7 @@ gives the raw number; a constant that bounds a measure of it (bytes, a
 count, a depth, digits) has that measure's integer type. A limit shared by
 several types is defined once, and its rustdoc says why it lives there:
 - a validation limit, which input fails, lives on the owner of the shared
-  format (`Workspace::MAX_STRING_BYTES` for its document, the `svg` module's
+  format (`Workspace::MAX_STRING_BYTES` for its document, the `svg_images` module's
   `MAX_NESTING` for SVG input), otherwise on the error type whose one
   variant reports it (`TextEditError::MAX_TEXT_BYTES`); the bounded
   constructors link to it from `# Errors`;

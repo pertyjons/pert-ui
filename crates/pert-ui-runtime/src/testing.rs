@@ -4,7 +4,8 @@
 //! chords, settles the runtime after each step and finds a component's
 //! [`Semantics`]; [`TestError`] names what a step could not do. Neither needs a
 //! window, a GPU or an operating-system service. The module also re-exports
-//! what a headless test writes besides the driver, so one glob covers it:
+//! what a headless test writes besides the driver and the prelude, so one glob
+//! covers it:
 //!
 //! ```
 //! # use pert_ui_runtime as pert_ui;
@@ -12,19 +13,33 @@
 //! use pert_ui::testing::*;
 //! ```
 //!
-//! - [`Viewport`], which every harness sets with [`Runtime::set_viewport`];
-//! - [`KeyAction`] and [`FocusDirection`], for key input and focus movement
-//!   by hand through [`Runtime::key_input`] and [`Runtime::focus_next`];
-//! - [`PointerEvent`], [`PointerKind`] and [`PointerButton`] for
-//!   [`Runtime::pointer_input`], [`CommandKeyInput`] for
-//!   [`Runtime::command_key_input`], and the [`InputOutcome`] that pointer
-//!   and key input return;
-//! - [`SemanticValue`], for asserting what a component's semantics report,
-//!   and [`ClickCounter`], whose interval separates single clicks;
-//! - [`InspectionQuery`], [`Selector`] and [`Detail`], for reading what the
-//!   runtime shows through [`Runtime::query`];
-//! - [`CaptureRequest`], [`CaptureTarget`] and [`FrameImage`], for a
-//!   rendered capture;
+//! - input by hand and the viewport: [`Viewport`], which every harness sets
+//!   with [`Runtime::set_viewport`]; [`KeyAction`] and [`FocusDirection`], for
+//!   key input and focus movement through [`Runtime::key_input`] and
+//!   [`Runtime::focus_next`]; [`PointerEvent`], [`PointerKind`] with the
+//!   [`Magnification`] of a pinch, and [`PointerButton`] for
+//!   [`Runtime::pointer_input`]; [`CommandKeyInput`] for
+//!   [`Runtime::command_key_input`]; the [`InputOutcome`] that pointer and key
+//!   input return; and [`ClickCounter`], whose interval separates single
+//!   clicks;
+//! - what the driver's steps return: [`FlushReport`], which
+//!   [`Driver::settle`] and [`Driver::advance`] return, and the
+//!   [`RevealRefusal`] that [`TestError::NotRevealed`] carries;
+//! - semantics: [`Semantics`], which [`Driver::semantics`] returns, with
+//!   [`SemanticRole`], [`SemanticValue`], [`SemanticAction`] and
+//!   [`SemanticItem`];
+//! - queries: [`InspectionQuery`], [`Selector`], [`Detail`] and [`Depth`] for
+//!   [`Runtime::query`], and the [`QueryResult`] it returns, with its
+//!   [`ComponentInspection`]s, their [`ComponentDetails`] and the
+//!   [`InspectValue`] properties those hold;
+//! - development validation: [`ValidationReport`] from
+//!   [`Runtime::validation_report`], with its [`ValidationIssue`]s, their
+//!   [`ValidationCode`] and its [`ValidationMarker`]s;
+//! - captures: [`CaptureRequest`] and [`CaptureTarget`], with the
+//!   [`NativeWindowId`] and [`Rect`] a target names, for
+//!   [`Runtime::request_capture`], and the [`Pending`], [`InspectionReply`],
+//!   [`WaitError`], [`Capture`], [`CaptureError`] and [`FrameImage`] it
+//!   answers with;
 //! - [`HostIntegration`], whose methods a test calls where it stands in for
 //!   a host, such as selecting a native window, taking presentation requests
 //!   or clearing focus as a window's deactivation would.
@@ -32,11 +47,58 @@
 //! The key names a chord writes ([`KeyCode`], [`Modifiers`], [`CommandKey`])
 //! and [`Point`] are in the prelude.
 //!
+//! # Membership
+//!
+//! `testing` holds the driver and its error and everything else a headless
+//! test writes besides the prelude: the viewport, input by hand, the query,
+//! validation and capture names, and every type those names hand a test. It
+//! is closed: each type that a member's constructors, methods and associated
+//! constants take or return, and each type a member's public fields and
+//! variants hold, is in `testing` or in the prelude, and the same holds for
+//! every name this adds. An error nested inside another error is reached
+//! through `?` and `Display` and stays where it is. The exceptions below are
+//! records a test reads by field or passes on, and each is named with its
+//! module.
+//!
+//! # Where the other names are
+//!
+//! - The window, event, parameter and live-source answers of a query
+//!   ([`WindowInspection`](crate::WindowInspection),
+//!   [`EventHistory`](crate::EventHistory),
+//!   [`ParameterInspection`](crate::ParameterInspection),
+//!   [`SourceInspection`](crate::SourceInspection)) are records for an
+//!   application's own tooling, in [`inspection`](crate::inspection).
+//! - What a component reports about its geometry, invalidation and
+//!   validation hints ([`BoxModelInspection`](crate::BoxModelInspection),
+//!   [`Invalidation`](crate::Invalidation),
+//!   [`ValidationHints`](crate::ValidationHints)) is read by field and is in
+//!   [`component`](crate::component) and [`inspection`](crate::inspection).
+//! - Key routing and key records a test's key input ignores:
+//!   [`KeyDispatch`](crate::KeyDispatch), which
+//!   [`Runtime::command_key_input`] returns, in [`host`](crate::host);
+//!   [`KeyEvent`](crate::KeyEvent), which [`Runtime::key_input`] returns, in
+//!   [`component`](crate::component) and [`inspection`](crate::inspection);
+//!   and [`KeyTransition`](crate::KeyTransition) in
+//!   [`component`](crate::component).
+//! - A host's [`PhysicalExtent`](crate::PhysicalExtent), for
+//!   [`Viewport::from_physical`], is in [`host`](crate::host); a test builds
+//!   its viewport with [`Viewport::new`].
+//! - The [`DisplayList`](crate::DisplayList) that [`Runtime::paint`] returns
+//!   is passed on to a renderer, and is in [`component`](crate::component)
+//!   and [`host`](crate::host).
+//! - [`GeometryError`](crate::GeometryError), which [`Viewport::new`] and the
+//!   other value constructors return, is propagated with `?` and stays at the
+//!   crate root with the other errors; so does an error nested in another,
+//!   such as the [`DrawError`](crate::DrawError) of `CaptureError::Drawing`.
+//! - What the [`HostIntegration`] methods take and return, such as
+//!   presentation requests, capture jobs and the clipboard service, is the
+//!   [`host`](crate::host) module's vocabulary.
+//!
 //! These names stay at the crate root too, except [`HostIntegration`], which
 //! is reached through [`host`](crate::host) and this module; the module only
-//! gathers them. The
-//! `pert-ui` facade's `testing` module re-exports this one and adds its CPU
-//! renderer and its headless application entry.
+//! gathers them. The `pert-ui` facade's `testing` module re-exports this one
+//! and adds its CPU renderer with the renderer's error and its headless
+//! application entry.
 //!
 //! The driver is a test operation: [`Driver::wait_until`] polls with short
 //! sleeps for background work. The runtime's hosts and its inspection never
@@ -46,6 +108,15 @@
 //! # use pert_ui_runtime as pert_ui;
 //! use pert_ui::prelude::*;
 //! use pert_ui::testing::*;
+//!
+//! /// The semantics of the component at `path` under `root`.
+//! fn semantics_of(
+//!     driver: &Driver<'_>,
+//!     root: &WidgetId,
+//!     path: &[&str],
+//! ) -> Result<Semantics, TestError> {
+//!     driver.semantics(&driver.find(root, path)?)
+//! }
 //!
 //! let mut ui = Runtime::new();
 //! ui.set_viewport(Viewport::new(400.0, 200.0, 1.0)?)?;
@@ -68,21 +139,37 @@
 //!     driver.semantics(&field)?.value,
 //!     Some(SemanticValue::Text("Report".into())),
 //! );
+//! let save = semantics_of(&driver, &root, &["save"])?;
+//! assert!(matches!(save.role, SemanticRole::Button));
+//! assert_eq!(save.name.as_deref(), Some("Save"));
 //! # Ok::<(), Box<dyn std::error::Error>>(())
 //! ```
 use crate::{
-    CommandKey, FlushReport, KeyChord, KeyCode, Modifiers, Point, RevealOutcome, RevealRefusal,
-    Runtime, RuntimeError, Semantics, TextCommand, TextCommandOutcome, WidgetId,
+    CommandKey, KeyChord, KeyCode, Modifiers, Point, RevealOutcome, Runtime, RuntimeError,
+    TextCommand, TextCommandOutcome, WidgetId,
 };
 use std::time::{Duration, Instant};
 
 #[doc(no_inline)]
 pub use crate::host::HostIntegration;
+// Input by hand, the viewport and what the driver's steps return.
 #[doc(no_inline)]
 pub use crate::{
-    CaptureRequest, CaptureTarget, ClickCounter, CommandKeyInput, Detail, FocusDirection,
-    FrameImage, InputOutcome, InspectionQuery, KeyAction, PointerButton, PointerEvent, PointerKind,
-    Selector, SemanticValue, Viewport,
+    ClickCounter, CommandKeyInput, FlushReport, FocusDirection, InputOutcome, KeyAction,
+    Magnification, PointerButton, PointerEvent, PointerKind, RevealRefusal, Viewport,
+};
+// Reading what the runtime shows: semantics, queries and validation.
+#[doc(no_inline)]
+pub use crate::{
+    ComponentDetails, ComponentInspection, Depth, Detail, InspectValue, InspectionQuery,
+    QueryResult, Selector, SemanticAction, SemanticItem, SemanticRole, SemanticValue, Semantics,
+    ValidationCode, ValidationIssue, ValidationMarker, ValidationReport,
+};
+// Captures.
+#[doc(no_inline)]
+pub use crate::{
+    Capture, CaptureError, CaptureRequest, CaptureTarget, FrameImage, InspectionReply,
+    NativeWindowId, Pending, Rect, WaitError,
 };
 
 /// Drives a runtime as a user would, one settled step at a time.

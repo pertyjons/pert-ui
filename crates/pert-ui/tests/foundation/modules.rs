@@ -1,6 +1,6 @@
-//! The membership of `prelude`, `component`, `testing` and the thematic
-//! modules: every promised name, each module's sufficiency for the names its
-//! closure adds, and that all the globs combine.
+//! The membership of `prelude`, `component`, `testing`, `host` and the
+//! thematic modules: every promised name, each module's sufficiency for the
+//! names its closure adds, and that all the globs combine.
 
 /// Each name every module promises, imported one by one in one child module
 /// per list, so removing any re-export fails to compile even where no program
@@ -38,10 +38,10 @@ mod every_name {
             Show, Signal, Size, SizeLimits, SortDirection, Spacing, Spinner, StateOwner,
             SurfaceDismissal, Tab, Table, TableColumn, TableController, TableItems, TableSort,
             TableSource, Tabs, TextArea, TextColor, TextCommand, TextField, TextOverflow, TextSpan,
-            TextStyle, Toast, ToastController, ToastHost, ToastReceipt, ToastStatus, Toggle,
-            ToolGroup, Toolbar, ToolbarOverflow, Tooltip, Track, Tree, TreeController, TreeItems,
-            TreeSource, View, ViewScale, ViewTransform, VirtualList, WheelGesture, WidgetId, Wrap,
-            ZoomController, ZoomView,
+            TextStyle, ThemeMode, Toast, ToastController, ToastHost, ToastReceipt, ToastStatus,
+            Toggle, ToolGroup, Toolbar, ToolbarOverflow, Tooltip, Track, Tree, TreeController,
+            TreeItems, TreeSource, View, ViewScale, ViewTransform, VirtualList, WheelGesture,
+            WidgetId, Wrap, ZoomController, ZoomView,
         };
         #[cfg(feature = "native")]
         use pert_ui::prelude::{
@@ -76,14 +76,30 @@ mod every_name {
         };
     }
     mod testing_names {
-        #[cfg(feature = "cpu")]
-        use pert_ui::testing::CpuRenderer;
         #[cfg(feature = "native")]
         use pert_ui::testing::HeadlessApp;
         use pert_ui::testing::{
-            CaptureRequest, CaptureTarget, ClickCounter, CommandKeyInput, Detail, Driver,
-            FocusDirection, FrameImage, InputOutcome, InspectionQuery, KeyAction, PointerButton,
-            PointerEvent, PointerKind, Selector, SemanticValue, TestError, Viewport,
+            Capture, CaptureError, CaptureRequest, CaptureTarget, ClickCounter, CommandKeyInput,
+            ComponentDetails, ComponentInspection, Depth, Detail, Driver, FlushReport,
+            FocusDirection, FrameImage, HostIntegration, InputOutcome, InspectValue,
+            InspectionQuery, InspectionReply, KeyAction, Magnification, NativeWindowId, Pending,
+            PointerButton, PointerEvent, PointerKind, QueryResult, Rect, RevealRefusal, Selector,
+            SemanticAction, SemanticItem, SemanticRole, SemanticValue, Semantics, TestError,
+            ValidationCode, ValidationIssue, ValidationMarker, ValidationReport, Viewport,
+            WaitError,
+        };
+        #[cfg(feature = "cpu")]
+        use pert_ui::testing::{CpuRenderError, CpuRenderer};
+    }
+    mod host_names {
+        use pert_ui::host::{
+            CaptureError, CaptureJob, Clipboard, ClipboardError, CommandKey, CommandKeyInput,
+            CursorIcon, DisplayList, DrawError, FlushReport, FrameImage, HostIntegration,
+            Invalidation, KeyAction, KeyCode, KeyDispatch, KeyboardState, LimitError,
+            Magnification, Modifiers, NativeWindowId, NativeWindowOptions, PhysicalExtent, Point,
+            PointerButton, PointerEvent, PointerKind, PreparedDetach, PresentationAction,
+            PresentationRate, PresentationRequest, PresentationStatus, Runtime, RuntimeError,
+            TextInputState, TextPreedit, Viewport, WidgetId, WindowError,
         };
     }
     mod parameter_names {
@@ -150,11 +166,9 @@ mod every_name {
 #[allow(unused_imports)]
 mod every_glob_combines {
     use pert_ui::*;
-    use pert_ui::{commands::*, component::*, inspection::*, live::*, parameter::*};
+    use pert_ui::{commands::*, component::*, host::*, inspection::*, live::*, parameter::*};
     use pert_ui::{prelude::*, testing::*, windowing::*};
 
-    #[cfg(feature = "cpu")]
-    use self::CpuRenderer as _;
     #[cfg(feature = "svg")]
     use self::Svg as _;
     use self::{
@@ -164,23 +178,23 @@ mod every_glob_combines {
         ArrangeContext as _, AuthorityReceipt as _, AuthorityResponse as _, AuthorityStatus as _,
         Banner as _, BindingError as _, BorderInspection as _, BoxModelInspection as _,
         Breadcrumb as _, BreadcrumbSegment as _, Button as _, Capacity as _, Capture as _,
-        CaptureError as _, CaptureRequest as _, CaptureTarget as _, CellEdit as _,
+        CaptureError as _, CaptureJob as _, CaptureRequest as _, CaptureTarget as _, CellEdit as _,
         CellEditEnd as _, CellEditEndReason as _, ChangeOrigin as _, Checkbox as _, ChildInfo as _,
         ChildReveal as _, Chip as _, Choice as _, ChoiceId as _, ChoiceOption as _,
-        ClickCounter as _, Collapsible as _, CollectionFilter as _, Color as _, ColorPicker as _,
-        ColorRole as _, ColorSwatch as _, Column as _, CommandContext as _, CommandEntry as _,
-        CommandId as _, CommandInfo as _, CommandKey as _, CommandKeyInput as _,
-        CommandMatcher as _, CommandOutcome as _, CommandPalette as _,
-        CommandPaletteController as _, CommandPaletteStatus as _, CommandReceipt as _,
-        CommandScope as _, CommandSource as _, CommandStatus as _, Component as _,
-        ComponentDetails as _, ComponentInspection as _, Constraints as _, Container as _,
-        ContentRows as _, ContextMenu as _, ContextMenuController as _, CursorIcon as _,
-        DRAG_THRESHOLD as _, DebugMode as _, DebugOverlay as _, DecimalInput as _, Delivery as _,
-        DeliveryError as _, DeliveryMonitor as _, DeliveryResolution as _, DeliverySnapshot as _,
-        DeliveryStatus as _, Depth as _, DetachedClosePolicy as _, Detail as _,
-        DiagnosticCommand as _, Dialog as _, DialogController as _, DialogOutcome as _,
-        DialogStatus as _, DirectoryEntry as _, DirectoryRequest as _, DirectoryResponse as _,
-        DisplayList as _, Divider as _, DraftAlign as _, DraftEditor as _,
+        ClickCounter as _, Clipboard as _, ClipboardError as _, Collapsible as _,
+        CollectionFilter as _, Color as _, ColorPicker as _, ColorRole as _, ColorSwatch as _,
+        Column as _, CommandContext as _, CommandEntry as _, CommandId as _, CommandInfo as _,
+        CommandKey as _, CommandKeyInput as _, CommandMatcher as _, CommandOutcome as _,
+        CommandPalette as _, CommandPaletteController as _, CommandPaletteStatus as _,
+        CommandReceipt as _, CommandScope as _, CommandSource as _, CommandStatus as _,
+        Component as _, ComponentDetails as _, ComponentInspection as _, Constraints as _,
+        Container as _, ContentRows as _, ContextMenu as _, ContextMenuController as _,
+        CursorIcon as _, DRAG_THRESHOLD as _, DebugMode as _, DebugOverlay as _, DecimalInput as _,
+        Delivery as _, DeliveryError as _, DeliveryMonitor as _, DeliveryResolution as _,
+        DeliverySnapshot as _, DeliveryStatus as _, Depth as _, DetachedClosePolicy as _,
+        Detail as _, DiagnosticCommand as _, Dialog as _, DialogController as _,
+        DialogOutcome as _, DialogStatus as _, DirectoryEntry as _, DirectoryRequest as _,
+        DirectoryResponse as _, DisplayList as _, Divider as _, DraftAlign as _, DraftEditor as _,
         DraftEditorController as _, DraftSelection as _, DragEvent as _, DragInspection as _,
         DragOutcome as _, DragPayload as _, DragPhase as _, DragPreview as _, DragRole as _,
         DrainReport as _, DrawCommand as _, DrawError as _, Driver as _, DropOperation as _,
@@ -196,33 +210,35 @@ mod every_glob_combines {
         FocusDirection as _, Form as _, FormFields as _, FormSummary as _, FrameError as _,
         FrameImage as _, Freshness as _, Grid as _, Group as _, HeldCancellation as _,
         HeldInputId as _, HiddenActive as _, HistoryButtons as _, HistoryEntry as _,
-        HistoryEntryId as _, HistoryNavigator as _, HistorySnapshot as _, HostValue as _,
-        Icon as _, IconSource as _, Image as _, ImageFit as _, ImageId as _, ImageSampling as _,
-        Incarnation as _, InlineChoice as _, InlineDecimal as _, InlineInteger as _,
-        InlineReadout as _, InlineSelect as _, InlineSlider as _, InlineText as _,
-        InlineToggle as _, InputOutcome as _, InputRejection as _, InspectValue as _,
-        InspectionClient as _, InspectionQuery as _, InspectionReply as _, InspectionService as _,
-        InspectionSnapshot as _, IntegerInput as _, IntoElement as _, Invalidation as _,
-        Justify as _, KeyAction as _, KeyChord as _, KeyCode as _, KeyEvent as _,
-        KeyTransition as _, KeyboardState as _, Knob as _, Label as _, Length as _,
-        LevelMeter as _, LimitError as _, LineCap as _, LineJoin as _, Link as _, LinkTarget as _,
-        LinkUnderline as _, ListController as _, ListDrop as _, ListDropMark as _,
-        ListDropPlacement as _, ListDropPoint as _, ListDropPosition as _, ListFilter as _,
-        ListItems as _, ListRevealReceipt as _, ListRevealStatus as _, ListSelection as _,
-        ListSelectionChange as _, ListSource as _, ListingDelivery as _, ListingError as _,
-        ListingErrorKind as _, LiveError as _, LiveItem as _, LiveWaker as _, Magnification as _,
-        Mailbox as _, MaskId as _, MaskImage as _, MeasureContext as _, Menu as _, MenuBar as _,
-        MenuItem as _, MeterAxis as _, MetricRole as _, Modifiers as _, MotionPreference as _,
-        MultiSelect as _, MultiSelectCommit as _, NativeWindowId as _, NativeWindowOptions as _,
-        NavigationHistory as _, NormalizedValue as _, NormalizedValueError as _, Notifier as _,
-        NumberFormat as _, NumberInputError as _, Orientation as _, OverlapPolicy as _,
-        Painter as _, Parameter as _, ParameterError as _, ParameterFamily as _,
-        ParameterHost as _, ParameterId as _, ParameterIdError as _, ParameterInspection as _,
-        ParameterMapping as _, ParameterSnapshot as _, ParameterSpec as _, ParameterState as _,
-        ParameterValue as _, Path as _, PathBuilder as _, PathElement as _, Pending as _,
-        Permission as _, PickChoice as _, PickItem as _, PickMatcher as _, PickPending as _,
-        PickStatus as _, Point as _, PointerButton as _, PointerEvent as _, PointerKind as _,
-        Popover as _, PowerExponent as _, PresentationReceipt as _, PresentationStatus as _,
+        HistoryEntryId as _, HistoryNavigator as _, HistorySnapshot as _, HostIntegration as _,
+        HostValue as _, Icon as _, IconSource as _, Image as _, ImageFit as _, ImageId as _,
+        ImageSampling as _, Incarnation as _, InlineChoice as _, InlineDecimal as _,
+        InlineInteger as _, InlineReadout as _, InlineSelect as _, InlineSlider as _,
+        InlineText as _, InlineToggle as _, InputOutcome as _, InputRejection as _,
+        InspectValue as _, InspectionClient as _, InspectionQuery as _, InspectionReply as _,
+        InspectionService as _, InspectionSnapshot as _, IntegerInput as _, IntoElement as _,
+        Invalidation as _, Justify as _, KeyAction as _, KeyChord as _, KeyCode as _,
+        KeyDispatch as _, KeyEvent as _, KeyTransition as _, KeyboardState as _, Knob as _,
+        Label as _, Length as _, LevelMeter as _, LimitError as _, LineCap as _, LineJoin as _,
+        Link as _, LinkTarget as _, LinkUnderline as _, ListController as _, ListDrop as _,
+        ListDropMark as _, ListDropPlacement as _, ListDropPoint as _, ListDropPosition as _,
+        ListFilter as _, ListItems as _, ListRevealReceipt as _, ListRevealStatus as _,
+        ListSelection as _, ListSelectionChange as _, ListSource as _, ListingDelivery as _,
+        ListingError as _, ListingErrorKind as _, LiveError as _, LiveItem as _, LiveWaker as _,
+        Magnification as _, Mailbox as _, MaskId as _, MaskImage as _, MeasureContext as _,
+        Menu as _, MenuBar as _, MenuItem as _, MeterAxis as _, MetricRole as _, Modifiers as _,
+        MotionPreference as _, MultiSelect as _, MultiSelectCommit as _, NativeWindowId as _,
+        NativeWindowOptions as _, NavigationHistory as _, NormalizedValue as _,
+        NormalizedValueError as _, Notifier as _, NumberFormat as _, NumberInputError as _,
+        Orientation as _, OverlapPolicy as _, Painter as _, Parameter as _, ParameterError as _,
+        ParameterFamily as _, ParameterHost as _, ParameterId as _, ParameterIdError as _,
+        ParameterInspection as _, ParameterMapping as _, ParameterSnapshot as _,
+        ParameterSpec as _, ParameterState as _, ParameterValue as _, Path as _, PathBuilder as _,
+        PathElement as _, Pending as _, Permission as _, PhysicalExtent as _, PickChoice as _,
+        PickItem as _, PickMatcher as _, PickPending as _, PickStatus as _, Point as _,
+        PointerButton as _, PointerEvent as _, PointerKind as _, Popover as _, PowerExponent as _,
+        PreparedDetach as _, PresentationAction as _, PresentationRate as _,
+        PresentationReceipt as _, PresentationRequest as _, PresentationStatus as _,
         PreviewEvent as _, PreviewOutcome as _, ProfileOperation as _, ProfileSample as _,
         ProfileSnapshot as _, ProfileStats as _, ProgressBar as _, ProgressStatus as _,
         Property as _, PropertyGrid as _, PublishOutcome as _, QuarterTurn as _, QueryResult as _,
@@ -246,9 +262,9 @@ mod every_glob_combines {
         TaskReceipt as _, TaskStatus as _, Telemetry as _, TerminalEvent as _, TestError as _,
         TextArea as _, TextColor as _, TextCommand as _, TextCommandOutcome as _, TextField as _,
         TextInputState as _, TextKeyOutcome as _, TextLayout as _, TextOverflow as _,
-        TextPreedit as _, TextSpan as _, TextStyle as _, Timestamp as _, Toast as _,
-        ToastController as _, ToastHost as _, ToastReceipt as _, ToastStatus as _, Toggle as _,
-        ToolEdge as _, ToolGroup as _, ToolWindow as _, ToolWindowChange as _,
+        TextPreedit as _, TextSpan as _, TextStyle as _, ThemeMode as _, Timestamp as _,
+        Toast as _, ToastController as _, ToastHost as _, ToastReceipt as _, ToastStatus as _,
+        Toggle as _, ToolEdge as _, ToolGroup as _, ToolWindow as _, ToolWindowChange as _,
         ToolWindowChangeKind as _, ToolWindowController as _, ToolWindowLayout as _,
         ToolWindowMode as _, Toolbar as _, ToolbarOverflow as _, Tooltip as _, Trace as _,
         Track as _, Transform2D as _, Tree as _, TreeController as _, TreeItems as _,
@@ -266,6 +282,8 @@ mod every_glob_combines {
         App as _, AppError as _, AppShutdownError as _, ErrorAction as _, HeadlessApp as _,
         NativeCloseAction as _,
     };
+    #[cfg(feature = "cpu")]
+    use self::{CpuRenderError as _, CpuRenderer as _};
 }
 
 /// Each thematic module with the prelude is enough to construct the members

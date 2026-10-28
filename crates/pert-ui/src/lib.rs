@@ -36,13 +36,13 @@ pub mod images;
 #[cfg(feature = "native")]
 mod platform;
 #[cfg(feature = "svg")]
-pub mod svg;
+pub mod svg_images;
 // Placement: every widget, including a feature-gated one, is at the crate root;
 // a feature module holds its loaders, rasterizers and their errors.
 #[cfg(feature = "native")]
 pub use app::{App, AppError, AppShutdownError, ErrorAction, NativeCloseAction};
 #[cfg(feature = "svg")]
-pub use svg::component::Svg;
+pub use svg_images::component::Svg;
 
 /// The names an application's first program writes, for
 /// `use pert_ui::prelude::*`.
@@ -71,7 +71,9 @@ pub use svg::component::Svg;
 /// - what those members need to be configured, applied again to every name it
 ///   adds: each type their constructors and builders take, each callback value
 ///   an application matches, each returned value it keeps, and each enum
-///   payload or public field it constructs.
+///   payload or public field it constructs;
+/// - [`ThemeMode`], which a theme switch writes; [`ThemeManager`] and
+///   [`Palette`] stay at the crate root.
 ///
 /// A name is written when a program constructs it, matches it or keeps it; a
 /// value only passed on, such as a closure's context, is not.
@@ -101,8 +103,8 @@ pub use svg::component::Svg;
 /// - [`TextEditError`], which `on_binding_refusal` reports, and the other
 ///   error types stay at the crate root, where code names them to match a
 ///   failure; `?` converts the leaf errors [`RuntimeError`] wraps into it.
-///   Asset-loading errors such as `svg::SvgError` stay in their feature
-///   modules.
+///   Asset-loading errors such as `svg_images::SvgError` stay in their
+///   feature modules.
 /// - Services: [`NumberFormat`]'s localized constructors take a
 ///   [`NumberLocale`], and [`TextSpan::font`] and [`TextSpan::font_role`] take
 ///   a [`FontId`] and a [`FontRole`]; they are at the crate root.
@@ -116,14 +118,14 @@ pub use svg::component::Svg;
 /// | Names | Import |
 /// |---|---|
 /// | Implementing [`Component`]: contexts, drawing, input events, drag and drop, receipts, editor sessions and the embedded draft editor | `use pert_ui::component::*` ([`component`]) |
-/// | A headless test: the driver, the viewport, key and pointer input, queries, captures, the CPU renderer and the headless application | `use pert_ui::testing::*` ([`testing`]) |
+/// | A headless test: the driver, the viewport, key and pointer input, semantics, query results and validation, queries, captures, the CPU renderer and the headless application | `use pert_ui::testing::*` ([`testing`]) |
 /// | A custom host that drives the runtime in place of `App`: [`HostIntegration`](host::HostIntegration) and the names a host writes | `use pert_ui::host::*` ([`host`]) |
 /// | Authoritative values: parameters, edit gestures, hosts, external authority, and [`Slider`], [`Knob`] and [`InlineSlider`] | `use pert_ui::parameter::*` ([`parameter`]) |
 /// | Commands beyond a shortcut's chord and scope, held input and the command palette | `use pert_ui::commands::*` ([`commands`]) |
 /// | Windows inside a view, native windows, regions, splits and tool windows | `use pert_ui::windowing::*` ([`windowing`]) |
 /// | Inspection, capture, profiling and validation | `use pert_ui::inspection::*` ([`inspection`]) |
 /// | Data from other threads: live series, mailboxes, [`LevelMeter`] and [`Trace`] | `use pert_ui::live::*` ([`live`]) |
-/// | Theme, UI settings, fonts and icons, strings and locale, the workspace document, other errors, [`DescribeContext`], [`PhysicalExtent`] and [`VirtualAxis`] | by name from the crate root, such as `use pert_ui::{ThemeMode, Workspace};` |
+/// | Theme, UI settings, fonts and icons, strings and locale, the workspace document, other errors, [`DescribeContext`], [`PhysicalExtent`] and [`VirtualAxis`] | by name from the crate root, such as `use pert_ui::{Palette, Workspace};` |
 ///
 /// A name can be in the prelude and in a module, or in several modules: each
 /// re-exports the same crate-root item, so the globs combine without
@@ -200,25 +202,87 @@ pub mod component {
 ///
 /// [`Driver`](testing::Driver) clicks a component, replaces or types text,
 /// presses keys and chords, settles the runtime after each step and finds a
-/// component's semantics; [`TestError`](testing::TestError) names what a step
-/// could not do. Neither needs a window or a GPU. The module also re-exports
-/// what a headless test writes besides the driver: the [`Viewport`] every
-/// harness sets; [`KeyAction`], [`FocusDirection`], [`PointerEvent`],
-/// [`PointerKind`], [`PointerButton`] and [`CommandKeyInput`] for input by
-/// hand, with the [`InputOutcome`] it returns; [`SemanticValue`] and
-/// [`ClickCounter`]; [`InspectionQuery`], [`Selector`] and [`Detail`] for
-/// [`Runtime::query`]; [`CaptureRequest`], [`CaptureTarget`] and
-/// [`FrameImage`] for a capture; and
-/// [`HostIntegration`](host::HostIntegration), because a test that selects a
-/// native window, takes presentation requests or clears focus stands in for
-/// a [`host`].
+/// component's [`Semantics`]; [`TestError`](testing::TestError) names what a
+/// step could not do. Neither needs a window or a GPU. The module also
+/// re-exports what a headless test writes besides the driver and the
+/// prelude:
+///
+/// - input by hand and the viewport: the [`Viewport`] every harness sets;
+///   [`KeyAction`], [`FocusDirection`], [`PointerEvent`], [`PointerKind`] with
+///   the [`Magnification`] of a pinch, [`PointerButton`] and
+///   [`CommandKeyInput`], with the [`InputOutcome`] input returns; and
+///   [`ClickCounter`];
+/// - what the driver's steps return: [`FlushReport`], which
+///   [`Driver::settle`](testing::Driver::settle) and
+///   [`Driver::advance`](testing::Driver::advance) return, and the
+///   [`RevealRefusal`] a `TestError::NotRevealed` carries;
+/// - semantics: [`Semantics`] with [`SemanticRole`], [`SemanticValue`],
+///   [`SemanticAction`] and [`SemanticItem`];
+/// - queries: [`InspectionQuery`], [`Selector`], [`Detail`] and [`Depth`] for
+///   [`Runtime::query`], and the [`QueryResult`] it returns, with its
+///   [`ComponentInspection`]s, their [`ComponentDetails`] and the
+///   [`InspectValue`] properties those hold;
+/// - development validation: [`ValidationReport`] from
+///   [`Runtime::validation_report`], with [`ValidationIssue`],
+///   [`ValidationCode`] and [`ValidationMarker`];
+/// - captures: [`CaptureRequest`] and [`CaptureTarget`], with the
+///   [`NativeWindowId`] and [`Rect`] a target names, and [`Pending`],
+///   [`InspectionReply`], [`WaitError`], [`Capture`], [`CaptureError`] and
+///   [`FrameImage`] for [`Runtime::request_capture`];
+/// - [`HostIntegration`](host::HostIntegration), because a test that selects
+///   a native window, takes presentation requests or clears focus stands in
+///   for a [`host`].
+///
 /// With the `cpu` feature it adds [`CpuRenderer`], which serves captures
-/// without a GPU, and with the `native` feature, which `desktop` and
-/// `desktop-cpu` enable, [`HeadlessApp`], an [`App`] started without a window
-/// by [`App::headless`] so its content and its close policy can be tested.
+/// without a GPU, and the [`CpuRenderError`] its rendering returns, and with
+/// the `native` feature, which `desktop` and `desktop-cpu` enable,
+/// [`HeadlessApp`], an [`App`] started without a window by [`App::headless`]
+/// so its content and its close policy can be tested.
+///
+/// # Membership
+///
+/// `testing` holds the driver and its error and everything else a headless
+/// test writes besides the prelude: the viewport, input by hand, the query,
+/// validation and capture names, the CPU renderer and the headless
+/// application, and every type those names hand a test. It is closed: each
+/// type that a member's constructors, methods and associated constants take
+/// or return, and each type a member's public fields and variants hold, is in
+/// `testing` or in the prelude, and the same holds for every name this adds.
+/// An error nested inside another error is reached through `?` and `Display`
+/// and stays where it is. The exceptions below are records a test reads by
+/// field or passes on, and each is named with its module.
+///
+/// # Where the other names are
+///
+/// - The window, event, parameter and live-source answers of a query
+///   ([`WindowInspection`], [`EventHistory`], [`ParameterInspection`],
+///   [`SourceInspection`]) are records for an application's own tooling, in
+///   [`inspection`].
+/// - What a component reports about its geometry, invalidation and
+///   validation hints ([`BoxModelInspection`], [`Invalidation`],
+///   [`ValidationHints`]) is read by field and is in [`component`] and
+///   [`inspection`].
+/// - Key routing and key records a test's key input ignores:
+///   [`KeyDispatch`], which [`Runtime::command_key_input`] returns, in
+///   [`host`]; [`KeyEvent`], which [`Runtime::key_input`] returns, in
+///   [`component`] and [`inspection`]; and [`KeyTransition`] in
+///   [`component`].
+/// - A host's [`PhysicalExtent`], for [`Viewport::from_physical`], is in
+///   [`host`]; a test builds its viewport with [`Viewport::new`].
+/// - The [`DisplayList`] that [`Runtime::paint`] returns is passed on to a
+///   renderer, and is in [`component`] and [`host`].
+/// - [`GeometryError`], which [`Viewport::new`] and the other value
+///   constructors return, is propagated with `?` and stays at the crate root
+///   with the other errors; so does an error nested in another, such as the
+///   [`DrawError`] of `CaptureError::Drawing` or of `CpuRenderError::Drawing`.
+/// - What the [`HostIntegration`](host::HostIntegration) methods take and
+///   return, such as presentation requests, capture jobs and the clipboard
+///   service, is the [`host`] module's vocabulary.
+///
 /// The re-exported names stay at the crate root too, except
 /// [`HostIntegration`](host::HostIntegration), which is reached through
-/// [`host`] and this module.
+/// [`host`] and this module, [`CpuRenderer`] and [`CpuRenderError`], which
+/// are in [`cpu`], and [`HeadlessApp`], which only this module exports.
 ///
 /// The [testing chapter](crate::guide::testing) of the guide walks through a
 /// test.
@@ -226,6 +290,12 @@ pub mod component {
 /// ```
 /// use pert_ui::prelude::*;
 /// use pert_ui::testing::*;
+///
+/// /// The settled semantics of a component.
+/// fn semantics_of(driver: &mut Driver<'_>, id: &WidgetId) -> Result<Semantics, TestError> {
+///     driver.settle()?;
+///     driver.semantics(id)
+/// }
 ///
 /// let mut ui = Runtime::new();
 /// ui.set_viewport(Viewport::new(300.0, 100.0, 1.0)?)?;
@@ -237,6 +307,7 @@ pub mod component {
 /// driver.settle()?;
 /// driver.click(&button)?;
 /// assert_eq!(clicks.get()?, 1);
+/// assert!(matches!(semantics_of(&mut driver, &button)?.role, SemanticRole::Button));
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 ///
@@ -266,11 +337,17 @@ pub mod component {
 pub mod testing {
     #[doc(no_inline)]
     pub use pert_ui_runtime::testing::HostIntegration;
+    // Each name of `pert_ui_runtime::testing`, listed so the page shows them;
+    // pert-ui-diagnostics' closure check keeps the two lists equal.
     #[doc(no_inline)]
     pub use pert_ui_runtime::testing::{
-        CaptureRequest, CaptureTarget, ClickCounter, CommandKeyInput, Detail, FocusDirection,
-        FrameImage, InputOutcome, InspectionQuery, KeyAction, PointerButton, PointerEvent,
-        PointerKind, Selector, SemanticValue, Viewport,
+        Capture, CaptureError, CaptureRequest, CaptureTarget, ClickCounter, CommandKeyInput,
+        ComponentDetails, ComponentInspection, Depth, Detail, FlushReport, FocusDirection,
+        FrameImage, InputOutcome, InspectValue, InspectionQuery, InspectionReply, KeyAction,
+        Magnification, NativeWindowId, Pending, PointerButton, PointerEvent, PointerKind,
+        QueryResult, Rect, RevealRefusal, Selector, SemanticAction, SemanticItem, SemanticRole,
+        SemanticValue, Semantics, ValidationCode, ValidationIssue, ValidationMarker,
+        ValidationReport, Viewport, WaitError,
     };
     #[doc(inline)]
     pub use pert_ui_runtime::testing::{Driver, TestError};
@@ -279,7 +356,7 @@ pub mod testing {
     pub use crate::app::HeadlessApp;
     #[cfg(feature = "cpu")]
     #[doc(no_inline)]
-    pub use crate::cpu::CpuRenderer;
+    pub use crate::cpu::{CpuRenderError, CpuRenderer};
 }
 
 /// Driving a [`Runtime`] in place of `App`, for a custom host:

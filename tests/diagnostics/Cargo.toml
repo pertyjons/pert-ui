@@ -1,6 +1,6 @@
 [package]
 name = "pert-ui-diagnostics"
-description = "Snapshots of the compiler messages pert-ui shapes with diagnostic attributes"
+description = "Snapshots of the compiler messages pert-ui shapes with diagnostic attributes, and the testing module's closure check over the API listings"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

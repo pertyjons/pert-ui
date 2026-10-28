@@ -43,8 +43,8 @@ use std::rc::Rc;
 ///
 /// Like every component description, an `Svg` is a UI-thread value and is not
 /// `Send`. A worker thread that prepares a drawing returns its source bytes, or
-/// the pixels of [`rasterize`](crate::svg::rasterize) or
-/// [`rasterize_mask`](crate::svg::rasterize_mask), and the UI thread builds the
+/// the pixels of [`rasterize`](crate::svg_images::rasterize) or
+/// [`rasterize_mask`](crate::svg_images::rasterize_mask), and the UI thread builds the
 /// component:
 ///
 /// ```compile_fail

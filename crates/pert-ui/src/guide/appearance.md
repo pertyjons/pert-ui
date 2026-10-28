@@ -504,8 +504,8 @@ Enable the feature in the application's manifest, for example
 
 # SVG graphics
 
-The `svg` feature adds the [`svg`] module, which rasterizes SVG icons and similar
-graphics with resvg. Its [`Svg`] component rasterizes for the physical size of its
+The `svg` feature adds the [`svg_images`] module, which rasterizes SVG icons and
+similar graphics with resvg. Its [`Svg`] component rasterizes for the physical size of its
 allocation during layout, never in `paint`, and keeps that result until the size
 or the display scale changes. [`Svg::tinted`] turns a monochrome drawing into a
 coverage mask colored by a theme role, so it follows theme changes like the
@@ -514,4 +514,5 @@ rendered: convert text to paths, or place a [`Label`] beside the graphic.
 
 Features follow one placement rule: every widget, including a feature-gated one
 such as `App` or [`Svg`], is at the crate root beside the others, while a feature
-module such as `images` or [`svg`] holds its loaders, rasterizers and their errors.
+module such as `images` or [`svg_images`] holds its loaders, rasterizers and
+their errors.
