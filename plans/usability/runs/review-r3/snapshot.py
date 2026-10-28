@@ -32,6 +32,14 @@ if (run/'work/FRICTION.md').exists():
 
 def ignore(directory,names):
     excluded={'target','.git','.claude','.codex','Cargo.lock','FRICTION.md','docs-text'}
+    # Keep generated kit-documentation dumps in the raw run only. Preserve
+    # application-authored docs: only a directory entirely of rustdoc-page
+    # conversions is excluded here.
+    docs=Path(directory)/'docs'
+    if 'docs' in names and docs.is_dir():
+        files=list(docs.rglob('*'))
+        if files and all(p.is_file() and p.suffix=='.md' and 'Copy item path' in p.read_text()[:200] for p in files):
+            excluded.add('docs')
     # Top-level PNGs are the tasks' generated captures. Keep assets in nested
     # source directories in the submitted project, since code may include them.
     if Path(directory)==run/'work':
