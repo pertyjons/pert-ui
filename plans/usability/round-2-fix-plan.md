@@ -1858,4 +1858,5 @@ plan closes.
   mutation M19d applying growth to shrunk allocations fails at the width
   assertion). Each fix has its test and failing mutation
   (`target/p7-evidence/`). Fixes gate (fresh): as above, with the
-  `--release` foundation run. Recheck: pending.
+  `--release` foundation run. Codex's recheck: every point resolved, no
+  regressions: ready. **P7 done** (native evidence missing).
