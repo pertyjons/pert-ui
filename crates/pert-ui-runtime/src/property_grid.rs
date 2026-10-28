@@ -126,7 +126,8 @@ impl Property {
         self
     }
     /// Follows a form's field, as [`Field::form`], so
-    /// [`FormFields::focus_first_error`] reaches this row's editor.
+    /// [`FormFields::focus_first_error`] and [`FormFields::discard_drafts`]
+    /// reach this row's editor.
     pub fn form(mut self, handle: &FieldHandle) -> Self {
         self.field = self.field.form(handle);
         self

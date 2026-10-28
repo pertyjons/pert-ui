@@ -86,7 +86,10 @@ impl NumberInputError {
 /// [`TextCommand::DiscardDraft`] discards it without touching the binding.
 /// Input/clipboard errors and geometry changes clear transient input state
 /// and keep the draft. External changed values win over drafts and clear
-/// composition/undo.
+/// composition/undo. Writing the value the field already shows changes
+/// nothing and keeps the draft;
+/// [`FormFields::discard_drafts`](crate::FormFields::discard_drafts) or
+/// [`TextCommand::DiscardDraft`] ends it.
 ///
 /// An external value the editor does not accept (outside the bounds, off a
 /// parameter's step, or a non-finite decimal) is refused by the field rather than
@@ -2420,7 +2423,10 @@ macro_rules! number_shared {
             /// Tells the application about each refused save, with the rules
             /// of [`TextField::on_rejection`]: `Some` on each save of a
             /// changed draft that is refused, and `None` once when a reported
-            /// refusal ends at a later save or at Escape.
+            /// refusal ends at a later save, at Escape or at
+            /// [`TextCommand::DiscardDraft`] (which
+            /// [`FormFields::discard_drafts`](crate::FormFields::discard_drafts)
+            /// sends to every field of a form).
             ///
             /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
             ///

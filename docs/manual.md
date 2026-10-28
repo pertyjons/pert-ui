@@ -447,7 +447,8 @@ reports the end of each cell edit through `on_edit_end`, where such a count is
 cleared for an edit the table ended itself. What revocation, hiding and a
 window close do to a draft is the draft policy in
 [contracts.md](contracts.md#draft-policy); `TextCommand::DiscardDraft`
-discards a draft a field keeps. `FieldStatus` (normal, warning, error or a pending
+discards a draft a field keeps, and `FormFields::discard_drafts` every draft
+a form's fields keep, as a Revert does. `FieldStatus` (normal, warning, error or a pending
 check) and `FormFields` can present and navigate application-supplied statuses
 without giving any one control special ownership of validation.
 

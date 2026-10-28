@@ -21,8 +21,8 @@ cancels its active input. Recreating it produces a new incarnation.
 
 Use [`Column`], [`Row`] and [`Wrap`] for ordinary flow, [`Form`] for adaptive field
 columns, and [`Field`] to associate a label, help and application-owned status
-with any control. [`FormFields`] coordinates errors and can focus the first one;
-it never decides whether your application data is valid. [`SplitPane`] and [`Tabs`]
+with any control. [`FormFields`] coordinates errors, can focus the first one
+and discard every field's draft; it never decides whether your application data is valid. [`SplitPane`] and [`Tabs`]
 compose larger views. Inactive tabs retain local state and suspend presentation.
 
 `Form` uses its allocated width, so it also works inside a resizable side panel.

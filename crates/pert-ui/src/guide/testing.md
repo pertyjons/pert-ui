@@ -724,7 +724,9 @@ keeps otherwise, such as a disabled field's typed text or a refused draft left
 in a field that lost focus earlier, is not saved; a close policy that should
 keep such a window open counts the unsaved fields with `on_modified` and a
 [`FormFields`], as [`IntegerInput::on_modified`]'s example does, and reads
-[`FormSummary::modified`].
+[`FormSummary::modified`]. The
+[settings-form recipe](crate::guide::state#a-settings-form) shows such a
+policy with a Revert that discards the kept drafts.
 
 # A capture
 

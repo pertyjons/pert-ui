@@ -116,15 +116,6 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   crates.io. Update it with `cargo update -p clipboard-win` to a non-yanked
   compatible release and run the dependency gate, including the Windows
   native clipboard check.
-- [ ] 2026-10-27 `crates/pert-ui/examples/diagram_editor/app.rs`
-  `close_requested` — draft policy (contracts.md "Draft policy", rule 10):
-  the close policy asks only whether the document is dirty, so a draft the
-  inspector's label `TextField` or a `DecimalInput` refuses
-  (`app.rs:452-498`) stays unsaved through admission and is lost with the
-  window without a prompt. The fields now report kept drafts through
-  `on_modified`: feed a `FormFields` from them and keep the window open, or
-  ask, while `FormSummary::modified` is non-zero, with a test through
-  `HeadlessApp::admit_close`.
 - [ ] 2026-10-28 rustdoc and guide examples with unused imports — public
   examples (round 2 finding R2-14's rule that an example needs exactly what
   it imports): a run with `#![doc(test(attr(deny(unused_imports))))]` added
@@ -206,3 +197,16 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   comparing, and above a threshold summarize per parent, for example "N
   components overlap under <parent>; first pairs: ...", with a test of the
   summary, the threshold and the issues the report still lists.
+- [ ] 2026-10-28 `crates/pert-ui-runtime/src/text_fields/number_inputs.rs`
+  `accept` — inspection contract (`IntegerInput`'s inspection properties:
+  `validation_error` is "why the editing text is not a valid number"): an
+  application write of a changed value that ends
+  a refused draft in an ordinary `IntegerInput` or `DecimalInput` leaves
+  `field.error` set, so inspection still reports `validation_error` ("number
+  is outside the allowed range") beside `valid: true` until the next edit;
+  `discard_command` and the edit paths recompute `field.error`, `accept` does
+  not. The ordinary field paints from `draft()` and is unaffected; an inline
+  row clears the error in `stop_text`. Recompute `field.error` in `accept`
+  (or clear it when the draft ends), with a test that a changed write after
+  a refused draft leaves no `validation_error`. Found by round 2 part P12's
+  form-draft tests (Revert writing a changed value).

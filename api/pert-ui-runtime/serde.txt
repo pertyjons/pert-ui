@@ -17837,6 +17837,7 @@ impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Form
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Form
 pub struct pert_ui_runtime::prelude::FormFields(_)
 impl pert_ui_runtime::FormFields
+pub fn pert_ui_runtime::FormFields::discard_drafts(&self, &mut pert_ui_runtime::EventContext) -> core::result::Result<usize, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FormFields::field(&self, impl core::convert::Into<alloc::string::String>) -> core::result::Result<pert_ui_runtime::FieldHandle, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FormFields::focus_first_error(&self, &pert_ui_runtime::EventContext) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FormFields::new(&impl pert_ui_runtime::StateOwner) -> Self
@@ -33932,6 +33933,7 @@ impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Form
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Form
 pub struct pert_ui_runtime::FormFields(_)
 impl pert_ui_runtime::FormFields
+pub fn pert_ui_runtime::FormFields::discard_drafts(&self, &mut pert_ui_runtime::EventContext) -> core::result::Result<usize, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FormFields::field(&self, impl core::convert::Into<alloc::string::String>) -> core::result::Result<pert_ui_runtime::FieldHandle, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FormFields::focus_first_error(&self, &pert_ui_runtime::EventContext) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FormFields::new(&impl pert_ui_runtime::StateOwner) -> Self

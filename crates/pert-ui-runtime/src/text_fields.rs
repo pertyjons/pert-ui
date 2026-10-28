@@ -177,7 +177,10 @@ type RefusalReport =
 /// always does, and hiding discards it without saving. Undo and redo act on the
 /// draft and never normalize; a save clears the local undo history. An
 /// external write that changes the binding wins over the draft and discards it,
-/// so a later focus loss has nothing to save.
+/// so a later focus loss has nothing to save. Writing the value the field
+/// already shows changes nothing and keeps the draft;
+/// [`FormFields::discard_drafts`](crate::FormFields::discard_drafts) or
+/// [`TextCommand::DiscardDraft`](crate::TextCommand::DiscardDraft) ends it.
 ///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
@@ -373,7 +376,10 @@ macro_rules! editor_api {
             /// field whose unchanged text is below its minimum, including
             /// a repeated refusal of the same draft, and `None` once when a
             /// reported refusal ends: at a later save that succeeds or finds
-            /// nothing to save (including focus loss), and at Escape. An
+            /// nothing to save (including focus loss), at Escape, and at
+            /// [`TextCommand::DiscardDraft`](crate::TextCommand::DiscardDraft),
+            /// which [`FormFields::discard_drafts`](crate::FormFields::discard_drafts)
+            /// sends to every field of a form. An
             /// application write or hiding that discards the draft happens
             /// outside an event, so the next save or Escape reports its end;
             /// that Escape still reaches the field's owner. Removal and

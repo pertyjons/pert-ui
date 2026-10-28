@@ -25,12 +25,15 @@
 //! menu bar, a context menu, a toolbar and a command palette, files opened
 //! through a `FileBrowser` dialog and saved on background threads, work a
 //! closing dialog starts queued with `EventContext::defer`, a saved
-//! tool-window layout, close admission and, with the `cpu` feature, PNG
-//! export through a second runtime in the light theme.
+//! tool-window layout, close admission that also counts the drafts the
+//! inspector's fields keep, through a `FormFields` they report to, and, with
+//! the `cpu` feature, PNG export through a second runtime in the light theme.
 //!
 //! Without arguments the example runs a deterministic headless session and
 //! checks its results, which needs no window:
 //! `cargo run -p pert-ui --example diagram_editor --no-default-features --features cpu`.
+//! Its close checks start the application with `App::headless`, so they need
+//! the `native` feature, which the default features include.
 //! With the `native` feature, `--window` opens it; files go to the folder
 //! given with `--dir`, by default `pert-ui-diagram-editor` in the system's
 //! temporary folder.
@@ -51,16 +54,19 @@ fn folder() -> std::path::PathBuf {
         )
 }
 
+/// The application, saving its files in `dir`: the window runs it, and the
+/// session's close checks start it headless.
 #[cfg(feature = "native")]
-fn window() -> Result<(), Box<dyn std::error::Error>> {
+fn application(
+    dir: std::path::PathBuf,
+) -> Result<pert_ui::App<std::rc::Rc<app::DiagramApp>>, Box<dyn std::error::Error>> {
     use pert_ui::prelude::*;
-    let dir = folder();
     std::fs::create_dir_all(&dir)?;
     // The application the initializer builds is the application state: close
     // admission and error handling receive it, and it lives until the
     // application ends. A failing initializer reaches neither; its error
     // returns from `run`.
-    App::new("Diagram editor", move |ui| {
+    Ok(App::new("Diagram editor", move |ui| {
         Ok(app::build(ui, dir.clone()).map_err(|error| {
             pert_ui::ApplicationError::new(std::io::Error::other(error.to_string()))
         })?)
@@ -83,8 +89,12 @@ fn window() -> Result<(), Box<dyn std::error::Error>> {
             None => NativeCloseAction::Close,
             Some(decision) => NativeCloseAction::Defer(decision),
         })
-    })
-    .run()?;
+    }))
+}
+
+#[cfg(feature = "native")]
+fn window() -> Result<(), Box<dyn std::error::Error>> {
+    application(folder())?.run()?;
     Ok(())
 }
 

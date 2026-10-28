@@ -1301,7 +1301,10 @@ commits the composition, not the draft.
 3. **Application writes win.** A changed bound value, a changed controlled
    value or a parameter base or metadata change discards a draft unsaved; a
    session's next completion reports `Unchanged`. Writing the value the
-   editor already shows changes nothing.
+   editor already shows changes nothing. The draft stays; an application
+   that must end it, such as a form's Revert after writing the applied
+   values, sends `TextCommand::DiscardDraft`, to every field of a form with
+   `FormFields::discard_drafts`.
 4. **Revoked editability** keeps focus, selection and copying, cancels a
    composition and editing gestures (a selection drag, a held step, a pressed
    stepper), keeps the draft unsaved and refuses every save attempt, with
@@ -1360,9 +1363,15 @@ commits the composition, not the draft.
 
 `TextCommand::DiscardDraft` is how an application drops a kept draft without
 touching application data: the editor discards it as Escape does, also
-while disabled or read-only, reports `on_modified(false)`, and a session's
-edit stays open (its next completion reports `Unchanged`). It is aimed at the
-control that owns the draft; a `DraftEditor` answers it `Unavailable`.
+while disabled or read-only, reports `on_rejection(None)` within the
+command where a refusal was reported and `on_modified(false)` after
+settling, and a session's edit stays open (its next completion reports
+`Unchanged`). It is aimed at the control that owns the draft; a
+`DraftEditor` answers it `Unavailable`. `FormFields::discard_drafts` queues
+it for every field a form shows, in registration order. A draft that a
+changed write ended before the command arrived is reported by that write's
+route: the command finds no draft and answers `Unavailable`, and a reported
+refusal ends at the editor's next save or Escape.
 Describing a field with another binding also discards a draft, at the cost
 of a second signal holding the same value; describing it under another key
 remounts it, losing focus, undo and retained layout.
@@ -1374,7 +1383,7 @@ For the built-in editors:
 | Save attempt by Enter, Tab or a step | saved if accepted, else kept | the parameter outcomes below; `InlineSlider` its own | saved or proposed, else kept open | `Saved`, `Unchanged` or `Refused` |
 | Save attempt by focus loss | saved if accepted, else kept | cancelled | as a local or parameter draft | `FocusLeft` with the outcome |
 | Enter in `TextArea`; Enter or Tab while busy | no save attempt | no save attempt | no save attempt | nothing |
-| Application write | discarded | discarded | ended | `Unchanged` at the next completion |
+| Application write of a changed value | discarded | discarded | ended | `Unchanged` at the next completion |
 | Editability revoked | kept, save attempts refused | kept, save attempts refused | read-only, save attempts refused | `Refused` at a confirmation |
 | Enablement revoked | kept unsaved, focused or not | cancelled | ended unsaved | nothing; the edit stays open |
 | Hiding, removal | discarded | cancelled | ended | nothing |

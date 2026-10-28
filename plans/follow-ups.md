@@ -72,6 +72,16 @@ until then if one is being written.
   `Field::status`); no round 2 run needed an editing control without a
   controlled form per row.
 
+- **A form discard from a command action.** From round 2 part P12
+  ([design](usability/round-2-design-P12.md), decision P12-D3):
+  `FormFields::discard_drafts` takes the `EventContext` a button's or a
+  `MenuItem::new` action receives, but a command action, such as a Revert
+  bound to a shortcut or the command palette, receives `&mut Runtime` and
+  cannot call it. The alternative not taken is a sealed receiver trait
+  implemented by `EventContext` and `Runtime` that queues on the same queue,
+  delivered at the next flush from a `Runtime`. Round 2's runs and the
+  settings-form recipe use buttons; take it up when an application needs a
+  Revert command.
 - **Refusal for other captioned controls.** From
   [plan-audit-repairs](plan-audit-repairs.md) slice 2: `Label` and the
   components built on it refuse display text they cannot prepare, but

@@ -8,7 +8,12 @@
 use crate::model::{Diagram, EdgeId, NodeId, NodeShape};
 use pert_ui::prelude::*;
 use pert_ui::{StateOwner, ViewScale, ViewTransform};
-use std::{cell::RefCell, collections::BTreeSet, path::PathBuf, rc::Rc};
+use std::{
+    cell::{Cell, RefCell},
+    collections::BTreeSet,
+    path::PathBuf,
+    rc::Rc,
+};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Tool {
@@ -21,12 +26,24 @@ pub enum Tool {
 /// What the inspector shows. Its structure depends only on this: another
 /// node is a new description under another key, so a draft typed for one
 /// node can never be saved to another, while a change of values never
-/// describes the panel again.
+/// describes the panel again. Leaving a node discards its drafts, also when
+/// it is selected again before the screen updates: each change of what is
+/// shown has a new `incarnation`, which the panel's key includes.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Shown {
     Nothing,
-    One(NodeId),
+    One { node: NodeId, incarnation: u64 },
     Many(usize),
+}
+
+impl Shown {
+    /// Whether both show the same thing, whatever their incarnations.
+    fn same_target(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::One { node: a, .. }, Self::One { node: b, .. }) => a == b,
+            _ => self == other,
+        }
+    }
 }
 
 /// The inspector's fields, created once and kept for the editor's lifetime.
@@ -34,6 +51,9 @@ pub enum Shown {
 /// any document change that leaves its own value alone: `sync` writes only
 /// values that differ. An application write to a field replaces its draft,
 /// as selecting another node, hiding or removing the panel discards it.
+///
+/// The fields that can keep a draft report it to `form`, which close
+/// admission reads: a draft a field refuses is not saved by admission.
 pub struct Inspector {
     pub shown: Signal<Shown>,
     pub label: Signal<String>,
@@ -41,6 +61,23 @@ pub struct Inspector {
     pub height: Signal<f64>,
     pub shape: Signal<NodeShape>,
     pub fill: Signal<Color>,
+    pub form: FormFields,
+    pub label_field: FieldHandle,
+    pub width_field: FieldHandle,
+    pub height_field: FieldHandle,
+    /// Advances with every change of what is shown; see `Shown`.
+    incarnation: Cell<u64>,
+}
+
+impl Inspector {
+    /// Forgets the kept drafts of a panel that is being replaced. Its
+    /// editors are removed without a report, so their marks would stay set.
+    fn forget_drafts(&self) -> Result<(), RuntimeError> {
+        for field in [&self.label_field, &self.width_field, &self.height_field] {
+            field.set_modified(false)?;
+        }
+        Ok(())
+    }
 }
 
 const HISTORY: usize = 200;
@@ -78,6 +115,12 @@ pub struct Editor {
 impl Editor {
     pub fn new(ui: &impl StateOwner, diagram: Diagram) -> Result<Rc<Self>, RuntimeError> {
         let doc = Rc::new(diagram);
+        let form = FormFields::new(ui);
+        let (label_field, width_field, height_field) = (
+            form.field("label")?,
+            form.field("width")?,
+            form.field("height")?,
+        );
         let editor = Rc::new(Self {
             doc: ui.signal(doc.clone()),
             nodes: ListSelection::new(ui, SelectionMode::Multiple),
@@ -96,6 +139,11 @@ impl Editor {
                 height: ui.signal(0.0),
                 shape: ui.signal(NodeShape::Box),
                 fill: ui.signal(Color::WHITE),
+                form,
+                label_field,
+                width_field,
+                height_field,
+                incarnation: Cell::new(0),
             },
             history: RefCell::default(),
             saved: RefCell::new(doc),
@@ -171,7 +219,8 @@ impl Editor {
     }
 
     /// Copies the selected node's values into the inspector's fields,
-    /// writing only those that differ.
+    /// writing only those that differ, and shows another panel when the
+    /// selection asks for one.
     pub fn sync(&self) -> Result<(), RuntimeError> {
         let doc = self.doc.get()?;
         let nodes = self.selected_nodes()?;
@@ -181,20 +230,31 @@ impl Editor {
             [id] if edges == 0 => doc.node(*id).cloned(),
             _ => None,
         };
-        let Some(node) = node else {
-            let count = nodes.len() + edges;
-            return inspector.shown.set(if count == 0 {
-                Shown::Nothing
-            } else {
-                Shown::Many(count)
-            });
+        let incarnation = inspector.incarnation.get().wrapping_add(1);
+        let target = match &node {
+            Some(node) => Shown::One {
+                node: node.id,
+                incarnation,
+            },
+            None if nodes.len() + edges == 0 => Shown::Nothing,
+            None => Shown::Many(nodes.len() + edges),
         };
-        inspector.label.set(node.label.clone())?;
-        inspector.width.set(f64::from(node.width))?;
-        inspector.height.set(f64::from(node.height))?;
-        inspector.shape.set(node.shape)?;
-        inspector.fill.set(node.fill)?;
-        inspector.shown.set(Shown::One(node.id))
+        if let Some(node) = node {
+            inspector.label.set(node.label.clone())?;
+            inspector.width.set(f64::from(node.width))?;
+            inspector.height.set(f64::from(node.height))?;
+            inspector.shape.set(node.shape)?;
+            inspector.fill.set(node.fill)?;
+        }
+        if target.same_target(&inspector.shown.get()?) {
+            return Ok(());
+        }
+        // Another panel: its key changes with the incarnation, so the panel
+        // shown now is removed with its drafts, which therefore no longer
+        // count.
+        inspector.incarnation.set(incarnation);
+        inspector.shown.set(target)?;
+        inspector.forget_drafts()
     }
 
     /// Selects nodes and edges.

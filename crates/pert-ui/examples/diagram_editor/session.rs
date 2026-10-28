@@ -1,13 +1,13 @@
 //! The deterministic headless session: drives the editor through pointer
 //! and key input, the test driver's keys and shortcuts on the native command
 //! path, and checks the document, the selection, the inspector and the files
-//! it writes.
+//! it writes. With the `native` feature it also starts the application with
+//! `App::headless` and checks its close admission.
 use crate::app::{self, DiagramApp};
 use crate::editor::Tool;
 use crate::model::{Diagram, NodeId};
 use pert_ui::prelude::*;
 use pert_ui::testing::*;
-use pert_ui::windowing::*;
 use pert_ui::{
     CommandKey, CommandKeyInput, CommandSource, KeyAction, KeyCode, ViewTransform, Viewport,
 };
@@ -252,7 +252,11 @@ pub fn run(dir: PathBuf) -> Outcome {
         "Finish line",
         "refused, kept for correction"
     );
+    let form = s.app.editor.inspector.form.clone();
+    let kept = || form.summary().get();
+    assert_eq!(kept()?.modified(), 1, "the inspector counts the kept draft");
     s.driver().key(KeyCode::Escape)?;
+    assert_eq!(kept()?.modified(), 0);
     s.ui.focus(&s.app.canvas)?;
 
     // The outline shares the selection: a click on its first row selects
@@ -263,10 +267,10 @@ pub fn run(dir: PathBuf) -> Outcome {
             .ok_or("outline row")?;
     s.driver().click(&row)?;
     assert_eq!(s.selected()?, BTreeSet::from([start]));
-    assert_eq!(
+    assert!(matches!(
         s.app.editor.inspector.shown.get()?,
-        crate::editor::Shown::One(start)
-    );
+        crate::editor::Shown::One { node, .. } if node == start
+    ));
     s.click(s.node_point(finish)?)?;
 
     // Renaming in place: F2 opens the editor with the label selected.
@@ -510,44 +514,138 @@ pub fn run(dir: PathBuf) -> Outcome {
         std::fs::write(dir.join("export.png"), png)?;
     }
 
-    // The layout round-trips, and closing asks only with unsaved changes.
+    // The layout round-trips.
     s.app.files.save_layout(&s.ui)?;
     files.restore_layout(&mut s.ui)?;
     assert_eq!(s.app.editor.status.get()?, "Layout restored");
-    assert!(app::close_requested(&s.app, &mut s.ui)?.is_none());
-    // A draft open in the inspector counts: closing resolves it first. `App`
-    // releases focus before its close policy runs; the session calls the
-    // policy itself, so it releases focus as that admission does.
-    s.click(s.node_point(start)?)?;
-    s.ui.focus(&s.find("label-input")?)?;
-    s.driver().key(KeyCode::End)?;
-    s.driver().type_text("!")?;
-    s.ui.clear_focus();
-    let decision = app::close_requested(&s.app, &mut s.ui)?.ok_or("asks")?;
-    assert_eq!(s.label(start)?, "Start!");
     s.settle()?;
-    assert_eq!(decision.get()?, None);
-    s.app.files.discard_dialog.cancel()?;
-    s.settle()?;
-    assert_eq!(decision.get()?, Some(WindowCloseAction::KeepOpen));
-    // So does a rename open on the canvas.
-    s.ui.focus(&s.app.canvas)?;
-    s.driver().key(KeyCode::F2)?;
-    s.driver().type_text("Renamed")?;
-    s.ui.clear_focus();
-    let decision = app::close_requested(&s.app, &mut s.ui)?.ok_or("asks")?;
-    assert_eq!(s.label(start)?, "Renamed");
-    s.settle()?;
-    s.app.files.discard_dialog.cancel()?;
-    s.settle()?;
-    assert_eq!(decision.get()?, Some(WindowCloseAction::KeepOpen));
 
     s.assert_clean("at the end")?;
     assert_eq!(s.settle()?, 0, "nothing updates while nothing happens");
     s.ui.shutdown();
     let cleanup = s.ui.take_shutdown_errors();
     assert!(cleanup.is_empty(), "{cleanup:?}");
+    #[cfg(feature = "native")]
+    close_admission(dir.join("close"))?;
     let _ = std::fs::remove_dir_all(&dir);
     println!("diagram editor: headless session passed");
+    Ok(())
+}
+
+/// Whether the editor `id` shows a draft it refuses.
+#[cfg(feature = "native")]
+fn refused(ui: &mut Runtime, id: &WidgetId) -> Result<bool, Box<dyn std::error::Error>> {
+    Ok(Driver::new(ui).semantics(id)?.invalid)
+}
+
+/// Close admission, as the window runs it: the application started with
+/// `App::headless` in a folder of its own, and each close request through
+/// `HeadlessApp::admit_close`. Closing asks only with unsaved changes, in
+/// the diagram or a draft an inspector field keeps.
+#[cfg(feature = "native")]
+fn close_admission(dir: PathBuf) -> Outcome {
+    use pert_ui::windowing::WindowCloseAction;
+    type Headless = HeadlessApp<Rc<DiagramApp>>;
+    type Failure = Box<dyn std::error::Error>;
+    let mut app = crate::application(dir)?.headless()?;
+    let main = app.main_window();
+    let diagram = app.state().clone();
+    let editor = diagram.editor.clone();
+    let (start, decide) = (NodeId(1), NodeId(2));
+    let label = |id: NodeId| -> Result<String, Failure> {
+        Ok(editor.diagram()?.node(id).ok_or("node")?.label.clone())
+    };
+    let find = |ui: &Runtime, key: &str| -> Result<WidgetId, Failure> {
+        Ok(ui
+            .find_descendant(&diagram.root, key)?
+            .ok_or_else(|| format!("no {key}"))?)
+    };
+    // A request the policy defers, cancelled in the dialog: the window stays.
+    let cancel = |app: &mut Headless, what: &str| -> Outcome {
+        let NativeCloseAction::Defer(decision) = app.admit_close(&main)? else {
+            return Err(format!("closing asks with {what}").into());
+        };
+        let ui = app.runtime_mut();
+        Driver::new(ui).settle()?;
+        assert_eq!(ui.read_signal(&decision)?, None);
+        app.state().files.discard_dialog.cancel()?;
+        let ui = app.runtime_mut();
+        Driver::new(ui).settle()?;
+        assert_eq!(
+            ui.read_signal(&decision)?,
+            Some(WindowCloseAction::KeepOpen)
+        );
+        Ok(())
+    };
+    let closes = |app: &mut Headless| -> Result<bool, Failure> {
+        Ok(matches!(app.admit_close(&main)?, NativeCloseAction::Close))
+    };
+    assert!(closes(&mut app)?, "a clean document closes");
+
+    // A draft open in the inspector is saved by admission before the policy.
+    editor.select([start], [])?;
+    let mut driver = Driver::new(app.runtime_mut());
+    driver.settle()?;
+    let field = find(driver.runtime(), "label-input")?;
+    driver.runtime_mut().focus(&field)?;
+    driver.key(KeyCode::End)?;
+    driver.type_text("!")?;
+    cancel(&mut app, "a label draft")?;
+    assert_eq!(label(start)?, "Start!");
+    editor.undo()?;
+    // So is a rename open on the canvas.
+    let ui = app.runtime_mut();
+    ui.focus(&diagram.canvas)?;
+    let mut driver = Driver::new(ui);
+    driver.key(KeyCode::F2)?;
+    driver.type_text("Renamed")?;
+    cancel(&mut app, "a rename")?;
+    assert_eq!(label(start)?, "Renamed");
+    editor.undo()?;
+    assert!(!editor.dirty.get()?);
+
+    // A draft the inspector refuses is not saved: with the document clean,
+    // the inspector's form asks, and the draft stays.
+    let height = |app: &mut Headless| -> Result<WidgetId, Failure> {
+        let ui = app.runtime_mut();
+        let field = find(ui, "height-input")?;
+        let mut driver = Driver::new(ui);
+        driver.replace_text(&field, "5")?;
+        driver.key(KeyCode::Enter)?;
+        Ok(field)
+    };
+    let field = height(&mut app)?;
+    assert!(refused(app.runtime_mut(), &field)?);
+    cancel(&mut app, "a refused height")?;
+    assert!(
+        refused(app.runtime_mut(), &field)?,
+        "the refused draft stays"
+    );
+    // Leaving the node discards it, so closing no longer asks.
+    editor.select([decide], [])?;
+    Driver::new(app.runtime_mut()).settle()?;
+    assert!(closes(&mut app)?, "the draft left with its node");
+
+    // Returning to a node before the screen updates is a new panel too, so
+    // no draft survives that the form does not count.
+    editor.select([start], [])?;
+    Driver::new(app.runtime_mut()).settle()?;
+    let before = height(&mut app)?;
+    assert!(refused(app.runtime_mut(), &before)?);
+    editor.select([decide], [])?;
+    editor.select([start], [])?;
+    Driver::new(app.runtime_mut()).settle()?;
+    let after = find(app.runtime(), "height-input")?;
+    assert_ne!(after, before, "a new panel");
+    assert!(!refused(app.runtime_mut(), &after)?);
+    let height = f64::from(editor.diagram()?.node(start).ok_or("start")?.height);
+    let shown = Driver::new(app.runtime_mut()).semantics(&after)?.value;
+    assert!(
+        matches!(shown, Some(SemanticValue::Number { value, .. }) if value == height),
+        "{shown:?}"
+    );
+    assert_eq!(editor.inspector.form.summary().get()?.modified(), 0);
+    assert!(closes(&mut app)?);
+    app.shutdown()?;
     Ok(())
 }

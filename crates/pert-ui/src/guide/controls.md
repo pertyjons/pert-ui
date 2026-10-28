@@ -428,7 +428,8 @@ ui.mount_tree(
 Text stays local until Enter or focus loss saves a valid draft; Escape restores
 its saved value, and with nothing to restore it reaches the field's owner.
 Hiding/removal cancels. Invalid text remains visible with an error
-outline and never overwrites the number. External changed values win over drafts.
+outline and never overwrites the number. External changed values win over drafts;
+writing the value the field already shows keeps its draft.
 Ranges and keyboard steps are optional; Up/Down edits the draft. Decimal display
 precision does not round the stored value, and both `.` and `,` are accepted as
 decimal separators (no grouping). These are local signals, not host edit sessions;
@@ -436,7 +437,8 @@ decimal separators (no grouping). These are local signals, not host edit session
 exactly against its step and cancelling them on focus loss. Disabling a field or
 making it read-only keeps a typed draft unsaved, as a [`TextField`] keeps one, and
 [`IntegerInput::on_modified`] reports it; [`TextCommand::DiscardDraft`] discards
-it without touching the binding. The
+it without touching the binding, and [`FormFields::discard_drafts`] discards
+every draft a form's fields keep. The
 [draft policy](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#draft-policy)
 states these rules for every built-in editor.
 

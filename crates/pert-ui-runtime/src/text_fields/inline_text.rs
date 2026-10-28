@@ -295,7 +295,10 @@ impl InlineText {
     /// [controlled](Self::controlled) label, proposes it. A refusal writes
     /// and proposes nothing and keeps the draft open with the error outline
     /// until it changes. Text the application writes to the binding or
-    /// describes is never normalized.
+    /// describes is never normalized. Writing the value the field already
+    /// shows changes nothing and keeps the draft;
+    /// [`FormFields::discard_drafts`](crate::FormFields::discard_drafts) or
+    /// [`TextCommand::DiscardDraft`](crate::TextCommand::DiscardDraft) ends it.
     ///
     /// The function must be bounded and free of side effects, binding writes
     /// and I/O. It may read application state, such as the other names in a
@@ -456,7 +459,10 @@ impl InlineText {
     /// Tells the application about the normalizer's refusals, with the rules
     /// of [`TextField::on_rejection`]: `Some` on each refused save, and `None`
     /// once when a reported refusal ends at a later save, at focus loss or at
-    /// Escape, including after an application write ended the session.
+    /// Escape, including after an application write ended the session, and at
+    /// [`TextCommand::DiscardDraft`](crate::TextCommand::DiscardDraft), which
+    /// [`FormFields::discard_drafts`](crate::FormFields::discard_drafts) sends
+    /// to every field of a form.
     /// Escape discards the draft before delivering this callback. A callback
     /// failure does not keep editing active; the clear notification stays pending
     /// for a later retry.

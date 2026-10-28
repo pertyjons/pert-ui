@@ -1,5 +1,100 @@
 # Changelog
 
+## 0.3.87 (2026-10-28)
+
+Form drafts and the settings recipe (round 2 fix plan, part P12, R2-2 by
+decision D2, from its approved design checkpoint
+`plans/usability/round-2-design-P12.md`, revision 2, with decisions P12-D1,
+P12-D2 and P12-D3).
+
+- Added (R2-2): `FormFields::discard_drafts(&self, &mut EventContext) ->
+  Result<usize, RuntimeError>`: queues `TextCommand::DiscardDraft` through
+  `EventContext::request_text_command` for every field control a form
+  records (a `Field` or `Property` bound with `form`) that is visible at the
+  call, in registration order, and returns the number queued, whatever the
+  fields' marks or statuses say; `ForeignRuntime` for a caller of another
+  runtime than the form, queueing nothing, whether or not a field is shown
+  (P12-D1). Delivery, dropped and modal-blocked targets, a target's error
+  and partial progress are `request_text_command`'s; an editor that still
+  holds its draft at delivery reports `on_rejection(None)` within it where a
+  refusal was reported and `on_modified(false)` after settling, while a draft
+  a changed write in the same callback already ended reports as that write
+  does. The call writes no signal, status or mark and requests no focus.
+  Retires collecting editor ids for a per-editor `request_text_command` loop
+  as the way to end drafts from a Revert; `DiscardDraft` stays the
+  single-editor route.
+- Documentation (R2-2): `docs/contracts.md`'s draft policy rule 3 says the
+  draft stays after an equal write and how to end it, the `DiscardDraft`
+  paragraph adds `on_rejection(None)`, `FormFields::discard_drafts` and the
+  route of a draft a changed write ended, and the matrix row "Application
+  write" reads "Application write of a changed value" (no cell changes; the
+  policy-table test passes unchanged). `TextField`'s normalization,
+  `IntegerInput`'s page (which `DecimalInput` and the inline rows follow) and
+  `InlineText::normalize` say that writing the value the field shows keeps
+  the draft and what ends it; `TextField::on_rejection`, the number editors'
+  and `InlineText`'s `on_rejection` add `DiscardDraft` to where a reported
+  refusal ends. `FormFields` (it can discard every field's draft, and
+  schedules nothing of its own except the text commands this queues),
+  `Field::form`, `Property::form`, `FieldHandle::remove` and
+  `FieldHandle::set_modified` (a removed editor reports nothing, so an
+  application that removes it while keeping the handle clears the mark).
+  The state chapter gains "A settings form": fields registered in a
+  `FormFields`, dirty state through the tuple `ReadSignal::combine`, Apply
+  through `EventContext::spawn`, a Revert that writes the applied values,
+  clears the statuses it published and discards the drafts, and a close
+  policy over `App`'s state, tested with `App::headless` for an equal and a
+  changed bound value; the guide's and the chapter's summaries name it. The
+  testing chapter's close-policy paragraph points to it; the controls and
+  getting-started chapters and `docs/manual.md` name the form discard.
+- Changed: the diagram editor's inspector counts the drafts its label and
+  size fields keep in a `FormFields` they report to through `on_modified`,
+  and its close policy asks with the existing discard dialog while the
+  document is dirty or a draft is kept (P12-D2; its message now reads "The
+  diagram or the inspector has unsaved changes."), so a refused inspector
+  draft is no longer lost with the window without a prompt (TODO.md entry
+  resolved). Its `Shown::One` carries an inspector incarnation that `sync`
+  advances, forgetting the marks, only when what is shown changes, and the
+  panel is keyed by node and incarnation, so leaving a node remounts its
+  panel, also when the node is selected again before the next update, and a
+  cleared count never hides a surviving draft. The size editors have keys of
+  their own (`width-input`, `height-input`). `main.rs` builds the `App` in
+  `application(dir)`, which the window runs, and the session's new
+  `close_admission` step starts it with `App::headless` and checks close
+  admission through `HeadlessApp::admit_close` with the `native` feature,
+  replacing the stand-in that released focus and called the policy itself;
+  without `native` the step and `close_requested` are compiled out. The
+  session also checks that the inspector's form counts a refused label
+  draft.
+- Tests (R2-2): the facade's `editing` binary gains `form_drafts`: an equal
+  write keeps a refused and a kept draft and Revert's `discard_drafts`
+  discards both with `Ok(2)` and the summary unchanged inside the callback,
+  while after a changed write the refusal's status stays until Escape; the
+  call counts every visible recorded control (an editor without a draft and
+  a draft without `on_modified` included) and skips a field never shown, one
+  described with `status_signal` and a hidden control, and a control hidden
+  before the flush is dropped without error; a failing `on_rejection(None)`
+  returns from the flush with the later request still queued and its `None`
+  pending; a discarded focused `InlineText` session returns focus as Escape
+  does, standalone and in a list row; a caller in another runtime gets
+  `ForeignRuntime` for a form with and without shown fields; and a
+  modal-blocked target spends its request while the later one is delivered
+  by the next flush. Each new-behavior test, and the diagram editor's
+  `close_admission` step, was shown to fail under its named mutation.
+- Follow-up recorded in `plans/follow-ups.md`: a form discard from a
+  command action, which receives `&mut Runtime` (P12-D3).
+- TODO.md: the diagram editor's `close_requested` entry is removed; a new
+  entry records that an ordinary number field keeps reporting
+  `validation_error` in inspection after a changed application write ended
+  its refused draft.
+- API listings: `api/pert-ui-runtime/default.txt` and `serde.txt` list
+  `pub fn pert_ui_runtime::FormFields::discard_drafts(&self, &mut
+  pert_ui_runtime::EventContext) -> core::result::Result<usize,
+  pert_ui_runtime::RuntimeError>` at the root and in `prelude`. No other
+  listing changes.
+- Native evidence: none for this change (`docs/verification.md`); the hand
+  check of the diagram editor's close with a refused draft is the author's,
+  and no native window has a form Revert.
+
 ## 0.3.86 (2026-10-28)
 
 Application state from the initializer (round 2 fix plan, part P11, R2-1 by

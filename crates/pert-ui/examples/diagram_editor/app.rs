@@ -9,9 +9,9 @@ use crate::canvas::{Canvas, Shared};
 use crate::editor::{Editor, Shown, Tool};
 use crate::model::{Diagram, MAX_LABEL, MAX_SIDE, MIN_SIDE, NodeId, NodeShape};
 use pert_ui::{
-    Capacity, CommandId, CommandReceipt, CommandScope, CommandStatus, DialogOutcome, DialogStatus,
-    DirectoryEntry, DirectoryResponse, HeldInputId, KeyChord, KeyCode, KeyTransition, ListItems,
-    ListSource, Mailbox, MetricRole, Modifiers, ViewScale, ViewTransform, Workspace,
+    Capacity, CommandId, CommandReceipt, CommandScope, CommandStatus, DirectoryEntry,
+    DirectoryResponse, HeldInputId, KeyChord, KeyCode, KeyTransition, ListItems, ListSource,
+    Mailbox, MetricRole, Modifiers, ViewScale, ViewTransform, Workspace,
 };
 use pert_ui::{commands::*, component::*, prelude::*, windowing::*};
 use std::{path::PathBuf, rc::Rc};
@@ -441,17 +441,24 @@ fn inspector(editor: &Rc<Editor>) -> Element {
         move |_, shown| match *shown {
             Shown::Nothing => Label::new("Nothing selected").key("nothing"),
             Shown::Many(count) => Label::new(format!("{count} items selected")).key("many"),
-            // Keyed by the node: another node's fields are new components,
-            // so a draft never outlives the node it was typed for.
-            Shown::One(id) => node_inspector(&editor, id),
+            // Keyed by the node and the incarnation: another node's fields
+            // are new components, so a draft never outlives the node it was
+            // typed for, nor a return to that node.
+            Shown::One { node, incarnation } => node_inspector(&editor, node, incarnation),
         },
     )
     .key("inspector")
 }
 
-fn node_inspector(editor: &Rc<Editor>, id: NodeId) -> Element {
+fn node_inspector(editor: &Rc<Editor>, id: NodeId, incarnation: u64) -> Element {
     let inspector = &editor.inspector;
     let e = editor.clone();
+    // The fields that can keep a draft report it to the inspector's form,
+    // so close admission counts a draft a field refuses.
+    let mark = |field: &FieldHandle| {
+        let field = field.clone();
+        move |_: &mut EventContext, modified: bool| field.set_modified(modified).map(|_| ())
+    };
     // A normalizer makes a draft that saves on Enter or focus loss. It
     // checks the length the way the file format does, in characters
     // (`max_length` would count graphemes, which can hold several).
@@ -468,35 +475,38 @@ fn node_inspector(editor: &Rc<Editor>, id: NodeId) -> Element {
         .on_save(move |_, text| {
             let text = text.to_owned();
             e.edit_node(id, "Rename", |node| node.label = text)
-        });
-    let size = |signal: &Signal<f64>, key: &str, horizontal: bool| -> Element {
-        let e = editor.clone();
-        let input = DecimalInput::new(signal).normalize(|value| {
-            if (f64::from(MIN_SIDE)..=f64::from(MAX_SIDE)).contains(&value) {
-                Ok(value.round())
-            } else {
-                Err(InputRejection::new(format!(
-                    "Enter {MIN_SIDE} to {MAX_SIDE}"
-                )))
-            }
-        });
-        match input {
-            Ok(input) => input
-                .on_save(move |_, value| {
-                    // The normalizer admitted only values in range.
-                    let value = value as f32;
-                    e.edit_node(id, "Resize", |node| {
-                        if horizontal {
-                            node.width = value;
-                        } else {
-                            node.height = value;
-                        }
+        })
+        .on_modified(mark(&inspector.label_field));
+    let size =
+        |signal: &Signal<f64>, field: &FieldHandle, key: &str, horizontal: bool| -> Element {
+            let e = editor.clone();
+            let input = DecimalInput::new(signal).normalize(|value| {
+                if (f64::from(MIN_SIDE)..=f64::from(MAX_SIDE)).contains(&value) {
+                    Ok(value.round())
+                } else {
+                    Err(InputRejection::new(format!(
+                        "Enter {MIN_SIDE} to {MAX_SIDE}"
+                    )))
+                }
+            });
+            match input {
+                Ok(input) => input
+                    .on_save(move |_, value| {
+                        // The normalizer admitted only values in range.
+                        let value = value as f32;
+                        e.edit_node(id, "Resize", |node| {
+                            if horizontal {
+                                node.width = value;
+                            } else {
+                                node.height = value;
+                            }
+                        })
                     })
-                })
-                .key(key),
-            Err(error) => Label::new(error.to_string()).key(format!("{key}-error")),
-        }
-    };
+                    .on_modified(mark(field))
+                    .key(key),
+                Err(error) => Label::new(error.to_string()).key(format!("{key}-error")),
+            }
+        };
     let e = editor.clone();
     let shape = match SegmentedControl::new(
         &inspector.shape,
@@ -521,14 +531,32 @@ fn node_inspector(editor: &Rc<Editor>, id: NodeId) -> Element {
     PropertyGrid::new([
         Property::new("label", "Label", label.key("label-input")),
         Property::new("shape", "Shape", shape),
-        Property::new("width", "Width", size(&inspector.width, "width", true)),
-        Property::new("height", "Height", size(&inspector.height, "height", false)),
+        Property::new(
+            "width",
+            "Width",
+            size(
+                &inspector.width,
+                &inspector.width_field,
+                "width-input",
+                true,
+            ),
+        ),
+        Property::new(
+            "height",
+            "Height",
+            size(
+                &inspector.height,
+                &inspector.height_field,
+                "height-input",
+                false,
+            ),
+        ),
         Property::new("fill", "Fill", fill.key("fill")),
     ])
     // One grid per node: its resized label column is not worth a workspace
     // entry per node.
     .persist(false)
-    .key(id.key())
+    .key(format!("{}-{incarnation}", id.key()))
 }
 
 fn files(
@@ -873,7 +901,7 @@ fn mount(
         files.discard_dialog.clone(),
         Element::new("save", content),
         "Discard changes?",
-        "The diagram has unsaved changes.",
+        "The diagram or the inspector has unsaved changes.",
         "Discard",
     );
     Ok(ui.mount_tree(
@@ -885,15 +913,18 @@ fn mount(
 
 /// Close admission. `App` has resolved open drafts before this runs, as a
 /// click elsewhere would resolve them: releasing focus saved the inspector
-/// field and the in-place rename being typed (a draft its field refuses stays
-/// unsaved and is lost with the window). The layout is saved, and with
-/// unsaved changes the user is asked before they are discarded.
+/// field and the in-place rename being typed. A draft an inspector field
+/// refuses stays unsaved, and the inspector's form counts it. The layout is
+/// saved, and with unsaved changes, in the diagram or a draft the inspector
+/// keeps, the user is asked before they are discarded.
+#[cfg(feature = "native")]
 pub fn close_requested(
     app: &DiagramApp,
     ui: &mut Runtime,
 ) -> Result<Option<ReadSignal<Option<WindowCloseAction>>>, RuntimeError> {
     app.files.save_layout(ui)?;
-    if !app.editor.dirty.get()? {
+    let kept = app.editor.inspector.form.summary().get()?.modified();
+    if !app.editor.dirty.get()? && kept == 0 {
         return Ok(None);
     }
     // An earlier close the user cancelled left its outcome; take it, or the

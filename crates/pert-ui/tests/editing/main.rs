@@ -14,6 +14,7 @@ mod draft_editor;
 mod draft_policy;
 mod editor_permissions;
 mod editor_sessions;
+mod form_drafts;
 mod inline_controls;
 mod inline_draft_editing;
 mod input_adornments;

@@ -175,6 +175,195 @@ latest item with its [`Freshness`] as [`Telemetry`], and older items as a window
 [`LevelMeter`] and [`Trace`] are the built-in readers; custom components use the
 same `SeriesSource` API.
 
+# A settings form
+
+A settings form edits a copy of what the application has applied: Apply is
+offered while the copy differs, Revert while anything is unsaved, and the
+window stays open over unsaved work. Each editor sits in its own [`Field`]
+bound to a [`FormFields`] handle with [`Field::form`], and reports a refused
+save to the handle's status and a kept draft to
+[`FieldHandle::set_modified`]. Whether the copy differs is one
+[`ReadSignal::combine`] over the fields and the applied record; Revert's
+availability adds [`FormSummary::modified`], so Revert is offered for a
+refused draft even while the bound value is the applied one. Apply reads the
+values, writes them on a worker with [`EventContext::spawn`] and records them
+as applied when the result arrives.
+
+Revert writes the applied values back, clears the statuses the application
+published and calls [`FormFields::discard_drafts`]. The write alone is not
+enough: writing the value a field already shows changes nothing and keeps its
+draft, as the
+[draft policy](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#draft-policy)
+says. The click on Revert first takes focus, so a valid draft is saved by
+focus loss and then overwritten by the write, and a refused one is kept until
+the write ends it (a changed value) or the discard does (an equal one). The
+statuses are the application's own: a draft the write ended reports no end
+of its refusal, so Revert clears them itself. The close policy reads the same
+[application state][app-state] through [`App::on_close`].
+
+```rust
+# #[cfg(feature = "native")]
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    use pert_ui::prelude::*;
+
+    /// What the settings file holds.
+    #[derive(Clone, Debug, PartialEq)]
+    struct Applied {
+        name: String,
+        copies: i64,
+    }
+    /// What the initializer builds; the close policy and the test read it.
+    struct Settings {
+        name: Signal<String>,
+        copies: Signal<i64>,
+        applied: Signal<Applied>,
+        form: FormFields,
+        copies_field: FieldHandle,
+        changed: ReadSignal<bool>,
+        root: WidgetId,
+    }
+
+    fn build(ui: &mut Runtime) -> Result<Settings, RuntimeError> {
+        let saved = Applied { name: "Office".to_owned(), copies: 1 };
+        let name = ui.signal(saved.name.clone());
+        let copies = ui.signal(saved.copies);
+        let applied = ui.signal(saved);
+        let form = FormFields::new(ui);
+        let (name_field, copies_field) = (form.field("name")?, form.field("copies")?);
+        let changed = ReadSignal::combine((&name, &copies, &applied), |(name, copies, applied)| {
+            *name != applied.name || *copies != applied.copies
+        })?;
+        // A kept draft is unsaved too, even over the applied value.
+        let unsaved = ReadSignal::combine((&changed, &form.summary()), |(changed, summary)| {
+            *changed || summary.modified() > 0
+        })?;
+
+        let (status, mark) = (name_field.clone(), name_field.clone());
+        let name_input = TextField::new(&name)
+            .normalize(|text| match text.trim() {
+                "" => Err(InputRejection::new("Enter a name")),
+                trimmed => Ok(trimmed.to_owned()),
+            })
+            .on_rejection(move |_, refusal| match refusal {
+                Some(refusal) => status.set(FieldStatus::error(refusal.to_string())),
+                None => status.clear().map(|_| ()),
+            })
+            .on_modified(move |_, modified| mark.set_modified(modified).map(|_| ()));
+        let (status, mark) = (copies_field.clone(), copies_field.clone());
+        let copies_input = IntegerInput::new(&copies)
+            .range(1, 99)?
+            .on_rejection(move |_, refusal| match refusal {
+                Some(refusal) => status.set(FieldStatus::error(refusal.to_string())),
+                None => status.clear().map(|_| ()),
+            })
+            .on_modified(move |_, modified| mark.set_modified(modified).map(|_| ()));
+
+        let (values, record) = ((name.clone(), copies.clone()), applied.clone());
+        let apply = Button::new("Apply", move |cx| {
+            let values = Applied { name: values.0.get()?, copies: values.1.get()? };
+            let record = record.clone();
+            cx.spawn(
+                // The worker would write the settings file here.
+                move || values,
+                move |values| record.set(values),
+            )?;
+            Ok(())
+        })
+        .enabled(&changed);
+        let (values, record) = ((name.clone(), copies.clone()), applied.clone());
+        let (handles, drafts) = ((name_field.clone(), copies_field.clone()), form.clone());
+        let revert = Button::new("Revert", move |cx| {
+            let saved = record.get()?;
+            // A value a field already shows keeps its draft,
+            values.0.set(saved.name)?;
+            values.1.set(saved.copies)?;
+            // the statuses are the application's own,
+            handles.0.clear()?;
+            handles.1.clear()?;
+            // so the drafts are discarded too.
+            drafts.discard_drafts(cx)?;
+            Ok(())
+        })
+        .enabled(&unsaved);
+
+        let root = ui.mount_tree(Column::new([
+            Field::new(name_input.key("name")).label("Printer").form(&name_field).key("name-field"),
+            Field::new(copies_input.key("copies")).label("Copies").form(&copies_field).key("copies-field"),
+            Row::new([apply.key("apply"), revert.key("revert")]).key("buttons"),
+        ]).key("settings"))?;
+        Ok(Settings { name, copies, applied, form, copies_field, changed, root })
+    }
+
+    fn app() -> App<Settings> {
+        App::new("Settings", |ui| Ok(build(ui)?)).on_close(|_, settings, _| {
+            let unsaved = settings.changed.get()? || settings.form.summary().get()?.modified() > 0;
+            Ok(if unsaved { NativeCloseAction::KeepOpen } else { NativeCloseAction::Close })
+        })
+    }
+
+    // The test.
+    use pert_ui::testing::*;
+    use std::time::Duration;
+
+    let mut app = app().headless()?;
+    let main = app.main_window();
+    let (ui, settings) = app.runtime_and_state_mut();
+    let mut driver = Driver::new(ui);
+    let root = settings.root.clone();
+    let name = driver.find(&root, &["name-field", "name"])?;
+    let copies = driver.find(&root, &["copies-field", "copies"])?;
+    let apply = driver.find(&root, &["buttons", "apply"])?;
+    let revert = driver.find(&root, &["buttons", "revert"])?;
+
+    // A refused draft over the applied value: the window stays open.
+    driver.replace_text(&copies, "150")?;
+    driver.key(KeyCode::Enter)?;
+    assert!(driver.semantics(&copies)?.invalid);
+    assert!(settings.copies_field.status().get()?.is_error());
+    assert_eq!(settings.form.summary().get()?.modified(), 1);
+    assert_eq!(settings.copies.get()?, 1);
+    assert!(matches!(app.admit_close(&main)?, NativeCloseAction::KeepOpen));
+    let (ui, settings) = app.runtime_and_state_mut();
+    let mut driver = Driver::new(ui);
+    driver.click(&revert)?;
+    assert!(!driver.semantics(&copies)?.invalid);
+    assert_eq!(settings.copies_field.status().get()?, FieldStatus::Normal);
+    assert_eq!(settings.form.summary().get()?.modified(), 0);
+    assert_eq!(settings.copies.get()?, 1);
+    assert!(matches!(app.admit_close(&main)?, NativeCloseAction::Close));
+
+    // A refused draft over a changed value: the write ends it.
+    let (ui, settings) = app.runtime_and_state_mut();
+    let mut driver = Driver::new(ui);
+    driver.replace_text(&copies, "8")?;
+    driver.key(KeyCode::Enter)?;
+    assert!(settings.changed.get()?);
+    driver.replace_text(&copies, "150")?;
+    driver.key(KeyCode::Enter)?;
+    assert!(settings.copies_field.status().get()?.is_error());
+    driver.click(&revert)?;
+    assert_eq!(settings.copies.get()?, 1);
+    assert!(!driver.semantics(&copies)?.invalid);
+    assert_eq!(settings.copies_field.status().get()?, FieldStatus::Normal);
+    assert_eq!(settings.form.summary().get()?.modified(), 0);
+    assert!(matches!(app.admit_close(&main)?, NativeCloseAction::Close));
+
+    // Apply records the values when the worker's result arrives.
+    let (ui, settings) = app.runtime_and_state_mut();
+    let mut driver = Driver::new(ui);
+    driver.replace_text(&name, "Studio")?;
+    driver.key(KeyCode::Enter)?;
+    assert!(settings.changed.get()?);
+    driver.click(&apply)?;
+    driver.wait_until(Duration::from_secs(5), |_| Ok(settings.applied.get()?.name == "Studio"))?;
+    assert!(!settings.changed.get()?);
+    app.shutdown()?;
+    Ok(())
+}
+# #[cfg(not(feature = "native"))]
+# fn main() {}
+```
+
 # Bounded updates and recovery
 
 [`Runtime::flush`] limits update/settlement feedback to [`Runtime::MAX_FLUSH_WAVES`],

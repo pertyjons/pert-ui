@@ -5,7 +5,7 @@
 //! read in any order:
 //!
 //! - [State](state): which way to choose, signals and controls, worker
-//!   results, live data and recovery.
+//!   results, live data, a settings form and recovery.
 //! - [Authoritative values](authoritative_values): parameters, local edit
 //!   gestures, host notifications, effective overlays and external authority.
 //! - [Layout and views](layout): which way to choose for children from data,
@@ -65,7 +65,7 @@ pub mod getting_started {
 
 pub mod state {
     //! State: which way to choose, signals and controls, worker results, live
-    //! data and recovery.
+    //! data, a settings form and recovery.
     //!
     #![doc = include_str!("guide/state.md")]
     #![cfg_attr(feature = "native", doc = include_str!("guide/links/desktop.md"))]

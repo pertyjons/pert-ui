@@ -2046,3 +2046,32 @@ plan closes.
   the first settle or the initializer drops the state and handler
   captures before the runtime, reversing the promised order) and the
   gate's missing configurations (run above). Fix: pending.
+
+- **P12 Form drafts and the settings recipe (0.3.87), 2026-10-28.**
+  Implemented by a fresh agent from the approved design
+  (`round-2-design-P12.md`, revision 2): `FormFields::discard_drafts`
+  (queues one `DiscardDraft` per visible recorded control in registration
+  order, returns the requests queued, checks the form's own runtime,
+  P12-D1); contracts.md's rule 3, the `DiscardDraft` paragraph and the
+  matrix row label; the state chapter's "A settings form" recipe (P10's
+  tuple `combine`, P11's state, Revert clearing its own statuses, tested
+  with equal and changed bound values and `admit_close`); the diagram
+  editor's inspector counted through a `FormFields`, the grid keyed by
+  node and selection incarnation, `close_requested` asking for kept drafts
+  through the existing dialog (P12-D2), `application(dir)` and the
+  session's `close_admission` step; TODO.md: the `close_requested` entry
+  removed; the P12-D3 follow-up added. Not breaking. Small additions,
+  accepted: test 1 reads the editor's own `valid` property; the non-native
+  build drops unused dialog imports; the session checks the inspector
+  form's count and settles after restoring the layout. Mutation evidence:
+  every listed mutation failed (test 4's standalone case survives its
+  mutation, its row-mode case fails). No fixture check. Gate (fresh): fmt,
+  workspace Clippy, workspace tests, the five headless sessions, doctests,
+  rustdoc `-D warnings`, the diagnostics snapshots, the diagram editor
+  with no-default `cpu` (session and Clippy), the API listing gate, `git
+  diff --check`. **Native evidence: missing** (the diagram editor's close
+  with a refused draft, the maintainer's hand check; Revert has no native
+  surface). Found by the part and to be fixed in it (author's decision,
+  same kind in touched code): an application write of a changed value
+  that ends a refused draft leaves `IntegerInput`/`DecimalInput`'s
+  `validation_error` beside `valid: true`. Codex review: pending.

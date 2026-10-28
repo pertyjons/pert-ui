@@ -175,15 +175,17 @@ impl FormInner {
 /// A form registers its fields by key, in the order a reader meets them. Each
 /// registration returns a [`FieldHandle`] the application writes to and hands to
 /// the matching [`Field`]. The form keeps one [`FormSummary`] binding current
-/// with every write, and can move focus to the first field in error.
+/// with every write, can move focus to the first field in error, and can
+/// discard every field's draft.
 ///
 /// Clones share the same form. Keys identify fields within one form only; they
 /// are not element keys and need not match them. A key stays taken while its
 /// field is registered: a form with repeatable rows calls
 /// [`FieldHandle::remove`] when it removes a row, which drops that field from
 /// the summary and frees its key for a later registration. The form holds no
-/// component alive and schedules nothing: it changes only when a handle is
-/// written or removed.
+/// component alive and schedules nothing of its own: it changes only when a
+/// handle is written or removed, and queues text commands only when
+/// [`Self::discard_drafts`] is called.
 ///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
@@ -302,6 +304,118 @@ impl FormFields {
         }
         Ok(false)
     }
+    /// Discards the draft of every field this form shows, for a Revert that
+    /// writes the applied values back: writing the value an editor already
+    /// shows changes nothing and keeps its draft (draft policy rule 3).
+    ///
+    /// Queues one [`TextCommand::DiscardDraft`](crate::TextCommand::DiscardDraft)
+    /// through [`EventContext::request_text_command`] for each registered
+    /// field, in registration order, whose [`Field`] or
+    /// [`Property`](crate::Property) bound with `form` has a control that is
+    /// visible at the call. Skipped are a field no such `Field` shows (never
+    /// mounted, unmounted, described with [`Field::status`] or
+    /// [`Field::status_signal`], or removed with [`FieldHandle::remove`]) and
+    /// a field whose control is hidden, which holds no draft. The control is
+    /// the `Field`'s single child; when it is not an editor, the command
+    /// reaches an editor inside it only while that editor holds focus, so a
+    /// form wraps each editor in its own `Field`.
+    ///
+    /// Returns the number of requests queued, whatever the fields' marks or
+    /// statuses say. It says nothing about which controls had a draft: a
+    /// control without one answers `Unavailable` and a non-editor
+    /// `NotAnEditor`, neither an error.
+    ///
+    /// Delivery is `request_text_command`'s: in the event phase of the flush
+    /// the callback runs in, or of the next flush when it ran in an input
+    /// call. A request whose target is unmounted or hidden by then is
+    /// dropped; a target the current modality blocks makes the flush return
+    /// `ModalBlocked`, and its request is spent; a target's error is returned
+    /// from the flush. After either error the later requests stay queued and
+    /// the next flush delivers them, so progress can be partial, in
+    /// registration order.
+    ///
+    /// An editor that still holds its draft when the request is delivered
+    /// discards it as Escape does and reports as for a single `DiscardDraft`:
+    /// `on_rejection(None)` within the delivery where a refusal was reported,
+    /// and `on_modified(false)` after settling; a session's edit stays open.
+    /// A draft that a write of a *changed* value in the same callback already
+    /// ended reports as an application write does: the editor's update runs
+    /// before the request, which then finds no draft, and a reported refusal
+    /// ends at the editor's next save or Escape. Statuses the application
+    /// published from `on_rejection` are therefore the application's to
+    /// clear on Revert, as the example does.
+    ///
+    /// Focus is inherited, not suppressed: a focused in-place session that is
+    /// discarded returns focus as Escape does. The call requests no focus of
+    /// its own, writes no signal and changes no status or `modified` mark:
+    /// [`FormSummary::modified`] falls only when the editors' `on_modified`
+    /// reports reach [`FieldHandle::set_modified`].
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::testing::{Driver, Viewport};
+    /// let mut ui = Runtime::new();
+    /// ui.set_viewport(Viewport::new(300.0, 200.0, 1.0)?)?;
+    /// let form = FormFields::new(&ui);
+    /// let copies = ui.signal(7_i64);
+    /// let status = form.field("copies")?;
+    /// let report = status.clone();
+    /// let input = IntegerInput::new(copies.clone())
+    ///     .range(1, 99)?
+    ///     .on_rejection(move |_, refusal| match refusal {
+    ///         Some(refusal) => report.set(FieldStatus::error(refusal.to_string())),
+    ///         None => report.clear().map(|_| ()),
+    ///     })
+    ///     .key("copies");
+    /// let (applied, revert_status, revert_form) = (copies.clone(), status.clone(), form.clone());
+    /// let revert = Button::new("Revert", move |cx| {
+    ///     applied.set(7)?; // the value the field shows: its draft stays
+    ///     revert_status.clear()?;
+    ///     revert_form.discard_drafts(cx)?;
+    ///     Ok(())
+    /// });
+    /// let root = ui.mount_tree(Column::new([
+    ///     Field::new(input).label("Copies").form(&status).key("field"),
+    ///     revert.key("revert"),
+    /// ]).key("form"))?;
+    /// let mut driver = Driver::new(&mut ui);
+    /// let field = driver.find(&root, &["field", "copies"])?;
+    /// driver.replace_text(&field, "150")?;
+    /// driver.key(KeyCode::Enter)?;
+    /// assert!(driver.semantics(&field)?.invalid); // refused, kept for correction
+    /// let revert = driver.find(&root, &["revert"])?;
+    /// driver.click(&revert)?;
+    /// assert!(!driver.semantics(&field)?.invalid);
+    /// assert_eq!(copies.get()?, 7);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`RuntimeError::ForeignRuntime`], queueing nothing, when `cx`
+    /// belongs to another runtime than the form, whether or not any field is
+    /// shown. A target's error comes from the flush that delivers its
+    /// request, not from this call.
+    pub fn discard_drafts(&self, cx: &mut EventContext) -> Result<usize, RuntimeError> {
+        if !Rc::ptr_eq(&cx.node.shared, self.0.summary.shared()) {
+            return Err(RuntimeError::ForeignRuntime);
+        }
+        // Every recorded control is in the form's runtime: a `Field` records
+        // one only after reading the handle's status, which fails across
+        // runtimes. The entries' borrow ends before anything is queued.
+        let controls: Vec<WidgetId> = self
+            .0
+            .entries
+            .borrow()
+            .iter()
+            .filter_map(|entry| entry.control.borrow().clone())
+            .filter(|control| control.0.is_visible())
+            .collect();
+        for control in &controls {
+            cx.request_text_command(control, crate::TextCommand::DiscardDraft)?;
+        }
+        Ok(controls.len())
+    }
 }
 
 /// The application's write access to one registered field of a [`FormFields`].
@@ -361,6 +475,10 @@ impl FieldHandle {
     /// [`TextField::on_modified`](crate::TextField::on_modified). The state is
     /// separate from the status: a field can be modified and valid.
     ///
+    /// An editor that is removed reports nothing, so an application that
+    /// removes a field's editor while keeping this handle clears the mark
+    /// itself, or removes the field with [`Self::remove`].
+    ///
     /// # Errors
     /// Same as [`FieldHandle::set`]; on a refused summary write the state is
     /// recorded and the summary catches up with the next successful write.
@@ -385,8 +503,9 @@ impl FieldHandle {
     }
     /// Removes this field from its form, for a form that removes a repeatable
     /// row. The field no longer counts in the summary, which is brought up to
-    /// date, [`FormFields::focus_first_error`] no longer reaches its control,
-    /// and its key can be registered again; a new registration is a different
+    /// date, neither [`FormFields::focus_first_error`] nor
+    /// [`FormFields::discard_drafts`] reaches its control any longer, and its
+    /// key can be registered again; a new registration is a different
     /// field, which this handle never reaches. Returns whether the field was
     /// still registered: removing it again, or through a clone, does nothing.
     ///
@@ -608,9 +727,9 @@ impl Field {
         self.target = None;
         self
     }
-    /// Follows a form's field, and lets [`FormFields::focus_first_error`] reach
-    /// this field's control while it is mounted. Replaces an earlier status or
-    /// status binding.
+    /// Follows a form's field, and lets [`FormFields::focus_first_error`] and
+    /// [`FormFields::discard_drafts`] reach this field's control while it is
+    /// mounted. Replaces an earlier status or status binding.
     pub fn form(mut self, handle: &FieldHandle) -> Self {
         self.status = FieldStatus::Normal;
         self.source = Some(ValueSource::Bound(handle.status()));
