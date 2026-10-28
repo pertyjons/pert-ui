@@ -1662,5 +1662,7 @@ plan closes.
   hid an unresolved `testing::B`; values are now indexed by full path and
   an unresolved member is exempt only when a value line exists at the
   `testing` module's own path (a value re-exported from another package
-  fails closed; none exists), with the collision in the self-test. Third
-  recheck: pending.
+  fails closed; none exists), with the collision in the self-test. Codex's
+  third recheck: no findings, ready (its replayed binary was stale; the
+  author ran the closure test at 61c88be against HEAD's listings: 25
+  passed). **P2 done.**
