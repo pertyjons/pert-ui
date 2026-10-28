@@ -107,12 +107,16 @@ impl Runtime {
 
     /// Keeps `value` alive until the runtime shuts down or is dropped.
     ///
-    /// This is the owner for values an application creates once and must not
-    /// lose, such as a [`Mailbox`](crate::Mailbox), a
-    /// [`ParameterHost`](crate::ParameterHost) or a controller made in the
+    /// This is the owner for values that code with only a `Runtime` creates
+    /// once and must not lose, such as a [`Mailbox`](crate::Mailbox), a
+    /// [`ParameterHost`](crate::ParameterHost) or a controller made by a
+    /// [custom host](crate::host), a helper that builds part of an
+    /// application, or deferred work, where a local value would be dropped
+    /// when that code returns and, for a mailbox, close it. An
     /// [`App`](https://docs.rs/pert-ui/latest/pert_ui/struct.App.html)
-    /// initializer, where a local value would be dropped when the initializer
-    /// returns and, for a mailbox, close it.
+    /// initializer returns such values in its
+    /// [application state](https://docs.rs/pert-ui/latest/pert_ui/struct.App.html#application-state)
+    /// instead, which `App` keeps until the application ends.
     ///
     /// [`Self::shutdown`] drops kept values last, after components have
     /// unmounted and parameters have ended their edits, in the reverse order

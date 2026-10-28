@@ -592,34 +592,28 @@ user moves on: compare what it was started for (a document, a generation of
 requests) with what is current before applying its result, and run writes to
 one file one at a time. Work a
 closing dialog starts is queued with [`EventContext::defer`], which runs it
-after the dialog has closed. Close admission (`App::on_close`)
-and error handling (`App::on_error`) receive the [`Runtime`] but not what
-the initializer created; share the application with them through a slot the
-initializer fills, and decide what the callbacks do while it is still empty.
-The example's error handler shows a component failure on the status line
-and keeps the window running. A failing initializer never reaches it: its
-error returns from `run`. The handler still exits when the slot is empty,
-defensively, since it has nothing to show the failure on then:
+after the dialog has closed. The initializer returns the application as
+its [state][app-state]: close admission
+(`App::on_close`), error handling (`App::on_error`) and window failures
+(`App::on_window_error`) receive it beside the [`Runtime`], and it lives
+until the application ends. A failing initializer never reaches them: its
+error returns from `run`. The example's error handler shows a component
+failure on a status line the state holds and keeps the window running:
 
 ```no_run
 # #[cfg(feature = "native")]
 fn main() -> Result<(), pert_ui::AppError> {
-    use pert_ui::{App, ErrorAction, Signal};
-    use std::{cell::RefCell, rc::Rc};
-    // What the error handler needs from the application: here its status line.
-    let slot: Rc<RefCell<Option<Signal<String>>>> = Rc::default();
-    let (filled, failing) = (slot.clone(), slot.clone());
-    App::new("Editor", move |ui| {
-        *filled.borrow_mut() = Some(ui.signal(String::new()));
-        Ok(())
-    })
-    .on_error(move |_, error| match failing.borrow().as_ref() {
-        Some(status) if status.set(format!("Something went wrong: {error}")).is_ok() => {
-            ErrorAction::Retry
-        }
-        _ => ErrorAction::Exit,
-    })
-    .run()?;
+    use pert_ui::{App, ErrorAction};
+    // The state is what the error handler needs from the application: here
+    // its status line.
+    App::new("Editor", |ui| Ok(ui.signal(String::new())))
+        .on_error(|_, status, error| {
+            match status.set(format!("Something went wrong: {error}")) {
+                Ok(()) => ErrorAction::Retry,
+                Err(_) => ErrorAction::Exit,
+            }
+        })
+        .run()?;
     Ok(())
 }
 # #[cfg(not(feature = "native"))]

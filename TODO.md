@@ -125,21 +125,6 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   `on_modified`: feed a `FormFields` from them and keep the window open, or
   ask, while `FormSummary::modified` is non-zero, with a test through
   `HeadlessApp::admit_close`.
-- [ ] 2026-10-27 `crates/pert-ui-wgpu/src/native_smoke.rs` (pixel readback,
-  realtime workload probe) and `crates/pert-ui/src/platform/smoke.rs`
-  (`persistent-paint-error`) — Verification and review: layering L3 migrated
-  these probes' legacy roots to `mount_tree` roots, which are laid out and
-  overlap-validated, but the design's migration exceptions
-  (`layering-design-L3.md` §2, items 1–2) did not list them and the native
-  checks were not run for L3. The 2026-10-27 native run passed but logged
-  500,503 `UnexpectedOverlap` lines, 499,500 of them the pairs of the
-  pixel-readback probe's 1,000 stacked `static-N` roots, so its debug-profile
-  update and compose timings now include writing them. Have the overlapping
-  probe components report `OverlapPolicy::Allow` (or mount them under one
-  stacking container), and rerun the native suite to see a log without
-  validation errors. Separately, consider whether development validation
-  should cap or summarize overlap reports, since it writes one line per
-  overlapping pair.
 - [ ] 2026-10-28 rustdoc and guide examples with unused imports — public
   examples (round 2 finding R2-14's rule that an example needs exactly what
   it imports): a run with `#![doc(test(attr(deny(unused_imports))))]` added
@@ -209,3 +194,15 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   `jump_to_content` revealing and focusing the component), document it in
   `docs/contracts.md` ("Content search"), which states the limitation since
   0.3.84, and test it with a toast and a menu. Found by round 2 part P9.
+- [ ] 2026-10-28 `crates/pert-ui-runtime/src/validation/development.rs`
+  overlap check (`:744-760`) — Verification and review (development
+  validation cost): the check compares every pair of visible components with
+  `OverlapPolicy::Disallow` in the application, keeps the pairs that share a
+  window and a parent, and writes one `[pert-ui validation ERROR
+  UnexpectedOverlap]` line per new pair, so N overlapping components cost
+  N(N-1)/2 comparisons and lines (500,500 for the 1,001 roots of the
+  pixel-readback probe in the 2026-10-27 native run, before round 2 part P11
+  allowed the probes' overlap). Group the peers by window and parent before
+  comparing, and above a threshold summarize per parent, for example "N
+  components overlap under <parent>; first pairs: ...", with a test of the
+  summary, the threshold and the issues the report still lists.

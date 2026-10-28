@@ -12,6 +12,24 @@ use winit::{
     window::{Window, WindowId},
 };
 
+/// Fails with the issue's message when development validation reports an
+/// unexpected overlap once every overlapping root is flushed; a release
+/// build reports nothing, so it passes there.
+fn no_overlap(ui: &Runtime) -> Result<(), String> {
+    match ui
+        .validation_report()
+        .issues
+        .iter()
+        .find(|issue| issue.code == pert_ui_runtime::ValidationCode::UnexpectedOverlap)
+    {
+        Some(issue) => Err(format!(
+            "a probe overlaps without allowing it: {}",
+            issue.message
+        )),
+        None => Ok(()),
+    }
+}
+
 fn srgb_to_linear(byte: u8) -> f32 {
     let encoded = f32::from(byte) / 255.0;
     if encoded <= 0.04045 {
@@ -217,6 +235,12 @@ impl Renderer {
                 );
                 Ok(())
             }
+            fn inspect(&self) -> pert_ui_runtime::ComponentDetails {
+                let mut details = pert_ui_runtime::ComponentDetails::default();
+                // Every root is a probe, stacked over the others on purpose.
+                details.validation.overlap = pert_ui_runtime::OverlapPolicy::Allow;
+                details
+            }
         }
         let result = (|| -> Result<(), Box<dyn std::error::Error>> {
             let mut ui = Runtime::new();
@@ -245,6 +269,7 @@ impl Renderer {
                 },
             ))?;
             ui.flush(Duration::ZERO)?;
+            no_overlap(&ui)?;
             self.prepare_scene(ui.paint()?)?;
             let buffer = self.vertices.clone();
             let mut update_time = Duration::ZERO;
@@ -364,6 +389,12 @@ impl Renderer {
                 );
                 Ok(())
             }
+            fn inspect(&self) -> pert_ui_runtime::ComponentDetails {
+                let mut details = pert_ui_runtime::ComponentDetails::default();
+                // Drawn over the grid on purpose; the grid stays disallowing.
+                details.validation.overlap = pert_ui_runtime::OverlapPolicy::Allow;
+                details
+            }
         }
 
         let result = (|| -> Result<(), Box<dyn std::error::Error>> {
@@ -415,6 +446,7 @@ impl Renderer {
             ))?;
             assert_ne!(grid, trace);
             ui.flush(Duration::ZERO)?;
+            no_overlap(&ui)?;
             self.prepare_scene(ui.paint()?)?;
             // Initialize both attachments before the first load operation.
             self.submit_probe_pass(&full_view, None)?;

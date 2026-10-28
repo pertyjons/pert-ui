@@ -251,7 +251,8 @@ pub mod component {
 /// without a GPU, and the [`CpuRenderError`] its rendering returns, and with
 /// the `native` feature, which `desktop` and `desktop-cpu` enable,
 /// [`HeadlessApp`], an [`App`] started without a window by [`App::headless`]
-/// so its content and its close policy can be tested.
+/// so its content and its close policy can be tested; it hands the test the
+/// [application state][app-state] its initializer returned.
 ///
 /// # Membership
 ///

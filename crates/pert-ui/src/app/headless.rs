@@ -1,5 +1,5 @@
 //! An [`App`] without an event loop, for tests of its content and close policy.
-use super::{App, AppError, NativeCloseAction, close};
+use super::{App, AppError, Bound, Host, NativeCloseAction, close};
 use crate::host::HostIntegration;
 use crate::{NativeWindowId, Runtime};
 use std::time::Duration;
@@ -17,12 +17,16 @@ use std::time::Duration;
 ///
 /// End it with [`Self::shutdown`], which reports cleanup failures. Dropping
 /// it shuts the runtime down through [`Runtime`]'s drop, which reports
-/// nothing.
+/// nothing. Either way the state is dropped after the runtime has shut down.
+///
+/// The initializer's value is the [application state](App#application-state):
+/// the close policy receives it, and the test reads it with [`Self::state`]
+/// and drives the runtime with the handles it holds through
+/// [`Self::runtime_and_state_mut`].
 ///
 /// ```
 /// use pert_ui::prelude::*;
 /// use pert_ui::testing::{Driver, HeadlessApp};
-/// use std::{cell::RefCell, rc::Rc};
 ///
 /// /// What the application builds, and its close policy and a test read.
 /// struct Notes {
@@ -38,33 +42,28 @@ use std::time::Duration;
 /// }
 ///
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// let notes: Rc<RefCell<Option<Rc<Notes>>>> = Rc::default();
-/// let (built, policy) = (notes.clone(), notes.clone());
-/// let mut app: HeadlessApp = App::new("Notes", move |ui| {
-///     *built.borrow_mut() = Some(Rc::new(build(ui)?));
-///     Ok(())
-/// })
-/// .on_close(move |_, _| {
-///     let notes = policy.borrow().clone().ok_or(ApplicationError::from("not built"))?;
+/// let mut app: HeadlessApp<Notes> = App::new("Notes", |ui| Ok(build(ui)?))
 ///     // Unsaved text keeps the window open.
-///     Ok(if notes.text.get()? == notes.saved.get()? {
-///         NativeCloseAction::Close
-///     } else {
-///         NativeCloseAction::KeepOpen
+///     .on_close(|_, notes, _| {
+///         Ok(if notes.text.get()? == notes.saved.get()? {
+///             NativeCloseAction::Close
+///         } else {
+///             NativeCloseAction::KeepOpen
+///         })
 ///     })
-/// })
-/// .headless()?;
-/// let notes = notes.borrow().clone().ok_or("not built")?;
+///     .headless()?;
 ///
-/// Driver::new(app.runtime_mut()).replace_text(&notes.field, "Call the bank")?;
-/// assert_eq!(notes.text.get()?, ""); // still a draft
+/// let (ui, notes) = app.runtime_and_state_mut();
+/// Driver::new(ui).replace_text(&notes.field, "Call the bank")?;
+/// assert_eq!(app.state().text.get()?, ""); // still a draft
 /// // Admission saves the focused draft before the policy runs, so the policy
 /// // sees it; keeping the window open focuses the field again.
 /// let main = app.main_window();
 /// assert!(matches!(app.admit_close(&main)?, NativeCloseAction::KeepOpen));
-/// assert_eq!(notes.text.get()?, "Call the bank");
-/// assert_eq!(app.runtime().focused(), Some(notes.field.clone()));
+/// assert_eq!(app.state().text.get()?, "Call the bank");
+/// assert_eq!(app.runtime().focused(), Some(app.state().field.clone()));
 ///
+/// let notes = app.state();
 /// notes.saved.set(notes.text.get()?)?;
 /// assert!(matches!(app.admit_close(&main)?, NativeCloseAction::Close));
 /// app.shutdown()?;
@@ -72,29 +71,34 @@ use std::time::Duration;
 /// # }
 /// ```
 #[must_use = "dropping it shuts the runtime down without reporting cleanup errors"]
-pub struct HeadlessApp {
-    app: App,
+pub struct HeadlessApp<S = ()> {
+    // Declared before the state so that dropping the application drops the
+    // runtime, which shuts down in its drop, before the state.
+    host: Host,
+    bound: Bound<S>,
 }
 
 /// Shows the title and the main window's geometry, as [`App`]'s does, not
-/// the runtime or the callbacks.
-impl std::fmt::Debug for HeadlessApp {
+/// the runtime, the callbacks or the state.
+impl<S> std::fmt::Debug for HeadlessApp<S> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("HeadlessApp")
-            .field("title", &self.app.title)
-            .field("window", &self.app.window)
+            .field("title", &self.host.title)
+            .field("window", &self.host.window)
             .finish_non_exhaustive()
     }
 }
 
-impl App {
+impl<S: 'static> App<S> {
     /// Starts the application without an event loop, for a test.
     ///
     /// In this order:
     /// 1. the title is validated as [`Self::run`] validates it;
     /// 2. the viewport is set to the main window's configured
     ///    [size](Self::size) at scale 1;
-    /// 3. the initialization closure runs on the runtime at clock zero;
+    /// 3. the initialization closure runs on the runtime at clock zero, and
+    ///    the [application state](Self#application-state) it returns is kept
+    ///    for [`HeadlessApp::state`] and the close policy;
     /// 4. the primary window is selected again, since the closure may have
     ///    selected a detached one, and every visible root is flushed with
     ///    [`HostIntegration::flush_windows`](crate::host::HostIntegration::flush_windows) at
@@ -118,48 +122,134 @@ impl App {
     /// initialization closure or the first flush fails, the runtime is shut
     /// down, as [`Self::run`] does for an initialization failure, and that
     /// failure is returned, inside [`AppError::Shutdown`] when cleanup failed
-    /// too.
-    pub fn headless(mut self) -> Result<HeadlessApp, AppError> {
-        if self.title.trim().is_empty() {
+    /// too. A state the closure returned is dropped after that shutdown.
+    pub fn headless(mut self) -> Result<HeadlessApp<S>, AppError> {
+        if self.host.title.trim().is_empty() {
             return Err(AppError::InvalidTitle);
         }
-        let started = self.start_headless();
-        if let Err(error) = started {
-            // Always an error: this failure, or the shutdown aggregate that
-            // keeps it.
-            crate::platform::finish_runtime(&mut self.runtime, Err(error))?;
+        let size = self.host.window.size;
+        if let Err(error) = viewport(&mut self.host.runtime, size) {
+            return crate::platform::finish_runtime(&mut self.host.runtime, Err(error));
         }
-        Ok(HeadlessApp { app: self })
-    }
-
-    fn start_headless(&mut self) -> Result<(), AppError> {
-        let size = self.window.size;
-        self.runtime
-            .set_viewport(crate::Viewport::new(size.width(), size.height(), 1.0)?)?;
-        if let Some(initialize) = self.initialize.take() {
-            initialize(&mut self.runtime)?;
+        let (mut host, bound) = self.start()?;
+        if let Err(error) = settle(&mut host.runtime) {
+            let ended = crate::platform::finish_runtime(&mut host.runtime, Err(error));
+            // The state goes after the runtime has shut down.
+            drop(bound);
+            return ended;
         }
-        let primary = self.runtime.primary_window();
-        self.runtime.select_window(&primary)?;
-        self.runtime.flush_windows(Duration::ZERO)?;
-        Ok(())
+        Ok(HeadlessApp { host, bound })
     }
 }
 
-impl HeadlessApp {
+fn viewport(runtime: &mut Runtime, size: crate::Size) -> Result<(), AppError> {
+    runtime.set_viewport(crate::Viewport::new(size.width(), size.height(), 1.0)?)?;
+    Ok(())
+}
+
+/// Selects the primary window again and lays out every visible root.
+fn settle(runtime: &mut Runtime) -> Result<(), AppError> {
+    let primary = runtime.primary_window();
+    runtime.select_window(&primary)?;
+    runtime.flush_windows(Duration::ZERO)?;
+    Ok(())
+}
+
+impl<S: 'static> HeadlessApp<S> {
     /// The application's runtime, for reading what it shows.
     pub fn runtime(&self) -> &Runtime {
-        &self.app.runtime
+        &self.host.runtime
     }
 
     /// The application's runtime, for driving it.
     pub fn runtime_mut(&mut self) -> &mut Runtime {
-        &mut self.app.runtime
+        &mut self.host.runtime
     }
 
     /// The main window: [`Runtime::primary_window`].
     pub fn main_window(&self) -> NativeWindowId {
-        self.app.runtime.primary_window()
+        self.host.runtime.primary_window()
+    }
+
+    /// The [application state](App#application-state) the initializer
+    /// returned, as the callbacks see it.
+    ///
+    /// ```
+    /// use pert_ui::{App, NativeCloseAction};
+    /// /// The policy's count of the closes it refused.
+    /// struct Closes {
+    ///     refused: u32,
+    /// }
+    /// # fn main() -> Result<(), pert_ui::AppError> {
+    /// let mut app = App::new("Counted", |_| Ok(Closes { refused: 0 }))
+    ///     .on_close(|_, closes, _| {
+    ///         closes.refused += 1;
+    ///         Ok(NativeCloseAction::KeepOpen)
+    ///     })
+    ///     .headless()?;
+    /// let main = app.main_window();
+    /// app.admit_close(&main)?;
+    /// assert_eq!(app.state().refused, 1);
+    /// # app.shutdown() }
+    /// ```
+    pub fn state(&self) -> &S {
+        self.bound.state()
+    }
+
+    /// The application state, for a change a test makes as the application
+    /// would. The callbacks see the change on their next call.
+    ///
+    /// ```
+    /// use pert_ui::{App, NativeCloseAction};
+    /// /// The policy's count of the closes it refused.
+    /// struct Closes {
+    ///     refused: u32,
+    /// }
+    /// # fn main() -> Result<(), pert_ui::AppError> {
+    /// let mut app = App::new("Counted", |_| Ok(Closes { refused: 0 }))
+    ///     .on_close(|_, closes, _| {
+    ///         closes.refused += 1;
+    ///         Ok(NativeCloseAction::KeepOpen)
+    ///     })
+    ///     .headless()?;
+    /// let main = app.main_window();
+    /// app.admit_close(&main)?;
+    /// app.state_mut().refused = 0;
+    /// app.admit_close(&main)?;
+    /// assert_eq!(app.state().refused, 1);
+    /// # app.shutdown() }
+    /// ```
+    pub fn state_mut(&mut self) -> &mut S {
+        self.bound.state_mut()
+    }
+
+    /// The runtime and the application state at once, as a callback
+    /// receives them, so a test drives the runtime with the handles the
+    /// state holds without copying them out first.
+    ///
+    /// ```
+    /// use pert_ui::testing::Driver;
+    /// use pert_ui::{App, Element, Signal, TextField, WidgetId};
+    /// /// The field the application built and the text it edits.
+    /// struct Notes {
+    ///     field: WidgetId,
+    ///     text: Signal<String>,
+    /// }
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let mut app = App::new("Notes", |ui| {
+    ///     let text = ui.signal(String::new());
+    ///     let field = ui.mount_tree(Element::new("note", TextField::new(text.clone())))?;
+    ///     Ok(Notes { field, text })
+    /// })
+    /// .headless()?;
+    /// let (ui, notes) = app.runtime_and_state_mut();
+    /// Driver::new(ui).replace_text(&notes.field, "Call the bank")?;
+    /// assert_eq!(app.state().text.get()?, "Call the bank");
+    /// app.shutdown()?;
+    /// # Ok(()) }
+    /// ```
+    pub fn runtime_and_state_mut(&mut self) -> (&mut Runtime, &mut S) {
+        (&mut self.host.runtime, self.bound.state_mut())
     }
 
     /// Runs close admission and the [`App::on_close`] policy for `window`, as
@@ -168,7 +258,8 @@ impl HeadlessApp {
     /// Admission is the native runner's: focus is released in every window
     /// the close would discard, so each focused editor applies its focus-loss
     /// policy before the policy runs, those windows are flushed, the policy
-    /// runs with `window` selected, and a synchronous
+    /// runs with `window` selected and receives the state [`Self::state`]
+    /// reads, and a synchronous
     /// [`NativeCloseAction::KeepOpen`] focuses the released components again;
     /// [`App::on_close`] lists the steps. There is no component-error backoff
     /// here, so admission always flushes. The window selected before the call
@@ -192,7 +283,7 @@ impl HeadlessApp {
     /// once; and the errors of focusing a released component again. Errors
     /// come back directly: [`App::on_error`] belongs to the native runner.
     pub fn admit_close(&mut self, window: &NativeWindowId) -> Result<NativeCloseAction, AppError> {
-        let runtime = &mut self.app.runtime;
+        let runtime = &mut self.host.runtime;
         let previous = runtime.current_window();
         // Validates the identity before anything changes.
         runtime.select_window(window)?;
@@ -201,8 +292,8 @@ impl HeadlessApp {
         let now = runtime.now();
         let released = close::prepare_close(runtime, &affected, true, now)?;
         runtime.select_window(window)?;
-        let decision = self.app.handle_close(window);
-        let runtime = &mut self.app.runtime;
+        let decision = self.bound.close_policy(&mut self.host.runtime, window);
+        let runtime = &mut self.host.runtime;
         let decided = decision.map_err(AppError::from).and_then(|action| {
             match &action {
                 NativeCloseAction::KeepOpen => close::restore_focus(runtime, released)?,
@@ -224,7 +315,11 @@ impl HeadlessApp {
     /// # Errors
     /// [`AppError::Shutdown`] with the runtime's cleanup failures, in
     /// [`HostIntegration::take_shutdown_errors`](crate::host::HostIntegration::take_shutdown_errors) order.
-    pub fn shutdown(mut self) -> Result<(), AppError> {
-        crate::platform::finish_runtime(&mut self.app.runtime, Ok(()))
+    pub fn shutdown(self) -> Result<(), AppError> {
+        let Self { mut host, bound } = self;
+        let ended = crate::platform::finish_runtime(&mut host.runtime, Ok(()));
+        // The state goes after the runtime has shut down.
+        drop(bound);
+        ended
     }
 }

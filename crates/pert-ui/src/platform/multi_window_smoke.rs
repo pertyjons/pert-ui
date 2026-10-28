@@ -39,6 +39,9 @@ struct Driver {
     updates: Vec<Rc<Cell<u64>>>,
     phase: u8,
     baseline: Vec<u64>,
+    /// What `on_window_error` pushed into the application state, read
+    /// through the state's clone.
+    window_errors: Rc<std::cell::RefCell<Vec<crate::WindowError>>>,
     result: Option<Result<(), AppError>>,
 }
 impl Driver {
@@ -70,35 +73,37 @@ impl Driver {
             // root: Space in each unfocused window reaches the application
             // command, which toggles playback once per window.
             let started = Instant::now();
-            let windows = self.runner.app.runtime.native_windows();
+            let windows = self.runner.app.host.runtime.native_windows();
             assert_eq!(windows.len(), 3);
             for (index, window) in windows.iter().enumerate() {
-                self.runner.app.runtime.select_window(window)?;
-                self.runner.app.runtime.clear_focus();
+                self.runner.app.host.runtime.select_window(window)?;
+                self.runner.app.host.runtime.clear_focus();
                 let before = self.running.get()?;
-                let press = self
-                    .runner
-                    .app
-                    .runtime
-                    .command_key_input(CommandKeyInput::new(
-                        KeyCode::Space,
-                        KeyAction::Press,
-                        CommandKey::Named(KeyCode::Space),
-                    ))?;
+                let press =
+                    self.runner
+                        .app
+                        .host
+                        .runtime
+                        .command_key_input(CommandKeyInput::new(
+                            KeyCode::Space,
+                            KeyAction::Press,
+                            CommandKey::Named(KeyCode::Space),
+                        ))?;
                 assert!(
                     press.handled && !press.deliver_text,
                     "window {index}: Space press was not routed to the command: {press:?}"
                 );
                 assert_eq!(press.event.transition, KeyTransition::Pressed);
-                let release = self
-                    .runner
-                    .app
-                    .runtime
-                    .command_key_input(CommandKeyInput::new(
-                        KeyCode::Space,
-                        KeyAction::Release,
-                        CommandKey::Named(KeyCode::Space),
-                    ))?;
+                let release =
+                    self.runner
+                        .app
+                        .host
+                        .runtime
+                        .command_key_input(CommandKeyInput::new(
+                            KeyCode::Space,
+                            KeyAction::Release,
+                            CommandKey::Named(KeyCode::Space),
+                        ))?;
                 assert_eq!(release.event.transition, KeyTransition::Released);
                 assert_eq!(
                     self.running.get()?,
@@ -116,6 +121,7 @@ impl Driver {
         } else if self.phase == 1 && elapsed >= Duration::from_secs(3) {
             self.runner
                 .app
+                .host
                 .runtime
                 .select_window(&self.runner.current.root)?;
             self.runner
@@ -147,6 +153,7 @@ impl Driver {
             self.title = Some(
                 self.runner
                     .app
+                    .host
                     .runtime
                     .request_window_title(&window, "pert-ui smoke retitled")?,
             );
@@ -160,7 +167,14 @@ impl Driver {
                     .collect::<Vec<_>>(),
                 "idle roots do not tick"
             );
-            assert!(self.runner.app.runtime.application_deadline().is_none());
+            assert!(
+                self.runner
+                    .app
+                    .host
+                    .runtime
+                    .application_deadline()
+                    .is_none()
+            );
             let retitled = self.title.as_ref().map(PresentationReceipt::status);
             assert!(
                 matches!(retitled, Some(PresentationStatus::Presented(_))),
@@ -172,13 +186,14 @@ impl Driver {
             self.receipts.push(
                 self.runner
                     .app
+                    .host
                     .runtime
-                    .request_close(&self.runner.app.runtime.primary_window())?,
+                    .request_close(&self.runner.app.host.runtime.primary_window())?,
             );
             self.phase = 4;
         } else if self.phase == 4 && elapsed >= Duration::from_secs(6) {
             assert_eq!(
-                self.runner.app.runtime.native_windows().len(),
+                self.runner.app.host.runtime.native_windows().len(),
                 3,
                 "deferred main close preserves every window"
             );
@@ -189,14 +204,14 @@ impl Driver {
                 status => panic!("the detach receipt is {status:?}, not presented"),
             };
             self.receipts
-                .push(self.runner.app.runtime.request_close(&window)?);
+                .push(self.runner.app.host.runtime.request_close(&window)?);
             // A second close queued before the first is processed finds the
             // window gone: a failed request, not a component failure.
             self.receipts
-                .push(self.runner.app.runtime.request_close(&window)?);
+                .push(self.runner.app.host.runtime.request_close(&window)?);
             self.phase = 5;
         } else if self.phase == 5 && elapsed >= Duration::from_secs(7) {
-            assert_eq!(self.runner.app.runtime.native_windows().len(), 2);
+            assert_eq!(self.runner.app.host.runtime.native_windows().len(), 2);
             assert_eq!(self.runner.parked.len(), 1);
             assert_eq!(self.receipts[2].status(), PresentationStatus::CloseRejected);
             assert_eq!(self.receipts[3].status(), PresentationStatus::Closed);
@@ -207,6 +222,11 @@ impl Driver {
             assert!(
                 self.runner.error.is_none(),
                 "the stale close did not enter error recovery"
+            );
+            assert_eq!(
+                *self.window_errors.borrow(),
+                [crate::WindowError::Runtime(RuntimeError::Unmounted)],
+                "on_window_error received the stale close's failure with its state"
             );
             eprintln!(
                 "Shared recovery, all-window suspend/resume, idle, deferred/rejected main close, detached close/re-dock and a stale queued close passed."
@@ -271,25 +291,28 @@ fn three_software_surfaces_animate_settle_and_redock() -> Result<(), AppError> {
 }
 
 fn three_surfaces(software: bool) -> Result<(), AppError> {
-    let mut app = App::new("pert-ui multi-window smoke", |_| Ok(()));
-    app.software = software;
-    app.initialize.take();
-    let close_decision = app.runtime.signal(None);
+    // The state `on_window_error` records each window failure in.
+    let window_errors = Rc::new(std::cell::RefCell::new(Vec::new()));
+    let reported = window_errors.clone();
+    let mut app = App::new("pert-ui multi-window smoke", move |_| Ok(reported))
+        .on_window_error(|_, reported, error| reported.borrow_mut().push(error.clone()));
+    app.host.software = software;
+    let close_decision = app.host.runtime.signal(None);
     let decision = close_decision.read_only();
-    app = app.on_close(move |ui, window| {
+    app = app.on_close(move |ui, _, window| {
         Ok(if *window == ui.primary_window() {
             NativeCloseAction::Defer(decision.clone())
         } else {
             NativeCloseAction::Close
         })
     });
-    let running = app.runtime.signal(true);
+    let running = app.host.runtime.signal(true);
     let mut updates = Vec::new();
     let mut receipts = Vec::new();
     let state = running.clone();
     let toggles = Rc::new(Cell::new(0));
     let counted = toggles.clone();
-    app.runtime.register_command(
+    app.host.runtime.register_command(
         "Play",
         CommandScope::Application,
         vec![KeyChord::new(
@@ -315,16 +338,24 @@ fn three_surfaces(software: bool) -> Result<(), AppError> {
         ));
     }
     let root = app
+        .host
         .runtime
         .mount_tree(Element::new("layout", Column::new(elements)))?;
-    for (index, view) in app.runtime.children(&root)?.into_iter().enumerate().skip(1) {
-        receipts.push(app.runtime.request_detach(
+    for (index, view) in app
+        .host
+        .runtime
+        .children(&root)?
+        .into_iter()
+        .enumerate()
+        .skip(1)
+    {
+        receipts.push(app.host.runtime.request_detach(
             &view,
             NativeWindowOptions::new(format!("pert-ui smoke {index}"))?,
         )?);
     }
     let event_loop = native_test_event_loop()?;
-    let runner = Runner::new(app, event_loop.create_proxy());
+    let runner = Runner::new(app.start()?.into(), event_loop.create_proxy());
     let mut driver = Driver {
         runner,
         running,
@@ -335,6 +366,7 @@ fn three_surfaces(software: bool) -> Result<(), AppError> {
         updates,
         phase: 0,
         baseline: Vec::new(),
+        window_errors,
         result: None,
     };
     event_loop
@@ -372,7 +404,7 @@ impl CloseRequestDriver {
         else {
             return Ok(());
         };
-        let ui = &mut self.runner.app.runtime;
+        let ui = &mut self.runner.app.host.runtime;
         ui.focus(&self.field)?;
         ui.text_input("typed draft")?;
         assert_eq!(self.text.get()?, "", "the field holds a draft");
@@ -386,11 +418,11 @@ impl CloseRequestDriver {
         assert_eq!(
             self.seen.borrow().as_deref(),
             Some("typed draft"),
-            "the close policy saw the draft admission saved"
+            "the close policy saw the draft admission saved, recorded in its state"
         );
         assert_eq!(self.text.get()?, "typed draft");
         assert_eq!(
-            self.runner.app.runtime.focused(),
+            self.runner.app.host.runtime.focused(),
             Some(self.field.clone()),
             "keeping the window open focused the editor again"
         );
@@ -440,22 +472,22 @@ impl ApplicationHandler<UserEvent> for CloseRequestDriver {
 #[test]
 #[ignore = "requires a native desktop session and hardware GPU adapter"]
 fn a_native_close_request_saves_the_focused_draft_before_the_policy() -> Result<(), AppError> {
-    let mut app = App::new("pert-ui close request smoke", |_| Ok(()));
-    app.initialize.take();
-    let text = app.runtime.signal(String::new());
-    let field = app.runtime.mount_tree(Element::new(
+    // The state the policy records the text it saw in.
+    let seen = Rc::new(std::cell::RefCell::new(None));
+    let recorded = seen.clone();
+    let mut app = App::new("pert-ui close request smoke", move |_| Ok(recorded));
+    let text = app.host.runtime.signal(String::new());
+    let field = app.host.runtime.mount_tree(Element::new(
         "field",
         TextField::new(text.clone()).max_length(Some(100)),
     ))?;
-    let seen = Rc::new(std::cell::RefCell::new(None));
-    let record = seen.clone();
     let read = text.clone();
-    app = app.on_close(move |_, _| {
-        *record.borrow_mut() = Some(read.get()?);
+    app = app.on_close(move |_, seen, _| {
+        *seen.borrow_mut() = Some(read.get()?);
         Ok(NativeCloseAction::KeepOpen)
     });
     let event_loop = native_test_event_loop()?;
-    let runner = Runner::new(app, event_loop.create_proxy());
+    let runner = Runner::new(app.start()?.into(), event_loop.create_proxy());
     let mut driver = CloseRequestDriver {
         runner,
         field,

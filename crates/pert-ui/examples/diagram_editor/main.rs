@@ -54,29 +54,21 @@ fn folder() -> std::path::PathBuf {
 #[cfg(feature = "native")]
 fn window() -> Result<(), Box<dyn std::error::Error>> {
     use pert_ui::prelude::*;
-    use std::{cell::RefCell, rc::Rc};
     let dir = folder();
     std::fs::create_dir_all(&dir)?;
-    // Close admission and error handling need the application, which the
-    // initializer creates: they share it through this slot, empty until
-    // initialization succeeds.
-    let slot: Rc<RefCell<Option<Rc<app::DiagramApp>>>> = Rc::default();
-    let (filled, failing) = (slot.clone(), slot.clone());
+    // The application the initializer builds is the application state: close
+    // admission and error handling receive it, and it lives until the
+    // application ends. A failing initializer reaches neither; its error
+    // returns from `run`.
     App::new("Diagram editor", move |ui| {
-        let diagram = app::build(ui, dir.clone()).map_err(|error| {
+        Ok(app::build(ui, dir.clone()).map_err(|error| {
             pert_ui::ApplicationError::new(std::io::Error::other(error.to_string()))
-        })?;
-        *filled.borrow_mut() = Some(diagram.clone());
-        ui.keep_alive(diagram);
-        Ok(())
+        })?)
     })
     .size(Size::from([1200, 800]))?
     // A component failure is shown on the status line and the window keeps
-    // running; before the application exists there is nothing to show it on.
-    .on_error(move |_, error| {
-        let Some(diagram) = failing.borrow().clone() else {
-            return ErrorAction::Exit;
-        };
+    // running.
+    .on_error(|_, diagram, error| {
         match diagram
             .editor
             .status
@@ -86,11 +78,8 @@ fn window() -> Result<(), Box<dyn std::error::Error>> {
             Err(_) => ErrorAction::Exit,
         }
     })
-    .on_close(move |ui, _| {
-        let Some(diagram) = slot.borrow().clone() else {
-            return Ok(NativeCloseAction::Close);
-        };
-        Ok(match app::close_requested(&diagram, ui)? {
+    .on_close(|ui, diagram, _| {
+        Ok(match app::close_requested(diagram, ui)? {
             None => NativeCloseAction::Close,
             Some(decision) => NativeCloseAction::Defer(decision),
         })

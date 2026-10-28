@@ -67,7 +67,7 @@ impl Driver {
                 .copied()
                 .unwrap_or(f64::NAN)
         };
-        let rate = self.runner.app.runtime.presentation_rate();
+        let rate = self.runner.app.host.runtime.presentation_rate();
         let monitor = self
             .runner
             .current
@@ -132,9 +132,8 @@ impl ApplicationHandler<UserEvent> for Driver {
 #[ignore = "requires a native desktop session and hardware GPU adapter"]
 fn animation_follows_the_monitor_presentation_rate() -> Result<(), AppError> {
     let mut app = App::new("pert-ui pacing smoke", |_| Ok(()));
-    app.initialize.take();
     let updates = Rc::new(RefCell::new(Vec::new()));
-    app.runtime.mount_tree(Element::new(
+    app.host.runtime.mount_tree(Element::new(
         "animated",
         Animated {
             updates: updates.clone(),
@@ -142,7 +141,7 @@ fn animation_follows_the_monitor_presentation_rate() -> Result<(), AppError> {
         },
     ))?;
     let event_loop = native_test_event_loop()?;
-    let runner = Runner::new(app, event_loop.create_proxy());
+    let runner = Runner::new(app.start()?.into(), event_loop.create_proxy());
     let mut driver = Driver {
         runner,
         updates,

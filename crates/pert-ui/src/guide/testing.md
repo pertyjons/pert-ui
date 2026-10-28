@@ -664,41 +664,50 @@ editor saves a valid draft by its own focus-loss rules before the policy reads
 the application's state, and a synchronous `KeepOpen` focuses the released
 editor again.
 
+The initializer's value is the [application state][app-state]
+that `on_close` and the test share: [`HeadlessApp::state`] reads it, and
+[`HeadlessApp::runtime_and_state_mut`] lends the runtime and the state at once,
+so the test drives the runtime with the handles the state holds. An
+application's builder function returns `App<State>`, so a test starts it with
+`app().headless()?`, as `main` runs it with `app().run()`.
+
 ```rust
 # #[cfg(feature = "native")]
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     use pert_ui::prelude::*;
     use pert_ui::testing::*;
-    use std::{cell::RefCell, rc::Rc};
 
     // What the application builds; its close policy and the test read it.
-    let built: Rc<RefCell<Option<(WidgetId, Signal<String>)>>> = Rc::default();
-    let (slot, policy) = (built.clone(), built.clone());
-    let mut app = App::new("Notes", move |ui| {
-        let text = ui.signal(String::new());
-        // A length limit makes the field hold a draft until Enter or focus loss.
-        let field = ui.mount_tree(Element::new("note",
-            TextField::new(text.clone()).max_length(Some(200))))?;
-        *slot.borrow_mut() = Some((field, text));
-        Ok(())
-    })
-    .on_close(move |_, _| {
-        let text = policy.borrow().as_ref().map(|(_, text)| text.clone());
-        let unsaved = match text {
-            Some(text) => !text.get()?.is_empty(),
-            None => false,
-        };
-        Ok(if unsaved { NativeCloseAction::KeepOpen } else { NativeCloseAction::Close })
-    })
-    .headless()?;
-    let (field, text) = built.borrow().clone().ok_or("not built")?;
+    struct Notes {
+        field: WidgetId,
+        text: Signal<String>,
+    }
+    fn app() -> App<Notes> {
+        App::new("Notes", |ui| {
+            let text = ui.signal(String::new());
+            // A length limit makes the field hold a draft until Enter or focus loss.
+            let field = ui.mount_tree(Element::new("note",
+                TextField::new(text.clone()).max_length(Some(200))))?;
+            Ok(Notes { field, text })
+        })
+        .on_close(|_, notes, _| {
+            Ok(if notes.text.get()?.is_empty() {
+                NativeCloseAction::Close
+            } else {
+                NativeCloseAction::KeepOpen
+            })
+        })
+    }
 
-    Driver::new(app.runtime_mut()).replace_text(&field, "Call the bank")?;
-    assert_eq!(text.get()?, ""); // still a draft
+    let mut app = app().headless()?;
+    let (ui, notes) = app.runtime_and_state_mut();
+    Driver::new(ui).replace_text(&notes.field, "Call the bank")?;
+    assert_eq!(notes.text.get()?, ""); // still a draft
     let main = app.main_window();
     assert!(matches!(app.admit_close(&main)?, NativeCloseAction::KeepOpen));
-    assert_eq!(text.get()?, "Call the bank"); // saved before the policy ran
-    assert_eq!(app.runtime().focused(), Some(field));
+    let notes = app.state();
+    assert_eq!(notes.text.get()?, "Call the bank"); // saved before the policy ran
+    assert_eq!(app.runtime().focused(), Some(notes.field.clone()));
     app.shutdown()?;
     Ok(())
 }

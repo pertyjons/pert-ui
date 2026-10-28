@@ -50,8 +50,8 @@ fn window(items: usize) -> Result<(), Box<dyn std::error::Error>> {
         let (inventory, commands, _) = app::build(ui, items).map_err(|error| {
             pert_ui::ApplicationError::new(std::io::Error::other(error.to_string()))
         })?;
-        ui.keep_alive((inventory, commands));
-        Ok(())
+        // The application state keeps them until the application ends.
+        Ok((inventory, commands))
     })
     .size(Size::from([1200, 800]))?
     .run()?;

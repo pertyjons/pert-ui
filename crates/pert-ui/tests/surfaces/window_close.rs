@@ -1,7 +1,8 @@
 //! Close admission through `App::headless` and `HeadlessApp::admit_close`:
 //! focused drafts are released before `App::on_close` reads the
-//! application's state, focus comes back only after a synchronous
-//! `KeepOpen`, and admission's errors come back directly.
+//! application state the initializer returned, focus comes back only after
+//! a synchronous `KeepOpen`, and admission's errors come back directly; and
+//! the state's lifetime.
 #![cfg(feature = "native")]
 
 use pert_ui::testing::*;
@@ -10,31 +11,6 @@ use pert_ui::{component::*, parameter::*, prelude::*, windowing::*};
 use std::{cell::Cell, cell::RefCell, rc::Rc, time::Duration};
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
-type Policy<T> = Box<dyn FnMut(&mut Runtime, &T) -> Result<NativeCloseAction, RuntimeError>>;
-
-/// Starts `build` as a headless application whose close policy is
-/// `policy`, and returns what `build` made, which the policy reads too.
-fn start<T: 'static>(
-    build: impl FnOnce(&mut Runtime) -> Result<T, RuntimeError> + 'static,
-    mut policy: Policy<T>,
-) -> Result<(HeadlessApp, Rc<T>), Box<dyn std::error::Error>> {
-    let slot: Rc<RefCell<Option<Rc<T>>>> = Rc::default();
-    let (filled, read) = (slot.clone(), slot.clone());
-    let app = App::new("Close", move |ui| {
-        *filled.borrow_mut() = Some(Rc::new(build(ui)?));
-        Ok(())
-    })
-    .on_close(move |ui, _| {
-        let built = read
-            .borrow()
-            .clone()
-            .ok_or(ApplicationError::from("not built"))?;
-        policy(ui, &built)
-    })
-    .headless()?;
-    let built = slot.borrow().clone().ok_or("not built")?;
-    Ok((app, built))
-}
 
 /// Two fields that hold a draft until Enter or focus loss.
 struct Form {
@@ -63,9 +39,10 @@ fn form(ui: &mut Runtime) -> Result<Form, RuntimeError> {
     })
 }
 
-/// Types `text` into `form.first`, which keeps it as a draft.
-fn draft(app: &mut HeadlessApp, form: &Form, text: &str) -> TestResult {
-    Driver::new(app.runtime_mut()).replace_text(&form.first, text)?;
+/// Types `text` into the form's first field, which keeps it as a draft.
+fn draft(app: &mut HeadlessApp<Form>, text: &str) -> TestResult {
+    let (ui, form) = app.runtime_and_state_mut();
+    Driver::new(ui).replace_text(&form.first, text)?;
     assert_eq!(form.first_text.get()?, "", "still a draft");
     Ok(())
 }
@@ -74,14 +51,13 @@ fn draft(app: &mut HeadlessApp, form: &Form, text: &str) -> TestResult {
 fn the_close_policy_sees_a_draft_admission_saved() -> TestResult {
     let seen = Rc::new(RefCell::new(None));
     let record = seen.clone();
-    let (mut app, form) = start(
-        form,
-        Box::new(move |_, form: &Form| {
+    let mut app = App::new("Close", |ui| Ok(form(ui)?))
+        .on_close(move |_, form, _| {
             *record.borrow_mut() = Some(form.first_text.get()?);
             Ok(NativeCloseAction::Close)
-        }),
-    )?;
-    draft(&mut app, &form, "Unsaved notes")?;
+        })
+        .headless()?;
+    draft(&mut app, "Unsaved notes")?;
     let main = app.main_window();
     assert!(matches!(app.admit_close(&main)?, NativeCloseAction::Close));
     assert_eq!(seen.borrow().as_deref(), Some("Unsaved notes"));
@@ -101,28 +77,27 @@ fn a_parameter_draft_is_cancelled_not_committed() -> TestResult {
     }
     let seen = Rc::new(Cell::new(f32::NAN));
     let record = seen.clone();
-    let (mut app, gain) = start(
-        |ui| {
-            let (gain, host) = ui.parameter(
-                ParameterId::new(1, 1, "gain")?,
-                ParameterSpec::new("Gain", 0.0, 1.0, 0.1)?,
-            )?;
-            let field = ui.mount_tree(Element::new(
-                "gain",
-                DecimalInput::for_parameter(gain.clone()),
-            ))?;
-            Ok(Gain {
-                field,
-                gain,
-                _host: host,
-            })
-        },
-        Box::new(move |_, gain: &Gain| {
-            record.set(gain.gain.snapshot().get()?.base);
-            Ok(NativeCloseAction::Close)
-        }),
-    )?;
-    let shown = |app: &HeadlessApp| {
+    let mut app = App::new("Close", |ui| {
+        let (gain, host) = ui.parameter(
+            ParameterId::new(1, 1, "gain")?,
+            ParameterSpec::new("Gain", 0.0, 1.0, 0.1)?,
+        )?;
+        let field = ui.mount_tree(Element::new(
+            "gain",
+            DecimalInput::for_parameter(gain.clone()),
+        ))?;
+        Ok(Gain {
+            field,
+            gain,
+            _host: host,
+        })
+    })
+    .on_close(move |_, gain, _| {
+        record.set(gain.gain.snapshot().get()?.base);
+        Ok(NativeCloseAction::Close)
+    })
+    .headless()?;
+    let shown = |app: &HeadlessApp<Gain>| {
         app.runtime()
             .inspect()
             .components
@@ -130,14 +105,15 @@ fn a_parameter_draft_is_cancelled_not_committed() -> TestResult {
             .find(|c| c.key == "gain")
             .and_then(|c| c.details.properties.get("text").cloned())
     };
-    Driver::new(app.runtime_mut()).replace_text(&gain.field, "0.75")?;
+    let (ui, gain) = app.runtime_and_state_mut();
+    Driver::new(ui).replace_text(&gain.field, "0.75")?;
     assert_eq!(shown(&app), Some(InspectValue::Text("0.75".into())));
     let main = app.main_window();
     app.admit_close(&main)?;
     // A valid draft, cancelled: parameter authority commits only on an
     // explicit commit.
     assert_eq!(seen.get(), 0.1);
-    assert_eq!(gain.gain.snapshot().get()?.base, 0.1);
+    assert_eq!(app.state().gain.snapshot().get()?.base, 0.1);
     assert_eq!(shown(&app), Some(InspectValue::Text("0.1".into())));
     app.shutdown()?;
     Ok(())
@@ -187,9 +163,9 @@ fn windows(ui: &mut Runtime) -> Result<Windows, RuntimeError> {
 }
 
 /// Drafts `text` in both windows' fields; the main window ends selected.
-fn draft_both(app: &mut HeadlessApp, windows: &Windows) -> TestResult {
+fn draft_both(app: &mut HeadlessApp<Windows>) -> TestResult {
     let main = app.main_window();
-    let ui = app.runtime_mut();
+    let (ui, windows) = app.runtime_and_state_mut();
     ui.select_window(&windows.detached)?;
     Driver::new(ui).replace_text(&windows.detached_field, "detached draft")?;
     ui.select_window(&main)?;
@@ -203,16 +179,15 @@ fn draft_both(app: &mut HeadlessApp, windows: &Windows) -> TestResult {
 fn closing_the_main_window_releases_every_windows_draft() -> TestResult {
     let seen = Rc::new(RefCell::new(Vec::new()));
     let record = seen.clone();
-    let (mut app, windows) = start(
-        windows,
-        Box::new(move |_, windows: &Windows| {
+    let mut app = App::new("Close", |ui| Ok(windows(ui)?))
+        .on_close(move |_, windows, _| {
             record
                 .borrow_mut()
                 .push((windows.main_text.get()?, windows.detached_text.get()?));
             Ok(NativeCloseAction::Close)
-        }),
-    )?;
-    draft_both(&mut app, &windows)?;
+        })
+        .headless()?;
+    draft_both(&mut app)?;
     let main = app.main_window();
     app.admit_close(&main)?;
     assert_eq!(
@@ -227,13 +202,13 @@ fn closing_the_main_window_releases_every_windows_draft() -> TestResult {
 
 #[test]
 fn closing_a_detached_window_releases_only_its_own_draft() -> TestResult {
-    let (mut app, windows) = start(
-        windows,
-        Box::new(|_, _: &Windows| Ok(NativeCloseAction::Close)),
-    )?;
-    draft_both(&mut app, &windows)?;
-    let detached = windows.detached.clone();
+    let mut app = App::new("Close", |ui| Ok(windows(ui)?))
+        .on_close(|_, _, _| Ok(NativeCloseAction::Close))
+        .headless()?;
+    draft_both(&mut app)?;
+    let detached = app.state().detached.clone();
     app.admit_close(&detached)?;
+    let windows = app.state();
     assert_eq!(windows.detached_text.get()?, "detached draft");
     assert_eq!(
         windows.main_text.get()?,
@@ -247,49 +222,46 @@ fn closing_a_detached_window_releases_only_its_own_draft() -> TestResult {
 
 #[test]
 fn keep_open_focuses_the_released_editor_again() -> TestResult {
-    let (mut app, form) = start(
-        form,
-        Box::new(|_, _: &Form| Ok(NativeCloseAction::KeepOpen)),
-    )?;
-    draft(&mut app, &form, "Kept open")?;
+    let mut app = App::new("Close", |ui| Ok(form(ui)?))
+        .on_close(|_, _, _| Ok(NativeCloseAction::KeepOpen))
+        .headless()?;
+    draft(&mut app, "Kept open")?;
     let main = app.main_window();
     assert!(matches!(
         app.admit_close(&main)?,
         NativeCloseAction::KeepOpen
     ));
-    assert_eq!(form.first_text.get()?, "Kept open");
-    assert_eq!(app.runtime().focused(), Some(form.first.clone()));
+    assert_eq!(app.state().first_text.get()?, "Kept open");
+    assert_eq!(app.runtime().focused(), Some(app.state().first.clone()));
     app.shutdown()?;
     Ok(())
 }
 
 #[test]
 fn keep_open_leaves_a_component_the_policy_focused() -> TestResult {
-    let (mut app, form) = start(
-        form,
-        Box::new(|ui, form: &Form| {
+    let mut app = App::new("Close", |ui| Ok(form(ui)?))
+        .on_close(|ui, form, _| {
             ui.focus(&form.second)?;
             Ok(NativeCloseAction::KeepOpen)
-        }),
-    )?;
-    draft(&mut app, &form, "Moved")?;
+        })
+        .headless()?;
+    draft(&mut app, "Moved")?;
     let main = app.main_window();
     app.admit_close(&main)?;
-    assert_eq!(app.runtime().focused(), Some(form.second.clone()));
+    assert_eq!(app.runtime().focused(), Some(app.state().second.clone()));
     app.shutdown()?;
     Ok(())
 }
 
 #[test]
 fn keep_open_leaves_focus_cleared_for_a_hidden_editor() -> TestResult {
-    let (mut app, form) = start(
-        form,
-        Box::new(|ui, form: &Form| {
+    let mut app = App::new("Close", |ui| Ok(form(ui)?))
+        .on_close(|ui, form, _| {
             ui.set_visible(&form.first, false)?;
             Ok(NativeCloseAction::KeepOpen)
-        }),
-    )?;
-    draft(&mut app, &form, "Hidden")?;
+        })
+        .headless()?;
+    draft(&mut app, "Hidden")?;
     let main = app.main_window();
     assert!(matches!(
         app.admit_close(&main)?,
@@ -304,21 +276,20 @@ fn keep_open_leaves_focus_cleared_for_a_hidden_editor() -> TestResult {
 fn a_deferred_decision_restores_nothing() -> TestResult {
     let decision = Rc::new(RefCell::new(None));
     let keep = decision.clone();
-    let (mut app, form) = start(
-        form,
-        Box::new(move |ui, _: &Form| {
+    let mut app = App::new("Close", |ui| Ok(form(ui)?))
+        .on_close(move |ui, _, _| {
             let signal = ui.signal(None);
             *keep.borrow_mut() = Some(signal.clone());
             Ok(NativeCloseAction::Defer(signal.read_only()))
-        }),
-    )?;
-    draft(&mut app, &form, "Deferred")?;
+        })
+        .headless()?;
+    draft(&mut app, "Deferred")?;
     let main = app.main_window();
     let NativeCloseAction::Defer(pending) = app.admit_close(&main)? else {
         return Err("a deferred decision".into());
     };
     assert_eq!(app.runtime().read_signal(&pending)?, None);
-    assert_eq!(form.first_text.get()?, "Deferred");
+    assert_eq!(app.state().first_text.get()?, "Deferred");
     assert_eq!(app.runtime().focused(), None);
     // The confirmation decides later; admission does not come back to it.
     let signal = decision.borrow().clone().ok_or("no decision signal")?;
@@ -336,13 +307,12 @@ fn a_deferred_decision_restores_nothing() -> TestResult {
 #[test]
 fn a_defer_signal_of_another_runtime_is_refused_at_once() -> TestResult {
     let other = Rc::new(RefCell::new(Runtime::new()));
-    let (mut app, _) = start(
-        form,
-        Box::new(move |_, _: &Form| {
+    let mut app = App::new("Close", |ui| Ok(form(ui)?))
+        .on_close(move |_, _, _| {
             let foreign = other.borrow().signal(None);
             Ok(NativeCloseAction::Defer(foreign.read_only()))
-        }),
-    )?;
+        })
+        .headless()?;
     let main = app.main_window();
     assert!(matches!(
         app.admit_close(&main),
@@ -373,14 +343,16 @@ impl Component for FailingFocusLoss {
 fn a_failed_focus_loss_aborts_admission_before_the_policy() -> TestResult {
     let calls = Rc::new(Cell::new(0));
     let count = calls.clone();
-    let (mut app, failing) = start(
-        |ui| ui.mount_tree(Element::new("failing", FailingFocusLoss)),
-        Box::new(move |_, _: &WidgetId| {
-            count.set(count.get() + 1);
-            Ok(NativeCloseAction::Close)
-        }),
-    )?;
-    app.runtime_mut().focus(&failing)?;
+    let mut app = App::new("Close", |ui| {
+        Ok(ui.mount_tree(Element::new("failing", FailingFocusLoss))?)
+    })
+    .on_close(move |_, _, _| {
+        count.set(count.get() + 1);
+        Ok(NativeCloseAction::Close)
+    })
+    .headless()?;
+    let (ui, failing) = app.runtime_and_state_mut();
+    ui.focus(failing)?;
     let main = app.main_window();
     let error = app.admit_close(&main).unwrap_err();
     assert!(
@@ -397,18 +369,19 @@ fn a_failed_focus_loss_aborts_admission_before_the_policy() -> TestResult {
 
 #[test]
 fn admission_refuses_a_window_that_is_not_open() -> TestResult {
-    let (mut app, windows) = start(
-        windows,
-        Box::new(|_, _: &Windows| Ok(NativeCloseAction::Close)),
-    )?;
+    let mut app = App::new("Close", |ui| Ok(windows(ui)?))
+        .on_close(|_, _, _| Ok(NativeCloseAction::Close))
+        .headless()?;
     let foreign = Runtime::new().primary_window();
     assert!(matches!(
         app.admit_close(&foreign),
         Err(AppError::Runtime(RuntimeError::ForeignRuntime))
     ));
-    app.runtime_mut().redock(&windows.detached)?;
+    let (ui, windows) = app.runtime_and_state_mut();
+    ui.redock(&windows.detached)?;
+    let detached = windows.detached.clone();
     assert!(matches!(
-        app.admit_close(&windows.detached),
+        app.admit_close(&detached),
         Err(AppError::Runtime(RuntimeError::Unmounted))
     ));
     app.shutdown()?;
@@ -417,20 +390,11 @@ fn admission_refuses_a_window_that_is_not_open() -> TestResult {
 
 #[test]
 fn headless_lays_the_content_out_at_the_configured_size_in_the_main_window() -> TestResult {
-    let (app, windows) = {
-        let slot: Rc<RefCell<Option<Windows>>> = Rc::default();
-        let filled = slot.clone();
-        let app = App::new("Sized", move |ui| {
-            // The initializer leaves the detached window selected.
-            *filled.borrow_mut() = Some(windows(ui)?);
-            Ok(())
-        })
+    // The initializer leaves the detached window selected.
+    let app = App::new("Sized", |ui| Ok(windows(ui)?))
         .size(Size::from([500, 300]))?
         .min_size(Size::from([600, 400]))?
         .headless()?;
-        let windows = slot.borrow_mut().take().ok_or("not built")?;
-        (app, windows)
-    };
     let main = app.main_window();
     assert_eq!(main, app.runtime().primary_window());
     assert_eq!(app.runtime().current_window(), main);
@@ -442,7 +406,7 @@ fn headless_lays_the_content_out_at_the_configured_size_in_the_main_window() -> 
     );
     let bounds = app
         .runtime()
-        .bounds(&windows.main_field)?
+        .bounds(&app.state().main_field)?
         .ok_or("not laid out")?;
     assert!(bounds.width() > 0.0 && bounds.height() > 0.0);
     assert_eq!(
@@ -459,9 +423,13 @@ fn headless_refuses_a_blank_title_and_returns_an_initialization_failure() {
         App::new(" ", |_| Ok(())).headless(),
         Err(AppError::InvalidTitle)
     ));
-    let failed = App::new("Failing", |_| {
+    // No callback runs without the state a failing initializer never
+    // returned; one that never returns `Ok` names the state type.
+    let failed = App::<()>::new("Failing", |_| {
         Err(ApplicationError::from("initialization failed").into())
     })
+    .on_close(|_, _, _| panic!("on_close ran without state"))
+    .on_error(|_, _, _| panic!("on_error ran without state"))
     .headless();
     assert!(
         matches!(&failed, Err(AppError::Runtime(RuntimeError::Application(inner))) if inner.to_string() == "initialization failed"),
@@ -469,21 +437,22 @@ fn headless_refuses_a_blank_title_and_returns_an_initialization_failure() {
     );
 }
 
+/// Clearing focus queues the focus loss's error for the next flush, or for
+/// shutdown's report.
+fn queue_failure(ui: &mut Runtime) -> Result<(), RuntimeError> {
+    let failing = ui.mount_tree(Element::new("failing", FailingFocusLoss))?;
+    ui.flush(ui.now())?;
+    ui.focus(&failing)?;
+    ui.clear_focus();
+    Ok(())
+}
+
 #[test]
 fn a_failed_start_and_the_shutdown_report_cleanup_failures() -> TestResult {
-    // Clearing focus queues the focus loss's error for the next flush, or for
-    // shutdown's report.
-    fn queue_failure(ui: &mut Runtime) -> Result<(), RuntimeError> {
-        let failing = ui.mount_tree(Element::new("failing", FailingFocusLoss))?;
-        ui.flush(ui.now())?;
-        ui.focus(&failing)?;
-        ui.clear_focus();
-        Ok(())
-    }
     let is_focus_failure = |error: &AppError| matches!(error, AppError::Runtime(RuntimeError::Application(inner)) if inner.to_string() == "focus loss failed");
 
     // A failed initializer shuts the runtime down, keeping both failures.
-    let failed = App::new("Failing", |ui| {
+    let failed = App::<()>::new("Failing", |ui| {
         queue_failure(ui)?;
         Err(ApplicationError::from("initialization failed").into())
     })
@@ -528,31 +497,30 @@ fn a_hidden_detached_window_is_not_flushed_by_its_admission() -> TestResult {
     }
     let calls = Rc::new(Cell::new(0));
     let count = calls.clone();
-    let (mut app, hidden) = start(
-        |ui| {
-            let root = ui.mount_tree(Element::new(
-                "root",
-                Column::new([Element::new(
-                    "panel",
-                    View::new(Element::new("failing", FailingFocusLoss)),
-                )]),
-            ))?;
-            ui.flush(Duration::ZERO)?;
-            let panel = ui.find(&root, &["panel"])?.ok_or(RuntimeError::Unmounted)?;
-            let prepared = ui.prepare_detach(&panel, NativeWindowOptions::new("Panel")?)?;
-            let detached = ui.commit_detach(prepared)?;
-            ui.set_viewport(Viewport::new(200.0, 100.0, 1.0)?)?;
-            let failing = ui
-                .find(&root, &["panel", "failing"])?
-                .ok_or(RuntimeError::Unmounted)?;
-            Ok(Hidden { failing, detached })
-        },
-        Box::new(move |_, _: &Hidden| {
-            count.set(count.get() + 1);
-            Ok(NativeCloseAction::Close)
-        }),
-    )?;
-    let ui = app.runtime_mut();
+    let mut app = App::new("Close", |ui| {
+        let root = ui.mount_tree(Element::new(
+            "root",
+            Column::new([Element::new(
+                "panel",
+                View::new(Element::new("failing", FailingFocusLoss)),
+            )]),
+        ))?;
+        ui.flush(Duration::ZERO)?;
+        let panel = ui.find(&root, &["panel"])?.ok_or(RuntimeError::Unmounted)?;
+        let prepared = ui.prepare_detach(&panel, NativeWindowOptions::new("Panel")?)?;
+        let detached = ui.commit_detach(prepared)?;
+        ui.set_viewport(Viewport::new(200.0, 100.0, 1.0)?)?;
+        let failing = ui
+            .find(&root, &["panel", "failing"])?
+            .ok_or(RuntimeError::Unmounted)?;
+        Ok(Hidden { failing, detached })
+    })
+    .on_close(move |_, _, _| {
+        count.set(count.get() + 1);
+        Ok(NativeCloseAction::Close)
+    })
+    .headless()?;
+    let (ui, hidden) = app.runtime_and_state_mut();
     ui.select_window(&hidden.detached)?;
     ui.flush(ui.now())?;
     ui.focus(&hidden.failing)?;
@@ -560,11 +528,12 @@ fn a_hidden_detached_window_is_not_flushed_by_its_admission() -> TestResult {
     ui.set_window_visible(false)?;
     let main = ui.primary_window();
     ui.select_window(&main)?;
-    app.admit_close(&hidden.detached)?;
+    let detached = hidden.detached.clone();
+    app.admit_close(&detached)?;
     assert_eq!(calls.get(), 1, "the policy ran");
     // Shown again, the window's flush reports the waiting error.
     let ui = app.runtime_mut();
-    ui.select_window(&hidden.detached)?;
+    ui.select_window(&detached)?;
     ui.set_window_visible(true)?;
     let error = ui.flush(ui.now()).unwrap_err();
     assert!(
@@ -582,33 +551,34 @@ fn keep_open_leaves_focus_cleared_for_an_editor_the_policy_disabled() -> TestRes
         text: Signal<String>,
         enabled: Signal<bool>,
     }
-    let (mut app, form) = start(
-        |ui| {
-            let text = ui.signal(String::new());
-            let enabled = ui.signal(true);
-            let field = ui.mount_tree(Element::new(
-                "field",
-                TextField::new(text.clone())
-                    .max_length(Some(100))
-                    .enabled(&enabled),
-            ))?;
-            Ok(Disabling {
-                field,
-                text,
-                enabled,
-            })
-        },
-        Box::new(|_, form: &Disabling| {
-            form.enabled.set(false)?;
-            Ok(NativeCloseAction::KeepOpen)
-        }),
-    )?;
-    Driver::new(app.runtime_mut()).replace_text(&form.field, "Saved first")?;
+    let mut app = App::new("Close", |ui| {
+        let text = ui.signal(String::new());
+        let enabled = ui.signal(true);
+        let field = ui.mount_tree(Element::new(
+            "field",
+            TextField::new(text.clone())
+                .max_length(Some(100))
+                .enabled(&enabled),
+        ))?;
+        Ok(Disabling {
+            field,
+            text,
+            enabled,
+        })
+    })
+    .on_close(|_, form, _| {
+        form.enabled.set(false)?;
+        Ok(NativeCloseAction::KeepOpen)
+    })
+    .headless()?;
+    let (ui, form) = app.runtime_and_state_mut();
+    Driver::new(ui).replace_text(&form.field, "Saved first")?;
     let main = app.main_window();
     assert!(matches!(
         app.admit_close(&main)?,
         NativeCloseAction::KeepOpen
     ));
+    let form = app.state();
     assert_eq!(form.text.get()?, "Saved first");
     assert_eq!(app.runtime().focused(), None);
     assert!(!app.runtime().can_focus(&form.field)?);
@@ -624,31 +594,30 @@ fn a_detached_windows_failed_focus_loss_aborts_closing_the_main_window() -> Test
     }
     let calls = Rc::new(Cell::new(0));
     let count = calls.clone();
-    let (mut app, built) = start(
-        |ui| {
-            let root = ui.mount_tree(Element::new(
-                "root",
-                Column::new([Element::new(
-                    "panel",
-                    View::new(Element::new("failing", FailingFocusLoss)),
-                )]),
-            ))?;
-            ui.flush(Duration::ZERO)?;
-            let panel = ui.find(&root, &["panel"])?.ok_or(RuntimeError::Unmounted)?;
-            let prepared = ui.prepare_detach(&panel, NativeWindowOptions::new("Panel")?)?;
-            let detached = ui.commit_detach(prepared)?;
-            ui.set_viewport(Viewport::new(200.0, 100.0, 1.0)?)?;
-            let failing = ui
-                .find(&root, &["panel", "failing"])?
-                .ok_or(RuntimeError::Unmounted)?;
-            Ok(Detached { failing, detached })
-        },
-        Box::new(move |_, _: &Detached| {
-            count.set(count.get() + 1);
-            Ok(NativeCloseAction::Close)
-        }),
-    )?;
-    let ui = app.runtime_mut();
+    let mut app = App::new("Close", |ui| {
+        let root = ui.mount_tree(Element::new(
+            "root",
+            Column::new([Element::new(
+                "panel",
+                View::new(Element::new("failing", FailingFocusLoss)),
+            )]),
+        ))?;
+        ui.flush(Duration::ZERO)?;
+        let panel = ui.find(&root, &["panel"])?.ok_or(RuntimeError::Unmounted)?;
+        let prepared = ui.prepare_detach(&panel, NativeWindowOptions::new("Panel")?)?;
+        let detached = ui.commit_detach(prepared)?;
+        ui.set_viewport(Viewport::new(200.0, 100.0, 1.0)?)?;
+        let failing = ui
+            .find(&root, &["panel", "failing"])?
+            .ok_or(RuntimeError::Unmounted)?;
+        Ok(Detached { failing, detached })
+    })
+    .on_close(move |_, _, _| {
+        count.set(count.get() + 1);
+        Ok(NativeCloseAction::Close)
+    })
+    .headless()?;
+    let (ui, built) = app.runtime_and_state_mut();
     ui.select_window(&built.detached)?;
     ui.flush(ui.now())?;
     ui.focus(&built.failing)?;
@@ -708,14 +677,21 @@ fn unsaved_page(ui: &mut Runtime) -> Result<Unsaved, RuntimeError> {
     })
 }
 /// Keeps the window open while any field reports an unsaved draft.
-fn while_unsaved() -> Policy<Unsaved> {
-    Box::new(|_, page: &Unsaved| {
-        Ok(if page.form.summary().get()?.modified() > 0 {
-            NativeCloseAction::KeepOpen
-        } else {
-            NativeCloseAction::Close
-        })
+fn while_unsaved(
+    _: &mut Runtime,
+    page: &mut Unsaved,
+    _: &NativeWindowId,
+) -> Result<NativeCloseAction, RuntimeError> {
+    Ok(if page.form.summary().get()?.modified() > 0 {
+        NativeCloseAction::KeepOpen
+    } else {
+        NativeCloseAction::Close
     })
+}
+/// The application, as its builder function returns it; a test calls
+/// `unsaved_app().headless()`.
+fn unsaved_app() -> App<Unsaved> {
+    App::new("Close", |ui| Ok(unsaved_page(ui)?)).on_close(while_unsaved)
 }
 fn text_property(ui: &Runtime, id: &WidgetId, name: &str) -> Option<String> {
     let inspection = ui.inspection_id(id).ok()?;
@@ -738,10 +714,13 @@ fn text_property(ui: &Runtime, id: &WidgetId, name: &str) -> Option<String> {
 /// Mutation checked: test 1's (the draft discarded on revocation).
 #[test]
 fn the_close_policy_sees_a_disabled_fields_kept_draft() -> TestResult {
-    let (mut app, page) = start(unsaved_page, while_unsaved())?;
-    let field = app.runtime().find(&page.root, &["count"])?.ok_or("count")?;
+    let mut app = unsaved_app().headless()?;
+    let field = app
+        .runtime()
+        .find(&app.state().root, &["count"])?
+        .ok_or("count")?;
     Driver::new(app.runtime_mut()).replace_text(&field, "42")?;
-    page.enabled.set(false)?;
+    app.state().enabled.set(false)?;
     Driver::new(app.runtime_mut()).settle()?;
     let main = app.main_window();
     assert!(matches!(
@@ -752,7 +731,7 @@ fn the_close_policy_sees_a_disabled_fields_kept_draft() -> TestResult {
         text_property(app.runtime(), &field, "text").as_deref(),
         Some("42")
     );
-    assert_eq!(page.count.get()?, 7);
+    assert_eq!(app.state().count.get()?, 7);
     app.shutdown()?;
     Ok(())
 }
@@ -762,16 +741,22 @@ fn the_close_policy_sees_a_disabled_fields_kept_draft() -> TestResult {
 /// assertion: `KeepOpen`. Mutation checked: test 2's.
 #[test]
 fn the_close_policy_sees_an_unfocused_refused_draft_after_revocation() -> TestResult {
-    let (mut app, page) = start(unsaved_page, while_unsaved())?;
-    let field = app.runtime().find(&page.root, &["count"])?.ok_or("count")?;
-    let other = app.runtime().find(&page.root, &["other"])?.ok_or("other")?;
+    let mut app = unsaved_app().headless()?;
+    let field = app
+        .runtime()
+        .find(&app.state().root, &["count"])?
+        .ok_or("count")?;
+    let other = app
+        .runtime()
+        .find(&app.state().root, &["other"])?
+        .ok_or("other")?;
     Driver::new(app.runtime_mut()).replace_text(&field, "4x")?;
     app.runtime_mut().focus(&other)?;
     let [x, y, w, h] = app.runtime().bounds(&field)?.ok_or("bounds")?.values();
     let point = Point::new(x + w / 2.0, y + h / 2.0)?;
     app.runtime_mut()
         .pointer_input(PointerEvent::new(point, PointerKind::Move))?;
-    page.enabled.set(false)?;
+    app.state().enabled.set(false)?;
     Driver::new(app.runtime_mut()).settle()?;
     let main = app.main_window();
     assert!(matches!(
@@ -793,8 +778,11 @@ fn the_close_policy_sees_an_unfocused_refused_draft_after_revocation() -> TestRe
 #[test]
 fn the_close_policy_sees_focused_refused_drafts() -> TestResult {
     // An integer field with an invalid draft.
-    let (mut app, page) = start(unsaved_page, while_unsaved())?;
-    let field = app.runtime().find(&page.root, &["count"])?.ok_or("count")?;
+    let mut app = unsaved_app().headless()?;
+    let field = app
+        .runtime()
+        .find(&app.state().root, &["count"])?
+        .ok_or("count")?;
     Driver::new(app.runtime_mut()).replace_text(&field, "4x")?;
     let main = app.main_window();
     assert!(matches!(
@@ -805,8 +793,11 @@ fn the_close_policy_sees_focused_refused_drafts() -> TestResult {
     app.shutdown()?;
 
     // An editable label whose normalizer refuses the draft.
-    let (mut app, page) = start(unsaved_page, while_unsaved())?;
-    let label = app.runtime().find(&page.root, &["name"])?.ok_or("name")?;
+    let mut app = unsaved_app().headless()?;
+    let label = app
+        .runtime()
+        .find(&app.state().root, &["name"])?
+        .ok_or("name")?;
     app.runtime_mut()
         .text_command(&label, TextCommand::BeginEdit)?;
     Driver::new(app.runtime_mut()).settle()?;
@@ -817,7 +808,7 @@ fn the_close_policy_sees_focused_refused_drafts() -> TestResult {
         app.admit_close(&main)?,
         NativeCloseAction::KeepOpen
     ));
-    assert_eq!(page.name.get()?, "Bass");
+    assert_eq!(app.state().name.get()?, "Bass");
     assert_eq!(app.runtime().focused(), Some(editor));
     app.shutdown()?;
     Ok(())
@@ -893,9 +884,8 @@ fn a_table_cell_saved_by_admission_leaves_nothing_unsaved() -> TestResult {
     for held in [false, true] {
         let seen = Rc::new(RefCell::new(None));
         let record = seen.clone();
-        let (mut app, page) = start(
-            ledger,
-            Box::new(move |ui, page: &Ledger| {
+        let mut app = App::new("Close", |ui| Ok(ledger(ui)?))
+            .on_close(move |ui, page, _| {
                 let open = ui.find_descendant(&page.root, "editor")?.is_some();
                 *record.borrow_mut() = Some((page.amounts[0].get()?, open));
                 Ok(if page.form.summary().get()?.modified() > 0 {
@@ -903,9 +893,9 @@ fn a_table_cell_saved_by_admission_leaves_nothing_unsaved() -> TestResult {
                 } else {
                     NativeCloseAction::Close
                 })
-            }),
-        )?;
-        let ui = app.runtime_mut();
+            })
+            .headless()?;
+        let (ui, page) = app.runtime_and_state_mut();
         ui.set_viewport(Viewport::new(320.0, 200.0, 1.0)?)?;
         Driver::new(ui).settle()?;
         page.state.selection().set_active(Some("r0".into()))?;
@@ -936,7 +926,11 @@ fn a_table_cell_saved_by_admission_leaves_nothing_unsaved() -> TestResult {
         let decision = app.admit_close(&main)?;
         let expected = if held { 4.0 } else { 3.5 };
         assert_eq!(*seen.borrow(), Some((expected, false)), "held {held}");
-        assert_eq!(page.form.summary().get()?.modified(), 0, "held {held}");
+        assert_eq!(
+            app.state().form.summary().get()?.modified(),
+            0,
+            "held {held}"
+        );
         assert!(matches!(decision, NativeCloseAction::Close), "held {held}");
         app.shutdown()?;
     }
@@ -1036,14 +1030,13 @@ fn admission_applies_the_focus_loss_rule_of_focused_in_place_editors() -> TestRe
     for (key, draft, check) in cases {
         let checked = Rc::new(RefCell::new(None));
         let record = checked.clone();
-        let (mut app, page) = start(
-            page,
-            Box::new(move |_, page: &Page| {
+        let mut app = App::new("Close", |ui| Ok(page(ui)?))
+            .on_close(move |_, page, _| {
                 *record.borrow_mut() = Some(check(page).map_err(|error| error.to_string()));
                 Ok(NativeCloseAction::Close)
-            }),
-        )?;
-        let ui = app.runtime_mut();
+            })
+            .headless()?;
+        let (ui, page) = app.runtime_and_state_mut();
         let id = ui.find(&page.root, &[key])?.ok_or("the editor")?;
         ui.focus(&id)?;
         Driver::new(ui).settle()?;
@@ -1059,8 +1052,10 @@ fn admission_applies_the_focus_loss_rule_of_focused_in_place_editors() -> TestRe
     }
 
     // A read-only search field discards its pending query.
-    let (mut app, page) = start(page, Box::new(|_, _: &Page| Ok(NativeCloseAction::Close)))?;
-    let ui = app.runtime_mut();
+    let mut app = App::new("Close", |ui| Ok(page(ui)?))
+        .on_close(|_, _, _| Ok(NativeCloseAction::Close))
+        .headless()?;
+    let (ui, page) = app.runtime_and_state_mut();
     let search = ui.find(&page.root, &["search"])?.ok_or("search")?;
     ui.focus(&search)?;
     Driver::new(ui).type_text("abc")?;
@@ -1068,7 +1063,7 @@ fn admission_applies_the_focus_loss_rule_of_focused_in_place_editors() -> TestRe
     Driver::new(ui).settle()?;
     let main = app.main_window();
     app.admit_close(&main)?;
-    assert_eq!(page.query.get()?, "");
+    assert_eq!(app.state().query.get()?, "");
     assert_eq!(
         text_property(app.runtime(), &search, "text").as_deref(),
         Some("")
@@ -1145,11 +1140,10 @@ fn admission_completes_a_table_cells_session() -> TestResult {
         })
     }
     for refused in [false, true] {
-        let (mut app, page) = start(
-            names,
-            Box::new(|_, _: &Names| Ok(NativeCloseAction::KeepOpen)),
-        )?;
-        let ui = app.runtime_mut();
+        let mut app = App::new("Close", |ui| Ok(names(ui)?))
+            .on_close(|_, _, _| Ok(NativeCloseAction::KeepOpen))
+            .headless()?;
+        let (ui, page) = app.runtime_and_state_mut();
         ui.set_viewport(Viewport::new(320.0, 200.0, 1.0)?)?;
         Driver::new(ui).settle()?;
         page.state.selection().set_active(Some("r0".into()))?;
@@ -1165,7 +1159,7 @@ fn admission_completes_a_table_cells_session() -> TestResult {
         }
         let main = app.main_window();
         app.admit_close(&main)?;
-        let ui = app.runtime();
+        let (ui, page) = (app.runtime(), app.state());
         if refused {
             assert!(page.ends.borrow().is_empty(), "the refused edit stays open");
             assert_eq!(ui.focused(), Some(editor), "KeepOpen focuses it again");
@@ -1180,5 +1174,159 @@ fn admission_completes_a_table_cells_session() -> TestResult {
         }
         app.shutdown()?;
     }
+    Ok(())
+}
+
+/// New-behavior test (P11) 1: the close policy reads and changes the state
+/// the initializer returned, with no slot, and the test reads and changes
+/// it too. Named assertions: `KeepOpen` with one refused close, then
+/// `Close` with the count unchanged, then after a reset and a new draft
+/// `KeepOpen` with one again. Mutation checked: `HeadlessApp::admit_close`
+/// returns the default decision without calling the bound handler.
+#[test]
+fn a_close_policy_reads_and_changes_the_state_the_initializer_returned() -> TestResult {
+    /// What the application builds; the policy counts the closes it refused.
+    struct Notes {
+        field: WidgetId,
+        text: Signal<String>,
+        saved: Signal<String>,
+        refused: u32,
+    }
+    let mut app = App::new("Notes", |ui| {
+        let text = ui.signal(String::new());
+        let field = ui.mount_tree(Element::new(
+            "note",
+            TextField::new(text.clone()).max_length(Some(100)),
+        ))?;
+        Ok(Notes {
+            field,
+            text,
+            saved: ui.signal(String::new()),
+            refused: 0,
+        })
+    })
+    .on_close(|_, notes, _| {
+        Ok(if notes.text.get()? == notes.saved.get()? {
+            NativeCloseAction::Close
+        } else {
+            notes.refused += 1;
+            NativeCloseAction::KeepOpen
+        })
+    })
+    .headless()?;
+    let main = app.main_window();
+    let (ui, notes) = app.runtime_and_state_mut();
+    Driver::new(ui).replace_text(&notes.field, "Call the bank")?;
+    assert!(matches!(
+        app.admit_close(&main)?,
+        NativeCloseAction::KeepOpen
+    ));
+    assert_eq!(app.state().refused, 1);
+
+    let notes = app.state();
+    notes.saved.set(notes.text.get()?)?;
+    assert!(matches!(app.admit_close(&main)?, NativeCloseAction::Close));
+    assert_eq!(app.state().refused, 1);
+
+    app.state_mut().refused = 0;
+    let (ui, notes) = app.runtime_and_state_mut();
+    Driver::new(ui).replace_text(&notes.field, "Call the dentist")?;
+    assert!(matches!(
+        app.admit_close(&main)?,
+        NativeCloseAction::KeepOpen
+    ));
+    assert_eq!(app.state().refused, 1);
+    app.shutdown()?;
+    Ok(())
+}
+
+/// What an [`Observed`] records when dropped.
+type Record = Rc<Cell<Option<bool>>>;
+
+/// Records, when dropped, whether the runtime of the signal it holds had
+/// shut down: `Some(true)` when reading it reports `Closed`, `None` when it
+/// was never given a signal.
+struct Observed {
+    signal: Rc<RefCell<Option<Signal<i32>>>>,
+    closed: Record,
+}
+impl Drop for Observed {
+    fn drop(&mut self) {
+        let closed = self
+            .signal
+            .borrow()
+            .as_ref()
+            .map(|signal| matches!(signal.get(), Err(RuntimeError::Closed)));
+        self.closed.set(closed);
+    }
+}
+
+/// An application whose state is an [`Observed`] and whose close policy
+/// captures a second one; the initializer gives both a signal, and with
+/// `fail` queues a focus-loss failure for the first flush. Returns the
+/// application and what each observer records.
+fn observed(fail: bool) -> (App<Observed>, Record, Record) {
+    let (state, captured) = (Rc::new(Cell::new(None)), Rc::new(Cell::new(None)));
+    let captured_signal = Rc::new(RefCell::new(None));
+    let kept = Observed {
+        signal: captured_signal.clone(),
+        closed: captured.clone(),
+    };
+    let records = state.clone();
+    let app = App::new("Observed", move |ui| {
+        let signal = ui.signal(0);
+        *captured_signal.borrow_mut() = Some(signal.clone());
+        if fail {
+            queue_failure(ui)?;
+        }
+        Ok(Observed {
+            signal: Rc::new(RefCell::new(Some(signal))),
+            closed: records,
+        })
+    })
+    .on_close(move |_, _, _| {
+        let _kept = &kept;
+        Ok(NativeCloseAction::Close)
+    });
+    (app, state, captured)
+}
+
+/// New-behavior test (P11) 2: the state, and what the callbacks captured,
+/// are dropped after the runtime has shut down, whether the test shuts it
+/// down, drops the application or the first flush fails; an application
+/// that never started has no state. Named assertion: each observer records
+/// `Some(true)`, and `None` without a start. Mutations checked: the state
+/// declared before the host in `HeadlessApp` (the drop case fails), and the
+/// state dropped before the shutdown in `HeadlessApp::shutdown` (the first
+/// case fails) and in a failed `App::headless` (the third fails).
+#[test]
+fn the_state_is_dropped_after_the_runtime_has_shut_down() -> TestResult {
+    let (app, state, captured) = observed(false);
+    app.headless()?.shutdown()?;
+    assert_eq!(
+        (state.get(), captured.get()),
+        (Some(true), Some(true)),
+        "shutdown"
+    );
+
+    let (app, state, captured) = observed(false);
+    drop(app.headless()?);
+    assert_eq!(
+        (state.get(), captured.get()),
+        (Some(true), Some(true)),
+        "drop"
+    );
+
+    let (app, state, captured) = observed(true);
+    assert!(app.headless().is_err(), "the first flush fails");
+    assert_eq!(
+        (state.get(), captured.get()),
+        (Some(true), Some(true)),
+        "a failed start"
+    );
+
+    let (app, state, captured) = observed(false);
+    drop(app);
+    assert_eq!((state.get(), captured.get()), (None, None), "never started");
     Ok(())
 }

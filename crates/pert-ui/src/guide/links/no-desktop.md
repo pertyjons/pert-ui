@@ -12,3 +12,6 @@
 [`App::on_close`]: https://docs.rs/pert-ui/latest/pert_ui/struct.App.html#method.on_close
 [`HeadlessApp`]: https://docs.rs/pert-ui/latest/pert_ui/testing/struct.HeadlessApp.html
 [`HeadlessApp::admit_close`]: https://docs.rs/pert-ui/latest/pert_ui/testing/struct.HeadlessApp.html#method.admit_close
+[`HeadlessApp::state`]: https://docs.rs/pert-ui/latest/pert_ui/testing/struct.HeadlessApp.html#method.state
+[`HeadlessApp::runtime_and_state_mut`]: https://docs.rs/pert-ui/latest/pert_ui/testing/struct.HeadlessApp.html#method.runtime_and_state_mut
+[app-state]: https://docs.rs/pert-ui/latest/pert_ui/struct.App.html#application-state

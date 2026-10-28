@@ -1,5 +1,100 @@
 # Changelog
 
+## 0.3.86 (2026-10-28)
+
+Application state from the initializer (round 2 fix plan, part P11, R2-1 by
+decision D9, from its approved design checkpoint
+`plans/usability/round-2-design-P11.md`, revision 2, with decisions P11-D1,
+P11-D2 and P11-D3).
+
+- Breaking (R2-1): `App` takes the application state as a type parameter,
+  `App<S = ()>`: `App::new`'s initializer returns `Result<S, AppError>`,
+  and `on_close`, `on_error` and `on_window_error` receive `&mut S` after
+  the runtime. Replacement usage: `.on_close(|ui, state, window| ..)`,
+  `.on_error(|ui, state, error| ..)`, `.on_window_error(|ui, state, error|
+  ..)`; without state, `|ui, _, window|`. An application that shared what
+  its initializer built through a slot returns it instead:
+  `App::new("Notes", |ui| Ok(build(ui)?)).on_close(|_, notes, _| ..)`. An
+  initializer that never returns `Ok` (one that always fails or panics)
+  names the type: `App::<()>::new(..)`, since a defaulted type parameter
+  does not take part in inferring a call. `App` written alone, as in
+  `fn app() -> App`, still names `App<()>`, and an `Ok(())` initializer
+  without handlers compiles unchanged. A callback runs only after the
+  initializer returned its state, one at a time, so a change it makes to
+  the state persists to its next call; the library keeps the state and
+  never reads, copies, compares or persists it.
+- Breaking (R2-1): `HeadlessApp<S = ()>`, returned by `App::headless`;
+  `HeadlessApp` written alone still names `HeadlessApp<()>`.
+  `HeadlessApp::admit_close` passes the same state to `on_close` that
+  `state` reads.
+- Added (R2-1): `HeadlessApp::state`, `state_mut` and
+  `runtime_and_state_mut` (P11-D2: the runtime and the state at once, as a
+  callback receives them, so a test drives the runtime with the handles the
+  state holds without cloning them out first).
+- Changed (R2-1): the state, and the values the callbacks capture, drop
+  after the runtime has shut down on every path: the end of `App::run`,
+  `HeadlessApp::shutdown`, a dropped `HeadlessApp` and an `App::headless`
+  whose first flush failed; the order captured callback values already
+  had. The native runner stays non-generic: `App::run` runs the
+  initializer where it did, after the event loop exists, and erases the
+  state into a private owner (P11-D1), so a call that cannot run still
+  never builds the host's content. The packaged examples (`diagram_editor`,
+  `inventory`, `log_explorer`, `live_mixer`) return their application
+  object as the state instead of keeping it with `Runtime::keep_alive`
+  (P11-D3), and the diagram editor's slot and its empty-slot branches are
+  gone. The gallery's checks write `|_, _, _|`.
+- Documentation (R2-1): `App`'s page gains "Application state", with an
+  example whose close policy keeps the window open while the state holds
+  unsaved text; `App::new` states the inference rule with a runnable
+  example (`let app: App = ..` and `App::<()>::new`); `on_error`'s example
+  shows a failure on a status line the state holds; `on_window_error`
+  gains an example counting failures in the state and states its default
+  report (`[pert-ui window error]` on standard error) and that a failed
+  report ends the application with `AppError::WindowErrorReporting` (same
+  kind); `on_close`'s fifth close step names the state. `HeadlessApp`'s
+  example, the testing chapter's "The close policy" (with a builder
+  function returning `App<Notes>`) and the custom-widgets chapter's
+  "Building the application" no longer build a slot. `Runtime::keep_alive`
+  is the owner for code that has only a runtime; an `App` initializer
+  returns such values as its state. `docs/manual.md`, `docs/contracts.md`
+  ("Callbacks outside the classes", "Calling the runtime from callbacks",
+  application services), the `testing` module page and the crate root's
+  table. `plans/follow-ups.md`'s "Typed state handoff from `App::new`" is
+  removed.
+- Tests: the facade's `surfaces` binary checks that a close policy reads
+  and changes the state the initializer returned, read and reset through
+  `state` and `state_mut`, and that the state and a callback's captured
+  value are dropped after the runtime has shut down (shutdown, drop, a
+  failed first flush, never started); the runner's unit tests drive
+  `on_error` with state through component recovery, repair and exit, and
+  drop the erased owner with its runtime open. Each was shown to fail
+  under its named mutation. The `close` tests read `state` and
+  `runtime_and_state_mut` instead of a slot helper, and a failing
+  initializer with panicking handlers still returns its error. The native
+  smokes check `on_error`, `on_window_error` and `on_close` with state, and
+  the probes that overlap on purpose report `OverlapPolicy::Allow` and
+  assert a validation report without `UnexpectedOverlap` (TODO.md entry
+  resolved; the proposal to summarize overlap reports is re-recorded as
+  its own entry). The native checks have not been run for this change
+  (`docs/verification.md`).
+- Fixture: `plans/usability/task4-app` requires `pert-ui` 0.3.86; its
+  `Ok(())` initializer compiles unchanged.
+- API listings: every `api/pert-ui/*.txt` with `native` (`default`, `cpu`,
+  `images`, `image-formats`, `serde`, `svg`, `no-default-desktop-cpu`)
+  lists `pert_ui::App<S>` (at the root and in `prelude`) and
+  `pert_ui::testing::HeadlessApp<S>` with `impl<S: 'static>` blocks;
+  `App::new`'s initializer returning `Result<S, AppError>`; `on_close`,
+  `on_error` and `on_window_error` with `&mut S`; `App::headless`
+  returning `HeadlessApp<S>`; the added `HeadlessApp::state`, `state_mut`
+  and `runtime_and_state_mut`; the unchanged methods listed under the
+  generic types (`App<S>::size`, `min_size`, `max_size`, `resizable`, `run`
+  and, with `cpu`, `software_rendering`; `HeadlessApp<S>::runtime`,
+  `runtime_mut`, `main_window`, `admit_close` and `shutdown`); and `Debug`
+  and the auto-trait lines in
+  their generic form (`impl<S> Unpin for HeadlessApp<S> where S: Unpin`,
+  `UnsafeUnpin` likewise; `App<S>`'s are unconditional), which follow
+  from the type parameter. No runtime, core, CPU or wgpu listing changes.
+
 ## 0.3.85 (2026-10-28)
 
 Derivations over several bindings (round 2 fix plan, part P10, R2-3 by

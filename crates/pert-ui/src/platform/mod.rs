@@ -22,6 +22,7 @@ mod window_smoke;
 #[cfg(test)]
 use smoke::{Smoke, native_test_event_loop};
 
+use crate::app::Running;
 use crate::host::HostIntegration;
 use crate::{App, AppError, KeyAction, PhysicalExtent, RuntimeError, Viewport, WidgetId};
 use presenter::Presenter;
@@ -60,8 +61,8 @@ enum UserEvent {
     Wake,
 }
 
-pub(crate) fn run(mut app: App) -> Result<(), AppError> {
-    if app.title.trim().is_empty() {
+pub(crate) fn run<S: 'static>(mut app: App<S>) -> Result<(), AppError> {
+    if app.host.title.trim().is_empty() {
         return Err(AppError::InvalidTitle);
     }
     // Before initialization, so a call that cannot run (a second loop in this
@@ -69,18 +70,23 @@ pub(crate) fn run(mut app: App) -> Result<(), AppError> {
     let event_loop = EventLoop::<UserEvent>::with_user_event()
         .build()
         .map_err(|e| AppError::EventLoop(e.to_string()))?;
-    app.runtime
+    app.host
+        .runtime
         .set_clipboard(clipboard::NativeClipboard::new())?;
-    if let Some(initialize) = app.initialize.take()
-        && let Err(error) = initialize(&mut app.runtime)
-    {
-        return finish_runtime(&mut app.runtime, Err(error));
-    }
+    // The state type ends here: everything after this point is compiled once.
+    let app = Running::from(app.start()?);
+    drive(event_loop, app)
+}
+
+/// Runs a started application's event loop to its end, then shuts its
+/// runtime down before the state is dropped.
+fn drive(event_loop: EventLoop<UserEvent>, app: Running) -> Result<(), AppError> {
     // A waker taken during initialization shares the runtime's flag, so it works
     // once delivery exists; a notification before this point only marks the
     // runtime due, which the first `about_to_wait` observes.
     let wake_proxy = event_loop.create_proxy();
-    app.runtime
+    app.host
+        .runtime
         .set_wake_delivery(move || wake_proxy.send_event(UserEvent::Wake).is_ok());
     let mut runner = Runner::new(app, event_loop.create_proxy());
     let event_loop_error = event_loop
@@ -98,7 +104,7 @@ pub(crate) fn run(mut app: App) -> Result<(), AppError> {
         runner.retired_error.take(),
     )
     .map_or(Ok(()), Err);
-    finish_runtime(&mut runner.app.runtime, error)
+    finish_runtime(&mut runner.app.host.runtime, error)
 }
 
 /// The failure `run` returns, in [`App::run`]'s precedence: event-loop
@@ -121,11 +127,12 @@ fn terminal_error(
 
 // Finalize even when the event loop did not call exiting. Kept independent of
 // native handles so terminal result ownership is verifiable headlessly; the
-// headless application ends through it too.
-pub(crate) fn finish_runtime(
+// headless application and a failed initializer end through it too, which is
+// why it passes any success value through.
+pub(crate) fn finish_runtime<T>(
     runtime: &mut crate::Runtime,
-    result: Result<(), AppError>,
-) -> Result<(), AppError> {
+    result: Result<T, AppError>,
+) -> Result<T, AppError> {
     runtime.shutdown();
     let mut errors = runtime.take_shutdown_errors().into_iter();
     if let Some(first) = errors.next() {
@@ -144,7 +151,7 @@ struct Runner {
     parked: std::collections::HashMap<WindowId, NativeState>,
     device_recovery: DeviceRecovery,
     closing: Vec<PendingClose>,
-    app: App,
+    app: Running,
     proxy: EventLoopProxy<UserEvent>,
     start: Instant,
     generation: u64,
@@ -157,10 +164,10 @@ struct Runner {
     smoke: Option<Smoke>,
 }
 impl Runner {
-    fn new(app: App, proxy: EventLoopProxy<UserEvent>) -> Self {
+    fn new(app: Running, proxy: EventLoopProxy<UserEvent>) -> Self {
         // This host renders capture jobs offscreen with each window's renderer.
-        app.runtime.set_capture_support(true);
-        let current = NativeState::new(app.runtime.primary_window());
+        app.host.runtime.set_capture_support(true);
+        let current = NativeState::new(app.host.runtime.primary_window());
         Self {
             current,
             parked: std::collections::HashMap::new(),
@@ -177,16 +184,16 @@ impl Runner {
         }
     }
     fn sync_ime(&mut self) {
-        let state = self.app.runtime.text_input_state();
+        let state = self.app.host.runtime.text_input_state();
         if let Some(window) = &self.current.window {
-            if self.current.ime.reconcile(&self.app.runtime) {
+            if self.current.ime.reconcile(&self.app.host.runtime) {
                 self.current.ime_area = None;
                 window.set_ime_allowed(false);
                 window.set_ime_allowed(self.current.ime.wanted());
             }
             if let Some((_, state)) = state {
                 let [x, y, w, h] = state.caret.values();
-                let scale = self.app.runtime.viewport().scale();
+                let scale = self.app.host.runtime.viewport().scale();
                 if self.current.ime_area == Some((state.caret, scale)) {
                     return;
                 }
@@ -210,15 +217,19 @@ impl Runner {
         };
         use winit::platform::modifier_supplement::KeyEventExtModifierSupplement;
         let text = event.text.as_deref();
-        let dispatch = self.app.runtime.command_key_input(keyboard::command_input(
-            event.physical_key,
-            action,
-            &event.key_without_modifiers(),
-            &event.logical_key,
-            text,
-            self.current.ime.composing,
-            self.app.runtime.keyboard().modifiers(),
-        ))?;
+        let dispatch = self
+            .app
+            .host
+            .runtime
+            .command_key_input(keyboard::command_input(
+                event.physical_key,
+                action,
+                &event.key_without_modifiers(),
+                &event.logical_key,
+                text,
+                self.current.ime.composing,
+                self.app.host.runtime.keyboard().modifiers(),
+            ))?;
         self.sync_ime();
         if let Some(text) = keyboard::admitted_text(
             &dispatch,
@@ -226,12 +237,14 @@ impl Runner {
             self.current.ime.composing,
             text,
         ) {
-            self.app.runtime.text_input(&text)?;
+            self.app.host.runtime.text_input(&text)?;
         }
         Ok(())
     }
     fn native_ime(&mut self, event: winit::event::Ime) -> Result<(), AppError> {
-        self.current.ime.receive(&mut self.app.runtime, event)?;
+        self.current
+            .ime
+            .receive(&mut self.app.host.runtime, event)?;
         Ok(())
     }
     fn scale_changed(&mut self) -> Result<(), AppError> {
@@ -258,16 +271,16 @@ impl Runner {
     fn window_focused(&mut self, focused: bool, backing_off: bool) -> Result<(), AppError> {
         if self
             .current
-            .window_focused(&mut self.app.runtime, focused, backing_off)?
+            .window_focused(&mut self.app.host.runtime, focused, backing_off)?
         {
             self.sync_ime();
-            self.app.runtime.flush(self.start.elapsed())?;
+            self.app.host.runtime.flush(self.start.elapsed())?;
         }
         Ok(())
     }
     fn modifiers_changed(&mut self, modifiers: winit::event::Modifiers) -> Result<(), AppError> {
         let modifiers = modifiers.state();
-        self.app.runtime.native_modifiers(crate::Modifiers {
+        self.app.host.runtime.native_modifiers(crate::Modifiers {
             shift: modifiers.shift_key(),
             control: modifiers.control_key(),
             alt: modifiers.alt_key(),
@@ -295,7 +308,7 @@ impl Runner {
         })
     }
     fn mouse_wheel(&mut self, delta: winit::event::MouseScrollDelta) -> Result<(), AppError> {
-        let scale = self.app.runtime.viewport().scale();
+        let scale = self.app.host.runtime.viewport().scale();
         let (x, y) = match delta {
             winit::event::MouseScrollDelta::LineDelta(x, y) => (-x * 40.0, -y * 40.0),
             winit::event::MouseScrollDelta::PixelDelta(position) => {
@@ -314,7 +327,7 @@ impl Runner {
         }
     }
     fn pointer(&mut self, kind: crate::PointerKind) -> Result<(), AppError> {
-        self.current.motion.send(&mut self.app.runtime, kind)?;
+        self.current.motion.send(&mut self.app.host.runtime, kind)?;
         Ok(())
     }
     fn fail(&mut self, event_loop: &ActiveEventLoop, mut error: AppError) {
@@ -351,7 +364,7 @@ impl Runner {
     fn sync_visibility(&mut self) -> Result<(), AppError> {
         let visible = self.current.shown();
         self.current
-            .apply_visibility(&mut self.app.runtime, visible)
+            .apply_visibility(&mut self.app.host.runtime, visible)
     }
     /// Moves the pointer to a native physical position. Motion is coalesced
     /// and delivered before the next discrete input, on the next scheduling
@@ -360,7 +373,7 @@ impl Runner {
         &mut self,
         position: winit::dpi::PhysicalPosition<f64>,
     ) -> Result<(), AppError> {
-        let scale = self.app.runtime.viewport().scale();
+        let scale = self.app.host.runtime.viewport().scale();
         let point = crate::Point::new((position.x / scale) as f32, (position.y / scale) as f32)?;
         self.current.motion.queue_at_scale(point, scale);
         Ok(())
@@ -368,7 +381,7 @@ impl Runner {
     /// Shows the runtime's cursor for the pointer's current hit region,
     /// calling the window system only when it changes.
     fn sync_cursor(&mut self) {
-        let icon = self.app.runtime.cursor_icon();
+        let icon = self.app.host.runtime.cursor_icon();
         let Some(window) = &self.current.window else {
             return;
         };
@@ -390,7 +403,7 @@ impl Runner {
         let proxy = self.proxy.clone();
         self.current.renderer = Some(
             Presenter::new(
-                self.app.software,
+                self.app.host.software,
                 window,
                 self.current.size.width,
                 self.current.size.height,
@@ -419,7 +432,7 @@ impl Runner {
         self.sync_visibility()?;
         if let Some(window) = &self.current.window {
             let scale = window.scale_factor();
-            self.app.runtime.set_viewport(Viewport::from_physical(
+            self.app.host.runtime.set_viewport(Viewport::from_physical(
                 PhysicalExtent::new(size.width, size.height),
                 scale,
             )?)?;
@@ -455,10 +468,10 @@ impl Runner {
         if self.current.window_focused && self.current.restore_focus.is_some() {
             self.focus(true)?;
         }
-        self.current.motion.flush(&mut self.app.runtime)?;
-        self.app.runtime.flush(self.start.elapsed())?;
+        self.current.motion.flush(&mut self.app.host.runtime)?;
+        self.app.host.runtime.flush(self.start.elapsed())?;
         self.sync_cursor();
-        let scene = self.app.runtime.paint()?;
+        let scene = self.app.host.runtime.paint()?;
         if let (Some(renderer), Some(window)) = (&mut self.current.renderer, &self.current.window) {
             match renderer
                 .render(scene, || window.pre_present_notify())
@@ -503,13 +516,14 @@ impl Runner {
     /// this host no longer has is reported unknown. Other windows' jobs wait
     /// for their own turn, which `about_to_wait` gives every window.
     fn process_captures(&mut self) {
-        let jobs = self.app.runtime.pending_captures();
+        let jobs = self.app.host.runtime.pending_captures();
         if jobs.is_empty() {
             return;
         }
         let now = self.start.elapsed();
         let flushed = !self
             .app
+            .host
             .runtime
             .next_deadline()
             .is_some_and(|time| time <= now);
@@ -517,12 +531,14 @@ impl Runner {
             if job.window() != self.current.root.id() {
                 let known = self
                     .app
+                    .host
                     .runtime
                     .native_windows()
                     .iter()
                     .any(|root| root.id() == job.window());
                 if !known {
                     self.app
+                        .host
                         .runtime
                         .complete_capture(&job, Err(crate::CaptureError::UnknownTarget));
                 }
@@ -530,6 +546,7 @@ impl Runner {
             }
             if !self.active() {
                 self.app
+                    .host
                     .runtime
                     .complete_capture(&job, Err(crate::CaptureError::SurfaceUnavailable));
                 continue;
@@ -541,8 +558,8 @@ impl Runner {
             // Painting the capture takes the window's damage, so the window
             // keeps it for its next presentation; otherwise the screen would
             // go on showing the content from before the change.
-            self.current.dirty |= self.app.runtime.needs_paint();
-            let frame = match self.app.runtime.capture_scene(&job) {
+            self.current.dirty |= self.app.host.runtime.needs_paint();
+            let frame = match self.app.host.runtime.capture_scene(&job) {
                 Ok(scene) => match &mut self.current.renderer {
                     Some(renderer) => renderer
                         .render_offscreen(scene)
@@ -551,11 +568,11 @@ impl Runner {
                 },
                 Err(error) => Err(error),
             };
-            self.app.runtime.complete_capture(&job, frame);
+            self.app.host.runtime.complete_capture(&job, frame);
         }
     }
     fn focus(&mut self, focused: bool) -> Result<(), AppError> {
-        self.current.focus(&mut self.app.runtime, focused)
+        self.current.focus(&mut self.app.host.runtime, focused)
     }
 }
 impl ApplicationHandler<UserEvent> for Runner {
@@ -603,7 +620,10 @@ impl ApplicationHandler<UserEvent> for Runner {
         let result = (|| {
             let window = Arc::new(
                 event_loop
-                    .create_window(main_window_attributes(&self.app.title, &self.app.window))
+                    .create_window(main_window_attributes(
+                        &self.app.host.title,
+                        &self.app.host.window,
+                    ))
                     .map_err(|e| AppError::Window(e.to_string()))?,
             );
             self.current.size = window.inner_size();
@@ -672,7 +692,7 @@ impl ApplicationHandler<UserEvent> for Runner {
         // Focus loss must release input before a failed pending update can exit.
         if flushes_motion_first(&event)
             && !backing_off
-            && let Err(error) = self.current.motion.flush(&mut self.app.runtime)
+            && let Err(error) = self.current.motion.flush(&mut self.app.host.runtime)
         {
             self.fail(event_loop, error.into());
             return;
@@ -686,7 +706,7 @@ impl ApplicationHandler<UserEvent> for Runner {
                 | WindowEvent::PinchGesture { .. }
                 | WindowEvent::Focused(true)
         ) && !backing_off
-            && let Err(error) = self.app.runtime.flush(self.start.elapsed())
+            && let Err(error) = self.app.host.runtime.flush(self.start.elapsed())
         {
             self.fail(event_loop, error.into());
             return;
@@ -738,11 +758,12 @@ impl ApplicationHandler<UserEvent> for Runner {
     }
     fn exiting(&mut self, _event_loop: &ActiveEventLoop) {
         self.closing.clear();
-        self.app.runtime.shutdown();
+        self.app.host.runtime.shutdown();
     }
     fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
         if let Err(error) = self
             .app
+            .host
             .runtime
             .flush_commands()
             .map_err(AppError::from)
@@ -755,7 +776,12 @@ impl ApplicationHandler<UserEvent> for Runner {
         }
         // Interval timers are the application's: they run on time even while
         // every window's redraw is withheld, and their deadline wakes the loop.
-        if let Err(error) = self.app.runtime.service_intervals(self.start.elapsed()) {
+        if let Err(error) = self
+            .app
+            .host
+            .runtime
+            .service_intervals(self.start.elapsed())
+        {
             self.fail(event_loop, error.into());
             return;
         }
@@ -763,7 +789,7 @@ impl ApplicationHandler<UserEvent> for Runner {
         if let Some(window) = &self.current.window {
             ids.push(window.id());
         }
-        let mut next: Option<Duration> = self.app.runtime.interval_deadline();
+        let mut next: Option<Duration> = self.app.host.runtime.interval_deadline();
         for id in ids {
             match self.select_native(id) {
                 Ok(true) => {
@@ -778,7 +804,9 @@ impl ApplicationHandler<UserEvent> for Runner {
                 }
             }
         }
-        if self.app.runtime.has_presentation_requests() || self.app.runtime.has_command_requests() {
+        if self.app.host.runtime.has_presentation_requests()
+            || self.app.host.runtime.has_command_requests()
+        {
             next = Some(self.start.elapsed());
         }
         event_loop.set_control_flow(
@@ -1207,7 +1235,7 @@ mod tests {
         let mut runtime = crate::Runtime::new();
         let prior = RuntimeError::from(crate::ApplicationError::from("initialization failed"));
         assert!(
-            matches!(finish_runtime(&mut runtime, Err(prior.clone().into())), Err(AppError::Runtime(error)) if error == prior)
+            matches!(finish_runtime::<()>(&mut runtime, Err(prior.clone().into())), Err(AppError::Runtime(error)) if error == prior)
         );
     }
     #[test]
@@ -1237,7 +1265,7 @@ mod tests {
             } else {
                 RuntimeError::from(crate::ApplicationError::from("initialization failed")).into()
             };
-            let error = finish_runtime(&mut runtime, Err(prior)).unwrap_err();
+            let error = finish_runtime::<()>(&mut runtime, Err(prior)).unwrap_err();
             let source = std::error::Error::source(&error)
                 .unwrap()
                 .downcast_ref::<AppError>()

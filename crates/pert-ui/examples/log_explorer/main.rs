@@ -52,8 +52,8 @@ fn window(path: std::path::PathBuf) -> Result<(), Box<dyn std::error::Error>> {
         let (explorer, _) = app::build(ui, path.clone()).map_err(|error| {
             pert_ui::ApplicationError::new(std::io::Error::other(error.to_string()))
         })?;
-        ui.keep_alive(explorer);
-        Ok(())
+        // The application state keeps it until the application ends.
+        Ok(explorer)
     })
     .size(Size::from([1400, 900]))?
     .run()?;

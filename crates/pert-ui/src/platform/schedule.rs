@@ -14,11 +14,11 @@ pub(super) struct ComponentRecovery {
 impl ComponentRecovery {
     pub(super) fn handle(
         &mut self,
-        app: &mut App,
+        app: &mut crate::app::Running,
         error: AppError,
         now: Duration,
     ) -> Result<Duration, AppError> {
-        app.runtime.cancel_input()?;
+        app.host.runtime.cancel_input()?;
         let (action, error) = app.handle_error(error)?;
         if action == crate::ErrorAction::Retry
             && let Some(deadline) = self.retry(now)
@@ -166,7 +166,7 @@ impl Runner {
             .and_then(|window| window.current_monitor())
             .and_then(|monitor| monitor.refresh_rate_millihertz())
             .and_then(|rate| crate::PresentationRate::new(f64::from(rate) / 1000.0).ok());
-        if let Err(error) = self.app.runtime.set_presentation_rate(rate) {
+        if let Err(error) = self.app.host.runtime.set_presentation_rate(rate) {
             self.fail(event_loop, error.into());
             return None;
         }
@@ -187,7 +187,7 @@ impl Runner {
                 (Some(a), Some(b)) => Some(a.min(b)),
                 (a, b) => a.or(b),
             };
-            if let Err(error) = self.app.runtime.service_inspection() {
+            if let Err(error) = self.app.host.runtime.service_inspection() {
                 self.fail(event_loop, error.into());
                 return None;
             }
@@ -195,7 +195,7 @@ impl Runner {
             // An occluded, lost or zero-sized window flushes nothing; answer
             // inspection from the last flush so a request is not stranded,
             // and report its captures unavailable rather than leaving them.
-            if let Err(error) = self.app.runtime.service_inspection() {
+            if let Err(error) = self.app.host.runtime.service_inspection() {
                 self.fail(event_loop, error.into());
                 return None;
             }
@@ -207,17 +207,17 @@ impl Runner {
             // Coalesced motion is delivered once per turn while no redraw is
             // outstanding; during one, the redraw delivers it.
             if !self.current.redraw_pending
-                && let Err(error) = self.current.motion.flush(&mut self.app.runtime)
+                && let Err(error) = self.current.motion.flush(&mut self.app.host.runtime)
             {
                 self.fail(event_loop, error.into());
                 return None;
             }
             let ready = updates_ready(
-                &self.app.runtime,
+                &self.app.host.runtime,
                 &self.current.root,
                 self.current.redraw_pending,
             );
-            if let Err(error) = prepare_updates(&mut self.app.runtime, now, ready) {
+            if let Err(error) = prepare_updates(&mut self.app.host.runtime, now, ready) {
                 self.fail(event_loop, error.into());
                 return None;
             }
@@ -227,7 +227,7 @@ impl Runner {
             self.sync_cursor();
             // Only damage presents: an update or pointer motion that changed
             // nothing visible requests no frame.
-            self.current.dirty |= self.app.runtime.needs_paint();
+            self.current.dirty |= self.app.host.runtime.needs_paint();
             if self.current.dirty
                 && !self.current.redraw_pending
                 && self.current.retry_at.is_none()
@@ -238,7 +238,7 @@ impl Runner {
             }
             let scheduled = presentation_deadline(
                 !self.current.redraw_pending,
-                self.app.runtime.next_deadline(),
+                self.app.host.runtime.next_deadline(),
                 self.current.retry_at,
             );
             next = match (next, scheduled) {
@@ -470,30 +470,46 @@ mod scheduling_tests {
         Ok(())
     }
 
+    /// The state `on_error` changes on every call, and a copy of its count
+    /// the test reads.
+    struct Failures {
+        calls: u32,
+        seen: Rc<Cell<u32>>,
+    }
+
+    /// New-behavior test (P11) 3: `on_error` keeps the state it changes
+    /// across the runner's recovery path. Named assertion: `seen == 4`, and
+    /// the fourth failure returns the original error. Mutation checked:
+    /// `Running::handle_error` writes the default report even when a handler
+    /// is installed (`seen == 0`).
     #[test]
-    fn component_failures_back_off_and_successful_flush_does_not_reset_paint_budget() {
-        let calls = std::rc::Rc::new(std::cell::Cell::new(0));
-        let observed = calls.clone();
-        let mut app = App::new("recovery", |_| Ok(())).on_error(move |ui, _| {
+    fn component_failures_back_off_and_successful_flush_does_not_reset_paint_budget()
+    -> Result<(), AppError> {
+        let seen = Rc::new(Cell::new(0));
+        let failures = Failures {
+            calls: 0,
+            seen: seen.clone(),
+        };
+        let app = App::new("recovery", move |_| Ok(failures)).on_error(|ui, failures, _| {
+            failures.calls += 1;
+            failures.seen.set(failures.calls);
             assert!(ui.keyboard().pressed().next().is_none());
-            observed.set(observed.get() + 1);
             crate::ErrorAction::Retry
         });
+        let mut app = Running::from(app.start()?);
         let mut recovery = ComponentRecovery::default();
         let mut now = Duration::ZERO;
         for milliseconds in [100, 200, 400] {
-            let deadline = recovery
-                .handle(
-                    &mut app,
-                    AppError::Drawing(crate::DrawError::InvalidColor),
-                    now,
-                )
-                .unwrap();
+            let deadline = recovery.handle(
+                &mut app,
+                AppError::Drawing(crate::DrawError::InvalidColor),
+                now,
+            )?;
             assert_eq!(deadline - now, Duration::from_millis(milliseconds));
             assert!(recovery.waiting(now));
             assert!(recovery.waiting(deadline - Duration::from_nanos(1)));
             assert!(!recovery.waiting(deadline));
-            app.runtime.flush(deadline).unwrap();
+            app.host.runtime.flush(deadline)?;
             now = deadline;
         }
         assert!(matches!(
@@ -504,7 +520,8 @@ mod scheduling_tests {
             ),
             Err(AppError::Drawing(crate::DrawError::InvalidColor))
         ));
-        assert_eq!(calls.get(), 4);
+        // The handler's changes to its state persisted from call to call.
+        assert_eq!(seen.get(), 4);
         // A presented frame starts a new independent recovery allowance.
         recovery = ComponentRecovery::default();
         assert!(
@@ -516,32 +533,38 @@ mod scheduling_tests {
                 )
                 .is_ok()
         );
+        Ok(())
     }
 
+    /// New-behavior test (P11) 4: one handler, installed before the start,
+    /// repairs runtime state, then exits with the original error. Named
+    /// assertions: the repair, the retained error, and the new error on
+    /// `Exit`. Mutation checked: `ComponentRecovery::handle` returns the
+    /// retained error instead of the new one on `Exit`.
     #[test]
-    fn custom_error_policy_can_repair_state_or_exit_with_original_error() {
-        let mut app = App::new("repair", |_| Ok(()));
-        let signal = app.runtime.signal(0);
-        let repair = signal.clone();
-        app = app.on_error(move |_, error| {
+    fn custom_error_policy_can_repair_state_or_exit_with_original_error() -> Result<(), AppError> {
+        let app = App::new("repair", |_| Ok(()));
+        let repair = app.host.runtime.signal(0);
+        let action = Rc::new(Cell::new(crate::ErrorAction::Retry));
+        let (repaired, decided) = (repair.clone(), action.clone());
+        let app = app.on_error(move |_, _, error| {
             assert!(matches!(
                 error,
-                AppError::Runtime(RuntimeError::BorrowConflict)
+                AppError::Runtime(RuntimeError::BorrowConflict | RuntimeError::Exhausted)
             ));
-            repair.set(1).unwrap();
-            crate::ErrorAction::Retry
+            repaired.set(1).unwrap();
+            decided.get()
         });
+        let mut app = Running::from(app.start()?);
         let mut recovery = ComponentRecovery::default();
-        recovery
-            .handle(
-                &mut app,
-                AppError::Runtime(RuntimeError::BorrowConflict),
-                Duration::ZERO,
-            )
-            .unwrap();
-        assert_eq!(signal.get().unwrap(), 1);
+        recovery.handle(
+            &mut app,
+            AppError::Runtime(RuntimeError::BorrowConflict),
+            Duration::ZERO,
+        )?;
+        assert_eq!(repair.get()?, 1);
         assert!(recovery.error.is_some()); // retained if close occurs during backoff
-        app = app.on_error(|_, _| crate::ErrorAction::Exit);
+        action.set(crate::ErrorAction::Exit);
         assert!(matches!(
             recovery.handle(
                 &mut app,
@@ -550,6 +573,7 @@ mod scheduling_tests {
             ),
             Err(AppError::Runtime(RuntimeError::Exhausted))
         ));
+        Ok(())
     }
 
     struct Live;

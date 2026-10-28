@@ -12,3 +12,6 @@
 [`App::on_close`]: crate::App::on_close
 [`HeadlessApp`]: crate::testing::HeadlessApp
 [`HeadlessApp::admit_close`]: crate::testing::HeadlessApp::admit_close
+[`HeadlessApp::state`]: crate::testing::HeadlessApp::state
+[`HeadlessApp::runtime_and_state_mut`]: crate::testing::HeadlessApp::runtime_and_state_mut
+[app-state]: crate::App#application-state

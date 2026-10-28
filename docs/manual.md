@@ -73,8 +73,11 @@ With no cleanup failure, it returns the original result. Terminal cleanup bypass
 from the aggregate rather than requesting presentation retry.
 
 Values the application creates once and must keep, such as a `Mailbox` made
-in the initializer, belong to `ui.keep_alive(value)`; a local value would drop,
-and a dropped mailbox closes. `ui.spawn(work, deliver)` runs work such as
+in the initializer, are returned from the initializer as the application
+state, which `on_close`, `on_error` and `on_window_error` receive and `App`
+keeps until the application ends; a local value would drop, and a dropped
+mailbox closes. A custom host, or code that has only the runtime, keeps them
+with `ui.keep_alive(value)`. `ui.spawn(work, deliver)` runs work such as
 reading or saving a file on a background thread and hands the result to
 `deliver` on the UI thread, and `ui.start_interval(period, tick)` repeats
 application work such as an autosave. When a flush fails in a component,

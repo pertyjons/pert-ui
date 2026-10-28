@@ -208,7 +208,7 @@ pub(super) fn run(save: bool, path: &Path) -> Result<(), Box<dyn std::error::Err
         let _finish = ui.mount_tree(Element::new("restart-check", probe))?;
         Ok(())
     })
-    .on_error(|_, _| ErrorAction::Exit)
+    .on_error(|_, _, _| ErrorAction::Exit)
     .run();
     let joined = producer.join();
     result?;

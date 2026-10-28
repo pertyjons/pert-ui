@@ -640,7 +640,8 @@ checks.
 
 A few callbacks keep a moment of their own, which their rustdoc states:
 `App`'s initializer, `on_close`, `on_error` and `on_window_error` run from the
-native host's event loop outside a flush; a command action runs at its
+native host's event loop outside a flush, and the three policies receive the
+application state the initializer returned after the runtime; a command action runs at its
 invocation, which is in the input for a routed chord, at the next flush for a
 queued invocation and inside `Runtime::invoke_command` for a direct call; a
 held-input registration's cancellation runs wherever its input is cancelled;
@@ -888,8 +889,10 @@ handler; values sent between handlers wait for the next flush regardless of
 registration order. Concurrent worker sends join the current delivery only when
 accepted before their inbox's frontier is captured. Closing or dropping a mailbox
 immediately cancels its undelivered values, including a captured delivery frontier.
-`Runtime::keep_alive` owns a mailbox or other application-lifetime value until
-shutdown, so an application need not find another owner for it.
+An `App` initializer returns a mailbox or other application-lifetime value in
+its application state, which `App` keeps until the application ends;
+`Runtime::keep_alive` owns one until shutdown for code that has only the
+runtime, such as a custom host, so neither needs to find another owner for it.
 
 `Runtime::spawn` runs one unit of work per call on a new thread and delivers its
 result to a UI-thread callback through a runtime-owned mailbox, in arrival
@@ -1166,7 +1169,11 @@ matching `WriteDuring…` error. These callbacks do receive the runtime:
 a flush, as their rustdoc describes. The initializer (`App::new`) runs before
 the native event loop starts, or in `App::headless`; `on_close`, `on_error`
 and `on_window_error` run from the native event loop, and `on_close` also
-from `HeadlessApp::admit_close`, which has no event loop.
+from `HeadlessApp::admit_close`, which has no event loop. The three policies
+also receive the application state the initializer returned, by `&mut`
+after the runtime, one call at a time; none runs when the initializer
+failed. The state is opaque to the library, which keeps it and never reads
+it, and it is dropped after the runtime has shut down, on every path.
 
 These operations flush internally, settling update and layout before they
 return: `flush` and `HostIntegration::flush_windows`; the input entry points

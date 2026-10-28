@@ -243,13 +243,16 @@ pub enum NativeCloseAction {
     /// reuse the pending decision.
     Defer(crate::ReadSignal<Option<crate::WindowCloseAction>>),
 }
-type CloseHandler =
-    Box<dyn FnMut(&mut Runtime, &crate::NativeWindowId) -> Result<NativeCloseAction, RuntimeError>>;
-
-type WindowErrorHandler = Box<dyn FnMut(&mut Runtime, &crate::WindowError)>;
-
-type ErrorHandler = Box<dyn FnMut(&mut Runtime, &AppError) -> ErrorAction>;
-type Initialize = Box<dyn FnOnce(&mut Runtime) -> Result<(), AppError>>;
+type CloseHandler<S> = Box<
+    dyn FnMut(
+        &mut Runtime,
+        &mut S,
+        &crate::NativeWindowId,
+    ) -> Result<NativeCloseAction, RuntimeError>,
+>;
+type WindowErrorHandler<S> = Box<dyn FnMut(&mut Runtime, &mut S, &crate::WindowError)>;
+type ErrorHandler<S> = Box<dyn FnMut(&mut Runtime, &mut S, &AppError) -> ErrorAction>;
+type Initialize<S> = Box<dyn FnOnce(&mut Runtime) -> Result<S, AppError>>;
 
 /// A standalone desktop application with independently scheduled native windows with automatic retained scheduling.
 ///
@@ -319,55 +322,300 @@ type Initialize = Box<dyn FnOnce(&mut Runtime) -> Result<(), AppError>>;
 ///     }).run()
 /// }
 /// ```
+///
+/// # Application state
+///
+/// The initializer's `Ok` value is the application state `S`: whatever the
+/// application's lifecycle callbacks and tests must reach, typically the
+/// handles the initializer built (signals, `WidgetId`s, controllers, an `Rc`
+/// of the application's own object) or the model itself. [`Self::on_close`],
+/// [`Self::on_error`] and [`Self::on_window_error`] receive it by `&mut`
+/// after the runtime, one call at a time, so a change one of them makes is
+/// there for the next; [`HeadlessApp::state`] hands it to a test. An
+/// initializer that returns `Ok(())` has no state, `S = ()`.
+///
+/// The state lives from the initializer's successful return until the
+/// application ends, and is dropped after the runtime has shut down, on
+/// every path: its own `Drop` finds components unmounted and parameter
+/// edits ended, and a signal it reads there reports
+/// [`RuntimeError::Closed`]. It stays on the UI thread and need not be
+/// `Send`, `Sync`, `Clone`, `Debug` or `Default`. The library keeps it for
+/// the application and never reads, copies, compares or persists it. No
+/// callback runs without it: a failing initializer's error returns from
+/// [`Self::run`] or [`Self::headless`] without calling any of them.
+///
+/// ```no_run
+/// use pert_ui::{App, AppError, Element, NativeCloseAction, Signal, TextField};
+/// /// What the close policy reads.
+/// struct Notes {
+///     text: Signal<String>,
+///     saved: Signal<String>,
+/// }
+/// fn main() -> Result<(), AppError> {
+///     App::new("Notes", |ui| {
+///         let text = ui.signal(String::new());
+///         ui.mount_tree(Element::new("note", TextField::new(text.clone())))?;
+///         Ok(Notes { text, saved: ui.signal(String::new()) })
+///     })
+///     // Unsaved text keeps the window open.
+///     .on_close(|_, notes, _| {
+///         Ok(if notes.text.get()? == notes.saved.get()? {
+///             NativeCloseAction::Close
+///         } else {
+///             NativeCloseAction::KeepOpen
+///         })
+///     })
+///     .run()
+/// }
+/// ```
 #[must_use = "call run to open the application, or headless in a test"]
-pub struct App {
+pub struct App<S = ()> {
+    pub(crate) host: Host,
+    initialize: Initialize<S>,
+    handlers: Handlers<S>,
+}
+
+/// What every form of an application shares: before it starts ([`App`]),
+/// while the native runner owns it ([`Running`]) and in a test
+/// ([`HeadlessApp`]).
+pub(crate) struct Host {
     pub(crate) title: String,
     pub(crate) window: MainWindow,
-    pub(crate) initialize: Option<Initialize>,
     pub(crate) runtime: Runtime,
     /// Whether windows present CPU frames instead of using the GPU.
     pub(crate) software: bool,
-    error_handler: Option<ErrorHandler>,
-    close_handler: Option<CloseHandler>,
-    window_error_handler: Option<WindowErrorHandler>,
+}
+
+/// The lifecycle callbacks an application installed, typed in its state.
+struct Handlers<S> {
+    error: Option<ErrorHandler<S>>,
+    close: Option<CloseHandler<S>>,
+    window_error: Option<WindowErrorHandler<S>>,
+}
+
+/// The state the initializer returned and the callbacks that receive it.
+/// Built only from the initializer's `Ok` value, so no callback can run
+/// without state.
+pub(crate) struct Bound<S> {
+    state: S,
+    handlers: Handlers<S>,
+}
+
+/// The callbacks of a [`Bound`] with its state type erased, for the native
+/// runner. Each method returns `None` when the application installed no
+/// callback, and the caller applies the default.
+trait Lifecycle {
+    fn error(&mut self, runtime: &mut Runtime, error: &AppError) -> Option<ErrorAction>;
+    fn close(
+        &mut self,
+        runtime: &mut Runtime,
+        window: &crate::NativeWindowId,
+    ) -> Option<Result<NativeCloseAction, RuntimeError>>;
+    fn window_error(&mut self, runtime: &mut Runtime, error: &crate::WindowError) -> Option<()>;
+}
+
+impl<S> Lifecycle for Bound<S> {
+    fn error(&mut self, runtime: &mut Runtime, error: &AppError) -> Option<ErrorAction> {
+        let handler = self.handlers.error.as_mut()?;
+        Some(handler(runtime, &mut self.state, error))
+    }
+    fn close(
+        &mut self,
+        runtime: &mut Runtime,
+        window: &crate::NativeWindowId,
+    ) -> Option<Result<NativeCloseAction, RuntimeError>> {
+        let handler = self.handlers.close.as_mut()?;
+        Some(handler(runtime, &mut self.state, window))
+    }
+    fn window_error(&mut self, runtime: &mut Runtime, error: &crate::WindowError) -> Option<()> {
+        let handler = self.handlers.window_error.as_mut()?;
+        handler(runtime, &mut self.state, error);
+        Some(())
+    }
+}
+
+impl<S> Bound<S> {
+    pub(crate) fn state(&self) -> &S {
+        &self.state
+    }
+    pub(crate) fn state_mut(&mut self) -> &mut S {
+        &mut self.state
+    }
+    /// Runs the close policy, [`NativeCloseAction::Close`] without one.
+    pub(crate) fn close_policy(
+        &mut self,
+        runtime: &mut Runtime,
+        window: &crate::NativeWindowId,
+    ) -> Result<NativeCloseAction, RuntimeError> {
+        close_policy(self, runtime, window)
+    }
+}
+
+/// The close policy's decision, [`NativeCloseAction::Close`] without one.
+fn close_policy(
+    lifecycle: &mut dyn Lifecycle,
+    runtime: &mut Runtime,
+    window: &crate::NativeWindowId,
+) -> Result<NativeCloseAction, RuntimeError> {
+    lifecycle
+        .close(runtime, window)
+        .unwrap_or(Ok(NativeCloseAction::Close))
+}
+
+/// A started application as the native runner owns it, its state erased.
+pub(crate) struct Running {
+    // Declared before the lifecycle so that a drop without an explicit
+    // shutdown drops the runtime, which shuts down in its drop, before the
+    // state and the callbacks' captured values.
+    pub(crate) host: Host,
+    lifecycle: Box<dyn Lifecycle>,
+}
+
+impl<S: 'static> From<(Host, Bound<S>)> for Running {
+    fn from((host, bound): (Host, Bound<S>)) -> Self {
+        Self {
+            host,
+            lifecycle: Box::new(bound),
+        }
+    }
+}
+
+impl Running {
+    pub(crate) fn handle_window_error(
+        &mut self,
+        error: &crate::WindowError,
+    ) -> Result<(), AppError> {
+        if self
+            .lifecycle
+            .window_error(&mut self.host.runtime, error)
+            .is_some()
+        {
+            return Ok(());
+        }
+        use std::io::Write;
+        writeln!(std::io::stderr().lock(), "[pert-ui window error] {error}").map_err(|io| {
+            AppError::WindowErrorReporting {
+                failure: error.clone(),
+                io,
+            }
+        })
+    }
+    pub(crate) fn handle_close(
+        &mut self,
+        window: &crate::NativeWindowId,
+    ) -> Result<NativeCloseAction, RuntimeError> {
+        close_policy(&mut *self.lifecycle, &mut self.host.runtime, window)
+    }
+
+    /// Asks the host what to do about a failure it can recover from. The
+    /// default reports to standard error and retries; when that report cannot be
+    /// written, the failure comes back inside [`AppError::ErrorReporting`].
+    pub(crate) fn handle_error(
+        &mut self,
+        error: AppError,
+    ) -> Result<(ErrorAction, AppError), AppError> {
+        if let Some(action) = self.lifecycle.error(&mut self.host.runtime, &error) {
+            return Ok((action, error));
+        }
+        use std::io::Write;
+        // The site names the component, so the report says where to look.
+        let site = self
+            .host
+            .runtime
+            .last_failure()
+            .map(|site| format!(" (in the {site})"))
+            .unwrap_or_default();
+        match writeln!(
+            std::io::stderr().lock(),
+            "[pert-ui component error] {error}{site}"
+        ) {
+            Ok(()) => Ok((ErrorAction::Retry, error)),
+            Err(io) => Err(AppError::ErrorReporting {
+                failure: Box::new(error),
+                io,
+            }),
+        }
+    }
 }
 
 /// Shows the title, the main window's geometry and whether presentation is
-/// software, not the runtime or the callbacks.
-impl std::fmt::Debug for App {
+/// software, not the runtime, the callbacks or the state.
+impl<S> std::fmt::Debug for App<S> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("App")
-            .field("title", &self.title)
-            .field("window", &self.window)
-            .field("software", &self.software)
+            .field("title", &self.host.title)
+            .field("window", &self.host.window)
+            .field("software", &self.host.software)
             .finish_non_exhaustive()
     }
 }
-impl App {
+impl<S: 'static> App<S> {
     /// Defines content once using the public runtime, with no backend configuration.
     ///
     /// Initialization runs on the calling main thread from `run`, after the native
     /// event loop exists and before any window opens, so the runtime has no
     /// viewport yet: it is supplied when the window opens, before the first
     /// flush the application runs. Content laid out by a flush inside the closure
-    /// has empty bounds, which development validation does not report. Retain
-    /// parameter host owners in components or captured application-owned state.
+    /// has empty bounds, which development validation does not report.
     /// The closure does not repeat on redraw. Errors are returned from `run`.
     /// A test starts the same application without a window with
     /// [`Self::headless`].
+    ///
+    /// The closure's `Ok` value becomes the
+    /// [application state](Self#application-state) the lifecycle callbacks
+    /// receive. Values the application must keep for as long as it runs,
+    /// parameter host owners and mailboxes included, go in components or in
+    /// that state. `Ok(())` keeps the default `S = ()`. The type is inferred
+    /// from the `Ok` value, so a closure that never returns `Ok`, one that
+    /// always fails or panics, names it: `App::<()>::new`.
+    ///
+    /// ```
+    /// use pert_ui::{App, AppError, ApplicationError, Element, Label};
+    /// # fn main() -> Result<(), AppError> {
+    /// // An initializer that returns `Ok(())` has no state: `App` is `App<()>`.
+    /// let app: App = App::new("Status", |ui| {
+    ///     ui.mount_tree(Element::new("status", Label::new("Ready")))?;
+    ///     Ok(())
+    /// });
+    /// app.headless()?.shutdown()?;
+    /// // One that never returns `Ok` names the state type.
+    /// let failing = App::<()>::new("Failing", |_| Err(ApplicationError::from("no data").into()));
+    /// assert!(failing.headless().is_err());
+    /// # Ok(()) }
+    /// ```
     pub fn new(
         title: impl Into<String>,
-        initialize: impl FnOnce(&mut Runtime) -> Result<(), AppError> + 'static,
+        initialize: impl FnOnce(&mut Runtime) -> Result<S, AppError> + 'static,
     ) -> Self {
         Self {
-            title: title.into(),
-            window: MainWindow::default(),
-            initialize: Some(Box::new(initialize)),
-            runtime: Runtime::new(),
-            software: false,
-            error_handler: None,
-            close_handler: None,
-            window_error_handler: None,
+            host: Host {
+                title: title.into(),
+                window: MainWindow::default(),
+                runtime: Runtime::new(),
+                software: false,
+            },
+            initialize: Box::new(initialize),
+            handlers: Handlers {
+                error: None,
+                close: None,
+                window_error: None,
+            },
+        }
+    }
+
+    /// Runs the initializer and binds the callbacks to the state it returns.
+    /// On its failure the runtime is shut down, and that failure is returned,
+    /// inside [`AppError::Shutdown`] when cleanup failed too; the callbacks'
+    /// captured values are dropped after that shutdown.
+    pub(crate) fn start(self) -> Result<(Host, Bound<S>), AppError> {
+        let Self {
+            mut host,
+            initialize,
+            handlers,
+        } = self;
+        match initialize(&mut host.runtime) {
+            Ok(state) => Ok((host, Bound { state, handlers })),
+            Err(error) => crate::platform::finish_runtime(&mut host.runtime, Err(error)),
         }
     }
     /// Sets the main window's initial logical size, before user zoom and native
@@ -393,7 +641,7 @@ impl App {
     /// }
     /// ```
     pub fn size(mut self, size: crate::Size) -> Result<Self, RuntimeError> {
-        self.window.size = nonzero(size)?;
+        self.host.window.size = nonzero(size)?;
         Ok(self)
     }
     /// Sets the smallest logical size the user can resize the main window to.
@@ -406,8 +654,8 @@ impl App {
     /// for a dimension larger than a maximum set with [`Self::max_size`].
     pub fn min_size(mut self, size: crate::Size) -> Result<Self, RuntimeError> {
         let size = nonzero(size)?;
-        ordered(Some(size), self.window.max)?;
-        self.window.min = Some(size);
+        ordered(Some(size), self.host.window.max)?;
+        self.host.window.min = Some(size);
         Ok(self)
     }
     /// Sets the largest logical size the user can resize the main window to.
@@ -420,15 +668,15 @@ impl App {
     /// for a dimension smaller than a minimum set with [`Self::min_size`].
     pub fn max_size(mut self, size: crate::Size) -> Result<Self, RuntimeError> {
         let size = nonzero(size)?;
-        ordered(self.window.min, Some(size))?;
-        self.window.max = Some(size);
+        ordered(self.host.window.min, Some(size))?;
+        self.host.window.max = Some(size);
         Ok(self)
     }
     /// Sets whether the user can resize the main window. Defaults to true. The
     /// content still receives size changes the window system makes, such as a
     /// scale change after moving to another monitor.
     pub fn resizable(mut self, resizable: bool) -> Self {
-        self.window.resizable = resizable;
+        self.host.window.resizable = resizable;
         self
     }
 
@@ -465,7 +713,7 @@ impl App {
     /// ```
     #[cfg(feature = "cpu")]
     pub fn software_rendering(mut self) -> Self {
-        self.software = true;
+        self.host.software = true;
         self
     }
 
@@ -474,7 +722,9 @@ impl App {
     /// ([`AppError::Limit`]).
     ///
     /// Runs after input cleanup, outside runtime evaluation, so the handler
-    /// may repair local signals through `runtime`. It must return promptly; no
+    /// may repair local signals through `runtime`. It receives the
+    /// [application state](Self#application-state) after the runtime. It must
+    /// return promptly; no
     /// callback is safe for time-critical producers. The error is borrowed only
     /// for this call. Report or retain its details here: retrying does not
     /// return recovered errors from `run`.
@@ -495,20 +745,29 @@ impl App {
     /// unless a subsequent native lifecycle event removes focus. Neither the failed
     /// input nor its application action is replayed.
     ///
+    /// The state here is a status line the window shows; a failure appears in
+    /// it, and the application exits when the line cannot be written:
+    ///
     /// ```no_run
-    /// use pert_ui::{App, Element, ErrorAction, Label};
-    /// # fn main() -> Result<(), pert_ui::AppError> {
-    /// App::new("Example", |ui| {
-    ///     ui.mount_tree(Element::new("label", Label::new("Ready")))?;
-    ///     Ok(())
-    /// }).on_error(|_ui, _error| ErrorAction::Exit).run()?;
-    /// # Ok(()) }
+    /// use pert_ui::{App, AppError, Element, ErrorAction, Label};
+    /// fn main() -> Result<(), AppError> {
+    ///     App::new("Example", |ui| {
+    ///         let status = ui.signal(String::from("Ready"));
+    ///         ui.mount_tree(Element::new("status", Label::new(status.read_only())))?;
+    ///         Ok(status)
+    ///     })
+    ///     .on_error(|_, status, error| match status.set(format!("Failed: {error}")) {
+    ///         Ok(()) => ErrorAction::Retry,
+    ///         Err(_) => ErrorAction::Exit,
+    ///     })
+    ///     .run()
+    /// }
     /// ```
     pub fn on_error(
         mut self,
-        handler: impl FnMut(&mut Runtime, &AppError) -> ErrorAction + 'static,
+        handler: impl FnMut(&mut Runtime, &mut S, &AppError) -> ErrorAction + 'static,
     ) -> Self {
-        self.error_handler = Some(Box::new(handler));
+        self.handlers.error = Some(Box::new(handler));
         self
     }
 
@@ -557,7 +816,8 @@ impl App {
     ///    is in backoff, nothing is flushed, so closing never needs a failing
     ///    update to succeed first: bindings the drafts wrote are current, and
     ///    derived values and the queued focus errors wait for the next flush.
-    /// 5. This callback runs, with the closing window selected.
+    /// 5. This callback runs, with the closing window selected and the
+    ///    [application state](Self#application-state).
     /// 6. On a synchronous [`NativeCloseAction::KeepOpen`], in each affected
     ///    window, the component whose focus step 2 released is focused again
     ///    when nothing in that window holds focus after the callback, so a
@@ -575,83 +835,58 @@ impl App {
     ///    affected window recorded to focus again on reactivation is
     ///    forgotten: the close supersedes it.
     ///
-    /// [`HeadlessApp::admit_close`] runs the same steps in a test.
+    /// [`HeadlessApp::admit_close`] runs the same steps in a test. The
+    /// [type's example](Self#application-state) keeps the window open while
+    /// the state holds unsaved text.
     pub fn on_close(
         mut self,
         handler: impl FnMut(
             &mut Runtime,
+            &mut S,
             &crate::NativeWindowId,
         ) -> Result<NativeCloseAction, RuntimeError>
         + 'static,
     ) -> Self {
-        self.close_handler = Some(Box::new(handler));
+        self.handlers.close = Some(Box::new(handler));
         self
     }
     /// Reports failed asynchronous native presentation, including tab drag failure.
-    /// Defaults to stderr. The receipt retains the typed failure independently.
-    /// Called on the UI thread after failed preparation/cleanup; existing content
-    /// remains available and the operation is never automatically retried.
+    /// The receipt retains the typed failure independently. Called on the UI
+    /// thread after failed preparation/cleanup, with the
+    /// [application state](Self#application-state) after the runtime;
+    /// existing content remains available and the operation is never
+    /// automatically retried.
+    ///
+    /// The default writes `[pert-ui window error]` and the failure to standard
+    /// error; when that report cannot be written, the application ends with
+    /// [`AppError::WindowErrorReporting`]. A callback replaces the report.
+    ///
+    /// ```no_run
+    /// use pert_ui::{App, AppError, Element, Label, NativeWindowOptions, View};
+    /// /// How many window requests failed so far.
+    /// struct Windows {
+    ///     failures: u32,
+    /// }
+    /// fn main() -> Result<(), AppError> {
+    ///     App::new("Workspace", |ui| {
+    ///         let editor = ui.mount_tree(Element::new("editor",
+    ///             View::new(Element::new("content", Label::new("Detached content")))))?;
+    ///         let _receipt = ui.request_detach(&editor, NativeWindowOptions::new("Editor")?)?;
+    ///         Ok(Windows { failures: 0 })
+    ///     })
+    ///     .on_window_error(|_, windows, error| {
+    ///         windows.failures += 1;
+    ///         eprintln!("window failure {}: {error}", windows.failures);
+    ///     })
+    ///     .run()
+    /// }
+    /// ```
     pub fn on_window_error(
         mut self,
-        handler: impl FnMut(&mut Runtime, &crate::WindowError) + 'static,
+        handler: impl FnMut(&mut Runtime, &mut S, &crate::WindowError) + 'static,
     ) -> Self {
-        self.window_error_handler = Some(Box::new(handler));
+        self.handlers.window_error = Some(Box::new(handler));
         self
-    }
-    pub(crate) fn handle_window_error(
-        &mut self,
-        error: &crate::WindowError,
-    ) -> Result<(), AppError> {
-        if let Some(handler) = &mut self.window_error_handler {
-            handler(&mut self.runtime, error);
-            return Ok(());
-        }
-        use std::io::Write;
-        writeln!(std::io::stderr().lock(), "[pert-ui window error] {error}").map_err(|io| {
-            AppError::WindowErrorReporting {
-                failure: error.clone(),
-                io,
-            }
-        })
-    }
-    pub(crate) fn handle_close(
-        &mut self,
-        window: &crate::NativeWindowId,
-    ) -> Result<NativeCloseAction, RuntimeError> {
-        match &mut self.close_handler {
-            Some(handler) => handler(&mut self.runtime, window),
-            None => Ok(NativeCloseAction::Close),
-        }
-    }
-
-    /// Asks the host what to do about a failure it can recover from. The
-    /// default reports to standard error and retries; when that report cannot be
-    /// written, the failure comes back inside [`AppError::ErrorReporting`].
-    pub(crate) fn handle_error(
-        &mut self,
-        error: AppError,
-    ) -> Result<(ErrorAction, AppError), AppError> {
-        if let Some(handler) = &mut self.error_handler {
-            let action = handler(&mut self.runtime, &error);
-            return Ok((action, error));
-        }
-        use std::io::Write;
-        // The site names the component, so the report says where to look.
-        let site = self
-            .runtime
-            .last_failure()
-            .map(|site| format!(" (in the {site})"))
-            .unwrap_or_default();
-        match writeln!(
-            std::io::stderr().lock(),
-            "[pert-ui component error] {error}{site}"
-        ) {
-            Ok(()) => Ok((ErrorAction::Retry, error)),
-            Err(io) => Err(AppError::ErrorReporting {
-                failure: Box::new(error),
-                io,
-            }),
-        }
     }
 
     /// Opens the native window and runs until close or an unrecovered failure.
@@ -872,9 +1107,52 @@ mod tests {
         assert!(!error.to_string().contains(&source.to_string()));
     }
 
+    /// Records, when dropped, whether its signal's runtime had shut down.
+    struct Observed {
+        signal: crate::Signal<i32>,
+        closed: std::rc::Rc<std::cell::Cell<Option<bool>>>,
+    }
+    impl Drop for Observed {
+        fn drop(&mut self) {
+            self.closed
+                .set(Some(matches!(self.signal.get(), Err(RuntimeError::Closed))));
+        }
+    }
+
+    /// New-behavior test (P11) 5: the native runner's erased owner, dropped
+    /// with its runtime still open, drops the runtime first, so the state
+    /// and the value a callback captured both find it closed. Named
+    /// assertion: both record `Some(true)`. Mutation checked: `lifecycle`
+    /// declared before `host` in `Running` (both record `Some(false)`).
+    #[test]
+    fn the_erased_native_owner_drops_the_state_after_the_runtime() -> Result<(), AppError> {
+        let state = std::rc::Rc::new(std::cell::Cell::new(None));
+        let captured = std::rc::Rc::new(std::cell::Cell::new(None));
+        let records = state.clone();
+        let app = App::new("drop", move |ui| {
+            Ok(Observed {
+                signal: ui.signal(0),
+                closed: records,
+            })
+        });
+        let kept = Observed {
+            signal: app.host.runtime.signal(0),
+            closed: captured.clone(),
+        };
+        let app = app.on_error(move |_, _, _| {
+            let _kept = &kept;
+            ErrorAction::Exit
+        });
+        let running = Running::from(app.start()?);
+        assert_eq!((state.get(), captured.get()), (None, None));
+        drop(running);
+        assert_eq!((state.get(), captured.get()), (Some(true), Some(true)));
+        Ok(())
+    }
+
     #[test]
     fn main_window_geometry_defaults_and_validates() {
-        assert_eq!(app().window, MainWindow::default());
+        assert_eq!(app().host.window, MainWindow::default());
         assert!(empty(app().size(Size::from([0, 480]))));
         assert!(empty(app().min_size(Size::from([640, 0]))));
         let bounded = app()
@@ -883,10 +1161,10 @@ mod tests {
             .and_then(|app| app.max_size(Size::from([1920, 1200])))
             .unwrap()
             .resizable(false);
-        assert_eq!(bounded.window.size, Size::from([1280, 800]));
-        assert_eq!(bounded.window.min, Some(Size::from([640, 400])));
-        assert_eq!(bounded.window.max, Some(Size::from([1920, 1200])));
-        assert!(!bounded.window.resizable);
+        assert_eq!(bounded.host.window.size, Size::from([1280, 800]));
+        assert_eq!(bounded.host.window.min, Some(Size::from([640, 400])));
+        assert_eq!(bounded.host.window.max, Some(Size::from([1920, 1200])));
+        assert!(!bounded.host.window.resizable);
         // A minimum above the maximum is refused in either order.
         assert!(inverted(
             app()

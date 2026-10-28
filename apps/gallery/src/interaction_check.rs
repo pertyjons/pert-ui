@@ -1124,7 +1124,7 @@ pub(super) fn run(software: bool) -> Result<(), Box<dyn std::error::Error>> {
         *id.borrow_mut() = Some(probe);
         Ok(())
     })
-    .on_error(|_, _| ErrorAction::Exit);
+    .on_error(|_, _, _| ErrorAction::Exit);
     let app = if software {
         app.software_rendering()
     } else {

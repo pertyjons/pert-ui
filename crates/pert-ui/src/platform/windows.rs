@@ -6,23 +6,23 @@ use crate::host::HostIntegration;
 impl Runner {
     pub(super) fn select_native(&mut self, id: WindowId) -> Result<bool, AppError> {
         if self.current.window.as_ref().is_some_and(|w| w.id() == id) {
-            if !self.app.runtime.contains_window(&self.current.root) {
+            if !self.app.host.runtime.contains_window(&self.current.root) {
                 return Ok(false);
             }
-            self.app.runtime.select_window(&self.current.root)?;
+            self.app.host.runtime.select_window(&self.current.root)?;
             return Ok(true);
         }
         let Some(next) = self.parked.remove(&id) else {
             return Ok(false);
         };
-        if !self.app.runtime.contains_window(&next.root) {
+        if !self.app.host.runtime.contains_window(&next.root) {
             return Ok(false);
         }
         let previous = std::mem::replace(&mut self.current, next);
         if let Some(window) = &previous.window {
             self.parked.insert(window.id(), previous);
         }
-        self.app.runtime.select_window(&self.current.root)?;
+        self.app.host.runtime.select_window(&self.current.root)?;
         Ok(true)
     }
     fn select_root(&mut self, root: &crate::NativeWindowId) -> Result<(), AppError> {
@@ -41,10 +41,14 @@ impl Runner {
         Ok(())
     }
     pub(super) fn retire_windows(&mut self) -> Result<(), AppError> {
-        if !self.app.runtime.contains_window(&self.current.root) {
-            self.select_root(&self.app.runtime.primary_window())?;
+        if !self.app.host.runtime.contains_window(&self.current.root) {
+            self.select_root(&self.app.host.runtime.primary_window())?;
         }
-        retire_closed(&mut self.parked, &self.app.runtime, &mut self.retired_error);
+        retire_closed(
+            &mut self.parked,
+            &self.app.host.runtime,
+            &mut self.retired_error,
+        );
         Ok(())
     }
     fn presentation_action(
@@ -55,12 +59,16 @@ impl Runner {
         use crate::{PresentationAction, PresentationStatus, WindowError};
         match action {
             PresentationAction::Detach { view, options } => {
-                let source = self.app.runtime.window_of(view)?;
-                self.app.runtime.select_window(&source)?;
+                let source = self.app.host.runtime.window_of(view)?;
+                self.app.host.runtime.select_window(&source)?;
                 // A release may select a previously inactive tab before requesting
                 // native movement. Apply that retained visibility transition first.
-                self.app.runtime.flush(self.start.elapsed())?;
-                let prepared = self.app.runtime.prepare_detach(view, options.clone())?;
+                self.app.host.runtime.flush(self.start.elapsed())?;
+                let prepared = self
+                    .app
+                    .host
+                    .runtime
+                    .prepare_detach(view, options.clone())?;
                 let size = options.initial_size();
                 let window = Arc::new(
                     event_loop
@@ -82,8 +90,8 @@ impl Runner {
                 let scale = window.scale_factor();
                 let viewport =
                     Viewport::from_physical(PhysicalExtent::new(size.width, size.height), scale)?;
-                let root = self.app.runtime.commit_detach(prepared)?;
-                self.app.runtime.set_viewport(viewport)?;
+                let root = self.app.host.runtime.commit_detach(prepared)?;
+                self.app.host.runtime.set_viewport(viewport)?;
                 let mut native = NativeState::new(root.clone());
                 native.size = size;
                 native.window = Some(window.clone());
@@ -92,9 +100,9 @@ impl Runner {
                 Ok(PresentationStatus::Presented(root))
             }
             PresentationAction::Redock(root) => {
-                self.app.runtime.redock(root)?;
+                self.app.host.runtime.redock(root)?;
                 Ok(PresentationStatus::Presented(
-                    self.app.runtime.current_window(),
+                    self.app.host.runtime.current_window(),
                 ))
             }
             PresentationAction::Close(_) => Err(RuntimeError::StalePresentation.into()),
@@ -108,7 +116,7 @@ impl Runner {
                         .and_then(|native| native.window.as_ref())
                 }
                 .ok_or(RuntimeError::Unmounted)?;
-                if !self.app.runtime.contains_window(window) {
+                if !self.app.host.runtime.contains_window(window) {
                     return Err(RuntimeError::Unmounted.into());
                 }
                 native.set_title(title);
@@ -124,7 +132,7 @@ impl Runner {
                         .and_then(|native| native.window.as_ref())
                 }
                 .ok_or(RuntimeError::Unmounted)?;
-                if !self.app.runtime.contains_window(root) {
+                if !self.app.host.runtime.contains_window(root) {
                     return Err(RuntimeError::Unmounted.into());
                 }
                 #[cfg(target_os = "linux")]
@@ -147,7 +155,7 @@ impl Runner {
         &mut self,
         event_loop: &ActiveEventLoop,
     ) -> Result<(), AppError> {
-        for request in self.app.runtime.take_presentation_requests()? {
+        for request in self.app.host.runtime.take_presentation_requests()? {
             if let crate::PresentationAction::Close(root) = request.action() {
                 self.begin_close(event_loop, root.clone(), Some(request))?;
                 continue;
@@ -160,7 +168,7 @@ impl Runner {
             }
             request.complete(status)?;
             self.retire_windows()?;
-            self.app.runtime.select_window(&self.current.root)?;
+            self.app.host.runtime.select_window(&self.current.root)?;
         }
         Ok(())
     }
@@ -207,11 +215,11 @@ impl Runner {
             return Ok(crate::PresentationStatus::CloseRejected);
         }
         self.select_root(window)?;
-        if *window == self.app.runtime.primary_window() {
+        if *window == self.app.host.runtime.primary_window() {
             event_loop.exit();
             Ok(crate::PresentationStatus::Closed)
         } else {
-            let status = self.app.runtime.close_detached_window()?;
+            let status = self.app.host.runtime.close_detached_window()?;
             self.retire_windows()?;
             Ok(status)
         }
@@ -241,7 +249,7 @@ impl Runner {
         // A close queued for a window an earlier request already closed is a
         // failed presentation request, reported as other requests' failures
         // are, not a component failure for error recovery.
-        if !self.app.runtime.contains_window(&window) {
+        if !self.app.host.runtime.contains_window(&window) {
             if let Some(request) = request {
                 let failure = crate::WindowError::Runtime(RuntimeError::Unmounted);
                 self.app.handle_window_error(&failure)?;
@@ -251,7 +259,7 @@ impl Runner {
         }
         // The close supersedes what an affected window recorded to focus on
         // reactivation, whatever the decision.
-        let affected = crate::app::close::affected_roots(&self.app.runtime, &window);
+        let affected = crate::app::close::affected_roots(&self.app.host.runtime, &window);
         forget_reactivation(
             std::iter::once(&mut self.current).chain(self.parked.values_mut()),
             &affected,
@@ -264,7 +272,7 @@ impl Runner {
             now,
         );
         let admission =
-            crate::app::close::prepare_close(&mut self.app.runtime, &affected, settle, now)
+            crate::app::close::prepare_close(&mut self.app.host.runtime, &affected, settle, now)
                 .map_err(AppError::from)
                 .and_then(|released| {
                     self.select_root(&window)?;
@@ -281,7 +289,8 @@ impl Runner {
             crate::NativeCloseAction::KeepOpen => {
                 // The window stays open whether or not focus comes back; a
                 // failure to restore it goes to error recovery afterwards.
-                let restored = crate::app::close::restore_focus(&mut self.app.runtime, released);
+                let restored =
+                    crate::app::close::restore_focus(&mut self.app.host.runtime, released);
                 Self::finish_close_requests(
                     request.into_iter().collect(),
                     Ok(crate::PresentationStatus::CloseRejected),
@@ -289,7 +298,7 @@ impl Runner {
                 return restored.map_err(AppError::from);
             }
             crate::NativeCloseAction::Defer(decision) => {
-                self.app.runtime.read_signal(&decision)?;
+                self.app.host.runtime.read_signal(&decision)?;
                 self.closing.push(PendingClose {
                     window,
                     decision,
@@ -326,6 +335,7 @@ impl Runner {
         while index < self.closing.len() {
             if !self
                 .app
+                .host
                 .runtime
                 .contains_window(&self.closing[index].window)
             {
@@ -334,6 +344,7 @@ impl Runner {
             }
             let Some(action) = self
                 .app
+                .host
                 .runtime
                 .read_signal(&self.closing[index].decision)?
             else {

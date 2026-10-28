@@ -74,7 +74,7 @@ impl Driver {
             .received
             .pop()
             .ok_or_else(|| AppError::Graphics("no window reply".into()))?;
-        let viewport = self.runner.app.runtime.inspect().windows[0].viewport;
+        let viewport = self.runner.app.host.runtime.inspect().windows[0].viewport;
         let extent = viewport
             .physical()
             .ok_or_else(|| AppError::Graphics("the native window has no physical extent".into()))?;
@@ -225,19 +225,19 @@ fn software_presentation_captures_the_window_and_a_widget() -> Result<(), AppErr
 
 fn capture_smoke(software: bool) -> Result<(), AppError> {
     let mut app = App::new("pert-ui capture smoke", |_| Ok(())).size(Size::from([320, 240]))?;
-    app.software = software;
-    app.initialize.take();
-    app.runtime.theme().set_mode(ThemeMode::Dark)?;
-    app.runtime.theme().set_color(
+    app.host.software = software;
+    app.host.runtime.theme().set_mode(ThemeMode::Dark)?;
+    app.host.runtime.theme().set_color(
         ThemeMode::Dark,
         ColorRole::Background,
         Color::from_linear(1.0, 1.0, 1.0, 0.5)?,
     )?;
-    app.runtime.mount_tree(Element::new(
+    app.host.runtime.mount_tree(Element::new(
         "canvas",
         Column::new([Element::new("square", Square)]),
     ))?;
     let service = app
+        .host
         .runtime
         .inspection_service(Capacity::new(4).map_err(|e| AppError::Graphics(e.to_string()))?)?;
     let client = service.client();
@@ -296,7 +296,7 @@ fn capture_smoke(software: bool) -> Result<(), AppError> {
             let _ = wake.send_event(UserEvent::Wake);
         }
     });
-    let runner = Runner::new(app, event_loop.create_proxy());
+    let runner = Runner::new(app.start()?.into(), event_loop.create_proxy());
     let mut driver = Driver {
         runner,
         replies,

@@ -130,7 +130,7 @@ impl Runner {
             // the quiet interval of more than one of them.
             let idle_stage = matches!(smoke.stage, 5 | 8 | 12 | 28 | 34 | 39 | 46);
             let unsettled = if idle_stage {
-                smoke.frames != smoke.baseline_frames || self.app.runtime.needs_paint()
+                smoke.frames != smoke.baseline_frames || self.app.host.runtime.needs_paint()
             } else {
                 matches!(
                     smoke.stage,
@@ -161,7 +161,7 @@ impl Runner {
                     if smoke.frames == 0 {
                         return Err(AppError::Graphics("smoke: no initial frame".into()));
                     }
-                    let snapshot = self.app.runtime.inspect();
+                    let snapshot = self.app.host.runtime.inspect();
                     let tile = snapshot
                         .components
                         .iter()
@@ -191,7 +191,7 @@ impl Runner {
                 1 => {
                     if smoke.paints.get() != smoke.baseline_paints
                         || self.current.dirty
-                        || self.app.runtime.next_deadline().is_some()
+                        || self.app.host.runtime.next_deadline().is_some()
                     {
                         return Err(AppError::Graphics(
                             "smoke: static content did not settle".into(),
@@ -213,7 +213,7 @@ impl Runner {
                     if smoke.frames <= smoke.baseline_frames {
                         return Err(not_presented("resize"));
                     }
-                    let snapshot = self.app.runtime.inspect();
+                    let snapshot = self.app.host.runtime.inspect();
                     let tile = snapshot
                         .components
                         .iter()
@@ -242,7 +242,11 @@ impl Runner {
                     }
                     smoke.baseline_frames = smoke.frames;
                     smoke.baseline_paints = smoke.paints.get();
-                    self.app.runtime.theme().set_mode(crate::ThemeMode::Light)?;
+                    self.app
+                        .host
+                        .runtime
+                        .theme()
+                        .set_mode(crate::ThemeMode::Light)?;
                 }
                 4 => {
                     // Report the two failures apart: a compositor that withholds
@@ -262,21 +266,23 @@ impl Runner {
                     self.inject_motion()?;
                 }
                 5 => {
-                    if smoke.frames != smoke.baseline_frames || self.app.runtime.needs_paint() {
+                    if smoke.frames != smoke.baseline_frames || self.app.host.runtime.needs_paint()
+                    {
                         return Err(AppError::Graphics(
                             "smoke: theme change or pointer motion did not settle".into(),
                         ));
                     }
                     self.inject_motion()?;
-                    self.current.motion.flush(&mut self.app.runtime)?;
-                    self.app.runtime.flush(self.start.elapsed())?;
-                    if self.app.runtime.needs_paint() || self.current.dirty {
+                    self.current.motion.flush(&mut self.app.host.runtime)?;
+                    self.app.host.runtime.flush(self.start.elapsed())?;
+                    if self.app.host.runtime.needs_paint() || self.current.dirty {
                         return Err(AppError::Graphics(
                             "smoke: pointer motion over static content requested a frame".into(),
                         ));
                     }
                     smoke.original_size = self.current.size;
                     self.app
+                        .host
                         .runtime
                         .ui_settings()
                         .set_zoom(crate::UiZoom::new(1.25)?)?;
@@ -291,7 +297,7 @@ impl Runner {
                         return Err(not_presented("user zoom"));
                     }
                     if self.current.size != smoke.original_size
-                        || self.app.runtime.viewport().scale() != native_scale * 1.25
+                        || self.app.host.runtime.viewport().scale() != native_scale * 1.25
                     {
                         return Err(AppError::Graphics(
                             "smoke: user zoom did not apply at the unchanged native size".into(),
@@ -299,10 +305,12 @@ impl Runner {
                     }
                     smoke.baseline_frames = smoke.frames;
                     self.app
+                        .host
                         .runtime
                         .ui_settings()
                         .set_zoom(crate::UiZoom::default())?;
                     self.app
+                        .host
                         .runtime
                         .theme()
                         .set_density(crate::Density::Compact)?;
@@ -314,12 +322,13 @@ impl Runner {
                     smoke.baseline_frames = smoke.frames;
                 }
                 8 => {
-                    if smoke.frames != smoke.baseline_frames || self.app.runtime.needs_paint() {
+                    if smoke.frames != smoke.baseline_frames || self.app.host.runtime.needs_paint()
+                    {
                         return Err(AppError::Graphics(
                             "smoke: zoom/density did not settle".into(),
                         ));
                     }
-                    let ui = &mut self.app.runtime;
+                    let ui = &mut self.app.host.runtime;
                     ui.unmount(&smoke.original_root)?;
                     let enabled = ui.signal(false);
                     let choice = ui.signal(0);
@@ -413,20 +422,24 @@ impl Runner {
                     if smoke.frames <= smoke.baseline_frames {
                         return Err(not_presented("controls"));
                     }
-                    let column = self.app.runtime.children(&controls.root)?[0].clone();
-                    let children = self.app.runtime.children(&column)?;
-                    self.app.runtime.focus(&children[0])?;
+                    let column = self.app.host.runtime.children(&controls.root)?[0].clone();
+                    let children = self.app.host.runtime.children(&column)?;
+                    self.app.host.runtime.focus(&children[0])?;
                     self.app
+                        .host
                         .runtime
                         .key_input(crate::KeyCode::Space, crate::KeyAction::Press)?;
                     self.app
+                        .host
                         .runtime
                         .key_input(crate::KeyCode::Space, crate::KeyAction::Release)?;
-                    self.app.runtime.focus(&children[3])?;
+                    self.app.host.runtime.focus(&children[3])?;
                     self.app
+                        .host
                         .runtime
                         .key_input(crate::KeyCode::ArrowRight, crate::KeyAction::Press)?;
                     self.app
+                        .host
                         .runtime
                         .key_input(crate::KeyCode::ArrowRight, crate::KeyAction::Release)?;
                     if !controls.enabled.get()? || controls.parameter.snapshot().get()?.base <= 0.5
@@ -444,19 +457,21 @@ impl Runner {
                         .as_ref()
                         .ok_or_else(|| AppError::Graphics("smoke: controls missing".into()))?;
                     let focus =
-                        self.app.runtime.focused().ok_or_else(|| {
+                        self.app.host.runtime.focused().ok_or_else(|| {
                             AppError::Graphics("smoke: popup focus missing".into())
                         })?;
                     if smoke.frames <= smoke.baseline_frames {
                         return Err(not_presented("popup"));
                     }
-                    if self.app.runtime.key(&focus)? != "popup-action" {
+                    if self.app.host.runtime.key(&focus)? != "popup-action" {
                         return Err(AppError::Graphics("smoke: popup was not focused".into()));
                     }
                     self.app
+                        .host
                         .runtime
                         .key_input(crate::KeyCode::Escape, crate::KeyAction::Press)?;
                     self.app
+                        .host
                         .runtime
                         .key_input(crate::KeyCode::Escape, crate::KeyAction::Release)?;
                     if controls.open.get()? {
@@ -470,17 +485,18 @@ impl Runner {
                 }
                 12 => {
                     if smoke.frames != smoke.baseline_frames
-                        || self.app.runtime.next_deadline().is_some()
-                        || self.app.runtime.needs_paint()
+                        || self.app.host.runtime.next_deadline().is_some()
+                        || self.app.host.runtime.needs_paint()
                     {
                         return Err(AppError::Graphics(format!(
                             "smoke: controls did not settle: {} frames since the baseline, \
                              next deadline {:?} at {:?}, needs paint {}, pending components {:?}",
                             smoke.frames - smoke.baseline_frames,
-                            self.app.runtime.next_deadline(),
-                            self.app.runtime.now(),
-                            self.app.runtime.needs_paint(),
+                            self.app.host.runtime.next_deadline(),
+                            self.app.host.runtime.now(),
+                            self.app.host.runtime.needs_paint(),
                             self.app
+                                .host
                                 .runtime
                                 .inspect()
                                 .components
@@ -491,14 +507,14 @@ impl Runner {
                         )));
                     }
                     if let Some(controls) = &smoke.controls {
-                        self.app.runtime.unmount(&controls.root)?;
+                        self.app.host.runtime.unmount(&controls.root)?;
                     }
-                    let name = self.app.runtime.signal("Native name".to_owned());
-                    let notes = self.app.runtime.signal(format!(
+                    let name = self.app.host.runtime.signal("Native name".to_owned());
+                    let notes = self.app.host.runtime.signal(format!(
                         "Native multiline\nMonospace by default\n{}",
                         "Scrollbar line\n".repeat(12)
                     ));
-                    let root = self.app.runtime.mount_tree(crate::Element::new(
+                    let root = self.app.host.runtime.mount_tree(crate::Element::new(
                         "text-fields",
                         crate::Column::new([
                             crate::Element::new("native-name", crate::TextField::new(name.clone())),
@@ -519,8 +535,8 @@ impl Runner {
                     if smoke.frames <= smoke.baseline_frames {
                         return Err(not_presented("text fields"));
                     }
-                    let children = self.app.runtime.children(root)?;
-                    self.app.runtime.focus(&children[0])?;
+                    let children = self.app.host.runtime.children(root)?;
+                    self.app.host.runtime.focus(&children[0])?;
                     self.sync_ime();
                     self.native_ime(winit::event::Ime::Enabled)?;
                     self.native_ime(winit::event::Ime::Preedit("åäö".into(), Some((0, 6))))?;
@@ -534,13 +550,15 @@ impl Runner {
                     if name.get()? != "åäö Native name" {
                         return Err(AppError::Graphics("smoke: IME commit failed".into()));
                     }
-                    let children = self.app.runtime.children(root)?;
-                    self.app.runtime.focus(&children[1])?;
-                    self.app.runtime.text_input("Edited ")?;
+                    let children = self.app.host.runtime.children(root)?;
+                    self.app.host.runtime.focus(&children[1])?;
+                    self.app.host.runtime.text_input("Edited ")?;
                     self.app
+                        .host
                         .runtime
                         .key_input(crate::KeyCode::Enter, crate::KeyAction::Press)?;
                     self.app
+                        .host
                         .runtime
                         .key_input(crate::KeyCode::Enter, crate::KeyAction::Release)?;
                 }
@@ -557,7 +575,7 @@ impl Runner {
                         .text_fields
                         .as_ref()
                         .ok_or_else(|| AppError::Graphics("smoke: text fields missing".into()))?;
-                    let ui = &mut self.app.runtime;
+                    let ui = &mut self.app.host.runtime;
                     let notes_field = ui.children(root)?[1].clone();
                     let metrics = ui.theme().metrics(ui.theme().density()?)?;
                     let bounds = ui
@@ -606,16 +624,16 @@ impl Runner {
                 }
                 17 => {
                     if smoke.frames != smoke.baseline_frames
-                        || self.app.runtime.next_deadline().is_some()
+                        || self.app.host.runtime.next_deadline().is_some()
                     {
                         return Err(AppError::Graphics(
                             "smoke: text fields did not settle".into(),
                         ));
                     }
                     if let Some((root, _, _)) = &smoke.text_fields {
-                        self.app.runtime.unmount(root)?;
+                        self.app.host.runtime.unmount(root)?;
                     }
-                    let ui = &mut self.app.runtime;
+                    let ui = &mut self.app.host.runtime;
                     let integer = ui.signal(0_i64);
                     let decimal = ui.signal(0_f64);
                     let root = ui.mount_tree(crate::Element::new(
@@ -642,7 +660,7 @@ impl Runner {
                     if smoke.frames <= smoke.baseline_frames {
                         return Err(not_presented("number fields"));
                     }
-                    let ui = &mut self.app.runtime;
+                    let ui = &mut self.app.host.runtime;
                     let children = ui.children(root)?;
                     ui.focus(&children[0])?;
                     ui.text_input("42")?;
@@ -678,7 +696,7 @@ impl Runner {
                             "smoke: decimal draft saved prematurely".into(),
                         ));
                     }
-                    let ui = &mut self.app.runtime;
+                    let ui = &mut self.app.host.runtime;
                     ui.clear_focus();
                     if decimal.get()? != 1.5 {
                         return Err(AppError::Graphics(
@@ -728,7 +746,7 @@ impl Runner {
                 }
                 21 => {
                     if smoke.frames != smoke.baseline_frames
-                        || self.app.runtime.next_deadline().is_some()
+                        || self.app.host.runtime.next_deadline().is_some()
                     {
                         return Err(AppError::Graphics(
                             "smoke: number fields did not settle".into(),
@@ -742,9 +760,11 @@ impl Runner {
                         .as_ref()
                         .ok_or_else(|| AppError::Graphics("smoke: number fields missing".into()))?;
                     self.app
+                        .host
                         .runtime
-                        .focus(&self.app.runtime.children(root)?[1])?;
+                        .focus(&self.app.host.runtime.children(root)?[1])?;
                     self.app
+                        .host
                         .runtime
                         .key_input(crate::KeyCode::ControlLeft, crate::KeyAction::Press)?;
                     decimal.set(f64::NAN)?;
@@ -756,10 +776,11 @@ impl Runner {
                         .id();
                     self.window_event(event_loop, window_id, WindowEvent::Focused(false));
                     if self.current.component_recovery.error.is_some()
-                        || self.app.runtime.focused().is_some()
-                        || !self.app.runtime.inspect().pressed_keys.is_empty()
+                        || self.app.host.runtime.focused().is_some()
+                        || !self.app.host.runtime.inspect().pressed_keys.is_empty()
                         || self
                             .app
+                            .host
                             .runtime
                             .inspect()
                             .components
@@ -776,6 +797,7 @@ impl Runner {
                     // The next presented frame shows the refusal, not an error.
                     let refused = self
                         .app
+                        .host
                         .runtime
                         .inspect()
                         .components
@@ -791,10 +813,11 @@ impl Runner {
                     }
                     if let Some((root, _, decimal)) = &smoke.number_fields {
                         decimal.set(1.5)?;
-                        self.app.runtime.set_visible(root, false)?;
+                        self.app.host.runtime.set_visible(root, false)?;
                     }
-                    smoke.transients =
-                        Some(transient_smoke::TransientSmoke::new(&mut self.app.runtime)?);
+                    smoke.transients = Some(transient_smoke::TransientSmoke::new(
+                        &mut self.app.host.runtime,
+                    )?);
                     smoke.baseline_frames = smoke.frames;
                 }
                 23..=26 => {
@@ -806,7 +829,7 @@ impl Runner {
                         .transients
                         .as_mut()
                         .ok_or(RuntimeError::Unmounted)?
-                        .step(&mut self.app.runtime, smoke.stage)?;
+                        .step(&mut self.app.host.runtime, smoke.stage)?;
                     smoke.baseline_frames = smoke.frames;
                 }
                 27 => {
@@ -817,13 +840,14 @@ impl Runner {
                         smoke.frames, smoke.baseline_frames,
                         "transient content did not settle"
                     );
-                    assert!(self.app.runtime.next_deadline().is_none());
+                    assert!(self.app.host.runtime.next_deadline().is_none());
                     smoke
                         .transients
                         .as_ref()
                         .ok_or(RuntimeError::Unmounted)?
-                        .hide(&mut self.app.runtime)?;
-                    smoke.inline = Some(inline_smoke::InlineSmoke::new(&mut self.app.runtime)?);
+                        .hide(&mut self.app.host.runtime)?;
+                    smoke.inline =
+                        Some(inline_smoke::InlineSmoke::new(&mut self.app.host.runtime)?);
                     smoke.baseline_frames = smoke.frames;
                 }
                 29..=32 => {
@@ -835,7 +859,7 @@ impl Runner {
                         .inline
                         .as_mut()
                         .ok_or(RuntimeError::Unmounted)?
-                        .step(&mut self.app.runtime, smoke.stage)?;
+                        .step(&mut self.app.host.runtime, smoke.stage)?;
                     smoke.baseline_frames = smoke.frames;
                 }
                 33 => {
@@ -846,13 +870,13 @@ impl Runner {
                         smoke.frames, smoke.baseline_frames,
                         "inline controls did not settle"
                     );
-                    assert!(self.app.runtime.next_deadline().is_none());
+                    assert!(self.app.host.runtime.next_deadline().is_none());
                     smoke
                         .inline
                         .take()
                         .ok_or(RuntimeError::Unmounted)?
-                        .unmount(&mut self.app.runtime)?;
-                    smoke.fonts = Some(font_smoke::FontSmoke::new(&mut self.app.runtime)?);
+                        .unmount(&mut self.app.host.runtime)?;
+                    smoke.fonts = Some(font_smoke::FontSmoke::new(&mut self.app.host.runtime)?);
                     smoke.baseline_frames = smoke.frames;
                 }
                 35..=37 => {
@@ -864,7 +888,7 @@ impl Runner {
                         .fonts
                         .as_mut()
                         .ok_or(RuntimeError::Unmounted)?
-                        .step(&self.app.runtime, smoke.stage)?;
+                        .step(&self.app.host.runtime, smoke.stage)?;
                     if !done {
                         // A capture is on its way; run this stage again.
                         smoke.settle_attempts += 1;
@@ -893,13 +917,14 @@ impl Runner {
                         smoke.frames, smoke.baseline_frames,
                         "font/icon controls did not settle"
                     );
-                    assert!(self.app.runtime.next_deadline().is_none());
+                    assert!(self.app.host.runtime.next_deadline().is_none());
                     smoke
                         .fonts
                         .take()
                         .ok_or(RuntimeError::Unmounted)?
-                        .unmount(&mut self.app.runtime)?;
-                    smoke.windows = Some(window_smoke::WindowSmoke::new(&mut self.app.runtime)?);
+                        .unmount(&mut self.app.host.runtime)?;
+                    smoke.windows =
+                        Some(window_smoke::WindowSmoke::new(&mut self.app.host.runtime)?);
                     smoke.baseline_frames = smoke.frames;
                 }
                 40..=44 => {
@@ -911,7 +936,7 @@ impl Runner {
                         .windows
                         .as_ref()
                         .ok_or(RuntimeError::Unmounted)?
-                        .step(&mut self.app.runtime, smoke.stage)?;
+                        .step(&mut self.app.host.runtime, smoke.stage)?;
                     smoke.baseline_frames = smoke.frames;
                 }
                 45 => {
@@ -926,7 +951,7 @@ impl Runner {
                         smoke.frames, smoke.baseline_frames,
                         "floating windows did not settle"
                     );
-                    assert!(self.app.runtime.next_deadline().is_none());
+                    assert!(self.app.host.runtime.next_deadline().is_none());
                     println!(
                         "Native smoke: {} frames; existing rendering/input/recovery checks plus dialog, context menu, submenu, banner, toast, inline numeric editing, rich text, font/icon overrides, floating window move/resize/minimize/restore/close and idle passed",
                         smoke.frames
@@ -944,10 +969,22 @@ impl Runner {
                         fn paint(&self, _: &mut crate::Painter) -> Result<(), crate::DrawError> {
                             Err(crate::DrawError::InvalidColor)
                         }
+                        fn inspect(&self) -> crate::ComponentDetails {
+                            let mut details = crate::ComponentDetails::default();
+                            // Mounted over the content still shown, on purpose.
+                            details.validation.overlap = crate::OverlapPolicy::Allow;
+                            details
+                        }
                     }
                     self.app
+                        .host
                         .runtime
                         .mount_tree(crate::Element::new("persistent-paint-error", FailingPaint))?;
+                    // Its update succeeds; only its paint fails, later. The
+                    // report is read here, since the runner's later flushes
+                    // end in the paint failures this stage provokes.
+                    self.app.host.runtime.flush(now)?;
+                    assert_no_overlap(&self.app.host.runtime.validation_report());
                 }
                 _ => (),
             }
@@ -1104,6 +1141,18 @@ impl Drop for StageReport {
     }
 }
 
+/// Fails with the issue's message when development validation reports an
+/// unexpected overlap. A release build reports nothing, so it always passes.
+fn assert_no_overlap(report: &crate::ValidationReport) {
+    if let Some(issue) = report
+        .issues
+        .iter()
+        .find(|issue| issue.code == crate::ValidationCode::UnexpectedOverlap)
+    {
+        panic!("a probe overlaps without allowing it: {}", issue.message);
+    }
+}
+
 // Native window checks each need their own process: winit allows one event
 // loop per process, so run them one at a time with `--exact`, as listed in
 // docs/verification.md §Native evidence.
@@ -1126,17 +1175,27 @@ fn software_window_resize_and_idle() -> Result<(), AppError> {
 fn window_resize_and_idle(software: bool) -> Result<(), AppError> {
     let paints = Rc::new(Cell::new(0));
     let widget_paints = paints.clone();
-    let failures = Rc::new(Cell::new(0));
-    let observed = failures.clone();
-    let mut app = App::new("pert-ui native verification", |_| Ok(()))
+    /// The state `on_error` changes on every call, and a copy of its count
+    /// the check reads after the run.
+    struct Failures {
+        calls: u32,
+        seen: Rc<Cell<u32>>,
+    }
+    let seen = Rc::new(Cell::new(0));
+    let failures = Failures {
+        calls: 0,
+        seen: seen.clone(),
+    };
+    let mut app = App::new("pert-ui native verification", move |_| Ok(failures))
         .size(crate::Size::from([1000, 660]))?
         .min_size(crate::Size::from([480, 320]))?
-        .on_error(move |_, _| {
-            observed.set(observed.get() + 1);
+        .on_error(|_, failures, _| {
+            failures.calls += 1;
+            failures.seen.set(failures.calls);
             crate::ErrorAction::Retry
         });
-    app.software = software;
-    let original_root = app.runtime.mount_tree(crate::Element::new(
+    app.host.software = software;
+    let original_root = app.host.runtime.mount_tree(crate::Element::new(
         "flow",
         crate::Wrap::new((0..4).map(|index| {
             crate::Element::new(format!("tile-{index}"), Rectangle(widget_paints.clone()))
@@ -1145,7 +1204,7 @@ fn window_resize_and_idle(software: bool) -> Result<(), AppError> {
     let event_loop = native_test_event_loop()?;
     let progress = Arc::new(AtomicU8::new(0));
     let report = StageReport::start(progress.clone());
-    let mut runner = Runner::new(app, event_loop.create_proxy());
+    let mut runner = Runner::new(app.start()?.into(), event_loop.create_proxy());
     runner.smoke = Some(Smoke {
         original_root,
         controls: None,
@@ -1183,9 +1242,9 @@ fn window_resize_and_idle(software: bool) -> Result<(), AppError> {
         runner.error
     );
     assert_eq!(
-        failures.get(),
+        seen.get(),
         4,
-        "four paint failures; the invalid number is refused by its field, not reported"
+        "four paint failures, counted in the state on_error received; the invalid number is refused by its field, not reported"
     );
     Ok(())
 }

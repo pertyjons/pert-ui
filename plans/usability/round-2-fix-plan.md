@@ -2002,3 +2002,29 @@ plan closes.
   with P8's open fix; corrected by the author (test renamed, CHANGELOG
   line reworded). Codex's recheck: both points resolved, ready. **P10
   done.**
+
+- **P11 Application state from the initializer (0.3.86), 2026-10-28.**
+  Implemented by a fresh agent from the approved design
+  (`round-2-design-P11.md`, revision 2): `App<S = ()>` whose initializer
+  returns `Result<S, AppError>`; `on_close`, `on_error` and
+  `on_window_error` receive `&mut S`; `HeadlessApp<S>` with `state`,
+  `state_mut` and `runtime_and_state_mut` (P11-D2); the state erased into a
+  private `Running` at a thin generic `platform::run<S>` that keeps the
+  startup order (P11-D1), the runner and smokes non-generic; the state
+  dropped after the runtime's shutdown on every path; `keep_alive` taught
+  as the runtime-only route (P11-D3), four examples returning their object
+  as state; the overlapping native probes report `OverlapPolicy::Allow`
+  and check the report; docs, migrations, the task 4 fixture at 0.3.86;
+  TODO.md: the L3 overlap entry removed and a narrowed summary entry
+  re-recorded; the follow-up removed. Implementer's choices: a private
+  non-generic `drive` after erasure; `finish_runtime` generic over its
+  success value. Mutation evidence (`target/p11-evidence/`): the seven
+  headless mutations failed at their named assertions. Gate (fresh, the
+  dependency/platform row): fmt, workspace Clippy, workspace tests, the
+  five headless sessions, doctests, rustdoc `-D warnings`, the
+  diagnostics snapshots, the API listing gate, release-profile tests,
+  `pert-ui` no-default, `desktop-cpu` and `cpu` (Clippy, tests, rustdoc),
+  the headless gallery, `cargo package` of the five libraries (dirty
+  tree; repackaged after the commit below), `git diff --check`. Native
+  suite, kit fixture check, consumer check and hand check: below. Codex
+  review: pending.

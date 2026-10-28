@@ -35,9 +35,6 @@ until then if one is being written.
   form of `ReadSignal::combine` (0.3.85) replaces; neither needed to write
   through a projection. The follow-up stays for a control bound to a field
   of one model signal, with its validation, revision and conflict rules.
-- **Typed state handoff from `App::new`** to its lifecycle callbacks
-  (`on_close`, `on_error`). From the diagram-probe plan; today a shared slot
-  carries it, as the custom-widget guide shows.
 - **Default insets.** From the app-author plan slice 4: list rows and a
   bottom status region touch the window edge. It is a visual default
   decision, separate from flex layout.

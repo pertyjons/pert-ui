@@ -170,7 +170,7 @@ impl Driver {
     }
     /// The main window's adapter state, wherever the runner keeps it now.
     fn main(&self) -> Result<&NativeState, AppError> {
-        let primary = self.runner.app.runtime.primary_window();
+        let primary = self.runner.app.host.runtime.primary_window();
         if self.runner.current.root == primary {
             return Ok(&self.runner.current);
         }
@@ -188,7 +188,7 @@ impl Driver {
             .ok_or_else(|| Self::error("the main window is not open"))
     }
     fn scale(&self) -> f64 {
-        self.runner.app.runtime.viewport().scale()
+        self.runner.app.host.runtime.viewport().scale()
     }
     /// Feeds one constructed event to the adapter's native entry point and
     /// surfaces the failure it recorded, if any.
@@ -252,6 +252,7 @@ impl Driver {
     fn border_box(&self, key: &str) -> Result<[f32; 4], AppError> {
         self.runner
             .app
+            .host
             .runtime
             .inspect()
             .components
@@ -272,7 +273,7 @@ impl Driver {
         expected: CursorIcon,
         native: winit::window::CursorIcon,
     ) -> Result<(), AppError> {
-        let runtime = self.runner.app.runtime.cursor_icon();
+        let runtime = self.runner.app.host.runtime.cursor_icon();
         let shown = self.main()?.cursor;
         Self::ensure(runtime == expected && shown == Some(expected), || {
             format!(
@@ -296,6 +297,7 @@ impl Driver {
         let drag = self
             .runner
             .app
+            .host
             .runtime
             .inspect()
             .drag
@@ -304,6 +306,7 @@ impl Driver {
         let bounds = self
             .runner
             .app
+            .host
             .runtime
             .inspect()
             .components
@@ -319,7 +322,13 @@ impl Driver {
             (bounds[0] - expected[0]).abs() < 0.01 && (bounds[1] - expected[1]).abs() < 0.01,
             || format!("preview at {bounds:?}, expected its origin at {expected:?}"),
         )?;
-        let scene = self.runner.app.runtime.paint().map_err(AppError::from)?;
+        let scene = self
+            .runner
+            .app
+            .host
+            .runtime
+            .paint()
+            .map_err(AppError::from)?;
         let renderer = self
             .runner
             .current
@@ -378,7 +387,7 @@ impl Driver {
                 self.step,
                 state.redraw_pending,
                 state.dirty,
-                self.runner.app.runtime.needs_paint(),
+                self.runner.app.host.runtime.needs_paint(),
                 state.presentable(),
                 super::smoke::WITHHELD
             )
@@ -391,8 +400,8 @@ impl Driver {
             Await::Nothing => true,
             Await::Frame(frames) => self.main()?.frames > frames,
             Await::Detached => {
-                let primary = self.runner.app.runtime.primary_window();
-                self.runner.app.runtime.native_windows().len() == 2
+                let primary = self.runner.app.host.runtime.primary_window();
+                self.runner.app.host.runtime.native_windows().len() == 2
                     && self
                         .runner
                         .parked
@@ -432,7 +441,7 @@ impl Driver {
                 self.start_drag(event_loop)?;
             }
             1 => {
-                let drag = self.runner.app.runtime.inspect().drag;
+                let drag = self.runner.app.host.runtime.inspect().drag;
                 Self::ensure(
                     drag.as_ref().is_some_and(|drag| drag.target.is_none()),
                     || format!("no session without a target after the threshold: {drag:?}"),
@@ -457,7 +466,7 @@ impl Driver {
             4 => {
                 self.check_cursor(CursorIcon::NoDrop, winit::window::CursorIcon::NoDrop)?;
                 self.button(event_loop, ElementState::Released)?;
-                Self::ensure(!self.runner.app.runtime.drag_active(), || {
+                Self::ensure(!self.runner.app.host.runtime.drag_active(), || {
                     "a release over the forbidding target did not end the session".into()
                 })?;
                 // A fractional scale the compositor did not choose, applied to
@@ -474,12 +483,17 @@ impl Driver {
                 let size = self.main()?.size;
                 self.runner
                     .app
+                    .host
                     .runtime
                     .set_viewport(Viewport::from_physical(
                         PhysicalExtent::new(size.width, size.height),
                         fractional,
                     )?)?;
-                self.runner.app.runtime.flush(self.runner.start.elapsed())?;
+                self.runner
+                    .app
+                    .host
+                    .runtime
+                    .flush(self.runner.start.elapsed())?;
                 self.start_drag(event_loop)?;
             }
             5 => {
@@ -497,7 +511,7 @@ impl Driver {
                 self.check_cursor(CursorIcon::Copy, winit::window::CursorIcon::Copy)?;
                 self.check_preview(self.pointer)?;
                 self.button(event_loop, ElementState::Released)?;
-                Self::ensure(!self.runner.app.runtime.drag_active(), || {
+                Self::ensure(!self.runner.app.host.runtime.drag_active(), || {
                     "a release over the copy target did not end the session".into()
                 })?;
                 // Back to the compositor's scale, and a new session there.
@@ -517,7 +531,7 @@ impl Driver {
                 self.move_to(event_loop, -20.0, -20.0)?;
             }
             8 => {
-                let drag = self.runner.app.runtime.inspect().drag;
+                let drag = self.runner.app.host.runtime.inspect().drag;
                 Self::ensure(
                     drag.as_ref().is_some_and(|drag| drag.target.is_none()),
                     || format!("outside the window the session has a target: {drag:?}"),
@@ -527,7 +541,7 @@ impl Driver {
                 // The source is told within the release's own dispatch.
                 Self::ensure(
                     self.outcome() == Some(DragOutcome::Unclaimed)
-                        && !self.runner.app.runtime.drag_active(),
+                        && !self.runner.app.host.runtime.drag_active(),
                     || format!("a release outside ended as {:?}", self.outcome()),
                 )?;
                 eprintln!(
@@ -546,7 +560,7 @@ impl Driver {
                 self.move_logical(event_loop, center)?;
             }
             10 => {
-                let snapshot = self.runner.app.runtime.inspect();
+                let snapshot = self.runner.app.host.runtime.inspect();
                 let strip = snapshot
                     .components
                     .iter()
@@ -567,11 +581,11 @@ impl Driver {
                         device_id: winit::event::DeviceId::dummy(),
                     },
                 )?;
-                Self::ensure(self.runner.app.runtime.drag_active(), || {
+                Self::ensure(self.runner.app.host.runtime.drag_active(), || {
                     "leaving the window with the button held ended the session".into()
                 })?;
                 self.button(event_loop, ElementState::Released)?;
-                Self::ensure(!self.runner.app.runtime.drag_active(), || {
+                Self::ensure(!self.runner.app.host.runtime.drag_active(), || {
                     "a release after the leave did not end the session".into()
                 })?;
                 self.waiting = Await::Detached;
@@ -580,11 +594,12 @@ impl Driver {
                 return Ok(());
             }
             11 => {
-                let windows = self.runner.app.runtime.native_windows().len();
-                let window = self.runner.app.runtime.window_of(&self.tab)?;
-                Self::ensure(window != self.runner.app.runtime.primary_window(), || {
-                    "the dragged tab stayed in the main window".into()
-                })?;
+                let windows = self.runner.app.host.runtime.native_windows().len();
+                let window = self.runner.app.host.runtime.window_of(&self.tab)?;
+                Self::ensure(
+                    window != self.runner.app.host.runtime.primary_window(),
+                    || "the dragged tab stayed in the main window".into(),
+                )?;
                 eprintln!(
                     "Leave then release outside: the tab detached into a presented native \
                      window ({windows} native windows)"
@@ -656,7 +671,6 @@ impl ApplicationHandler<UserEvent> for Driver {
 #[ignore = "requires a native desktop session and hardware GPU adapter"]
 fn injected_pointer_drives_a_drag_session_through_the_native_adapter() -> Result<(), AppError> {
     let mut app = App::new("pert-ui drag smoke", |_| Ok(()));
-    app.initialize.take();
     let outcomes = Rc::new(RefCell::new(Vec::new()));
     let tab = |key: &str| {
         Tab::new(
@@ -667,7 +681,7 @@ fn injected_pointer_drives_a_drag_session_through_the_native_adapter() -> Result
         .into_element()
     };
     let zone = |key: &str, answer| Element::new(key, Zone(answer));
-    let root = app.runtime.mount_tree(Element::new(
+    let root = app.host.runtime.mount_tree(Element::new(
         "page",
         Column::new([
             Element::new("tabs", Tabs::new([]).detachable(true))
@@ -691,17 +705,19 @@ fn injected_pointer_drives_a_drag_session_through_the_native_adapter() -> Result
         ]),
     ))?;
     let tabs = app
+        .host
         .runtime
         .find_descendant(&root, "tabs")?
         .ok_or(RuntimeError::Unmounted)?;
     let tab = app
+        .host
         .runtime
         .children(&tabs)?
         .into_iter()
         .next()
         .ok_or(RuntimeError::Unmounted)?;
     let event_loop = native_test_event_loop()?;
-    let runner = Runner::new(app, event_loop.create_proxy());
+    let runner = Runner::new(app.start()?.into(), event_loop.create_proxy());
     let mut driver = Driver {
         runner,
         outcomes,

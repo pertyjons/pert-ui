@@ -789,8 +789,9 @@ fn window() -> Result<(), Box<dyn std::error::Error>> {
             .engine
             .send(Command::Run(true))
             .map_err(pert_ui::ApplicationError::new)?;
-        ui.keep_alive(mixer);
-        Ok(())
+        // The application state keeps the mixer, and with it the engine,
+        // until the application ends.
+        Ok(mixer)
     })
     .size(Size::from([900, 520]))?
     .run()?;
