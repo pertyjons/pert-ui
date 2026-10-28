@@ -1769,4 +1769,5 @@ plan closes.
   pending) and one nit: the table test lacked the `Selector::children`
   comparison the design names for tests 1, 3 and 5; the author added
   `agrees_with_selector(.., &["parts"], ..)` and ran the test (passes),
-  fmt and the runtime's test Clippy. Recheck: pending.
+  fmt and the runtime's test Clippy. Codex's recheck: both points resolved,
+  ready. **P5 done.**
