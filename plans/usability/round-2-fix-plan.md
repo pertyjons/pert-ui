@@ -10,8 +10,8 @@ found it ready for the maintainer's decisions
 session as [round 3](#round-3-proposal) describes; the parts land on the
 branch `round-2-fixes`; the design checkpoints are approved by the author and
 Codex once Codex finds them ready, with the recommended options, under the
-maintainer's delegation of 2026-10-28, and recorded as such. No part has
-started. Written against `developer-usability` at 26e6b5a (0.3.75); the
+maintainer's delegation of 2026-10-28, and recorded as such. Each part's
+state is in [Progress](#progress). Written against `developer-usability` at 26e6b5a (0.3.75); the
 library code is unchanged at ceb5dc7, which Codex's recheck read.
 
 ## Purpose
