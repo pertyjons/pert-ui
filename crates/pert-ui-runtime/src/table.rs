@@ -944,6 +944,7 @@ impl Component for CellContent {
         cx.measure(0, space)
     }
     fn arrange(&self, cx: &mut ArrangeContext<'_>, size: Size) -> Result<(), RuntimeError> {
+        cx.measurement().refresh_forwarded(0)?;
         cx.place(0, Rect::from_size(size))
     }
     fn inspect(&self) -> ComponentDetails {

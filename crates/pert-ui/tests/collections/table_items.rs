@@ -404,7 +404,8 @@ fn an_index_out_of_range_is_refused_before_the_reveal_scrolls() -> TestResult {
 #[test]
 fn click_item_reads_the_items_again_after_a_reveal_that_scrolls() -> TestResult {
     let (mut ui, table, sorts) = below_the_fold()?;
-    Driver::new(&mut ui).click_item(&table, 0)?;
+    // The items read after the reveal have bounds, so the click is made.
+    assert_eq!(Driver::new(&mut ui).click_item(&table, 0), Ok(()));
     assert_eq!(sorted(&sorts), [("a".to_owned(), SortDirection::Ascending)]);
     Ok(())
 }
@@ -1221,6 +1222,95 @@ fn content_keyed_like_the_editors_host_is_reported_once_against_the_tables_wrapp
     assert!(
         found.iter().all(|keys| keys == &["cell editor", "content"]),
         "{found:?}"
+    );
+    Ok(())
+}
+
+/// Text that wraps to two lines in a narrow column and fits one in a wide one.
+#[cfg(debug_assertions)]
+const WRAPPING: &str = "alpha beta gamma";
+
+/// A 28 px table of one column `c`, with content keyed like the editor's host
+/// wrapping [`WRAPPING`], and, with `edit`, an open edit of row `r1` whose
+/// editor is a label of the same text.
+#[cfg(debug_assertions)]
+fn wrapper_table(edit: bool) -> Result<(Runtime, TableController), Box<dyn std::error::Error>> {
+    let mut ui = ui(600.0, 300.0);
+    let controller = TableController::new(
+        &ui,
+        ListSelection::new(&ui, SelectionMode::Single),
+        [TableColumn::new("c", "C")
+            .width(Length::new(400.0)?)
+            .editable(true)],
+        TableSource::new(Built(Rc::new(|_, _| {
+            Some(Element::new("cell editor", Label::new(WRAPPING)))
+        }))),
+    )?;
+    let table = ui.mount_tree(Element::new(
+        "table",
+        Table::new(&controller, 28.0)?
+            .cell_editor(|_| Ok(Element::new("editor", Label::new(WRAPPING)))),
+    ))?;
+    settle(&mut ui);
+    if edit {
+        let body = ui.children(&table)?[0].clone();
+        ui.focus(&body)?;
+        controller.selection().set_active(Some("r1".into()))?;
+        controller.set_active_column(Some("c".into()))?;
+        Driver::new(&mut ui).key(KeyCode::Enter)?;
+        ui.find(&table, &["r1", "c", "editor"])?
+            .ok_or("the editor")?;
+    }
+    Ok((ui, controller))
+}
+
+/// The rows whose wrapped content, or whose editor, is reported, after the
+/// column took each width in turn.
+#[cfg(debug_assertions)]
+fn reported_through_widths(
+    edit: bool,
+    widths: [f32; 3],
+) -> Result<Vec<Vec<Vec<String>>>, Box<dyn std::error::Error>> {
+    let (mut ui, controller) = wrapper_table(edit)?;
+    let mut seen = Vec::new();
+    for width in widths {
+        controller.set_column_width("c", Length::new(width)?)?;
+        settle(&mut ui);
+        let mut found = exceeding(&ui);
+        found.retain(|keys| keys[0] == if edit { "editor" } else { "cell editor" });
+        seen.push(found);
+    }
+    Ok(seen)
+}
+
+#[cfg(debug_assertions)]
+#[test]
+fn a_wrapper_measured_from_its_cache_reports_its_contents_current_height() -> TestResult {
+    let wrapped = || vec![vec!["cell editor".to_owned(), "content".to_owned()]; 3];
+    // Wide, narrow and wide again: the last wide measurement of the wrapper
+    // is a cached one, and the content's two lines no longer count.
+    assert_eq!(
+        reported_through_widths(false, [400.0, 70.0, 400.0])?,
+        [vec![], wrapped(), vec![]]
+    );
+    assert_eq!(
+        reported_through_widths(false, [70.0, 400.0, 70.0])?,
+        [wrapped(), vec![], wrapped()]
+    );
+    Ok(())
+}
+
+#[cfg(debug_assertions)]
+#[test]
+fn an_editor_host_measured_from_its_cache_reports_its_editors_current_height() -> TestResult {
+    let editor = || vec![vec!["editor".to_owned(), "cell editor".to_owned()]];
+    assert_eq!(
+        reported_through_widths(true, [400.0, 70.0, 400.0])?,
+        [vec![], editor(), vec![]]
+    );
+    assert_eq!(
+        reported_through_widths(true, [70.0, 400.0, 70.0])?,
+        [editor(), vec![], editor()]
     );
     Ok(())
 }

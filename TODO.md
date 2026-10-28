@@ -198,3 +198,16 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   from the geometry its painting and hit testing use, as the table's titles
   do since 0.3.83, with a test that clicks one. Found by round 2 part P8's
   checkpoint.
+- [ ] 2026-10-28 `crates/pert-ui-runtime/src/layout.rs`
+  `MeasureContext::refresh_forwarded` — avoid privileged paths: the table's
+  measurement-forwarding wrappers (`CellContent`, `EditHost`) measure their
+  child again in `arrange` under the constraints they were last measured
+  under, so a cached wrapper measurement leaves no stale child height for
+  `ValidationCode::ExceedsFixedHeight`; the method is crate-private, and an
+  external component that sets `ValidationHints::fixed_height` and forwards
+  its child's measurement cannot learn those constraints in `arrange`. A
+  fixed-height parent that measures its child in `arrange`, as `TableCell`
+  does, is unaffected. Make the refresh public (or let the runtime refresh a
+  forwarding child itself on a cache hit), document it on `fixed_height`, and
+  test it with an external wrapper. Found by the Codex review of round 2
+  part P8.

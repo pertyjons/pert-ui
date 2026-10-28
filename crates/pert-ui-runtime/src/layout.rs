@@ -812,6 +812,24 @@ impl std::fmt::Debug for MeasureContext<'_> {
     }
 }
 impl MeasureContext<'_> {
+    /// Measures child `index` again under the constraints this component was
+    /// last measured under, for a component that forwards its child's
+    /// measurement and gives its children a fixed height
+    /// ([`ValidationHints::fixed_height`](crate::ValidationHints::fixed_height)).
+    /// A cached measurement of this component returns without measuring the
+    /// child, which would leave the child's last measurement, the one
+    /// development validation checks, from other constraints; arranging calls
+    /// this so the child's matches. Development builds only: release builds
+    /// keep no such record and do nothing.
+    pub(crate) fn refresh_forwarded(&self, index: usize) -> Result<(), RuntimeError> {
+        #[cfg(debug_assertions)]
+        if let Some(constraints) = self.node.measured_constraints() {
+            self.measure(index, constraints)?;
+        }
+        #[cfg(not(debug_assertions))]
+        let _ = index;
+        Ok(())
+    }
     /// Current logical window bounds for anchored surface sizing. Native resize
     /// and UI zoom invalidate layout before this value is consumed again.
     #[must_use]

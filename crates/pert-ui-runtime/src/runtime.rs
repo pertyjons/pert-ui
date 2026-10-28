@@ -933,11 +933,18 @@ impl Node {
             .flatten()
     }
     /// The height this node was last measured at, in window pixels at its
-    /// committed scale, for development validation's fixed-height check.
+    /// committed scale, for development validation's fixed-height check. It
+    /// is multiplied in `f64`, so a valid measurement times a valid scale
+    /// stays finite.
     #[cfg(debug_assertions)]
-    pub(crate) fn measured_height(&self) -> Option<f32> {
-        let height = self.measured.get().latest()?.height();
-        Some(height * self.committed_scale.get().unwrap_or(self.scale.get()))
+    pub(crate) fn measured_height(&self) -> Option<f64> {
+        let height = f64::from(self.measured.get().latest()?.height());
+        Some(height * f64::from(self.committed_scale.get().unwrap_or(self.scale.get())))
+    }
+    /// The constraints this node was last measured under.
+    #[cfg(debug_assertions)]
+    pub(crate) fn measured_constraints(&self) -> Option<crate::Constraints> {
+        self.measured.get().latest_constraints()
     }
     pub(crate) fn presentation_interval(&self) -> Duration {
         self.window().presentation_interval.get()

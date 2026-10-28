@@ -12,7 +12,7 @@ pub(crate) struct NodeData {
     pub(crate) collection: Option<CollectionExtent>,
     /// The height the component was last measured at, by the parent that
     /// laid it out, in window pixels; for `ExceedsFixedHeight`.
-    pub(crate) measured_height: Option<f32>,
+    pub(crate) measured_height: Option<f64>,
     pub(crate) window: u64,
     pub(crate) parent: Option<u64>,
     pub(crate) key: String,
@@ -113,7 +113,7 @@ impl Validator {
         id: u64,
         bounds: [f32; 4],
         clip: [f32; 4],
-        measured_height: Option<f32>,
+        measured_height: Option<f64>,
         collection: Option<CollectionExtent>,
     ) {
         if let Some(node) = self.nodes.get_mut(&id) {
@@ -134,7 +134,7 @@ impl Validator {
     /// Records a measurement that changed without the node being arranged or
     /// updated again: a parent measured it under new constraints and placed
     /// it where it was.
-    pub(crate) fn measured(&mut self, id: u64, height: Option<f32>) {
+    pub(crate) fn measured(&mut self, id: u64, height: Option<f64>) {
         if let Some(node) = self.nodes.get_mut(&id)
             && !same_height(node.measured_height, height)
         {
@@ -437,8 +437,8 @@ fn same_collection(a: Option<CollectionExtent>, b: Option<CollectionExtent>) -> 
     }
 }
 
-fn same_height(a: Option<f32>, b: Option<f32>) -> bool {
-    a.map(f32::to_bits) == b.map(f32::to_bits)
+fn same_height(a: Option<f64>, b: Option<f64>) -> bool {
+    a.map(f64::to_bits) == b.map(f64::to_bits)
 }
 
 fn same_array(a: Option<[f32; 4]>, b: Option<[f32; 4]>) -> bool {
@@ -723,7 +723,7 @@ fn check(nodes: &BTreeMap<u64, NodeData>) -> Vec<ValidationIssue> {
             let height = node
                 .measured_height
                 .filter(|height| height.is_finite())
-                .map_or(inner.h, |measured| inner.h.max(f64::from(measured)));
+                .map_or(inner.h, |measured| inner.h.max(measured));
             if inner.y + height > outer.y + outer.h + GEOMETRY_TOLERANCE
                 || inner.y < outer.y - GEOMETRY_TOLERANCE
             {

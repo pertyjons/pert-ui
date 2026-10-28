@@ -1905,4 +1905,22 @@ plan closes.
   gallery, the API listing gate, `git diff --check`. **Native evidence:
   missing** (pointer sorting, row heights at every density, Note editing:
   the maintainer's Linux hand check, in `docs/verification.md`). Codex
-  review: pending.
+  review (2026-10-28): needs fixes, two should-fix and two nits, all
+  verified: a forwarding wrapper (`CellContent`, `EditHost`) measured from
+  its cache left its child's measured height stale, so the report stayed
+  after wrapped text fit (now the wrapper measures its child again under
+  its own last constraints when it arranges it, through a crate-private
+  `MeasureContext::refresh_forwarded`, debug builds only; two width-cycle
+  regressions, failing with the refresh a no-op); scaled measured heights
+  were multiplied in f32 and an infinite product was ignored (now f64
+  throughout, with an `f32::MAX` at scale 2 test); tests 7 and 22b failed
+  through `?` before their named assertions (now explicit outcome
+  assertions, failing there under their mutations; test 8's table half
+  still cannot fail, its custom-component half does); `QueryResult`'s
+  unknown-field rejection was untested (added). **Open, recorded in
+  TODO.md:** the refresh is crate-private, so an external fixed-height
+  component that forwards its child's measurement cannot refresh it the
+  same way (one that measures its child in `arrange`, as `TableCell` does,
+  is unaffected); widening the public API is left to the maintainer.
+  Fixes gate (fresh): as above, with the serde configurations and the
+  release build. Recheck: pending.

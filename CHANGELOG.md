@@ -26,9 +26,13 @@ P8-D4).
   component that gives it the row's height (the cell, or the wrapper keyed
   `content` or `cell editor` around content keyed like the editor's host and
   around an open edit's editor). The measurement is the one the parent
-  obtained during layout; a measurement that changes while the child keeps
-  its rectangle is recorded after the next successful layout of its window.
-  An external grid sets the same hint.
+  obtained during layout, kept in f64 at the component's scale; a
+  measurement that changes while the child keeps its rectangle is recorded
+  after the next successful layout of its window, and the table's wrappers,
+  which forward their child's measurement, measure the child again under
+  their own last constraints when they arrange it, so a cached wrapper
+  measurement leaves no stale child height. An external grid sets the same
+  hint.
 - Breaking (R2-22): `TestError::NotFound` gains `resolved`, the longest
   prefix of the path that resolves (a prefix `Runtime::find` refuses as
   ambiguous counts), and its message says how far the path resolves.
@@ -77,17 +81,20 @@ P8-D4).
 - Tests: the runtime's `testing` binary covers the resolved prefix and
   `click_item`'s refusals; its `validation` binary covers a custom
   fixed-height parent, the hint alone, the measurement alone and a
-  measurement queued across a detach and a redock; its unit tests cover the
+  measurement queued across a detach and a redock, and the largest finite
+  measured height at a view scale of 2; its unit tests cover the
   queue's move and unmount cleanup, idle flushes and a rejected restore. The
   facade's `collections` binary adds `table_items` (header bounds and
   sorting, horizontal clipping, a view scale, a title out of view, refusals
   before and after a scrolling reveal, before the first, pending and failed
   layouts, a hidden table, a promoted surface and a detached window, a
   restore, a reparent and a failed zoom, moves before a layout, a zero-size
-  component in a continuing zoom, the cell address and the row-height
-  reports); `foundation` covers custom item rectangles and the schema-16
-  envelopes; the gallery tests the Note editor after a density switch. Each
-  new-behavior test was shown to fail under its named mutation.
+  component in a continuing zoom, the cell address, the row-height reports
+  and width cycles through wide and narrow columns for wrapped content and an
+  editor); `foundation` covers custom item rectangles and the schema-16
+  envelopes, including unknown fields in both; the gallery tests the Note
+  editor after a density switch. Each new-behavior test was shown to fail
+  under its named mutation, at an assertion of its outcome.
 - API listings: `api/pert-ui-runtime/default.txt` and `serde.txt` add
   `SemanticItem::bounds`, `SemanticItem::local_bounds`,
   `ValidationHints::fixed_height`, `ValidationCode::ExceedsFixedHeight`,

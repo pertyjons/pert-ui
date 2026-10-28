@@ -797,14 +797,22 @@ fn snapshots_and_query_results_carry_item_bounds_and_decode_only_schema_16() -> 
     );
     rejects_other_revisions::<QueryResult>(&empty_query);
     let unknown = empty.replacen(r#""windows""#, r#""tool":1,"windows""#, 1);
+    assert_ne!(unknown, empty);
     assert!(serde_json::from_str::<InspectionSnapshot>(&unknown).is_err());
+    let unknown_query = empty_query.replacen(r#""at""#, r#""tool":1,"at""#, 1);
+    assert_ne!(unknown_query, empty_query);
+    assert!(serde_json::from_str::<QueryResult>(&unknown_query).is_err());
 
     // An item written without the field has no bounds.
     let text = serde_json::to_string(&query)?;
     let without = text.replacen(r#","bounds":null"#, "", 1);
     assert_ne!(without, text);
-    let decoded: QueryResult = serde_json::from_str(&without)?;
-    assert_eq!(items(&decoded.components), expected);
+    let decoded = serde_json::from_str::<QueryResult>(&without);
+    assert!(
+        decoded.is_ok(),
+        "an item without bounds decodes: {decoded:?}"
+    );
+    assert_eq!(items(&decoded?.components), expected);
     Ok(())
 }
 

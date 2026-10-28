@@ -45,6 +45,11 @@ impl Measurements {
     pub(crate) fn latest(&self) -> Option<Size> {
         self.entries[0].map(|(_, size)| size)
     }
+    /// The constraints of the most recently used measurement.
+    #[cfg(debug_assertions)]
+    pub(crate) fn latest_constraints(&self) -> Option<Constraints> {
+        self.entries[0].map(|(constraints, _)| constraints)
+    }
     /// Whether no measurement is retained.
     #[cfg(test)]
     pub(crate) fn is_empty(&self) -> bool {

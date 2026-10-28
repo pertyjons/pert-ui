@@ -483,3 +483,43 @@ fn a_measurement_queued_before_a_move_is_recorded_only_in_the_window_that_lays_i
     }
     Ok(())
 }
+
+/// A leaf whose measured height is the largest finite `f32`.
+struct Tallest;
+impl Component for Tallest {
+    fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+        Ok(())
+    }
+    fn measure(&self, _: &MeasureContext<'_>, _: Constraints) -> Result<Size, RuntimeError> {
+        Ok(Size::new(10.0, f32::MAX)?)
+    }
+}
+
+#[cfg(debug_assertions)]
+#[test]
+fn the_largest_measured_height_at_a_view_scale_of_two_is_still_reported() -> TestResult {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(400.0, 300.0, 1.0)?)?;
+    let zoom = ZoomController::new(&ui);
+    zoom.set(ViewTransform::new(ViewScale::new(2.0)?, Point::ZERO))?;
+    let (hint, width) = (ui.signal(true), ui.signal(WIDE));
+    ui.mount_tree(Element::new(
+        "zoom",
+        ZoomView::new([(
+            Point::ZERO,
+            Strip::element("strip", Element::new("tallest", Tallest), &hint, &width),
+        )])
+        .controller(&zoom),
+    ))?;
+    ui.flush(Duration::ZERO)?;
+    // f32::MAX times the scale is beyond f32 but well within f64.
+    let strip = ui
+        .inspect()
+        .components
+        .into_iter()
+        .find(|component| component.key == "strip")
+        .ok_or("the strip")?;
+    assert_eq!(strip.view_scale, 2.0);
+    assert_eq!(exceeding(&ui), [["tallest", "strip"]]);
+    Ok(())
+}
