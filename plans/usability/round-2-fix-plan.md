@@ -1716,8 +1716,9 @@ plan closes.
   asserts the update count and next deadline. Same kind: `ClockOverflow`'s
   rustdoc, the `testing` pages' nested-error examples. Mutation evidence
   (`target/p4-evidence/`): each of the 13 new-behavior tests and the
-  contract mutations failed as the design names. No fixture check (the
-  fixture uses none of these). Gate (fresh): fmt, workspace Clippy,
+  contract mutations failed (three of them, before the review fix below,
+  at an earlier `unwrap_err` or `?` rather than at their named assertion).
+  No fixture check (the fixture uses none of these). Gate (fresh): fmt, workspace Clippy,
   workspace tests (with `testing_closure`), the five headless sessions,
   workspace and `cpu` doctests, rustdoc `-D warnings`, the diagnostics
   snapshots, the API listing gate, `git diff --check`. Native evidence: not
@@ -1757,4 +1758,15 @@ plan closes.
   (with `testing_closure`), the five headless sessions, doctests, rustdoc
   `-D warnings`, the diagnostics snapshots (new `e01`, no other change),
   the API listing gate, `git diff --check`. Native evidence: not
-  applicable. Codex review: pending.
+  applicable. **Kit fixture check** (author, 2026-10-28):
+  `run.sh prepare ~/pert-ui-usability/kit-2a33217` from a clean worktree
+  at 2a33217 (prepare: commit 2a33217, dirty 0, version 0.3.80), then the
+  fixture copied to a fresh run directory and `cargo test --offline` run
+  in it with `run.sh exec`: it builds against the packaged 0.3.80 (its
+  lock file names pert-ui 0.3.80) and passes (the fixture has no tests of
+  its own, so the check is that it compiles and links). **Codex review**
+  (2026-10-28): needs fixes, one should-fix (this kit check, then
+  pending) and one nit: the table test lacked the `Selector::children`
+  comparison the design names for tests 1, 3 and 5; the author added
+  `agrees_with_selector(.., &["parts"], ..)` and ran the test (passes),
+  fmt and the runtime's test Clippy. Recheck: pending.

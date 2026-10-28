@@ -1802,6 +1802,7 @@ mod address_children {
         assert_eq!(segments(&rows), ["cable", "mouse", "laptop"]);
         assert!(!segments(&rows).contains(&"body"));
         agrees_with_find(driver.runtime(), &table, &rows)?;
+        agrees_with_selector(driver.runtime(), &["parts"], &rows)?;
         Ok(())
     }
 
