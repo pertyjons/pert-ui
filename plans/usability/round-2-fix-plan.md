@@ -1657,4 +1657,10 @@ plan closes.
   type export (`B`) that resolves to nothing was still skipped by the
   spelling rule; non-type exports are now recognized by their listing kind
   (`pub fn`/`pub const` lines), with `B`, a renamed type, a function and a
-  constant in the self-test. Second recheck: pending.
+  constant in the self-test. Codex's second recheck: values were indexed by
+  bare name across packages, so an unrelated `pub const pert_ui_core::B`
+  hid an unresolved `testing::B`; values are now indexed by full path and
+  an unresolved member is exempt only when a value line exists at the
+  `testing` module's own path (a value re-exported from another package
+  fails closed; none exists), with the collision in the self-test. Third
+  recheck: pending.

@@ -124,8 +124,11 @@ struct Index {
     declared: BTreeMap<String, BTreeSet<String>>,
     types: BTreeMap<TypeKey, TypeInfo>,
     modules: BTreeMap<String, ModuleEntry>,
-    /// The names of free functions and constants: the listing's `pub fn`
-    /// and `pub const` lines outside any type, which are no seeds.
+    /// The full paths of free functions and constants: the listing's
+    /// `pub fn` and `pub const` lines outside any type, which are no seeds.
+    /// A value re-exported within its own package is listed at the
+    /// re-exporting module's path; one from another package is a bare
+    /// `pub use`, whose kind the listing does not show.
     values: BTreeSet<String>,
     /// Parse, resolution and ambiguity failures.
     problems: Vec<String>,
@@ -585,8 +588,14 @@ impl Index {
                 *group = Some(key);
             } else {
                 // Free functions and constants are not types; the check
-                // skips them as seeds, by this record of their kind.
-                self.values.insert(segments[last].clone());
+                // skips them as seeds, by this record of their kind and path.
+                self.values.insert(segments.join("::"));
+                let module = Self::module_of(&segments);
+                self.modules
+                    .entry(module)
+                    .or_default()
+                    .names
+                    .insert(segments[last].clone());
             }
             return;
         };
@@ -756,11 +765,13 @@ fn check(
                     queue.push_back((key, String::new()));
                 }
             }
-            // A function or constant, by its listing line, is no seed.
-            None if index.values.contains(name) => {}
+            // A function or constant listed at the module's own path is no
+            // seed.
+            None if index.values.contains(&format!("{testing}::{name}")) => {}
             // Anything else that no declaration defines, such as a re-export
-            // renamed with `as`, would leave its closure unchecked, so it
-            // fails.
+            // renamed with `as` or a value re-exported from another package,
+            // whose `pub use` line does not show its kind, would leave its
+            // closure unchecked, so it fails.
             None => outcome.problems.push(format!(
                 "`testing` member `{name}` resolves to no declared type"
             )),
@@ -1351,19 +1362,22 @@ mod rules {
     #[test]
     fn a_testing_member_without_a_declaration_fails() {
         // A re-export renamed with `as`: the module lists the new name, while
-        // the declaration index knows only the defining one.
-        // A single-letter type name fails too, while a function and a
-        // constant, known by their listing lines in the defining package, do
-        // not.
+        // the declaration index knows only the defining one. A single-letter
+        // name fails as well, and so does `B` beside an unrelated constant of
+        // that name in another package: only a value line at the module's own
+        // path shows that the export is a value. A value of the same package
+        // is listed there; one re-exported from another package is a bare
+        // `pub use`, which cannot show its kind, and fails too.
         let core = "pub mod pert_ui_core\n\
                     pub struct pert_ui_core::Original\n\
-                    pub fn pert_ui_core::helper() -> u8\n\
-                    pub const pert_ui_core::LIMIT: usize\n";
+                    pub const pert_ui_core::B: u8\n\
+                    pub fn pert_ui_core::bridge() -> u8\n";
         let runtime = format!(
             "{HEAD}pub use pert_ui_runtime::testing::B\n\
-             pub use pert_ui_runtime::testing::LIMIT\n\
              pub use pert_ui_runtime::testing::Renamed\n\
-             pub use pert_ui_runtime::testing::helper\n"
+             pub use pert_ui_runtime::testing::bridge\n\
+             pub const pert_ui_runtime::testing::LIMIT: usize\n\
+             pub fn pert_ui_runtime::testing::helper() -> u8\n"
         );
         let outcome = check(
             &[&runtime, core],
@@ -1377,6 +1391,7 @@ mod rules {
             [
                 "`testing` member `B` resolves to no declared type",
                 "`testing` member `Renamed` resolves to no declared type",
+                "`testing` member `bridge` resolves to no declared type",
             ]
         );
     }
