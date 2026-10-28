@@ -1721,7 +1721,18 @@ plan closes.
   workspace tests (with `testing_closure`), the five headless sessions,
   workspace and `cpu` doctests, rustdoc `-D warnings`, the diagnostics
   snapshots, the API listing gate, `git diff --check`. Native evidence: not
-  applicable. Codex review: pending.
+  applicable. **Codex review** (2026-10-28):
+  needs fixes, one should-fix and two nits, all verified: the `quiet_for`
+  and `next_deadline` docs (and the design, rules 2.2.5 and 2.2.6, and the
+  testing chapter) claimed pending background work, but a `spawn` worker
+  still computing is not observed, so a report can be idle while it runs
+  (docs and CHANGELOG corrected; tests are told to `wait_until` the result
+  first; a channel-blocked worker contract test records the boundary);
+  `QuietReport` said it covered every flush (it aggregates the steps'
+  reports, nested counts excluded); this entry's mutation claim (the three
+  tests now assert their results explicitly and fail at named assertions,
+  `target/p4-evidence/mutations-fix.txt`). Fixes gate (fresh): as above.
+  Recheck: pending.
 
 - **P5 Rows in display order (0.3.80), 2026-10-28.** Implemented by a
   fresh agent from the approved design (`round-2-design-P5.md`, revision

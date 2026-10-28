@@ -943,8 +943,11 @@ fn clear_focus_returns_a_focus_loss_error() -> TestResult {
     ui.flush(Duration::ZERO)?;
     ui.focus(&leaf)?;
     let mut driver = Driver::new(&mut ui);
-    let error = driver.clear_focus().unwrap_err();
-    assert!(is_failure(&error, "focus loss failed"), "{error:?}");
+    let result = driver.clear_focus();
+    assert!(
+        matches!(&result, Err(error) if is_failure(error, "focus loss failed")),
+        "{result:?}"
+    );
     assert_eq!(driver.runtime().focused(), None);
     Ok(())
 }
@@ -961,7 +964,7 @@ fn clear_focus_needs_no_neutral_input_and_leaves_it_neutral() -> TestResult {
             CommandKey::Named(KeyCode::KeyA),
         ))?;
     assert_eq!(driver.key(KeyCode::Tab), Err(TestError::InputHeld));
-    driver.clear_focus()?;
+    assert_eq!(driver.clear_focus(), Ok(()));
     assert!(driver.runtime().keyboard().pressed().next().is_none());
     assert_eq!(
         driver.runtime().keyboard().modifiers(),
@@ -1286,7 +1289,12 @@ fn a_refused_baseline_is_activity_not_an_error() -> TestResult {
     notifier.request();
     let mut driver = Driver::new(&mut ui);
     let now = driver.runtime().now();
-    let report = driver.quiet_for(Duration::ZERO)?;
+    let result = driver.quiet_for(Duration::ZERO);
+    assert!(
+        result.is_ok(),
+        "the refusal is activity, not an error: {result:?}"
+    );
+    let report = result?;
     assert!(!report.baseline_painted, "{report:?}");
     assert_eq!(report.next_deadline, Some(now), "{report:?}");
     assert!(!report.is_idle());
@@ -1307,6 +1315,34 @@ fn a_refused_baseline_is_never_idle_even_when_the_end_needs_no_paint() -> TestRe
     assert!(!report.needs_paint, "{report:?}");
     assert!(!report.baseline_painted, "{report:?}");
     assert!(!report.is_idle());
+    Ok(())
+}
+
+#[test]
+fn a_worker_still_computing_is_not_observed_so_a_test_waits_for_its_result_first() -> TestResult {
+    let mut ui = runtime()?;
+    let result = ui.signal(None::<u32>);
+    let shown = result.map(|value| format!("{value:?}"))?;
+    ui.mount_tree(Element::new("result", Label::new(shown)))?;
+    let (release, gate) = std::sync::mpsc::channel::<u32>();
+    let target = result.clone();
+    let _task = ui.spawn(
+        move || gate.recv().unwrap_or(0),
+        move |value| target.set(Some(value)),
+    )?;
+    let mut driver = Driver::new(&mut ui);
+    driver.settle()?;
+    // The worker is blocked on the channel: its thread is outside the
+    // runtime, so nothing is scheduled and the report is idle.
+    let report = driver.quiet_for(QUARTER)?;
+    assert!(report.is_idle(), "{report:?}");
+    assert_eq!(result.get()?, None);
+    // Waiting for the result first, as the documentation directs.
+    release.send(42)?;
+    driver.wait_until(Duration::from_secs(10), |_| Ok(result.get()?.is_some()))?;
+    assert_eq!(result.get()?, Some(42));
+    let report = driver.quiet_for(QUARTER)?;
+    assert!(report.is_idle(), "{report:?}");
     Ok(())
 }
 

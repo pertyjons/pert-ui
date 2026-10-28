@@ -508,9 +508,13 @@ painting (`needs_paint`), and whether the baseline could be painted at all
 (`baseline_painted`, false while the runtime still had queued work to run).
 
 The check covers the selected window and the work all windows share, such as
-interval timers and background tasks; another window's own animation does not
-make it busy, and a test checks that window by selecting it and calling
-`quiet_for` again. Choose an interval longer than the longest period to rule
+interval timers and background results that have arrived; another window's own
+animation does not make it busy, and a test checks that window by selecting it
+and calling `quiet_for` again. A background worker still computing is not
+seen: its thread is outside the runtime until its result arrives, so a test of
+background work waits for the result with
+[`Driver::wait_until`](crate::testing::Driver::wait_until) first and then
+checks that the window is quiet. Choose an interval longer than the longest period to rule
 out: a spinner steps every 100 ms and a focused text field's caret blinks
 every 500 ms. A later deadline, such as a toast's expiry, still shows in
 `next_deadline`. A zero interval checks that nothing is scheduled now without

@@ -95,7 +95,9 @@ decision D5, from its approved design checkpoint
   `Driver::FRAME` steps without painting, a final partial frame landing
   exactly on its end and a zero interval making no step, so the clock moves
   by exactly the interval. The report covers the selected window and the
-  work windows share; another window's own timers do not make it busy. A
+  work windows share; another window's own timers do not make it busy, and
+  a background worker still computing is not observed until its result
+  arrives, so a test of background work calls `Driver::wait_until` first. A
   baseline the runtime refuses because the baseline flush left work queued
   is activity (`baseline_painted: false`, never idle), told apart from a
   component's own `DrawError::PendingUpdates` by `Runtime::last_failure`.
@@ -114,6 +116,7 @@ decision D5, from its approved design checkpoint
   window keeps it true and that a queued command does not;
   `Runtime::next_deadline` states its scope (the selected window's deadlines
   and timers, the work windows share, the current time while work waits,
+  including an arrived background result but not a worker still computing,
   and `HostIntegration::application_deadline` for every window); the
   `testing` and `host` pages and the trait's page no longer teach clearing
   focus through the trait, and the facade's `testing` page drops its
@@ -128,8 +131,10 @@ decision D5, from its approved design checkpoint
   a spinner in another window, baseline work, the exact clock, paint
   failures in both forms, a refused baseline at a zero and a nonzero
   interval, a component's own `PendingUpdates`, the overflow check, a
-  step's flush error, and the uncounted nested flushes of a queued command's
-  admission and of a queued reveal into another window. A `compile_fail`
+  step's flush error, the uncounted nested flushes of a queued command's
+  admission and of a queued reveal into another window, and a worker
+  blocked on a channel, which leaves the report idle until the test waits
+  for its result. A `compile_fail`
   doctest under `#![deny(unused_must_use)]` discards a `QuietReport` after
   `?`, beside one that reads it. The facade's module tests name
   `QuietReport` and `DrawError` in `testing`, and the closure check lists

@@ -859,3 +859,9 @@ so trees lay out.
   remaining point is resolved and the earlier corrections hold. Ready for
   approval. Approved by the author under the maintainer's delegation, with
   P4-D1 and P4-D2 as recommended.
+- **Implementation review correction (2026-10-28):** the scope of rules
+  2.2.5 and 2.2.6 includes queued deferred tasks and background results
+  that have arrived, not a worker still computing: `next_deadline` does not
+  observe a running `spawn` worker, so a quiet interval can be idle while
+  one runs. The implementation's docs say so and tell a test to wait for
+  the result first (Codex's review of a98fdb2).

@@ -490,13 +490,21 @@ impl<'a> Driver<'a> {
     /// The selected window's own updates, deadlines, timers and presentation,
     /// as [`Self::settle`] covers them, plus the work all windows share that
     /// [`Runtime::next_deadline`] includes: interval timers, view-scale
-    /// settling, polled live sources and pending background work, whichever
-    /// window they serve. Another window's own timer or animation does not
+    /// settling, polled live sources, queued deferred tasks and background
+    /// results that have arrived, whichever window they serve. Another window's own timer or animation does not
     /// make the report non-idle, because the driver's flushes do not run it;
     /// a test checks that window by selecting it with
     /// [`HostIntegration::select_window`] and calling `quiet_for` again.
     /// [`QuietReport::components_updated`] counts the notification followups
     /// a step delivers in other visible windows, as [`FlushReport`] does.
+    ///
+    /// A background worker still computing is not observed: its thread runs
+    /// outside the runtime until its result arrives, so a report can be idle
+    /// while a worker of [`Runtime::spawn`] is blocked or busy. A result that
+    /// arrives during the interval is delivered by a step and shows as
+    /// activity, but one that arrives later is not foreseen. A test of
+    /// background work waits for its result with [`Self::wait_until`] first,
+    /// then checks that the window is quiet.
     ///
     /// A runtime operation nested inside a step runs flushes of its own: a
     /// queued command's admission flushes every eligible window, a queued
@@ -1089,8 +1097,9 @@ impl<'a> Driver<'a> {
 /// [`Self::is_idle`] is the usual assertion; the fields say which kind of
 /// work remains: components that updated during the interval, a deadline
 /// still scheduled at its end, a window that needs painting, or a baseline
-/// that could not be painted. It is not a [`FlushReport`]: it covers every
-/// flush of the interval and the window's paint need. Only the driver
+/// that could not be painted. It is not a [`FlushReport`]: it aggregates the
+/// reports the driver's interval steps return, without the counts of flushes
+/// nested inside them, and adds the window's paint need. Only the driver
 /// constructs it, and fields may be added.
 ///
 /// The report is `#[must_use]`, so `driver.quiet_for(interval)?;`, which
@@ -1142,9 +1151,10 @@ pub struct QuietReport {
     /// [`FlushReport::next_deadline`] is, and the current time while
     /// immediate work waits. It holds the selected window's update deadlines
     /// and timers and the work all windows share (interval timers,
-    /// view-scale settling, polled live sources and pending background
-    /// work), not another window's own deadlines. `None` when nothing is
-    /// scheduled.
+    /// view-scale settling, polled live sources, queued deferred tasks and
+    /// background results that have arrived), not another window's own
+    /// deadlines and not a background worker still computing. `None` when
+    /// nothing is scheduled.
     pub next_deadline: Option<Duration>,
     /// [`HostIntegration::needs_paint`] after the last step, or after the
     /// baseline for a zero interval: whether the selected window needs

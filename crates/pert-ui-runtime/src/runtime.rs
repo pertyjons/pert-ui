@@ -5576,9 +5576,11 @@ impl Runtime {
     /// all windows share, or `None` when the runtime can sleep.
     ///
     /// While immediate work waits, such as pending updates or layout, queued
-    /// commands, reveals and structure changes, deferred or background tasks,
-    /// queued focus errors, inspection requests or notifications, it is the
-    /// current [`Self::now`]. Otherwise it is the earliest of the selected
+    /// commands, reveals and structure changes, deferred tasks, background
+    /// results that have arrived, queued focus errors, inspection requests or
+    /// notifications, it is the current [`Self::now`]. A background worker
+    /// still computing is not included: the runtime learns of it only when
+    /// its result arrives. Otherwise it is the earliest of the selected
     /// window's update deadlines and event timers and the shared work's
     /// deadlines: interval timers, view-scale settling and polled live
     /// sources. Another window's own deadlines are not included; a host that
