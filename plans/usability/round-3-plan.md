@@ -1,6 +1,6 @@
 # Round 3 execution and closure
 
-Status: blind runs starting, 2026-10-28. The maintainer authorized completion through
+Status: blind runs in progress, 2026-10-28. The maintainer authorized completion through
 round 3 as a persistent goal, including kit preparation, blind testing,
 verification and repair of new and recurring findings, Claude review and a
 documented final assessment. This executes the
@@ -112,3 +112,23 @@ are run where available; missing platforms remain explicit.
   harmless duplicate-HTML-identifier warnings on TextArea's rustdoc sections.
   Claude probe reports effective model claude-opus-5-5. Test queues start
   from these immutable kits with the order above.
+- First terminal records preserved: r3-6-baseline-codex-1 and
+  r3-6-head-claude-1. Neither has independent acceptance yet. Original CPU
+  captures were losslessly recompressed for storage; per-run provenance
+  records the original/archive hashes and verifies identical decoded IDAT
+  streams. Source and test files are unchanged from the submissions.
+- Acceptance procedure independently reviewed and rechecked by fresh Claude
+  sessions (runs/review-r3). Clarified correct-kit validation, aggregate and
+  incomplete grading, original-source protection, required features and the
+  frozen task checks, report locations and task 4's temporary mutation proof.
+  The recheck's remaining global-configuration concern is resolved with an
+  isolated CLAUDE_CONFIG_DIR, empty setting sources and disabled skills. A
+  tool-free authenticated check reported no global CLAUDE.md instruction.
+  Driver probes refuse nonterminal submissions, wrong kits and escaping
+  symlinks before creating acceptance state or starting a verifier. The
+  driver checks kit metadata against prelaunch.json, frozen criteria and
+  before/after hashes of original source and run logs. It writes reports to
+  acceptance copies only; author review precedes copying them into run records.
+  Acceptance builds wait until both blind queues finish to avoid adding
+  compilation load to the timed experiment. A read-only initial triage of
+  the completed head task 6 run is underway; no final finding is claimed yet.

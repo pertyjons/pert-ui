@@ -1,0 +1,12 @@
+{
+  "conditions.env": "96b8484ead1ed0dbac194afa56b771e9108b6204463c137640fd5b50682b688d",
+  "summary.md": "7dd50015a81a934e30409655093c1ec96b2374a1f215d7c299d2717857385156",
+  "diagnostics.md": "304a483b8693f0d6663100261aa4e58bda70ec36eea418f76f62dea70d8425fc",
+  "FRICTION.md": "9f6c071e44c3427f043939d288e85eca0ccb995de7bec514727f1c5203b24d99",
+  "capture-provenance.json": "e64c9d01b97a00c1fad21a50bcc719a50a7125d94d1008c30dd23e7c3cb93193",
+  "submission/.gitignore": "44c92e3a70ad3307b7056871c2bdb096d8bfa9373f5bf06a79bb6324a20ff2fb",
+  "submission/Cargo.toml": "79195d494cb877325b75d8ebf48caab766ee42e50acad5db0bdfdefe15542ccd",
+  "submission/README.md": "4515218a2aa194a7fddaac942a45dececdb537f446d3150cd2e1cc70f976ba1d",
+  "captures/notes-editor.png": "57bb6de779b668b342155f5e555e5b6bc0b5d1597ce8d1c7ab57a6167fb1bb22",
+  "submission/src/main.rs": "e702fc6420142a57d8803174b8ba93db0fe4ed5fd80d9ae7947eceb459c8c7f6"
+}

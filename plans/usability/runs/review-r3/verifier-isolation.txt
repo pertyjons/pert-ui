@@ -1,0 +1,4 @@
+Isolated CLAUDE_CONFIG_DIR authenticated; auth status configDirectory matched.
+No user-global CLAUDE.md instruction loaded: tool-free probe returned NONE.
+Claude Code 2.1.312; --disable-slash-commands; --setting-sources empty; explicit empty MCP config.
+No credentials are included in this record.
