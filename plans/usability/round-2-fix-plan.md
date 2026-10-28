@@ -1613,7 +1613,8 @@ plan closes.
   fmt, workspace Clippy, workspace tests (runtime README doctests
   included), facade doctests with `cpu`, the five headless sessions,
   rustdoc (default and `serde`), the diagnostics snapshots, no `api/`
-  diff, `git diff --check`. Recheck: pending.
+  diff, `git diff --check`. Codex's recheck of 0f9638f: every point
+  resolved, no regressions: ready. **P1 done.**
 
 - **P2 Glob membership (0.3.77), 2026-10-28.** Implemented by a fresh
   agent from the approved design (`round-2-design-P2.md`, revision 3):
