@@ -30,6 +30,10 @@
 //! declarations disagree on and any unresolved `pert_ui…` type path fail the
 //! test, so a format change or a parse gap cannot pass silently.
 //!
+//! Setting `PERT_UI_API_DIR` to another directory of listings runs the check
+//! against them, as the change that introduced it did against the listings
+//! from before its additions.
+//!
 //! Limits: it checks types, not functions or constants; it sees the x86_64
 //! Linux view the listings record; the API listing gate, not this test, keeps
 //! the listings current; and a new `Runtime` method written for tests joins
@@ -144,6 +148,12 @@ fn is_ident_byte(byte: u8) -> bool {
     byte.is_ascii_alphanumeric() || byte == b'_'
 }
 
+/// A type's name: upper camel case, unlike a constant's `UPPER_CASE` or a
+/// function's `snake_case`.
+fn type_like(name: &str) -> bool {
+    upper(name) && name.contains(|c: char| c.is_ascii_lowercase())
+}
+
 fn upper(segment: &str) -> bool {
     segment.starts_with(|c: char| c.is_ascii_uppercase())
 }
@@ -151,20 +161,35 @@ fn upper(segment: &str) -> bool {
 /// Splits a leading path into its segments, generics removed, and the rest
 /// of the line from the first `(`, space or single `:` outside generics.
 fn split_path(text: &str) -> (Vec<String>, &str) {
+    let (segments, _, rest) = split_path_generics(text);
+    (segments, rest)
+}
+
+/// [`split_path`], also returning the generics of the last segment, such as a
+/// method's own `<F: FnOnce(B)>`, whose bounds are part of its signature.
+fn split_path_generics(text: &str) -> (Vec<String>, &str, &str) {
     let bytes = text.as_bytes();
     let mut segments = Vec::new();
     let mut current = String::new();
+    let mut generics = (0, 0);
     let mut depth = 0usize;
     let mut i = 0;
     while i < bytes.len() {
         let byte = bytes[i];
         if byte == b'<' {
+            if depth == 0 {
+                generics = (i, i);
+            }
             depth += 1;
         } else if byte == b'>' && (i == 0 || bytes[i - 1] != b'-') {
             depth = depth.saturating_sub(1);
+            if depth == 0 {
+                generics.1 = i + 1;
+            }
         } else if depth == 0 {
             if byte == b':' && bytes.get(i + 1) == Some(&b':') {
                 segments.push(std::mem::take(&mut current));
+                generics = (0, 0);
                 i += 2;
                 continue;
             }
@@ -176,7 +201,7 @@ fn split_path(text: &str) -> (Vec<String>, &str) {
         i += 1;
     }
     segments.push(current);
-    (segments, &text[i..])
+    (segments, &text[generics.0..generics.1], &text[i..])
 }
 
 /// Every `pert_ui…` path in a text, as its byte range and segments.
@@ -524,7 +549,7 @@ impl Index {
         block: &Block,
         group: &mut Option<TypeKey>,
     ) {
-        let (segments, signature) = split_path(rest);
+        let (segments, own_generics, signature) = split_path_generics(rest);
         let last = segments.len() - 1;
         if !is_pert(&segments[0]) {
             // A trait implementation for a primitive, such as `bool::Error`.
@@ -549,12 +574,15 @@ impl Index {
                     .or_default()
                     .names
                     .insert(key.name.clone());
+                let target = signature.strip_prefix(" = ").unwrap_or(signature);
+                // The target is the alias's one member, so the ambiguity guard
+                // compares the targets of same-name aliases.
+                let member = format!("{own_generics} = {}", self.normalize(target));
                 self.types
                     .entry(key.clone())
                     .or_default()
                     .groups
-                    .push((raw.to_owned(), Vec::new()));
-                let target = signature.strip_prefix(" = ").unwrap_or(signature);
+                    .push((raw.to_owned(), vec![member]));
                 let edges = self.edges(&key.name, target, false, raw);
                 self.add_edges(&key, edges);
                 *group = Some(key);
@@ -567,7 +595,7 @@ impl Index {
             Block::TraitImpl => self.record(group, line),
             Block::Inherent(Some(key)) if *key == owner && keyword != "pub type " => {
                 self.record(group, line);
-                let edges = self.edges(&via, signature, false, raw);
+                let edges = self.edges(&via, &format!("{own_generics}{signature}"), false, raw);
                 if keyword.ends_with("fn ") {
                     self.types
                         .entry(owner.clone())
@@ -579,7 +607,7 @@ impl Index {
             }
             Block::TraitDeclaration(key) if *key == owner => {
                 self.record(group, line);
-                let edges = self.edges(&via, signature, false, raw);
+                let edges = self.edges(&via, &format!("{own_generics}{signature}"), false, raw);
                 self.add_edges(&owner, edges);
             }
             _ => self.problems.push(format!("unknown line `{raw}`")),
@@ -722,10 +750,19 @@ fn check(
         if name == "HostIntegration" {
             continue;
         }
-        if let Some(key) = index.lookup(name)
-            && visited.insert(key.clone())
-        {
-            queue.push_back((key, String::new()));
+        match index.lookup(name) {
+            Some(key) => {
+                if visited.insert(key.clone()) {
+                    queue.push_back((key, String::new()));
+                }
+            }
+            // A type name (functions and constants are not seeds) that no
+            // declaration defines, such as a re-export renamed with `as`:
+            // its closure would go unchecked, so it fails.
+            None if type_like(name) => outcome.problems.push(format!(
+                "`testing` member `{name}` resolves to no declared type"
+            )),
+            None => {}
         }
     }
     let mut frontier: Vec<(&Edge, String, bool)> = Vec::new();
@@ -845,8 +882,13 @@ const CONFIGURATIONS: [Configuration; 5] = [
     },
 ];
 
+/// Reads a listing from `api/`, or from the directory `PERT_UI_API_DIR`
+/// names, which runs the check against other listings, such as an earlier
+/// commit's, for a mutation check.
 fn read(listing: &str) -> String {
-    let path = format!("{}/../../api/{listing}", env!("CARGO_MANIFEST_DIR"));
+    let directory = std::env::var("PERT_UI_API_DIR")
+        .unwrap_or_else(|_| format!("{}/../../api", env!("CARGO_MANIFEST_DIR")));
+    let path = format!("{directory}/{listing}");
     std::fs::read_to_string(&path).unwrap_or_else(|error| panic!("reading {path}: {error}"))
 }
 
@@ -1037,6 +1079,27 @@ mod rules {
                     pub struct pert_ui_runtime::B\n\
                     pub struct pert_ui_runtime::C\n";
         assert_eq!(missing(body), ["B", "C"]);
+    }
+
+    #[test]
+    fn a_callback_bound_is_followed_as_an_impl_parameter_is() {
+        // The same callback, as an `impl FnOnce` parameter and as a bound on
+        // the method's own generic parameter.
+        let spellings = [
+            "pub fn pert_ui_runtime::A::run(&self, impl core::ops::function::FnOnce(pert_ui_runtime::B) -> pert_ui_runtime::C)",
+            "pub fn pert_ui_runtime::A::run<F: core::ops::function::FnOnce(pert_ui_runtime::B) -> pert_ui_runtime::C>(&self, F)",
+            "pub fn pert_ui_runtime::A::run<F>(&self, F) where F: core::ops::function::FnOnce(pert_ui_runtime::B) -> pert_ui_runtime::C",
+        ];
+        for method in spellings {
+            let body = format!(
+                "pub struct pert_ui_runtime::testing::A\n\
+                 impl pert_ui_runtime::A\n\
+                 {method}\n\
+                 pub struct pert_ui_runtime::B\n\
+                 pub struct pert_ui_runtime::C\n"
+            );
+            assert_eq!(missing(&body), ["B", "C"], "{method}");
+        }
     }
 
     #[test]
@@ -1254,6 +1317,55 @@ mod rules {
         );
         assert!(outcome.problems.is_empty(), "{:?}", outcome.problems);
         assert!(outcome.missing.is_empty());
+    }
+
+    #[test]
+    fn same_name_aliases_with_different_targets_are_ambiguous() {
+        let body = "pub struct pert_ui_runtime::testing::A\n\
+                    pub pert_ui_runtime::testing::A::list: pert_ui_runtime::Items\n\
+                    pub type pert_ui_runtime::Items = alloc::vec::Vec<pert_ui_runtime::Item>\n\
+                    pub mod pert_ui_runtime::other\n\
+                    pub type pert_ui_runtime::other::Items = alloc::vec::Vec<pert_ui_runtime::Other>\n\
+                    pub struct pert_ui_runtime::Item\n\
+                    pub struct pert_ui_runtime::Other\n";
+        let outcome = run(body, &[]);
+        assert!(
+            outcome
+                .problems
+                .iter()
+                .any(|p| p.starts_with("ambiguous name `Items`")),
+            "{:?}",
+            outcome.problems
+        );
+        // Repeats of one alias, under two paths, agree.
+        let body = "pub struct pert_ui_runtime::testing::A\n\
+                    pub pert_ui_runtime::testing::A::list: pert_ui_runtime::Items\n\
+                    pub type pert_ui_runtime::Items = alloc::vec::Vec<pert_ui_runtime::Item>\n\
+                    pub mod pert_ui_runtime::other\n\
+                    pub type pert_ui_runtime::other::Items = alloc::vec::Vec<pert_ui_runtime::other::Item>\n\
+                    pub struct pert_ui_runtime::Item\n";
+        assert_eq!(missing(body), ["Item", "Items"]);
+    }
+
+    #[test]
+    fn a_testing_member_without_a_declaration_fails() {
+        // A re-export renamed with `as`: the module lists the new name, while
+        // the declaration index knows only the defining one.
+        let core = "pub mod pert_ui_core\npub struct pert_ui_core::Original\n";
+        let runtime = format!(
+            "{HEAD}pub use pert_ui_runtime::testing::Renamed\npub use pert_ui_runtime::testing::helper\n"
+        );
+        let outcome = check(
+            &[&runtime, core],
+            "pert_ui_runtime::testing",
+            "pert_ui_runtime::prelude",
+            &[],
+            &[],
+        );
+        assert_eq!(
+            outcome.problems,
+            ["`testing` member `Renamed` resolves to no declared type"]
+        );
     }
 
     #[test]

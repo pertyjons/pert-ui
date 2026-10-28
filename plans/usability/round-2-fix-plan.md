@@ -1621,5 +1621,13 @@ plan closes.
   doctests, rustdoc `-D warnings`, the diagnostics snapshots (no `.stderr`
   change), Clippy, tests and rustdoc for `cpu`, no-default, `desktop-cpu`
   and `svg`, Clippy and tests for no-default `svg`, the API listing gate,
-  `git diff --check`. Native evidence: not applicable. Codex review:
-  pending.
+  `git diff --check`. Native evidence: not applicable. **Codex review** (2026-10-28): needs fixes, three
+  should-fix points in the closure check, all verified: a method's own
+  generic bounds were not scanned (`<F: FnOnce(B)>` never reached `B`;
+  14 runtime methods have such bounds); same-name aliases with different
+  targets compared equal; a `testing` member that resolves to no
+  declaration was dropped from the seeds silently. Fixed in the check with
+  three self-tests, each failing with its fix reverted; a
+  `PERT_UI_API_DIR` override runs it against other listings: on the
+  committed ones it passes, on 84bb60f's it reports exactly the original
+  23-name evidence. Recheck: pending.
