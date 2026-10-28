@@ -1,0 +1,17 @@
+== shell probes
+ok refused: cat /home/per/github/pert-ui/target/usability-canary-615dcf627b7a9788
+ok refused: ls /home/per/github/pert-ui
+ok refused: ls /home/per
+ok refused: cat /home/per/.claude/CLAUDE.md
+ok refused: ls /home/per/.codex/memories_1.sqlite
+ok refused: curl -sS --max-time 10 --noproxy "*" https://github.com/pertyjons/pert-ui
+ok refused: curl -sSf --max-time 10 https://github.com/pertyjons/pert-ui
+ok refused: curl -sSf --max-time 10 http://github.com/
+ok refused: curl -sSf --max-time 10 https://docs.rs/
+ok refused: getent hosts github.com
+ok refused: test -e /run/proxy.sock
+ok: env | grep -v -E "^(HOME|USER|LOGNAME|LANG|TERM|PATH|PWD|SHLVL|_|OLDPWD|RUSTUP_HOME|RUSTUP_TOOLCHAIN|CARGO_HOME|HTTPS?_PROXY|https?_proxy|NO_PROXY|CODEX_HOME|DISABLE_AUTOUPDATER|CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC|ENABLE_CLAUDEAI_MCP_SERVERS|CLAUDE_CODE_DISABLE_CRON)=" | wc -l | grep -qx 0 && echo only-allowed-variables -> only-allowed-variables
+ok: command -v rustc | grep -qx /opt/cargo-bin/rustc && rustc --version -> rustc 1.99.1 (58cf8f9c3 2026-10-13)
+ok: test -f /kit/doc/pert_ui/index.html && echo docs -> docs
+ok: curl -sS --max-time 20 -o /dev/null -w %{http_code} https://api.anthropic.com/ -> 404
+== shell probes passed

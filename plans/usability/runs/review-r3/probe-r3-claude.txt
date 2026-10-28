@@ -1,0 +1,33 @@
+== shell probes
+ok refused: cat /home/per/github/pert-ui/target/usability-canary-63b51f117ac61b14
+ok refused: ls /home/per/github/pert-ui
+ok refused: ls /home/per
+ok refused: cat /home/per/.claude/CLAUDE.md
+ok refused: ls /home/per/.codex/memories_1.sqlite
+ok refused: curl -sS --max-time 10 --noproxy "*" https://github.com/pertyjons/pert-ui
+ok refused: curl -sSf --max-time 10 https://github.com/pertyjons/pert-ui
+ok refused: curl -sSf --max-time 10 http://github.com/
+ok refused: curl -sSf --max-time 10 https://docs.rs/
+ok refused: getent hosts github.com
+ok refused: test -e /run/proxy.sock
+ok: env | grep -v -E "^(HOME|USER|LOGNAME|LANG|TERM|PATH|PWD|SHLVL|_|OLDPWD|RUSTUP_HOME|RUSTUP_TOOLCHAIN|CARGO_HOME|HTTPS?_PROXY|https?_proxy|NO_PROXY|CODEX_HOME|DISABLE_AUTOUPDATER|CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC|ENABLE_CLAUDEAI_MCP_SERVERS|CLAUDE_CODE_DISABLE_CRON)=" | wc -l | grep -qx 0 && echo only-allowed-variables -> only-allowed-variables
+ok: command -v rustc | grep -qx /opt/cargo-bin/rustc && rustc --version -> rustc 1.99.1 (58cf8f9c3 2026-10-13)
+ok: test -f /kit/doc/pert_ui/index.html && echo docs -> docs
+ok: curl -sS --max-time 20 -o /dev/null -w %{http_code} https://api.anthropic.com/ -> 404
+ok: the canary's content does not appear in the tester session
+ok: shell network: curl: (56) CONNECT tunnel failed, response 403 net=000 exit=56
+ok: shell write outside the writable directories: touch: cannot touch '/home/tester/sandbox-write-probe': Read-only file system exit=1
+ok: shell network (proxy log): the probe host never reached the proxy
+ok: shell write (tester home): no file in the tester's home
+ok: session tools: disallowed tools [], MCP servers []
+ok: the tester's cargo build succeeded and was logged
+ok: the session named the image's color (yellow)
+== proxy log
+2026-10-28T16:41:46 DENY CONNECT github.com:443 HTTP/1.1
+2026-10-28T16:41:46 DENY GET http://github.com/ HTTP/1.1
+2026-10-28T16:41:46 DENY CONNECT docs.rs:443 HTTP/1.1
+2026-10-28T16:41:46 ALLOW CONNECT api.anthropic.com:443 HTTP/1.1
+2026-10-28T16:41:46 ALLOW CONNECT api.anthropic.com:443 HTTP/1.1
+2026-10-28T16:41:47 ALLOW CONNECT api.anthropic.com:443 HTTP/1.1
+== read /home/per/pert-ui-usability/probe-r3-claude/log for the session's own report
+== probe passed

@@ -1,6 +1,6 @@
 # Round 3 execution and closure
 
-Status: preparation, 2026-10-28. The maintainer authorized completion through
+Status: blind runs starting, 2026-10-28. The maintainer authorized completion through
 round 3 as a persistent goal, including kit preparation, blind testing,
 verification and repair of new and recurring findings, Claude review and a
 documented final assessment. This executes the
@@ -100,3 +100,15 @@ are run where available; missing platforms remain explicit.
   removing task 5's "outside-row" wording and giving acceptance agents this
   interpretation. All three corrected; the reviewer explicitly found the
   rest resolved and ready subject to these corrections and prelaunch checks.
+
+- Prelaunch: head kit at 32dd9c4 (dirty=0, 0.3.88), baseline at 26e6b5a
+  (dirty=1, only the overlaid brief differs, 0.3.75). Packaged source paths
+  match 86a196f on head. Matched harness hashes, exact Rust/pandoc versions
+  and frozen acceptance hash are in [prelaunch.json](runs/review-r3/prelaunch.json).
+  Both no-tester isolation probes and the fresh Claude/Codex probes passed;
+  logs are in runs/review-r3. Documentation reading succeeded inside each
+  sandbox for facade, guide and TextArea pages, preserving link targets;
+  neither plans nor reserved directories exists in either kit. Pandoc emits
+  harmless duplicate-HTML-identifier warnings on TextArea's rustdoc sections.
+  Claude probe reports effective model claude-opus-5-5. Test queues start
+  from these immutable kits with the order above.

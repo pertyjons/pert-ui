@@ -1,0 +1,15 @@
+{
+  "run.sh": "4eedb7ad65691bbb4020f28c068c657c7d9762a981f56f81a47db5bfbf2a51d1",
+  "bridge.py": "f588a383b3e5a5cbd005299fc22d34026d6df584746bcf7751db724636b98919",
+  "proxy.py": "41a76a219ce568b7ea3330985a68399cbd9e0d4606e8e9bdb41f4e7d4481fd25",
+  "cargo-wrapper.py": "c872b7bb21ec86095c530ea32a8deaafb041062c9445dfdf151f3c00567fa79d",
+  "friction-log.md": "f63a636c6248dcf8af2f749f94a192e3179af3bdfcd9f769faebb80eedf696e5",
+  "check-probe.py": "24cfb31692c9741fceb6452bc52cded3349069d0c3db9e7129d5846e12fab3e6",
+  "claude-settings.json": "1fc5ed8b034daf5cfd25526419cc552afd40d1b6be84cd704e4023360d398a49",
+  "tester-brief.md": "546c32f078b1766bca175588d280e05264eb1373202288c0550f24bb0a94df22",
+  "head": "commit=32dd9c4f667b50cfbbef7e46b18c0007e2b08ee2\ndirty=0\nversion=0.3.88\ntoolchain=rustc 1.99.1 (58cf8f9c3 2026-10-13)\nprepared=2026-10-28T16:41:41+01:00\n",
+  "baseline": "commit=26e6b5a308df24bffe09f796cf683710979df05e\ndirty=1\nversion=0.3.75\ntoolchain=rustc 1.99.1 (58cf8f9c3 2026-10-13)\nprepared=2026-10-28T16:41:12+01:00\n",
+  "acceptance_sha256": "2a082c33f8a1bed2d243706920a7e9ec17320a13cbab4c4d5539bb389b901127",
+  "pandoc": "3.7.0.2, verified inside both sandboxes on facade, guide index and TextArea pages; link targets preserved",
+  "sandbox_read_check": "Neither /kit/plans nor /kit/reserved exists, both variants"
+}
