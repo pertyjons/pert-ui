@@ -1,0 +1,8 @@
+{
+  "notes-editor.png": {
+    "original_sha256": "515b168fb91a1c06f25dd70d86dfcbeb75c7f94cc2b1abc4bff4e4d3984527fb",
+    "archived_sha256": "2bdf3126d0b3d31c3f1fedfd2140411cc5e483ffd50baf0e845a50855e1e67a4",
+    "identical_decoded_IDAT_sha256": "b596fca6cb96c0eb3171f20ad7e4b64acc9072314a1f2813aa81900a6b18d904",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  }
+}
