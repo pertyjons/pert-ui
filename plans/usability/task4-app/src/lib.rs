@@ -63,13 +63,13 @@ pub fn build(ui: &mut Runtime) -> Result<WidgetId, RuntimeError> {
     let error = ui.signal(String::new());
     let filter = ui.signal(String::new());
 
-    let visible = bookmarks.combine(&filter, |all, filter| {
+    let visible = ReadSignal::combine((&bookmarks, &filter), |(all, filter)| {
         all.iter()
             .filter(|bookmark| matches(bookmark, filter))
             .cloned()
             .collect::<Vec<_>>()
     })?;
-    let status = bookmarks.combine(&filter, |all, filter| {
+    let status = ReadSignal::combine((&bookmarks, &filter), |(all, filter)| {
         if filter.trim().is_empty() {
             format!("{} bookmarks", all.len())
         } else {

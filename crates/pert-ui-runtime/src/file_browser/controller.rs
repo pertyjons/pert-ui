@@ -556,27 +556,27 @@ impl FileBrowserController {
             ListSelection::new(ui, SelectionMode::Single),
             folders(Listings::default()),
         )?;
-        let shown = current.combine(&listings.read_only(), |path, listings| {
-            (path.clone(), listings.clone())
-        })?;
         let (row_paths, row_hooks, row_texts) = (paths.clone(), hooks.clone(), texts.clone());
         let entry_cache: RefCell<Option<EntryCache>> = RefCell::new(None);
-        let entries = shown.combine(&filter.read_only(), move |(path, listings), query| {
-            let listing = listings.0.get(path);
-            if let Some(previous) = entry_cache.borrow().as_ref()
-                && previous.matches(path, listing, query)
-            {
-                return previous.source.clone();
-            }
-            let source = entries(path, listings, query, &row_paths, &row_hooks, &row_texts);
-            *entry_cache.borrow_mut() = Some(EntryCache {
-                directory: path.clone(),
-                listing: listing.cloned(),
-                query: query.clone(),
-                source: source.clone(),
-            });
-            source
-        })?;
+        let entries = ReadSignal::combine(
+            (&current, &listings, &filter),
+            move |(path, listings, query)| {
+                let listing = listings.0.get(path);
+                if let Some(previous) = entry_cache.borrow().as_ref()
+                    && previous.matches(path, listing, query)
+                {
+                    return previous.source.clone();
+                }
+                let source = entries(path, listings, query, &row_paths, &row_hooks, &row_texts);
+                *entry_cache.borrow_mut() = Some(EntryCache {
+                    directory: path.clone(),
+                    listing: listing.cloned(),
+                    query: query.clone(),
+                    source: source.clone(),
+                });
+                source
+            },
+        )?;
         let controller = Self(Rc::new(Inner {
             settings: ui.ui_settings(),
             texts,

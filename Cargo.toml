@@ -3,18 +3,18 @@ members = ["crates/pert-ui-core", "crates/pert-ui-runtime", "crates/pert-ui-cpu"
 resolver = "3"
 
 [workspace.package]
-version = "0.3.84"
+version = "0.3.85"
 edition = "2024"
 rust-version = "1.99.1"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/pertyjons/pert-ui"
 
 [workspace.dependencies]
-pert-ui-core = { version = "0.3.84", path = "crates/pert-ui-core" }
-pert-ui = { version = "0.3.84", path = "crates/pert-ui" }
-pert-ui-runtime = { version = "0.3.84", path = "crates/pert-ui-runtime" }
-pert-ui-wgpu = { version = "0.3.84", path = "crates/pert-ui-wgpu" }
-pert-ui-cpu = { version = "0.3.84", path = "crates/pert-ui-cpu" }
+pert-ui-core = { version = "0.3.85", path = "crates/pert-ui-core" }
+pert-ui = { version = "0.3.85", path = "crates/pert-ui" }
+pert-ui-runtime = { version = "0.3.85", path = "crates/pert-ui-runtime" }
+pert-ui-wgpu = { version = "0.3.85", path = "crates/pert-ui-wgpu" }
+pert-ui-cpu = { version = "0.3.85", path = "crates/pert-ui-cpu" }
 thiserror = "2.0.21"
 # Opt-in `Serialize`/`Deserialize` for the owned diagnostic and document types.
 serde = { version = "1.0.229", default-features = false, features = ["derive", "std"] }

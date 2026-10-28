@@ -136,15 +136,13 @@ fn derived_bindings_batch_filter_changes_and_keep_chains_current() -> Result {
     );
     assert_eq!(ui.flush(Duration::ZERO)?.components_updated, 1);
     let other = ui.signal(10);
-    let sum = count.combine(&other.read_only(), |a, b| a + b)?;
+    let sum = ReadSignal::combine((&count, &other), |(a, b)| a + b)?;
     count.set(7)?;
     other.set(20)?;
     assert_eq!(sum.get()?, 27);
     let foreign = Runtime::new().signal(0);
     assert!(matches!(
-        count
-            .read_only()
-            .combine(&foreign.read_only(), |a, b| a + b),
+        ReadSignal::combine((&count, &foreign), |(a, b)| a + b),
         Err(RuntimeError::ForeignRuntime)
     ));
     Ok(())
@@ -356,7 +354,7 @@ fn derived_diamond_is_consistent_and_drop_releases_captured_state() -> Result {
     let input = ui.signal(1);
     let left = input.map(|v| v * 2)?;
     let right = input.map(|v| v * 3)?;
-    let sum = left.combine(&right, |a, b| a + b)?;
+    let sum = ReadSignal::combine((&left, &right), |(a, b)| a + b)?;
     input.set(4)?;
     assert_eq!(sum.get()?, 20);
     let lifetime = Rc::new(());

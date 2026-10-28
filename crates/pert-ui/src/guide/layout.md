@@ -648,9 +648,10 @@ fn build(ui: &mut Runtime) -> Result<TaskList, RuntimeError> {
     })?;
     let selection = ListSelection::new(ui, SelectionMode::Single);
     let filter = ListFilter::new(ui, source)?.selection(selection.clone());
-    let selected_shown = filter.items().combine(&selection.active(), |rows, active| {
-        active.as_deref().is_some_and(|key| rows.index_of(key).is_some())
-    })?;
+    let selected_shown =
+        ReadSignal::combine((filter.items(), selection.active()), |(rows, active)| {
+            active.as_deref().is_some_and(|key| rows.index_of(key).is_some())
+        })?;
     let (order, remove, active) = (tasks.clone(), tasks.clone(), selection.active());
     let list = VirtualList::new(filter.items(), 32.0)?
         .selection(selection.clone())

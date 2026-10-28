@@ -97,7 +97,9 @@ pub use svg_images::component::Svg;
 /// - The editors' `session` builders take an [`EditorSession`]: [`component`].
 /// - Arguments taken as `impl Into<TextSource>` or `impl Into<IconSource>` are
 ///   written as strings, signals and [`Icon`]s; [`TextSource`] is at the crate
-///   root and [`IconSource`] in [`component`].
+///   root and [`IconSource`] in [`component`]. [`ReadSignal::combine`] takes
+///   its inputs as a tuple of signals and read bindings; [`CombineInputs`] and
+///   [`CombineInput`], which only generic code names, are at the crate root.
 /// - The [`DescribeContext`] an [`Each`], [`Dynamic`] or [`Show`] closure
 ///   receives, and the [`EachItem`] an [`Each`]'s `build` returns, are
 ///   inferred; code that names either imports it from the crate root.

@@ -158,17 +158,15 @@ impl Inventory {
         // Set once the inventory exists; until then nothing is a target.
         let handle: Rc<RefCell<Weak<Self>>> = Rc::default();
         let reach = handle.clone();
-        let has_targets = selection
-            .selected()
-            .combine(&query.read_only(), |keys, query| {
-                (keys.clone(), query.clone())
-            })?
-            .combine(&published.read_only(), move |(keys, query), _| {
+        let has_targets = ReadSignal::combine(
+            (selection.selected(), &query, &published),
+            move |(keys, query, _)| {
                 reach
                     .borrow()
                     .upgrade()
                     .is_some_and(|inventory| !inventory.targets(keys, query).is_empty())
-            })?;
+            },
+        )?;
         let table = TableController::new(
             ui,
             selection,

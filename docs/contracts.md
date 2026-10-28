@@ -627,8 +627,8 @@ control's text, or answers a query, a command availability check or an
 inspection. Unless its rustdoc says how often, it may run at any of those
 moments, so it must be pure: deterministic for its inputs, bounded, free of
 I/O and side effects, and it writes nothing; during update, layout, paint or
-inspection the runtime rejects a write. Binding derivations (`ReadSignal::map`
-and `combine`), description factories (`Dynamic`, `Show` and `Each`, a
+inspection the runtime rejects a write. Binding derivations (`ReadSignal::map`,
+and `ReadSignal::combine` over two to twelve bindings), description factories (`Dynamic`, `Show` and `Each`, a
 collection's row builders and `Table::cell_editor`), filter and ranking rules,
 number formats, command enabled predicates and inspection providers are
 evaluation callbacks, and so are a numeric editor's normalizer and its number

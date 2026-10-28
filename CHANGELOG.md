@@ -1,5 +1,82 @@
 # Changelog
 
+## 0.3.85 (2026-10-28)
+
+Derivations over several bindings (round 2 fix plan, part P10, R2-3 by
+decision D10, from its approved design checkpoint
+`plans/usability/round-2-design-P10.md`, revision 3, with decision P10-D1).
+
+- Breaking (R2-3): `ReadSignal::combine` is an associated function over a
+  tuple of 2 to 12 signals or read bindings, whose function receives a
+  reference to the tuple of their values:
+  `ReadSignal::combine<I: CombineInputs>(I, impl Fn(&I::Values) -> T +
+  'static) -> Result<Self, RuntimeError>`, in an impl over the output
+  `T: Clone + PartialEq + 'static`. It replaces the method
+  `ReadSignal<T>::combine<U, V>(&self, &ReadSignal<U>, impl Fn(&T, &U) -> V
+  + 'static)`. Replacement usage: `a.combine(&b, |a, b| ...)` becomes
+  `ReadSignal::combine((&a, &b), |(a, b)| ...)` with the body unchanged; a
+  chain building a tuple becomes one call, `ReadSignal::combine((&a, &b,
+  &c), |(a, b, c)| ...)`; `.read_only()` on an input is no longer needed;
+  an annotated closure names the tuple, `|values: &(A, B)|`. rustc's
+  suggestion for the old call, `ReadSignal::<T>::combine(&b, f)`, is not the
+  replacement; the error that follows it names the tuple form. Its rules
+  are today's: `ForeignRuntime` for an input of another runtime, checked
+  before anything is read; at most one evaluation per batch of input writes
+  over one derived node; an equal result advances no revision and updates
+  no component that reads it, while a binding derived from it still
+  evaluates again (a clarification of D10's "equal results invalidate
+  nothing", with the algorithm unchanged); every input and the function
+  retained for the result's lifetime and released with its last clone.
+- Added (R2-3): `CombineInput` (`Value`), implemented for `Signal<T>`,
+  `ReadSignal<T>` and `&B`, and `CombineInputs` (`Values`), implemented for
+  tuples of 2 to 12 inputs; sealed (by `signal::sealed::CombineInputSeal`
+  and `CombineInputsSeal`, which the listing shows as supertrait paths), at
+  the crate root and not in the prelude (an application writes a tuple, not
+  the trait), with compiler messages for a tuple outside the limit and an
+  element that is not a binding.
+- Changed: the file browser, the tool-window menus and the `inventory`
+  example derive with one `combine` where they chained two (no behavior
+  change); every other caller in the runtime, the examples, the gallery,
+  the guide and the facade's tests is migrated. `map` and `combine` share
+  one private constructor of the derived node; `map`'s behavior is
+  unchanged.
+- Documentation (R2-3): `combine`'s rustdoc states the input forms, the
+  limit, the function's argument, batching, equal results, retention,
+  repeated inputs and its errors in order, with a settings form's dirty
+  flag as its example (it had none); `CombineInput` and `CombineInputs`
+  have runnable examples, a 12-tuple and a generic caller. `map`'s
+  `# Errors` names `Closed` and the phase errors it already returned, and a
+  write refused inside the function and a later evaluation's errors move to
+  a paragraph of their own (same kind). `Signal`'s page; the prelude pages
+  (the runtime's and the facade's); `docs/contracts.md`'s evaluation class;
+  `guide/state.md` (a paragraph on derivations from several bindings);
+  `plans/follow-ups.md`'s "Writable model projection" records round 2's
+  evidence.
+- Tests: the facade's `foundation` binary adds `combine` (five inputs
+  evaluated once per batch and not on an equal result; inputs and function
+  retained and released with the last result; `ForeignRuntime` before
+  anything runs, also for a dirty derived input; a write inside the
+  function refused at every evaluation; an update may combine and a paint
+  may not; `ForeignRuntime` before `Closed`; what an equal result stops;
+  every input form and a repeated input; the prelude alone). Each new
+  behavior test was shown to fail under its named mutation, at an assertion
+  of its outcome. `CombineInputs` has `compile_fail` doctests for a 13-tuple
+  and a 1-tuple, each shown to compile, and so fail, with that arity added.
+  The diagnostics cases `d01_combine_single_input` and
+  `d02_combine_not_a_binding` snapshot the new messages; no other snapshot
+  changed.
+- Fixture: `plans/usability/task4-app` uses the tuple form and requires
+  `pert-ui` 0.3.85.
+- API listings: `api/pert-ui-runtime/default.txt` and `serde.txt` remove the
+  method `ReadSignal<T>::combine<U, V>(&self, …)` and add the associated
+  function `ReadSignal<T>::combine<I: CombineInputs>` with its impl block,
+  at each of `ReadSignal`'s listing paths (the root, `component` and
+  `prelude`), where `ReadSignal` and `Signal` also list their
+  `CombineInput` impls with `Value`; the traits `CombineInput` with `Value` and its impls for
+  `Signal<T>`, `ReadSignal<T>` and `&B`, and `CombineInputs` with `Values`
+  and its impls for the tuples `(A, B)` to `(A, …, L)`. The facade's
+  listings re-export the runtime root by one glob line and do not change.
+
 ## 0.3.84 (2026-10-28)
 
 Notifications in inspection (round 2 fix plan, part P9, R2-20 by decision

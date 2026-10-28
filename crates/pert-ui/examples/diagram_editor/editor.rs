@@ -119,7 +119,7 @@ impl Editor {
     }
 
     pub fn has_selection(&self) -> Result<ReadSignal<bool>, RuntimeError> {
-        self.nodes.selected().combine(&self.edges, |nodes, edges| {
+        ReadSignal::combine((self.nodes.selected(), &self.edges), |(nodes, edges)| {
             !nodes.is_empty() || !edges.is_empty()
         })
     }

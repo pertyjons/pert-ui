@@ -124,6 +124,46 @@ pub(crate) mod sealed {
     impl StateOwnerSeal for crate::EventContext {}
     impl<O: StateOwnerSeal + ?Sized> StateOwnerSeal for &O {}
     impl<O: StateOwnerSeal + ?Sized> StateOwnerSeal for &mut O {}
+
+    use super::{CombineInput, CombineInputs, ReadSignal};
+    use crate::RuntimeError;
+
+    /// Proves a call of a sealed operation comes from this crate: its field
+    /// is crate-private, so code outside the crate cannot construct one and cannot
+    /// call [`CombineInputSeal::read_signal`] or [`CombineInputsSeal::derive`],
+    /// although a bound on the public trait brings them into scope.
+    #[derive(Debug, Clone, Copy)]
+    pub struct Token(pub(crate) ());
+
+    /// Seals [`CombineInput`](super::CombineInput) and carries the operation
+    /// [`ReadSignal::combine`] needs from each input.
+    #[diagnostic::on_unimplemented(
+        message = "`CombineInput` is sealed and cannot be implemented for `{Self}`",
+        label = "not one of pert-ui's bindings",
+        note = "only `Signal`, `ReadSignal` and references to them implement `CombineInput`"
+    )]
+    pub trait CombineInputSeal {
+        /// The read binding this input observes.
+        fn read_signal(&self, token: Token) -> &ReadSignal<<Self as CombineInput>::Value>
+        where
+            Self: CombineInput;
+    }
+
+    /// Seals [`CombineInputs`](super::CombineInputs) and carries the
+    /// derivation [`ReadSignal::combine`] runs for each tuple arity.
+    #[diagnostic::on_unimplemented(
+        message = "`CombineInputs` is sealed and cannot be implemented for `{Self}`",
+        label = "not one of pert-ui's input tuples",
+        note = "only pert-ui's tuples of 2 to 12 `CombineInput`s implement `CombineInputs`"
+    )]
+    pub trait CombineInputsSeal {
+        /// Derives a binding over these inputs; see [`ReadSignal::combine`].
+        fn derive<T, F>(&self, token: Token, map: F) -> Result<ReadSignal<T>, RuntimeError>
+        where
+            Self: CombineInputs,
+            T: Clone + PartialEq + 'static,
+            F: Fn(&<Self as CombineInputs>::Values) -> T + 'static;
+    }
 }
 impl StateOwner for crate::Runtime {
     fn signal<T>(&self, value: T) -> Signal<T> {
@@ -184,8 +224,9 @@ struct Inner<T> {
 ///
 /// A signal is also its own read binding: it dereferences to a [`ReadSignal`],
 /// so `&signal` works wherever `&ReadSignal` is taken, such as
-/// [`UpdateContext::read`](crate::UpdateContext::read) and
-/// [`ReadSignal::combine`], and [`ReadSignal::map`] derives from it directly.
+/// [`UpdateContext::read`](crate::UpdateContext::read);
+/// [`ReadSignal::map`] derives from it directly; and it is one input of
+/// [`ReadSignal::combine`]'s tuple as it is ([`CombineInput`]).
 /// Parameters that take a binding by value accept `&signal` through `From`:
 /// a reference converts to a clone sharing the value, and a writable signal
 /// converts to a [`ReadSignal`] where only reading is needed.
@@ -733,6 +774,43 @@ impl Drop for Derived {
     }
 }
 
+/// Builds a derived binding: checks the phase, evaluates once under the
+/// evaluation guard, and stores the result with one node that owns `sources`
+/// and `evaluate` and holds the subscriptions `subscribe` makes. [`ReadSignal::map`]
+/// and [`ReadSignal::combine`] share it, so their rules live here.
+fn derived<S: 'static, T: Clone + PartialEq + 'static>(
+    shared: Rc<Shared>,
+    sources: S,
+    evaluate: impl Fn(&S) -> Result<T, RuntimeError> + 'static,
+    subscribe: impl FnOnce(&S, &Weak<dyn Computation>) -> Vec<Subscription>,
+) -> Result<ReadSignal<T>, RuntimeError> {
+    shared.check_evaluation()?;
+    let initial = {
+        let _guard = shared.evaluating();
+        evaluate(&sources)?
+    };
+    let output = Signal::new(shared.clone(), initial);
+    let target = output.clone();
+    let downstream = output.clone();
+    let derived: Rc<Derived> = Rc::new_cyclic(|weak: &Weak<Derived>| {
+        let weak: Weak<dyn Computation> = weak.clone();
+        let inputs = subscribe(&sources, &weak);
+        Derived {
+            shared,
+            dirty: Cell::new(false),
+            compute: RefCell::new(Box::new(move || {
+                target.publish(evaluate(&sources)?).map(|_| ())
+            })),
+            invalidate_dependents: Box::new(move || downstream.invalidate_computations()),
+            _inputs: inputs,
+        }
+    });
+    Ok(ReadSignal {
+        inner: output.read.inner,
+        computation: Some(derived),
+    })
+}
+
 impl<T: Clone + 'static> ReadSignal<T> {
     /// Derives a read-only value, retaining this input for the result's lifetime.
     ///
@@ -743,10 +821,21 @@ impl<T: Clone + 'static> ReadSignal<T> {
     /// downstream widgets. No callback runs from `Signal::set`; the runtime settles
     /// derived values before component updates. Do not mutate state or perform I/O
     /// in the function. Dropping the last result releases its subscriptions.
+    /// [`Self::combine`] derives from several bindings at once.
+    ///
+    /// The function runs in the evaluation phase, so a write it attempts is
+    /// refused: the write returns `WriteDuringUpdate` to the function and
+    /// changes nothing, here and at every later evaluation. A later
+    /// evaluation's error, such as a failed read of the input, is returned by
+    /// the read that settles the result: an explicit [`Self::get`], or the flush
+    /// that settles derived values before component updates.
     ///
     /// # Errors
-    /// Returns the input's read errors. Writes from the function are rejected as
-    /// `WriteDuringUpdate`. Cyclic reentrant reads return `BorrowConflict`.
+    /// `Closed` after the runtime shut down; `WriteDuringLayout`,
+    /// `WriteDuringPaint`, `WriteDuringInspection` or `WriteDuringDelivery`
+    /// when called inside that phase (a component's update may derive); then
+    /// the input's read errors, such as `BorrowConflict` for a cyclic
+    /// reentrant read, without calling the function.
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
@@ -762,78 +851,12 @@ impl<T: Clone + 'static> ReadSignal<T> {
         &self,
         map: impl Fn(&T) -> U + 'static,
     ) -> Result<ReadSignal<U>, RuntimeError> {
-        let shared = self.inner.shared.clone();
-        shared.check_evaluation()?;
-        let initial = {
-            let _guard = shared.evaluating();
-            map(&self.get()?)
-        };
-        let output = Signal::new(shared.clone(), initial);
-        let source = self.clone();
-        let target = output.clone();
-        let downstream = output.clone();
-        let derived: Rc<Derived> = Rc::new_cyclic(|weak: &Weak<Derived>| {
-            let weak: Weak<dyn Computation> = weak.clone();
-            Derived {
-                shared,
-                dirty: Cell::new(false),
-                compute: RefCell::new(Box::new(move || {
-                    target.publish(map(&source.get()?)).map(|_| ())
-                })),
-                invalidate_dependents: Box::new(move || downstream.invalidate_computations()),
-                _inputs: vec![self.subscribe_computation(weak)],
-            }
-        });
-        Ok(ReadSignal {
-            inner: output.read.inner,
-            computation: Some(derived),
-        })
-    }
-
-    /// Combines two bindings from the same runtime with the batching, equality
-    /// and ownership rules of [`Self::map`]. Both inputs are observed, and chains
-    /// read their current upstream values before publishing a downstream value.
-    ///
-    /// Timing class: [evaluation](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#evaluation).
-    ///
-    /// # Errors
-    /// Returns `ForeignRuntime` for different owners, otherwise input read errors.
-    pub fn combine<U: Clone + 'static, V: Clone + PartialEq + 'static>(
-        &self,
-        other: &ReadSignal<U>,
-        map: impl Fn(&T, &U) -> V + 'static,
-    ) -> Result<ReadSignal<V>, RuntimeError> {
-        let shared = self.inner.shared.clone();
-        if !Rc::ptr_eq(&shared, &other.inner.shared) {
-            return Err(RuntimeError::ForeignRuntime);
-        }
-        shared.check_evaluation()?;
-        let initial = {
-            let _guard = shared.evaluating();
-            map(&self.get()?, &other.get()?)
-        };
-        let output = Signal::new(shared.clone(), initial);
-        let (a, b, target) = (self.clone(), other.clone(), output.clone());
-        let downstream = output.clone();
-        let derived: Rc<Derived> = Rc::new_cyclic(|weak: &Weak<Derived>| {
-            let weak: Weak<dyn Computation> = weak.clone();
-            Derived {
-                shared,
-                dirty: Cell::new(false),
-                compute: RefCell::new(Box::new(move || {
-                    target.publish(map(&a.get()?, &b.get()?)).map(|_| ())
-                })),
-                invalidate_dependents: Box::new(move || downstream.invalidate_computations()),
-                _inputs: vec![
-                    self.subscribe_computation(weak.clone()),
-                    other.subscribe_computation(weak),
-                ],
-            }
-        });
-        Ok(ReadSignal {
-            inner: output.read.inner,
-            computation: Some(derived),
-        })
+        derived(
+            self.inner.shared.clone(),
+            self.clone(),
+            move |source| Ok(map(&source.get()?)),
+            |source, weak| vec![source.subscribe_computation(weak.clone())],
+        )
     }
 
     fn subscribe_computation(&self, computation: Weak<dyn Computation>) -> Subscription {
@@ -852,6 +875,316 @@ impl<T: Clone + 'static> ReadSignal<T> {
         }
     }
 }
+
+/// One input of [`ReadSignal::combine`]: a [`Signal`] or a [`ReadSignal`], or a
+/// reference to one.
+///
+/// An application never names this trait: it writes its inputs in a tuple,
+/// and each element implements it. `&signal` and `&binding` work, and so does
+/// a binding a call returns, such as `count.map(..)?` or `filter.items()`, or an
+/// owned clone of a signal; every element is cloned into the derived binding,
+/// so a reference is not kept. Only generic code over inputs names it, as a
+/// bound.
+///
+/// The trait is sealed: only pert-ui's bindings implement it, so a value that
+/// is not a binding is refused with a message saying so. A fixed value the
+/// derivation needs is captured by the function instead.
+///
+/// ```
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{ReadSignal, Runtime};
+/// let ui = Runtime::new();
+/// let count = ui.signal(2_u32);
+/// let label = ui.signal(String::from("items"));
+/// let doubled = count.map(|n| n * 2)?;
+/// let caption = ReadSignal::combine(
+///     (&count, &doubled, count.map(|n| n + 1)?, label.clone()),
+///     |(count, doubled, next, label)| format!("{count} {label}, {doubled} doubled, {next} next"),
+/// )?;
+/// assert_eq!(caption.get()?, "2 items, 4 doubled, 3 next");
+/// count.set(3)?;
+/// assert_eq!(caption.get()?, "3 items, 6 doubled, 4 next");
+/// # Ok::<(), pert_ui::RuntimeError>(())
+/// ```
+#[diagnostic::on_unimplemented(
+    message = "`{Self}` is not a signal or read binding",
+    label = "not an input `ReadSignal::combine` can observe",
+    note = "each element of the tuple is a `Signal` or `ReadSignal`, or a reference to one; capture a fixed value in the function instead"
+)]
+pub trait CombineInput: sealed::CombineInputSeal {
+    /// The type of the value the input holds, which the derivation reads.
+    type Value: Clone + 'static;
+}
+impl<T: Clone + 'static> CombineInput for Signal<T> {
+    type Value = T;
+}
+impl<T: Clone + 'static> sealed::CombineInputSeal for Signal<T> {
+    fn read_signal(
+        &self,
+        _token: sealed::Token,
+    ) -> &ReadSignal<<Signal<T> as CombineInput>::Value> {
+        &self.read
+    }
+}
+impl<T: Clone + 'static> CombineInput for ReadSignal<T> {
+    type Value = T;
+}
+impl<T: Clone + 'static> sealed::CombineInputSeal for ReadSignal<T> {
+    fn read_signal(
+        &self,
+        _token: sealed::Token,
+    ) -> &ReadSignal<<ReadSignal<T> as CombineInput>::Value> {
+        self
+    }
+}
+impl<B: CombineInput> CombineInput for &B {
+    type Value = B::Value;
+}
+impl<'a, B: CombineInput> sealed::CombineInputSeal for &'a B {
+    fn read_signal(&self, token: sealed::Token) -> &ReadSignal<<&'a B as CombineInput>::Value> {
+        (**self).read_signal(token)
+    }
+}
+
+/// The inputs of [`ReadSignal::combine`]: a tuple of 2 to 12
+/// [`CombineInput`]s.
+///
+/// An application writes the tuple, `(&name, &port)`, and never names this
+/// trait; generic code over a set of inputs names it as a bound, with
+/// [`Self::Values`] the tuple of their values. The limit 12 is the arity to
+/// which the standard library implements its tuple traits (`Debug`,
+/// `PartialEq`, `Hash`, `Default`). There is no 1-tuple: a derivation from
+/// one binding is [`ReadSignal::map`]. More than 12 inputs combine in steps,
+/// a `combine` over a tuple of derived bindings, or related fields live in
+/// one signal that `map` projects.
+///
+/// The trait is sealed: only pert-ui's tuples implement it, so a tuple outside
+/// the limit is refused with a message naming the limit.
+///
+/// Twelve inputs, the most one call takes:
+///
+/// ```
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{ReadSignal, Runtime};
+/// let ui = Runtime::new();
+/// let [a, b, c, d, e, f, g, h, i, j, k, l] = std::array::from_fn(|n| ui.signal(n));
+/// let sum = ReadSignal::combine(
+///     (&a, &b, &c, &d, &e, &f, &g, &h, &i, &j, &k, &l),
+///     |(a, b, c, d, e, f, g, h, i, j, k, l)| a + b + c + d + e + f + g + h + i + j + k + l,
+/// )?;
+/// assert_eq!(sum.get()?, 66);
+/// l.set(100)?;
+/// assert_eq!(sum.get()?, 155);
+/// # Ok::<(), pert_ui::RuntimeError>(())
+/// ```
+///
+/// Thirteen inputs do not compile, because the tuple is longer than 12:
+///
+/// ```compile_fail
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{ReadSignal, Runtime};
+/// let ui = Runtime::new();
+/// let a = ui.signal(1_u32);
+/// let sum = ReadSignal::combine(
+///     (&a, &a, &a, &a, &a, &a, &a, &a, &a, &a, &a, &a, &a),
+///     |values| values.0,
+/// )?;
+/// # Ok::<(), pert_ui::RuntimeError>(())
+/// ```
+///
+/// Nor does one input, because a 1-tuple is shorter than 2; write
+/// `count.map(|n| *n)` instead:
+///
+/// ```compile_fail
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{ReadSignal, Runtime};
+/// let ui = Runtime::new();
+/// let count = ui.signal(1_u32);
+/// let same = ReadSignal::combine((&count,), |(n,)| *n)?;
+/// # Ok::<(), pert_ui::RuntimeError>(())
+/// ```
+///
+/// Generic code over any inputs, here whether their values differ from the
+/// applied ones:
+///
+/// ```
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::{CombineInputs, ReadSignal, Runtime, RuntimeError};
+///
+/// fn changed<I>(inputs: I, applied: I::Values) -> Result<ReadSignal<bool>, RuntimeError>
+/// where
+///     I: CombineInputs,
+///     I::Values: PartialEq,
+/// {
+///     ReadSignal::combine(inputs, move |values| *values != applied)
+/// }
+///
+/// let ui = Runtime::new();
+/// let name = ui.signal(String::from("server"));
+/// let port = ui.signal(8080_u16);
+/// let dirty = changed((&name, &port), (String::from("server"), 8080))?;
+/// assert!(!dirty.get()?);
+/// port.set(8443)?;
+/// assert!(dirty.get()?);
+/// # Ok::<(), pert_ui::RuntimeError>(())
+/// ```
+#[diagnostic::on_unimplemented(
+    message = "`{Self}` is not a tuple of 2 to 12 bindings",
+    label = "expected a tuple of signals or read bindings, such as `(&a, &b)`",
+    note = "`ReadSignal::combine((&a, &b), |(a, b)| ...)` derives from 2 to 12 bindings; `ReadSignal::map` derives from one, and more than 12 combine in steps"
+)]
+pub trait CombineInputs: sealed::CombineInputsSeal {
+    /// The inputs' values as a tuple in input order, `(A::Value, B::Value, …)`;
+    /// the derivation's function receives a reference to it.
+    type Values: 'static;
+}
+
+/// Implements [`CombineInputs`] for one tuple arity: the first input names the
+/// runtime every other must share.
+macro_rules! combine_inputs {
+    ($first_input:ident $first:ident $(, $input:ident $value:ident)+) => {
+        impl<$first_input: CombineInput $(, $input: CombineInput)+> CombineInputs
+            for ($first_input, $($input,)+)
+        {
+            type Values = ($first_input::Value, $($input::Value,)+);
+        }
+        impl<$first_input: CombineInput $(, $input: CombineInput)+> sealed::CombineInputsSeal
+            for ($first_input, $($input,)+)
+        {
+            fn derive<T, Map>(
+                &self,
+                token: sealed::Token,
+                map: Map,
+            ) -> Result<ReadSignal<T>, RuntimeError>
+            where
+                T: Clone + PartialEq + 'static,
+                Map: Fn(&<($first_input, $($input,)+) as CombineInputs>::Values) -> T + 'static,
+            {
+                let ($first, $($value,)+) = self;
+                let ($first, $($value,)+) = (
+                    $first.read_signal(token).clone(),
+                    $($value.read_signal(token).clone(),)+
+                );
+                let shared = $first.inner.shared.clone();
+                $(
+                    if !Rc::ptr_eq(&shared, &$value.inner.shared) {
+                        return Err(RuntimeError::ForeignRuntime);
+                    }
+                )+
+                derived(
+                    shared,
+                    ($first, $($value,)+),
+                    move |($first, $($value,)+)| {
+                        Ok(map(&($first.get()?, $($value.get()?,)+)))
+                    },
+                    |($first, $($value,)+), weak| {
+                        vec![
+                            $first.subscribe_computation(weak.clone()),
+                            $($value.subscribe_computation(weak.clone()),)+
+                        ]
+                    },
+                )
+            }
+        }
+    };
+}
+combine_inputs!(A a, B b);
+combine_inputs!(A a, B b, C c);
+combine_inputs!(A a, B b, C c, D d);
+combine_inputs!(A a, B b, C c, D d, E e);
+combine_inputs!(A a, B b, C c, D d, E e, F f);
+combine_inputs!(A a, B b, C c, D d, E e, F f, G g);
+combine_inputs!(A a, B b, C c, D d, E e, F f, G g, H h);
+combine_inputs!(A a, B b, C c, D d, E e, F f, G g, H h, I i);
+combine_inputs!(A a, B b, C c, D d, E e, F f, G g, H h, I i, J j);
+combine_inputs!(A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k);
+combine_inputs!(A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l);
+
+impl<T: Clone + PartialEq + 'static> ReadSignal<T> {
+    /// Derives a read-only value from 2 to 12 bindings of one runtime, with
+    /// the batching, equality and ownership rules of [`Self::map`].
+    ///
+    /// Timing class: [evaluation](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#evaluation).
+    ///
+    /// `inputs` is a tuple of [`Signal`]s and [`ReadSignal`]s, or references
+    /// to them, in any mix: `(&name, &port)`, `(filter.items(), &query)`. Each
+    /// element is cloned into the result, so a reference is not kept and a
+    /// signal needs no `read_only()`. Every input must belong to the runtime of
+    /// the first. The limit is 12, the arity of the standard library's tuple
+    /// traits; a derivation from one binding is [`Self::map`], and more than
+    /// 12 inputs combine in steps, a `combine` over derived bindings, or live
+    /// as related fields of one signal that `map` projects
+    /// ([`CombineInputs`]).
+    ///
+    /// `map` receives a reference to the tuple of the inputs' values, in input
+    /// order. The pattern `|(a, b)|` binds `a` and `b` as references to the
+    /// values, as two parameters would; an annotated closure names the tuple,
+    /// `|values: &(u32, String)|`, and a named function takes `&(A, B)`. A
+    /// closure with two parameters, `|a, b|`, does not compile ("expected
+    /// closure that takes 1 argument").
+    ///
+    /// The pure UI-thread function runs once here, reading the inputs in tuple
+    /// order, and then at most once per batch of input writes however many
+    /// inputs changed: the result is one derived binding with one
+    /// subscription per input, so writes mark it stale and run nothing, and
+    /// the runtime evaluates it before component updates, or at an earlier
+    /// explicit read. Do not mutate state or perform I/O in the function. An
+    /// equal result advances no revision and updates no component that reads
+    /// it; a binding derived from the result was marked stale with it and
+    /// still evaluates again, its own equal result stopping there.
+    ///
+    /// The result retains every input, a derived input with its own
+    /// computation so it stays current, and the function with whatever it
+    /// captured; clones of the result share them, and dropping the last clone
+    /// releases the subscriptions, the inputs and the function. An input may
+    /// repeat, `(&a, &a)`: both positions read the same value.
+    ///
+    /// The function runs in the evaluation phase, so a write it attempts is
+    /// refused: the write returns `WriteDuringUpdate` to the function and
+    /// changes nothing, here and at every later evaluation. A later
+    /// evaluation's error, such as a failed read of an input, is returned by
+    /// the read that settles the result: an explicit [`Self::get`], or the
+    /// flush that settles derived values before component updates.
+    ///
+    /// # Errors
+    /// In this order: `ForeignRuntime` when an input belongs to another
+    /// runtime than the first, before any input is read or the function runs;
+    /// `Closed` after the runtime shut down; `WriteDuringLayout`,
+    /// `WriteDuringPaint`, `WriteDuringInspection` or `WriteDuringDelivery`
+    /// when called inside that phase (a component's update may derive); then
+    /// the first input read error in tuple order, such as `BorrowConflict`
+    /// for a reentrant read, without calling the function.
+    ///
+    /// A settings form's dirty flag, over three field signals and the applied
+    /// record:
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{ReadSignal, Runtime};
+    /// let ui = Runtime::new();
+    /// let name = ui.signal(String::from("server"));
+    /// let port = ui.signal(8080_u16);
+    /// let secure = ui.signal(true);
+    /// let applied = ui.signal((String::from("server"), 8080_u16, true));
+    /// let dirty = ReadSignal::combine(
+    ///     (&name, &port, &secure, &applied),
+    ///     |(name, port, secure, applied)| {
+    ///         (name, port, secure) != (&applied.0, &applied.1, &applied.2)
+    ///     },
+    /// )?;
+    /// assert!(!dirty.get()?);
+    /// port.set(8443)?;
+    /// assert!(dirty.get()?);
+    /// # Ok::<(), pert_ui::RuntimeError>(())
+    /// ```
+    pub fn combine<I: CombineInputs>(
+        inputs: I,
+        map: impl Fn(&I::Values) -> T + 'static,
+    ) -> Result<Self, RuntimeError> {
+        sealed::CombineInputsSeal::derive(&inputs, sealed::Token(()), map)
+    }
+}
+
 impl Drop for Subscription {
     fn drop(&mut self) {
         if let Some(remove) = self.remove.take() {

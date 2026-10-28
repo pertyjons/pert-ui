@@ -162,11 +162,12 @@ macro_rules! described_component {
 ///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
-/// use pert_ui::{Dynamic, IntoElement, Label, Runtime};
+/// use pert_ui::{Dynamic, IntoElement, Label, ReadSignal, Runtime};
 /// use std::time::Duration;
 /// let mut ui = Runtime::new();
 /// let (name, unread) = (ui.signal("Ada".to_owned()), ui.signal(2));
-/// let header = name.combine(&unread, |name, unread| (name.clone(), *unread))?;
+/// let header =
+///     ReadSignal::combine((&name, &unread), |(name, unread)| (name.clone(), *unread))?;
 /// let root = ui.mount_tree(
 ///     Dynamic::new(header, |_, (name, unread)| {
 ///         if *unread == 0 {

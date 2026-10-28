@@ -771,7 +771,7 @@ fn mount(
     let zoom = editor
         .view
         .map(|view| format!("{:.0} %", view.scale().get() * 100.0))?;
-    let title = editor.path.combine(&editor.dirty, |path, dirty| {
+    let title = ReadSignal::combine((&editor.path, &editor.dirty), |(path, dirty)| {
         let name = path
             .as_ref()
             .and_then(|path| path.file_name())

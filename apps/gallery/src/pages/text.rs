@@ -647,12 +647,15 @@ fn search_example(ui: &Runtime) -> Result<Element, RuntimeError> {
             ),
             Element::new(
                 "search-highlight",
-                Label::new(query.combine(&highlight.read_only(), |query, selected| {
-                    search_highlight(query, selected).map_or_else(
-                        || "No highlighted match.".to_owned(),
-                        |index| format!("Highlighted match: {}", index + 1),
-                    )
-                })?),
+                Label::new(ReadSignal::combine(
+                    (&query, &highlight),
+                    |(query, selected)| {
+                        search_highlight(query, selected).map_or_else(
+                            || "No highlighted match.".to_owned(),
+                            |index| format!("Highlighted match: {}", index + 1),
+                        )
+                    },
+                )?),
             ),
             Element::new("search-chosen", Label::new(chosen.read_only())),
         ],

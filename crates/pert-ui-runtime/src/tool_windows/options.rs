@@ -84,7 +84,9 @@ impl Builder<'_> {
         }
         let holds = self.holds(check)?;
         let enabled = match permission.signal()? {
-            Some(permission) => holds.combine(&permission, |holds, allowed| *holds && *allowed)?,
+            Some(permission) => {
+                ReadSignal::combine((&holds, &permission), |(holds, allowed)| *holds && *allowed)?
+            }
             None => holds,
         };
         Ok(item.enabled(enabled))
@@ -126,11 +128,10 @@ fn mode_item(
             .window(&key)
             .map_or(ToolWindowMode::Docked, |window| window.mode)
     })?;
-    let enabled = current
-        .combine(&builder.floatable, |mode, float| (*mode, *float))?
-        .combine(&builder.detachable, move |(mode, float), detach| {
-            may_switch(*mode, target, *float, *detach)
-        })?;
+    let enabled = ReadSignal::combine(
+        (&current, &builder.floatable, &builder.detachable),
+        move |(mode, float, detach)| may_switch(*mode, target, *float, *detach),
+    )?;
     let checked = current.map(move |mode| *mode == target)?;
     let (action_link, action_key) = (builder.link.clone(), builder.key.to_owned());
     Ok(MenuItem::new(item_key, label, move |_| {

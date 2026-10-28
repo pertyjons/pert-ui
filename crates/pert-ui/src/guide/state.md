@@ -79,6 +79,13 @@ at the next flush, where only the components that read a changed binding
 update, and several writes before a flush coalesce. A hidden component keeps
 its change pending without being updated until it is shown.
 
+A value derived from several bindings is one [`ReadSignal::combine`] over a
+tuple of them, such as `ReadSignal::combine((&name, &port), |(name, port)|
+format!("{name}:{port}"))?`. It evaluates at most once per batch of writes,
+however many of its inputs changed, and an equal result updates no component
+that reads it; a binding derived from it in turn still evaluates again and
+filters its own equal result.
+
 A signal's value type needs [`PartialEq`] to be written, since a write that
 leaves the value equal notifies nobody, and [`Clone`] to be read, since
 [`ReadSignal::get`] returns a copy. Creating a signal needs neither.

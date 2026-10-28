@@ -405,7 +405,7 @@ impl<T: Clone + Eq + Hash + 'static> Shared<T> {
             (desc.options.clone(), desc.filter.clone())
         };
         let registry = self.keys.clone();
-        let filtered = self.query.combine(&options, move |query, options| {
+        let filtered = ReadSignal::combine((&self.query, &options), move |(query, options)| {
             let keys = registry.borrow_mut().keys(options);
             let folded = query.to_lowercase();
             let rows: Vec<Row<T>> = options
@@ -437,14 +437,15 @@ impl<T: Clone + Eq + Hash + 'static> Shared<T> {
                 shared: weak.clone(),
             })
         })?;
-        let highlighted = self.highlight.combine(&filtered, |highlight, filtered| {
-            let enabled = filtered.enabled_keys();
-            highlight
-                .as_deref()
-                .filter(|key| enabled.contains(key))
-                .or_else(|| enabled.first().copied())
-                .map(str::to_owned)
-        })?;
+        let highlighted =
+            ReadSignal::combine((&self.highlight, &filtered), |(highlight, filtered)| {
+                let enabled = filtered.enabled_keys();
+                highlight
+                    .as_deref()
+                    .filter(|key| enabled.contains(key))
+                    .or_else(|| enabled.first().copied())
+                    .map(str::to_owned)
+            })?;
         Ok(Chain {
             options,
             filter_generation: self.filter_generation.get(),

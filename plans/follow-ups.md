@@ -29,7 +29,12 @@ until then if one is being written.
   application model as a control binding. It must define validation, write
   revisions, transaction failure and external-write conflicts, and route
   writes through the application rather than treating a document mutation as
-  an undo step or an authoritative acceptance.
+  an undo step or an authoritative acceptance. Round 2 of the usability
+  study: both task 1 runs bound each control to its own field signal and
+  derived the edited record with chained `combine` calls, which the tuple
+  form of `ReadSignal::combine` (0.3.85) replaces; neither needed to write
+  through a projection. The follow-up stays for a control bound to a field
+  of one model signal, with its validation, revision and conflict rules.
 - **Typed state handoff from `App::new`** to its lifecycle callbacks
   (`on_close`, `on_error`). From the diagram-probe plan; today a shared slot
   carries it, as the custom-widget guide shows.

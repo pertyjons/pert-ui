@@ -1,0 +1,17 @@
+error[E0277]: `(&Signal<u32>,)` is not a tuple of 2 to 12 bindings
+ --> ui/d01_combine_single_input.rs:6:33
+  |
+6 |     let _ = ReadSignal::combine((&count,), |(n,)| *n);
+  |             ------------------- ^^^^^^^^^ expected a tuple of signals or read bindings, such as `(&a, &b)`
+  |             |
+  |             required by a bound introduced by this call
+  |
+  = help: the trait `CombineInputs` is not implemented for `(&Signal<u32>,)`
+  = note: `ReadSignal::combine((&a, &b), |(a, b)| ...)` derives from 2 to 12 bindings; `ReadSignal::map` derives from one, and more than 12 combine in steps
+  = help: the following other types implement trait `CombineInputs`:
+            (T₁, T₂, …, Tₙ) for tuples of arity 2 up to and including 12
+note: required by a bound in `pert_ui::ReadSignal::<T>::combine`
+ --> $WORKSPACE/crates/pert-ui-runtime/src/signal.rs
+  |
+  |     pub fn combine<I: CombineInputs>(
+  |                       ^^^^^^^^^^^^^ required by this bound in `ReadSignal::<T>::combine`

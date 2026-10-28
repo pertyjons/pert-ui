@@ -3652,8 +3652,9 @@ impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::RasterImage
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::RasterImage
 pub struct pert_ui_runtime::component::ReadSignal<T>
 impl<T: core::clone::Clone + 'static> pert_ui_runtime::ReadSignal<T>
-pub fn pert_ui_runtime::ReadSignal<T>::combine<U: core::clone::Clone + 'static, V: core::clone::Clone + core::cmp::PartialEq + 'static>(&self, &pert_ui_runtime::ReadSignal<U>, impl core::ops::function::Fn(&T, &U) -> V + 'static) -> core::result::Result<pert_ui_runtime::ReadSignal<V>, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::ReadSignal<T>::map<U: core::clone::Clone + core::cmp::PartialEq + 'static>(&self, impl core::ops::function::Fn(&T) -> U + 'static) -> core::result::Result<pert_ui_runtime::ReadSignal<U>, pert_ui_runtime::RuntimeError>
+impl<T: core::clone::Clone + core::cmp::PartialEq + 'static> pert_ui_runtime::ReadSignal<T>
+pub fn pert_ui_runtime::ReadSignal<T>::combine<I: pert_ui_runtime::CombineInputs>(I, impl core::ops::function::Fn(&<I as pert_ui_runtime::CombineInputs>::Values) -> T + 'static) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
 impl<T: core::clone::Clone> pert_ui_runtime::ReadSignal<T>
 pub fn pert_ui_runtime::ReadSignal<T>::get(&self) -> core::result::Result<T, pert_ui_runtime::RuntimeError>
 impl<T> pert_ui_runtime::ReadSignal<T>
@@ -3670,6 +3671,8 @@ impl core::convert::From<pert_ui_runtime::ReadSignal<bool>> for pert_ui_runtime:
 pub fn pert_ui_runtime::Permission::from(pert_ui_runtime::ReadSignal<bool>) -> Self
 impl core::convert::From<pert_ui_runtime::ReadSignal<pert_ui_runtime::RichText>> for pert_ui_runtime::TextSource
 pub fn pert_ui_runtime::TextSource::from(pert_ui_runtime::ReadSignal<pert_ui_runtime::RichText>) -> Self
+impl<T: core::clone::Clone + 'static> pert_ui_runtime::CombineInput for pert_ui_runtime::ReadSignal<T>
+pub type pert_ui_runtime::ReadSignal<T>::Value = T
 impl<T> core::clone::Clone for pert_ui_runtime::ReadSignal<T>
 pub fn pert_ui_runtime::ReadSignal<T>::clone(&self) -> Self
 impl<T> core::convert::From<&pert_ui_runtime::ReadSignal<T>> for pert_ui_runtime::ReadSignal<T>
@@ -3928,6 +3931,8 @@ impl core::convert::From<pert_ui_runtime::Signal<bool>> for pert_ui_runtime::Per
 pub fn pert_ui_runtime::Permission::from(pert_ui_runtime::Signal<bool>) -> Self
 impl core::convert::From<pert_ui_runtime::Signal<pert_ui_runtime::RichText>> for pert_ui_runtime::TextSource
 pub fn pert_ui_runtime::TextSource::from(pert_ui_runtime::Signal<pert_ui_runtime::RichText>) -> Self
+impl<T: core::clone::Clone + 'static> pert_ui_runtime::CombineInput for pert_ui_runtime::Signal<T>
+pub type pert_ui_runtime::Signal<T>::Value = T
 impl<T> core::clone::Clone for pert_ui_runtime::Signal<T>
 pub fn pert_ui_runtime::Signal<T>::clone(&self) -> Self
 impl<T> core::convert::From<&pert_ui_runtime::Signal<T>> for pert_ui_runtime::ReadSignal<T>
@@ -20412,8 +20417,9 @@ impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::RasterImage
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::RasterImage
 pub struct pert_ui_runtime::prelude::ReadSignal<T>
 impl<T: core::clone::Clone + 'static> pert_ui_runtime::ReadSignal<T>
-pub fn pert_ui_runtime::ReadSignal<T>::combine<U: core::clone::Clone + 'static, V: core::clone::Clone + core::cmp::PartialEq + 'static>(&self, &pert_ui_runtime::ReadSignal<U>, impl core::ops::function::Fn(&T, &U) -> V + 'static) -> core::result::Result<pert_ui_runtime::ReadSignal<V>, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::ReadSignal<T>::map<U: core::clone::Clone + core::cmp::PartialEq + 'static>(&self, impl core::ops::function::Fn(&T) -> U + 'static) -> core::result::Result<pert_ui_runtime::ReadSignal<U>, pert_ui_runtime::RuntimeError>
+impl<T: core::clone::Clone + core::cmp::PartialEq + 'static> pert_ui_runtime::ReadSignal<T>
+pub fn pert_ui_runtime::ReadSignal<T>::combine<I: pert_ui_runtime::CombineInputs>(I, impl core::ops::function::Fn(&<I as pert_ui_runtime::CombineInputs>::Values) -> T + 'static) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
 impl<T: core::clone::Clone> pert_ui_runtime::ReadSignal<T>
 pub fn pert_ui_runtime::ReadSignal<T>::get(&self) -> core::result::Result<T, pert_ui_runtime::RuntimeError>
 impl<T> pert_ui_runtime::ReadSignal<T>
@@ -20430,6 +20436,8 @@ impl core::convert::From<pert_ui_runtime::ReadSignal<bool>> for pert_ui_runtime:
 pub fn pert_ui_runtime::Permission::from(pert_ui_runtime::ReadSignal<bool>) -> Self
 impl core::convert::From<pert_ui_runtime::ReadSignal<pert_ui_runtime::RichText>> for pert_ui_runtime::TextSource
 pub fn pert_ui_runtime::TextSource::from(pert_ui_runtime::ReadSignal<pert_ui_runtime::RichText>) -> Self
+impl<T: core::clone::Clone + 'static> pert_ui_runtime::CombineInput for pert_ui_runtime::ReadSignal<T>
+pub type pert_ui_runtime::ReadSignal<T>::Value = T
 impl<T> core::clone::Clone for pert_ui_runtime::ReadSignal<T>
 pub fn pert_ui_runtime::ReadSignal<T>::clone(&self) -> Self
 impl<T> core::convert::From<&pert_ui_runtime::ReadSignal<T>> for pert_ui_runtime::ReadSignal<T>
@@ -21325,6 +21333,8 @@ impl core::convert::From<pert_ui_runtime::Signal<bool>> for pert_ui_runtime::Per
 pub fn pert_ui_runtime::Permission::from(pert_ui_runtime::Signal<bool>) -> Self
 impl core::convert::From<pert_ui_runtime::Signal<pert_ui_runtime::RichText>> for pert_ui_runtime::TextSource
 pub fn pert_ui_runtime::TextSource::from(pert_ui_runtime::Signal<pert_ui_runtime::RichText>) -> Self
+impl<T: core::clone::Clone + 'static> pert_ui_runtime::CombineInput for pert_ui_runtime::Signal<T>
+pub type pert_ui_runtime::Signal<T>::Value = T
 impl<T> core::clone::Clone for pert_ui_runtime::Signal<T>
 pub fn pert_ui_runtime::Signal<T>::clone(&self) -> Self
 impl<T> core::convert::From<&pert_ui_runtime::Signal<T>> for pert_ui_runtime::ReadSignal<T>
@@ -37802,8 +37812,9 @@ impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::RasterImage
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::RasterImage
 pub struct pert_ui_runtime::ReadSignal<T>
 impl<T: core::clone::Clone + 'static> pert_ui_runtime::ReadSignal<T>
-pub fn pert_ui_runtime::ReadSignal<T>::combine<U: core::clone::Clone + 'static, V: core::clone::Clone + core::cmp::PartialEq + 'static>(&self, &pert_ui_runtime::ReadSignal<U>, impl core::ops::function::Fn(&T, &U) -> V + 'static) -> core::result::Result<pert_ui_runtime::ReadSignal<V>, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::ReadSignal<T>::map<U: core::clone::Clone + core::cmp::PartialEq + 'static>(&self, impl core::ops::function::Fn(&T) -> U + 'static) -> core::result::Result<pert_ui_runtime::ReadSignal<U>, pert_ui_runtime::RuntimeError>
+impl<T: core::clone::Clone + core::cmp::PartialEq + 'static> pert_ui_runtime::ReadSignal<T>
+pub fn pert_ui_runtime::ReadSignal<T>::combine<I: pert_ui_runtime::CombineInputs>(I, impl core::ops::function::Fn(&<I as pert_ui_runtime::CombineInputs>::Values) -> T + 'static) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
 impl<T: core::clone::Clone> pert_ui_runtime::ReadSignal<T>
 pub fn pert_ui_runtime::ReadSignal<T>::get(&self) -> core::result::Result<T, pert_ui_runtime::RuntimeError>
 impl<T> pert_ui_runtime::ReadSignal<T>
@@ -37820,6 +37831,8 @@ impl core::convert::From<pert_ui_runtime::ReadSignal<bool>> for pert_ui_runtime:
 pub fn pert_ui_runtime::Permission::from(pert_ui_runtime::ReadSignal<bool>) -> Self
 impl core::convert::From<pert_ui_runtime::ReadSignal<pert_ui_runtime::RichText>> for pert_ui_runtime::TextSource
 pub fn pert_ui_runtime::TextSource::from(pert_ui_runtime::ReadSignal<pert_ui_runtime::RichText>) -> Self
+impl<T: core::clone::Clone + 'static> pert_ui_runtime::CombineInput for pert_ui_runtime::ReadSignal<T>
+pub type pert_ui_runtime::ReadSignal<T>::Value = T
 impl<T> core::clone::Clone for pert_ui_runtime::ReadSignal<T>
 pub fn pert_ui_runtime::ReadSignal<T>::clone(&self) -> Self
 impl<T> core::convert::From<&pert_ui_runtime::ReadSignal<T>> for pert_ui_runtime::ReadSignal<T>
@@ -39098,6 +39111,8 @@ impl core::convert::From<pert_ui_runtime::Signal<bool>> for pert_ui_runtime::Per
 pub fn pert_ui_runtime::Permission::from(pert_ui_runtime::Signal<bool>) -> Self
 impl core::convert::From<pert_ui_runtime::Signal<pert_ui_runtime::RichText>> for pert_ui_runtime::TextSource
 pub fn pert_ui_runtime::TextSource::from(pert_ui_runtime::Signal<pert_ui_runtime::RichText>) -> Self
+impl<T: core::clone::Clone + 'static> pert_ui_runtime::CombineInput for pert_ui_runtime::Signal<T>
+pub type pert_ui_runtime::Signal<T>::Value = T
 impl<T> core::clone::Clone for pert_ui_runtime::Signal<T>
 pub fn pert_ui_runtime::Signal<T>::clone(&self) -> Self
 impl<T> core::convert::From<&pert_ui_runtime::Signal<T>> for pert_ui_runtime::ReadSignal<T>
@@ -42199,6 +42214,38 @@ pub const pert_ui_runtime::DRAG_THRESHOLD: f32
 pub trait pert_ui_runtime::Clipboard
 pub fn pert_ui_runtime::Clipboard::read_text(&mut self) -> core::result::Result<alloc::string::String, pert_ui_runtime::ClipboardError>
 pub fn pert_ui_runtime::Clipboard::write_text(&mut self, &str) -> core::result::Result<(), pert_ui_runtime::ClipboardError>
+pub trait pert_ui_runtime::CombineInput: pert_ui_runtime::signal::sealed::CombineInputSeal
+pub type pert_ui_runtime::CombineInput::Value: core::clone::Clone + 'static
+impl<B: pert_ui_runtime::CombineInput> pert_ui_runtime::CombineInput for &B
+pub type &B::Value = <B as pert_ui_runtime::CombineInput>::Value
+impl<T: core::clone::Clone + 'static> pert_ui_runtime::CombineInput for pert_ui_runtime::ReadSignal<T>
+pub type pert_ui_runtime::ReadSignal<T>::Value = T
+impl<T: core::clone::Clone + 'static> pert_ui_runtime::CombineInput for pert_ui_runtime::Signal<T>
+pub type pert_ui_runtime::Signal<T>::Value = T
+pub trait pert_ui_runtime::CombineInputs: pert_ui_runtime::signal::sealed::CombineInputsSeal
+pub type pert_ui_runtime::CombineInputs::Values: 'static
+impl<A: pert_ui_runtime::CombineInput, B: pert_ui_runtime::CombineInput, C: pert_ui_runtime::CombineInput, D: pert_ui_runtime::CombineInput, E: pert_ui_runtime::CombineInput, F: pert_ui_runtime::CombineInput, G: pert_ui_runtime::CombineInput, H: pert_ui_runtime::CombineInput, I: pert_ui_runtime::CombineInput, J: pert_ui_runtime::CombineInput, K: pert_ui_runtime::CombineInput, L: pert_ui_runtime::CombineInput> pert_ui_runtime::CombineInputs for (A, B, C, D, E, F, G, H, I, J, K, L)
+pub type (A, B, C, D, E, F, G, H, I, J, K, L)::Values = (<A as pert_ui_runtime::CombineInput>::Value, <B as pert_ui_runtime::CombineInput>::Value, <C as pert_ui_runtime::CombineInput>::Value, <D as pert_ui_runtime::CombineInput>::Value, <E as pert_ui_runtime::CombineInput>::Value, <F as pert_ui_runtime::CombineInput>::Value, <G as pert_ui_runtime::CombineInput>::Value, <H as pert_ui_runtime::CombineInput>::Value, <I as pert_ui_runtime::CombineInput>::Value, <J as pert_ui_runtime::CombineInput>::Value, <K as pert_ui_runtime::CombineInput>::Value, <L as pert_ui_runtime::CombineInput>::Value)
+impl<A: pert_ui_runtime::CombineInput, B: pert_ui_runtime::CombineInput, C: pert_ui_runtime::CombineInput, D: pert_ui_runtime::CombineInput, E: pert_ui_runtime::CombineInput, F: pert_ui_runtime::CombineInput, G: pert_ui_runtime::CombineInput, H: pert_ui_runtime::CombineInput, I: pert_ui_runtime::CombineInput, J: pert_ui_runtime::CombineInput, K: pert_ui_runtime::CombineInput> pert_ui_runtime::CombineInputs for (A, B, C, D, E, F, G, H, I, J, K)
+pub type (A, B, C, D, E, F, G, H, I, J, K)::Values = (<A as pert_ui_runtime::CombineInput>::Value, <B as pert_ui_runtime::CombineInput>::Value, <C as pert_ui_runtime::CombineInput>::Value, <D as pert_ui_runtime::CombineInput>::Value, <E as pert_ui_runtime::CombineInput>::Value, <F as pert_ui_runtime::CombineInput>::Value, <G as pert_ui_runtime::CombineInput>::Value, <H as pert_ui_runtime::CombineInput>::Value, <I as pert_ui_runtime::CombineInput>::Value, <J as pert_ui_runtime::CombineInput>::Value, <K as pert_ui_runtime::CombineInput>::Value)
+impl<A: pert_ui_runtime::CombineInput, B: pert_ui_runtime::CombineInput, C: pert_ui_runtime::CombineInput, D: pert_ui_runtime::CombineInput, E: pert_ui_runtime::CombineInput, F: pert_ui_runtime::CombineInput, G: pert_ui_runtime::CombineInput, H: pert_ui_runtime::CombineInput, I: pert_ui_runtime::CombineInput, J: pert_ui_runtime::CombineInput> pert_ui_runtime::CombineInputs for (A, B, C, D, E, F, G, H, I, J)
+pub type (A, B, C, D, E, F, G, H, I, J)::Values = (<A as pert_ui_runtime::CombineInput>::Value, <B as pert_ui_runtime::CombineInput>::Value, <C as pert_ui_runtime::CombineInput>::Value, <D as pert_ui_runtime::CombineInput>::Value, <E as pert_ui_runtime::CombineInput>::Value, <F as pert_ui_runtime::CombineInput>::Value, <G as pert_ui_runtime::CombineInput>::Value, <H as pert_ui_runtime::CombineInput>::Value, <I as pert_ui_runtime::CombineInput>::Value, <J as pert_ui_runtime::CombineInput>::Value)
+impl<A: pert_ui_runtime::CombineInput, B: pert_ui_runtime::CombineInput, C: pert_ui_runtime::CombineInput, D: pert_ui_runtime::CombineInput, E: pert_ui_runtime::CombineInput, F: pert_ui_runtime::CombineInput, G: pert_ui_runtime::CombineInput, H: pert_ui_runtime::CombineInput, I: pert_ui_runtime::CombineInput> pert_ui_runtime::CombineInputs for (A, B, C, D, E, F, G, H, I)
+pub type (A, B, C, D, E, F, G, H, I)::Values = (<A as pert_ui_runtime::CombineInput>::Value, <B as pert_ui_runtime::CombineInput>::Value, <C as pert_ui_runtime::CombineInput>::Value, <D as pert_ui_runtime::CombineInput>::Value, <E as pert_ui_runtime::CombineInput>::Value, <F as pert_ui_runtime::CombineInput>::Value, <G as pert_ui_runtime::CombineInput>::Value, <H as pert_ui_runtime::CombineInput>::Value, <I as pert_ui_runtime::CombineInput>::Value)
+impl<A: pert_ui_runtime::CombineInput, B: pert_ui_runtime::CombineInput, C: pert_ui_runtime::CombineInput, D: pert_ui_runtime::CombineInput, E: pert_ui_runtime::CombineInput, F: pert_ui_runtime::CombineInput, G: pert_ui_runtime::CombineInput, H: pert_ui_runtime::CombineInput> pert_ui_runtime::CombineInputs for (A, B, C, D, E, F, G, H)
+pub type (A, B, C, D, E, F, G, H)::Values = (<A as pert_ui_runtime::CombineInput>::Value, <B as pert_ui_runtime::CombineInput>::Value, <C as pert_ui_runtime::CombineInput>::Value, <D as pert_ui_runtime::CombineInput>::Value, <E as pert_ui_runtime::CombineInput>::Value, <F as pert_ui_runtime::CombineInput>::Value, <G as pert_ui_runtime::CombineInput>::Value, <H as pert_ui_runtime::CombineInput>::Value)
+impl<A: pert_ui_runtime::CombineInput, B: pert_ui_runtime::CombineInput, C: pert_ui_runtime::CombineInput, D: pert_ui_runtime::CombineInput, E: pert_ui_runtime::CombineInput, F: pert_ui_runtime::CombineInput, G: pert_ui_runtime::CombineInput> pert_ui_runtime::CombineInputs for (A, B, C, D, E, F, G)
+pub type (A, B, C, D, E, F, G)::Values = (<A as pert_ui_runtime::CombineInput>::Value, <B as pert_ui_runtime::CombineInput>::Value, <C as pert_ui_runtime::CombineInput>::Value, <D as pert_ui_runtime::CombineInput>::Value, <E as pert_ui_runtime::CombineInput>::Value, <F as pert_ui_runtime::CombineInput>::Value, <G as pert_ui_runtime::CombineInput>::Value)
+impl<A: pert_ui_runtime::CombineInput, B: pert_ui_runtime::CombineInput, C: pert_ui_runtime::CombineInput, D: pert_ui_runtime::CombineInput, E: pert_ui_runtime::CombineInput, F: pert_ui_runtime::CombineInput> pert_ui_runtime::CombineInputs for (A, B, C, D, E, F)
+pub type (A, B, C, D, E, F)::Values = (<A as pert_ui_runtime::CombineInput>::Value, <B as pert_ui_runtime::CombineInput>::Value, <C as pert_ui_runtime::CombineInput>::Value, <D as pert_ui_runtime::CombineInput>::Value, <E as pert_ui_runtime::CombineInput>::Value, <F as pert_ui_runtime::CombineInput>::Value)
+impl<A: pert_ui_runtime::CombineInput, B: pert_ui_runtime::CombineInput, C: pert_ui_runtime::CombineInput, D: pert_ui_runtime::CombineInput, E: pert_ui_runtime::CombineInput> pert_ui_runtime::CombineInputs for (A, B, C, D, E)
+pub type (A, B, C, D, E)::Values = (<A as pert_ui_runtime::CombineInput>::Value, <B as pert_ui_runtime::CombineInput>::Value, <C as pert_ui_runtime::CombineInput>::Value, <D as pert_ui_runtime::CombineInput>::Value, <E as pert_ui_runtime::CombineInput>::Value)
+impl<A: pert_ui_runtime::CombineInput, B: pert_ui_runtime::CombineInput, C: pert_ui_runtime::CombineInput, D: pert_ui_runtime::CombineInput> pert_ui_runtime::CombineInputs for (A, B, C, D)
+pub type (A, B, C, D)::Values = (<A as pert_ui_runtime::CombineInput>::Value, <B as pert_ui_runtime::CombineInput>::Value, <C as pert_ui_runtime::CombineInput>::Value, <D as pert_ui_runtime::CombineInput>::Value)
+impl<A: pert_ui_runtime::CombineInput, B: pert_ui_runtime::CombineInput, C: pert_ui_runtime::CombineInput> pert_ui_runtime::CombineInputs for (A, B, C)
+pub type (A, B, C)::Values = (<A as pert_ui_runtime::CombineInput>::Value, <B as pert_ui_runtime::CombineInput>::Value, <C as pert_ui_runtime::CombineInput>::Value)
+impl<A: pert_ui_runtime::CombineInput, B: pert_ui_runtime::CombineInput> pert_ui_runtime::CombineInputs for (A, B)
+pub type (A, B)::Values = (<A as pert_ui_runtime::CombineInput>::Value, <B as pert_ui_runtime::CombineInput>::Value)
 pub trait pert_ui_runtime::Component: core::any::Any
 pub fn pert_ui_runtime::Component::arrange(&self, &mut pert_ui_runtime::ArrangeContext<'_>, pert_ui_runtime::Size) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Component::can_reveal(&self) -> bool

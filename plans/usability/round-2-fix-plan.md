@@ -1962,3 +1962,25 @@ plan closes.
   exposed only through semantic items is not searched; a tab's selected
   title is, through its choice value), corrected by the author after
   P8's open fix. **P9 done.**
+
+- **P10 Derivations over several bindings (0.3.85), 2026-10-28.**
+  Implemented by a fresh agent from the approved design
+  (`round-2-design-P10.md`, revision 3): `ReadSignal::combine` is an
+  associated function over a tuple of 2 to 12 bindings (P10-D1, the
+  function receives `&(A, B, ..)`), with the sealed `CombineInput` and
+  `CombineInputs` at the crate root (not in the prelude), `map` and
+  `combine` sharing one private constructor, diagnostics cases `d01` and
+  `d02`; every manifest caller migrated (permission fold kept pairwise,
+  tool-window options, file browser, multi-select, `inventory`, the
+  diagram editor, the gallery, the guide, the task 4 fixture at 0.3.85);
+  same kind: `map`'s `# Errors` and the refused-write paragraph.
+  **Deviation, accepted:** the seal impls spell the associated-type
+  projections in full without the trait method's `where Self:` clause,
+  which rustc needs to resolve them. Mutation evidence
+  (`target/p10-scratch/`): each of 14 mutations failed at its named
+  assertion. Fixture: compiled and tested against the workspace by path;
+  the kit check follows. Gate (fresh): fmt, workspace Clippy, workspace
+  tests (with `testing_closure`), the five headless sessions, doctests,
+  rustdoc `-D warnings`, the diagnostics snapshots (new `d01`, `d02`), the
+  API listing gate, `git diff --check`. Native evidence: not applicable.
+  Codex review: pending.

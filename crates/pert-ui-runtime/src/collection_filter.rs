@@ -564,13 +564,13 @@ struct Parts {
 /// item, so an action on it checks that it is shown, for example to enable
 /// it. Derive that from the shown rows and the active key, which for a list
 /// are [`ListFilter::items`] and [`ListSelection::active`]:
-/// `filter.items().combine(&selection.active(), |rows, active|
+/// `ReadSignal::combine((filter.items(), selection.active()), |(rows, active)|
 /// active.as_deref().is_some_and(|key| rows.index_of(key).is_some()))`
 /// ([`ReadSignal::combine`], [`ListItems::index_of`]). An action on a
 /// [`SelectionMode::Multiple`](crate::SelectionMode::Multiple) selection acts
 /// on every selected key, so its guard checks those rather than the active
 /// one, since hidden selected keys stay selected under every policy:
-/// `filter.items().combine(&selection.selected(), |rows, keys|
+/// `ReadSignal::combine((filter.items(), selection.selected()), |(rows, keys)|
 /// keys.iter().all(|key| rows.index_of(key).is_some()))`. Down in the field
 /// moves focus into the collection; Escape clears the query first, as the
 /// search field documents.

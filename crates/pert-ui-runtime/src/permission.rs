@@ -211,7 +211,7 @@ impl Permission {
         };
         let mut combined = first.clone();
         for condition in conditions {
-            combined = combined.combine(condition, |a, b| *a && *b)?;
+            combined = ReadSignal::combine((&combined, condition), |(a, b)| *a && *b)?;
         }
         Ok(Some(combined))
     }

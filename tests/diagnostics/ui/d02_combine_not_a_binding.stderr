@@ -1,0 +1,27 @@
+error[E0277]: `u32` is not a signal or read binding
+ --> ui/d02_combine_not_a_binding.rs:6:42
+  |
+6 |     let _ = ReadSignal::combine((&count, 3_u32), |(n, m)| n + m);
+  |             -------------------          ^^^^^ not an input `ReadSignal::combine` can observe
+  |             |
+  |             required by a bound introduced by this call
+  |
+  = help: the trait `CombineInput` is not implemented for `u32`
+  = note: each element of the tuple is a `Signal` or `ReadSignal`, or a reference to one; capture a fixed value in the function instead
+help: the following other types implement trait `CombineInput`
+ --> $WORKSPACE/crates/pert-ui-runtime/src/signal.rs
+  |
+  | impl<T: Clone + 'static> CombineInput for Signal<T> {
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `Signal<T>`
+...
+  | impl<T: Clone + 'static> CombineInput for ReadSignal<T> {
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `pert_ui::ReadSignal<T>`
+...
+  | impl<B: CombineInput> CombineInput for &B {
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `&B`
+  = note: required for `(&Signal<u32>, u32)` to implement `CombineInputs`
+note: required by a bound in `pert_ui::ReadSignal::<T>::combine`
+ --> $WORKSPACE/crates/pert-ui-runtime/src/signal.rs
+  |
+  |     pub fn combine<I: CombineInputs>(
+  |                       ^^^^^^^^^^^^^ required by this bound in `ReadSignal::<T>::combine`
