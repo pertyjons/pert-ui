@@ -812,24 +812,6 @@ impl std::fmt::Debug for MeasureContext<'_> {
     }
 }
 impl MeasureContext<'_> {
-    /// Measures child `index` again under the constraints this component was
-    /// last measured under, for a component that forwards its child's
-    /// measurement and gives its children a fixed height
-    /// ([`ValidationHints::fixed_height`](crate::ValidationHints::fixed_height)).
-    /// A cached measurement of this component returns without measuring the
-    /// child, which would leave the child's last measurement, the one
-    /// development validation checks, from other constraints; arranging calls
-    /// this so the child's matches. Development builds only: release builds
-    /// keep no such record and do nothing.
-    pub(crate) fn refresh_forwarded(&self, index: usize) -> Result<(), RuntimeError> {
-        #[cfg(debug_assertions)]
-        if let Some(constraints) = self.node.measured_constraints() {
-            self.measure(index, constraints)?;
-        }
-        #[cfg(not(debug_assertions))]
-        let _ = index;
-        Ok(())
-    }
     /// Current logical window bounds for anchored surface sizing. Native resize
     /// and UI zoom invalidate layout before this value is consumed again.
     #[must_use]
@@ -1126,6 +1108,79 @@ impl ArrangeContext<'_> {
     /// As [`MeasureContext::measure`].
     pub fn measure(&self, index: usize, available: Constraints) -> Result<Size, RuntimeError> {
         self.measure.measure(index, available)
+    }
+    /// Measures child `index` again under the constraints this component was
+    /// last measured under, so the child's latest measurement is the one this
+    /// component's own measurement was computed from.
+    ///
+    /// It is for a component that forwards a child's measurement, whose
+    /// [`Component::measure`] returns what `cx.measure(index, space)` gives
+    /// for the child under the space it was offered, and that reports
+    /// [`ValidationHints::fixed_height`](crate::ValidationHints::fixed_height).
+    /// Development validation checks the child against the height it was last
+    /// measured at. When the runtime answers this component's own measurement
+    /// from its retained results, its `measure` is not called, so the child's
+    /// latest measurement can be from other constraints, such as a column's
+    /// previous width: a report of content too tall for the fixed height
+    /// would then stay after the content fits, or be missed. Call it in
+    /// [`Component::arrange`], before placing the child. A fixed-height
+    /// component that measures its child in `arrange` with the constraints it
+    /// gives, as a table cell does, needs no call; neither does a component
+    /// that does not report `fixed_height`.
+    ///
+    /// The measurement reuses the child's retained result for those
+    /// constraints when it has one. Before this component's first measurement
+    /// it measures nothing. Development builds only: release builds keep no
+    /// such record, and the call checks `index` and measures nothing.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::component::*;
+    /// use pert_ui::prelude::*;
+    ///
+    /// /// Gives its one child exactly its own measurement and size, and asks
+    /// /// that the child fit the height it is given.
+    /// struct Band(Option<Element>);
+    /// impl Component for Band {
+    ///     fn take_children(&mut self) -> Vec<Element> {
+    ///         self.0.take().into_iter().collect()
+    ///     }
+    ///     fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+    ///         Ok(())
+    ///     }
+    ///     fn measure(&self, cx: &MeasureContext<'_>, space: Constraints) -> Result<Size, RuntimeError> {
+    ///         cx.measure(0, space)
+    ///     }
+    ///     fn arrange(&self, cx: &mut ArrangeContext<'_>, size: Size) -> Result<(), RuntimeError> {
+    ///         cx.refresh_forwarded(0)?;
+    ///         cx.place(0, Rect::from_size(size))
+    ///     }
+    ///     fn inspect(&self) -> ComponentDetails {
+    ///         let mut details = ComponentDetails::default();
+    ///         details.validation.fixed_height = true;
+    ///         details
+    ///     }
+    /// }
+    ///
+    /// let mut ui = Runtime::new();
+    /// ui.mount_tree(Element::new("band", Band(Some(Element::new("text", Label::new("Fits"))))))?;
+    /// ui.flush(ui.now())?;
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// # Errors
+    /// Returns [`RuntimeError::Layout`] with [`LayoutError::InvalidChild`] for
+    /// an index outside the visible children, and in development builds
+    /// forwards the errors of [`MeasureContext::measure`].
+    pub fn refresh_forwarded(&self, index: usize) -> Result<(), RuntimeError> {
+        if index >= self.len() {
+            return Err(LayoutError::InvalidChild.into());
+        }
+        #[cfg(debug_assertions)]
+        if let Some(constraints) = self.measure.node.measured_constraints() {
+            self.measure.measure(index, constraints)?;
+        }
+        Ok(())
     }
     /// Places a child with an explicit parent-local clipping boundary for its entire
     /// subtree, including overflowing flow containers. Useful for independent grid

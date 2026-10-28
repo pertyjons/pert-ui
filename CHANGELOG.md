@@ -70,11 +70,17 @@ P8-D4).
   around an open edit's editor). The measurement is the one the parent
   obtained during layout, kept in f64 at the component's scale; a
   measurement that changes while the child keeps its rectangle is recorded
-  after the next successful layout of its window, and the table's wrappers,
-  which forward their child's measurement, measure the child again under
-  their own last constraints when they arrange it, so a cached wrapper
-  measurement leaves no stale child height. An external grid sets the same
-  hint.
+  after the next successful layout of its window. An external grid sets the
+  same hint.
+- Added (R2-23): `ArrangeContext::refresh_forwarded`, which measures a child
+  again under the constraints the arranging component was last measured
+  under. A fixed-height component that forwards its child's measurement calls
+  it in `arrange`, so a measurement the runtime answers from its retained
+  results, such as a column returning to an earlier width, leaves no stale
+  child height for `ExceedsFixedHeight`; it measures nothing in release
+  builds. The table's wrappers around content keyed like the editor's host
+  and around an open edit's editor use it, and an external wrapper can do
+  the same.
 - Breaking (R2-22): `TestError::NotFound` gains `resolved`, the longest
   prefix of the path that resolves (a prefix `Runtime::find` refuses as
   ambiguous counts), and its message says how far the path resolves.
@@ -133,15 +139,17 @@ P8-D4).
   restore, a reparent and a failed zoom, moves before a layout, a zero-size
   component in a continuing zoom, the cell address, the row-height reports
   and width cycles through wide and narrow columns for wrapped content and an
-  editor); `foundation` covers custom item rectangles and the schema-16
+  editor); `foundation` covers an external forwarding wrapper through both
+  width cycles, custom item rectangles and the schema-16
   envelopes, including unknown fields in both; the gallery tests the Note
   editor after a density switch. Each new-behavior test was shown to fail
   under its named mutation, at an assertion of its outcome.
 - API listings: `api/pert-ui-runtime/default.txt` and `serde.txt` add
   `SemanticItem::bounds`, `SemanticItem::local_bounds`,
   `ValidationHints::fixed_height`, `ValidationCode::ExceedsFixedHeight`,
-  `Driver::click_item`, `TestError::NoItem` and
-  `TestError::ItemWithoutBounds` with their fields, and
+  `ArrangeContext::refresh_forwarded`, `Driver::click_item`,
+  `TestError::NoItem` and `TestError::ItemWithoutBounds` with their fields,
+  and
   `TestError::NotFound::resolved`, each at every path the listing shows; the
   `api/pert-ui/*.txt` listings show the runtime's items as re-exports and do
   not change, and no listing shows `SCHEMA_VERSION`'s value or the

@@ -2018,7 +2018,11 @@ column titles give their rectangles with `SemanticItem::local_bounds`, which
 `Driver::click_item` clicks, and its cells report
 `ValidationHints::fixed_height`, so development validation reports content
 that measured or is laid out taller than the row
-(`ValidationCode::ExceedsFixedHeight`); an external grid does the same.
+(`ValidationCode::ExceedsFixedHeight`); an external grid does the same. Its
+wrappers that forward their child's measurement call
+`ArrangeContext::refresh_forwarded` in `arrange`, so a measurement the runtime
+answers from its retained results leaves the child's current; an external
+forwarding wrapper calls it too.
 
 ### Custom hosts
 

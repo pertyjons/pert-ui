@@ -717,7 +717,7 @@ impl Component for EditHost {
     }
     fn arrange(&self, cx: &mut ArrangeContext<'_>, size: Size) -> Result<(), RuntimeError> {
         if !cx.is_empty() {
-            cx.measurement().refresh_forwarded(0)?;
+            cx.refresh_forwarded(0)?;
             cx.place(0, Rect::from_size(size))?;
         }
         Ok(())

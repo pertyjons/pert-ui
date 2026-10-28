@@ -2478,6 +2478,7 @@ pub fn pert_ui_runtime::ArrangeContext<'_>::measure(&self, usize, pert_ui_runtim
 pub fn pert_ui_runtime::ArrangeContext<'_>::measurement(&self) -> &pert_ui_runtime::MeasureContext<'_>
 pub fn pert_ui_runtime::ArrangeContext<'_>::place(&mut self, usize, pert_ui_runtime::Rect) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::ArrangeContext<'_>::place_clipped(&mut self, usize, pert_ui_runtime::Rect, pert_ui_runtime::Rect) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::ArrangeContext<'_>::refresh_forwarded(&self, usize) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::ArrangeContext<'_>::request_update(&self)
 impl core::fmt::Debug for pert_ui_runtime::ArrangeContext<'_>
 pub fn pert_ui_runtime::ArrangeContext<'_>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
@@ -30022,6 +30023,7 @@ pub fn pert_ui_runtime::ArrangeContext<'_>::measure(&self, usize, pert_ui_runtim
 pub fn pert_ui_runtime::ArrangeContext<'_>::measurement(&self) -> &pert_ui_runtime::MeasureContext<'_>
 pub fn pert_ui_runtime::ArrangeContext<'_>::place(&mut self, usize, pert_ui_runtime::Rect) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::ArrangeContext<'_>::place_clipped(&mut self, usize, pert_ui_runtime::Rect, pert_ui_runtime::Rect) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::ArrangeContext<'_>::refresh_forwarded(&self, usize) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::ArrangeContext<'_>::request_update(&self)
 impl core::fmt::Debug for pert_ui_runtime::ArrangeContext<'_>
 pub fn pert_ui_runtime::ArrangeContext<'_>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result

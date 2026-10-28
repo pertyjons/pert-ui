@@ -1923,7 +1923,19 @@ plan closes.
   same way (one that measures its child in `arrange`, as `TableCell` does,
   is unaffected); widening the public API is left to the maintainer.
   Fixes gate (fresh): as above, with the serde configurations and the
-  release build. Recheck: pending.
+  release build. Codex's recheck: the four points resolved, but the
+  deferred gap is not acceptable under AGENTS.md (built-ins must be
+  reproducible through public extension points). The refresh is now the
+  public `ArrangeContext::refresh_forwarded(&self, usize) -> Result<(),
+  RuntimeError>` (it checks the index in every build and measures nothing
+  in release builds), documented with its forwarding precondition and a
+  runnable example, referenced from `ValidationHints::fixed_height` and
+  contracts.md; an external forwarding wrapper written with the public
+  globs only is tested through both width cycles (fails with the call
+  removed); the TODO entry is removed; CHANGELOG 0.3.83 `Added`. P2's
+  closure rules add nothing (`ArrangeContext` is in `component`; the
+  method names only prelude types). Gate (fresh) as above. Second
+  recheck: pending.
 
 - **P9 Notifications in inspection (0.3.84), 2026-10-28.** Implemented by
   a fresh agent from this section (no checkpoint: D6 approved as

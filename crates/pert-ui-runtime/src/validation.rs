@@ -128,8 +128,12 @@ pub struct ValidationHints {
     /// layout, so a child that measures taller than the height it is placed
     /// at, such as a single-line control in a shorter row, is reported too; a
     /// child this component never measured is checked by its bounds alone.
-    /// Set it on the innermost component that gives the fixed height, so one
-    /// problem is reported once. Schema 16 added this field.
+    /// A component that forwards its child's measurement as its own calls
+    /// [`ArrangeContext::refresh_forwarded`](crate::ArrangeContext::refresh_forwarded)
+    /// in `arrange`, so a measurement the runtime answers from its retained
+    /// results leaves the child's current. Set it on the innermost component
+    /// that gives the fixed height, so one problem is reported once. Schema 16
+    /// added this field.
     pub fixed_height: bool,
 }
 
