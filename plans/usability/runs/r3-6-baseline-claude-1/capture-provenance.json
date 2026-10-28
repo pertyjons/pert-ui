@@ -1,0 +1,8 @@
+{
+  "capture.png": {
+    "original_sha256": "86186722845a4a357720eca01b9224fc8813cafbbfd1a84a7d98337b626f8655",
+    "archived_sha256": "9166960833a8b1d2d2444687cc0a4bd00571c368b2d133b13de3251d3d4143ec",
+    "identical_decoded_IDAT_sha256": "252732767f0566e17bf4cb5e90205fd68fdfd6b5a00e85c91c1583b158a0a077",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  }
+}
