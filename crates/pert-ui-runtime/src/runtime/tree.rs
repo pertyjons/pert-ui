@@ -2252,4 +2252,130 @@ mod tests {
         assert_eq!(node.font_layout[1].get(), 0);
         Ok(())
     }
+
+    /// Reads `ControlWidth`, or prepares body text when `font`, in its
+    /// measurement and, when `paint`, in its paint; measures its children as
+    /// the default does.
+    struct Reader {
+        font: bool,
+        paint: bool,
+        children: Vec<Element>,
+    }
+    impl Component for Reader {
+        fn take_children(&mut self) -> Vec<Element> {
+            std::mem::take(&mut self.children)
+        }
+        fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+            Ok(())
+        }
+        fn measure(
+            &self,
+            cx: &MeasureContext<'_>,
+            available: Constraints,
+        ) -> Result<Size, RuntimeError> {
+            if self.font {
+                cx.text("Reader", None, TextStyle::Body)?;
+            } else {
+                let _ = cx.metric(MetricRole::ControlWidth);
+            }
+            let (mut width, mut height) = (10.0f32, 10.0f32);
+            for index in 0..cx.len() {
+                let size = cx.measure(index, available)?;
+                width = width.max(size.width());
+                height = height.max(size.height());
+            }
+            Ok(Size::new(width, height)?)
+        }
+        fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
+            if self.paint {
+                if self.font {
+                    painter.text("Reader", None, TextStyle::Body)?;
+                } else {
+                    let _ = painter.metric(MetricRole::ControlWidth);
+                }
+            }
+            Ok(())
+        }
+    }
+
+    /// An ancestor that reads in measurement and paint above a descendant
+    /// that reads in measurement, the notifiers visiting the descendant
+    /// first when `descendant_first`; returns the runtime and the two
+    /// components after the value they read changed.
+    fn notified(
+        descendant_first: bool,
+        font: bool,
+    ) -> Result<(Runtime, WidgetId, WidgetId), Box<dyn std::error::Error>> {
+        let mut ui = Runtime::new();
+        resize(&mut ui, 400.0)?;
+        let reader = |paint: bool, children: Vec<Element>| Reader {
+            font,
+            paint,
+            children,
+        };
+        let root = if descendant_first {
+            // Mounted before its ancestor, the descendant has the lower
+            // serial, which the notifiers visit first.
+            let root = ui.mount_tree(Element::new(
+                "root",
+                Column::new([
+                    Element::new("descendant", reader(false, Vec::new())),
+                    Element::new("ancestor", reader(true, Vec::new())),
+                ]),
+            ))?;
+            ui.flush(ui.now())?;
+            let children = ui.children(&root)?;
+            ui.reparent(&children[0], &children[1], 0)?;
+            root
+        } else {
+            ui.mount_tree(Element::new(
+                "root",
+                Column::new([Element::new(
+                    "ancestor",
+                    reader(
+                        true,
+                        vec![Element::new("descendant", reader(false, Vec::new()))],
+                    ),
+                )]),
+            ))?
+        };
+        ui.flush(ui.now())?;
+        ui.paint()?;
+        let ancestor = ui.find_descendant(&root, "ancestor")?.ok_or("mounted")?;
+        let descendant = ui.find_descendant(&root, "descendant")?.ok_or("mounted")?;
+        assert_eq!(descendant.0.serial < ancestor.0.serial, descendant_first);
+        assert_eq!(ancestor.0.dirty.get(), None);
+        if font {
+            let fonts = ui.fonts();
+            let mono = fonts.register(FontData::bundled(FontRole::Monospace))?;
+            fonts.set_default(FontRole::Body, mono)?;
+        } else {
+            ui.theme().set_metrics(
+                Density::Standard,
+                ThemeMetrics::for_density(Density::Standard)
+                    .with_metric(MetricRole::ControlWidth, Length::from(72))?,
+            )?;
+        }
+        Ok((ui, ancestor, descendant))
+    }
+
+    #[test]
+    fn notifiers_select_every_layout_reader_in_either_visiting_order()
+    -> Result<(), Box<dyn std::error::Error>> {
+        for font in [false, true] {
+            for descendant_first in [false, true] {
+                let (_ui, ancestor, descendant) = notified(descendant_first, font)?;
+                let case = format!("font: {font}, descendant first: {descendant_first}");
+                // The ancestor's measurement read the value, so its layout is
+                // invalidated, not only its paint.
+                assert_eq!(ancestor.0.dirty.get(), Some(Invalidation::Layout), "{case}");
+                assert_eq!(
+                    descendant.0.dirty.get(),
+                    Some(Invalidation::Layout),
+                    "{case}"
+                );
+            }
+        }
+        Ok(())
+    }
 }

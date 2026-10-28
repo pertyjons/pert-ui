@@ -1152,3 +1152,117 @@ fn a_fill_child_narrower_at_its_fill_height_leaves_space_that_justify_places() -
     );
     Ok(())
 }
+
+#[test]
+fn a_shrinking_rows_spare_space_is_its_final_widths_total_in_f64() -> TestResult {
+    // A filler 200,000,000 wide by nature fills at 100,000,000; with three
+    // 1 px siblings the final total is 100,000,003, so a 100,000,016 px row
+    // centers 13 px of spare space. Summed in f32, the ones vanish.
+    let filler = Filler {
+        unbounded: (200_000_000.0, 10.0),
+        filled: 100_000_000.0,
+        minimum: 0.0,
+    };
+    let (ui, root) = layout(
+        100_000_016.0,
+        40.0,
+        Row::new([
+            filler.key("fill"),
+            fixed("a", 1.0, 10.0),
+            fixed("b", 1.0, 10.0),
+            fixed("c", 1.0, 10.0),
+            fixed("grows", 0.0, 10.0).with_grow(1),
+        ])
+        .gap(no_gap()?)
+        .justify(Justify::Center)
+        .key("row"),
+    )?;
+    assert_eq!(bounds_of(&ui, &root, "fill")?[0], 6.5);
+    Ok(())
+}
+
+#[test]
+fn a_shrinking_rows_reported_width_is_its_final_widths_total_in_f64() -> TestResult {
+    // Five 1 px siblings of a filler at 100,000,000 and a grower with no
+    // room: 100,000,005, which f32 holds as 100,000,008.
+    let filler = Filler {
+        unbounded: (200_000_000.0, 10.0),
+        filled: 100_000_000.0,
+        minimum: 0.0,
+    };
+    let mut children = vec![filler.key("fill")];
+    children.extend((0..5).map(|index| fixed(&format!("one-{index}"), 1.0, 10.0)));
+    children.push(fixed("grows", 0.0, 10.0).with_grow(1));
+    let (_ui, _root, reported) = in_reporter(Row::new(children).gap(no_gap()?).key("row"))?;
+    assert_eq!(reported.get(), 100_000_008.0);
+    Ok(())
+}
+
+/// A leaf `width` wide that records every constraint it is measured at; as
+/// a row-height filler it is as high as it is offered.
+struct Recorder {
+    width: f32,
+    fill: bool,
+    seen: Rc<std::cell::RefCell<Vec<Constraints>>>,
+}
+impl Component for Recorder {
+    fn fills_row_height(&self) -> bool {
+        self.fill
+    }
+    fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+        Ok(())
+    }
+    fn measure(
+        &self,
+        _: &MeasureContext<'_>,
+        available: Constraints,
+    ) -> Result<Size, RuntimeError> {
+        self.seen.borrow_mut().push(available);
+        let height = if self.fill {
+            available.height().unwrap_or(10.0)
+        } else {
+            10.0
+        };
+        Ok(Size::new(self.width, height)?)
+    }
+}
+
+/// Lays out a 1099 px row of a 1000 px [`Recorder`] with weight 1 and a
+/// 100 px child with weight 65,535: 1100 natural, so the recorder's share of
+/// the 1 px deficit is 1/65,536, which does not change its width as f32.
+fn rounded_away(fill: bool) -> TestResult {
+    let seen = Rc::default();
+    let recorder = Recorder {
+        width: 1000.0,
+        fill,
+        seen: Rc::clone(&seen),
+    };
+    let (ui, root) = layout(
+        1099.0,
+        40.0,
+        Row::new([
+            recorder.key("first").with_grow(1),
+            fixed("second", 100.0, 10.0).with_grow(u16::MAX),
+        ])
+        .gap(no_gap()?)
+        .key("row"),
+    )?;
+    assert_eq!(bounds_of(&ui, &root, "first")?[2], 1000.0);
+    // Unshrunk, it is never measured at a width.
+    let seen = seen.borrow();
+    assert!(
+        seen.iter().all(|constraints| constraints.width().is_none()),
+        "{seen:?}"
+    );
+    Ok(())
+}
+
+#[test]
+fn a_share_that_rounds_away_leaves_a_child_unshrunk() -> TestResult {
+    rounded_away(false)
+}
+
+#[test]
+fn a_share_that_rounds_away_leaves_a_fill_child_unshrunk() -> TestResult {
+    rounded_away(true)
+}

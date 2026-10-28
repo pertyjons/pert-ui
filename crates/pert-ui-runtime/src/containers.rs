@@ -697,6 +697,16 @@ fn row_sizes_of(
         }
         None => None,
     };
+    // A child shrank only when its final width, as the row allocates it, is
+    // smaller than its natural width: a share that rounds away leaves it
+    // unshrunk, so it is neither measured again nor held at that width.
+    if let Some(shortfall) = shortfall.as_mut() {
+        for (length, size) in shortfall.lengths.iter_mut().zip(&sizes) {
+            if length.is_some_and(|width| width >= size.width()) {
+                *length = None;
+            }
+        }
+    }
     let finals = |index: usize| {
         shortfall
             .as_ref()
@@ -771,14 +781,23 @@ fn flex(
     // A row that shrank grows no child back. Its spare space, which
     // `Justify` places, is what its final widths leave: none when the whole
     // deficit was taken, and otherwise only what a fill child gave up at its
-    // fill height.
+    // fill height. Both that space and the row's reported width come from
+    // the total of its final allocations in f64, as a column's final lengths
+    // do, so f32 cancellation on huge widths cannot move them.
     let row_shrank = !column && shortfall.is_some();
-    if row_shrank
-        && shortfall
+    let row_total = row_shrank.then(|| {
+        lengths.iter().map(|length| f64::from(*length)).sum::<f64>()
+            + f64::from(style.gap) * count.saturating_sub(1) as f64
+    });
+    if let Some(total) = row_total {
+        spare = if shortfall
             .as_ref()
             .is_some_and(|shortfall| shortfall.absorbed)
-    {
-        spare = 0.0;
+        {
+            0.0
+        } else {
+            limit.map_or(0.0, |limit| (f64::from(limit) - total).max(0.0) as f32)
+        };
     }
     let mut extra = vec![0.0f32; count];
     let mut growing = Vec::new();
@@ -904,6 +923,8 @@ fn flex(
     // limit, or a row's fill child narrowed at its fill height.
     let placed = if absorbed {
         limit.unwrap_or(used)
+    } else if let Some(total) = row_total {
+        total as f32
     } else if shrunk.iter().any(Option::is_some) {
         (shrunk
             .iter()

@@ -1845,4 +1845,17 @@ plan closes.
   diagnostics snapshots, the `--release` foundation run, the API listing
   gate, `git diff --check`. **Native evidence: missing** (the Linux hand
   check of narrow rows and the gallery's Progress column, recorded in
-  `docs/verification.md` as the maintainer's). Codex review: pending.
+  `docs/verification.md` as the maintainer's). **Codex review** (2026-10-28): needs fixes, two should-fix
+  and two nits, all verified: a shrinking row's spare space and reported
+  width partly summed in f32 (now one f64 total of the final allocations
+  and gaps, also when no entry shrank; columns unchanged); a share that
+  rounded away still counted as shrunk and was measured again (now a child
+  counts as shrunk only when its allocated width is smaller); the notifier
+  deviation had no ordering test (a runtime test now covers ancestor-first
+  and descendant-first visiting for metrics and fonts, failing with
+  immediate invalidation in the descendant-first cases); this entry missed
+  that M19c fails at the filler's position, not the grower's width (a new
+  mutation M19d applying growth to shrunk allocations fails at the width
+  assertion). Each fix has its test and failing mutation
+  (`target/p7-evidence/`). Fixes gate (fresh): as above, with the
+  `--release` foundation run. Recheck: pending.

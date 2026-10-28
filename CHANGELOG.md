@@ -18,7 +18,11 @@ revision 5, with decision P7-D1).
   its fill height instead; development validation still reports that
   overflow as `EscapesParent`. Whether the row shrinks, and by how much, is
   decided once from the natural widths; its reported width, overflow and
-  justified spare space are computed from the final allocations. An
+  justified spare space are computed from the total of the final
+  allocations in f64, so f32 cancellation on huge widths cannot move them,
+  and a child counts as shrunk, and is measured again at its final width,
+  only when that width as allocated is smaller than its natural one (a
+  share that rounds away leaves it unshrunk). An
   unshrunk fill child is allocated the width it reports at its fill height;
   a shrunk one keeps its final width. Growth when the natural widths fit
   works as before; after a shrink no child grows back. Rows that fit, rows
@@ -41,7 +45,8 @@ revision 5, with decision P7-D1).
   metric or font change that only that result had read. The theme and font
   notifiers now judge every subscriber's reads before invalidating any, since
   a layout invalidation clears the measurement reads of a component and its
-  ancestors.
+  ancestors; a runtime test covers both visiting orders for metrics and
+  fonts.
 - Documentation (R2-21): `Element::with_grow` (with a row example), `Row`,
   `ProgressBar` (a grown bar beside its percentage), `VirtualList`'s
   bounded extent and the `UnboundedCollection` message, `docs/contracts.md`,
@@ -62,9 +67,12 @@ revision 5, with decision P7-D1).
   and narrower at their fill height with and without a shortfall, the
   measurement counts of nested shrinking rows, a fitting row, a shrunk fill
   child, a row in a column redescribed with a new `Justify` and more than
-  four constraints, and metric and font dependencies of an evicted
-  measurement; the runtime adds unit tests of the store and of the sticky
-  dependency bits; the gallery tests the Progress column. Each
+  four constraints, metric and font dependencies of an evicted
+  measurement, the f64 total of a shrinking row's final widths (its
+  justified spare space and reported width at 100,000,000 px) and a share
+  that rounds away for an ordinary and a fill child; the runtime adds unit
+  tests of the store and of the sticky dependency bits; the gallery tests
+  the Progress column. Each
   new-behavior test was shown to fail under its named mutation.
 - No public item is added, removed or changed: the `api/` listings do not
   change.
