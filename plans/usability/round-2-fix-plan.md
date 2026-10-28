@@ -1941,8 +1941,9 @@ plan closes.
   constraints passed through the component's resolved limits, as
   `measure_node` does, with maximum- and minimum-width external-wrapper
   regressions failing under the unlimited mutation. Gate (fresh, from a
-  clean cache after the disk was cleared) as above. Third recheck:
-  pending.
+  clean cache after the disk was cleared) as above. Codex's third
+  recheck: every point resolved, ready. **P8 done** (native evidence
+  missing).
 
 - **P9 Notifications in inspection (0.3.84), 2026-10-28.** Implemented by
   a fresh agent from this section (no checkpoint: D6 approved as
@@ -1999,4 +2000,5 @@ plan closes.
   test name and a CHANGELOG line said an equal result is not evaluated;
   it is, and only the component update is suppressed), to be corrected
   with P8's open fix; corrected by the author (test renamed, CHANGELOG
-  line reworded). Recheck: pending.
+  line reworded). Codex's recheck: both points resolved, ready. **P10
+  done.**
