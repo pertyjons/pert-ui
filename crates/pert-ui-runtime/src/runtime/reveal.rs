@@ -432,7 +432,12 @@ impl Runtime {
     /// its title does, so workspace capture records it, and it requests
     /// activation of the tab's window when the tab is detached. A child that
     /// is already shown returns [`ChildReveal::AlreadyVisible`] without asking
-    /// the container. Focus does not move.
+    /// the container. Focus does not move. The runtime flushes pending update
+    /// and layout before resolving the immediate child key, so an earlier
+    /// signal write that redescribes this mounted container through `Dynamic`
+    /// is observed. From an input callback, queue the write and this operation
+    /// through [`EventContext::defer`]; retain the container's identity and keep
+    /// its key and component type in the new description.
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;

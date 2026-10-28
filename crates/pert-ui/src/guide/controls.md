@@ -500,7 +500,8 @@ scheduling when hidden, unmounted or finished, or under reduced motion.
 
 # Joined exclusive buttons
 
-`SegmentedControl<T>` binds one `Signal<T>` to a horizontal row of equal-width
+`SegmentedControl<T>` requires `T: Clone + Eq + 'static` and binds one
+`Signal<T>` to a horizontal row of equal-width
 `Choice<T>` buttons. They share straight internal edges, with the same rounded
 exterior corners as ordinary buttons. The selected segment uses `TabSelected`
 with no underline or baseline beneath the group. Labels clip within constrained

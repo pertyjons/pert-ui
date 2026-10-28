@@ -621,6 +621,39 @@ impl Component for MenuTitle {
 /// assert_eq!(ui.focused(), document);
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
+///
+/// # Inspection and tests
+///
+/// Each title is exposed as `title/<menu-key>` through
+/// [`Driver::exposed_part`](crate::testing::Driver::exposed_part); the slash
+/// belongs to the literal name. The title's scope exposes `items` and
+/// `submenu/<row-key>` as [`Menu`] does. Click the title to open it and use
+/// [`Driver::click_item`](crate::testing::Driver::click_item) on its visible
+/// command rows. Captions are semantic names, not lookup keys. Exposed names
+/// leave application content and leading/trailing workspace paths unchanged.
+///
+/// ```
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::prelude::*;
+/// use pert_ui::testing::*;
+/// let mut ui = Runtime::new();
+/// ui.set_viewport(Viewport::new(600.0, 300.0, 1.0)?)?;
+/// let count = ui.signal(0_u32);
+/// let chosen = count.clone();
+/// let bar = ui.mount_tree(MenuBar::new(&ui, vec![
+///     MenuItem::submenu("file", "File", vec![
+///         MenuItem::new("new", "New", move |_| chosen.update(|count| *count += 1)),
+///     ]),
+/// ])?.key("bar"))?;
+/// let mut driver = Driver::new(&mut ui);
+/// driver.settle()?;
+/// let title = driver.exposed_part(&bar, "title/file")?;
+/// let items = driver.exposed_part(&title, "items")?;
+/// driver.click(&title)?;
+/// driver.click_item(&items, 0)?;
+/// assert_eq!(count.get()?, 1);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub struct MenuBar {
     /// The titles, in display order; the slots and content follow them as
@@ -697,9 +730,10 @@ impl MenuBar {
                 .transpose()?
                 .map(|panel| Element::new("menu", panel).structural());
             let action = popup.is_none().then_some(item.action);
+            let title_part = format!("title/{}", item.key);
             children.push(
                 Element::new(
-                    format!("title/{}", item.key),
+                    title_part.clone(),
                     MenuTitle {
                         key: item.key,
                         state: state.clone(),
@@ -718,7 +752,8 @@ impl MenuBar {
                         text: RefCell::new(None),
                     },
                 )
-                .structural(),
+                .structural()
+                .expose_part(title_part),
             );
         }
         Ok(Self {

@@ -612,6 +612,8 @@ pub mod prelude {
 /// ```
 pub mod component {
     #[doc(no_inline)]
+    pub use crate::{ApplicationError, DrawError, RuntimeError};
+    #[doc(no_inline)]
     pub use crate::{
         ArrangeContext, ChildInfo, ChildReveal, Component, ComponentDetails, ContentRows,
         EventContext, Invalidation, MeasureContext, Notifier, UpdateContext, WidgetId,
@@ -657,8 +659,6 @@ pub mod component {
         PresentationStatus, RevealOutcome, RevealReceipt, RevealRefusal, RevealStatus,
         ShownTaskReceipt, TaskReceipt, TaskStatus,
     };
-    #[doc(no_inline)]
-    pub use crate::{DrawError, RuntimeError};
     #[doc(no_inline)]
     pub use crate::{EditorAttachment, EditorOutcome, EditorSession, EditorStart, EditorTrigger};
     #[doc(no_inline)]

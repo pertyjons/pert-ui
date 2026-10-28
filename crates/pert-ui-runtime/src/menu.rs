@@ -659,7 +659,9 @@ pub(crate) fn owned_menu(
     items: Vec<MenuItem>,
 ) -> Result<Element, ChoiceError> {
     let chain = MenuChain::closing(&Slot::new(open.clone()));
-    Ok(Element::new("menu", menu_panel(open, items, chain)?).structural())
+    Ok(Element::new("menu", menu_panel(open, items, chain)?)
+        .structural()
+        .expose_part("clipboard"))
 }
 
 type Opener = Rc<dyn Fn(&EventContext) -> Result<(), RuntimeError>>;
@@ -682,6 +684,44 @@ type Opener = Rc<dyn Fn(&EventContext) -> Result<(), RuntimeError>>;
 /// menu is open and the command context captured when it opened are kept, except
 /// when an explicitly supplied open binding is replaced. That replacement follows
 /// its current value and starts without the previous engagement's command context.
+///
+/// # Inspection and tests
+///
+/// Use [`Driver::exposed_part`](crate::testing::Driver::exposed_part) to find
+/// `trigger`, the actual Button even for an icon menu, and `items`, the own
+/// level's Menu list. Click the trigger to open it, then
+/// [`Driver::click_item`](crate::testing::Driver::click_item) on a visible row.
+/// Item order excludes separators; disabled rows run no command. Rows report
+/// visible pointer rectangles, with offscreen rows absent. Wheel or keyboard
+/// navigation scrolls them. Querying or revealing a closed list does not open it.
+/// A submenu row expands its panel: query `submenu/<row-key>` in this scope,
+/// then `items` in that panel's scope for the nested list. The slash is literal;
+/// stable keys, rather than captions, select these parts. Application/workspace
+/// addresses and semantic naming are independent of these exposed names.
+///
+/// ```
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::prelude::*;
+/// use pert_ui::testing::*;
+/// let mut ui = Runtime::new();
+/// ui.set_viewport(Viewport::new(400.0, 300.0, 1.0)?)?;
+/// let count = ui.signal(0_u32);
+/// let chosen = count.clone();
+/// let root = ui.mount_tree(Column::new([
+///     Menu::new(&ui, "Actions", vec![
+///         MenuItem::new("run", "Run", move |_| chosen.update(|n| *n += 1)),
+///     ])?.key("actions"),
+/// ]).key("root"))?;
+/// let mut driver = Driver::new(&mut ui);
+/// driver.settle()?;
+/// let menu = driver.find(&root, &["actions"])?;
+/// let trigger = driver.exposed_part(&menu, "trigger")?;
+/// let items = driver.exposed_part(&menu, "items")?;
+/// driver.click(&trigger)?;
+/// driver.click_item(&items, 0)?;
+/// assert_eq!(count.get()?, 1);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub struct Menu {
     popover: Popover,
@@ -780,7 +820,9 @@ impl Menu {
         let label = label.into();
         Self::with_trigger(open, items, move |open, enabled| {
             let button = Button::new(label, move |cx| open(cx));
-            Element::new("trigger", if enabled { button } else { button.disabled() }).structural()
+            Element::new("trigger", if enabled { button } else { button.disabled() })
+                .structural()
+                .expose_part("trigger")
         })
     }
     /// Creates a menu opened by a frameless icon button with a readable action
@@ -828,7 +870,8 @@ impl Menu {
                 "trigger",
                 Tooltip::new(
                     Element::new("button", if enabled { button } else { button.disabled() })
-                        .structural(),
+                        .structural()
+                        .expose_part("trigger"),
                     name,
                 ),
             )
@@ -1049,7 +1092,8 @@ impl MenuBranch {
                         )
                         .padding(MetricRole::ControlPaddingX),
                     )
-                    .structural(),
+                    .structural()
+                    .expose_part(format!("submenu/{}", item.key)),
                 );
             } else {
                 leaves.push(item);
@@ -1114,7 +1158,12 @@ impl MenuBranch {
             shortcut_text: RefCell::new(Vec::new()),
         });
         let geometry = list.geometry.clone();
-        children.insert(0, Element::new("items", list).structural());
+        children.insert(
+            0,
+            Element::new("items", list)
+                .structural()
+                .expose_part("items"),
+        );
         Ok(Self {
             children,
             level,
@@ -1258,6 +1307,39 @@ impl Component for MenuBranch {
 /// ui.key_input(KeyCode::Enter, KeyAction::Press)?;
 /// ui.key_input(KeyCode::Enter, KeyAction::Release)?;
 /// assert!(copied.get()?);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Inspection and tests
+///
+/// This composite exposes `items` and `submenu/<row-key>` with the same scopes
+/// and pointer geometry as [`Menu`]. The wrapped application content retains
+/// its own key path. Open with a context-menu request or the controller before
+/// clicking rows; finding a hidden part does not open the menu. Editors that
+/// own clipboard menus expose a `clipboard` scope, then that scope's `items`.
+///
+/// ```
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::prelude::*;
+/// use pert_ui::testing::*;
+/// let mut ui = Runtime::new();
+/// ui.set_viewport(Viewport::new(400.0, 300.0, 1.0)?)?;
+/// let count = ui.signal(0_u32);
+/// let chosen = count.clone();
+/// let root = ui.mount_tree(Column::new([
+///     ContextMenu::new(&ui, Button::new("Target", |_| Ok(())).key("target"),
+///         vec![MenuItem::new("run", "Run", move |_| chosen.update(|n| *n += 1))])?
+///         .key("context"),
+/// ]).key("root"))?;
+/// let mut driver = Driver::new(&mut ui);
+/// driver.settle()?;
+/// let context = driver.find(&root, &["context"])?;
+/// let target = driver.find(&context, &["target"])?;
+/// driver.runtime_mut().focus(&target)?;
+/// driver.key(KeyCode::ContextMenu)?;
+/// let items = driver.exposed_part(&context, "items")?;
+/// driver.click_item(&items, 0)?;
+/// assert_eq!(count.get()?, 1);
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 #[must_use]

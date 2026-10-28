@@ -356,7 +356,7 @@ pub mod testing {
     // Each name of `pert_ui_runtime::testing`, listed so the page shows them;
     // pert-ui-diagnostics' closure check keeps the two lists equal.
     #[doc(inline)]
-    pub use pert_ui_runtime::testing::{AddressChild, Driver, QuietReport, TestError};
+    pub use pert_ui_runtime::testing::{AddressChild, Driver, ExposedPart, QuietReport, TestError};
     #[doc(no_inline)]
     pub use pert_ui_runtime::testing::{
         Capture, CaptureError, CaptureRequest, CaptureTarget, ClickCounter, CommandKeyInput,

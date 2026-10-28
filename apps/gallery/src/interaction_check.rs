@@ -22,6 +22,7 @@ use pert_ui::PresentationAction;
 use pert_ui::component::*;
 use pert_ui::host::HostIntegration;
 use pert_ui::prelude::*;
+use pert_ui::testing::Driver;
 use pert_ui::{AnyParameterSnapshot, ComponentInspection, ParameterId};
 use std::{
     cell::{Cell, RefCell},
@@ -825,6 +826,85 @@ pub(crate) fn steps() -> Vec<Step> {
                     "no non-matching item returned".into()
                 })
             },
+        },
+        Step {
+            name: "tab titles: item pointer bounds switch the category",
+            act: |ui, scene| {
+                show(ui, scene, "tool-windows")?;
+                let tabs = find(ui, &scene.root, "gallery-tabs")?;
+                let mut driver = Driver::new(ui);
+                ensure(
+                    !driver.semantics(&tabs).map_err(failed)?.items[1].selected,
+                    || "the target category was already selected before the click".into(),
+                )?;
+                driver.click_item(&tabs, 1).map_err(failed)
+            },
+            check: |ui, scene| {
+                let tabs = find(ui, &scene.root, "gallery-tabs")?;
+                ensure(
+                    Driver::new(ui).semantics(&tabs).map_err(failed)?.items[1].selected,
+                    || "the Controls category title was not selected".into(),
+                )
+            },
+        },
+        Step {
+            name: "Select: named control and option bounds choose the second value",
+            act: |ui, scene| {
+                show(ui, scene, "controls")?;
+                let page = page(ui, &scene.root, "controls")?;
+                let select = find(ui, &page, "dropdown")?;
+                let mut driver = Driver::new(ui);
+                let control = driver.exposed_part(&select, "control").map_err(failed)?;
+                let options = driver.exposed_part(&select, "options").map_err(failed)?;
+                driver.click(&control).map_err(failed)?;
+                driver.click_item(&options, 2).map_err(failed)
+            },
+            check: |ui, scene| {
+                let page = page(ui, &scene.root, "controls")?;
+                let select = find(ui, &page, "dropdown")?;
+                let driver = Driver::new(ui);
+                let control = driver.exposed_part(&select, "control").map_err(failed)?;
+                let semantics = driver.semantics(&control).map_err(failed)?;
+                ensure(
+                    matches!(
+                        semantics.value,
+                        Some(SemanticValue::Choice {
+                            selected: Some(2),
+                            ..
+                        })
+                    ),
+                    || format!("the dropdown has value {:?}", semantics.value),
+                )
+            },
+        },
+        Step {
+            name: "menu: named Help title and item bounds open About",
+            act: |ui, scene| {
+                let mut driver = Driver::new(ui);
+                let title = driver
+                    .exposed_part(&scene.root, "title/help")
+                    .map_err(failed)?;
+                let items = driver.exposed_part(&title, "items").map_err(failed)?;
+                driver.click(&title).map_err(failed)?;
+                let about = driver
+                    .semantics(&items)
+                    .map_err(failed)?
+                    .items
+                    .iter()
+                    .position(|item| item.name.as_deref() == Some("About"))
+                    .ok_or("the Help menu has no About item")?;
+                driver.click_item(&items, about).map_err(failed)
+            },
+            check: |ui, _| {
+                ensure(visible(ui, "about"), || {
+                    "About did not open from the menu row".into()
+                })
+            },
+        },
+        Step {
+            name: "menu About: Escape closes the dialog",
+            act: |ui, _| key(ui, KeyCode::Escape),
+            check: |ui, _| ensure(!visible(ui, "about"), || "About stayed open".into()),
         },
         Step {
             name: "settle: with focus and pointer gone nothing stays scheduled",

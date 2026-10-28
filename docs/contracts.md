@@ -1526,6 +1526,22 @@ rejects every other revision ("inspection schema version N is not
 supported"), so a snapshot of another revision does not decode as this one.
 The version is a snapshot's first field, so an order-keeping serializer writes
 it first; a tool that reads several revisions compares it before decoding.
+`Element::expose_part` declares scoped UI-local part metadata independently of
+keys, semantic names and workspace addressing. `Runtime::find_exposed_part`
+and `Driver::exposed_parts` traverse internal structural/part/slot wrappers,
+stop at ordinary application children and exposed parts, and skip drag previews.
+An exposed part is a nested scope; duplicate names can be listed but singular
+lookup refuses them. Names match exactly, without trimming or splitting `/`;
+blank declarations are refused before adoption. Same-key redescription replaces
+or removes the declaration without remounting or invalidating layout solely for
+that metadata. Queries do not flush, reveal, focus, select a window or schedule
+work. Returned `WidgetId`s remain the event targets, including when presented in
+another window, which must be selected before input. `ComponentInspection::exposed_part`
+is descriptive metadata in inspection schema 17, not a transport-level selector:
+the owned DTO does not reproduce the scope walk. Its serialized field is required
+and nullable, and a present blank name is invalid. Workspace schema 2 and its
+address markers are unchanged.
+
 Unknown geometry remains absent until measured.
 
 A record's geometry is the last successful layout's. Layout stages every

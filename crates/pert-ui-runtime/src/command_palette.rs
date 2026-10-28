@@ -507,6 +507,10 @@ fn command_item(strings: &crate::UiStrings, index: usize, entry: &CommandEntry) 
 /// assert_eq!(receipt.status(), CommandStatus::Finished(Ok(CommandOutcome::Invoked)));
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
+///
+/// Inspection parts follow [`QuickPick`]: find the existing `surface` address,
+/// then query its exposed `search` part. Its clipboard menu is nested under
+/// that search's `clipboard` scope.
 #[must_use]
 pub struct CommandPalette {
     inner: QuickPick,

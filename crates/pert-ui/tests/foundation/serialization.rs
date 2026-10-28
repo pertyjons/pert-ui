@@ -745,13 +745,13 @@ fn with_version(text: &str, version: u32) -> String {
 }
 
 fn rejects_other_revisions<T: serde::de::DeserializeOwned + std::fmt::Debug>(text: &str) {
-    for version in [15, 17] {
+    for version in [16, 18] {
         let error = serde_json::from_str::<T>(&with_version(text, version))
             .expect_err("another revision is rejected")
             .to_string();
         assert!(
             error.starts_with(&format!(
-                "inspection schema version {version} is not supported (this build writes 16)"
+                "inspection schema version {version} is not supported (this build writes 17)"
             )),
             "{error}"
         );
@@ -759,13 +759,13 @@ fn rejects_other_revisions<T: serde::de::DeserializeOwned + std::fmt::Debug>(tex
 }
 
 #[test]
-fn snapshots_and_query_results_carry_item_bounds_and_decode_only_schema_16() -> TestResult {
-    assert_eq!(InspectionSnapshot::SCHEMA_VERSION, 16);
+fn snapshots_and_query_results_carry_item_bounds_and_decode_only_schema_17() -> TestResult {
+    assert_eq!(InspectionSnapshot::SCHEMA_VERSION, 17);
     let mut ui = ui()?;
     let rows = ui.mount_tree(Element::new("rows", TwoRows))?;
     ui.flush(Duration::ZERO)?;
     let snapshot = ui.inspect();
-    assert_eq!(snapshot.schema_version, 16);
+    assert_eq!(snapshot.schema_version, 17);
     let items = |components: &[ComponentInspection]| -> Vec<Option<[f32; 4]>> {
         components
             .iter()
@@ -782,11 +782,11 @@ fn snapshots_and_query_results_carry_item_bounds_and_decode_only_schema_16() -> 
     );
     assert_eq!(items(&round_trip(&query)?.components), expected);
 
-    // Empty envelopes decode at 16, and no other revision does.
+    // Empty envelopes decode at 17, and no other revision does.
     let empty = serde_json::to_string(&Runtime::new().inspect())?;
     assert_eq!(
         serde_json::from_str::<InspectionSnapshot>(&empty)?.schema_version,
-        16
+        17
     );
     rejects_other_revisions::<InspectionSnapshot>(&empty);
     let empty_query = serde_json::to_string(&ui.query(&InspectionQuery::new()))?;
@@ -826,18 +826,18 @@ fn the_schema_version_is_written_first_and_read_wherever_it_is() -> TestResult {
         &ui.query(&InspectionQuery::components(Selector::key("rows")).detail(Detail::Semantics)),
     )?;
     for text in [&snapshot, &query] {
-        assert!(text.starts_with(r#"{"schema_version":16,"#), "{text}");
+        assert!(text.starts_with(r#"{"schema_version":17,"#), "{text}");
     }
     // Moved to the end, the version is still checked.
     let moved = |text: &str, version: u32| {
-        let body = text.replacen(r#""schema_version":16,"#, "", 1);
+        let body = text.replacen(r#""schema_version":17,"#, "", 1);
         format!(
             r#"{},"schema_version":{version}}}"#,
             body.strip_suffix('}').unwrap_or(&body)
         )
     };
-    assert!(serde_json::from_str::<InspectionSnapshot>(&moved(&snapshot, 16)).is_ok());
-    assert!(serde_json::from_str::<QueryResult>(&moved(&query, 16)).is_ok());
+    assert!(serde_json::from_str::<InspectionSnapshot>(&moved(&snapshot, 17)).is_ok());
+    assert!(serde_json::from_str::<QueryResult>(&moved(&query, 17)).is_ok());
     assert!(serde_json::from_str::<InspectionSnapshot>(&moved(&snapshot, 15)).is_err());
     assert!(serde_json::from_str::<QueryResult>(&moved(&query, 15)).is_err());
     Ok(())
@@ -896,5 +896,47 @@ fn a_fixed_height_hint_and_its_issue_round_trip_and_the_hint_is_required() -> Te
     let without = text.replacen(r#","fixed_height":false"#, "", 1);
     assert_ne!(without, text);
     assert!(serde_json::from_str::<InspectionSnapshot>(&without).is_err());
+    Ok(())
+}
+
+#[test]
+fn exposed_part_metadata_is_required_nullable_and_validated_in_both_envelopes() -> TestResult {
+    let mut ui = ui()?;
+    ui.mount_tree(
+        Column::new([
+            Element::new("part", Label::new("Part")).expose_part(" literal/name "),
+            Element::new("ordinary", Label::new("Ordinary")),
+        ])
+        .key("root"),
+    )?;
+    ui.flush(Duration::ZERO)?;
+    let snapshot = ui.inspect();
+    round_trip(&snapshot)?;
+    let query = ui.query(&InspectionQuery::components(Selector::descendants([
+        "root",
+    ])));
+    round_trip(&query)?;
+    for text in [
+        serde_json::to_string(&snapshot)?,
+        serde_json::to_string(&query)?,
+    ] {
+        assert!(text.contains(r#""exposed_part":" literal/name ""#));
+        assert!(text.contains(r#""exposed_part":null"#));
+        let mut value: serde_json::Value = serde_json::from_str(&text)?;
+        value["components"][0]
+            .as_object_mut()
+            .ok_or("component object")?
+            .remove("exposed_part");
+        let missing = serde_json::to_string(&value)?;
+        assert!(serde_json::from_str::<InspectionSnapshot>(&missing).is_err());
+        assert!(serde_json::from_str::<QueryResult>(&missing).is_err());
+        let blank = text.replace(
+            r#""exposed_part":" literal/name ""#,
+            r#""exposed_part":" \t ""#,
+        );
+        assert_ne!(blank, text);
+        assert!(serde_json::from_str::<InspectionSnapshot>(&blank).is_err());
+        assert!(serde_json::from_str::<QueryResult>(&blank).is_err());
+    }
     Ok(())
 }

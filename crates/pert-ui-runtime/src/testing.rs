@@ -56,8 +56,8 @@
 //!
 //! # Membership
 //!
-//! `testing` holds the driver and its error and everything else a headless
-//! test writes besides the prelude: the viewport, input by hand, the query,
+//! `testing` holds the driver and its error and the names for headless
+//! input and observation beside the prelude: the viewport, input by hand, the query,
 //! validation and capture names, and every type those names hand a test. It
 //! is closed: each type that a member's constructors, methods and associated
 //! constants take or return, and each type a member's public fields and
@@ -65,7 +65,10 @@
 //! every name this adds. An error nested inside another error is reached
 //! through `?` and `Display` and stays where it is. The exceptions below are
 //! records a test reads by field or passes on, and each is named with its
-//! module.
+//! module. This covers the operations listed above, not every operation on
+//! the prelude's `Runtime`: inspecting drawing commands from `Runtime::paint`
+//! also uses `component::{DisplayList, DrawCommand}`. Application services
+//! keep their own thematic imports.
 //!
 //! # Where the other names are
 //!
@@ -657,6 +660,80 @@ impl<'a> Driver<'a> {
         })
     }
 
+    /// Finds a part declared with [`Element::expose_part`](crate::Element::expose_part).
+    ///
+    /// This is not a workspace [`Element::part`](crate::Element::part): those
+    /// addresses use [`Self::find`]. Names are exact scoped selectors, including
+    /// any literal `/`. This query does not settle, reveal or select a window;
+    /// hidden parts and parts in another window can be found. Select that
+    /// window before sending input to a returned part. See
+    /// [`Runtime::find_exposed_part`] for the scope and cost, and
+    /// [`Self::exposed_parts`] to discover available names.
+    ///
+    /// # Errors
+    /// Returns the errors of [`Runtime::find_exposed_part`] as
+    /// [`TestError::Runtime`], or [`TestError::ExposedPartNotFound`] with the
+    /// owner's incarnation, logical key and available names if none matches.
+    pub fn exposed_part(&self, owner: &WidgetId, name: &str) -> Result<WidgetId, TestError> {
+        if let Some(id) = self.runtime.find_exposed_part(owner, name)? {
+            return Ok(id);
+        }
+        Err(TestError::ExposedPartNotFound {
+            owner: self.runtime.inspection_id(owner)?,
+            key: self.runtime.key(owner)?.to_owned(),
+            name: name.to_owned(),
+            available: self
+                .runtime
+                .exposed_parts_of(owner)?
+                .into_iter()
+                .map(|(name, _)| name)
+                .collect(),
+        })
+    }
+
+    /// Lists the owner's immediate exposed-part scopes in logical description order.
+    ///
+    /// Parts come from [`Element::expose_part`](crate::Element::expose_part),
+    /// independently of application keys and workspace addresses. Internal
+    /// composition forwards declarations until an exposed part or an ordinary
+    /// application child bounds the scope; query a returned part to enter its
+    /// nested scope. Duplicate names are listed too, but [`Self::exposed_part`]
+    /// refuses an ambiguous singular lookup.
+    ///
+    /// This UI-thread query reads retained metadata without settling, revealing,
+    /// selecting a window or scheduling work. Hidden parts are included and
+    /// returned IDs may belong to another window. Cost grows with the internal
+    /// structure visited. Retain IDs for events rather than re-resolving names
+    /// from an older description. A part's name in an owned inspection record
+    /// is descriptive metadata, not a remote lookup protocol.
+    ///
+    /// # Errors
+    /// Returns `ForeignRuntime` or `Unmounted` as [`TestError::Runtime`] for an
+    /// invalid owner, with nothing changed.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::testing::*;
+    /// let mut ui = Runtime::new();
+    /// let root = ui.mount_tree(Container::new(
+    ///     Button::new("Apply", |_| Ok(())).key("button").expose_part("action"),
+    /// ).key("panel"))?;
+    /// let driver = Driver::new(&mut ui);
+    /// let parts = driver.exposed_parts(&root)?;
+    /// assert_eq!(parts[0].name, "action");
+    /// assert_eq!(driver.exposed_part(&root, "action")?, parts[0].id);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn exposed_parts(&self, owner: &WidgetId) -> Result<Vec<ExposedPart>, TestError> {
+        Ok(self
+            .runtime
+            .exposed_parts_of(owner)?
+            .into_iter()
+            .map(|(name, id)| ExposedPart { name, id })
+            .collect())
+    }
+
     /// The components one address segment below `parent`, in child order,
     /// each with the segment [`Runtime::find`] resolves it by.
     ///
@@ -832,8 +909,9 @@ impl<'a> Driver<'a> {
     /// command or a tab title; a component that gives an item its rectangle
     /// ([`SemanticItem::local_bounds`]) reports it as
     /// [`SemanticItem::bounds`], and only such an item can be clicked. Among
-    /// the built-in components, a table's column titles do, and a toast
-    /// stack's toasts, whose rectangle is the whole toast rather than its
+    /// the built-in components, table column titles, tab titles, menu command
+    /// rows and the open Select list's options do, as do a toast stack's toasts,
+    /// whose rectangle is the whole toast rather than its
     /// action or Dismiss control, so a test activates a toast through the
     /// stack's keys ([`ToastHost`](crate::ToastHost#inspection-and-tests)).
     ///
@@ -854,6 +932,14 @@ impl<'a> Driver<'a> {
     /// active cell's column into view, or with a horizontal wheel through
     /// [`Runtime::pointer_input`]. A column can also be sorted from the
     /// keyboard, with Alt and Up or Down on the active column.
+    ///
+    /// Tab overflow arrows or wheel input bring offscreen titles into view;
+    /// arrow-key selection also reveals the selected title. For a menu or
+    /// Select, obtain its list with [`Self::exposed_part`], open it through
+    /// its trigger, then click an item. A part query does not open a closed
+    /// list; reveal refuses it. List wheel or keyboard navigation scrolls its
+    /// options. A clipped row reports only its visible rectangle; separators
+    /// have no item index, and clicking a disabled row runs no command.
     ///
     /// The clock moves only by the settle, so two `click_item`s are
     /// [`Self::FRAME`] apart and a component that counts clicks sees a double
@@ -1381,6 +1467,21 @@ pub struct AddressChild {
     pub id: WidgetId,
 }
 
+/// One named part returned by [`Driver::exposed_parts`].
+///
+/// The name is a scoped selector declared with [`Element::expose_part`](crate::Element::expose_part),
+/// independent of the logical key and workspace address. `id` names the actual
+/// mounted incarnation. Both are UI-local; this handle is not a cross-thread
+/// inspection DTO and does not keep an unmounted component alive.
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[non_exhaustive]
+pub struct ExposedPart {
+    /// The exact declared part name, with at least one non-whitespace character.
+    pub name: String,
+    /// The part's current mounted identity; retain this for an event target.
+    pub id: WidgetId,
+}
+
 /// Why a [`Driver`] step could not do what it was asked.
 ///
 /// A runtime failure keeps its one form, [`Self::Runtime`]; the other variants
@@ -1411,6 +1512,18 @@ pub enum TestError {
         /// returns a component for it or refuses it as ambiguous. Empty when
         /// not even the first segment does.
         resolved: Vec<String>,
+    },
+    /// No part with this exact name is exposed below the given owner.
+    #[error("component {owner} (`{key}`) exposes no part named `{name}`; available: {available:?}")]
+    ExposedPartNotFound {
+        /// Runtime-local owner incarnation, as inspection reports it.
+        owner: u64,
+        /// The owner's logical key, for diagnostics rather than unique identity.
+        key: String,
+        /// The exact requested name.
+        name: String,
+        /// Declared names in the scope's logical description order, including duplicates.
+        available: Vec<String>,
     },
     /// The component reports no item at this index ([`Driver::click_item`]).
     #[error("`{key}` reports {count} items, none at index {index}")]

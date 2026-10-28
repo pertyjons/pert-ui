@@ -46,6 +46,60 @@ The [`component`] page has an example that mounts such a widget, with both
 globs. The examples below glob the modules they use and import the few other
 names they write from the crate root by name, never by a crate-root glob.
 
+# Exposing composite parts
+
+`Element::expose_part` publishes a named control through
+`Runtime::find_exposed_part` and the testing driver's part queries. Exposing a
+nested Select gives its `control` and `options` a scope under the selected
+name. Structural composition forwards those names into its surrounding scope.
+A custom composite uses the same public contract as built-in composites:
+
+```rust
+use pert_ui::prelude::*;
+use pert_ui::component::*;
+use pert_ui::testing::*;
+
+struct Preferences { child: Option<Element> }
+impl Component for Preferences {
+    fn take_children(&mut self) -> Vec<Element> {
+        self.child.take().into_iter().collect()
+    }
+    fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> { Ok(()) }
+    fn measure(&self, cx: &MeasureContext<'_>, available: Constraints) -> Result<Size, RuntimeError> {
+        cx.measure(0, available)
+    }
+    fn arrange(&self, cx: &mut ArrangeContext<'_>, size: Size) -> Result<(), RuntimeError> {
+        cx.place(0, Rect::from_size(size))
+    }
+}
+let mut ui = Runtime::new();
+ui.set_viewport(Viewport::new(400.0, 300.0, 1.0)?)?;
+let value = ui.signal(0_u8);
+let preferences = Preferences { child: Some(
+    Select::new(&ui, value.clone(), [Choice::new(0, "A"), Choice::new(1, "B")])?
+        .key("implementation-key").expose_part("mode"),
+) };
+let root = ui.mount_tree(Column::new([preferences.key("preferences")]).key("root"))?;
+let mut driver = Driver::new(&mut ui);
+driver.settle()?;
+let preferences = driver.find(&root, &["preferences"])?;
+let mode = driver.exposed_part(&preferences, "mode")?;
+let control = driver.exposed_part(&mode, "control")?;
+let options = driver.exposed_part(&mode, "options")?;
+driver.click(&control)?;
+driver.click_item(&options, 1)?;
+assert_eq!(value.get()?, 1);
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
+# Pointer precision
+
+Pointer positions and logical geometry use `f32`; an application value may use
+`f64`. Mapping a pointer position into such a value retains the geometry's
+precision. Use approximate assertions for that mapping unless the control
+explicitly defines a quantization step. Formatting is a separate presentation
+choice; rounding a canonical value is part of the control's stated policy.
+
 # A component that follows a binding
 
 A component reads the bindings it shows in [`Component::update`] and retains

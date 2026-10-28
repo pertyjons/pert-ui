@@ -745,7 +745,9 @@ impl<T: Clone + Eq + Hash + 'static> Component for Panel<T> {
             let list = VirtualList::estimated(rows.read_only(), ROW_ESTIMATE)?
                 .controller(self.shared.list.clone());
             cx.request_children(vec![
-                Element::new("search", search).structural(),
+                Element::new("search", search)
+                    .structural()
+                    .expose_part("search"),
                 Element::new("list", list).structural(),
             ]);
             self.described = Some(search_placeholder);
@@ -1184,7 +1186,9 @@ impl<T: Clone + Eq + Hash + 'static> Component for Trigger<T> {
 /// Inspection reports the trigger as a [`SemanticRole::ComboBox`] whose value
 /// is the chosen labels joined by ", ", with one item per option, and each
 /// popup row as a [`SemanticRole::Checkbox`]. The trigger's `placeholder`
-/// property is its placeholder text as last read.
+/// property is its placeholder text as last read. The popup's search is an
+/// exposed `search` part; its clipboard menu is nested under that part's
+/// `clipboard` scope, so it is not a menu of the outer chooser.
 ///
 /// Describing the chooser again under the same key applies its binding,
 /// options, availability, placeholders, commit timing and filter, and keeps the popup's

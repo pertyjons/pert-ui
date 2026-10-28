@@ -686,6 +686,12 @@ impl TableController {
     }
     /// Replaces the rows, keeping selection by key.
     ///
+    /// May be called from an input callback, including a button in this table's
+    /// own cell. Rows adopt the source during the next update; surviving keys
+    /// keep their row identities. A cell that reads its own signal can follow
+    /// changing data without replacing the source. Replace it when membership,
+    /// order or fixed cell descriptions change.
+    ///
     /// # Errors
     /// The errors of [`Signal::set`](crate::Signal::set): `Closed` after the
     /// runtime shut down; `WriteDuringUpdate`, `WriteDuringLayout`,

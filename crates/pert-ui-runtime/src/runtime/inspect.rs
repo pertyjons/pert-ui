@@ -209,6 +209,7 @@ impl Runtime {
             labelled_by: None,
             id: serial,
             key: entry.key.clone(),
+            exposed_part: entry.exposed_part.clone(),
             path: self.workspace_segments(serial),
             parent: entry.node.logical_parent_serial(),
             visible: entry.node.visible.get(),

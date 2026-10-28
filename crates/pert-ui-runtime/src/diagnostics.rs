@@ -367,8 +367,11 @@ pub enum SemanticAction {
 /// ([`local_bounds`](Self::local_bounds)), which an inspection reports in window
 /// coordinates as [`bounds`](Self::bounds); a component gives bounds only where
 /// it reports them, and among the built-in components a
-/// [`Table`](crate::Table)'s column titles and a
-/// [`ToastHost`](crate::ToastHost)'s toasts do. A component whose rows are real
+/// [`Table`](crate::Table)'s column titles, [`Tabs`](crate::Tabs)' titles,
+/// open menu rows, the [`Select`](crate::Select) list's options and a
+/// [`ToastHost`](crate::ToastHost)'s toasts do. Offscreen rows have no bounds;
+/// menu separator bands are not items. A closed ComboBox's option descriptions
+/// carry no list geometry. Inspection does not scroll. A component whose rows are real
 /// child components reports none and lets the children describe themselves.
 ///
 /// ```
@@ -630,7 +633,8 @@ impl SemanticItem {
 /// ```
 ///
 /// Everything is an owned observation captured on the UI thread. Absent means
-/// not known or not applicable, never an empty placeholder. Reporting semantics
+/// not known or not applicable, never an empty placeholder. An actual empty
+/// editable value is present as Text(String::new()); it is not absent. Reporting semantics
 /// schedules nothing and is evaluated only when a snapshot is captured.
 ///
 /// The builders keep the invariants the fields document. A component may also
@@ -661,7 +665,9 @@ pub struct Semantics {
     /// The content of an editable or stateful control: a field's text, a
     /// toggle's state, a slider's number, a chooser's selection. Static text,
     /// such as a [`Label`](crate::Label)'s, is the `name` and leaves the value
-    /// absent.
+    /// absent. An ordinary empty text editor reports
+    /// Some(SemanticValue::Text(String::new())); an absent value is not an empty
+    /// editor. A protected editor deliberately withdraws its value instead.
     pub value: Option<SemanticValue>,
     /// What can currently be done to it, sorted and without duplicates.
     pub actions: Vec<SemanticAction>,
@@ -937,6 +943,22 @@ pub struct ComponentInspection {
     pub id: u64,
     /// Stable caller key, distinct from runtime incarnation.
     pub key: String,
+    /// The name declared with [`Element::expose_part`](crate::Element::expose_part),
+    /// if any, independent of the logical key, semantic name and workspace
+    /// path. Schema 17 added this field. A present name is not blank; `None`
+    /// means no declaration.
+    ///
+    /// This is descriptive metadata, not a unique widget identity or a remote
+    /// lookup protocol: the snapshot does not encode the scoping walk.
+    /// Resolve names on the UI thread with [`Runtime::find_exposed_part`](crate::Runtime::find_exposed_part)
+    /// and use the returned incarnation's owned inspection for tooling.
+    /// With `serde` this field is required (null means no declaration), and a
+    /// present name empty after trimming is refused.
+    #[cfg_attr(
+        feature = "serde",
+        serde(deserialize_with = "crate::diagnostics::exposed_part_name")
+    )]
+    pub exposed_part: Option<String>,
     /// The addressable key path of [workspace persistence](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md):
     /// application keys and container slots from the root down to the segment
     /// this component introduces, without library-internal structure. `None`
@@ -1194,18 +1216,34 @@ impl InspectionSnapshot {
     /// It changes when a field is added, removed or reinterpreted, not with the
     /// crate version. With the `serde` feature, deserializing a snapshot or a
     /// [`QueryResult`](crate::QueryResult) whose `schema_version` is any other
-    /// revision fails with the message "inspection schema version 15 is not
-    /// supported (this build writes 16)", naming the version found; unknown
+    /// revision fails with the message "inspection schema version 16 is not
+    /// supported (this build writes 17)", naming the version found; unknown
     /// fields are rejected as before. A document whose version is not its
     /// first field, as a format or an intermediate map may reorder it, can
     /// fail on an unknown or missing field of the other revision first. An
     /// external inspector that reads several revisions compares the version
     /// before decoding and treats an unknown revision as unsupported rather
     /// than reinterpreting it.
-    pub const SCHEMA_VERSION: u32 = 16;
+    pub const SCHEMA_VERSION: u32 = 17;
     /// The most events history retains. Recording one more evicts the oldest
     /// and counts it in [`Self::dropped_events`].
     pub const MAX_EVENTS: usize = 256;
+}
+
+/// Reads descriptive part metadata without normalizing its exact name.
+#[cfg(feature = "serde")]
+fn exposed_part_name<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let name = <Option<String> as serde::Deserialize>::deserialize(deserializer)?;
+    if name.as_ref().is_some_and(|name| name.trim().is_empty()) {
+        Err(serde::de::Error::custom(
+            "an exposed component part name must not be blank",
+        ))
+    } else {
+        Ok(name)
+    }
 }
 
 /// A document of an inspection schema revision this build does not read.

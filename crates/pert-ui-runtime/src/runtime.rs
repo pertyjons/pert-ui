@@ -332,6 +332,19 @@ pub enum RuntimeError {
     /// A key must contain a non-whitespace character.
     #[error("component key must not be empty")]
     EmptyKey,
+    /// A declared or queried exposed-part name contains no non-whitespace
+    /// character. See [`Element::expose_part`](crate::Element::expose_part).
+    #[error("an exposed component part name must not be blank")]
+    EmptyExposedPartName,
+    /// A singular exposed-part lookup matched several declarations in the
+    /// same composite scope. No target was chosen.
+    #[error("several exposed parts of component {owner} have the name `{name}`")]
+    AmbiguousExposedPart {
+        /// Runtime-local incarnation of the lookup's owner, as inspection reports it.
+        owner: u64,
+        /// The exact requested part name.
+        name: String,
+    },
     /// A key or address lookup below an ancestor matched more than one
     /// descendant, because keys are unique only among siblings; see
     /// [`Runtime::find_descendant`] and [`Runtime::find`]. It holds the key, or
@@ -3714,6 +3727,7 @@ type PreviousLabel = (u64, Option<String>, Option<crate::RichText>);
 struct Entry {
     key: String,
     addressing: crate::layout::Addressing,
+    exposed_part: Option<String>,
     label: Option<String>,
     rich_label: Option<crate::RichText>,
     /// A bound label the parent's update reads into `label` and `rich_label`.

@@ -231,6 +231,36 @@ results](../plans/archive/developer-usability.md#round-2-results):
 - The maintainer decided that every reopened and new finding is fixed in a
   round 2 fix plan, breaking API changes allowed.
 
+Round 3 is in progress under the [execution and closure plan](../plans/usability/round-3-plan.md).
+The planned blind submissions are terminal against frozen head 0.3.88 and
+baseline 0.3.75 kits. All independent acceptances are author-adopted as met
+against unchanged frozen criteria. Full recurrence triage and the remaining
+repairs are not complete; no overall result or closure is claimed.
+
+The working 0.3.89 repairs add scoped exposed parts and pointer rectangles for
+Tabs titles and the shared menu/Select list. Focused public-API tests cover
+lookup scopes, naming, workspace addressing, serialization, real pointer input,
+scrolling and retained identities. The native gallery interaction scenario now
+also switches from the selected Layout category to the unselected Controls
+category by clicking its tab title, selects a different Select option and opens
+About by clicking a menu row through those public contracts. `cargo run --locked -p pert-ui-native-checks -- interaction_check`
+passed both selected interaction checks on 2026-10-28, Fedora Linux 44,
+kernel 7.2.12-200.fc44.x86_64, GNOME Shell 50.6 on Wayland, Rust 1.99.1,
+winit 0.30.13 and wgpu 30.0.1. Both wgpu presentation and opt-in CPU/softbuffer
+presentation ran in a real window with injected runtime input and a painted
+frame after each action. The runner did not report the selected GPU adapter;
+no hand-input, compositor-translation, Windows/macOS or skipped native-check
+coverage is claimed. Independent review caught an initial tab step that clicked
+the already-selected category. The corrected scenario passed both native
+backends again; the original run is not evidence of a tab selection change.
+The corrected step also fails its headless negative control when its pointer
+click is removed. Logs are in the round-3 review evidence. The full workspace and relevant serde gates passed again after review repairs,
+with source hashes checked unchanged during that run. The later empty-value
+rustdoc precision passed runtime doctests and strict workspace rustdoc. Fresh
+Claude implementation re-review approved this checkpoint; records and the
+API-generation result are in runs/review-r3. Literal-tab and disabled-Button
+presentation are separate approved designs awaiting implementation.
+
 ## Thin outlines at fractional zoom
 
 A 75% scale regression renders a one-logical-pixel rounded outline at a

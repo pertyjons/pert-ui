@@ -1,7 +1,7 @@
 A headless test builds the application's content on a [`Runtime`], drives it
 through the input the native host delivers and reads what it shows through
 inspection. It needs no window, GPU or operating-system service. One `use` block
-covers it:
+covers ordinary input, semantic inspection and capture:
 
 ```rust
 use pert_ui::prelude::*;
@@ -24,7 +24,11 @@ a type, such as a helper's return type, needs no other import. The exceptions
 are records a test reads by field or passes on: the window, event, parameter
 and source answers of a query are in [`inspection`](crate::inspection), and a
 host's records, such as its physical surface size and key routing, in
-[`host`](crate::host).
+[`host`](crate::host). A test of a custom widget's drawing also imports
+`pert_ui::component::{DisplayList, DrawCommand}` for `Runtime::paint`'s scene
+and commands; those belong to the component contract. The testing glob covers
+the listed input and observation operations, while other runtime services use
+their thematic modules.
 
 # Reading what the runtime shows
 
@@ -35,6 +39,12 @@ search of a whole snapshot. [`Driver::semantics`](crate::testing::Driver::semant
 is that query for the [`Semantics`]. Static text, a label's or a button's, is
 the semantic name; an editable or stateful control's content is the value.
 Empty text is no name: an empty label's `name` is `None`, not `Some("")`.
+A plain empty TextField or TextArea instead reports
+`Some(SemanticValue::Text(String::new()))`: `Text` owns a `String`. A protected
+editor omits its value. An ordinary keyed `Form`, `Field` or `ScrollArea`
+contributes its key to a child's address, like a keyed Column; internal
+structural wrappers do not. A custom `Element::structural` declaration can
+explicitly remove that element's segment.
 
 ```rust
 use pert_ui::prelude::*;
@@ -92,6 +102,49 @@ let result = driver.runtime().query(
 assert!(result.components[0].details.box_model.border_box.is_some());
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
+
+# Composite parts
+
+Application children keep their stable key paths through internal wrappers.
+A composite may also expose controls it owns with [`Element::expose_part`].
+Use [`Driver::exposed_parts`](crate::testing::Driver::exposed_parts) to list
+that owner's available names and [`Driver::exposed_part`](crate::testing::Driver::exposed_part)
+to select one. These names are exact scoped selectors; a slash in `title/file`
+is literal. They are independent of semantic captions and workspace paths.
+Finding parts does not settle, open a surface, change focus or select a window.
+Retain the returned identity for input to that incarnation. For parts in another
+window, select that window before sending input.
+
+| Owner | Exposed names and next scope |
+| --- | --- |
+| Select, InlineSelect | `control` is the ComboBox; `options` is the list |
+| Menu | `trigger` is its Button; `items` is its own row list |
+| ContextMenu | `items` is its own row list; open through a context-menu request |
+| MenuBar | `title/<menu-key>`; query that title for its menu's `items` |
+| Menu, ContextMenu, menu title | `submenu/<row-key>`; query that panel for `items` |
+| Editor with a clipboard menu | `clipboard`; query that scope for `items` |
+
+A list part can be found while closed. Open its trigger or send a context-menu
+request before clicking a row; reveal refuses a closed list. The component's
+rustdoc has complete pointer examples. `Tabs` title items belong to the strip;
+application content is still found by tab key. `Dialog` and `AlertDialog` keep
+their existing `dialog` address segment for the described dialog content.
+
+Internal structural composition forwards exposed names until another part or
+an ordinary application child bounds the scope. The [custom widgets chapter](crate::guide::custom_widgets#exposing-composite-parts)
+shows a complete external composite using that same contract.
+
+Duplicate part names can be listed, but singular lookup refuses ambiguity.
+A same-key redescription replaces or removes its part declaration without
+remounting. Names do not by themselves invalidate layout or paint. An owned
+inspection's `exposed_part` is descriptive metadata; it does not encode this
+scope walk for remote tooling. Resolve on the UI thread and capture the
+returned incarnation through the public inspection contract.
+
+QuickPick and CommandPalette keep the addressable `surface` boundary: find
+`["surface"]`, then query its `search` part, then that search's `clipboard`
+if needed. MultiSelect's structurally composed search similarly bounds its
+clipboard parts under `search`, rather than forwarding them to the chooser.
 
 # Clicking
 

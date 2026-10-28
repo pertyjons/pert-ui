@@ -2185,6 +2185,26 @@ impl Component for Plain {
     }
 }
 
+/// A custom item reporter deliberately omitting pointer rectangles.
+struct ItemsWithoutBounds;
+impl Component for ItemsWithoutBounds {
+    fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+        Ok(())
+    }
+    fn measure(&self, _: &MeasureContext<'_>, _: Constraints) -> Result<Size, RuntimeError> {
+        Ok(Size::new(40.0, 20.0)?)
+    }
+    fn inspect(&self) -> ComponentDetails {
+        ComponentDetails {
+            semantics: Some(
+                Semantics::new(SemanticRole::Group)
+                    .items([SemanticItem::new("One"), SemanticItem::new("Two")]),
+            ),
+            ..ComponentDetails::default()
+        }
+    }
+}
+
 #[test]
 fn click_item_refuses_before_any_input_and_names_what_it_cannot_click() -> TestResult {
     let mut ui = runtime()?;
@@ -2194,13 +2214,7 @@ fn click_item_refuses_before_any_input_and_names_what_it_cannot_click() -> TestR
         Column::new([
             Element::new("plain", Plain),
             Element::new("label", Label::new("Label")),
-            Element::new(
-                "tabs",
-                Tabs::new([
-                    Tab::new("one", "One", Element::new("first", Label::new("First"))),
-                    Tab::new("two", "Two", Element::new("second", Label::new("Second"))),
-                ]),
-            ),
+            Element::new("items", ItemsWithoutBounds),
             Element::new(
                 "panel",
                 View::new(Element::new("away", Button::new("Away", action))),
@@ -2239,23 +2253,23 @@ fn click_item_refuses_before_any_input_and_names_what_it_cannot_click() -> TestR
             count: 0
         })
     );
-    // A tab title is an item the tabs give no rectangle.
-    let tabs = id(&driver, "tabs")?;
-    assert_eq!(driver.semantics(&tabs)?.items.len(), 2);
+    // A custom item reporter can omit rectangles, even after layout.
+    let items = id(&driver, "items")?;
+    assert_eq!(driver.semantics(&items)?.items.len(), 2);
     assert_eq!(
-        driver.click_item(&tabs, 1),
+        driver.click_item(&items, 1),
         Err(TestError::ItemWithoutBounds {
-            key: "tabs".into(),
+            key: "items".into(),
             index: 1
         })
     );
     assert_eq!(
         TestError::ItemWithoutBounds {
-            key: "tabs".into(),
+            key: "items".into(),
             index: 1
         }
         .to_string(),
-        "item 1 of `tabs` has no visible bounds"
+        "item 1 of `items` has no visible bounds"
     );
     assert_eq!(
         TestError::NoItem {
@@ -2270,7 +2284,7 @@ fn click_item_refuses_before_any_input_and_names_what_it_cannot_click() -> TestR
     driver
         .runtime_mut()
         .key_input(KeyCode::KeyA, KeyAction::Press)?;
-    assert_eq!(driver.click_item(&tabs, 0), Err(TestError::InputHeld));
+    assert_eq!(driver.click_item(&items, 0), Err(TestError::InputHeld));
     assert!(driver.runtime().keyboard().is_pressed(KeyCode::KeyA));
     driver
         .runtime_mut()

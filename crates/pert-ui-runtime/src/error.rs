@@ -51,6 +51,10 @@ pub struct ApplicationError(Arc<dyn Error + Send + Sync + 'static>);
 impl ApplicationError {
     /// Wraps an application error.
     ///
+    /// For a message alone use `ApplicationError::from("message")` or
+    /// `ApplicationError::from(String::from("message"))`. This constructor
+    /// takes an error value and preserves its concrete type and source chain.
+    ///
     /// A boxed `Box<dyn Error + Send + Sync>` is not itself an `Error`; it
     /// converts with [`ApplicationError::from`], which keeps the boxed error
     /// and its source chain, so `?` on such a result reads
@@ -227,6 +231,8 @@ mod tests {
             | RuntimeError::Hidden
             | RuntimeError::DuplicateKey(_)
             | RuntimeError::EmptyKey
+            | RuntimeError::EmptyExposedPartName
+            | RuntimeError::AmbiguousExposedPart { .. }
             | RuntimeError::AmbiguousKey(_)
             | RuntimeError::WriteDuringUpdate
             | RuntimeError::WriteDuringPaint

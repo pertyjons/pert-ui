@@ -113,6 +113,10 @@ assert_eq!(ui.bounds(&fader)?.map(|b| b.height()), ui.bounds(&row)?.map(|b| b.he
 
 # Independent split dividers
 
+Split panes and their sizing/axis types are in [`crate::windowing`], beside
+the prelude rather than inside it. Import that module when adding a split
+to an application: `use pert_ui::{prelude::*, windowing::*};`.
+
 [`SplitPane`] defaults to equal shares and enabled resizing. `LeftRight`/`TopBottom`
 name child placement. Choose a ratio or a fixed first/second extent only when that
 has meaning for the workspace. Locking is independent of sizing, so locked ratios
@@ -188,6 +192,65 @@ ui.flush(Duration::ZERO)?;
 let _scene = ui.paint()?;
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
+
+# Adding and closing retained tabs
+
+The application owns its open records and each record's text binding. A
+`Dynamic` description turns those records into tabs with stable keys; keeping
+a key and component type retains the editor's identity and local state.
+Adding, selecting and removing a record are separate operations. Queue runtime
+navigation from an input callback with `EventContext::defer`:
+`Runtime::reveal_child` flushes pending descriptions before looking up the tab
+key, so the write and selection can share that deferred operation.
+
+```rust
+use pert_ui::prelude::*;
+use pert_ui::testing::*;
+
+#[derive(Clone)]
+struct Note { key: String, text: Signal<String> }
+impl PartialEq for Note {
+    fn eq(&self, other: &Self) -> bool {
+        self.key == other.key && self.text.read_only().same_source(&other.text.read_only())
+    }
+}
+let mut ui = Runtime::new();
+ui.set_viewport(Viewport::new(600.0, 300.0, 1.0)?)?;
+let notes = ui.signal(vec![Note { key: "first".to_owned(), text: ui.signal("Kept".to_owned()) }]);
+let root = ui.mount_tree(Dynamic::new(&notes, |_, notes| {
+    Tabs::new(notes.iter().map(|note| Tab::new(
+        note.key.clone(), note.key.clone(), TextArea::new(&note.text).key("editor"),
+    ))).key("tabs")
+}).key("notes"))?;
+let mut driver = Driver::new(&mut ui);
+driver.settle()?;
+let tabs = driver.find(&root, &["tabs"])?;
+let first = driver.find(&tabs, &["first", "editor"])?;
+let next = Note { key: "second".to_owned(), text: driver.runtime().signal("New".to_owned()) };
+let records = notes.clone();
+let target = tabs.clone();
+let _request = driver.runtime().defer(move |ui| {
+    records.update(|notes| notes.push(next))?;
+    // The pending Dynamic description is observed before this key lookup.
+    ui.reveal_child(&target, "second")?;
+    Ok(())
+})?;
+driver.settle()?;
+assert_eq!(driver.find(&tabs, &["first", "editor"])?, first);
+assert!(driver.semantics(&tabs)?.items[1].selected);
+// After any application save/discard decision, remove the record by stable key.
+notes.update(|notes| notes.retain(|note| note.key != "second"))?;
+driver.settle()?;
+assert_eq!(driver.find(&tabs, &["first", "editor"])?, first);
+assert!(driver.semantics(&tabs)?.items[0].selected);
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
+A tab key identifies an open record, not its caption or display index. Keep
+canonical text and the last saved text in application state, derive its modified
+title from those bindings, and apply the save/discard policy before removing
+the record. The library retains editors while their keys survive and owns no
+application document or save policy.
 
 # Native windows
 

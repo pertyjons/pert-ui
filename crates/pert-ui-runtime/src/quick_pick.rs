@@ -830,7 +830,9 @@ impl Shared {
 /// Inspection reports a `Dialog` (modal) or `Popover` with the picker's name
 /// and `open`, `status` and `modal` properties, and the results as a
 /// `ListBox` whose items carry each row's label, shortcut, highlight and
-/// disabled state.
+/// disabled state. The existing `surface` address bounds its parts: find that
+/// address, then query its exposed `search` part. The search's `clipboard`
+/// menu belongs to that nested scope, rather than to the picker.
 ///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
@@ -1343,7 +1345,8 @@ impl PickContent {
                     .placeholder(placeholder)
                     .on_key(move |cx, key| shared.on_key(cx, key)),
             )
-            .structural(),
+            .structural()
+            .expose_part("search"),
         ];
         if let Some(message) = message {
             children.push(

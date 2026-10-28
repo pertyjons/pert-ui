@@ -163,6 +163,75 @@ the undelivered value in [`SendError`], and the handler runs on the UI thread,
 where it may write bindings. Mailboxes take locks and can wake the event loop, so
 they are not endpoints for time-critical producer callbacks.
 
+The mailbox family is in `pert_ui::live`. Retain the mailbox in application
+state; cloning a sender alone does not keep its receiving handler alive. A
+handler can capture the particular bindings it updates, while buttons capture
+a sender, so neither needs to own the whole model through a cycle:
+
+```rust
+use pert_ui::{live::*, prelude::*};
+use pert_ui::testing::*;
+use std::time::Duration;
+
+struct Model {
+    progress: Signal<u32>,
+    mailbox: Mailbox<u32>,
+    sender: UiSender<u32>,
+}
+fn build(ui: &mut Runtime) -> Result<(Model, WidgetId), RuntimeError> {
+    let progress = ui.signal(0_u32);
+    let shown = progress.clone();
+    let mailbox = ui.mailbox(Capacity::new(4)?, move |percent| shown.set(percent))?;
+    let model = Model { progress, sender: mailbox.sender(), mailbox };
+    let sender = model.sender.clone();
+    let start = Button::new("Start", move |cx| {
+        let sender = sender.clone();
+        let _start = cx.spawn(move || {
+            // This ordinary worker may sleep and take the mailbox's lock.
+            for mut report in [0, 20, 40, 60, 80, 100] {
+                loop {
+                    match sender.send(report) {
+                        Ok(()) => break,
+                        Err(SendError::Full(value)) => {
+                            report = value;
+                            std::thread::sleep(Duration::from_millis(1));
+                        }
+                        Err(SendError::Closed(_)) => return,
+                    }
+                }
+            }
+        }, |()| Ok(()))?;
+        Ok(())
+    });
+    let root = ui.mount_tree(Column::new([
+        start.key("start"),
+        Label::new(model.progress.map(|percent| format!("{percent}%"))?).key("progress"),
+    ]).key("root"))?;
+    Ok((model, root))
+}
+let mut ui = Runtime::new();
+ui.set_viewport(Viewport::new(400.0, 200.0, 1.0)?)?;
+let (model, root) = build(&mut ui)?;
+let mut driver = Driver::new(&mut ui);
+driver.settle()?;
+let start = driver.find(&root, &["start"])?;
+driver.click(&start)?;
+driver.wait_until(Duration::from_secs(2), |_| Ok(model.progress.get()? == 100))?;
+assert_eq!(model.mailbox.pending(), 0);
+let progress = driver.find(&root, &["progress"])?;
+assert_eq!(driver.semantics(&progress)?.name.as_deref(), Some("100%"));
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
+This worker retries full queues and stops when the receiver closes; reports
+are not silently dropped. The application's shutdown policy chooses when to
+close the mailbox and join any separately owned workers. A table cell that
+reads a per-record signal can follow progress without replacing the source;
+replace a TableSource when its membership/order or fixed record descriptions
+change. The [table testing recipe](crate::guide::testing#tables) shows bound
+progress cells and the [quiet-window check](crate::guide::testing#nothing-scheduled-while-idle)
+checks that settled work schedules no extra presentation.
+
 High-rate, lossy data such as levels and traces travels separately. A
 `series_bridge` splits into a `Send` producer [`SeriesEndpoint`], which publishes
 with bounded work and no allocation into a ring preallocated when the bridge is
@@ -240,7 +309,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         let (status, mark) = (name_field.clone(), name_field.clone());
         let name_input = TextField::new(&name)
-            .normalize(|text| match text.trim() {
+            .normalize(|text: String| match text.trim() {
                 "" => Err(InputRejection::new("Enter a name")),
                 trimmed => Ok(trimmed.to_owned()),
             })

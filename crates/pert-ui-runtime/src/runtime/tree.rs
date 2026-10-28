@@ -36,6 +36,8 @@ struct MetadataChange {
     detachable: crate::Permission,
     searchable: bool,
     grow: u16,
+    exposed_part: Option<String>,
+    layout_changed: bool,
 }
 
 /// Whether two optional label sources are the same binding, whose read text
@@ -57,6 +59,14 @@ fn validate_traced(elements: &[Element], trail: &mut Vec<String>) -> Result<u64,
     for element in elements {
         if element.key.trim().is_empty() {
             return Err(RuntimeError::EmptyKey);
+        }
+        if element
+            .exposed_part
+            .as_ref()
+            .is_some_and(|name| name.trim().is_empty())
+        {
+            trail.push(element.key.clone());
+            return Err(RuntimeError::EmptyExposedPartName);
         }
         if !keys.insert(&element.key) {
             trail.push(element.key.clone());
@@ -89,6 +99,7 @@ impl Runtime {
     /// Nothing is mounted after an error: a runtime phase error (see
     /// [`Runtime`]); [`RuntimeError::EmptyKey`] for a key without a
     /// non-whitespace character anywhere in the tree;
+    /// [`RuntimeError::EmptyExposedPartName`] for a blank exposed-part name;
     /// [`RuntimeError::DuplicateKey`] for siblings sharing a key or a root key
     /// already in use; the error a component's
     /// [`Component::check_description`](crate::Component::check_description)
@@ -362,6 +373,81 @@ impl Runtime {
         Ok(found.map(|serial| WidgetId(self.entries[&serial].node.clone())))
     }
 
+    /// Finds the current part named `name` in a composite's exposed-part scope.
+    ///
+    /// Names come from [`Element::expose_part`], not element keys, semantic
+    /// labels or workspace [`Element::part`] markers. Matching is exact and
+    /// does not split `/`. The walk starts below `owner`, follows internal
+    /// structural/part/slot wrappers, and stops at exposed parts and ordinary
+    /// application children. Query a returned part to enter its own scope.
+    /// Internal composition therefore forwards exposed names unless the nested
+    /// composite is itself exposed under a name.
+    ///
+    /// This UI-thread query does not flush, reveal, focus or schedule work. It
+    /// follows logical ownership, including hidden parts and parts presented in
+    /// another window, and skips the drag preview. Its cost grows with the
+    /// internal structure visited. Retain the returned `WidgetId` for events;
+    /// a later lookup of a name may find a new incarnation.
+    ///
+    /// # Errors
+    /// Returns [`RuntimeError::ForeignRuntime`] or [`RuntimeError::Unmounted`]
+    /// for an invalid owner, then [`RuntimeError::EmptyExposedPartName`] for a
+    /// name empty after trimming, or [`RuntimeError::AmbiguousExposedPart`] if
+    /// several declarations have that name. A valid absent name is `Ok(None)`.
+    /// See [`Element::expose_part`] for a complete example.
+    pub fn find_exposed_part(
+        &self,
+        owner: &WidgetId,
+        name: &str,
+    ) -> Result<Option<WidgetId>, RuntimeError> {
+        self.check(owner)?;
+        if name.trim().is_empty() {
+            return Err(RuntimeError::EmptyExposedPartName);
+        }
+        let mut found = None;
+        for (declared, id) in self.exposed_parts_of(owner)? {
+            if declared == name {
+                if found.is_some() {
+                    return Err(RuntimeError::AmbiguousExposedPart {
+                        owner: owner.incarnation(),
+                        name: name.to_owned(),
+                    });
+                }
+                found = Some(id);
+            }
+        }
+        Ok(found)
+    }
+
+    /// The exposed parts in one scope, in logical description order. Keeping
+    /// this walk shared makes driver enumeration and singular lookup agree.
+    pub(crate) fn exposed_parts_of(
+        &self,
+        owner: &WidgetId,
+    ) -> Result<Vec<(String, WidgetId)>, RuntimeError> {
+        self.check(owner)?;
+        let preview = self.drag_preview_root();
+        let mut found = Vec::new();
+        let mut pending: Vec<u64> = self.entries[&owner.0.serial]
+            .children
+            .iter()
+            .rev()
+            .copied()
+            .collect();
+        while let Some(serial) = pending.pop() {
+            if Some(serial) == preview {
+                continue;
+            }
+            let entry = &self.entries[&serial];
+            if let Some(name) = &entry.exposed_part {
+                found.push((name.clone(), WidgetId(entry.node.clone())));
+            } else if entry.addressing != crate::layout::Addressing::Own {
+                pending.extend(entry.children.iter().rev().copied());
+            }
+        }
+        Ok(found)
+    }
+
     /// The components one address segment below `parent`, in child order,
     /// each with the segment [`Self::find`] resolves it by: the walk `find`
     /// makes for a one-segment path, collecting every component that
@@ -479,7 +565,7 @@ impl Runtime {
     /// through that owner's own descriptions, which do not list it.
     ///
     /// # Errors
-    /// Rejects invalid IDs, duplicate/empty keys (including a key that names a
+    /// Rejects invalid IDs, blank exposed-part names, duplicate/empty keys (including a key that names a
     /// child moved here from a parent that still describes it), changed
     /// surviving component types,
     /// identity exhaustion, children described for a surviving
@@ -553,11 +639,17 @@ impl Runtime {
                 detachable,
                 searchable,
                 grow,
+                exposed_part,
+                layout_changed,
             } = change;
             let entry = self
                 .entries
                 .get_mut(&serial)
                 .ok_or(RuntimeError::Unmounted)?;
+            entry.exposed_part = exposed_part;
+            if !layout_changed {
+                continue;
+            }
             // The same binding keeps the text the parent read; anything else
             // takes the description's text, empty for a binding until read.
             let keep = same_bound_label(entry.label_source.as_ref(), label_source.as_ref())
@@ -1005,11 +1097,11 @@ impl Runtime {
                         && entry.rich_label == child.rich_label
                         && entry.label_source.as_ref().is_none_or(|s| !s.is_bound())
                 };
-                if !same_label
+                let layout_changed = !same_label
                     || !entry.node.detachable.borrow().same_as(&child.detachable)
                     || entry.searchable != child.searchable
-                    || entry.grow != child.grow
-                {
+                    || entry.grow != child.grow;
+                if layout_changed || entry.exposed_part != child.exposed_part {
                     changes.push(MetadataChange {
                         serial,
                         label: child.label.clone(),
@@ -1019,6 +1111,8 @@ impl Runtime {
                         detachable: child.detachable.clone(),
                         searchable: child.searchable,
                         grow: child.grow,
+                        exposed_part: child.exposed_part.clone(),
+                        layout_changed,
                     });
                 }
                 self.metadata_changes(serial, &child.children, changes);
@@ -1245,6 +1339,7 @@ impl Runtime {
         let mut entry = Entry {
             key: element.key,
             addressing: element.addressing,
+            exposed_part: element.exposed_part,
             label: element.label,
             rich_label: element.rich_label,
             label_source: element.label_source,

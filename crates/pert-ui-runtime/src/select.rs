@@ -126,7 +126,7 @@ pub(crate) struct OptionList<T> {
     pub(crate) menu: Option<MenuRows>,
     text: RefCell<Vec<TextLayout>>,
     pub(crate) geometry: Rc<RowGeometry>,
-    height: Cell<f32>,
+    viewport: Cell<Size>,
 }
 impl<T: Clone + Eq + 'static> OptionList<T> {
     fn new(
@@ -164,11 +164,11 @@ impl<T: Clone + Eq + 'static> OptionList<T> {
                 separators: RefCell::new(separators),
                 ..RowGeometry::default()
             }),
-            height: Cell::new(0.0),
+            viewport: Cell::new(Size::ZERO),
         }
     }
     fn max_offset(&self) -> f32 {
-        (self.geometry.top(self.options.len()) - self.height.get()).max(0.0)
+        (self.geometry.top(self.options.len()) - self.viewport.get().height()).max(0.0)
     }
     fn active_index(&self) -> Option<usize> {
         self.active
@@ -181,7 +181,9 @@ impl<T: Clone + Eq + 'static> OptionList<T> {
     fn reveal_active(&self) -> bool {
         self.geometry.count.set(self.options.len());
         match self.active_index() {
-            Some(index) => self.geometry.reveal_row(index, self.height.get()),
+            Some(index) => self
+                .geometry
+                .reveal_row(index, self.viewport.get().height()),
             None => false,
         }
     }
@@ -510,7 +512,7 @@ impl<T: Clone + Eq + 'static> Component for OptionList<T> {
                 }),
         );
         self.geometry.band.set(m.metric(MetricRole::ItemGap));
-        self.height.set(s.height());
+        self.viewport.set(s);
         *self.text.borrow_mut() = texts;
         if let Some(menu) = &self.menu {
             let shortcuts = menu
@@ -658,7 +660,7 @@ impl<T: Clone + Eq + 'static> Component for OptionList<T> {
                     .as_ref()
                     .and_then(|v| enabled.iter().position(|c| c == v))
                     .unwrap_or(0);
-                let page = (self.height.get() / self.geometry.row.get().max(1.0))
+                let page = (self.viewport.get().height() / self.geometry.row.get().max(1.0))
                     .floor()
                     .max(1.0) as usize;
                 let next = match control {
@@ -805,6 +807,17 @@ impl<T: Clone + Eq + 'static> Component for OptionList<T> {
             let mut item = SemanticItem::new(option.label())
                 .selected(active == Some(index))
                 .disabled(!self.editable || !option.is_enabled());
+            if let Ok(bounds) = rect(
+                0.0,
+                self.geometry.top(index) - self.geometry.offset.get(),
+                self.viewport.get().width(),
+                self.geometry.row.get(),
+            ) {
+                let bounds = bounds.intersection(Rect::from_size(self.viewport.get()));
+                if bounds.width() > 0.0 && bounds.height() > 0.0 {
+                    item = item.local_bounds(bounds);
+                }
+            }
             let Some(menu) = &self.menu else {
                 return item.action(SemanticAction::Select);
             };
@@ -1361,6 +1374,40 @@ impl<T: Clone + Eq + 'static> Component for SelectAnchor<T> {
 /// needs room above or below the control. Mounted directly as a root the control
 /// is allocated the whole viewport, so the list is refused with
 /// [`SurfaceDismissal::NoSpace`]; mount it inside a layout container.
+///
+/// # Inspection and tests
+///
+/// This composite exposes `control` (the ComboBox anchor) and `options` (the
+/// ListBox) through [`Runtime::find_exposed_part`] and
+/// [`Driver::exposed_part`](crate::testing::Driver::exposed_part). The anchor's
+/// choice value describes the current selection. The open list's items have
+/// visible pointer rectangles, clipped to its viewport; offscreen options have
+/// no bounds. Wheel input or keyboard navigation scrolls them into view.
+/// Querying a closed list does not open it, and reveal refuses it. These names
+/// leave application and workspace paths unchanged. [`InlineSelect`] follows
+/// the same contract.
+///
+/// ```
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::prelude::*;
+/// use pert_ui::testing::*;
+/// let mut ui = Runtime::new();
+/// ui.set_viewport(Viewport::new(400.0, 300.0, 1.0)?)?;
+/// let value = ui.signal(0_u8);
+/// let root = ui.mount_tree(Column::new([
+///     Select::new(&ui, value.clone(), [Choice::new(0, "A"), Choice::new(1, "B")])?
+///         .key("mode"),
+/// ]).key("root"))?;
+/// let mut driver = Driver::new(&mut ui);
+/// driver.settle()?;
+/// let select = driver.find(&root, &["mode"])?;
+/// let control = driver.exposed_part(&select, "control")?;
+/// let options = driver.exposed_part(&select, "options")?;
+/// driver.click(&control)?;
+/// driver.click_item(&options, 1)?;
+/// assert_eq!(value.get()?, 1);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub struct Select<T> {
     popover: Popover,
@@ -1661,8 +1708,12 @@ impl<T: Clone + Eq + 'static> Component for Select<T> {
     fn take_children(&mut self) -> Vec<Element> {
         if let (Some(anchor), Some(list)) = (self.anchor.take(), self.list.take()) {
             self.popover.set_list_content(
-                Element::new("select", anchor).structural(),
-                Element::new("options", list).structural(),
+                Element::new("select", anchor)
+                    .structural()
+                    .expose_part("control"),
+                Element::new("options", list)
+                    .structural()
+                    .expose_part("options"),
             );
         }
         self.popover.take_children()

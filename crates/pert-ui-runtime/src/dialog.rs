@@ -173,6 +173,18 @@ impl DialogController {
 /// the scope it was admitted with. A description with a different controller
 /// dismisses the old controller's open session with
 /// [`SurfaceDismissal::OwnerRemoved`] and presents the new controller's state.
+///
+/// # Inspection and tests
+///
+/// The owner reports a [`SemanticRole::Dialog`] whose `expanded` state and
+/// `open` property say whether its surface is open. The owner itself remains
+/// visible while closed, so do not use owner visibility as an open-state test.
+/// `window_modal` reports the configured modality. The caller's anchor retains
+/// its key path; content is addressed under the `dialog` segment, followed by
+/// the content element's own key. For content keyed `form` and its child
+/// `name`, use `Driver::find(&owner, &["dialog", "form", "name"])`.
+/// Finding hidden content does not open the controller. See [`DialogController`]
+/// for starting a session and consuming its outcome.
 #[must_use]
 pub struct Dialog {
     state: DialogController,
@@ -492,6 +504,16 @@ impl Component for DialogPanel {
 /// rich text, or bindings the heading, message, buttons and accessible name
 /// follow while the confirmation stays mounted or open. The title names the
 /// confirmation by its plain text.
+///
+/// # Inspection and tests
+///
+/// As with [`Dialog`], `expanded` and `open` describe the session, rather than
+/// the owner's visibility. Its generated content occupies
+/// `dialog/confirmation`; the heading, message and action buttons are internal
+/// structure, so their keys are not further address segments. Their semantic
+/// Button names describe their actions in inspection.
+/// Controller acceptance/cancellation and consuming the outcome follow
+/// [`DialogController`]; closing alone does not establish application success.
 #[must_use]
 pub struct AlertDialog {
     dialog: Dialog,

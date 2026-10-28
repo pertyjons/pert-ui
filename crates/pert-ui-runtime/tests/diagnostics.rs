@@ -52,7 +52,7 @@ fn snapshot_is_owned_read_only_and_includes_explicit_host_state() -> TestResult 
     let snapshot = runtime.inspect_with(|| {
         BTreeMap::from([("document".into(), InspectValue::Text("Untitled".into()))])
     });
-    assert_eq!(snapshot.schema_version, 16);
+    assert_eq!(snapshot.schema_version, 17);
     assert_eq!(snapshot.mode, DebugMode::Inspect);
     assert_eq!(snapshot.components.len(), 1);
     assert!(snapshot.components[0].focused);

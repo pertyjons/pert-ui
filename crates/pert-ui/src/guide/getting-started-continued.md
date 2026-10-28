@@ -11,6 +11,14 @@ content once. It returns initialization, graphics and unrecovered application
 errors to the caller. [`App::size`] can change the initial window size; the default
 window is 960 × 640 logical pixels.
 
+If you factor mounting into a reusable function returning `RuntimeError`,
+wrap it at the application boundary: `App::new("Editor", |ui| Ok(build(ui)?))`.
+The initializer returns [`AppError`], so the wrapper's `?` converts the runtime
+error. Passing that `build` function directly has a different error signature.
+[`App::new`] has a complete named-builder example that tests the same
+application headlessly; the [editable-list recipe](crate::guide::layout#an-editable-list-of-records)
+uses the runtime-builder side of this pattern.
+
 ## Compose content and preserve identity
 
 An [`Element`] pairs a stable sibling key with a component. Keys identify content,
@@ -23,7 +31,10 @@ Use [`Column`], [`Row`] and [`Wrap`] for ordinary flow, [`Form`] for adaptive fi
 columns, and [`Field`] to associate a label, help and application-owned status
 with any control. [`FormFields`] coordinates errors, can focus the first one
 and discard every field's draft; it never decides whether your application data is valid. [`SplitPane`] and [`Tabs`]
-compose larger views. Inactive tabs retain local state and suspend presentation.
+compose larger views. Split types belong to [`crate::windowing`], so an
+application using them imports `pert_ui::{prelude::*, windowing::*}`;
+the prelude alone includes tabs but not split panes. Inactive tabs retain
+local state and suspend presentation.
 
 `Form` uses its allocated width, so it also works inside a resizable side panel.
 Its labels stay above their controls. A row's column count changes without

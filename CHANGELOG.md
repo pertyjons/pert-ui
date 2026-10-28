@@ -1,5 +1,71 @@
 # Changelog
 
+## 0.3.89 (2026-10-28)
+
+Round 3 usability repairs: discoverable composite controls and real pointer
+geometry for tab titles and the option list shared by menus and Select.
+Blind submissions remain on the frozen 0.3.88 and 0.3.75 kits; these repairs
+have regression evidence, not a new blind-test result.
+
+- Added `Element::expose_part`, `Runtime::find_exposed_part`,
+  `testing::Driver::{exposed_part, exposed_parts}` and
+  `testing::ExposedPart` with public `name` and `id` fields. The UI-local
+  record is non-exhaustive and implements Clone, Debug, Eq and PartialEq.
+  Names are exact scoped selectors, independent of keys, semantic labels and
+  workspace paths. Queries do not flush, reveal, focus, select a window or
+  schedule work. Internal wrappers forward declarations; ordinary application
+  children and exposed parts bound nested scopes. Repeated builders replace;
+  same-key redescription replaces/removes metadata without remounting or
+  invalidating layout solely for the name. Retires ad hoc traversal of private
+  structural keys for the supported built-in parts; custom composites use the
+  same public declaration.
+- Added `RuntimeError::EmptyExposedPartName`,
+  `RuntimeError::AmbiguousExposedPart { owner, name }`, and
+  `testing::TestError::ExposedPartNotFound { owner, key, name, available }`.
+  Blank declarations fail before adoption; duplicate names remain enumerable
+  but singular lookup refuses ambiguity. Invalid owners are checked before
+  query names. Names select current parts; returned WidgetIds target events.
+- Breaking inspection format: added `ComponentInspection::exposed_part`;
+  `InspectionSnapshot::SCHEMA_VERSION` advances to 17. Serialized metadata is
+  required and nullable, and present blank names are refused. Snapshots and
+  query results reject other revisions. Workspace schema 2, addressing markers
+  and naming propagation are unchanged.
+- Select/InlineSelect expose `control` and `options`; Menu exposes its actual
+  `trigger` Button and `items`; MenuBar exposes `title/<menu-key>`; menu levels
+  expose `submenu/<row-key>` panels with nested `items`. Slashes are literal.
+  Editors' owned menus are nested under `clipboard`. Structurally embedded
+  search fields in MultiSelect and QuickPick bound their clipboard scopes with
+  `search`; QuickPick/CommandPalette retain the existing `surface` address
+  boundary. These are part names, not new persisted path segments.
+- Tabs title items and OptionList rows now report local pointer rectangles
+  from their painting/hit geometry. Titles use the live scroll offset and the
+  current key/incarnation, clipped outside overflow arrows; rows use the live
+  row offset and viewport, excluding separators. Offscreen/hidden items have
+  no window bounds. Driver::click_item uses actual pointer input, does not
+  scroll to an item or open a closed menu/Select list, and disabled command
+  rows invoke nothing. Retires application-computed coordinates and keyboard
+  navigation as workarounds for pointer testing of these items.
+- Re-exported the existing `ApplicationError` and its unchanged members under
+  `component`, meeting that module's component-author contract. Its existing
+  constructors, conversions and traits appear at the additional path in API
+  listings; no error behavior changes. The component-only callback example and
+  membership tests cover reporting an application failure without a root import.
+- Documentation: complete public examples for parts and tab/menu/Select pointer
+  input, a custom composite using scoped parts, actual Dialog/AlertDialog
+  inspection/address contracts, list Button rows versus Enter activation,
+  pre-lookup settling in reveal_child, App::new's named RuntimeError-returning
+  builder wrapper, windowing imports for splits, empty editor semantic values,
+  drawing-test imports, owned normalizer arguments, choice Eq requirements,
+  ApplicationError message conversions, register_command routing precedence,
+  and a retained mailbox worker recipe
+  with explicit full/closed handling and bound table-cell guidance.
+- Contract tests cover scoped/custom lookup, ambiguity and validation, identity
+  errors and redescription idleness, another presentation window, naming and
+  workspace path collisions/round trips, closed/disabled/submenu pointer input,
+  live tab scrolling and recreated keys, clipping/view scale/dynamic title
+  widths, detached-title activation, and schema-17 round trips/rejection.
+  Existing item-reporters TODO narrowed to the remaining control families.
+
 ## 0.3.88 (2026-10-28)
 
 Gallery: a Revert for the sign-in form, the native evidence the round 2 fix

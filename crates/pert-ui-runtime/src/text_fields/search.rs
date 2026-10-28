@@ -107,6 +107,13 @@ pub enum SearchKey {
 /// settings, debounce, key callback and placeholder; a pending debounced query
 /// is dropped when the binding changes or the debounce is removed, and rearmed
 /// when the debounce changes.
+///
+/// # Inspection parts
+///
+/// The editor exposes a `clipboard` scope through
+/// [`Driver::exposed_part`](crate::testing::Driver::exposed_part); query that
+/// scope's `items` for command rows. It can be found while closed; a
+/// context-menu request opens it. Geometry and input follow [`crate::Menu`].
 #[must_use]
 pub struct SearchField {
     editor: Editor,

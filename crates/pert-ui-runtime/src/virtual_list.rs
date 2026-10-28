@@ -1102,7 +1102,12 @@ impl VirtualList {
 
     /// Runs when Enter is pressed on the active item of a list with a selection.
     /// The callback receives the item's key and may write bindings; failures
-    /// propagate through input routing.
+    /// propagate through input routing. This is keyboard activation; selecting
+    /// a row with a pointer does not call it. For pointer opening, build the
+    /// row as a [`crate::Button`] whose callback performs the action, and use
+    /// this callback for Enter on the list. A Button row can run even when the
+    /// row is already selected; selection-change notifications are not an
+    /// activation callback.
     ///
     /// With this callback the list consumes the press of Enter, with any
     /// modifiers, while it has an active item, in ordinary bubbling (stage 10

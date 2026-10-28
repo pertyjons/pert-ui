@@ -51,10 +51,10 @@ mod every_name {
     }
     mod component_names {
         use pert_ui::component::{
-            ArrangeContext, BorderInspection, BoxModelInspection, ChildInfo, ChildReveal,
-            ClickCounter, Color, ColorRole, CommandContext, CommandId, CommandKey, CommandKeyInput,
-            CommandOutcome, CommandReceipt, CommandSource, CommandStatus, Component,
-            ComponentDetails, Constraints, ContentRows, CursorIcon, DRAG_THRESHOLD,
+            ApplicationError, ArrangeContext, BorderInspection, BoxModelInspection, ChildInfo,
+            ChildReveal, ClickCounter, Color, ColorRole, CommandContext, CommandId, CommandKey,
+            CommandKeyInput, CommandOutcome, CommandReceipt, CommandSource, CommandStatus,
+            Component, ComponentDetails, Constraints, ContentRows, CursorIcon, DRAG_THRESHOLD,
             DetachedClosePolicy, DisplayList, DraftAlign, DraftEditor, DraftEditorController,
             DraftSelection, DragEvent, DragOutcome, DragPayload, DragPhase, DragPreview, DragRole,
             DrawCommand, DrawError, DropOperation, DropOperations, DropResponse, EditorAttachment,
@@ -81,8 +81,8 @@ mod every_name {
         use pert_ui::testing::{
             AddressChild, Capture, CaptureError, CaptureRequest, CaptureTarget, ClickCounter,
             CommandKeyInput, ComponentDetails, ComponentInspection, Depth, Detail, DrawError,
-            Driver, FlushReport, FocusDirection, FrameImage, HostIntegration, InputOutcome,
-            InspectValue, InspectionQuery, InspectionReply, KeyAction, Magnification,
+            Driver, ExposedPart, FlushReport, FocusDirection, FrameImage, HostIntegration,
+            InputOutcome, InspectValue, InspectionQuery, InspectionReply, KeyAction, Magnification,
             NativeWindowId, Pending, PointerButton, PointerEvent, PointerKind, QueryResult,
             QuietReport, Rect, RevealRefusal, Selector, SemanticAction, SemanticItem, SemanticRole,
             SemanticValue, Semantics, TestError, ValidationCode, ValidationIssue, ValidationMarker,

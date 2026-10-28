@@ -1951,6 +1951,9 @@ impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::RevealStatus
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::RevealStatus
 #[non_exhaustive] pub enum pert_ui_runtime::component::RuntimeError
 pub pert_ui_runtime::component::RuntimeError::AlreadyDetached
+pub pert_ui_runtime::component::RuntimeError::AmbiguousExposedPart
+pub pert_ui_runtime::component::RuntimeError::AmbiguousExposedPart::name: alloc::string::String
+pub pert_ui_runtime::component::RuntimeError::AmbiguousExposedPart::owner: u64
 pub pert_ui_runtime::component::RuntimeError::AmbiguousKey(alloc::string::String)
 pub pert_ui_runtime::component::RuntimeError::Application(pert_ui_runtime::ApplicationError)
 pub pert_ui_runtime::component::RuntimeError::BackgroundFull
@@ -1970,6 +1973,7 @@ pub pert_ui_runtime::component::RuntimeError::DragUnavailable
 pub pert_ui_runtime::component::RuntimeError::DropNotPermitted
 pub pert_ui_runtime::component::RuntimeError::DuplicateKey(alloc::string::String)
 pub pert_ui_runtime::component::RuntimeError::EmptyCommandName
+pub pert_ui_runtime::component::RuntimeError::EmptyExposedPartName
 pub pert_ui_runtime::component::RuntimeError::EmptyKey
 pub pert_ui_runtime::component::RuntimeError::EmptyWindowTitle
 pub pert_ui_runtime::component::RuntimeError::Exhausted
@@ -2522,6 +2526,43 @@ impl core::marker::Unpin for pert_ui_runtime::WorkspaceError
 impl core::marker::UnsafeUnpin for pert_ui_runtime::WorkspaceError
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::WorkspaceError
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::WorkspaceError
+pub struct pert_ui_runtime::component::ApplicationError(_)
+impl pert_ui_runtime::ApplicationError
+pub fn pert_ui_runtime::ApplicationError::downcast_ref<T: core::error::Error + 'static>(&self) -> core::option::Option<&T>
+pub fn pert_ui_runtime::ApplicationError::get(&self) -> &(dyn core::error::Error + core::marker::Send + core::marker::Sync + 'static)
+pub fn pert_ui_runtime::ApplicationError::new(impl core::error::Error + core::marker::Send + core::marker::Sync + 'static) -> Self
+impl core::clone::Clone for pert_ui_runtime::ApplicationError
+pub fn pert_ui_runtime::ApplicationError::clone(&self) -> pert_ui_runtime::ApplicationError
+impl core::cmp::Eq for pert_ui_runtime::ApplicationError
+impl core::cmp::PartialEq for pert_ui_runtime::ApplicationError
+pub fn pert_ui_runtime::ApplicationError::eq(&self, &Self) -> bool
+impl core::convert::From<&str> for pert_ui_runtime::ApplicationError
+pub fn pert_ui_runtime::ApplicationError::from(&str) -> Self
+impl core::convert::From<alloc::boxed::Box<(dyn core::error::Error + core::marker::Send + core::marker::Sync)>> for pert_ui_runtime::ApplicationError
+pub fn pert_ui_runtime::ApplicationError::from(alloc::boxed::Box<(dyn core::error::Error + core::marker::Send + core::marker::Sync + 'static)>) -> Self
+impl core::convert::From<alloc::string::String> for pert_ui_runtime::ApplicationError
+pub fn pert_ui_runtime::ApplicationError::from(alloc::string::String) -> Self
+impl core::convert::From<pert_ui_runtime::ApplicationError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::ApplicationError) -> Self
+impl core::convert::From<pert_ui_runtime::ApplicationError> for pert_ui_runtime::RuntimeError
+pub fn pert_ui_runtime::RuntimeError::from(pert_ui_runtime::ApplicationError) -> Self
+impl core::convert::From<pert_ui_runtime::ApplicationError> for pert_ui_runtime::WindowError
+pub fn pert_ui_runtime::WindowError::from(pert_ui_runtime::ApplicationError) -> Self
+impl core::convert::From<pert_ui_runtime::ApplicationError> for pert_ui_runtime::WorkspaceError
+pub fn pert_ui_runtime::WorkspaceError::from(pert_ui_runtime::ApplicationError) -> Self
+impl core::error::Error for pert_ui_runtime::ApplicationError
+pub fn pert_ui_runtime::ApplicationError::source(&self) -> core::option::Option<&(dyn core::error::Error + 'static)>
+impl core::fmt::Debug for pert_ui_runtime::ApplicationError
+pub fn pert_ui_runtime::ApplicationError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui_runtime::ApplicationError
+pub fn pert_ui_runtime::ApplicationError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for pert_ui_runtime::ApplicationError
+impl core::marker::Send for pert_ui_runtime::ApplicationError
+impl core::marker::Sync for pert_ui_runtime::ApplicationError
+impl core::marker::Unpin for pert_ui_runtime::ApplicationError
+impl core::marker::UnsafeUnpin for pert_ui_runtime::ApplicationError
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ApplicationError
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ApplicationError
 pub struct pert_ui_runtime::component::ArrangeContext<'a>
 impl pert_ui_runtime::ArrangeContext<'_>
 pub fn pert_ui_runtime::ArrangeContext<'_>::is_empty(&self) -> bool
@@ -3083,6 +3124,7 @@ impl pert_ui_runtime::Element
 pub fn pert_ui_runtime::Element::children(self, impl core::iter::traits::collect::IntoIterator<Item = Self>) -> Self
 pub fn pert_ui_runtime::Element::detach_permission(&self) -> &pert_ui_runtime::Permission
 pub fn pert_ui_runtime::Element::detachable(&self) -> bool
+pub fn pert_ui_runtime::Element::expose_part(self, impl core::convert::Into<alloc::string::String>) -> Self
 pub fn pert_ui_runtime::Element::grow(&self) -> u16
 pub fn pert_ui_runtime::Element::key(&self) -> &str
 pub fn pert_ui_runtime::Element::label(&self) -> core::option::Option<&str>
@@ -9911,6 +9953,9 @@ impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::PresentationS
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::PresentationStatus
 #[non_exhaustive] pub enum pert_ui_runtime::host::RuntimeError
 pub pert_ui_runtime::host::RuntimeError::AlreadyDetached
+pub pert_ui_runtime::host::RuntimeError::AmbiguousExposedPart
+pub pert_ui_runtime::host::RuntimeError::AmbiguousExposedPart::name: alloc::string::String
+pub pert_ui_runtime::host::RuntimeError::AmbiguousExposedPart::owner: u64
 pub pert_ui_runtime::host::RuntimeError::AmbiguousKey(alloc::string::String)
 pub pert_ui_runtime::host::RuntimeError::Application(pert_ui_runtime::ApplicationError)
 pub pert_ui_runtime::host::RuntimeError::BackgroundFull
@@ -9930,6 +9975,7 @@ pub pert_ui_runtime::host::RuntimeError::DragUnavailable
 pub pert_ui_runtime::host::RuntimeError::DropNotPermitted
 pub pert_ui_runtime::host::RuntimeError::DuplicateKey(alloc::string::String)
 pub pert_ui_runtime::host::RuntimeError::EmptyCommandName
+pub pert_ui_runtime::host::RuntimeError::EmptyExposedPartName
 pub pert_ui_runtime::host::RuntimeError::EmptyKey
 pub pert_ui_runtime::host::RuntimeError::EmptyWindowTitle
 pub pert_ui_runtime::host::RuntimeError::Exhausted
@@ -10579,6 +10625,7 @@ pub fn pert_ui_runtime::Runtime::bounds(&self, &pert_ui_runtime::WidgetId) -> co
 pub fn pert_ui_runtime::Runtime::children(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<alloc::vec::Vec<pert_ui_runtime::WidgetId>, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::find(&self, &pert_ui_runtime::WidgetId, &[&str]) -> core::result::Result<core::option::Option<pert_ui_runtime::WidgetId>, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::find_descendant(&self, &pert_ui_runtime::WidgetId, &str) -> core::result::Result<core::option::Option<pert_ui_runtime::WidgetId>, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::find_exposed_part(&self, &pert_ui_runtime::WidgetId, &str) -> core::result::Result<core::option::Option<pert_ui_runtime::WidgetId>, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::inspection_id(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<u64, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::key(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<&str, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::mount_tree(&mut self, pert_ui_runtime::Element) -> core::result::Result<pert_ui_runtime::WidgetId, pert_ui_runtime::RuntimeError>
@@ -11818,6 +11865,7 @@ impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ComponentDetails
 #[non_exhaustive] pub struct pert_ui_runtime::inspection::ComponentInspection
 pub pert_ui_runtime::inspection::ComponentInspection::details: pert_ui_runtime::ComponentDetails
 pub pert_ui_runtime::inspection::ComponentInspection::dirty: core::option::Option<pert_ui_runtime::Invalidation>
+pub pert_ui_runtime::inspection::ComponentInspection::exposed_part: core::option::Option<alloc::string::String>
 pub pert_ui_runtime::inspection::ComponentInspection::focused: bool
 pub pert_ui_runtime::inspection::ComponentInspection::id: u64
 pub pert_ui_runtime::inspection::ComponentInspection::key: alloc::string::String
@@ -15004,6 +15052,9 @@ impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::QuarterTurn
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::QuarterTurn
 #[non_exhaustive] pub enum pert_ui_runtime::prelude::RuntimeError
 pub pert_ui_runtime::prelude::RuntimeError::AlreadyDetached
+pub pert_ui_runtime::prelude::RuntimeError::AmbiguousExposedPart
+pub pert_ui_runtime::prelude::RuntimeError::AmbiguousExposedPart::name: alloc::string::String
+pub pert_ui_runtime::prelude::RuntimeError::AmbiguousExposedPart::owner: u64
 pub pert_ui_runtime::prelude::RuntimeError::AmbiguousKey(alloc::string::String)
 pub pert_ui_runtime::prelude::RuntimeError::Application(pert_ui_runtime::ApplicationError)
 pub pert_ui_runtime::prelude::RuntimeError::BackgroundFull
@@ -15023,6 +15074,7 @@ pub pert_ui_runtime::prelude::RuntimeError::DragUnavailable
 pub pert_ui_runtime::prelude::RuntimeError::DropNotPermitted
 pub pert_ui_runtime::prelude::RuntimeError::DuplicateKey(alloc::string::String)
 pub pert_ui_runtime::prelude::RuntimeError::EmptyCommandName
+pub pert_ui_runtime::prelude::RuntimeError::EmptyExposedPartName
 pub pert_ui_runtime::prelude::RuntimeError::EmptyKey
 pub pert_ui_runtime::prelude::RuntimeError::EmptyWindowTitle
 pub pert_ui_runtime::prelude::RuntimeError::Exhausted
@@ -17369,6 +17421,7 @@ impl pert_ui_runtime::Element
 pub fn pert_ui_runtime::Element::children(self, impl core::iter::traits::collect::IntoIterator<Item = Self>) -> Self
 pub fn pert_ui_runtime::Element::detach_permission(&self) -> &pert_ui_runtime::Permission
 pub fn pert_ui_runtime::Element::detachable(&self) -> bool
+pub fn pert_ui_runtime::Element::expose_part(self, impl core::convert::Into<alloc::string::String>) -> Self
 pub fn pert_ui_runtime::Element::grow(&self) -> u16
 pub fn pert_ui_runtime::Element::key(&self) -> &str
 pub fn pert_ui_runtime::Element::label(&self) -> core::option::Option<&str>
@@ -20643,6 +20696,7 @@ pub fn pert_ui_runtime::Runtime::bounds(&self, &pert_ui_runtime::WidgetId) -> co
 pub fn pert_ui_runtime::Runtime::children(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<alloc::vec::Vec<pert_ui_runtime::WidgetId>, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::find(&self, &pert_ui_runtime::WidgetId, &[&str]) -> core::result::Result<core::option::Option<pert_ui_runtime::WidgetId>, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::find_descendant(&self, &pert_ui_runtime::WidgetId, &str) -> core::result::Result<core::option::Option<pert_ui_runtime::WidgetId>, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::find_exposed_part(&self, &pert_ui_runtime::WidgetId, &str) -> core::result::Result<core::option::Option<pert_ui_runtime::WidgetId>, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::inspection_id(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<u64, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::key(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<&str, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::mount_tree(&mut self, pert_ui_runtime::Element) -> core::result::Result<pert_ui_runtime::WidgetId, pert_ui_runtime::RuntimeError>
@@ -23518,6 +23572,11 @@ pub pert_ui_runtime::testing::TestError::Cleanup::cleanup: pert_ui_runtime::Runt
 pub pert_ui_runtime::testing::TestError::Cleanup::error: alloc::boxed::Box<pert_ui_runtime::testing::TestError>
 pub pert_ui_runtime::testing::TestError::ClockOverflow
 pub pert_ui_runtime::testing::TestError::Draw(pert_ui_runtime::DrawError)
+pub pert_ui_runtime::testing::TestError::ExposedPartNotFound
+pub pert_ui_runtime::testing::TestError::ExposedPartNotFound::available: alloc::vec::Vec<alloc::string::String>
+pub pert_ui_runtime::testing::TestError::ExposedPartNotFound::key: alloc::string::String
+pub pert_ui_runtime::testing::TestError::ExposedPartNotFound::name: alloc::string::String
+pub pert_ui_runtime::testing::TestError::ExposedPartNotFound::owner: u64
 pub pert_ui_runtime::testing::TestError::InputHeld
 pub pert_ui_runtime::testing::TestError::ItemWithoutBounds
 pub pert_ui_runtime::testing::TestError::ItemWithoutBounds::index: usize
@@ -23784,6 +23843,7 @@ impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ComponentDetails
 #[non_exhaustive] pub struct pert_ui_runtime::testing::ComponentInspection
 pub pert_ui_runtime::testing::ComponentInspection::details: pert_ui_runtime::ComponentDetails
 pub pert_ui_runtime::testing::ComponentInspection::dirty: core::option::Option<pert_ui_runtime::Invalidation>
+pub pert_ui_runtime::testing::ComponentInspection::exposed_part: core::option::Option<alloc::string::String>
 pub pert_ui_runtime::testing::ComponentInspection::focused: bool
 pub pert_ui_runtime::testing::ComponentInspection::id: u64
 pub pert_ui_runtime::testing::ComponentInspection::key: alloc::string::String
@@ -23823,6 +23883,8 @@ pub fn pert_ui_runtime::testing::Driver<'a>::chord(&mut self, pert_ui_runtime::K
 pub fn pert_ui_runtime::testing::Driver<'a>::clear_focus(&mut self) -> core::result::Result<(), pert_ui_runtime::testing::TestError>
 pub fn pert_ui_runtime::testing::Driver<'a>::click(&mut self, &pert_ui_runtime::WidgetId) -> core::result::Result<(), pert_ui_runtime::testing::TestError>
 pub fn pert_ui_runtime::testing::Driver<'a>::click_item(&mut self, &pert_ui_runtime::WidgetId, usize) -> core::result::Result<(), pert_ui_runtime::testing::TestError>
+pub fn pert_ui_runtime::testing::Driver<'a>::exposed_part(&self, &pert_ui_runtime::WidgetId, &str) -> core::result::Result<pert_ui_runtime::WidgetId, pert_ui_runtime::testing::TestError>
+pub fn pert_ui_runtime::testing::Driver<'a>::exposed_parts(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<alloc::vec::Vec<pert_ui_runtime::testing::ExposedPart>, pert_ui_runtime::testing::TestError>
 pub fn pert_ui_runtime::testing::Driver<'a>::find(&self, &pert_ui_runtime::WidgetId, &[&str]) -> core::result::Result<pert_ui_runtime::WidgetId, pert_ui_runtime::testing::TestError>
 pub fn pert_ui_runtime::testing::Driver<'a>::key(&mut self, pert_ui_runtime::KeyCode) -> core::result::Result<(), pert_ui_runtime::testing::TestError>
 pub fn pert_ui_runtime::testing::Driver<'a>::new(&'a mut pert_ui_runtime::Runtime) -> Self
@@ -23843,6 +23905,24 @@ impl<'a> core::marker::Unpin for pert_ui_runtime::testing::Driver<'a>
 impl<'a> core::marker::UnsafeUnpin for pert_ui_runtime::testing::Driver<'a>
 impl<'a> !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::testing::Driver<'a>
 impl<'a> !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::testing::Driver<'a>
+#[non_exhaustive] pub struct pert_ui_runtime::testing::ExposedPart
+pub pert_ui_runtime::testing::ExposedPart::id: pert_ui_runtime::WidgetId
+pub pert_ui_runtime::testing::ExposedPart::name: alloc::string::String
+impl core::clone::Clone for pert_ui_runtime::testing::ExposedPart
+pub fn pert_ui_runtime::testing::ExposedPart::clone(&self) -> pert_ui_runtime::testing::ExposedPart
+impl core::cmp::Eq for pert_ui_runtime::testing::ExposedPart
+impl core::cmp::PartialEq for pert_ui_runtime::testing::ExposedPart
+pub fn pert_ui_runtime::testing::ExposedPart::eq(&self, &pert_ui_runtime::testing::ExposedPart) -> bool
+impl core::fmt::Debug for pert_ui_runtime::testing::ExposedPart
+pub fn pert_ui_runtime::testing::ExposedPart::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::testing::ExposedPart
+impl core::marker::Freeze for pert_ui_runtime::testing::ExposedPart
+impl !core::marker::Send for pert_ui_runtime::testing::ExposedPart
+impl !core::marker::Sync for pert_ui_runtime::testing::ExposedPart
+impl core::marker::Unpin for pert_ui_runtime::testing::ExposedPart
+impl core::marker::UnsafeUnpin for pert_ui_runtime::testing::ExposedPart
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::testing::ExposedPart
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::testing::ExposedPart
 pub struct pert_ui_runtime::testing::FlushReport
 pub pert_ui_runtime::testing::FlushReport::components_updated: usize
 pub pert_ui_runtime::testing::FlushReport::next_deadline: core::option::Option<core::time::Duration>
@@ -28783,6 +28863,9 @@ impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::RevealStatus
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::RevealStatus
 #[non_exhaustive] pub enum pert_ui_runtime::RuntimeError
 pub pert_ui_runtime::RuntimeError::AlreadyDetached
+pub pert_ui_runtime::RuntimeError::AmbiguousExposedPart
+pub pert_ui_runtime::RuntimeError::AmbiguousExposedPart::name: alloc::string::String
+pub pert_ui_runtime::RuntimeError::AmbiguousExposedPart::owner: u64
 pub pert_ui_runtime::RuntimeError::AmbiguousKey(alloc::string::String)
 pub pert_ui_runtime::RuntimeError::Application(pert_ui_runtime::ApplicationError)
 pub pert_ui_runtime::RuntimeError::BackgroundFull
@@ -28802,6 +28885,7 @@ pub pert_ui_runtime::RuntimeError::DragUnavailable
 pub pert_ui_runtime::RuntimeError::DropNotPermitted
 pub pert_ui_runtime::RuntimeError::DuplicateKey(alloc::string::String)
 pub pert_ui_runtime::RuntimeError::EmptyCommandName
+pub pert_ui_runtime::RuntimeError::EmptyExposedPartName
 pub pert_ui_runtime::RuntimeError::EmptyKey
 pub pert_ui_runtime::RuntimeError::EmptyWindowTitle
 pub pert_ui_runtime::RuntimeError::Exhausted
@@ -32085,6 +32169,7 @@ impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ComponentDetails
 #[non_exhaustive] pub struct pert_ui_runtime::ComponentInspection
 pub pert_ui_runtime::ComponentInspection::details: pert_ui_runtime::ComponentDetails
 pub pert_ui_runtime::ComponentInspection::dirty: core::option::Option<pert_ui_runtime::Invalidation>
+pub pert_ui_runtime::ComponentInspection::exposed_part: core::option::Option<alloc::string::String>
 pub pert_ui_runtime::ComponentInspection::focused: bool
 pub pert_ui_runtime::ComponentInspection::id: u64
 pub pert_ui_runtime::ComponentInspection::key: alloc::string::String
@@ -33270,6 +33355,7 @@ impl pert_ui_runtime::Element
 pub fn pert_ui_runtime::Element::children(self, impl core::iter::traits::collect::IntoIterator<Item = Self>) -> Self
 pub fn pert_ui_runtime::Element::detach_permission(&self) -> &pert_ui_runtime::Permission
 pub fn pert_ui_runtime::Element::detachable(&self) -> bool
+pub fn pert_ui_runtime::Element::expose_part(self, impl core::convert::Into<alloc::string::String>) -> Self
 pub fn pert_ui_runtime::Element::grow(&self) -> u16
 pub fn pert_ui_runtime::Element::key(&self) -> &str
 pub fn pert_ui_runtime::Element::label(&self) -> core::option::Option<&str>
@@ -38274,6 +38360,7 @@ pub fn pert_ui_runtime::Runtime::bounds(&self, &pert_ui_runtime::WidgetId) -> co
 pub fn pert_ui_runtime::Runtime::children(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<alloc::vec::Vec<pert_ui_runtime::WidgetId>, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::find(&self, &pert_ui_runtime::WidgetId, &[&str]) -> core::result::Result<core::option::Option<pert_ui_runtime::WidgetId>, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::find_descendant(&self, &pert_ui_runtime::WidgetId, &str) -> core::result::Result<core::option::Option<pert_ui_runtime::WidgetId>, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::Runtime::find_exposed_part(&self, &pert_ui_runtime::WidgetId, &str) -> core::result::Result<core::option::Option<pert_ui_runtime::WidgetId>, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::inspection_id(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<u64, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::key(&self, &pert_ui_runtime::WidgetId) -> core::result::Result<&str, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Runtime::mount_tree(&mut self, pert_ui_runtime::Element) -> core::result::Result<pert_ui_runtime::WidgetId, pert_ui_runtime::RuntimeError>

@@ -208,6 +208,19 @@ type RefusalReport =
 /// assert_eq!(name.get()?, "New Example");
 /// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
+///
+/// # Inspection parts
+///
+/// The editable value is Some(SemanticValue::Text(String::new())) when empty;
+/// a protected editor deliberately omits its value. Static label text instead
+/// uses a semantic name and leaves the value absent.
+///
+////// [`Driver::exposed_part`](crate::testing::Driver::exposed_part) finds this
+/// editor's `clipboard` menu scope; query that scope's `items` for its command
+/// rows. The declaration exists while closed. A context-menu request opens it;
+/// finding or revealing the hidden rows does not. The menu's item rectangles
+/// and pointer behavior follow [`crate::Menu`]. Protected/disabled state still
+/// restricts the available clipboard actions.
 #[must_use]
 pub struct TextField(Editor);
 description_debug!(TextField);
@@ -261,6 +274,19 @@ description_debug!(TextField);
 /// ui.mount_tree(Element::new("notes", TextArea::new(notes)))?;
 /// # Ok::<(), pert_ui::RuntimeError>(())
 /// ```
+///
+/// # Inspection parts
+///
+/// The editable value is Some(SemanticValue::Text(String::new())) when empty;
+/// a protected editor deliberately omits its value. Static label text instead
+/// uses a semantic name and leaves the value absent.
+///
+////// [`Driver::exposed_part`](crate::testing::Driver::exposed_part) finds this
+/// editor's `clipboard` menu scope; query that scope's `items` for its command
+/// rows. The declaration exists while closed. A context-menu request opens it;
+/// finding or revealing the hidden rows does not. The menu's item rectangles
+/// and pointer behavior follow [`crate::Menu`]. Protected/disabled state still
+/// restricts the available clipboard actions.
 #[must_use]
 pub struct TextArea(Editor);
 description_debug!(TextArea);

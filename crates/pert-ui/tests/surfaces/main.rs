@@ -16,6 +16,7 @@ mod menu_changes;
 mod menus;
 mod multi_window;
 mod native_titles;
+mod pointer_items;
 mod popups;
 mod resize_grips;
 mod splits;

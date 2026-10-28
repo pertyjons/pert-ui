@@ -168,10 +168,9 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   each row's measurement with its slot, and test it with a button in a short
   row. Found by round 2 part P8's checkpoint.
 - [ ] 2026-10-28 built-in item reporters without rectangles — testing
-  (R2-27's improvement for other controls): `Tabs` titles
-  (`crates/pert-ui-runtime/src/tabs.rs`), `Accordion` and `Collapsible`
+  (R2-27's improvement for other controls): `Accordion` and `Collapsible`
   headers (`collapsible.rs`), the choice controls (`choice_controls.rs`),
-  `Select` and its list (`select.rs`), `MultiSelect` (`multi_select.rs`),
+  `MultiSelect` (`multi_select.rs`),
   `QuickPick` (`quick_pick.rs`) and the tool-window stripe
   (`tool_windows/stripe.rs`) report `SemanticItem`s without
   `SemanticItem::local_bounds`, so `Driver::click_item` refuses them with
@@ -202,6 +201,11 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   comparing, and above a threshold summarize per parent, for example "N
   components overlap under <parent>; first pairs: ...", with a test of the
   summary, the threshold and the issues the report still lists.
+  Round 3's workspace and runtime-serde gates also reproduce this flood in
+  `tests/runtime.rs::shared_live_deadlines_skip_missed_frames_without_visiting_static_components`,
+  whose deliberately coincident static/live roots do not declare allowed overlap.
+  Mark that scheduling fixture's intentional overlap separately so its output
+  does not bury unrelated failures; preserve the dedicated validation tests.
 - [ ] 2026-10-28 `crates/pert-ui/tests/presentation/svg.rs`
   `an_image_element_reads_no_file_and_no_embedded_data` — verification
   (tests independent of leftover build state): the test writes into
@@ -210,3 +214,28 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   (as a disk cleanup did on 2026-10-28) makes the next run of the unchanged
   binary fail with `NotFound`. Call `std::fs::create_dir_all` on the
   directory first.
+- [ ] 2026-10-28 `crates/pert-ui-runtime/src/dialog.rs`
+  `AlertDialog::take_children` — public inspection/testability improvement:
+  the generated confirmation buttons are structural and declare no exposed
+  part, so their semantic names can be inspected but a widget target requires
+  traversing private `accept`/`cancel` keys. The Menu/Select parts checkpoint
+  does not cover this control family. Expose those buttons in the existing
+  `dialog/confirmation` scope, preserve workspace addressing and semantic
+  naming, and add a public pointer test; this would give applications a stable
+  route without private-key traversal. Verified during round 3's independent
+  implementation review. The new docs no longer recommend that traversal.
+
+- [ ] 2026-10-28 `crates/pert-ui-runtime/src/select.rs`
+  `SelectAnchor::paint` and `crates/pert-ui-runtime/src/multi_select.rs`
+  paint — presentation consistency: disabled dropdowns use Button fill and
+  Muted text, the same text-only distinction reported for Button in usability
+  round 3. A Button-only neutral disabled-frame repair does not change these
+  separate paint paths. Decide and document a consistent disabled dropdown
+  treatment using adaptive roles, then verify both palettes and shared
+  caption/icon/arrow content without changing permission or selection behavior.
+- [ ] 2026-10-28 `crates/pert-ui-runtime/src/controls.rs`
+  `Button::inspect` — inspection improvement: painted button background,
+  foreground and border colors are absent from its box model, while Container
+  and Toolbar report theirs. Retain resolved paint metadata and expose only
+  measured/current values through ComponentDetails, with disabled/theme
+  redescription tests; inspection must not paint or schedule work.

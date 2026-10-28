@@ -577,6 +577,12 @@ impl Runtime {
     /// alias/fallback collisions, return `ShortcutConflict` in debug and release.
     /// An empty chord list supports menu/button-only commands. Repeats default off.
     ///
+    /// The [`CommandScope`] determines precedence in the routing order listed by
+    /// [`Self::command_key_input`]. Ordinary application/window/view commands run
+    /// after the focused control and its ancestors: a list that consumes Enter
+    /// or Alt with an arrow keeps that key. A capture command has its separate
+    /// documented stage after text editing, before ordinary controls.
+    ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
     /// use pert_ui::{Runtime, CommandScope, CommandSource, KeyChord, CommandOutcome};

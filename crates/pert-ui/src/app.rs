@@ -591,6 +591,31 @@ impl<S: 'static> App<S> {
     /// assert!(failing.headless().is_err());
     /// # Ok(()) }
     /// ```
+    ///
+    /// A reusable builder can return [`RuntimeError`], as the runtime's
+    /// mounting operations do. Wrap that builder in `|ui| Ok(build(ui)?)`:
+    /// the initializer returns [`AppError`], and `?` converts the runtime
+    /// error at this boundary. Passing `build` directly would require its
+    /// error type to be `AppError` too.
+    ///
+    /// ```
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::testing::*;
+    ///
+    /// fn build(ui: &mut Runtime) -> Result<WidgetId, RuntimeError> {
+    ///     ui.mount_tree(Label::new("Ready").key("status"))
+    /// }
+    ///
+    /// // Use this same definition with `.run()` to open its native window.
+    /// let definition = App::new("Status", |ui| Ok(build(ui)?));
+    /// let mut app = definition.headless()?;
+    /// let status = app.state().clone();
+    /// let mut driver = Driver::new(app.runtime_mut());
+    /// driver.settle()?;
+    /// assert_eq!(driver.semantics(&status)?.name.as_deref(), Some("Ready"));
+    /// app.shutdown()?;
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     pub fn new(
         title: impl Into<String>,
         initialize: impl FnOnce(&mut Runtime) -> Result<S, AppError> + 'static,

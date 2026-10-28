@@ -348,6 +348,7 @@ pub(crate) fn rect(x: f32, y: f32, width: f32, height: f32) -> Result<Rect, Runt
 pub struct Element {
     pub(crate) key: String,
     pub(crate) addressing: Addressing,
+    pub(crate) exposed_part: Option<String>,
     pub(crate) label: Option<String>,
     pub(crate) rich_label: Option<crate::RichText>,
     /// A label from [`Self::with_label`], kept so a binding can be read.
@@ -426,6 +427,7 @@ impl Element {
         Self {
             key: key.into(),
             addressing: Addressing::Own,
+            exposed_part: None,
             label: None,
             rich_label: None,
             label_source: None,
@@ -746,6 +748,43 @@ impl Element {
     /// The marking is fixed at mount; reconciliation does not change it.
     pub fn structural(mut self) -> Self {
         self.addressing = Addressing::Structural;
+        self
+    }
+    /// Exposes this element as a named part of its enclosing composite.
+    ///
+    /// The name is for [`Runtime::find_exposed_part`](crate::Runtime::find_exposed_part)
+    /// and the testing driver's part queries. It is independent of the logical
+    /// key, semantic name and workspace addressing: this does not change
+    /// [`Self::structural`], [`Self::part`] or [`Self::slot`]. A second call
+    /// replaces the name, and a same-key redescription replaces or removes it
+    /// without remounting the component or invalidating layout or paint solely
+    /// for that change.
+    ///
+    /// A name must contain a non-whitespace character; mounting or adopting a
+    /// blank declaration fails with [`RuntimeError::EmptyExposedPartName`]
+    /// before mutation. Matching is exact, without trimming or splitting `/`.
+    /// A part is a nested lookup scope: expose an internally composed control
+    /// under its own name to keep its parts separate. Ordinary application
+    /// children do not merge their descendants into the enclosing scope.
+    /// Duplicate declared names remain inspectable, but singular lookup refuses
+    /// their ambiguity. A name selects a current part; retain its `WidgetId`,
+    /// not this name, when addressing an event to that incarnation.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
+    /// let mut ui = Runtime::new();
+    /// let root = ui.mount_tree(Container::new(
+    ///     Button::new("Apply", |_| Ok(())).key("button").expose_part("action"),
+    /// ).key("panel"))?;
+    /// let action = ui.find_exposed_part(&root, "action")?
+    ///     .ok_or_else(|| ApplicationError::from("the panel exposes action"))?;
+    /// assert_eq!(ui.key(&action)?, "button");
+    /// assert!(ui.find_exposed_part(&root, "button")?.is_none());
+    /// # Ok::<(), RuntimeError>(())
+    /// ```
+    pub fn expose_part(mut self, name: impl Into<String>) -> Self {
+        self.exposed_part = Some(name.into());
         self
     }
     /// Names a structural element's position, for [workspace

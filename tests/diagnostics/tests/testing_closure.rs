@@ -45,13 +45,14 @@ use std::sync::OnceLock;
 /// The `Runtime` methods `testing`'s names exist for: input by hand, reading
 /// what is shown, development validation and captures. `Runtime` is a
 /// prelude member, so its other methods belong to their families.
-const RUNTIME_SEEDS: [&str; 9] = [
+const RUNTIME_SEEDS: [&str; 10] = [
     "set_viewport",
     "key_input",
     "focus_next",
     "pointer_input",
     "command_key_input",
     "inspection_id",
+    "find_exposed_part",
     "query",
     "validation_report",
     "request_capture",

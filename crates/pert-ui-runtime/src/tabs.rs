@@ -209,6 +209,7 @@ struct Header {
     key: String,
     id: WidgetId,
     text: TextLayout,
+    /// Unscrolled arrangement; painting, targeting and inspection add the live offset.
     rect: Rect,
 }
 /// Keyed views with first-tab selection, a themed tab strip (at least 36 logical pixels at Standard) and retained inactive state.
@@ -273,6 +274,34 @@ struct Header {
 /// callback, or removes them. The selection, title scrolling, detached windows
 /// and a drag session in progress are retained; the session follows the new
 /// settings from its next event.
+///
+/// # Inspection and tests
+///
+/// The strip reports a `TabList` whose items are titles in display order.
+/// Each arranged title exposes its visible rectangle, clipped to the title
+/// viewport and excluding overflow arrows. Entirely offscreen titles have no
+/// bounds. Wheel input or the overflow arrows scroll titles; keyboard selection
+/// also brings the selected title into view. Inspection itself never scrolls.
+/// Application tab content remains addressable by its stable tab key.
+///
+/// ```
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::prelude::*;
+/// use pert_ui::testing::*;
+/// let mut ui = Runtime::new();
+/// ui.set_viewport(Viewport::new(600.0, 300.0, 1.0)?)?;
+/// let tabs = ui.mount_tree(Tabs::new([
+///     Tab::new("first", "First", Label::new("One").key("body")),
+///     Tab::new("second", "Second", Label::new("Two").key("body")),
+/// ]).key("tabs"))?;
+/// let mut driver = Driver::new(&mut ui);
+/// driver.settle()?;
+/// driver.click_item(&tabs, 1)?;
+/// assert!(driver.semantics(&tabs)?.items[1].selected);
+/// let second = driver.find(&tabs, &["second", "body"])?;
+/// assert_eq!(driver.semantics(&second)?.name.as_deref(), Some("Two"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[must_use]
 pub struct Tabs {
     detached: BTreeMap<String, NativeWindowId>,
@@ -663,7 +692,10 @@ impl Tabs {
         let headers = self.headers.borrow();
         headers
             .iter()
-            .position(|header| x < header.rect.x() + header.rect.width() / 2.0)
+            .position(|header| {
+                self.displayed_header(header)
+                    .is_ok_and(|displayed| x < displayed.x() + displayed.width() / 2.0)
+            })
             .unwrap_or(headers.len())
     }
     fn position_for(&self, boundary: usize) -> ListDropPosition {
@@ -839,6 +871,12 @@ impl Tabs {
             (0.0, width)
         }
     }
+    /// The cached unscrolled title, positioned using the live scroll offset.
+    fn displayed_header(&self, header: &Header) -> Result<Rect, DrawError> {
+        let (inset, _) = self.header_space();
+        let [x, y, width, height] = header.rect.values();
+        Ok(Rect::new(x - self.offset.get() + inset, y, width, height)?)
+    }
     fn target(&self, point: Point) -> Option<Target> {
         let width = self.viewport.get().width();
         if point.y() < 0.0
@@ -858,7 +896,10 @@ impl Tabs {
         self.headers
             .borrow()
             .iter()
-            .find(|header| header.rect.contains(point))
+            .find(|header| {
+                self.displayed_header(header)
+                    .is_ok_and(|bounds| bounds.contains(point))
+            })
             .map(|header| Target::Tab(header.key.clone(), header.id.clone()))
     }
     fn scroll(&self, cx: &mut EventContext, delta: f32) -> bool {
@@ -1271,7 +1312,7 @@ impl Component for Tabs {
         if self.viewport.replace(size).width() != size.width() {
             self.reveal.set(true);
         }
-        let (inset, width) = self.header_space();
+        let (_, width) = self.header_space();
         let mut offset = self.offset.get().min((x - width).max(0.0));
         if self.reveal.replace(false)
             && let Some(header) = headers
@@ -1286,10 +1327,6 @@ impl Component for Tabs {
             }
         }
         self.offset.set(offset);
-        for header in &mut headers {
-            let [x, y, w, h] = header.rect.values();
-            header.rect = rect(x - offset + inset, y, w, h)?;
-        }
         *self.headers.borrow_mut() = headers;
         if !cx.is_empty() {
             cx.place(
@@ -1647,7 +1684,7 @@ impl Component for Tabs {
             Rect::new(inset, 0.0, width, self.height.get())?,
             |painter| {
                 for header in self.headers.borrow().iter() {
-                    let [x, _, w, _] = header.rect.values();
+                    let [x, _, w, _] = self.displayed_header(header)?.values();
                     if x + w <= inset || x >= inset + width {
                         continue;
                     }
@@ -1685,7 +1722,7 @@ impl Component for Tabs {
                             painter.color(ColorRole::PanelBorder),
                         )?;
                     }
-                    let [x, _, w, _] = header.rect.values();
+                    let [x, _, w, _] = self.displayed_header(header)?.values();
                     header.text.paint(
                         painter,
                         crate::Point::new(
@@ -1736,10 +1773,14 @@ impl Component for Tabs {
                     let headers = self.headers.borrow();
                     let boundary = self.boundary_at(point.x());
                     let edge = match headers.get(boundary) {
-                        Some(header) => Some(header.rect.x()),
+                        Some(header) => Some(self.displayed_header(header)?.x()),
                         None => headers
                             .last()
-                            .map(|header| header.rect.x() + header.rect.width()),
+                            .map(|header| {
+                                let displayed = self.displayed_header(header)?;
+                                Ok::<_, DrawError>(displayed.x() + displayed.width())
+                            })
+                            .transpose()?,
                     };
                     if let Some(edge) = edge {
                         let thickness = painter.metric(MetricRole::FocusWidth);
@@ -1843,6 +1884,28 @@ impl Component for Tabs {
                     let item = SemanticItem::new(self.name(index))
                         .selected(selected == Some(index))
                         .action(SemanticAction::Select);
+                    let (inset, width) = self.header_space();
+                    let bounds = self
+                        .headers
+                        .borrow()
+                        .iter()
+                        .find(|header| {
+                            header.key == *key && self.identities.get(key) == Some(&header.id)
+                        })
+                        .and_then(|header| {
+                            rect(inset, 0.0, width, self.height.get())
+                                .ok()
+                                .and_then(|viewport| {
+                                    self.displayed_header(header)
+                                        .ok()
+                                        .map(|bounds| bounds.intersection(viewport))
+                                })
+                        })
+                        .filter(|bounds| !bounds.is_empty());
+                    let item = match bounds {
+                        Some(bounds) => item.local_bounds(bounds),
+                        None => item,
+                    };
                     if self.draggable(key) {
                         item.action(SemanticAction::Move)
                     } else {

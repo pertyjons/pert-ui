@@ -40,6 +40,13 @@ mod widget {
         }
     }
 
+    pub struct Refused;
+    impl Component for Refused {
+        fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+            Err(ApplicationError::from("the application refused this update").into())
+        }
+    }
+
     pub struct Probe {
         pub record: Rc<RefCell<Record>>,
         pub armed: Option<Point>,
@@ -158,12 +165,12 @@ mod widget {
 #[allow(unused_imports)]
 mod every_name {
     use pert_ui::component::{
-        ArrangeContext, BorderInspection, BoxModelInspection, ChildInfo, ChildReveal, Color,
-        ColorRole, CommandContext, CommandId, CommandKey, CommandKeyInput, CommandOutcome,
-        CommandReceipt, CommandSource, CommandStatus, Component, ComponentDetails, Constraints,
-        ContentRows, CursorIcon, DRAG_THRESHOLD, DetachedClosePolicy, DisplayList, DragEvent,
-        DragOutcome, DragPayload, DragPhase, DragPreview, DragRole, DrawCommand, DrawError,
-        DropOperation, DropOperations, DropResponse, EditorAttachment, EditorOutcome,
+        ApplicationError, ArrangeContext, BorderInspection, BoxModelInspection, ChildInfo,
+        ChildReveal, Color, ColorRole, CommandContext, CommandId, CommandKey, CommandKeyInput,
+        CommandOutcome, CommandReceipt, CommandSource, CommandStatus, Component, ComponentDetails,
+        Constraints, ContentRows, CursorIcon, DRAG_THRESHOLD, DetachedClosePolicy, DisplayList,
+        DragEvent, DragOutcome, DragPayload, DragPhase, DragPreview, DragRole, DrawCommand,
+        DrawError, DropOperation, DropOperations, DropResponse, EditorAttachment, EditorOutcome,
         EditorSession, EditorStart, EditorTrigger, Element, EventContext, FillRule, FocusDirection,
         Icon, IconSource, ImageId, ImageSampling, InputOutcome, InspectValue, Invalidation,
         KeyAction, KeyCode, KeyEvent, KeyTransition, KeyboardState, Length, LineCap, LineJoin,
@@ -263,5 +270,17 @@ fn a_component_written_from_the_component_module_alone_runs_its_contracts()
     // The state saves and restores through the workspace document.
     let saved = ui.capture_workspace()?;
     assert!(ui.restore_workspace(&saved)?.is_complete());
+    Ok(())
+}
+
+#[test]
+fn a_component_can_return_its_own_error_with_only_the_component_glob() -> Result<(), RuntimeError> {
+    let mut ui = Runtime::new();
+    ui.mount_tree(Element::new("refused", widget::Refused))?;
+    let error = ui
+        .flush(Duration::ZERO)
+        .expect_err("the component refuses its update");
+    assert!(matches!(error, RuntimeError::Application(_)));
+    assert_eq!(error.to_string(), "the application refused this update");
     Ok(())
 }
