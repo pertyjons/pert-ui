@@ -17,8 +17,10 @@ workspace tests once rerun after a deleted `target/tmp`, TODO.md). Native
 evidence: the maintainer's Linux hand checks for P6, P7, P8, P11 and P12
 passed on 2026-10-28 (`docs/verification.md`), and so did a form's Revert
 in the gallery's sign-in form (added in 0.3.88 for that check); Windows and
-macOS are missing throughout. Round 3 is not started: its kit fixes come first
-([Round 3](#round-3-proposal)). Written against `developer-usability` at 26e6b5a (0.3.75); the
+macOS are missing throughout. Round 3 was authorized on 2026-10-28 as a
+persistent goal; its kit fixes and isolation checks are complete and blind
+runs are starting under the [execution plan](round-3-plan.md).
+Written against `developer-usability` at 26e6b5a (0.3.75); the
 library code is unchanged at ceb5dc7, which Codex's recheck read.
 
 ## Purpose

@@ -262,3 +262,26 @@ For a later round's kit; none affected a result:
   author was a fresh agent session that saw only the facade README, the
   crate root page, tasks 1 to 5, the tester brief and the acceptance
   format. None of these files changes afterwards.
+
+## Round 3
+
+In progress, 2026-10-28, under the maintainer's goal to complete usability
+through this round. The [execution plan](../round-3-plan.md) freezes the
+paired task 6 comparison (26e6b5a, 0.3.75, versus 32dd9c4, 0.3.88),
+head-only tasks 1 to 5, balanced queue order, grading rules and closure
+criteria. Kits remain unchanged during runs; subsequent repairs are reported
+separately from the blind evidence.
+
+Preparation received independent Claude review and recheck in
+[review-r3/](review-r3/), which also holds the matched harness hashes,
+frozen acceptance hash, exact kit metadata and passing isolation probes.
+Both kits provide the same link-preserving pandoc reading instruction.
+CLI versions are Claude Code 2.1.312 and Codex CLI 0.165.0; requested models
+are claude-opus-5-5 at high effort and gpt-6.1-sol at medium effort.
+The Claude probe confirms the model identity; no unobserved effective Codex
+model is claimed. Rust is 1.99.1 and pandoc is 3.7.0.2 in both sandboxes.
+
+Raw working directories and logs live under `~/pert-ui-usability/r3-*`.
+Completed submissions, per-run acceptance, summaries and friction logs will
+be preserved here using the same conventions as round 2. No result or final
+assessment is claimed yet.
