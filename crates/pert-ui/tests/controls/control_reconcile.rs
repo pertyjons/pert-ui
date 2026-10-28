@@ -730,6 +730,31 @@ fn a_readout_mounted_with_a_unit_that_cannot_be_shown_recovers() -> TestResult {
 }
 
 #[test]
+fn a_later_unit_builder_leaves_nothing_of_an_earlier_unit() -> TestResult {
+    // A refused final unit presents exactly as a description that only ever
+    // had that unit: nothing shown, neither text nor the earlier unit.
+    let mut presented = Vec::new();
+    for readout in [
+        InlineReadout::new("old").unit("ms").unit("\u{7}"),
+        InlineReadout::new("old").unit("\u{7}"),
+    ] {
+        let mut ui = Runtime::new();
+        ui.set_viewport(Viewport::new(600.0, 400.0, 1.0)?)?;
+        ui.mount_tree(Element::new(
+            "root",
+            Row::new([Element::new("readout", readout)]),
+        ))?;
+        let details = details(&ui, "readout")?;
+        presented.push((details.properties, details.semantics));
+    }
+    assert_eq!(presented[0], presented[1]);
+    let (properties, _) = &presented[0];
+    assert_eq!(properties["unit"], InspectValue::Text(String::new()));
+    assert_eq!(properties["text"], InspectValue::Text(String::new()));
+    Ok(())
+}
+
+#[test]
 fn a_readout_follows_rich_bindings_and_string_roles() -> TestResult {
     let mut ui = Runtime::new();
     ui.set_viewport(Viewport::new(600.0, 400.0, 1.0)?)?;

@@ -1816,7 +1816,13 @@ plan closes.
   (`target/p6-evidence/summary-fix.txt`). Fixes gate (fresh): fmt,
   workspace Clippy, workspace tests, the five headless sessions,
   doctests, rustdoc, the diagnostics snapshots, no `api/` change, `git
-  diff --check`. Recheck: pending.
+  diff --check`. Codex's recheck: the recovery point resolved; one
+  should-fix, a repeated `unit` builder whose last unit is refused kept the
+  earlier unit's suffix; the builder now clears the whole unmounted
+  presentation before checking the final pair, with a test comparing the
+  chain with a direct invalid-unit description (fails with the stale
+  suffix restored, `target/p6-evidence/fix2-stale-suffix.txt`). Second
+  recheck: pending.
 
 - **P7 Rows that shrink (0.3.82), 2026-10-28.** Implemented by a fresh
   agent from the approved design (`round-2-design-P7.md`, revision 5):

@@ -752,9 +752,14 @@ impl InlineReadout {
     pub fn unit(mut self, unit: impl Into<String>) -> Self {
         self.literal_unit = unit.into();
         if self.is_fixed() {
-            // A description that is not mounted has shown nothing yet.
+            // A description that is not mounted has shown nothing yet, so the
+            // final pair is checked from an empty presentation: an earlier
+            // unit builder's unit leaves nothing behind.
             self.text.clear();
             self.field.display.clear();
+            self.field.unit.clear();
+            self.field.suffix.clear();
+            self.end_text = false;
             self.apply_fixed();
         } else {
             self.field.unit = self.literal_unit.clone();
