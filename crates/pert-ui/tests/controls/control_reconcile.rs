@@ -653,6 +653,82 @@ fn fixed_readout_text_applies_when_the_description_is_adopted() -> TestResult {
     Ok(())
 }
 
+/// The readout's shown text and unit.
+fn text_and_unit(ui: &Runtime) -> Result<(InspectValue, InspectValue), Error> {
+    Ok((
+        property(ui, "readout", "text")?,
+        property(ui, "readout", "unit")?,
+    ))
+}
+fn pair(text: &str, unit: &str) -> (InspectValue, InspectValue) {
+    (
+        InspectValue::Text(text.into()),
+        InspectValue::Text(unit.into()),
+    )
+}
+
+#[test]
+fn a_fixed_readout_refuses_a_unit_that_cannot_be_shown_and_recovers() -> TestResult {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(600.0, 400.0, 1.0)?)?;
+    let describe =
+        |text: &str, unit: &str| vec![Element::new("readout", InlineReadout::new(text).unit(unit))];
+    let root = ui.mount_tree(Element::new("root", Row::new(describe("1.0", "ms"))))?;
+    frame(&mut ui);
+    assert_eq!(text_and_unit(&ui)?, pair("1.0", "ms"));
+
+    // A unit that cannot be shown refuses the whole description, its valid
+    // text included: the last valid text and unit stay.
+    ui.reconcile_children(&root, describe("2.0", "\u{7}"))?;
+    assert_eq!(text_and_unit(&ui)?, pair("1.0", "ms"), "before the flush");
+    let error = ui.flush(ui.now()).unwrap_err();
+    assert!(is_invalid_text(&error), "{error:?}");
+    assert_eq!(text_and_unit(&ui)?, pair("1.0", "ms"));
+
+    // A valid description with a new text and a new unit ends the refusal.
+    ui.reconcile_children(&root, describe("3.0", "s"))?;
+    assert_eq!(text_and_unit(&ui)?, pair("3.0", "s"), "before the flush");
+    ui.flush(ui.now())?;
+    assert_eq!(text_and_unit(&ui)?, pair("3.0", "s"));
+
+    // A new unit alone checks the kept text again, both ways.
+    ui.reconcile_children(&root, describe("3.0", "\u{7}"))?;
+    assert!(is_invalid_text(&ui.flush(ui.now()).unwrap_err()));
+    assert_eq!(text_and_unit(&ui)?, pair("3.0", "s"));
+    ui.reconcile_children(&root, describe("3.0", "min"))?;
+    ui.flush(ui.now())?;
+    assert_eq!(text_and_unit(&ui)?, pair("3.0", "min"));
+
+    // A refused new text with a bad unit recovers when only the unit is
+    // corrected, the text described again unchanged.
+    ui.reconcile_children(&root, describe("4.0", "\u{7}"))?;
+    assert!(is_invalid_text(&ui.flush(ui.now()).unwrap_err()));
+    assert_eq!(text_and_unit(&ui)?, pair("3.0", "min"));
+    ui.reconcile_children(&root, describe("4.0", "h"))?;
+    assert_eq!(text_and_unit(&ui)?, pair("4.0", "h"), "before the flush");
+    ui.flush(ui.now())?;
+    assert_eq!(text_and_unit(&ui)?, pair("4.0", "h"));
+    Ok(())
+}
+
+#[test]
+fn a_readout_mounted_with_a_unit_that_cannot_be_shown_recovers() -> TestResult {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(600.0, 400.0, 1.0)?)?;
+    let describe =
+        |text: &str, unit: &str| vec![Element::new("readout", InlineReadout::new(text).unit(unit))];
+    let root = ui.mount_tree(Element::new("root", Row::new(describe("old", "\u{7}"))))?;
+    // Nothing was valid yet, so nothing shows.
+    assert_eq!(text_and_unit(&ui)?, pair("", ""));
+    let error = ui.flush(ui.now()).unwrap_err();
+    assert!(is_invalid_text(&error), "{error:?}");
+    ui.reconcile_children(&root, describe("new", "ms"))?;
+    ui.flush(ui.now())?;
+    assert_eq!(text_and_unit(&ui)?, pair("new", "ms"));
+    assert_eq!(readout_text(&ui)?, shows("new"));
+    Ok(())
+}
+
 #[test]
 fn a_readout_follows_rich_bindings_and_string_roles() -> TestResult {
     let mut ui = Runtime::new();

@@ -101,13 +101,15 @@ and R2-26 by decision D13, from its approved design checkpoint
   for a fixed status.
 - Breaking (F16): `InlineReadout::new` takes `impl Into<TextSource>`: fixed
   or bound text, plain or rich (shown as its plain text), or a
-  `StringRole`. Fixed text applies when the description is adopted and is
-  refused there, keeping the last valid text, when it cannot be shown (the
-  next update returns the `TextEditError`); a binding or role is read in the
-  update, and a same-key description with the same binding or role keeps
-  the text read. Every argument the library converted before still
-  converts; a caller-defined conversion into `ReadSignal<String>` is
-  replaced by passing the `ReadSignal<String>`.
+  `StringRole`. Fixed text applies when the description is adopted, checked
+  together with the description's literal unit (`unit`); a text or unit
+  that cannot be shown refuses both there, keeping the last valid text and
+  unit, until a valid description replaces them (the next update returns
+  the `TextEditError`); a binding or role is read in the update, and a
+  same-key description with the same binding or role keeps the text read.
+  Every argument the library converted before still converts; a
+  caller-defined conversion into `ReadSignal<String>` is replaced by
+  passing the `ReadSignal<String>`.
 - Breaking (R2-26): `ProgressStatus::Failed(Option<NormalizedValue>)` and
   `ProgressStatus::Cancelled(Option<NormalizedValue>)`. `None` is the full
   track in the Error or Muted role as before; `Some(reached)` fills the
@@ -155,7 +157,9 @@ and R2-26 by decision D13, from its approved design checkpoint
   the bar and the spinner through `check_redescription`, with the dropped
   binding after bound to fixed, fixed values before any flush, fixed,
   rich, rebound and role readout text, refused fixed, bound and formatted
-  text, the old readout conversions, a described field status, the builder
+  text, a fixed readout's unit that cannot be shown and its recovery (also
+  from the first mount and by a corrected unit alone), the old readout
+  conversions, a described field status, the builder
   replacement rules and a form replaced by a fixed status; `presentation`
   covers both terminal statuses at zero, three eighths and full, a
   described indeterminate bar and a described busy spinner, and the

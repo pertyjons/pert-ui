@@ -591,11 +591,13 @@ enum ReadoutSource {
 /// Re-describing the readout under the same key adopts its source, hint,
 /// style, label and literal unit: a fixed text applies when the description is
 /// adopted; a binding, role or format is read again in the next update. Text
-/// mode ends only if the shown text changes. Text that cannot be shown (over
-/// [`TextEditError::MAX_TEXT_BYTES`] or holding a control character) is
-/// refused before anything changes: the readout keeps its last valid text, in
-/// inspection and semantics too, and its update returns the [`TextEditError`]
-/// in every flush until a valid text replaces it.
+/// mode ends only if the shown text changes. Text or a unit that cannot be
+/// shown (over [`TextEditError::MAX_TEXT_BYTES`] or holding a control
+/// character) is refused before anything changes: the readout keeps its last
+/// valid text and unit, in inspection and semantics too, and its update
+/// returns the [`TextEditError`] in every flush until a valid description or
+/// value replaces it. Fixed text is checked together with the description's
+/// unit.
 #[must_use]
 pub struct InlineReadout {
     field: InlineField<()>,
@@ -689,35 +691,48 @@ impl InlineReadout {
         readout
     }
     /// Adopts a described source and returns whether the shown text changed.
-    /// Fixed text is checked and applied here, as [`TextSource`] promises; a
-    /// refused text changes nothing and is reported by the next update. A
-    /// binding, role or reader is read in the update.
+    /// Fixed text is checked and applied here, as [`TextSource`] promises
+    /// ([`Self::apply_fixed`]). A binding, role or reader is read in the
+    /// update.
     fn adopt(&mut self, source: ReadoutSource) -> bool {
-        let fixed = match &source {
-            ReadoutSource::Text(text) => text.fixed().map(RichText::plain_text),
-            ReadoutSource::Formatted(_) => None,
-        };
         self.source = source;
+        self.apply_fixed()
+    }
+    /// Checks a fixed source's text together with the configured literal
+    /// unit, the description's whole presentation, and shows both, returning
+    /// whether the shown text changed. A refused pair changes nothing: the
+    /// shown text and unit stay, and the next update reports the refusal.
+    /// Other sources clear an earlier refusal; their text and unit are
+    /// checked in the update.
+    fn apply_fixed(&mut self) -> bool {
         self.refused = None;
-        let Some(text) = fixed else {
+        let ReadoutSource::Text(source) = &self.source else {
             return false;
         };
-        if let Err(error) = self.field.check_display(&text, &self.field.unit) {
+        let Some(text) = source.fixed().map(RichText::plain_text) else {
+            return false;
+        };
+        if let Err(error) = self.field.check_display(&text, &self.literal_unit) {
             self.refused = Some(error);
             return false;
         }
-        if text == self.text {
-            return false;
-        }
+        self.field.unit = self.literal_unit.clone();
         // The check above is the one `display_value` applies, so this cannot
         // fail; ending an open text mode is left to the update.
         if self.field.display_value((), text.clone()).is_err() {
             self.refused = Some(TextEditError::InvalidText);
             return false;
         }
+        if text == self.text {
+            return false;
+        }
         self.end_text |= self.field.editing;
         self.text = text;
         true
+    }
+    /// Whether the source is fixed text, applied at adoption.
+    fn is_fixed(&self) -> bool {
+        matches!(&self.source, ReadoutSource::Text(source) if !source.is_bound())
     }
     /// Sets the leading caption, empty by default; its plain text is the
     /// readout's accessible name.
@@ -731,10 +746,19 @@ impl InlineReadout {
         self
     }
     /// Sets a literal unit after the value; a formatted dynamic unit overrides
-    /// it even when that callback returns an empty suffix.
+    /// it even when that callback returns an empty suffix. With fixed text,
+    /// the text and the unit are checked together when the description is
+    /// adopted, and a unit that cannot be shown refuses both.
     pub fn unit(mut self, unit: impl Into<String>) -> Self {
         self.literal_unit = unit.into();
-        self.field.unit = self.literal_unit.clone();
+        if self.is_fixed() {
+            // A description that is not mounted has shown nothing yet.
+            self.text.clear();
+            self.field.display.clear();
+            self.apply_fixed();
+        } else {
+            self.field.unit = self.literal_unit.clone();
+        }
         self
     }
     /// Reserves the value slot for this example text instead of the current text.
@@ -775,6 +799,7 @@ impl Component for InlineReadout {
             focused: _,
         } = next;
         let mut invalidation = None;
+        let unit_changed = literal_unit != self.literal_unit;
         let caption_changed = self.field.caption.reconcile(field.caption);
         if caption_changed
             || hint != self.hint
@@ -794,8 +819,16 @@ impl Component for InlineReadout {
             (ReadoutSource::Text(mine), ReadoutSource::Text(theirs)) => mine.same_as(theirs),
             _ => false,
         };
-        if !same {
-            let changed = self.adopt(source);
+        // Fixed text is checked with the incoming unit, so a new unit alone
+        // checks the kept text again, and a valid pair ends an earlier refusal.
+        let adopted = if !same {
+            Some(self.adopt(source))
+        } else if unit_changed && self.is_fixed() {
+            Some(self.apply_fixed())
+        } else {
+            None
+        };
+        if let Some(changed) = adopted {
             let relayout = changed && self.hint.is_none();
             invalidation = invalidation.max(Some(if relayout {
                 Invalidation::Layout

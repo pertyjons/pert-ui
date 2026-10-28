@@ -1805,8 +1805,18 @@ plan closes.
   evidence: missing** — the Linux hand check of the gallery's Controls ›
   Progress page (fixed Failed and Cancelled at three of eight, the live
   bar's reached fill) is recorded in `docs/verification.md` as the
-  maintainer's, not yet done; Windows and macOS missing. Codex review:
-  pending.
+  maintainer's, not yet done; Windows and macOS missing. **Codex review** (2026-10-28): needs fixes, one should-fix, verified:
+  a readout's adoption checked fixed text against the old unit while the
+  incoming unit was adopted later, so a readout once refused for its unit
+  refused every later valid description. Fixed: fixed text is checked with
+  the incoming unit and both are applied or refused together; a unit-only
+  change rechecks the text; the `unit` builder with fixed text checks the
+  pair. Two new-behavior tests (refusal and recovery, Codex's mount
+  scenario), each failing under today's order and the partial mutations
+  (`target/p6-evidence/summary-fix.txt`). Fixes gate (fresh): fmt,
+  workspace Clippy, workspace tests, the five headless sessions,
+  doctests, rustdoc, the diagnostics snapshots, no `api/` change, `git
+  diff --check`. Recheck: pending.
 
 - **P7 Rows that shrink (0.3.82), 2026-10-28.** Implemented by a fresh
   agent from the approved design (`round-2-design-P7.md`, revision 5):
