@@ -1,0 +1,14 @@
+{
+  "FRICTION.md": "b2b622e99cb316bc27b7aea9a1ad08dd4b645f034918abd3f0d26adfc784d5ef",
+  ".gitignore": "44c92e3a70ad3307b7056871c2bdb096d8bfa9373f5bf06a79bb6324a20ff2fb",
+  "Cargo.toml": "89c2aa4ad8a7255c24f9af72a4e69f3be6535924dcb6622a06ffd0783b075c63",
+  "Cargo.lock": "473251cc9e5ab762e0afaf7bd1782d7cdf1efea443a07c308f1cdbaf1bf4eda9",
+  "src/main.rs": "fea535e33d6150a2e37723bb94055a03aa8afbd84472f29225575cf9f67ac1dc",
+  "src/picker.rs": "978a6c4c2fbd6b245c706f9f8c62b4681109c2812f390402c2034cac39e41353",
+  "src/lib.rs": "d0212f17d2125a75d85085191465e39a59ae46980b8e67446f1d529547a70a75",
+  "src/headless.rs": "a8c301c21f35ad99a22344aac9ef153b0eca465adcab1373c3b5d061b825d001",
+  "src/app.rs": "40b235fa2195fbab3fa94c0da6e0be263d7605ed8b91f03403198bd4db007226",
+  "tests/picker.rs": "4f68a4e521de39b0eba5b4078605778d5e7b5896b112c4080e1d5bd173fa18eb",
+  "captures/dark.png": "9e3e81772bbd3f596d3fd1491ea4aefbc778318cdaab11d586dbf7a42ab26513",
+  "captures/light.png": "af1fef2cdd4c79be7d7aa253acf9cd8296f6997e16445ed3f9a9ffe88c900288"
+}

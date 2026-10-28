@@ -1,0 +1,13 @@
+$ run.sh exec KIT ACCEPTANCE_DIR cargo test --offline --locked -- --nocapture
+   Compiling photo-export-settings v0.1.0 (/work)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.78s
+     Running unittests src/main.rs (target/debug/deps/photo_export_settings-68ffaf9fcf2b7c01)
+
+running 2 tests
+Refused quality: Some("Enter a number from 1 to 100")
+test tests::background_save_success_failure_and_retry ... ok
+test tests::loaded_fields_validation_revert_and_close ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+exit=0

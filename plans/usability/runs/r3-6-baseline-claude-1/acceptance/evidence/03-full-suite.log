@@ -1,0 +1,44 @@
+$ cargo test --locked -- --nocapture   (full suite, default threads)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+     Running unittests src/lib.rs (target/debug/deps/notes-74702d665e2db5a5)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/debug/deps/notes-37cbafd3109b04c6)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/acceptance.rs (target/debug/deps/acceptance-4134637f3500dc97)
+
+running 5 tests
+test item1_listing_and_reopen ... ok
+notifications after failed Ctrl+S: [(Alert, Some("Could not save kiwi.txt: No such file or directory (os error 2)"), Some(true))]
+test item2_typing_saving_and_failed_save ... ok
+test item4_close_choices ... ok
+test item3_new_note_dialog ... ok
+test item5_cpu_capture ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+     Running tests/notes.rs (target/debug/deps/notes-9f0f35269ee6b4ac)
+
+running 5 tests
+test typing_marks_modified_and_saving_clears_it ... ok
+test new_note_dialog_refuses_invalid_names ... ok
+test lists_notes_in_order_and_reopening_switches_tab ... ok
+test closing_tabs ... ok
+test capture_two_notes_one_modified ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+   Doc-tests notes
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+exit=0

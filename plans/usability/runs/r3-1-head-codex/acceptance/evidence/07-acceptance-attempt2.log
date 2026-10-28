@@ -1,0 +1,90 @@
+$ run.sh exec KIT ACCEPTANCE_DIR cargo test --offline --locked settings_acceptance -- --nocapture --test-threads=1
+   Compiling photo-export-settings v0.1.0 (/work)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.29s
+     Running unittests src/main.rs (target/debug/deps/photo_export_settings-68ffaf9fcf2b7c01)
+
+running 8 tests
+test settings_acceptance::discovery_prints_addressable_paths ... ["settings"] role=None name=None props=[]
+["settings", "title"] role=Some(Label) name=Some("Photo export settings") props=["text"]
+["settings", "output"] role=None name=None props=[]
+["settings", "output", "title"] role=Some(Label) name=Some("Output") props=["text"]
+["settings", "output", "prefix"] role=Some(Field) name=Some("File name prefix") props=["help", "label", "message", "outlined", "required", "status"]
+["settings", "output", "prefix", "input"] role=Some(TextInput) name=Some("File name prefix") props=["composing", "dirty", "enabled", "multiline", "read_only", "scroll_x", "scroll_y", "selection", "text", "typography"]
+["settings", "output", "format"] role=Some(Field) name=Some("Format") props=["help", "label", "message", "outlined", "required", "status"]
+["settings", "output", "format", "input"] role=Some(SegmentedChoice) name=Some("Format") props=["options", "selected"]
+["settings", "quality-group"] role=None name=None props=[]
+["settings", "quality-group", "title"] role=Some(Label) name=Some("Quality") props=["text"]
+["settings", "quality-group", "quality"] role=Some(Field) name=Some("JPEG quality (1–100)") props=["help", "label", "message", "outlined", "required", "status"]
+["settings", "quality-group", "quality", "input"] role=Some(NumberInput) name=Some("JPEG quality (1–100)") props=["composing", "dirty", "display_value", "enabled", "inline", "multiline", "read_only", "scroll_x", "scroll_y", "selection", "shows_display", "stepper", "text", "text_editing", "typography", "unit", "valid", "value"]
+["settings", "quality-group", "width"] role=Some(Field) name=Some("Maximum width") props=["help", "label", "message", "outlined", "required", "status"]
+["settings", "quality-group", "width", "row"] role=None name=None props=[]
+["settings", "quality-group", "width", "row", "input"] role=Some(NumberInput) name=None props=["composing", "dirty", "display_value", "enabled", "inline", "multiline", "read_only", "scroll_x", "scroll_y", "selection", "shows_display", "stepper", "text", "text_editing", "typography", "unit", "valid", "value"]
+["settings", "quality-group", "width", "row", "unit"] role=Some(Label) name=Some("px") props=["text"]
+["settings", "behavior"] role=None name=None props=[]
+["settings", "behavior", "title"] role=Some(Label) name=Some("Behavior") props=["text"]
+["settings", "behavior", "open"] role=Some(Switch) name=Some("Open folder after export") props=["checked", "enabled", "text"]
+["settings", "dirty"] role=Some(Label) name=Some("All changes saved") props=["text"]
+["settings", "buttons"] role=None name=None props=[]
+["settings", "buttons", "apply"] role=Some(Button) name=Some("Apply") props=["enabled", "text"]
+["settings", "buttons", "revert"] role=Some(Button) name=Some("Revert") props=["enabled", "text"]
+["settings", "message"] role=Some(Label) name=Some("Settings loaded") props=["text"]
+ok
+test settings_acceptance::item1_structure_and_loaded_values ... prefix semantics: Semantics { role: TextInput, name: Some("File name prefix"), description: None, value: Some(Text("cam-01_X")), actions: [SetValue], items: [], disabled: false, read_only: false, invalid: false, warning: false, expanded: None, required: false, protected: false, names_children: false }
+format semantics: Semantics { role: SegmentedChoice, name: Some("Format"), description: None, value: Some(Choice { selected: Some(0), count: 3, label: Some("PNG") }), actions: [Select], items: [SemanticItem { name: Some("PNG"), selected: true, disabled: false, expanded: None, checked: None, shortcut: None, actions: [Select], bounds: None, local: None }, SemanticItem { name: Some("JPEG"), selected: false, disabled: false, expanded: None, checked: None, shortcut: None, actions: [Select], bounds: None, local: None }, SemanticItem { name: Some("WebP"), selected: false, disabled: false, expanded: None, checked: None, shortcut: None, actions: [Select], bounds: None, local: None }], disabled: false, read_only: false, invalid: false, warning: false, expanded: None, required: false, protected: false, names_children: false }
+format items: ["PNG", "JPEG", "WebP"]
+quality semantics: Semantics { role: NumberInput, name: Some("JPEG quality (1–100)"), description: None, value: Some(Number { value: 33.0, minimum: Some(1.0), maximum: Some(100.0) }), actions: [SetValue, Increment, Decrement], items: [], disabled: false, read_only: false, invalid: false, warning: false, expanded: None, required: false, protected: false, names_children: false }
+width semantics: Semantics { role: NumberInput, name: None, description: None, value: Some(Number { value: 16384.0, minimum: Some(16.0), maximum: Some(16384.0) }), actions: [SetValue, Increment, Decrement], items: [], disabled: false, read_only: false, invalid: false, warning: false, expanded: None, required: false, protected: false, names_children: false }
+
+thread 'settings_acceptance::item1_structure_and_loaded_values' (201) panicked at src/../acceptance/settings_acceptance.rs:197:5:
+assertion `left == right` failed
+  left: None
+ right: Some("Maximum width")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+test settings_acceptance::item2_refusals_keep_last_valid_value ... prefix "bad prefix!": invalid=true description=Some("Use 1–32 letters, digits, - or _ only") field message=Some("Use 1–32 letters, digits, - or _ only")
+prefix "dot.name": invalid=true description=Some("Use 1–32 letters, digits, - or _ only") field message=Some("Use 1–32 letters, digits, - or _ only")
+prefix "ümlaut": invalid=true description=Some("Use 1–32 letters, digits, - or _ only") field message=Some("Use 1–32 letters, digits, - or _ only")
+prefix "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa": invalid=true description=Some("Use 1–32 letters, digits, - or _ only") field message=Some("Use 1–32 letters, digits, - or _ only")
+prefix "": invalid=true description=Some("Use 1–32 letters, digits, - or _ only") field message=Some("Use 1–32 letters, digits, - or _ only")
+quality "0": invalid=true description=Some("Enter a number from 1 to 100") field message=Some("Enter a number from 1 to 100")
+quality "101": invalid=true description=Some("Enter a number from 1 to 100") field message=Some("Enter a number from 1 to 100")
+quality "-5": invalid=true description=Some("Enter a number from 1 to 100") field message=Some("Enter a number from 1 to 100")
+quality "abc": invalid=true description=Some("Enter a whole number") field message=Some("Enter a whole number")
+quality "50.5": invalid=true description=Some("Enter a whole number") field message=Some("Enter a whole number")
+quality "": invalid=true description=Some("Enter a whole number") field message=Some("Enter a whole number")
+width "15": invalid=true description=None field message=Some("Enter a number from 16 to 16384")
+width "16385": invalid=true description=None field message=Some("Enter a number from 16 to 16384")
+apply enabled with only refused drafts: true
+disk after applying with refused drafts: {"format":"PNG","max_width":16384,"open_folder":true,"prefix":"cam-01_X","quality":33}
+ok
+test settings_acceptance::item3_dirty_state_and_revert ... after revert (valid change + refused draft): message="Changes reverted"
+Error: ItemWithoutBounds { key: "input", index: 2 }
+FAILED
+test settings_acceptance::item4_failed_save_to_unwritable_path ... missing parent: message="Save failed: No such file or directory (os error 2). Apply to retry or Revert." marker="Unsaved changes" buttons=(true, true)
+read-only directory: message="Save failed: Permission denied (os error 13). Apply to retry or Revert." marker="Unsaved changes" buttons=(true, true)
+ok
+test settings_acceptance::item4_save_runs_off_the_ui_thread ... click+advance returned after 1.862322ms; reader opened: false; message: "Saving…"; buttons: (false, false)
+bytes read from FIFO: {
+  "prefix": "threaded",
+  "format": "JPEG",
+  "quality": 85,
+  "max_width": 2048,
+  "open_folder": true
+}
+ok
+test settings_acceptance::item4_successful_save_writes_file ... Error: ItemWithoutBounds { key: "input", index: 1 }
+FAILED
+test settings_acceptance::item5_close_refused_while_dirty ... close refused message: "Unsaved changes: apply or revert before closing."
+ok
+
+failures:
+
+failures:
+    settings_acceptance::item1_structure_and_loaded_values
+    settings_acceptance::item3_dirty_state_and_revert
+    settings_acceptance::item4_successful_save_writes_file
+
+test result: FAILED. 5 passed; 3 failed; 0 ignored; 0 measured; 2 filtered out; finished in 1.81s
+
+error: test failed, to rerun pass `--bin photo-export-settings`
+exit=101

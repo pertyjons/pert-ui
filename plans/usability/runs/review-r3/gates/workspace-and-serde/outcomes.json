@@ -1,0 +1,283 @@
+[
+  {
+    "name": "format",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--check"
+    ],
+    "environment": {},
+    "started": "2026-10-28T18:00:09.211674+00:00",
+    "ended": "2026-10-28T18:00:14.206408+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--workspace",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "environment": {},
+    "started": "2026-10-28T18:00:14.206742+00:00",
+    "ended": "2026-10-28T18:00:23.819353+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "live_mixer",
+    "command": [
+      "cargo",
+      "run",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--features",
+      "png,svg,cpu",
+      "--example",
+      "live_mixer"
+    ],
+    "environment": {},
+    "started": "2026-10-28T18:00:23.819555+00:00",
+    "ended": "2026-10-28T18:00:25.961241+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "dynamic_documents",
+    "command": [
+      "cargo",
+      "run",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--features",
+      "png,svg,cpu",
+      "--example",
+      "dynamic_documents"
+    ],
+    "environment": {},
+    "started": "2026-10-28T18:00:25.961442+00:00",
+    "ended": "2026-10-28T18:00:28.894378+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "diagram_editor",
+    "command": [
+      "cargo",
+      "run",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--features",
+      "png,svg,cpu",
+      "--example",
+      "diagram_editor"
+    ],
+    "environment": {},
+    "started": "2026-10-28T18:00:28.894693+00:00",
+    "ended": "2026-10-28T18:00:34.245766+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "log_explorer",
+    "command": [
+      "cargo",
+      "run",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--features",
+      "png,svg,cpu",
+      "--example",
+      "log_explorer",
+      "--",
+      "--lines",
+      "10000"
+    ],
+    "environment": {},
+    "started": "2026-10-28T18:00:34.246084+00:00",
+    "ended": "2026-10-28T18:00:47.111799+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "inventory",
+    "command": [
+      "cargo",
+      "run",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--features",
+      "png,svg,cpu",
+      "--example",
+      "inventory",
+      "--",
+      "--items",
+      "2000"
+    ],
+    "environment": {},
+    "started": "2026-10-28T18:00:47.112009+00:00",
+    "ended": "2026-10-28T18:00:52.648741+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "doctests",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--workspace",
+      "--doc"
+    ],
+    "environment": {},
+    "started": "2026-10-28T18:00:52.649122+00:00",
+    "ended": "2026-10-28T18:01:10.798252+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "rustdoc",
+    "command": [
+      "cargo",
+      "doc",
+      "--locked",
+      "--workspace",
+      "--no-deps"
+    ],
+    "environment": {
+      "RUSTDOCFLAGS": "-D warnings"
+    },
+    "started": "2026-10-28T18:01:10.798612+00:00",
+    "ended": "2026-10-28T18:03:01.486864+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "diagnostics",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "pert-ui-diagnostics",
+      "--",
+      "--ignored"
+    ],
+    "environment": {},
+    "started": "2026-10-28T18:03:01.487198+00:00",
+    "ended": "2026-10-28T18:03:16.755365+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "serde-clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--features",
+      "serde",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "environment": {},
+    "started": "2026-10-28T18:03:16.755674+00:00",
+    "ended": "2026-10-28T18:03:30.766914+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "serde-tests",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--features",
+      "serde"
+    ],
+    "environment": {},
+    "started": "2026-10-28T18:03:30.767273+00:00",
+    "ended": "2026-10-28T18:04:06.646662+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "serde-rustdoc",
+    "command": [
+      "cargo",
+      "doc",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--features",
+      "serde",
+      "--no-deps"
+    ],
+    "environment": {
+      "RUSTDOCFLAGS": "-D warnings"
+    },
+    "started": "2026-10-28T18:04:06.647016+00:00",
+    "ended": "2026-10-28T18:04:30.981723+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "headless-serde-clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--no-default-features",
+      "--features",
+      "serde",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "environment": {},
+    "started": "2026-10-28T18:04:30.982094+00:00",
+    "ended": "2026-10-28T18:04:42.167248+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "headless-serde-tests",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--no-default-features",
+      "--features",
+      "serde"
+    ],
+    "environment": {},
+    "started": "2026-10-28T18:04:42.167560+00:00",
+    "ended": "2026-10-28T18:05:36.656587+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "runtime-serde-tests",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "pert-ui-runtime",
+      "--features",
+      "serde"
+    ],
+    "environment": {},
+    "started": "2026-10-28T18:05:36.656986+00:00",
+    "ended": "2026-10-28T18:06:09.639171+00:00",
+    "exit_status": 0
+  }
+]

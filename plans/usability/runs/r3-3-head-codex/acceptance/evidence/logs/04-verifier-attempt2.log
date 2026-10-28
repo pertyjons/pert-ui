@@ -1,0 +1,17 @@
+$ run.sh exec KIT ACC sh -c "cd /work && cargo test --offline --test acceptance_verifier"
+   Compiling point-picker v0.1.0 (/work)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.20s
+     Running tests/acceptance_verifier.rs (target/debug/deps/acceptance_verifier-3be312252009c84d)
+
+running 7 tests
+test v7_reusable_control_two_instances ... ok
+test v8_focus_loss_cancels_drag ... ok
+test v1_v2_drag_clamp_and_cancel ... ok
+test v3_arrow_keys_with_and_without_shift ... ok
+test v6_value_in_inspection_snapshot ... ok
+test v4_fields_sync_and_reset ... ok
+test v5_captures_theme_and_focus_ring ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+
+exit=0

@@ -1,0 +1,26 @@
+   Compiling pert-ui v0.3.89 (/home/per/github/pert-ui/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.12s
+   Doc-tests pert_ui
+
+running 12 tests
+test crates/pert-ui/src/guide.rs - guide::layout (line 228) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 193) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 412) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 278) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 949) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 570) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 140) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 471) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 436) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 499) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 309) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 719) ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 104 filtered out; finished in 0.09s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+all doctests ran in 6.72s; merged doctests compilation took 6.54s

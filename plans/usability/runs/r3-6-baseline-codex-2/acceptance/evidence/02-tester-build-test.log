@@ -1,0 +1,18 @@
+$ run.sh exec KIT ACC sh -c "cd /work && cargo build --offline --locked"
+   Compiling pert-ui-cpu v0.3.75
+   Compiling pert-ui-wgpu v0.3.75
+   Compiling pert-ui v0.3.75
+   Compiling notes-editor v0.1.0 (/work)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 24.69s
+exit=0
+$ run.sh exec KIT ACC sh -c "cd /work && cargo test --offline --locked -- --nocapture"
+   Compiling notes-editor v0.1.0 (/work)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.37s
+     Running unittests src/main.rs (target/debug/deps/notes_editor-c55310efc50ef678)
+
+running 1 test
+test tests::acceptance_through_ui ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+exit=0

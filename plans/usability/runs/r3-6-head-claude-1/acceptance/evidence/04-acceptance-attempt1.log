@@ -1,0 +1,47 @@
+$ run.sh exec KIT ACC cargo test --locked --test acceptance -- --test-threads=1 --nocapture
+   Compiling notes_editor v0.1.0 (/work)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.13s
+     Running tests/acceptance.rs (target/debug/deps/acceptance-e9add65577186187)
+
+running 6 tests
+test acc1_divider_drag_resizes ... splitters: [("split", Some("Resize panes"), 0)]
+sidebar 0,220; tabs at 228; pressing divider at 224,332
+sidebar width 220 -> 280
+ok
+test acc1_own_folder_listing_open_reopen ... list role: List
+
+thread 'acc1_own_folder_listing_open_reopen' (125) panicked at tests/acceptance.rs:198:5:
+assertion `left == right` failed
+  left: []
+ right: ["alpha.txt", "kilo.txt", "mike.txt", "zulu.txt"]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+test acc2_typing_marker_status_saves_and_failure ... 
+thread 'acc2_typing_marker_status_saves_and_failure' (126) panicked at tests/acceptance.rs:311:5:
+assertion `left == right` failed
+  left: "alpha.txt: 2 lines, 3 words"
+ right: "alpha.txt: 2 lines, 4 words"
+FAILED
+test acc3_new_note_dialog_refusals_and_creation ... 
+thread 'acc3_new_note_dialog_refusals_and_creation' (127) panicked at tests/acceptance.rs:355:5:
+assertion failed: visible_roles(&d, SemanticRole::Dialog).is_empty()
+FAILED
+test acc4_close_choices_and_unmodified_close ... 
+thread 'acc4_close_choices_and_unmodified_close' (128) panicked at tests/acceptance.rs:446:5:
+no dialog
+FAILED
+test acc5_cpu_capture_two_tabs_one_modified ... capture 960x640 -> /work/acceptance-captures/acc5-two-tabs-one-modified.png
+ok
+
+failures:
+
+failures:
+    acc1_own_folder_listing_open_reopen
+    acc2_typing_marker_status_saves_and_failure
+    acc3_new_note_dialog_refusals_and_creation
+    acc4_close_choices_and_unmodified_close
+
+test result: FAILED. 2 passed; 4 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.41s
+
+error: test failed, to rerun pass `--test acceptance`
+exit=101

@@ -1,0 +1,10 @@
+{
+  ".gitignore": "44c92e3a70ad3307b7056871c2bdb096d8bfa9373f5bf06a79bb6324a20ff2fb",
+  "Cargo.toml": "ad7ccd13b487039b632724386db4b7a8ed7b59b7b228c3786bf570c6c6eff116",
+  "Cargo.lock": "6d853ad3ef5ca9eaecb51379976242ddb9b72a460985873c5a58abaf1c985184",
+  "notes-capture.png": "cbeb539b8667df6c8bd6f08b4d1354d7670f6037cfc13f5db73f2e0b8c490ad2",
+  "FRICTION.md": "eca9d568a69db246d05d89a355d977bb015b63e7fae317ceab2e193364abc556",
+  "src/main.rs": "cee33d9ba76faab35ec4e601dcfee4dfb704f82d88b4dc42f6404dd21c49b12c",
+  "src/lib.rs": "dc266b553ae21caf3d3ee5acc57c8a07ed3c4849df7307a9f67af717d19e2add",
+  "tests/app.rs": "c6b4b9bda7a2417343aee94ac9bb19175f0bdb717a624e2e3c2df15d0d8c7849"
+}

@@ -1,0 +1,14 @@
+{
+  "work/acceptance-two-tabs.png": {
+    "original_sha256": "e8fa64f1b2f24d2e1e62fedcefc94f3761723092e074d6363e4a0f9d9b06d5a2",
+    "archived_sha256": "31a5a04ed8f9c938c7bff5e767a26212f4b980ec4bd27a0793ea1fca9cdfb7e3",
+    "identical_decoded_IDAT_sha256": "b4722d5423744085c7519c3c0f9f9935e8708ef1f543589a022aa21af2cf2d80",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  },
+  "work/acceptance-save-failure.png": {
+    "original_sha256": "5c14661ed046bf928f1f04af7367ec53b2f57cfe36fb4919e9ebfad35c1cd606",
+    "archived_sha256": "289f6621a5b5918b460b53b42adf34b721562cb3eb8abae83b7f8e3acbe66f72",
+    "identical_decoded_IDAT_sha256": "04c772e63e733f419c380a7434bf1357565599962490b2d742e56e44d3ee38af",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  }
+}

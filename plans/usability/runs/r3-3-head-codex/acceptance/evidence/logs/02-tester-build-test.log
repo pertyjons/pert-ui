@@ -1,0 +1,33 @@
+$ run.sh exec KIT ACC sh -c "cd /work && cargo build --offline --all-targets && cargo test --offline"
+   Compiling pert-ui-wgpu v0.3.88
+   Compiling pert-ui-cpu v0.3.88
+   Compiling pert-ui v0.3.88
+   Compiling point-picker v0.1.0 (/work)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 24.70s
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+     Running unittests src/lib.rs (target/debug/deps/point_picker-fb8abd5d4d1c874a)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/debug/deps/point_picker-cce299f2ab32b73d)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/headless.rs (target/debug/deps/headless-40232508f8ba10a1)
+
+running 1 test
+test application_headless_acceptance ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+   Doc-tests point_picker
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+exit=0

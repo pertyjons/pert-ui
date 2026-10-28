@@ -1,0 +1,10 @@
+--- submitted/src/main.rs
++++ acceptance-copy/src/main.rs
+@@ -388,3 +388,7 @@
+         Ok(())
+     }
+ }
++
++// Verifier test entry point (acceptance copy only; test builds only).
++#[cfg(test)]
++mod acceptance_tests;

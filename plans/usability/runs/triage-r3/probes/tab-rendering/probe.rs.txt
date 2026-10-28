@@ -1,0 +1,17 @@
+
+    #[test]
+    fn r3_literal_tab_probe() -> Result<(), Box<dyn std::error::Error>> {
+        let mut service = TextService::new()?;
+        for text in ["A\tB", "A B", "\t", " "] {
+            let layout = service.prepare(text, None, 1.0, TextStyle::Body)?;
+            println!("TEXT {text:?} SIZE {:?} PARTS {}", layout.size(), layout.parts.len());
+            for line in layout.shaped.lines() {
+                for run in line.runs() {
+                    for cluster in run.clusters() {
+                        println!("CLUSTER {:?} GLYPHS {:?}", cluster.text_range(), cluster.glyphs().map(|g| (g.id, g.advance)).collect::<Vec<_>>());
+                    }
+                }
+            }
+        }
+        Ok(())
+    }

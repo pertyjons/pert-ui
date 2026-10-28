@@ -1,0 +1,128 @@
+$ run.sh exec KIT ACC sh -c "cd /work && cargo test --offline --test acceptance_verifier"
+   Compiling point-picker v0.1.0 (/work)
+error[E0425]: cannot find type `CaptureImage` in this scope
+  --> tests/acceptance_verifier.rs:81:37
+   |
+81 | fn capture(d: &mut Driver<'_>) -> R<CaptureImage> {
+   |                                     ^^^^^^^^^^^^
+   |
+  ::: /kit/vendor/pert-ui-runtime-0.3.88/src/capture.rs:40:1
+   |
+40 | pub enum CaptureTarget {
+   | ---------------------- similarly named enum `CaptureTarget` defined here
+   |
+help: an enum with a similar name exists
+   |
+81 - fn capture(d: &mut Driver<'_>) -> R<CaptureImage> {
+81 + fn capture(d: &mut Driver<'_>) -> R<CaptureTarget> {
+   |
+help: you might be missing a type parameter
+   |
+81 | fn capture<CaptureImage>(d: &mut Driver<'_>) -> R<CaptureImage> {
+   |           ++++++++++++++
+
+error[E0425]: cannot find type `CaptureImage` in this scope
+  --> tests/acceptance_verifier.rs:93:13
+   |
+93 | fn px(img: &CaptureImage, x: u32, y: u32) -> [u8; 4] {
+   |             ^^^^^^^^^^^^
+   |
+  ::: /kit/vendor/pert-ui-runtime-0.3.88/src/capture.rs:40:1
+   |
+40 | pub enum CaptureTarget {
+   | ---------------------- similarly named enum `CaptureTarget` defined here
+   |
+help: an enum with a similar name exists
+   |
+93 - fn px(img: &CaptureImage, x: u32, y: u32) -> [u8; 4] {
+93 + fn px(img: &CaptureTarget, x: u32, y: u32) -> [u8; 4] {
+   |
+
+error[E0425]: cannot find type `CaptureImage` in this scope
+   --> tests/acceptance_verifier.rs:100:19
+    |
+100 | fn count_in(img: &CaptureImage, rect: [f32; 4], pad: f32, rgb: [u8; 3]) -> usize {
+    |                   ^^^^^^^^^^^^
+    |
+   ::: /kit/vendor/pert-ui-runtime-0.3.88/src/capture.rs:40:1
+    |
+ 40 | pub enum CaptureTarget {
+    | ---------------------- similarly named enum `CaptureTarget` defined here
+    |
+help: an enum with a similar name exists
+    |
+100 - fn count_in(img: &CaptureImage, rect: [f32; 4], pad: f32, rgb: [u8; 3]) -> usize {
+100 + fn count_in(img: &CaptureTarget, rect: [f32; 4], pad: f32, rgb: [u8; 3]) -> usize {
+    |
+
+error[E0425]: cannot find type `CaptureImage` in this scope
+   --> tests/acceptance_verifier.rs:118:16
+    |
+118 | fn whole(img: &CaptureImage, rgb: [u8; 3]) -> usize {
+    |                ^^^^^^^^^^^^
+    |
+   ::: /kit/vendor/pert-ui-runtime-0.3.88/src/capture.rs:40:1
+    |
+ 40 | pub enum CaptureTarget {
+    | ---------------------- similarly named enum `CaptureTarget` defined here
+    |
+help: an enum with a similar name exists
+    |
+118 - fn whole(img: &CaptureImage, rgb: [u8; 3]) -> usize {
+118 + fn whole(img: &CaptureTarget, rgb: [u8; 3]) -> usize {
+    |
+
+error[E0425]: cannot find type `CaptureImage` in this scope
+   --> tests/acceptance_verifier.rs:127:15
+    |
+127 | fn save(img: &CaptureImage, name: &str) -> R {
+    |               ^^^^^^^^^^^^
+    |
+   ::: /kit/vendor/pert-ui-runtime-0.3.88/src/capture.rs:40:1
+    |
+ 40 | pub enum CaptureTarget {
+    | ---------------------- similarly named enum `CaptureTarget` defined here
+    |
+help: an enum with a similar name exists
+    |
+127 - fn save(img: &CaptureImage, name: &str) -> R {
+127 + fn save(img: &CaptureTarget, name: &str) -> R {
+    |
+
+error[E0425]: cannot find type `CaptureImage` in this scope
+   --> tests/acceptance_verifier.rs:258:28
+    |
+258 |     let handle_at = |img: &CaptureImage, fx: f32, fy: f32| {
+    |                            ^^^^^^^^^^^^
+    |
+   ::: /kit/vendor/pert-ui-runtime-0.3.88/src/capture.rs:40:1
+    |
+ 40 | pub enum CaptureTarget {
+    | ---------------------- similarly named enum `CaptureTarget` defined here
+    |
+help: an enum with a similar name exists
+    |
+258 -     let handle_at = |img: &CaptureImage, fx: f32, fy: f32| {
+258 +     let handle_at = |img: &CaptureTarget, fx: f32, fy: f32| {
+    |
+
+error[E0425]: cannot find type `CaptureImage` in this scope
+   --> tests/acceptance_verifier.rs:346:24
+    |
+346 |     let inner = |img: &CaptureImage| px(img, (x + w * 0.25) as u32, (y + h * 0.25) as u32);
+    |                        ^^^^^^^^^^^^
+    |
+   ::: /kit/vendor/pert-ui-runtime-0.3.88/src/capture.rs:40:1
+    |
+ 40 | pub enum CaptureTarget {
+    | ---------------------- similarly named enum `CaptureTarget` defined here
+    |
+help: an enum with a similar name exists
+    |
+346 -     let inner = |img: &CaptureImage| px(img, (x + w * 0.25) as u32, (y + h * 0.25) as u32);
+346 +     let inner = |img: &CaptureTarget| px(img, (x + w * 0.25) as u32, (y + h * 0.25) as u32);
+    |
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `point-picker` (test "acceptance_verifier") due to 7 previous errors
+exit=101

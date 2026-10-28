@@ -1,0 +1,9 @@
+{
+  "FRICTION.md": "9f6c071e44c3427f043939d288e85eca0ccb995de7bec514727f1c5203b24d99",
+  ".gitignore": "44c92e3a70ad3307b7056871c2bdb096d8bfa9373f5bf06a79bb6324a20ff2fb",
+  "Cargo.toml": "79195d494cb877325b75d8ebf48caab766ee42e50acad5db0bdfdefe15542ccd",
+  "Cargo.lock": "68ccbc7234b11d33cf5a5479a5d8a70da3baf7dc928efaf925fe3eb9229f23d5",
+  "notes-editor.png": "a7868eaca5d26cdba0057eeacbb45889ff414e08e04a03e7873ecc9ebf7f7072",
+  "README.md": "4515218a2aa194a7fddaac942a45dececdb537f446d3150cd2e1cc70f976ba1d",
+  "src/main.rs": "e702fc6420142a57d8803174b8ba93db0fe4ed5fd80d9ae7947eceb459c8c7f6"
+}

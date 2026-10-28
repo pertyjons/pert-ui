@@ -1,0 +1,74 @@
+$ run.sh exec KIT ACCEPTANCE_DIR cargo tree --manifest-path /work/bookmarks/Cargo.toml --offline -e features -i pert-ui
+pert-ui v0.3.88
+├── pert-ui feature "cpu"
+│   └── bookmarks v0.1.0 (/work/bookmarks)
+│       └── bookmarks feature "default" (command-line)
+├── pert-ui feature "default"
+│   └── bookmarks v0.1.0 (/work/bookmarks) (*)
+├── pert-ui feature "desktop"
+│   └── pert-ui feature "default" (*)
+├── pert-ui feature "gpu"
+│   └── pert-ui feature "desktop" (*)
+└── pert-ui feature "native"
+    └── pert-ui feature "gpu" (*)
+exit=0
+$ run.sh exec KIT ACCEPTANCE_DIR cargo tree --manifest-path /work/bookmarks/Cargo.toml --offline -e normal --depth 1
+bookmarks v0.1.0 (/work/bookmarks)
+└── pert-ui v0.3.88
+exit=0
+$ run.sh exec KIT ACCEPTANCE_DIR sh -c "env; cat /home/tester/.cargo/config.toml; grep -A3 \"name = \\\"pert-ui\\\"\" /work/bookmarks/Cargo.lock"
+CARGO_HOME=/home/tester/.cargo
+HOME=/home/tester
+HTTPS_PROXY=http://127.0.0.1:3128
+HTTP_PROXY=http://127.0.0.1:3128
+LANG=C.UTF-8
+LOGNAME=tester
+NO_PROXY=localhost,127.0.0.1
+PATH=/kit/bin:/opt/cargo-bin:/opt/cli:/usr/bin
+PWD=/work
+RUSTUP_HOME=/opt/rustup
+RUSTUP_TOOLCHAIN=stable
+SHLVL=1
+TERM=dumb
+USER=tester
+_=/usr/bin/env
+http_proxy=http://127.0.0.1:3128
+https_proxy=http://127.0.0.1:3128
+---
+[source.crates-io]
+replace-with = "vendored"
+[source.vendored]
+directory = "/kit/vendor"
+[net]
+offline = true
+---
+name = "pert-ui"
+version = "0.3.88"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "165b2b32743a9a58319f8d065470bd84ecc0b6c2b92c7ee9b8b6216ed1e54cb3"
+--
+name = "pert-ui-core"
+version = "0.3.88"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e1644d5b911e06e89e04dfdd714738de68df53d2d4addc2a8f7f9a980cac50da"
+--
+name = "pert-ui-cpu"
+version = "0.3.88"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bc2a46cc412705cd88b2603f358d9a0dad502442b1d16a31627d518b8299fa33"
+--
+name = "pert-ui-runtime"
+version = "0.3.88"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "338ce98551b7824cbbd9673b1bf2366b3e23b203336d35651fc64956add5032c"
+--
+name = "pert-ui-wgpu"
+version = "0.3.88"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "275b6b0bffb5811662e622ff198e7610460fadb167b5d786a6a986674bcb74e5"
+pert-ui-0.3.88
+pert-ui-core-0.3.88
+pert-ui-cpu-0.3.88
+pert-ui-runtime-0.3.88
+pert-ui-wgpu-0.3.88
+exit=0

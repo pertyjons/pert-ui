@@ -1,0 +1,23 @@
+$ run.sh exec KIT ACC cargo test --locked --test acceptance -- --test-threads=1 --nocapture
+   Compiling job_monitor v0.1.0 (/work)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.80s
+     Running tests/acceptance.rs (target/debug/deps/acceptance-640f08b5232eedf0)
+
+running 8 tests
+test idle_check_detects_jobs_and_is_quiet_without_them ... while running: 25 components updated, paint needed 6 times
+after done: 44 consecutive idle reports
+ok
+test item1_progress_completion_and_summary_through_inspection ... ok
+test item2_cancel_is_prompt_on_the_wall_clock ... worker job-1 exited 90.770338ms after the Cancel click
+cancelled at Some("3%"), 553.059721ms after click
+ok
+test item2_cancel_stops_the_worker_thread_and_the_row ... ok
+test item3_failure_in_row_and_notification ... ok
+test item4_name_sort_is_by_job_number_beyond_nine ... ok
+test item4_sorting_by_each_column_orders_drawn_rows ... ok
+test item5_cpu_capture_png_of_several_states ... wrote /work/acceptance-capture.png (1152513 bytes)
+ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.39s
+
+exit=0

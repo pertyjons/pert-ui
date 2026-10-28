@@ -1,0 +1,14 @@
+$ run.sh exec KIT ACCEPTANCE_DIR bash -c "cd /work/bookmarks && cargo test --locked --test verifier_acceptance -- --nocapture"
+   Compiling bookmarks v0.1.0 (/work/bookmarks)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.93s
+     Running tests/verifier_acceptance.rs (target/debug/deps/verifier_acceptance-c062f9414cd52e28)
+
+running 2 tests
+test verifier_remove_in_filtered_view_and_clear_filter_from_button_focus ... ok
+capture written to /work/bookmarks/target/tmp/verifier-start.png
+capture written to /work/bookmarks/target/tmp/verifier-filtered.png
+test verifier_cpu_capture_png_of_main_window ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+exit=0

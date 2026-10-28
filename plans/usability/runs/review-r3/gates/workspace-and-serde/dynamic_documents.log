@@ -1,0 +1,3 @@
+   Compiling pert-ui v0.3.89 (/home/per/github/pert-ui/crates/pert-ui)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.87s
+     Running `target/debug/examples/dynamic_documents`

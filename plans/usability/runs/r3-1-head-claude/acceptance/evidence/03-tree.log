@@ -1,0 +1,18 @@
+$ run.sh exec /home/per/pert-ui-usability/kit-r3-head /home/per/pert-ui-usability/acceptance-r3-1-head-claude cargo tree --locked -e features -i pert-ui
+# started 2026-10-28T18:24:25+01:00
+pert-ui v0.3.88
+├── pert-ui feature "cpu"
+│   [dev-dependencies]
+│   └── settings_editor v0.1.0 (/work)
+│       └── settings_editor feature "default" (command-line)
+├── pert-ui feature "default"
+│   └── settings_editor v0.1.0 (/work) (*)
+│   [dev-dependencies]
+│   └── settings_editor v0.1.0 (/work) (*)
+├── pert-ui feature "desktop"
+│   └── pert-ui feature "default" (*)
+├── pert-ui feature "gpu"
+│   └── pert-ui feature "desktop" (*)
+└── pert-ui feature "native"
+    └── pert-ui feature "gpu" (*)
+# exit=0 ended 2026-10-28T18:24:25+01:00

@@ -1,0 +1,10 @@
+{
+  "FRICTION.md": "74390784bc0983e3514b3b06b0af4890b9e1c66e438f60e71893744c647d56d6",
+  "bookmarks/README.md": "b96b6ccc00510c049c39e143bb7544ca0e72ada08abddda3c7b309984bf8ba40",
+  "bookmarks/Cargo.toml": "2d2c8529b908fb97c8612d229f31ce2b2874f2973ba9835fd42360903c6972e6",
+  "bookmarks/Cargo.lock": "56287bac4dd807b16e10168560b2900853bfcc8293e9cc6362ac02c3e79e9271",
+  "bookmarks/src/main.rs": "8ba4002ad491086f1a099fab0f60420ec2468cb28c749b0e072197e038132ac2",
+  "bookmarks/src/lib.rs": "242b409eab123c76aa1c9180addd31d6d82d402527644520f9c7f33ebbcc504a",
+  "bookmarks/tests/behaviors.rs": "19996e560be8dae0f8439c34f14e2554638a35773a368aa2bff2ca534f2d0408",
+  "bookmarks/tests/capture.rs": "814aa046c140571fe0aaec631cf9c8af5e44e98db204a4380abc3443982c2181"
+}

@@ -1,0 +1,34 @@
+$ run.sh exec KIT ACC cargo test --locked --test acceptance -- --test-threads=1 --nocapture
+   Compiling notes_editor v0.1.0 (/work)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.87s
+     Running tests/acceptance.rs (target/debug/deps/acceptance-e9add65577186187)
+
+running 6 tests
+test acc1_divider_drag_resizes ... splitters: [("split", Some("Resize panes"), 0)]
+sidebar 0,220; tabs at 228; pressing divider at 224,332
+sidebar width 220 -> 280
+ok
+test acc1_own_folder_listing_open_reopen ... list role: List
+ok
+test acc2_typing_marker_status_saves_and_failure ... notifications after failed Ctrl+S: 1 ["Could not save kilo.txt: No such file or directory (os error 2)"]
+capture 960x640 -> /work/acceptance-captures/acc2-failed-save-notification.png
+ok
+test acc3_new_note_dialog_refusals_and_creation ... dialogs after Ctrl+N: ["new-dialog"]
+"" -> "Enter a name."
+"a/b" -> "A name cannot contain / or \\."
+"a\\b" -> "A name cannot contain / or \\."
+".hidden" -> "A name cannot start with a dot."
+"nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn" -> "A name has at most 64 characters."
+"alpha" -> "A note named alpha.txt already exists."
+capture 960x640 -> /work/acceptance-captures/acc3-existing-name-refused.png
+"zulu.txt" -> "A note named zulu.txt already exists."
+ok
+test acc4_close_choices_and_unmodified_close ... close dialog: ["close-dialog"]
+after failed dialog Save: 1 ["Could not save alpha.txt: No such file or directory (os error 2)"]
+ok
+test acc5_cpu_capture_two_tabs_one_modified ... capture 960x640 -> /work/acceptance-captures/acc5-two-tabs-one-modified.png
+ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.76s
+
+exit=0

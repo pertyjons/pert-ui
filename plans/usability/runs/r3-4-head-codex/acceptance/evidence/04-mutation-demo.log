@@ -1,0 +1,122 @@
+== before mutation
+242b409eab123c76aa1c9180addd31d6d82d402527644520f9c7f33ebbcc504a  work/bookmarks/src/lib.rs
+1
+== mutation diff (original -> mutated)
+--- evidence/lib.rs.pre-mutation	2026-10-28 19:52:45.391245279 +0100
++++ work/bookmarks/src/lib.rs	2026-10-28 19:52:45.394660864 +0100
+@@ -90,7 +90,7 @@
+             list.update(|list| {
+                 list.push(Bookmark {
+                     id,
+-                    name: entered_name.trim().to_owned(),
++                    name: entered_name.to_owned(),
+                     url: entered_url,
+                 });
+             })?;
+$ run.sh exec KIT ACCEPTANCE_DIR cargo test --manifest-path /work/bookmarks/Cargo.toml --offline --test ui add_appends_and_trims_name -- --exact
+   Compiling bookmarks v0.1.0 (/work/bookmarks)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.02s
+     Running tests/ui.rs (bookmarks/target/debug/deps/ui-3063b8ea806a76eb)
+
+running 1 test
+test add_appends_and_trims_name ... FAILED
+
+failures:
+
+---- add_appends_and_trims_name stdout ----
+
+thread 'add_appends_and_trims_name' (293) panicked at tests/ui.rs:92:9:
+assertion `left == right` failed
+  left: "  Docs  "
+ right: "Docs"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    add_appends_and_trims_name
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `--test ui`
+exit=101
+$ run.sh exec KIT ACCEPTANCE_DIR cargo test --manifest-path /work/bookmarks/Cargo.toml --offline --no-fail-fast
+   Compiling bookmarks v0.1.0 (/work/bookmarks)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.62s
+     Running unittests src/lib.rs (bookmarks/target/debug/deps/bookmarks-4965cadeca4c9639)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (bookmarks/target/debug/deps/bookmarks-29282a4316e51175)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/acceptance.rs (bookmarks/target/debug/deps/acceptance-c620ccbfb7a60bf0)
+
+running 3 tests
+test acceptance_clear_filter_command_is_registered_with_ctrl_l ... ok
+test acceptance_typed_add_appends_trims_and_clears ... FAILED
+test acceptance_ctrl_l_clears_filter_from_inspected_focus ... ok
+
+failures:
+
+---- acceptance_typed_add_appends_trims_and_clears stdout ----
+
+thread 'acceptance_typed_add_appends_trims_and_clears' (185) panicked at tests/acceptance.rs:162:5:
+assertion `left == right` failed
+  left: Some("  Docs ")
+ right: Some("Docs")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    acceptance_typed_add_appends_trims_and_clears
+
+test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+error: test failed, to rerun pass `--test acceptance`
+     Running tests/ui.rs (bookmarks/target/debug/deps/ui-3063b8ea806a76eb)
+
+running 8 tests
+test successful_add_clears_both_fields ... ok
+test list_shows_rows_and_remove_deletes_only_its_bookmark ... ok
+test filter_matches_name_substrings_ignoring_case_and_spaces ... ok
+test refused_add_preserves_fields_and_success_clears_error ... ok
+test add_appends_and_trims_name ... FAILED
+test clear_filter_keyboard_command_works_wherever_focus_is ... ok
+test status_counts_visible_and_total_bookmarks ... ok
+test cpu_renderer_captures_main_window_as_png ... ok
+
+failures:
+
+---- add_appends_and_trims_name stdout ----
+
+thread 'add_appends_and_trims_name' (187) panicked at tests/ui.rs:92:9:
+assertion `left == right` failed
+  left: "  Docs  "
+ right: "Docs"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    add_appends_and_trims_name
+
+test result: FAILED. 7 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+error: test failed, to rerun pass `--test ui`
+   Doc-tests bookmarks
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: 2 targets failed:
+    `--test acceptance`
+    `--test ui`
+exit=101
+== restore
+242b409eab123c76aa1c9180addd31d6d82d402527644520f9c7f33ebbcc504a  work/bookmarks/src/lib.rs
+restored: byte-identical to original submission

@@ -1,0 +1,5 @@
+    Checking pert-ui-wgpu v0.3.89 (/home/per/github/pert-ui/crates/pert-ui-wgpu)
+    Checking pert-ui-cpu v0.3.89 (/home/per/github/pert-ui/crates/pert-ui-cpu)
+    Checking pert-ui v0.3.89 (/home/per/github/pert-ui/crates/pert-ui)
+    Checking pert-ui-gallery v0.3.89 (/home/per/github/pert-ui/apps/gallery)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.90s

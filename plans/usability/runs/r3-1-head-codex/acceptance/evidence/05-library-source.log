@@ -1,0 +1,6 @@
+$ run.sh exec KIT ACCEPTANCE_DIR cargo metadata --offline --locked --format-version 1 (pert-ui manifest path)
+pert-ui 0.3.88 /kit/vendor/pert-ui-0.3.88/Cargo.toml
+pert-ui-core 0.3.88 /kit/vendor/pert-ui-core-0.3.88/Cargo.toml
+pert-ui-runtime 0.3.88 /kit/vendor/pert-ui-runtime-0.3.88/Cargo.toml
+pert-ui-wgpu 0.3.88 /kit/vendor/pert-ui-wgpu-0.3.88/Cargo.toml
+exit=0

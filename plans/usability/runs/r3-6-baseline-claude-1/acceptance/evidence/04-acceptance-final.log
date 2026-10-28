@@ -1,0 +1,16 @@
+$ cargo test --locked --test acceptance -- --nocapture
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.56s
+     Running tests/acceptance.rs (target/debug/deps/acceptance-4134637f3500dc97)
+
+running 6 tests
+test item1_listing_and_reopen ... ok
+notifications after failed Ctrl+S: [(Alert, Some("Could not save kiwi.txt: No such file or directory (os error 2)"), Some(true))]
+test item2_typing_saving_and_failed_save ... ok
+test item2_failed_save_capture ... ok
+test item3_new_note_dialog ... ok
+test item5_cpu_capture ... ok
+test item4_close_choices ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.37s
+
+exit=0

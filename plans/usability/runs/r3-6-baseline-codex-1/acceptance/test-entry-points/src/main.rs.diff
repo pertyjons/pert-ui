@@ -1,0 +1,11 @@
+--- submitted/src/main.rs
++++ acceptance-copy/src/main.rs
+@@ -651,3 +651,8 @@
+         h.click("cancel-close");
+     }
+ }
++
++// Acceptance-verifier test entry point (test builds only; no application change).
++#[cfg(test)]
++#[path = "../acceptance/acceptance_tests.rs"]
++mod acceptance_tests;

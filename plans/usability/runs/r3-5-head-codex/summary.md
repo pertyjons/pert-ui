@@ -6,8 +6,8 @@ Exploratory evidence from one AI tester run. Counts describe how this tester wor
 - Task: 5-job-monitor.md; budget 90 min; session outcome ended (exit 0)
 - Kit: commit 32dd9c4f667b, version 0.3.88, rustc 1.99.1 (58cf8f9c3 2026-10-13), third-party cache none
 - Brief to end of session: 2.8 min
-- Brief to accepted completion: n/a (acceptance not recorded)
-- Acceptance: not recorded
+- Brief to accepted completion: 2.8 min
+- Acceptance: met
 - Time to first build: 1.1 min
 - Builds: 3; failed 2; killed or unfinished 0; total build time 0.6 min
 - First successful run or test (candidate; the author checks it exercised the app): `cargo test --offline`, 1 tests passed, build 3, 2.0 min after the brief

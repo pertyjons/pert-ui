@@ -1,0 +1,30 @@
+$ run.sh exec KIT ACCEPTANCE_DIR cargo test --locked --test verifier_acceptance -- --test-threads=1
+   Compiling notes v0.1.0 (/work)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.83s
+     Running tests/verifier_acceptance.rs (target/debug/deps/verifier_acceptance-69ce7e7f881ecb3f)
+
+running 5 tests
+test item1_lists_own_folder_and_reopen_switches ... ok
+test item2_typing_save_shortcut_menu_and_failure ... ok
+test item3_new_note_refusals_and_creation ... FAILED
+test item4_close_choices_and_unmodified_close ... ok
+test item5_cpu_capture_two_tabs_one_modified ... ok
+
+failures:
+
+---- item3_new_note_refusals_and_creation stdout ----
+
+thread 'item3_new_note_refusals_and_creation' (127) panicked at tests/verifier_acceptance.rs:98:9:
+assertion `left == right` failed: inspection names vs laid-out order
+  left: ["apple.txt", "cherry.txt", "mango.txt", "zebra.txt", "kiwi.txt"]
+ right: ["apple.txt", "cherry.txt", "kiwi.txt", "mango.txt", "zebra.txt"]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    item3_new_note_refusals_and_creation
+
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.33s
+
+error: test failed, to rerun pass `--test verifier_acceptance`
+exit=101

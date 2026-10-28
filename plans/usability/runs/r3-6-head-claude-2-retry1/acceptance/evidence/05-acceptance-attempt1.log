@@ -1,0 +1,26 @@
+$ run.sh exec KIT ACCEPTANCE_DIR cargo test --offline --locked --test acceptance -- --nocapture --test-threads=1
+   Compiling notes v0.1.0 (/work)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.08s
+     Running tests/acceptance.rs (target/debug/deps/acceptance-ddfeada1cfb42fb6)
+
+running 5 tests
+test item1_listing_and_reopen ... tab titles after two opens: ["kiwi.txt", "apple.txt"]
+ok
+test item2_edit_save_and_failed_save ... failed Ctrl+S notifications: ["Could not save plan.txt: No such file or directory (os error 2)"]
+ok
+test item3_new_note_dialog ... refused "": "Enter a name."
+refused "a/b": "A name must not contain / or \\."
+refused "a\\b": "A name must not contain / or \\."
+refused ".hidden": "A name must not start with a dot."
+refused "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx": "A name has at most 64 characters."
+refused "pear": "A note named pear.txt already exists."
+refused "fig.txt": "A note named fig.txt already exists."
+ok
+test item4_close_choices ... close dialog content: [["app", "new-dialog", "close-dialog", "dialog"], ["app", "new-dialog", "close-dialog", "dialog", "close-tab"], ["app", "new-dialog", "close-dialog", "dialog", "close-tab", "heading"], ["app", "new-dialog", "close-dialog", "dialog", "close-tab", "message"], ["app", "new-dialog", "close-dialog", "dialog", "close-tab", "actions"], ["app", "new-dialog", "close-dialog", "dialog", "close-tab", "actions", "save"], ["app", "new-dialog", "close-dialog", "dialog", "close-tab", "actions", "discard"], ["app", "new-dialog", "close-dialog", "dialog", "close-tab", "actions", "cancel"]]
+ok
+test item5_cpu_capture ... capture tab titles: ["alpha.txt *", "beta.txt"]
+ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.45s
+
+exit=0

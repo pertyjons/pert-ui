@@ -45,6 +45,32 @@ checks pass.
   implementation fix for baseline behavior. Baseline Claude's state slot
   and virtual-list ordering leads are assessed with all paired runs later.
 
-All runtime probes and independent acceptance remain pending until the timed
-blind queues finish. Subsequent library repairs are regression-tested and
-reviewed separately; these blind runs do not test the repairs.
+The initial positions above preceded execution. The frozen-head probes now
+pass (see probes/README.md and output.txt): address discovery, deferred Dynamic
+write/reveal, missing item geometry, actual dialog paths and Select/menu lookup
+all have execution evidence. They disprove the proposed Dynamic navigation and
+address_children defects, and confirm the geometry/discovery gaps. Independent
+acceptance is underway after the timed blind queues finished. Subsequent
+library repairs are regression-tested and reviewed separately; these blind runs
+do not test the repairs.
+
+## Further source checks during implementation
+
+- Claude task 3's component-import report is a real omission from the stated
+  component-module contract, rather than solely a missing prelude import:
+  `guide/custom-widgets.md` promises every name a Component implementation
+  writes, including errors it returns, while `component` omits ApplicationError.
+  Add that existing facade-owned error to `component` and the membership test;
+  no prelude widening or new error constructor is needed. Corrects the earlier
+  provisional assessment. The two-glob examples already compile.
+- That run's drawing-test report exposes overbroad testing-guide wording.
+  Runtime::paint and DrawCommand belong to the component/host drawing contract,
+  beyond the testing module's declared seed operations. Clarify the additional
+  component imports instead of adding every Runtime service to testing.
+- ApplicationError already implements From<String> and From<&str>. Improve the
+  new constructor's pointer to those conversions; do not introduce msg or reuse
+  RuntimeError::Closed as an application failure. Geometry f32 precision is
+  expected; presentation/quantization policy belongs to a custom control.
+- Further acceptance lead pending verification/triage: a task 6 verifier saw a
+  literal tab rendered as a missing-glyph box in a TextArea CPU capture. Read the
+  text/renderer contract and reproduce it before deciding a fix or disposition.

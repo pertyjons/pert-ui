@@ -1,0 +1,10 @@
+   Compiling pert-ui-gallery v0.3.89 (/home/per/github/pert-ui/apps/gallery)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.83s
+     Running unittests src/main.rs (target/debug/deps/pert_ui_gallery-0e2d2963ce087658)
+
+running 2 tests
+test interaction_check::probe_tests::hiding_the_window_reports_interruption_before_any_more_steps ... ok
+test cli::the_interaction_steps_pass_headlessly ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 132 filtered out; finished in 8.88s
+

@@ -1,0 +1,37 @@
+$ run.sh exec KIT ACC bash -c "cd /work && cargo test --offline --locked -- --include-ignored"
+   Compiling notes-editor v0.1.0 (/work)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.20s
+     Running unittests src/main.rs (target/debug/deps/notes_editor-c55310efc50ef678)
+
+running 9 tests
+test acceptance_tests::probe_focus_order ... ok
+test acceptance_tests::probe_inspection ... ok
+test acceptance_tests::item1_listing_open_and_reopen ... ok
+test acceptance_tests::feature_divider_drag_resizes_sidebar ... ok
+test acceptance_tests::item3_new_note_dialog ... ok
+test acceptance_tests::item5_cpu_capture_two_tabs_one_modified ... ok
+test acceptance_tests::item4_close_choices ... ok
+test acceptance_tests::item2_typing_save_and_failed_save ... ok
+test tests::acceptance_through_ui ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.26s
+
+exit=0
+$ run.sh exec KIT ACC bash -c "cd /work && cargo test --offline --locked"
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.15s
+     Running unittests src/main.rs (target/debug/deps/notes_editor-c55310efc50ef678)
+
+running 9 tests
+test acceptance_tests::probe_focus_order ... ignored
+test acceptance_tests::probe_inspection ... ignored
+test acceptance_tests::feature_divider_drag_resizes_sidebar ... ok
+test acceptance_tests::item1_listing_open_and_reopen ... ok
+test acceptance_tests::item3_new_note_dialog ... ok
+test acceptance_tests::item4_close_choices ... ok
+test acceptance_tests::item5_cpu_capture_two_tabs_one_modified ... ok
+test acceptance_tests::item2_typing_save_and_failed_save ... ok
+test tests::acceptance_through_ui ... ok
+
+test result: ok. 7 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.25s
+
+exit=0

@@ -1,0 +1,50 @@
+$ run.sh exec /home/per/pert-ui-usability/kit-r3-head /home/per/pert-ui-usability/acceptance-r3-1-head-claude cargo test --locked -- --nocapture
+# started 2026-10-28T18:24:30+01:00
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+     Running unittests src/lib.rs (target/debug/deps/settings_editor-dcdb9f19b3a91bb0)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/debug/deps/settings_editor-5c931c00290f7dea)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/acceptance.rs (target/debug/deps/acceptance-f9229488a9321927)
+
+running 8 tests
+test shows_the_values_loaded_from_the_file ... ok
+test choosing_a_format_makes_the_editor_dirty ... ok
+test closing_is_refused_while_dirty ... ok
+test starts_from_defaults_without_a_file ... ok
+test refuses_invalid_input_and_keeps_the_old_value ... ok
+test a_failed_save_is_reported_and_stays_dirty ... ok
+test apply_and_revert_follow_the_dirty_state ... ok
+test apply_saves_the_file ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+     Running tests/capture.rs (target/debug/deps/capture-f73aa4d32a3cf386)
+
+running 1 test
+wrote /work/target/tmp/clean.png
+width=2000 apply disabled=false
+quality says: Some("Enter a number from 1 to 100")
+wrote /work/target/tmp/refused.png
+apply: disabled=false props={"enabled": Bool(true), "text": Text("Apply")}
+revert: disabled=false props={"enabled": Bool(true), "text": Text("Revert")}
+wrote /work/target/tmp/dirty.png
+test renders_clean_and_refused_states ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s
+
+   Doc-tests settings_editor
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+# exit=0 ended 2026-10-28T18:24:30+01:00

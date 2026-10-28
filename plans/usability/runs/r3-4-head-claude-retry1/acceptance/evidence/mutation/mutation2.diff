@@ -1,0 +1,11 @@
+--- evidence/mutation/lib.rs.orig	2026-10-28 17:56:57.632391833 +0100
++++ work/bookmarks/src/lib.rs	2026-10-28 19:15:15.711531361 +0100
+@@ -122,7 +122,7 @@
+     ui.register_command(
+         "Clear filter",
+         CommandScope::Application,
+-        vec![KeyChord::primary('l')],
++        vec![KeyChord::primary('k')],
+         move |_, _| clear.set(String::new()),
+     )?;
+ 

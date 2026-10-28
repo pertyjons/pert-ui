@@ -1,0 +1,16 @@
+{
+  "dark.png": {
+    "original_relative_path": "captures/dark.png",
+    "original_sha256": "9e3e81772bbd3f596d3fd1491ea4aefbc778318cdaab11d586dbf7a42ab26513",
+    "archived_sha256": "15d7ff3486ed732c1ba118d5f85660bddf544763c70b26a5f556524a29078f02",
+    "identical_decoded_IDAT_sha256": "b62606889a05210636871318ef01d192d5da479aa3a3ccaca0fc02ce8f68bdd2",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  },
+  "light.png": {
+    "original_relative_path": "captures/light.png",
+    "original_sha256": "af1fef2cdd4c79be7d7aa253acf9cd8296f6997e16445ed3f9a9ffe88c900288",
+    "archived_sha256": "4354a1db06be98aac251dd041eb7901cf167f75e4929c7eee866f3fbc2df0ee3",
+    "identical_decoded_IDAT_sha256": "ff55e8db05b2fe471af23753d34ffeee10abad925cad4f929bd07360bf1daeda",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  }
+}

@@ -1,0 +1,179 @@
+$ /home/per/github/pert-ui/plans/usability/run.sh exec /home/per/pert-ui-usability/kit-r3-head /home/per/pert-ui-usability/acceptance-r3-5-head-codex cargo test --offline --locked --test acceptance -- --test-threads=1 --nocapture
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.07s
+     Running tests/acceptance.rs (target/debug/deps/acceptance-14ef85d6161d7287)
+
+running 6 tests
+test item1_production_random_job_completes ... random job 1: RowView { key: "1", name: "Job 1", percent: 100, state: "done", elapsed: 0.5, has_cancel: false }
+ok
+test item1_progress_completion_summary ... intermediate row 1: RowView { key: "1", name: "Job 1", percent: 10, state: "running", elapsed: 0.1, has_cancel: true }
+completed row 1: RowView { key: "1", name: "Job 1", percent: 100, state: "done", elapsed: 1.0, has_cancel: false }
+ok
+test item2_cancel_stops_job_and_worker ... cancelled after 5.32583ms: RowView { key: "1", name: "Job 1", percent: 2, state: "cancelled", elapsed: 0.2, has_cancel: false }
+threads before start 2, after cancel 2
+ok
+test item3_failure_in_row_and_notification ... failed row: RowView { key: "2", name: "Job 2", percent: 45, state: "failed: simulated error", elapsed: 0.5, has_cancel: false }
+notification: "Notification: Job 2 failed — simulated error at 45 / 100 units"
+monitor children: ["title", "start", "summary", "jobs", "notification"]
+ok
+test item3_production_fifth_job_fails ... random jobs: [
+    RowView {
+        key: "1",
+        name: "Job 1",
+        percent: 100,
+        state: "done",
+        elapsed: 3.5,
+        has_cancel: false,
+    },
+    RowView {
+        key: "2",
+        name: "Job 2",
+        percent: 100,
+        state: "done",
+        elapsed: 3.7,
+        has_cancel: false,
+    },
+    RowView {
+        key: "3",
+        name: "Job 3",
+        percent: 100,
+        state: "done",
+        elapsed: 1.4,
+        has_cancel: false,
+    },
+    RowView {
+        key: "4",
+        name: "Job 4",
+        percent: 100,
+        state: "done",
+        elapsed: 0.7,
+        has_cancel: false,
+    },
+    RowView {
+        key: "5",
+        name: "Job 5",
+        percent: 59,
+        state: "failed: simulated error",
+        elapsed: 1.8,
+        has_cancel: false,
+    },
+]
+ok
+test item4_sorting_item5_capture_and_idle ... while running: QuietReport { components_updated: 23, next_deadline: None, needs_paint: true, baseline_painted: true }
+header items: [Some("Name"), Some("Progress"), Some("State"), Some("Elapsed"), Some("Action")]
+sort name descending=false: ["1", "10", "11", "2", "3", "4", "5", "6", "7", "8", "9"]
+name order: ["Job 1", "Job 10", "Job 11", "Job 2", "Job 3", "Job 4", "Job 5", "Job 6", "Job 7", "Job 8", "Job 9"]
+sort name descending=true: ["9", "8", "7", "6", "5", "4", "3", "2", "11", "10", "1"]
+name order: ["Job 9", "Job 8", "Job 7", "Job 6", "Job 5", "Job 4", "Job 3", "Job 2", "Job 11", "Job 10", "Job 1"]
+sort progress descending=false: ["2", "6", "4", "3", "1", "5", "7", "8", "9", "10", "11"]
+sort progress descending=true: ["11", "10", "9", "8", "7", "5", "1", "3", "4", "6", "2"]
+sort state descending=false: ["2", "1", "5", "7", "8", "9", "10", "11", "3", "6", "4"]
+sort state descending=true: ["4", "6", "3", "11", "10", "9", "8", "7", "5", "1", "2"]
+sort elapsed descending=false: ["1", "3", "8", "6", "9", "7", "11", "2", "10", "5", "4"]
+sort elapsed descending=true: ["4", "5", "10", "2", "11", "7", "9", "6", "8", "3", "1"]
+capture 1000x520 at /work/acceptance-captures/acceptance-states.png; rows at capture: [
+    RowView {
+        key: "4",
+        name: "Job 4",
+        percent: 14,
+        state: "running",
+        elapsed: 1.4,
+        has_cancel: true,
+    },
+    RowView {
+        key: "5",
+        name: "Job 5",
+        percent: 100,
+        state: "done",
+        elapsed: 1.0,
+        has_cancel: false,
+    },
+    RowView {
+        key: "10",
+        name: "Job 10",
+        percent: 100,
+        state: "done",
+        elapsed: 1.0,
+        has_cancel: false,
+    },
+    RowView {
+        key: "2",
+        name: "Job 2",
+        percent: 6,
+        state: "cancelled",
+        elapsed: 0.6,
+        has_cancel: false,
+    },
+    RowView {
+        key: "11",
+        name: "Job 11",
+        percent: 100,
+        state: "done",
+        elapsed: 0.6,
+        has_cancel: false,
+    },
+    RowView {
+        key: "7",
+        name: "Job 7",
+        percent: 100,
+        state: "done",
+        elapsed: 0.5,
+        has_cancel: false,
+    },
+    RowView {
+        key: "9",
+        name: "Job 9",
+        percent: 100,
+        state: "done",
+        elapsed: 0.4,
+        has_cancel: false,
+    },
+    RowView {
+        key: "6",
+        name: "Job 6",
+        percent: 10,
+        state: "failed: simulated error",
+        elapsed: 0.4,
+        has_cancel: false,
+    },
+    RowView {
+        key: "8",
+        name: "Job 8",
+        percent: 100,
+        state: "done",
+        elapsed: 0.3,
+        has_cancel: false,
+    },
+    RowView {
+        key: "3",
+        name: "Job 3",
+        percent: 60,
+        state: "failed: simulated error",
+        elapsed: 0.3,
+        has_cancel: false,
+    },
+    RowView {
+        key: "1",
+        name: "Job 1",
+        percent: 100,
+        state: "done",
+        elapsed: 0.2,
+        has_cancel: false,
+    },
+]
+
+thread 'item4_sorting_item5_capture_and_idle' (39) panicked at tests/acceptance.rs:405:5:
+assertion `left == right` failed
+  left: "Running: 0   Done: 7   Cancelled: 2   Failed: 2"
+ right: "Running: 0   Done: 6   Cancelled: 2   Failed: 3"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    item4_sorting_item5_capture_and_idle
+
+test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.64s
+
+error: test failed, to rerun pass `--test acceptance`
+exit=101

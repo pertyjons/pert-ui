@@ -1,0 +1,30 @@
+[
+  {
+    "run": "r3-6-head-claude-1",
+    "verifier_exit": 0
+  },
+  {
+    "run": "r3-6-baseline-claude-1",
+    "verifier_exit": 0
+  },
+  {
+    "run": "r3-1-head-claude",
+    "verifier_exit": 1
+  },
+  {
+    "run": "r3-6-head-claude-2-retry1",
+    "verifier_exit": 0
+  },
+  {
+    "run": "r3-6-baseline-claude-2-retry1",
+    "verifier_exit": 0
+  },
+  {
+    "run": "r3-2-head-claude-retry1",
+    "verifier_exit": 0
+  },
+  {
+    "run": "r3-4-head-claude-retry1",
+    "verifier_exit": 1
+  }
+]

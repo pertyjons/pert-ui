@@ -1,0 +1,14 @@
+cargo 1.99.1 (5f94df478 2026-08-27)
+rustc 1.99.1 (58cf8f9c3 2026-10-13)
+pert-ui v0.3.75
+├── pert-ui feature "cpu"
+│   └── notes v0.1.0 (/work)
+│       └── notes feature "default" (command-line)
+├── pert-ui feature "default"
+│   └── notes v0.1.0 (/work) (*)
+├── pert-ui feature "desktop"
+│   └── pert-ui feature "default" (*)
+├── pert-ui feature "gpu"
+│   └── pert-ui feature "desktop" (*)
+└── pert-ui feature "native"
+    └── pert-ui feature "gpu" (*)

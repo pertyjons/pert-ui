@@ -1,0 +1,20 @@
+{
+  "work/verifier-captures/two-tabs-one-modified.png": {
+    "original_sha256": "4f1f5c2d6a7a6dd7c9f1ab490114bc651c0f9db0400583f554014bdc80502f85",
+    "archived_sha256": "87d672edcfe162302734e03fe3bdb3e4d3028750862627503447095587946c6e",
+    "identical_decoded_IDAT_sha256": "e465ac6c53df6bf8774331406b4fb79403c54ec3ffed8230c4a36b53afeec39a",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  },
+  "work/verifier-captures/failed-save-notification.png": {
+    "original_sha256": "26bb95048b4cb6a93debcbfe5f43e1e758aa839c20e3b160ae6b541edda776c1",
+    "archived_sha256": "39a870931c78c58ab4b0e3025bb3f98e00f8e111c6042c4ad121f392be08a1f1",
+    "identical_decoded_IDAT_sha256": "ff1b92b58c2af780db7fa12ee6d6bd5d552d92183fce3515551b9e489eb36526",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  },
+  "work/verifier-captures/new-note-refusal.png": {
+    "original_sha256": "3f99713d9cd9484ac18367df0871e36a8c3b6471c924a304d6963d358f8caae0",
+    "archived_sha256": "5b16166f065f787022a74a931408f3399b3db7df6c61602d39f8b4cf192c8006",
+    "identical_decoded_IDAT_sha256": "c9e0ec8e46a356b788a2262715a330317be48be26e82f256ebaa81eca0db9c09",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  }
+}

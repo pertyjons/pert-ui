@@ -1,0 +1,88 @@
+$ run.sh exec KIT ACCEPTANCE_DIR cargo test --locked --test verifier_acceptance -- --test-threads=1
+   Compiling notes v0.1.0 (/work)
+error[E0425]: cannot find type `ComponentInspection` in this scope
+  --> tests/verifier_acceptance.rs:68:30
+   |
+68 |     fn visible(&self) -> Vec<ComponentInspection> {
+   |                              ^^^^^^^^^^^^^^^^^^^ not found in this scope
+   |
+help: you might be missing a type parameter
+   |
+50 | impl<ComponentInspection> App {
+   |     +++++++++++++++++++++
+
+error[E0425]: cannot find type `ComponentInspection` in this scope
+  --> tests/verifier_acceptance.rs:72:40
+   |
+72 |     fn by_key(&self, key: &str) -> Vec<ComponentInspection> {
+   |                                        ^^^^^^^^^^^^^^^^^^^ not found in this scope
+   |
+help: you might be missing a type parameter
+   |
+50 | impl<ComponentInspection> App {
+   |     +++++++++++++++++++++
+
+error[E0433]: cannot find type `SemanticRole` in this scope
+  --> tests/verifier_acceptance.rs:82:96
+   |
+82 |             .find(|c| c.key == "notes" && c.details.semantics.as_ref().map(|s| s.role) == Some(SemanticRole::List))
+   |                                                                                                ^^^^^^^^^^^^ use of undeclared type `SemanticRole`
+   |
+help: an enum with a similar name exists
+   |
+82 -             .find(|c| c.key == "notes" && c.details.semantics.as_ref().map(|s| s.role) == Some(SemanticRole::List))
+82 +             .find(|c| c.key == "notes" && c.details.semantics.as_ref().map(|s| s.role) == Some(SemanticValue::List))
+   |
+
+error[E0433]: cannot find type `SemanticRole` in this scope
+   --> tests/verifier_acceptance.rs:104:76
+    |
+104 |             .find(|c| c.details.semantics.as_ref().map(|s| s.role) == Some(SemanticRole::TabList))
+    |                                                                            ^^^^^^^^^^^^ use of undeclared type `SemanticRole`
+    |
+help: an enum with a similar name exists
+    |
+104 -             .find(|c| c.details.semantics.as_ref().map(|s| s.role) == Some(SemanticRole::TabList))
+104 +             .find(|c| c.details.semantics.as_ref().map(|s| s.role) == Some(SemanticValue::TabList))
+    |
+
+error[E0433]: cannot find type `SemanticRole` in this scope
+   --> tests/verifier_acceptance.rs:125:78
+    |
+125 |             .filter(|c| c.details.semantics.as_ref().map(|s| s.role) == Some(SemanticRole::Dialog))
+    |                                                                              ^^^^^^^^^^^^ use of undeclared type `SemanticRole`
+    |
+help: an enum with a similar name exists
+    |
+125 -             .filter(|c| c.details.semantics.as_ref().map(|s| s.role) == Some(SemanticRole::Dialog))
+125 +             .filter(|c| c.details.semantics.as_ref().map(|s| s.role) == Some(SemanticValue::Dialog))
+    |
+
+error[E0433]: cannot find type `SemanticRole` in this scope
+   --> tests/verifier_acceptance.rs:138:76
+    |
+138 |             .find(|c| c.details.semantics.as_ref().map(|s| s.role) == Some(SemanticRole::Notifications))
+    |                                                                            ^^^^^^^^^^^^ use of undeclared type `SemanticRole`
+    |
+help: an enum with a similar name exists
+    |
+138 -             .find(|c| c.details.semantics.as_ref().map(|s| s.role) == Some(SemanticRole::Notifications))
+138 +             .find(|c| c.details.semantics.as_ref().map(|s| s.role) == Some(SemanticValue::Notifications))
+    |
+
+error[E0433]: cannot find type `SemanticRole` in this scope
+   --> tests/verifier_acceptance.rs:209:73
+    |
+209 |                 && c.details.semantics.as_ref().map(|s| s.role) == Some(SemanticRole::Menu)),
+    |                                                                         ^^^^^^^^^^^^ use of undeclared type `SemanticRole`
+    |
+help: an enum with a similar name exists
+    |
+209 -                 && c.details.semantics.as_ref().map(|s| s.role) == Some(SemanticRole::Menu)),
+209 +                 && c.details.semantics.as_ref().map(|s| s.role) == Some(SemanticValue::Menu)),
+    |
+
+Some errors have detailed explanations: E0425, E0433.
+For more information about an error, try `rustc --explain E0425`.
+error: could not compile `notes` (test "verifier_acceptance") due to 7 previous errors
+exit=101

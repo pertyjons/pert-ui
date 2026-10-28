@@ -1,0 +1,15 @@
+$ run.sh exec KIT ACCEPTANCE_DIR cargo metadata --locked --format-version 1 (pert-ui package manifest paths)
+pert-ui 0.3.88 /kit/vendor/pert-ui-0.3.88/Cargo.toml registry+https://github.com/rust-lang/crates.io-index
+pert-ui-core 0.3.88 /kit/vendor/pert-ui-core-0.3.88/Cargo.toml registry+https://github.com/rust-lang/crates.io-index
+pert-ui-cpu 0.3.88 /kit/vendor/pert-ui-cpu-0.3.88/Cargo.toml registry+https://github.com/rust-lang/crates.io-index
+pert-ui-runtime 0.3.88 /kit/vendor/pert-ui-runtime-0.3.88/Cargo.toml registry+https://github.com/rust-lang/crates.io-index
+pert-ui-wgpu 0.3.88 /kit/vendor/pert-ui-wgpu-0.3.88/Cargo.toml registry+https://github.com/rust-lang/crates.io-index
+exit=0
+
+$ run.sh exec KIT ACCEPTANCE_DIR cat /home/tester/.cargo/config.toml
+[source.crates-io]
+replace-with = "vendored"
+[source.vendored]
+directory = "/kit/vendor"
+[net]
+offline = true

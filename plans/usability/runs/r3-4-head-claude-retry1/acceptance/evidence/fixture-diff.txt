@@ -1,0 +1,14 @@
+Only in work/bookmarks: Cargo.lock
+diff -ru evidence/fixture/Cargo.toml work/bookmarks/Cargo.toml
+--- evidence/fixture/Cargo.toml	2026-10-28 19:13:51.950071726 +0100
++++ work/bookmarks/Cargo.toml	2026-10-28 17:54:50.654356512 +0100
+@@ -5,7 +5,7 @@
+ publish = false
+ 
+ [dependencies]
+-pert-ui = { version = "0.3.86", features = ["cpu"] }
++pert-ui = { version = "0.3.88", features = ["cpu"] }
+ 
+ # Not a member of any enclosing workspace.
+ [workspace]
+Only in work/bookmarks: tests

@@ -1,0 +1,22 @@
+   Compiling notes-editor v0.1.0 (/work)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.09s
+     Running unittests src/main.rs (target/debug/deps/notes_editor-c55310efc50ef678)
+
+running 1 test
+tab 0: focused []
+tab 1: focused ["split#14 parent=Some(13)"]
+tab 2: focused ["notes#15 parent=Some(14)"]
+tab 3: focused ["a.txt#44 parent=Some(15)"]
+tab 4: focused ["b.txt#45 parent=Some(15)"]
+tab 5: focused ["c.txt#46 parent=Some(15)"]
+tab 6: focused ["split#14 parent=Some(13)"]
+tab 7: focused ["notes#15 parent=Some(14)"]
+tab 8: focused ["a.txt#44 parent=Some(15)"]
+tab 9: focused ["b.txt#45 parent=Some(15)"]
+tab 10: focused ["c.txt#46 parent=Some(15)"]
+tab 11: focused ["split#14 parent=Some(13)"]
+list id 15
+test acceptance_tests::probe_focus_order ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.02s
+

@@ -1,0 +1,13 @@
+$ run.sh exec KIT ACCEPTANCE_DIR cargo test --manifest-path /work/bookmarks/Cargo.toml --offline --test acceptance
+   Compiling bookmarks v0.1.0 (/work/bookmarks)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.17s
+     Running tests/acceptance.rs (bookmarks/target/debug/deps/acceptance-c620ccbfb7a60bf0)
+
+running 3 tests
+test acceptance_clear_filter_command_is_registered_with_ctrl_l ... ok
+test acceptance_typed_add_appends_trims_and_clears ... ok
+test acceptance_ctrl_l_clears_filter_from_inspected_focus ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+exit=0

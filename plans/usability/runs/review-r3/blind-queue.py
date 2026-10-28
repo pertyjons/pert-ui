@@ -1,4 +1,4 @@
-"""Serial blind-test queue; refuses to reuse any run directory."""
+"""Historical serial blind-test queue; refuses to reuse any run directory."""
 import os
 from pathlib import Path
 import subprocess

@@ -1,0 +1,33 @@
+   Compiling notes-editor v0.1.0 (/work)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.23s
+     Running unittests src/main.rs (target/debug/deps/notes_editor-c55310efc50ef678)
+
+running 5 tests
+test acceptance_tests::item1_listing_open_and_reopen ... listed: ["apple.txt", "mango.txt", "pear.txt", "zucchini.txt"]
+Tab presses to reach the sidebar: 0
+
+thread 'acceptance_tests::item1_listing_open_and_reopen' (185) panicked at src/acceptance_tests.rs:377:5:
+assertion `left == right` failed
+  left: [("pear.txt", true)]
+ right: [("pear.txt", false), ("mango.txt", true)]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+test acceptance_tests::item2_typing_save_and_failed_save ... Error: TimeReversed
+FAILED
+test acceptance_tests::item3_new_note_dialog ... Error: TimeReversed
+FAILED
+test acceptance_tests::item4_close_choices ... Error: AmbiguousKey("dialog")
+FAILED
+test acceptance_tests::item5_cpu_capture_two_tabs_one_modified ... ok
+
+failures:
+
+failures:
+    acceptance_tests::item1_listing_open_and_reopen
+    acceptance_tests::item2_typing_save_and_failed_save
+    acceptance_tests::item3_new_note_dialog
+    acceptance_tests::item4_close_choices
+
+test result: FAILED. 1 passed; 4 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.23s
+
+error: test failed, to rerun pass `--bin notes-editor`

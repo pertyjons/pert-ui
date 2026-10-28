@@ -1,0 +1,32 @@
+$ run.sh exec /home/per/pert-ui-usability/kit-r3-head /home/per/pert-ui-usability/acceptance-r3-1-head-claude cargo test --locked --test verifier_acceptance -- --nocapture --test-threads=1
+# started 2026-10-28T19:11:11+01:00
+   Compiling settings_editor v0.1.0 (/work)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.18s
+     Running tests/verifier_acceptance.rs (target/debug/deps/verifier_acceptance-a73212e4fcecd2dd)
+
+running 6 tests
+test v1_every_field_shows_the_loaded_file ... capture v1-loaded.png
+ok
+test v2_refused_input_keeps_the_last_valid_value_in_effect ... 
+thread 'v2_refused_input_keeps_the_last_valid_value_in_effect' (141) panicked at tests/verifier_acceptance.rs:253:9:
+quality "1e2": "Enter a whole number"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+test v3_revert_after_valid_change_and_later_refused_draft ... capture v3-dirty-with-refused-draft.png
+ok
+test v4_failed_save_is_reported_and_stays_dirty ... capture v4-save-failed.png
+read-only case ran: Save failed: Could not save /work/target/tmp/verifier/v4-fail/sub/settings.json: Permission denied (os error 13)
+ok
+test v4_save_runs_off_the_ui_thread ... ok
+test v5_close_refused_while_dirty_and_admitted_when_resolved ... capture v5-close-refused.png
+ok
+
+failures:
+
+failures:
+    v2_refused_input_keeps_the_last_valid_value_in_effect
+
+test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.65s
+
+error: test failed, to rerun pass `--test verifier_acceptance`
+# exit=101 ended 2026-10-28T19:11:13+01:00

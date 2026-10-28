@@ -1,12 +1,17 @@
 # Round 3 checkpoint: pointer-testable menu rows and tab titles
 
-Status: proposed, 2026-10-28; implementation and execution evidence pending.
+Status: revision 2 approved, 2026-10-28; implemented on the working tree,
+with focused/workspace/native interaction checks passed; fresh implementation
+review pending. Fresh Claude review of revision 1 requested the named-parts dependency,
+live tab scrolling, complete documentation and sharper tests.
 This checkpoint is driven by the retained head submission
 [r3-6-head-claude-1](runs/r3-6-head-claude-1/FRICTION.md), its recorded
 `ItemWithoutBounds` failures for menus and tabs, and TODO.md's existing
 "built-in item reporters without rectangles" finding. It does not classify
 all of that submission's other leads; independent triage is still underway.
-The frozen experimental head stays at 32dd9c4 throughout the blind runs.
+The frozen experimental head stays at 32dd9c4 throughout the blind runs. This
+checkpoint lands together with the approved named-parts checkpoint; it does not
+publish structural-key traversal as the supported lookup route.
 
 ## Responsibility and scope
 
@@ -28,7 +33,11 @@ is fixed together rather than adding a menu-only coordinate path.
 - Use the rectangles painting and hit testing already use. Inspection reads
   retained geometry only and does not measure, arrange, publish or request
   work. All values are component-local logical pixels.
-- Tabs use the retained `Header::rect`, matching the current tab's stable key
+- Tabs retain unscrolled header rectangles and derive the displayed rectangle by
+  subtracting the live offset and adding the header inset. Update every paint,
+  target, drag and inspection use of Header::rect consistently so a wheel/arrow
+  scroll is reflected before a new arrangement. Match the current tab's stable
+  key
   and mounted `WidgetId` so stale cached geometry cannot be assigned to a
   recreated tab. Intersect it with `header_space()` and the title-strip
   height before publishing it: overflow arrows have their own hit regions
@@ -50,21 +59,27 @@ is fixed together rather than adding a menu-only coordinate path.
   preferred size. Cached headers must not retarget removed/recreated tabs;
   zero-area intersections publish no rectangle.
 
-The snapshot shape and field meanings do not change: item bounds are already
-optional under inspection schema 16, and their meaning stays the same. No
-schema bump or persisted workspace migration is proposed. Public signatures
-and the API listing should remain unchanged; the listing gate still runs.
+The geometry change itself does not change snapshot shape: optional item bounds
+keep their existing meaning. The companion named-parts checkpoint separately
+advances inspection to schema 17. Workspace stays at schema 2; no persisted
+workspace migration is proposed. The combined public API additions and their
+listing are owned by that checkpoint.
 
 ## Documentation and migration
 
-Document each affected component's inspection items and pointer bounds, plus
-its exact address route: tabs are addressed by tab key while titles are items
-of the strip; menus report their rows on the option-list component; Select's
-anchor and open list are distinct. Update `Driver::click_item`'s built-in
+Document each affected component's inspection items and pointer bounds and its
+public part route: tabs keep application tab-key addresses, while title items
+belong to the strip. Menu titles/lists and Select's control/options are obtained
+with the companion checkpoint's scoped Driver::exposed_part queries. That checkpoint
+owns the combined menu and Select doctests; this one owns the tab-title doctest.
+Update `Driver::click_item`'s built-in
 coverage statement and the testing guide without promising automatic
 scroll-to-item behavior. No repository consumer needs a compatibility shim.
-Add a complete public-API example that opens a menu and clicks a row, and a
-complete example selecting a tab through its title item; run them as doctests.
+Update SemanticItem rustdoc and the CHANGELOG as well. Document how
+wheel/arrows/keyboard bring hidden titles or rows into view, and that querying a
+closed list does not open it. Complete the tab-title example as a doctest.
+Narrow TODO.md's resolved tab and Select-list portions in the same change; the
+closed ComboBox's option descriptions intentionally have no bounds.
 Keep additional inspection/address documentation findings separately visible
 in the final triage rather than silently declaring them resolved by geometry.
 
@@ -97,3 +112,19 @@ menu/tab/Select pointer paths where available; headless evidence does not
 claim Windows/macOS support. Obtain fresh Claude design review before
 implementation and implementation review after the gates. Reviewers author
 no fixes and do not delegate.
+
+- Additional explicit cases from review: inspect immediately after tab scrolling
+  without settling; a strip narrower than its two arrows has no title bounds;
+  a disabled menu-row click runs no command and keeps the menu open; a closed
+  menu/Select list refuses reveal and invokes nothing; a nested submenu leaf
+  is clicked through its named-part scope; a detached title retains pointer
+  geometry and its existing native activation request behavior. Reuse the
+  existing runtime transform/failure coverage for unchanged machinery.
+
+Author/reviewer roles: Codex authors; fresh Claude reviews the design and
+implementation. The review is independent and authors no fixes.
+
+Fresh Claude review found geometry revision 2 ready conditional on the parts
+checkpoint; its revision-3 recheck approved that companion. Codex approved
+implementation under the maintainer's delegation on 2026-10-28. No runtime
+execution or implementation gate is claimed by this design approval.

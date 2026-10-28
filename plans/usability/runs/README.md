@@ -1,6 +1,6 @@
 # Blind-test records
 
-Rounds 1 and 2 of [the developer-usability
+Rounds 1 to 3 of [the developer-usability
 plan](../../archive/developer-usability.md). Exploratory evidence from AI
 testers: the times and counts describe how each tester worked, not a
 usability score.
@@ -282,9 +282,13 @@ The Claude probe confirms the model identity; no unobserved effective Codex
 model is claimed. Rust is 1.99.1 and pandoc is 3.7.0.2 in both sandboxes.
 
 Raw working directories and logs live under `~/pert-ui-usability/r3-*`.
-Completed submissions, per-run acceptance, summaries and friction logs will
-be preserved here using the same conventions as round 2. No result or final
-assessment is claimed yet.
+All planned successful submissions and their friction logs/summaries are
+preserved here using round 2's conventions, including the declared Claude
+replacement names. Independent acceptance is adopted only after author review.
+[The first review](review-r3/author-acceptance-1.md) adopts the completed Claude
+task-6 head/baseline verifiers and task 2 at head. Their added checks, command
+outputs and losslessly archived captures are kept under each run's acceptance/
+directory. No overall result or final assessment is claimed yet.
 
 The original Codex queue is complete. Claude's authentication interruption
 and the exact fresh replacement mapping are recorded in
@@ -293,3 +297,33 @@ starts are infrastructure records, not usability results. Successful retries
 keep the `-retry1` suffix. The kits and task/acceptance criteria are unchanged.
 Initial triage is under [triage-r3/](triage-r3/initial-head-task6.md); independent
 acceptance and final results are still pending.
+
+The independent verifier queues later stopped at the service's five-hour usage
+limit. Completed reports were preserved; interrupted graders retain their own
+contexts, copies and evidence. A tool-free isolated probe confirmed service
+availability after the declared 19:10 Europe/Stockholm reset. The continuation
+uses resume-acceptance.py only for those interrupted graders and creates fresh
+contexts for untouched submissions, skipping every completed verifier. Blind
+submissions are never replayed for this grading interruption. Both the first
+and resumed verifier status/output records remain private raw evidence; only
+reviewed acceptance artifacts are copied here.
+
+All planned round-3 independent acceptance checks have now completed and passed
+author review: every successful blind submission meets the frozen task checks.
+[The adoption index](review-r3/adopted-acceptance.json) records report/review
+hashes. Author reviews 1–5 explain decisions, test-only entry points, corrected
+report citations and the task-5 name-sort/failure-frequency interpretations.
+Original submissions remain unchanged. Added tests, reviewed hooks and diffs,
+command output and lossless CPU captures are preserved beside each report.
+The two interrupted graders resumed their own contexts; no blind result or
+completed verifier was replayed. The initial and continuation outcome JSONs
+preserve failures as well as successes. These acceptance results do not close
+full triage, library repairs or the overall usability assessment.
+
+Archived stdout and blind source are evidence. Some retain trailing spaces or
+a final extra blank line from the original bytes; git diff --check reports
+those artifact-only whitespace findings. They are not silently normalized, and
+no whitespace rule is relaxed for production code/documentation. PNG IDAT
+recompression is separately declared and decoded-byte checked in each capture
+provenance record. The source snapshots and acceptance index hashes distinguish
+the retained artifact bytes from regenerated summaries.

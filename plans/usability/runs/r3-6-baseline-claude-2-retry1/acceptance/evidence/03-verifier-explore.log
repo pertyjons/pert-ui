@@ -1,0 +1,68 @@
+$ run.sh exec KIT ACCEPTANCE_DIR cargo test --locked --test verifier_explore -- --nocapture
+   Compiling notes v0.1.0 (/work)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.81s
+     Running tests/verifier_explore.rs (target/debug/deps/verifier_explore-e3c53d15cc8f6eaa)
+
+running 1 test
+list semantics: Semantics { role: List, name: None, description: None, value: Some(Choice { selected: None, count: 2, label: None }), actions: [Select], items: [], disabled: false, read_only: false, invalid: false, warning: false, expanded: None, required: false, protected: false, names_children: false }
+title bounds Some(Rect([0.0, 0.0, 47.0, 32.0]))
+==== after clicking File
+   1 parent=None key="app" role=None name=None value=None items=None
+   2 parent=Some(1) key="content" role=None name=None value=None items=None
+   3 parent=Some(2) key="new-dialog" role=Some(Dialog) name=None value=None items=Some([])
+   4 parent=Some(3) key="anchor" role=None name=None value=None items=None
+   5 parent=Some(4) key="close-dialog" role=Some(Dialog) name=None value=None items=Some([])
+   6 parent=Some(5) key="anchor" role=None name=None value=None items=None
+   7 parent=Some(6) key="bar" role=Some(MenuBar) name=None value=None items=Some([])
+   8 parent=Some(7) key="title/file" role=Some(Menu) name=Some("File") value=None items=Some([])
+   9 parent=Some(8) key="menu" role=None name=None value=None items=None
+  10 parent=Some(9) key="actions" role=None name=None value=None items=None
+  11 parent=Some(10) key="items" role=Some(Menu) name=None value=Some(Choice { selected: Some(0), count: 3, label: Some("New note") }) items=Some([(Some("New note"), true), (Some("Save"), false), (Some("Close tab"), false)])
+  12 parent=Some(7) key="content" role=None name=None value=None items=None
+  13 parent=Some(12) key="main" role=None name=None value=None items=None
+  14 parent=Some(13) key="split" role=Some(Splitter) name=Some("Resize panes") value=None items=Some([])
+  15 parent=Some(14) key="notes" role=Some(List) name=None value=Some(Choice { selected: None, count: 2, label: None }) items=Some([])
+  16 parent=Some(14) key="tabs" role=Some(TabList) name=None value=Some(Choice { selected: None, count: 0, label: None }) items=Some([])
+  17 parent=Some(13) key="status" role=None name=None value=None items=None
+  42 parent=Some(1) key="toasts" role=Some(Notifications) name=None value=Some(Number { value: 0.0, minimum: Some(0.0), maximum: None }) items=Some([])
+  43 parent=Some(17) key="none" role=Some(Label) name=None value=None items=Some([])
+  44 parent=Some(15) key="a.txt" role=Some(Button) name=Some("a.txt") value=None items=Some([])
+  45 parent=Some(15) key="b.txt" role=Some(Button) name=Some("b.txt") value=None items=Some([])
+items bounds Some(Rect([12.0, 44.0, 144.0, 96.0]))
+==== close dialog open
+   1 parent=None key="app" role=None name=None value=None items=None
+   2 parent=Some(1) key="content" role=None name=None value=None items=None
+   3 parent=Some(2) key="new-dialog" role=Some(Dialog) name=None value=None items=Some([])
+   4 parent=Some(3) key="anchor" role=None name=None value=None items=None
+   5 parent=Some(4) key="close-dialog" role=Some(Dialog) name=None value=None items=Some([])
+   6 parent=Some(5) key="anchor" role=None name=None value=None items=None
+   7 parent=Some(6) key="bar" role=Some(MenuBar) name=None value=None items=Some([])
+   8 parent=Some(7) key="title/file" role=Some(Menu) name=Some("File") value=None items=Some([])
+  12 parent=Some(7) key="content" role=None name=None value=None items=None
+  13 parent=Some(12) key="main" role=None name=None value=None items=None
+  14 parent=Some(13) key="split" role=Some(Splitter) name=Some("Resize panes") value=None items=Some([])
+  15 parent=Some(14) key="notes" role=Some(List) name=None value=Some(Choice { selected: Some(0), count: 2, label: None }) items=Some([])
+  16 parent=Some(14) key="tabs" role=Some(TabList) name=None value=Some(Choice { selected: Some(0), count: 1, label: Some("a.txt *") }) items=Some([(Some("a.txt *"), true)])
+  17 parent=Some(13) key="status" role=None name=None value=None items=None
+  18 parent=Some(5) key="dialog" role=None name=None value=None items=None
+  19 parent=Some(18) key="panel" role=None name=None value=None items=None
+  20 parent=Some(19) key="scroll" role=Some(ScrollArea) name=None value=None items=Some([])
+  21 parent=Some(20) key="body" role=None name=None value=None items=None
+  22 parent=Some(21) key="close-form" role=None name=None value=None items=None
+  23 parent=Some(22) key="message" role=Some(Label) name=Some("a.txt has unsaved changes. Save them before closing?") value=None items=Some([])
+  24 parent=Some(22) key="actions" role=None name=None value=None items=None
+  25 parent=Some(24) key="save" role=Some(Button) name=Some("Save") value=None items=Some([])
+  26 parent=Some(24) key="discard" role=Some(Button) name=Some("Discard") value=None items=Some([])
+  27 parent=Some(24) key="cancel" role=Some(Button) name=Some("Cancel") value=None items=Some([])
+  42 parent=Some(1) key="toasts" role=Some(Notifications) name=None value=Some(Number { value: 0.0, minimum: Some(0.0), maximum: None }) items=Some([])
+  44 parent=Some(15) key="a.txt" role=Some(Button) name=Some("a.txt") value=None items=Some([])
+  45 parent=Some(15) key="b.txt" role=Some(Button) name=Some("b.txt") value=None items=Some([])
+  46 parent=Some(16) key="a.txt" role=Some(View) name=Some("a.txt *") value=None items=Some([])
+  47 parent=Some(46) key="tab-viewport" role=Some(ScrollArea) name=None value=None items=Some([])
+  48 parent=Some(47) key="editor" role=Some(MultilineTextInput) name=None value=Some(Text("xa")) items=Some([])
+  52 parent=Some(17) key="a.txt" role=Some(Label) name=Some("a.txt: 1 lines, 1 words") value=None items=Some([])
+test explore ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+exit=0

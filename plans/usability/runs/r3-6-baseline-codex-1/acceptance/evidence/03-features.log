@@ -1,0 +1,19 @@
+### $ run.sh exec KIT ACC cargo tree --offline -e features -i pert-ui
+pert-ui v0.3.75
+├── pert-ui feature "cpu"
+│   └── notes-editor v0.1.0 (/work)
+│       └── notes-editor feature "default" (command-line)
+├── pert-ui feature "default"
+│   └── notes-editor v0.1.0 (/work) (*)
+├── pert-ui feature "desktop"
+│   └── pert-ui feature "default" (*)
+├── pert-ui feature "gpu"
+│   └── pert-ui feature "desktop" (*)
+└── pert-ui feature "native"
+    └── pert-ui feature "gpu" (*)
+exit=0
+### $ cargo tree --offline -e features -i pert-ui-cpu
+pert-ui-cpu v0.3.75
+└── pert-ui-cpu feature "default"
+    └── pert-ui v0.3.75
+exit=0

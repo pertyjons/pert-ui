@@ -1,0 +1,16 @@
+Verifier-test iterations before the final run (verifier errors, not application defects).
+All via: run.sh exec KIT ACC cargo test --locked --test acceptance
+
+1) Compile errors in the verifier's own test file:
+   error[E0425]: cannot find type `CaptureImage` in this scope   (correct public type is pert_ui::FrameImage)
+   error[E0308]: mismatched types: mount_tree expected `Element`, found `Row`   (added .key("row"))
+   -> fixed in tests/acceptance.rs only.
+
+2) Run: 7 passed; 1 failed
+   ---- acc4_typed_fields_move_handle_both_axes_and_reset_restores_centre stdout ----
+   Error: TimeReversed
+   Cause: the verifier's capture helper flushed at Duration::ZERO after Driver::settle
+   had advanced the runtime clock. Fixed by flushing at Runtime::now() in the helper.
+   -> fixed in tests/acceptance.rs only.
+
+3) Run: 8 passed; 0 failed (see 04-final-suite.log for the final full suite).

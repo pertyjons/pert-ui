@@ -1,0 +1,124 @@
+   Compiling notes-editor v0.1.0 (/work)
+error[E0425]: cannot find type `InspectionSnapshot` in this scope
+  --> src/../acceptance/acceptance_tests.rs:56:23
+   |
+56 |     fn snap(&self) -> InspectionSnapshot {
+   |                       ^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `ComponentInspection` in this scope
+  --> src/../acceptance/acceptance_tests.rs:60:34
+   |
+60 |     fn comp(&self, key: &str) -> ComponentInspection {
+   |                                  ^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `ComponentInspection` in this scope
+  --> src/../acceptance/acceptance_tests.rs:70:23
+   |
+70 |     fn props_text(c: &ComponentInspection, prop: &str) -> Option<String> {
+   |                       ^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `ComponentInspection` in this scope
+  --> src/../acceptance/acceptance_tests.rs:76:23
+   |
+76 |     fn props_bool(c: &ComponentInspection, prop: &str) -> Option<bool> {
+   |                       ^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `ComponentInspection` in this scope
+  --> src/../acceptance/acceptance_tests.rs:82:22
+   |
+82 |     fn props_num(c: &ComponentInspection, prop: &str) -> Option<f64> {
+   |                      ^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0433]: cannot find type `SemanticRole` in this scope
+  --> src/../acceptance/acceptance_tests.rs:97:67
+   |
+97 |         assert_eq!(list.details.semantics.as_ref().unwrap().role, SemanticRole::List);
+   |                                                                   ^^^^^^^^^^^^ use of undeclared type `SemanticRole`
+   |
+help: an enum with a similar name exists
+   |
+97 -         assert_eq!(list.details.semantics.as_ref().unwrap().role, SemanticRole::List);
+97 +         assert_eq!(list.details.semantics.as_ref().unwrap().role, SemanticValue::List);
+   |
+
+error[E0433]: cannot find type `SemanticRole` in this scope
+   --> src/../acceptance/acceptance_tests.rs:118:28
+    |
+118 |         assert_eq!(s.role, SemanticRole::TabList);
+    |                            ^^^^^^^^^^^^ use of undeclared type `SemanticRole`
+    |
+help: an enum with a similar name exists
+    |
+118 -         assert_eq!(s.role, SemanticRole::TabList);
+118 +         assert_eq!(s.role, SemanticValue::TabList);
+    |
+
+error[E0433]: cannot find type `SemanticRole` in this scope
+   --> src/../acceptance/acceptance_tests.rs:165:28
+    |
+165 |         assert_eq!(s.role, SemanticRole::Notifications);
+    |                            ^^^^^^^^^^^^ use of undeclared type `SemanticRole`
+    |
+help: an enum with a similar name exists
+    |
+165 -         assert_eq!(s.role, SemanticRole::Notifications);
+165 +         assert_eq!(s.role, SemanticValue::Notifications);
+    |
+
+error[E0433]: cannot find type `SemanticRole` in this scope
+   --> src/../acceptance/acceptance_tests.rs:255:77
+    |
+255 |                     && c.details.semantics.as_ref().map(|s| s.role) == Some(SemanticRole::Menu)
+    |                                                                             ^^^^^^^^^^^^ use of undeclared type `SemanticRole`
+    |
+help: an enum with a similar name exists
+    |
+255 -                     && c.details.semantics.as_ref().map(|s| s.role) == Some(SemanticRole::Menu)
+255 +                     && c.details.semantics.as_ref().map(|s| s.role) == Some(SemanticValue::Menu)
+    |
+
+error[E0433]: cannot find type `InspectValue` in this scope
+  --> src/../acceptance/acceptance_tests.rs:72:18
+   |
+72 |             Some(InspectValue::Text(t)) => Some(t.clone()),
+   |                  ^^^^^^^^^^^^ use of undeclared type `InspectValue`
+
+error[E0433]: cannot find type `InspectValue` in this scope
+  --> src/../acceptance/acceptance_tests.rs:78:18
+   |
+78 |             Some(InspectValue::Bool(b)) => Some(*b),
+   |                  ^^^^^^^^^^^^ use of undeclared type `InspectValue`
+
+error[E0433]: cannot find type `InspectValue` in this scope
+  --> src/../acceptance/acceptance_tests.rs:84:18
+   |
+84 |             Some(InspectValue::Number(n)) => Some(*n),
+   |                  ^^^^^^^^^^^^ use of undeclared type `InspectValue`
+
+error[E0433]: cannot find type `SemanticRole` in this scope
+   --> src/../acceptance/acceptance_tests.rs:146:26
+    |
+146 |                     Some(SemanticRole::Dialog | SemanticRole::AlertDialog)
+    |                          ^^^^^^^^^^^^ use of undeclared type `SemanticRole`
+    |
+help: an enum with a similar name exists
+    |
+146 -                     Some(SemanticRole::Dialog | SemanticRole::AlertDialog)
+146 +                     Some(SemanticValue::Dialog | SemanticRole::AlertDialog)
+    |
+
+error[E0433]: cannot find type `SemanticRole` in this scope
+   --> src/../acceptance/acceptance_tests.rs:146:49
+    |
+146 |                     Some(SemanticRole::Dialog | SemanticRole::AlertDialog)
+    |                                                 ^^^^^^^^^^^^ use of undeclared type `SemanticRole`
+    |
+help: an enum with a similar name exists
+    |
+146 -                     Some(SemanticRole::Dialog | SemanticRole::AlertDialog)
+146 +                     Some(SemanticRole::Dialog | SemanticValue::AlertDialog)
+    |
+
+Some errors have detailed explanations: E0425, E0433.
+For more information about an error, try `rustc --explain E0425`.
+error: could not compile `notes-editor` (bin "notes-editor" test) due to 14 previous errors

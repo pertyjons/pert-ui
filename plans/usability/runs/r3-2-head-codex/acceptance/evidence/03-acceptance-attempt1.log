@@ -1,0 +1,62 @@
+$ run.sh exec KIT ACC cargo test --offline --locked -- --nocapture --test-threads=1
+   Compiling pert-tasks v0.1.0 (/work)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.86s
+     Running unittests src/main.rs (target/debug/deps/pert_tasks-3080e6fda56b2681)
+
+running 8 tests
+test acceptance_tests::acc_check_uncheck_remove_reorder_status ... 
+thread 'acceptance_tests::acc_check_uncheck_remove_reorder_status' (149) panicked at src/acceptance_tests.rs:119:5:
+assertion `left == right` failed
+  left: []
+ right: ["Charlie"]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+test acceptance_tests::acc_filter_selection_and_vector ... 
+thread 'acceptance_tests::acc_filter_selection_and_vector' (150) panicked at src/acceptance_tests.rs:241:5:
+assertion `left == right` failed
+  left: []
+ right: ["Buy milk", "MILK the cow"]
+FAILED
+test acceptance_tests::acc_inline_rename_enter_escape ... 
+thread 'acceptance_tests::acc_inline_rename_enter_escape' (151) panicked at src/acceptance_tests.rs:189:5:
+assertion `left == right` failed
+  left: []
+ right: ["Alpha", "Bravo renamed", "Charlie"]
+FAILED
+test acceptance_tests::acc_keyboard_shortcuts ... 
+thread 'acceptance_tests::acc_keyboard_shortcuts' (152) panicked at src/acceptance_tests.rs:307:5:
+assertion `left == right` failed
+  left: ["Alpha", "Bravo", "Charlie"]
+ right: ["Bravo", "Alpha", "Charlie"]
+FAILED
+test acceptance_tests::acc_observe_delete_in_text_field ... OBSERVE delete-in-search: search=Some(Text("")) tasks=["Alpha", "Bravo", "Charlie"]
+OBSERVE alt-up-after-button: focused_is_list=false tasks=["Alpha", "Charlie", "Bravo"]
+ok
+test acceptance_tests::acc_single_selection_pointer_and_arrows ... 
+thread 'acceptance_tests::acc_single_selection_pointer_and_arrows' (154) panicked at src/acceptance_tests.rs:156:5:
+assertion `left == right` failed
+  left: []
+ right: ["Alpha"]
+FAILED
+test acceptance_tests::acc_vector_drives_rows_and_status ... 
+thread 'acceptance_tests::acc_vector_drives_rows_and_status' (155) panicked at src/acceptance_tests.rs:69:5:
+assertion `left == right` failed
+  left: []
+ right: ["Alpha", "Bravo", "Charlie"]
+FAILED
+test tests::full_headless_user_session ... ok
+
+failures:
+
+failures:
+    acceptance_tests::acc_check_uncheck_remove_reorder_status
+    acceptance_tests::acc_filter_selection_and_vector
+    acceptance_tests::acc_inline_rename_enter_escape
+    acceptance_tests::acc_keyboard_shortcuts
+    acceptance_tests::acc_single_selection_pointer_and_arrows
+    acceptance_tests::acc_vector_drives_rows_and_status
+
+test result: FAILED. 2 passed; 6 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.25s
+
+error: test failed, to rerun pass `--bin pert-tasks`
+exit=101

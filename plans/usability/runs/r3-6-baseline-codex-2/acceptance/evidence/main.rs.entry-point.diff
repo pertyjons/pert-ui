@@ -1,0 +1,6 @@
+669a670,674
+> 
+> // Acceptance verifier entry point (test-only; no application behavior change).
+> #[cfg(test)]
+> #[path = "acceptance_tests.rs"]
+> mod acceptance_tests;

@@ -1,0 +1,12 @@
+$ /home/per/github/pert-ui/plans/usability/run.sh exec /home/per/pert-ui-usability/kit-r3-head /home/per/pert-ui-usability/acceptance-r3-6-head-codex-1 cargo test --offline -- --nocapture
+# started 2026-10-28T19:19:04+01:00
+   Compiling notes-editor v0.1.0 (/work)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.72s
+     Running unittests src/main.rs (target/debug/deps/notes_editor-02371687c9bde48a)
+
+running 1 test
+test tests::acceptance_through_ui ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+
+# exit=0 ended 2026-10-28T19:19:06+01:00

@@ -1,0 +1,58 @@
+### 2026-10-28T19:33:59+01:00 $ run.sh exec KIT ACC cargo test --offline -- --nocapture --test-threads=1
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running unittests src/main.rs (target/debug/deps/notes_editor-c55310efc50ef678)
+
+running 6 tests
+test acceptance_tests::item1_listing_open_and_reopen ... [acceptance] item1: folder created in order ["zulu.txt", "readme.md", "mike.txt", "archive.txt.bak", "alpha.txt"]
+[acceptance] item1: listed ["alpha.txt", "mike.txt", "zulu.txt"]
+[acceptance] item1: list focused after 2 Tab presses: true
+[acceptance] item1: keyboard-only open: ["alpha.txt"] selected=Some("alpha.txt")
+[acceptance] item1: after pointer open zulu: ["zulu.txt"] selected=Some("zulu.txt")
+[acceptance] item1: list not focused by row click; focusing it with Runtime::focus
+[acceptance] item1: after keyboard open: ["zulu.txt", "mike.txt"] selected=Some("mike.txt")
+[acceptance] item1: after reopening zulu by pointer: ["zulu.txt", "mike.txt"] selected=Some("zulu.txt")
+[acceptance] item1: after reopening mike by keyboard: ["zulu.txt", "mike.txt"] selected=Some("mike.txt")
+ok
+test acceptance_tests::item2_typing_marker_status_saves_and_failed_save ... [acceptance] item2: folder created in order ["zeta.txt", "other.md", "beta.txt"]
+[acceptance] item2: after typing ' two': title=["beta.txt *"] status="beta.txt: 1 lines, 2 words"
+[acceptance] item2: editor text "one two\nthree   four\n"; status="beta.txt: 3 lines, 4 words"
+[acceptance] item2: after Ctrl+S disk="one two\nthree   four\n" title=["beta.txt"]
+[acceptance] menu: clicked File → Save at y=81
+[acceptance] item2: after File→Save disk="one two\nthree   four\nfive" title=["beta.txt"]
+[acceptance] capture written: /work/acceptance-out/item2-two-tabs-one-modified.png
+[acceptance] item2: failed Ctrl+S notifications 0 -> 1; titles=["beta.txt", "zeta.txt *"]
+[acceptance] capture written: /work/acceptance-out/item2-failed-save-notification.png
+[acceptance] menu: clicked File → Save at y=81
+[acceptance] item2: failed File→Save notifications 1 -> 2; titles=["beta.txt", "zeta.txt *"]
+ok
+test acceptance_tests::item3_new_note_dialog_refusals_and_creation ... [acceptance] item3: folder created in order ["mike.txt", "notes.md", "alpha.txt"]
+[acceptance] menu: clicked File → New note at y=49
+[acceptance] item3: name "" -> dialogs=["new-dialog"] error visible=true text="Use a name of 1 to 64 characters."
+[acceptance] item3: name "a/b" -> dialogs=["new-dialog"] error visible=true text="Names cannot start with . or contain / or \\."
+[acceptance] item3: name "back\\slash" -> dialogs=["new-dialog"] error visible=true text="Names cannot start with . or contain / or \\."
+[acceptance] item3: name ".hidden" -> dialogs=["new-dialog"] error visible=true text="Names cannot start with . or contain / or \\."
+[acceptance] item3: name "alpha" -> dialogs=["new-dialog"] error visible=true text="A note with that name already exists."
+[acceptance] item3: name "alpha.txt" -> dialogs=["new-dialog"] error visible=true text="A note with that name already exists."
+[acceptance] item3: after 'beta': dialogs=[] dir={"alpha.txt", "beta.txt", "mike.txt", "notes.md"} listed=["alpha.txt", "beta.txt", "mike.txt"] tabs=(["beta.txt"], Some("beta.txt"), 1)
+[acceptance] item3: final dir {"alpha.txt", "beta.txt", "gamma.txt", "mike.txt", "notes.md"}
+ok
+test acceptance_tests::item4_close_choices_and_unmodified_close ... [acceptance] item4: folder created in order ["c.txt", "ignored.log", "b.txt", "a.txt", "d.txt"]
+[acceptance] item4: unmodified Ctrl+W -> tabs=(["a.txt", "b.txt", "c.txt"], Some("c.txt"), 3) dialogs=[]
+[acceptance] item4: modified Ctrl+W -> dialogs=["close-dialog"] close-form visible=true
+[acceptance] item4: Cancel -> tabs=(["a.txt", "b.txt", "c.txt *"], Some("c.txt"), 3) dialogs=[]
+[acceptance] menu: clicked File → Close tab at y=113
+[acceptance] item4: Discard -> tabs=(["a.txt", "b.txt"], Some("b.txt"), 2) dialogs=[] disk="cee"
+[acceptance] item4: Save -> tabs=(["a.txt", "c.txt"], Some("c.txt"), 2) dialogs=[] disk="bee\nsaved on close"
+[acceptance] menu: clicked File → Close tab at y=113
+[acceptance] item4: unmodified File→Close tab -> tabs=(["a.txt"], Some("a.txt"), 1) dialogs=[]
+[acceptance] item4: failing Save-and-close -> tabs=(["a.txt *"], Some("a.txt"), 1) dialogs=["close-dialog"] notifications 0->1
+ok
+test acceptance_tests::item5_cpu_capture_two_tabs_one_modified ... [acceptance] item5: folder created in order ["shopping.txt", "ideas.txt"]
+[acceptance] item5: tabs ["ideas.txt", "shopping.txt *"] selected=Some("shopping.txt") status="shopping.txt: 2 lines, 3 words"
+[acceptance] capture written: /work/acceptance-out/item5-two-tabs-one-modified.png
+ok
+test tests::headless_acceptance ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.83s
+
+exit=0

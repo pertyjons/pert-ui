@@ -1,0 +1,42 @@
+[
+  {
+    "name": "metadata-layout",
+    "file": "crates/pert-ui-runtime/src/runtime/tree.rs",
+    "original_sha256": "d56083120c9ab975d96f77aca408702fedb4ac51aec3add9e0a906a773454b7b",
+    "mutated_sha256": "b2daa059271cd8a29ffeb425dceb6df6923a55cb4e6b5451a730a613d0df9a15",
+    "restored_sha256": "d56083120c9ab975d96f77aca408702fedb4ac51aec3add9e0a906a773454b7b",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--test",
+      "foundation",
+      "exposed_parts::names_replace_and_remove_without_remounting_or_scheduling_layout",
+      "--",
+      "--exact"
+    ],
+    "exit_status": 101,
+    "expected_failure_present": true
+  },
+  {
+    "name": "native-tab-no-input",
+    "file": "apps/gallery/src/interaction_check.rs",
+    "original_sha256": "da42901c1c957358423c8035713b99aef0dd0cd777bf0cf89ae83417f7f51e24",
+    "mutated_sha256": "4810a5d34a0f24e3f9faeff209a7235a7f8b32e745fc7a1de4049228c7ff44de",
+    "restored_sha256": "da42901c1c957358423c8035713b99aef0dd0cd777bf0cf89ae83417f7f51e24",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "pert-ui-gallery",
+      "cli::the_interaction_steps_pass_headlessly",
+      "--",
+      "--exact"
+    ],
+    "exit_status": 101,
+    "expected_failure_present": true
+  }
+]

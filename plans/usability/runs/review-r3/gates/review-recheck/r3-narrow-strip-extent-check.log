@@ -1,0 +1,24 @@
+   Compiling pert-ui v0.3.89 (/home/per/github/pert-ui/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.86s
+     Running tests/surfaces/main.rs (target/debug/deps/surfaces-ed62ac05e6514d6b)
+
+running 1 test
+test pointer_items::tab_bounds_follow_live_scroll_exclude_arrows_and_do_not_retarget_recreated_keys ... FAILED
+
+failures:
+
+---- pointer_items::tab_bounds_follow_live_scroll_exclude_arrows_and_do_not_retarget_recreated_keys stdout ----
+
+thread 'pointer_items::tab_bounds_follow_live_scroll_exclude_arrows_and_do_not_retarget_recreated_keys' (2955692) panicked at crates/pert-ui/tests/surfaces/pointer_items.rs:194:5:
+assertion `left == right` failed: the strip itself is narrow, not just clipped by a narrow window
+  left: 96.0
+ right: 8.0
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    pointer_items::tab_bounds_follow_live_scroll_exclude_arrows_and_do_not_retarget_recreated_keys
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 463 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p pert-ui --test surfaces`

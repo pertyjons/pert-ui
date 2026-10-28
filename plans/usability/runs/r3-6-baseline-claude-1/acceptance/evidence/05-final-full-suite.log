@@ -1,0 +1,22 @@
+$ cargo test --locked   (final full suite: tester tests/notes.rs + author tests/acceptance.rs)
+     Running unittests src/lib.rs (target/debug/deps/notes-74702d665e2db5a5)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running unittests src/main.rs (target/debug/deps/notes-37cbafd3109b04c6)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/acceptance.rs (target/debug/deps/acceptance-4134637f3500dc97)
+test item1_listing_and_reopen ... ok
+test item4_close_choices ... ok
+test item5_cpu_capture ... ok
+test item2_typing_saving_and_failed_save ... ok
+test item3_new_note_dialog ... ok
+test item2_failed_save_capture ... ok
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+     Running tests/notes.rs (target/debug/deps/notes-9f0f35269ee6b4ac)
+test typing_marks_modified_and_saving_clears_it ... ok
+test lists_notes_in_order_and_reopening_switches_tab ... ok
+test new_note_dialog_refuses_invalid_names ... ok
+test closing_tabs ... ok
+test capture_two_notes_one_modified ... ok
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+exit=0

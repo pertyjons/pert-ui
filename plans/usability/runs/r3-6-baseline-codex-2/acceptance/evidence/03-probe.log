@@ -1,0 +1,147 @@
+   Compiling notes-editor v0.1.0 (/work)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.88s
+     Running unittests src/main.rs (target/debug/deps/notes_editor-c55310efc50ef678)
+
+running 1 test
+==== start
+   1 parent=None key="app" visible=true focused=false role=None name=None value=None items=None
+   2 parent=Some(1) key="content" visible=true focused=false role=None name=None value=None items=None
+   3 parent=Some(2) key="close-dialog" visible=true focused=false role=Some(Dialog) name=None value=None items=Some([])
+   4 parent=Some(3) key="anchor" visible=true focused=false role=None name=None value=None items=None
+   5 parent=Some(4) key="new-dialog" visible=true focused=false role=Some(Dialog) name=None value=None items=Some([])
+   6 parent=Some(5) key="anchor" visible=true focused=false role=None name=None value=None items=None
+   7 parent=Some(6) key="menu" visible=true focused=false role=Some(MenuBar) name=None value=None items=Some([])
+   8 parent=Some(7) key="title/file" visible=true focused=false role=Some(Menu) name=Some("File") value=None items=Some([])
+   9 parent=Some(8) key="menu" visible=false focused=false role=None name=None value=None items=None
+  10 parent=Some(9) key="actions" visible=false focused=false role=None name=None value=None items=None
+  11 parent=Some(10) key="items" visible=false focused=false role=Some(Menu) name=None value=Some(Choice { selected: None, count: 3, label: None }) items=Some([(Some("New note"), false), (Some("Save"), false), (Some("Close tab"), false)])
+  12 parent=Some(7) key="content" visible=true focused=false role=None name=None value=None items=None
+  13 parent=Some(12) key="content" visible=true focused=false role=None name=None value=None items=None
+  14 parent=Some(13) key="split" visible=true focused=false role=Some(Splitter) name=Some("Resize panes") value=None items=Some([])
+  15 parent=Some(14) key="notes" visible=true focused=false role=Some(List) name=None value=Some(Choice { selected: None, count: 2, label: None }) items=Some([])
+  16 parent=Some(14) key="tabs" visible=true focused=false role=Some(TabList) name=None value=Some(Choice { selected: None, count: 0, label: None }) items=Some([])
+  17 parent=Some(13) key="status" visible=true focused=false role=None name=None value=None items=None
+  18 parent=Some(5) key="dialog" visible=false focused=false role=None name=None value=None items=None
+  19 parent=Some(18) key="panel" visible=false focused=false role=None name=None value=None items=None
+  20 parent=Some(19) key="scroll" visible=false focused=false role=Some(ScrollArea) name=None value=None items=Some([])
+  21 parent=Some(20) key="body" visible=false focused=false role=None name=None value=None items=None
+  22 parent=Some(21) key="new-form" visible=false focused=false role=None name=None value=None items=None
+  23 parent=Some(22) key="heading" visible=false focused=false role=Some(Label) name=Some("New note") value=None items=Some([])
+  24 parent=Some(22) key="name" visible=false focused=false role=Some(TextInput) name=None value=Some(Text("")) items=Some([])
+  25 parent=Some(24) key="menu" visible=false focused=false role=None name=None value=None items=None
+  26 parent=Some(25) key="actions" visible=false focused=false role=None name=None value=None items=None
+  27 parent=Some(26) key="items" visible=false focused=false role=Some(Menu) name=None value=Some(Choice { selected: None, count: 5, label: None }) items=Some([(Some("Copy"), false), (Some("Cut"), false), (Some("Paste"), false), (Some("Paste Before"), false), (Some("Paste After"), false)])
+  28 parent=Some(22) key="error" visible=false focused=false role=Some(Label) name=None value=None items=Some([])
+  29 parent=Some(22) key="actions" visible=false focused=false role=None name=None value=None items=None
+  30 parent=Some(29) key="create" visible=false focused=false role=Some(Button) name=Some("Create") value=None items=Some([])
+  31 parent=Some(29) key="cancel" visible=false focused=false role=Some(Button) name=Some("Cancel") value=None items=Some([])
+  32 parent=Some(3) key="dialog" visible=false focused=false role=None name=None value=None items=None
+  33 parent=Some(32) key="panel" visible=false focused=false role=None name=None value=None items=None
+  34 parent=Some(33) key="scroll" visible=false focused=false role=Some(ScrollArea) name=None value=None items=Some([])
+  35 parent=Some(34) key="body" visible=false focused=false role=None name=None value=None items=None
+  36 parent=Some(35) key="close-form" visible=false focused=false role=None name=None value=None items=None
+  37 parent=Some(36) key="heading" visible=false focused=false role=Some(Label) name=Some("Save changes before closing?") value=None items=Some([])
+  38 parent=Some(36) key="actions" visible=false focused=false role=None name=None value=None items=None
+  39 parent=Some(38) key="save" visible=false focused=false role=Some(Button) name=Some("Save") value=None items=Some([])
+  40 parent=Some(38) key="discard" visible=false focused=false role=Some(Button) name=Some("Discard") value=None items=Some([])
+  41 parent=Some(38) key="cancel" visible=false focused=false role=Some(Button) name=Some("Cancel") value=None items=Some([])
+  42 parent=Some(1) key="toasts" visible=true focused=false role=Some(Notifications) name=None value=Some(Number { value: 0.0, minimum: Some(0.0), maximum: None }) items=Some([])
+  43 parent=Some(17) key="counts" visible=true focused=false role=Some(Label) name=None value=None items=Some([])
+  44 parent=Some(15) key="apple.txt" visible=true focused=false role=Some(Button) name=Some("apple.txt") value=None items=Some([])
+  45 parent=Some(15) key="pear.txt" visible=true focused=false role=Some(Button) name=Some("pear.txt") value=None items=Some([])
+==== menu open
+   1 parent=None key="app" visible=true focused=false role=None name=None value=None items=None
+   2 parent=Some(1) key="content" visible=true focused=false role=None name=None value=None items=None
+   3 parent=Some(2) key="close-dialog" visible=true focused=false role=Some(Dialog) name=None value=None items=Some([])
+   4 parent=Some(3) key="anchor" visible=true focused=false role=None name=None value=None items=None
+   5 parent=Some(4) key="new-dialog" visible=true focused=false role=Some(Dialog) name=None value=None items=Some([])
+   6 parent=Some(5) key="anchor" visible=true focused=false role=None name=None value=None items=None
+   7 parent=Some(6) key="menu" visible=true focused=false role=Some(MenuBar) name=None value=None items=Some([])
+   8 parent=Some(7) key="title/file" visible=true focused=false role=Some(Menu) name=Some("File") value=None items=Some([])
+   9 parent=Some(8) key="menu" visible=true focused=false role=None name=None value=None items=None
+  10 parent=Some(9) key="actions" visible=true focused=false role=None name=None value=None items=None
+  11 parent=Some(10) key="items" visible=true focused=true role=Some(Menu) name=None value=Some(Choice { selected: Some(0), count: 3, label: Some("New note") }) items=Some([(Some("New note"), true), (Some("Save"), false), (Some("Close tab"), false)])
+  12 parent=Some(7) key="content" visible=true focused=false role=None name=None value=None items=None
+  13 parent=Some(12) key="content" visible=true focused=false role=None name=None value=None items=None
+  14 parent=Some(13) key="split" visible=true focused=false role=Some(Splitter) name=Some("Resize panes") value=None items=Some([])
+  15 parent=Some(14) key="notes" visible=true focused=false role=Some(List) name=None value=Some(Choice { selected: None, count: 2, label: None }) items=Some([])
+  16 parent=Some(14) key="tabs" visible=true focused=false role=Some(TabList) name=None value=Some(Choice { selected: None, count: 0, label: None }) items=Some([])
+  17 parent=Some(13) key="status" visible=true focused=false role=None name=None value=None items=None
+  18 parent=Some(5) key="dialog" visible=false focused=false role=None name=None value=None items=None
+  19 parent=Some(18) key="panel" visible=false focused=false role=None name=None value=None items=None
+  20 parent=Some(19) key="scroll" visible=false focused=false role=Some(ScrollArea) name=None value=None items=Some([])
+  21 parent=Some(20) key="body" visible=false focused=false role=None name=None value=None items=None
+  22 parent=Some(21) key="new-form" visible=false focused=false role=None name=None value=None items=None
+  23 parent=Some(22) key="heading" visible=false focused=false role=Some(Label) name=Some("New note") value=None items=Some([])
+  24 parent=Some(22) key="name" visible=false focused=false role=Some(TextInput) name=None value=Some(Text("")) items=Some([])
+  25 parent=Some(24) key="menu" visible=false focused=false role=None name=None value=None items=None
+  26 parent=Some(25) key="actions" visible=false focused=false role=None name=None value=None items=None
+  27 parent=Some(26) key="items" visible=false focused=false role=Some(Menu) name=None value=Some(Choice { selected: None, count: 5, label: None }) items=Some([(Some("Copy"), false), (Some("Cut"), false), (Some("Paste"), false), (Some("Paste Before"), false), (Some("Paste After"), false)])
+  28 parent=Some(22) key="error" visible=false focused=false role=Some(Label) name=None value=None items=Some([])
+  29 parent=Some(22) key="actions" visible=false focused=false role=None name=None value=None items=None
+  30 parent=Some(29) key="create" visible=false focused=false role=Some(Button) name=Some("Create") value=None items=Some([])
+  31 parent=Some(29) key="cancel" visible=false focused=false role=Some(Button) name=Some("Cancel") value=None items=Some([])
+  32 parent=Some(3) key="dialog" visible=false focused=false role=None name=None value=None items=None
+  33 parent=Some(32) key="panel" visible=false focused=false role=None name=None value=None items=None
+  34 parent=Some(33) key="scroll" visible=false focused=false role=Some(ScrollArea) name=None value=None items=Some([])
+  35 parent=Some(34) key="body" visible=false focused=false role=None name=None value=None items=None
+  36 parent=Some(35) key="close-form" visible=false focused=false role=None name=None value=None items=None
+  37 parent=Some(36) key="heading" visible=false focused=false role=Some(Label) name=Some("Save changes before closing?") value=None items=Some([])
+  38 parent=Some(36) key="actions" visible=false focused=false role=None name=None value=None items=None
+  39 parent=Some(38) key="save" visible=false focused=false role=Some(Button) name=Some("Save") value=None items=Some([])
+  40 parent=Some(38) key="discard" visible=false focused=false role=Some(Button) name=Some("Discard") value=None items=Some([])
+  41 parent=Some(38) key="cancel" visible=false focused=false role=Some(Button) name=Some("Cancel") value=None items=Some([])
+  42 parent=Some(1) key="toasts" visible=true focused=false role=Some(Notifications) name=None value=Some(Number { value: 0.0, minimum: Some(0.0), maximum: None }) items=Some([])
+  43 parent=Some(17) key="counts" visible=true focused=false role=Some(Label) name=None value=None items=Some([])
+  44 parent=Some(15) key="apple.txt" visible=true focused=false role=Some(Button) name=Some("apple.txt") value=None items=Some([])
+  45 parent=Some(15) key="pear.txt" visible=true focused=false role=Some(Button) name=Some("pear.txt") value=None items=Some([])
+==== after ctrl+n
+   1 parent=None key="app" visible=true focused=false role=None name=None value=None items=None
+   2 parent=Some(1) key="content" visible=true focused=false role=None name=None value=None items=None
+   3 parent=Some(2) key="close-dialog" visible=true focused=false role=Some(Dialog) name=None value=None items=Some([])
+   4 parent=Some(3) key="anchor" visible=true focused=false role=None name=None value=None items=None
+   5 parent=Some(4) key="new-dialog" visible=true focused=false role=Some(Dialog) name=None value=None items=Some([])
+   6 parent=Some(5) key="anchor" visible=true focused=false role=None name=None value=None items=None
+   7 parent=Some(6) key="menu" visible=true focused=false role=Some(MenuBar) name=None value=None items=Some([])
+   8 parent=Some(7) key="title/file" visible=true focused=false role=Some(Menu) name=Some("File") value=None items=Some([])
+   9 parent=Some(8) key="menu" visible=true focused=false role=None name=None value=None items=None
+  10 parent=Some(9) key="actions" visible=true focused=false role=None name=None value=None items=None
+  11 parent=Some(10) key="items" visible=true focused=false role=Some(Menu) name=None value=Some(Choice { selected: Some(0), count: 3, label: Some("New note") }) items=Some([(Some("New note"), true), (Some("Save"), false), (Some("Close tab"), false)])
+  12 parent=Some(7) key="content" visible=true focused=false role=None name=None value=None items=None
+  13 parent=Some(12) key="content" visible=true focused=false role=None name=None value=None items=None
+  14 parent=Some(13) key="split" visible=true focused=false role=Some(Splitter) name=Some("Resize panes") value=None items=Some([])
+  15 parent=Some(14) key="notes" visible=true focused=false role=Some(List) name=None value=Some(Choice { selected: None, count: 2, label: None }) items=Some([])
+  16 parent=Some(14) key="tabs" visible=true focused=false role=Some(TabList) name=None value=Some(Choice { selected: None, count: 0, label: None }) items=Some([])
+  17 parent=Some(13) key="status" visible=true focused=false role=None name=None value=None items=None
+  18 parent=Some(5) key="dialog" visible=true focused=false role=None name=None value=None items=None
+  19 parent=Some(18) key="panel" visible=true focused=false role=None name=None value=None items=None
+  20 parent=Some(19) key="scroll" visible=true focused=false role=Some(ScrollArea) name=None value=None items=Some([])
+  21 parent=Some(20) key="body" visible=true focused=false role=None name=None value=None items=None
+  22 parent=Some(21) key="new-form" visible=true focused=false role=None name=None value=None items=None
+  23 parent=Some(22) key="heading" visible=true focused=false role=Some(Label) name=Some("New note") value=None items=Some([])
+  24 parent=Some(22) key="name" visible=true focused=true role=Some(TextInput) name=None value=Some(Text("")) items=Some([])
+  25 parent=Some(24) key="menu" visible=false focused=false role=None name=None value=None items=None
+  26 parent=Some(25) key="actions" visible=false focused=false role=None name=None value=None items=None
+  27 parent=Some(26) key="items" visible=false focused=false role=Some(Menu) name=None value=Some(Choice { selected: None, count: 5, label: None }) items=Some([(Some("Copy"), false), (Some("Cut"), false), (Some("Paste"), false), (Some("Paste Before"), false), (Some("Paste After"), false)])
+  28 parent=Some(22) key="error" visible=true focused=false role=Some(Label) name=None value=None items=Some([])
+  29 parent=Some(22) key="actions" visible=true focused=false role=None name=None value=None items=None
+  30 parent=Some(29) key="create" visible=true focused=false role=Some(Button) name=Some("Create") value=None items=Some([])
+  31 parent=Some(29) key="cancel" visible=true focused=false role=Some(Button) name=Some("Cancel") value=None items=Some([])
+  32 parent=Some(3) key="dialog" visible=false focused=false role=None name=None value=None items=None
+  33 parent=Some(32) key="panel" visible=false focused=false role=None name=None value=None items=None
+  34 parent=Some(33) key="scroll" visible=false focused=false role=Some(ScrollArea) name=None value=None items=Some([])
+  35 parent=Some(34) key="body" visible=false focused=false role=None name=None value=None items=None
+  36 parent=Some(35) key="close-form" visible=false focused=false role=None name=None value=None items=None
+  37 parent=Some(36) key="heading" visible=false focused=false role=Some(Label) name=Some("Save changes before closing?") value=None items=Some([])
+  38 parent=Some(36) key="actions" visible=false focused=false role=None name=None value=None items=None
+  39 parent=Some(38) key="save" visible=false focused=false role=Some(Button) name=Some("Save") value=None items=Some([])
+  40 parent=Some(38) key="discard" visible=false focused=false role=Some(Button) name=Some("Discard") value=None items=Some([])
+  41 parent=Some(38) key="cancel" visible=false focused=false role=Some(Button) name=Some("Cancel") value=None items=Some([])
+  42 parent=Some(1) key="toasts" visible=true focused=false role=Some(Notifications) name=None value=Some(Number { value: 0.0, minimum: Some(0.0), maximum: None }) items=Some([])
+  43 parent=Some(17) key="counts" visible=true focused=false role=Some(Label) name=None value=None items=Some([])
+  44 parent=Some(15) key="apple.txt" visible=true focused=false role=Some(Button) name=Some("apple.txt") value=None items=Some([])
+  45 parent=Some(15) key="pear.txt" visible=true focused=false role=Some(Button) name=Some("pear.txt") value=None items=Some([])
+test acceptance_tests::probe_inspection ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.02s
+

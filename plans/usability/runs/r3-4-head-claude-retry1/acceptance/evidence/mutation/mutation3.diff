@@ -1,0 +1,17 @@
+--- evidence/mutation/lib.rs.orig	2026-10-28 17:56:57.632391833 +0100
++++ work/bookmarks/src/lib.rs	2026-10-28 19:15:16.953188356 +0100
+@@ -105,12 +105,12 @@
+         &visible,
+         |bookmark| bookmark.id.to_string(),
+         move |_, bookmark| {
+-            let (list, id) = (remove_from.clone(), bookmark.id);
++            let (list, id) = (remove_from.clone(), bookmark.name.clone());
+             Row::new([
+                 Label::new(bookmark.name.as_str()).key("name"),
+                 Label::new(bookmark.url.as_str()).key("url"),
+                 Button::new("Remove", move |_| {
+-                    list.update(|list| list.retain(|bookmark| bookmark.id != id))
++                    list.update(|list| list.retain(|bookmark| bookmark.name != id))
+                 })
+                 .key("remove"),
+             ])

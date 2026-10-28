@@ -1,0 +1,17 @@
+$ run.sh exec KIT ACCEPTANCE_DIR cargo tree --offline --locked -e features -i pert-ui
+pert-ui v0.3.88
+├── pert-ui feature "default"
+│   └── photo-export-settings v0.1.0 (/work)
+│       └── photo-export-settings feature "default" (command-line)
+├── pert-ui feature "desktop"
+│   └── pert-ui feature "default" (*)
+├── pert-ui feature "gpu"
+│   └── pert-ui feature "desktop" (*)
+└── pert-ui feature "native"
+    └── pert-ui feature "gpu" (*)
+exit=0
+$ cargo tree -i pert-ui-cpu
+error: package ID specification `pert-ui-cpu` did not match any packages
+
+help: a package with a similar name exists: `pert-ui-wgpu`
+exit=101

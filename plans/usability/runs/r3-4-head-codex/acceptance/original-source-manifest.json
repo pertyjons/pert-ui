@@ -1,0 +1,13 @@
+{
+  "FRICTION.md": "b1a56038408da846a0034b68bd12d6f06758002824360c20c79c426dda96822c",
+  "first-test.log": "3dd8a3e8a14b619b3d009215fcc12fe696f811bdc57fd9e673718be71f07d8ac",
+  "mutation-test.log": "e94c887a248759087f6790f12c40264545ae08922c67f58bc0bf7ae0578bc920",
+  "final-test.log": "f3f6b6f423f1c3ef8de3fcafd797c088f58889bec8dd1f72f283788d9bef3027",
+  "bookmarks/README.md": "b96b6ccc00510c049c39e143bb7544ca0e72ada08abddda3c7b309984bf8ba40",
+  "bookmarks/Cargo.toml": "2d2c8529b908fb97c8612d229f31ce2b2874f2973ba9835fd42360903c6972e6",
+  "bookmarks/Cargo.lock": "56287bac4dd807b16e10168560b2900853bfcc8293e9cc6362ac02c3e79e9271",
+  "bookmarks/src/lib.rs": "242b409eab123c76aa1c9180addd31d6d82d402527644520f9c7f33ebbcc504a",
+  "bookmarks/src/main.rs": "8ba4002ad491086f1a099fab0f60420ec2468cb28c749b0e072197e038132ac2",
+  "bookmarks/tests/ui.rs": "31ab3ae43cd64055a7721dca1e51cbd905e4bb589c6e28b32d4d112b983ab7c5",
+  "bookmarks/captures/bookmarks.png": "657f2534d2bdec34cd33273f710f958bfe51797a1072de2f448050880cb2adfb"
+}

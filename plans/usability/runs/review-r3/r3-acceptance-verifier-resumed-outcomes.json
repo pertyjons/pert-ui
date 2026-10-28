@@ -1,0 +1,67 @@
+[
+  {
+    "run": "r3-1-head-claude",
+    "resumed": true,
+    "verifier_exit": 0
+  },
+  {
+    "run": "r3-4-head-claude-retry1",
+    "resumed": true,
+    "verifier_exit": 0
+  },
+  {
+    "run": "r3-6-head-codex-1",
+    "resumed": false,
+    "verifier_exit": 0
+  },
+  {
+    "run": "r3-6-baseline-codex-1",
+    "resumed": false,
+    "verifier_exit": 0
+  },
+  {
+    "run": "r3-1-head-codex",
+    "resumed": false,
+    "verifier_exit": 0
+  },
+  {
+    "run": "r3-3-head-codex",
+    "resumed": false,
+    "verifier_exit": 0
+  },
+  {
+    "run": "r3-5-head-codex",
+    "resumed": false,
+    "verifier_exit": 0
+  },
+  {
+    "run": "r3-3-head-claude-retry1",
+    "resumed": false,
+    "verifier_exit": 0
+  },
+  {
+    "run": "r3-5-head-claude-retry1",
+    "resumed": false,
+    "verifier_exit": 0
+  },
+  {
+    "run": "r3-6-head-codex-2",
+    "resumed": false,
+    "verifier_exit": 0
+  },
+  {
+    "run": "r3-6-baseline-codex-2",
+    "resumed": false,
+    "verifier_exit": 0
+  },
+  {
+    "run": "r3-2-head-codex",
+    "resumed": false,
+    "verifier_exit": 0
+  },
+  {
+    "run": "r3-4-head-codex",
+    "resumed": false,
+    "verifier_exit": 0
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "FRICTION.md": "385eea0e4919780df654062700c94aef55531d9917022523a2d1b4fbd850820c",
+  ".gitignore": "72e91eeb3afb28e2a1063cbed0bd0bdddc16469d06b1ac0bd0913004f04efef6",
+  "Cargo.toml": "9118d59dbf59fcdcd79360cece1f86f6025ed0937ecd6ffc03df7f554a844c0a",
+  "Cargo.lock": "2738d4f6510e6f695dcf6d87fdc619abe129d667337fa02a28f6afd241762e1a",
+  "README.md": "d041d2741d5b351860443c552ce39362537a800519e5e2a3c79e2537fbe591c3",
+  "src/main.rs": "75c2891783169900960eb561aff943708dfe4da0515e4bd4b1f519d6c58a1a2c",
+  "test-output/save/settings.json": "d62ea3ec1f55bf4b5bd0af7b3374e1d242a2437dbb54b8a5ada36edbf046484a",
+  "test-output/fields/settings.json": "9bbd5a608fe7d1a8830229f08b2123951610f1bd168bc874de5f1e699b800f40"
+}

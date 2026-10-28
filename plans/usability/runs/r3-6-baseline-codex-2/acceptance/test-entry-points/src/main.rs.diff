@@ -1,0 +1,11 @@
+--- submitted/src/main.rs
++++ acceptance-copy/src/main.rs
+@@ -667,3 +667,8 @@
+         Ok(())
+     }
+ }
++
++// Acceptance verifier entry point (test-only; no application behavior change).
++#[cfg(test)]
++#[path = "acceptance_tests.rs"]
++mod acceptance_tests;

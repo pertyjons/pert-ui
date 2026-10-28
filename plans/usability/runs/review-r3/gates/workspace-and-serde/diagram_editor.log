@@ -1,0 +1,4 @@
+   Compiling pert-ui v0.3.89 (/home/per/github/pert-ui/crates/pert-ui)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4.54s
+     Running `target/debug/examples/diagram_editor`
+diagram editor: headless session passed

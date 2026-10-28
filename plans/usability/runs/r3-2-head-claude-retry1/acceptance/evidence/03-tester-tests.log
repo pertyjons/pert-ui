@@ -1,0 +1,33 @@
+$ run.sh exec KIT ACCEPTANCE_DIR cargo test --locked
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+     Running unittests src/lib.rs (target/debug/deps/todo-e7e86712c4c85ab3)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/debug/deps/todo-ce96a83a35714f47)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/headless.rs (target/debug/deps/headless-a70e9a160858d547)
+
+running 6 tests
+test filter_hides_without_changing_tasks ... ok
+test layout_validates ... ok
+test rename_in_place ... ok
+test keyboard_shortcuts ... ok
+test add_remove_check_reorder ... ok
+test capture_after_edits ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+   Doc-tests todo
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+exit=0

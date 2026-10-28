@@ -1,0 +1,53 @@
+$ run.sh exec KIT ACCEPTANCE_DIR rustfmt --edition 2024 /work/bookmarks/tests/acceptance.rs
+exit=0
+$ run.sh exec KIT ACCEPTANCE_DIR cargo fmt --manifest-path /work/bookmarks/Cargo.toml --check
+exit=0
+$ run.sh exec KIT ACCEPTANCE_DIR cargo test --manifest-path /work/bookmarks/Cargo.toml --offline
+   Compiling bookmarks v0.1.0 (/work/bookmarks)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.71s
+     Running unittests src/lib.rs (bookmarks/target/debug/deps/bookmarks-4965cadeca4c9639)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (bookmarks/target/debug/deps/bookmarks-29282a4316e51175)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/acceptance.rs (bookmarks/target/debug/deps/acceptance-c620ccbfb7a60bf0)
+
+running 3 tests
+test acceptance_clear_filter_command_is_registered_with_ctrl_l ... ok
+test acceptance_ctrl_l_clears_filter_from_inspected_focus ... ok
+test acceptance_typed_add_appends_trims_and_clears ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/ui.rs (bookmarks/target/debug/deps/ui-3063b8ea806a76eb)
+
+running 8 tests
+test list_shows_rows_and_remove_deletes_only_its_bookmark ... ok
+test successful_add_clears_both_fields ... ok
+test clear_filter_keyboard_command_works_wherever_focus_is ... ok
+test refused_add_preserves_fields_and_success_clears_error ... ok
+test filter_matches_name_substrings_ignoring_case_and_spaces ... ok
+test add_appends_and_trims_name ... ok
+test status_counts_visible_and_total_bookmarks ... ok
+test cpu_renderer_captures_main_window_as_png ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+   Doc-tests bookmarks
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+exit=0
+== copy vs original-source-manifest
+all 11 submitted files identical to manifest
+== verifier-added files
+b1dbcc769ecc643eb25bba666c56b494fd6b208a7f08380956c69d2d7169e60b  work/bookmarks/tests/acceptance.rs

@@ -1,0 +1,66 @@
+$ run.sh exec KIT ACC cargo build --locked --all-targets
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.11s
+exit=0
+
+$ run.sh exec KIT ACC cargo test --locked --no-fail-fast
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running unittests src/lib.rs (target/debug/deps/point_picker-b5b36df36b7254be)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/debug/deps/point_picker-ae79a916fa5da319)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/acceptance.rs (target/debug/deps/acceptance-ca9bcaf768ef41e7)
+
+running 8 tests
+test acc_reusable_two_independent_pickers_report_and_accept_owner_values ... ok
+test acc6_value_in_inspection_snapshot_follows_input ... ok
+test acc2_escape_cancels_drag_to_pre_press_value_and_next_drag_works ... ok
+test acc5b_focus_ring_follows_a_live_theme_change ... ok
+test acc1_drag_outside_each_edge_clamps_and_continues_until_release ... ok
+test acc3_arrow_keys_step_001_and_shift_step_01_on_both_axes ... ok
+test acc4_typed_fields_move_handle_both_axes_and_reset_restores_centre ... ok
+test acc5_cpu_captures_dark_and_light_show_theme_focus_ring ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+     Running tests/picker.rs (target/debug/deps/picker-6a4367750fb86416)
+
+running 8 tests
+test the_value_appears_in_an_inspection_snapshot ... ok
+test focus_loss_during_a_drag_restores_the_old_point ... ok
+test the_focus_ring_follows_the_theme ... ok
+test numeric_fields_move_the_handle_and_reset_restores_the_centre ... ok
+test escape_cancels_a_drag_and_restores_the_old_point ... ok
+test drag_moves_the_handle_and_clamps_outside_the_area ... ok
+test cpu_captures_in_both_themes ... ok
+test arrow_keys_move_the_point_with_and_without_shift ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+   Doc-tests point_picker
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+exit=0
+
+$ run.sh exec KIT ACC cargo clippy --locked --all-targets
+    Checking point_picker v0.1.0 (/work)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.27s
+exit=0
+
+$ run.sh exec KIT ACC cargo run --locked -- --capture /work/acceptance-captures/headless-mode
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.13s
+     Running `target/debug/point_picker --capture /work/acceptance-captures/headless-mode`
+wrote /work/acceptance-captures/headless-mode/dark.png
+wrote /work/acceptance-captures/headless-mode/light.png
+exit=0
+

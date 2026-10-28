@@ -1,0 +1,21 @@
+   Compiling pert-ui-runtime v0.3.89 (/home/per/github/pert-ui/crates/pert-ui-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 40.58s
+     Running unittests src/lib.rs (target/debug/deps/pert_ui_runtime-87e7d33e6cb9fb9f)
+
+running 1 test
+TEXT "A\tB" SIZE Size { width: 27.0, height: 20.0 } PARTS 1
+CLUSTER 0..1 GLYPHS [(36, 8.946)]
+CLUSTER 1..2 GLYPHS [(0, 8.400001)]
+CLUSTER 2..3 GLYPHS [(37, 9.1)]
+TEXT "A B" SIZE Size { width: 22.0, height: 20.0 } PARTS 1
+CLUSTER 0..1 GLYPHS [(36, 8.946)]
+CLUSTER 1..2 GLYPHS [(3, 3.64)]
+CLUSTER 2..3 GLYPHS [(37, 9.1)]
+TEXT "\t" SIZE Size { width: 9.0, height: 20.0 } PARTS 1
+CLUSTER 0..1 GLYPHS [(0, 8.400001)]
+TEXT " " SIZE Size { width: 4.0, height: 20.0 } PARTS 1
+CLUSTER 0..1 GLYPHS [(3, 3.64)]
+test text::r3_tab_probe::r3_literal_tab_probe ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 188 filtered out; finished in 0.01s
+

@@ -1,0 +1,19 @@
+$ run.sh exec KIT ACCEPTANCE_DIR cargo build --offline --locked   (non-test build, after adding the cfg(test) entry point)
+   Compiling photo-export-settings v0.1.0 (/work)
+warning: fields `root`, `values`, and `applied` are never read
+  --> src/main.rs:71:5
+   |
+70 | struct Editor {
+   |        ------ fields in this struct
+71 |     root: WidgetId,
+   |     ^^^^
+72 |     values: Values,
+   |     ^^^^^^
+73 |     applied: Signal<Settings>,
+   |     ^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `photo-export-settings` (bin "photo-export-settings") generated 1 warning
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.73s
+exit=0

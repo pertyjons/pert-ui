@@ -1,0 +1,197 @@
+### 2026-10-28T19:33:34+01:00 $ run.sh exec KIT ACCEPTANCE_DIR cargo test --offline --locked -- --nocapture --test-threads=1
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running unittests src/lib.rs (target/debug/deps/notes_editor-a04ad6acc778d6ef)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/debug/deps/notes_editor-33d0acd25999bcd8)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/headless.rs (target/debug/deps/headless-c47a6ccdec46e94b)
+
+running 1 test
+test acceptance ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+     Running tests/verifier_acceptance.rs (target/debug/deps/verifier_acceptance-e264b11bba500aea)
+
+running 7 tests
+test feature_divider_drag ... divider dragged from x=220: extent Some(Number(300.0))
+ok
+test item1_listing_open_and_reopen ... ok
+test item2_typing_marker_status_saves_and_failed_save ... failure notification: Save failed for journal.txt: No such file or directory (os error 2)
+ok
+test item3_new_note_dialog_refusals_and_creation ... empty: Name must contain 1 to 64 characters.
+"a/b": Name must not contain / or \.
+"a\\b": Name must not contain / or \.
+".hidden": Name must not start with a dot.
+"existing": A note with that name already exists.
+"existing.txt": A note with that name already exists.
+"nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn": Name must contain 1 to 64 characters.
+ok
+test item4_close_choices_and_unmodified_close ... ok
+test item5_cpu_capture_two_tabs_one_modified ... titles at capture: ["Ideas.txt", "Shopping.txt *"]
+ok
+test supporting_captures_failure_and_refusal ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.56s
+
+     Running tests/verifier_explore.rs (target/debug/deps/verifier_explore-3e71cf19fe0702d2)
+
+running 1 test
+test explore ... ==== all at start
+id=1 key="window" path=Some(["window"]) visible=true focused=false props={"open": Bool(false), "window_modal": Bool(true)}
+    role=Some(Dialog) name=None value=None items=Some([])
+id=2 key="anchor" path=None visible=true focused=false props={}
+    role=None name=None value=None items=None
+id=3 key="close-dialog" path=Some(["window", "close-dialog"]) visible=true focused=false props={"open": Bool(false), "window_modal": Bool(true)}
+    role=Some(Dialog) name=None value=None items=Some([])
+id=4 key="anchor" path=None visible=true focused=false props={}
+    role=None name=None value=None items=None
+id=5 key="bar" path=Some(["window", "close-dialog", "bar"]) visible=true focused=false props={"keyboard": Bool(false)}
+    role=Some(MenuBar) name=None value=None items=Some([])
+id=6 key="title/file" path=None visible=true focused=false props={"open": Bool(false)}
+    role=Some(Menu) name=Some("File") value=None items=Some([])
+id=7 key="menu" path=None visible=false focused=false props={"anchor_owner": Number(6.0), "presentation_layer": Text("Popover")}
+    role=None name=None value=None items=None
+id=8 key="actions" path=None visible=false focused=false props={}
+    role=None name=None value=None items=None
+id=9 key="items" path=None visible=false focused=false props={"options": Number(3.0), "scroll_offset": Number(0.0)}
+    role=Some(Menu) name=None value=Some(Choice { selected: None, count: 3, label: None }) items=Some([(Some("New note"), false, None, None), (Some("Save"), false, None, None), (Some("Close tab"), false, None, None)])
+id=10 key="content" path=None visible=true focused=false props={}
+    role=None name=None value=None items=None
+id=11 key="body" path=Some(["window", "close-dialog", "bar", "body"]) visible=true focused=false props={}
+    role=None name=None value=None items=None
+id=12 key="split" path=Some(["window", "close-dialog", "bar", "body", "split"]) visible=true focused=false props={"extent": Number(220.0), "resizable": Bool(true), "rule": Text("first")}
+    role=Some(Splitter) name=Some("Resize panes") value=None items=Some([])
+id=13 key="files" path=Some(["window", "close-dialog", "bar", "body", "split", "files"]) visible=true focused=false props={"lanes": Number(1.0), "mounted": Number(2.0), "range_end": Number(2.0), "range_start": Number(0.0), "reorderable": Bool(false), "rows": Number(2.0), "scroll_y": Number(0.0)}
+    role=Some(List) name=None value=Some(Choice { selected: None, count: 2, label: None }) items=Some([])
+id=14 key="tabs" path=Some(["window", "close-dialog", "bar", "body", "split", "tabs"]) visible=true focused=false props={"detachable": Bool(false), "detached_tabs": Number(0.0), "reorderable": Bool(false), "scroll_x": Number(0.0), "tab_count": Number(0.0)}
+    role=Some(TabList) name=None value=Some(Choice { selected: None, count: 0, label: None }) items=Some([])
+id=15 key="notification" path=Some(["window", "close-dialog", "bar", "body", "notification"]) visible=true focused=false props={"text": Text("")}
+    role=Some(Label) name=None value=None items=Some([])
+id=16 key="dialog" path=Some(["window", "close-dialog", "dialog"]) visible=false focused=false props={"anchor_owner": Number(3.0), "presentation_layer": Text("Dialog")}
+    role=None name=None value=None items=None
+id=17 key="panel" path=None visible=false focused=false props={}
+    role=None name=None value=None items=None
+id=18 key="scroll" path=None visible=false focused=false props={"scroll_x": Number(0.0), "scroll_y": Number(0.0)}
+    role=Some(ScrollArea) name=None value=None items=Some([])
+id=19 key="body" path=None visible=false focused=false props={}
+    role=None name=None value=None items=None
+id=20 key="close-form" path=Some(["window", "close-dialog", "dialog", "close-form"]) visible=false focused=false props={}
+    role=None name=None value=None items=None
+id=21 key="heading" path=Some(["window", "close-dialog", "dialog", "close-form", "heading"]) visible=false focused=false props={"text": Text("Save changes before closing?")}
+    role=Some(Label) name=Some("Save changes before closing?") value=None items=Some([])
+id=22 key="actions" path=Some(["window", "close-dialog", "dialog", "close-form", "actions"]) visible=false focused=false props={}
+    role=None name=None value=None items=None
+id=23 key="save" path=Some(["window", "close-dialog", "dialog", "close-form", "actions", "save"]) visible=false focused=false props={"enabled": Bool(true), "text": Text("Save")}
+    role=Some(Button) name=Some("Save") value=None items=Some([])
+id=24 key="discard" path=Some(["window", "close-dialog", "dialog", "close-form", "actions", "discard"]) visible=false focused=false props={"enabled": Bool(true), "text": Text("Discard")}
+    role=Some(Button) name=Some("Discard") value=None items=Some([])
+id=25 key="cancel" path=Some(["window", "close-dialog", "dialog", "close-form", "actions", "cancel"]) visible=false focused=false props={"enabled": Bool(true), "text": Text("Cancel")}
+    role=Some(Button) name=Some("Cancel") value=None items=Some([])
+id=26 key="dialog" path=Some(["window", "dialog"]) visible=false focused=false props={"anchor_owner": Number(1.0), "presentation_layer": Text("Dialog")}
+    role=None name=None value=None items=None
+id=27 key="panel" path=None visible=false focused=false props={}
+    role=None name=None value=None items=None
+id=28 key="scroll" path=None visible=false focused=false props={"scroll_x": Number(0.0), "scroll_y": Number(0.0)}
+    role=Some(ScrollArea) name=None value=None items=Some([])
+id=29 key="body" path=None visible=false focused=false props={}
+    role=None name=None value=None items=None
+id=30 key="new-form" path=Some(["window", "dialog", "new-form"]) visible=false focused=false props={}
+    role=None name=None value=None items=None
+id=31 key="heading" path=Some(["window", "dialog", "new-form", "heading"]) visible=false focused=false props={"text": Text("New note")}
+    role=Some(Label) name=Some("New note") value=None items=Some([])
+id=32 key="name" path=Some(["window", "dialog", "new-form", "name"]) visible=false focused=false props={"composing": Bool(false), "enabled": Bool(true), "multiline": Bool(false), "placeholder": Text("Note name"), "read_only": Bool(false), "scroll_x": Number(0.0), "scroll_y": Number(0.0), "selection": Text("0..0"), "text": Text(""), "typography": Text("Body")}
+    role=Some(TextInput) name=None value=Some(Text("")) items=Some([])
+id=33 key="menu" path=None visible=false focused=false props={"anchor_owner": Number(32.0), "presentation_layer": Text("ContextMenu")}
+    role=None name=None value=None items=None
+id=34 key="actions" path=None visible=false focused=false props={}
+    role=None name=None value=None items=None
+id=35 key="items" path=None visible=false focused=false props={"options": Number(5.0), "scroll_offset": Number(0.0)}
+    role=Some(Menu) name=None value=Some(Choice { selected: None, count: 5, label: None }) items=Some([(Some("Copy"), false, None, None), (Some("Cut"), false, None, None), (Some("Paste"), false, None, None), (Some("Paste Before"), false, None, None), (Some("Paste After"), false, None, None)])
+id=36 key="error" path=Some(["window", "dialog", "new-form", "error"]) visible=false focused=false props={"text": Text("")}
+    role=Some(Label) name=None value=None items=Some([])
+id=37 key="actions" path=Some(["window", "dialog", "new-form", "actions"]) visible=false focused=false props={}
+    role=None name=None value=None items=None
+id=38 key="create" path=Some(["window", "dialog", "new-form", "actions", "create"]) visible=false focused=false props={"enabled": Bool(true), "text": Text("Create")}
+    role=Some(Button) name=Some("Create") value=None items=Some([])
+id=39 key="cancel" path=Some(["window", "dialog", "new-form", "actions", "cancel"]) visible=false focused=false props={"enabled": Bool(true), "text": Text("Cancel")}
+    role=Some(Button) name=Some("Cancel") value=None items=Some([])
+id=40 key="a.txt" path=Some(["window", "close-dialog", "bar", "body", "split", "files", "a.txt"]) visible=true focused=false props={}
+    role=None name=None value=None items=None
+id=41 key="open" path=Some(["window", "close-dialog", "bar", "body", "split", "files", "a.txt", "open"]) visible=true focused=false props={"enabled": Bool(true), "text": Text("a.txt")}
+    role=Some(Button) name=Some("a.txt") value=None items=Some([])
+id=42 key="b.txt" path=Some(["window", "close-dialog", "bar", "body", "split", "files", "b.txt"]) visible=true focused=false props={}
+    role=None name=None value=None items=None
+id=43 key="open" path=Some(["window", "close-dialog", "bar", "body", "split", "files", "b.txt", "open"]) visible=true focused=false props={"enabled": Bool(true), "text": Text("b.txt")}
+    role=Some(Button) name=Some("b.txt") value=None items=Some([])
+==== after clicking File
+id=6 key="title/file" path=None visible=true focused=false props={"open": Bool(true)}
+    role=Some(Menu) name=Some("File") value=None items=Some([])
+id=7 key="menu" path=None visible=true focused=false props={"anchor_owner": Number(6.0), "presentation_layer": Text("Popover")}
+    role=None name=None value=None items=None
+id=9 key="items" path=None visible=true focused=true props={"active": Text("New note"), "options": Number(3.0), "scroll_offset": Number(0.0)}
+    role=Some(Menu) name=None value=Some(Choice { selected: Some(0), count: 3, label: Some("New note") }) items=Some([(Some("New note"), true, Some("Ctrl+N"), None), (Some("Save"), false, Some("Ctrl+S"), None), (Some("Close tab"), false, Some("Ctrl+W"), None)])
+id=33 key="menu" path=None visible=false focused=false props={"anchor_owner": Number(32.0), "presentation_layer": Text("ContextMenu")}
+    role=None name=None value=None items=None
+id=35 key="items" path=None visible=false focused=false props={"options": Number(5.0), "scroll_offset": Number(0.0)}
+    role=Some(Menu) name=None value=Some(Choice { selected: None, count: 5, label: None }) items=Some([(Some("Copy"), false, None, None), (Some("Cut"), false, None, None), (Some("Paste"), false, None, None), (Some("Paste Before"), false, None, None), (Some("Paste After"), false, None, None)])
+items bounds [12.0, 44.0, 144.0, 96.0]
+y=45 selected=[true, false, false] value=Some(Choice { selected: Some(0), count: 3, label: Some("New note") })
+y=49 selected=[true, false, false] value=Some(Choice { selected: Some(0), count: 3, label: Some("New note") })
+y=53 selected=[true, false, false] value=Some(Choice { selected: Some(0), count: 3, label: Some("New note") })
+y=57 selected=[true, false, false] value=Some(Choice { selected: Some(0), count: 3, label: Some("New note") })
+y=61 selected=[true, false, false] value=Some(Choice { selected: Some(0), count: 3, label: Some("New note") })
+y=65 selected=[true, false, false] value=Some(Choice { selected: Some(0), count: 3, label: Some("New note") })
+y=69 selected=[true, false, false] value=Some(Choice { selected: Some(0), count: 3, label: Some("New note") })
+y=73 selected=[true, false, false] value=Some(Choice { selected: Some(0), count: 3, label: Some("New note") })
+y=77 selected=[false, true, false] value=Some(Choice { selected: Some(1), count: 3, label: Some("Save") })
+y=81 selected=[false, true, false] value=Some(Choice { selected: Some(1), count: 3, label: Some("Save") })
+y=85 selected=[false, true, false] value=Some(Choice { selected: Some(1), count: 3, label: Some("Save") })
+y=89 selected=[false, true, false] value=Some(Choice { selected: Some(1), count: 3, label: Some("Save") })
+y=93 selected=[false, true, false] value=Some(Choice { selected: Some(1), count: 3, label: Some("Save") })
+y=97 selected=[false, true, false] value=Some(Choice { selected: Some(1), count: 3, label: Some("Save") })
+y=101 selected=[false, true, false] value=Some(Choice { selected: Some(1), count: 3, label: Some("Save") })
+y=105 selected=[false, true, false] value=Some(Choice { selected: Some(1), count: 3, label: Some("Save") })
+y=109 selected=[false, false, true] value=Some(Choice { selected: Some(2), count: 3, label: Some("Close tab") })
+y=113 selected=[false, false, true] value=Some(Choice { selected: Some(2), count: 3, label: Some("Close tab") })
+y=117 selected=[false, false, true] value=Some(Choice { selected: Some(2), count: 3, label: Some("Close tab") })
+y=121 selected=[false, false, true] value=Some(Choice { selected: Some(2), count: 3, label: Some("Close tab") })
+y=125 selected=[false, false, true] value=Some(Choice { selected: Some(2), count: 3, label: Some("Close tab") })
+y=129 selected=[false, false, true] value=Some(Choice { selected: Some(2), count: 3, label: Some("Close tab") })
+y=133 selected=[false, false, true] value=Some(Choice { selected: Some(2), count: 3, label: Some("Close tab") })
+y=137 selected=[false, false, true] value=Some(Choice { selected: Some(2), count: 3, label: Some("Close tab") })
+==== after open a
+id=14 key="tabs" path=Some(["window", "close-dialog", "bar", "body", "split", "tabs"]) visible=true focused=false props={"detachable": Bool(false), "detached_tabs": Number(0.0), "reorderable": Bool(false), "scroll_x": Number(0.0), "selected": Text("a.txt"), "tab_count": Number(1.0)}
+    role=Some(TabList) name=None value=Some(Choice { selected: Some(0), count: 1, label: Some("a.txt") }) items=Some([(Some("a.txt"), true, None, None)])
+id=44 key="a.txt" path=Some(["window", "close-dialog", "bar", "body", "split", "tabs", "a.txt"]) visible=true focused=false props={}
+    role=Some(View) name=Some("a.txt") value=None items=Some([])
+id=45 key="tab-viewport" path=Some(["window", "close-dialog", "bar", "body", "split", "tabs", "a.txt", "viewport"]) visible=true focused=false props={"scroll_x": Number(0.0), "scroll_y": Number(0.0)}
+    role=Some(ScrollArea) name=None value=None items=Some([])
+id=46 key="page" path=Some(["window", "close-dialog", "bar", "body", "split", "tabs", "a.txt", "page"]) visible=true focused=false props={}
+    role=None name=None value=None items=None
+id=47 key="editor" path=Some(["window", "close-dialog", "bar", "body", "split", "tabs", "a.txt", "page", "editor"]) visible=true focused=false props={"composing": Bool(false), "enabled": Bool(true), "multiline": Bool(true), "read_only": Bool(false), "scroll_x": Number(0.0), "scroll_y": Number(0.0), "selection": Text("0..0"), "text": Text("a"), "typography": Text("Monospace")}
+    role=Some(MultilineTextInput) name=None value=Some(Text("a")) items=Some([])
+id=51 key="status" path=Some(["window", "close-dialog", "bar", "body", "split", "tabs", "a.txt", "page", "status"]) visible=true focused=false props={"text": Text("a.txt: 1 lines, 1 words")}
+    role=Some(Label) name=Some("a.txt: 1 lines, 1 words") value=None items=Some([])
+focused editor: true
+editor value Some(Text("aX\nY Z"))
+tabs Semantics { role: TabList, name: None, description: None, value: Some(Choice { selected: Some(0), count: 1, label: Some("a.txt *") }), actions: [Select], items: [SemanticItem { name: Some("a.txt *"), selected: true, disabled: false, expanded: None, checked: None, shortcut: None, actions: [Select], bounds: None, local: None }], disabled: false, read_only: false, invalid: false, warning: false, expanded: None, required: false, protected: false, names_children: false }
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+   Doc-tests notes_editor
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+### exit=0

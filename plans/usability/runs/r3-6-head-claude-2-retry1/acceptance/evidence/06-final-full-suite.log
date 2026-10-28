@@ -1,0 +1,90 @@
+$ run.sh exec KIT ACCEPTANCE_DIR cargo test --offline --locked -- --nocapture --test-threads=1
+   Compiling notes v0.1.0 (/work)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.86s
+     Running unittests src/lib.rs (target/debug/deps/notes-3c76db413fb6c068)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/debug/deps/notes-74865e27ea01d805)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/acceptance.rs (target/debug/deps/acceptance-ddfeada1cfb42fb6)
+
+running 5 tests
+test item1_listing_and_reopen ... tab titles after two opens: ["kiwi.txt", "apple.txt"]
+ok
+test item2_edit_save_and_failed_save ... failed Ctrl+S notifications: ["Could not save plan.txt: No such file or directory (os error 2)"]
+ok
+test item3_new_note_dialog ... refused "": "Enter a name."
+refused "a/b": "A name must not contain / or \\."
+refused "a\\b": "A name must not contain / or \\."
+refused ".hidden": "A name must not start with a dot."
+refused "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx": "A name has at most 64 characters."
+refused "pear": "A note named pear.txt already exists."
+refused "fig.txt": "A note named fig.txt already exists."
+ok
+test item4_close_choices ... close dialog content: [["app", "new-dialog", "close-dialog", "dialog"], ["app", "new-dialog", "close-dialog", "dialog", "close-tab"], ["app", "new-dialog", "close-dialog", "dialog", "close-tab", "heading"], ["app", "new-dialog", "close-dialog", "dialog", "close-tab", "message"], ["app", "new-dialog", "close-dialog", "dialog", "close-tab", "actions"], ["app", "new-dialog", "close-dialog", "dialog", "close-tab", "actions", "save"], ["app", "new-dialog", "close-dialog", "dialog", "close-tab", "actions", "discard"], ["app", "new-dialog", "close-dialog", "dialog", "close-tab", "actions", "cancel"]]
+ok
+test item5_cpu_capture ... capture tab titles: ["alpha.txt *", "beta.txt"]
+ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.41s
+
+     Running tests/acceptance_probe.rs (target/debug/deps/acceptance_probe-c2a1abb49ae718ff)
+
+running 1 test
+test probe_menu_bar ... bar child segment="split"
+==== before
+Some(["app", "new-dialog"]) key="new-dialog" role=Dialog name=None value=None border=Some([0.0, 0.0, 960.0, 640.0])
+Some(["app", "new-dialog", "close-dialog"]) key="close-dialog" role=Dialog name=None value=None border=Some([0.0, 0.0, 960.0, 640.0])
+Some(["app", "new-dialog", "close-dialog", "main", "bar"]) key="bar" role=MenuBar name=None value=None border=Some([0.0, 0.0, 960.0, 640.0])
+None key="title/file" role=Menu name=Some("File") value=None border=Some([0.0, 0.0, 47.0, 32.0])
+Some(["app", "new-dialog", "close-dialog", "main", "bar", "split"]) key="split" role=Splitter name=Some("Resize panes") value=None border=Some([0.0, 32.0, 960.0, 608.0])
+Some(["app", "new-dialog", "close-dialog", "main", "bar", "split", "notes"]) key="notes" role=List name=None value=Some(Choice { selected: None, count: 1, label: None }) border=Some([0.0, 32.0, 220.0, 608.0])
+Some(["app", "new-dialog", "close-dialog", "main", "bar", "split", "editor", "tabs"]) key="tabs" role=TabList name=None value=Some(Choice { selected: None, count: 0, label: None }) border=Some([228.0, 32.0, 732.0, 600.0])
+Some(["app", "toasts"]) key="toasts" role=Notifications name=None value=Some(Number { value: 0.0, minimum: Some(0.0), maximum: None }) border=Some([960.0, 640.0, 0.0, 0.0])
+Some(["app", "new-dialog", "close-dialog", "main", "bar", "split", "editor", "status", "none"]) key="none" role=Label name=None value=None border=Some([228.0, 640.0, 732.0, 0.0])
+Some(["app", "new-dialog", "close-dialog", "main", "bar", "split", "notes", "a.txt"]) key="a.txt" role=Button name=Some("a.txt") value=None border=Some([0.0, 32.0, 220.0, 32.0])
+==== after clicking File
+Some(["app", "new-dialog"]) key="new-dialog" role=Dialog name=None value=None border=Some([0.0, 0.0, 960.0, 640.0])
+Some(["app", "new-dialog", "close-dialog"]) key="close-dialog" role=Dialog name=None value=None border=Some([0.0, 0.0, 960.0, 640.0])
+Some(["app", "new-dialog", "close-dialog", "main", "bar"]) key="bar" role=MenuBar name=None value=None border=Some([0.0, 0.0, 960.0, 640.0])
+None key="title/file" role=Menu name=Some("File") value=None border=Some([0.0, 0.0, 47.0, 32.0])
+None key="items" role=Menu name=None value=Some(Choice { selected: Some(0), count: 3, label: Some("New note") }) border=Some([12.0, 44.0, 144.0, 104.0])
+    item name=Some("New note") bounds=None shortcut=Some("Ctrl+N")
+    item name=Some("Save") bounds=None shortcut=Some("Ctrl+S")
+    item name=Some("Close tab") bounds=None shortcut=Some("Ctrl+W")
+Some(["app", "new-dialog", "close-dialog", "main", "bar", "split"]) key="split" role=Splitter name=Some("Resize panes") value=None border=Some([0.0, 32.0, 960.0, 608.0])
+Some(["app", "new-dialog", "close-dialog", "main", "bar", "split", "notes"]) key="notes" role=List name=None value=Some(Choice { selected: None, count: 1, label: None }) border=Some([0.0, 32.0, 220.0, 608.0])
+Some(["app", "new-dialog", "close-dialog", "main", "bar", "split", "editor", "tabs"]) key="tabs" role=TabList name=None value=Some(Choice { selected: None, count: 0, label: None }) border=Some([228.0, 32.0, 732.0, 600.0])
+Some(["app", "toasts"]) key="toasts" role=Notifications name=None value=Some(Number { value: 0.0, minimum: Some(0.0), maximum: None }) border=Some([960.0, 640.0, 0.0, 0.0])
+Some(["app", "new-dialog", "close-dialog", "main", "bar", "split", "editor", "status", "none"]) key="none" role=Label name=None value=None border=Some([228.0, 640.0, 732.0, 0.0])
+Some(["app", "new-dialog", "close-dialog", "main", "bar", "split", "notes", "a.txt"]) key="a.txt" role=Button name=Some("a.txt") value=None border=Some([0.0, 32.0, 220.0, 32.0])
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/app.rs (target/debug/deps/app-aeaf820f22ba994e)
+
+running 6 tests
+test closes_tabs ... ok
+test cpu_capture ... ok
+test divider_resizes_sidebar ... ok
+test edits_and_saves ... ok
+test lists_and_opens ... ok
+test new_note_dialog ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+
+   Doc-tests notes
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+exit=0

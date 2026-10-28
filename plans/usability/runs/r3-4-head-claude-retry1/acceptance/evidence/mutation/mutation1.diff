@@ -1,0 +1,11 @@
+--- evidence/mutation/lib.rs.orig	2026-10-28 17:56:57.632391833 +0100
++++ work/bookmarks/src/lib.rs	2026-10-28 19:15:03.851464242 +0100
+@@ -90,7 +90,7 @@
+             list.update(|list| {
+                 list.push(Bookmark {
+                     id,
+-                    name: entered_name.trim().to_owned(),
++                    name: entered_name.clone(),
+                     url: entered_url,
+                 });
+             })?;

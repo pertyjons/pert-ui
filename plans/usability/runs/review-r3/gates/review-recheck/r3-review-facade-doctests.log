@@ -1,0 +1,133 @@
+    Blocking waiting for file lock on build directory
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.79s
+   Doc-tests pert_ui
+
+running 116 tests
+test crates/pert-ui/src/../README.md - ReadmeDoctests (line 12) - compile ... ok
+test crates/pert-ui/src/app.rs - app::App (line 285) - compile ... ok
+test crates/pert-ui/src/app.rs - app::App (line 311) - compile ... ok
+test crates/pert-ui/src/app.rs - app::App (line 347) - compile ... ok
+test crates/pert-ui/src/app.rs - app::App<S>::on_error (line 791) - compile ... ok
+test crates/pert-ui/src/app.rs - app::App<S>::run (line 942) - compile ... ok
+test crates/pert-ui/src/app.rs - app::App<S>::on_window_error (line 904) - compile ... ok
+test crates/pert-ui/src/app.rs - app::App<S>::size (line 671) - compile ... ok
+test crates/pert-ui/src/guide.rs - guide::appearance (line 631) - compile ... ok
+test crates/pert-ui/src/guide.rs - guide::appearance (line 297) ... ok
+test crates/pert-ui/src/app.rs - app::AppError (line 43) ... ok
+test crates/pert-ui/src/app/headless.rs - app::headless::HeadlessApp<S>::state_mut (line 203) ... ok
+test crates/pert-ui/src/app/headless.rs - app::headless::HeadlessApp<S>::state (line 178) ... ok
+test crates/pert-ui/src/guide.rs - guide::appearance (line 407) ... ok
+test crates/pert-ui/src/guide.rs - guide::authoritative_values (line 135) ... ok
+test crates/pert-ui/src/guide.rs - guide::authoritative_values (line 103) ... ok
+test crates/pert-ui/src/guide.rs - guide::appearance (line 481) ... ok
+test crates/pert-ui/src/guide.rs - guide::appearance (line 536) ... ok
+test crates/pert-ui/src/guide.rs - guide::appearance (line 554) ... ok
+test crates/pert-ui/src/guide.rs - guide::authoritative_values (line 235) ... ok
+test crates/pert-ui/src/guide.rs - guide::appearance (line 247) ... ok
+test crates/pert-ui/src/guide.rs - guide::appearance (line 449) ... ok
+test crates/pert-ui/src/guide.rs - guide::controls (line 467) - compile ... ok
+test crates/pert-ui/src/guide.rs - guide::appearance (line 177) ... ok
+test crates/pert-ui/src/app.rs - app::App<S>::new (line 601) ... ok
+test crates/pert-ui/src/app.rs - app::App<S>::new (line 580) ... ok
+test crates/pert-ui/src/guide.rs - guide::controls (line 344) ... ok
+test crates/pert-ui/src/guide.rs - guide::appearance (line 320) ... ok
+test crates/pert-ui/src/guide.rs - guide::authoritative_values (line 178) ... ok
+test crates/pert-ui/src/guide.rs - guide::controls (line 400) ... ok
+test crates/pert-ui/src/guide.rs - guide::appearance (line 389) ... ok
+test crates/pert-ui/src/guide.rs - guide::appearance (line 573) ... ok
+test crates/pert-ui/src/guide.rs - guide::controls (line 531) ... ok
+test crates/pert-ui/src/app/headless.rs - app::headless::HeadlessApp (line 27) ... ok
+test crates/pert-ui/src/guide.rs - guide::custom_widgets (line 862) - compile ... ok
+test crates/pert-ui/src/app/headless.rs - app::headless::HeadlessApp<S>::runtime_and_state_mut (line 231) ... ok
+test crates/pert-ui/src/guide.rs - guide::custom_widgets (line 231) ... ok
+test crates/pert-ui/src/guide.rs - guide::controls (line 688) ... ok
+test crates/pert-ui/src/guide.rs - guide::controls (line 639) ... ok
+test crates/pert-ui/src/guide.rs - guide::controls (line 664) ... ok
+test crates/pert-ui/src/guide.rs - guide::controls (line 744) ... ok
+test crates/pert-ui/src/guide.rs - guide::custom_widgets (line 314) ... ok
+test crates/pert-ui/src/guide.rs - guide::controls (line 261) ... ok
+test crates/pert-ui/src/guide.rs - guide::controls (line 176) ... ok
+test crates/pert-ui/src/guide.rs - guide::appearance (line 510) ... ok
+test crates/pert-ui/src/guide.rs - guide::controls (line 141) ... ok
+test crates/pert-ui/src/guide.rs - guide::controls (line 291) ... ok
+test crates/pert-ui/src/guide.rs - guide::custom_widgets (line 385) ... ok
+test crates/pert-ui/src/guide.rs - guide::diagnostics (line 384) ... ok
+test crates/pert-ui/src/guide.rs - guide::controls (line 312) ... ok
+test crates/pert-ui/src/guide.rs - guide::diagnostics (line 330) ... ok
+test crates/pert-ui/src/guide.rs - guide::diagnostics (line 202) ... ok
+test crates/pert-ui/src/guide.rs - guide::controls (line 420) ... ok
+test crates/pert-ui/src/guide.rs - guide::controls (line 596) ... ok
+test crates/pert-ui/src/guide.rs - guide::controls (line 565) ... ok
+test crates/pert-ui/src/guide.rs - guide::controls (line 222) ... ok
+test crates/pert-ui/src/guide.rs - guide::getting_started (line 189) ... ok
+test crates/pert-ui/src/guide.rs - guide::appearance (line 362) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 228) ... ok
+test crates/pert-ui/src/guide.rs - guide::diagnostics (line 275) ... ok
+test crates/pert-ui/src/guide.rs - guide::getting_started (line 251) ... ok
+test crates/pert-ui/src/guide.rs - guide::getting_started (line 220) ... ok
+test crates/pert-ui/src/guide.rs - guide::custom_widgets (line 807) ... ok
+test crates/pert-ui/src/guide.rs - guide::diagnostics (line 421) ... ok
+test crates/pert-ui/src/guide.rs - guide::custom_widgets (line 498) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 193) ... ok
+test crates/pert-ui/src/guide.rs - guide::surfaces (line 167) ... ok
+test crates/pert-ui/src/guide.rs - guide::custom_widgets (line 262) ... ok
+test crates/pert-ui/src/guide.rs - guide::testing (line 193) ... ok
+test crates/pert-ui/src/guide.rs - guide::surfaces (line 223) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 278) ... ok
+test crates/pert-ui/src/guide.rs - guide::state (line 177) ... ok
+test crates/pert-ui/src/guide.rs - guide::testing (line 473) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 309) ... ok
+test crates/pert-ui/src/guide.rs - guide::state (line 122) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 412) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 499) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 140) ... ok
+test crates/pert-ui/src/guide.rs - guide::surfaces (line 319) ... ok
+test crates/pert-ui/src/guide.rs - guide::state (line 240) ... ok
+test crates/pert-ui/src/guide.rs - guide::testing (line 356) ... ok
+test crates/pert-ui/src/guide.rs - guide::testing (line 393) ... ok
+test crates/pert-ui/src/guide.rs - guide::surfaces (line 257) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 436) ... ok
+test crates/pert-ui/src/guide.rs - guide::testing (line 236) ... ok
+test crates/pert-ui/src/guide.rs - guide::surfaces (line 411) ... ok
+test crates/pert-ui/src/guide.rs - guide::surfaces (line 463) ... ok
+test crates/pert-ui/src/guide.rs - guide::testing (line 424) ... ok
+test crates/pert-ui/src/guide.rs - guide::testing (line 540) ... ok
+test crates/pert-ui/src/lib.rs - component (line 179) ... ok
+test crates/pert-ui/src/lib.rs - host (line 571) ... ok
+test crates/pert-ui/src/lib.rs - commands (line 714) ... ok
+test crates/pert-ui/src/root.md - (line 15) - compile ... ok
+test crates/pert-ui/src/guide.rs - guide::testing (line 601) ... ok
+test crates/pert-ui/src/guide.rs - guide::testing (line 501) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 471) ... ok
+test crates/pert-ui/src/guide.rs - guide::testing (line 571) ... ok
+test crates/pert-ui/src/guide.rs - guide::testing (line 833) ... ok
+test crates/pert-ui/src/lib.rs - parameter (line 661) ... ok
+test crates/pert-ui/src/guide.rs - guide::surfaces (line 365) ... ok
+test crates/pert-ui/src/lib.rs - testing (line 336) ... ok
+test crates/pert-ui/src/guide.rs - guide::testing (line 984) ... ok
+test crates/pert-ui/src/lib.rs - live (line 871) ... ok
+test crates/pert-ui/src/guide.rs - guide::testing (line 875) ... ok
+test crates/pert-ui/src/lib.rs - inspection (line 819) ... ok
+test crates/pert-ui/src/guide.rs - guide::testing (line 673) ... ok
+test crates/pert-ui/src/lib.rs - testing (line 309) ... ok
+test crates/pert-ui/src/guide.rs - guide::testing (line 732) ... ok
+test crates/pert-ui/src/guide.rs - guide::testing (line 914) ... ok
+test crates/pert-ui/src/lib.rs - windowing (line 768) ... ok
+test crates/pert-ui/src/lib.rs - host (line 416) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 570) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 949) ... ok
+test crates/pert-ui/src/guide.rs - guide::testing (line 630) ... ok
+test crates/pert-ui/src/guide.rs - guide::state (line 342) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 719) ... ok
+
+test result: ok. 116 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+
+running 3 tests
+test crates/pert-ui/src/guide.rs - guide::getting_started (line 83) - compile ... ok
+test crates/pert-ui/src/lib.rs - host (line 557) - compile fail ... ok
+test crates/pert-ui/src/lib.rs - host (line 548) - compile fail ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+all doctests ran in 3.60s; merged doctests compilation took 3.46s

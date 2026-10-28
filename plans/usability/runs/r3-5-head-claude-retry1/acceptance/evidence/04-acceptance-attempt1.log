@@ -1,0 +1,47 @@
+$ run.sh exec KIT ACC cargo test --locked --test acceptance -- --test-threads=1 --nocapture
+   Compiling job_monitor v0.1.0 (/work)
+warning: unused `QuietReport` that must be used
+   --> tests/acceptance.rs:630:5
+    |
+630 |     d.quiet_for(Duration::from_millis(100))?;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: a quiet interval checks nothing unless its report is read
+    = note: `#[warn(unused_must_use)]` (part of `#[warn(unused)]`) on by default
+help: use `let _ = ...` to ignore the resulting value
+    |
+630 |     let _ = d.quiet_for(Duration::from_millis(100))?;
+    |     +++++++
+
+warning: `job_monitor` (test "acceptance") generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.14s
+     Running tests/acceptance.rs (target/debug/deps/acceptance-640f08b5232eedf0)
+
+running 8 tests
+test idle_check_detects_jobs_and_is_quiet_without_them ... while running: 25 components updated, paint needed 6 times
+after done: 49 consecutive idle reports
+ok
+test item1_progress_completion_and_summary_through_inspection ... 
+thread 'item1_progress_completion_and_summary_through_inspection' (148) panicked at tests/acceptance.rs:271:5:
+assertion failed: close(bar(&s, "job-1"), 1.0)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+test item2_cancel_is_prompt_on_the_wall_clock ... worker job-1 exited 91.300437ms after the Cancel click
+cancelled at Some("3%"), 552.452581ms after click
+ok
+test item2_cancel_stops_the_worker_thread_and_the_row ... ok
+test item3_failure_in_row_and_notification ... ok
+test item4_name_sort_is_by_job_number_beyond_nine ... ok
+test item4_sorting_by_each_column_orders_drawn_rows ... ok
+test item5_cpu_capture_png_of_several_states ... wrote /work/acceptance-capture.png (1152513 bytes)
+ok
+
+failures:
+
+failures:
+    item1_progress_completion_and_summary_through_inspection
+
+test result: FAILED. 7 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.64s
+
+error: test failed, to rerun pass `--test acceptance`
+exit=101

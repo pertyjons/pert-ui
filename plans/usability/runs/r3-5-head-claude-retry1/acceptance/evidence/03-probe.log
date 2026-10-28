@@ -1,0 +1,47 @@
+$ run.sh exec KIT ACC cargo test --locked --test acceptance_probe -- --nocapture
+   Compiling job_monitor v0.1.0 (/work)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.88s
+     Running tests/acceptance_probe.rs (target/debug/deps/acceptance_probe-171d07dabd57abc1)
+
+running 1 test
+schema 16
+Some(["monitor"]) key=monitor role=None name=None value=None items=None border=Some([0.0, 0.0, 800.0, 360.0])
+None key=content role=None name=None value=None items=None border=Some([0.0, 0.0, 800.0, 360.0])
+Some(["monitor", "content"]) key=content role=None name=None value=None items=None border=Some([0.0, 0.0, 800.0, 360.0])
+Some(["monitor", "content", "toolbar"]) key=toolbar role=None name=None value=None items=None border=Some([0.0, 0.0, 800.0, 32.0])
+Some(["monitor", "content", "toolbar", "start"]) key=start role=Some(Button) name=Some("Start job") value=None items=Some([]) border=Some([0.0, 0.0, 80.0, 32.0])
+Some(["monitor", "content", "toolbar", "summary"]) key=summary role=Some(Label) name=Some("Running: 1 · Done: 0 · Cancelled: 0 · Failed: 1") value=None items=Some([]) border=Some([88.0, 6.0, 712.0, 20.0])
+Some(["monitor", "content", "jobs"]) key=jobs role=Some(Table) name=None value=Some(Number { value: 2.0, minimum: Some(0.0), maximum: None }) items=Some([(Some("Name"), false, Some([0.0, 40.0, 100.0, 32.0])), (Some("Progress"), false, Some([100.0, 40.0, 220.0, 32.0])), (Some("State"), false, Some([320.0, 40.0, 220.0, 32.0])), (Some("Elapsed"), false, Some([540.0, 40.0, 90.0, 32.0])), (None, false, Some([630.0, 40.0, 110.0, 32.0]))]) border=Some([0.0, 40.0, 800.0, 320.0])
+None key=body role=Some(List) name=None value=Some(Choice { selected: None, count: 2, label: None }) items=Some([]) border=Some([0.0, 72.0, 800.0, 288.0])
+None key=edit end reporter role=None name=None value=None items=None border=Some([0.0, 40.0, 0.0, 0.0])
+Some(["monitor", "toasts"]) key=toasts role=Some(Notifications) name=None value=Some(Number { value: 1.0, minimum: Some(0.0), maximum: None }) items=Some([(Some("Job 1 failed: I/O error at unit 40"), true, Some([480.0, 284.0, 320.0, 76.0]))]) border=Some([480.0, 284.0, 320.0, 76.0])
+Some(["monitor", "content", "jobs", "job-1"]) key=job-1 role=None name=None value=None items=None border=Some([0.0, 72.0, 800.0, 32.0])
+Some(["monitor", "content", "jobs", "job-1", "name"]) key=name role=Some(Cell) name=Some("Name") value=None items=Some([]) border=Some([0.0, 72.0, 100.0, 32.0])
+Some(["monitor", "content", "jobs", "job-1", "name", "text"]) key=text role=Some(Label) name=Some("Job 1") value=None items=Some([]) border=Some([12.0, 78.0, 76.0, 20.0])
+Some(["monitor", "content", "jobs", "job-1", "progress"]) key=progress role=Some(Cell) name=Some("Progress") value=None items=Some([]) border=Some([100.0, 72.0, 220.0, 32.0])
+Some(["monitor", "content", "jobs", "job-1", "progress", "cell"]) key=cell role=None name=None value=None items=None border=Some([112.0, 78.0, 196.0, 20.0])
+Some(["monitor", "content", "jobs", "job-1", "progress", "cell", "bar"]) key=bar role=Some(ProgressIndicator) name=None value=Some(Number { value: 0.4000000059604645, minimum: Some(0.0), maximum: Some(1.0) }) items=Some([]) border=Some([112.0, 85.0, 160.0, 6.0])
+Some(["monitor", "content", "jobs", "job-1", "progress", "cell", "percent"]) key=percent role=Some(Label) name=Some("40%") value=None items=Some([]) border=Some([280.0, 78.0, 28.0, 20.0])
+Some(["monitor", "content", "jobs", "job-1", "state"]) key=state role=Some(Cell) name=Some("State") value=None items=Some([]) border=Some([320.0, 72.0, 220.0, 32.0])
+Some(["monitor", "content", "jobs", "job-1", "state", "text"]) key=text role=Some(Label) name=Some("failed: I/O error at unit 40") value=None items=Some([]) border=Some([332.0, 78.0, 196.0, 20.0])
+Some(["monitor", "content", "jobs", "job-1", "elapsed"]) key=elapsed role=Some(Cell) name=Some("Elapsed") value=None items=Some([]) border=Some([540.0, 72.0, 90.0, 32.0])
+Some(["monitor", "content", "jobs", "job-1", "elapsed", "text"]) key=text role=Some(Label) name=Some("0.2 s") value=None items=Some([]) border=Some([552.0, 78.0, 66.0, 20.0])
+Some(["monitor", "content", "jobs", "job-1", "action"]) key=action role=Some(Cell) name=None value=None items=Some([]) border=Some([630.0, 72.0, 110.0, 32.0])
+Some(["monitor", "content", "jobs", "job-2"]) key=job-2 role=None name=None value=None items=None border=Some([0.0, 104.0, 800.0, 32.0])
+Some(["monitor", "content", "jobs", "job-2", "name"]) key=name role=Some(Cell) name=Some("Name") value=None items=Some([]) border=Some([0.0, 104.0, 100.0, 32.0])
+Some(["monitor", "content", "jobs", "job-2", "name", "text"]) key=text role=Some(Label) name=Some("Job 2") value=None items=Some([]) border=Some([12.0, 110.0, 76.0, 20.0])
+Some(["monitor", "content", "jobs", "job-2", "progress"]) key=progress role=Some(Cell) name=Some("Progress") value=None items=Some([]) border=Some([100.0, 104.0, 220.0, 32.0])
+Some(["monitor", "content", "jobs", "job-2", "progress", "cell"]) key=cell role=None name=None value=None items=None border=Some([112.0, 110.0, 196.0, 20.0])
+Some(["monitor", "content", "jobs", "job-2", "progress", "cell", "bar"]) key=bar role=Some(ProgressIndicator) name=None value=Some(Number { value: 0.20000000298023224, minimum: Some(0.0), maximum: Some(1.0) }) items=Some([]) border=Some([112.0, 117.0, 160.0, 6.0])
+Some(["monitor", "content", "jobs", "job-2", "progress", "cell", "percent"]) key=percent role=Some(Label) name=Some("20%") value=None items=Some([]) border=Some([280.0, 110.0, 28.0, 20.0])
+Some(["monitor", "content", "jobs", "job-2", "state"]) key=state role=Some(Cell) name=Some("State") value=None items=Some([]) border=Some([320.0, 104.0, 220.0, 32.0])
+Some(["monitor", "content", "jobs", "job-2", "state", "text"]) key=text role=Some(Label) name=Some("running") value=None items=Some([]) border=Some([332.0, 110.0, 196.0, 20.0])
+Some(["monitor", "content", "jobs", "job-2", "elapsed"]) key=elapsed role=Some(Cell) name=Some("Elapsed") value=None items=Some([]) border=Some([540.0, 104.0, 90.0, 32.0])
+Some(["monitor", "content", "jobs", "job-2", "elapsed", "text"]) key=text role=Some(Label) name=Some("0.2 s") value=None items=Some([]) border=Some([552.0, 110.0, 66.0, 20.0])
+Some(["monitor", "content", "jobs", "job-2", "action"]) key=action role=Some(Cell) name=None value=None items=Some([]) border=Some([630.0, 104.0, 110.0, 32.0])
+Some(["monitor", "content", "jobs", "job-2", "action", "cancel"]) key=cancel role=Some(Button) name=Some("Cancel") value=None items=Some([]) border=Some([642.0, 104.0, 86.0, 32.0])
+test dump_inspection ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+
+exit=0

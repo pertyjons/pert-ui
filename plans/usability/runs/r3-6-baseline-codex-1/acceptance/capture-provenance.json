@@ -1,0 +1,26 @@
+{
+  "work/acceptance-out/item2-two-tabs-one-modified.png": {
+    "original_sha256": "580841d9a2c32d7bfc35e6a059df71d06de96596b96df64a66db016672112890",
+    "archived_sha256": "0463f326d1cf5cf183e7fd8d5269833c7e7748c4c290858463946ec039c46f8d",
+    "identical_decoded_IDAT_sha256": "c03608f51fdc36a3524d7d109608d5825b141c44f7f61dcbf9267197ed75288a",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  },
+  "work/acceptance-out/item2-failed-save-notification.png": {
+    "original_sha256": "a887384ef0193043d36c23dfae0f40bcd58f0bc6ebaedea89b3367eb4eec5e66",
+    "archived_sha256": "3b554fcb3e5ca809d8d97b071bc811590331a55267027b4e71bf9d20c112c67f",
+    "identical_decoded_IDAT_sha256": "b11398352280c495b2df77951a006956cbb151470675aa20a78f161924c374eb",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  },
+  "work/acceptance-out/item5-two-tabs-one-modified.png": {
+    "original_sha256": "0f5617d92fa7dd7948ab36e183b861c2d2f351a72137efd773364036d53ce399",
+    "archived_sha256": "4759a2a9fa017b57add9d4c39ae65476505f4ae30eadc5f6c731166dfd6a5984",
+    "identical_decoded_IDAT_sha256": "c990e5d66136154adf76a210bb1c0d2347bd2021214457cefdfd3e3e1d579164",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  },
+  "evidence/submitted-notes-editor.png": {
+    "original_sha256": "a7868eaca5d26cdba0057eeacbb45889ff414e08e04a03e7873ecc9ebf7f7072",
+    "archived_sha256": "57bb6de779b668b342155f5e555e5b6bc0b5d1597ce8d1c7ab57a6167fb1bb22",
+    "identical_decoded_IDAT_sha256": "0c425dde0231bdc529a2e8d6d6af63cf5ac6b76084e7d939779e36705fd22109",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  }
+}

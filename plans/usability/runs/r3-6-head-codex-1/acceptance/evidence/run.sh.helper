@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Usage: run.sh.helper <logname> <command...>; runs through HARNESS exec and logs.
+A=/home/per/pert-ui-usability/acceptance-r3-6-head-codex-1
+H=/home/per/github/pert-ui/plans/usability/run.sh
+K=/home/per/pert-ui-usability/kit-r3-head
+name="$1"; shift
+log="$A/evidence/$name.log"
+{ echo "\$ $H exec $K $A $*"; echo "# started $(date -Iseconds)"; } > "$log"
+"$H" exec "$K" "$A" "$@" >>"$log" 2>&1; status=$?
+echo "# exit=$status ended $(date -Iseconds)" >> "$log"
+tail -40 "$log"
+exit $status

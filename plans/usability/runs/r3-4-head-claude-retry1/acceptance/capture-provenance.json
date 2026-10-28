@@ -1,0 +1,38 @@
+{
+  "evidence/captures/tester-bookmarks.png": {
+    "original_sha256": "301f41ef895b280c621dd45fab67801b12374cbbaa1619427f6d33464167715f",
+    "archived_sha256": "b0a8e18adb8f17164fa4fc358b229c7144a1fc37463e59569e7712586f5381a5",
+    "identical_decoded_IDAT_sha256": "599d721be4d8237608dc983758908c3c3ce495d137daabfa8e626cd122994b3f",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  },
+  "evidence/captures/bookmarks.png": {
+    "original_sha256": "301f41ef895b280c621dd45fab67801b12374cbbaa1619427f6d33464167715f",
+    "archived_sha256": "b0a8e18adb8f17164fa4fc358b229c7144a1fc37463e59569e7712586f5381a5",
+    "identical_decoded_IDAT_sha256": "599d721be4d8237608dc983758908c3c3ce495d137daabfa8e626cd122994b3f",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  },
+  "evidence/captures/verifier-filtered.png": {
+    "original_sha256": "8089d1b281f7f329bdbcb9197e8f650b9147b9556e654845b0f199a025377db5",
+    "archived_sha256": "0e47850c9438f9865fb38ad4f3814168e0a7c35d83d0b5be2d54fae2c39e3d53",
+    "identical_decoded_IDAT_sha256": "c38b0cc2db360ff6625469e47b94b59ca21ee25785a7f4b26d520dce01c0f802",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  },
+  "evidence/captures/verifier-start.png": {
+    "original_sha256": "f766a9328eacb90b344be1ad80076379b95254991c0a72a215c69a9e468ccf38",
+    "archived_sha256": "05943e84f3c3d6eefbea2b69db272dde1fd431de1454f3b6fcf5b84529fb90bd",
+    "identical_decoded_IDAT_sha256": "4f73a30caee76ad63f37218a12da63ddfb23c3638a9219ae9f10a4257cc25b2b",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  },
+  "evidence/captures/from-stale-mutation3-build/verifier-filtered.png": {
+    "original_sha256": "8089d1b281f7f329bdbcb9197e8f650b9147b9556e654845b0f199a025377db5",
+    "archived_sha256": "0e47850c9438f9865fb38ad4f3814168e0a7c35d83d0b5be2d54fae2c39e3d53",
+    "identical_decoded_IDAT_sha256": "c38b0cc2db360ff6625469e47b94b59ca21ee25785a7f4b26d520dce01c0f802",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  },
+  "evidence/captures/from-stale-mutation3-build/verifier-start.png": {
+    "original_sha256": "f766a9328eacb90b344be1ad80076379b95254991c0a72a215c69a9e468ccf38",
+    "archived_sha256": "05943e84f3c3d6eefbea2b69db272dde1fd431de1454f3b6fcf5b84529fb90bd",
+    "identical_decoded_IDAT_sha256": "4f73a30caee76ad63f37218a12da63ddfb23c3638a9219ae9f10a4257cc25b2b",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  }
+}

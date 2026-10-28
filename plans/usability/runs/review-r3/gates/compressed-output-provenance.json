@@ -1,0 +1,38 @@
+[
+  {
+    "path": "r3-workspace-tests-attempt3.log",
+    "raw_sha256": "c0665d94793bc577f75053d503dc96f94eb5972d019dbcca65e8b9a9a87d20df",
+    "raw_bytes": 146681685,
+    "raw_lines": 506131,
+    "full_gzip": "r3-workspace-tests-attempt3.full.log.gz",
+    "gzip_sha256": "33e9f8039f5affa83ecec6744c58b053d92c38bd1987bec6872bd589219343e3",
+    "gzip_bytes": 2921951,
+    "excerpt_sha256": "2066ae2b7340c3d5e05ab38200a3ec5911e18bf5d6a795d64e2a8d7050bddda1",
+    "omitted_diagnostic_lines": 501533,
+    "policy": "Only lines starting with the exact UnexpectedOverlap diagnostic prefix are abbreviated, after the first three. All other lines retained. Full output losslessly gzip-compressed; decompressed bytes checked equal."
+  },
+  {
+    "path": "attempts/r3-workspace-tests-attempt2.log",
+    "raw_sha256": "f5c13722678058c281b5f515b8888cff20aa8d8144ab6e658081afee847acdbe",
+    "raw_bytes": 146625136,
+    "raw_lines": 505476,
+    "full_gzip": "attempts/r3-workspace-tests-attempt2.full.log.gz",
+    "gzip_sha256": "c3b8373680eae2df26d7fa71865cd657012b8ff855dff25a7e551aca6125f472",
+    "gzip_bytes": 2913334,
+    "excerpt_sha256": "ebaebf46e4d28137728726929e7261eff7a618968c34122729c649b92237e6d3",
+    "omitted_diagnostic_lines": 501527,
+    "policy": "Only lines starting with the exact UnexpectedOverlap diagnostic prefix are abbreviated, after the first three. All other lines retained. Full output losslessly gzip-compressed; decompressed bytes checked equal."
+  },
+  {
+    "path": "workspace-and-serde/runtime-serde-tests.log",
+    "raw_sha256": "a6158b34cfd6042dae3ab883d37a950d21b6e38e1ee5b1cd4d2c4b8fa005864e",
+    "raw_bytes": 146297669,
+    "raw_lines": 502448,
+    "full_gzip": "workspace-and-serde/runtime-serde-tests.full.log.gz",
+    "gzip_sha256": "cfcc307e9f17ecbd7144a7c94c9ef6d58cf2df3336fe498eaeab8acf2ea97e44",
+    "gzip_bytes": 2852581,
+    "excerpt_sha256": "f268e3d1b49a4c14f177e3c6b1a79b8aa50718c4fe8b3853442e0a94f3fc0008",
+    "omitted_diagnostic_lines": 501505,
+    "policy": "Only lines starting with the exact UnexpectedOverlap diagnostic prefix are abbreviated, after the first three. All other lines retained. Full output losslessly gzip-compressed; decompressed bytes checked equal."
+  }
+]

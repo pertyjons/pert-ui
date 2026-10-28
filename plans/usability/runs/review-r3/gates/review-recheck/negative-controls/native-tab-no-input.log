@@ -1,0 +1,37 @@
+   Compiling pert-ui-runtime v0.3.89 (/home/per/github/pert-ui/crates/pert-ui-runtime)
+   Compiling pert-ui-wgpu v0.3.89 (/home/per/github/pert-ui/crates/pert-ui-wgpu)
+   Compiling pert-ui-cpu v0.3.89 (/home/per/github/pert-ui/crates/pert-ui-cpu)
+   Compiling pert-ui v0.3.89 (/home/per/github/pert-ui/crates/pert-ui)
+   Compiling pert-ui-gallery v0.3.89 (/home/per/github/pert-ui/apps/gallery)
+warning: variable does not need to be mutable
+   --> apps/gallery/src/interaction_check.rs:835:21
+    |
+835 |                 let mut driver = Driver::new(ui);
+    |                     ----^^^^^^
+    |                     |
+    |                     help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: `pert-ui-gallery` (bin "pert-ui-gallery" test) generated 1 warning (run `cargo fix --bin "pert-ui-gallery" -p pert-ui-gallery --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.81s
+     Running unittests src/main.rs (target/debug/deps/pert_ui_gallery-0e2d2963ce087658)
+
+running 1 test
+test cli::the_interaction_steps_pass_headlessly ... FAILED
+
+failures:
+
+---- cli::the_interaction_steps_pass_headlessly stdout ----
+
+thread 'cli::the_interaction_steps_pass_headlessly' (2935428) panicked at apps/gallery/src/main.rs:521:79:
+tab titles: item pointer bounds switch the category: the Controls category title was not selected
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    cli::the_interaction_steps_pass_headlessly
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 133 filtered out; finished in 6.04s
+
+error: test failed, to rerun pass `-p pert-ui-gallery --bin pert-ui-gallery`

@@ -1,0 +1,22 @@
+from pathlib import Path
+import gzip,hashlib,json
+root=Path('/home/per/github/pert-ui/plans/usability/runs/review-r3/gates')
+records=[]
+for rel in ['r3-workspace-tests-attempt3.log','attempts/r3-workspace-tests-attempt2.log','workspace-and-serde/runtime-serde-tests.log']:
+ p=root/rel;data=p.read_bytes();lines=data.splitlines(keepends=True)
+ compressed=gzip.compress(data,compresslevel=9,mtime=0)
+ assert gzip.decompress(compressed)==data
+ full=p.with_suffix('.full.log.gz');assert not full.exists();full.write_bytes(compressed)
+ prefix=b'[pert-ui validation ERROR UnexpectedOverlap] '
+ count=sum(l.startswith(prefix) for l in lines);kept=[];seen=0
+ for l in lines:
+  if l.startswith(prefix):
+   seen+=1
+   if seen<=3:kept.append(l)
+   elif seen==4:kept.append(f'[archive excerpt: {count-3} further UnexpectedOverlap diagnostic lines omitted; lossless full stdout/stderr in {full.name}]\n'.encode())
+  else:kept.append(l)
+ header=f'# ARCHIVED EXCERPT: {count-3} repetitive overlap diagnostics omitted.\n# Full original bytes: {full.name}; SHA256 {hashlib.sha256(data).hexdigest()}\n# Decompress that gzip for the complete unmodified command output.\n\n'.encode()
+ p.write_bytes(header+b''.join(kept))
+ records.append({'path':rel,'raw_sha256':hashlib.sha256(data).hexdigest(),'raw_bytes':len(data),'raw_lines':len(lines),'full_gzip':str(full.relative_to(root)),'gzip_sha256':hashlib.sha256(compressed).hexdigest(),'gzip_bytes':len(compressed),'excerpt_sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'omitted_diagnostic_lines':count-3,'policy':'Only lines starting with the exact UnexpectedOverlap diagnostic prefix are abbreviated, after the first three. All other lines retained. Full output losslessly gzip-compressed; decompressed bytes checked equal.'})
+(root/'compressed-output-provenance.json').write_text(json.dumps(records,indent=2)+'\n')
+print(json.dumps([{k:r[k] for k in ['path','raw_bytes','gzip_bytes','omitted_diagnostic_lines']} for r in records],indent=2))

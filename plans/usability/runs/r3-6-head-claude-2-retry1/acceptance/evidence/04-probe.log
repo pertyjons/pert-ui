@@ -1,0 +1,38 @@
+$ run.sh exec KIT ACCEPTANCE_DIR cargo test --offline --locked --test acceptance_probe -- --nocapture
+   Compiling notes v0.1.0 (/work)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.78s
+     Running tests/acceptance_probe.rs (target/debug/deps/acceptance_probe-c2a1abb49ae718ff)
+
+running 1 test
+bar child segment="split"
+==== before
+Some(["app", "new-dialog"]) key="new-dialog" role=Dialog name=None value=None border=Some([0.0, 0.0, 960.0, 640.0])
+Some(["app", "new-dialog", "close-dialog"]) key="close-dialog" role=Dialog name=None value=None border=Some([0.0, 0.0, 960.0, 640.0])
+Some(["app", "new-dialog", "close-dialog", "main", "bar"]) key="bar" role=MenuBar name=None value=None border=Some([0.0, 0.0, 960.0, 640.0])
+None key="title/file" role=Menu name=Some("File") value=None border=Some([0.0, 0.0, 47.0, 32.0])
+Some(["app", "new-dialog", "close-dialog", "main", "bar", "split"]) key="split" role=Splitter name=Some("Resize panes") value=None border=Some([0.0, 32.0, 960.0, 608.0])
+Some(["app", "new-dialog", "close-dialog", "main", "bar", "split", "notes"]) key="notes" role=List name=None value=Some(Choice { selected: None, count: 1, label: None }) border=Some([0.0, 32.0, 220.0, 608.0])
+Some(["app", "new-dialog", "close-dialog", "main", "bar", "split", "editor", "tabs"]) key="tabs" role=TabList name=None value=Some(Choice { selected: None, count: 0, label: None }) border=Some([228.0, 32.0, 732.0, 600.0])
+Some(["app", "toasts"]) key="toasts" role=Notifications name=None value=Some(Number { value: 0.0, minimum: Some(0.0), maximum: None }) border=Some([960.0, 640.0, 0.0, 0.0])
+Some(["app", "new-dialog", "close-dialog", "main", "bar", "split", "editor", "status", "none"]) key="none" role=Label name=None value=None border=Some([228.0, 640.0, 732.0, 0.0])
+Some(["app", "new-dialog", "close-dialog", "main", "bar", "split", "notes", "a.txt"]) key="a.txt" role=Button name=Some("a.txt") value=None border=Some([0.0, 32.0, 220.0, 32.0])
+==== after clicking File
+Some(["app", "new-dialog"]) key="new-dialog" role=Dialog name=None value=None border=Some([0.0, 0.0, 960.0, 640.0])
+Some(["app", "new-dialog", "close-dialog"]) key="close-dialog" role=Dialog name=None value=None border=Some([0.0, 0.0, 960.0, 640.0])
+Some(["app", "new-dialog", "close-dialog", "main", "bar"]) key="bar" role=MenuBar name=None value=None border=Some([0.0, 0.0, 960.0, 640.0])
+None key="title/file" role=Menu name=Some("File") value=None border=Some([0.0, 0.0, 47.0, 32.0])
+None key="items" role=Menu name=None value=Some(Choice { selected: Some(0), count: 3, label: Some("New note") }) border=Some([12.0, 44.0, 144.0, 104.0])
+    item name=Some("New note") bounds=None shortcut=Some("Ctrl+N")
+    item name=Some("Save") bounds=None shortcut=Some("Ctrl+S")
+    item name=Some("Close tab") bounds=None shortcut=Some("Ctrl+W")
+Some(["app", "new-dialog", "close-dialog", "main", "bar", "split"]) key="split" role=Splitter name=Some("Resize panes") value=None border=Some([0.0, 32.0, 960.0, 608.0])
+Some(["app", "new-dialog", "close-dialog", "main", "bar", "split", "notes"]) key="notes" role=List name=None value=Some(Choice { selected: None, count: 1, label: None }) border=Some([0.0, 32.0, 220.0, 608.0])
+Some(["app", "new-dialog", "close-dialog", "main", "bar", "split", "editor", "tabs"]) key="tabs" role=TabList name=None value=Some(Choice { selected: None, count: 0, label: None }) border=Some([228.0, 32.0, 732.0, 600.0])
+Some(["app", "toasts"]) key="toasts" role=Notifications name=None value=Some(Number { value: 0.0, minimum: Some(0.0), maximum: None }) border=Some([960.0, 640.0, 0.0, 0.0])
+Some(["app", "new-dialog", "close-dialog", "main", "bar", "split", "editor", "status", "none"]) key="none" role=Label name=None value=None border=Some([228.0, 640.0, 732.0, 0.0])
+Some(["app", "new-dialog", "close-dialog", "main", "bar", "split", "notes", "a.txt"]) key="a.txt" role=Button name=Some("a.txt") value=None border=Some([0.0, 32.0, 220.0, 32.0])
+test probe_menu_bar ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+exit=0

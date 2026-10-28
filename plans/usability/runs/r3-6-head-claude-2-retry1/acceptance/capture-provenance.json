@@ -1,0 +1,38 @@
+{
+  "work/acceptance-capture.png": {
+    "original_sha256": "ea5b6cc58623623addd07aef63e1036f8788e5d6278a9ce242cc9ac9c503c0d0",
+    "archived_sha256": "366d3556d852d6556697c665826c0fc9f9634dda7b708b186922e52062628b15",
+    "identical_decoded_IDAT_sha256": "4da9e888bd6248438e8307ba12cbc09b44f2a6cbfb8986b4d2301a798fc1cab7",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  },
+  "work/acceptance-failed-save.png": {
+    "original_sha256": "09ea73a609e64662b56c46da87af0301bd40d79c2d486275bc326934d90a02d2",
+    "archived_sha256": "e5e85f963fed7667322ff8b80ec65103fefb25f572383406eb54149643ed2f28",
+    "identical_decoded_IDAT_sha256": "5e31ee0efb1bef513453f3f7de1ead9b62e507ba7438d54501642eb00764604b",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  },
+  "evidence/original-notes-capture.png": {
+    "original_sha256": "cbeb539b8667df6c8bd6f08b4d1354d7670f6037cfc13f5db73f2e0b8c490ad2",
+    "archived_sha256": "0bf60d7d07bfa9455ee9bbbc8c2dcb224c34281c75af246336257477b7ef4f24",
+    "identical_decoded_IDAT_sha256": "b36ef8de23f3084e6afd3e71fcc4b14f9e89dff9b01d88b7c8b9dc046d9812e2",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  },
+  "evidence/rerun-notes-capture.png": {
+    "original_sha256": "cbeb539b8667df6c8bd6f08b4d1354d7670f6037cfc13f5db73f2e0b8c490ad2",
+    "archived_sha256": "0bf60d7d07bfa9455ee9bbbc8c2dcb224c34281c75af246336257477b7ef4f24",
+    "identical_decoded_IDAT_sha256": "b36ef8de23f3084e6afd3e71fcc4b14f9e89dff9b01d88b7c8b9dc046d9812e2",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  },
+  "evidence/acceptance-capture.png": {
+    "original_sha256": "ea5b6cc58623623addd07aef63e1036f8788e5d6278a9ce242cc9ac9c503c0d0",
+    "archived_sha256": "366d3556d852d6556697c665826c0fc9f9634dda7b708b186922e52062628b15",
+    "identical_decoded_IDAT_sha256": "4da9e888bd6248438e8307ba12cbc09b44f2a6cbfb8986b4d2301a798fc1cab7",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  },
+  "evidence/acceptance-failed-save.png": {
+    "original_sha256": "09ea73a609e64662b56c46da87af0301bd40d79c2d486275bc326934d90a02d2",
+    "archived_sha256": "e5e85f963fed7667322ff8b80ec65103fefb25f572383406eb54149643ed2f28",
+    "identical_decoded_IDAT_sha256": "5e31ee0efb1bef513453f3f7de1ead9b62e507ba7438d54501642eb00764604b",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  }
+}

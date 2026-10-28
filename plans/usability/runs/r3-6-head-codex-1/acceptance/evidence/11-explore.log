@@ -1,0 +1,159 @@
+$ /home/per/github/pert-ui/plans/usability/run.sh exec /home/per/pert-ui-usability/kit-r3-head /home/per/pert-ui-usability/acceptance-r3-6-head-codex-1 cargo test --offline explore -- --nocapture
+# started 2026-10-28T19:20:43+01:00
+   Compiling notes-editor v0.1.0 (/work)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.88s
+     Running unittests src/main.rs (target/debug/deps/notes_editor-02371687c9bde48a)
+
+running 1 test
+==== dump start
+id=1 parent=None key="app" path=Some(["app"]) vis=true foc=false role=Some(Dialog) name=None value=None box=Some([0.0, 0.0, 960.0, 640.0]) items=Some([])
+id=2 parent=Some(1) key="anchor" path=None vis=true foc=false role=None name=None value=None box=Some([0.0, 0.0, 960.0, 640.0]) items=None
+id=3 parent=Some(2) key="new-dialog" path=Some(["app", "new-dialog"]) vis=true foc=false role=Some(Dialog) name=None value=None box=Some([0.0, 0.0, 960.0, 640.0]) items=Some([])
+id=4 parent=Some(3) key="anchor" path=None vis=true foc=false role=None name=None value=None box=Some([0.0, 0.0, 960.0, 640.0]) items=None
+id=5 parent=Some(4) key="menu" path=Some(["app", "new-dialog", "menu"]) vis=true foc=false role=Some(MenuBar) name=None value=None box=Some([0.0, 0.0, 960.0, 640.0]) items=Some([])
+id=6 parent=Some(5) key="title/file" path=None vis=true foc=false role=Some(Menu) name=Some("File") value=None box=Some([0.0, 0.0, 47.0, 32.0]) items=Some([])
+id=7 parent=Some(6) key="menu" path=None vis=false foc=false role=None name=None value=None box=None items=None
+id=8 parent=Some(7) key="actions" path=None vis=false foc=false role=None name=None value=None box=None items=None
+id=9 parent=Some(8) key="items" path=None vis=false foc=false role=Some(Menu) name=None value=Some(Choice { selected: None, count: 3, label: None }) box=None items=Some([(Some("New note"), false, None), (Some("Save"), false, None), (Some("Close tab"), false, None)])
+id=10 parent=Some(5) key="content" path=None vis=true foc=false role=None name=None value=None box=Some([0.0, 32.0, 960.0, 608.0]) items=None
+id=11 parent=Some(10) key="content" path=Some(["app", "new-dialog", "menu", "content"]) vis=true foc=false role=None name=None value=None box=Some([0.0, 32.0, 960.0, 608.0]) items=None
+id=12 parent=Some(11) key="split" path=Some(["app", "new-dialog", "menu", "content", "split"]) vis=true foc=false role=Some(Splitter) name=Some("Resize panes") value=None box=Some([0.0, 32.0, 228.0, 592.0]) items=Some([])
+id=13 parent=Some(12) key="files" path=Some(["app", "new-dialog", "menu", "content", "split", "files"]) vis=true foc=false role=Some(List) name=None value=Some(Choice { selected: None, count: 2, label: None }) box=Some([0.0, 32.0, 220.0, 592.0]) items=Some([])
+id=14 parent=Some(12) key="documents" path=Some(["app", "new-dialog", "menu", "content", "split", "documents"]) vis=true foc=false role=None name=None value=None box=Some([228.0, 32.0, 0.0, 592.0]) items=None
+id=15 parent=Some(11) key="notification" path=Some(["app", "new-dialog", "menu", "content", "notification"]) vis=true foc=false role=Some(Label) name=None value=None box=Some([0.0, 632.0, 0.0, 0.0]) items=Some([])
+id=16 parent=Some(11) key="status-host" path=Some(["app", "new-dialog", "menu", "content", "status-host"]) vis=true foc=false role=None name=None value=None box=Some([0.0, 640.0, 0.0, 0.0]) items=None
+id=17 parent=Some(3) key="dialog" path=Some(["app", "new-dialog", "dialog"]) vis=false foc=false role=None name=None value=None box=None items=None
+id=18 parent=Some(17) key="panel" path=None vis=false foc=false role=None name=None value=None box=None items=None
+id=19 parent=Some(18) key="scroll" path=None vis=false foc=false role=Some(ScrollArea) name=None value=None box=None items=Some([])
+id=20 parent=Some(19) key="body" path=None vis=false foc=false role=None name=None value=None box=None items=None
+id=21 parent=Some(20) key="new-form" path=Some(["app", "new-dialog", "dialog", "new-form"]) vis=false foc=false role=None name=None value=None box=None items=None
+id=22 parent=Some(21) key="title" path=Some(["app", "new-dialog", "dialog", "new-form", "title"]) vis=false foc=false role=Some(Label) name=Some("New note") value=None box=None items=Some([])
+id=23 parent=Some(21) key="name" path=Some(["app", "new-dialog", "dialog", "new-form", "name"]) vis=false foc=false role=Some(TextInput) name=None value=Some(Text("")) box=None items=Some([])
+id=24 parent=Some(23) key="menu" path=None vis=false foc=false role=None name=None value=None box=None items=None
+id=25 parent=Some(24) key="actions" path=None vis=false foc=false role=None name=None value=None box=None items=None
+id=26 parent=Some(25) key="items" path=None vis=false foc=false role=Some(Menu) name=None value=Some(Choice { selected: None, count: 5, label: None }) box=None items=Some([(Some("Copy"), false, None), (Some("Cut"), false, None), (Some("Paste"), false, None), (Some("Paste Before"), false, None), (Some("Paste After"), false, None)])
+id=27 parent=Some(21) key="error" path=Some(["app", "new-dialog", "dialog", "new-form", "error"]) vis=false foc=false role=Some(Label) name=None value=None box=None items=Some([])
+id=28 parent=Some(21) key="actions" path=Some(["app", "new-dialog", "dialog", "new-form", "actions"]) vis=false foc=false role=None name=None value=None box=None items=None
+id=29 parent=Some(28) key="create" path=Some(["app", "new-dialog", "dialog", "new-form", "actions", "create"]) vis=false foc=false role=Some(Button) name=Some("Create") value=None box=None items=Some([])
+id=30 parent=Some(28) key="cancel" path=Some(["app", "new-dialog", "dialog", "new-form", "actions", "cancel"]) vis=false foc=false role=Some(Button) name=Some("Cancel") value=None box=None items=Some([])
+id=31 parent=Some(1) key="dialog" path=Some(["app", "dialog"]) vis=false foc=false role=None name=None value=None box=None items=None
+id=32 parent=Some(31) key="panel" path=None vis=false foc=false role=None name=None value=None box=None items=None
+id=33 parent=Some(32) key="scroll" path=None vis=false foc=false role=Some(ScrollArea) name=None value=None box=None items=Some([])
+id=34 parent=Some(33) key="body" path=None vis=false foc=false role=None name=None value=None box=None items=None
+id=35 parent=Some(34) key="close-form" path=Some(["app", "dialog", "close-form"]) vis=false foc=false role=None name=None value=None box=None items=None
+id=36 parent=Some(35) key="title" path=Some(["app", "dialog", "close-form", "title"]) vis=false foc=false role=Some(Label) name=Some("Save changes before closing?") value=None box=None items=Some([])
+id=37 parent=Some(35) key="actions" path=Some(["app", "dialog", "close-form", "actions"]) vis=false foc=false role=None name=None value=None box=None items=None
+id=38 parent=Some(37) key="save" path=Some(["app", "dialog", "close-form", "actions", "save"]) vis=false foc=false role=Some(Button) name=Some("Save") value=None box=None items=Some([])
+id=39 parent=Some(37) key="discard" path=Some(["app", "dialog", "close-form", "actions", "discard"]) vis=false foc=false role=Some(Button) name=Some("Discard") value=None box=None items=Some([])
+id=40 parent=Some(37) key="cancel" path=Some(["app", "dialog", "close-form", "actions", "cancel"]) vis=false foc=false role=Some(Button) name=Some("Cancel") value=None box=None items=Some([])
+id=41 parent=Some(14) key="tabs" path=Some(["app", "new-dialog", "menu", "content", "split", "documents", "tabs"]) vis=true foc=false role=Some(TabList) name=None value=Some(Choice { selected: None, count: 0, label: None }) box=Some([228.0, 32.0, 0.0, 592.0]) items=Some([])
+id=42 parent=Some(16) key="status" path=Some(["app", "new-dialog", "menu", "content", "status-host", "status"]) vis=true foc=false role=Some(Label) name=None value=None box=Some([0.0, 640.0, 0.0, 0.0]) items=Some([])
+id=43 parent=Some(13) key="alpha.txt" path=Some(["app", "new-dialog", "menu", "content", "split", "files", "alpha.txt"]) vis=true foc=false role=Some(Button) name=Some("alpha.txt") value=None box=Some([0.0, 32.0, 220.0, 34.0]) items=Some([])
+id=44 parent=Some(13) key="zeta.txt" path=Some(["app", "new-dialog", "menu", "content", "split", "files", "zeta.txt"]) vis=true foc=false role=Some(Button) name=Some("zeta.txt") value=None box=Some([0.0, 66.0, 220.0, 34.0]) items=Some([])
+==== dump opened alpha
+id=1 parent=None key="app" path=Some(["app"]) vis=true foc=false role=Some(Dialog) name=None value=None box=Some([0.0, 0.0, 960.0, 640.0]) items=Some([])
+id=2 parent=Some(1) key="anchor" path=None vis=true foc=false role=None name=None value=None box=Some([0.0, 0.0, 960.0, 640.0]) items=None
+id=3 parent=Some(2) key="new-dialog" path=Some(["app", "new-dialog"]) vis=true foc=false role=Some(Dialog) name=None value=None box=Some([0.0, 0.0, 960.0, 640.0]) items=Some([])
+id=4 parent=Some(3) key="anchor" path=None vis=true foc=false role=None name=None value=None box=Some([0.0, 0.0, 960.0, 640.0]) items=None
+id=5 parent=Some(4) key="menu" path=Some(["app", "new-dialog", "menu"]) vis=true foc=false role=Some(MenuBar) name=None value=None box=Some([0.0, 0.0, 960.0, 640.0]) items=Some([])
+id=6 parent=Some(5) key="title/file" path=None vis=true foc=false role=Some(Menu) name=Some("File") value=None box=Some([0.0, 0.0, 47.0, 32.0]) items=Some([])
+id=7 parent=Some(6) key="menu" path=None vis=false foc=false role=None name=None value=None box=None items=None
+id=8 parent=Some(7) key="actions" path=None vis=false foc=false role=None name=None value=None box=None items=None
+id=9 parent=Some(8) key="items" path=None vis=false foc=false role=Some(Menu) name=None value=Some(Choice { selected: None, count: 3, label: None }) box=None items=Some([(Some("New note"), false, None), (Some("Save"), false, None), (Some("Close tab"), false, None)])
+id=10 parent=Some(5) key="content" path=None vis=true foc=false role=None name=None value=None box=Some([0.0, 32.0, 960.0, 608.0]) items=None
+id=11 parent=Some(10) key="content" path=Some(["app", "new-dialog", "menu", "content"]) vis=true foc=false role=None name=None value=None box=Some([0.0, 32.0, 960.0, 608.0]) items=None
+id=12 parent=Some(11) key="split" path=Some(["app", "new-dialog", "menu", "content", "split"]) vis=true foc=false role=Some(Splitter) name=Some("Resize panes") value=None box=Some([0.0, 32.0, 960.0, 572.0]) items=Some([])
+id=13 parent=Some(12) key="files" path=Some(["app", "new-dialog", "menu", "content", "split", "files"]) vis=true foc=false role=Some(List) name=None value=Some(Choice { selected: None, count: 2, label: None }) box=Some([0.0, 32.0, 220.0, 572.0]) items=Some([])
+id=14 parent=Some(12) key="documents" path=Some(["app", "new-dialog", "menu", "content", "split", "documents"]) vis=true foc=false role=None name=None value=None box=Some([228.0, 32.0, 732.0, 572.0]) items=None
+id=15 parent=Some(11) key="notification" path=Some(["app", "new-dialog", "menu", "content", "notification"]) vis=true foc=false role=Some(Label) name=None value=None box=Some([0.0, 612.0, 0.0, 0.0]) items=Some([])
+id=16 parent=Some(11) key="status-host" path=Some(["app", "new-dialog", "menu", "content", "status-host"]) vis=true foc=false role=None name=None value=None box=Some([0.0, 620.0, 167.0, 20.0]) items=None
+id=17 parent=Some(3) key="dialog" path=Some(["app", "new-dialog", "dialog"]) vis=false foc=false role=None name=None value=None box=None items=None
+id=18 parent=Some(17) key="panel" path=None vis=false foc=false role=None name=None value=None box=None items=None
+id=19 parent=Some(18) key="scroll" path=None vis=false foc=false role=Some(ScrollArea) name=None value=None box=None items=Some([])
+id=20 parent=Some(19) key="body" path=None vis=false foc=false role=None name=None value=None box=None items=None
+id=21 parent=Some(20) key="new-form" path=Some(["app", "new-dialog", "dialog", "new-form"]) vis=false foc=false role=None name=None value=None box=None items=None
+id=22 parent=Some(21) key="title" path=Some(["app", "new-dialog", "dialog", "new-form", "title"]) vis=false foc=false role=Some(Label) name=Some("New note") value=None box=None items=Some([])
+id=23 parent=Some(21) key="name" path=Some(["app", "new-dialog", "dialog", "new-form", "name"]) vis=false foc=false role=Some(TextInput) name=None value=Some(Text("")) box=None items=Some([])
+id=24 parent=Some(23) key="menu" path=None vis=false foc=false role=None name=None value=None box=None items=None
+id=25 parent=Some(24) key="actions" path=None vis=false foc=false role=None name=None value=None box=None items=None
+id=26 parent=Some(25) key="items" path=None vis=false foc=false role=Some(Menu) name=None value=Some(Choice { selected: None, count: 5, label: None }) box=None items=Some([(Some("Copy"), false, None), (Some("Cut"), false, None), (Some("Paste"), false, None), (Some("Paste Before"), false, None), (Some("Paste After"), false, None)])
+id=27 parent=Some(21) key="error" path=Some(["app", "new-dialog", "dialog", "new-form", "error"]) vis=false foc=false role=Some(Label) name=None value=None box=None items=Some([])
+id=28 parent=Some(21) key="actions" path=Some(["app", "new-dialog", "dialog", "new-form", "actions"]) vis=false foc=false role=None name=None value=None box=None items=None
+id=29 parent=Some(28) key="create" path=Some(["app", "new-dialog", "dialog", "new-form", "actions", "create"]) vis=false foc=false role=Some(Button) name=Some("Create") value=None box=None items=Some([])
+id=30 parent=Some(28) key="cancel" path=Some(["app", "new-dialog", "dialog", "new-form", "actions", "cancel"]) vis=false foc=false role=Some(Button) name=Some("Cancel") value=None box=None items=Some([])
+id=31 parent=Some(1) key="dialog" path=Some(["app", "dialog"]) vis=false foc=false role=None name=None value=None box=None items=None
+id=32 parent=Some(31) key="panel" path=None vis=false foc=false role=None name=None value=None box=None items=None
+id=33 parent=Some(32) key="scroll" path=None vis=false foc=false role=Some(ScrollArea) name=None value=None box=None items=Some([])
+id=34 parent=Some(33) key="body" path=None vis=false foc=false role=None name=None value=None box=None items=None
+id=35 parent=Some(34) key="close-form" path=Some(["app", "dialog", "close-form"]) vis=false foc=false role=None name=None value=None box=None items=None
+id=36 parent=Some(35) key="title" path=Some(["app", "dialog", "close-form", "title"]) vis=false foc=false role=Some(Label) name=Some("Save changes before closing?") value=None box=None items=Some([])
+id=37 parent=Some(35) key="actions" path=Some(["app", "dialog", "close-form", "actions"]) vis=false foc=false role=None name=None value=None box=None items=None
+id=38 parent=Some(37) key="save" path=Some(["app", "dialog", "close-form", "actions", "save"]) vis=false foc=false role=Some(Button) name=Some("Save") value=None box=None items=Some([])
+id=39 parent=Some(37) key="discard" path=Some(["app", "dialog", "close-form", "actions", "discard"]) vis=false foc=false role=Some(Button) name=Some("Discard") value=None box=None items=Some([])
+id=40 parent=Some(37) key="cancel" path=Some(["app", "dialog", "close-form", "actions", "cancel"]) vis=false foc=false role=Some(Button) name=Some("Cancel") value=None box=None items=Some([])
+id=41 parent=Some(14) key="tabs" path=Some(["app", "new-dialog", "menu", "content", "split", "documents", "tabs"]) vis=true foc=false role=Some(TabList) name=None value=Some(Choice { selected: Some(0), count: 1, label: Some("alpha.txt") }) box=Some([228.0, 32.0, 732.0, 572.0]) items=Some([(Some("alpha.txt"), true, None)])
+id=42 parent=Some(16) key="status" path=Some(["app", "new-dialog", "menu", "content", "status-host", "status"]) vis=true foc=false role=Some(Label) name=Some("alpha.txt: 1 lines, 1 words") value=None box=Some([0.0, 620.0, 167.0, 20.0]) items=Some([])
+id=43 parent=Some(13) key="alpha.txt" path=Some(["app", "new-dialog", "menu", "content", "split", "files", "alpha.txt"]) vis=true foc=true role=Some(Button) name=Some("alpha.txt") value=None box=Some([0.0, 32.0, 220.0, 34.0]) items=Some([])
+id=44 parent=Some(13) key="zeta.txt" path=Some(["app", "new-dialog", "menu", "content", "split", "files", "zeta.txt"]) vis=true foc=false role=Some(Button) name=Some("zeta.txt") value=None box=Some([0.0, 66.0, 220.0, 34.0]) items=Some([])
+id=45 parent=Some(41) key="alpha.txt" path=Some(["app", "new-dialog", "menu", "content", "split", "documents", "tabs", "alpha.txt"]) vis=true foc=false role=Some(View) name=Some("alpha.txt") value=None box=Some([228.0, 68.0, 732.0, 536.0]) items=Some([])
+id=46 parent=Some(45) key="tab-viewport" path=Some(["app", "new-dialog", "menu", "content", "split", "documents", "tabs", "alpha.txt", "viewport"]) vis=true foc=false role=Some(ScrollArea) name=None value=None box=Some([228.0, 68.0, 732.0, 536.0]) items=Some([])
+id=47 parent=Some(46) key="editor" path=Some(["app", "new-dialog", "menu", "content", "split", "documents", "tabs", "alpha.txt", "editor"]) vis=true foc=false role=Some(MultilineTextInput) name=None value=Some(Text("a")) box=Some([228.0, 68.0, 732.0, 536.0]) items=Some([])
+id=48 parent=Some(47) key="menu" path=None vis=false foc=false role=None name=None value=None box=None items=None
+id=49 parent=Some(48) key="actions" path=None vis=false foc=false role=None name=None value=None box=None items=None
+id=50 parent=Some(49) key="items" path=None vis=false foc=false role=Some(Menu) name=None value=Some(Choice { selected: None, count: 5, label: None }) box=None items=Some([(Some("Copy"), false, None), (Some("Cut"), false, None), (Some("Paste"), false, None), (Some("Paste Before"), false, None), (Some("Paste After"), false, None)])
+==== dump file menu open
+id=1 parent=None key="app" path=Some(["app"]) vis=true foc=false role=Some(Dialog) name=None value=None box=Some([0.0, 0.0, 960.0, 640.0]) items=Some([])
+id=2 parent=Some(1) key="anchor" path=None vis=true foc=false role=None name=None value=None box=Some([0.0, 0.0, 960.0, 640.0]) items=None
+id=3 parent=Some(2) key="new-dialog" path=Some(["app", "new-dialog"]) vis=true foc=false role=Some(Dialog) name=None value=None box=Some([0.0, 0.0, 960.0, 640.0]) items=Some([])
+id=4 parent=Some(3) key="anchor" path=None vis=true foc=false role=None name=None value=None box=Some([0.0, 0.0, 960.0, 640.0]) items=None
+id=5 parent=Some(4) key="menu" path=Some(["app", "new-dialog", "menu"]) vis=true foc=false role=Some(MenuBar) name=None value=None box=Some([0.0, 0.0, 960.0, 640.0]) items=Some([])
+id=6 parent=Some(5) key="title/file" path=None vis=true foc=false role=Some(Menu) name=Some("File") value=None box=Some([0.0, 0.0, 47.0, 32.0]) items=Some([])
+id=7 parent=Some(6) key="menu" path=None vis=true foc=false role=None name=None value=None box=Some([0.0, 32.0, 168.0, 120.0]) items=None
+id=8 parent=Some(7) key="actions" path=None vis=true foc=false role=None name=None value=None box=Some([12.0, 44.0, 144.0, 96.0]) items=None
+id=9 parent=Some(8) key="items" path=None vis=true foc=true role=Some(Menu) name=None value=Some(Choice { selected: Some(0), count: 3, label: Some("New note") }) box=Some([12.0, 44.0, 144.0, 96.0]) items=Some([(Some("New note"), true, None), (Some("Save"), false, None), (Some("Close tab"), false, None)])
+id=10 parent=Some(5) key="content" path=None vis=true foc=false role=None name=None value=None box=Some([0.0, 32.0, 960.0, 608.0]) items=None
+id=11 parent=Some(10) key="content" path=Some(["app", "new-dialog", "menu", "content"]) vis=true foc=false role=None name=None value=None box=Some([0.0, 32.0, 960.0, 608.0]) items=None
+id=12 parent=Some(11) key="split" path=Some(["app", "new-dialog", "menu", "content", "split"]) vis=true foc=false role=Some(Splitter) name=Some("Resize panes") value=None box=Some([0.0, 32.0, 960.0, 572.0]) items=Some([])
+id=13 parent=Some(12) key="files" path=Some(["app", "new-dialog", "menu", "content", "split", "files"]) vis=true foc=false role=Some(List) name=None value=Some(Choice { selected: None, count: 2, label: None }) box=Some([0.0, 32.0, 220.0, 572.0]) items=Some([])
+id=14 parent=Some(12) key="documents" path=Some(["app", "new-dialog", "menu", "content", "split", "documents"]) vis=true foc=false role=None name=None value=None box=Some([228.0, 32.0, 732.0, 572.0]) items=None
+id=15 parent=Some(11) key="notification" path=Some(["app", "new-dialog", "menu", "content", "notification"]) vis=true foc=false role=Some(Label) name=None value=None box=Some([0.0, 612.0, 0.0, 0.0]) items=Some([])
+id=16 parent=Some(11) key="status-host" path=Some(["app", "new-dialog", "menu", "content", "status-host"]) vis=true foc=false role=None name=None value=None box=Some([0.0, 620.0, 167.0, 20.0]) items=None
+id=17 parent=Some(3) key="dialog" path=Some(["app", "new-dialog", "dialog"]) vis=false foc=false role=None name=None value=None box=None items=None
+id=18 parent=Some(17) key="panel" path=None vis=false foc=false role=None name=None value=None box=None items=None
+id=19 parent=Some(18) key="scroll" path=None vis=false foc=false role=Some(ScrollArea) name=None value=None box=None items=Some([])
+id=20 parent=Some(19) key="body" path=None vis=false foc=false role=None name=None value=None box=None items=None
+id=21 parent=Some(20) key="new-form" path=Some(["app", "new-dialog", "dialog", "new-form"]) vis=false foc=false role=None name=None value=None box=None items=None
+id=22 parent=Some(21) key="title" path=Some(["app", "new-dialog", "dialog", "new-form", "title"]) vis=false foc=false role=Some(Label) name=Some("New note") value=None box=None items=Some([])
+id=23 parent=Some(21) key="name" path=Some(["app", "new-dialog", "dialog", "new-form", "name"]) vis=false foc=false role=Some(TextInput) name=None value=Some(Text("")) box=None items=Some([])
+id=24 parent=Some(23) key="menu" path=None vis=false foc=false role=None name=None value=None box=None items=None
+id=25 parent=Some(24) key="actions" path=None vis=false foc=false role=None name=None value=None box=None items=None
+id=26 parent=Some(25) key="items" path=None vis=false foc=false role=Some(Menu) name=None value=Some(Choice { selected: None, count: 5, label: None }) box=None items=Some([(Some("Copy"), false, None), (Some("Cut"), false, None), (Some("Paste"), false, None), (Some("Paste Before"), false, None), (Some("Paste After"), false, None)])
+id=27 parent=Some(21) key="error" path=Some(["app", "new-dialog", "dialog", "new-form", "error"]) vis=false foc=false role=Some(Label) name=None value=None box=None items=Some([])
+id=28 parent=Some(21) key="actions" path=Some(["app", "new-dialog", "dialog", "new-form", "actions"]) vis=false foc=false role=None name=None value=None box=None items=None
+id=29 parent=Some(28) key="create" path=Some(["app", "new-dialog", "dialog", "new-form", "actions", "create"]) vis=false foc=false role=Some(Button) name=Some("Create") value=None box=None items=Some([])
+id=30 parent=Some(28) key="cancel" path=Some(["app", "new-dialog", "dialog", "new-form", "actions", "cancel"]) vis=false foc=false role=Some(Button) name=Some("Cancel") value=None box=None items=Some([])
+id=31 parent=Some(1) key="dialog" path=Some(["app", "dialog"]) vis=false foc=false role=None name=None value=None box=None items=None
+id=32 parent=Some(31) key="panel" path=None vis=false foc=false role=None name=None value=None box=None items=None
+id=33 parent=Some(32) key="scroll" path=None vis=false foc=false role=Some(ScrollArea) name=None value=None box=None items=Some([])
+id=34 parent=Some(33) key="body" path=None vis=false foc=false role=None name=None value=None box=None items=None
+id=35 parent=Some(34) key="close-form" path=Some(["app", "dialog", "close-form"]) vis=false foc=false role=None name=None value=None box=None items=None
+id=36 parent=Some(35) key="title" path=Some(["app", "dialog", "close-form", "title"]) vis=false foc=false role=Some(Label) name=Some("Save changes before closing?") value=None box=None items=Some([])
+id=37 parent=Some(35) key="actions" path=Some(["app", "dialog", "close-form", "actions"]) vis=false foc=false role=None name=None value=None box=None items=None
+id=38 parent=Some(37) key="save" path=Some(["app", "dialog", "close-form", "actions", "save"]) vis=false foc=false role=Some(Button) name=Some("Save") value=None box=None items=Some([])
+id=39 parent=Some(37) key="discard" path=Some(["app", "dialog", "close-form", "actions", "discard"]) vis=false foc=false role=Some(Button) name=Some("Discard") value=None box=None items=Some([])
+id=40 parent=Some(37) key="cancel" path=Some(["app", "dialog", "close-form", "actions", "cancel"]) vis=false foc=false role=Some(Button) name=Some("Cancel") value=None box=None items=Some([])
+id=41 parent=Some(14) key="tabs" path=Some(["app", "new-dialog", "menu", "content", "split", "documents", "tabs"]) vis=true foc=false role=Some(TabList) name=None value=Some(Choice { selected: Some(0), count: 1, label: Some("alpha.txt") }) box=Some([228.0, 32.0, 732.0, 572.0]) items=Some([(Some("alpha.txt"), true, None)])
+id=42 parent=Some(16) key="status" path=Some(["app", "new-dialog", "menu", "content", "status-host", "status"]) vis=true foc=false role=Some(Label) name=Some("alpha.txt: 1 lines, 1 words") value=None box=Some([0.0, 620.0, 167.0, 20.0]) items=Some([])
+id=43 parent=Some(13) key="alpha.txt" path=Some(["app", "new-dialog", "menu", "content", "split", "files", "alpha.txt"]) vis=true foc=false role=Some(Button) name=Some("alpha.txt") value=None box=Some([0.0, 32.0, 220.0, 34.0]) items=Some([])
+id=44 parent=Some(13) key="zeta.txt" path=Some(["app", "new-dialog", "menu", "content", "split", "files", "zeta.txt"]) vis=true foc=false role=Some(Button) name=Some("zeta.txt") value=None box=Some([0.0, 66.0, 220.0, 34.0]) items=Some([])
+id=45 parent=Some(41) key="alpha.txt" path=Some(["app", "new-dialog", "menu", "content", "split", "documents", "tabs", "alpha.txt"]) vis=true foc=false role=Some(View) name=Some("alpha.txt") value=None box=Some([228.0, 68.0, 732.0, 536.0]) items=Some([])
+id=46 parent=Some(45) key="tab-viewport" path=Some(["app", "new-dialog", "menu", "content", "split", "documents", "tabs", "alpha.txt", "viewport"]) vis=true foc=false role=Some(ScrollArea) name=None value=None box=Some([228.0, 68.0, 732.0, 536.0]) items=Some([])
+id=47 parent=Some(46) key="editor" path=Some(["app", "new-dialog", "menu", "content", "split", "documents", "tabs", "alpha.txt", "editor"]) vis=true foc=false role=Some(MultilineTextInput) name=None value=Some(Text("a")) box=Some([228.0, 68.0, 732.0, 536.0]) items=Some([])
+id=48 parent=Some(47) key="menu" path=None vis=false foc=false role=None name=None value=None box=None items=None
+id=49 parent=Some(48) key="actions" path=None vis=false foc=false role=None name=None value=None box=None items=None
+id=50 parent=Some(49) key="items" path=None vis=false foc=false role=Some(Menu) name=None value=Some(Choice { selected: None, count: 5, label: None }) box=None items=Some([(Some("Copy"), false, None), (Some("Cut"), false, None), (Some("Paste"), false, None), (Some("Paste Before"), false, None), (Some("Paste After"), false, None)])
+test verifier_acceptance::explore_structure ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.02s
+
+# exit=0 ended 2026-10-28T19:20:44+01:00

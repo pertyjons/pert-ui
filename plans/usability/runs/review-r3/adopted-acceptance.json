@@ -1,0 +1,128 @@
+[
+  {
+    "run": "r3-1-head-claude",
+    "acceptance": "met",
+    "accepted": "2026-10-28T17:10:51+01:00",
+    "report_sha256": "13c5239de9dffad4bc2ff5b7d9617f0569482aca492be9e3a33a4af2064595c5",
+    "author_review_sha256": "8e4f794de08746751606f211a26ea4104d430bdd5cec88902bdc4abf7f72bc65"
+  },
+  {
+    "run": "r3-1-head-codex",
+    "acceptance": "met",
+    "accepted": "2026-10-28T16:59:16+01:00",
+    "report_sha256": "26ca920249e3153a95522344fe7be9ac4aa6943b72d52f916b0bb837177943ce",
+    "author_review_sha256": "8e4f794de08746751606f211a26ea4104d430bdd5cec88902bdc4abf7f72bc65"
+  },
+  {
+    "run": "r3-2-head-claude-retry1",
+    "acceptance": "met",
+    "accepted": "2026-10-28T17:28:50+01:00",
+    "report_sha256": "a6296999284ba736307e00e6fd465e185af578b21af007a7394001455e5b9325",
+    "author_review_sha256": "b30e8346c10cf66a5fa860e7de3072d30baeb93a091e01e8ea9224ca21d7d782"
+  },
+  {
+    "run": "r3-2-head-codex",
+    "acceptance": "met",
+    "accepted": "2026-10-28T17:02:23+01:00",
+    "report_sha256": "1277c54a42b75868044b9fb8e9bcf9268a9d3bd420a8d7e1c82b3f3dcfdfd970",
+    "author_review_sha256": "38a6e958a5898472075855a943213faea82254895697c472d537c20ef6ac811c"
+  },
+  {
+    "run": "r3-3-head-claude-retry1",
+    "acceptance": "met",
+    "accepted": "2026-10-28T17:54:50+01:00",
+    "report_sha256": "fb26f67c3aa2d56b6b115b10c69de64b70cebc0d939eef78748bd3bf7797676a",
+    "author_review_sha256": "8e4f794de08746751606f211a26ea4104d430bdd5cec88902bdc4abf7f72bc65"
+  },
+  {
+    "run": "r3-3-head-codex",
+    "acceptance": "met",
+    "accepted": "2026-10-28T17:17:09+01:00",
+    "report_sha256": "ed97a5ca311ce2ee0ac8c6fbcabf56b9dc27c831c307a5b5d72a416b407b4431",
+    "author_review_sha256": "38a6e958a5898472075855a943213faea82254895697c472d537c20ef6ac811c"
+  },
+  {
+    "run": "r3-4-head-claude-retry1",
+    "acceptance": "met",
+    "accepted": "2026-10-28T17:57:32+01:00",
+    "report_sha256": "2f6ce149587962e8e018eb39c1adbf3d89a9827f2e4fb6c9708366fa3348659a",
+    "author_review_sha256": "8e4f794de08746751606f211a26ea4104d430bdd5cec88902bdc4abf7f72bc65"
+  },
+  {
+    "run": "r3-4-head-codex",
+    "acceptance": "met",
+    "accepted": "2026-10-28T17:19:36+01:00",
+    "report_sha256": "2dc2d5a97456a2d3bb4a73e6c26d6b463345dad4f0eced13723290b6acc58bd5",
+    "author_review_sha256": "38a6e958a5898472075855a943213faea82254895697c472d537c20ef6ac811c"
+  },
+  {
+    "run": "r3-5-head-claude-retry1",
+    "acceptance": "met",
+    "accepted": "2026-10-28T18:04:10+01:00",
+    "report_sha256": "543ced9a4f749783d6fbc09bfa77766a9bbe45e9051c5fece9e7e9c8b6bab281",
+    "author_review_sha256": "8e4f794de08746751606f211a26ea4104d430bdd5cec88902bdc4abf7f72bc65"
+  },
+  {
+    "run": "r3-5-head-codex",
+    "acceptance": "met",
+    "accepted": "2026-10-28T17:22:23+01:00",
+    "report_sha256": "8fea119c7a0225146e67b565c53234d07512b32599928a974ba47f5e95e7a758",
+    "author_review_sha256": "0a63b4f8c4769e3b9cabf19e687506f40abf500ad7bca74d8ab10246dbfd43c2"
+  },
+  {
+    "run": "r3-6-baseline-claude-1",
+    "acceptance": "met",
+    "accepted": "2026-10-28T17:03:11+01:00",
+    "report_sha256": "0c8ddc42cdff7eb80e813260d5ff4a4a43484ad842b3e8aa73f95aabe40f5cef",
+    "author_review_sha256": "b30e8346c10cf66a5fa860e7de3072d30baeb93a091e01e8ea9224ca21d7d782"
+  },
+  {
+    "run": "r3-6-baseline-claude-2-retry1",
+    "acceptance": "met",
+    "accepted": "2026-10-28T17:49:10+01:00",
+    "report_sha256": "bafddf1070420968a907690c2265a3334318fb09d9354bac75a48480091b27f2",
+    "author_review_sha256": "b30e8346c10cf66a5fa860e7de3072d30baeb93a091e01e8ea9224ca21d7d782"
+  },
+  {
+    "run": "r3-6-baseline-codex-1",
+    "acceptance": "met",
+    "accepted": "2026-10-28T16:48:40+01:00",
+    "report_sha256": "f2620f75a8d4ecad9820b15aadd11fd2da70d34b101809edbf7938423c423424",
+    "author_review_sha256": "ba43bc6f4c3ae321d87abea8c7a1344ac6555642f4afb897040d56352acabc1e"
+  },
+  {
+    "run": "r3-6-baseline-codex-2",
+    "acceptance": "met",
+    "accepted": "2026-10-28T17:10:00+01:00",
+    "report_sha256": "1d962a66f5b61478dd0cb2e310057e2b40b6e12f8e1fd3ab434839117ab189d2",
+    "author_review_sha256": "ba43bc6f4c3ae321d87abea8c7a1344ac6555642f4afb897040d56352acabc1e"
+  },
+  {
+    "run": "r3-6-head-claude-1",
+    "acceptance": "met",
+    "accepted": "2026-10-28T16:51:38+01:00",
+    "report_sha256": "61ed9425ffec8736a16ea9be59e36fd93ca440a11f156f530154b53c1c83e2c8",
+    "author_review_sha256": "b30e8346c10cf66a5fa860e7de3072d30baeb93a091e01e8ea9224ca21d7d782"
+  },
+  {
+    "run": "r3-6-head-claude-2-retry1",
+    "acceptance": "met",
+    "accepted": "2026-10-28T17:36:13+01:00",
+    "report_sha256": "183f7a5a48882ce95f1928079e293c90bdb937b127efd9b6f2ed59209c1ec73e",
+    "author_review_sha256": "b30e8346c10cf66a5fa860e7de3072d30baeb93a091e01e8ea9224ca21d7d782"
+  },
+  {
+    "run": "r3-6-head-codex-1",
+    "acceptance": "met",
+    "accepted": "2026-10-28T16:55:08+01:00",
+    "report_sha256": "ee4f4c1568f14d9ec033c7b43954c35e2102643b68a314e14972e332ee14b350",
+    "author_review_sha256": "ba43bc6f4c3ae321d87abea8c7a1344ac6555642f4afb897040d56352acabc1e"
+  },
+  {
+    "run": "r3-6-head-codex-2",
+    "acceptance": "met",
+    "accepted": "2026-10-28T17:14:31+01:00",
+    "report_sha256": "15cc94d88c457c62619f75c609ebed6ee7f7aa074a77d12ad8776ebd0945ab59",
+    "author_review_sha256": "ba43bc6f4c3ae321d87abea8c7a1344ac6555642f4afb897040d56352acabc1e"
+  }
+]

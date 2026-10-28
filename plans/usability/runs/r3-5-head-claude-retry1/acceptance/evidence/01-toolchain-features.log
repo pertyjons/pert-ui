@@ -1,0 +1,18 @@
+$ run.sh exec KIT ACC cargo --version && rustc --version
+cargo 1.99.1 (5f94df478 2026-08-27)
+rustc 1.99.1 (58cf8f9c3 2026-10-13)
+exit=0
+$ run.sh exec KIT ACC cargo tree -e features -i pert-ui
+pert-ui v0.3.88
+├── pert-ui feature "cpu"
+│   └── job_monitor v0.1.0 (/work)
+│       └── job_monitor feature "default" (command-line)
+├── pert-ui feature "default"
+│   └── job_monitor v0.1.0 (/work) (*)
+├── pert-ui feature "desktop"
+│   └── pert-ui feature "default" (*)
+├── pert-ui feature "gpu"
+│   └── pert-ui feature "desktop" (*)
+└── pert-ui feature "native"
+    └── pert-ui feature "gpu" (*)
+exit=0

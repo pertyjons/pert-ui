@@ -1,0 +1,19 @@
+$ run.sh exec KIT ACCEPTANCE_DIR cargo tree --locked -e features -i pert-ui
+pert-ui v0.3.88
+├── pert-ui feature "cpu"
+│   └── todo v0.1.0 (/work)
+│       └── todo feature "default" (command-line)
+├── pert-ui feature "default"
+│   └── todo v0.1.0 (/work) (*)
+├── pert-ui feature "desktop"
+│   └── pert-ui feature "default" (*)
+├── pert-ui feature "gpu"
+│   └── pert-ui feature "desktop" (*)
+└── pert-ui feature "native"
+    └── pert-ui feature "gpu" (*)
+exit=0
+
+$ run.sh exec KIT ACCEPTANCE_DIR cargo tree --locked --depth 1
+todo v0.1.0 (/work)
+└── pert-ui v0.3.88
+exit=0

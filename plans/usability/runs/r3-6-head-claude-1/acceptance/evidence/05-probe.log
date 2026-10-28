@@ -1,0 +1,44 @@
+$ run.sh exec KIT ACC cargo test --locked --test acc_probe -- --nocapture
+   Compiling notes_editor v0.1.0 (/work)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.80s
+     Running tests/acc_probe.rs (target/debug/deps/acc_probe-b84830e0389d3f6a)
+
+running 1 test
+== start
+  Dialog key=new-dialog path=Some(["app", "new-dialog"]) visible=true name=None items=0
+  Dialog key=close-dialog path=Some(["app", "new-dialog", "close-dialog"]) visible=true name=None items=0
+  Button key=save path=Some(["app", "new-dialog", "close-dialog", "dialog", "close-form", "actions", "save"]) visible=false name=Some("Save") items=0
+  Button key=discard path=Some(["app", "new-dialog", "close-dialog", "dialog", "close-form", "actions", "discard"]) visible=false name=Some("Discard") items=0
+  Button key=cancel path=Some(["app", "new-dialog", "close-dialog", "dialog", "close-form", "actions", "cancel"]) visible=false name=Some("Cancel") items=0
+  Button key=create path=Some(["app", "new-dialog", "dialog", "new-form", "actions", "create"]) visible=false name=Some("Create") items=0
+  Button key=cancel path=Some(["app", "new-dialog", "dialog", "new-form", "actions", "cancel"]) visible=false name=Some("Cancel") items=0
+  Notifications key=toasts path=Some(["app", "toasts"]) visible=true name=None items=0
+  Button key=a.txt path=Some(["app", "new-dialog", "close-dialog", "menu", "main", "split", "notes", "a.txt"]) visible=true name=Some("a.txt") items=0
+  Button key=b.txt path=Some(["app", "new-dialog", "close-dialog", "menu", "main", "split", "notes", "b.txt"]) visible=true name=Some("b.txt") items=0
+== after Ctrl+N
+  Dialog key=new-dialog path=Some(["app", "new-dialog"]) visible=true name=None items=0
+  Dialog key=close-dialog path=Some(["app", "new-dialog", "close-dialog"]) visible=true name=None items=0
+  Button key=save path=Some(["app", "new-dialog", "close-dialog", "dialog", "close-form", "actions", "save"]) visible=false name=Some("Save") items=0
+  Button key=discard path=Some(["app", "new-dialog", "close-dialog", "dialog", "close-form", "actions", "discard"]) visible=false name=Some("Discard") items=0
+  Button key=cancel path=Some(["app", "new-dialog", "close-dialog", "dialog", "close-form", "actions", "cancel"]) visible=false name=Some("Cancel") items=0
+  Button key=create path=Some(["app", "new-dialog", "dialog", "new-form", "actions", "create"]) visible=true name=Some("Create") items=0
+  Button key=cancel path=Some(["app", "new-dialog", "dialog", "new-form", "actions", "cancel"]) visible=true name=Some("Cancel") items=0
+  Notifications key=toasts path=Some(["app", "toasts"]) visible=true name=None items=0
+  Button key=a.txt path=Some(["app", "new-dialog", "close-dialog", "menu", "main", "split", "notes", "a.txt"]) visible=true name=Some("a.txt") items=0
+  Button key=b.txt path=Some(["app", "new-dialog", "close-dialog", "menu", "main", "split", "notes", "b.txt"]) visible=true name=Some("b.txt") items=0
+== after Escape
+  Dialog key=new-dialog path=Some(["app", "new-dialog"]) visible=true name=None items=0
+  Dialog key=close-dialog path=Some(["app", "new-dialog", "close-dialog"]) visible=true name=None items=0
+  Button key=save path=Some(["app", "new-dialog", "close-dialog", "dialog", "close-form", "actions", "save"]) visible=false name=Some("Save") items=0
+  Button key=discard path=Some(["app", "new-dialog", "close-dialog", "dialog", "close-form", "actions", "discard"]) visible=false name=Some("Discard") items=0
+  Button key=cancel path=Some(["app", "new-dialog", "close-dialog", "dialog", "close-form", "actions", "cancel"]) visible=false name=Some("Cancel") items=0
+  Button key=create path=Some(["app", "new-dialog", "dialog", "new-form", "actions", "create"]) visible=false name=Some("Create") items=0
+  Button key=cancel path=Some(["app", "new-dialog", "dialog", "new-form", "actions", "cancel"]) visible=false name=Some("Cancel") items=0
+  Notifications key=toasts path=Some(["app", "toasts"]) visible=true name=None items=0
+  Button key=a.txt path=Some(["app", "new-dialog", "close-dialog", "menu", "main", "split", "notes", "a.txt"]) visible=true name=Some("a.txt") items=0
+  Button key=b.txt path=Some(["app", "new-dialog", "close-dialog", "menu", "main", "split", "notes", "b.txt"]) visible=true name=Some("b.txt") items=0
+test probe ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+exit=0

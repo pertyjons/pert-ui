@@ -1,0 +1,16 @@
+$ run.sh exec KIT ACCEPTANCE_DIR cargo test --locked --test acceptance
+   Compiling todo v0.1.0 (/work)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.29s
+     Running tests/acceptance.rs (target/debug/deps/acceptance-144bb4af2ea33f92)
+
+running 6 tests
+test vector_drives_rows ... ok
+test filter_keeps_vector_and_meaningful_selection ... ok
+test rename_enter_commits_escape_discards ... ok
+test status_follows_check_uncheck_remove ... ok
+test shortcuts_from_other_focus ... ok
+test add_updates_rows ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+exit=0

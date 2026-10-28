@@ -1,0 +1,32 @@
+{
+  "work/acceptance-captures/item2-failed-save.png": {
+    "original_sha256": "6d9558343bf01cbf9ecbcdfdb1babf1da79f9e20b072871f3ec99a3b7622ec77",
+    "archived_sha256": "94009093d981e0c1888f3c9d87892b1f30a952e8512362b5fb166551ec89b79c",
+    "identical_decoded_IDAT_sha256": "cb68e96c63317ebe6ec11db3f4569a4fbcc0f89969f1e1746c39e0babe6bd127",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  },
+  "work/acceptance-captures/item3-refusal.png": {
+    "original_sha256": "b56b227b2359de65d71019fd1806f8b01710c5987aa4eac141ee01074ccfb16f",
+    "archived_sha256": "7422c61cf5f644094734f9eb6f0abd032e4a36e2e8e29e5a28325804f9e48ae7",
+    "identical_decoded_IDAT_sha256": "8afb4c3d916124b323f135161f07472c0554140caa0a0a2d27ca7a08cee0e2e5",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  },
+  "work/acceptance-captures/item4-close-dialog.png": {
+    "original_sha256": "9a7e4e61230454ffaabb6282c8f362e7b986daf6819d8c50641cfb4343c6124b",
+    "archived_sha256": "ba4391a24621333fd2f38daf99c1f0ab3a95fb47a77005a1d89851979eb8efe9",
+    "identical_decoded_IDAT_sha256": "787b06597613d0172add3d512aa7b6ea25b3b0d36b4a38977de71bf7eeb8ef59",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  },
+  "work/acceptance-captures/item5-two-tabs-one-modified.png": {
+    "original_sha256": "5e5306fd48585c43724a73eeca1d1641630af666e016645be2e4685bcf131f88",
+    "archived_sha256": "2e74518494661bff80be04b5a7c575283acd3cd57b68ff4b5829bd07153ca013",
+    "identical_decoded_IDAT_sha256": "f3bf5eece53fc95f586547f555d8bf76125fa18ae33bcf15591f18831b37f61d",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  },
+  "evidence/tester-original-notes-editor.png": {
+    "original_sha256": "515b168fb91a1c06f25dd70d86dfcbeb75c7f94cc2b1abc4bff4e4d3984527fb",
+    "archived_sha256": "2bdf3126d0b3d31c3f1fedfd2140411cc5e483ffd50baf0e845a50855e1e67a4",
+    "identical_decoded_IDAT_sha256": "b596fca6cb96c0eb3171f20ad7e4b64acc9072314a1f2813aa81900a6b18d904",
+    "operation": "Lossless zlib recompression of IDAT; all other chunks unchanged."
+  }
+}

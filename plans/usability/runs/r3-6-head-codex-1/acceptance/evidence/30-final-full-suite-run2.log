@@ -1,0 +1,45 @@
+$ /home/per/github/pert-ui/plans/usability/run.sh exec /home/per/pert-ui-usability/kit-r3-head /home/per/pert-ui-usability/acceptance-r3-6-head-codex-1 cargo test --offline -- --nocapture --test-threads=1
+# started 2026-10-28T19:26:01+01:00
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+     Running unittests src/main.rs (target/debug/deps/notes_editor-02371687c9bde48a)
+
+running 1 test
+test tests::acceptance_through_ui ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+
+     Running tests/acceptance_verifier.rs (target/debug/deps/acceptance_verifier-a65df8bba9891a4f)
+
+running 9 tests
+test notes::tests::acceptance_through_ui ... ok
+test notes::verifier::explore_structure ... ignored, exploration dump; run explicitly
+test notes::verifier::item1_list_from_own_folder_open_and_reopen ... after keyboard reopen: ["apple.txt", "pear.txt"] selected Some("pear.txt")
+ok
+test notes::verifier::item2_typing_marker_status_save_paths_and_failure ... notification after failed Ctrl+S: Some("Save failed for beta.txt: No such file or directory (os error 2)") box Some([0.0, 592.0, 389.0, 20.0])
+capture written: /work/acceptance-captures/item2-failed-save.png
+ok
+test notes::verifier::item3_new_note_dialog_refusals_and_creation ... refused "": "Use 1–64 characters, no / or \\, and do not start with a dot."
+refused "a/b": "Use 1–64 characters, no / or \\, and do not start with a dot."
+refused "apple": "A note with that name already exists."
+refused "apple.txt": "A note with that name already exists."
+refused "back\\slash": "Use 1–64 characters, no / or \\, and do not start with a dot."
+refused ".hidden": "Use 1–64 characters, no / or \\, and do not start with a dot."
+refused "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx": "Use 1–64 characters, no / or \\, and do not start with a dot."
+capture written: /work/acceptance-captures/item3-refusal.png
+ok
+test notes::verifier::item4_close_choices_and_unmodified_close ... capture written: /work/acceptance-captures/item4-close-dialog.png
+after discard: tabs (["fig.txt"], Some("fig.txt")) status "fig.txt: 1 lines, 3 words"
+after failed close-save: dialog visible true
+ok
+test notes::verifier::item5_cpu_capture_two_tabs_one_modified ... capture written: /work/acceptance-captures/item5-two-tabs-one-modified.png
+ok
+test notes::verifier::supplementary_active_tab_consistency_after_close ... after closing a.txt: tabs ["b.txt", "c.txt"] selected Some("b.txt") status "b.txt: 1 lines, 1 words"
+visible editors: ["b.txt"]
+b.txt on disk after Ctrl+S: "bbb+"
+ok
+test notes::verifier::supplementary_divider_drag ... sidebar width 220 -> 280
+ok
+
+test result: ok. 8 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.16s
+
+# exit=0 ended 2026-10-28T19:26:03+01:00

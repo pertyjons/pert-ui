@@ -1,0 +1,32 @@
+$ run.sh exec KIT ACCEPTANCE_DIR bash -c "cd /work/bookmarks && cargo test --locked --test behaviors"   # MUTATION 3 (Remove deletes by name instead of id (verifier's own)) applied, see mutation3.diff
+   Compiling bookmarks v0.1.0 (/work/bookmarks)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.09s
+     Running tests/behaviors.rs (target/debug/deps/behaviors-7607c1ba76d19ed7)
+
+running 7 tests
+test ctrl_l_clears_the_filter_wherever_focus_is ... ok
+test status_counts_all_or_shown_of_total ... ok
+test a_successful_add_clears_both_fields ... ok
+test add_appends_a_trimmed_bookmark_at_the_end ... ok
+test each_row_shows_name_url_and_remove_which_deletes_only_that_bookmark ... FAILED
+test filter_hides_names_that_do_not_contain_it_ignoring_case_and_spaces ... ok
+test add_refuses_a_blank_name_or_a_bad_url_and_keeps_the_fields ... ok
+
+failures:
+
+---- each_row_shows_name_url_and_remove_which_deletes_only_that_bookmark stdout ----
+
+thread 'each_row_shows_name_url_and_remove_which_deletes_only_that_bookmark' (293) panicked at tests/behaviors.rs:202:5:
+assertion `left == right` failed
+  left: [("3", "Docs", "https://docs.rs")]
+ right: [("1", "Rust", "https://www.rust-lang.org"), ("3", "Docs", "https://docs.rs")]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    each_row_shows_name_url_and_remove_which_deletes_only_that_bookmark
+
+test result: FAILED. 6 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+error: test failed, to rerun pass `--test behaviors`
+exit=101

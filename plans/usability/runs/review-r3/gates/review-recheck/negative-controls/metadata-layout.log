@@ -1,0 +1,26 @@
+   Compiling pert-ui-runtime v0.3.89 (/home/per/github/pert-ui/crates/pert-ui-runtime)
+   Compiling pert-ui-wgpu v0.3.89 (/home/per/github/pert-ui/crates/pert-ui-wgpu)
+   Compiling pert-ui v0.3.89 (/home/per/github/pert-ui/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.29s
+     Running tests/foundation/main.rs (target/debug/deps/foundation-f128adfe4d155157)
+
+running 1 test
+test exposed_parts::names_replace_and_remove_without_remounting_or_scheduling_layout ... FAILED
+
+failures:
+
+---- exposed_parts::names_replace_and_remove_without_remounting_or_scheduling_layout stdout ----
+
+thread 'exposed_parts::names_replace_and_remove_without_remounting_or_scheduling_layout' (2934343) panicked at crates/pert-ui/tests/foundation/exposed_parts.rs:22:9:
+assertion `left == right` failed: root was invalidated
+  left: Some(Layout)
+ right: None
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    exposed_parts::names_replace_and_remove_without_remounting_or_scheduling_layout
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 491 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p pert-ui --test foundation`

@@ -1,0 +1,26 @@
+### 2026-10-28T19:33:00+01:00 $ run.sh exec KIT ACCEPTANCE_DIR cargo test --offline --locked --test verifier_acceptance -- --nocapture --test-threads=1
+   Compiling notes-editor v0.1.0 (/work)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.11s
+     Running tests/verifier_acceptance.rs (target/debug/deps/verifier_acceptance-e264b11bba500aea)
+
+running 6 tests
+test feature_divider_drag ... divider dragged from x=220: extent Some(Number(300.0))
+ok
+test item1_listing_open_and_reopen ... ok
+test item2_typing_marker_status_saves_and_failed_save ... failure notification: Save failed for journal.txt: No such file or directory (os error 2)
+ok
+test item3_new_note_dialog_refusals_and_creation ... empty: Name must contain 1 to 64 characters.
+"a/b": Name must not contain / or \.
+"a\\b": Name must not contain / or \.
+".hidden": Name must not start with a dot.
+"existing": A note with that name already exists.
+"existing.txt": A note with that name already exists.
+"nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn": Name must contain 1 to 64 characters.
+ok
+test item4_close_choices_and_unmodified_close ... ok
+test item5_cpu_capture_two_tabs_one_modified ... titles at capture: ["Ideas.txt", "Shopping.txt *"]
+ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.42s
+
+### exit=0

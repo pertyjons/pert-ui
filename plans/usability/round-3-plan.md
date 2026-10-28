@@ -1,6 +1,6 @@
 # Round 3 execution and closure
 
-Status: blind runs in progress, 2026-10-28. The maintainer authorized completion through
+Status: blind runs and independent acceptance complete; triage and repairs in progress, 2026-10-28. The maintainer authorized completion through
 round 3 as a persistent goal, including kit preparation, blind testing,
 verification and repair of new and recurring findings, Claude review and a
 documented final assessment. This executes the
@@ -155,3 +155,95 @@ are run where available; missing platforms remain explicit.
   have fresh isolated Claude reviews in progress; neither is implemented or
   called approved yet. Acceptance, full recurrence matrices, repairs, gates
   and final review remain outstanding.
+
+- All planned successful blind sessions are terminal, including the fresh
+  Claude replacements. Independent acceptance now runs in separate kit-backed
+  copies, two fresh Claude contexts at a time, with original source/log hash
+  checks. Its first launcher stopped before any verifier started because the
+  historical queue.py record shadowed Python's standard queue module; the
+  record is renamed blind-queue.py and the launcher uses python3 -I. No
+  acceptance context was replayed or result discarded.
+- Frozen-head author probes compiled and all eight passed. Their source and
+  full output are in triage-r3/probes. These confirm the reported menu/tab
+  geometry and Select lookup gaps, and contradict the hypothesized Dynamic
+  timing and tab-address enumeration defects. Geometry revision 2 and
+  named-part revision 3 received independent Claude approval; reviews are in
+  runs/review-r3. Implementation is underway under the delegated approval:
+  part lookup/metadata are independent of workspace paths and semantic names,
+  with inspection schema 17 and workspace schema 2. The runtime's first
+  package check passes; complete tests, documentation, version/changelog/API
+  listing update, semantic review and final gates remain required.
+
+- Both blind queues are terminal with all planned successful submissions,
+  including the separately declared authentication replacements. Fresh
+  independent acceptance began only afterwards. Five verifier sessions
+  completed; these reports still require author review before adoption.
+  Two further verifiers ended with the service's `usage_limit_reached` (429),
+  reporting a reset at 19:10 Europe/Stockholm. Their copies/transcripts remain
+  intact and are not graded from an interrupted verifier; no successful
+  verifier or blind submission will be replayed. Reversible implementation and
+  regression testing continue while the service limit is active.
+- Implementation probes confirmed the approved part-scope boundaries. In
+  QuickPick and CommandPalette the existing addressable `surface` remains
+  a boundary: find that address first, then query its exposed `search` part,
+  then that search's `clipboard`. The picker does not expose `search` directly.
+  This clarifies the design's forwarding wording without changing addressing
+  or adding a privileged lookup route.
+
+- Geometry/parts regression tests now pass, including scoped built-in/custom
+  lookup, metadata-only idleness, field naming, workspace collisions/round trips,
+  another window, serialization and real item pointer input with clipping,
+  scrolling, dynamic titles and detached-title activation. A pre-existing
+  Driver refusal test used Tabs as its no-bounds fixture; it is migrated to a
+  custom reporter that deliberately omits rectangles, keeping that refusal
+  contract while Tabs gains geometry. The guide's import-contract check caught
+  a custom component example in the testing chapter; the example now lives in
+  custom-widgets with a link, keeping each chapter's intended imports.
+- Native gallery pointer steps pass headlessly and in both selected native
+  interaction checks (wgpu and CPU/softbuffer), Fedora 44 GNOME Shell 50.6,
+  Wayland. See docs/verification.md for exact limits and platform metadata.
+  The selected adapter was not printed; skipped native checks remain skipped.
+- A literal U+0009 missing-glyph box is independently observed and author
+  reproduced in TextService; source/output are in the tab-rendering probes.
+  A separate presentation-policy checkpoint is proposed for Claude review;
+  no text repair is implemented yet. Existing frozen acceptance captures stay
+  unchanged. Workspace/API/documentation gates for the first repair checkpoint
+  are running, with failures and corrected author test assumptions retained.
+
+- The first completed independent acceptance reports have been author reviewed
+  and adopted: Claude's paired task-6 submissions and head task 2, all met.
+  Added verifier tests, outputs and captures are preserved with each run;
+  original source and all pre-existing Rust/Cargo files in the copies have
+  identical hashes. This is partial acceptance progress, not an overall result.
+- All first-checkpoint workspace commands, API generation and relevant serde
+  configurations passed; outputs and prior failed attempts are preserved in
+  runs/review-r3/gates. API listings still need their committed-clean check.
+  The existing AppError-rustdoc leaf-list TODO and other-platform native gaps
+  remain out of this repair's scope.
+- At the declared service reset, an isolated tool-free Claude probe returned
+  OK. The verifier continuation skips completed sessions, resumes the interrupted
+  graders with their own contexts/copies, and starts fresh remaining graders.
+  A fresh read-only implementation reviewer is checking the first repairs;
+  the separate literal-tab policy remains a proposal awaiting independent review.
+
+- All independent verifiers are terminal, and author reviews 1–5 have adopted
+  every successful blind submission as met against unchanged frozen criteria.
+  The adoption index and both initial/continued controller outcomes are in
+  review-r3. Test-only hooks are preserved with diffs; original submissions
+  remain unchanged. The resumed graders are continuations, not blind reruns.
+- Initial full head-task triage is preserved as initial-head-tasks1-5.md.
+  It started before Codex acceptance finished, so its pending-acceptance status
+  is historical; the final matrices must distinguish later acceptance exercise
+  from timed tester exercise. Report citation errors and the owned
+  ListDropPosition correction are in the author reviews.
+- Independent implementation review rejected an already-selected-tab native
+  step and idle tests whose baseline could absorb invalidation. Both were
+  repaired, with intentional negative controls proving the repaired checks
+  fail on those regressions and byte-restoring the source. The corrected
+  native scenario passes GPU and CPU; focused post-review outputs are in
+  gates/review-recheck. Fresh implementation re-review is underway.
+- The first literal-tab proposal was rejected because substituting spaces
+  changes Unicode/grapheme/bidi behavior. Revision 2 preserves original text
+  and tags only tab ink privately; fresh review is underway before any
+  implementation. Disabled Button appearance has a separate proposed
+  presentation checkpoint, based on source and actual acceptance captures.

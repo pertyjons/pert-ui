@@ -1,0 +1,38 @@
+$ run.sh exec KIT ACC bash -c "cargo tree --locked -e features -i pert-ui; cargo tree --locked -p pert-ui-cpu -i pert-ui-cpu; grep -A3 \"name = \\\"pert-ui\\\"\" Cargo.lock"
+pert-ui v0.3.88
+├── pert-ui feature "cpu"
+├── pert-ui feature "default"
+├── pert-ui feature "desktop"
+├── pert-ui feature "gpu"
+└── pert-ui feature "native"
+---
+pert-ui-cpu v0.3.88
+└── pert-ui v0.3.88
+---
+name = "pert-ui"
+version = "0.3.88"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+--
+name = "pert-ui-core"
+version = "0.3.88"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+--
+name = "pert-ui-cpu"
+version = "0.3.88"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+--
+name = "pert-ui-runtime"
+version = "0.3.88"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+--
+name = "pert-ui-wgpu"
+version = "0.3.88"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+---
+[source.crates-io]
+replace-with = "vendored"
+[source.vendored]
+directory = "/kit/vendor"
+[net]
+offline = true
+exit=0

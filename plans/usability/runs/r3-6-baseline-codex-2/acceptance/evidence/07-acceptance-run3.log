@@ -1,0 +1,29 @@
+   Compiling notes-editor v0.1.0 (/work)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.92s
+     Running unittests src/main.rs (target/debug/deps/notes_editor-c55310efc50ef678)
+
+running 7 tests
+test acceptance_tests::feature_divider_drag_resizes_sidebar ... sidebar x=0 w=220; tabs x=228
+sidebar width before=220 after drag=340
+ok
+test acceptance_tests::item1_listing_open_and_reopen ... listed: ["apple.txt", "mango.txt", "pear.txt", "zucchini.txt"]
+Tab presses to reach the sidebar: 5
+Tab presses to reach the sidebar again: 5
+ok
+test acceptance_tests::item2_typing_save_and_failed_save ... notifications before=0 after Ctrl+S failure=1
+ok
+test acceptance_tests::item3_new_note_dialog ... refused None: "Use 1–64 characters, no / or \\, and do not start with a dot."
+refused Some("sub/dir"): "Use 1–64 characters, no / or \\, and do not start with a dot."
+refused Some("apple"): "A note named apple.txt already exists."
+refused Some("pear.txt"): "A note named pear.txt already exists."
+refused Some("back\\slash"): "Use 1–64 characters, no / or \\, and do not start with a dot."
+refused Some(".hidden"): "Use 1–64 characters, no / or \\, and do not start with a dot."
+refused Some("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"): "Use 1–64 characters, no / or \\, and do not start with a dot."
+ok
+test acceptance_tests::item4_close_choices ... dialog open after failed Save: true
+ok
+test acceptance_tests::item5_cpu_capture_two_tabs_one_modified ... ok
+test acceptance_tests::probe_focus_order ... ignored
+
+test result: ok. 6 passed; 0 failed; 1 ignored; 0 measured; 1 filtered out; finished in 0.55s
+

@@ -1,0 +1,14 @@
+r3-6-baseline-codex-1/work/.gitignore: same
+r3-6-baseline-codex-1/work/Cargo.lock: same
+r3-6-baseline-codex-1/work/Cargo.toml: same
+r3-6-baseline-codex-1/work/FRICTION.md: same
+r3-6-baseline-codex-1/work/README.md: same
+r3-6-baseline-codex-1/work/notes-editor.png: same
+r3-6-baseline-codex-1/work/src/main.rs: same
+acceptance-r3-6-baseline-codex-1/work/.gitignore: same
+acceptance-r3-6-baseline-codex-1/work/Cargo.lock: same
+acceptance-r3-6-baseline-codex-1/work/Cargo.toml: same
+acceptance-r3-6-baseline-codex-1/work/FRICTION.md: same
+acceptance-r3-6-baseline-codex-1/work/README.md: same
+acceptance-r3-6-baseline-codex-1/work/notes-editor.png: same
+acceptance-r3-6-baseline-codex-1/work/src/main.rs: DIFFERENT 53afdbdaf1491ba37a2e69f36acaf3642ba2890c997ce82f3a1e4cddc5d494ce

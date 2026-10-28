@@ -1,0 +1,36 @@
+from pathlib import Path
+import datetime
+import json
+import os
+import subprocess
+
+root = Path('/home/per/github/pert-ui')
+output = Path('/home/per/pert-ui-usability/r3-repair-gates-v1')
+output.mkdir(exist_ok=False)
+commands = [
+ ('format', ['cargo', 'fmt', '--all', '--check'], {}),
+ ('clippy', ['cargo', 'clippy', '--locked', '--workspace', '--all-targets', '--', '-D', 'warnings'], {}),
+ *[(name, ['cargo', 'run', '--locked', '-p', 'pert-ui', '--features', 'png,svg,cpu', '--example', name, *args], {})
+   for name, args in [('live_mixer', []), ('dynamic_documents', []), ('diagram_editor', []), ('log_explorer', ['--', '--lines', '10000']), ('inventory', ['--', '--items', '2000'])]],
+ ('doctests', ['cargo', 'test', '--locked', '--workspace', '--doc'], {}),
+ ('rustdoc', ['cargo', 'doc', '--locked', '--workspace', '--no-deps'], {'RUSTDOCFLAGS': '-D warnings'}),
+ ('diagnostics', ['cargo', 'test', '--locked', '-p', 'pert-ui-diagnostics', '--', '--ignored'], {}),
+ ('serde-clippy', ['cargo', 'clippy', '--locked', '-p', 'pert-ui', '--features', 'serde', '--all-targets', '--', '-D', 'warnings'], {}),
+ ('serde-tests', ['cargo', 'test', '--locked', '-p', 'pert-ui', '--features', 'serde'], {}),
+ ('serde-rustdoc', ['cargo', 'doc', '--locked', '-p', 'pert-ui', '--features', 'serde', '--no-deps'], {'RUSTDOCFLAGS': '-D warnings'}),
+ ('headless-serde-clippy', ['cargo', 'clippy', '--locked', '-p', 'pert-ui', '--no-default-features', '--features', 'serde', '--all-targets', '--', '-D', 'warnings'], {}),
+ ('headless-serde-tests', ['cargo', 'test', '--locked', '-p', 'pert-ui', '--no-default-features', '--features', 'serde'], {}),
+ ('runtime-serde-tests', ['cargo', 'test', '--locked', '-p', 'pert-ui-runtime', '--features', 'serde'], {}),
+]
+records = []
+for name, command, additions in commands:
+ print('GATE START', name, flush=True)
+ started = datetime.datetime.now(datetime.timezone.utc).isoformat()
+ with (output / (name + '.log')).open('x') as log:
+  result = subprocess.run(command, cwd=root, env=dict(os.environ, **additions), stdout=log, stderr=subprocess.STDOUT)
+ records.append({'name': name, 'command': command, 'environment': additions, 'started': started,
+                 'ended': datetime.datetime.now(datetime.timezone.utc).isoformat(), 'exit_status': result.returncode})
+ (output / 'outcomes.json').write_text(json.dumps(records, indent=2) + '\n')
+ print('GATE END', name, result.returncode, flush=True)
+ if result.returncode:
+  raise SystemExit(result.returncode)

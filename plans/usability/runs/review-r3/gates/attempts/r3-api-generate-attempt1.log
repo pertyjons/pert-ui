@@ -1,0 +1,11 @@
+api/pert-ui-core/default.txt
+api/pert-ui-core/serde.txt
+error: unresolved link to `Element::expose_part`
+   --> crates/pert-ui-runtime/src/runtime.rs:336:26
+    |
+336 |     /// character. See [`Element::expose_part`].
+    |                          ^^^^^^^^^^^^^^^^^^^^ no item named `Element` in scope
+    |
+    = note: requested on the command line with `-D rustdoc::broken-intra-doc-links`
+
+error: could not document `pert-ui-runtime`

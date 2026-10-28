@@ -1,0 +1,24 @@
+$ run.sh exec KIT ACC sh -c "cd /work && cargo tree -e features -i pert-ui --offline | head -30; cat ~/.cargo/config.toml; cargo --version; rustc --version"
+pert-ui v0.3.88
+├── pert-ui feature "cpu"
+│   └── point-picker v0.1.0 (/work)
+│       └── point-picker feature "default" (command-line)
+├── pert-ui feature "default"
+│   └── point-picker v0.1.0 (/work) (*)
+├── pert-ui feature "desktop"
+│   └── pert-ui feature "default" (*)
+├── pert-ui feature "gpu"
+│   └── pert-ui feature "desktop" (*)
+├── pert-ui feature "native"
+│   └── pert-ui feature "gpu" (*)
+└── pert-ui feature "serde"
+    └── point-picker v0.1.0 (/work) (*)
+[source.crates-io]
+replace-with = "vendored"
+[source.vendored]
+directory = "/kit/vendor"
+[net]
+offline = true
+cargo 1.99.1 (5f94df478 2026-08-27)
+rustc 1.99.1 (58cf8f9c3 2026-10-13)
+exit=0

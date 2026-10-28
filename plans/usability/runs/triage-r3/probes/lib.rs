@@ -232,4 +232,31 @@ mod tests {
         assert!(ui.find(&root, &["dialog", "confirmation"])?.is_some());
         Ok(())
     }
+
+    #[test]
+    fn p6_select_semantics_need_logical_discovery_on_the_frozen_head() -> Check {
+        let mut ui = runtime()?;
+        let value = ui.signal(1_u8);
+        let select = Select::new(&ui, &value, [Choice::new(1, "One"), Choice::new(2, "Two")])?;
+        let root = ui.mount_tree(Column::new([select.key("format")]).key("root"))?;
+        Driver::new(&mut ui).settle()?;
+        let owner = ui.find(&root, &["format"])?.ok_or("missing Select")?;
+        assert!(matches!(
+            Driver::new(&mut ui).semantics(&owner),
+            Err(TestError::NoSemantics { .. })
+        ));
+        assert!(Driver::new(&mut ui).address_children(&owner)?.is_empty());
+        assert!(ui.find(&owner, &["control"])?.is_none());
+        let control = descendants(&ui, &owner, "select");
+        let semantics = Driver::new(&mut ui).semantics(&control)?;
+        assert_eq!(semantics.role, SemanticRole::ComboBox);
+        assert!(matches!(
+            semantics.value,
+            Some(SemanticValue::Choice {
+                selected: Some(0),
+                ..
+            })
+        ));
+        Ok(())
+    }
 }

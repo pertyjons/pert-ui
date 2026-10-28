@@ -1,0 +1,5 @@
+original RUN_DIR/work vs manifest mismatches: []
+copy vs manifest mismatches: []
+copy files not in manifest: ['acceptance-captures/dark-unfocused.png', 'acceptance-captures/dark.png', 'acceptance-captures/headless-mode/dark.png', 'acceptance-captures/headless-mode/light.png', 'acceptance-captures/light-unfocused.png', 'acceptance-captures/light.png', 'tests/acceptance.rs']
+dark submitted==regenerated captures/: True  submitted==acceptance-captures/: True  submitted==headless-mode/: True
+light submitted==regenerated captures/: True  submitted==acceptance-captures/: True  submitted==headless-mode/: True

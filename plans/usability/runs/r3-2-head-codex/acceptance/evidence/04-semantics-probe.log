@@ -1,0 +1,43 @@
+   Compiling pert-tasks v0.1.0 (/work)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.87s
+     Running unittests src/main.rs (target/debug/deps/pert_tasks-3080e6fda56b2681)
+
+running 1 test
+LIST Semantics {
+    role: List,
+    name: None,
+    description: None,
+    value: Some(
+        Choice {
+            selected: Some(
+                0,
+            ),
+            count: 2,
+            label: None,
+        },
+    ),
+    actions: [
+        Select,
+        Move,
+    ],
+    items: [],
+    disabled: false,
+    read_only: false,
+    invalid: false,
+    warning: false,
+    expanded: None,
+    required: false,
+    protected: false,
+    names_children: false,
+}
+Error: NoSemantics { key: "1" }
+test acceptance_probe::acc_probe_semantics ... FAILED
+
+failures:
+
+failures:
+    acceptance_probe::acc_probe_semantics
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `--bin pert-tasks`

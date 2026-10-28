@@ -1,0 +1,15 @@
+== original RUN_DIR/work vs controller manifest
+.gitignore original OK | copy identical
+Cargo.lock original OK | copy identical
+Cargo.toml original OK | copy identical
+FRICTION.md original OK | copy identical
+README.md original OK | copy identical
+src/main.rs original OK | copy differs
+test-output/fields/settings.json original OK | copy identical
+test-output/save/settings.json original OK | copy identical
+491a492,496
+> 
+> // Acceptance verifier test entry point (test builds only; no application change).
+> #[cfg(test)]
+> #[path = "../acceptance/settings_acceptance.rs"]
+> mod settings_acceptance;

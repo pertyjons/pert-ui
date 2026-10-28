@@ -1,0 +1,37 @@
+$ run.sh exec KIT ACCEPTANCE_DIR cargo test --offline --locked settings_acceptance -- --nocapture --test-threads=1
+   Compiling photo-export-settings v0.1.0 (/work)
+error[E0618]: expected function, found `pert_ui::testing::HeadlessApp<Editor>`
+   --> src/../acceptance/settings_acceptance.rs:219:19
+    |
+166 |     let mut app = app(path).headless()?;
+    |         ------- `app` has type `pert_ui::testing::HeadlessApp<Editor>`
+...
+219 |     let mut app = app(path).headless()?;
+    |                   ^^^------
+    |                   |
+    |                   call expression requires function
+    |
+   ::: src/main.rs:267:1
+    |
+267 | fn app(path: PathBuf) -> App<Editor> {
+    | ------------------------------------ this function of the same name is available here, but it's shadowed by the local binding
+
+error[E0618]: expected function, found `pert_ui::testing::HeadlessApp<Editor>`
+   --> src/../acceptance/settings_acceptance.rs:444:19
+    |
+414 |     let mut app = app(path.clone()).headless()?;
+    |         ------- `app` has type `pert_ui::testing::HeadlessApp<Editor>`
+...
+444 |     let mut app = app(path).headless()?;
+    |                   ^^^------
+    |                   |
+    |                   call expression requires function
+    |
+   ::: src/main.rs:267:1
+    |
+267 | fn app(path: PathBuf) -> App<Editor> {
+    | ------------------------------------ this function of the same name is available here, but it's shadowed by the local binding
+
+For more information about this error, try `rustc --explain E0618`.
+error: could not compile `photo-export-settings` (bin "photo-export-settings" test) due to 2 previous errors
+exit=101

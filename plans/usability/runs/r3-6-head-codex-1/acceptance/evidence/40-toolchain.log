@@ -1,0 +1,15 @@
+$ /home/per/github/pert-ui/plans/usability/run.sh exec /home/per/pert-ui-usability/kit-r3-head /home/per/pert-ui-usability/acceptance-r3-6-head-codex-1 bash -c rustc --version; cargo --version; grep -A3 "^name = \"pert-ui\"" Cargo.lock; cat /home/tester/.cargo/config.toml
+# started 2026-10-28T19:26:10+01:00
+rustc 1.99.1 (58cf8f9c3 2026-10-13)
+cargo 1.99.1 (5f94df478 2026-08-27)
+name = "pert-ui"
+version = "0.3.88"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "165b2b32743a9a58319f8d065470bd84ecc0b6c2b92c7ee9b8b6216ed1e54cb3"
+[source.crates-io]
+replace-with = "vendored"
+[source.vendored]
+directory = "/kit/vendor"
+[net]
+offline = true
+# exit=0 ended 2026-10-28T19:26:10+01:00

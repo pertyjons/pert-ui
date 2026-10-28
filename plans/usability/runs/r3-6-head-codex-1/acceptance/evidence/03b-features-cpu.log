@@ -1,0 +1,17 @@
+$ /home/per/github/pert-ui/plans/usability/run.sh exec /home/per/pert-ui-usability/kit-r3-head /home/per/pert-ui-usability/acceptance-r3-6-head-codex-1 cargo tree --offline -e features -i pert-ui-cpu
+# started 2026-10-28T19:19:06+01:00
+pert-ui-cpu v0.3.88
+└── pert-ui-cpu feature "default"
+    └── pert-ui v0.3.88
+        ├── pert-ui feature "cpu"
+        │   └── notes-editor v0.1.0 (/work)
+        │       └── notes-editor feature "default" (command-line)
+        ├── pert-ui feature "default"
+        │   └── notes-editor v0.1.0 (/work) (*)
+        ├── pert-ui feature "desktop"
+        │   └── pert-ui feature "default" (*)
+        ├── pert-ui feature "gpu"
+        │   └── pert-ui feature "desktop" (*)
+        └── pert-ui feature "native"
+            └── pert-ui feature "gpu" (*)
+# exit=0 ended 2026-10-28T19:19:07+01:00
