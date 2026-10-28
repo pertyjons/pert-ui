@@ -30,13 +30,18 @@ order requires ("P6 before P7", `round-2-fix-plan.md:1332`); P6's text says
 nothing about row shrinking (P6 design, section 5, "Later parts"). Nothing
 else of P6 is used.
 
-Status: **revision 5, 2026-10-28,** for Codex's fourth recheck. Revisions
+Status: **revision 5 with the author's correction of Codex's fourth
+recheck, approved 2026-10-28** by the author together with Codex's review,
+under the maintainer's delegation of 2026-10-28, with P7-D1 as
+recommended. Revisions
 1 to 4 answered Codex's review and three rechecks; the third recheck
 accepted revision 4's algorithm and left two should-fix points, which
 revision 5 answers ([review record](#review-record)). One decision,
 **P7-D1** (which measurements a component keeps and how their
-dependencies are kept), is recommended below; the author approves it once
-Codex finds the checkpoint ready.
+dependencies are kept), is recommended below and approved. Codex's fourth
+recheck left one wording point (the overflow floor omitted a growing
+unshrunk fill child), which the author corrected as Codex proposed, with
+test 18's variant (b).
 
 ## What testers built by hand, and what the library says
 
@@ -460,9 +465,10 @@ validation).
   give up the difference instead, in proportion to their weights and down
   to each one's minimum, so a grown child fills what the others leave; the
   container then overflows only past the ungrown children's lengths plus
-  the grown children's minimums (for a row, the ungrown children's final
-  widths: an unshrunk fill child's width at its fill height, which may
-  differ from its natural one, and every other child's natural width). A
+  the grown children's minimums (for a row, the children's final widths
+  where they were not shrunk: any unshrunk fill child, grown or not,
+  counts with its width at its fill height, which may differ from its
+  natural one, and every other ungrown child with its natural width). A
   row measures each child it shrank
   again at its final width and takes its height from those measurements, so
   a child that wraps gets the height of its new line count; a column's
@@ -935,7 +941,14 @@ profiles.
     Mutations: the
     reported width taken as `L` when the natural deficit was absorbed (250);
     `WideFill` placed at its natural width (the counting child at `x`
-    100).
+    100). **Variant (b), a growing fill child at its minimum** (Codex's
+    fourth recheck): the same fixture with `WideFill` growing (weight 1,
+    minimum width 100) beside the growing `Counting` 300 wide with minimum
+    0. The natural deficit is 150; `WideFill` cannot give up width, the
+    counting child shrinks to 150. Named assertions: `WideFill` 300 wide,
+    the counting child 150 wide, the row's reported width 450. Mutation:
+    a grown fill child counted with its minimum instead of its fill-height
+    width (reported width 250).
 19. **A fill child narrower at its fill height, with a shortfall (2.1.11,
     Codex's second configuration).** The same `Reporter` fixture (250 px,
     the child's reported width recorded separately, `clips_children`
@@ -988,9 +1001,10 @@ profiles.
     shrank again at its final width, so a wrapping label gets its new
     height and the row grows to it, and an ellipsis label truncates; a
     grown horizontal collection in a bounded row is now bounded. The row
-    overflows only past its ungrown children's widths (natural, or for an
-    unshrunk fill child its width at its fill height) plus its grown
-    children's minimums, which development validation still reports as
+    overflows only past its ungrown children's natural widths plus its
+    grown children's minimums, where any fill child the row did not
+    shrink, grown or not, counts with its width at its fill height
+    instead; development validation still reports that overflow as
     `EscapesParent`. Whether the row shrinks, and by how much, is decided
     once from the natural widths; its reported width, overflow and
     justified spare space are computed from the final allocations. An
@@ -1329,3 +1343,11 @@ own children (section 1).
      `:613-624`). Tests 18 and 19 now specify a 250 px `Reporter` that
      records its child's reported width separately, returns `false` from
      `clips_children` and sits in a 290 px `Container` with 20 px padding.
+- **Revision 5, Codex fourth recheck (2026-10-28):** one should-fix: the
+  contracts and CHANGELOG passages counted growing children only by their
+  minimums, omitting a growing fill child the row did not shrink, which
+  counts with its fill-height width (rule 2.1.10 already did). The author
+  qualified both passages and added test 18's variant (b) exactly as Codex
+  proposed; no algorithm decision reopened. Approved by the author under
+  the maintainer's delegation, with P7-D1 (four entries per component,
+  least recently used replaced, sticky dependency bits) as recommended.
