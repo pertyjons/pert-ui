@@ -104,7 +104,9 @@ overlay, profiling, clearing) are refused unless the application enables them,
 and nothing the application owns can be changed through it.
 
 ```
-use pert_ui::{Capacity, Column, Detail, Element, InspectionQuery, Label, Runtime, Selector};
+use pert_ui::{
+    Capacity, Column, Detail, Element, InspectionQuery, Label, Runtime, Selector, WaitError,
+};
 use std::time::Duration;
 let mut ui = Runtime::new();
 ui.mount_tree(Element::new(
@@ -120,6 +122,8 @@ let pending = std::thread::spawn(move || {
 .expect("the tool thread finishes")?;
 // The request woke the host; a headless host sees it in `next_deadline` and flushes.
 assert_eq!(ui.next_deadline(), Some(Duration::ZERO));
+// Unanswered until the flush: `wait` here would block forever.
+assert!(matches!(pending.try_reply(), Err(WaitError::Timeout)));
 ui.flush(Duration::ZERO)?;
 // This flush answered the request; on the UI thread take the reply, never wait.
 let reply = pending.try_reply()?;
@@ -158,7 +162,7 @@ would present.
 # #[cfg(feature = "cpu")]
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     use pert_ui::cpu::CpuRenderer;
-    use pert_ui::{CaptureRequest, CaptureTarget, Element, Label, Runtime, Viewport};
+    use pert_ui::{CaptureRequest, CaptureTarget, Element, Label, Runtime, Viewport, WaitError};
     use std::time::Duration;
     let mut ui = Runtime::new();
     ui.set_viewport(Viewport::new(300.0, 200.0, 1.0)?)?;
@@ -169,6 +173,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "title".into(),
     ])));
     ui.flush(Duration::ZERO)?;
+    // The flush only queued the job: unanswered until the renderer serves it.
+    assert!(matches!(pending.try_reply(), Err(WaitError::Timeout)));
     CpuRenderer::new().serve_captures(&mut ui);
     let capture = pending.try_reply()?.value?; // served above
     std::fs::write(std::env::temp_dir().join("title.png"), capture.image.encode_png())?;
@@ -177,6 +183,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &ui.primary_window(),
     )));
     ui.flush(Duration::ZERO)?;
+    assert!(matches!(pending.try_reply(), Err(WaitError::Timeout)));
     CpuRenderer::new().serve_captures(&mut ui);
     let window = pending.try_reply()?.value?;
     assert_eq!((window.image.width(), window.image.height()), (300, 200));

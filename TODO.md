@@ -157,8 +157,8 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   examples of `CommandPalette`, `Runtime::content_search`,
   `Runtime::reveal_child`, `Runtime::capture_workspace`, the `testing`
   module, `TextField::on_binding_refusal` and `TextArea::on_binding_refusal`
-  (one macro), `DraftEditor`, `DraftEditorController::set_read_only`, four
-  blocks of `crates/pert-ui-runtime/README.md`, and the guide's
+  (one macro), `DraftEditor`, `DraftEditorController::set_read_only`, and
+  the guide's
   authoritative-values, appearance and controls chapters (one, one and two
   blocks), each with an import it does not use; doctests allow unused code,
   so nothing reports it. The testing chapter's opening block, the two globs

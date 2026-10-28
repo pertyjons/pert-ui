@@ -150,9 +150,13 @@ impl NumberInputError {
 /// The semantics have the role [`SemanticRole::NumberInput`] and, as the
 /// value, the saved number: [`SemanticValue::Number`] with the range as its
 /// minimum and maximum, also while a draft is pending, so a test or tool
-/// reads the number in effect. The draft is the `text` property. Only a field
-/// that has read no valid value since it mounted, such as one refusing its
-/// first bound value, reports its text as [`SemanticValue::Text`] instead.
+/// reads the number in effect. The draft is the `text` property. When no saved
+/// numeric value is available, the field reports its text as
+/// [`SemanticValue::Text`] instead: before it has read a valid value, as when
+/// it refuses its first bound value, and after a redescription that rebinds it
+/// or changes a resting field's range, step, precision or presentation, until
+/// it reads a value it accepts, so a bound value the new range refuses leaves
+/// the text.
 /// An `i64` beyond 2^53 loses precision as an `f64`; the `value` property
 /// keeps it exact. A text editor such as [`TextField`] reports its current
 /// text, the draft, as its value instead. The name is the label of a
@@ -204,6 +208,22 @@ impl NumberInputError {
 /// assert_eq!(properties.get("text"), Some(&InspectValue::Text("7".into())));
 /// assert_eq!(properties.get("value"), Some(&InspectValue::Text("3".into())));
 /// assert_eq!(properties.get("dirty"), Some(&InspectValue::Bool(true)));
+///
+/// // A narrower range refuses the bound 8: no saved number, so the text.
+/// let maximum = driver.runtime().signal(10_i64);
+/// let level = driver.runtime().signal(8_i64);
+/// let (bound, limits) = (level.clone(), maximum.clone());
+/// let root = driver.runtime_mut().mount_tree(Dynamic::new(&limits, move |_, &max| {
+///     Element::new("level", IntegerInput::new(bound.clone()).range(0, max)
+///         .expect("an ordered range"))
+/// }).key("levels"))?;
+/// driver.settle()?;
+/// let level_field = driver.find(&root, &["level"])?;
+/// assert!(matches!(driver.semantics(&level_field)?.value,
+///     Some(SemanticValue::Number { value: 8.0, .. })));
+/// maximum.set(5)?;
+/// driver.settle()?;
+/// assert_eq!(driver.semantics(&level_field)?.value, Some(SemanticValue::Text("8".into())));
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 ///

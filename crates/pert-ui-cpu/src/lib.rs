@@ -245,7 +245,7 @@ impl CpuRenderer {
     /// ```
     /// # mod pert_ui { pub use pert_ui_runtime::*; pub mod cpu { pub use pert_ui_cpu::CpuRenderer; } }
     /// use pert_ui::cpu::CpuRenderer;
-    /// use pert_ui::{CaptureRequest, CaptureTarget, Element, Label, Runtime, Viewport};
+    /// use pert_ui::{CaptureRequest, CaptureTarget, Element, Label, Runtime, Viewport, WaitError};
     /// use std::time::Duration;
     ///
     /// let mut ui = Runtime::new();
@@ -255,6 +255,7 @@ impl CpuRenderer {
     /// ui.set_capture_support(true);
     /// let pending = ui.request_capture(CaptureRequest::new(CaptureTarget::Path(vec!["title".into()])));
     /// ui.flush(Duration::ZERO)?;
+    /// assert!(matches!(pending.try_reply(), Err(WaitError::Timeout))); // queued, not served
     /// let mut renderer = CpuRenderer::new();
     /// assert_eq!(renderer.serve_captures(&mut ui), 1);
     /// let capture = pending.try_reply()?.value?; // answered by `serve_captures`

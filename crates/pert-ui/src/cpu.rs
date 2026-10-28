@@ -14,7 +14,7 @@
 //!
 //! ```
 //! use pert_ui::cpu::CpuRenderer;
-//! use pert_ui::{CaptureRequest, CaptureTarget, Element, Label, Runtime, Viewport};
+//! use pert_ui::{CaptureRequest, CaptureTarget, Element, Label, Runtime, Viewport, WaitError};
 //! use std::time::Duration;
 //!
 //! let mut ui = Runtime::new();
@@ -31,6 +31,7 @@
 //!     height: 40.0,
 //! }));
 //! ui.flush(Duration::ZERO)?;
+//! assert!(matches!(pending.try_reply(), Err(WaitError::Timeout))); // queued, not served
 //! CpuRenderer::new().serve_captures(&mut ui);
 //! // Served on this thread: take the reply, never wait for it here.
 //! let png = pending.try_reply()?.value?.image.encode_png();

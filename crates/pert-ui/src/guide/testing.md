@@ -453,6 +453,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         CaptureTarget::window(&driver.runtime().primary_window()),
     ));
     driver.settle()?;
+    // Not served yet: the flush only queued the job, and `wait` would block forever.
+    assert!(matches!(pending.try_reply(), Err(WaitError::Timeout)));
     CpuRenderer::new().serve_captures(driver.runtime_mut());
     let capture = pending.try_reply()?.value?; // served above
     let image: &FrameImage = &capture.image;

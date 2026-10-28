@@ -226,6 +226,11 @@ contract:
   [`Component::deliver_notifications`] returns it from a later flush. That
   route reports only while the control stays mounted: a removed control is not
   called there, so a restore that fails during removal is not reported.
+- **Readings are validated** before they replace what the control shows.
+  It supports a value and a limit in 0..=1; `update` refuses a reading
+  outside that range, NaN included, with an error, which fails the flush, and
+  keeps its previous presentation, so pointer and key input never compute
+  with an invalid limit. The next valid reading is shown again.
 - **The focus ring** is the built-in one, drawn as
   [`ColorRole::FocusRing`] describes: [`Painter::stroke_shape`] on the
   control's bounds at [`MetricRole::FocusWidth`] while
@@ -235,7 +240,8 @@ contract:
 use pert_ui::{component::*, prelude::*};
 use std::{cell::RefCell, rc::Rc, time::Duration};
 
-/// Edits `value` from 0 up to `limit`, which the application may lower.
+/// Edits `value` from 0 up to `limit`, which the application may lower; both
+/// lie in 0..=1.
 struct Level {
     value: Signal<f32>,
     limit: ReadSignal<f32>,
@@ -270,7 +276,12 @@ impl Level {
 }
 impl Component for Level {
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
-        self.shown = (cx.read(&self.value.read_only())?, cx.read(&self.limit)?);
+        let (value, limit) = (cx.read(&self.value.read_only())?, cx.read(&self.limit)?);
+        // Refused readings, NaN included, keep what the control shows.
+        if !(0.0..=1.0).contains(&value) || !(0.0..=1.0).contains(&limit) {
+            return Err(ApplicationError::from("a level and its limit lie in 0..=1").into());
+        }
+        self.shown = (value, limit);
         Ok(())
     }
     fn measure(&self, cx: &MeasureContext<'_>, _: Constraints) -> Result<Size, RuntimeError> {
@@ -378,8 +389,16 @@ ui.key_input(KeyCode::Escape, KeyAction::Press)?;
 assert_eq!(value.get()?, 0.8);
 assert_eq!(*reported.borrow(), [0.5, 0.25, 0.8]);
 ui.key_input(KeyCode::Escape, KeyAction::Release)?;
+
+// The focused control draws the focus ring: four sides in the ring's color,
+// made distinct here from `Primary`, which built-in palettes match.
+let ring = Color::from_linear(1.0, 0.0, 0.5, 1.0)?;
+ui.theme().set_color(ui.theme().mode()?, ColorRole::FocusRing, ring)?;
 ui.flush(Duration::ZERO)?;
-ui.paint()?; // the focused control draws the focus ring
+let sides = ui.paint()?.commands().iter()
+    .filter(|command| matches!(command, DrawCommand::FillRect { color, .. } if *color == ring))
+    .count();
+assert_eq!(sides, 4);
 
 // Focus loss restores in `cancel_input`, which reports nothing to `on_change`.
 ui.pointer_input(press(40.0)?)?;
@@ -395,6 +414,16 @@ ui.focus(&other)?;
 assert!(ui.flush(Duration::ZERO).is_err());
 assert_eq!(value.get()?, 0.25); // the drag's value stands
 ui.flush(Duration::ZERO)?; // reported once
+
+// A limit outside 0..=1 is refused, and the control keeps the one it shows.
+let shown_limit = |ui: &Runtime| ui.inspect().components.into_iter()
+    .find(|component| component.key == "level")
+    .and_then(|component| component.details.semantics?.value);
+limit.set(f32::NAN)?;
+assert!(ui.flush(Duration::ZERO).is_err());
+assert!(matches!(shown_limit(&ui), Some(SemanticValue::Number { maximum: Some(0.5), .. })));
+limit.set(0.5)?;
+ui.flush(Duration::ZERO)?;
 
 // One that fails while the control is removed is not reported.
 value.set(0.5)?;

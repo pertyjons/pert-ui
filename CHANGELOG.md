@@ -78,11 +78,12 @@ answers a finding the testers met (`plans/archive/developer-usability.md`,
   reports while an edit is pending. `IntegerInput` has an "Inspection"
   section: the role `NumberInput`, the saved number as
   `SemanticValue::Number` with the range also while a draft is pending, the
-  draft in the `text` property, the text value only before any valid value,
-  and the inspection properties (`text`, `value`, `display_value`,
-  `shows_display`, `unit`, `valid`, `dirty`, `validation_error`,
-  `binding_error`, `inline`, `text_editing`, `stepper`), with an example;
-  `DecimalInput` points to it.
+  draft in the `text` property, the text value when no saved number is
+  available (before a valid value is read, and after a rebinding or a resting
+  range change until the field accepts a value), and the inspection
+  properties (`text`, `value`, `display_value`, `shows_display`, `unit`,
+  `valid`, `dirty`, `validation_error`, `binding_error`, `inline`,
+  `text_editing`, `stepper`), with an example; `DecimalInput` points to it.
 - R2-7: `InlineText` has a section on its editing child `"editor"`: its
   address, that it stays mounted and is shown while editing, that focus and
   typing move into it, and where the draft is reported (the child's value and
@@ -96,7 +97,8 @@ answers a finding the testers met (`plans/archive/developer-usability.md`,
 - R2-9: `Checkbox` and `Toggle` point to `Field::hide_label` for a control
   named by text shown elsewhere.
 - R2-10: `KeyChord::new` has an example of explicit Control+Alt and Alt
-  chords written with `Modifiers`' fields, run through `Driver::chord`.
+  chords written with `Modifiers`' fields, run through `Driver::chord`, and
+  says that ASCII letters match in either case and other characters exactly.
 - R2-12: the testing chapter's capture ends by writing
   `FrameImage::encode_png` to a file under `CARGO_TARGET_TMPDIR`, with the
   system temporary directory where Cargo does not set it (a doctest).
@@ -111,8 +113,11 @@ answers a finding the testers met (`plans/archive/developer-usability.md`,
   the restore in `cancel_input`, what `on_change` reports, a failed restore
   recorded and reported through a `Notifier` while the control stays mounted
   (and the stated limit: a restore that fails during removal is not
-  reported), and the focus ring by `ColorRole::FocusRing`'s recipe. Its
-  doctest runs both a failed restore while mounted and one during removal.
+  reported), the readings it supports (a value and a limit in 0..=1; any
+  other reading, NaN included, fails the update and keeps the previous
+  presentation) and the focus ring by `ColorRole::FocusRing`'s recipe. Its
+  doctest runs a failed restore while mounted and one during removal,
+  refuses a NaN limit, and counts the focus ring's four sides in a frame.
 - R2-16: every type whose `Serialize` and `Deserialize` are behind the
   `serde` feature says so on its page, and the feature table of the crate
   page and the README links the documents it serializes.
@@ -120,11 +125,13 @@ answers a finding the testers met (`plans/archive/developer-usability.md`,
   custom-widgets chapters' examples that did the same, import the prelude,
   the modules and named items instead of globbing the crate root. Same kind,
   fixed here: every rustdoc example of `pert-ui-runtime` and `pert-ui-core`
-  that globbed the crate root (only `pert-ui`'s `compile_fail` example that
-  shows the root glob lacks `HostIntegration` keeps it), the packaged
+  that globbed the crate root, the runtime README's included (only
+  `pert-ui`'s `compile_fail` example that shows the root glob lacks
+  `HostIntegration` keeps it), the packaged
   `dynamic_documents` example and the gallery's modules and tests. The
   examples touched lose imports they did not use (`EventContext::to_local`,
-  `VirtualList::on_selection_change`, the diagnostics chapter's query), and
+  `VirtualList::on_selection_change`, the diagnostics chapter's query and
+  four blocks of the runtime README), and
   `KeyChord::named`'s example compares it with the `KeyChord::new` form its
   text names. `IntegerInput`'s local-signal example and its wheel and Shift
   paragraph move before the page's headings, out of "Parameter binding".
@@ -135,7 +142,8 @@ answers a finding the testers met (`plans/archive/developer-usability.md`,
   there; `Runtime::request_capture` and the diagnostics chapter say the
   same, and the UI-thread examples of the diagnostics and testing chapters,
   the `cpu` module and `CpuRenderer::serve_captures` use `try_reply` after the
-  flush or the serve that answers the request.
+  flush or the serve that answers the request, and assert before it that the
+  reply has not arrived (`WaitError::Timeout`).
 
 The `api/` listings are unchanged.
 

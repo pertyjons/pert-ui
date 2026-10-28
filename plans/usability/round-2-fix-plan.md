@@ -1577,8 +1577,8 @@ plan closes.
   `CARGO_TARGET_TMPDIR`; R2-16's feature-table row links the four
   serialized documents and each type's page carries the note; R2-14 changed
   the facade's `representative_programs_import_only_their_globs`, which
-  encoded the old rule. Each new doctest was shown to fail under a
-  temporary mutation of its claim. **Same kind, fixed here** (the author's
+  encoded the old rule. The new doctests are runnable usage examples;
+  which of them are regression evidence is stated under the review below. **Same kind, fixed here** (the author's
   review sent back three entries the agent had put in TODO.md): every
   runtime and core rustdoc example that globbed the crate root, the
   packaged `dynamic_documents` example and the gallery's root globs now
@@ -1591,7 +1591,29 @@ plan closes.
   doctests, the facade and gallery tests, the five headless sessions and
   the headless gallery, rustdoc `-D warnings` (default and `serde`), the
   diagnostics snapshots, the API listing gate (no `api/` diff), `git diff
-  --check`. Native evidence: not applicable. Codex review: pending.
+  --check`. Native evidence: not applicable. **Codex review**
+  (2026-10-28): needs fixes, four should-fix and two nits, all verified:
+  `IntegerInput`'s text fallback also follows a rebinding or a resting
+  range change, not only the first read (page, CHANGELOG and an
+  assertion corrected); the value-editing recipe clamped against an
+  unvalidated limit and could panic (it now states the domain 0..=1 and
+  refuses another reading, keeping its presentation, tested with a NaN
+  limit); eight runtime README examples still globbed the root (migrated,
+  with the README's unused imports removed and the TODO entry narrowed);
+  this entry overstated the examples' sensitivity; `KeyChord::new`'s case
+  rule is ASCII only; the plan's status line (fixed by the author).
+  **Regression evidence, as checked:** each R2-28 example asserts
+  `WaitError::Timeout` before the serve or answering flush, so dropping
+  the serve fails it, but changing the final take back to `wait()` does
+  not (the reply has arrived by then); the recipe's failed restore,
+  focus loss, `on_change` count, NaN refusal and focus ring (four
+  `FillRect`s in a distinct `FocusRing` colour) each fail under their
+  mutation; R2-10, R2-12 and R2-19 fail under theirs; R2-5's new assertion
+  was not mutated (it would need a library change). Fixes gate (fresh):
+  fmt, workspace Clippy, workspace tests (runtime README doctests
+  included), facade doctests with `cpu`, the five headless sessions,
+  rustdoc (default and `serde`), the diagnostics snapshots, no `api/`
+  diff, `git diff --check`. Recheck: pending.
 
 - **P2 Glob membership (0.3.77), 2026-10-28.** Implemented by a fresh
   agent from the approved design (`round-2-design-P2.md`, revision 3):

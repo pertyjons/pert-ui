@@ -27,8 +27,7 @@ profiling, and `live` for data from other threads. Every name also stays at
 the crate root.
 
 ```rust
-use pert_ui_runtime::{parameter::*, prelude::*};
-use pert_ui_runtime::ParameterError;
+use pert_ui_runtime::parameter::*;
 
 let amount = ParameterSpec::new("Amount", -100.0, 100.0, 0.0)?;
 let id = ParameterId::new(1, 42, "amount")?;
@@ -435,7 +434,7 @@ with zero padding by default. Use a container only when content needs decoration
 padding or a preferred size; ordinary rows/columns need no spacing setup.
 
 ```rust
-use pert_ui_runtime::{Color, Column, Container, Element, Grid, Length, Row,
+use pert_ui_runtime::{Color, Column, Container, Element, Grid, Row,
     Runtime, Size, Track, Viewport, Wrap};
 use std::time::Duration;
 let tile = |key: &str| -> Result<Element, pert_ui_runtime::GeometryError> {
@@ -474,7 +473,7 @@ custom components. Native repeats remain repeats after window focus loss.
 
 ```rust
 use pert_ui_runtime::{
-    Button, Column, Element, FocusDirection, Label, Runtime, RuntimeError, Viewport,
+    Button, Column, Element, FocusDirection, Label, Runtime, Viewport,
 };
 use std::time::Duration;
 let mut ui = Runtime::new();
@@ -829,7 +828,8 @@ Compact and Comfortable change spacing and control sizes while retaining text
 sizes. Local fixed lengths ignore density; theme role overrides remain live.
 
 ```rust
-use pert_ui_runtime::*;
+use pert_ui_runtime::prelude::*;
+use pert_ui_runtime::Density;
 let mut ui = Runtime::new();
 let theme = ui.theme();
 theme.set_density(Density::Compact)?;
@@ -870,7 +870,8 @@ Selection, stable widget IDs, physical key state and split preferences are retai
 Hosts own preference persistence and any zoom keyboard shortcuts.
 
 ```rust
-use pert_ui_runtime::*;
+use pert_ui_runtime::prelude::*;
+use pert_ui_runtime::{UiZoom, Viewport};
 let mut ui = Runtime::new();
 ui.set_viewport(Viewport::new(800.0, 600.0, 1.5)?)?; // native size/DPI, before zoom
 let settings = ui.ui_settings();
@@ -894,7 +895,7 @@ runtime caches shape coverage separately from its color, bounded to 128 entries
 and 16 MiB. Cached display lists may retain evicted masks. This is UI-thread work.
 
 ```rust
-use pert_ui_runtime::*;
+use pert_ui_runtime::{component::*, prelude::*};
 struct CustomPanel;
 impl Component for CustomPanel {
     fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> { Ok(()) }
@@ -1031,7 +1032,8 @@ acceptance, owner removal and failed admission remain distinguishable. Native
 focus loss keeps dialogs open. No task action or I/O is implicit in dismissal.
 
 ```rust
-use pert_ui_runtime::*;
+use pert_ui_runtime::prelude::*;
+use pert_ui_runtime::{KeyAction, Viewport};
 use std::time::Duration;
 
 let mut ui = Runtime::new();
@@ -1066,7 +1068,8 @@ Custom containers use the same public `Component::child_surface` contract and
 notifications; physical held keys are never replayed on focus transfer.
 
 ```rust
-use pert_ui_runtime::*;
+use pert_ui_runtime::prelude::*;
+use pert_ui_runtime::Viewport;
 use std::time::Duration;
 
 let mut ui = Runtime::new();
@@ -1102,7 +1105,8 @@ at the pointer, or on the Menu key or Shift+F10 from focused content. Inputs
 consumed by a custom child do not bubble to its surrounding context menu.
 
 ```rust
-use pert_ui_runtime::*;
+use pert_ui_runtime::prelude::*;
+use pert_ui_runtime::Viewport;
 use std::time::Duration;
 
 let mut ui = Runtime::new();
@@ -1131,7 +1135,8 @@ Give the content to `MenuBar::content` so F10 reaches the bar from it. There are
 no mnemonics and no native OS menus; see `docs/contracts.md` in the repository.
 
 ```rust
-use pert_ui_runtime::*;
+use pert_ui_runtime::prelude::*;
+use pert_ui_runtime::{KeyAction, Viewport};
 use std::time::Duration;
 
 let mut ui = Runtime::new();
@@ -1187,7 +1192,8 @@ keyboard selection. Enter/Space activates the selected action, Delete dismisses;
 failed actions close once and report both `ActionFailed` and the runtime error.
 
 ```rust
-use pert_ui_runtime::*;
+use pert_ui_runtime::prelude::*;
+use pert_ui_runtime::Viewport;
 use std::time::Duration;
 
 let mut ui = Runtime::new();
@@ -1308,7 +1314,7 @@ view are siblings.
 
 ```rust
 use pert_ui_runtime::{Button, Choice, Element, Icon, InlineChoice, InlineReadout, InlineSelect,
-    InlineText, InlineToggle, Runtime, RuntimeError, ToolGroup, Toolbar};
+    InlineText, InlineToggle, Runtime, ToolGroup, Toolbar};
 let mut ui = Runtime::new();
 let looping = ui.signal(false);
 let snap = ui.signal("1/16");

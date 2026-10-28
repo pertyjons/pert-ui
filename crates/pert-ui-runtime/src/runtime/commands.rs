@@ -35,7 +35,8 @@ impl KeyChord {
     /// The chord matches only `modifiers`: set the [`Modifiers`] fields it
     /// needs and leave the rest at their defaults. `control` and `alt` are
     /// those keys on every platform; [`Self::primary`] instead takes the
-    /// platform's primary modifier. A letter matches in either case.
+    /// platform's primary modifier. ASCII letters match in either case;
+    /// other characters compare exactly.
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
