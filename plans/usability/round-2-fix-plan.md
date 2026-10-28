@@ -1821,8 +1821,9 @@ plan closes.
   earlier unit's suffix; the builder now clears the whole unmounted
   presentation before checking the final pair, with a test comparing the
   chain with a direct invalid-unit description (fails with the stale
-  suffix restored, `target/p6-evidence/fix2-stale-suffix.txt`). Second
-  recheck: pending.
+  suffix restored, `target/p6-evidence/fix2-stale-suffix.txt`). Codex's
+  second recheck: resolved, no new findings: ready. **P6 done** (native
+  evidence missing).
 
 - **P7 Rows that shrink (0.3.82), 2026-10-28.** Implemented by a fresh
   agent from the approved design (`round-2-design-P7.md`, revision 5):
