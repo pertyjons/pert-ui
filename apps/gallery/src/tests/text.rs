@@ -193,6 +193,67 @@ fn the_sign_in_example_conceals_limits_and_shows_a_pending_check() {
 }
 
 #[test]
+fn the_sign_in_examples_revert_discards_a_refused_draft_and_clears_its_marks() {
+    let user_input = |ui: &Runtime| {
+        ui.inspect()
+            .components
+            .into_iter()
+            .find(|c| c.key == "user-input")
+            .unwrap()
+            .details
+            .properties
+    };
+    let (mut ui, root) = mounted();
+    open(&mut ui, &root, "editing");
+    let user = find(&ui, &root, "user-input");
+    ui.focus(&user).unwrap();
+    settle(&mut ui);
+    ui.text_input("ab").unwrap();
+    press(&mut ui, KeyCode::Enter);
+    // The refused entry keeps its draft for correction.
+    let shown = user_input(&ui);
+    assert_eq!(shown["text"], InspectValue::Text("ab".into()));
+    assert!(shown.contains_key("validation_error"), "{shown:?}");
+    assert_eq!(
+        text(&ui, "sign-in-summary"),
+        ["Errors: 1, pending checks: 0, unsaved fields: 1"]
+    );
+
+    // Activating Revert takes focus, so the user field tries to save its
+    // refused draft again and keeps it; the action then clears the statuses
+    // and asks the shown fields to discard their drafts.
+    let revert = find(&ui, &root, "revert");
+    click(&mut ui, &revert);
+    settle(&mut ui);
+    let shown = user_input(&ui);
+    assert_eq!(
+        shown["text"],
+        InspectValue::Text(String::new()),
+        "the bound value is shown again"
+    );
+    assert!(!shown.contains_key("validation_error"), "{shown:?}");
+    let snapshot = ui.inspect();
+    let field = snapshot
+        .components
+        .iter()
+        .find(|c| c.key == "user-field")
+        .unwrap();
+    assert_eq!(
+        field.details.properties["status"],
+        InspectValue::Text("normal".into())
+    );
+    assert_eq!(
+        text(&ui, "sign-in-summary"),
+        ["Errors: 0, pending checks: 0, unsaved fields: 0"]
+    );
+    assert_eq!(
+        text(&ui, "sign-in-outcome"),
+        ["Reverted: 3 fields asked to discard their drafts."]
+    );
+    assert!(ui.validation_report().issues.is_empty());
+}
+
+#[test]
 fn the_truncation_section_cuts_only_labels_that_do_not_fit() {
     let (mut ui, root) = mounted();
     open(&mut ui, &root, "fonts");

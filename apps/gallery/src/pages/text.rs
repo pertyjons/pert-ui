@@ -419,6 +419,15 @@ fn sign_in_example(ui: &Runtime) -> Result<Element, RuntimeError> {
         secret.clone(),
         outcome.clone(),
     );
+    // Revert clears the statuses the application published and asks every
+    // shown field to discard its draft; the requests are delivered after the
+    // action, and each editor that ends a draft reports it as Escape does.
+    let (revert_form, revert_user, revert_password, revert_outcome) = (
+        form.clone(),
+        user.clone(),
+        password.clone(),
+        outcome.clone(),
+    );
     let summary = form.summary();
     Ok(section(
         "sign-in-example",
@@ -426,7 +435,7 @@ fn sign_in_example(ui: &Runtime) -> Result<Element, RuntimeError> {
         [
             label(
                 "sign-in-help",
-                "Both fields are required (*). The user name keeps 3–20 characters and the password at least 8, counted as you see them and checked when the field saves on Enter or focus loss. The password shows dots: press the eye or Alt+F8 to reveal it; it hides again when focus leaves. Check the name to see a pending status, then finish the check (the name \"admin\" is taken). The × button clears a field; a dot in a field's corner marks an edit not saved yet, and the summary counts them. The delay field shows an icon and its unit around the text.",
+                "Both fields are required (*). The user name keeps 3–20 characters and the password at least 8, counted as you see them and checked when the field saves on Enter or focus loss. The password shows dots: press the eye or Alt+F8 to reveal it; it hides again when focus leaves. Check the name to see a pending status, then finish the check (the name \"admin\" is taken). The × button clears a field; a dot in a field's corner marks an edit not saved yet, and the summary counts them. A refused entry keeps its draft for correction (focus leaving saves only a valid one), and Revert discards the unsaved drafts, keeping what was saved, and clears the error and pending marks. The delay field shows an icon and its unit around the text.",
             ),
             Element::new(
                 "user-field",
@@ -521,6 +530,19 @@ fn sign_in_example(ui: &Runtime) -> Result<Element, RuntimeError> {
                                 format!("Signed in as {}.", sign_name.get()?)
                             };
                             sign_outcome.set(text)
+                        }),
+                    ),
+                    Element::new(
+                        "revert",
+                        Button::new("Revert", move |cx| {
+                            revert_user.clear()?;
+                            revert_password.clear()?;
+                            let asked = revert_form.discard_drafts(cx)?;
+                            revert_outcome.set(if asked == 1 {
+                                "Reverted: 1 field asked to discard its draft.".to_owned()
+                            } else {
+                                format!("Reverted: {asked} fields asked to discard their drafts.")
+                            })
                         }),
                     ),
                 ])

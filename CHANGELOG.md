@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.3.88 (2026-10-28)
+
+Gallery: a Revert for the sign-in form, the native evidence the round 2 fix
+plan's part P12 still lacks. No library change.
+
+- Gallery: Text › Input states has a Revert button (key `revert`, in
+  `sign-in-actions`). Its action clears the statuses the application
+  publishes on the user-name and password fields with `FieldHandle::clear`,
+  then calls `FormFields::discard_drafts`, and reports how many shown fields
+  were asked to discard their drafts; the requests are delivered after the
+  action, so a refused draft disappears, its error ends and the unsaved
+  count falls once the flush settles, while saved values stay. The section's
+  help text says that a refused entry keeps its draft (focus leaving saves
+  only a valid one) and what Revert does; the gallery README follows.
+- Tests: the gallery test
+  `the_sign_in_examples_revert_discards_a_refused_draft_and_clears_its_marks`
+  types a too-short user name, saves it with Enter, activates Revert through
+  keyboard input and checks the bound value, status, summary and outcome;
+  it fails with the `discard_drafts` call removed.
+- Verification: `docs/verification.md`'s 0.3.87 "Form drafts" row names the
+  gallery Revert as the next hand check (Text › Input states: `ab` in User
+  name, Enter, then Revert); it has not been run.
+
 ## 0.3.87 (2026-10-28)
 
 Form drafts and the settings recipe (round 2 fix plan, part P12, R2-2 by
