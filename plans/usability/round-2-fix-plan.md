@@ -2052,7 +2052,9 @@ plan closes.
   unwinds; a `catch_unwind` regression test (a panicking first flush, a
   panicking initializer) fails under both former orders
   (`target/p11-evidence/m6-*.log`, `m7-*.log`). Fixes gate (fresh): fmt,
-  workspace Clippy, workspace tests, doctests, rustdoc. Recheck: pending.
+  workspace Clippy, workspace tests, doctests, rustdoc. Codex's recheck:
+  both points resolved, ready. **P11 done** (hand check and Windows/macOS
+  missing).
 
 - **P12 Form drafts and the settings recipe (0.3.87), 2026-10-28.**
   Implemented by a fresh agent from the approved design
