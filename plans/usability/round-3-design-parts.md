@@ -1,7 +1,8 @@
 # Round 3 checkpoint: named component parts
 
 Status: **revision 3 approved**, 2026-10-28; implemented on the working tree,
-with focused/workspace checks passed and fresh implementation review pending.
+with focused/workspace checks passed and independent implementation re-review
+approved. The complete usability round remains open.
 Revision 1's
 use of workspace part/slot markers was rejected by fresh Claude review:
 it would interrupt semantic naming and collide with application-content

@@ -1,0 +1,13 @@
+{
+  "commit": "3bbfb813a8c02c417d68386b0c5547b4b8139580",
+  "command": [
+    "git",
+    "status",
+    "--porcelain",
+    "--",
+    "api/"
+  ],
+  "stdout": "",
+  "exit_status": 0,
+  "generation_log": "r3-api-final-0.3.89.log"
+}

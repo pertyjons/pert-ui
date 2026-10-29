@@ -1,8 +1,8 @@
 # Round 3 checkpoint: pointer-testable menu rows and tab titles
 
 Status: revision 2 approved, 2026-10-28; implemented on the working tree,
-with focused/workspace/native interaction checks passed; fresh implementation
-review pending. Fresh Claude review of revision 1 requested the named-parts dependency,
+with focused/workspace/native interaction checks passed and independent
+implementation re-review approved. Fresh Claude review of revision 1 requested the named-parts dependency,
 live tab scrolling, complete documentation and sharper tests.
 This checkpoint is driven by the retained head submission
 [r3-6-head-claude-1](runs/r3-6-head-claude-1/FRICTION.md), its recorded

@@ -1,0 +1,6 @@
+$ cargo doc --locked -p pert-ui --features serde --no-deps
+    Checking pert-ui-runtime v0.3.89 (/home/per/github/pert-ui/crates/pert-ui-runtime)
+    Checking pert-ui-wgpu v0.3.89 (/home/per/github/pert-ui/crates/pert-ui-wgpu)
+ Documenting pert-ui v0.3.89 (/home/per/github/pert-ui/crates/pert-ui)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 17.22s
+   Generated /home/per/github/pert-ui/target/doc/pert_ui/index.html

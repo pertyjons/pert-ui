@@ -1,0 +1,296 @@
+[
+  {
+    "name": "format",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--check"
+    ],
+    "environment": {},
+    "started": "2026-10-28T19:03:50.408486+00:00",
+    "ended": "2026-10-28T19:03:53.201205+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--workspace",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "environment": {},
+    "started": "2026-10-28T19:03:53.201454+00:00",
+    "ended": "2026-10-28T19:03:57.216783+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "workspace-tests",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--workspace"
+    ],
+    "environment": {},
+    "started": "2026-10-28T19:03:57.217035+00:00",
+    "ended": "2026-10-28T19:07:23.004814+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "live_mixer",
+    "command": [
+      "cargo",
+      "run",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--features",
+      "png,svg,cpu",
+      "--example",
+      "live_mixer"
+    ],
+    "environment": {},
+    "started": "2026-10-28T19:07:23.005143+00:00",
+    "ended": "2026-10-28T19:07:24.269590+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "dynamic_documents",
+    "command": [
+      "cargo",
+      "run",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--features",
+      "png,svg,cpu",
+      "--example",
+      "dynamic_documents"
+    ],
+    "environment": {},
+    "started": "2026-10-28T19:07:24.269864+00:00",
+    "ended": "2026-10-28T19:07:25.096405+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "diagram_editor",
+    "command": [
+      "cargo",
+      "run",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--features",
+      "png,svg,cpu",
+      "--example",
+      "diagram_editor"
+    ],
+    "environment": {},
+    "started": "2026-10-28T19:07:25.096715+00:00",
+    "ended": "2026-10-28T19:07:27.323590+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "log_explorer",
+    "command": [
+      "cargo",
+      "run",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--features",
+      "png,svg,cpu",
+      "--example",
+      "log_explorer",
+      "--",
+      "--lines",
+      "10000"
+    ],
+    "environment": {},
+    "started": "2026-10-28T19:07:27.323890+00:00",
+    "ended": "2026-10-28T19:07:36.759871+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "inventory",
+    "command": [
+      "cargo",
+      "run",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--features",
+      "png,svg,cpu",
+      "--example",
+      "inventory",
+      "--",
+      "--items",
+      "2000"
+    ],
+    "environment": {},
+    "started": "2026-10-28T19:07:36.760146+00:00",
+    "ended": "2026-10-28T19:07:39.560711+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "doctests",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--workspace",
+      "--doc"
+    ],
+    "environment": {},
+    "started": "2026-10-28T19:07:39.561007+00:00",
+    "ended": "2026-10-28T19:07:52.517209+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "rustdoc",
+    "command": [
+      "cargo",
+      "doc",
+      "--locked",
+      "--workspace",
+      "--no-deps"
+    ],
+    "environment": {
+      "RUSTDOCFLAGS": "-D warnings"
+    },
+    "started": "2026-10-28T19:07:52.517510+00:00",
+    "ended": "2026-10-28T19:08:06.374296+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "diagnostics",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "pert-ui-diagnostics",
+      "--",
+      "--ignored"
+    ],
+    "environment": {},
+    "started": "2026-10-28T19:08:06.374642+00:00",
+    "ended": "2026-10-28T19:08:20.461792+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "serde-clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--features",
+      "serde",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "environment": {},
+    "started": "2026-10-28T19:08:20.462083+00:00",
+    "ended": "2026-10-28T19:08:26.367475+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "serde-tests",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--features",
+      "serde"
+    ],
+    "environment": {},
+    "started": "2026-10-28T19:08:26.367807+00:00",
+    "ended": "2026-10-28T19:08:49.264001+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "serde-rustdoc",
+    "command": [
+      "cargo",
+      "doc",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--features",
+      "serde",
+      "--no-deps"
+    ],
+    "environment": {
+      "RUSTDOCFLAGS": "-D warnings"
+    },
+    "started": "2026-10-28T19:08:49.264336+00:00",
+    "ended": "2026-10-28T19:09:06.520903+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "headless-serde-clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--no-default-features",
+      "--features",
+      "serde",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "environment": {},
+    "started": "2026-10-28T19:09:06.521722+00:00",
+    "ended": "2026-10-28T19:09:11.847843+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "headless-serde-tests",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--no-default-features",
+      "--features",
+      "serde"
+    ],
+    "environment": {},
+    "started": "2026-10-28T19:09:11.848176+00:00",
+    "ended": "2026-10-28T19:09:30.656116+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "runtime-serde-tests",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "pert-ui-runtime",
+      "--features",
+      "serde"
+    ],
+    "environment": {},
+    "started": "2026-10-28T19:09:30.656468+00:00",
+    "ended": "2026-10-28T19:09:50.848422+00:00",
+    "exit_status": 0
+  }
+]

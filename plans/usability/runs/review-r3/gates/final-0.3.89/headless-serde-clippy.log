@@ -1,0 +1,4 @@
+$ cargo clippy --locked -p pert-ui --no-default-features --features serde --all-targets -- -D warnings
+    Checking pert-ui-runtime v0.3.89 (/home/per/github/pert-ui/crates/pert-ui-runtime)
+    Checking pert-ui v0.3.89 (/home/per/github/pert-ui/crates/pert-ui)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 5.26s

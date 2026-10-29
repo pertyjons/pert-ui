@@ -1,0 +1,20 @@
+[
+  {
+    "path": "workspace-tests.log",
+    "raw_sha256": "f9dbead3f5ef0e3413ed8fd741fb0217959d046ac60191c137bc8ee34638d591",
+    "gzip": "workspace-tests.full.log.gz",
+    "gzip_sha256": "5cb9d592b12a6645538a3e115250bb58c4a16e77f9a30762ead2b9995f038a55",
+    "excerpt_sha256": "d672d1bed108462cdf45fefaab035e967da11b2bea69bd22e39d81ddabb02229",
+    "omitted_diagnostic_lines": 501533,
+    "decompression_checked_equal": true
+  },
+  {
+    "path": "runtime-serde-tests.log",
+    "raw_sha256": "418cb09c213278f0b40c673bb018f5e1549c64d35106a064ce3271d620a24a2c",
+    "gzip": "runtime-serde-tests.full.log.gz",
+    "gzip_sha256": "7555d22dd36f902415e646835376c8552cee21bdd9f4e1e1ad99d3bd47576ec1",
+    "excerpt_sha256": "7cda0f074211552bbe2106da2926e562bbd64ec16539fe2ea7da644fd290b183",
+    "omitted_diagnostic_lines": 501505,
+    "decompression_checked_equal": true
+  }
+]

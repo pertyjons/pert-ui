@@ -1,0 +1,18 @@
+{
+  "TODO.md": {
+    "gate_sha256": "16287eecf8947fed44a875f5c2756ecde71c092e529f8899f5c247ebf71f8c8e",
+    "final_sha256": "12a5cd7336bc68e8d337a7b899d9b537ec13896ef62c9257c656e47a4cc288da"
+  },
+  "crates/pert-ui-runtime/src/diagnostics.rs": {
+    "gate_sha256": "1b306971fea469ae9c84f886b3a1366753dd52923b06bfb576b54aab913a351a",
+    "final_sha256": "49443b955f88be335d91fc76e77176296650c4cac2a7e14a1a601b5705f602c0"
+  },
+  "crates/pert-ui-runtime/src/text_fields.rs": {
+    "gate_sha256": "61f00dc9ab3a2f8e9f455fd9a6977319aef32dc9db52a07fbba1c504c7f7c1c6",
+    "final_sha256": "91a21ddd66d826a97f64a7ba232d33c285cda62065e39e64667ec0f0fe838aec"
+  },
+  "docs/verification.md": {
+    "gate_sha256": "5f13d683aa629ff10c3936472b606b25d712c68cb73cb1e973a1c2477662f50f",
+    "final_sha256": "4cc3dd5201a2cc82d1e6a82ea0f63944cd911fa33266af6de71f67bc438dbedf"
+  }
+}

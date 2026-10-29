@@ -1,0 +1,9 @@
+$ cargo clippy --locked --workspace --all-targets -- -D warnings
+    Checking pert-ui-runtime v0.3.89 (/home/per/github/pert-ui/crates/pert-ui-runtime)
+    Checking pert-ui-cpu v0.3.89 (/home/per/github/pert-ui/crates/pert-ui-cpu)
+    Checking pert-ui-wgpu v0.3.89 (/home/per/github/pert-ui/crates/pert-ui-wgpu)
+    Checking pert-ui v0.3.89 (/home/per/github/pert-ui/crates/pert-ui)
+    Checking pert-ui-diagnostics v0.3.89 (/home/per/github/pert-ui/tests/diagnostics)
+    Checking pert-ui-native-checks v0.3.89 (/home/per/github/pert-ui/apps/native-checks)
+    Checking pert-ui-gallery v0.3.89 (/home/per/github/pert-ui/apps/gallery)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.94s

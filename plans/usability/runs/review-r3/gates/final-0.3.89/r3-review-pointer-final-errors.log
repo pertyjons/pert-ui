@@ -1,0 +1,21 @@
+   Compiling pert-ui-runtime v0.3.89 (/home/per/github/pert-ui/crates/pert-ui-runtime)
+   Compiling pert-ui-wgpu v0.3.89 (/home/per/github/pert-ui/crates/pert-ui-wgpu)
+   Compiling pert-ui v0.3.89 (/home/per/github/pert-ui/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.79s
+     Running tests/surfaces/main.rs (target/debug/deps/surfaces-ed62ac05e6514d6b)
+
+running 11 tests
+test pointer_items::hidden_tab_title_items_have_no_window_bounds ... ok
+test pointer_items::tabs_click_unselected_titles_and_report_settled_selection_once ... ok
+test pointer_items::select_options_use_pointer_bounds_and_commit_then_close ... ok
+test pointer_items::a_pointer_context_request_opens_its_scoped_menu_and_a_row_click_runs_it ... ok
+test pointer_items::title_bounds_use_committed_view_scale_ancestor_clip_and_bound_title_widths ... ok
+test pointer_items::menu_titles_commands_disabled_rows_separators_and_submenus_use_pointer_input ... ok
+test pointer_items::tab_bounds_follow_live_scroll_exclude_arrows_and_do_not_retarget_recreated_keys ... ok
+test pointer_items::a_detached_tab_title_still_has_bounds_and_requests_window_activation ... ok
+test pointer_items::repeated_row_keys_in_distinct_menu_scopes_select_only_their_own_commands ... ok
+test pointer_items::button_and_icon_menus_expose_the_actual_trigger_and_pointer_rows ... ok
+test pointer_items::a_scrolled_partly_visible_option_has_only_its_visible_click_rectangle ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 453 filtered out; finished in 0.02s
+

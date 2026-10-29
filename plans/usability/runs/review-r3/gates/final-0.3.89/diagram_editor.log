@@ -1,0 +1,5 @@
+$ cargo run --locked -p pert-ui --features png,svg,cpu --example diagram_editor
+   Compiling pert-ui v0.3.89 (/home/per/github/pert-ui/crates/pert-ui)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.63s
+     Running `target/debug/examples/diagram_editor`
+diagram editor: headless session passed

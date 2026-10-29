@@ -1,0 +1,4 @@
+$ cargo doc --locked --workspace --no-deps
+ Documenting pert-ui v0.3.89 (/home/per/github/pert-ui/crates/pert-ui)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 13.81s
+   Generated /home/per/github/pert-ui/target/doc/pert_ui/index.html and 8 other files
