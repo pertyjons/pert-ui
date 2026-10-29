@@ -1,0 +1,12 @@
+{
+  "checked_at_utc": "2026-10-29T09:43:24.136597+00:00",
+  "runner_postcheck_exit_status": 1,
+  "reason": "Before/after source guard detected TODO.md item-name correction made during the gate. All eleven actual gate commands exited zero. No compiled source or other captured file changed.",
+  "changed_files": [
+    "TODO.md"
+  ],
+  "todo_before_sha256": "3f7ddc89876b8e0641ef5bc345f4acaaba6f7986fa6e94d107788c11ed8af67d",
+  "todo_after_sha256": "5d1ed4c447fb93cb6d921dd71e6ad4629b4e280b437ac6469609758871387dec",
+  "exact_change": "Row::pointer_input renamed to actual source item ChoiceRow::pointer_input; prose only",
+  "all_other_captured_bytes_match": true
+}

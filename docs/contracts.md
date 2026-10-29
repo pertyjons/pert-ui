@@ -1032,6 +1032,14 @@ by key and report the mounted row's identity, since a row has none before it
 mounts. Search-and-jump uses one command per destination rather than a
 destination registry.
 
+Historical reveal refusal Debug records immutable runtime-local identity,
+omitting the handle's live mounted state. The same formatting propagates through
+outcomes, terminal statuses/receipts and driver errors after unmount or runtime
+drop; standalone WidgetId Debug remains live. A host-hidden native window
+returns the operational `RuntimeError::Hidden`, including through queued reveal
+receipts and content jumps. Retry once the host reports the window visible;
+this differs from an explicit `set_visible` refusal.
+
 ### Content search
 
 Content search reads what components already report: their semantic names and

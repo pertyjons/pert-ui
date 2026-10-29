@@ -1,0 +1,19 @@
+{
+  "mutation": "Restore derived live WidgetId Debug on RevealRefusal",
+  "command": [
+    "cargo",
+    "test",
+    "--locked",
+    "-p",
+    "pert-ui",
+    "--test",
+    "collections",
+    "reveal_diagnostics::refusal_text_is_historical"
+  ],
+  "expected_nonzero_status": 101,
+  "original_sha256": "3f55a2f55a9e44f6a79f88a798ed5a833edd3d2441518adbdcb6ce730116a738",
+  "restored_sha256": "3f55a2f55a9e44f6a79f88a798ed5a833edd3d2441518adbdcb6ce730116a738",
+  "byte_restored": true,
+  "file": "crates/pert-ui-runtime/src/runtime/reveal.rs",
+  "test_revision_note": "Before final boxed/jump/extra receipt coverage and exact-shape assertion; current lifecycle assertion still rejects derived live Debug."
+}

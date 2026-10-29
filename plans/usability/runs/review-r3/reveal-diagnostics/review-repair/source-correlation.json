@@ -1,0 +1,13 @@
+{
+  "checked_at_utc": "2026-10-29T09:58:17.302727+00:00",
+  "changes_from_full_gate": [
+    "crates/pert-ui/tests/collections/reveal_diagnostics.rs",
+    "TODO.md",
+    "crates/pert-ui-runtime/src/runtime/content_search.rs",
+    "crates/pert-ui-runtime/src/testing.rs"
+  ],
+  "runtime_implementation_bytes_match_gate": true,
+  "content_search_and_testing_changes_are_only_rustdoc": true,
+  "test_difference_is_only_exact_shape_assertion": true,
+  "todo_difference": "source item name correction; prose only"
+}

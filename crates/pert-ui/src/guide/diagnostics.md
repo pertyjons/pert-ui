@@ -78,7 +78,17 @@ contribute component and host state. [`Runtime::inspection_id`] gives a mounted
 component's snapshot id, so a test finds the entry of a component it holds
 without matching keys, which repeat across a real application;
 [`Runtime::query`] with [`Selector::id`] of that id answers with that entry
-alone, one lookup instead of a whole snapshot. Unmeasured box-model values stay absent,
+alone, one lookup instead of a whole snapshot.
+
+Historical reveal refusals format the identity captured at refusal, without
+the handle's current mounted state. Their `serial` is the inspection id that
+was available while the component was mounted, meaningful within that runtime.
+This also applies inside [`RevealOutcome`], [`RevealStatus`], [`RevealReceipt`]
+and the driver's [`TestError`](crate::testing::TestError), including nested
+cleanup errors. Keeping an error after unmount or shutdown preserves its
+refusal text; a standalone [`WidgetId`]'s Debug still reports current mount state.
+
+Unmeasured box-model values stay absent,
 including [`BoxModelInspection::border`], which reports a painted outline's width
 and color only after the paint that drew it.
 [`DebugMode::Inspect`] enables a 256-event history. [`DebugOverlay`] separately draws

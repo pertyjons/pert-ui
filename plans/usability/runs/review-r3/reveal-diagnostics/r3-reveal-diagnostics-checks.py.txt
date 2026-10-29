@@ -1,0 +1,16 @@
+from pathlib import Path
+import datetime,hashlib,json,os,subprocess
+root=Path('/home/per/github/pert-ui');out=Path('/home/per/pert-ui-usability/r3-reveal-diagnostics-evidence');(out/'checks').mkdir()
+paths=['crates/pert-ui-runtime/src/runtime.rs','crates/pert-ui-runtime/src/runtime/reveal.rs','crates/pert-ui-runtime/src/runtime/content_search.rs','crates/pert-ui-runtime/src/testing.rs','crates/pert-ui/src/guide/diagnostics.md','crates/pert-ui/tests/collections/main.rs','crates/pert-ui/tests/collections/reveal_diagnostics.rs','docs/contracts.md']
+manifest={p:hashlib.sha256((root/p).read_bytes()).hexdigest() for p in paths};(out/'checks/source-manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
+checks=[('format',['cargo','fmt','--all','--check'],{}),('clippy',['cargo','clippy','--locked','-p','pert-ui-runtime','-p','pert-ui','--all-targets','--','-D','warnings'],{}),('reveal-tests',['cargo','test','--locked','-p','pert-ui','--test','collections','reveal'],{}),('doctests',['cargo','test','--locked','-p','pert-ui-runtime','-p','pert-ui','--doc'],{}),('rustdoc',['cargo','doc','--locked','-p','pert-ui-runtime','-p','pert-ui','--no-deps'],{'RUSTDOCFLAGS':'-D warnings'})]
+results=[]
+for name,cmd,extra in checks:
+ start=datetime.datetime.now(datetime.timezone.utc).isoformat()
+ with (out/'checks'/f'{name}.log').open('x') as f:
+  f.write(json.dumps({'command':cmd,'environment':extra,'started_at_utc':start})+'\n');f.flush()
+  result=subprocess.run(cmd,cwd=root,env=dict(os.environ,**extra),stdout=f,stderr=subprocess.STDOUT)
+ results.append({'name':name,'command':cmd,'environment':extra,'started_at_utc':start,'finished_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'exit_status':result.returncode})
+ (out/'checks/outcomes.json').write_text(json.dumps(results,indent=2)+'\n');print(name,result.returncode,flush=True)
+ if result.returncode:raise SystemExit(result.returncode)
+changed=[p for p,h in manifest.items() if hashlib.sha256((root/p).read_bytes()).hexdigest()!=h];(out/'checks/source-check.json').write_text(json.dumps({'changed':changed},indent=2)+'\n');assert not changed

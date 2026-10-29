@@ -322,7 +322,9 @@ pub enum RuntimeError {
     /// A component has been unmounted.
     #[error("component is not mounted")]
     Unmounted,
-    /// The component is hidden and cannot receive an editing event.
+    /// The component is hidden and cannot receive the requested operation.
+    /// Reveal also returns this for a host-hidden native window; retry after
+    /// the host reports that window visible.
     #[error("component is hidden")]
     Hidden,
     /// A component key, the one held here, is already mounted under the same

@@ -28,7 +28,10 @@ pub enum ChildReveal {
 ///
 /// Opening the path is not atomic: containers opened before the refusal stay
 /// open, and the refusal names where the walk stopped.
-#[derive(Clone, Debug, Eq, PartialEq)]
+/// Debug formatting reports historical identity without the handle's current
+/// mount state. Each `serial` is the value [`Runtime::inspection_id`] returned
+/// while that component was mounted, meaningful only within that runtime.
+#[derive(Clone, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum RevealRefusal {
     /// `ancestor` hides the next component on the path and its
@@ -55,10 +58,41 @@ pub enum RevealRefusal {
     ModalBlocked,
 }
 
+/// Identity-only formatting for a historical outcome; never reads live state.
+struct HistoricalWidgetId(u64);
+impl std::fmt::Debug for HistoricalWidgetId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("WidgetId")
+            .field("serial", &self.0)
+            .finish_non_exhaustive()
+    }
+}
+impl std::fmt::Debug for RevealRefusal {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::AncestorRefused { ancestor } => f
+                .debug_struct("AncestorRefused")
+                .field("ancestor", &HistoricalWidgetId(ancestor.incarnation()))
+                .finish(),
+            Self::ApplicationControlled { ancestor } => f
+                .debug_struct("ApplicationControlled")
+                .field("ancestor", &HistoricalWidgetId(ancestor.incarnation()))
+                .finish(),
+            Self::Hidden { component } => f
+                .debug_struct("Hidden")
+                .field("component", &HistoricalWidgetId(component.incarnation()))
+                .finish(),
+            Self::ModalBlocked => f.write_str("ModalBlocked"),
+        }
+    }
+}
+
 /// The terminal result of revealing a mounted target.
 ///
 /// `RuntimeError` remains for operational failures and stale or foreign
-/// identities; everything a reveal can legitimately decline is an outcome.
+/// identities. A host-reported hidden native window returns
+/// [`RuntimeError::Hidden`]; retry once the host reports it visible. This differs
+/// from explicit [`Runtime::set_visible`] hiding, which is a typed refusal.
 #[derive(Clone, Debug, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum RevealOutcome {
@@ -112,7 +146,8 @@ pub enum RevealStatus {
     /// The reveal runs after the next flush's updates and layout settle.
     Pending,
     /// The reveal ran: its outcome, or the operational error that stopped it,
-    /// such as `Unmounted` for a target already gone when it ran.
+    /// such as `Unmounted` for a target already gone when it ran, or `Hidden`
+    /// for a host-hidden native window.
     Finished(Result<RevealOutcome, RuntimeError>),
     /// Runtime shutdown discarded the request before it ran.
     Cancelled,
@@ -126,6 +161,8 @@ pub enum RevealStatus {
 /// shutdown discarded. [`Self::status_binding`] mirrors it as a binding. Every
 /// accepted request reaches a terminal status; none is dropped silently.
 /// Retaining a receipt retains neither the target nor the runtime.
+/// Debug prints the current status; a terminal refusal uses
+/// [`RevealRefusal`]'s historical identity formatting even after unmount/drop.
 ///
 /// Receipts compare equal when they report the same request.
 #[derive(Clone)]
@@ -220,7 +257,9 @@ impl EventContext {
     ///
     /// The receipt always reaches a terminal [`RevealStatus`]: the outcome, an
     /// operational error such as `Unmounted` for a target removed before the
-    /// reveal ran, or `Cancelled` at shutdown.
+    /// reveal ran, `Finished(Err(RuntimeError::Hidden))` for a host-hidden
+    /// window, or `Cancelled` at shutdown. A host-hidden target can be retried
+    /// after the host reports its window visible.
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
@@ -368,6 +407,9 @@ impl Runtime {
     /// mounted component of this runtime when called, the runtime
     /// phase/shutdown error, and errors of the flushes, of
     /// [`Component::reveal_child`] and of [`Component::reveal`].
+    /// Returns [`RuntimeError::Hidden`] when the target's native window is
+    /// host-hidden; retry after the host reports it visible. This is distinct
+    /// from an explicit [`Self::set_visible`] refusal.
     pub fn reveal(&mut self, target: &WidgetId) -> Result<RevealOutcome, RuntimeError> {
         let origin = self.current_window();
         self.reveal_target(target, false, &origin)
@@ -617,8 +659,8 @@ impl Runtime {
             }
         }
         if !target.0.visible.get() {
-            // Every container on the path shows the next one and nothing is
-            // hidden explicitly, so visibility is only waiting to be applied.
+            // Apply pending visibility. Even with every container showing its
+            // child, a host-hidden native window can keep the target hidden.
             self.flush(self.shared.now.get())?;
             if !target.0.mounted.get() {
                 return Ok(RevealOutcome::Unmounted);

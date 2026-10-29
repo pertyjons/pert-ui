@@ -1,0 +1,24 @@
+   Compiling pert-ui-runtime v0.3.90 (/home/per/github/pert-ui/crates/pert-ui-runtime)
+   Compiling pert-ui-wgpu v0.3.90 (/home/per/github/pert-ui/crates/pert-ui-wgpu)
+   Compiling pert-ui v0.3.90 (/home/per/github/pert-ui/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 14.96s
+     Running tests/collections/main.rs (target/debug/deps/collections-7ca56351710fa5c8)
+
+running 1 test
+test reveal_diagnostics::refusal_text_is_historical_through_open_unmount_drop_and_return ... FAILED
+
+failures:
+
+---- reveal_diagnostics::refusal_text_is_historical_through_open_unmount_drop_and_return stdout ----
+
+thread 'reveal_diagnostics::refusal_text_is_historical_through_open_unmount_drop_and_return' (3682161) panicked at crates/pert-ui/tests/collections/reveal_diagnostics.rs:122:5:
+["`target` could not be revealed: AncestorRefused { ancestor: WidgetId { serial: 2, mounted: true, .. } }", "NotRevealed { key: \"target\", refusal: AncestorRefused { ancestor: WidgetId { serial: 2, mounted: true, .. } } }", "NotRevealed {\n    key: \"target\",\n    refusal: AncestorRefused {\n        ancestor: WidgetId {\n            serial: 2,\n            mounted: true,\n            ..\n        },\n    },\n}", "`target` could not be revealed: AncestorRefused { ancestor: WidgetId { serial: 2, mounted: true, .. } }; releasing the pressed input also failed", "Cleanup { error: NotRevealed { key: \"target\", refusal: AncestorRefused { ancestor: WidgetId { serial: 2, mounted: true, .. } } }, cleanup: Closed }", "Cleanup {\n    error: NotRevealed {\n        key: \"target\",\n        refusal: AncestorRefused {\n            ancestor: WidgetId {\n                serial: 2,\n                mounted: true,\n                ..\n            },\n        },\n    },\n    cleanup: Closed,\n}", "Refused(AncestorRefused { ancestor: WidgetId { serial: 2, mounted: true, .. } })", "Refused(\n    AncestorRefused {\n        ancestor: WidgetId {\n            serial: 2,\n            mounted: true,\n            ..\n        },\n    },\n)", "Finished(Ok(Refused(AncestorRefused { ancestor: WidgetId { serial: 2, mounted: true, .. } })))", "Finished(\n    Ok(\n        Refused(\n            AncestorRefused {\n                ancestor: WidgetId {\n                    serial: 2,\n                    mounted: true,\n                    ..\n                },\n            },\n        ),\n    ),\n)", "RevealReceipt { status: Finished(Ok(Refused(AncestorRefused { ancestor: WidgetId { serial: 2, mounted: true, .. } }))) }", "RevealReceipt {\n    status: Finished(\n        Ok(\n            Refused(\n                AncestorRefused {\n                    ancestor: WidgetId {\n                        serial: 2,\n                        mounted: true,\n                        ..\n                    },\n                },\n            ),\n        ),\n    ),\n}", "`target` could not be revealed: AncestorRefused { ancestor: WidgetId { serial: 2, mounted: true, .. } }", "NotRevealed { key: \"target\", refusal: AncestorRefused { ancestor: WidgetId { serial: 2, mounted: true, .. } } }", "NotRevealed {\n    key: \"target\",\n    refusal: AncestorRefused {\n        ancestor: WidgetId {\n            serial: 2,\n            mounted: true,\n            ..\n        },\n    },\n}"]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    reveal_diagnostics::refusal_text_is_historical_through_open_unmount_drop_and_return
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 462 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p pert-ui --test collections`

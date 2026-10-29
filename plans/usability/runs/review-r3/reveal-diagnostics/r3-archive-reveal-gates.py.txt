@@ -1,0 +1,34 @@
+from pathlib import Path
+import sys,shutil,hashlib,json,gzip
+source,target=(Path(value) for value in sys.argv[1:3])
+outcomes=json.loads((source/'outcomes.json').read_text())
+assert outcomes and all(record['exit_status']==0 for record in outcomes)
+correlation=json.loads((source/'source-doc-only-difference.json').read_text())
+assert correlation['changed_files']==['TODO.md'] and correlation['all_other_captured_bytes_match']
+target.mkdir()
+provenance=[]
+for p in source.iterdir():
+ if not p.is_file():continue
+ raw=p.read_bytes()
+ if len(raw)<1000000:
+  shutil.copy2(p,target/p.name);continue
+ prefix=b'[pert-ui validation ERROR UnexpectedOverlap] '
+ lines=raw.splitlines(keepends=True)
+ count=sum(l.startswith(prefix) for l in lines)
+ assert count>100000,p.name
+ full=p.name.removesuffix('.log')+'.full.log.gz'
+ compressed=gzip.compress(raw,9,mtime=0)
+ assert gzip.decompress(compressed)==raw
+ (target/full).write_bytes(compressed)
+ kept=[];seen=0
+ for line in lines:
+  if line.startswith(prefix):
+   seen+=1
+   if seen<=3:kept.append(line)
+   elif seen==4:kept.append(f'[archive excerpt: {count-3} further overlap diagnostics omitted; complete output: {full}]\n'.encode())
+  else:kept.append(line)
+ excerpt=f'# ARCHIVED EXCERPT: complete original {full}\n# Original SHA256 {hashlib.sha256(raw).hexdigest()}; {count-3} overlap diagnostics omitted\n\n'.encode()+b''.join(kept)
+ (target/p.name).write_bytes(excerpt)
+ provenance.append({'path':p.name,'original_sha256':hashlib.sha256(raw).hexdigest(),'full_gzip':full,'gzip_sha256':hashlib.sha256(compressed).hexdigest(),'excerpt_sha256':hashlib.sha256(excerpt).hexdigest(),'omitted_diagnostic_lines':count-3,'decompression_checked_equal':True})
+(target/'compressed-output-provenance.json').write_text(json.dumps(provenance,indent=2)+'\n')
+print(target.name,len(outcomes),'commands all exit zero')

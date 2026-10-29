@@ -1,0 +1,55 @@
+$ cargo run --locked -p pert-ui --features png,svg,cpu --example inventory -- --items 2000
+   Compiling pert-ui v0.3.91 (/home/per/github/pert-ui/crates/pert-ui)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.74s
+     Running `target/debug/examples/inventory --items 2000`
+time  build and first layout, 2000 items             117.10ms
+ok    657 components mounted
+ok    a click makes the row active
+time  Enter opens the editor                           6.40ms
+ok    Enter edits the name
+time  Enter saves                                     14.50ms
+ok    typing replaced the selected name and Enter saved it
+ok    the table has focus again
+ok    Tab moves to the category
+ok    Tab moves to the quantity
+ok    the quantity is 12, not appended to the old value
+ok    Tab moves to the price
+ok    Escape cancels in one press
+ok    typing begins an edit
+ok    and Enter saves it
+ok    an empty name is refused and stays open
+ok    Escape keeps the saved name
+ok    a double-click edits
+ok    with the caret at the end
+ok    F2 reaches the checkbox
+ok    Space toggles it in the store
+ok    Escape returns to the table
+ok    Tab leaves the table in one step
+time  undo                                             8.66ms
+ok    undo restores the store
+ok    the checkbox shows the restored value
+ok    two rows copied
+time  paste two rows                                  12.32ms
+ok    two rows pasted
+ok    Delete removes the pasted rows
+time  save a sorted rename and move                  118.89ms
+ok    Tab stays on the renamed row after the sort moved it
+ok    a dropdown cell saves the chosen category and returns
+ok    a price saves in cents
+ok    Shift+Tab moves back to the quantity
+ok    undo and redo the price
+ok    a refused edit stays open when focus leaves
+ok    Enter reaches the refused draft again
+ok    Escape discards it
+ok    the Add button adds an item
+ok    the Duplicate shortcut copies the selected item
+ok    a copied row is its tab-separated fields
+ok    a pasted row has the copied values
+ok    a paste with an invalid field is refused whole
+ok    a row the category filter hides is not a target
+ok    a row the search hides is not a target
+ok    shown again, it is a target
+ok    the store refuses a mismatched value and a group that removes first
+ok    a pasted quantity out of range is refused
+status: Paste refused: line 1: quantity is out of range
+totals: 2003 items · 10320022.48 + VAT 2580005.62 = 12900028.10

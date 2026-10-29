@@ -1,0 +1,46 @@
+{"command": ["cargo", "test", "--locked", "-p", "pert-ui", "--test", "collections", "reveal"], "environment": {}, "started_at_utc": "2026-10-29T09:33:30.548947+00:00"}
+   Compiling pert-ui v0.3.90 (/home/per/github/pert-ui/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.73s
+     Running tests/collections/main.rs (target/debug/deps/collections-7ca56351710fa5c8)
+
+running 37 tests
+test reveal::a_change_that_leaves_the_child_hidden_is_a_refusal ... ok
+test reveal::a_list_removed_before_mounting_the_row_cancels_its_receipt ... ok
+test reveal::a_target_the_reveal_unmounts_is_reported_and_never_retargeted ... ok
+test reveal::a_scroll_reveal_that_removes_its_outer_ancestor_ends_as_unmounted ... ok
+test reveal::a_custom_container_opens_through_the_public_hook ... ok
+test reveal::a_reveal_queued_during_dispatch_is_due_for_the_application ... ok
+test reveal::a_target_in_the_requesting_window_requests_no_activation ... ok
+test reveal::a_request_for_another_runtime_is_refused ... ok
+test reveal::the_default_hook_refuses_and_names_the_container ... ok
+test reveal::a_detached_tab_reports_a_requested_window_activation ... ok
+test reveal::explicit_runtime_hiding_refuses_before_anything_opens ... ok
+test reveal::a_target_in_an_unselected_tab_selects_it_without_moving_focus ... ok
+test reveal::a_scroll_reveal_that_hides_the_target_is_not_reported_as_revealed ... ok
+test reveal::a_queued_reveal_of_a_removed_target_finishes_with_an_error ... ok
+test reveal::an_application_bound_view_refuses_and_earlier_containers_stay_open ... ok
+test reveal::a_queued_reveal_reaches_its_receipt_after_the_flush ... ok
+test reveal::nested_containers_open_from_the_outermost_inwards ... ok
+test reveal::the_reveal_queue_is_bounded_and_shutdown_cancels_it ... ok
+test reveal::a_modal_that_closes_in_the_same_event_no_longer_blocks_a_queued_reveal ... ok
+test table_items::an_index_out_of_range_is_refused_before_the_reveal_scrolls ... ok
+test reveal::reveal_child_selects_a_tab_by_key ... ok
+test reveal::reveal_and_focus_focuses_a_focusable_target_only ... ok
+test reveal::a_modal_blocks_targets_outside_it_and_admits_targets_inside ... ok
+test reveal_diagnostics::host_hidden_window_is_an_operational_reveal_error_and_can_be_retried ... ok
+test table_items::click_item_reads_the_items_again_after_a_reveal_that_scrolls ... ok
+test reveal_diagnostics::refusal_text_is_historical_through_open_unmount_drop_and_return ... ok
+test command_palette::a_destination_command_reveals_outside_the_closed_modal_palette ... ok
+test reveal::a_hidden_list_removed_before_reading_a_request_cancels_its_receipt ... ok
+test reveal::a_tree_reveal_reports_rows_and_collapsed_nodes ... ok
+test reveal::a_hidden_list_serves_its_request_when_shown ... ok
+test tree::the_controller_reveals_a_node_by_key_once_its_ancestors_are_expanded ... ok
+test virtual_list::a_controller_reveals_an_unmounted_row_by_key ... ok
+test virtual_list::a_focused_row_stays_mounted_while_scrolled_away_and_traversal_reveals_the_next ... ok
+test reveal::a_target_far_down_a_scroll_area_is_scrolled_into_view ... ok
+test reveal::a_list_reveal_reports_the_mounted_row_which_can_then_take_focus ... ok
+test virtual_list::a_list_mounted_later_does_not_replay_a_served_reveal ... ok
+test table::the_controller_reveals_a_row_by_key_below_the_header ... ok
+
+test result: ok. 37 passed; 0 failed; 0 ignored; 0 measured; 426 filtered out; finished in 0.07s
+

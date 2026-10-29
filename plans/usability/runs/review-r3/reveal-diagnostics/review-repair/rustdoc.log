@@ -1,0 +1,7 @@
+{"command": ["cargo", "doc", "--locked", "-p", "pert-ui-runtime", "-p", "pert-ui", "--no-deps"], "environment": {"RUSTDOCFLAGS": "-D warnings"}, "started_at_utc": "2026-10-29T09:56:51.770239+00:00"}
+    Checking pert-ui-runtime v0.3.91 (/home/per/github/pert-ui/crates/pert-ui-runtime)
+ Documenting pert-ui-runtime v0.3.91 (/home/per/github/pert-ui/crates/pert-ui-runtime)
+    Checking pert-ui-wgpu v0.3.91 (/home/per/github/pert-ui/crates/pert-ui-wgpu)
+ Documenting pert-ui v0.3.91 (/home/per/github/pert-ui/crates/pert-ui)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 28.88s
+   Generated /home/per/github/pert-ui/target/doc/pert_ui/index.html and 1 other file

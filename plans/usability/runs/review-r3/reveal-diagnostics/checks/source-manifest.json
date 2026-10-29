@@ -1,0 +1,10 @@
+{
+  "crates/pert-ui-runtime/src/runtime.rs": "23d8c98d5b17a5db84c60a88dd371db5901fb6c7680aea9d9a5d522155fe463f",
+  "crates/pert-ui-runtime/src/runtime/reveal.rs": "3f55a2f55a9e44f6a79f88a798ed5a833edd3d2441518adbdcb6ce730116a738",
+  "crates/pert-ui-runtime/src/runtime/content_search.rs": "4e89c535f7e6f4586f4dce41ce06cbcd2aa29c280464bb4520a48de33a26eba7",
+  "crates/pert-ui-runtime/src/testing.rs": "3475cc2b535b33e06664dfb1c69056d8dc1c0cdb7fa224eb9297e866673acbc6",
+  "crates/pert-ui/src/guide/diagnostics.md": "46266afa141fca1d2467584394d339689719240fb2db9935b0940746474f6a13",
+  "crates/pert-ui/tests/collections/main.rs": "701b94e6ede3e83c1cf08e1d3551f9deb61279c05a88d0ec26b30c7dbcb5cfec",
+  "crates/pert-ui/tests/collections/reveal_diagnostics.rs": "872567f4e974aa4881550b07550984a7d49762347b60ff94bc6f85b4f48e12cb",
+  "docs/contracts.md": "5436d1184a416fcb81b4b383743a3d067098b1bcf08b9cf7505bec36e51ed67f"
+}

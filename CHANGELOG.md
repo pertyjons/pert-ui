@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.3.91 (2026-10-29)
+
+Round 3 historical reveal diagnostics and hidden-window documentation.
+
+- RevealRefusal Debug now prints immutable runtime-local WidgetId serials
+  without live mounted state. A retained refusal's text stays identical after
+  opening its container, unmount and Runtime drop. Standalone WidgetId Debug
+  keeps reporting current mount state. No field, variant, signature or persisted
+  format changes; the serial is the inspection id available while mounted.
+- This also changes nested Debug formatting of RevealOutcome, RevealStatus,
+  RevealReceipt and TestError, including Cleanup and boxed errors; TestError's
+  Display uses the same historical refusal. ModalBlocked formatting is unchanged.
+- Runtime::reveal/reveal_and_focus and content-search jumps document the
+  operational RuntimeError::Hidden from a host-hidden native window, distinct
+  from an explicit set_visible refusal. Driver::click/click_item, queued
+  request_reveal/request_reveal_and_focus, RevealStatus/RevealOutcome and
+  RuntimeError::Hidden document the forwarded error and retry after known
+  native visibility resumes. No reveal or host visibility behavior changes.
+- Public facade tests retain genuine Dialog, bound View and explicit-hiding
+  refusals across lifecycle transitions, covering Display, normal/pretty Debug,
+  terminal receipts and nested errors. A negative control restoring derived
+  live Debug fails. Host-hidden public reveal/click/item/jump/receipt tests
+  confirm the existing operational error and successful visibility retry.
+
 ## 0.3.90 (2026-10-28)
 
 Round 3 disabled-action presentation, from the independently reviewed Button

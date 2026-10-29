@@ -25,6 +25,7 @@ mod navigation_history;
 mod property_grid;
 mod quick_pick;
 mod reveal;
+mod reveal_diagnostics;
 mod selection_notifications;
 mod table;
 mod table_columns;

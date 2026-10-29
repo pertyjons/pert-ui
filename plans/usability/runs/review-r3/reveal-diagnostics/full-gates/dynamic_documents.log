@@ -1,0 +1,4 @@
+$ cargo run --locked -p pert-ui --features png,svg,cpu --example dynamic_documents
+   Compiling pert-ui v0.3.91 (/home/per/github/pert-ui/crates/pert-ui)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.29s
+     Running `target/debug/examples/dynamic_documents`

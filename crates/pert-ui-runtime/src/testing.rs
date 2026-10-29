@@ -876,6 +876,8 @@ impl<'a> Driver<'a> {
     /// unmounted, [`TestError::NotLaidOut`] for a target without bounds, and
     /// the errors of [`Runtime::reveal`], [`Runtime::pointer_input`] and the
     /// settle, with [cleanup](Self#neutral-input-and-cleanup) as described.
+    /// A host-hidden native window reports `RuntimeError::Hidden` through
+    /// [`TestError::Runtime`]; retry after the host reports it visible.
     pub fn click(&mut self, id: &WidgetId) -> Result<(), TestError> {
         let key = self.key_of(id)?;
         self.require_selected(id, &key)?;
@@ -962,6 +964,8 @@ impl<'a> Driver<'a> {
     /// and the errors of [`Runtime::reveal`], [`Runtime::pointer_input`] and
     /// the settle, with [cleanup](Self#neutral-input-and-cleanup) as
     /// described.
+    /// A host-hidden native window reports `RuntimeError::Hidden` through
+    /// [`TestError::Runtime`]; retry after the host reports it visible.
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
@@ -1554,6 +1558,8 @@ pub enum TestError {
     },
     /// Revealing the target before a click stopped ([`Driver::click`],
     /// [`Driver::click_item`]).
+    /// The refusal's Debug uses historical identity without live mount state;
+    /// Display keeps that refusal text after unmount or runtime drop.
     #[error("`{key}` could not be revealed: {refusal:?}")]
     NotRevealed {
         /// The target's key.

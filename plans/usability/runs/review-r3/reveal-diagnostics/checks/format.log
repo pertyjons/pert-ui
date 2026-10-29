@@ -1,0 +1,1 @@
+{"command": ["cargo", "fmt", "--all", "--check"], "environment": {}, "started_at_utc": "2026-10-29T09:33:17.543820+00:00"}

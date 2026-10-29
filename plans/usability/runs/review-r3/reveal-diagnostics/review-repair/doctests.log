@@ -1,0 +1,18 @@
+{"command": ["cargo", "test", "--locked", "-p", "pert-ui-runtime", "--doc", "content_search"], "environment": {}, "started_at_utc": "2026-10-29T09:56:25.545703+00:00"}
+   Compiling pert-ui-core v0.3.91 (/home/per/github/pert-ui/crates/pert-ui-core)
+   Compiling pert-ui-runtime v0.3.91 (/home/per/github/pert-ui/crates/pert-ui-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 18.89s
+   Doc-tests pert_ui_runtime
+
+running 2 tests
+test crates/pert-ui-runtime/src/content_search.rs - content_search::ContentQuery (line 13) ... ok
+test crates/pert-ui-runtime/src/runtime/content_search.rs - runtime::content_search::Runtime::content_search (line 42) ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 390 filtered out; finished in 0.01s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 23 filtered out; finished in 0.00s
+
+all doctests ran in 6.41s; merged doctests compilation took 6.38s

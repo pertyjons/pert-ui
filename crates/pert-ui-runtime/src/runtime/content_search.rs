@@ -355,7 +355,8 @@ impl Runtime {
     /// # Errors
     /// The errors of [`Self::reveal_and_focus`] and [`Self::flush`] for a
     /// stale, foreign or unmounted target, and the collection's request
-    /// failure for a row.
+    /// failure for a row. A host-hidden target window returns
+    /// [`RuntimeError::Hidden`]; retry once the host reports it visible.
     pub fn jump_to_content(&mut self, target: &ContentTarget) -> Result<ContentJump, RuntimeError> {
         match target {
             ContentTarget::Widget(id) => self.reveal_and_focus(id).map(ContentJump::Reveal),
@@ -394,6 +395,8 @@ impl Runtime {
     ///
     /// # Errors
     /// The errors of [`Self::reveal_and_focus`] for a stale or foreign row.
+    /// A host-hidden row window returns [`RuntimeError::Hidden`]; retry once
+    /// the host reports it visible.
     pub fn resume_content_jump(
         &mut self,
         pending: &crate::PendingJump,

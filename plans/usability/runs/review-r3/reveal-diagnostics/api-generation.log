@@ -1,0 +1,18 @@
+{"command": ["api/generate.sh"], "started_at_utc": "2026-10-29T09:43:24.136759+00:00"}
+api/pert-ui-core/default.txt
+api/pert-ui-core/serde.txt
+api/pert-ui-runtime/default.txt
+api/pert-ui-runtime/serde.txt
+api/pert-ui-cpu/default.txt
+api/pert-ui-wgpu/default.txt
+api/pert-ui/default.txt
+api/pert-ui/no-default.txt
+api/pert-ui/images.txt
+api/pert-ui/image-formats.txt
+api/pert-ui/no-default-png.txt
+api/pert-ui/svg.txt
+api/pert-ui/no-default-svg.txt
+api/pert-ui/serde.txt
+api/pert-ui/no-default-serde.txt
+api/pert-ui/cpu.txt
+api/pert-ui/no-default-desktop-cpu.txt

@@ -1,0 +1,71 @@
+[
+  {
+    "label": "focused",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--test",
+      "collections",
+      "reveal_diagnostics"
+    ],
+    "environment": {},
+    "started_at_utc": "2026-10-29T09:56:14.513813+00:00",
+    "finished_at_utc": "2026-10-29T09:56:25.545480+00:00",
+    "exit_status": 0
+  },
+  {
+    "label": "doctests",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "pert-ui-runtime",
+      "--doc",
+      "content_search"
+    ],
+    "environment": {},
+    "started_at_utc": "2026-10-29T09:56:25.545703+00:00",
+    "finished_at_utc": "2026-10-29T09:56:51.769938+00:00",
+    "exit_status": 0
+  },
+  {
+    "label": "rustdoc",
+    "command": [
+      "cargo",
+      "doc",
+      "--locked",
+      "-p",
+      "pert-ui-runtime",
+      "-p",
+      "pert-ui",
+      "--no-deps"
+    ],
+    "environment": {
+      "RUSTDOCFLAGS": "-D warnings"
+    },
+    "started_at_utc": "2026-10-29T09:56:51.770239+00:00",
+    "finished_at_utc": "2026-10-29T09:57:20.708856+00:00",
+    "exit_status": 0
+  },
+  {
+    "label": "clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "started_at_utc": "2026-10-29T09:58:09.614293+00:00",
+    "finished_at_utc": "2026-10-29T09:58:17.259133+00:00",
+    "exit_status": 0
+  }
+]
