@@ -1,0 +1,5 @@
+$ cd /home/per/pert-ui-usability/r3-whitespace-worktree && CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-whitespace-implementation-target cargo clippy --locked -p pert-ui-runtime --all-targets -- -D warnings
+# started 2026-10-29T11:32:23+00:00
+    Checking pert-ui-runtime v0.3.91 (/home/per/pert-ui-usability/r3-whitespace-worktree/crates/pert-ui-runtime)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.39s
+# exit status 0, finished 2026-10-29T11:32:26+00:00

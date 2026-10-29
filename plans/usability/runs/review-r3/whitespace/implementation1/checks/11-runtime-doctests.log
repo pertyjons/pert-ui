@@ -1,0 +1,431 @@
+$ cd /home/per/pert-ui-usability/r3-whitespace-worktree && CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-whitespace-implementation-target cargo test --locked -p pert-ui-runtime --doc
+# started 2026-10-29T11:34:12+00:00
+
+running 392 tests
+test crates/pert-ui-runtime/src/../README.md - (line 1378) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 1014) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 1239) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 1263) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 113) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 1315) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 1434) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 29) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 195) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 386) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 1452) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 1471) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 231) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 1070) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 436) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 1107) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 59) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 566) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 1408) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 277) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 1194) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 162) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 474) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 678) ... ok
+test crates/pert-ui-runtime/src/axis_mapping.rs - axis_mapping::AxisMapping (line 20) ... ok
+test crates/pert-ui-runtime/src/breadcrumb.rs - breadcrumb::BreadcrumbSegment::leading_icon (line 62) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 1137) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 897) ... ok
+test crates/pert-ui-runtime/src/breadcrumb.rs - breadcrumb::Breadcrumb (line 126) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 759) ... ok
+test crates/pert-ui-runtime/src/chip.rs - chip::Chip (line 48) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 721) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 615) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 830) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 1034) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 698) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 1581) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 520) ... ok
+test crates/pert-ui-runtime/src/click.rs - click::ClickCounter (line 47) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 938) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 1518) ... ok
+test crates/pert-ui-runtime/src/choice_controls.rs - choice_controls::Checkbox (line 549) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 980) ... ok
+test crates/pert-ui-runtime/src/choice_controls.rs - choice_controls::InlineChoice (line 1684) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 872) ... ok
+test crates/pert-ui-runtime/src/choice_controls.rs - choice_controls::RadioGroup<T>::bound (line 877) ... ok
+test crates/pert-ui-runtime/src/choice_controls.rs - choice_controls::SegmentedControl (line 1540) ... ok
+test crates/pert-ui-runtime/src/collection_filter.rs - collection_filter::ListFilter (line 304) ... ok
+test crates/pert-ui-runtime/src/collection_filter.rs - collection_filter::FilterMatcher (line 33) ... ok
+test crates/pert-ui-runtime/src/choice_controls.rs - choice_controls::Toggle (line 549) ... ok
+test crates/pert-ui-runtime/src/command_palette.rs - command_palette::CommandMatcher (line 18) ... ok
+test crates/pert-ui-runtime/src/color_swatch.rs - color_swatch::ColorSwatch (line 70) ... ok
+test crates/pert-ui-runtime/src/choice_controls.rs - choice_controls::RadioGroup (line 772) ... ok
+test crates/pert-ui-runtime/src/../README.md - (line 1553) ... ok
+test crates/pert-ui-runtime/src/command_palette.rs - command_palette::CommandMatcher::fuzzy_score (line 93) ... ok
+test crates/pert-ui-runtime/src/choice_controls.rs - choice_controls::Checkbox::controlled (line 578) ... ok
+test crates/pert-ui-runtime/src/choice_controls.rs - choice_controls::Toggle::controlled (line 578) ... ok
+test crates/pert-ui-runtime/src/command_palette.rs - command_palette::CommandPalette::width (line 607) ... ok
+test crates/pert-ui-runtime/src/collapsible.rs - collapsible::Accordion::on_change (line 1076) ... ok
+test crates/pert-ui-runtime/src/content_search.rs - content_search::ContentQuery (line 13) ... ok
+test crates/pert-ui-runtime/src/conformance.rs - conformance::redescribe (line 112) ... ok
+test crates/pert-ui-runtime/src/controls.rs - controls::Label::new (line 99) ... ok
+test crates/pert-ui-runtime/src/controls.rs - controls::Button::new (line 497) ... ok
+test crates/pert-ui-runtime/src/collapsible.rs - collapsible::Accordion (line 932) ... ok
+test crates/pert-ui-runtime/src/controls.rs - controls::Button::command_icon (line 615) ... ok
+test crates/pert-ui-runtime/src/containers.rs - containers::Container::background_role_signal (line 134) ... ok
+test crates/pert-ui-runtime/src/conformance.rs - conformance::check_redescription (line 206) ... ok
+test crates/pert-ui-runtime/src/controls.rs - controls::Button (line 449) ... ok
+test crates/pert-ui-runtime/src/collection_filter.rs - collection_filter::CollectionFilter::hidden_active (line 772) ... ok
+test crates/pert-ui-runtime/src/capture.rs - capture::CaptureRequest (line 112) ... ok
+test crates/pert-ui-runtime/src/capture.rs - capture::CaptureTarget::window (line 85) ... ok
+test crates/pert-ui-runtime/src/async_source.rs - async_source::RequestTracker (line 104) ... ok
+test crates/pert-ui-runtime/src/controls.rs - controls::Button::command (line 573) ... ok
+test crates/pert-ui-runtime/src/diagnostics.rs - diagnostics::SemanticItem (line 377) ... ok
+test crates/pert-ui-runtime/src/diagnostics.rs - diagnostics::Semantics (line 618) ... ok
+test crates/pert-ui-runtime/src/command_palette.rs - command_palette::CommandPaletteController::open (line 243) ... ok
+test crates/pert-ui-runtime/src/described.rs - described::Each (line 285) ... ok
+test crates/pert-ui-runtime/src/containers.rs - containers::Grid (line 1164) ... ok
+test crates/pert-ui-runtime/src/described.rs - described::Each (line 304) ... ok
+test crates/pert-ui-runtime/src/described.rs - described::Dynamic (line 136) ... ok
+test crates/pert-ui-runtime/src/drag.rs - drag::DropOperations (line 100) ... ok
+test crates/pert-ui-runtime/src/drag.rs - drag::DragPayload (line 30) ... ok
+test crates/pert-ui-runtime/src/drawing.rs - drawing::Color::from_hex (line 461) ... ok
+test crates/pert-ui-runtime/src/drawing.rs - drawing::Color::from_srgb (line 356) ... ok
+test crates/pert-ui-runtime/src/drawing.rs - drawing::Color::fmt (line 807) ... ok
+test crates/pert-ui-runtime/src/described.rs - described::EachItem (line 488) ... ok
+test crates/pert-ui-runtime/src/described.rs - described::Each<T>::new (line 380) ... ok
+test crates/pert-ui-runtime/src/described.rs - described::Dynamic (line 163) ... ok
+test crates/pert-ui-runtime/src/described.rs - described::Each (line 331) ... ok
+test crates/pert-ui-runtime/src/diagnostics.rs - diagnostics::SemanticItem::local_bounds (line 495) ... ok
+test crates/pert-ui-runtime/src/controls.rs - controls::Label::overflow (line 149) ... ok
+test crates/pert-ui-runtime/src/color_picker.rs - color_picker::ColorPicker::into_popover (line 567) ... ok
+test crates/pert-ui-runtime/src/drawing.rs - drawing::Color::scale_alpha (line 559) ... ok
+test crates/pert-ui-runtime/src/drawing.rs - drawing::Color::to_hex (line 518) ... ok
+test crates/pert-ui-runtime/src/drawing.rs - drawing::DrawError (line 12) ... ok
+test crates/pert-ui-runtime/src/drawing.rs - drawing::Color::mix (line 595) ... ok
+test crates/pert-ui-runtime/src/drawing.rs - drawing::OpaqueColor::contrast_ratio (line 746) ... ok
+test crates/pert-ui-runtime/src/command_palette.rs - command_palette::CommandPalette (line 475) ... ok
+test crates/pert-ui-runtime/src/drawing.rs - drawing::Color::red (line 309) ... ok
+test crates/pert-ui-runtime/src/dialog.rs - dialog::AlertDialog::cancel_label (line 557) ... ok
+test crates/pert-ui-runtime/src/drawing.rs - drawing::Color::with_alpha (line 535) ... ok
+test crates/pert-ui-runtime/src/collapsible.rs - collapsible::Collapsible (line 442) ... ok
+test crates/pert-ui-runtime/src/file_browser.rs - file_browser::list_directory (line 311) - compile ... ok
+test crates/pert-ui-runtime/src/drawing.rs - drawing::OpaqueColor::relative_luminance (line 724) ... ok
+test crates/pert-ui-runtime/src/drawing.rs - drawing::Color::over (line 652) ... ok
+test crates/pert-ui-runtime/src/drawing.rs - drawing::Color::from_srgb8 (line 393) ... ok
+test crates/pert-ui-runtime/src/drawing.rs - drawing::Rect::contains (line 150) ... ok
+test crates/pert-ui-runtime/src/drawing.rs - drawing::Rect::from_origin_size (line 125) ... ok
+test crates/pert-ui-runtime/src/drawing.rs - drawing::Rect::x (line 201) ... ok
+test crates/pert-ui-runtime/src/drawing.rs - drawing::Rect::from_size (line 108) ... ok
+test crates/pert-ui-runtime/src/color_picker.rs - color_picker::ColorPicker (line 361) ... ok
+test crates/pert-ui-runtime/src/drawing.rs - drawing::Viewport::from_physical (line 996) ... ok
+test crates/pert-ui-runtime/src/drawing.rs - drawing::Rect::is_empty (line 172) ... ok
+test crates/pert-ui-runtime/src/error.rs - error::ApplicationError (line 30) ... ok
+test crates/pert-ui-runtime/src/drawing.rs - drawing::Painter::draw_image (line 1626) ... ok
+test crates/pert-ui-runtime/src/drawing.rs - drawing::OpaqueColor (line 690) ... ok
+test crates/pert-ui-runtime/src/geometry.rs - geometry::Path (line 187) ... ok
+test crates/pert-ui-runtime/src/described.rs - described::Show (line 219) ... ok
+test crates/pert-ui-runtime/src/geometry.rs - geometry::StrokeStyle (line 82) ... ok
+test crates/pert-ui-runtime/src/drawing.rs - drawing::Viewport::frame_extent (line 1025) ... ok
+test crates/pert-ui-runtime/src/form.rs - form::Form (line 32) ... ok
+test crates/pert-ui-runtime/src/geometry.rs - geometry::Path::transformed (line 330) ... ok
+test crates/pert-ui-runtime/src/geometry.rs - geometry::Painter::fill_path (line 633) ... ok
+test crates/pert-ui-runtime/src/geometry.rs - geometry::Painter::stroke_polyline (line 739) ... ok
+test crates/pert-ui-runtime/src/editor_session.rs - editor_session::EditorSession (line 123) ... ok
+test crates/pert-ui-runtime/src/field_status.rs - field_status::FormFields (line 190) ... ok
+test crates/pert-ui-runtime/src/host.rs - host::HostIntegration::prepare_detach (line 315) ... ok
+test crates/pert-ui-runtime/src/file_browser/controller.rs - file_browser::controller::FileBrowserController (line 446) ... ok
+test crates/pert-ui-runtime/src/image.rs - image::Image (line 51) ... ok
+test crates/pert-ui-runtime/src/input.rs - input::KeyEvent::requests_context_menu (line 288) ... ok
+test crates/pert-ui-runtime/src/host.rs - host::HostIntegration::take_shutdown_errors (line 548) ... ok
+test crates/pert-ui-runtime/src/input.rs - input::Modifiers (line 316) ... ok
+test crates/pert-ui-runtime/src/input.rs - input::Modifiers::PRIMARY (line 356) ... ok
+test crates/pert-ui-runtime/src/inline_controls.rs - inline_controls::InlineReadout (line 574) ... ok
+test crates/pert-ui-runtime/src/input.rs - input::KeyboardState::chord_modifiers (line 494) ... ok
+test crates/pert-ui-runtime/src/input.rs - input::KeyboardState::control_key (line 431) ... ok
+test crates/pert-ui-runtime/src/input.rs - input::Modifiers::primary (line 379) ... ok
+test crates/pert-ui-runtime/src/color_picker.rs - color_picker::ColorPicker::on_change (line 520) ... ok
+test crates/pert-ui-runtime/src/inspection_service.rs - inspection_service::InspectionQuery (line 204) ... ok
+test crates/pert-ui-runtime/src/collection_filter.rs - collection_filter::CollectionFilter (line 593) ... ok
+test crates/pert-ui-runtime/src/inspection_service.rs - inspection_service::Selector (line 45) ... ok
+test crates/pert-ui-runtime/src/host.rs - host (line 19) ... ok
+test crates/pert-ui-runtime/src/layout.rs - layout::Element::spacer (line 692) ... ok
+test crates/pert-ui-runtime/src/field_status.rs - field_status::Field::status (line 665) ... ok
+test crates/pert-ui-runtime/src/host.rs - host::HostIntegration::cancel_input (line 448) ... ok
+test crates/pert-ui-runtime/src/layout.rs - layout::Element::with_detachable (line 541) ... ok
+test crates/pert-ui-runtime/src/layout.rs - layout::GeometryError (line 74) ... ok
+test crates/pert-ui-runtime/src/layout.rs - layout::SizeLimits::constrain (line 269) ... ok
+test crates/pert-ui-runtime/src/inline_controls.rs - inline_controls::InlineToggle (line 41) ... ok
+test crates/pert-ui-runtime/src/history_navigator.rs - history_navigator::HistoryNavigator (line 78) ... ok
+test crates/pert-ui-runtime/src/layout.rs - layout::Element::with_searchable (line 580) ... ok
+test crates/pert-ui-runtime/src/layout.rs - layout::Element::expose_part (line 773) ... ok
+test crates/pert-ui-runtime/src/layout.rs - layout::SizeLimits::exact (line 210) ... ok
+test crates/pert-ui-runtime/src/layout.rs - layout::Element::with_label (line 473) ... ok
+test crates/pert-ui-runtime/src/layout.rs - layout::IntoElement (line 400) ... ok
+test crates/pert-ui-runtime/src/inspection_service.rs - inspection_service::InspectionService (line 1048) ... ok
+test crates/pert-ui-runtime/src/history_navigator.rs - history_navigator::HistoryButtons (line 460) ... ok
+test crates/pert-ui-runtime/src/field_status.rs - field_status::Field::status_signal (line 695) ... ok
+test crates/pert-ui-runtime/src/lib.rs - component (line 551) ... ok
+test crates/pert-ui-runtime/src/lib.rs - commands (line 762) ... ok
+test crates/pert-ui-runtime/src/list_drag.rs - list_drag::ListDragItems (line 13) ... ok
+test crates/pert-ui-runtime/src/layout.rs - layout::Element::with_grow (line 658) ... ok
+test crates/pert-ui-runtime/src/layout.rs - layout::ArrangeContext<'_>::refresh_forwarded (line 1181) ... ok
+test crates/pert-ui-runtime/src/live_widgets.rs - live_widgets::LevelMeter (line 100) ... ok
+test crates/pert-ui-runtime/src/link.rs - link::Link (line 50) ... ok
+test crates/pert-ui-runtime/src/mailbox.rs - mailbox::Mailbox (line 228) ... ok
+test crates/pert-ui-runtime/src/layout.rs - layout::Element::with_grow (line 633) ... ok
+test crates/pert-ui-runtime/src/lib.rs - parameter (line 697) ... ok
+test crates/pert-ui-runtime/src/live_widgets.rs - live_widgets::Trace (line 453) ... ok
+test crates/pert-ui-runtime/src/lib.rs - live (line 946) ... ok
+test crates/pert-ui-runtime/src/layout.rs - layout::MeasureContext<'_>::fitted_text (line 950) ... ok
+test crates/pert-ui-runtime/src/inline_controls.rs - inline_controls::InlineReadout::new (line 650) ... ok
+test crates/pert-ui-runtime/src/list_selection.rs - list_selection::ListSelection (line 48) ... ok
+test crates/pert-ui-runtime/src/lib.rs - inspection (line 881) ... ok
+test crates/pert-ui-runtime/src/lib.rs - windowing (line 822) ... ok
+test crates/pert-ui-runtime/src/menu.rs - menu::MenuItem (line 205) ... ok
+test crates/pert-ui-runtime/src/menu.rs - menu::MenuItem::command (line 394) ... ok
+test crates/pert-ui-runtime/src/field_status.rs - field_status::FormFields::discard_drafts (line 354) ... ok
+test crates/pert-ui-runtime/src/menu.rs - menu::ContextMenu (line 1323) ... ok
+test crates/pert-ui-runtime/src/menu.rs - menu::MenuItem::selected_signal (line 536) ... ok
+test crates/pert-ui-runtime/src/menu.rs - menu::ContextMenu (line 1283) ... ok
+test crates/pert-ui-runtime/src/number_format.rs - number_format::NumberFormat<T>::unit (line 129) ... ok
+test crates/pert-ui-runtime/src/multi_select.rs - multi_select::MultiSelect<T>::filter (line 1404) ... ok
+test crates/pert-ui-runtime/src/multi_select.rs - multi_select::MultiSelect<T>::on_change (line 1344) ... ok
+test crates/pert-ui-runtime/src/number_format.rs - number_format::NumberLocale (line 208) ... ok
+test crates/pert-ui-runtime/src/number_format.rs - number_format::NumberFormat (line 24) ... ok
+test crates/pert-ui-runtime/src/parameter_binding.rs - parameter_binding::BindingError (line 43) ... ok
+test crates/pert-ui-runtime/src/menu.rs - menu::Menu::with_state (line 781) ... ok
+test crates/pert-ui-runtime/src/menu_bar.rs - menu_bar::MenuBar (line 583) ... ok
+test crates/pert-ui-runtime/src/parameter_binding.rs - parameter_binding::ParameterHost<T>::set_effective (line 597) ... ok
+test crates/pert-ui-runtime/src/permission.rs - permission::Permission (line 25) ... ok
+test crates/pert-ui-runtime/src/numeric_controls.rs - numeric_controls::Slider::format (line 1604) ... ok
+test crates/pert-ui-runtime/src/menu.rs - menu::ContextMenuController::open (line 1433) ... ok
+test crates/pert-ui-runtime/src/menu_bar.rs - menu_bar::MenuBar::leading (line 787) ... ok
+test crates/pert-ui-runtime/src/numeric_controls.rs - numeric_controls::Knob::format (line 1604) ... ok
+test crates/pert-ui-runtime/src/parameter_binding.rs - parameter_binding::Runtime::parameter (line 987) ... ok
+test crates/pert-ui-runtime/src/parameter_binding/delivery.rs - parameter_binding::delivery::SinkError (line 81) ... ok
+test crates/pert-ui-runtime/src/menu_bar.rs - menu_bar::MenuBar (line 635) ... ok
+test crates/pert-ui-runtime/src/menu.rs - menu::MenuItem::on_change (line 449) ... ok
+test crates/pert-ui-runtime/src/numeric_controls.rs - numeric_controls::Knob (line 1357) ... ok
+test crates/pert-ui-runtime/src/notifications.rs - notifications::ToastHost::dismiss_label (line 519) ... ok
+test crates/pert-ui-runtime/src/progress.rs - progress::ProgressStatus::fraction (line 118) ... ok
+test crates/pert-ui-runtime/src/progress.rs - progress::ProgressStatus::of (line 80) ... ok
+test crates/pert-ui-runtime/src/parameter_binding/erased.rs - parameter_binding::erased::AnyTerminalEvent::outcome (line 146) ... ok
+test crates/pert-ui-runtime/src/menu.rs - menu::Menu (line 704) ... ok
+test crates/pert-ui-runtime/src/property_grid.rs - property_grid::Property (line 24) ... ok
+test crates/pert-ui-runtime/src/pointer.rs - pointer::Magnification (line 98) ... ok
+test crates/pert-ui-runtime/src/permission.rs - permission::Permission::signal (line 185) ... ok
+test crates/pert-ui-runtime/src/quick_pick.rs - quick_pick::PickItem (line 22) ... ok
+test crates/pert-ui-runtime/src/progress.rs - progress::ProgressBar::bound (line 323) ... ok
+test crates/pert-ui-runtime/src/progress.rs - progress::ProgressBar (line 258) ... ok
+test crates/pert-ui-runtime/src/parameter_binding/remote.rs - parameter_binding::remote::RemoteHost (line 344) ... ok
+test crates/pert-ui-runtime/src/progress.rs - progress::Spinner::new (line 568) ... ok
+test crates/pert-ui-runtime/src/multi_select.rs - multi_select::MultiSelect (line 1198) ... ok
+test crates/pert-ui-runtime/src/progress.rs - progress::ProgressBar::new (line 291) ... ok
+test crates/pert-ui-runtime/src/notifications.rs - notifications::ToastHost (line 450) ... ok
+test crates/pert-ui-runtime/src/navigation_history.rs - navigation_history::NavigationHistory (line 154) ... ok
+test crates/pert-ui-runtime/src/parameter_binding.rs - parameter_binding::ParameterHost (line 479) ... ok
+test crates/pert-ui-runtime/src/progress.rs - progress::ProgressStatus (line 26) ... ok
+test crates/pert-ui-runtime/src/progress.rs - progress::Spinner (line 535) ... ok
+test crates/pert-ui-runtime/src/progress.rs - progress::Spinner::bound (line 596) ... ok
+test crates/pert-ui-runtime/src/quick_pick.rs - quick_pick::PickMatcher::fuzzy_score (line 168) ... ok
+test crates/pert-ui-runtime/src/quick_pick.rs - quick_pick::PickMatcher (line 98) ... ok
+test crates/pert-ui-runtime/src/quick_pick.rs - quick_pick::PickPending (line 308) ... ok
+test crates/pert-ui-runtime/src/resources.rs - resources::RasterImage (line 135) ... ok
+test crates/pert-ui-runtime/src/runtime.rs - runtime::Component::hit_test_foreground (line 2350) ... ok
+test crates/pert-ui-runtime/src/runtime.rs - runtime::Component::hit_test (line 2318) ... ok
+test crates/pert-ui-runtime/src/runtime.rs - runtime::Component::try_content_rows (line 2252) ... ok
+test crates/pert-ui-runtime/src/runtime.rs - runtime::Component::fills_row_height (line 1821) ... ok
+test crates/pert-ui-runtime/src/runtime.rs - runtime::EventContext::to_local (line 3260) ... ok
+test crates/pert-ui-runtime/src/runtime.rs - runtime::Component::restore_workspace_state_with_children (line 2134) ... ok
+test crates/pert-ui-runtime/src/runtime.rs - runtime::Component::workspace_state (line 2029) ... ok
+test crates/pert-ui-runtime/src/runtime.rs - runtime::EventContext::now (line 3202) ... ok
+test crates/pert-ui-runtime/src/runtime.rs - runtime::EventContext::set_timer (line 3639) ... ok
+test crates/pert-ui-runtime/src/runtime.rs - runtime::Component::retain_initial_children (line 1890) ... ok
+test crates/pert-ui-runtime/src/runtime.rs - runtime::Component::child_transform (line 1377) ... ok
+test crates/pert-ui-runtime/src/runtime.rs - runtime::Component::child_stacking_priority (line 1298) ... ok
+test crates/pert-ui-runtime/src/property_grid.rs - property_grid::PropertyGrid (line 259) ... ok
+test crates/pert-ui-runtime/src/runtime/commands.rs - runtime::commands::KeyChord::named (line 78) ... ok
+test crates/pert-ui-runtime/src/popover.rs - popover::Popover::on_dismiss (line 259) ... ok
+test crates/pert-ui-runtime/src/runtime/commands.rs - runtime::commands::KeyChord (line 191) ... ok
+test crates/pert-ui-runtime/src/runtime/commands.rs - runtime::commands::KeyChord::navigate_back (line 103) ... ok
+test crates/pert-ui-runtime/src/runtime/commands.rs - runtime::commands::Runtime::commands_for (line 965) ... ok
+test crates/pert-ui-runtime/src/runtime.rs - runtime::Runtime::set_clipboard_text (line 5232) ... ok
+test crates/pert-ui-runtime/src/runtime/drag.rs - runtime::drag::EventContext::start_drag (line 87) ... ok
+test crates/pert-ui-runtime/src/runtime.rs - runtime::Runtime::series_source (line 4481) ... ok
+test crates/pert-ui-runtime/src/runtime.rs - runtime::RuntimeError (line 176) ... ok
+test crates/pert-ui-runtime/src/runtime/commands.rs - runtime::commands::Runtime::register_command (line 590) ... ok
+test crates/pert-ui-runtime/src/runtime.rs - runtime::Component::pointer_input (line 1586) ... ok
+test crates/pert-ui-runtime/src/runtime/application.rs - runtime::application::Runtime::keep_alive (line 126) ... ok
+test crates/pert-ui-runtime/src/property_grid.rs - property_grid::Property::status_signal (line 93) ... ok
+test crates/pert-ui-runtime/src/runtime/commands.rs - runtime::commands::KeyChord::new (line 41) ... ok
+test crates/pert-ui-runtime/src/runtime/application.rs - runtime::application::Runtime::start_interval (line 297) ... ok
+test crates/pert-ui-runtime/src/runtime/application.rs - runtime::application::Runtime::spawn (line 180) ... ok
+test crates/pert-ui-runtime/src/runtime/application.rs - runtime::application::Runtime::last_failure (line 457) ... ok
+test crates/pert-ui-runtime/src/runtime.rs - runtime::UpdateContext::signal (line 2812) ... ok
+test crates/pert-ui-runtime/src/property_grid.rs - property_grid::Property::status (line 69) ... ok
+test crates/pert-ui-runtime/src/runtime/notify.rs - runtime::notify::Notifier (line 213) ... ok
+test crates/pert-ui-runtime/src/runtime/tasks.rs - runtime::tasks::TaskReceipt (line 43) ... ok
+test crates/pert-ui-runtime/src/runtime.rs - runtime::Runtime::can_focus (line 4713) ... ok
+test crates/pert-ui-runtime/src/runtime/tasks.rs - runtime::tasks::EventContext::defer_while_shown (line 348) ... ok
+test crates/pert-ui-runtime/src/runtime/settings.rs - runtime::settings::UiSettings::set_text_rendering (line 263) ... ok
+test crates/pert-ui-runtime/src/runtime/theme.rs - runtime::theme::ColorRole::follows (line 616) ... ok
+test crates/pert-ui-runtime/src/quick_pick.rs - quick_pick::QuickPick (line 837) ... ok
+test crates/pert-ui-runtime/src/runtime/pointer.rs - runtime::pointer::Runtime::pointer_input (line 314) ... ok
+test crates/pert-ui-runtime/src/runtime/theme.rs - runtime::theme::Spacing (line 331) ... ok
+test crates/pert-ui-runtime/src/runtime/theme.rs - runtime::theme::Palette (line 760) ... ok
+test crates/pert-ui-runtime/src/runtime/tree.rs - runtime::tree::Runtime::reparent (line 797) ... ok
+test crates/pert-ui-runtime/src/runtime/reveal.rs - runtime::reveal::Runtime::reveal (line 376) ... ok
+test crates/pert-ui-runtime/src/runtime/tree.rs - runtime::tree::Runtime::find (line 309) ... ok
+test crates/pert-ui-runtime/src/select.rs - select::Select<T>::on_change (line 1529) ... ok
+test crates/pert-ui-runtime/src/runtime/workspace.rs - runtime::workspace::Runtime::capture_workspace (line 46) ... ok
+test crates/pert-ui-runtime/src/runtime/tree.rs - runtime::tree::Runtime::inspection_id (line 521) ... ok
+test crates/pert-ui-runtime/src/runtime/tree.rs - runtime::tree::Runtime::find_descendant (line 215) ... ok
+test crates/pert-ui-runtime/src/signal.rs - signal::CombineInput (line 893) ... ok
+test crates/pert-ui-runtime/src/runtime/theme.rs - runtime::theme::Palette::from_seeds (line 844) ... ok
+test crates/pert-ui-runtime/src/signal.rs - signal::CombineInputs (line 1010) ... ok
+test crates/pert-ui-runtime/src/runtime/content_search.rs - runtime::content_search::Runtime::content_search (line 42) ... ok
+test crates/pert-ui-runtime/src/runtime/tasks.rs - runtime::tasks::EventContext::spawn (line 443) ... ok
+test crates/pert-ui-runtime/src/runtime/reveal.rs - runtime::reveal::EventContext::request_reveal (line 264) ... ok
+test crates/pert-ui-runtime/src/signal.rs - signal::CombineInputs (line 966) ... ok
+test crates/pert-ui-runtime/src/shapes.rs - shapes::Painter::stroke_arc (line 213) ... ok
+test crates/pert-ui-runtime/src/signal.rs - signal::ReadSignal<T>::combine (line 1161) ... ok
+test crates/pert-ui-runtime/src/runtime/reveal.rs - runtime::reveal::Runtime::reveal_child (line 484) ... ok
+test crates/pert-ui-runtime/src/signal.rs - signal::Signal (line 234) ... ok
+test crates/pert-ui-runtime/src/runtime/tasks.rs - runtime::tasks::EventContext::defer (line 264) ... ok
+test crates/pert-ui-runtime/src/runtime/reveal.rs - runtime::reveal::Runtime::reveal_and_focus (line 430) ... ok
+test crates/pert-ui-runtime/src/signal.rs - signal::Signal<T>::sibling (line 415) ... ok
+test crates/pert-ui-runtime/src/select.rs - select::Select<T>::bound (line 1589) ... ok
+test crates/pert-ui-runtime/src/selectable_text.rs - selectable_text::SelectableText (line 84) ... ok
+test crates/pert-ui-runtime/src/signal.rs - signal::ReadSignal<T>::map (line 840) ... ok
+test crates/pert-ui-runtime/src/select.rs - select::Select<T>::placeholder (line 1659) ... ok
+test crates/pert-ui-runtime/src/table.rs - table::Table::on_edit_end (line 1870) ... ok
+test crates/pert-ui-runtime/src/strings.rs - strings::UiStrings (line 564) ... ok
+test crates/pert-ui-runtime/src/signal.rs - signal::Signal<T>::revision (line 464) ... ok
+test crates/pert-ui-runtime/src/signal.rs - signal::StateOwner::ui_settings (line 99) ... ok
+test crates/pert-ui-runtime/src/table.rs - table::Table::new (line 1634) ... ok
+test crates/pert-ui-runtime/src/tabs.rs - tabs::Tab::leading_icon (line 108) ... ok
+test crates/pert-ui-runtime/src/tabs.rs - tabs::Tab::detachable (line 73) ... ok
+test crates/pert-ui-runtime/src/tabs.rs - tabs::Tab::fixed (line 47) ... ok
+test crates/pert-ui-runtime/src/tabs.rs - tabs::Tab::rich_title (line 91) ... ok
+test crates/pert-ui-runtime/src/testing.rs - testing (line 14) ... ok
+test crates/pert-ui-runtime/src/select.rs - select::InlineSelect (line 1785) ... ok
+test crates/pert-ui-runtime/src/signal.rs - signal::StateOwner (line 44) ... ok
+test crates/pert-ui-runtime/src/testing.rs - testing::Driver<'a>::quiet_for (line 546) ... ok
+test crates/pert-ui-runtime/src/testing.rs - testing::Driver<'a>::advance (line 385) ... ok
+test crates/pert-ui-runtime/src/testing.rs - testing::Driver<'a>::find (line 618) ... ok
+test crates/pert-ui-runtime/src/testing.rs - testing::Driver<'a>::exposed_parts (line 714) ... ok
+test crates/pert-ui-runtime/src/select.rs - select::Select (line 1390) ... ok
+test crates/pert-ui-runtime/src/table.rs - table::TableController::set_column_width (line 845) ... ok
+test crates/pert-ui-runtime/src/split.rs - split::SplitPane::on_resize (line 296) ... ok
+test crates/pert-ui-runtime/src/tabs.rs - tabs::Tabs::reorderable (line 540) ... ok
+test crates/pert-ui-runtime/src/table.rs - table::Table::resize_permission (line 1570) ... ok
+test crates/pert-ui-runtime/src/tabs.rs - tabs::Tabs::on_select (line 637) ... ok
+test crates/pert-ui-runtime/src/tabs.rs - tabs::Tabs (line 287) ... ok
+test crates/pert-ui-runtime/src/tabs.rs - tabs::Tabs::selected (line 438) ... ok
+test crates/pert-ui-runtime/src/testing.rs - testing::Driver<'a>::chord (line 1204) ... ok
+test crates/pert-ui-runtime/src/text/fit.rs - text::fit::RichText::highlighted (line 246) ... ok
+test crates/pert-ui-runtime/src/testing.rs - testing::Driver<'a>::wait_until (line 421) ... ok
+test crates/pert-ui-runtime/src/testing.rs - testing::Driver<'a>::address_children (line 791) ... ok
+test crates/pert-ui-runtime/src/testing.rs - testing::Driver (line 249) ... ok
+test crates/pert-ui-runtime/src/testing.rs - testing::QuietReport (line 1396) ... ok
+test crates/pert-ui-runtime/src/text_fields.rs - text_fields::TextArea (line 302) ... ok
+test crates/pert-ui-runtime/src/table.rs - table::Table (line 1445) ... ok
+test crates/pert-ui-runtime/src/testing.rs - testing::TestError::Draw (line 1628) ... ok
+test crates/pert-ui-runtime/src/testing.rs - testing (line 121) ... ok
+test crates/pert-ui-runtime/src/text_fields.rs - text_fields::TextArea::on_binding_refusal (line 702) ... ok
+test crates/pert-ui-runtime/src/text_fields.rs - text_fields::TextArea::on_modified (line 643) ... ok
+test crates/pert-ui-runtime/src/testing.rs - testing::Driver<'a>::replace_text (line 1075) ... ok
+test crates/pert-ui-runtime/src/testing.rs - testing::Driver<'a>::key (line 1143) ... ok
+test crates/pert-ui-runtime/src/testing.rs - testing::Driver<'a>::click_item (line 970) ... ok
+test crates/pert-ui-runtime/src/testing.rs - testing::Driver<'a>::clear_focus (line 1302) ... ok
+test crates/pert-ui-runtime/src/text_fields.rs - text_fields::TextField::on_binding_refusal (line 702) ... ok
+test crates/pert-ui-runtime/src/text_fields.rs - text_fields::TextField::clearable (line 1026) ... ok
+test crates/pert-ui-runtime/src/table.rs - table::Table (line 1294) ... ok
+test crates/pert-ui-runtime/src/text_fields.rs - text_fields::TextField::concealed (line 982) ... ok
+test crates/pert-ui-runtime/src/text_fields/normalize.rs - text_fields::normalize::InputRejection (line 16) ... ok
+test crates/pert-ui-runtime/src/text_fields.rs - text_fields::TextField (line 200) ... ok
+test crates/pert-ui-runtime/src/text_fields.rs - text_fields::TextField (line 185) ... ok
+test crates/pert-ui-runtime/src/text_fields/inline_text.rs - text_fields::inline_text::InlineText (line 60) ... ok
+test crates/pert-ui-runtime/src/text_fields.rs - text_fields::TextField::on_modified (line 643) ... ok
+test crates/pert-ui-runtime/src/text_fields/inline_text.rs - text_fields::inline_text::InlineText::normalize (line 314) ... ok
+test crates/pert-ui-runtime/src/text_fields/draft.rs - text_fields::draft::DraftEditorController<P>::set_read_only (line 444) ... ok
+test crates/pert-ui-runtime/src/text_fields/inline_text.rs - text_fields::inline_text::InlineText::controlled (line 185) ... ok
+test crates/pert-ui-runtime/src/text_fields/draft.rs - text_fields::draft::DraftEditor (line 670) ... ok
+test crates/pert-ui-runtime/src/text_fields/inline_text.rs - text_fields::inline_text::InlineText::in_row (line 416) ... ok
+test crates/pert-ui-runtime/src/text_fields/inline_text.rs - text_fields::inline_text::InlineText::normalize (line 340) ... ok
+test crates/pert-ui-runtime/src/text_fields/inline_text.rs - text_fields::inline_text::InlineText::on_modified (line 515) ... ok
+test crates/pert-ui-runtime/src/text_fields.rs - text_fields::TextField::on_rejection (line 455) ... ok
+test crates/pert-ui-runtime/src/text_fields/number_inputs.rs - text_fields::number_inputs::DecimalInput::on_modified (line 2820) ... ok
+test crates/pert-ui-runtime/src/text_fields.rs - text_fields::TextArea::on_rejection (line 455) ... ok
+test crates/pert-ui-runtime/src/text_fields/number_inputs.rs - text_fields::number_inputs::DecimalInput::for_parameter (line 3040) ... ok
+test crates/pert-ui-runtime/src/text_input.rs - text_input::TextPreedit::new (line 76) ... ok
+test crates/pert-ui-runtime/src/text_fields/number_inputs.rs - text_fields::number_inputs::DecimalInput (line 301) ... ok
+test crates/pert-ui-runtime/src/text_fields/number_inputs.rs - text_fields::number_inputs::IntegerInput (line 114) ... ok
+test crates/pert-ui-runtime/src/text_fields/number_inputs.rs - text_fields::number_inputs::IntegerInput::for_parameter (line 2991) ... ok
+test crates/pert-ui-runtime/src/text_fields/search.rs - text_fields::search::SearchField::placeholder (line 227) ... ok
+test crates/pert-ui-runtime/src/text_fields/number_inputs.rs - text_fields::number_inputs::InlineDecimal (line 390) ... ok
+test crates/pert-ui-runtime/src/transform.rs - transform::QuarterTurn::place (line 209) ... ok
+test crates/pert-ui-runtime/src/transform.rs - transform::Transform2D (line 20) ... ok
+test crates/pert-ui-runtime/src/toolbar.rs - toolbar::Toolbar (line 307) ... ok
+test crates/pert-ui-runtime/src/text_fields/number_inputs.rs - text_fields::number_inputs::IntegerInput::on_modified (line 2820) ... ok
+test crates/pert-ui-runtime/src/text_fields/number_inputs.rs - text_fields::number_inputs::IntegerInput (line 238) ... ok
+test crates/pert-ui-runtime/src/text_fields/number_inputs.rs - text_fields::number_inputs::IntegerInput (line 189) ... ok
+test crates/pert-ui-runtime/src/transform.rs - transform::ViewTransform (line 355) ... ok
+test crates/pert-ui-runtime/src/text_selection.rs - text_selection::TextSelection::new (line 70) ... ok
+test crates/pert-ui-runtime/src/toolbar.rs - toolbar::Toolbar::more_label (line 462) ... ok
+test crates/pert-ui-runtime/src/text_fields/search.rs - text_fields::search::SearchField (line 79) ... ok
+test crates/pert-ui-runtime/src/virtual_axis.rs - virtual_axis::VirtualAxis (line 101) ... ok
+test crates/pert-ui-runtime/src/text_fields/number_inputs.rs - text_fields::number_inputs::InlineInteger::on_modified (line 2910) ... ok
+test crates/pert-ui-runtime/src/text_source.rs - text_source::TextSource (line 38) ... ok
+test crates/pert-ui-runtime/src/text_input.rs - text_input::TextCommand::DiscardDraft (line 282) ... ok
+test crates/pert-ui-runtime/src/virtual_list.rs - virtual_list::VirtualList::placement (line 1221) ... ok
+test crates/pert-ui-runtime/src/text_input.rs - text_input::TextCommand::BeginEdit (line 212) ... ok
+test crates/pert-ui-runtime/src/workspace.rs - workspace::WorkspaceValue::number (line 89) ... ok
+test crates/pert-ui-runtime/src/workspace.rs - workspace::Workspace (line 482) ... ok
+test crates/pert-ui-runtime/src/workspace.rs - workspace::ViewState (line 215) ... ok
+test crates/pert-ui-runtime/src/workspace.rs - workspace::Workspace::decode (line 915) ... ok
+test crates/pert-ui-runtime/src/tree.rs - tree::Tree (line 887) ... ok
+test crates/pert-ui-runtime/src/zoom_view.rs - zoom_view::ZoomView (line 293) ... ok
+test crates/pert-ui-runtime/src/virtual_list.rs - virtual_list::VirtualList::on_selection_change (line 979) ... ok
+test crates/pert-ui-runtime/src/text_fields/number_inputs.rs - text_fields::number_inputs::InlineDecimal::on_modified (line 2910) ... ok
+test crates/pert-ui-runtime/src/windows.rs - windows::FloatingWindow::on_frame (line 385) ... ok
+test crates/pert-ui-runtime/src/windows.rs - windows::FloatingWindow::close_label (line 479) ... ok
+test crates/pert-ui-runtime/src/text_fields/number_inputs.rs - text_fields::number_inputs::InlineInteger (line 361) ... ok
+test crates/pert-ui-runtime/src/tool_windows/mod.rs - tool_windows::ToolWindowLayout (line 740) ... ok
+test crates/pert-ui-runtime/src/tree.rs - tree::Tree::reorderable (line 999) ... ok
+test crates/pert-ui-runtime/src/virtual_list.rs - virtual_list::VirtualList (line 471) ... ok
+test crates/pert-ui-runtime/src/zoom_view.rs - zoom_view::ZoomController (line 106) ... ok
+test crates/pert-ui-runtime/src/tool_windows/mod.rs - tool_windows::ToolWindowMode (line 127) ... ok
+test crates/pert-ui-runtime/src/virtual_list.rs - virtual_list::ListController (line 195) ... ok
+test crates/pert-ui-runtime/src/views.rs - views::ScrollArea::on_scroll (line 389) ... ok
+
+test result: ok. 392 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+
+running 23 tests
+test crates/pert-ui-runtime/src/described.rs - described::EachItem (line 451) - compile fail ... ok
+test crates/pert-ui-runtime/src/signal.rs - signal::CombineInputs (line 998) - compile fail ... ok
+test crates/pert-ui-runtime/src/signal.rs - signal::CombineInputs (line 983) - compile fail ... ok
+test crates/pert-ui-runtime/src/parameter_binding.rs - parameter_binding::ParameterHost (line 516) - compile fail ... ok
+test crates/pert-ui-runtime/src/async_source.rs - async_source::RequestTracker (line 96) - compile fail ... ok
+test crates/pert-ui-runtime/src/parameter_binding.rs - parameter_binding::EditSession (line 739) - compile fail ... ok
+test crates/pert-ui-runtime/src/parameter_binding.rs - parameter_binding::Parameter (line 286) - compile fail ... ok
+test crates/pert-ui-runtime/src/views.rs - views::Divider (line 914) - compile fail ... ok
+test crates/pert-ui-runtime/src/signal.rs - signal::Signal (line 248) - compile fail ... ok
+test crates/pert-ui-runtime/src/text/fonts.rs - text::fonts::FontId (line 92) - compile fail ... ok
+test crates/pert-ui-runtime/src/described.rs - described::EachItem (line 458) - compile fail ... ok
+test crates/pert-ui-runtime/src/runtime/tasks.rs - runtime::tasks::ShownTaskReceipt (line 107) - compile fail ... ok
+test crates/pert-ui-runtime/src/live_source.rs - live_source::SeriesSource (line 625) - compile fail ... ok
+test crates/pert-ui-runtime/src/host.rs - host::HostIntegration (line 84) - compile fail ... ok
+test crates/pert-ui-runtime/src/described.rs - described::EachItem (line 478) - compile fail ... ok
+test crates/pert-ui-runtime/src/runtime/theme.rs - runtime::theme::ThemeManager (line 1054) - compile fail ... ok
+test crates/pert-ui-runtime/src/runtime.rs - runtime::Runtime (line 3804) - compile fail ... ok
+test crates/pert-ui-runtime/src/signal.rs - signal::StateOwner (line 29) - compile fail ... ok
+test crates/pert-ui-runtime/src/testing.rs - testing::QuietReport (line 1383) - compile fail ... ok
+test crates/pert-ui-runtime/src/described.rs - described::EachItem (line 470) - compile fail ... ok
+test crates/pert-ui-runtime/src/signal.rs - signal::ReadSignal (line 264) - compile fail ... ok
+test crates/pert-ui-runtime/src/drawing.rs - drawing::OpaqueColor (line 708) - compile fail ... ok
+test crates/pert-ui-runtime/src/choice_controls.rs - choice_controls::RadioGroup<ChoiceId>::for_parameter (line 1005) - compile fail ... ok
+
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+all doctests ran in 5.74s; merged doctests compilation took 5.55s
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.07s
+   Doc-tests pert_ui_runtime
+# exit status 0, finished 2026-10-29T11:34:18+00:00

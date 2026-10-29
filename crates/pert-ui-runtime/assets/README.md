@@ -23,6 +23,14 @@ inseparable atom; that glyph retains its ink. Canonical bytes and Unicode
 analysis are unchanged. This
 bundled-font baseline does not claim complete script coverage or color emoji.
 
+Zero-area glyph rasters add no placement or bounds after normal cache lookup
+and admission. A bundled-font space has no default coverage; a fractional
+vertical phase can still produce a transparent positive-area raster and blank
+phase mask. No alpha scan is performed, and positive-area custom-font space ink
+remains eligible. Empty-edge removal can change origin/extent and fractional
+mask sampling. Icon reference metrics and centering remain unchanged; an
+inline-icon text frame need not remain pixel-identical when its mask narrows.
+
 ## Material Icons Outlined
 
 `MaterialIconsOutlined-Regular.otf` and its complete upstream

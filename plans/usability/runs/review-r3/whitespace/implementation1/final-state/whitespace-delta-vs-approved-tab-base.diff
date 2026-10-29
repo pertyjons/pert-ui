@@ -1,0 +1,1806 @@
+--- a/crates/pert-ui-runtime/src/text.rs
++++ b/crates/pert-ui-runtime/src/text.rs
+@@ -193,16 +193,16 @@
+ /// one ligature keeps that glyph's ink rather than erasing the printable text.
+ ///
+ /// [`Self::size`] is the layout box joined with the raster bounds of the drawn
+-/// glyphs, and the painted origin is its top-left corner. That is not an exact
+-/// union of visible ink: a glyph whose raster is empty, such as a space in the
+-/// bundled fonts, still extends the bounds to its pen position, while a hidden
+-/// tab adds nothing. The layout box leaves out whitespace hanging past the end
+-/// of a wrapped line, so caret, selection and pointer geometry at hanging
+-/// spaces and tabs may lie outside the size: beyond its right edge in
+-/// left-to-right text and at negative x in right-to-left text. There a
+-/// hanging space's pen position can still extend the size leftward and move
+-/// the origin, where a tab of the same advance does not, so the two can give
+-/// different size, origin and public caret coordinates.
++/// glyphs, and the painted origin is its top-left corner. A glyph whose raster
++/// has no area, such as a space in the bundled fonts or an empty glyph of a
++/// registered font, draws nothing and adds no bounds, like a hidden tab;
++/// text of such glyphs alone draws nothing at all. The bounds are whole
++/// raster rectangles, not an exact union of visible ink. The layout box
++/// leaves out whitespace hanging past the end of a wrapped line, so caret,
++/// selection and pointer geometry at hanging spaces and tabs may lie outside
++/// the size: beyond its right edge in left-to-right text and at negative x in
++/// right-to-left text. A hanging space and a hanging tab of the same advance
++/// give the same size, origin and public coordinates.
+ #[derive(Clone, Debug)]
+ pub struct TextLayout {
+     size: Size,
+@@ -222,11 +222,11 @@
+ }
+ impl TextLayout {
+     /// Logical extent of the painted text: the layout box joined with the drawn
+-    /// glyphs' raster bounds, overhangs included. An empty raster, such as a
+-    /// bundled-font space, counts at its pen position, and a hidden tab not at
+-    /// all, as the [type documentation](Self) describes. Whitespace hanging
+-    /// past the end of a wrapped line is outside the layout box, so a caret or
+-    /// selection there can fall outside this extent; see
++    /// glyphs' raster bounds, overhangs included, rounded out to whole physical
++    /// pixels. A raster without area, such as a bundled-font space, and a
++    /// hidden tab add nothing, as the [type documentation](Self) describes.
++    /// Whitespace hanging past the end of a wrapped line is outside the layout
++    /// box, so a caret or selection there can fall outside this extent; see
+     /// [`TextSelection::caret`](crate::TextSelection::caret).
+     #[must_use]
+     pub const fn size(&self) -> Size {
+@@ -1407,7 +1407,7 @@
+                     };
+                     let Some(cached) = cached else {
+                         continue;
+-                    }; // Empty outlines (e.g. spaces) have no ink.
++                    }; // No image at all has no ink either.
+                     let image = &cached.image;
+                     if let Some(key) = key
+                         && !self.phase_glyphs.contains_key(&key)
+@@ -1435,6 +1435,13 @@
+                     if raster_bytes > RASTER_BYTES {
+                         return Err(TextError::TooLarge(TextLimit::Coverage));
+                     }
++                    // A zero-area raster, such as a space's, has no coverage and
++                    // places nothing: it neither aligns nor extends the bounds.
++                    // Its cache entry above stays, so the phase path does not
++                    // render it again on the next line miss.
++                    if image.placement.width == 0 || image.placement.height == 0 {
++                        continue;
++                    }
+                     let x = x.floor() as i64 + i64::from(image.placement.left);
+                     let mut y = y.floor() as i64 - i64::from(image.placement.top);
+                     if let Some(alignment) = alignment {
+--- a/crates/pert-ui-runtime/src/text/tabs.rs
++++ b/crates/pert-ui-runtime/src/text/tabs.rs
+@@ -290,21 +290,15 @@
+     /// The canvas the visible-ink policy defines for the pre-fix `reference`,
+     /// computed here independently of the implementation's bounds: Parley's
+     /// logical box, `width()` by `height()`, joined with the unphased raster
+-    /// placement of every glyph outside an atom of tabs alone, as the existing
+-    /// bounds calculation places it (an empty raster, as a space has, counts
+-    /// at its pen position). Icons are aligned vertically after shaping, so
+-    /// their glyphs give only horizontal bounds; the second value is whether
+-    /// every drawn glyph also gave vertical bounds. With `tab_ink`, the
+-    /// glyphs of tab-only atoms count too: the reference's own canvas.
++    /// placement of every glyph outside an atom of tabs alone whose raster
++    /// has area. A zero-area raster, as a space has, places nothing and adds
++    /// no bounds, not even its pen position. Icons are aligned vertically
++    /// after shaping, so their glyphs give only horizontal bounds; the second
++    /// value is whether every drawn glyph also gave vertical bounds. With
++    /// `tab_ink`, the glyphs of tab-only atoms count too: the reference's own
++    /// canvas. Without tabs, any layout is its own reference.
+     fn expected_canvas(reference: &TextLayout, text: &str, tab_ink: bool) -> ([i64; 4], bool) {
+         let shaped = &reference.shaped;
+-        let icons: Vec<usize> = reference
+-            .signature
+-            .runs
+-            .iter()
+-            .filter(|run| run.alignment.is_some())
+-            .map(|run| run.brush)
+-            .collect();
+         let mut bounds = [
+             0,
+             0,
+@@ -312,6 +306,41 @@
+             shaped.height().ceil() as i64,
+         ];
+         let mut vertical = true;
++        for placed in expected_placements(reference, text, tab_ink) {
++            bounds[0] = bounds[0].min(placed.rect[0]);
++            bounds[2] = bounds[2].max(placed.rect[2]);
++            if placed.icon {
++                vertical = false;
++            } else {
++                bounds[1] = bounds[1].min(placed.rect[1]);
++                bounds[3] = bounds[3].max(placed.rect[3]);
++            }
++        }
++        (bounds, vertical)
++    }
++    /// One raster [`expected_placements`] places.
++    struct Placed {
++        /// Physical `[left, top, right, bottom]` in Parley coordinates; an
++        /// icon's vertical extent is that of its unaligned raster.
++        rect: [i64; 4],
++        brush: usize,
++        icon: bool,
++    }
++    /// The unphased rasters with area that `reference` places, in the order
++    /// the lines, glyph runs and glyphs are visited: every glyph outside an
++    /// atom of tabs alone (with `tab_ink`, those too), skipping zero-area
++    /// rasters such as a space's. Computed with Swash directly, not through
++    /// the service.
++    fn expected_placements(reference: &TextLayout, text: &str, tab_ink: bool) -> Vec<Placed> {
++        let shaped = &reference.shaped;
++        let icons: Vec<usize> = reference
++            .signature
++            .runs
++            .iter()
++            .filter(|run| run.alignment.is_some())
++            .map(|run| run.brush)
++            .collect();
++        let mut placed = Vec::new();
+         let mut context = swash::scale::ScaleContext::new();
+         for line in shaped.lines() {
+             // Pen positions of the glyphs of atoms of tabs alone on this line.
+@@ -374,20 +403,25 @@
+                     else {
+                         continue;
+                     };
+-                    let left = glyph.x.floor() as i64 + i64::from(image.placement.left);
+-                    bounds[0] = bounds[0].min(left);
+-                    bounds[2] = bounds[2].max(left + i64::from(image.placement.width));
+-                    if icon {
+-                        vertical = false;
+-                    } else {
+-                        let top = glyph.y.floor() as i64 - i64::from(image.placement.top);
+-                        bounds[1] = bounds[1].min(top);
+-                        bounds[3] = bounds[3].max(top + i64::from(image.placement.height));
++                    if image.placement.width == 0 || image.placement.height == 0 {
++                        continue;
+                     }
++                    let left = glyph.x.floor() as i64 + i64::from(image.placement.left);
++                    let top = glyph.y.floor() as i64 - i64::from(image.placement.top);
++                    placed.push(Placed {
++                        rect: [
++                            left,
++                            top,
++                            left + i64::from(image.placement.width),
++                            top + i64::from(image.placement.height),
++                        ],
++                        brush,
++                        icon,
++                    });
+                 }
+             }
+         }
+-        (bounds, vertical)
++        placed
+     }
+     /// Asserts the repaired canvas is exactly the policy's, keeping the
+     /// reference's vertical extent, and returns whether the old tab ink alone
+@@ -1302,6 +1336,344 @@
+         }
+     }
+ 
++    /// A space and a hidden tab of the same advance both have no coverage, so
++    /// their layouts agree: size, origin and every public caret and selection
++    /// rectangle, wrapped or not, left to right or right to left.
++    #[test]
++    fn hanging_spaces_and_tabs_of_equal_advance_share_public_geometry() {
++        let texts = [
++            "aaaa\tbbbb\tcccc",
++            "\u{627}\u{628}\u{62c}\u{62f}\t\u{647}\u{648}\u{632}\u{62d}\t\u{637}\u{64a}",
++            "\u{5d0}\u{5d1}\u{5d2}\u{5d3}\t",
++            "\t\u{5d0}\u{5d1}",
++            "aaaa\t",
++            "\t\taaaa\t\t",
++            "abc\t\ndef\t\t",
++        ];
++        let rects = |layout: &TextLayout, selection: TextSelection| {
++            selection
++                .rectangles(layout)
++                .unwrap()
++                .iter()
++                .map(|r| r.values())
++                .collect::<Vec<_>>()
++        };
++        for scale in [1.0, 1.25] {
++            let (mut fixed, mut reference) = services();
++            for text in texts {
++                let twin = text.replace('\t', " ");
++                for width in [None, Some(38.0), Some(12.0)] {
++                    let style = TextStyle::Monospace;
++                    let tab = fixed.prepare(text, width, scale, style).unwrap();
++                    let space = fixed.prepare(&twin, width, scale, style).unwrap();
++                    let context = format!("{text:?} at {width:?}, scale {scale}");
++                    // The bundled monospace font gives both one cell.
++                    assert_eq!(tab.shaped.width(), space.shaped.width(), "{context}");
++                    // Each canvas is the independent one: the space's has no
++                    // tabs, so it is its own reference.
++                    let (policy, vertical) = expected_canvas(&space, &twin, true);
++                    assert!(vertical);
++                    assert_eq!(canvas(&space), policy, "{context}: space canvas");
++                    let expected = reference.prepare(text, width, scale, style).unwrap();
++                    assert_policy_canvas(&tab, &expected, text);
++                    assert_eq!(tab.size(), space.size(), "{context}");
++                    assert_eq!(tab.origin, space.origin, "{context}");
++                    for index in 0..=text.len() {
++                        let (a, b) = (
++                            TextSelection::snapped(&tab, index, index),
++                            TextSelection::snapped(&space, index, index),
++                        );
++                        assert_eq!(focus(a), focus(b), "{context} at {index}");
++                        assert_eq!(
++                            a.caret(&tab).unwrap(),
++                            b.caret(&space).unwrap(),
++                            "{context}: caret at {index}"
++                        );
++                        let collapse = crate::SelectionExtension::Collapse;
++                        let end = (
++                            a.moved(&tab, TextMovement::LineEnd, collapse),
++                            b.moved(&space, TextMovement::LineEnd, collapse),
++                        );
++                        assert_eq!(end.0.caret(&tab).unwrap(), end.1.caret(&space).unwrap());
++                    }
++                    assert_eq!(
++                        rects(&tab, TextSelection::snapped(&tab, 0, text.len())),
++                        rects(&space, TextSelection::snapped(&space, 0, text.len())),
++                        "{context}"
++                    );
++                    println!(
++                        "{context}: tab and space size {:?}, origin {:?}",
++                        [space.size().width(), space.size().height()],
++                        space.origin
++                    );
++                }
++            }
++        }
++    }
++
++    /// The independent placements' brush chunks: one mask part each.
++    fn expected_parts(placed: &[Placed]) -> usize {
++        placed.chunk_by(|a, b| a.brush == b.brush).count()
++    }
++
++    /// Zero-area rasters neither place a glyph nor extend the canvas, ink or
++    /// mask parts, in the default path and at phases without a vertical
++    /// offset. Parley's baselines are whole pixels, so the default path renders
++    /// a space 0 or 1 pixel wide and 0 high. A vertical phase offsets it by a
++    /// fraction, and Swash then renders the empty outline as one pixel of zero
++    /// coverage: that raster has area and stays placed, as
++    /// `phase_spaces_with_a_vertical_offset_place_one_blank_pixel` records.
++    #[test]
++    fn empty_rasters_place_nothing_in_bounds_ink_or_mask_parts() {
++        let red = Color::from_srgb8(220, 20, 20, 255);
++        let blue = Color::from_srgb8(20, 20, 220, 255);
++        let hebrew = "\u{5d0}\u{5d1}\u{5d2}";
++        let plain = [
++            " ",
++            "   ",
++            "\t ",
++            " \t \t",
++            "a ",
++            " a",
++            "  a  b  ",
++            "\u{5d0} ",
++            " \u{5d0}\u{5d1}",
++            "\u{5d0}\u{5d1} \u{5d2}  ",
++            "aaaa bbbb cccc",
++            "aaaa  bbbb   cccc ",
++            "\u{627}\u{628}\u{62c}\u{62f} \u{647}\u{648}\u{632}\u{62d} \u{637}\u{64a}",
++            "a\u{E000} b",
++            "x \u{301}y ",
++            "first line \nsecond  ",
++        ];
++        let mut contents: Vec<RichText> = plain.iter().map(|t| RichText::from(*t)).collect();
++        contents.extend([
++            // A space of another color between two same-colored glyphs no
++            // longer splits their mask.
++            RichText::new()
++                .span(TextSpan::new("a").color(red))
++                .span(TextSpan::new(" ").color(blue))
++                .span(TextSpan::new("b").color(red)),
++            RichText::new()
++                .text("a ")
++                .icon(Icon::Save)
++                .text(" ")
++                .gap()
++                .text(format!(" {hebrew} ")),
++            RichText::new().text(" ").icon(Icon::Close).text(" "),
++        ]);
++        let mut whitespace_only = 0;
++        for scale in [1.0, 1.25, 2.0] {
++            let (mut fixed, mut reference) = services();
++            let font = fixture(&mut fixed);
++            let reference_font = fixture(&mut reference);
++            let fixture_text = |font: &FontId| {
++                RichText::new()
++                    .span(TextSpan::new("A X\tB ").font(font.clone()))
++                    .text(" end ")
++            };
++            let mut cases: Vec<(RichText, RichText)> =
++                contents.iter().map(|c| (c.clone(), c.clone())).collect();
++            cases.push((fixture_text(&font), fixture_text(&reference_font)));
++            for (content, reference_content) in &cases {
++                let text = shaped_text(&fixed, content);
++                for width in [None, Some(38.0), Some(12.0)] {
++                    for style_size in [14.0, 26.0] {
++                        let prepare = |service: &mut TextService, content: &RichText| {
++                            service
++                                .prepare_rich(
++                                    content,
++                                    TextRequest::new(
++                                        TextStyle::Monospace,
++                                        style_size,
++                                        &Cell::new(0),
++                                    )
++                                    .width(width)
++                                    .scale(scale)
++                                    .inline(16.0, 6.0),
++                                )
++                                .unwrap()
++                        };
++                        let actual = prepare(&mut fixed, content);
++                        let expected = prepare(&mut reference, reference_content);
++                        let context = format!("{text:?} {width:?} size {style_size} scale {scale}");
++                        assert_policy_canvas(&actual, &expected, &text);
++                        let placed = expected_placements(&expected, &text, false);
++                        // Ink is the union of the placed rasters, or None.
++                        if placed.is_empty() {
++                            whitespace_only += 1;
++                            assert_eq!(actual.ink, None, "{context}");
++                            assert!(actual.parts.is_empty(), "{context}");
++                            for phase in [[1, 0], [2, 0], [3, 0]] {
++                                assert!(
++                                    fixed.phase_parts(&actual, phase).unwrap().is_empty(),
++                                    "{context}: phase {phase:?}"
++                                );
++                            }
++                            continue;
++                        }
++                        if placed.iter().all(|p| !p.icon) {
++                            let [left, top, ..] = canvas(&actual);
++                            let s = actual.scale;
++                            let mut ink = [i64::MAX, i64::MAX, i64::MIN, i64::MIN];
++                            for p in &placed {
++                                ink[0] = ink[0].min(p.rect[0]);
++                                ink[1] = ink[1].min(p.rect[1]);
++                                ink[2] = ink[2].max(p.rect[2]);
++                                ink[3] = ink[3].max(p.rect[3]);
++                            }
++                            let ink = [
++                                (ink[0] - left) as f32 / s,
++                                (ink[1] - top) as f32 / s,
++                                (ink[2] - left) as f32 / s,
++                                (ink[3] - top) as f32 / s,
++                            ];
++                            assert_eq!(actual.ink, Some(ink), "{context}");
++                        } else {
++                            assert!(actual.ink.is_some(), "{context}");
++                        }
++                        assert_eq!(actual.parts.len(), expected_parts(&placed), "{context}");
++                        for phase in [[1, 0], [2, 0], [3, 0]] {
++                            let parts = fixed.phase_parts(&actual, phase).unwrap();
++                            assert_eq!(
++                                parts.len(),
++                                expected_parts(&placed),
++                                "{context}: phase {phase:?}"
++                            );
++                            // Every phase part covers some pixel: none is a
++                            // blank canvas grown by an empty raster.
++                            for part in parts.iter() {
++                                assert!(part.image.pixels().iter().any(|v| *v != 0));
++                            }
++                        }
++                    }
++                }
++            }
++        }
++        assert!(whitespace_only > 0);
++        // The colored case: three placements, one brush chunk, one mask.
++        let (mut service, _) = services();
++        let colored = rich(&mut service, &contents[plain.len()], None, 1.0);
++        assert_eq!(colored.parts.len(), 1);
++        assert_eq!(colored.parts[0].brush, colored.signature.runs[0].brush);
++    }
++
++    /// The phase path caches a zero-area raster like any other, at zero
++    /// bytes, before skipping it: another line's miss finds it instead of
++    /// rendering the space again.
++    #[test]
++    fn zero_area_phase_glyphs_stay_cached_and_serve_later_line_misses() {
++        let (mut service, _) = services();
++        let style = TextStyle::Monospace;
++        let first = service.prepare("a b", None, 1.0, style).unwrap();
++        // The same cells: the space has the same glyph, size and phase.
++        let second = service.prepare("c d", None, 1.0, style).unwrap();
++        let empty = |service: &TextService| {
++            service
++                .phase_glyphs
++                .iter()
++                .filter(|(_, glyph)| {
++                    glyph.image.placement.width == 0 || glyph.image.placement.height == 0
++                })
++                .map(|(key, glyph)| (key.glyph, key.phase, glyph.image.data.len()))
++                .collect::<std::collections::BTreeSet<_>>()
++        };
++        // Without a vertical phase the space's raster has no area.
++        for phase in [[1, 0], [0, 0], [3, 0]] {
++            let bytes = service.phase_glyph_bytes;
++            let entries = service.phase_glyphs.len();
++            let before = empty(&service);
++            assert!(!service.phase_parts(&first, phase).unwrap().is_empty());
++            let cached = empty(&service);
++            let admitted: Vec<_> = cached.iter().filter(|key| !before.contains(key)).collect();
++            assert_eq!(admitted.len(), 1, "phase {phase:?}: the space is admitted");
++            assert_eq!(admitted[0].2, 0, "at zero bytes");
++            assert_eq!(service.phase_glyphs.len(), entries + 3);
++            let a_and_b = service.phase_glyph_bytes - bytes;
++            // Another line misses its phase-line entry; its two letters are
++            // new, its space is not.
++            let lines = service.phase_lines.len();
++            assert!(!service.phase_parts(&second, phase).unwrap().is_empty());
++            assert_eq!(service.phase_lines.len(), lines + 1);
++            assert_eq!(service.phase_glyphs.len(), entries + 5, "phase {phase:?}");
++            assert_eq!(empty(&service), cached);
++            // The first line again, its phase-line entry evicted: no glyph
++            // is admitted again.
++            service.phase_lines.clear();
++            let (order, total) = (service.phase_order.len(), service.phase_glyph_bytes);
++            assert!(!service.phase_parts(&first, phase).unwrap().is_empty());
++            assert_eq!(service.phase_order.len(), order);
++            assert_eq!(service.phase_glyph_bytes, total);
++            assert!(total - bytes > a_and_b);
++        }
++    }
++
++    /// The residue the zero-area test leaves: at a vertical phase a space
++    /// renders as one pixel of zero coverage, which is placed like any glyph.
++    /// It draws nothing and changes no public size or origin, which come from
++    /// the default path, but whitespace alone then has a blank phase mask.
++    #[test]
++    fn phase_spaces_with_a_vertical_offset_place_one_blank_pixel() {
++        let (mut service, _) = services();
++        for scale in [1.0, 1.25] {
++            let layout = service
++                .prepare("   ", None, scale, TextStyle::Monospace)
++                .unwrap();
++            assert!(layout.parts.is_empty());
++            assert_eq!(layout.ink, None);
++            for phase in [[1, 2], [2, 3], [3, 1], [0, 2]] {
++                let parts = service.phase_parts(&layout, phase).unwrap();
++                assert_eq!(parts.len(), 1, "scale {scale} phase {phase:?}");
++                assert!(parts[0].image.pixels().iter().all(|v| *v == 0));
++                let blank = service
++                    .phase_glyphs
++                    .values()
++                    .filter(|glyph| {
++                        let p = glyph.image.placement;
++                        (p.width, p.height, &glyph.image.data[..]) == (1, 1, &[0][..])
++                    })
++                    .count();
++                assert!(blank > 0, "scale {scale} phase {phase:?}");
++            }
++        }
++    }
++
++    /// Bundled icons are centered through their ink, which skipping empty
++    /// rasters cannot change: none of their glyphs rasterizes empty.
++    #[test]
++    fn bundled_icons_have_no_empty_raster_so_their_ink_is_unchanged() {
++        let (mut service, _) = services();
++        for icon in Icon::ALL {
++            for size in [16.0, 32.0, 64.0] {
++                for scale in [1.0, 1.25] {
++                    let layout = service
++                        .prepare_rich(
++                            &RichText::new().icon(*icon),
++                            TextRequest::new(TextStyle::Body, size, &Cell::new(0))
++                                .scale(scale)
++                                .inline(size, 0.0),
++                        )
++                        .unwrap();
++                    let text = shaped_text(&service, &RichText::new().icon(*icon));
++                    let placed = expected_placements(&layout, &text, true);
++                    let positioned = glyphs(&layout).len();
++                    assert!(positioned > 0);
++                    assert_eq!(placed.len(), positioned, "{icon:?} {size} {scale}");
++                    let [left, ..] = canvas(&layout);
++                    let ink = layout.ink.unwrap();
++                    let s = layout.scale;
++                    let min = placed.iter().map(|p| p.rect[0]).min().unwrap();
++                    let max = placed.iter().map(|p| p.rect[2]).max().unwrap();
++                    assert_eq!(
++                        [ink[0], ink[2]],
++                        [(min - left) as f32 / s, (max - left) as f32 / s],
++                        "{icon:?} {size} {scale}"
++                    );
++                }
++            }
++        }
++    }
++
+     #[test]
+     fn tab_only_text_has_no_coverage_but_its_advance_and_caret_stops() {
+         let (mut fixed, mut reference) = services();
+--- a/crates/pert-ui-runtime/src/text_fields.rs
++++ b/crates/pert-ui-runtime/src/text_fields.rs
+@@ -228,9 +228,8 @@
+ /// A multiline local text editor with monospace typography by default.
+ ///
+ /// Uses bundled Noto Sans Mono, a 320-pixel preferred width and six visible lines.
+-/// Soft wraps to its allocation and scrolls internally to reveal the caret,
+-/// except next to whitespace hanging past a wrapped line's end, as described
+-/// below; wheel scrolls the text. Enter inserts LF, Tab traverses focus. Pasted CRLF,
++/// Soft wraps to its allocation and scrolls internally to reveal the caret;
++/// wheel scrolls the text. Enter inserts LF, Tab traverses focus. Pasted CRLF,
+ /// CR, NEL, vertical tab, form feed and the Unicode line and paragraph
+ /// separators become LF, pasted tabs are kept and other pasted control
+ /// characters are dropped. Bound text accepts LF and tabs, but no other control
+@@ -246,18 +245,29 @@
+ /// printable text keeps that glyph, as [`TextLayout`](crate::TextLayout)
+ /// describes.
+ ///
+-/// Scrolling stays within the measured text extent,
+-/// [`TextLayout::size`](crate::TextLayout::size), plus the caret's width, and
+-/// that extent leaves out whitespace hanging past the end of a wrapped line.
+-/// A caret at such whitespace may therefore stay clipped at the viewport edge
+-/// instead of being revealed, for spaces and tabs alike: in left-to-right text
+-/// after End on that line or after typing the space or tab that hangs, and in
+-/// right-to-left text, where hanging whitespace lies at the left edge, at that
+-/// line's end. In wrapped right-to-left text the caret at the start of the
+-/// text, on the right edge, can likewise stay clipped. A hanging right-to-left
+-/// space can still be revealed where a tab is not, because its empty glyph
+-/// raster extends the measured size, as [`TextLayout`](crate::TextLayout)
+-/// describes. Only the view is affected; the selection keeps its offsets.
++/// Spaces and tabs that do not fit at the end of a wrapped line hang past
++/// it rather than wrapping: after the line in left-to-right text and before
++/// it in right-to-left text. The caret is drawn, revealed and reported to
++/// input methods inside the text's box instead, which spans the wider of the
++/// measured text, [`TextLayout::size`](crate::TextLayout::size), and the wrap
++/// width; so does the right-to-left caret on a line's right edge. Typing or
++/// holding Space at a full line therefore keeps the text still, and
++/// consecutive caret stops in hanging whitespace are drawn at the same edge.
++/// The selection keeps its offsets, and its fill and a composition underline
++/// over hanging whitespace keep their own geometry, clipped by the text area.
++/// Clicking the drawn caret places the caret at the text under the pointer,
++/// as anywhere else, which need not be the hanging position it was drawn for.
++///
++/// Horizontal scrolling, by caret reveal or the wheel, stays between zero
++/// and that box's width less the text area's, so only an unbreakable word
++/// wider than the area scrolls sideways, and a wheel step with nothing left
++/// to scroll is left to the enclosing view. At a fractional scale, where the
++/// measured size rounds whitespace that fills the last line up past the wrap
++/// width, the text can scroll by less than one physical pixel. In a text area
++/// narrower than the caret, the caret's end is shown. Arrangement, such as a
++/// resize, reveals the caret even while the field is unfocused; a wheel step
++/// between an edit and its paint keeps the scrolled offset instead of that
++/// edit's reveal.
+ ///
+ /// Text taller than the field shows the same vertical scrollbar as scroll areas,
+ /// views and windows: a track strip along the text's right edge with a thumb in
+@@ -269,12 +279,12 @@
+ /// clicking the track centers the thumb there and starts a drag. Release ends
+ /// dragging, and Escape or context loss cancels it at the current offset without
+ /// restoring the previous one. Scrolling never moves the caret or selection, and
+-/// the next caret movement, edit or resize reveals the caret again, within the
+-/// hanging-whitespace limit above. Scrolling
++/// the next caret movement, edit or resize reveals the caret again. Scrolling
+ /// repaints without remeasuring, and the pointer keeps the ordinary arrow over the
+ /// bar. A read-only field keeps its bar; a disabled one shows none, because it
+ /// does not scroll at all. Single-line fields scroll horizontally without a
+-/// scrollbar.
++/// scrollbar, by caret reveal and the wheel alike, up to one caret width past
++/// the measured text.
+ ///
+ /// Binding ownership and refused bindings, [`TextEditError::MAX_TEXT_BYTES`]/preparation limits,
+ /// selection, clipboard, undo, cancellation and scheduling follow `TextField`,
+@@ -1065,6 +1075,49 @@
+     layout: TextLayout,
+     inner: Rect,
+     origin: [f32; 2],
++    horizontal: Horizontal,
++}
++/// An editor's horizontal caret presentation and scroll range over one
++/// prepared layout. Arrange and paint compute it with that layout, and the
++/// wheel and input state reuse the stored value, so a newer selection is
++/// never measured against an older layout's range.
++#[derive(Clone, Copy, Debug, PartialEq)]
++struct Horizontal {
++    /// A wrapping editor's horizontal box in painted-text coordinates, from
++    /// zero to the larger of the layout's width and its wrap width. Whitespace
++    /// hanging past a wrapped line's end lies outside the layout's width, and
++    /// the displayed caret is pinned inside this box instead of scrolling the
++    /// text sideways to follow it. `None` when the editor does not wrap.
++    pin: Option<f32>,
++    /// The largest horizontal scroll offset; the smallest is zero. The extent
++    /// is the box for a wrapping editor and the layout's width plus the
++    /// caret's otherwise, less the viewport width.
++    max_scroll: f32,
++}
++impl Horizontal {
++    fn new(layout: &TextLayout, wrap: Option<f32>, caret_width: f32, viewport: f32) -> Self {
++        let width = layout.size().width();
++        let (pin, extent) = match wrap {
++            Some(wrap) => (Some(width.max(wrap)), width.max(wrap)),
++            None => (None, width + caret_width),
++        };
++        Self {
++            pin,
++            max_scroll: (extent - viewport).max(0.0),
++        }
++    }
++    /// The caret as displayed, revealed and anchored for input methods: a
++    /// wrapping editor clamps `caret`'s x into its box, less the caret's
++    /// width, so consecutive hanging caret stops share the box's end. The
++    /// selection itself, selection fills, composition underlines and hit
++    /// testing keep the unpinned geometry.
++    fn caret(self, caret: Rect) -> Result<Rect, crate::GeometryError> {
++        let Some(extent) = self.pin else {
++            return Ok(caret);
++        };
++        let [x, y, w, h] = caret.values();
++        Rect::new(x.clamp(0.0, (extent - w).max(0.0)), y, w, h)
++    }
+ }
+ #[derive(Clone)]
+ struct Snapshot<M> {
+@@ -2599,18 +2652,18 @@
+             (size.height() - 2.0 * py).max(0.0),
+         )?;
+         let inner = self.area.get().unwrap_or(inner);
+-        let layout = cx.text(
+-            &self.display().0,
+-            self.multi.then_some(inner.width().max(1.0)),
+-            self.style,
+-        )?;
++        let wrap = self.multi.then_some(inner.width().max(1.0));
++        let layout = cx.text(&self.display().0, wrap, self.style)?;
+         let caret = self.display_selection(&layout).caret(&layout)?;
++        let horizontal = Horizontal::new(&layout, wrap, caret.width(), inner.width());
++        // Arrangement reveals the caret whether or not the editor is focused.
+         self.reveal.set(true);
+-        let origin = self.position(&layout, inner, caret);
++        let origin = self.position(&layout, inner, horizontal.caret(caret)?, horizontal);
+         *self.prepared.borrow_mut() = Some(Prepared {
+             layout,
+             inner,
+             origin,
++            horizontal,
+         });
+         Ok(())
+     }
+@@ -2797,7 +2850,16 @@
+             && self.revealable
+             && self.reveal_rect.get().is_some_and(|r| r.contains(point))
+     }
+-    fn position(&self, layout: &TextLayout, inner: Rect, caret: Rect) -> [f32; 2] {
++    /// Applies a requested reveal of the displayed `caret` and clamps the
++    /// scroll offsets, returning the painted text origin. When the viewport is
++    /// narrower than the caret, the caret's end wins and its start is clipped.
++    fn position(
++        &self,
++        layout: &TextLayout,
++        inner: Rect,
++        caret: Rect,
++        horizontal: Horizontal,
++    ) -> [f32; 2] {
+         let [px, py, w, h] = inner.values();
+         let [x, y, cw, ch] = caret.values();
+         let mut scroll = self.scroll.get();
+@@ -2811,7 +2873,7 @@
+                 }
+             }
+         }
+-        scroll[0] = scroll[0].clamp(0.0, (layout.size().width() + cw - w).max(0.0));
++        scroll[0] = scroll[0].clamp(0.0, horizontal.max_scroll);
+         scroll[1] = scroll[1].clamp(0.0, (layout.size().height() - h).max(0.0));
+         self.scroll.set(scroll);
+         let spare = w - layout.size().width() - cw;
+@@ -2943,10 +3005,13 @@
+         let inner = self.area.get().unwrap_or(inner);
+         let [_, _, w, _] = inner.values();
+         let (text, composition) = self.display();
+-        let layout = p.text(&text, self.multi.then_some(w.max(1.0)), self.style)?;
++        let wrap = self.multi.then_some(w.max(1.0));
++        let layout = p.text(&text, wrap, self.style)?;
+         let selection = self.display_selection(&layout);
+         let caret = selection.caret(&layout)?;
+-        let origin = self.position(&layout, inner, caret);
++        let horizontal = Horizontal::new(&layout, wrap, caret.width(), w);
++        let caret = horizontal.caret(caret)?;
++        let origin = self.position(&layout, inner, caret, horizontal);
+         if !self.embedded {
+             field_frame(
+                 p,
+@@ -3072,6 +3137,7 @@
+             layout,
+             inner,
+             origin,
++            horizontal,
+         });
+         Ok(())
+     }
+@@ -3083,12 +3149,12 @@
+         }
+         let prepared = self.prepared.borrow();
+         let p = prepared.as_ref()?;
+-        let [x, y, w, h] = offset(
+-            self.display_selection(&p.layout).caret(&p.layout).ok()?,
+-            p.origin,
+-        )
+-        .ok()?
+-        .values();
++        // The current selection on the prepared layout, as before, pinned
++        // like the painted caret.
++        let caret = self.display_selection(&p.layout).caret(&p.layout).ok()?;
++        let [x, y, w, h] = offset(p.horizontal.caret(caret).ok()?, p.origin)
++            .ok()?
++            .values();
+         let [ix, iy, iw, ih] = p.inner.values();
+         let w = w.min(iw);
+         let h = h.min(ih);
+@@ -3500,18 +3566,21 @@
+             return self.open_menu(cx, local);
+         }
+         if let PointerKind::Scroll(delta) = e.kind() {
+-            let Some(p) = self
+-                .prepared
+-                .borrow()
+-                .as_ref()
+-                .map(|p| (p.layout.size(), p.inner.values()))
+-            else {
++            // The range the last arrangement or paint stored with its layout,
++            // the one caret reveal clamps to.
++            let Some((height, viewport, max_x)) = self.prepared.borrow().as_ref().map(|p| {
++                (
++                    p.layout.size().height(),
++                    p.inner.height(),
++                    p.horizontal.max_scroll,
++                )
++            }) else {
+                 return Ok(InputOutcome::Ignored);
+             };
+             let old = self.scroll.get();
+             let next = [
+-                (old[0] + delta.x()).clamp(0.0, (p.0.width() - p.1[2]).max(0.0)),
+-                (old[1] + delta.y()).clamp(0.0, (p.0.height() - p.1[3]).max(0.0)),
++                (old[0] + delta.x()).clamp(0.0, max_x),
++                (old[1] + delta.y()).clamp(0.0, (height - viewport).max(0.0)),
+             ];
+             if next == old {
+                 return Ok(InputOutcome::Ignored);
+--- a/crates/pert-ui-runtime/src/text_selection.rs
++++ b/crates/pert-ui-runtime/src/text_selection.rs
+@@ -161,6 +161,9 @@
+     /// [`SelectionExtension::Extend`] keeps the anchor. A point outside
+     /// [`TextLayout::size`] can still be over whitespace hanging past the end of
+     /// a wrapped line, as [`Self::caret`] describes, and places the caret there.
++    /// This is not the inverse of an editor's clamped caret: a point on a caret
++    /// a [`TextArea`](crate::TextArea) draws at its box's edge selects the text
++    /// under that point.
+     pub fn at_point(
+         self,
+         layout: &TextLayout,
+@@ -191,9 +194,9 @@
+     /// After whitespace hanging past the end of a wrapped line, spaces and tabs
+     /// alike, the rectangle can lie outside [`TextLayout::size`]: beyond its
+     /// right edge in left-to-right text, and at negative x in right-to-left
+-    /// text, where the hanging whitespace is on the left. In right-to-left text
+-    /// a hanging space can extend the size where a tab does not, so their
+-    /// coordinates can differ, as [`TextLayout`] describes.
++    /// text, where the hanging whitespace is on the left. A
++    /// [`TextArea`](crate::TextArea) draws its caret clamped into the text's
++    /// box there instead; this rectangle is the unclamped one.
+     ///
+     /// # Errors
+     /// Returns [`GeometryError::NonFinite`](crate::GeometryError::NonFinite) or
+--- a/crates/pert-ui/tests/editing/tab_whitespace.rs
++++ b/crates/pert-ui/tests/editing/tab_whitespace.rs
+@@ -2,8 +2,10 @@
+ //! caret movement, editing, clipboard and inspection keep U+0009, Tab traverses
+ //! focus, and the rendered tab is blank between its neighbors. In narrow
+ //! wrapped text a tab hanging past a line end adds no extent, so it behaves as
+-//! a hanging space: the editor gains no horizontal scroll range and
+-//! right-to-left positions move left by the width its mark used to add.
++//! a hanging space, left to right and right to left alike: the editor gains no
++//! horizontal scroll range, right-to-left positions move left by the width its
++//! mark used to add, and a caret after it is drawn at the edge of the text's
++//! box. `hanging_whitespace` covers that caret pin itself.
+ //!
+ //! Multiline paste keeping tabs and single-line paste mapping them to spaces
+ //! are `text_fields::pasted_control_characters_become_line_breaks_or_are_dropped`;
+@@ -358,17 +360,18 @@
+             Some([45.6, 6.0, 1.0, 20.0]),
+             vec![],
+         ),
+-        // After the hanging tab the caret is clipped; no scroll reveals it.
++        // After the hanging tab the caret is drawn at the inner area's end
++        // without scrolling; the selection fill keeps its own geometry.
+         (
+             "line end after the hanging whitespace",
+             "5..5",
+-            None,
++            Some([49.0, 6.0, 1.0, 20.0]),
+             vec![],
+         ),
+         (
+             "selection with the hanging whitespace",
+             "0..5",
+-            None,
++            Some([49.0, 6.0, 1.0, 20.0]),
+             vec![[12.0, 6.0, 38.0, 20.0]],
+         ),
+         ("text end", "14..14", Some([45.6, 45.0, 1.0, 20.0]), vec![]),
+@@ -389,7 +392,7 @@
+         assert_eq!(painted.scroll_x, number(0.0), "{name}");
+         assert!(near(painted.caret, caret), "{name}: {:?}", painted.caret);
+         assert_eq!(painted.selected, selected, "{name}");
+-        assert_eq!(revealed(painted.caret, *area), caret.is_some(), "{name}");
++        assert!(revealed(painted.caret, *area), "{name}");
+     }
+     // The hanging-space twin paints and scrolls the same at every step.
+     assert_eq!(tab, space);
+@@ -410,11 +413,16 @@
+     };
+     let tab = typed(&["aaaa", "\t", "b"]);
+     assert_eq!(tab, typed(&["aaaa", " ", "b"]));
+-    // The typed tab hangs at the end of the text and its caret is clipped
+-    // there, as a space's is; the next character wraps without moving the
+-    // text sideways.
++    // The typed tab hangs at the end of the text and its caret is drawn at the
++    // inner area's end, as a space's is; neither it nor the next character,
++    // which wraps, moves the text sideways.
+     assert_eq!(tab[1].selection, text("5..5"));
+-    assert_eq!(tab[1].caret, None);
++    assert_eq!(tab[1].scroll_x, number(0.0));
++    assert!(
++        near(tab[1].caret, Some([49.0, 6.0, 1.0, 20.0])),
++        "{:?}",
++        tab[1]
++    );
+     assert_eq!(tab[2].selection, text("6..6"));
+     assert_eq!(tab[2].scroll_x, number(0.0));
+     assert!(
+@@ -424,45 +432,95 @@
+     );
+ }
+ 
+-#[test]
+-fn a_narrow_right_to_left_text_area_keeps_its_hanging_tab_in_the_extent_of_a_space() {
+-    let text_value = "\u{627}\u{628}\u{62c}\u{62f}\t\u{647}\u{648}\u{632}\u{62d}\t\u{637}\u{64a}";
+-    let (mut ui, id) = narrow(text_value, 62.0);
++/// The right-to-left steps of the narrow-editor test: each label, then what
++/// the editor paints after it.
++fn rtl_steps(text: &str) -> Vec<(&'static str, Painted, [f32; 4])> {
++    let (mut ui, id) = narrow(text, 62.0);
++    let mut steps = Vec::new();
++    let mut step = |ui: &mut Runtime, name| {
++        let (painted, inner) = painted(ui);
++        steps.push((name, painted, inner));
++    };
+     with(&mut ui, KeyCode::primary(), KeyCode::Home);
++    step(&mut ui, "text start at the right edge");
+     // Left moves forward in right-to-left text.
+     key(&mut ui, KeyCode::ArrowLeft);
+     key(&mut ui, KeyCode::ArrowLeft);
+-    let (interior, inner) = painted(&mut ui);
+-    assert_eq!(inner, [12.0, 6.0, 38.0, 188.0]);
+-    assert_eq!(interior.selection, text("4..4"));
+-    assert!(revealed(interior.caret, inner), "{interior:?}");
++    step(&mut ui, "interior");
+     key(&mut ui, KeyCode::ArrowLeft);
+     key(&mut ui, KeyCode::ArrowLeft);
+-    let (before, _) = painted(&mut ui);
+-    assert_eq!(before.selection, text("8..8"));
+-    assert!(
+-        near(before.caret, Some([16.4, 6.0, 1.0, 20.0])),
+-        "{before:?}"
+-    );
+-    // The line end after the hanging tab is left of the inner area.
++    step(&mut ui, "before the hanging whitespace");
+     key(&mut ui, KeyCode::End);
+-    let (end, _) = painted(&mut ui);
+-    assert_eq!(end.selection, text("9..9"));
+-    assert_eq!(end.caret, None);
++    step(&mut ui, "line end after the hanging whitespace");
+     key(&mut ui, KeyCode::Home);
+     with(&mut ui, KeyCode::ShiftLeft, KeyCode::End);
+-    let (selected, _) = painted(&mut ui);
+-    assert_eq!(selected.selection, text("0..9"));
+-    assert_eq!(selected.selected, vec![[12.0, 6.0, 38.0, 20.0]]);
+-    // The last line's caret: the pre-fix origin placed it 3 pixels further
+-    // right, at 36.2.
++    step(&mut ui, "selection with the hanging whitespace");
+     with(&mut ui, KeyCode::primary(), KeyCode::End);
+-    let (last, _) = painted(&mut ui);
+-    assert_eq!(last.selection, text("22..22"));
+-    assert!(near(last.caret, Some([33.2, 45.0, 1.0, 20.0])), "{last:?}");
+-    assert!(revealed(last.caret, inner));
++    step(&mut ui, "text end");
+     scroll_sideways(&mut ui, &id);
+-    assert_eq!(painted(&mut ui).0.scroll_x, number(0.0));
++    step(&mut ui, "after a sideways scroll");
++    steps
++}
++
++#[test]
++fn a_narrow_right_to_left_text_area_keeps_its_hanging_tab_in_the_extent_of_a_space() {
++    let tab =
++        rtl_steps("\u{627}\u{628}\u{62c}\u{62f}\t\u{647}\u{648}\u{632}\u{62d}\t\u{637}\u{64a}");
++    let space =
++        rtl_steps("\u{627}\u{628}\u{62c}\u{62f} \u{647}\u{648}\u{632}\u{62d} \u{637}\u{64a}");
++    let inner = [12.0, 6.0, 38.0, 188.0];
++    let expected = [
++        // The start caret, on the right edge, is drawn at the inner end.
++        (
++            "text start at the right edge",
++            "0..0",
++            Some([49.0, 6.0, 1.0, 20.0]),
++            vec![],
++        ),
++        ("interior", "4..4", Some([33.2, 6.0, 1.0, 20.0]), vec![]),
++        (
++            "before the hanging whitespace",
++            "8..8",
++            Some([16.4, 6.0, 1.0, 20.0]),
++            vec![],
++        ),
++        // The line end after the hanging tab, left of the text's box, is
++        // drawn at the inner area's start.
++        (
++            "line end after the hanging whitespace",
++            "9..9",
++            Some([12.0, 6.0, 1.0, 20.0]),
++            vec![],
++        ),
++        (
++            "selection with the hanging whitespace",
++            "0..9",
++            Some([12.0, 6.0, 1.0, 20.0]),
++            vec![[12.0, 6.0, 38.0, 20.0]],
++        ),
++        // The last line's caret: the pre-fix tab origin placed it 3 pixels
++        // further right, at 36.2.
++        ("text end", "22..22", Some([33.2, 45.0, 1.0, 20.0]), vec![]),
++        (
++            "after a sideways scroll",
++            "22..22",
++            Some([33.2, 45.0, 1.0, 20.0]),
++            vec![],
++        ),
++    ];
++    assert_eq!(tab.len(), expected.len());
++    for ((name, painted, area), (label, range, caret, selected)) in tab.iter().zip(expected) {
++        assert_eq!(*name, label);
++        assert_eq!(*area, inner, "{name}");
++        assert_eq!(painted.selection, text(range), "{name}");
++        assert_eq!(painted.scroll_x, number(0.0), "{name}");
++        assert!(near(painted.caret, caret), "{name}: {:?}", painted.caret);
++        assert_eq!(painted.selected, selected, "{name}");
++        assert!(revealed(painted.caret, *area), "{name}");
++    }
++    // The hanging-space twin paints and scrolls the same at every step: an
++    // empty space raster no longer widens the text where the tab does not.
++    assert_eq!(tab, space);
+ }
+ 
+ #[test]
+@@ -484,9 +542,16 @@
+     frame(&mut ui);
+     let id = support::widget(&ui, &root, "text");
+     // The hanging tab adds no width: 37 pixels of ink in a 38-pixel
+-    // allocation, where its mark measured 40.
++    // allocation, where its mark measured 40. A hanging space, whose empty
++    // raster once measured 42, now measures the same.
+     let bounds = ui.bounds(&id).unwrap().unwrap();
+     assert_eq!(bounds.values(), [0.0, 0.0, 37.0, 59.0]);
++    let space = value.replace('\t', " ");
++    let twin = ui
++        .event(&id, |cx| cx.text(&space, Some(38.0), TextStyle::Monospace))
++        .unwrap()
++        .unwrap();
++    assert_eq!(twin.size(), Size::new(37.0, 59.0).unwrap());
+     let layout = ui
+         .event(&id, |cx| cx.text(value, Some(38.0), TextStyle::Monospace))
+         .unwrap()
+--- a/crates/pert-ui/tests/editing/main.rs
++++ b/crates/pert-ui/tests/editing/main.rs
+@@ -15,6 +15,7 @@
+ mod editor_permissions;
+ mod editor_sessions;
+ mod form_drafts;
++mod hanging_whitespace;
+ mod inline_controls;
+ mod inline_draft_editing;
+ mod input_adornments;
+--- a/crates/pert-ui/tests/editing/hanging_whitespace.rs
++++ b/crates/pert-ui/tests/editing/hanging_whitespace.rs
+@@ -0,0 +1,789 @@
++//! Whitespace hanging past the end of a wrapped line, through the public
++//! facade. A TextArea draws, reveals and anchors input methods at a caret
++//! pinned inside the text's horizontal box, from zero to the larger of the
++//! layout's width and the wrap width, so a hanging space or tab neither clips
++//! the caret nor scrolls the text sideways. The selection, its fill, the
++//! composition underline and hit testing keep their own unpinned geometry.
++//! Horizontal wheel scrolling and caret reveal share one range stored with
++//! the painted layout. Single-line editors cannot hang and keep their range,
++//! now shared by the wheel.
++//!
++//! Each test runs at scale 1 and a fractional scale. With the `cpu` feature,
++//! a visible caret is also proven in pixels: the pixels that change when the
++//! caret blinks lie inside the editor's text area.
++use crate::support;
++use pert_ui::testing::HostIntegration;
++use pert_ui::*;
++use std::time::Duration;
++use support::frame;
++
++const SCALES: [f64; 2] = [1.0, 1.25];
++/// The default density's control padding around an editor's text area.
++const PADDING: [f32; 2] = [12.0, 6.0];
++const ARABIC: &str = "\u{627}\u{628}\u{62c}\u{62f} \u{647}\u{648}\u{632}\u{62d} \u{637}\u{64a}";
++
++/// A runtime holding one focused editor keyed `field`.
++struct Field {
++    ui: Runtime,
++    id: WidgetId,
++    value: Signal<String>,
++    scale: f64,
++}
++fn mount(
++    width: f32,
++    scale: f64,
++    text: &str,
++    build: impl FnOnce(Signal<String>) -> Element,
++) -> Field {
++    let mut ui = Runtime::new();
++    ui.set_viewport(Viewport::new(width, 200.0, scale).unwrap())
++        .unwrap();
++    let value = ui.signal(text.to_owned());
++    let id = ui.mount_tree(build(value.clone())).unwrap();
++    ui.focus(&id).unwrap();
++    frame(&mut ui);
++    Field {
++        ui,
++        id,
++        value,
++        scale,
++    }
++}
++fn area(width: f32, scale: f64, text: &str, style: TextStyle) -> Field {
++    mount(width, scale, text, |value| {
++        Element::new("field", TextArea::new(value).style(style))
++    })
++}
++impl Field {
++    fn key(&mut self, code: KeyCode) {
++        support::key(&mut self.ui, code);
++        frame(&mut self.ui);
++    }
++    fn with(&mut self, modifier: KeyCode, code: KeyCode) {
++        self.ui.key_input(modifier, KeyAction::Press).unwrap();
++        self.key(code);
++        self.ui.key_input(modifier, KeyAction::Release).unwrap();
++    }
++    fn type_text(&mut self, text: &str) {
++        self.ui.text_input(text).unwrap();
++        frame(&mut self.ui);
++    }
++    /// One horizontal wheel step over the editor, painted.
++    fn wheel(&mut self, dx: f32) -> InputOutcome {
++        let outcome = self.wheel_unpainted(dx);
++        frame(&mut self.ui);
++        outcome
++    }
++    fn wheel_unpainted(&mut self, dx: f32) -> InputOutcome {
++        let [x, y, w, h] = self.ui.bounds(&self.id).unwrap().unwrap().values();
++        let center = Point::new(x + w / 2.0, y + h / 2.0).unwrap();
++        self.ui
++            .pointer_input(PointerEvent::new(center, PointerKind::Move))
++            .unwrap();
++        self.ui
++            .pointer_input(PointerEvent::new(
++                center,
++                PointerKind::Scroll(Point::new(dx, 0.0).unwrap()),
++            ))
++            .unwrap()
++    }
++    fn property(&self, key: &str) -> InspectValue {
++        self.ui
++            .inspect()
++            .components
++            .iter()
++            .find(|c| c.key == "field")
++            .unwrap()
++            .details
++            .properties[key]
++            .clone()
++    }
++    fn scroll_x(&self) -> f32 {
++        match self.property("scroll_x") {
++            InspectValue::Number(value) => value as f32,
++            other => panic!("scroll_x {other:?}"),
++        }
++    }
++    fn selection(&self) -> String {
++        match self.property("selection") {
++            InspectValue::Text(value) => value,
++            other => panic!("selection {other:?}"),
++        }
++    }
++    /// The editor's text area in window coordinates, from its bounds and the
++    /// active control padding, halved in an allocation too small for it.
++    fn inner(&self) -> [f32; 4] {
++        let [x, y, w, h] = self.ui.bounds(&self.id).unwrap().unwrap().values();
++        let theme = self.ui.theme();
++        let metrics = theme.metrics(theme.density().unwrap()).unwrap();
++        let [px, py] = [
++            metrics.metric(MetricRole::ControlPaddingX).min(w / 2.0),
++            metrics.metric(MetricRole::ControlPaddingY).min(h / 2.0),
++        ];
++        [
++            x + px,
++            y + py,
++            (w - 2.0 * px).max(0.0),
++            (h - 2.0 * py).max(0.0),
++        ]
++    }
++    /// The editor's prepared text at its current wrap width, through the
++    /// public layout.
++    fn layout(&mut self, text: &str, style: TextStyle) -> TextLayout {
++        let wrap = self.inner()[2].max(1.0);
++        self.ui
++            .event(&self.id, |cx| cx.text(text, Some(wrap), style))
++            .unwrap()
++            .unwrap()
++    }
++    /// What the editor shows now.
++    fn seen(&mut self) -> Seen {
++        let palette = Palette::dark();
++        let (caret, highlight, underline) = (
++            palette.color(ColorRole::OnSurface),
++            palette.color(ColorRole::TextSelection),
++            palette.color(ColorRole::Primary),
++        );
++        let (mut carets, mut selected, mut underlines) = (Vec::new(), Vec::new(), Vec::new());
++        for command in self.ui.paint().unwrap().commands() {
++            match command {
++                DrawCommand::FillRect { rect, color } if *color == caret => {
++                    carets.push(rect.values())
++                }
++                DrawCommand::FillRect { rect, color } if *color == highlight => {
++                    selected.push(rect.values())
++                }
++                DrawCommand::FillRect { rect, color }
++                    if *color == underline && rect.height() == 1.0 =>
++                {
++                    underlines.push(rect.values())
++                }
++                _ => {}
++            }
++        }
++        assert!(carets.len() <= 1, "{carets:?}");
++        Seen {
++            selection: self.selection(),
++            scroll_x: self.scroll_x(),
++            caret: carets.first().copied(),
++            selected,
++            underlines,
++            ime: self
++                .ui
++                .text_input_state()
++                .map(|(_, state)| state.caret.values()),
++        }
++    }
++    /// Asserts a whole caret is drawn inside the text area, the input-method
++    /// anchor is that rectangle and, with the `cpu` feature, that the pixels
++    /// it changes lie inside the text area too. Returns the drawn caret.
++    #[track_caller]
++    fn assert_caret_visible(&mut self, context: &str) -> [f32; 4] {
++        let seen = self.seen();
++        let [ix, iy, iw, ih] = self.inner();
++        let Some(caret @ [x, y, w, h]) = seen.caret else {
++            panic!("{context}: no caret drawn: {seen:?}");
++        };
++        let e = 1e-3;
++        assert!(
++            (w - 1.0).abs() < e
++                && x >= ix - e
++                && x + w <= ix + iw + e
++                && y >= iy - e
++                && y + h <= iy + ih + e,
++            "{context}: caret {caret:?} outside {:?}",
++            [ix, iy, iw, ih]
++        );
++        assert!(
++            seen.ime.is_some_and(|ime| near(ime, caret)),
++            "{context}: input-method anchor {:?} for {caret:?}",
++            seen.ime
++        );
++        #[cfg(feature = "cpu")]
++        {
++            let s = self.scale;
++            let [x0, y0, x1, y1] = self
++                .blink_pixels()
++                .unwrap_or_else(|| panic!("{context}: no caret pixel visible"));
++            let floor = |v: f32| (f64::from(v) * s).floor() as u32;
++            let ceil = |v: f32| (f64::from(v) * s).ceil() as u32;
++            assert!(
++                x0 >= floor(ix) && x1 <= ceil(ix + iw) && y0 >= floor(iy) && y1 <= ceil(iy + ih),
++                "{context}: caret pixels {:?} outside the text area",
++                [x0, y0, x1, y1]
++            );
++            assert!(
++                x0 >= floor(x) && x1 <= ceil(x + w),
++                "{context}: caret pixels {:?} away from the caret {caret:?}",
++                [x0, y0, x1, y1]
++            );
++        }
++        caret
++    }
++    /// The physical bounding box `[x0, y0, x1, y1)` of the pixels one caret
++    /// blink changes, then the caret blinks back.
++    #[cfg(feature = "cpu")]
++    fn blink_pixels(&mut self) -> Option<[u32; 4]> {
++        let shown = self.render();
++        self.ui
++            .flush(self.ui.now() + Duration::from_millis(500))
++            .unwrap();
++        let hidden = self.render();
++        self.ui
++            .flush(self.ui.now() + Duration::from_millis(500))
++            .unwrap();
++        frame(&mut self.ui);
++        changed(&shown, &hidden)
++    }
++    #[cfg(feature = "cpu")]
++    fn render(&mut self) -> FrameImage {
++        let scene = self.ui.paint().unwrap();
++        pert_ui::cpu::CpuRenderer::new().render(&scene).unwrap()
++    }
++}
++/// The physical bounding box of the pixels that differ between two frames.
++#[cfg(feature = "cpu")]
++fn changed(a: &FrameImage, b: &FrameImage) -> Option<[u32; 4]> {
++    assert_eq!((a.width(), a.height()), (b.width(), b.height()));
++    let mut bounds: Option<[u32; 4]> = None;
++    for (index, (p, q)) in a.pixels().chunks(4).zip(b.pixels().chunks(4)).enumerate() {
++        if p != q {
++            let (x, y) = (index as u32 % a.width(), index as u32 / a.width());
++            let b = bounds.get_or_insert([x, y, x + 1, y + 1]);
++            *b = [b[0].min(x), b[1].min(y), b[2].max(x + 1), b[3].max(y + 1)];
++        }
++    }
++    bounds
++}
++/// What an editor shows: its inspected selection and horizontal offset, the
++/// caret, selection and composition fills, and the input-method anchor, all
++/// in window coordinates.
++#[derive(Clone, Debug, PartialEq)]
++struct Seen {
++    selection: String,
++    scroll_x: f32,
++    caret: Option<[f32; 4]>,
++    selected: Vec<[f32; 4]>,
++    underlines: Vec<[f32; 4]>,
++    ime: Option<[f32; 4]>,
++}
++fn near(a: [f32; 4], b: [f32; 4]) -> bool {
++    a.iter().zip(&b).all(|(a, b)| (a - b).abs() < 1e-3)
++}
++/// The horizontal offset left when whitespace at the end of the text fills
++/// its line to the wrap width: Parley measures that line as wide as the wrap
++/// width, and the measured size rounds it up to whole physical pixels. Zero
++/// unless the wrap width is a fractional number of physical pixels.
++fn rounding(wrap: f32, scale: f64) -> f32 {
++    let physical = f64::from(wrap) * scale;
++    ((physical.ceil() - physical) / scale) as f32
++}
++
++#[test]
++fn hanging_line_ends_draw_a_pinned_caret_inside_the_text_area() {
++    for scale in SCALES {
++        for text in ["aaaa bbbb cccc", "aaaa\tbbbb\tcccc"] {
++            let mut f = area(62.0, scale, text, TextStyle::Monospace);
++            let context = format!("{text:?} at scale {scale}");
++            let [ix, _, iw, _] = f.inner();
++            assert_eq!([ix, iw], [12.0, 38.0]);
++            f.with(KeyCode::primary(), KeyCode::Home);
++            f.key(KeyCode::End);
++            // The line end after the hanging whitespace, at 54 unpinned.
++            assert_eq!(f.selection(), "5..5", "{context}");
++            let caret = f.assert_caret_visible(&format!("{context}: End"));
++            assert!(near(caret, [49.0, 6.0, 1.0, 20.0]), "{context}: {caret:?}");
++            assert_eq!(f.scroll_x(), 0.0, "{context}");
++            // Extending through the whitespace: the fill is the selection's
++            // own geometry, clipped at the text area.
++            f.key(KeyCode::Home);
++            f.with(KeyCode::ShiftLeft, KeyCode::End);
++            let seen = f.seen();
++            assert_eq!(seen.selection, "0..5", "{context}");
++            assert_eq!(seen.selected, vec![[12.0, 6.0, 38.0, 20.0]], "{context}");
++            f.assert_caret_visible(&format!("{context}: Shift+End"));
++            // Hit testing keeps the canonical rule: clicking the drawn caret
++            // gives the offset the public layout gives at that point, which
++            // is not the pinned hanging offset.
++            let point = Point::new(caret[0] + 0.5, caret[1] + 10.0).unwrap();
++            for kind in [
++                PointerKind::Move,
++                PointerKind::Press(PointerButton::Primary),
++                PointerKind::Release(PointerButton::Primary),
++            ] {
++                f.ui.pointer_input(PointerEvent::new(point, kind)).unwrap();
++            }
++            frame(&mut f.ui);
++            let layout = f.layout(text, TextStyle::Monospace);
++            let local = Point::new(point.x() - ix, point.y() - 6.0).unwrap();
++            let hit =
++                TextSelection::default().at_point(&layout, local, SelectionExtension::Collapse);
++            assert_eq!(f.selection(), format!("{0}..{0}", hit.focus_byte()));
++            assert_eq!(
++                f.selection(),
++                "4..4",
++                "{context}: the click lands before the space"
++            );
++            f.ui.flush(f.ui.now() + Duration::from_secs(2)).unwrap();
++            // The literal bytes are untouched.
++            assert_eq!(f.value.get().unwrap(), text);
++        }
++    }
++}
++
++#[test]
++fn right_to_left_hanging_whitespace_and_the_right_edge_start_show_the_caret() {
++    for scale in SCALES {
++        for text in [ARABIC.to_owned(), ARABIC.replace(' ', "\t")] {
++            let mut f = area(62.0, scale, &text, TextStyle::Monospace);
++            let context = format!("{text:?} at scale {scale}");
++            // The start caret is at the box's right edge, pinned one caret
++            // width inside it.
++            f.with(KeyCode::primary(), KeyCode::Home);
++            let caret = f.assert_caret_visible(&format!("{context}: start"));
++            assert!(near(caret, [49.0, 6.0, 1.0, 20.0]), "{context}: {caret:?}");
++            // Left moves forward; End is past the hanging whitespace on the
++            // left, at negative x unpinned.
++            f.key(KeyCode::End);
++            assert_eq!(f.selection(), "9..9", "{context}");
++            let caret = f.assert_caret_visible(&format!("{context}: End"));
++            assert!(near(caret, [12.0, 6.0, 1.0, 20.0]), "{context}: {caret:?}");
++            f.key(KeyCode::Home);
++            f.with(KeyCode::ShiftLeft, KeyCode::End);
++            let seen = f.seen();
++            assert_eq!(seen.selected, vec![[12.0, 6.0, 38.0, 20.0]], "{context}");
++            f.assert_caret_visible(&format!("{context}: Shift+End"));
++            f.with(KeyCode::primary(), KeyCode::End);
++            let caret = f.assert_caret_visible(&format!("{context}: text end"));
++            // The space no longer widens the text: its twin's caret is the
++            // tab's, where the old empty raster moved it to 37.2.
++            assert!(
++                near(caret, [33.2, 45.0, 1.0, 20.0]) || scale != 1.0,
++                "{caret:?}"
++            );
++            assert_eq!(f.scroll_x(), 0.0, "{context}");
++            assert_eq!(f.wheel(40.0), InputOutcome::Ignored, "{context}");
++        }
++    }
++}
++
++#[test]
++fn typing_and_holding_space_at_a_full_line_keeps_the_text_still() {
++    // The second width's wrap is a whole number of physical pixels at both
++    // scales; the first's is not at 1.25.
++    for scale in SCALES {
++        for width in [62.0, 64.0] {
++            for space in [" ", "\t"] {
++                let mut f = area(width, scale, "", TextStyle::Monospace);
++                let wrap = f.inner()[2];
++                let context = format!("{space:?} width {width} scale {scale}");
++                f.type_text("aaaa");
++                assert_eq!(f.scroll_x(), 0.0, "{context}");
++                let end = wrap + PADDING[0] - 1.0;
++                let mut offsets = Vec::new();
++                for count in 1..=6 {
++                    f.type_text(space);
++                    let caret = f.assert_caret_visible(&format!("{context}: {count} hanging"));
++                    offsets.push(f.scroll_x());
++                    // Pinned at the box's end, which may exceed the text area
++                    // by the measured size's rounding.
++                    assert!(
++                        near(caret, [end, caret[1], 1.0, 20.0]),
++                        "{context}: {caret:?}"
++                    );
++                }
++                // Held whitespace never slides the text: one offset for all.
++                let residual = rounding(wrap, scale);
++                assert!(
++                    offsets.iter().all(|o| (o - residual).abs() < 1e-3),
++                    "{context}: {offsets:?}, rounding {residual}"
++                );
++                if (f64::from(wrap) * scale).fract() == 0.0 {
++                    assert_eq!(residual, 0.0);
++                }
++                f.type_text("b");
++                f.assert_caret_visible(&format!("{context}: wrapped b"));
++                assert_eq!(f.scroll_x(), 0.0, "{context}");
++                assert_eq!(f.selection(), "11..11");
++            }
++        }
++    }
++}
++
++#[test]
++fn typing_prose_keeps_the_text_still_at_every_soft_wrap() {
++    for scale in SCALES {
++        // One proportional width where a typed space hangs and where a word
++        // nearly fills its line.
++        let mut f = area(79.0, scale, "", TextStyle::Body);
++        let wrap = f.inner()[2];
++        let mut offsets = Vec::new();
++        for character in "one two three four five six seven".chars() {
++            f.type_text(&character.to_string());
++            f.assert_caret_visible(&format!("{character:?} at scale {scale}"));
++            offsets.push(f.scroll_x());
++        }
++        let residual = rounding(wrap, scale);
++        assert!(
++            offsets
++                .iter()
++                .all(|o| *o == 0.0 || (o - residual).abs() < 1e-3),
++            "scale {scale}: {offsets:?}"
++        );
++        if scale == 1.0 {
++            assert!(offsets.iter().all(|o| *o == 0.0), "{offsets:?}");
++        }
++    }
++}
++
++#[test]
++fn the_wheel_and_caret_reveal_share_one_nonnegative_range() {
++    for scale in SCALES {
++        // A wrapped line within a pixel of the wrap width, which nothing
++        // overflows: no horizontal range, so the wheel propagates.
++        let mut f = area(58.0, scale, "aaaa", TextStyle::Monospace);
++        f.with(KeyCode::primary(), KeyCode::End);
++        let caret = f.assert_caret_visible("nearly full");
++        assert!(near(caret, [45.0, 6.0, 1.0, 20.0]), "{caret:?}");
++        assert_eq!(f.scroll_x(), 0.0);
++        assert_eq!(f.wheel(40.0), InputOutcome::Ignored);
++        assert_eq!(f.wheel(-40.0), InputOutcome::Ignored);
++        f.assert_caret_visible("nearly full after the wheel");
++
++        // Hanging whitespace adds no range either.
++        let mut f = area(62.0, scale, "aaaa bbbb", TextStyle::Monospace);
++        f.with(KeyCode::primary(), KeyCode::Home);
++        f.key(KeyCode::End);
++        assert_eq!(f.wheel(40.0), InputOutcome::Ignored);
++        assert_eq!(f.wheel(-40.0), InputOutcome::Ignored);
++
++        // An unbreakable word overflows: reveal and the wheel stop at the same
++        // end, and the start is zero.
++        let word = "a".repeat(20);
++        let mut f = area(62.0, scale, &word, TextStyle::Monospace);
++        f.with(KeyCode::primary(), KeyCode::End);
++        f.assert_caret_visible("overflow end");
++        let end = f.scroll_x();
++        assert!(end > 100.0, "{end}");
++        let size = f.layout(&word, TextStyle::Monospace).size().width();
++        assert_eq!(end, size - f.inner()[2], "scale {scale}");
++        assert_eq!(f.wheel(40.0), InputOutcome::Ignored, "already at the end");
++        assert_eq!(f.scroll_x(), end);
++        assert_eq!(f.wheel(-1000.0), InputOutcome::Handled);
++        assert_eq!(f.scroll_x(), 0.0);
++        assert_eq!(
++            f.wheel(-40.0),
++            InputOutcome::Ignored,
++            "already at the start"
++        );
++        assert_eq!(f.seen().caret, None, "scrolled away from the caret");
++        assert_eq!(f.wheel(1000.0), InputOutcome::Handled);
++        assert_eq!(f.scroll_x(), end);
++        f.wheel(-1000.0);
++        // A caret movement reveals the caret again.
++        f.key(KeyCode::ArrowLeft);
++        f.key(KeyCode::ArrowRight);
++        assert_eq!(f.scroll_x(), end);
++        f.assert_caret_visible("revealed again");
++    }
++}
++
++#[test]
++fn single_line_reveal_and_the_wheel_share_the_caret_width_range() {
++    for scale in SCALES {
++        let text = "single line text that overflows";
++        let mut f = mount(120.0, scale, text, |value| {
++            Element::new("field", TextField::new(value))
++        });
++        f.with(KeyCode::primary(), KeyCode::Home);
++        f.assert_caret_visible("home");
++        assert_eq!(f.scroll_x(), 0.0);
++        f.key(KeyCode::End);
++        let caret = f.assert_caret_visible("end");
++        let end = f.scroll_x();
++        let size =
++            f.ui.event(&f.id, |cx| cx.text(text, None, TextStyle::Body))
++                .unwrap()
++                .unwrap()
++                .size()
++                .width();
++        // The single-line range keeps its caret-width allowance: it ends one
++        // caret width past the measured size, which rounds the ink up to
++        // whole pixels, so End reveals the caret at or before that end.
++        let max = size + 1.0 - f.inner()[2];
++        assert!(end > 0.0 && end <= max + 1e-3, "{end} of {max}");
++        // The wheel scrolls within that same range, never back below the
++        // revealed offset as it once did; at its end it propagates.
++        let outcome = f.wheel(40.0);
++        assert_eq!(
++            outcome == InputOutcome::Handled,
++            end < max,
++            "{end} of {max}"
++        );
++        assert!((f.scroll_x() - max).abs() < 1e-3);
++        assert_eq!(f.wheel(40.0), InputOutcome::Ignored);
++        assert!(f.seen().caret.is_some_and(|c| c[1] == caret[1]));
++        assert_eq!(f.wheel(-1000.0), InputOutcome::Handled);
++        assert_eq!(f.scroll_x(), 0.0);
++        assert_eq!(f.wheel(-40.0), InputOutcome::Ignored);
++        assert_eq!(f.wheel(1000.0), InputOutcome::Handled);
++        assert!((f.scroll_x() - max).abs() < 1e-3);
++        f.assert_caret_visible("wheeled to the end");
++        // Typed trailing spaces cannot hang in a single line: they scroll.
++        f.type_text("   ");
++        f.assert_caret_visible("trailing spaces");
++        assert!(f.scroll_x() > end);
++        assert_eq!(f.value.get().unwrap(), format!("{text}   "));
++    }
++}
++
++#[test]
++fn a_wheel_before_the_next_paint_still_cancels_an_edit_s_pending_reveal() {
++    for scale in SCALES {
++        let word = "a".repeat(20);
++        let mut f = area(62.0, scale, &word, TextStyle::Monospace);
++        f.with(KeyCode::primary(), KeyCode::End);
++        let end = f.scroll_x();
++        // The edit's reveal waits for the next paint; the wheel comes first,
++        // within the range the last paint stored.
++        f.ui.text_input("b").unwrap();
++        assert_eq!(f.wheel_unpainted(-40.0), InputOutcome::Handled);
++        frame(&mut f.ui);
++        assert_eq!(f.selection(), "21..21");
++        assert_eq!(f.scroll_x(), end - 40.0);
++        assert_eq!(f.seen().caret, None, "the reveal was cancelled");
++        f.key(KeyCode::ArrowLeft);
++        f.key(KeyCode::ArrowRight);
++        f.assert_caret_visible("revealed by the next movement");
++        assert!(f.scroll_x() > end);
++    }
++}
++
++#[test]
++fn tiny_and_zero_text_areas_keep_a_valid_range_and_the_caret_end_wins() {
++    for scale in SCALES {
++        // Text areas 0, 0.5, 1 and 2 pixels wide, and one whose padding is
++        // halved.
++        for width in [24.0, 24.5, 25.0, 26.0, 20.0] {
++            let mut f = area(width, scale, "aa bb", TextStyle::Monospace);
++            let [ix, _, iw, _] = f.inner();
++            let layout = f.layout("aa bb", TextStyle::Monospace);
++            let box_width = layout.size().width().max(iw.max(1.0));
++            let collapse = SelectionExtension::Collapse;
++            let start = TextSelection::new(&layout, 0, 0).unwrap();
++            let line_end = start.moved(&layout, TextMovement::LineEnd, collapse);
++            let text_end = start.moved(&layout, TextMovement::End, collapse);
++            for (step, offset, selection) in [
++                ("start", 0, start),
++                ("line end", 3, line_end),
++                ("text end", 5, text_end),
++            ] {
++                match step {
++                    "start" => f.with(KeyCode::primary(), KeyCode::Home),
++                    "line end" => f.key(KeyCode::End),
++                    _ => f.with(KeyCode::primary(), KeyCode::End),
++                }
++                let context = format!("width {width} scale {scale}: {step}");
++                assert_eq!(f.selection(), format!("{offset}..{offset}"), "{context}");
++                assert_eq!(selection.focus_byte(), offset);
++                let canonical = selection.caret(&layout).unwrap();
++                let pinned = canonical.x().clamp(0.0, box_width - 1.0);
++                let scroll = f.scroll_x();
++                assert!(scroll.is_finite() && scroll >= 0.0, "{context}: {scroll}");
++                if iw < 1.0 {
++                    // The caret's end stays in view and its start is clipped.
++                    assert!(
++                        (scroll - (pinned + 1.0 - iw).max(0.0)).abs() < 1e-3,
++                        "{context}: {scroll} for a caret at {pinned}"
++                    );
++                }
++                let seen = f.seen();
++                if iw == 0.0 {
++                    assert_eq!(seen.caret, None, "{context}: nothing to show");
++                } else if iw < 1.0 {
++                    // The visible part is the caret's end, filling the area.
++                    let caret = seen.caret.unwrap_or_else(|| panic!("{context}"));
++                    assert!(
++                        near(caret, [ix, caret[1], iw, caret[3]]),
++                        "{context}: {caret:?}"
++                    );
++                } else {
++                    f.assert_caret_visible(&context);
++                }
++            }
++        }
++    }
++}
++
++#[test]
++fn a_read_only_text_area_shows_its_selection_fill_over_hanging_whitespace() {
++    for scale in SCALES {
++        let mut f = mount(62.0, scale, "aaaa bbbb cccc", |value| {
++            Element::new(
++                "field",
++                TextArea::new(value).style(TextStyle::Monospace).read_only(),
++            )
++        });
++        #[cfg(feature = "cpu")]
++        let plain = f.render();
++        f.with(KeyCode::primary(), KeyCode::KeyA);
++        let seen = f.seen();
++        assert_eq!(seen.selection, "0..14");
++        assert_eq!(seen.caret, None, "a read-only field draws no caret");
++        assert_eq!(seen.scroll_x, 0.0);
++        assert_eq!(seen.selected[0], [12.0, 6.0, 38.0, 20.0]);
++        assert_eq!(seen.selected.len(), 3);
++        #[cfg(feature = "cpu")]
++        {
++            // The fill's pixels: inside the text area, from its first line.
++            let [x0, y0, x1, y1] = changed(&plain, &f.render()).expect("a visible fill");
++            let s = scale;
++            assert_eq!(x0, (12.0 * s).floor() as u32);
++            assert_eq!(y0, (6.0 * s).floor() as u32);
++            assert!(x1 <= (50.0 * s).ceil() as u32 && y1 <= (194.0 * s).ceil() as u32);
++        }
++    }
++}
++
++#[test]
++fn resizing_restyling_and_rescaling_keep_the_pinned_caret_visible() {
++    for scale in SCALES {
++        let mut ui = Runtime::new();
++        ui.set_viewport(Viewport::new(62.0, 200.0, scale).unwrap())
++            .unwrap();
++        let value = ui.signal("aaaa bbbb cccc".to_owned());
++        let style = ui.signal(TextStyle::Monospace);
++        let text = value.clone();
++        let root = ui
++            .mount_tree(Element::new(
++                "dynamic",
++                Dynamic::new(style.read_only(), move |_, style| {
++                    Element::new("field", TextArea::new(text.clone()).style(*style))
++                }),
++            ))
++            .unwrap();
++        frame(&mut ui);
++        let id = support::widget(&ui, &root, "field");
++        ui.focus(&id).unwrap();
++        frame(&mut ui);
++        let mut f = Field {
++            ui,
++            id,
++            value,
++            scale,
++        };
++        f.with(KeyCode::primary(), KeyCode::Home);
++        f.key(KeyCode::End);
++        f.assert_caret_visible("hanging line end");
++        let other = if scale == 1.0 { 1.25 } else { 1.0 };
++        for name in [
++            "widened, nothing hangs",
++            "narrowed again",
++            "compact density",
++            "other scale",
++        ] {
++            match name {
++                "widened, nothing hangs" => {
++                    f.ui.set_viewport(Viewport::new(200.0, 200.0, scale).unwrap())
++                        .unwrap()
++                }
++                "narrowed again" => {
++                    f.ui.set_viewport(Viewport::new(62.0, 200.0, scale).unwrap())
++                        .unwrap()
++                }
++                "compact density" => {
++                    f.ui.theme().set_density(Density::Compact).unwrap();
++                }
++                _ => {
++                    f.ui.set_viewport(Viewport::new(62.0, 200.0, other).unwrap())
++                        .unwrap();
++                    f.scale = other;
++                }
++            }
++            frame(&mut f.ui);
++            f.assert_caret_visible(&format!("scale {scale}: {name}"));
++            assert_eq!(f.selection(), "5..5", "{name}");
++            assert!(
++                f.scroll_x() <= rounding(f.inner()[2], f.scale) + 1e-3,
++                "{name}"
++            );
++        }
++        style.set(TextStyle::Body).unwrap();
++        frame(&mut f.ui);
++        f.ui.focus(&f.id).unwrap();
++        frame(&mut f.ui);
++        f.assert_caret_visible(&format!("scale {scale}: restyled"));
++        assert_eq!(f.value.get().unwrap(), "aaaa bbbb cccc");
++    }
++}
++
++#[test]
++fn composition_pins_the_caret_and_anchor_but_not_the_underline() {
++    for scale in SCALES {
++        let mut f = area(62.0, scale, "aaaa", TextStyle::Monospace);
++        f.with(KeyCode::primary(), KeyCode::End);
++        f.ui.text_preedit(&TextPreedit::new(" ", Some(1..1)).unwrap())
++            .unwrap();
++        frame(&mut f.ui);
++        let caret = f.assert_caret_visible(&format!("scale {scale}: composing a space"));
++        assert!(near(caret, [49.0, 6.0, 1.0, 20.0]), "{caret:?}");
++        // The underline is the composed range's own geometry, unpinned.
++        let layout = f.layout("aaaa ", TextStyle::Monospace);
++        let [x, y, w, h] = TextSelection::new(&layout, 4, 5)
++            .unwrap()
++            .rectangles(&layout)
++            .unwrap()[0]
++            .values();
++        let seen = f.seen();
++        let origin = [PADDING[0] - seen.scroll_x, PADDING[1]];
++        // It runs past the box's end and the pinned caret, where the text
++        // area clips it, as it clips a selection fill.
++        let [ix, _, iw, _] = f.inner();
++        assert!(origin[0] + x + w > ix + iw + 1.0, "{:?}", [x, w]);
++        let left = origin[0] + x;
++        assert_eq!(seen.underlines.len(), 1);
++        assert!(
++            near(
++                seen.underlines[0],
++                [left, origin[1] + y + h - 1.0, ix + iw - left, 1.0]
++            ),
++            "{:?}",
++            seen.underlines
++        );
++        assert!((seen.scroll_x - rounding(f.inner()[2], scale)).abs() < 1e-3);
++        f.ui.text_preedit(&TextPreedit::new("", None).unwrap())
++            .unwrap();
++        frame(&mut f.ui);
++        let caret = f.assert_caret_visible("composition cancelled");
++        assert!(near(caret, [45.6, 6.0, 1.0, 20.0]), "{caret:?}");
++        assert_eq!(f.value.get().unwrap(), "aaaa");
++    }
++}
++
++#[test]
++fn focus_loss_hides_the_caret_and_relayout_keeps_the_text_still() {
++    for scale in SCALES {
++        let mut f = area(62.0, scale, "aaaa bbbb cccc", TextStyle::Monospace);
++        f.with(KeyCode::primary(), KeyCode::Home);
++        f.key(KeyCode::End);
++        f.assert_caret_visible("focused");
++        pert_ui::testing::Driver::new(&mut f.ui)
++            .clear_focus()
++            .unwrap();
++        frame(&mut f.ui);
++        let seen = f.seen();
++        assert_eq!((seen.caret, seen.ime), (None, None));
++        assert_eq!(seen.scroll_x, 0.0);
++        // Arrangement reveals even an unfocused caret; pinned, it moves
++        // nothing.
++        f.ui.set_viewport(Viewport::new(63.0, 200.0, scale).unwrap())
++            .unwrap();
++        frame(&mut f.ui);
++        assert_eq!(f.scroll_x(), 0.0);
++        f.ui.focus(&f.id).unwrap();
++        frame(&mut f.ui);
++        let caret = f.assert_caret_visible("focus regained");
++        assert!(near(caret, [50.0, 6.0, 1.0, 20.0]), "{caret:?}");
++        assert_eq!(f.selection(), "5..5");
++    }
++}

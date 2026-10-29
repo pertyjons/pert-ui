@@ -1,0 +1,22 @@
+--- a/crates/pert-ui-runtime/src/text_fields.rs
++++ b/crates/pert-ui-runtime/src/text_fields.rs
+@@ -3579,7 +3579,7 @@
+             };
+             let old = self.scroll.get();
+             let next = [
+-                (old[0] + delta.x()).clamp(0.0, max_x),
++                (old[0] + delta.x()).clamp(0.0, (p_size_width(&self.prepared) - viewport_width(&self.prepared)).max(0.0)),
+                 (old[1] + delta.y()).clamp(0.0, (height - viewport).max(0.0)),
+             ];
+             if next == old {
+@@ -3870,3 +3870,10 @@
+         assert!(Editor::<()>::new(Some(value), false).menu.is_some());
+     }
+ }
++
++fn p_size_width(p: &RefCell<Option<Prepared>>) -> f32 {
++    p.borrow().as_ref().map_or(0.0, |p| p.layout.size().width())
++}
++fn viewport_width(p: &RefCell<Option<Prepared>>) -> f32 {
++    p.borrow().as_ref().map_or(0.0, |p| p.inner.width())
++}

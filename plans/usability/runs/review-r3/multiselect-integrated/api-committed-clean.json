@@ -1,0 +1,13 @@
+{
+  "at_utc": "2026-10-29T12:01:22.794826+00:00",
+  "commit": "6b8b3bf87bb753938e9c634c0d52cc4b8eb3fdd5",
+  "command": [
+    "git",
+    "status",
+    "--porcelain",
+    "--",
+    "api/"
+  ],
+  "exit_status": 0,
+  "stdout": ""
+}

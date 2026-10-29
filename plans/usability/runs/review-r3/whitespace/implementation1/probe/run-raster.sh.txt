@@ -1,0 +1,21 @@
+#!/bin/sh
+# Raster mode of the probe against one build; frames under probe/frames/<build>-<label>/.
+E=/home/per/pert-ui-usability/r3-whitespace-implementation-evidence
+build=$1; label=$2
+if [ "$build" = baseline ]; then
+  target=/home/per/pert-ui-usability/r3-whitespace-baseline-target; tree=$E/baseline-tree
+else
+  target=/home/per/pert-ui-usability/r3-whitespace-implementation-target; tree=/home/per/pert-ui-usability/r3-whitespace-worktree
+fi
+out="$E/probe/out/raster-$build-$label.out"; frames="$E/probe/frames/$build-$label"
+mkdir -p "$E/probe/out"; rm -rf "$frames"
+{
+  echo "started_at_utc: $(date -u +%FT%TZ)"
+  echo "\$ cd $E/probe/$build && RUSTUP_TOOLCHAIN=1.99.1 CARGO_TARGET_DIR=$target cargo run --offline -q --release -- raster $frames"
+  echo "probe source: $(sha256sum "$E/probe/src/main.rs")"
+  (cd "$tree" && sha256sum crates/pert-ui-runtime/src/text.rs crates/pert-ui-runtime/src/text/tabs.rs crates/pert-ui-runtime/src/text_fields.rs crates/pert-ui-runtime/src/text_selection.rs)
+  (cd "$E/probe/$build" && RUSTUP_TOOLCHAIN=1.99.1 CARGO_TARGET_DIR=$target cargo run --offline -q --release -- raster "$frames" 2>&1)
+  echo "exit status: $?"
+  echo "finished_at_utc: $(date -u +%FT%TZ)"
+} > "$out" 2>&1
+tail -n 2 "$out"

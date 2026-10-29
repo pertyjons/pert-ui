@@ -1,0 +1,9 @@
+Check: the implementation's frame equals the baseline frame translated left by the origin change, at whole-pixel origins.
+s1-rtl-wrapped-hanging-space-whole: baseline shifted left 5 physical px vs implementation: 72 mismatched pixels of 9200
+s1.25-rtl-wrapped-hanging-space-whole: baseline shifted left 5 physical px vs implementation: 713 mismatched pixels of 14500
+s1-rtl-wrapped-hanging-space-whole: mismatched columns [37, 38, 39, 40]; the widget's clip ends at physical x 42, so baseline ink at x >= 42 (implementation x >= 37) was clipped
+s1.25-rtl-wrapped-hanging-space-whole: mismatched columns [12, 13, 14, 18, 19, 20, 22, 23, 24, 28, 29, 30, 33, 34, 35, 39, 40, 41, 43, 44, 45, 48, 49, 50]; the widget's clip ends at physical x 52, so baseline ink at x >= 52 (implementation x >= 47) was clipped
+s1.25-rtl-wrapped-hanging-space-whole, columns 0..46 compared at integer shifts (mismatched pixels, max channel delta):
+  2: 1073, 196; 3: 952, 191; 4: 862, 177; 5: 626, 11; 6: 862, 173; 7: 1027, 191; 8: 1160, 197.
+  Only the 5-pixel (4 logical) shift matches the origin change; its residual differences are at most 11/255,
+  from resampling the 51- versus 46-pixel line mask into 40.8- versus 36.8-logical rectangles.

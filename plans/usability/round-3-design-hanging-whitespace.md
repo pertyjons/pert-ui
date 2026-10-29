@@ -1,7 +1,8 @@
 # Round 3 checkpoint: empty raster bounds and hanging-caret reveal
 
-Status: revision 3 approved conditionally for implementation 2026-10-29; independent design review required before
-implementation. These are newly verified follow-ups from the tab-coverage
+Status: revision 4 adopts the independent implementation review corrections,
+2026-10-29. Revision3 was independently reviewed before implementation; its
+production policy is unchanged. Independent repair recheck remains required. These are newly verified follow-ups from the tab-coverage
 repair and will be handled separately within the usability goal. The tab patch
 keeps them explicitly documented until this checkpoint is verified.
 
@@ -130,15 +131,17 @@ uncommitted tab patch, captured by source hashes; 3bbfb813 alone is only the
 older comparison, not this fix's implementation base. Update the independent
 tab-canvas oracles to exclude zero-area placements explicitly and rederive raw
 delta tables. RTL tab/space twin divergence becomes an equality assertion.
-Whitespace-only text has ink=None and no blank mask; brush chunks/part counts
+Whitespace-only zero-area glyphs have ink=None and no default blank mask;
+positive-area transparent phase rasters can remain. Brush chunks/part counts
 can change. Record those deltas and require pixel-identical CPU output where
-canvas/placement are unchanged. Where ghost-edge removal deliberately changes
+mask partition, extent, destination and clipping are unchanged. Where ghost-edge removal deliberately changes
 origin/extent, record raw fixed-coordinate before/after differences rather than
 normalize them away or claim whole-frame pixel identity. Bundled icon centering
 through ink stays unchanged; test it.
 
 Add public prose-jiggle and held-Space controls: hanging spaces/tabs keep the
-offset fixed and the caret inside the viewport. Readonly visible proof uses
+caret inside the viewport, with at most the bounded outward-rounding residual
+described below rather than progressively increasing offsets. Readonly visible proof uses
 selection fill, since no caret is painted. Default/phase cache hit/miss tests
 include a mutation that skips empty rasters before cache lookup, catching repeat
 Swash work via cache-hit counters. Old bounds, old clamp/pin and wheel +cw
@@ -172,3 +175,36 @@ private cfg(test) render count); there is no production cache-hit counter.
 Nearly full wrapped-line no-op wheel, tiny viewport end-wins, and the stated
 presentation consequences are required evidence. All approval conditions are
 now concrete; implementation may proceed with independent review afterwards.
+
+## Adopted implementation-review consequences (revision 4)
+
+The [first independent implementation review](runs/review-r3/whitespace/independent-review-r1.md)
+confirms the production logic matches revision3, and requires precise claims
+and explicit acceptance of measured presentation consequences. Root adopts:
+
+- Keep max(layout.width, wrap) and outward physical-pixel rounding. At wrap38,
+  scale1.25 the measured box is38.4: the observed scroll sequence is0 →0.4 →0
+  for typing whitespace then the wrapping letter. Repeated whitespace retains
+  the bounded residual rather than increasing it. Review2's inference that a
+  nonoverflowing wrapped layout always has box=wrap was incorrect. No negative
+  scrolling or changed canvas formula is introduced.
+- The skip is dimensions-only. Positive-area custom-font space ink remains;
+  equal advance alone does not imply space/tab geometry equality. Equivalence
+  requires a zero-area space, matching shaping/line breaking and other glyphs.
+  A phase raster can be1×1 with zero coverage; it remains eligible for a blank
+  phase mask, affecting its extent/partition without changing default layout
+  size/origin. No alpha scan is added.
+- Accept fractional-edge resampling consequences when mask extents change.
+  Stored frame pairs are60/72 identical. The RTL-leading-space quarter-origin
+  pair changes11 pixels in one column, at most79/255 per channel, as its mask
+  narrows192→190. Positive glyph placements remain; exact pixels require equal
+  partition, extent, destination and clipping. Icon-only and leading-icon-label
+  cases match; inline-icon text frames can differ when their masks narrow.
+  Bundled icon centering is preserved; whole-frame identity is not promised.
+
+Historical author reports and logs stay immutable. The repair record corrects
+one baseline-width description (actual42→37 at scale1,40.8→36.8 at1.25), an
+incorrect default/phase label in the Swash observation, and overly broad icon
+pixel wording. Rustdoc/test labels are corrected and focused checks plus a fresh
+independent recheck precede integration. These are qualifications of the
+approved natural-canvas policy, not a new renderer or shaping implementation.

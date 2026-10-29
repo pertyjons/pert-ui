@@ -1,0 +1,59 @@
+#!/usr/bin/env python3
+"""Compares the raster probe's frames of two builds case by case.
+
+Usage: compare-frames.py BASELINE_DIR IMPLEMENTATION_DIR BASELINE_OUT IMPLEMENTATION_OUT
+Prints, per case, whether the RGBA frames are byte-identical, else the number
+of differing pixels and their bounding box, with both builds' public bounds
+and mask commands from the probe outputs.
+"""
+import pathlib
+import sys
+
+
+def observations(path):
+    rows = {}
+    for line in pathlib.Path(path).read_text().splitlines():
+        if line.startswith("raster "):
+            head, rest = line.split(" | ", 1)
+            _, scale, name, offset = head.split()
+            rows[(scale, name, offset)] = rest
+    return rows
+
+
+def width_of(rest):
+    size = rest.rsplit("frame ", 1)[1]
+    return int(size.split("x")[0])
+
+
+def main():
+    base_dir, impl_dir, base_out, impl_out = map(pathlib.Path, sys.argv[1:5])
+    base, impl = observations(base_out), observations(impl_out)
+    assert base.keys() == impl.keys(), "the probe cases differ"
+    identical = 0
+    for key in sorted(base):
+        scale, name, offset = key
+        file = f"{scale}-{name}-{offset}.rgba"
+        a, b = (base_dir / file).read_bytes(), (impl_dir / file).read_bytes()
+        width = width_of(base[key])
+        if a == b:
+            identical += 1
+            verdict = "pixel-identical"
+        else:
+            assert len(a) == len(b), file
+            box, count = None, 0
+            for index in range(0, len(a), 4):
+                if a[index:index + 4] != b[index:index + 4]:
+                    count += 1
+                    x, y = (index // 4) % width, (index // 4) // width
+                    box = [x, y, x + 1, y + 1] if box is None else [
+                        min(box[0], x), min(box[1], y), max(box[2], x + 1), max(box[3], y + 1)]
+            verdict = f"{count} pixels differ in physical box {box}"
+        print(f"{scale} {name} {offset}: {verdict}")
+        if base[key] != impl[key]:
+            print(f"    baseline:       {base[key]}")
+            print(f"    implementation: {impl[key]}")
+    print(f"{identical} of {len(base)} frames pixel-identical")
+
+
+if __name__ == "__main__":
+    main()

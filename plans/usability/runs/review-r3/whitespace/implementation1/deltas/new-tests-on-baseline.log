@@ -1,0 +1,410 @@
+started_at_utc: 2026-10-29T11:30:52Z
+# baseline production sources with the final test files; see baseline-with-new-tests.sources.sha256
+$ cd /home/per/pert-ui-usability/r3-whitespace-implementation-evidence/baseline-with-new-tests && CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-whitespace-baseline-newtests-target cargo test --locked -p pert-ui-runtime --lib --no-fail-fast text::tabs
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.26
+   Compiling stable_deref_trait v1.2.1
+   Compiling writeable v0.6.4
+   Compiling litemap v0.8.3
+   Compiling utf8_iter v1.0.4
+   Compiling once_cell v1.21.4
+   Compiling libc v0.2.190
+   Compiling smallvec v1.16.2
+   Compiling icu_properties_data v2.3.0
+   Compiling icu_locale_fallback_data v2.3.0
+   Compiling icu_normalizer_data v2.3.0
+   Compiling icu_segmenter_data v2.3.0
+   Compiling foldhash v0.2.0
+   Compiling bitflags v2.13.2
+   Compiling linebender_resource_handle v0.1.1
+   Compiling thiserror v2.0.21
+   Compiling parlance v0.1.1
+   Compiling parley_emoji v0.12.0
+   Compiling zeno v0.3.3
+   Compiling yazi v0.2.1
+   Compiling unicode-segmentation v1.13.3
+   Compiling hashbrown v0.17.1
+   Compiling syn v3.0.6
+   Compiling memmap2 v0.9.11
+   Compiling synstructure v0.14.0
+   Compiling zerovec-derive v0.11.6
+   Compiling displaydoc v0.2.7
+   Compiling bytemuck_derive v1.12.1
+   Compiling thiserror-impl v2.0.21
+   Compiling zerofrom-derive v0.1.8
+   Compiling yoke-derive v0.8.4
+   Compiling zerofrom v0.1.8
+   Compiling yoke v0.8.3
+   Compiling bytemuck v1.25.2
+   Compiling zerotrie v0.2.5
+   Compiling font-types v0.12.6
+   Compiling zerovec v0.11.8
+   Compiling read-fonts v0.41.0
+   Compiling pert-ui-core v0.3.91 (/home/per/pert-ui-usability/r3-whitespace-implementation-evidence/baseline-with-new-tests/crates/pert-ui-core)
+   Compiling tinystr v0.8.4
+   Compiling potential_utf v0.1.6
+   Compiling icu_collections v2.3.0
+   Compiling icu_locale_core v2.3.0
+   Compiling icu_provider v2.3.1
+   Compiling icu_locale_fallback v2.3.0
+   Compiling icu_properties v2.3.0
+   Compiling icu_normalizer v2.3.0
+   Compiling icu_segmenter v2.3.0
+   Compiling parley_data v0.12.0
+   Compiling skrifa v0.44.0
+   Compiling fontique v0.12.0
+   Compiling harfrust v0.12.0
+   Compiling swash v0.2.10
+   Compiling parley_engine v0.12.0
+   Compiling parley v0.12.0
+   Compiling pert-ui-runtime v0.3.91 (/home/per/pert-ui-usability/r3-whitespace-implementation-evidence/baseline-with-new-tests/crates/pert-ui-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 27.76s
+     Running unittests src/lib.rs (/home/per/pert-ui-usability/r3-whitespace-baseline-newtests-target/debug/deps/pert_ui_runtime-f196cba36386d9cb)
+
+running 16 tests
+test text::tabs::tests::consecutive_tabs_merge_and_retained_tabs_split_them ... ok
+test text::tabs::tests::phase_spaces_with_a_vertical_offset_place_one_blank_pixel ... FAILED
+test text::tabs::tests::empty_rasters_place_nothing_in_bounds_ink_or_mask_parts ... FAILED
+test text::tabs::tests::zero_area_phase_glyphs_stay_cached_and_serve_later_line_misses ... ok
+test text::tabs::tests::tab_only_text_has_no_coverage_but_its_advance_and_caret_stops ... ok
+test text::tabs::tests::a_registered_font_ligating_a_tab_keeps_that_glyph_and_hides_pure_tab_atoms ... ok
+test text::tabs::tests::other_unsupported_characters_keep_their_fallback_ink ... ok
+test text::tabs::tests::a_tab_and_a_missing_character_never_share_phase_coverage ... ok
+test text::tabs::tests::hanging_spaces_and_tabs_of_equal_advance_share_public_geometry ... FAILED
+test text::tabs::tests::cached_measured_and_ellipsized_tabs_stay_hidden ... ok
+test text::tabs::tests::bundled_icons_have_no_empty_raster_so_their_ink_is_unchanged ... ok
+test text::tabs::tests::hanging_tabs_shrink_the_extent_and_translate_right_to_left_public_coordinates ... ok
+test text::tabs::tests::rich_spans_gaps_and_icons_keep_reference_color_size_and_alignment ... ok
+test text::tabs::tests::mixed_fonts_keep_each_tab_s_font_size_and_advance_and_icons_use_hidden_tab_metrics ... ok
+test text::tabs::tests::the_worst_admitted_alternating_tabs_stay_within_the_style_bound ... ok
+test text::tabs::tests::tabs_keep_the_reference_geometry_and_unicode_analysis_without_their_ink ... ok
+
+failures:
+
+---- text::tabs::tests::phase_spaces_with_a_vertical_offset_place_one_blank_pixel stdout ----
+
+thread 'text::tabs::tests::phase_spaces_with_a_vertical_offset_place_one_blank_pixel' (4035185) panicked at crates/pert-ui-runtime/src/text/tabs.rs:1622:13:
+assertion failed: layout.parts.is_empty()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- text::tabs::tests::empty_rasters_place_nothing_in_bounds_ink_or_mask_parts stdout ----
+
+thread 'text::tabs::tests::empty_rasters_place_nothing_in_bounds_ink_or_mask_parts' (4035180) panicked at crates/pert-ui-runtime/src/text/tabs.rs:1505:29:
+assertion `left == right` failed: " " None size 14 scale 1
+  left: Some([0.0, 15.0, 0.0, 15.0])
+ right: None
+
+---- text::tabs::tests::hanging_spaces_and_tabs_of_equal_advance_share_public_geometry stdout ----
+"aaaa\tbbbb\tcccc" at None, scale 1: tab and space size [118.0, 20.0], origin [0.0, 0.0]
+"aaaa\tbbbb\tcccc" at Some(38.0), scale 1: tab and space size [34.0, 59.0], origin [0.0, 0.0]
+"aaaa\tbbbb\tcccc" at Some(12.0), scale 1: tab and space size [34.0, 59.0], origin [0.0, 0.0]
+"ابجد\tهوزح\tطي" at None, scale 1: tab and space size [101.0, 20.0], origin [0.0, 0.0]
+
+thread 'text::tabs::tests::hanging_spaces_and_tabs_of_equal_advance_share_public_geometry' (4035181) panicked at crates/pert-ui-runtime/src/text/tabs.rs:1376:21:
+assertion `left == right` failed: "ابجد\tهوزح\tطي" at Some(38.0), scale 1: space canvas
+  left: [-5, 0, 37, 59]
+ right: [0, 0, 37, 59]
+
+
+failures:
+    text::tabs::tests::empty_rasters_place_nothing_in_bounds_ink_or_mask_parts
+    text::tabs::tests::hanging_spaces_and_tabs_of_equal_advance_share_public_geometry
+    text::tabs::tests::phase_spaces_with_a_vertical_offset_place_one_blank_pixel
+
+test result: FAILED. 13 passed; 3 failed; 0 ignored; 0 measured; 188 filtered out; finished in 2.02s
+
+error: test failed, to rerun pass `-p pert-ui-runtime --lib`
+error: 1 target failed:
+    `-p pert-ui-runtime --lib`
+exit status: 101
+$ cd /home/per/pert-ui-usability/r3-whitespace-implementation-evidence/baseline-with-new-tests && CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-whitespace-baseline-newtests-target cargo test --locked -p pert-ui --features cpu --test editing --no-fail-fast -- tab_whitespace hanging_whitespace
+   Compiling unicode-ident v1.0.26
+   Compiling cfg-if v1.0.5
+   Compiling bitflags v2.13.2
+   Compiling once_cell v1.21.4
+   Compiling smallvec v1.16.2
+   Compiling log v0.4.34
+   Compiling rustix v1.1.5
+   Compiling linux-raw-sys v0.12.1
+   Compiling cfg_aliases v0.2.2
+   Compiling pkg-config v0.3.34
+   Compiling shlex v2.0.1
+   Compiling memchr v2.8.3
+   Compiling find-msvc-tools v0.1.14
+   Compiling equivalent v1.0.2
+   Compiling downcast-rs v1.2.1
+   Compiling scoped-tls v1.0.1
+   Compiling wayland-client v0.31.15
+   Compiling hashbrown v0.17.1
+   Compiling autocfg v1.5.1
+   Compiling libm v0.2.16
+   Compiling zerocopy v0.8.59
+   Compiling arrayvec v0.7.8
+   Compiling libloading v0.8.9
+   Compiling rustc-hash v1.1.0
+   Compiling raw-window-handle v0.6.2
+   Compiling parking_lot_core v0.9.12
+   Compiling proc-macro2 v1.0.107
+   Compiling naga v30.0.1
+   Compiling ash v0.38.0+1.3.281
+   Compiling scopeguard v1.2.0
+   Compiling bit-vec v0.9.1
+   Compiling cc v1.6.0
+   Compiling dlib v0.5.3
+   Compiling unicode-width v0.2.2
+   Compiling lock_api v0.4.14
+   Compiling spirv v0.4.0+sdk-1.4.341.0
+   Compiling rustix v0.38.44
+   Compiling allocator-api2 v0.2.21
+   Compiling thiserror v1.0.69
+   Compiling static_assertions v1.1.0
+   Compiling wgpu-hal v30.0.1
+   Compiling linux-raw-sys v0.4.15
+   Compiling presser v0.3.1
+   Compiling renderdoc-sys v1.1.0
+   Compiling bit-set v0.10.0
+   Compiling foldhash v0.1.5
+   Compiling codespan-reporting v0.13.1
+   Compiling slab v0.4.12
+   Compiling profiling v1.0.18
+   Compiling wgpu-core v30.0.1
+   Compiling hashbrown v0.15.5
+   Compiling num-traits v0.2.19
+   Compiling cursor-icon v1.2.0
+   Compiling xcursor v0.3.11
+   Compiling parking_lot v0.12.5
+   Compiling litrs v1.0.0
+   Compiling xkeysym v0.2.1
+   Compiling fixedbitset v0.5.7
+   Compiling hashbrown v0.16.1
+   Compiling wayland-sys v0.31.11
+   Compiling quote v1.0.47
+   Compiling arrayref v0.3.9
+   Compiling getrandom v0.3.4
+   Compiling quick-xml v0.41.0
+   Compiling smithay-client-toolkit v0.19.2
+   Compiling strict-num v0.1.1
+   Compiling ttf-parser v0.25.1
+   Compiling syn v3.0.6
+   Compiling syn v2.0.119
+   Compiling indexmap v2.14.2
+   Compiling version_check v0.9.5
+   Compiling nom v8.0.0
+   Compiling wgpu v30.0.1
+   Compiling tracing-core v0.1.36
+   Compiling ab_glyph_rasterizer v0.1.10
+   Compiling serde_core v1.0.229
+   Compiling pin-project-lite v0.2.17
+   Compiling document-features v0.2.12
+   Compiling winit v0.30.13
+   Compiling os_pipe v1.2.3
+   Compiling ahash v0.8.12
+   Compiling zmij v1.0.23
+   Compiling x11rb-protocol v0.13.2
+   Compiling xkbcommon-dl v0.4.2
+   Compiling pollster v1.0.1
+   Compiling serde_json v1.0.154
+   Compiling tracing v0.1.44
+   Compiling smol_str v0.2.2
+   Compiling fastrand v2.5.0
+   Compiling serde v1.0.229
+   Compiling dpi v0.1.2
+   Compiling percent-encoding v2.3.2
+   Compiling itoa v1.0.18
+   Compiling wayland-scanner v0.31.11
+   Compiling petgraph v0.8.3
+   Compiling wayland-backend v0.3.17
+   Compiling ordered-float v5.5.0
+   Compiling synstructure v0.14.0
+   Compiling bytemuck_derive v1.12.1
+   Compiling zerofrom-derive v0.1.8
+   Compiling yoke-derive v0.8.4
+   Compiling zerovec-derive v0.11.6
+   Compiling thiserror-impl v2.0.21
+   Compiling displaydoc v0.2.7
+   Compiling serde_derive v1.0.229
+   Compiling zerocopy-derive v0.8.59
+   Compiling thiserror-impl v1.0.69
+   Compiling zerofrom v0.1.8
+   Compiling yoke v0.8.3
+   Compiling owned_ttf_parser v0.25.1
+   Compiling zerotrie v0.2.5
+   Compiling ab_glyph v0.2.32
+   Compiling bytemuck v1.25.2
+   Compiling zerovec v0.11.8
+   Compiling tree_magic_mini v3.2.2
+   Compiling font-types v0.12.6
+   Compiling tiny-skia-path v0.11.4
+   Compiling thiserror v2.0.21
+   Compiling naga-types v30.0.1
+   Compiling pert-ui-core v0.3.91 (/home/per/pert-ui-usability/r3-whitespace-implementation-evidence/baseline-with-new-tests/crates/pert-ui-core)
+   Compiling wgpu-types v30.0.1
+   Compiling read-fonts v0.41.0
+   Compiling tiny-skia v0.11.4
+   Compiling tinystr v0.8.4
+   Compiling potential_utf v0.1.6
+   Compiling icu_collections v2.3.0
+   Compiling icu_locale_core v2.3.0
+   Compiling polling v3.11.0
+   Compiling gethostname v1.1.0
+   Compiling calloop v0.13.0
+   Compiling x11rb v0.13.2
+   Compiling icu_provider v2.3.1
+   Compiling icu_properties v2.3.0
+   Compiling icu_locale_fallback v2.3.0
+   Compiling icu_normalizer v2.3.0
+   Compiling icu_segmenter v2.3.0
+   Compiling wayland-csd-frame v0.3.0
+   Compiling parley_data v0.12.0
+   Compiling wayland-protocols v0.32.13
+   Compiling calloop-wayland-source v0.3.0
+   Compiling wayland-cursor v0.31.14
+   Compiling softbuffer v0.4.8
+   Compiling half v2.7.1
+   Compiling skrifa v0.44.0
+   Compiling fontique v0.12.0
+   Compiling harfrust v0.12.0
+   Compiling gpu-allocator v0.28.0
+   Compiling wayland-protocols-wlr v0.3.12
+   Compiling wayland-protocols-plasma v0.3.12
+   Compiling swash v0.2.10
+   Compiling wl-clipboard-rs v0.9.4
+   Compiling parley_engine v0.12.0
+   Compiling arboard v3.7.0
+   Compiling sctk-adwaita v0.10.1
+   Compiling parley v0.12.0
+   Compiling pert-ui-runtime v0.3.91 (/home/per/pert-ui-usability/r3-whitespace-implementation-evidence/baseline-with-new-tests/crates/pert-ui-runtime)
+   Compiling wgpu-naga-bridge v30.0.1
+   Compiling wgpu-core-deps-windows-linux-android v30.0.1
+   Compiling pert-ui-wgpu v0.3.91 (/home/per/pert-ui-usability/r3-whitespace-implementation-evidence/baseline-with-new-tests/crates/pert-ui-wgpu)
+   Compiling pert-ui-cpu v0.3.91 (/home/per/pert-ui-usability/r3-whitespace-implementation-evidence/baseline-with-new-tests/crates/pert-ui-cpu)
+   Compiling pert-ui v0.3.91 (/home/per/pert-ui-usability/r3-whitespace-implementation-evidence/baseline-with-new-tests/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 29.73s
+     Running tests/editing/main.rs (/home/per/pert-ui-usability/r3-whitespace-baseline-newtests-target/debug/deps/editing-45c73a21f910b75a)
+
+running 20 tests
+test hanging_whitespace::tiny_and_zero_text_areas_keep_a_valid_range_and_the_caret_end_wins ... FAILED
+test hanging_whitespace::right_to_left_hanging_whitespace_and_the_right_edge_start_show_the_caret ... FAILED
+test hanging_whitespace::focus_loss_hides_the_caret_and_relayout_keeps_the_text_still ... FAILED
+test hanging_whitespace::resizing_restyling_and_rescaling_keep_the_pinned_caret_visible ... FAILED
+test hanging_whitespace::composition_pins_the_caret_and_anchor_but_not_the_underline ... FAILED
+test tab_whitespace::keyboard_tab_moves_focus_between_text_areas_without_inserting_a_tab ... ok
+test hanging_whitespace::typing_and_holding_space_at_a_full_line_keeps_the_text_still ... FAILED
+test hanging_whitespace::hanging_line_ends_draw_a_pinned_caret_inside_the_text_area ... FAILED
+test tab_whitespace::typing_a_tab_at_a_full_line_end_matches_typing_a_space ... FAILED
+test hanging_whitespace::the_wheel_and_caret_reveal_share_one_nonnegative_range ... FAILED
+test tab_whitespace::a_text_area_edits_copies_and_inspects_literal_tabs_as_canonical_bytes ... ok
+test tab_whitespace::right_to_left_selectable_text_selects_at_fixed_points_after_the_origin_moved ... FAILED
+test tab_whitespace::a_narrow_text_area_treats_a_hanging_tab_as_a_hanging_space ... FAILED
+test tab_whitespace::a_narrow_right_to_left_text_area_keeps_its_hanging_tab_in_the_extent_of_a_space ... FAILED
+test hanging_whitespace::a_read_only_text_area_shows_its_selection_fill_over_hanging_whitespace ... ok
+test hanging_whitespace::single_line_reveal_and_the_wheel_share_the_caret_width_range ... FAILED
+test hanging_whitespace::a_wheel_before_the_next_paint_still_cancels_an_edit_s_pending_reveal ... ok
+test tab_whitespace::a_rendered_tab_is_blank_while_its_neighbors_stay_in_place ... ok
+test hanging_whitespace::typing_prose_keeps_the_text_still_at_every_soft_wrap ... FAILED
+test tab_whitespace::a_full_text_area_of_tab_separated_columns_paints_and_edits ... ok
+
+failures:
+
+---- hanging_whitespace::tiny_and_zero_text_areas_keep_a_valid_range_and_the_caret_end_wins stdout ----
+
+thread 'hanging_whitespace::tiny_and_zero_text_areas_keep_a_valid_range_and_the_caret_end_wins' (4040105) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:595:21:
+width 24 scale 1: line end: 18 for a caret at 16
+
+---- hanging_whitespace::right_to_left_hanging_whitespace_and_the_right_edge_start_show_the_caret stdout ----
+
+thread 'hanging_whitespace::right_to_left_hanging_whitespace_and_the_right_edge_start_show_the_caret' (4040102) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:343:27:
+"ابجد هوزح طي" at scale 1: start: no caret drawn: Seen { selection: "0..0", scroll_x: 5.0, caret: None, selected: [], underlines: [], ime: Some([49.0, 6.0, 1.0, 20.0]) }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- hanging_whitespace::focus_loss_hides_the_caret_and_relayout_keeps_the_text_still stdout ----
+
+thread 'hanging_whitespace::focus_loss_hides_the_caret_and_relayout_keeps_the_text_still' (4040099) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:769:11:
+focused: no caret drawn: Seen { selection: "5..5", scroll_x: 0.0, caret: None, selected: [], underlines: [], ime: Some([49.0, 6.0, 1.0, 20.0]) }
+
+---- hanging_whitespace::resizing_restyling_and_rescaling_keep_the_pinned_caret_visible stdout ----
+
+thread 'hanging_whitespace::resizing_restyling_and_rescaling_keep_the_pinned_caret_visible' (4040101) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:677:11:
+hanging line end: no caret drawn: Seen { selection: "5..5", scroll_x: 0.0, caret: None, selected: [], underlines: [], ime: Some([49.0, 6.0, 1.0, 20.0]) }
+
+---- hanging_whitespace::composition_pins_the_caret_and_anchor_but_not_the_underline stdout ----
+
+thread 'hanging_whitespace::composition_pins_the_caret_and_anchor_but_not_the_underline' (4040098) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:728:23:
+scale 1: composing a space: no caret drawn: Seen { selection: "4..4", scroll_x: 1.0, caret: None, selected: [], underlines: [[44.600002, 25.0, 5.3999977, 1.0]], ime: Some([49.0, 6.0, 1.0, 20.0]) }
+
+---- hanging_whitespace::typing_and_holding_space_at_a_full_line_keeps_the_text_still stdout ----
+
+thread 'hanging_whitespace::typing_and_holding_space_at_a_full_line_keeps_the_text_still' (4040106) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:386:35:
+" " width 62 scale 1: 1 hanging: no caret drawn: Seen { selection: "5..5", scroll_x: 1.0, caret: None, selected: [], underlines: [], ime: Some([49.0, 6.0, 1.0, 20.0]) }
+
+---- hanging_whitespace::hanging_line_ends_draw_a_pinned_caret_inside_the_text_area stdout ----
+
+thread 'hanging_whitespace::hanging_line_ends_draw_a_pinned_caret_inside_the_text_area' (4040100) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:294:27:
+"aaaa bbbb cccc" at scale 1: End: no caret drawn: Seen { selection: "5..5", scroll_x: 0.0, caret: None, selected: [], underlines: [], ime: Some([49.0, 6.0, 1.0, 20.0]) }
+
+---- tab_whitespace::typing_a_tab_at_a_full_line_end_matches_typing_a_space stdout ----
+
+thread 'tab_whitespace::typing_a_tab_at_a_full_line_end_matches_typing_a_space' (4040115) panicked at crates/pert-ui/tests/editing/tab_whitespace.rs:420:5:
+assertion `left == right` failed
+  left: Number(1.0)
+ right: Number(0.0)
+
+---- hanging_whitespace::the_wheel_and_caret_reveal_share_one_nonnegative_range stdout ----
+
+thread 'hanging_whitespace::the_wheel_and_caret_reveal_share_one_nonnegative_range' (4040104) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:448:9:
+assertion `left == right` failed
+  left: 0.6000023
+ right: 0.0
+
+---- tab_whitespace::right_to_left_selectable_text_selects_at_fixed_points_after_the_origin_moved stdout ----
+
+thread 'tab_whitespace::right_to_left_selectable_text_selects_at_fixed_points_after_the_origin_moved' (4040114) panicked at crates/pert-ui/tests/editing/tab_whitespace.rs:554:5:
+assertion `left == right` failed
+  left: Size { width: 42.0, height: 59.0 }
+ right: Size { width: 37.0, height: 59.0 }
+
+---- tab_whitespace::a_narrow_text_area_treats_a_hanging_tab_as_a_hanging_space stdout ----
+
+thread 'tab_whitespace::a_narrow_text_area_treats_a_hanging_tab_as_a_hanging_space' (4040110) panicked at crates/pert-ui/tests/editing/tab_whitespace.rs:393:9:
+line end after the hanging whitespace: None
+
+---- tab_whitespace::a_narrow_right_to_left_text_area_keeps_its_hanging_tab_in_the_extent_of_a_space stdout ----
+
+thread 'tab_whitespace::a_narrow_right_to_left_text_area_keeps_its_hanging_tab_in_the_extent_of_a_space' (4040109) panicked at crates/pert-ui/tests/editing/tab_whitespace.rs:517:9:
+text start at the right edge: None
+
+---- hanging_whitespace::single_line_reveal_and_the_wheel_share_the_caret_width_range stdout ----
+
+thread 'hanging_whitespace::single_line_reveal_and_the_wheel_share_the_caret_width_range' (4040103) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:523:9:
+assertion failed: (f.scroll_x() - max).abs() < 1e-3
+
+---- hanging_whitespace::typing_prose_keeps_the_text_still_at_every_soft_wrap stdout ----
+
+thread 'hanging_whitespace::typing_prose_keeps_the_text_still_at_every_soft_wrap' (4040107) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:423:15:
+' ' at scale 1: no caret drawn: Seen { selection: "8..8", scroll_x: 1.0, caret: None, selected: [], underlines: [], ime: Some([66.0, 6.0, 1.0, 20.0]) }
+
+
+failures:
+    hanging_whitespace::composition_pins_the_caret_and_anchor_but_not_the_underline
+    hanging_whitespace::focus_loss_hides_the_caret_and_relayout_keeps_the_text_still
+    hanging_whitespace::hanging_line_ends_draw_a_pinned_caret_inside_the_text_area
+    hanging_whitespace::resizing_restyling_and_rescaling_keep_the_pinned_caret_visible
+    hanging_whitespace::right_to_left_hanging_whitespace_and_the_right_edge_start_show_the_caret
+    hanging_whitespace::single_line_reveal_and_the_wheel_share_the_caret_width_range
+    hanging_whitespace::the_wheel_and_caret_reveal_share_one_nonnegative_range
+    hanging_whitespace::tiny_and_zero_text_areas_keep_a_valid_range_and_the_caret_end_wins
+    hanging_whitespace::typing_and_holding_space_at_a_full_line_keeps_the_text_still
+    hanging_whitespace::typing_prose_keeps_the_text_still_at_every_soft_wrap
+    tab_whitespace::a_narrow_right_to_left_text_area_keeps_its_hanging_tab_in_the_extent_of_a_space
+    tab_whitespace::a_narrow_text_area_treats_a_hanging_tab_as_a_hanging_space
+    tab_whitespace::right_to_left_selectable_text_selects_at_fixed_points_after_the_origin_moved
+    tab_whitespace::typing_a_tab_at_a_full_line_end_matches_typing_a_space
+
+test result: FAILED. 6 passed; 14 failed; 0 ignored; 0 measured; 315 filtered out; finished in 0.23s
+
+error: test failed, to rerun pass `-p pert-ui --test editing`
+error: 1 target failed:
+    `-p pert-ui --test editing`
+exit status: 101
+finished_at_utc: 2026-10-29T11:31:52Z

@@ -1,0 +1,12 @@
+--- a/crates/pert-ui-runtime/src/text.rs
++++ b/crates/pert-ui-runtime/src/text.rs
+@@ -1409,6 +1409,9 @@
+                         continue;
+                     }; // No image at all has no ink either.
+                     let image = &cached.image;
++                    if image.placement.width == 0 || image.placement.height == 0 {
++                        continue;
++                    }
+                     if let Some(key) = key
+                         && !self.phase_glyphs.contains_key(&key)
+                     {

@@ -1,0 +1,40 @@
+captured_at_utc: 2026-10-29T11:14:31Z
+Temporary #[cfg(test)] mod probe_tmp appended to tabs.rs (removed afterwards); first variant rendered 'a b' glyphs at fixed offsets, second at the default path's offset (x-floor(x), y-floor(y)), third at the phase path's y offset -(0.25*k).
+--- source of the last variant ---
+#[cfg(test)]
+mod probe_tmp {
+--- output, default-path offsets (rerun from the second variant's recorded output above in transcript) ---
+Body scale 1: blank rasters (x, y, w, h, data) [(7.854, 15.0, 1, 1, [0]), (6.7200003, 35.0, 1, 1, [0]), (10.360001, 35.0, 1, 1, [0])]
+Body scale 1.25: blank rasters (x, y, w, h, data) [(9.8175, 19.0, 1, 1, [0]), (8.4, 44.0, 1, 1, [0]), (12.95, 44.0, 1, 1, [0])]
+Body scale 1.5: blank rasters (x, y, w, h, data) [(11.781, 22.0, 1, 1, [0]), (10.08, 51.0, 1, 1, [0]), (15.54, 51.0, 1, 1, [0])]
+Body scale 2: blank rasters (x, y, w, h, data) [(15.708, 30.0, 1, 1, [0]), (13.440001, 69.0, 1, 1, [0]), (20.720001, 69.0, 1, 1, [0])]
+Body scale 0.9: blank rasters (x, y, w, h, data) [(7.0685997, 13.0, 1, 1, [0]), (6.0479994, 31.0, 1, 1, [0]), (9.323999, 31.0, 1, 1, [0])]
+Body scale 1.1: blank rasters (x, y, w, h, data) [(8.6394005, 16.0, 1, 1, [0]), (7.392, 38.0, 1, 1, [0]), (11.396, 38.0, 1, 1, [0])]
+Monospace scale 1: blank rasters (x, y, w, h, data) [(8.400001, 15.0, 1, 1, [0]), (8.400001, 35.0, 1, 1, [0]), (16.800001, 35.0, 1, 1, [0])]
+Monospace scale 1.25: blank rasters (x, y, w, h, data) [(10.5, 19.0, 1, 1, [0]), (10.5, 44.0, 1, 1, [0]), (21.0, 44.0, 0, 1, [])]
+Monospace scale 1.5: blank rasters (x, y, w, h, data) [(12.599999, 22.0, 1, 1, [0]), (12.599999, 51.0, 1, 1, [0]), (25.199999, 51.0, 1, 1, [0])]
+Monospace scale 2: blank rasters (x, y, w, h, data) [(16.800001, 30.0, 1, 1, [0]), (16.800001, 69.0, 1, 1, [0]), (33.600002, 69.0, 1, 1, [0])]
+Monospace scale 0.9: blank rasters (x, y, w, h, data) [(7.5599995, 13.0, 1, 1, [0]), (7.5599995, 31.0, 1, 1, [0]), (15.119999, 31.0, 1, 1, [0])]
+Monospace scale 1.1: blank rasters (x, y, w, h, data) [(9.240001, 16.0, 1, 1, [0]), (9.240001, 38.0, 1, 1, [0]), (18.480001, 38.0, 1, 1, [0])]
+Caption scale 1: blank rasters (x, y, w, h, data) [(6.732, 12.0, 1, 1, [0]), (5.76, 29.0, 1, 1, [0]), (8.88, 29.0, 1, 1, [0])]
+Caption scale 1.25: blank rasters (x, y, w, h, data) [(8.415, 16.0, 1, 1, [0]), (7.2, 37.0, 1, 1, [0]), (11.099999, 37.0, 1, 1, [0])]
+Caption scale 1.5: blank rasters (x, y, w, h, data) [(10.098, 19.0, 1, 1, [0]), (8.639999, 44.0, 1, 1, [0]), (13.32, 44.0, 1, 1, [0])]
+Caption scale 2: blank rasters (x, y, w, h, data) [(13.464, 26.0, 1, 1, [0]), (11.52, 60.0, 1, 1, [0]), (17.76, 60.0, 1, 1, [0])]
+Caption scale 0.9: blank rasters (x, y, w, h, data) [(6.0587997, 12.0, 1, 1, [0]), (5.1839995, 27.0, 1, 1, [0]), (7.9919996, 27.0, 1, 1, [0])]
+Caption scale 1.1: blank rasters (x, y, w, h, data) [(7.4052005, 14.0, 1, 1, [0]), (6.3360004, 32.0, 1, 1, [0]), (9.768001, 32.0, 1, 1, [0])]
+Heading scale 1: blank rasters (x, y, w, h, data) [(10.098, 19.0, 1, 1, [0]), (8.639999, 44.0, 1, 1, [0]), (13.32, 44.0, 1, 1, [0])]
+Heading scale 1.25: blank rasters (x, y, w, h, data) [(12.6225, 24.0, 1, 1, [0]), (10.8, 55.0, 1, 1, [0]), (16.650002, 55.0, 1, 1, [0])]
+Heading scale 1.5: blank rasters (x, y, w, h, data) [(15.147, 29.0, 1, 1, [0]), (12.96, 67.0, 1, 1, [0]), (19.98, 67.0, 1, 1, [0])]
+Heading scale 2: blank rasters (x, y, w, h, data) [(20.196, 38.0, 1, 1, [0]), (17.279999, 88.0, 1, 1, [0]), (26.64, 88.0, 1, 1, [0])]
+Heading scale 0.9: blank rasters (x, y, w, h, data) [(9.0882, 17.0, 1, 1, [0]), (7.775999, 40.0, 1, 1, [0]), (11.987999, 40.0, 1, 1, [0])]
+Heading scale 1.1: blank rasters (x, y, w, h, data) [(11.107801, 21.0, 1, 1, [0]), (9.504001, 49.0, 1, 1, [0]), (14.652, 49.0, 1, 1, [0])]
+--- earlier variants in the same session (output copied from the session transcript) ---
+Fixed offsets, Monospace 'a b' at scale 1, space glyph 3 at x=8.400001:
+  offset (0,0): (left 0, top 0, w 0, h 0, 0 bytes); (0.25,0.5), (0.5,0.75), (0.75,0.25): 1x1, 1 byte;
+  (0.4,0): w 1 h 0, 0 bytes; (0,-0.5): w 0 h 1, 0 bytes.
+Default-path offsets (x-floor(x), y-floor(y)): every baseline y was integral (15, 35, 19, 44, ...), so every
+space raster was 1x0 or 0x0 with no data for Body, Monospace, Caption and Heading at scales 1, 1.25, 1.5, 2, 0.9, 1.1.
+Conclusion: the zero-area test removes every space placement in the default path (size, origin, ink, default
+mask parts). In the phase path a nonzero vertical phase gives a 1x1 raster of coverage 0, which is not zero-area
+and stays placed: no visible pixel, no public size/origin change, but it can grow the phase canvas and split
+phase mask parts. The approved policy forbids a pixel scan, so this residue is disclosed, not removed.

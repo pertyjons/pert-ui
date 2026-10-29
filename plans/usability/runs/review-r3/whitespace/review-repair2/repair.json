@@ -1,0 +1,6 @@
+{
+  "at_utc": "2026-10-29T11:49:35.959238+00:00",
+  "change": "Only module-level prose corrected per review2; no code, test names or assertions changed.",
+  "before_sha256": "ee7eeba3845a804fd53c606bca9cc7e73f29987a04f2b9fd518e3cc988b6afdf",
+  "after_sha256": "afd46031af20bc56c4821a827c4a5d1adb4e19cd1bfdd81fd323517b41e93f4e"
+}

@@ -1,0 +1,30 @@
+captured_at_utc: 2026-10-29T11:36:03Z
+head: 17c6c3d39b3015a1563d7440541af87a1b7ee998
+ M crates/pert-ui-runtime/src/text.rs
+ M crates/pert-ui-runtime/src/text_fields.rs
+ M crates/pert-ui-runtime/src/text_selection.rs
+ M crates/pert-ui/tests/editing/main.rs
+?? crates/pert-ui-runtime/src/text/tabs.rs
+?? crates/pert-ui-runtime/tests/assets/
+?? crates/pert-ui/tests/editing/hanging_whitespace.rs
+?? crates/pert-ui/tests/editing/tab_whitespace.rs
+
+ad1e8bc4ad82f0ec260bf192eed052addb73e416f7cb21852cd3233e80d78a07  crates/pert-ui-runtime/src/text.rs
+37e76e23247f481fede67a6dd0c4d68fb0fc80c19bfee159f4a46c14f067a1c3  crates/pert-ui-runtime/src/text/tabs.rs
+2ffcaa0272bb161774da8f4b9ba117aaee9bfa44f11e4cd95f6c1e1dc734c36c  crates/pert-ui-runtime/src/text_fields.rs
+550d32750d9a0bef6d251869e8bde1849a21dbe981f1f8c146acfa491f709db8  crates/pert-ui-runtime/src/text_selection.rs
+e47b61c5b7dfbf9b6669e4c92dce51652fbdf49b3588352a966525af4dd875b0  crates/pert-ui/tests/editing/tab_whitespace.rs
+64083bb3787f7df982f9af4d8418923a2e9fddb43afaf832a3545c41ac0fa75d  crates/pert-ui/tests/editing/hanging_whitespace.rs
+eef65bbc2ad2e37ff31edebe76339f72ce3d56f24f7b2b43e85b8098236977cc  crates/pert-ui/tests/editing/main.rs
+4560cc006135ca857ead07ca3aa8829b54b160f9b578fe6915342f67ed507607  crates/pert-ui-runtime/tests/assets/tab-atoms/README.md
+ef405e8ef511ced850becf815e71f0a4461f693a76b426814425fbded332450b  crates/pert-ui-runtime/tests/assets/tab-atoms/TabAtomFixture.ttf
+a8712d16ebebe6b34b5228961fe24d342232d8b339949f22e28078b0f2c9394a  crates/pert-ui-runtime/tests/assets/tab-atoms/generate.py
+
+## delta vs approved-tab base (lines +/-)
+crates/pert-ui-runtime/src/text.rs: 23 added, 16 removed
+crates/pert-ui-runtime/src/text/tabs.rs: 395 added, 23 removed
+crates/pert-ui-runtime/src/text_fields.rs: 111 added, 42 removed
+crates/pert-ui-runtime/src/text_selection.rs: 6 added, 3 removed
+crates/pert-ui/tests/editing/tab_whitespace.rs: 104 added, 39 removed
+crates/pert-ui/tests/editing/main.rs: 1 added, 0 removed
+crates/pert-ui/tests/editing/hanging_whitespace.rs: new, 789 lines

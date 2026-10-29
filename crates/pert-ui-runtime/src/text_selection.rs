@@ -161,6 +161,9 @@ impl TextSelection {
     /// [`SelectionExtension::Extend`] keeps the anchor. A point outside
     /// [`TextLayout::size`] can still be over whitespace hanging past the end of
     /// a wrapped line, as [`Self::caret`] describes, and places the caret there.
+    /// This is not the inverse of an editor's clamped caret: a point on a caret
+    /// a [`TextArea`](crate::TextArea) draws at its box's edge selects the text
+    /// under that point.
     pub fn at_point(
         self,
         layout: &TextLayout,
@@ -191,9 +194,9 @@ impl TextSelection {
     /// After whitespace hanging past the end of a wrapped line, spaces and tabs
     /// alike, the rectangle can lie outside [`TextLayout::size`]: beyond its
     /// right edge in left-to-right text, and at negative x in right-to-left
-    /// text, where the hanging whitespace is on the left. In right-to-left text
-    /// a hanging space can extend the size where a tab does not, so their
-    /// coordinates can differ, as [`TextLayout`] describes.
+    /// text, where the hanging whitespace is on the left. A
+    /// [`TextArea`](crate::TextArea) draws its caret clamped into the text's
+    /// box there instead; this rectangle is the unclamped one.
     ///
     /// # Errors
     /// Returns [`GeometryError::NonFinite`](crate::GeometryError::NonFinite) or

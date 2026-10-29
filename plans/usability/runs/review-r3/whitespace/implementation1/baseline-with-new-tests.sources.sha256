@@ -1,0 +1,7 @@
+2417e1489452fc61e5f0206a463d579cde1eb7c1f97ee7b92af7e2c7dab9d0a8  crates/pert-ui-runtime/src/text.rs
+e07a31f6637029e91781247441df4fed469e8822520dc3869a5729350e8b7b66  crates/pert-ui-runtime/src/text_fields.rs
+a0cbc2e3375e12b0702df6e8e868e0f5fc0bf8ac76fd57be0aa10a34f3af5d28  crates/pert-ui-runtime/src/text_selection.rs
+37e76e23247f481fede67a6dd0c4d68fb0fc80c19bfee159f4a46c14f067a1c3  crates/pert-ui-runtime/src/text/tabs.rs
+64083bb3787f7df982f9af4d8418923a2e9fddb43afaf832a3545c41ac0fa75d  crates/pert-ui/tests/editing/hanging_whitespace.rs
+e47b61c5b7dfbf9b6669e4c92dce51652fbdf49b3588352a966525af4dd875b0  crates/pert-ui/tests/editing/tab_whitespace.rs
+eef65bbc2ad2e37ff31edebe76339f72ce3d56f24f7b2b43e85b8098236977cc  crates/pert-ui/tests/editing/main.rs

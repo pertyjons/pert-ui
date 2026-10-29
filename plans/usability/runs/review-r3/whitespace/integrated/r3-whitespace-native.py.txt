@@ -1,0 +1,8 @@
+from pathlib import Path
+import subprocess,datetime,json,os
+root=Path('/home/per/github/pert-ui');out=Path('/home/per/pert-ui-usability/r3-whitespace-native');out.mkdir()
+cmd=['cargo','run','--locked','-p','pert-ui-native-checks','--','interaction_check','native_text_rendering_probe'];start=datetime.datetime.now(datetime.timezone.utc).isoformat()
+with (out/'run1.log').open('x') as log:
+ log.write(json.dumps({'command':cmd,'started_at_utc':start})+'\n');log.flush();r=subprocess.run(cmd,cwd=root,env=dict(os.environ,PERT_UI_TEXT_MODE_REPORT_DIR=str(out/"captures")),stdout=log,stderr=subprocess.STDOUT)
+(out/'outcome1.json').write_text(json.dumps({'command':cmd,'started_at_utc':start,'finished_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'exit_status':r.returncode,'environment':{'PERT_UI_TEXT_MODE_REPORT_DIR':str(out/'captures')}},indent=2)+'\n')
+print('Native exit',r.returncode)

@@ -1,0 +1,11 @@
+--- a/crates/pert-ui-runtime/src/text_fields.rs
++++ b/crates/pert-ui-runtime/src/text_fields.rs
+@@ -1098,7 +1098,7 @@
+     fn new(layout: &TextLayout, wrap: Option<f32>, caret_width: f32, viewport: f32) -> Self {
+         let width = layout.size().width();
+         let (pin, extent) = match wrap {
+-            Some(wrap) => (Some(width.max(wrap)), width.max(wrap)),
++            Some(wrap) => (Some(wrap), width.max(wrap)),
+             None => (None, width + caret_width),
+         };
+         Self {

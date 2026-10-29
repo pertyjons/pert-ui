@@ -2,8 +2,10 @@
 //! caret movement, editing, clipboard and inspection keep U+0009, Tab traverses
 //! focus, and the rendered tab is blank between its neighbors. In narrow
 //! wrapped text a tab hanging past a line end adds no extent, so it behaves as
-//! a hanging space: the editor gains no horizontal scroll range and
-//! right-to-left positions move left by the width its mark used to add.
+//! a hanging space, left to right and right to left alike: the editor gains no
+//! horizontal scroll range, right-to-left positions move left by the width its
+//! mark used to add, and a caret after it is drawn at the edge of the text's
+//! box. `hanging_whitespace` covers that caret pin itself.
 //!
 //! Multiline paste keeping tabs and single-line paste mapping them to spaces
 //! are `text_fields::pasted_control_characters_become_line_breaks_or_are_dropped`;
@@ -358,17 +360,18 @@ fn a_narrow_text_area_treats_a_hanging_tab_as_a_hanging_space() {
             Some([45.6, 6.0, 1.0, 20.0]),
             vec![],
         ),
-        // After the hanging tab the caret is clipped; no scroll reveals it.
+        // After the hanging tab the caret is drawn at the inner area's end
+        // without scrolling; the selection fill keeps its own geometry.
         (
             "line end after the hanging whitespace",
             "5..5",
-            None,
+            Some([49.0, 6.0, 1.0, 20.0]),
             vec![],
         ),
         (
             "selection with the hanging whitespace",
             "0..5",
-            None,
+            Some([49.0, 6.0, 1.0, 20.0]),
             vec![[12.0, 6.0, 38.0, 20.0]],
         ),
         ("text end", "14..14", Some([45.6, 45.0, 1.0, 20.0]), vec![]),
@@ -389,7 +392,7 @@ fn a_narrow_text_area_treats_a_hanging_tab_as_a_hanging_space() {
         assert_eq!(painted.scroll_x, number(0.0), "{name}");
         assert!(near(painted.caret, caret), "{name}: {:?}", painted.caret);
         assert_eq!(painted.selected, selected, "{name}");
-        assert_eq!(revealed(painted.caret, *area), caret.is_some(), "{name}");
+        assert!(revealed(painted.caret, *area), "{name}");
     }
     // The hanging-space twin paints and scrolls the same at every step.
     assert_eq!(tab, space);
@@ -410,11 +413,16 @@ fn typing_a_tab_at_a_full_line_end_matches_typing_a_space() {
     };
     let tab = typed(&["aaaa", "\t", "b"]);
     assert_eq!(tab, typed(&["aaaa", " ", "b"]));
-    // The typed tab hangs at the end of the text and its caret is clipped
-    // there, as a space's is; the next character wraps without moving the
-    // text sideways.
+    // The typed tab hangs at the end of the text and its caret is drawn at the
+    // inner area's end, as a space's is; neither it nor the next character,
+    // which wraps, moves the text sideways.
     assert_eq!(tab[1].selection, text("5..5"));
-    assert_eq!(tab[1].caret, None);
+    assert_eq!(tab[1].scroll_x, number(0.0));
+    assert!(
+        near(tab[1].caret, Some([49.0, 6.0, 1.0, 20.0])),
+        "{:?}",
+        tab[1]
+    );
     assert_eq!(tab[2].selection, text("6..6"));
     assert_eq!(tab[2].scroll_x, number(0.0));
     assert!(
@@ -424,45 +432,95 @@ fn typing_a_tab_at_a_full_line_end_matches_typing_a_space() {
     );
 }
 
-#[test]
-fn a_narrow_right_to_left_text_area_keeps_its_hanging_tab_in_the_extent_of_a_space() {
-    let text_value = "\u{627}\u{628}\u{62c}\u{62f}\t\u{647}\u{648}\u{632}\u{62d}\t\u{637}\u{64a}";
-    let (mut ui, id) = narrow(text_value, 62.0);
+/// The right-to-left steps of the narrow-editor test: each label, then what
+/// the editor paints after it.
+fn rtl_steps(text: &str) -> Vec<(&'static str, Painted, [f32; 4])> {
+    let (mut ui, id) = narrow(text, 62.0);
+    let mut steps = Vec::new();
+    let mut step = |ui: &mut Runtime, name| {
+        let (painted, inner) = painted(ui);
+        steps.push((name, painted, inner));
+    };
     with(&mut ui, KeyCode::primary(), KeyCode::Home);
+    step(&mut ui, "text start at the right edge");
     // Left moves forward in right-to-left text.
     key(&mut ui, KeyCode::ArrowLeft);
     key(&mut ui, KeyCode::ArrowLeft);
-    let (interior, inner) = painted(&mut ui);
-    assert_eq!(inner, [12.0, 6.0, 38.0, 188.0]);
-    assert_eq!(interior.selection, text("4..4"));
-    assert!(revealed(interior.caret, inner), "{interior:?}");
+    step(&mut ui, "interior");
     key(&mut ui, KeyCode::ArrowLeft);
     key(&mut ui, KeyCode::ArrowLeft);
-    let (before, _) = painted(&mut ui);
-    assert_eq!(before.selection, text("8..8"));
-    assert!(
-        near(before.caret, Some([16.4, 6.0, 1.0, 20.0])),
-        "{before:?}"
-    );
-    // The line end after the hanging tab is left of the inner area.
+    step(&mut ui, "before the hanging whitespace");
     key(&mut ui, KeyCode::End);
-    let (end, _) = painted(&mut ui);
-    assert_eq!(end.selection, text("9..9"));
-    assert_eq!(end.caret, None);
+    step(&mut ui, "line end after the hanging whitespace");
     key(&mut ui, KeyCode::Home);
     with(&mut ui, KeyCode::ShiftLeft, KeyCode::End);
-    let (selected, _) = painted(&mut ui);
-    assert_eq!(selected.selection, text("0..9"));
-    assert_eq!(selected.selected, vec![[12.0, 6.0, 38.0, 20.0]]);
-    // The last line's caret: the pre-fix origin placed it 3 pixels further
-    // right, at 36.2.
+    step(&mut ui, "selection with the hanging whitespace");
     with(&mut ui, KeyCode::primary(), KeyCode::End);
-    let (last, _) = painted(&mut ui);
-    assert_eq!(last.selection, text("22..22"));
-    assert!(near(last.caret, Some([33.2, 45.0, 1.0, 20.0])), "{last:?}");
-    assert!(revealed(last.caret, inner));
+    step(&mut ui, "text end");
     scroll_sideways(&mut ui, &id);
-    assert_eq!(painted(&mut ui).0.scroll_x, number(0.0));
+    step(&mut ui, "after a sideways scroll");
+    steps
+}
+
+#[test]
+fn a_narrow_right_to_left_text_area_keeps_its_hanging_tab_in_the_extent_of_a_space() {
+    let tab =
+        rtl_steps("\u{627}\u{628}\u{62c}\u{62f}\t\u{647}\u{648}\u{632}\u{62d}\t\u{637}\u{64a}");
+    let space =
+        rtl_steps("\u{627}\u{628}\u{62c}\u{62f} \u{647}\u{648}\u{632}\u{62d} \u{637}\u{64a}");
+    let inner = [12.0, 6.0, 38.0, 188.0];
+    let expected = [
+        // The start caret, on the right edge, is drawn at the inner end.
+        (
+            "text start at the right edge",
+            "0..0",
+            Some([49.0, 6.0, 1.0, 20.0]),
+            vec![],
+        ),
+        ("interior", "4..4", Some([33.2, 6.0, 1.0, 20.0]), vec![]),
+        (
+            "before the hanging whitespace",
+            "8..8",
+            Some([16.4, 6.0, 1.0, 20.0]),
+            vec![],
+        ),
+        // The line end after the hanging tab, left of the text's box, is
+        // drawn at the inner area's start.
+        (
+            "line end after the hanging whitespace",
+            "9..9",
+            Some([12.0, 6.0, 1.0, 20.0]),
+            vec![],
+        ),
+        (
+            "selection with the hanging whitespace",
+            "0..9",
+            Some([12.0, 6.0, 1.0, 20.0]),
+            vec![[12.0, 6.0, 38.0, 20.0]],
+        ),
+        // The last line's caret: the pre-fix tab origin placed it 3 pixels
+        // further right, at 36.2.
+        ("text end", "22..22", Some([33.2, 45.0, 1.0, 20.0]), vec![]),
+        (
+            "after a sideways scroll",
+            "22..22",
+            Some([33.2, 45.0, 1.0, 20.0]),
+            vec![],
+        ),
+    ];
+    assert_eq!(tab.len(), expected.len());
+    for ((name, painted, area), (label, range, caret, selected)) in tab.iter().zip(expected) {
+        assert_eq!(*name, label);
+        assert_eq!(*area, inner, "{name}");
+        assert_eq!(painted.selection, text(range), "{name}");
+        assert_eq!(painted.scroll_x, number(0.0), "{name}");
+        assert!(near(painted.caret, caret), "{name}: {:?}", painted.caret);
+        assert_eq!(painted.selected, selected, "{name}");
+        assert!(revealed(painted.caret, *area), "{name}");
+    }
+    // The hanging-space twin paints and scrolls the same at every step: an
+    // empty space raster no longer widens the text where the tab does not.
+    assert_eq!(tab, space);
 }
 
 #[test]
@@ -484,9 +542,16 @@ fn right_to_left_selectable_text_selects_at_fixed_points_after_the_origin_moved(
     frame(&mut ui);
     let id = support::widget(&ui, &root, "text");
     // The hanging tab adds no width: 37 pixels of ink in a 38-pixel
-    // allocation, where its mark measured 40.
+    // allocation, where its mark measured 40. A hanging space, whose empty
+    // raster once measured 42, now measures the same.
     let bounds = ui.bounds(&id).unwrap().unwrap();
     assert_eq!(bounds.values(), [0.0, 0.0, 37.0, 59.0]);
+    let space = value.replace('\t', " ");
+    let twin = ui
+        .event(&id, |cx| cx.text(&space, Some(38.0), TextStyle::Monospace))
+        .unwrap()
+        .unwrap();
+    assert_eq!(twin.size(), Size::new(37.0, 59.0).unwrap());
     let layout = ui
         .event(&id, |cx| cx.text(value, Some(38.0), TextStyle::Monospace))
         .unwrap()

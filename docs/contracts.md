@@ -1258,14 +1258,32 @@ combines tab with printable text keeps its inseparable coverage. There are no
 aligned tab stops, and keyboard Tab navigation is unchanged. Other unsupported
 characters keep fallback/missing-glyph ink.
 
-TextLayout's canvas keeps the logical box and retained non-tab raster bounds,
-including existing empty-raster pen points. Removing a hanging tab's former box
-may shrink width and translate public RTL caret/selection x positions through
-the changed origin. Hit/word testing uses that same coordinate mapping; logical
-analysis positions and vertical origin/baseline remain unchanged. Hanging-
-whitespace geometry can fall outside size(). The current TextArea scroll clamp
-cannot reveal every such caret; this separately verified limitation is recorded
-for follow-up, not hidden by normalized-coordinate comparisons.
+TextLayout's canvas keeps the logical box and retained positive-area raster
+bounds. A zero-width or zero-height raster is skipped after ordinary cache
+lookup/admission and before placement/bounds; its cache entry remains reusable.
+Removing old tab ink or empty-raster pen points can shrink width and translate
+public caret/selection coordinates through the changed origin. Hit/word testing
+uses that same mapping; logical analysis is unchanged. This dimensions-only
+rule does not scan alpha pixels: positive-area space ink from a custom font
+remains, and a transparent positive-area phase raster can still form a blank
+phase mask without changing default layout size/origin. Space/tab equivalence
+requires zero-area space plus matching shaping, line breaking and other glyphs.
+Changed mask extents/partition can change fractional-edge resampling even where
+positive glyph placements are preserved.
+
+Raw hanging-whitespace geometry can fall outside size(). Wrapping TextArea pins
+its displayed caret x to [0,max(box.width-caret.width,0)] for paint, reveal and
+IME anchoring, where box.width=max(layout.width,wrap width). Canonical offsets,
+selection fill, preedit underline and hit/word testing stay unpinned and clip
+normally. Several hanging offsets can share a drawn x; a hit there need not
+recover the hanging offset. Position and wheel use the same stored nonnegative
+interval: max(box.width-inner.width,0) for wrapping and
+max(layout.width+caret.width-inner.width,0) for single-line/numeric/draft editors.
+Outward physical-pixel rounding can cause a bounded shift below one physical
+pixel; repeated spaces do not grow it. An unbreakable wider word still scrolls.
+Tiny viewports retain end-wins reveal with unavoidable clipping. Arrangement
+still reveals even unfocused, and a wheel before the next paint can cancel an
+edit's pending reveal. Prepared-layout/input-state freshness is unchanged.
 
 `TextField` and `TextArea` edit UI-local text with selection, clipboard and IME
 composition. `DraftEditor` embeds a text session within an existing component;

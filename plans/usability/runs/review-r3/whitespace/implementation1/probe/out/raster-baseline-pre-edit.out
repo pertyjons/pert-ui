@@ -1,0 +1,81 @@
+started_at_utc: 2026-10-29T11:25:26Z
+$ cd /home/per/pert-ui-usability/r3-whitespace-implementation-evidence/probe/baseline && RUSTUP_TOOLCHAIN=1.99.1 CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-whitespace-baseline-target cargo run --offline -q --release -- raster /home/per/pert-ui-usability/r3-whitespace-implementation-evidence/probe/frames/baseline-pre-edit
+probe source: 50608d5c870734dd28f0d7a2d0ddd08d1350fc3c81919ef5f66b24b4a5f3f155  /home/per/pert-ui-usability/r3-whitespace-implementation-evidence/probe/src/main.rs
+2417e1489452fc61e5f0206a463d579cde1eb7c1f97ee7b92af7e2c7dab9d0a8  crates/pert-ui-runtime/src/text.rs
+bafd578442105267ff6f48a1ef5c0ee5c844225d15457ea28ad18542e841e016  crates/pert-ui-runtime/src/text/tabs.rs
+e07a31f6637029e91781247441df4fed469e8822520dc3869a5729350e8b7b66  crates/pert-ui-runtime/src/text_fields.rs
+a0cbc2e3375e12b0702df6e8e868e0f5fc0bf8ac76fd57be0aa10a34f3af5d28  crates/pert-ui-runtime/src/text_selection.rs
+raster s1 ltr-plain whole | bounds [4.000, 4.000, 200.000, 192.000] | masks 1 ["[4.000, 4.000, 34.000, 20.000]"] | frame 208x200
+raster s1 ltr-plain quarter | bounds [4.250, 4.250, 199.500, 191.500] | masks 1 ["[4.250, 4.250, 34.000, 20.000]"] | frame 208x200
+raster s1 ltr-trailing-spaces whole | bounds [4.000, 4.000, 200.000, 192.000] | masks 1 ["[4.000, 4.000, 59.000, 20.000]"] | frame 208x200
+raster s1 ltr-trailing-spaces quarter | bounds [4.250, 4.250, 199.500, 191.500] | masks 1 ["[4.250, 4.250, 59.000, 20.000]"] | frame 208x200
+raster s1 ltr-leading-spaces whole | bounds [4.000, 4.000, 200.000, 192.000] | masks 1 ["[4.000, 4.000, 59.000, 20.000]"] | frame 208x200
+raster s1 ltr-leading-spaces quarter | bounds [4.250, 4.250, 199.500, 191.500] | masks 1 ["[4.250, 4.250, 59.000, 20.000]"] | frame 208x200
+raster s1 ltr-inner-spaces whole | bounds [4.000, 4.000, 200.000, 192.000] | masks 1 ["[4.000, 4.000, 51.000, 20.000]"] | frame 208x200
+raster s1 ltr-inner-spaces quarter | bounds [4.250, 4.250, 199.500, 191.500] | masks 1 ["[4.250, 4.250, 51.000, 20.000]"] | frame 208x200
+raster s1 rtl-trailing-space whole | bounds [4.000, 4.000, 200.000, 192.000] | masks 1 ["[4.000, 4.000, 199.000, 20.000]"] | frame 208x200
+raster s1 rtl-trailing-space quarter | bounds [4.250, 4.250, 199.500, 191.500] | masks 1 ["[4.250, 4.250, 199.000, 20.000]"] | frame 208x200
+raster s1 rtl-leading-space whole | bounds [4.000, 4.000, 200.000, 192.000] | masks 1 ["[4.000, 4.000, 192.000, 20.000]"] | frame 208x200
+raster s1 rtl-leading-space quarter | bounds [4.250, 4.250, 199.500, 191.500] | masks 1 ["[4.250, 4.250, 192.000, 20.000]"] | frame 208x200
+raster s1 ltr-wrapped-hanging-space whole | bounds [4.000, 4.000, 38.000, 192.000] | masks 1 ["[4.000, 4.000, 34.000, 59.000]"] | frame 46x200
+raster s1 ltr-wrapped-hanging-space quarter | bounds [4.250, 4.250, 37.500, 191.500] | masks 1 ["[4.250, 4.250, 34.000, 59.000]"] | frame 46x200
+raster s1 ltr-wrapped-hanging-spaces whole | bounds [4.000, 4.000, 38.000, 192.000] | masks 1 ["[4.000, 4.000, 51.000, 59.000]"] | frame 46x200
+raster s1 ltr-wrapped-hanging-spaces quarter | bounds [4.250, 4.250, 37.500, 191.500] | masks 1 ["[4.250, 4.250, 51.000, 59.000]"] | frame 46x200
+raster s1 rtl-wrapped-hanging-space whole | bounds [4.000, 4.000, 38.000, 192.000] | masks 1 ["[4.000, 4.000, 42.000, 59.000]"] | frame 46x200
+raster s1 rtl-wrapped-hanging-space quarter | bounds [4.250, 4.250, 37.500, 191.500] | masks 1 ["[4.250, 4.250, 42.000, 59.000]"] | frame 46x200
+raster s1 rtl-wrapped-hanging-tab whole | bounds [4.000, 4.000, 38.000, 192.000] | masks 1 ["[4.000, 4.000, 37.000, 59.000]"] | frame 46x200
+raster s1 rtl-wrapped-hanging-tab quarter | bounds [4.250, 4.250, 37.500, 191.500] | masks 1 ["[4.250, 4.250, 37.000, 59.000]"] | frame 46x200
+raster s1 whitespace-only whole | bounds [4.000, 4.000, 200.000, 192.000] | masks 1 ["[4.000, 4.000, 26.000, 20.000]"] | frame 208x200
+raster s1 whitespace-only quarter | bounds [4.250, 4.250, 199.500, 191.500] | masks 1 ["[4.250, 4.250, 26.000, 20.000]"] | frame 208x200
+raster s1 tab-only whole | bounds [4.000, 4.000, 200.000, 192.000] | masks 0 [] | frame 208x200
+raster s1 tab-only quarter | bounds [4.250, 4.250, 199.500, 191.500] | masks 0 [] | frame 208x200
+raster s1 tab-and-space whole | bounds [4.000, 4.000, 200.000, 192.000] | masks 1 ["[4.000, 4.000, 43.000, 20.000]"] | frame 208x200
+raster s1 tab-and-space quarter | bounds [4.250, 4.250, 199.500, 191.500] | masks 1 ["[4.250, 4.250, 43.000, 20.000]"] | frame 208x200
+raster s1 unsupported whole | bounds [4.000, 4.000, 200.000, 192.000] | masks 1 ["[4.000, 4.000, 34.000, 20.000]"] | frame 208x200
+raster s1 unsupported quarter | bounds [4.250, 4.250, 199.500, 191.500] | masks 1 ["[4.250, 4.250, 34.000, 20.000]"] | frame 208x200
+raster s1 colored-space-split whole | bounds [4.000, 4.000, 200.000, 192.000] | masks 2 ["[4.000, 11.000, 7.000, 9.000]", "[16.000, 8.000, 8.000, 12.000]"] | frame 208x200
+raster s1 colored-space-split quarter | bounds [4.250, 4.250, 199.500, 191.500] | masks 2 ["[4.250, 11.250, 7.000, 9.000]", "[16.250, 8.250, 8.000, 12.000]"] | frame 208x200
+raster s1 inline-icons whole | bounds [4.000, 4.000, 200.000, 192.000] | masks 4 ["[4.000, 11.000, 8.000, 9.000]", "[17.000, 8.000, 13.000, 12.000]", "[31.000, 8.000, 13.000, 12.000]", "[50.000, 9.000, 11.000, 10.000]"] | frame 208x200
+raster s1 inline-icons quarter | bounds [4.250, 4.250, 199.500, 191.500] | masks 4 ["[4.250, 11.250, 8.000, 9.000]", "[17.250, 8.250, 13.000, 12.000]", "[31.250, 8.250, 13.000, 12.000]", "[50.250, 9.250, 11.000, 10.000]"] | frame 208x200
+raster s1 icon-only whole | bounds [4.000, 4.000, 200.000, 192.000] | masks 1 ["[4.000, 4.000, 16.000, 20.000]"] | frame 208x200
+raster s1 icon-only quarter | bounds [4.250, 4.250, 199.500, 191.500] | masks 1 ["[4.250, 4.250, 16.000, 20.000]"] | frame 208x200
+raster s1 leading-icon-label whole | bounds [4.000, 4.000, 200.000, 192.000] | masks 2 ["[6.000, 8.000, 12.000, 12.000]", "[26.000, 8.000, 30.000, 12.000]"] | frame 208x200
+raster s1 leading-icon-label quarter | bounds [4.250, 4.250, 199.500, 191.500] | masks 2 ["[6.250, 8.250, 12.000, 12.000]", "[26.250, 8.250, 30.000, 12.000]"] | frame 208x200
+raster s1.25 ltr-plain whole | bounds [4.000, 4.000, 200.000, 192.000] | masks 1 ["[4.000, 4.000, 33.600, 20.000]"] | frame 260x250
+raster s1.25 ltr-plain quarter | bounds [4.250, 4.250, 199.500, 191.500] | masks 1 ["[4.250, 4.250, 33.600, 20.000]"] | frame 260x250
+raster s1.25 ltr-trailing-spaces whole | bounds [4.000, 4.000, 200.000, 192.000] | masks 1 ["[4.000, 4.000, 59.200, 20.000]"] | frame 260x250
+raster s1.25 ltr-trailing-spaces quarter | bounds [4.250, 4.250, 199.500, 191.500] | masks 1 ["[4.250, 4.250, 59.200, 20.000]"] | frame 260x250
+raster s1.25 ltr-leading-spaces whole | bounds [4.000, 4.000, 200.000, 192.000] | masks 1 ["[4.000, 4.000, 59.200, 20.000]"] | frame 260x250
+raster s1.25 ltr-leading-spaces quarter | bounds [4.250, 4.250, 199.500, 191.500] | masks 1 ["[4.250, 4.250, 59.200, 20.000]"] | frame 260x250
+raster s1.25 ltr-inner-spaces whole | bounds [4.000, 4.000, 200.000, 192.000] | masks 1 ["[4.000, 4.000, 50.400, 20.000]"] | frame 260x250
+raster s1.25 ltr-inner-spaces quarter | bounds [4.250, 4.250, 199.500, 191.500] | masks 1 ["[4.250, 4.250, 50.400, 20.000]"] | frame 260x250
+raster s1.25 rtl-trailing-space whole | bounds [4.000, 4.000, 200.000, 192.000] | masks 1 ["[4.000, 4.000, 199.200, 20.000]"] | frame 260x250
+raster s1.25 rtl-trailing-space quarter | bounds [4.250, 4.250, 199.500, 191.500] | masks 1 ["[4.250, 4.250, 198.400, 20.000]"] | frame 260x250
+raster s1.25 rtl-leading-space whole | bounds [4.000, 4.000, 200.000, 192.000] | masks 1 ["[4.000, 4.000, 192.000, 20.000]"] | frame 260x250
+raster s1.25 rtl-leading-space quarter | bounds [4.250, 4.250, 199.500, 191.500] | masks 1 ["[4.250, 4.250, 191.200, 20.000]"] | frame 260x250
+raster s1.25 ltr-wrapped-hanging-space whole | bounds [4.000, 4.000, 38.000, 192.000] | masks 1 ["[4.000, 4.000, 33.600, 59.200]"] | frame 58x250
+raster s1.25 ltr-wrapped-hanging-space quarter | bounds [4.250, 4.250, 37.500, 191.500] | masks 1 ["[4.250, 4.250, 33.600, 59.200]"] | frame 58x250
+raster s1.25 ltr-wrapped-hanging-spaces whole | bounds [4.000, 4.000, 38.000, 192.000] | masks 1 ["[4.000, 4.000, 50.400, 59.200]"] | frame 58x250
+raster s1.25 ltr-wrapped-hanging-spaces quarter | bounds [4.250, 4.250, 37.500, 191.500] | masks 1 ["[4.250, 4.250, 50.400, 59.200]"] | frame 58x250
+raster s1.25 rtl-wrapped-hanging-space whole | bounds [4.000, 4.000, 38.000, 192.000] | masks 1 ["[4.000, 4.000, 40.800, 59.200]"] | frame 58x250
+raster s1.25 rtl-wrapped-hanging-space quarter | bounds [4.250, 4.250, 37.500, 191.500] | masks 1 ["[4.250, 4.250, 41.600, 59.200]"] | frame 58x250
+raster s1.25 rtl-wrapped-hanging-tab whole | bounds [4.000, 4.000, 38.000, 192.000] | masks 1 ["[4.000, 4.000, 36.800, 59.200]"] | frame 58x250
+raster s1.25 rtl-wrapped-hanging-tab quarter | bounds [4.250, 4.250, 37.500, 191.500] | masks 1 ["[4.250, 4.250, 36.800, 59.200]"] | frame 58x250
+raster s1.25 whitespace-only whole | bounds [4.000, 4.000, 200.000, 192.000] | masks 1 ["[4.000, 4.000, 25.600, 20.000]"] | frame 260x250
+raster s1.25 whitespace-only quarter | bounds [4.250, 4.250, 199.500, 191.500] | masks 1 ["[4.250, 4.250, 25.600, 20.000]"] | frame 260x250
+raster s1.25 tab-only whole | bounds [4.000, 4.000, 200.000, 192.000] | masks 0 [] | frame 260x250
+raster s1.25 tab-only quarter | bounds [4.250, 4.250, 199.500, 191.500] | masks 0 [] | frame 260x250
+raster s1.25 tab-and-space whole | bounds [4.000, 4.000, 200.000, 192.000] | masks 1 ["[4.000, 4.000, 42.400, 20.000]"] | frame 260x250
+raster s1.25 tab-and-space quarter | bounds [4.250, 4.250, 199.500, 191.500] | masks 1 ["[4.250, 4.250, 42.400, 20.000]"] | frame 260x250
+raster s1.25 unsupported whole | bounds [4.000, 4.000, 200.000, 192.000] | masks 1 ["[4.000, 4.000, 33.600, 20.000]"] | frame 260x250
+raster s1.25 unsupported quarter | bounds [4.250, 4.250, 199.500, 191.500] | masks 1 ["[4.250, 4.250, 33.600, 20.000]"] | frame 260x250
+raster s1.25 colored-space-split whole | bounds [4.000, 4.000, 200.000, 192.000] | masks 2 ["[4.000, 11.200, 7.200, 8.800]", "[16.000, 8.000, 8.000, 12.000]"] | frame 260x250
+raster s1.25 colored-space-split quarter | bounds [4.250, 4.250, 199.500, 191.500] | masks 2 ["[4.250, 11.450, 7.200, 8.800]", "[16.250, 8.250, 8.000, 12.000]"] | frame 260x250
+raster s1.25 inline-icons whole | bounds [4.000, 4.000, 200.000, 192.000] | masks 4 ["[4.000, 11.200, 8.000, 8.800]", "[16.800, 8.000, 12.800, 12.800]", "[31.200, 8.000, 12.800, 12.000]", "[50.400, 9.600, 10.400, 9.600]"] | frame 260x250
+raster s1.25 inline-icons quarter | bounds [4.250, 4.250, 199.500, 191.500] | masks 4 ["[4.250, 11.450, 8.000, 8.800]", "[17.050, 8.250, 12.800, 12.800]", "[31.450, 8.250, 12.800, 12.000]", "[50.650, 9.850, 10.400, 9.600]"] | frame 260x250
+raster s1.25 icon-only whole | bounds [4.000, 4.000, 200.000, 192.000] | masks 1 ["[4.000, 4.000, 16.000, 20.000]"] | frame 260x250
+raster s1.25 icon-only quarter | bounds [4.250, 4.250, 199.500, 191.500] | masks 1 ["[4.250, 4.250, 16.000, 20.000]"] | frame 260x250
+raster s1.25 leading-icon-label whole | bounds [4.000, 4.000, 200.000, 192.000] | masks 2 ["[5.600, 8.000, 12.800, 12.800]", "[26.400, 8.800, 29.600, 11.200]"] | frame 260x250
+raster s1.25 leading-icon-label quarter | bounds [4.250, 4.250, 199.500, 191.500] | masks 2 ["[5.850, 8.250, 12.800, 12.800]", "[26.650, 9.050, 29.600, 11.200]"] | frame 260x250
+exit status: 0
+finished_at_utc: 2026-10-29T11:25:27Z

@@ -363,7 +363,12 @@ One [`RichText`] is a Unicode paragraph with styled segments, shared baseline,
 bidirectional shaping and wrapping. Icons use IconSize, and `gap`/icon helpers use
 IconGap. Span sizes are logical pixels before DPI and zoom. Preparation limits
 include [`TextEditError::MAX_TEXT_BYTES`] of UTF-8, [`RichText::MAX_SEGMENTS`]
-segments and the shared raster limits of [`TextLimit`]. Palette
+segments and the shared raster limits of [`TextLimit`]. Zero-area rasters
+contribute no placement or bounds after cache admission. This checks dimensions,
+not alpha pixels; transparent positive-area phase rasters can remain. Removing
+an old blank edge may change fractional-edge sampling as mask extents change;
+raw [`TextLayout`] coordinates and the wrapped [`TextArea`] presentation policy
+are documented separately. Palette
 changes recolor semantic spans without reshaping their coverage. Existing plain
 and rich captions share one [`TextSource`], which also accepts a binding to
 reactive rich content. Text fields continue to edit plain strings.

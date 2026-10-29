@@ -1,0 +1,95 @@
+$ cd /home/per/pert-ui-usability/r3-whitespace-worktree && CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-whitespace-implementation-target cargo test --locked --release -p pert-ui-runtime --lib text
+# started 2026-10-29T11:32:41+00:00
+
+running 59 tests
+test number_format::tests::locales_refuse_ambiguous_text_and_separators ... ok
+test runtime::clipboard_tests::runtime_clipboard_text_is_refused_inside_every_phase_and_from_the_service ... ok
+test text::icons::tests::every_role_has_a_bundled_glyph ... ok
+test text::rich_tests::bundled_fonts_are_embedded_once_and_registered_by_role ... ok
+test text::rich_tests::a_fitting_ellipsis_text_is_shaped_once_and_then_not_at_all ... ok
+test text::rich_tests::a_truncated_text_measures_the_whole_string_once ... ok
+test text::rich_tests::a_cache_hit_records_the_font_read_and_another_font_misses ... ok
+test text::rich_tests::ellipsis_handles_line_breaks_tiny_widths_and_invalid_widths ... ok
+test text::rich_tests::highlights_validate_boundaries_and_merge_ranges ... ok
+test text::rich_tests::empty_styled_spans_keep_paragraph_defaults_and_validate_fonts ... ok
+test text::rich_tests::all_catalog_entries_exist_and_custom_font_names_do_not_alias ... ok
+test text::tabs::tests::consecutive_tabs_merge_and_retained_tabs_split_them ... ok
+test text::rich_tests::text_fallback_uses_bundled_text_and_icon_sources_stay_exact ... ok
+test text::rich_tests::plain_cache_hits_skip_resolution_and_recollect_current_font_roles ... ok
+test text::tabs::tests::a_registered_font_ligating_a_tab_keeps_that_glyph_and_hides_pure_tab_atoms ... ok
+test text::rich_tests::collection_with_two_readable_faces_is_rejected_before_registration ... ok
+test text::tabs::tests::tab_only_text_has_no_coverage_but_its_advance_and_caret_stops ... ok
+test text::rich_tests::wrapped_bidi_icons_use_their_own_alignment_and_reuse_coverage ... ok
+test text::tabs::tests::phase_spaces_with_a_vertical_offset_place_one_blank_pixel ... ok
+test text::tabs::tests::zero_area_phase_glyphs_stay_cached_and_serve_later_line_misses ... ok
+test text::tabs::tests::a_tab_and_a_missing_character_never_share_phase_coverage ... ok
+test text::tabs::tests::other_unsupported_characters_keep_their_fallback_ink ... ok
+test text::rich_tests::only_a_plain_unwrapped_entry_under_the_same_key_answers_the_width ... ok
+test text::tests::phase_cache_scroll_profile ... ignored, opt-in release-profile measurement of phase-cache reuse
+test text::rich_tests::a_line_beyond_the_byte_limit_is_cut_on_its_own_cluster_boundaries ... ok
+test text_fields::inline::tests::the_editor_area_reserves_the_suffix_and_the_density_gap ... ok
+test text_fields::spaced_paste::tests::a_caret_outside_a_word_uses_the_nearest_word_in_that_direction ... ok
+test text_fields::spaced_paste::tests::a_selection_is_the_target_and_stays_selected ... ok
+test text_fields::spaced_paste::tests::caret_in_a_word_pastes_beside_that_word ... ok
+test text_fields::spaced_paste::tests::existing_spacing_and_edges_are_not_doubled ... ok
+test text_fields::spaced_paste::tests::multibyte_words_keep_char_boundaries ... ok
+test text::rich_tests::cold_and_warm_fits_agree_around_the_advance_width ... ok
+test text_fields::inline::tests::caption_value_and_unit_share_a_painted_baseline ... ok
+test text_fields::spaced_paste::tests::the_clipboard_is_trimmed_and_empty_clipboards_are_not_edits ... ok
+test text_fields::tests::field_menu_is_always_constructible ... ok
+test text_source::tests::only_library_defaults_show_text_before_the_first_read ... ok
+test text_selection::tests::shaped_carets_snap_to_whole_graphemes ... ok
+test text::tests::sizes_above_the_raster_limit_lower_the_scale_instead_of_failing ... ok
+test text::tabs::tests::cached_measured_and_ellipsized_tabs_stay_hidden ... ok
+test text::rich_tests::the_cut_keeps_whole_source_clusters_at_each_share_boundary ... ok
+test text::rich_tests::ellipsis_fits_the_width_keeps_whole_graphemes_and_is_remembered ... ok
+test workspace::tests::escapes_separators_and_quotes_in_paths_and_text ... ok
+test text::rich_tests::segment_boundaries_preserve_clusters_bidi_and_wrapping ... ok
+test text::rich_tests::inline_icon_ink_aligns_with_neighboring_text_at_each_scale_and_font ... ok
+test text::tests::cache_budget_and_entry_limit_include_owned_metadata ... ok
+test text::rich_tests::a_text_beyond_the_raster_limit_truncates_unless_the_cut_is_too ... ok
+test text::tabs::tests::hanging_spaces_and_tabs_of_equal_advance_share_public_geometry ... ok
+test text::tabs::tests::bundled_icons_have_no_empty_raster_so_their_ink_is_unchanged ... ok
+test text::rich_tests::evicting_the_layout_or_the_cut_keeps_the_result ... ok
+test text::tests::phase_cache_reuses_visible_rows_across_vertical_scroll_phases ... ok
+test text::tabs::tests::rich_spans_gaps_and_icons_keep_reference_color_size_and_alignment ... ok
+test text::tests::width_changes_reuse_identical_rasters_but_reflow_matches_fresh_preparation ... ok
+test text::tabs::tests::hanging_tabs_shrink_the_extent_and_translate_right_to_left_public_coordinates ... ok
+test text::tabs::tests::mixed_fonts_keep_each_tab_s_font_size_and_advance_and_icons_use_hidden_tab_metrics ... ok
+test text::rich_tests::a_cut_line_is_fitted_with_its_ellipsis_and_never_shaped_whole ... ok
+test text::tabs::tests::empty_rasters_place_nothing_in_bounds_ink_or_mask_parts ... ok
+test text::rich_tests::a_line_at_the_limit_is_truncated_within_it ... ok
+test text::tabs::tests::the_worst_admitted_alternating_tabs_stay_within_the_style_bound ... ok
+test text::tabs::tests::tabs_keep_the_reference_geometry_and_unicode_analysis_without_their_ink ... ok
+
+test result: ok. 58 passed; 0 failed; 1 ignored; 0 measured; 124 filtered out; finished in 0.19s
+
+   Compiling once_cell v1.21.4
+   Compiling smallvec v1.16.2
+   Compiling bitflags v2.13.2
+   Compiling pert-ui-core v0.3.91 (/home/per/pert-ui-usability/r3-whitespace-worktree/crates/pert-ui-core)
+   Compiling read-fonts v0.41.0
+   Compiling icu_segmenter v2.3.0
+   Compiling icu_normalizer v2.3.0
+   Compiling skrifa v0.44.0
+   Compiling fontique v0.12.0
+   Compiling harfrust v0.12.0
+   Compiling swash v0.2.10
+   Compiling parley_engine v0.12.0
+   Compiling parley v0.12.0
+   Compiling pert-ui-runtime v0.3.91 (/home/per/pert-ui-usability/r3-whitespace-worktree/crates/pert-ui-runtime)
+warning: method `is_empty` is never used
+  --> crates/pert-ui-runtime/src/runtime/measurements.rs:55:19
+   |
+21 | impl Measurements {
+   | ----------------- method in this implementation
+...
+55 |     pub(crate) fn is_empty(&self) -> bool {
+   |                   ^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `pert-ui-runtime` (lib test) generated 1 warning
+    Finished `release` profile [optimized] target(s) in 32.06s
+     Running unittests src/lib.rs (/home/per/pert-ui-usability/r3-whitespace-implementation-target/release/deps/pert_ui_runtime-2fb9741ca8d35aeb)
+# exit status 0, finished 2026-10-29T11:33:13+00:00

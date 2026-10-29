@@ -1,0 +1,20 @@
+{
+  "source_directory": "/home/per/pert-ui-usability/r3-whitespace-api",
+  "policy": "Exact bytes except declared readable log excerpts; full gzip preserves those bytes. Script suffixes renamed for archival use.",
+  "files": [
+    {
+      "source": "generate.log",
+      "source_bytes": 475,
+      "source_sha256": "06226193241aca4295d9e1bd8a763210a58a435d6cd2fd305b8309af8b9cb14b",
+      "archive_path": "generate.log",
+      "archive_sha256": "06226193241aca4295d9e1bd8a763210a58a435d6cd2fd305b8309af8b9cb14b"
+    },
+    {
+      "source": "outcome.json",
+      "source_bytes": 336,
+      "source_sha256": "b7c1fe6f1c30057a0ebb916c6c1d2600857af24d5aedb1a3cd0a9f59e208496e",
+      "archive_path": "outcome.json",
+      "archive_sha256": "b7c1fe6f1c30057a0ebb916c6c1d2600857af24d5aedb1a3cd0a9f59e208496e"
+    }
+  ]
+}

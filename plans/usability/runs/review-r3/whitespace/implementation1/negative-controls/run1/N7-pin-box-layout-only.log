@@ -1,0 +1,91 @@
+# N7-pin-box-layout-only: The pin box is the layout width alone, ignoring the wrap width.
+# file crates/pert-ui-runtime/src/text_fields.rs, sha256 before 2ffcaa0272bb161774da8f4b9ba117aaee9bfa44f11e4cd95f6c1e1dc734c36c
+# mutated sha256 fa51c5a74b890434d4c93be4cbb449e5bc75540a253461d2b4167c6feb237723
+
+$ cargo test --locked -p pert-ui --features cpu --test editing --no-fail-fast -- tab_whitespace hanging_whitespace
+# started 2026-10-29T11:25:21+00:00
+
+running 20 tests
+test tab_whitespace::keyboard_tab_moves_focus_between_text_areas_without_inserting_a_tab ... ok
+test tab_whitespace::right_to_left_selectable_text_selects_at_fixed_points_after_the_origin_moved ... ok
+test tab_whitespace::a_narrow_right_to_left_text_area_keeps_its_hanging_tab_in_the_extent_of_a_space ... FAILED
+test tab_whitespace::typing_a_tab_at_a_full_line_end_matches_typing_a_space ... ok
+test hanging_whitespace::right_to_left_hanging_whitespace_and_the_right_edge_start_show_the_caret ... FAILED
+test tab_whitespace::a_text_area_edits_copies_and_inspects_literal_tabs_as_canonical_bytes ... ok
+test tab_whitespace::a_narrow_text_area_treats_a_hanging_tab_as_a_hanging_space ... FAILED
+test hanging_whitespace::hanging_line_ends_draw_a_pinned_caret_inside_the_text_area ... FAILED
+test hanging_whitespace::focus_loss_hides_the_caret_and_relayout_keeps_the_text_still ... FAILED
+test hanging_whitespace::composition_pins_the_caret_and_anchor_but_not_the_underline ... FAILED
+test hanging_whitespace::a_read_only_text_area_shows_its_selection_fill_over_hanging_whitespace ... ok
+test hanging_whitespace::a_wheel_before_the_next_paint_still_cancels_an_edit_s_pending_reveal ... ok
+test tab_whitespace::a_rendered_tab_is_blank_while_its_neighbors_stay_in_place ... ok
+test hanging_whitespace::the_wheel_and_caret_reveal_share_one_nonnegative_range ... FAILED
+test hanging_whitespace::tiny_and_zero_text_areas_keep_a_valid_range_and_the_caret_end_wins ... ok
+test hanging_whitespace::single_line_reveal_and_the_wheel_share_the_caret_width_range ... ok
+test hanging_whitespace::resizing_restyling_and_rescaling_keep_the_pinned_caret_visible ... ok
+test tab_whitespace::a_full_text_area_of_tab_separated_columns_paints_and_edits ... ok
+test hanging_whitespace::typing_and_holding_space_at_a_full_line_keeps_the_text_still ... ok
+test hanging_whitespace::typing_prose_keeps_the_text_still_at_every_soft_wrap ... ok
+
+failures:
+
+---- tab_whitespace::a_narrow_right_to_left_text_area_keeps_its_hanging_tab_in_the_extent_of_a_space stdout ----
+
+thread 'tab_whitespace::a_narrow_right_to_left_text_area_keeps_its_hanging_tab_in_the_extent_of_a_space' (4021591) panicked at crates/pert-ui/tests/editing/tab_whitespace.rs:517:9:
+text start at the right edge: Some([48.0, 6.0, 1.0, 20.0])
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- hanging_whitespace::right_to_left_hanging_whitespace_and_the_right_edge_start_show_the_caret stdout ----
+
+thread 'hanging_whitespace::right_to_left_hanging_whitespace_and_the_right_edge_start_show_the_caret' (4021584) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:344:13:
+"ابجد هوزح طي" at scale 1: [48.0, 6.0, 1.0, 20.0]
+
+---- tab_whitespace::a_narrow_text_area_treats_a_hanging_tab_as_a_hanging_space stdout ----
+
+thread 'tab_whitespace::a_narrow_text_area_treats_a_hanging_tab_as_a_hanging_space' (4021592) panicked at crates/pert-ui/tests/editing/tab_whitespace.rs:393:9:
+before the hanging whitespace: Some([45.0, 6.0, 1.0, 20.0])
+
+---- hanging_whitespace::hanging_line_ends_draw_a_pinned_caret_inside_the_text_area stdout ----
+
+thread 'hanging_whitespace::hanging_line_ends_draw_a_pinned_caret_inside_the_text_area' (4021582) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:295:13:
+"aaaa bbbb cccc" at scale 1: [45.0, 6.0, 1.0, 20.0]
+
+---- hanging_whitespace::focus_loss_hides_the_caret_and_relayout_keeps_the_text_still stdout ----
+
+thread 'hanging_whitespace::focus_loss_hides_the_caret_and_relayout_keeps_the_text_still' (4021581) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:786:9:
+[45.0, 6.0, 1.0, 20.0]
+
+---- hanging_whitespace::composition_pins_the_caret_and_anchor_but_not_the_underline stdout ----
+
+thread 'hanging_whitespace::composition_pins_the_caret_and_anchor_but_not_the_underline' (4021580) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:758:9:
+[45.0, 6.0, 1.0, 20.0]
+
+---- hanging_whitespace::the_wheel_and_caret_reveal_share_one_nonnegative_range stdout ----
+
+thread 'hanging_whitespace::the_wheel_and_caret_reveal_share_one_nonnegative_range' (4021586) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:447:9:
+[44.6, 6.0, 1.0, 20.0]
+
+
+failures:
+    hanging_whitespace::composition_pins_the_caret_and_anchor_but_not_the_underline
+    hanging_whitespace::focus_loss_hides_the_caret_and_relayout_keeps_the_text_still
+    hanging_whitespace::hanging_line_ends_draw_a_pinned_caret_inside_the_text_area
+    hanging_whitespace::right_to_left_hanging_whitespace_and_the_right_edge_start_show_the_caret
+    hanging_whitespace::the_wheel_and_caret_reveal_share_one_nonnegative_range
+    tab_whitespace::a_narrow_right_to_left_text_area_keeps_its_hanging_tab_in_the_extent_of_a_space
+    tab_whitespace::a_narrow_text_area_treats_a_hanging_tab_as_a_hanging_space
+
+test result: FAILED. 13 passed; 7 failed; 0 ignored; 0 measured; 315 filtered out; finished in 0.57s
+
+   Compiling pert-ui-runtime v0.3.91 (/home/per/pert-ui-usability/r3-whitespace-worktree/crates/pert-ui-runtime)
+   Compiling pert-ui-wgpu v0.3.91 (/home/per/pert-ui-usability/r3-whitespace-worktree/crates/pert-ui-wgpu)
+   Compiling pert-ui-cpu v0.3.91 (/home/per/pert-ui-usability/r3-whitespace-worktree/crates/pert-ui-cpu)
+   Compiling pert-ui v0.3.91 (/home/per/pert-ui-usability/r3-whitespace-worktree/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.89s
+     Running tests/editing/main.rs (/home/per/pert-ui-usability/r3-whitespace-implementation-target/debug/deps/editing-45c73a21f910b75a)
+error: test failed, to rerun pass `-p pert-ui --test editing`
+error: 1 target failed:
+    `-p pert-ui --test editing`
+# exit status 101, finished 2026-10-29T11:25:26+00:00
+
+# restored original bytes and touched; sha256 after 2ffcaa0272bb161774da8f4b9ba117aaee9bfa44f11e4cd95f6c1e1dc734c36c

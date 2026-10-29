@@ -1,0 +1,18 @@
+{
+  "recorded_at_utc": "2026-10-29T11:45:13.418624+00:00",
+  "author": "Root integration author; documentation/test labels only, no production logic or test assertions changed.",
+  "files": {
+    "crates/pert-ui-runtime/src/text_fields.rs": {
+      "before_sha256": "2ffcaa0272bb161774da8f4b9ba117aaee9bfa44f11e4cd95f6c1e1dc734c36c",
+      "after_sha256": "b954d9b0f2b79bbd6ce1072cff211baf38455004e39c10e0115e8092ded30d9e"
+    },
+    "crates/pert-ui-runtime/src/text.rs": {
+      "before_sha256": "ad1e8bc4ad82f0ec260bf192eed052addb73e416f7cb21852cd3233e80d78a07",
+      "after_sha256": "6a0cdb46593eee5aa0c8b05c97affb3975eebc03660064c2fed2bd9db89f9093"
+    },
+    "crates/pert-ui/tests/editing/hanging_whitespace.rs": {
+      "before_sha256": "64083bb3787f7df982f9af4d8418923a2e9fddb43afaf832a3545c41ac0fa75d",
+      "after_sha256": "ee7eeba3845a804fd53c606bca9cc7e73f29987a04f2b9fd518e3cc988b6afdf"
+    }
+  }
+}

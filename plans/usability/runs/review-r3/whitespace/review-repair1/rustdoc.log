@@ -1,0 +1,4 @@
+$ cargo doc --locked -p pert-ui-runtime --no-deps
+ Documenting pert-ui-runtime v0.3.91 (/home/per/pert-ui-usability/r3-whitespace-worktree/crates/pert-ui-runtime)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.58s
+   Generated /home/per/pert-ui-usability/r3-whitespace-implementation-target/doc/pert_ui_runtime/index.html

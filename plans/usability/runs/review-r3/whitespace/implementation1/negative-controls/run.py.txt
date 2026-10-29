@@ -1,0 +1,203 @@
+#!/usr/bin/env python3
+"""Negative controls for the hanging-whitespace implementation.
+
+Each control replaces exact source text in one worktree file (asserting one
+match), touches it, runs the focused tests, then writes the original bytes
+back (not a copy with preserved times), touches the file again and verifies
+its sha256. A final run after all restorations must recompile and pass.
+Usage: run.py [CONTROL ...]   (default: all)
+"""
+import hashlib
+import os
+import pathlib
+import subprocess
+import sys
+import time
+from datetime import datetime, timezone
+
+ROOT = pathlib.Path("/home/per/pert-ui-usability/r3-whitespace-worktree")
+OUT = pathlib.Path("/home/per/pert-ui-usability/r3-whitespace-implementation-evidence/negative-controls")
+ENV = dict(os.environ, CARGO_TARGET_DIR="/home/per/pert-ui-usability/r3-whitespace-implementation-target")
+TEXT = "crates/pert-ui-runtime/src/text.rs"
+FIELDS = "crates/pert-ui-runtime/src/text_fields.rs"
+
+RUNTIME = ["cargo", "test", "--locked", "-p", "pert-ui-runtime", "--lib", "--no-fail-fast", "text::tabs"]
+FACADE = ["cargo", "test", "--locked", "-p", "pert-ui", "--features", "cpu", "--test", "editing",
+          "--no-fail-fast", "--", "tab_whitespace", "hanging_whitespace"]
+
+ZERO_SKIP = """                    if image.placement.width == 0 || image.placement.height == 0 {
+                        continue;
+                    }
+                    let x = x.floor() as i64 + i64::from(image.placement.left);"""
+ADMISSION = """                    let image = &cached.image;
+                    if let Some(key) = key"""
+
+CONTROLS = {
+    "N1-empty-raster-bounds-restored": (
+        "The zero-area skip removed: empty rasters place and extend bounds again.",
+        TEXT, ZERO_SKIP,
+        "                    let x = x.floor() as i64 + i64::from(image.placement.left);",
+        [RUNTIME, FACADE]),
+    "N2-raw-caret-no-pin": (
+        "Horizontal::caret returns the canonical caret: paint, reveal and input state unpinned.",
+        FIELDS, "        let Some(extent) = self.pin else {",
+        "        let Some(extent) = self.pin.filter(|_| false) else {",
+        [FACADE]),
+    "N3-old-clamp-and-raw-caret": (
+        "The whole old reveal policy: the old clamp to size + caret width and no pin.",
+        FIELDS, None, None, [FACADE]),
+    "N3b-old-clamp-only": (
+        "Only the old reveal clamp, size + caret width - viewport, with the pin kept.",
+        FIELDS, "        scroll[0] = scroll[0].clamp(0.0, horizontal.max_scroll);",
+        "        scroll[0] = scroll[0].clamp(0.0, (layout.size().width() + cw - w).max(0.0));",
+        [FACADE]),
+    "N4-old-wheel-range": (
+        "The old wheel clamp, size - viewport for every editor: the +cw mismatch with single-line reveal.",
+        FIELDS, "                (old[0] + delta.x()).clamp(0.0, max_x),",
+        "                (old[0] + delta.x()).clamp(0.0, (p_size_width(&self.prepared) - viewport_width(&self.prepared)).max(0.0)),",
+        [FACADE]),
+    "N4b-wheel-plus-caret-width-everywhere": (
+        "The wheel range with the caret width for wrapping editors too (review 2, condition 1).",
+        FIELDS, "                (old[0] + delta.x()).clamp(0.0, max_x),",
+        "                (old[0] + delta.x()).clamp(0.0, max_x.max(wheel_plus_cw(&self.prepared))),",
+        [FACADE]),
+    "N5-phase-skip-before-admission": (
+        "Zero-area rasters skipped before the phase cache admits them.",
+        TEXT, ADMISSION,
+        """                    let image = &cached.image;
+                    if image.placement.width == 0 || image.placement.height == 0 {
+                        continue;
+                    }
+                    if let Some(key) = key""",
+        [RUNTIME]),
+    "N6-pin-box-wrap-only": (
+        "The pin box is the wrap width alone, ignoring a wider layout.",
+        FIELDS, "            Some(wrap) => (Some(width.max(wrap)), width.max(wrap)),",
+        "            Some(wrap) => (Some(wrap), width.max(wrap)),",
+        [FACADE]),
+    "N7-pin-box-layout-only": (
+        "The pin box is the layout width alone, ignoring the wrap width.",
+        FIELDS, "            Some(wrap) => (Some(width.max(wrap)), width.max(wrap)),",
+        "            Some(wrap) => (Some(width), width.max(wrap)),",
+        [FACADE]),
+}
+
+# Helpers some mutations need, appended to the end of text_fields.rs.
+HELPERS = {
+    "N4-old-wheel-range": """
+fn p_size_width(p: &RefCell<Option<Prepared>>) -> f32 {
+    p.borrow().as_ref().map_or(0.0, |p| p.layout.size().width())
+}
+fn viewport_width(p: &RefCell<Option<Prepared>>) -> f32 {
+    p.borrow().as_ref().map_or(0.0, |p| p.inner.width())
+}
+""",
+    "N4b-wheel-plus-caret-width-everywhere": """
+fn wheel_plus_cw(p: &RefCell<Option<Prepared>>) -> f32 {
+    p.borrow()
+        .as_ref()
+        .map_or(0.0, |p| (p.layout.size().width() + 1.0 - p.inner.width()).max(0.0))
+}
+""",
+}
+
+
+def now():
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def run(command, log):
+    log.write(f"\n$ {' '.join(command)}\n# started {now()}\n")
+    log.flush()
+    result = subprocess.run(command, cwd=ROOT, env=ENV, capture_output=True, text=True)
+    log.write(result.stdout)
+    log.write(result.stderr)
+    log.write(f"# exit status {result.returncode}, finished {now()}\n")
+    return result
+
+
+def mutate(name, original):
+    _, _, old, new, _ = CONTROLS[name]
+    text = original
+    if name == "N3-old-clamp-and-raw-caret":
+        for old, new in [
+            ("        let Some(extent) = self.pin else {",
+             "        let Some(extent) = self.pin.filter(|_| false) else {"),
+            ("        scroll[0] = scroll[0].clamp(0.0, horizontal.max_scroll);",
+             "        scroll[0] = scroll[0].clamp(0.0, (layout.size().width() + cw - w).max(0.0));"),
+        ]:
+            assert text.count(old) == 1, old
+            text = text.replace(old, new)
+        return text
+    assert text.count(old) == 1, (name, old)
+    text = text.replace(old, new)
+    return text + HELPERS.get(name, "")
+
+
+def control(name, summary):
+    description, relative, _, _, commands = CONTROLS[name]
+    path = ROOT / relative
+    original = path.read_bytes()
+    before = sha(path)
+    mutated = mutate(name, original.decode())
+    with open(OUT / f"{name}.log", "w") as log:
+        log.write(f"# {name}: {description}\n# file {relative}, sha256 before {before}\n")
+        path.write_text(mutated)
+        os.utime(path)
+        diff = subprocess.run(["diff", "-u", "--label", f"a/{relative}", "--label", f"b/{relative}", "-", str(path)],
+                              input=original.decode(), capture_output=True, text=True).stdout
+        (OUT / f"{name}.diff").write_text(diff)
+        log.write(f"# mutated sha256 {sha(path)}\n")
+        results = []
+        try:
+            for command in commands:
+                results.append(run(command, log))
+        finally:
+            path.write_bytes(original)
+            time.sleep(0.01)
+            os.utime(path)
+            after = sha(path)
+            log.write(f"\n# restored original bytes and touched; sha256 after {after}\n")
+            assert after == before, (name, after, before)
+    output = "".join(r.stdout + r.stderr for r in results)
+    compiled = "Compiling pert-ui-runtime" in output
+    failed = sorted({line.split()[1] for line in output.splitlines()
+                     if line.startswith("test ") and line.endswith("FAILED")})
+    panics = [line for line in output.splitlines() if "panicked at" in line]
+    statuses = [r.returncode for r in results]
+    summary.write(f"## {name}\n{description}\nexit statuses {statuses}; recompiled pert-ui-runtime: {compiled}\n")
+    summary.write(f"failing tests ({len(failed)}):\n" + "".join(f"  {t}\n" for t in failed))
+    summary.write("first panic locations:\n" + "".join(f"  {p}\n" for p in panics[:12]) + "\n")
+    summary.flush()
+
+
+def main():
+    OUT.mkdir(parents=True, exist_ok=True)
+    names = sys.argv[1:] or list(CONTROLS)
+    owned = (TEXT, FIELDS, "crates/pert-ui-runtime/src/text/tabs.rs",
+             "crates/pert-ui-runtime/src/text_selection.rs",
+             "crates/pert-ui/tests/editing/tab_whitespace.rs",
+             "crates/pert-ui/tests/editing/hanging_whitespace.rs",
+             "crates/pert-ui/tests/editing/main.rs")
+    hashes_before = {f: sha(ROOT / f) for f in owned}
+    with open(OUT / "summary.txt", "a") as summary:
+        summary.write(f"# run started {now()} for {names}\n# sources before: {hashes_before}\n\n")
+        for name in names:
+            control(name, summary)
+        hashes_after = {f: sha(ROOT / f) for f in owned}
+        assert hashes_after == hashes_before
+        summary.write(f"# sources after all restorations equal before: {hashes_after}\n")
+        with open(OUT / "post-restore-rebuild.log", "w") as log:
+            log.write(f"# after restoring every control; sources {hashes_after}\n")
+            results = [run(command, log) for command in (RUNTIME, FACADE)]
+        output = "".join(r.stdout + r.stderr for r in results)
+        summary.write(f"# post-restore rebuild: exit statuses {[r.returncode for r in results]}, "
+                      f"recompiled pert-ui-runtime: {'Compiling pert-ui-runtime' in output}, finished {now()}\n")
+
+
+if __name__ == "__main__":
+    main()

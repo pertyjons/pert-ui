@@ -1,0 +1,45 @@
+{
+  "note": "Descriptive CPU/GPU comparison of the existing general native text-mode probe only. No new tolerance gate, hanging-caret assertion, performance claim or tab-specific GPU proof. Original PNG bytes unchanged.",
+  "pairs": [
+    {
+      "cpu": "LineMask-cpu.png",
+      "gpu": "LineMask-gpu.png",
+      "size": [
+        800,
+        500
+      ],
+      "different_pixels": 8340,
+      "maximum_channel_difference": 1
+    },
+    {
+      "cpu": "LineMask-scroll-cpu.png",
+      "gpu": "LineMask-scroll-gpu.png",
+      "size": [
+        800,
+        500
+      ],
+      "different_pixels": 9117,
+      "maximum_channel_difference": 1
+    },
+    {
+      "cpu": "PhaseLine-cpu.png",
+      "gpu": "PhaseLine-gpu.png",
+      "size": [
+        800,
+        500
+      ],
+      "different_pixels": 5940,
+      "maximum_channel_difference": 1
+    },
+    {
+      "cpu": "PhaseLine-scroll-cpu.png",
+      "gpu": "PhaseLine-scroll-gpu.png",
+      "size": [
+        800,
+        500
+      ],
+      "different_pixels": 8154,
+      "maximum_channel_difference": 1
+    }
+  ]
+}

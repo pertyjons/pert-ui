@@ -290,13 +290,48 @@ mod tests {
     /// The canvas the visible-ink policy defines for the pre-fix `reference`,
     /// computed here independently of the implementation's bounds: Parley's
     /// logical box, `width()` by `height()`, joined with the unphased raster
-    /// placement of every glyph outside an atom of tabs alone, as the existing
-    /// bounds calculation places it (an empty raster, as a space has, counts
-    /// at its pen position). Icons are aligned vertically after shaping, so
-    /// their glyphs give only horizontal bounds; the second value is whether
-    /// every drawn glyph also gave vertical bounds. With `tab_ink`, the
-    /// glyphs of tab-only atoms count too: the reference's own canvas.
+    /// placement of every glyph outside an atom of tabs alone whose raster
+    /// has area. A zero-area raster, as a space has, places nothing and adds
+    /// no bounds, not even its pen position. Icons are aligned vertically
+    /// after shaping, so their glyphs give only horizontal bounds; the second
+    /// value is whether every drawn glyph also gave vertical bounds. With
+    /// `tab_ink`, the glyphs of tab-only atoms count too: the reference's own
+    /// canvas. Without tabs, any layout is its own reference.
     fn expected_canvas(reference: &TextLayout, text: &str, tab_ink: bool) -> ([i64; 4], bool) {
+        let shaped = &reference.shaped;
+        let mut bounds = [
+            0,
+            0,
+            shaped.width().ceil() as i64,
+            shaped.height().ceil() as i64,
+        ];
+        let mut vertical = true;
+        for placed in expected_placements(reference, text, tab_ink) {
+            bounds[0] = bounds[0].min(placed.rect[0]);
+            bounds[2] = bounds[2].max(placed.rect[2]);
+            if placed.icon {
+                vertical = false;
+            } else {
+                bounds[1] = bounds[1].min(placed.rect[1]);
+                bounds[3] = bounds[3].max(placed.rect[3]);
+            }
+        }
+        (bounds, vertical)
+    }
+    /// One raster [`expected_placements`] places.
+    struct Placed {
+        /// Physical `[left, top, right, bottom]` in Parley coordinates; an
+        /// icon's vertical extent is that of its unaligned raster.
+        rect: [i64; 4],
+        brush: usize,
+        icon: bool,
+    }
+    /// The unphased rasters with area that `reference` places, in the order
+    /// the lines, glyph runs and glyphs are visited: every glyph outside an
+    /// atom of tabs alone (with `tab_ink`, those too), skipping zero-area
+    /// rasters such as a space's. Computed with Swash directly, not through
+    /// the service.
+    fn expected_placements(reference: &TextLayout, text: &str, tab_ink: bool) -> Vec<Placed> {
         let shaped = &reference.shaped;
         let icons: Vec<usize> = reference
             .signature
@@ -305,13 +340,7 @@ mod tests {
             .filter(|run| run.alignment.is_some())
             .map(|run| run.brush)
             .collect();
-        let mut bounds = [
-            0,
-            0,
-            shaped.width().ceil() as i64,
-            shaped.height().ceil() as i64,
-        ];
-        let mut vertical = true;
+        let mut placed = Vec::new();
         let mut context = swash::scale::ScaleContext::new();
         for line in shaped.lines() {
             // Pen positions of the glyphs of atoms of tabs alone on this line.
@@ -374,20 +403,25 @@ mod tests {
                     else {
                         continue;
                     };
-                    let left = glyph.x.floor() as i64 + i64::from(image.placement.left);
-                    bounds[0] = bounds[0].min(left);
-                    bounds[2] = bounds[2].max(left + i64::from(image.placement.width));
-                    if icon {
-                        vertical = false;
-                    } else {
-                        let top = glyph.y.floor() as i64 - i64::from(image.placement.top);
-                        bounds[1] = bounds[1].min(top);
-                        bounds[3] = bounds[3].max(top + i64::from(image.placement.height));
+                    if image.placement.width == 0 || image.placement.height == 0 {
+                        continue;
                     }
+                    let left = glyph.x.floor() as i64 + i64::from(image.placement.left);
+                    let top = glyph.y.floor() as i64 - i64::from(image.placement.top);
+                    placed.push(Placed {
+                        rect: [
+                            left,
+                            top,
+                            left + i64::from(image.placement.width),
+                            top + i64::from(image.placement.height),
+                        ],
+                        brush,
+                        icon,
+                    });
                 }
             }
         }
-        (bounds, vertical)
+        placed
     }
     /// Asserts the repaired canvas is exactly the policy's, keeping the
     /// reference's vertical extent, and returns whether the old tab ink alone
@@ -1299,6 +1333,344 @@ mod tests {
                 "scale {scale}: categories {categories:?}; {differing} points hit differently \
                  in the reference at the same point"
             );
+        }
+    }
+
+    /// A space and a hidden tab of the same advance both have no coverage, so
+    /// their layouts agree: size, origin and every public caret and selection
+    /// rectangle, wrapped or not, left to right or right to left.
+    #[test]
+    fn hanging_spaces_and_tabs_of_equal_advance_share_public_geometry() {
+        let texts = [
+            "aaaa\tbbbb\tcccc",
+            "\u{627}\u{628}\u{62c}\u{62f}\t\u{647}\u{648}\u{632}\u{62d}\t\u{637}\u{64a}",
+            "\u{5d0}\u{5d1}\u{5d2}\u{5d3}\t",
+            "\t\u{5d0}\u{5d1}",
+            "aaaa\t",
+            "\t\taaaa\t\t",
+            "abc\t\ndef\t\t",
+        ];
+        let rects = |layout: &TextLayout, selection: TextSelection| {
+            selection
+                .rectangles(layout)
+                .unwrap()
+                .iter()
+                .map(|r| r.values())
+                .collect::<Vec<_>>()
+        };
+        for scale in [1.0, 1.25] {
+            let (mut fixed, mut reference) = services();
+            for text in texts {
+                let twin = text.replace('\t', " ");
+                for width in [None, Some(38.0), Some(12.0)] {
+                    let style = TextStyle::Monospace;
+                    let tab = fixed.prepare(text, width, scale, style).unwrap();
+                    let space = fixed.prepare(&twin, width, scale, style).unwrap();
+                    let context = format!("{text:?} at {width:?}, scale {scale}");
+                    // The bundled monospace font gives both one cell.
+                    assert_eq!(tab.shaped.width(), space.shaped.width(), "{context}");
+                    // Each canvas is the independent one: the space's has no
+                    // tabs, so it is its own reference.
+                    let (policy, vertical) = expected_canvas(&space, &twin, true);
+                    assert!(vertical);
+                    assert_eq!(canvas(&space), policy, "{context}: space canvas");
+                    let expected = reference.prepare(text, width, scale, style).unwrap();
+                    assert_policy_canvas(&tab, &expected, text);
+                    assert_eq!(tab.size(), space.size(), "{context}");
+                    assert_eq!(tab.origin, space.origin, "{context}");
+                    for index in 0..=text.len() {
+                        let (a, b) = (
+                            TextSelection::snapped(&tab, index, index),
+                            TextSelection::snapped(&space, index, index),
+                        );
+                        assert_eq!(focus(a), focus(b), "{context} at {index}");
+                        assert_eq!(
+                            a.caret(&tab).unwrap(),
+                            b.caret(&space).unwrap(),
+                            "{context}: caret at {index}"
+                        );
+                        let collapse = crate::SelectionExtension::Collapse;
+                        let end = (
+                            a.moved(&tab, TextMovement::LineEnd, collapse),
+                            b.moved(&space, TextMovement::LineEnd, collapse),
+                        );
+                        assert_eq!(end.0.caret(&tab).unwrap(), end.1.caret(&space).unwrap());
+                    }
+                    assert_eq!(
+                        rects(&tab, TextSelection::snapped(&tab, 0, text.len())),
+                        rects(&space, TextSelection::snapped(&space, 0, text.len())),
+                        "{context}"
+                    );
+                    println!(
+                        "{context}: tab and space size {:?}, origin {:?}",
+                        [space.size().width(), space.size().height()],
+                        space.origin
+                    );
+                }
+            }
+        }
+    }
+
+    /// The independent placements' brush chunks: one mask part each.
+    fn expected_parts(placed: &[Placed]) -> usize {
+        placed.chunk_by(|a, b| a.brush == b.brush).count()
+    }
+
+    /// Zero-area rasters neither place a glyph nor extend the canvas, ink or
+    /// mask parts, in the default path and at phases without a vertical
+    /// offset. Parley's baselines are whole pixels, so the default path renders
+    /// a space 0 or 1 pixel wide and 0 high. A vertical phase offsets it by a
+    /// fraction, and Swash then renders the empty outline as one pixel of zero
+    /// coverage: that raster has area and stays placed, as
+    /// `phase_spaces_with_a_vertical_offset_place_one_blank_pixel` records.
+    #[test]
+    fn empty_rasters_place_nothing_in_bounds_ink_or_mask_parts() {
+        let red = Color::from_srgb8(220, 20, 20, 255);
+        let blue = Color::from_srgb8(20, 20, 220, 255);
+        let hebrew = "\u{5d0}\u{5d1}\u{5d2}";
+        let plain = [
+            " ",
+            "   ",
+            "\t ",
+            " \t \t",
+            "a ",
+            " a",
+            "  a  b  ",
+            "\u{5d0} ",
+            " \u{5d0}\u{5d1}",
+            "\u{5d0}\u{5d1} \u{5d2}  ",
+            "aaaa bbbb cccc",
+            "aaaa  bbbb   cccc ",
+            "\u{627}\u{628}\u{62c}\u{62f} \u{647}\u{648}\u{632}\u{62d} \u{637}\u{64a}",
+            "a\u{E000} b",
+            "x \u{301}y ",
+            "first line \nsecond  ",
+        ];
+        let mut contents: Vec<RichText> = plain.iter().map(|t| RichText::from(*t)).collect();
+        contents.extend([
+            // A space of another color between two same-colored glyphs no
+            // longer splits their mask.
+            RichText::new()
+                .span(TextSpan::new("a").color(red))
+                .span(TextSpan::new(" ").color(blue))
+                .span(TextSpan::new("b").color(red)),
+            RichText::new()
+                .text("a ")
+                .icon(Icon::Save)
+                .text(" ")
+                .gap()
+                .text(format!(" {hebrew} ")),
+            RichText::new().text(" ").icon(Icon::Close).text(" "),
+        ]);
+        let mut whitespace_only = 0;
+        for scale in [1.0, 1.25, 2.0] {
+            let (mut fixed, mut reference) = services();
+            let font = fixture(&mut fixed);
+            let reference_font = fixture(&mut reference);
+            let fixture_text = |font: &FontId| {
+                RichText::new()
+                    .span(TextSpan::new("A X\tB ").font(font.clone()))
+                    .text(" end ")
+            };
+            let mut cases: Vec<(RichText, RichText)> =
+                contents.iter().map(|c| (c.clone(), c.clone())).collect();
+            cases.push((fixture_text(&font), fixture_text(&reference_font)));
+            for (content, reference_content) in &cases {
+                let text = shaped_text(&fixed, content);
+                for width in [None, Some(38.0), Some(12.0)] {
+                    for style_size in [14.0, 26.0] {
+                        let prepare = |service: &mut TextService, content: &RichText| {
+                            service
+                                .prepare_rich(
+                                    content,
+                                    TextRequest::new(
+                                        TextStyle::Monospace,
+                                        style_size,
+                                        &Cell::new(0),
+                                    )
+                                    .width(width)
+                                    .scale(scale)
+                                    .inline(16.0, 6.0),
+                                )
+                                .unwrap()
+                        };
+                        let actual = prepare(&mut fixed, content);
+                        let expected = prepare(&mut reference, reference_content);
+                        let context = format!("{text:?} {width:?} size {style_size} scale {scale}");
+                        assert_policy_canvas(&actual, &expected, &text);
+                        let placed = expected_placements(&expected, &text, false);
+                        // Ink is the union of the placed rasters, or None.
+                        if placed.is_empty() {
+                            whitespace_only += 1;
+                            assert_eq!(actual.ink, None, "{context}");
+                            assert!(actual.parts.is_empty(), "{context}");
+                            for phase in [[1, 0], [2, 0], [3, 0]] {
+                                assert!(
+                                    fixed.phase_parts(&actual, phase).unwrap().is_empty(),
+                                    "{context}: phase {phase:?}"
+                                );
+                            }
+                            continue;
+                        }
+                        if placed.iter().all(|p| !p.icon) {
+                            let [left, top, ..] = canvas(&actual);
+                            let s = actual.scale;
+                            let mut ink = [i64::MAX, i64::MAX, i64::MIN, i64::MIN];
+                            for p in &placed {
+                                ink[0] = ink[0].min(p.rect[0]);
+                                ink[1] = ink[1].min(p.rect[1]);
+                                ink[2] = ink[2].max(p.rect[2]);
+                                ink[3] = ink[3].max(p.rect[3]);
+                            }
+                            let ink = [
+                                (ink[0] - left) as f32 / s,
+                                (ink[1] - top) as f32 / s,
+                                (ink[2] - left) as f32 / s,
+                                (ink[3] - top) as f32 / s,
+                            ];
+                            assert_eq!(actual.ink, Some(ink), "{context}");
+                        } else {
+                            assert!(actual.ink.is_some(), "{context}");
+                        }
+                        assert_eq!(actual.parts.len(), expected_parts(&placed), "{context}");
+                        for phase in [[1, 0], [2, 0], [3, 0]] {
+                            let parts = fixed.phase_parts(&actual, phase).unwrap();
+                            assert_eq!(
+                                parts.len(),
+                                expected_parts(&placed),
+                                "{context}: phase {phase:?}"
+                            );
+                            // Every phase part covers some pixel: none is a
+                            // blank canvas grown by an empty raster.
+                            for part in parts.iter() {
+                                assert!(part.image.pixels().iter().any(|v| *v != 0));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        assert!(whitespace_only > 0);
+        // The colored case: three placements, one brush chunk, one mask.
+        let (mut service, _) = services();
+        let colored = rich(&mut service, &contents[plain.len()], None, 1.0);
+        assert_eq!(colored.parts.len(), 1);
+        assert_eq!(colored.parts[0].brush, colored.signature.runs[0].brush);
+    }
+
+    /// The phase path caches a zero-area raster like any other, at zero
+    /// bytes, before skipping it: another line's miss finds it instead of
+    /// rendering the space again.
+    #[test]
+    fn zero_area_phase_glyphs_stay_cached_and_serve_later_line_misses() {
+        let (mut service, _) = services();
+        let style = TextStyle::Monospace;
+        let first = service.prepare("a b", None, 1.0, style).unwrap();
+        // The same cells: the space has the same glyph, size and phase.
+        let second = service.prepare("c d", None, 1.0, style).unwrap();
+        let empty = |service: &TextService| {
+            service
+                .phase_glyphs
+                .iter()
+                .filter(|(_, glyph)| {
+                    glyph.image.placement.width == 0 || glyph.image.placement.height == 0
+                })
+                .map(|(key, glyph)| (key.glyph, key.phase, glyph.image.data.len()))
+                .collect::<std::collections::BTreeSet<_>>()
+        };
+        // Without a vertical phase the space's raster has no area.
+        for phase in [[1, 0], [0, 0], [3, 0]] {
+            let bytes = service.phase_glyph_bytes;
+            let entries = service.phase_glyphs.len();
+            let before = empty(&service);
+            assert!(!service.phase_parts(&first, phase).unwrap().is_empty());
+            let cached = empty(&service);
+            let admitted: Vec<_> = cached.iter().filter(|key| !before.contains(key)).collect();
+            assert_eq!(admitted.len(), 1, "phase {phase:?}: the space is admitted");
+            assert_eq!(admitted[0].2, 0, "at zero bytes");
+            assert_eq!(service.phase_glyphs.len(), entries + 3);
+            let a_and_b = service.phase_glyph_bytes - bytes;
+            // Another line misses its phase-line entry; its two letters are
+            // new, its space is not.
+            let lines = service.phase_lines.len();
+            assert!(!service.phase_parts(&second, phase).unwrap().is_empty());
+            assert_eq!(service.phase_lines.len(), lines + 1);
+            assert_eq!(service.phase_glyphs.len(), entries + 5, "phase {phase:?}");
+            assert_eq!(empty(&service), cached);
+            // The first line again, its phase-line entry evicted: no glyph
+            // is admitted again.
+            service.phase_lines.clear();
+            let (order, total) = (service.phase_order.len(), service.phase_glyph_bytes);
+            assert!(!service.phase_parts(&first, phase).unwrap().is_empty());
+            assert_eq!(service.phase_order.len(), order);
+            assert_eq!(service.phase_glyph_bytes, total);
+            assert!(total - bytes > a_and_b);
+        }
+    }
+
+    /// The residue the zero-area test leaves: at a vertical phase a space
+    /// renders as one pixel of zero coverage, which is placed like any glyph.
+    /// It draws nothing and changes no public size or origin, which come from
+    /// the default path, but whitespace alone then has a blank phase mask.
+    #[test]
+    fn phase_spaces_with_a_vertical_offset_place_one_blank_pixel() {
+        let (mut service, _) = services();
+        for scale in [1.0, 1.25] {
+            let layout = service
+                .prepare("   ", None, scale, TextStyle::Monospace)
+                .unwrap();
+            assert!(layout.parts.is_empty());
+            assert_eq!(layout.ink, None);
+            for phase in [[1, 2], [2, 3], [3, 1], [0, 2]] {
+                let parts = service.phase_parts(&layout, phase).unwrap();
+                assert_eq!(parts.len(), 1, "scale {scale} phase {phase:?}");
+                assert!(parts[0].image.pixels().iter().all(|v| *v == 0));
+                let blank = service
+                    .phase_glyphs
+                    .values()
+                    .filter(|glyph| {
+                        let p = glyph.image.placement;
+                        (p.width, p.height, &glyph.image.data[..]) == (1, 1, &[0][..])
+                    })
+                    .count();
+                assert!(blank > 0, "scale {scale} phase {phase:?}");
+            }
+        }
+    }
+
+    /// Bundled icons are centered through their ink, which skipping empty
+    /// rasters cannot change: none of their glyphs rasterizes empty.
+    #[test]
+    fn bundled_icons_have_no_empty_raster_so_their_ink_is_unchanged() {
+        let (mut service, _) = services();
+        for icon in Icon::ALL {
+            for size in [16.0, 32.0, 64.0] {
+                for scale in [1.0, 1.25] {
+                    let layout = service
+                        .prepare_rich(
+                            &RichText::new().icon(*icon),
+                            TextRequest::new(TextStyle::Body, size, &Cell::new(0))
+                                .scale(scale)
+                                .inline(size, 0.0),
+                        )
+                        .unwrap();
+                    let text = shaped_text(&service, &RichText::new().icon(*icon));
+                    let placed = expected_placements(&layout, &text, true);
+                    let positioned = glyphs(&layout).len();
+                    assert!(positioned > 0);
+                    assert_eq!(placed.len(), positioned, "{icon:?} {size} {scale}");
+                    let [left, ..] = canvas(&layout);
+                    let ink = layout.ink.unwrap();
+                    let s = layout.scale;
+                    let min = placed.iter().map(|p| p.rect[0]).min().unwrap();
+                    let max = placed.iter().map(|p| p.rect[2]).max().unwrap();
+                    assert_eq!(
+                        [ink[0], ink[2]],
+                        [(min - left) as f32 / s, (max - left) as f32 / s],
+                        "{icon:?} {size} {scale}"
+                    );
+                }
+            }
         }
     }
 

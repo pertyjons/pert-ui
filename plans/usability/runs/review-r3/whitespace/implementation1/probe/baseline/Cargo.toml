@@ -1,0 +1,15 @@
+[package]
+name = "r3-whitespace-probe-baseline"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+# Evidence-only program outside every checkout; its own workspace.
+[workspace]
+
+[[bin]]
+name = "probe"
+path = "../src/main.rs"
+
+[dependencies]
+pert-ui = { path = "../../baseline-tree/crates/pert-ui", default-features = false, features = ["cpu"] }

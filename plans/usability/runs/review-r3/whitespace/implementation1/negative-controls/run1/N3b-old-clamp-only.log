@@ -1,0 +1,49 @@
+# N3b-old-clamp-only: Only the old reveal clamp, size + caret width - viewport, with the pin kept.
+# file crates/pert-ui-runtime/src/text_fields.rs, sha256 before 2ffcaa0272bb161774da8f4b9ba117aaee9bfa44f11e4cd95f6c1e1dc734c36c
+# mutated sha256 d88e272a3151c14fac80a9c04d128e2eb6e1e6e76680e2368dc0f752d72c2338
+
+$ cargo test --locked -p pert-ui --features cpu --test editing --no-fail-fast -- tab_whitespace hanging_whitespace
+# started 2026-10-29T11:24:56+00:00
+
+running 20 tests
+test tab_whitespace::keyboard_tab_moves_focus_between_text_areas_without_inserting_a_tab ... ok
+test tab_whitespace::right_to_left_selectable_text_selects_at_fixed_points_after_the_origin_moved ... ok
+test tab_whitespace::a_text_area_edits_copies_and_inspects_literal_tabs_as_canonical_bytes ... ok
+test tab_whitespace::typing_a_tab_at_a_full_line_end_matches_typing_a_space ... ok
+test tab_whitespace::a_narrow_text_area_treats_a_hanging_tab_as_a_hanging_space ... ok
+test tab_whitespace::a_narrow_right_to_left_text_area_keeps_its_hanging_tab_in_the_extent_of_a_space ... ok
+test hanging_whitespace::a_read_only_text_area_shows_its_selection_fill_over_hanging_whitespace ... ok
+test hanging_whitespace::a_wheel_before_the_next_paint_still_cancels_an_edit_s_pending_reveal ... ok
+test tab_whitespace::a_rendered_tab_is_blank_while_its_neighbors_stay_in_place ... ok
+test hanging_whitespace::composition_pins_the_caret_and_anchor_but_not_the_underline ... ok
+test hanging_whitespace::focus_loss_hides_the_caret_and_relayout_keeps_the_text_still ... ok
+test hanging_whitespace::tiny_and_zero_text_areas_keep_a_valid_range_and_the_caret_end_wins ... ok
+test hanging_whitespace::the_wheel_and_caret_reveal_share_one_nonnegative_range ... ok
+test hanging_whitespace::single_line_reveal_and_the_wheel_share_the_caret_width_range ... ok
+test hanging_whitespace::hanging_line_ends_draw_a_pinned_caret_inside_the_text_area ... ok
+test hanging_whitespace::resizing_restyling_and_rescaling_keep_the_pinned_caret_visible ... ok
+test hanging_whitespace::right_to_left_hanging_whitespace_and_the_right_edge_start_show_the_caret ... ok
+test hanging_whitespace::typing_and_holding_space_at_a_full_line_keeps_the_text_still ... ok
+test tab_whitespace::a_full_text_area_of_tab_separated_columns_paints_and_edits ... ok
+test hanging_whitespace::typing_prose_keeps_the_text_still_at_every_soft_wrap ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 315 filtered out; finished in 0.58s
+
+   Compiling pert-ui-runtime v0.3.91 (/home/per/pert-ui-usability/r3-whitespace-worktree/crates/pert-ui-runtime)
+warning: unused variable: `horizontal`
+    --> crates/pert-ui-runtime/src/text_fields.rs:2861:9
+     |
+2861 |         horizontal: Horizontal,
+     |         ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_horizontal`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+   Compiling pert-ui-cpu v0.3.91 (/home/per/pert-ui-usability/r3-whitespace-worktree/crates/pert-ui-cpu)
+   Compiling pert-ui-wgpu v0.3.91 (/home/per/pert-ui-usability/r3-whitespace-worktree/crates/pert-ui-wgpu)
+   Compiling pert-ui v0.3.91 (/home/per/pert-ui-usability/r3-whitespace-worktree/crates/pert-ui)
+warning: `pert-ui-runtime` (lib) generated 1 warning (run `cargo fix --lib -p pert-ui-runtime` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.50s
+     Running tests/editing/main.rs (/home/per/pert-ui-usability/r3-whitespace-implementation-target/debug/deps/editing-45c73a21f910b75a)
+# exit status 0, finished 2026-10-29T11:25:01+00:00
+
+# restored original bytes and touched; sha256 after 2ffcaa0272bb161774da8f4b9ba117aaee9bfa44f11e4cd95f6c1e1dc734c36c

@@ -193,16 +193,21 @@ impl TextStyle {
 /// one ligature keeps that glyph's ink rather than erasing the printable text.
 ///
 /// [`Self::size`] is the layout box joined with the raster bounds of the drawn
-/// glyphs, and the painted origin is its top-left corner. That is not an exact
-/// union of visible ink: a glyph whose raster is empty, such as a space in the
-/// bundled fonts, still extends the bounds to its pen position, while a hidden
-/// tab adds nothing. The layout box leaves out whitespace hanging past the end
-/// of a wrapped line, so caret, selection and pointer geometry at hanging
-/// spaces and tabs may lie outside the size: beyond its right edge in
-/// left-to-right text and at negative x in right-to-left text. There a
-/// hanging space's pen position can still extend the size leftward and move
-/// the origin, where a tab of the same advance does not, so the two can give
-/// different size, origin and public caret coordinates.
+/// glyphs, and the painted origin is its top-left corner. A glyph whose raster
+/// has no area, such as a space in the bundled fonts or an empty glyph of a
+/// registered font, draws nothing and adds no bounds, like a hidden tab;
+/// text of such glyphs alone draws nothing at all. The bounds are whole
+/// raster rectangles, not an exact union of visible ink. The layout box
+/// leaves out whitespace hanging past the end of a wrapped line, so caret,
+/// selection and pointer geometry at hanging spaces and tabs may lie outside
+/// the size: beyond its right edge in left-to-right text and at negative x in
+/// right-to-left text. A hanging space with a zero-area raster and a hidden
+/// tab give the same size, origin and public coordinates when their shaped
+/// advances, line breaking and other glyphs match. A registered font's space
+/// with positive-area ink still contributes its raster bounds. A positive-area
+/// raster with zero coverage can also remain in phase-specific masks: this
+/// rule checks dimensions, without scanning pixels. Phase-mask extents and
+/// partitions can differ without changing the default size or painted origin.
 #[derive(Clone, Debug)]
 pub struct TextLayout {
     size: Size,
@@ -222,11 +227,11 @@ struct MaskPart {
 }
 impl TextLayout {
     /// Logical extent of the painted text: the layout box joined with the drawn
-    /// glyphs' raster bounds, overhangs included. An empty raster, such as a
-    /// bundled-font space, counts at its pen position, and a hidden tab not at
-    /// all, as the [type documentation](Self) describes. Whitespace hanging
-    /// past the end of a wrapped line is outside the layout box, so a caret or
-    /// selection there can fall outside this extent; see
+    /// glyphs' raster bounds, overhangs included, rounded out to whole physical
+    /// pixels. A raster without area, such as a bundled-font space, and a
+    /// hidden tab add nothing, as the [type documentation](Self) describes.
+    /// Whitespace hanging past the end of a wrapped line is outside the layout
+    /// box, so a caret or selection there can fall outside this extent; see
     /// [`TextSelection::caret`](crate::TextSelection::caret).
     #[must_use]
     pub const fn size(&self) -> Size {
@@ -1407,7 +1412,7 @@ impl TextService {
                     };
                     let Some(cached) = cached else {
                         continue;
-                    }; // Empty outlines (e.g. spaces) have no ink.
+                    }; // No image at all has no ink either.
                     let image = &cached.image;
                     if let Some(key) = key
                         && !self.phase_glyphs.contains_key(&key)
@@ -1434,6 +1439,13 @@ impl TextService {
                         .ok_or(TextError::TooLarge(TextLimit::Coverage))?;
                     if raster_bytes > RASTER_BYTES {
                         return Err(TextError::TooLarge(TextLimit::Coverage));
+                    }
+                    // A zero-area raster, such as a space's, has no coverage and
+                    // places nothing: it neither aligns nor extends the bounds.
+                    // Its cache entry above stays, so the phase path does not
+                    // render it again on the next line miss.
+                    if image.placement.width == 0 || image.placement.height == 0 {
+                        continue;
                     }
                     let x = x.floor() as i64 + i64::from(image.placement.left);
                     let mut y = y.floor() as i64 - i64::from(image.placement.top);

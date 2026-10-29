@@ -1,0 +1,36 @@
+# started 2026-10-29T11:32:20+00:00
+# owned sources before:
+  ad1e8bc4ad82f0ec260bf192eed052addb73e416f7cb21852cd3233e80d78a07  crates/pert-ui-runtime/src/text.rs
+  37e76e23247f481fede67a6dd0c4d68fb0fc80c19bfee159f4a46c14f067a1c3  crates/pert-ui-runtime/src/text/tabs.rs
+  2ffcaa0272bb161774da8f4b9ba117aaee9bfa44f11e4cd95f6c1e1dc734c36c  crates/pert-ui-runtime/src/text_fields.rs
+  550d32750d9a0bef6d251869e8bde1849a21dbe981f1f8c146acfa491f709db8  crates/pert-ui-runtime/src/text_selection.rs
+  e47b61c5b7dfbf9b6669e4c92dce51652fbdf49b3588352a966525af4dd875b0  crates/pert-ui/tests/editing/tab_whitespace.rs
+  64083bb3787f7df982f9af4d8418923a2e9fddb43afaf832a3545c41ac0fa75d  crates/pert-ui/tests/editing/hanging_whitespace.rs
+  eef65bbc2ad2e37ff31edebe76339f72ce3d56f24f7b2b43e85b8098236977cc  crates/pert-ui/tests/editing/main.rs
+01 fmt: exit 0
+02 clippy-runtime: exit 0
+03 clippy-facade-cpu: exit 0
+04 clippy-facade-default: exit 0
+05 runtime-tests: exit 0; 12 result lines, 371 passed, 0 failed
+06 runtime-text-release: exit 0; 1 result lines, 58 passed, 0 failed
+07 facade-editing-cpu: exit 0; 1 result lines, 335 passed, 0 failed
+08 facade-editing-default: exit 0; 1 result lines, 334 passed, 0 failed
+09 facade-editing-cpu-release: exit 0; 1 result lines, 65 passed, 0 failed
+10 facade-controls-cpu: exit 0; 1 result lines, 371 passed, 0 failed
+11 runtime-doctests: exit 0; 2 result lines, 415 passed, 0 failed
+12 facade-doctests: exit 0; 2 result lines, 121 passed, 0 failed
+13 rustdoc-runtime: exit 0
+14 rustdoc-facade: exit 0
+15 diff-check: exit 0
+16 new-file-whitespace: exit 0
+17 status: exit 0
+   status paths within the owned set and baseline: True; unexpected: []
+# owned sources after:
+  ad1e8bc4ad82f0ec260bf192eed052addb73e416f7cb21852cd3233e80d78a07  crates/pert-ui-runtime/src/text.rs
+  37e76e23247f481fede67a6dd0c4d68fb0fc80c19bfee159f4a46c14f067a1c3  crates/pert-ui-runtime/src/text/tabs.rs
+  2ffcaa0272bb161774da8f4b9ba117aaee9bfa44f11e4cd95f6c1e1dc734c36c  crates/pert-ui-runtime/src/text_fields.rs
+  550d32750d9a0bef6d251869e8bde1849a21dbe981f1f8c146acfa491f709db8  crates/pert-ui-runtime/src/text_selection.rs
+  e47b61c5b7dfbf9b6669e4c92dce51652fbdf49b3588352a966525af4dd875b0  crates/pert-ui/tests/editing/tab_whitespace.rs
+  64083bb3787f7df982f9af4d8418923a2e9fddb43afaf832a3545c41ac0fa75d  crates/pert-ui/tests/editing/hanging_whitespace.rs
+  eef65bbc2ad2e37ff31edebe76339f72ce3d56f24f7b2b43e85b8098236977cc  crates/pert-ui/tests/editing/main.rs
+# unchanged during the checks: True; finished 2026-10-29T11:34:31+00:00

@@ -1,0 +1,11 @@
+--- a/crates/pert-ui-runtime/src/text_fields.rs
++++ b/crates/pert-ui-runtime/src/text_fields.rs
+@@ -1112,7 +1112,7 @@
+     /// selection itself, selection fills, composition underlines and hit
+     /// testing keep the unpinned geometry.
+     fn caret(self, caret: Rect) -> Result<Rect, crate::GeometryError> {
+-        let Some(extent) = self.pin else {
++        let Some(extent) = self.pin.filter(|_| false) else {
+             return Ok(caret);
+         };
+         let [x, y, w, h] = caret.values();

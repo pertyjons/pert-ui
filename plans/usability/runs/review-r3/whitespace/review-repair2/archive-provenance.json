@@ -1,0 +1,27 @@
+{
+  "source_directory": "/home/per/pert-ui-usability/r3-whitespace-review-repair2",
+  "policy": "Exact bytes except declared readable log excerpts; full gzip preserves those bytes. Script suffixes renamed for archival use.",
+  "files": [
+    {
+      "source": "fmt.log",
+      "source_bytes": 0,
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive_path": "fmt.log",
+      "archive_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "module-comment.diff",
+      "source_bytes": 1058,
+      "source_sha256": "e5ad4ec8111b0316219b2c95dcff119f07cfb3eee9d06e89136664985353db92",
+      "archive_path": "module-comment.diff",
+      "archive_sha256": "e5ad4ec8111b0316219b2c95dcff119f07cfb3eee9d06e89136664985353db92"
+    },
+    {
+      "source": "repair.json",
+      "source_bytes": 329,
+      "source_sha256": "4ddfa244dc953db05f763c468a439ebf67cd1a0b78426abdc33091d2b88753b1",
+      "archive_path": "repair.json",
+      "archive_sha256": "4ddfa244dc953db05f763c468a439ebf67cd1a0b78426abdc33091d2b88753b1"
+    }
+  ]
+}

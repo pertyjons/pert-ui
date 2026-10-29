@@ -1,0 +1,97 @@
+{
+  "source_directory": "/home/per/pert-ui-usability/r3-whitespace-native",
+  "policy": "Exact bytes except declared readable log excerpts; full gzip preserves those bytes. Script suffixes renamed for archival use.",
+  "files": [
+    {
+      "source": "capture-comparison.json",
+      "source_bytes": 1068,
+      "source_sha256": "ebb3f4bcb3003e6c885965f5fcf12a714419be2bb34a3dac773dc660374a679d",
+      "archive_path": "capture-comparison.json",
+      "archive_sha256": "ebb3f4bcb3003e6c885965f5fcf12a714419be2bb34a3dac773dc660374a679d"
+    },
+    {
+      "source": "captures/LineMask-cpu.png",
+      "source_bytes": 1600688,
+      "source_sha256": "55efe9c1b70bf244a34899df8ab83e79f4bc7eab33ec919e1c8e00d0e06b985a",
+      "archive_path": "captures/LineMask-cpu.png",
+      "archive_sha256": "55efe9c1b70bf244a34899df8ab83e79f4bc7eab33ec919e1c8e00d0e06b985a"
+    },
+    {
+      "source": "captures/LineMask-gpu.png",
+      "source_bytes": 1600688,
+      "source_sha256": "e26b8c0b218ee4fb74f24f75a4b2b4369c0b643046bf26cebe9b79f4f388a3b4",
+      "archive_path": "captures/LineMask-gpu.png",
+      "archive_sha256": "e26b8c0b218ee4fb74f24f75a4b2b4369c0b643046bf26cebe9b79f4f388a3b4"
+    },
+    {
+      "source": "captures/LineMask-scroll-cpu.png",
+      "source_bytes": 1600688,
+      "source_sha256": "f6c54659872a5a80e8e8b87a9bf9f932c8bf3545acd5d16d87811eb34e20a185",
+      "archive_path": "captures/LineMask-scroll-cpu.png",
+      "archive_sha256": "f6c54659872a5a80e8e8b87a9bf9f932c8bf3545acd5d16d87811eb34e20a185"
+    },
+    {
+      "source": "captures/LineMask-scroll-gpu.png",
+      "source_bytes": 1600688,
+      "source_sha256": "28b4889d1c3b5eefabd49a0966af46d48a29c85bbe30175d7bcb9aba499ac34c",
+      "archive_path": "captures/LineMask-scroll-gpu.png",
+      "archive_sha256": "28b4889d1c3b5eefabd49a0966af46d48a29c85bbe30175d7bcb9aba499ac34c"
+    },
+    {
+      "source": "captures/PhaseLine-cpu.png",
+      "source_bytes": 1600688,
+      "source_sha256": "b339590eb1495d2ec2423f703a7b832dfd0ddc26af57468cabe5879d08a3e71f",
+      "archive_path": "captures/PhaseLine-cpu.png",
+      "archive_sha256": "b339590eb1495d2ec2423f703a7b832dfd0ddc26af57468cabe5879d08a3e71f"
+    },
+    {
+      "source": "captures/PhaseLine-gpu.png",
+      "source_bytes": 1600688,
+      "source_sha256": "2ec9f8e741cdcbfbe9a8fbd262bca7797a3481ebc661438eed187fc2a41c97e5",
+      "archive_path": "captures/PhaseLine-gpu.png",
+      "archive_sha256": "2ec9f8e741cdcbfbe9a8fbd262bca7797a3481ebc661438eed187fc2a41c97e5"
+    },
+    {
+      "source": "captures/PhaseLine-scroll-cpu.png",
+      "source_bytes": 1600688,
+      "source_sha256": "002dc3daa71c64322b3660df0ec6e03b65c2984a5cac637f873cd66e5eab1435",
+      "archive_path": "captures/PhaseLine-scroll-cpu.png",
+      "archive_sha256": "002dc3daa71c64322b3660df0ec6e03b65c2984a5cac637f873cd66e5eab1435"
+    },
+    {
+      "source": "captures/PhaseLine-scroll-gpu.png",
+      "source_bytes": 1600688,
+      "source_sha256": "14754a3082d20cca30d49fbaf37c45dbeef9f72f98972e7d3952ed51b85f4962",
+      "archive_path": "captures/PhaseLine-scroll-gpu.png",
+      "archive_sha256": "14754a3082d20cca30d49fbaf37c45dbeef9f72f98972e7d3952ed51b85f4962"
+    },
+    {
+      "source": "outcome1.json",
+      "source_bytes": 424,
+      "source_sha256": "37f539a8e1ee8d104d9a96bc5b83001133c5bbd4c163e93156e76719d9e89836",
+      "archive_path": "outcome1.json",
+      "archive_sha256": "37f539a8e1ee8d104d9a96bc5b83001133c5bbd4c163e93156e76719d9e89836"
+    },
+    {
+      "source": "platform.json",
+      "source_bytes": 1793,
+      "source_sha256": "e0918545065d279010639accdbb1f92080d35a943357e13b3480047102c109b2",
+      "archive_path": "platform.json",
+      "archive_sha256": "e0918545065d279010639accdbb1f92080d35a943357e13b3480047102c109b2"
+    },
+    {
+      "source": "run1.log",
+      "source_bytes": 10626,
+      "source_sha256": "cb886e5f88175587d706f6cdcc517b42ff13faae9747c37b44f86725d1456f93",
+      "archive_path": "run1.log",
+      "archive_sha256": "cb886e5f88175587d706f6cdcc517b42ff13faae9747c37b44f86725d1456f93"
+    },
+    {
+      "source": "source-correlation.json",
+      "source_bytes": 694,
+      "source_sha256": "396f4758e63d040e0b0c07f5b76b488f02df9a1854b53dfb55e863e7f18c0e42",
+      "archive_path": "source-correlation.json",
+      "archive_sha256": "396f4758e63d040e0b0c07f5b76b488f02df9a1854b53dfb55e863e7f18c0e42"
+    }
+  ]
+}

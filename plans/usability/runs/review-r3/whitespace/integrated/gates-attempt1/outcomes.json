@@ -1,0 +1,45 @@
+[
+  {
+    "name": "format",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--check"
+    ],
+    "environment": {},
+    "started": "2026-10-29T12:03:20.420373+00:00",
+    "ended": "2026-10-29T12:03:23.074709+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--workspace",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "environment": {},
+    "started": "2026-10-29T12:03:23.074938+00:00",
+    "ended": "2026-10-29T12:03:35.748186+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "workspace-tests",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--workspace"
+    ],
+    "environment": {},
+    "started": "2026-10-29T12:03:35.748455+00:00",
+    "ended": "2026-10-29T12:04:13.512402+00:00",
+    "exit_status": 101
+  }
+]

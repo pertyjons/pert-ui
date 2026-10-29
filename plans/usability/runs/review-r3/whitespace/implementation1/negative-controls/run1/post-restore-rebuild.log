@@ -1,0 +1,64 @@
+# after restoring every control; sources {'crates/pert-ui-runtime/src/text.rs': 'ad1e8bc4ad82f0ec260bf192eed052addb73e416f7cb21852cd3233e80d78a07', 'crates/pert-ui-runtime/src/text_fields.rs': '2ffcaa0272bb161774da8f4b9ba117aaee9bfa44f11e4cd95f6c1e1dc734c36c'}
+
+$ cargo test --locked -p pert-ui-runtime --lib --no-fail-fast text::tabs
+# started 2026-10-29T11:25:26+00:00
+
+running 16 tests
+test text::tabs::tests::consecutive_tabs_merge_and_retained_tabs_split_them ... ok
+test text::tabs::tests::phase_spaces_with_a_vertical_offset_place_one_blank_pixel ... ok
+test text::tabs::tests::tab_only_text_has_no_coverage_but_its_advance_and_caret_stops ... ok
+test text::tabs::tests::zero_area_phase_glyphs_stay_cached_and_serve_later_line_misses ... ok
+test text::tabs::tests::other_unsupported_characters_keep_their_fallback_ink ... ok
+test text::tabs::tests::a_registered_font_ligating_a_tab_keeps_that_glyph_and_hides_pure_tab_atoms ... ok
+test text::tabs::tests::a_tab_and_a_missing_character_never_share_phase_coverage ... ok
+test text::tabs::tests::cached_measured_and_ellipsized_tabs_stay_hidden ... ok
+test text::tabs::tests::hanging_spaces_and_tabs_of_equal_advance_share_public_geometry ... ok
+test text::tabs::tests::bundled_icons_have_no_empty_raster_so_their_ink_is_unchanged ... ok
+test text::tabs::tests::hanging_tabs_shrink_the_extent_and_translate_right_to_left_public_coordinates ... ok
+test text::tabs::tests::rich_spans_gaps_and_icons_keep_reference_color_size_and_alignment ... ok
+test text::tabs::tests::mixed_fonts_keep_each_tab_s_font_size_and_advance_and_icons_use_hidden_tab_metrics ... ok
+test text::tabs::tests::empty_rasters_place_nothing_in_bounds_ink_or_mask_parts ... ok
+test text::tabs::tests::tabs_keep_the_reference_geometry_and_unicode_analysis_without_their_ink ... ok
+test text::tabs::tests::the_worst_admitted_alternating_tabs_stay_within_the_style_bound ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 188 filtered out; finished in 1.74s
+
+   Compiling pert-ui-runtime v0.3.91 (/home/per/pert-ui-usability/r3-whitespace-worktree/crates/pert-ui-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.32s
+     Running unittests src/lib.rs (/home/per/pert-ui-usability/r3-whitespace-implementation-target/debug/deps/pert_ui_runtime-f196cba36386d9cb)
+# exit status 0, finished 2026-10-29T11:25:30+00:00
+
+$ cargo test --locked -p pert-ui --features cpu --test editing --no-fail-fast -- tab_whitespace hanging_whitespace
+# started 2026-10-29T11:25:30+00:00
+
+running 20 tests
+test tab_whitespace::keyboard_tab_moves_focus_between_text_areas_without_inserting_a_tab ... ok
+test tab_whitespace::typing_a_tab_at_a_full_line_end_matches_typing_a_space ... ok
+test tab_whitespace::right_to_left_selectable_text_selects_at_fixed_points_after_the_origin_moved ... ok
+test tab_whitespace::a_narrow_text_area_treats_a_hanging_tab_as_a_hanging_space ... ok
+test tab_whitespace::a_text_area_edits_copies_and_inspects_literal_tabs_as_canonical_bytes ... ok
+test tab_whitespace::a_narrow_right_to_left_text_area_keeps_its_hanging_tab_in_the_extent_of_a_space ... ok
+test hanging_whitespace::a_read_only_text_area_shows_its_selection_fill_over_hanging_whitespace ... ok
+test hanging_whitespace::a_wheel_before_the_next_paint_still_cancels_an_edit_s_pending_reveal ... ok
+test tab_whitespace::a_rendered_tab_is_blank_while_its_neighbors_stay_in_place ... ok
+test hanging_whitespace::composition_pins_the_caret_and_anchor_but_not_the_underline ... ok
+test hanging_whitespace::focus_loss_hides_the_caret_and_relayout_keeps_the_text_still ... ok
+test hanging_whitespace::tiny_and_zero_text_areas_keep_a_valid_range_and_the_caret_end_wins ... ok
+test hanging_whitespace::the_wheel_and_caret_reveal_share_one_nonnegative_range ... ok
+test hanging_whitespace::single_line_reveal_and_the_wheel_share_the_caret_width_range ... ok
+test hanging_whitespace::hanging_line_ends_draw_a_pinned_caret_inside_the_text_area ... ok
+test hanging_whitespace::resizing_restyling_and_rescaling_keep_the_pinned_caret_visible ... ok
+test hanging_whitespace::right_to_left_hanging_whitespace_and_the_right_edge_start_show_the_caret ... ok
+test hanging_whitespace::typing_and_holding_space_at_a_full_line_keeps_the_text_still ... ok
+test tab_whitespace::a_full_text_area_of_tab_separated_columns_paints_and_edits ... ok
+test hanging_whitespace::typing_prose_keeps_the_text_still_at_every_soft_wrap ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 315 filtered out; finished in 0.57s
+
+   Compiling pert-ui-runtime v0.3.91 (/home/per/pert-ui-usability/r3-whitespace-worktree/crates/pert-ui-runtime)
+   Compiling pert-ui-cpu v0.3.91 (/home/per/pert-ui-usability/r3-whitespace-worktree/crates/pert-ui-cpu)
+   Compiling pert-ui-wgpu v0.3.91 (/home/per/pert-ui-usability/r3-whitespace-worktree/crates/pert-ui-wgpu)
+   Compiling pert-ui v0.3.91 (/home/per/pert-ui-usability/r3-whitespace-worktree/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.98s
+     Running tests/editing/main.rs (/home/per/pert-ui-usability/r3-whitespace-implementation-target/debug/deps/editing-45c73a21f910b75a)
+# exit status 0, finished 2026-10-29T11:25:34+00:00

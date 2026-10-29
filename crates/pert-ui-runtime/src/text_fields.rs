@@ -228,9 +228,8 @@ description_debug!(TextField);
 /// A multiline local text editor with monospace typography by default.
 ///
 /// Uses bundled Noto Sans Mono, a 320-pixel preferred width and six visible lines.
-/// Soft wraps to its allocation and scrolls internally to reveal the caret,
-/// except next to whitespace hanging past a wrapped line's end, as described
-/// below; wheel scrolls the text. Enter inserts LF, Tab traverses focus. Pasted CRLF,
+/// Soft wraps to its allocation and scrolls internally to reveal the caret;
+/// wheel scrolls the text. Enter inserts LF, Tab traverses focus. Pasted CRLF,
 /// CR, NEL, vertical tab, form feed and the Unicode line and paragraph
 /// separators become LF, pasted tabs are kept and other pasted control
 /// characters are dropped. Bound text accepts LF and tabs, but no other control
@@ -246,18 +245,32 @@ description_debug!(TextField);
 /// printable text keeps that glyph, as [`TextLayout`](crate::TextLayout)
 /// describes.
 ///
-/// Scrolling stays within the measured text extent,
-/// [`TextLayout::size`](crate::TextLayout::size), plus the caret's width, and
-/// that extent leaves out whitespace hanging past the end of a wrapped line.
-/// A caret at such whitespace may therefore stay clipped at the viewport edge
-/// instead of being revealed, for spaces and tabs alike: in left-to-right text
-/// after End on that line or after typing the space or tab that hangs, and in
-/// right-to-left text, where hanging whitespace lies at the left edge, at that
-/// line's end. In wrapped right-to-left text the caret at the start of the
-/// text, on the right edge, can likewise stay clipped. A hanging right-to-left
-/// space can still be revealed where a tab is not, because its empty glyph
-/// raster extends the measured size, as [`TextLayout`](crate::TextLayout)
-/// describes. Only the view is affected; the selection keeps its offsets.
+/// Spaces and tabs that do not fit at the end of a wrapped line hang past
+/// it rather than wrapping: after the line in left-to-right text and before
+/// it in right-to-left text. The caret is drawn, revealed and reported to
+/// input methods inside the text's box instead, which spans the wider of the
+/// measured text, [`TextLayout::size`](crate::TextLayout::size), and the wrap
+/// width; so does the right-to-left caret on a line's right edge. Typing or
+/// holding Space at a full line does not move the text progressively farther;
+/// consecutive caret stops in hanging whitespace are drawn at the same edge.
+/// Outward rounding at a fractional scale can cause a bounded shift of less
+/// than one physical pixel, retained for repeated whitespace and removed when
+/// the next word wraps.
+/// The selection keeps its offsets, and its fill and a composition underline
+/// over hanging whitespace keep their own geometry, clipped by the text area.
+/// Clicking the drawn caret places the caret at the text under the pointer,
+/// as anywhere else, which need not be the hanging position it was drawn for.
+///
+/// Horizontal scrolling, by caret reveal or the wheel, stays between zero
+/// and that box's width less the text area's. An unbreakable word wider than
+/// the area still scrolls sideways; a wheel step with nothing left to scroll
+/// is left to the enclosing view. At a fractional scale, where the
+/// measured size rounds whitespace that fills the last line up past the wrap
+/// width, the text can scroll by less than one physical pixel. In a text area
+/// narrower than the caret, the caret's end is shown. Arrangement, such as a
+/// resize, reveals the caret even while the field is unfocused; a wheel step
+/// between an edit and its paint keeps the scrolled offset instead of that
+/// edit's reveal.
 ///
 /// Text taller than the field shows the same vertical scrollbar as scroll areas,
 /// views and windows: a track strip along the text's right edge with a thumb in
@@ -269,12 +282,12 @@ description_debug!(TextField);
 /// clicking the track centers the thumb there and starts a drag. Release ends
 /// dragging, and Escape or context loss cancels it at the current offset without
 /// restoring the previous one. Scrolling never moves the caret or selection, and
-/// the next caret movement, edit or resize reveals the caret again, within the
-/// hanging-whitespace limit above. Scrolling
+/// the next caret movement, edit or resize reveals the caret again. Scrolling
 /// repaints without remeasuring, and the pointer keeps the ordinary arrow over the
 /// bar. A read-only field keeps its bar; a disabled one shows none, because it
 /// does not scroll at all. Single-line fields scroll horizontally without a
-/// scrollbar.
+/// scrollbar, by caret reveal and the wheel alike, up to one caret width past
+/// the measured text.
 ///
 /// Binding ownership and refused bindings, [`TextEditError::MAX_TEXT_BYTES`]/preparation limits,
 /// selection, clipboard, undo, cancellation and scheduling follow `TextField`,
@@ -1065,6 +1078,49 @@ struct Prepared {
     layout: TextLayout,
     inner: Rect,
     origin: [f32; 2],
+    horizontal: Horizontal,
+}
+/// An editor's horizontal caret presentation and scroll range over one
+/// prepared layout. Arrange and paint compute it with that layout, and the
+/// wheel and input state reuse the stored value, so a newer selection is
+/// never measured against an older layout's range.
+#[derive(Clone, Copy, Debug, PartialEq)]
+struct Horizontal {
+    /// A wrapping editor's horizontal box in painted-text coordinates, from
+    /// zero to the larger of the layout's width and its wrap width. Whitespace
+    /// hanging past a wrapped line's end lies outside the layout's width, and
+    /// the displayed caret is pinned inside this box instead of scrolling the
+    /// text sideways to follow it. `None` when the editor does not wrap.
+    pin: Option<f32>,
+    /// The largest horizontal scroll offset; the smallest is zero. The extent
+    /// is the box for a wrapping editor and the layout's width plus the
+    /// caret's otherwise, less the viewport width.
+    max_scroll: f32,
+}
+impl Horizontal {
+    fn new(layout: &TextLayout, wrap: Option<f32>, caret_width: f32, viewport: f32) -> Self {
+        let width = layout.size().width();
+        let (pin, extent) = match wrap {
+            Some(wrap) => (Some(width.max(wrap)), width.max(wrap)),
+            None => (None, width + caret_width),
+        };
+        Self {
+            pin,
+            max_scroll: (extent - viewport).max(0.0),
+        }
+    }
+    /// The caret as displayed, revealed and anchored for input methods: a
+    /// wrapping editor clamps `caret`'s x into its box, less the caret's
+    /// width, so consecutive hanging caret stops share the box's end. The
+    /// selection itself, selection fills, composition underlines and hit
+    /// testing keep the unpinned geometry.
+    fn caret(self, caret: Rect) -> Result<Rect, crate::GeometryError> {
+        let Some(extent) = self.pin else {
+            return Ok(caret);
+        };
+        let [x, y, w, h] = caret.values();
+        Rect::new(x.clamp(0.0, (extent - w).max(0.0)), y, w, h)
+    }
 }
 #[derive(Clone)]
 struct Snapshot<M> {
@@ -2599,18 +2655,18 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             (size.height() - 2.0 * py).max(0.0),
         )?;
         let inner = self.area.get().unwrap_or(inner);
-        let layout = cx.text(
-            &self.display().0,
-            self.multi.then_some(inner.width().max(1.0)),
-            self.style,
-        )?;
+        let wrap = self.multi.then_some(inner.width().max(1.0));
+        let layout = cx.text(&self.display().0, wrap, self.style)?;
         let caret = self.display_selection(&layout).caret(&layout)?;
+        let horizontal = Horizontal::new(&layout, wrap, caret.width(), inner.width());
+        // Arrangement reveals the caret whether or not the editor is focused.
         self.reveal.set(true);
-        let origin = self.position(&layout, inner, caret);
+        let origin = self.position(&layout, inner, horizontal.caret(caret)?, horizontal);
         *self.prepared.borrow_mut() = Some(Prepared {
             layout,
             inner,
             origin,
+            horizontal,
         });
         Ok(())
     }
@@ -2797,7 +2853,16 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             && self.revealable
             && self.reveal_rect.get().is_some_and(|r| r.contains(point))
     }
-    fn position(&self, layout: &TextLayout, inner: Rect, caret: Rect) -> [f32; 2] {
+    /// Applies a requested reveal of the displayed `caret` and clamps the
+    /// scroll offsets, returning the painted text origin. When the viewport is
+    /// narrower than the caret, the caret's end wins and its start is clipped.
+    fn position(
+        &self,
+        layout: &TextLayout,
+        inner: Rect,
+        caret: Rect,
+        horizontal: Horizontal,
+    ) -> [f32; 2] {
         let [px, py, w, h] = inner.values();
         let [x, y, cw, ch] = caret.values();
         let mut scroll = self.scroll.get();
@@ -2811,7 +2876,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
                 }
             }
         }
-        scroll[0] = scroll[0].clamp(0.0, (layout.size().width() + cw - w).max(0.0));
+        scroll[0] = scroll[0].clamp(0.0, horizontal.max_scroll);
         scroll[1] = scroll[1].clamp(0.0, (layout.size().height() - h).max(0.0));
         self.scroll.set(scroll);
         let spare = w - layout.size().width() - cw;
@@ -2943,10 +3008,13 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
         let inner = self.area.get().unwrap_or(inner);
         let [_, _, w, _] = inner.values();
         let (text, composition) = self.display();
-        let layout = p.text(&text, self.multi.then_some(w.max(1.0)), self.style)?;
+        let wrap = self.multi.then_some(w.max(1.0));
+        let layout = p.text(&text, wrap, self.style)?;
         let selection = self.display_selection(&layout);
         let caret = selection.caret(&layout)?;
-        let origin = self.position(&layout, inner, caret);
+        let horizontal = Horizontal::new(&layout, wrap, caret.width(), w);
+        let caret = horizontal.caret(caret)?;
+        let origin = self.position(&layout, inner, caret, horizontal);
         if !self.embedded {
             field_frame(
                 p,
@@ -3072,6 +3140,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             layout,
             inner,
             origin,
+            horizontal,
         });
         Ok(())
     }
@@ -3083,12 +3152,12 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
         }
         let prepared = self.prepared.borrow();
         let p = prepared.as_ref()?;
-        let [x, y, w, h] = offset(
-            self.display_selection(&p.layout).caret(&p.layout).ok()?,
-            p.origin,
-        )
-        .ok()?
-        .values();
+        // The current selection on the prepared layout, as before, pinned
+        // like the painted caret.
+        let caret = self.display_selection(&p.layout).caret(&p.layout).ok()?;
+        let [x, y, w, h] = offset(p.horizontal.caret(caret).ok()?, p.origin)
+            .ok()?
+            .values();
         let [ix, iy, iw, ih] = p.inner.values();
         let w = w.min(iw);
         let h = h.min(ih);
@@ -3500,18 +3569,21 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             return self.open_menu(cx, local);
         }
         if let PointerKind::Scroll(delta) = e.kind() {
-            let Some(p) = self
-                .prepared
-                .borrow()
-                .as_ref()
-                .map(|p| (p.layout.size(), p.inner.values()))
-            else {
+            // The range the last arrangement or paint stored with its layout,
+            // the one caret reveal clamps to.
+            let Some((height, viewport, max_x)) = self.prepared.borrow().as_ref().map(|p| {
+                (
+                    p.layout.size().height(),
+                    p.inner.height(),
+                    p.horizontal.max_scroll,
+                )
+            }) else {
                 return Ok(InputOutcome::Ignored);
             };
             let old = self.scroll.get();
             let next = [
-                (old[0] + delta.x()).clamp(0.0, (p.0.width() - p.1[2]).max(0.0)),
-                (old[1] + delta.y()).clamp(0.0, (p.0.height() - p.1[3]).max(0.0)),
+                (old[0] + delta.x()).clamp(0.0, max_x),
+                (old[1] + delta.y()).clamp(0.0, (height - viewport).max(0.0)),
             ];
             if next == old {
                 return Ok(InputOutcome::Ignored);

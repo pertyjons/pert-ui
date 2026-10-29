@@ -390,9 +390,14 @@ tab stops. A registered font that forms one inseparable glyph from tab and
 printable text keeps that whole glyph's ink; see [`TextLayout`]. Other unsupported
 characters keep their fallback/missing-glyph presentation. Keyboard Tab still
 moves focus. Removing old hanging-tab ink can reduce the extent and translate
-RTL caret/selection x positions through the new origin. Hanging-whitespace
-geometry may lie outside [`TextLayout::size`]; the current editor reveal limits
-are documented on [`TextArea`].
+RTL caret/selection x positions through the new origin. Zero-area glyph rasters
+also add no bounds. Raw hanging-whitespace geometry can lie outside
+[`TextLayout::size`]; wrapping [`TextArea`] pins its displayed caret to the text
+box for painting, reveal and IME anchoring. Selection fills, composition
+underlines and hit testing retain their raw geometry and clip normally. Several
+hanging positions can share one drawn caret x. Reveal and the wheel share a
+nonnegative range; outward rounding at fractional scale can cause a bounded
+shift below one physical pixel, without growing as more spaces are typed.
 
 Bindings accept up to 16 KiB UTF-8, subject to the shared text preparation limits.
 Single-line paste replaces line breaks and tabs with spaces; multiline paste

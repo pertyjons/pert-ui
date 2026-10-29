@@ -1,0 +1,18 @@
+{
+  "command": [
+    "cargo",
+    "run",
+    "--locked",
+    "-p",
+    "pert-ui-native-checks",
+    "--",
+    "interaction_check",
+    "native_text_rendering_probe"
+  ],
+  "started_at_utc": "2026-10-29T12:03:38.126537+00:00",
+  "finished_at_utc": "2026-10-29T12:05:44.898853+00:00",
+  "exit_status": 0,
+  "environment": {
+    "PERT_UI_TEXT_MODE_REPORT_DIR": "/home/per/pert-ui-usability/r3-whitespace-native/captures"
+  }
+}

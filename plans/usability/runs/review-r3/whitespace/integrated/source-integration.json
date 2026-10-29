@@ -1,0 +1,21 @@
+{
+  "at_utc": "2026-10-29T12:01:40.474177+00:00",
+  "base_commit": "6b8b3bf",
+  "all_six_baseline_hashes_matched_before_copy": {
+    "crates/pert-ui-runtime/src/text.rs": "2417e1489452fc61e5f0206a463d579cde1eb7c1f97ee7b92af7e2c7dab9d0a8",
+    "crates/pert-ui-runtime/src/text/tabs.rs": "bafd578442105267ff6f48a1ef5c0ee5c844225d15457ea28ad18542e841e016",
+    "crates/pert-ui-runtime/src/text_fields.rs": "e07a31f6637029e91781247441df4fed469e8822520dc3869a5729350e8b7b66",
+    "crates/pert-ui-runtime/src/text_selection.rs": "a0cbc2e3375e12b0702df6e8e868e0f5fc0bf8ac76fd57be0aa10a34f3af5d28",
+    "crates/pert-ui/tests/editing/tab_whitespace.rs": "7886f565c81928cfe6a1204356e3efad535d89da8a6d09bd03d075fca7da3e3d",
+    "crates/pert-ui/tests/editing/main.rs": "45d02f5ebd53e3ed7bd5b4a9bcd27a17753364479a2b60942d1eae866d904bd2"
+  },
+  "copied_approved_source_sha256": {
+    "crates/pert-ui-runtime/src/text.rs": "6a0cdb46593eee5aa0c8b05c97affb3975eebc03660064c2fed2bd9db89f9093",
+    "crates/pert-ui-runtime/src/text/tabs.rs": "37e76e23247f481fede67a6dd0c4d68fb0fc80c19bfee159f4a46c14f067a1c3",
+    "crates/pert-ui-runtime/src/text_fields.rs": "b954d9b0f2b79bbd6ce1072cff211baf38455004e39c10e0115e8092ded30d9e",
+    "crates/pert-ui-runtime/src/text_selection.rs": "550d32750d9a0bef6d251869e8bde1849a21dbe981f1f8c146acfa491f709db8",
+    "crates/pert-ui/tests/editing/tab_whitespace.rs": "e47b61c5b7dfbf9b6669e4c92dce51652fbdf49b3588352a966525af4dd875b0",
+    "crates/pert-ui/tests/editing/hanging_whitespace.rs": "afd46031af20bc56c4821a827c4a5d1adb4e19cd1bfdd81fd323517b41e93f4e"
+  },
+  "module_note": "Preserved existing modules and added hanging_whitespace; source matches isolated approval apart from module registration order if any."
+}

@@ -1,0 +1,8 @@
+{
+  "at_utc": "2026-10-29T12:06:58.935345+00:00",
+  "before_snapshot": "../r3-whitespace-final-gates/source-manifest.json (before native)",
+  "after_snapshot": "../r3-whitespace-final-gates-retry1/source-manifest.json (after native)",
+  "outer_snapshots_equal": true,
+  "current_bytes_still_equal": true,
+  "limits": "Native ran before the final retry gate window. Root made no runtime/test/manifest/docs edits between these snapshots, but API listing files were temporarily absent during generation. Do not claim a continuous all-files source guard for the failed attempt/native interval. Code source correlation relies on matching outer manifests and the controlled no-code-edit interval."
+}

@@ -167,10 +167,19 @@ analysis but emit no tab-only coverage in either text mode. A custom font's
 mixed tab/printable atom retains its inseparable glyph. No tab stops or input
 normalization are introduced; other missing glyphs keep their ink. Removing
 hanging-tab ink can shrink the canvas and translate RTL public coordinates;
-vertical origin/baseline are unchanged. Existing empty non-tab raster pen points
-still participate in bounds. Public selection/hit coordinates use the resulting
-origin, with hanging whitespace allowed outside the extent. Editor reveal limits
-are separate from this coverage repair and documented by TextArea.
+vertical origin/baseline are unchanged by that tab-only repair. Zero-area
+rasters now add no placement or bounds after normal cache lookup/admission;
+removing a ghost pen-point edge can also change the canvas/origin. Positive-area
+raster rectangles remain eligible without alpha scanning, including transparent
+phase rasters; phase-mask extents can differ from default layout bounds. Changed
+mask partition/extent can change fractional-edge sampling. Pixel identity needs
+unchanged partition, extent, destination and clipping, not only glyph positions.
+Public raw selection/hit coordinates use the resulting origin and may extend
+past the layout box. Wrapping TextArea pins only displayed caret/reveal/IME
+geometry to max(layout width,wrap width), with a shared nonnegative wheel range.
+Outward physical rounding can leave a bounded shift below one physical pixel;
+selection fill and preedit underline remain unpinned and clipped. TextArea
+rustdoc specifies the presentation and freshness limits.
 
 `UiSettings::set_text_rendering` chooses between the retained line mask
 (`LineMask`, the default) and quarter-pixel phase glyphs composited into a run

@@ -1,0 +1,11 @@
+--- a/crates/pert-ui-runtime/src/text_fields.rs
++++ b/crates/pert-ui-runtime/src/text_fields.rs
+@@ -2873,7 +2873,7 @@
+                 }
+             }
+         }
+-        scroll[0] = scroll[0].clamp(0.0, horizontal.max_scroll);
++        scroll[0] = scroll[0].clamp(0.0, (layout.size().width() + cw - w).max(0.0));
+         scroll[1] = scroll[1].clamp(0.0, (layout.size().height() - h).max(0.0));
+         self.scroll.set(scroll);
+         let spare = w - layout.size().width() - cw;

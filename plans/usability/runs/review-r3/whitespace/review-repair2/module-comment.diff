@@ -1,0 +1,16 @@
+--- before/hanging_whitespace.rs
++++ after/hanging_whitespace.rs
+@@ -1,8 +1,11 @@
+ //! Whitespace hanging past the end of a wrapped line, through the public
+ //! facade. A TextArea draws, reveals and anchors input methods at a caret
+ //! pinned inside the text's horizontal box, from zero to the larger of the
+-//! layout's width and the wrap width, so a hanging space or tab neither clips
+-//! the caret nor scrolls the text sideways. The selection, its fill, the
++//! layout's width and the wrap width. Hanging spaces and tabs keep the caret
++//! visible when the viewport can contain it; a narrower viewport retains
++//! unavoidable clipping. Outward rounding can cause a bounded shift below one
++//! physical pixel, retained for repeated whitespace and removed when the next
++//! word wraps. The selection, its fill, the
+ //! composition underline and hit testing keep their own unpinned geometry.
+ //! Horizontal wheel scrolling and caret reveal share one range stored with
+ //! the painted layout. Single-line editors cannot hang and keep their range,

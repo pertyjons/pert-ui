@@ -1,0 +1,23 @@
+**Request changes before approval.** The production logic implements revision 3 correctly. The remaining blockers concern contradictory claims and root’s acceptance of the disclosed presentation consequences.
+
+1. **The stationary-text claim needs qualification.** [TextArea rustdoc](/home/per/pert-ui-usability/r3-whitespace-worktree/crates/pert-ui-runtime/src/text_fields.rs:253) says holding Space keeps text still, and later says only an oversized unbreakable word scrolls horizontally. The recorded sequence at wrap 38, scale 1.25 is **0 → 0.4000015 → 0** when typing whitespace and then a wrapping letter; repeated spaces retain that residual.
+
+   Finding 1 is valid. `max(layout.width, wrap)` correctly includes the outward-rounded width of 38.4. Review 2’s `box = wrap` inference was incorrect. Qualify the rustdoc, test names/comments and design’s fixed-offset acceptance language. Root must explicitly adopt this bounded residual; removing it would change the approved geometry.
+
+2. **The zero-area wording needs precise limits.** The [unconditional space/tab equivalence sentence](/home/per/pert-ui-usability/r3-whitespace-worktree/crates/pert-ui-runtime/src/text.rs:204) needs the zero-area-space and equivalent-shaping conditions. Equal advance alone does not determine raster bounds; positive-area custom-font space ink remains eligible for placement.
+
+   The transparent phase residue is consistent with the approved implementation. The [recorded regression](/home/per/pert-ui-usability/r3-whitespace-worktree/crates/pert-ui-runtime/src/text/tabs.rs:1611) distinguishes default `ink=None`/no parts from a phase path retaining a **1×1 zero-coverage glyph raster**, producing a blank phase mask. Default `TextLayout` size/origin remain unchanged by that phase mask; phase-part extents and partitioning can differ. Qualify the design’s blanket whitespace/no-blank-mask statements accordingly. No alpha scan or renderer change is warranted.
+
+3. **Finding 4 requires explicit acceptance and narrower pixel-preservation claims.** Inspection of the stored RGBA bytes confirms **60/72 identical pairs**. The scale-1 RTL-leading-space quarter-origin pair changes 11 pixels in column 194, with maximum channel difference **79/255**. Its mask narrows from 192 to 190 pixels. This is a real sampling consequence of changed mask extent with preserved positive glyph placement.
+
+   Root must adopt that consequence before closure. Pixel-identity claims need unchanged mask partition, extent, destination and clipping. The [README’s “all bundled-icon cases” wording](/home/per/pert-ui-usability/r3-whitespace-implementation-evidence/README.md:113) is too broad: `inline-icons` quarter-origin frames differ, although icon-only and leading-icon-label frames match and the evidence supports unchanged icon centering. I found no reason to replace the approved geometry or expand this patch into renderer work.
+
+I verified the six approved baseline hashes against the snapshot bytes, inspected the actual scoped delta, and matched the current seven owned files to the final evidence hashes. The zero-area skip follows cache lookup/admission and accounting, and precedes placement, bounds and icon-reference rendering. The shared prepared interval, pin reuse for paint/reveal/IME, unpinned selection/preedit geometry, tiny-viewport end-wins behavior and existing freshness semantics match the adopted policy.
+
+The evidence contains actual baseline changes: RTL space width **42→37**, with the first raw caret x **43→38** at scale 1; at 1.25, width **40.8→36.8** and caret x **42→38**. These support an origin change directly. The author result’s “38→37” description needs correction.
+
+I inspected individual check logs and mutation failures, beyond their summaries. N1 catches the ghost canvas, N2/N3 the missing caret, N4/N4b the wheel mismatch, and N5 zero-byte phase admission. Restores record matching hashes and touches; the final recompilation passes. N3b’s survival is adequately explained by the retained pin and wheel range. The targeted logs support the stated pixel/IME, read-only, wheel, resize/style/scale, canonical-text and numeric/draft regressions.
+
+One evidence-label correction remains: `findings/swash-empty-outline-rasters.txt` labels its 1×1 output “default-path”; the transcript distinguishes the default 1×0 output from the phase result.
+
+I made no edits, builds, test/app runs or delegations. TEXT-01 remains outside scope. Root retains workspace/API/native gates and the assigned documentation, TODO, changelog and version work. This review grants no native, performance, universal-font or full-usability approval.

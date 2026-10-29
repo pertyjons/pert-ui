@@ -247,18 +247,3 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   text release logs reproduce the pre-existing warning. Align the helper's
   cfg with its only caller so release tests remain warning-free; preserve the
   debug measurement-eviction test. This is outside the usability repairs.
-
-- [ ] 2026-10-29 `crates/pert-ui-runtime/src/text.rs`
-  `TextService::rasterize_glyphs` — a zero-area raster still expands the canvas
-  to its pen point. Actual base/repaired RTL-space probes show changed origin
-  and width despite no ink. Skip zero-area placement/bounds after normal glyph
-  cache lookup/admission, preserving shaping and cache hits; implement and
-  verify the separate `plans/usability/round-3-design-hanging-whitespace.md`
-  checkpoint, then remove this entry.
-- [ ] 2026-10-29 `crates/pert-ui-runtime/src/text_fields.rs`
-  `Editor::position` and wheel handling — hanging-whitespace and RTL-edge
-  carets are clipped after typing or LineEnd. Actual base/repaired public
-  probes reproduce it; position and wheel also disagree by caret width.
-  Implement the separately reviewed wrapped-caret presentation/shared interval
-  policy in `plans/usability/round-3-design-hanging-whitespace.md`, with pixel,
-  IME, wheel and prose-stability tests; remove this entry when verified.

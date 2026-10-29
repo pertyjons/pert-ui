@@ -1,0 +1,48 @@
+{
+  "source_directory": "/home/per/pert-ui-usability/r3-whitespace-final-gates",
+  "policy": "Exact bytes except declared readable log excerpts; full gzip preserves those bytes. Script suffixes renamed for archival use.",
+  "files": [
+    {
+      "source": "clippy.log",
+      "source_bytes": 789,
+      "source_sha256": "398aedab0c6e97c2cb3c11a9e7a944ee3495eac7523fdedfc5a8c70994ebc5e4",
+      "archive_path": "clippy.log",
+      "archive_sha256": "398aedab0c6e97c2cb3c11a9e7a944ee3495eac7523fdedfc5a8c70994ebc5e4"
+    },
+    {
+      "source": "format.log",
+      "source_bytes": 26,
+      "source_sha256": "5bd2c4787084677798c6fd838467a305f2dfa8bae7469f20aeed41fb6c07e93b",
+      "archive_path": "format.log",
+      "archive_sha256": "5bd2c4787084677798c6fd838467a305f2dfa8bae7469f20aeed41fb6c07e93b"
+    },
+    {
+      "source": "orchestration-failure.json",
+      "source_bytes": 696,
+      "source_sha256": "4fc59461de11dedf23eb51917bde548b282776214e452c8d8e64b231db33de99",
+      "archive_path": "orchestration-failure.json",
+      "archive_sha256": "4fc59461de11dedf23eb51917bde548b282776214e452c8d8e64b231db33de99"
+    },
+    {
+      "source": "outcomes.json",
+      "source_bytes": 871,
+      "source_sha256": "309ae50f3a0feec814dec4627986e1e8794e49b4d9037fbdb7f3b602e8bb64fe",
+      "archive_path": "outcomes.json",
+      "archive_sha256": "309ae50f3a0feec814dec4627986e1e8794e49b4d9037fbdb7f3b602e8bb64fe"
+    },
+    {
+      "source": "source-manifest.json",
+      "source_bytes": 77740,
+      "source_sha256": "e0653d95d5f0918d16e3639ce3e9ef31fec7c6efeb2488157350bcd0cd2285da",
+      "archive_path": "source-manifest.json",
+      "archive_sha256": "e0653d95d5f0918d16e3639ce3e9ef31fec7c6efeb2488157350bcd0cd2285da"
+    },
+    {
+      "source": "workspace-tests.log",
+      "source_bytes": 370371,
+      "source_sha256": "4a03d26fd0936a736e2884caffb4cfb7faf89a1919035f4eadef9e0a1c2192dc",
+      "archive_path": "workspace-tests.log",
+      "archive_sha256": "4a03d26fd0936a736e2884caffb4cfb7faf89a1919035f4eadef9e0a1c2192dc"
+    }
+  ]
+}

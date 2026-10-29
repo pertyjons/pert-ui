@@ -1,0 +1,39 @@
+from pathlib import Path
+import sys,hashlib,json,gzip,shutil,tarfile,io
+src,dst=map(Path,sys.argv[1:3]);assert not dst.exists();dst.mkdir(parents=True)
+packed_dirs=['baseline-tree','baseline-with-new-tests','probe/frames'];manifest=[]
+for rel in packed_dirs:
+ source=src/rel;target=dst/(rel+'.tar.gz');target.parent.mkdir(parents=True,exist_ok=True)
+ files={str(p.relative_to(source)):hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(source.rglob('*')) if p.is_file()}
+ with target.open('wb') as out,gzip.GzipFile(fileobj=out,mode='wb',mtime=0) as zipped,tarfile.open(fileobj=zipped,mode='w') as tar:
+  tar.add(source,arcname=rel,recursive=True)
+ verified={}
+ with tarfile.open(target,'r:gz') as tar:
+  for item in tar.getmembers():
+   if item.isfile():
+    f=tar.extractfile(item);assert f is not None
+    verified[str(Path(item.name).relative_to(rel))]=hashlib.sha256(f.read()).hexdigest()
+ assert files==verified
+ manifest.append({'source_directory':rel,'archive':str(target.relative_to(dst)),'archive_sha256':hashlib.sha256(target.read_bytes()).hexdigest(),'all_file_hashes_roundtrip_checked':True,'source_files_sha256':files})
+for p in sorted(src.rglob('*')):
+ if not p.is_file():continue
+ rel=p.relative_to(src);name=str(rel)
+ if any(name.startswith(d+'/') for d in packed_dirs):continue
+ data=p.read_bytes();target=dst/rel;target.parent.mkdir(parents=True,exist_ok=True)
+ record={'source':name,'source_sha256':hashlib.sha256(data).hexdigest(),'source_bytes':len(data)}
+ if p.suffix in {'.sh','.py'}:target=target.with_name(target.name+'.txt');record['note']='Exact script bytes, archival text suffix.'
+ if len(data)>5_000_000 and p.suffix=='.log':
+  prefix=b'[pert-ui validation ERROR UnexpectedOverlap] ';lines=data.splitlines(keepends=True);count=sum(l.startswith(prefix) for l in lines);assert count>100000,name
+  full=target.with_name(target.name.removesuffix('.log')+'.full.log.gz');packed=gzip.compress(data,9,mtime=0);assert gzip.decompress(packed)==data;full.write_bytes(packed)
+  kept=[];seen=0
+  for line in lines:
+   if line.startswith(prefix):
+    seen+=1
+    if seen<=3:kept.append(line)
+    elif seen==4:kept.append(f'[archived excerpt: {count-3} repeated overlap lines omitted; complete original {full.name}]\n'.encode())
+   else:kept.append(line)
+  target.write_bytes(b''.join(kept));record.update(full_gzip=str(full.relative_to(dst)),gzip_sha256=hashlib.sha256(packed).hexdigest(),decompression_checked_equal=True,omitted_overlap_lines=count-3)
+ else:shutil.copy2(p,target);assert data==target.read_bytes()
+ record.update(archive_path=str(target.relative_to(dst)),archive_sha256=hashlib.sha256(target.read_bytes()).hexdigest());manifest.append(record)
+(dst/'archive-provenance.json').write_text(json.dumps({'source_directory':str(src),'policy':'Exact source bytes; redundant full source trees and raw frame directories packed losslessly into tar.gz with every file hash roundtrip checked. Scripts renamed .txt. Known repeated overlap log preserved complete in gzip beside readable excerpt. Original source directories remain untouched.','files':manifest},indent=2)+'\n')
+print(dst,len(manifest),'records')

@@ -1,0 +1,8 @@
+{
+  "at_utc": "2026-10-29T12:05:41.203397+00:00",
+  "cause": "Root launched api/generate.sh concurrently with workspace tests. Generator temporarily removes API files, while diagnostics testing_closure reads them. Four missing-file failures; not a production text defect.",
+  "failed_file": "api/pert-ui/default.txt",
+  "retry_policy": "After API exits0 with clean status, rerun complete workspace gate on unchanged final source; preserve this failed attempt. API generation must not overlap tests that read its files.",
+  "all_captured_bytes_equal_after_generator_completed": true,
+  "not_claimed": "No continuous unchanged-source window during failed run; API files were temporarily absent."
+}

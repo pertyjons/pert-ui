@@ -1,0 +1,7 @@
+from pathlib import Path
+import subprocess,datetime,json
+root=Path('/home/per/github/pert-ui');out=Path('/home/per/pert-ui-usability/r3-whitespace-api');out.mkdir()
+cmd=['api/generate.sh'];start=datetime.datetime.now(datetime.timezone.utc).isoformat()
+with (out/'generate.log').open('x') as log:r=subprocess.run(cmd,cwd=root,stdout=log,stderr=subprocess.STDOUT)
+status=subprocess.run(['git','status','--porcelain','--','api/'],cwd=root,text=True,capture_output=True)
+(out/'outcome.json').write_text(json.dumps({'command':cmd,'started_at_utc':start,'finished_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'exit_status':r.returncode,'status_command':['git','status','--porcelain','--','api/'],'status_exit':status.returncode,'status_stdout':status.stdout,'status_stderr':status.stderr},indent=2)+'\n');print('API exit',r.returncode,'status',repr(status.stdout))

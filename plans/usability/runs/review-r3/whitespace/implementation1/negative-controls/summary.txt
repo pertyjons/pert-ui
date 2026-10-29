@@ -1,0 +1,152 @@
+# run started 2026-10-29T11:34:52+00:00 for ['N1-empty-raster-bounds-restored', 'N2-raw-caret-no-pin', 'N3-old-clamp-and-raw-caret', 'N3b-old-clamp-only', 'N4-old-wheel-range', 'N4b-wheel-plus-caret-width-everywhere', 'N5-phase-skip-before-admission', 'N6-pin-box-wrap-only', 'N7-pin-box-layout-only']
+# sources before: {'crates/pert-ui-runtime/src/text.rs': 'ad1e8bc4ad82f0ec260bf192eed052addb73e416f7cb21852cd3233e80d78a07', 'crates/pert-ui-runtime/src/text_fields.rs': '2ffcaa0272bb161774da8f4b9ba117aaee9bfa44f11e4cd95f6c1e1dc734c36c', 'crates/pert-ui-runtime/src/text/tabs.rs': '37e76e23247f481fede67a6dd0c4d68fb0fc80c19bfee159f4a46c14f067a1c3', 'crates/pert-ui-runtime/src/text_selection.rs': '550d32750d9a0bef6d251869e8bde1849a21dbe981f1f8c146acfa491f709db8', 'crates/pert-ui/tests/editing/tab_whitespace.rs': 'e47b61c5b7dfbf9b6669e4c92dce51652fbdf49b3588352a966525af4dd875b0', 'crates/pert-ui/tests/editing/hanging_whitespace.rs': '64083bb3787f7df982f9af4d8418923a2e9fddb43afaf832a3545c41ac0fa75d', 'crates/pert-ui/tests/editing/main.rs': 'eef65bbc2ad2e37ff31edebe76339f72ce3d56f24f7b2b43e85b8098236977cc'}
+
+## N1-empty-raster-bounds-restored
+The zero-area skip removed: empty rasters place and extend bounds again.
+exit statuses [101, 101]; recompiled pert-ui-runtime: True
+failing tests (7):
+  hanging_whitespace::right_to_left_hanging_whitespace_and_the_right_edge_start_show_the_caret
+  hanging_whitespace::typing_and_holding_space_at_a_full_line_keeps_the_text_still
+  tab_whitespace::a_narrow_right_to_left_text_area_keeps_its_hanging_tab_in_the_extent_of_a_space
+  tab_whitespace::right_to_left_selectable_text_selects_at_fixed_points_after_the_origin_moved
+  text::tabs::tests::empty_rasters_place_nothing_in_bounds_ink_or_mask_parts
+  text::tabs::tests::hanging_spaces_and_tabs_of_equal_advance_share_public_geometry
+  text::tabs::tests::phase_spaces_with_a_vertical_offset_place_one_blank_pixel
+first panic locations:
+  thread 'text::tabs::tests::phase_spaces_with_a_vertical_offset_place_one_blank_pixel' (4058246) panicked at crates/pert-ui-runtime/src/text/tabs.rs:1622:13:
+  thread 'text::tabs::tests::empty_rasters_place_nothing_in_bounds_ink_or_mask_parts' (4058241) panicked at crates/pert-ui-runtime/src/text/tabs.rs:1505:29:
+  thread 'text::tabs::tests::hanging_spaces_and_tabs_of_equal_advance_share_public_geometry' (4058242) panicked at crates/pert-ui-runtime/src/text/tabs.rs:1376:21:
+  thread 'tab_whitespace::right_to_left_selectable_text_selects_at_fixed_points_after_the_origin_moved' (4059294) panicked at crates/pert-ui/tests/editing/tab_whitespace.rs:554:5:
+  thread 'tab_whitespace::a_narrow_right_to_left_text_area_keeps_its_hanging_tab_in_the_extent_of_a_space' (4059289) panicked at crates/pert-ui/tests/editing/tab_whitespace.rs:523:5:
+  thread 'hanging_whitespace::right_to_left_hanging_whitespace_and_the_right_edge_start_show_the_caret' (4059282) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:360:13:
+  thread 'hanging_whitespace::typing_and_holding_space_at_a_full_line_keeps_the_text_still' (4059286) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:397:17:
+
+## N2-raw-caret-no-pin
+Horizontal::caret returns the canonical caret: paint, reveal and input state unpinned.
+exit statuses [101]; recompiled pert-ui-runtime: True
+failing tests (13):
+  hanging_whitespace::a_wheel_before_the_next_paint_still_cancels_an_edit_s_pending_reveal
+  hanging_whitespace::composition_pins_the_caret_and_anchor_but_not_the_underline
+  hanging_whitespace::focus_loss_hides_the_caret_and_relayout_keeps_the_text_still
+  hanging_whitespace::hanging_line_ends_draw_a_pinned_caret_inside_the_text_area
+  hanging_whitespace::resizing_restyling_and_rescaling_keep_the_pinned_caret_visible
+  hanging_whitespace::right_to_left_hanging_whitespace_and_the_right_edge_start_show_the_caret
+  hanging_whitespace::the_wheel_and_caret_reveal_share_one_nonnegative_range
+  hanging_whitespace::tiny_and_zero_text_areas_keep_a_valid_range_and_the_caret_end_wins
+  hanging_whitespace::typing_and_holding_space_at_a_full_line_keeps_the_text_still
+  hanging_whitespace::typing_prose_keeps_the_text_still_at_every_soft_wrap
+  tab_whitespace::a_narrow_right_to_left_text_area_keeps_its_hanging_tab_in_the_extent_of_a_space
+  tab_whitespace::a_narrow_text_area_treats_a_hanging_tab_as_a_hanging_space
+  tab_whitespace::typing_a_tab_at_a_full_line_end_matches_typing_a_space
+first panic locations:
+  thread 'hanging_whitespace::the_wheel_and_caret_reveal_share_one_nonnegative_range' (4060310) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:446:23:
+  thread 'hanging_whitespace::right_to_left_hanging_whitespace_and_the_right_edge_start_show_the_caret' (4060308) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:343:27:
+  thread 'hanging_whitespace::focus_loss_hides_the_caret_and_relayout_keeps_the_text_still' (4060305) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:769:11:
+  thread 'hanging_whitespace::hanging_line_ends_draw_a_pinned_caret_inside_the_text_area' (4060306) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:294:27:
+  thread 'hanging_whitespace::composition_pins_the_caret_and_anchor_but_not_the_underline' (4060304) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:728:23:
+  thread 'hanging_whitespace::resizing_restyling_and_rescaling_keep_the_pinned_caret_visible' (4060307) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:677:11:
+  thread 'hanging_whitespace::typing_and_holding_space_at_a_full_line_keeps_the_text_still' (4060312) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:386:35:
+  thread 'hanging_whitespace::a_wheel_before_the_next_paint_still_cancels_an_edit_s_pending_reveal' (4060303) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:557:11:
+  thread 'tab_whitespace::typing_a_tab_at_a_full_line_end_matches_typing_a_space' (4060321) panicked at crates/pert-ui/tests/editing/tab_whitespace.rs:421:5:
+  thread 'tab_whitespace::a_narrow_right_to_left_text_area_keeps_its_hanging_tab_in_the_extent_of_a_space' (4060315) panicked at crates/pert-ui/tests/editing/tab_whitespace.rs:517:9:
+  thread 'hanging_whitespace::tiny_and_zero_text_areas_keep_a_valid_range_and_the_caret_end_wins' (4060311) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:605:62:
+  thread 'tab_whitespace::a_narrow_text_area_treats_a_hanging_tab_as_a_hanging_space' (4060316) panicked at crates/pert-ui/tests/editing/tab_whitespace.rs:393:9:
+
+## N3-old-clamp-and-raw-caret
+The whole old reveal policy: the old clamp to size + caret width and no pin.
+exit statuses [101]; recompiled pert-ui-runtime: True
+failing tests (12):
+  hanging_whitespace::composition_pins_the_caret_and_anchor_but_not_the_underline
+  hanging_whitespace::focus_loss_hides_the_caret_and_relayout_keeps_the_text_still
+  hanging_whitespace::hanging_line_ends_draw_a_pinned_caret_inside_the_text_area
+  hanging_whitespace::resizing_restyling_and_rescaling_keep_the_pinned_caret_visible
+  hanging_whitespace::right_to_left_hanging_whitespace_and_the_right_edge_start_show_the_caret
+  hanging_whitespace::the_wheel_and_caret_reveal_share_one_nonnegative_range
+  hanging_whitespace::tiny_and_zero_text_areas_keep_a_valid_range_and_the_caret_end_wins
+  hanging_whitespace::typing_and_holding_space_at_a_full_line_keeps_the_text_still
+  hanging_whitespace::typing_prose_keeps_the_text_still_at_every_soft_wrap
+  tab_whitespace::a_narrow_right_to_left_text_area_keeps_its_hanging_tab_in_the_extent_of_a_space
+  tab_whitespace::a_narrow_text_area_treats_a_hanging_tab_as_a_hanging_space
+  tab_whitespace::typing_a_tab_at_a_full_line_end_matches_typing_a_space
+first panic locations:
+  thread 'hanging_whitespace::right_to_left_hanging_whitespace_and_the_right_edge_start_show_the_caret' (4061396) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:343:27:
+  thread 'hanging_whitespace::focus_loss_hides_the_caret_and_relayout_keeps_the_text_still' (4061393) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:769:11:
+  thread 'hanging_whitespace::resizing_restyling_and_rescaling_keep_the_pinned_caret_visible' (4061395) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:677:11:
+  thread 'hanging_whitespace::tiny_and_zero_text_areas_keep_a_valid_range_and_the_caret_end_wins' (4061399) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:595:21:
+  thread 'hanging_whitespace::hanging_line_ends_draw_a_pinned_caret_inside_the_text_area' (4061394) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:294:27:
+  thread 'hanging_whitespace::typing_and_holding_space_at_a_full_line_keeps_the_text_still' (4061400) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:386:35:
+  thread 'hanging_whitespace::composition_pins_the_caret_and_anchor_but_not_the_underline' (4061392) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:728:23:
+  thread 'tab_whitespace::typing_a_tab_at_a_full_line_end_matches_typing_a_space' (4061409) panicked at crates/pert-ui/tests/editing/tab_whitespace.rs:420:5:
+  thread 'tab_whitespace::a_narrow_right_to_left_text_area_keeps_its_hanging_tab_in_the_extent_of_a_space' (4061403) panicked at crates/pert-ui/tests/editing/tab_whitespace.rs:517:9:
+  thread 'tab_whitespace::a_narrow_text_area_treats_a_hanging_tab_as_a_hanging_space' (4061404) panicked at crates/pert-ui/tests/editing/tab_whitespace.rs:393:9:
+  thread 'hanging_whitespace::the_wheel_and_caret_reveal_share_one_nonnegative_range' (4061398) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:448:9:
+  thread 'hanging_whitespace::typing_prose_keeps_the_text_still_at_every_soft_wrap' (4061401) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:423:15:
+
+## N3b-old-clamp-only
+Only the old reveal clamp, size + caret width - viewport, with the pin kept.
+exit statuses [0]; recompiled pert-ui-runtime: True
+failing tests (0):
+first panic locations:
+
+## N4-old-wheel-range
+The old wheel clamp, size - viewport for every editor: the +cw mismatch with single-line reveal.
+exit statuses [101]; recompiled pert-ui-runtime: True
+failing tests (1):
+  hanging_whitespace::single_line_reveal_and_the_wheel_share_the_caret_width_range
+first panic locations:
+  thread 'hanging_whitespace::single_line_reveal_and_the_wheel_share_the_caret_width_range' (4064761) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:523:9:
+
+## N4b-wheel-plus-caret-width-everywhere
+The wheel range with the caret width for wrapping editors too (review 2, condition 1).
+exit statuses [101]; recompiled pert-ui-runtime: True
+failing tests (1):
+  hanging_whitespace::the_wheel_and_caret_reveal_share_one_nonnegative_range
+first panic locations:
+  thread 'hanging_whitespace::the_wheel_and_caret_reveal_share_one_nonnegative_range' (4066807) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:449:9:
+
+## N5-phase-skip-before-admission
+Zero-area rasters skipped before the phase cache admits them.
+exit statuses [101]; recompiled pert-ui-runtime: True
+failing tests (1):
+  text::tabs::tests::zero_area_phase_glyphs_stay_cached_and_serve_later_line_misses
+first panic locations:
+  thread 'text::tabs::tests::zero_area_phase_glyphs_stay_cached_and_serve_later_line_misses' (4068205) panicked at crates/pert-ui-runtime/src/text/tabs.rs:1589:13:
+
+## N6-pin-box-wrap-only
+The pin box is the wrap width alone, ignoring a wider layout.
+exit statuses [101]; recompiled pert-ui-runtime: True
+failing tests (5):
+  hanging_whitespace::a_wheel_before_the_next_paint_still_cancels_an_edit_s_pending_reveal
+  hanging_whitespace::composition_pins_the_caret_and_anchor_but_not_the_underline
+  hanging_whitespace::the_wheel_and_caret_reveal_share_one_nonnegative_range
+  hanging_whitespace::tiny_and_zero_text_areas_keep_a_valid_range_and_the_caret_end_wins
+  hanging_whitespace::typing_and_holding_space_at_a_full_line_keeps_the_text_still
+first panic locations:
+  thread 'hanging_whitespace::tiny_and_zero_text_areas_keep_a_valid_range_and_the_caret_end_wins' (4070485) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:595:21:
+  thread 'hanging_whitespace::a_wheel_before_the_next_paint_still_cancels_an_edit_s_pending_reveal' (4070477) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:550:9:
+  thread 'hanging_whitespace::composition_pins_the_caret_and_anchor_but_not_the_underline' (4070478) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:753:9:
+  thread 'hanging_whitespace::the_wheel_and_caret_reveal_share_one_nonnegative_range' (4070484) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:467:9:
+  thread 'hanging_whitespace::typing_and_holding_space_at_a_full_line_keeps_the_text_still' (4070486) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:397:17:
+
+## N7-pin-box-layout-only
+The pin box is the layout width alone, ignoring the wrap width.
+exit statuses [101]; recompiled pert-ui-runtime: True
+failing tests (7):
+  hanging_whitespace::composition_pins_the_caret_and_anchor_but_not_the_underline
+  hanging_whitespace::focus_loss_hides_the_caret_and_relayout_keeps_the_text_still
+  hanging_whitespace::hanging_line_ends_draw_a_pinned_caret_inside_the_text_area
+  hanging_whitespace::right_to_left_hanging_whitespace_and_the_right_edge_start_show_the_caret
+  hanging_whitespace::the_wheel_and_caret_reveal_share_one_nonnegative_range
+  tab_whitespace::a_narrow_right_to_left_text_area_keeps_its_hanging_tab_in_the_extent_of_a_space
+  tab_whitespace::a_narrow_text_area_treats_a_hanging_tab_as_a_hanging_space
+first panic locations:
+  thread 'tab_whitespace::a_narrow_text_area_treats_a_hanging_tab_as_a_hanging_space' (4071890) panicked at crates/pert-ui/tests/editing/tab_whitespace.rs:393:9:
+  thread 'hanging_whitespace::right_to_left_hanging_whitespace_and_the_right_edge_start_show_the_caret' (4071882) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:344:13:
+  thread 'hanging_whitespace::hanging_line_ends_draw_a_pinned_caret_inside_the_text_area' (4071880) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:295:13:
+  thread 'tab_whitespace::a_narrow_right_to_left_text_area_keeps_its_hanging_tab_in_the_extent_of_a_space' (4071889) panicked at crates/pert-ui/tests/editing/tab_whitespace.rs:517:9:
+  thread 'hanging_whitespace::composition_pins_the_caret_and_anchor_but_not_the_underline' (4071878) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:758:9:
+  thread 'hanging_whitespace::focus_loss_hides_the_caret_and_relayout_keeps_the_text_still' (4071879) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:786:9:
+  thread 'hanging_whitespace::the_wheel_and_caret_reveal_share_one_nonnegative_range' (4071884) panicked at crates/pert-ui/tests/editing/hanging_whitespace.rs:447:9:
+
+# sources after all restorations equal before: {'crates/pert-ui-runtime/src/text.rs': 'ad1e8bc4ad82f0ec260bf192eed052addb73e416f7cb21852cd3233e80d78a07', 'crates/pert-ui-runtime/src/text_fields.rs': '2ffcaa0272bb161774da8f4b9ba117aaee9bfa44f11e4cd95f6c1e1dc734c36c', 'crates/pert-ui-runtime/src/text/tabs.rs': '37e76e23247f481fede67a6dd0c4d68fb0fc80c19bfee159f4a46c14f067a1c3', 'crates/pert-ui-runtime/src/text_selection.rs': '550d32750d9a0bef6d251869e8bde1849a21dbe981f1f8c146acfa491f709db8', 'crates/pert-ui/tests/editing/tab_whitespace.rs': 'e47b61c5b7dfbf9b6669e4c92dce51652fbdf49b3588352a966525af4dd875b0', 'crates/pert-ui/tests/editing/hanging_whitespace.rs': '64083bb3787f7df982f9af4d8418923a2e9fddb43afaf832a3545c41ac0fa75d', 'crates/pert-ui/tests/editing/main.rs': 'eef65bbc2ad2e37ff31edebe76339f72ce3d56f24f7b2b43e85b8098236977cc'}
+# post-restore rebuild: exit statuses [0, 0], recompiled pert-ui-runtime: True, finished 2026-10-29T11:35:56+00:00

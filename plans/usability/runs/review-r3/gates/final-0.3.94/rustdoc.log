@@ -1,0 +1,16 @@
+$ cargo doc --locked --workspace --no-deps
+    Checking pert-ui-core v0.3.94 (/home/per/github/pert-ui/crates/pert-ui-core)
+ Documenting pert-ui-core v0.3.94 (/home/per/github/pert-ui/crates/pert-ui-core)
+    Checking pert-ui-runtime v0.3.94 (/home/per/github/pert-ui/crates/pert-ui-runtime)
+ Documenting pert-ui-runtime v0.3.94 (/home/per/github/pert-ui/crates/pert-ui-runtime)
+    Checking pert-ui-cpu v0.3.94 (/home/per/github/pert-ui/crates/pert-ui-cpu)
+    Checking pert-ui-wgpu v0.3.94 (/home/per/github/pert-ui/crates/pert-ui-wgpu)
+ Documenting pert-ui-wgpu v0.3.94 (/home/per/github/pert-ui/crates/pert-ui-wgpu)
+ Documenting pert-ui-cpu v0.3.94 (/home/per/github/pert-ui/crates/pert-ui-cpu)
+    Checking pert-ui v0.3.94 (/home/per/github/pert-ui/crates/pert-ui)
+ Documenting pert-ui v0.3.94 (/home/per/github/pert-ui/crates/pert-ui)
+ Documenting pert-ui-gallery v0.3.94 (/home/per/github/pert-ui/apps/gallery)
+ Documenting pert-ui-native-checks v0.3.94 (/home/per/github/pert-ui/apps/native-checks)
+ Documenting pert-ui-diagnostics v0.3.94 (/home/per/github/pert-ui/tests/diagnostics)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2m 26s
+   Generated /home/per/github/pert-ui/target/doc/pert_ui/index.html and 8 other files

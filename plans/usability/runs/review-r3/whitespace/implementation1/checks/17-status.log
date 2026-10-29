@@ -1,0 +1,11 @@
+$ cd /home/per/pert-ui-usability/r3-whitespace-worktree && CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-whitespace-implementation-target git status --short
+# started 2026-10-29T11:34:31+00:00
+ M crates/pert-ui-runtime/src/text.rs
+ M crates/pert-ui-runtime/src/text_fields.rs
+ M crates/pert-ui-runtime/src/text_selection.rs
+ M crates/pert-ui/tests/editing/main.rs
+?? crates/pert-ui-runtime/src/text/tabs.rs
+?? crates/pert-ui-runtime/tests/assets/
+?? crates/pert-ui/tests/editing/hanging_whitespace.rs
+?? crates/pert-ui/tests/editing/tab_whitespace.rs
+# exit status 0, finished 2026-10-29T11:34:31+00:00

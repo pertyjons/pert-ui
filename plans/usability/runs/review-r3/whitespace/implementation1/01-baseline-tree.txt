@@ -1,0 +1,14 @@
+created_at_utc: 2026-10-29T11:00:22Z
+method: git archive 17c6c3d | tar -x, then copy of the six baseline-src files and tests/assets/tab-atoms from the unedited worktree
+2417e1489452fc61e5f0206a463d579cde1eb7c1f97ee7b92af7e2c7dab9d0a8  crates/pert-ui-runtime/src/text.rs
+bafd578442105267ff6f48a1ef5c0ee5c844225d15457ea28ad18542e841e016  crates/pert-ui-runtime/src/text/tabs.rs
+e07a31f6637029e91781247441df4fed469e8822520dc3869a5729350e8b7b66  crates/pert-ui-runtime/src/text_fields.rs
+a0cbc2e3375e12b0702df6e8e868e0f5fc0bf8ac76fd57be0aa10a34f3af5d28  crates/pert-ui-runtime/src/text_selection.rs
+7886f565c81928cfe6a1204356e3efad535d89da8a6d09bd03d075fca7da3e3d  crates/pert-ui/tests/editing/tab_whitespace.rs
+45d02f5ebd53e3ed7bd5b4a9bcd27a17753364479a2b60942d1eae866d904bd2  crates/pert-ui/tests/editing/main.rs
+4560cc006135ca857ead07ca3aa8829b54b160f9b578fe6915342f67ed507607  crates/pert-ui-runtime/tests/assets/tab-atoms/README.md
+ef405e8ef511ced850becf815e71f0a4461f693a76b426814425fbded332450b  crates/pert-ui-runtime/tests/assets/tab-atoms/TabAtomFixture.ttf
+a8712d16ebebe6b34b5228961fe24d342232d8b339949f22e28078b0f2c9394a  crates/pert-ui-runtime/tests/assets/tab-atoms/generate.py
+whole-tree (excluding nothing) digest: 19ca9683a0f1bee440974df4d380c644ed784cb218a6e3e38d6407b32c6cfd1f  -
+worktree tracked+untracked digest of the same file set:
+19ca9683a0f1bee440974df4d380c644ed784cb218a6e3e38d6407b32c6cfd1f  -

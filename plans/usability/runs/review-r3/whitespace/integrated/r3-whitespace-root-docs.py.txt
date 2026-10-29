@@ -1,0 +1,85 @@
+from pathlib import Path
+replacements={
+'crates/pert-ui/src/guide/controls.md': [('''RTL caret/selection x positions through the new origin. Hanging-whitespace
+geometry may lie outside [`TextLayout::size`]; the current editor reveal limits
+are documented on [`TextArea`].''','''RTL caret/selection x positions through the new origin. Zero-area glyph rasters
+also add no bounds. Raw hanging-whitespace geometry can lie outside
+[`TextLayout::size`]; wrapping [`TextArea`] pins its displayed caret to the text
+box for painting, reveal and IME anchoring. Selection fills, composition
+underlines and hit testing retain their raw geometry and clip normally. Several
+hanging positions can share one drawn caret x. Reveal and the wheel share a
+nonnegative range; outward rounding at fractional scale can cause a bounded
+shift below one physical pixel, without growing as more spaces are typed.''')],
+'docs/contracts.md': [('''TextLayout's canvas keeps the logical box and retained non-tab raster bounds,
+including existing empty-raster pen points. Removing a hanging tab's former box
+may shrink width and translate public RTL caret/selection x positions through
+the changed origin. Hit/word testing uses that same coordinate mapping; logical
+analysis positions and vertical origin/baseline remain unchanged. Hanging-
+whitespace geometry can fall outside size(). The current TextArea scroll clamp
+cannot reveal every such caret; this separately verified limitation is recorded
+for follow-up, not hidden by normalized-coordinate comparisons.''','''TextLayout's canvas keeps the logical box and retained positive-area raster
+bounds. A zero-width or zero-height raster is skipped after ordinary cache
+lookup/admission and before placement/bounds; its cache entry remains reusable.
+Removing old tab ink or empty-raster pen points can shrink width and translate
+public caret/selection coordinates through the changed origin. Hit/word testing
+uses that same mapping; logical analysis is unchanged. This dimensions-only
+rule does not scan alpha pixels: positive-area space ink from a custom font
+remains, and a transparent positive-area phase raster can still form a blank
+phase mask without changing default layout size/origin. Space/tab equivalence
+requires zero-area space plus matching shaping, line breaking and other glyphs.
+Changed mask extents/partition can change fractional-edge resampling even where
+positive glyph placements are preserved.
+
+Raw hanging-whitespace geometry can fall outside size(). Wrapping TextArea pins
+its displayed caret x to [0,max(box.width-caret.width,0)] for paint, reveal and
+IME anchoring, where box.width=max(layout.width,wrap width). Canonical offsets,
+selection fill, preedit underline and hit/word testing stay unpinned and clip
+normally. Several hanging offsets can share a drawn x; a hit there need not
+recover the hanging offset. Position and wheel use the same stored nonnegative
+interval: max(box.width-inner.width,0) for wrapping and
+max(layout.width+caret.width-inner.width,0) for single-line/numeric/draft editors.
+Outward physical-pixel rounding can cause a bounded shift below one physical
+pixel; repeated spaces do not grow it. An unbreakable wider word still scrolls.
+Tiny viewports retain end-wins reveal with unavoidable clipping. Arrangement
+still reveals even unfocused, and a wheel before the next paint can cancel an
+edit's pending reveal. Prepared-layout/input-state freshness is unchanged.''')],
+'docs/rendering-platform.md': [('''vertical origin/baseline are unchanged. Existing empty non-tab raster pen points
+still participate in bounds. Public selection/hit coordinates use the resulting
+origin, with hanging whitespace allowed outside the extent. Editor reveal limits
+are separate from this coverage repair and documented by TextArea.''','''vertical origin/baseline are unchanged by that tab-only repair. Zero-area
+rasters now add no placement or bounds after normal cache lookup/admission;
+removing a ghost pen-point edge can also change the canvas/origin. Positive-area
+raster rectangles remain eligible without alpha scanning, including transparent
+phase rasters; phase-mask extents can differ from default layout bounds. Changed
+mask partition/extent can change fractional-edge sampling. Pixel identity needs
+unchanged partition, extent, destination and clipping, not only glyph positions.
+Public raw selection/hit coordinates use the resulting origin and may extend
+past the layout box. Wrapping TextArea pins only displayed caret/reveal/IME
+geometry to max(layout width,wrap width), with a shared nonnegative wheel range.
+Outward physical rounding can leave a bounded shift below one physical pixel;
+selection fill and preedit underline remain unpinned and clipped. TextArea
+rustdoc specifies the presentation and freshness limits.''')]
+}
+for name,pairs in replacements.items():
+ p=Path(name);s=p.read_text()
+ for old,new in pairs:
+  assert old in s,name;s=s.replace(old,new,1)
+ p.write_text(s)
+p=Path('crates/pert-ui/src/guide/appearance.md');s=p.read_text();needle='''segments and the shared raster limits of [`TextLimit`]. Palette
+''';assert needle in s;s=s.replace(needle,'''segments and the shared raster limits of [`TextLimit`]. Zero-area rasters
+contribute no placement or bounds after cache admission. This checks dimensions,
+not alpha pixels; transparent positive-area phase rasters can remain. Removing
+an old blank edge may change fractional-edge sampling as mask extents change;
+raw [`TextLayout`] coordinates and the wrapped [`TextArea`] presentation policy
+are documented separately. Palette
+''',1);p.write_text(s)
+p=Path('crates/pert-ui-runtime/assets/README.md');s=p.read_text();needle='''bundled-font baseline does not claim complete script coverage or color emoji.
+''';assert needle in s;s=s.replace(needle,needle+'''
+Zero-area glyph rasters add no placement or bounds after normal cache lookup
+and admission. A bundled-font space has no default coverage; a fractional
+vertical phase can still produce a transparent positive-area raster and blank
+phase mask. No alpha scan is performed, and positive-area custom-font space ink
+remains eligible. Empty-edge removal can change origin/extent and fractional
+mask sampling. Icon reference metrics and centering remain unchanged; an
+inline-icon text frame need not remain pixel-identical when its mask narrows.
+''',1);p.write_text(s)

@@ -1,5 +1,42 @@
 # Changelog
 
+## 0.3.94 (2026-10-29)
+
+Round 3 empty-raster bounds and wrapped hanging-caret presentation. These
+post-run repairs have separate regression/review evidence, not new blind timings.
+
+- TextService skips zero-width/zero-height glyph rasters after normal phase
+  cache lookup/admission and byte accounting, before icon alignment, placement
+  and bounds. Empty cache entries remain reusable. Canonical strings, shaping,
+  Unicode analysis, advances and the tab-atom policy are unchanged.
+- TextLayout and size() no longer include an empty raster's pen point. Removing
+  that ghost edge can shrink the canvas and translate public caret/selection,
+  hit and word coordinates. Positive-area custom-font space ink remains; equal
+  space/tab advance alone is not geometry equivalence. Transparent positive-area
+  phase rasters can still form blank masks because the rule does not scan alpha.
+  Changed mask extents can change fractional-edge sampling even with preserved
+  positive glyph placements; whole-frame pixel identity is not promised.
+- Wrapping TextArea pins displayed caret x inside max(layout.width, wrap width),
+  reserving caret width, for painting, reveal and IME anchoring. Raw canonical
+  TextSelection geometry, selection fill, composition underline and hit testing
+  remain unpinned and clip normally. Several hanging offsets can share a drawn
+  caret x, and clicking it need not recover its hanging offset. Tiny viewports
+  retain end-wins reveal with unavoidable clipping.
+- Position and wheel share one stored nonnegative horizontal interval. Wrapping
+  extent is the text box; single-line/numeric/draft extent also reserves caret
+  width. Repeated hanging whitespace no longer increases scrolling indefinitely.
+  Outward rounding at fractional scale can retain a bounded shift below one
+  physical pixel, removed when the next word wraps. Wider unbreakable text still
+  scrolls; truly nonoverflowing no-op wheel input propagates. Arrangement-forced
+  reveal, pending-edit/wheel interaction and input-state freshness are unchanged.
+- Updated TextLayout/size, TextArea and TextSelection::at_point/caret rustdoc,
+  guides, assets README, contracts and rendering notes. Real baseline/after
+  probes, independent canvas oracles, CPU caret pixels, IME/wheel/selection/
+  tiny-viewport tests and restored negative controls cover the policies and
+  their measured limits. Bundled icon centering is preserved; inline-icon text
+  frames can change when masks narrow. No public signature, schema, dependency
+  or platform-adapter change.
+
 ## 0.3.93 (2026-10-29)
 
 Round 3 MultiSelect navigation/click continuity and automatic surface press focus.

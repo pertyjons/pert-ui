@@ -1,0 +1,12 @@
+from pathlib import Path
+import subprocess,os,json,datetime,hashlib
+root=Path('/home/per/pert-ui-usability/r3-whitespace-worktree');out=Path(__file__).parent
+commands=[('fmt',['cargo','fmt','--all','--check'],{}),('hanging-tests',['cargo','test','--locked','-p','pert-ui','--features','cpu','--test','editing','hanging_whitespace'],{}),('runtime-docs',['cargo','test','--locked','-p','pert-ui-runtime','--doc'],{}),('rustdoc',['cargo','doc','--locked','-p','pert-ui-runtime','--no-deps'],{'RUSTDOCFLAGS':'-D warnings'})]
+records=[]
+for label,cmd,extra in commands:
+ start=datetime.datetime.now(datetime.timezone.utc).isoformat()
+ with (out/(label+'.log')).open('x') as log:
+  log.write('$ '+' '.join(cmd)+'\n');log.flush();r=subprocess.run(cmd,cwd=root,env=dict(os.environ,CARGO_TARGET_DIR='/home/per/pert-ui-usability/r3-whitespace-implementation-target',**extra),stdout=log,stderr=subprocess.STDOUT)
+ records.append({'command':cmd,'environment':extra,'started_at_utc':start,'finished_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'exit_status':r.returncode});(out/'outcomes.json').write_text(json.dumps(records,indent=2)+'\n')
+ if r.returncode:raise SystemExit(r.returncode)
+print('All repair checks passed')

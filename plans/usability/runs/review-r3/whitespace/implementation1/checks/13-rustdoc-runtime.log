@@ -1,0 +1,7 @@
+$ cd /home/per/pert-ui-usability/r3-whitespace-worktree && CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-whitespace-implementation-target RUSTDOCFLAGS='-D warnings' cargo doc --locked -p pert-ui-runtime --no-deps
+# started 2026-10-29T11:34:22+00:00
+    Checking pert-ui-core v0.3.91 (/home/per/pert-ui-usability/r3-whitespace-worktree/crates/pert-ui-core)
+ Documenting pert-ui-runtime v0.3.91 (/home/per/pert-ui-usability/r3-whitespace-worktree/crates/pert-ui-runtime)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.47s
+   Generated /home/per/pert-ui-usability/r3-whitespace-implementation-target/doc/pert_ui_runtime/index.html
+# exit status 0, finished 2026-10-29T11:34:25+00:00

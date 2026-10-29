@@ -1,0 +1,12 @@
+--- a/crates/pert-ui-runtime/src/text.rs
++++ b/crates/pert-ui-runtime/src/text.rs
+@@ -1439,9 +1439,6 @@
+                     // places nothing: it neither aligns nor extends the bounds.
+                     // Its cache entry above stays, so the phase path does not
+                     // render it again on the next line miss.
+-                    if image.placement.width == 0 || image.placement.height == 0 {
+-                        continue;
+-                    }
+                     let x = x.floor() as i64 + i64::from(image.placement.left);
+                     let mut y = y.floor() as i64 - i64::from(image.placement.top);
+                     if let Some(alignment) = alignment {

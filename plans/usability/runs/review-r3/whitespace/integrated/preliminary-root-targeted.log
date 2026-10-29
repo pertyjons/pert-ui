@@ -1,0 +1,24 @@
+   Compiling pert-ui-core v0.3.94 (/home/per/github/pert-ui/crates/pert-ui-core)
+   Compiling pert-ui-runtime v0.3.94 (/home/per/github/pert-ui/crates/pert-ui-runtime)
+   Compiling pert-ui-wgpu v0.3.94 (/home/per/github/pert-ui/crates/pert-ui-wgpu)
+   Compiling pert-ui-cpu v0.3.94 (/home/per/github/pert-ui/crates/pert-ui-cpu)
+   Compiling pert-ui v0.3.94 (/home/per/github/pert-ui/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 25.25s
+     Running tests/editing/main.rs (target/debug/deps/editing-b73ccf4e8637fe55)
+
+running 12 tests
+test hanging_whitespace::a_read_only_text_area_shows_its_selection_fill_over_hanging_whitespace ... ok
+test hanging_whitespace::a_wheel_before_the_next_paint_still_cancels_an_edit_s_pending_reveal ... ok
+test hanging_whitespace::composition_pins_the_caret_and_anchor_but_not_the_underline ... ok
+test hanging_whitespace::focus_loss_hides_the_caret_and_relayout_keeps_the_text_still ... ok
+test hanging_whitespace::tiny_and_zero_text_areas_keep_a_valid_range_and_the_caret_end_wins ... ok
+test hanging_whitespace::hanging_line_ends_draw_a_pinned_caret_inside_the_text_area ... ok
+test hanging_whitespace::single_line_reveal_and_the_wheel_share_the_caret_width_range ... ok
+test hanging_whitespace::the_wheel_and_caret_reveal_share_one_nonnegative_range ... ok
+test hanging_whitespace::right_to_left_hanging_whitespace_and_the_right_edge_start_show_the_caret ... ok
+test hanging_whitespace::resizing_restyling_and_rescaling_keep_the_pinned_caret_visible ... ok
+test hanging_whitespace::typing_and_holding_space_keeps_only_the_bounded_rounding_offset ... ok
+test hanging_whitespace::typing_prose_scrolls_only_by_the_bounded_rounding_residual ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 323 filtered out; finished in 0.38s
+

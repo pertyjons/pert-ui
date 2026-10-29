@@ -1,0 +1,97 @@
+#!/usr/bin/env python3
+"""Final targeted checks of the hanging-whitespace implementation.
+
+Each check is logged to checks/NN-name.log with its command, start and end
+times, full output and exit status; run-checks.out summarizes them. Source
+hashes are recorded before the first check and after the last one.
+"""
+import hashlib
+import os
+import pathlib
+import subprocess
+from datetime import datetime, timezone
+
+ROOT = pathlib.Path("/home/per/pert-ui-usability/r3-whitespace-worktree")
+OUT = pathlib.Path("/home/per/pert-ui-usability/r3-whitespace-implementation-evidence/checks")
+TARGET = "/home/per/pert-ui-usability/r3-whitespace-implementation-target"
+OWNED = [
+    "crates/pert-ui-runtime/src/text.rs",
+    "crates/pert-ui-runtime/src/text/tabs.rs",
+    "crates/pert-ui-runtime/src/text_fields.rs",
+    "crates/pert-ui-runtime/src/text_selection.rs",
+    "crates/pert-ui/tests/editing/tab_whitespace.rs",
+    "crates/pert-ui/tests/editing/hanging_whitespace.rs",
+    "crates/pert-ui/tests/editing/main.rs",
+]
+ALLOWED_STATUS = {
+    " M crates/pert-ui-runtime/src/text.rs",
+    " M crates/pert-ui-runtime/src/text_fields.rs",
+    " M crates/pert-ui-runtime/src/text_selection.rs",
+    " M crates/pert-ui/tests/editing/main.rs",
+    "?? crates/pert-ui-runtime/src/text/tabs.rs",
+    "?? crates/pert-ui-runtime/tests/assets/",
+    "?? crates/pert-ui/tests/editing/tab_whitespace.rs",
+    "?? crates/pert-ui/tests/editing/hanging_whitespace.rs",
+}
+NEW_FILES = ["crates/pert-ui-runtime/src/text/tabs.rs",
+             "crates/pert-ui/tests/editing/tab_whitespace.rs",
+             "crates/pert-ui/tests/editing/hanging_whitespace.rs"]
+CHECKS = [
+    ("fmt", "cargo fmt --all -- --check"),
+    ("clippy-runtime", "cargo clippy --locked -p pert-ui-runtime --all-targets -- -D warnings"),
+    ("clippy-facade-cpu", "cargo clippy --locked -p pert-ui --all-targets --features cpu -- -D warnings"),
+    ("clippy-facade-default", "cargo clippy --locked -p pert-ui --all-targets -- -D warnings"),
+    ("runtime-tests", "cargo test --locked -p pert-ui-runtime --lib --tests"),
+    ("runtime-text-release", "cargo test --locked --release -p pert-ui-runtime --lib text"),
+    ("facade-editing-cpu", "cargo test --locked -p pert-ui --features cpu --test editing"),
+    ("facade-editing-default", "cargo test --locked -p pert-ui --test editing"),
+    ("facade-editing-cpu-release",
+     "cargo test --locked --release -p pert-ui --features cpu --test editing -- hanging_whitespace tab_whitespace text_fields"),
+    ("facade-controls-cpu", "cargo test --locked -p pert-ui --features cpu --test controls"),
+    ("runtime-doctests", "cargo test --locked -p pert-ui-runtime --doc"),
+    ("facade-doctests", "cargo test --locked -p pert-ui --doc"),
+    ("rustdoc-runtime", "RUSTDOCFLAGS='-D warnings' cargo doc --locked -p pert-ui-runtime --no-deps"),
+    ("rustdoc-facade", "RUSTDOCFLAGS='-D warnings' cargo doc --locked -p pert-ui --no-deps"),
+    ("diff-check", "git diff --check"),
+    ("new-file-whitespace", "! grep -nP '[ \\t]+$' " + " ".join(NEW_FILES)),
+    ("status", "git status --short"),
+]
+
+
+def now():
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def hashes():
+    return {f: hashlib.sha256((ROOT / f).read_bytes()).hexdigest() for f in OWNED}
+
+
+def main():
+    OUT.mkdir(parents=True, exist_ok=True)
+    env = dict(os.environ, CARGO_TARGET_DIR=TARGET)
+    before = hashes()
+    lines = [f"# started {now()}", "# owned sources before:"] + [f"  {h}  {f}" for f, h in before.items()]
+    for number, (name, command) in enumerate(CHECKS, 1):
+        log = OUT / f"{number:02}-{name}.log"
+        start = now()
+        result = subprocess.run(command, shell=True, cwd=ROOT, env=env, capture_output=True, text=True)
+        log.write_text(f"$ cd {ROOT} && CARGO_TARGET_DIR={TARGET} {command}\n# started {start}\n"
+                       f"{result.stdout}{result.stderr}# exit status {result.returncode}, finished {now()}\n")
+        results = [l for l in (result.stdout + result.stderr).splitlines() if l.startswith("test result:")]
+        passed = sum(int(l.split()[3]) for l in results)
+        failed = sum(int(l.split()[5]) for l in results)
+        lines.append(f"{number:02} {name}: exit {result.returncode}"
+                     + (f"; {len(results)} result lines, {passed} passed, {failed} failed" if results else ""))
+        if name == "status":
+            status = {l for l in result.stdout.splitlines() if l}
+            lines.append(f"   status paths within the owned set and baseline: {status <= ALLOWED_STATUS}; "
+                         f"unexpected: {sorted(status - ALLOWED_STATUS)}")
+    after = hashes()
+    lines += ["# owned sources after:"] + [f"  {h}  {f}" for f, h in after.items()]
+    lines.append(f"# unchanged during the checks: {before == after}; finished {now()}")
+    (OUT / "run-checks.out").write_text("\n".join(lines) + "\n")
+    print("\n".join(lines))
+
+
+if __name__ == "__main__":
+    main()

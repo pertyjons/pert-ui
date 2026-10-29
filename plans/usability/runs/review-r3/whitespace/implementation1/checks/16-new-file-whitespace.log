@@ -1,0 +1,3 @@
+$ cd /home/per/pert-ui-usability/r3-whitespace-worktree && CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-whitespace-implementation-target ! grep -nP '[ \t]+$' crates/pert-ui-runtime/src/text/tabs.rs crates/pert-ui/tests/editing/tab_whitespace.rs crates/pert-ui/tests/editing/hanging_whitespace.rs
+# started 2026-10-29T11:34:31+00:00
+# exit status 0, finished 2026-10-29T11:34:31+00:00

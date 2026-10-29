@@ -1,0 +1,63 @@
+{
+  "source_directory": "/home/per/pert-ui-usability/r3-whitespace-review-repair1",
+  "policy": "Exact bytes except declared readable log excerpts; full gzip preserves those bytes. Script suffixes renamed for archival use.",
+  "files": [
+    {
+      "source": "README.md",
+      "source_bytes": 3353,
+      "source_sha256": "680a6ee48d5b57a21ef0e9db212410bfee080969e12d9a5a512aa16734703bb0",
+      "archive_path": "README.md",
+      "archive_sha256": "680a6ee48d5b57a21ef0e9db212410bfee080969e12d9a5a512aa16734703bb0"
+    },
+    {
+      "source": "fmt.log",
+      "source_bytes": 26,
+      "source_sha256": "5bd2c4787084677798c6fd838467a305f2dfa8bae7469f20aeed41fb6c07e93b",
+      "archive_path": "fmt.log",
+      "archive_sha256": "5bd2c4787084677798c6fd838467a305f2dfa8bae7469f20aeed41fb6c07e93b"
+    },
+    {
+      "source": "hanging-tests.log",
+      "source_bytes": 1978,
+      "source_sha256": "06a6147c0188c143a988f1329c9fd4fdf728a0702aff4a058e76650660bf60c3",
+      "archive_path": "hanging-tests.log",
+      "archive_sha256": "06a6147c0188c143a988f1329c9fd4fdf728a0702aff4a058e76650660bf60c3"
+    },
+    {
+      "source": "outcomes.json",
+      "source_bytes": 1247,
+      "source_sha256": "9803a1d02c330c4157f12f1b36c91336b842f2f3a5e8e3d5038d92de64f40eff",
+      "archive_path": "outcomes.json",
+      "archive_sha256": "9803a1d02c330c4157f12f1b36c91336b842f2f3a5e8e3d5038d92de64f40eff"
+    },
+    {
+      "source": "run-checks.py",
+      "source_bytes": 1230,
+      "source_sha256": "326688ad61b1beead0b00ddb30c54b2847f0bd79b46cc1b01987bf6bbaa0ba21",
+      "suffix_note": "Archived script text, not an installed/portable entry point; exact bytes unchanged.",
+      "archive_path": "run-checks.py.txt",
+      "archive_sha256": "326688ad61b1beead0b00ddb30c54b2847f0bd79b46cc1b01987bf6bbaa0ba21"
+    },
+    {
+      "source": "runtime-docs.log",
+      "source_bytes": 39584,
+      "source_sha256": "099b8583b88cb31c3e7d9c6608f8f3121ceb0fb5c80ff899989d4ba5d710913b",
+      "archive_path": "runtime-docs.log",
+      "archive_sha256": "099b8583b88cb31c3e7d9c6608f8f3121ceb0fb5c80ff899989d4ba5d710913b"
+    },
+    {
+      "source": "rustdoc.log",
+      "source_bytes": 343,
+      "source_sha256": "78170453b4055d650b53fd0c10a584a1f8bdf4826ef832ec08dd1306edda7f4c",
+      "archive_path": "rustdoc.log",
+      "archive_sha256": "78170453b4055d650b53fd0c10a584a1f8bdf4826ef832ec08dd1306edda7f4c"
+    },
+    {
+      "source": "source-repair.json",
+      "source_bytes": 913,
+      "source_sha256": "4b1f21424b423e06e9791aa6c4b6e11349fb45bf3eb56ef500c04ab074fe57be",
+      "archive_path": "source-repair.json",
+      "archive_sha256": "4b1f21424b423e06e9791aa6c4b6e11349fb45bf3eb56ef500c04ab074fe57be"
+    }
+  ]
+}
