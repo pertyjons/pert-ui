@@ -239,3 +239,14 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   and Toolbar report theirs. Retain resolved paint metadata and expose only
   measured/current values through ComponentDetails, with disabled/theme
   redescription tests; inspection must not paint or schedule work.
+
+- [ ] 2026-10-29 `crates/pert-ui-runtime/src/multi_select.rs`
+  `Row::pointer_input` — MultiSelect parked-pointer defect: refreshed Move
+  rewrites the shared highlight after keyboard navigation, so a popup parked
+  under Gamma cannot leave Gamma with Down; a long list remains on O03 after
+  twelve Downs and Enter toggles that option. Both frozen versions reproduce
+  it through public input; see `plans/usability/runs/triage-r3/extra-input-probes/`
+  P13. This violates the documented Up/Down highlight contract. Give this
+  separate row family an explicit pointer/keyboard ownership rule and public
+  parked-pointer, Leave, long-list and toggle/callback regression tests in a
+  separate checkpoint from Menu/Select's shared OptionList repair.

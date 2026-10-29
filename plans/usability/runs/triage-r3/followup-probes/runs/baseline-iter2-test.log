@@ -1,0 +1,254 @@
+### started 2026-10-28T20:29:31+01:00
+### harness: /home/per/github/pert-ui/plans/usability/run.sh exec /home/per/pert-ui-usability/kit-r3-baseline /home/per/pert-ui-usability/r3-extra-probes-baseline cargo test -- --nocapture --test-threads=1
+### kit.env:
+###   commit=26e6b5a308df24bffe09f796cf683710979df05e
+###   dirty=1
+###   version=0.3.75
+###   toolchain=rustc 1.99.1 (58cf8f9c3 2026-10-13)
+###   prepared=2026-10-28T16:41:12+01:00
+### input checksums:
+###   131b512773f4d91c45e62b25dfdbb3e90a55d31101cced1997f610429ec7467e  Cargo.toml
+###   c1aeefed2e337ec1aa46776a6d410a37c0c5be81f0c0dff93177a726e9116df1  src/lib.rs
+###   431f03a6c80767cae855cca33546cf24a0d98f9899d5c5013546c1bba70f8406  Cargo.lock
+   Compiling round-3-followup-probes v0.0.0 (/work)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.88s
+     Running unittests src/lib.rs (target/debug/deps/round_3_followup_probes-ee257cf5bcf5e482)
+
+running 6 tests
+test tests::p10_text_area_literal_tab_cpu_capture ... P10|capture 320x440 written to /work/captures/p10-textareas.png
+P10|tab canonical="A\tB" bytes=[65, 9, 66] inspect.text=Text("A\tB") semantics.value=Some(Text("A\tB")) bounds=[0.0, 0.0, 320.0, 132.0]
+P10|tab ink column runs (x ranges) = [(12, 20), (21, 28), (30, 37)]
+P10|tab crop x=3..317 y=3..129 background=[60, 66, 77, 255]
+P10|tab y= 11 ............##....+######..#####+
+P10|tab y= 12 ............###...+#...+#..##++##
+P10|tab y= 13 ...........+###...+#...+#..#+..+#+
+P10|tab y= 14 ...........##+#...+#...+#..#+..##
+P10|tab y= 15 ...........#+.#+..+#...+#..#####+
+P10|tab y= 16 ..........+#++##..+#...+#..##+###
+P10|tab y= 17 ..........######..+#...+#..#+...#+
+P10|tab y= 18 ..........#+...#+.+#...+#..#+...##
+P10|tab y= 19 .........+#....##.+#...+#..##++##+
+P10|tab y= 20 .........##....+#.+######..#####+
+P10|space canonical="A B" bytes=[65, 32, 66] inspect.text=Text("A B") semantics.value=Some(Text("A B")) bounds=[0.0, 140.0, 320.0, 132.0]
+P10|space ink column runs (x ranges) = [(12, 20), (30, 37)]
+P10|space crop x=3..317 y=143..269 background=[60, 66, 77, 255]
+P10|space y=151 ............##.............#####+
+P10|space y=152 ............###............##++##
+P10|space y=153 ...........+###............#+..+#+
+P10|space y=154 ...........##+#............#+..##
+P10|space y=155 ...........#+.#+...........#####+
+P10|space y=156 ..........+#++##...........##+###
+P10|space y=157 ..........######...........#+...#+
+P10|space y=158 ..........#+...#+..........#+...##
+P10|space y=159 .........+#....##..........##++##+
+P10|space y=160 .........##....+#..........#####+
+P10|adjacent canonical="AB" bytes=[65, 66] inspect.text=Text("AB") semantics.value=Some(Text("AB")) bounds=[0.0, 280.0, 320.0, 132.0]
+P10|adjacent ink column runs (x ranges) = [(12, 20), (21, 28)]
+P10|adjacent crop x=3..317 y=283..409 background=[60, 66, 77, 255]
+P10|adjacent y=291 ............##....+#####
+P10|adjacent y=292 ............###...+#+++##
+P10|adjacent y=293 ...........+###...+#...##
+P10|adjacent y=294 ...........##+#...+#...##
+P10|adjacent y=295 ...........#+.#+..+#####
+P10|adjacent y=296 ..........+#++##..+#++###
+P10|adjacent y=297 ..........######..+#...##
+P10|adjacent y=298 ..........#+...#+.+#...+#
+P10|adjacent y=299 .........+#....##.+#+++##
+P10|adjacent y=300 .........##....+#.+#####
+ok
+test tests::p11_dynamic_tabs_add_remove_without_reveal ... P11|dynamic start titles=["A*", "B"] focus=<none> log=[] a/editor#5
+P11|dynamic add c, no reveal: titles=["A*", "B", "C"] focus=<none> log=[] a/editor#5
+P11|dynamic reveal_child(b)=Changed: titles=["A", "B*", "C"] focus=<none> log=["Some(\"a\")->Some(\"b\") Reveal"]
+P11|dynamic focus b editor and type: titles=["A", "B*", "C"] focus=editor#11 log=["Some(\"a\")->Some(\"b\") Reveal"] b_text="1text b"
+P11|dynamic remove focused+selected b: titles=["A", "C*"] focus=tabs#2 log=["Some(\"a\")->Some(\"b\") Reveal", "Some(\"b\")->Some(\"c\") Redescription"] a/editor#5 c/editor#17 b_editor_mounted=false
+P11|dynamic type after removal: texts a="text a" b="1text b" c="text c" focus=tabs#2
+P11|dynamic ArrowLeft after removal: titles=["A*", "C"] focus=tabs#2 log=["Some(\"a\")->Some(\"b\") Reveal", "Some(\"b\")->Some(\"c\") Redescription", "Some(\"c\")->Some(\"a\") User"]
+P11|dynamic add d: titles=["A*", "C", "D"] focus=tabs#2 log=["Some(\"a\")->Some(\"b\") Reveal", "Some(\"b\")->Some(\"c\") Redescription", "Some(\"c\")->Some(\"a\") User"]
+P11|dynamic remove all: titles=[] focus=<none> log=["Some(\"a\")->Some(\"b\") Reveal", "Some(\"b\")->Some(\"c\") Redescription", "Some(\"c\")->Some(\"a\") User", "Some(\"a\")->None Redescription"]
+P11|dynamic describe d into empty: titles=["D*"] focus=<none> log=["Some(\"a\")->Some(\"b\") Reveal", "Some(\"b\")->Some(\"c\") Redescription", "Some(\"c\")->Some(\"a\") User", "Some(\"a\")->None Redescription", "None->Some(\"d\") Redescription"]
+P11|dynamic strip identity retained: true
+ok
+test tests::p11_reconcile_children_tabs_add_remove_without_reveal ... P11|reconcile_children start titles=["A*", "B"] focus=<none> log=[] a/editor#4
+P11|reconcile_children add c, no reveal: titles=["A*", "B", "C"] focus=<none> log=[] a/editor#4
+P11|reconcile_children reveal_child(b)=Changed: titles=["A", "B*", "C"] focus=<none> log=["Some(\"a\")->Some(\"b\") Reveal"]
+P11|reconcile_children focus b editor and type: titles=["A", "B*", "C"] focus=editor#10 log=["Some(\"a\")->Some(\"b\") Reveal"] b_text="1text b"
+P11|reconcile_children remove focused+selected b: titles=["A", "C*"] focus=tabs#1 log=["Some(\"a\")->Some(\"b\") Reveal", "Some(\"b\")->Some(\"c\") Redescription"] a/editor#4 c/editor#16 b_editor_mounted=false
+P11|reconcile_children type after removal: texts a="text a" b="1text b" c="text c" focus=tabs#1
+P11|reconcile_children ArrowLeft after removal: titles=["A*", "C"] focus=tabs#1 log=["Some(\"a\")->Some(\"b\") Reveal", "Some(\"b\")->Some(\"c\") Redescription", "Some(\"c\")->Some(\"a\") User"]
+P11|reconcile_children add d: titles=["A*", "C", "D"] focus=tabs#1 log=["Some(\"a\")->Some(\"b\") Reveal", "Some(\"b\")->Some(\"c\") Redescription", "Some(\"c\")->Some(\"a\") User"]
+P11|reconcile_children remove all: titles=[] focus=<none> log=["Some(\"a\")->Some(\"b\") Reveal", "Some(\"b\")->Some(\"c\") Redescription", "Some(\"c\")->Some(\"a\") User", "Some(\"a\")->None Redescription"]
+P11|reconcile_children describe d into empty: titles=["D*"] focus=<none> log=["Some(\"a\")->Some(\"b\") Reveal", "Some(\"b\")->Some(\"c\") Redescription", "Some(\"c\")->Some(\"a\") User", "Some(\"a\")->None Redescription", "None->Some(\"d\") Redescription"]
+ok
+test tests::p7_button_rows_pointer_selection_focus_and_arrows ... P7|plain-button start focus=<none> active=None selected={} log=[]
+P7|plain-button click b focus=b#5 active=None selected={} log=["button:b"]
+P7|plain-button Down focus=b#5 active=Some("a") selected={"a"} log=["button:b"]
+P7|plain-button Enter focus=b#5 active=Some("a") selected={"a"} log=["button:b", "button:b"]
+P7|plain-button Down2 focus=b#5 active=Some("b") selected={"b"} log=["button:b", "button:b"]
+P7|plain-button Tab focus=before#2 active=Some("b") selected={"b"} log=["button:b", "button:b"]
+P7|button+set_active start focus=<none> active=None selected={} log=[]
+P7|button+set_active click b focus=b#5 active=Some("b") selected={"b"} log=["button:b"]
+P7|button+set_active Down focus=b#5 active=Some("c") selected={"c"} log=["button:b"]
+P7|button+set_active Enter focus=b#5 active=Some("b") selected={"b"} log=["button:b", "button:b"]
+P7|button+set_active Down2 focus=b#5 active=Some("c") selected={"c"} log=["button:b", "button:b"]
+P7|button+set_active Tab focus=before#2 active=Some("c") selected={"c"} log=["button:b", "button:b"]
+P7|button+set_active+request_focus_for(list) start focus=<none> active=None selected={} log=[]
+P7|button+set_active+request_focus_for(list) click b focus=list#3 active=Some("b") selected={"b"} log=["button:b"]
+P7|button+set_active+request_focus_for(list) Down focus=list#3 active=Some("c") selected={"c"} log=["button:b"]
+P7|button+set_active+request_focus_for(list) Enter focus=list#3 active=Some("c") selected={"c"} log=["button:b", "activate:c"]
+P7|button+set_active+request_focus_for(list) Down2 focus=list#3 active=Some("d") selected={"d"} log=["button:b", "activate:c"]
+P7|button+set_active+request_focus_for(list) Tab focus=before#2 active=Some("d") selected={"d"} log=["button:b", "activate:c"]
+ok
+test tests::p8_keyboard_menu_highlight_and_stale_pointer ... P8|calibrate rows=4 items_bounds=[12,44,128,128] row_height=32
+P8|calibrate host move to row 0 at Point { x: 76.0, y: 60.0 } -> Text("Save")
+P8|calibrate host move to row 1 at Point { x: 76.0, y: 92.0 } -> Text("Beta")
+P8|calibrate host move to row 2 at Point { x: 76.0, y: 124.0 } -> Text("Gamma")
+P8|calibrate host move to row 3 at Point { x: 76.0, y: 156.0 } -> Text("Delta")
+P8|short/never parked focus=c0#13 log=[]
+P8|short/never F10 focus=title/file#3 active=<absent> visible=false
+P8|short/never Down before settle active=Text("Save") visible=true
+P8|short/never Down after settle focus=items#6 active=Text("Save") visible=true
+P8|short/never Down after second settle active=Text("Save") visible=true
+P8|short/never Enter log=["receipt:CommandReceipt { status: Pending }", "command:Save"] focus=c0#13 active=Text("Save") visible=false
+P8|short/move parked focus=c0#13 log=[]
+P8|short/move F10 focus=title/file#3 active=<absent> visible=false
+P8|short/move Down before settle active=Text("Gamma") visible=true
+P8|short/move Down after settle focus=items#6 active=Text("Gamma") visible=true
+P8|short/move Down after second settle active=Text("Gamma") visible=true
+P8|short/move Enter log=["row:Gamma"] focus=c0#13 active=Text("Gamma") visible=false
+P8|short/leave parked focus=c0#13 log=[]
+P8|short/leave F10 focus=title/file#3 active=<absent> visible=false
+P8|short/leave Down before settle active=Text("Save") visible=true
+P8|short/leave Down after settle focus=items#6 active=Text("Save") visible=true
+P8|short/leave Down after second settle active=Text("Save") visible=true
+P8|short/leave Enter log=["receipt:CommandReceipt { status: Pending }", "command:Save"] focus=c0#13 active=Text("Save") visible=false
+P8|short/outside parked focus=c0#13 log=[]
+P8|short/outside F10 focus=title/file#3 active=<absent> visible=false
+P8|short/outside Down before settle active=Text("Save") visible=true
+P8|short/outside Down after settle focus=items#6 active=Text("Save") visible=true
+P8|short/outside Down after second settle active=Text("Save") visible=true
+P8|short/outside Enter log=["receipt:CommandReceipt { status: Pending }", "command:Save"] focus=c0#13 active=Text("Save") visible=false
+P8|short/never-down parked focus=c0#13 log=[]
+P8|short/never-down F10 focus=title/file#3 active=<absent> visible=false
+P8|short/never-down Down before settle active=Text("Save") visible=true
+P8|short/never-down Down after settle focus=items#6 active=Text("Save") visible=true
+P8|short/never-down Down after second settle active=Text("Save") visible=true
+P8|short/never-down Down#2 active=Text("Beta") visible=true
+P8|short/never-down Enter log=["row:Beta"] focus=c0#13 active=Text("Beta") visible=false
+P8|short/move-down parked focus=c0#13 log=[]
+P8|short/move-down F10 focus=title/file#3 active=<absent> visible=false
+P8|short/move-down Down before settle active=Text("Gamma") visible=true
+P8|short/move-down Down after settle focus=items#6 active=Text("Gamma") visible=true
+P8|short/move-down Down after second settle active=Text("Gamma") visible=true
+P8|short/move-down Down#2 active=Text("Delta") visible=true
+P8|short/move-down Enter log=["row:Delta"] focus=c0#13 active=Text("Delta") visible=false
+P8|click target c1 middle=(44.5,88) lies in row 1 Text("Beta")
+P8|short/click parked focus=c1#14 log=["content:1"]
+P8|short/click F10 focus=title/file#3 active=<absent> visible=false
+P8|short/click Down before settle active=Text("Beta") visible=true
+P8|short/click Down after settle focus=items#6 active=Text("Beta") visible=true
+P8|short/click Down after second settle active=Text("Beta") visible=true
+P8|short/click Enter log=["content:1", "row:Beta"] focus=c1#14 active=Text("Beta") visible=false
+P8|calibrate rows=14 items_bounds=[12,44,106,256] row_height=32
+P8|calibrate host move to row 0 at Point { x: 65.0, y: 60.0 } -> Text("Save")
+P8|calibrate host move to row 1 at Point { x: 65.0, y: 92.0 } -> Text("R01")
+P8|calibrate host move to row 2 at Point { x: 65.0, y: 124.0 } -> Text("R02")
+P8|calibrate host move to row 3 at Point { x: 65.0, y: 156.0 } -> Text("R03")
+P8|calibrate host move to row 4 at Point { x: 65.0, y: 188.0 } -> Text("R04")
+P8|calibrate host move to row 5 at Point { x: 65.0, y: 220.0 } -> Text("R05")
+P8|calibrate host move to row 6 at Point { x: 65.0, y: 252.0 } -> Text("R06")
+P8|calibrate host move to row 7 at Point { x: 65.0, y: 284.0 } -> Text("R07")
+P8|long/never parked focus=c0#13 log=[]
+P8|long/never F10 focus=title/file#3 active=<absent> visible=false
+P8|long/never Down before settle active=Text("Save") visible=true
+P8|long/never Down after settle focus=items#6 active=Text("Save") visible=true
+P8|long/never Down after second settle active=Text("Save") visible=true
+P8|long/never Down#2 active=Text("R01") visible=true
+P8|long/never Down#3 active=Text("R02") visible=true
+P8|long/never Down#4 active=Text("R03") visible=true
+P8|long/never Down#5 active=Text("R04") visible=true
+P8|long/never Down#6 active=Text("R05") visible=true
+P8|long/never Down#7 active=Text("R06") visible=true
+P8|long/never Down#8 active=Text("R07") visible=true
+P8|long/never Down#9 active=Text("R08") visible=true
+P8|long/never Down#10 active=Text("R09") visible=true
+P8|long/never Down#11 active=Text("R10") visible=true
+P8|long/never Down#12 active=Text("R11") visible=true
+P8|long/never Down#13 active=Text("R12") visible=true
+P8|long/never Enter log=["row:R12"] focus=c0#13 active=Text("R12") visible=false
+P8|long/move parked focus=c0#13 log=[]
+P8|long/move F10 focus=title/file#3 active=<absent> visible=false
+P8|long/move Down before settle active=Text("R02") visible=true
+P8|long/move Down after settle focus=items#6 active=Text("R02") visible=true
+P8|long/move Down after second settle active=Text("R02") visible=true
+P8|long/move Down#2 active=Text("R03") visible=true
+P8|long/move Down#3 active=Text("R04") visible=true
+P8|long/move Down#4 active=Text("R05") visible=true
+P8|long/move Down#5 active=Text("R06") visible=true
+P8|long/move Down#6 active=Text("R07") visible=true
+P8|long/move Down#7 active=Text("R03") visible=true
+P8|long/move Down#8 active=Text("R04") visible=true
+P8|long/move Down#9 active=Text("R05") visible=true
+P8|long/move Down#10 active=Text("R06") visible=true
+P8|long/move Down#11 active=Text("R07") visible=true
+P8|long/move Down#12 active=Text("R08") visible=true
+P8|long/move Down#13 active=Text("R04") visible=true
+P8|long/move Enter log=["row:R04"] focus=c0#13 active=Text("R04") visible=false
+P8|long/leave parked focus=c0#13 log=[]
+P8|long/leave F10 focus=title/file#3 active=<absent> visible=false
+P8|long/leave Down before settle active=Text("Save") visible=true
+P8|long/leave Down after settle focus=items#6 active=Text("Save") visible=true
+P8|long/leave Down after second settle active=Text("Save") visible=true
+P8|long/leave Down#2 active=Text("R01") visible=true
+P8|long/leave Down#3 active=Text("R02") visible=true
+P8|long/leave Down#4 active=Text("R03") visible=true
+P8|long/leave Down#5 active=Text("R04") visible=true
+P8|long/leave Down#6 active=Text("R05") visible=true
+P8|long/leave Down#7 active=Text("R06") visible=true
+P8|long/leave Down#8 active=Text("R07") visible=true
+P8|long/leave Down#9 active=Text("R08") visible=true
+P8|long/leave Down#10 active=Text("R09") visible=true
+P8|long/leave Down#11 active=Text("R10") visible=true
+P8|long/leave Down#12 active=Text("R11") visible=true
+P8|long/leave Down#13 active=Text("R12") visible=true
+P8|long/leave Enter log=["row:R12"] focus=c0#13 active=Text("R12") visible=false
+P8|SUMMARY never: ["receipt:CommandReceipt { status: Pending }", "command:Save"]
+P8|SUMMARY move-over-gamma: ["row:Gamma"]
+P8|SUMMARY move-over-gamma-then-leave: ["receipt:CommandReceipt { status: Pending }", "command:Save"]
+P8|SUMMARY move-outside-menu: ["receipt:CommandReceipt { status: Pending }", "command:Save"]
+P8|SUMMARY never+Down: ["row:Beta"]
+P8|SUMMARY move-over-gamma+Down: ["row:Delta"]
+P8|SUMMARY driver-click-under-row: ["content:1", "row:Beta"]
+P8|SUMMARY long/never: ["row:R12"]
+P8|SUMMARY long/move-over-row2: ["row:R04"]
+P8|SUMMARY long/move-then-leave: ["row:R12"]
+ok
+test tests::p9_not_revealed_diagnostic_before_and_after_runtime_drop ... P9|owner key=confirm inspection_id=3 save inspection_id=10
+P9|component id=1 key=root path=Some(["root"]) visible=true parent=None
+P9|component id=2 key=doc path=Some(["root", "doc"]) visible=true parent=Some(1)
+P9|component id=3 key=confirm path=Some(["root", "confirm"]) visible=true parent=Some(1)
+P9|component id=4 key=anchor path=None visible=true parent=Some(3)
+P9|component id=5 key=anchor path=Some(["root", "confirm", "anchor"]) visible=true parent=Some(4)
+P9|component id=6 key=dialog path=Some(["root", "confirm", "dialog"]) visible=false parent=Some(3)
+P9|component id=10 key=save path=Some(["root", "confirm", "dialog", "save"]) visible=false parent=Some(9)
+P9|Runtime::reveal(save) = Refused(AncestorRefused { ancestor: WidgetId { serial: 3, mounted: true, .. } })
+P9|error key=save ancestor key=confirm ancestor inspection_id=3 ancestor==owner:true
+P9|alive Display: `save` could not be revealed: AncestorRefused { ancestor: WidgetId { serial: 3, mounted: true, .. } }
+P9|alive Debug:   NotRevealed { key: "save", refusal: AncestorRefused { ancestor: WidgetId { serial: 3, mounted: true, .. } } }
+P9|alive, dialog now open, same error Display: `save` could not be revealed: AncestorRefused { ancestor: WidgetId { serial: 3, mounted: true, .. } }
+P9|alive, dialog open: click(save) now Ok
+P9|after runtime drop Display: `save` could not be revealed: AncestorRefused { ancestor: WidgetId { serial: 3, mounted: false, .. } }
+P9|after runtime drop Debug:   NotRevealed { key: "save", refusal: AncestorRefused { ancestor: WidgetId { serial: 3, mounted: false, .. } } }
+P9|second runtime alive Display: `save` could not be revealed: AncestorRefused { ancestor: WidgetId { serial: 3, mounted: true, .. } }
+P9|second runtime alive, owner unmounted Display: `save` could not be revealed: AncestorRefused { ancestor: WidgetId { serial: 3, mounted: false, .. } }
+P9|test-shaped Err as the harness prints it: Error: NotRevealed { key: "save", refusal: AncestorRefused { ancestor: WidgetId { serial: 3, mounted: false, .. } } }
+ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.38s
+
+   Doc-tests round_3_followup_probes
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+### exit_status=0 finished 2026-10-28T20:29:33+01:00

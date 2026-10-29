@@ -1,0 +1,219 @@
+### started 2026-10-28T21:17:04+01:00
+### harness: /home/per/github/pert-ui/plans/usability/run.sh exec /home/per/pert-ui-usability/kit-r3-head /home/per/pert-ui-usability/r3-extra-input-probes-head cargo test -- --nocapture --test-threads=1
+### kit.env:
+###   commit=32dd9c4f667b50cfbbef7e46b18c0007e2b08ee2
+###   dirty=0
+###   version=0.3.88
+###   toolchain=rustc 1.99.1 (58cf8f9c3 2026-10-13)
+###   prepared=2026-10-28T16:41:41+01:00
+### input checksums:
+###   1d0a69e91d1fe6a8c3733292c47a7706cc07d14cd818a8b24d6ac71639fd4952  Cargo.toml
+###   cf97686de077a158ff3498bab9162005bf27f0d85d0144c2d9ab1eb5d4411aab  src/lib.rs
+###   de720f87645e85a416b14beca3628d4e1b5ffeba66937257361e20fbdccfd6fd  Cargo.lock
+   Compiling round-3-extra-input-probes v0.0.0 (/work)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.94s
+     Running unittests src/lib.rs (target/debug/deps/round_3_extra_input_probes-fd4c19f1612e95d1)
+
+running 3 tests
+test tests::p12_menu_title_switch_on_refreshed_move ... P12|calibrate title/file bounds=Some(Rect([0.0, 0.0, 47.0, 32.0])) title/view bounds=Some(Rect([47.0, 0.0, 55.0, 32.0]))
+P12|calibrate view middle=Point { x: 74.5, y: 16.0 } file middle=Point { x: 23.5, y: 16.0 }
+P12|never parked file[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] view[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] focus=c0#13
+P12|never F10 file[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] view[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] focus=title/file#3
+P12|never Down before settle file[open=Bool(true) expanded=Some(true) items_visible=true active=Text("Save")] view[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] focus=items#6
+P12|never Down after settle file[open=Bool(true) expanded=Some(true) items_visible=true active=Text("Save")] view[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] focus=items#6
+P12|never Enter log=["command:Save"] file[open=Bool(false) expanded=Some(false) items_visible=false active=Text("Save")] view[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] focus=c0#13
+P12|parked parked file[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] view[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] focus=c0#13
+P12|parked F10 file[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] view[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] focus=title/file#3
+P12|parked Down before settle file[open=Bool(false) expanded=Some(false) items_visible=false active=Text("Save")] view[open=Bool(true) expanded=Some(true) items_visible=true active=Text("Zoom")] focus=items#10
+P12|parked Down after settle file[open=Bool(false) expanded=Some(false) items_visible=false active=Text("Save")] view[open=Bool(true) expanded=Some(true) items_visible=true active=Text("Zoom")] focus=items#10
+P12|parked Enter log=["row:Zoom"] file[open=Bool(false) expanded=Some(false) items_visible=false active=Text("Save")] view[open=Bool(false) expanded=Some(false) items_visible=false active=Text("Zoom")] focus=c0#13
+P12|parked-twice parked file[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] view[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] focus=c0#13
+P12|parked-twice F10 file[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] view[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] focus=title/file#3
+P12|parked-twice Down before settle file[open=Bool(false) expanded=Some(false) items_visible=false active=Text("Save")] view[open=Bool(true) expanded=Some(true) items_visible=true active=Text("Zoom")] focus=items#10
+P12|parked-twice Down after settle file[open=Bool(false) expanded=Some(false) items_visible=false active=Text("Save")] view[open=Bool(true) expanded=Some(true) items_visible=true active=Text("Zoom")] focus=items#10
+P12|parked-twice Enter log=["row:Zoom"] file[open=Bool(false) expanded=Some(false) items_visible=false active=Text("Save")] view[open=Bool(false) expanded=Some(false) items_visible=false active=Text("Zoom")] focus=c0#13
+P12|leave parked file[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] view[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] focus=c0#13
+P12|leave F10 file[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] view[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] focus=title/file#3
+P12|leave Down before settle file[open=Bool(true) expanded=Some(true) items_visible=true active=Text("Save")] view[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] focus=items#6
+P12|leave Down after settle file[open=Bool(true) expanded=Some(true) items_visible=true active=Text("Save")] view[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] focus=items#6
+P12|leave Enter log=["command:Save"] file[open=Bool(false) expanded=Some(false) items_visible=false active=Text("Save")] view[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] focus=c0#13
+P12|genuine parked file[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] view[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] focus=c0#13
+P12|genuine F10 file[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] view[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] focus=title/file#3
+P12|genuine Down before settle file[open=Bool(true) expanded=Some(true) items_visible=true active=Text("Save")] view[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] focus=items#6
+P12|genuine Down after settle file[open=Bool(true) expanded=Some(true) items_visible=true active=Text("Save")] view[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] focus=items#6
+P12|genuine host Move#1 at Point { x: 74.5, y: 16.0 } file[open=Bool(false) expanded=Some(false) items_visible=false active=Text("Save")] view[open=Bool(true) expanded=Some(true) items_visible=true active=Text("Zoom")] focus=items#10
+P12|genuine Enter log=["row:Zoom"] file[open=Bool(false) expanded=Some(false) items_visible=false active=Text("Save")] view[open=Bool(false) expanded=Some(false) items_visible=false active=Text("Zoom")] focus=c0#13
+P12|genuine-twice parked file[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] view[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] focus=c0#13
+P12|genuine-twice F10 file[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] view[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] focus=title/file#3
+P12|genuine-twice Down before settle file[open=Bool(true) expanded=Some(true) items_visible=true active=Text("Save")] view[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] focus=items#6
+P12|genuine-twice Down after settle file[open=Bool(true) expanded=Some(true) items_visible=true active=Text("Save")] view[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] focus=items#6
+P12|genuine-twice host Move#1 at Point { x: 74.5, y: 16.0 } file[open=Bool(false) expanded=Some(false) items_visible=false active=Text("Save")] view[open=Bool(true) expanded=Some(true) items_visible=true active=Text("Zoom")] focus=items#10
+P12|genuine-twice host Move#2 at Point { x: 74.5, y: 16.0 } file[open=Bool(false) expanded=Some(false) items_visible=false active=Text("Save")] view[open=Bool(true) expanded=Some(true) items_visible=true active=Text("Zoom")] focus=items#10
+P12|genuine-twice Enter log=["row:Zoom"] file[open=Bool(false) expanded=Some(false) items_visible=false active=Text("Save")] view[open=Bool(false) expanded=Some(false) items_visible=false active=Text("Zoom")] focus=c0#13
+P12|leave-identical parked file[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] view[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] focus=c0#13
+P12|leave-identical F10 file[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] view[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] focus=title/file#3
+P12|leave-identical Down before settle file[open=Bool(true) expanded=Some(true) items_visible=true active=Text("Save")] view[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] focus=items#6
+P12|leave-identical Down after settle file[open=Bool(true) expanded=Some(true) items_visible=true active=Text("Save")] view[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] focus=items#6
+P12|leave-identical host Move#1 at Point { x: 74.5, y: 16.0 } file[open=Bool(false) expanded=Some(false) items_visible=false active=Text("Save")] view[open=Bool(true) expanded=Some(true) items_visible=true active=Text("Zoom")] focus=items#10
+P12|leave-identical Enter log=["row:Zoom"] file[open=Bool(false) expanded=Some(false) items_visible=false active=Text("Save")] view[open=Bool(false) expanded=Some(false) items_visible=false active=Text("Zoom")] focus=c0#13
+P12|parked-file parked file[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] view[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] focus=c0#13
+P12|parked-file F10 file[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] view[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] focus=title/file#3
+P12|parked-file Down before settle file[open=Bool(true) expanded=Some(true) items_visible=true active=Text("Save")] view[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] focus=items#6
+P12|parked-file Down after settle file[open=Bool(true) expanded=Some(true) items_visible=true active=Text("Save")] view[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] focus=items#6
+P12|parked-file Enter log=["command:Save"] file[open=Bool(false) expanded=Some(false) items_visible=false active=Text("Save")] view[open=Bool(false) expanded=Some(false) items_visible=false active=<absent>] focus=c0#13
+P12|SUMMARY never: ["command:Save"]
+P12|SUMMARY parked-over-view: ["row:Zoom"]
+P12|SUMMARY parked-over-view-twice: ["row:Zoom"]
+P12|SUMMARY parked-over-view-then-leave: ["command:Save"]
+P12|SUMMARY never+host-move-to-view-after-open: ["row:Zoom"]
+P12|SUMMARY never+host-move-to-view-twice-after-open: ["row:Zoom"]
+P12|SUMMARY parked-leave+identical-host-move-after-open: ["row:Zoom"]
+P12|SUMMARY parked-over-file-title: ["command:Save"]
+ok
+test tests::p13_multi_select_rows_and_stale_pointer ... P13|calibrate long=false visible rows=4
+P13|calibrate row Alpha box=[12,84,240,32] host Move -> highlighted=["Alpha"] shown=Alpha..Delta
+P13|calibrate row Beta box=[12,116,240,32] host Move -> highlighted=["Beta"] shown=Alpha..Delta
+P13|calibrate row Gamma box=[12,148,240,32] host Move -> highlighted=["Gamma"] shown=Alpha..Delta
+P13|calibrate row Delta box=[12,180,240,32] host Move -> highlighted=["Delta"] shown=Alpha..Delta
+P13|short/never parked focus=anchor#3 rows=<none visible>
+P13|short/never Down before settle highlighted=["Alpha"] shown=Alpha..Delta
+P13|short/never Down after settle focus=search#8 highlighted=["Alpha"] shown=Alpha..Delta
+P13|short/never Enter value=["alpha"] log=["change:[\"alpha\"]"] highlighted=["Alpha"] shown=Alpha..Delta
+P13|short/never Escape focus=anchor#3 rows=<none visible>
+P13|short/parked parked focus=anchor#3 rows=<none visible>
+P13|short/parked Down before settle highlighted=["Gamma"] shown=Alpha..Delta
+P13|short/parked Down after settle focus=search#8 highlighted=["Gamma"] shown=Alpha..Delta
+P13|short/parked Enter value=["gamma"] log=["change:[\"gamma\"]"] highlighted=["Gamma"] shown=Alpha..Delta
+P13|short/parked Escape focus=anchor#3 rows=<none visible>
+P13|short/leave parked focus=anchor#3 rows=<none visible>
+P13|short/leave Down before settle highlighted=["Alpha"] shown=Alpha..Delta
+P13|short/leave Down after settle focus=search#8 highlighted=["Alpha"] shown=Alpha..Delta
+P13|short/leave Enter value=["alpha"] log=["change:[\"alpha\"]"] highlighted=["Alpha"] shown=Alpha..Delta
+P13|short/leave Escape focus=anchor#3 rows=<none visible>
+P13|short/outside parked focus=anchor#3 rows=<none visible>
+P13|short/outside Down before settle highlighted=["Alpha"] shown=Alpha..Delta
+P13|short/outside Down after settle focus=search#8 highlighted=["Alpha"] shown=Alpha..Delta
+P13|short/outside Enter value=["alpha"] log=["change:[\"alpha\"]"] highlighted=["Alpha"] shown=Alpha..Delta
+P13|short/outside Escape focus=anchor#3 rows=<none visible>
+P13|short/never-down parked focus=anchor#3 rows=<none visible>
+P13|short/never-down Down before settle highlighted=["Alpha"] shown=Alpha..Delta
+P13|short/never-down Down after settle focus=search#8 highlighted=["Alpha"] shown=Alpha..Delta
+P13|short/never-down Down#2 highlighted=["Beta"] shown=Alpha..Delta
+P13|short/never-down Enter value=["beta"] log=["change:[\"beta\"]"] highlighted=["Beta"] shown=Alpha..Delta
+P13|short/never-down Escape focus=anchor#3 rows=<none visible>
+P13|short/parked-down parked focus=anchor#3 rows=<none visible>
+P13|short/parked-down Down before settle highlighted=["Gamma"] shown=Alpha..Delta
+P13|short/parked-down Down after settle focus=search#8 highlighted=["Gamma"] shown=Alpha..Delta
+P13|short/parked-down Down#2 highlighted=["Gamma"] shown=Alpha..Delta
+P13|short/parked-down Enter value=["gamma"] log=["change:[\"gamma\"]"] highlighted=["Gamma"] shown=Alpha..Delta
+P13|short/parked-down Escape focus=anchor#3 rows=<none visible>
+P13|calibrate long=true visible rows=12
+P13|calibrate row O01 box=[12,84,240,32] host Move -> highlighted=["O01"] shown=O01..O12
+P13|calibrate row O02 box=[12,116,240,32] host Move -> highlighted=["O02"] shown=O01..O12
+P13|calibrate row O03 box=[12,148,240,32] host Move -> highlighted=["O03"] shown=O01..O12
+P13|calibrate row O04 box=[12,180,240,32] host Move -> highlighted=["O04"] shown=O01..O12
+P13|calibrate row O05 box=[12,212,240,32] host Move -> highlighted=["O05"] shown=O01..O12
+P13|calibrate row O06 box=[12,244,240,32] host Move -> highlighted=["O06"] shown=O01..O12
+P13|calibrate row O07 box=[12,276,240,32] host Move -> highlighted=["O07"] shown=O01..O12
+P13|calibrate row O08 box=[12,308,240,32] host Move -> highlighted=["O08"] shown=O01..O12
+P13|calibrate row O09 box=[12,340,240,32] host Move -> highlighted=["O08"] shown=O01..O12
+P13|calibrate row O10 box=[12,372,240,32] host Move -> highlighted=["O08"] shown=O01..O12
+P13|calibrate row O11 box=[12,404,240,32] host Move -> highlighted=["O08"] shown=O01..O12
+P13|calibrate row O12 box=[12,436,240,32] host Move -> highlighted=["O08"] shown=O01..O12
+P13|long/never parked focus=anchor#3 rows=<none visible>
+P13|long/never Down before settle highlighted=["O01"] shown=O01..O12
+P13|long/never Down after settle focus=search#8 highlighted=["O01"] shown=O01..O12
+P13|long/never Down#2 highlighted=["O02"] shown=O01..O12
+P13|long/never Down#3 highlighted=["O03"] shown=O01..O12
+P13|long/never Down#4 highlighted=["O04"] shown=O01..O12
+P13|long/never Down#5 highlighted=["O05"] shown=O01..O12
+P13|long/never Down#6 highlighted=["O06"] shown=O01..O12
+P13|long/never Down#7 highlighted=["O07"] shown=O01..O12
+P13|long/never Down#8 highlighted=["O08"] shown=O01..O12
+P13|long/never Down#9 highlighted=["O09"] shown=O01..O13
+P13|long/never Down#10 highlighted=["O10"] shown=O01..O14
+P13|long/never Down#11 highlighted=["O11"] shown=O01..O15
+P13|long/never Down#12 highlighted=["O12"] shown=O01..O16
+P13|long/never Down#13 highlighted=["O13"] shown=O02..O17
+P13|long/never Enter value=["o13"] log=["change:[\"o13\"]"] highlighted=["O13"] shown=O02..O17
+P13|long/never Escape focus=anchor#3 rows=<none visible>
+P13|long/parked parked focus=anchor#3 rows=<none visible>
+P13|long/parked Down before settle highlighted=["O03"] shown=O01..O12
+P13|long/parked Down after settle focus=search#8 highlighted=["O03"] shown=O01..O12
+P13|long/parked Down#2 highlighted=["O03"] shown=O01..O12
+P13|long/parked Down#3 highlighted=["O03"] shown=O01..O12
+P13|long/parked Down#4 highlighted=["O03"] shown=O01..O12
+P13|long/parked Down#5 highlighted=["O03"] shown=O01..O12
+P13|long/parked Down#6 highlighted=["O03"] shown=O01..O12
+P13|long/parked Down#7 highlighted=["O03"] shown=O01..O12
+P13|long/parked Down#8 highlighted=["O03"] shown=O01..O12
+P13|long/parked Down#9 highlighted=["O03"] shown=O01..O12
+P13|long/parked Down#10 highlighted=["O03"] shown=O01..O12
+P13|long/parked Down#11 highlighted=["O03"] shown=O01..O12
+P13|long/parked Down#12 highlighted=["O03"] shown=O01..O12
+P13|long/parked Down#13 highlighted=["O03"] shown=O01..O12
+P13|long/parked Enter value=["o03"] log=["change:[\"o03\"]"] highlighted=["O03"] shown=O01..O12
+P13|long/parked Escape focus=anchor#3 rows=<none visible>
+P13|long/leave parked focus=anchor#3 rows=<none visible>
+P13|long/leave Down before settle highlighted=["O01"] shown=O01..O12
+P13|long/leave Down after settle focus=search#8 highlighted=["O01"] shown=O01..O12
+P13|long/leave Down#2 highlighted=["O02"] shown=O01..O12
+P13|long/leave Down#3 highlighted=["O03"] shown=O01..O12
+P13|long/leave Down#4 highlighted=["O04"] shown=O01..O12
+P13|long/leave Down#5 highlighted=["O05"] shown=O01..O12
+P13|long/leave Down#6 highlighted=["O06"] shown=O01..O12
+P13|long/leave Down#7 highlighted=["O07"] shown=O01..O12
+P13|long/leave Down#8 highlighted=["O08"] shown=O01..O12
+P13|long/leave Down#9 highlighted=["O09"] shown=O01..O13
+P13|long/leave Down#10 highlighted=["O10"] shown=O01..O14
+P13|long/leave Down#11 highlighted=["O11"] shown=O01..O15
+P13|long/leave Down#12 highlighted=["O12"] shown=O01..O16
+P13|long/leave Down#13 highlighted=["O13"] shown=O02..O17
+P13|long/leave Enter value=["o13"] log=["change:[\"o13\"]"] highlighted=["O13"] shown=O02..O17
+P13|long/leave Escape focus=anchor#3 rows=<none visible>
+P13|SUMMARY never: value=["alpha"] on_change=["change:[\"alpha\"]"]
+P13|SUMMARY parked-over-row3: value=["gamma"] on_change=["change:[\"gamma\"]"]
+P13|SUMMARY parked-then-leave: value=["alpha"] on_change=["change:[\"alpha\"]"]
+P13|SUMMARY outside: value=["alpha"] on_change=["change:[\"alpha\"]"]
+P13|SUMMARY never+Down: value=["beta"] on_change=["change:[\"beta\"]"]
+P13|SUMMARY parked+Down: value=["gamma"] on_change=["change:[\"gamma\"]"]
+P13|SUMMARY long/never: value=["o13"] on_change=["change:[\"o13\"]"]
+P13|SUMMARY long/parked: value=["o03"] on_change=["change:[\"o03\"]"]
+P13|SUMMARY long/leave: value=["o13"] on_change=["change:[\"o13\"]"]
+ok
+test tests::p14_reveal_hidden_refusal_paths ... P14|explicit group=2 target=3 group.visible=Some(false) target.visible=Some(false)
+P14|explicit Runtime::reveal(target) = Ok(Refused(Hidden { component: WidgetId { serial: 2, mounted: true, .. } }))
+P14|explicit Driver::click Err Display: `target` could not be revealed: Hidden { component: WidgetId { serial: 2, mounted: true, .. } } | Debug: NotRevealed { key: "target", refusal: Hidden { component: WidgetId { serial: 2, mounted: true, .. } } }
+P14|native-hidden target=3 group.visible=Some(false) target.visible=Some(false)
+P14|native-hidden Runtime::reveal(target) = Err(Hidden)
+P14|native-hidden Runtime::reveal_and_focus(target) = Err(Hidden)
+P14|native-hidden Driver::click Err Display: component is hidden | Debug: Runtime(Hidden)
+P14|native-shown-again Runtime::reveal(target) = Ok(Revealed { activation: None })
+P14|scroll/control before: area.visible=Some(true) target.visible=Some(true) bounds=Some(Rect([0.0, 840.0, 66.0, 32.0]))
+P14|scroll/control Runtime::reveal(target) = Ok(Revealed { activation: None })
+P14|scroll/control after: log=["on_scroll y=672 Reveal"] target_mounted=true area.visible=Some(true) target.visible=Some(true)
+P14|scroll/control after one more settle: log=["on_scroll y=672 Reveal"] target_mounted=true area.visible=Some(true) target.visible=Some(true)
+P14|scroll/deferred-set_visible(area,false) before: area.visible=Some(true) target.visible=Some(true) bounds=Some(Rect([0.0, 840.0, 66.0, 32.0]))
+P14|scroll/deferred-set_visible(area,false) Runtime::reveal(target) = Ok(Revealed { activation: None })
+P14|scroll/deferred-set_visible(area,false) after: log=["on_scroll y=672 Reveal"] target_mounted=true area.visible=Some(true) target.visible=Some(true)
+P14|scroll/deferred-set_visible(area,false) after one more settle: log=["on_scroll y=672 Reveal", "deferred op runs"] target_mounted=true area.visible=Some(false) target.visible=Some(false)
+P14|scroll/deferred-unmount(area) before: area.visible=Some(true) target.visible=Some(true) bounds=Some(Rect([0.0, 840.0, 66.0, 32.0]))
+P14|scroll/deferred-unmount(area) Runtime::reveal(target) = Ok(Revealed { activation: None })
+P14|scroll/deferred-unmount(area) after: log=["on_scroll y=672 Reveal"] target_mounted=true area.visible=Some(true) target.visible=Some(true)
+P14|scroll/deferred-unmount(area) after one more settle: log=["on_scroll y=672 Reveal", "deferred op runs"] target_mounted=false 
+P14|scroll/deferred-host-set_window_visible(false) before: area.visible=Some(true) target.visible=Some(true) bounds=Some(Rect([0.0, 840.0, 66.0, 32.0]))
+P14|scroll/deferred-host-set_window_visible(false) Runtime::reveal(target) = Ok(Revealed { activation: None })
+P14|scroll/deferred-host-set_window_visible(false) after: log=["on_scroll y=672 Reveal"] target_mounted=true area.visible=Some(true) target.visible=Some(true)
+P14|scroll/deferred-host-set_window_visible(false) after one more settle: log=["on_scroll y=672 Reveal", "deferred op runs"] target_mounted=true area.visible=Some(false) target.visible=Some(false)
+P14|boundary deferred host call ran=true
+ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.40s
+
+   Doc-tests round_3_extra_input_probes
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+### exit_status=0 finished 2026-10-28T21:17:06+01:00

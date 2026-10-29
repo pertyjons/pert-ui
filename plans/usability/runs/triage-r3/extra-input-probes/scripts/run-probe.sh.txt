@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Usage: run-probe.sh <head|baseline> <log-name> <command...>
+# Runs one command through the frozen-kit harness and records header,
+# checksums of the probe inputs, kit metadata, output and exit status.
+set -u
+kit_name="$1"; shift; log_name="$1"; shift
+U=/home/per/pert-ui-usability
+KIT="$U/kit-r3-$kit_name"; DIR="$U/r3-extra-input-probes-$kit_name"
+LOG="$U/r3-extra-input-probes-evidence/runs/$kit_name-$log_name.log"
+[ -e "$LOG" ] && { echo "refusing to overwrite $LOG"; exit 2; }
+{
+  echo "### started $(date -Is)"
+  echo "### harness: /home/per/github/pert-ui/plans/usability/run.sh exec $KIT $DIR $*"
+  echo "### kit.env:"; sed 's/^/###   /' "$KIT/kit.env"
+  echo "### input checksums:"
+  (cd "$DIR/work" && sha256sum Cargo.toml src/lib.rs $( [ -f Cargo.lock ] && echo Cargo.lock ) | sed 's/^/###   /')
+} >"$LOG"
+/home/per/github/pert-ui/plans/usability/run.sh exec "$KIT" "$DIR" "$@" >>"$LOG" 2>&1
+status=$?
+echo "### exit_status=$status finished $(date -Is)" >>"$LOG"
+echo "$LOG status=$status"
