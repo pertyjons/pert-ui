@@ -247,3 +247,13 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   text release logs reproduce the pre-existing warning. Align the helper's
   cfg with its only caller so release tests remain warning-free; preserve the
   debug measurement-eviction test. This is outside the usability repairs.
+
+- [ ] 2026-10-29 `apps/native-checks/src/main.rs` `HARDWARE` and the final GPU
+  summary — verification/evidence: adapter extraction recognizes only
+  "Hardware: ", so the 0.3.94 selected text probe prints its Intel UHD Graphics
+  770/Vulkan adapter as "Text mode adapter: " while the summary claims no check
+  that prints its adapter ran. The actual archived log has both lines. Accept
+  the text-probe marker too, or qualify the summary as absence of a Hardware
+  line, and add a runner-output regression test. This reporting-only runner
+  repair is outside the usability changes; the recorded probe adapter remains
+  established by its original output.

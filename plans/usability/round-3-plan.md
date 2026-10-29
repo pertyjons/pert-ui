@@ -1,8 +1,9 @@
 # Round 3 execution and closure
 
-Status: blind runs, independent acceptance and corrected experiment records complete;
-repairs and required available gates complete; final integrated assessment review
-pending, 2026-10-29. The maintainer authorized completion through
+Status: complete through round 3, 2026-10-29. Blind runs, independent
+acceptance, corrected records, in-scope repairs, required available gates and
+final Claude review are complete. The review's README condition is discharged
+with targeted documentation checks and author adoption. The maintainer authorized completion through
 round 3 as a persistent goal, including kit preparation, blind testing,
 verification and repair of new and recurring findings, Claude review and a
 documented final assessment. This executes the
@@ -359,3 +360,13 @@ are run where available; missing platforms remain explicit.
   completed review. Its result/prompt/status are preserved. Reported availability
   reset is 15:00 Europe/Stockholm (14:00 UTC), 2026-10-29. No final approval or
   goal completion is claimed; the complete source and records await that gate.
+
+- After the service reset, fresh final Claude review2 accepts the integration,
+  records and bounded closure after correcting a stale runtime crate-README
+  sentence. The correction passes strict runtime rustdoc, runtime doctests and
+  whitespace checks. The reviewer explicitly requires no new full gate or
+  review round. Author adoption also corrects stale statuses and the native/
+  retry timing wording, and records the verified outside-scope native GPU-summary
+  reporting defect in TODO.md. The final local record commit and clean API/tree
+  check close the authorized goal; remaining limits stay explicit in the
+  [assessment](round-3-assessment.md).

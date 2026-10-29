@@ -1,0 +1,34 @@
+{
+  "source_directory": "/home/per/pert-ui-usability/r3-final-readme-correction",
+  "policy": "Exact bytes except declared readable log excerpts; full gzip preserves those bytes. Script suffixes renamed for archival use.",
+  "files": [
+    {
+      "source": "doctests.log",
+      "source_bytes": 39640,
+      "source_sha256": "8b860294315e8c7649c1e4bf37eff7be096c994021a9d79142da6f8e7b9ec46e",
+      "archive_path": "doctests.log",
+      "archive_sha256": "8b860294315e8c7649c1e4bf37eff7be096c994021a9d79142da6f8e7b9ec46e"
+    },
+    {
+      "source": "outcomes.json",
+      "source_bytes": 868,
+      "source_sha256": "d12632f7294175e27e98e40fa5f40a93f0155fc09722134649ae69c6e3ae43bd",
+      "archive_path": "outcomes.json",
+      "archive_sha256": "d12632f7294175e27e98e40fa5f40a93f0155fc09722134649ae69c6e3ae43bd"
+    },
+    {
+      "source": "rustdoc.log",
+      "source_bytes": 286,
+      "source_sha256": "098780d5aed1f934a0c15c2233c21979829c080de2627369924d9f62bb9f5359",
+      "archive_path": "rustdoc.log",
+      "archive_sha256": "098780d5aed1f934a0c15c2233c21979829c080de2627369924d9f62bb9f5359"
+    },
+    {
+      "source": "whitespace.log",
+      "source_bytes": 19,
+      "source_sha256": "3d4d50cd32af92c6d4df37c1df74a96622fca8cfb5643a155c91f034a42f2068",
+      "archive_path": "whitespace.log",
+      "archive_sha256": "3d4d50cd32af92c6d4df37c1df74a96622fca8cfb5643a155c91f034a42f2068"
+    }
+  ]
+}

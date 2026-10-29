@@ -265,9 +265,9 @@ For a later round's kit; none affected a result:
 
 ## Round 3
 
-Blind testing, independent acceptance, repairs and required available gates are
-complete. Final integrated assessment review remains pending on 2026-10-29
-under the maintainer's goal. The
+Round 3 is complete on 2026-10-29: blind testing, independent acceptance,
+in-scope repairs, required available gates and the adopted final Claude review.
+The README correction required by that review passes its targeted doc checks. The
 [execution plan](../round-3-plan.md) records the frozen paired notes comparison
 (26e6b5a, 0.3.75, versus 32dd9c4, 0.3.88), head-only tasks 1–5, balanced queue
 order, grading rules and closure criteria. Subsequent library repairs are
@@ -321,8 +321,8 @@ integration approval. MultiSelect and generic popup press focus are committed
 at 6b8b3bf (0.3.93), with final integrated approval after stronger Escape evidence.
 Whitespace geometry/caret presentation is committed at ddfdb20 (0.3.94) with final
 isolated approval and full workspace/API/selected native success. The
-[assessment](../round-3-assessment.md) retains the pending final integrated
-review and current closure decision. No publication is claimed.
+[assessment](../round-3-assessment.md) records the adopted final integrated
+review and closure decision. No publication is claimed.
 
 Archived stdout and blind source preserve original whitespace; artifact-only
 git diff --check findings are disclosed rather than normalized or hidden by
@@ -334,5 +334,6 @@ distinguish preserved bytes from regenerated summaries.
 
 The first final integrated assessment reviewer hit Claude's service limit
 before completing its review; the [attempt record](review-r3/final-review-attempt1/README.md)
-is not approval. Code and available gates are complete, with final closure
-pending the fresh review after its reported 15:00 Stockholm reset.
+is not approval. A fresh retry after the reported 15:00 Stockholm reset completes the
+[final review](review-r3/final-review-r2.md). Its README condition is discharged
+with targeted checks and [author adoption](review-r3/final-review-adoption.md).

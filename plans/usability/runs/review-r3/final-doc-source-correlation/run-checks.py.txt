@@ -1,0 +1,10 @@
+from pathlib import Path
+import subprocess,json,datetime,os
+root=Path('/home/per/github/pert-ui');out=Path('/home/per/pert-ui-usability/r3-final-readme-correction');out.mkdir();records=[]
+for label,cmd,extra in [('rustdoc',['cargo','doc','--locked','-p','pert-ui-runtime','--no-deps'],{'RUSTDOCFLAGS':'-D warnings'}),('doctests',['cargo','test','--locked','-p','pert-ui-runtime','--doc'],{}),('whitespace',['git','diff','--check'],{})]:
+ start=datetime.datetime.now(datetime.timezone.utc).isoformat()
+ with (out/(label+'.log')).open('x') as log:
+  log.write('$ '+' '.join(cmd)+'\n');log.flush();r=subprocess.run(cmd,cwd=root,env=dict(os.environ,**extra),stdout=log,stderr=subprocess.STDOUT)
+ records.append({'command':cmd,'environment':extra,'started_at_utc':start,'finished_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'exit_status':r.returncode});(out/'outcomes.json').write_text(json.dumps(records,indent=2)+'\n')
+ if r.returncode:raise SystemExit(r.returncode)
+print('All final README correction checks passed')

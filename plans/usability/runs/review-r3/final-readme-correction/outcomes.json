@@ -1,0 +1,43 @@
+[
+  {
+    "command": [
+      "cargo",
+      "doc",
+      "--locked",
+      "-p",
+      "pert-ui-runtime",
+      "--no-deps"
+    ],
+    "environment": {
+      "RUSTDOCFLAGS": "-D warnings"
+    },
+    "started_at_utc": "2026-10-29T14:06:06.842903+00:00",
+    "finished_at_utc": "2026-10-29T14:06:25.450263+00:00",
+    "exit_status": 0
+  },
+  {
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "pert-ui-runtime",
+      "--doc"
+    ],
+    "environment": {},
+    "started_at_utc": "2026-10-29T14:06:25.450413+00:00",
+    "finished_at_utc": "2026-10-29T14:06:52.871882+00:00",
+    "exit_status": 0
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "environment": {},
+    "started_at_utc": "2026-10-29T14:06:52.872047+00:00",
+    "finished_at_utc": "2026-10-29T14:06:52.877878+00:00",
+    "exit_status": 0
+  }
+]

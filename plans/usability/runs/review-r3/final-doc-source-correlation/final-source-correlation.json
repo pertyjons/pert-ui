@@ -1,0 +1,9 @@
+{
+  "at_utc": "2026-10-29T14:09:09.928726+00:00",
+  "changed_from_full_gate": [
+    "TODO.md",
+    "crates/pert-ui-runtime/README.md",
+    "docs/verification.md"
+  ],
+  "note": "Only crate-README prose, the previously recorded verification row and a verified outside-scope TODO finding differ from the successful complete gate. All production Rust, tests, guides, manifests and API bytes still match. Targeted runtime doctests/strict rustdoc and author Markdown review cover the final README change; reviewer explicitly requires no full rerun or new review."
+}

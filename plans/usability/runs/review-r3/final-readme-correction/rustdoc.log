@@ -1,0 +1,4 @@
+$ cargo doc --locked -p pert-ui-runtime --no-deps
+ Documenting pert-ui-runtime v0.3.94 (/home/per/github/pert-ui/crates/pert-ui-runtime)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 18.56s
+   Generated /home/per/github/pert-ui/target/doc/pert_ui_runtime/index.html

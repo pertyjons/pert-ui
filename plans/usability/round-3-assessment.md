@@ -1,9 +1,10 @@
 # Round 3 assessment
 
-Proposed closure, 2026-10-29. Experiment records and isolated repairs are
-independently approved. All required available repair gates pass; fresh Claude
-review of the final integration and this assessment remains pending. The
-persistent goal is not marked complete before that review and final record adoption.
+Completed, 2026-10-29. All verified in-scope repairs, required available gates
+and the independent final assessment are complete. The final Claude review's
+stale-README condition is discharged by the correction, passing targeted doc
+checks and [author adoption](runs/review-r3/final-review-adoption.md). The final
+documentation/record commit receives the closing clean-tree/API check.
 
 ## Experimental result
 
@@ -84,8 +85,8 @@ publication remain outside the round's agreed scope. Newly verified unrelated
 findings are recorded there rather than silently added to a repair. No publish,
 push or merge follows from completing this local usability work.
 
-The proposed decision is to complete round 3 after independent final approval
-and the committed-tree/API check. Every verified in-scope finding has a repair
+The decision is to complete round 3 with the adopted independent final review
+and closing committed-tree/API check. Every verified in-scope finding has a repair
 or an evidence-based disposition in the ledger; optional/unrelated work remains
 explicit rather than becoming an unbounded new round. The approved plan does
 not require another blind experiment on the repaired head.
@@ -95,9 +96,14 @@ records describe their earlier review stages. This assessment and the execution
 plan carry the current closure decision; the original evidence is preserved.
 
 
-The first final-review invocation stopped at Claude's five-hour service limit
-without completing a review. [The preserved attempt](runs/review-r3/final-review-attempt1/README.md)
-is infrastructure evidence, not approval or a source rejection. Reported reset
-is 15:00 Europe/Stockholm (14:00 UTC), 2026-10-29. The code checkpoint and its
-committed API check are complete; a fresh final Claude review is the remaining
-closure gate.
+The first final-review invocation stopped at Claude's service limit without
+completing a review; its [attempt record](runs/review-r3/final-review-attempt1/README.md)
+remains infrastructure evidence. A fresh retry after the reported reset
+completed the [final review](runs/review-r3/final-review-r2.md). Its sole README
+blocker is corrected and passes the requested checks; the reviewer explicitly
+requires no further blind experiment, full rerun or review round.
+
+A new native-runner summary reporting defect is verified and recorded in
+TODO.md: it misses the text probe's adapter marker. The probe's original output
+still establishes the adapter used. This reporting-only repair is outside the
+closed usability scope.

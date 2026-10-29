@@ -471,8 +471,11 @@ not aligned tab stops. A registered font's inseparable tab/printable atom keeps
 its ink. Other unsupported characters retain their fallback/missing-glyph ink.
 Removing a hanging tab's old box can shrink TextLayout's size and translate
 public RTL caret/selection positions through its changed origin; hit testing
-uses that same origin. Existing empty non-tab rasters can still contribute pen
-positions to bounds. TextArea documents its current hanging-caret reveal limit.
+uses that same origin. Zero-width or zero-height glyph rasters add no placement
+or bounds after cache admission; positive-area raster rectangles remain eligible
+without scanning alpha pixels. Wrapping TextArea pins its displayed caret inside
+the text box while raw selection geometry stays unchanged. Its rustdoc describes
+the bounded fractional-rounding and tiny-viewport limits.
 
 Default labels wrap to allocated width. Buttons supply themed padding, a default Standard 64×32 logical
 minimum, visible focus, pointer capture and matched-release Space/Enter activation.

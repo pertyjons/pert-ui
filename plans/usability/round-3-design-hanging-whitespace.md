@@ -2,9 +2,12 @@
 
 Status: revision 4 adopts the independent implementation review corrections,
 2026-10-29. Revision3 was independently reviewed before implementation; its
-production policy is unchanged. Independent repair recheck remains required. These are newly verified follow-ups from the tab-coverage
-repair and will be handled separately within the usability goal. The tab patch
-keeps them explicitly documented until this checkpoint is verified.
+production policy is unchanged. Independent repair review r3 approves the source;
+root integration and required available gates pass at ddfdb20 (0.3.94). The
+final integrated review required one stale crate-README correction; it is now
+corrected and passes targeted documentation checks. The author adopts the
+reviewer's closure condition without another full gate or review round. These follow-ups are handled
+within the usability goal, separately from the original tab-ink checkpoint.
 
 ## Verified findings and scope
 
