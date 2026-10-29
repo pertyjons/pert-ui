@@ -22,11 +22,15 @@ this round. Necessary breaking changes are in scope under the unpublished
 compatibility policy. The goal delegates routine design choices to the
 author; significant design or API changes get a written checkpoint and
 fresh Claude review before implementation, with the decision recorded.
-Codex authors and verifies fixes; fresh Claude sessions perform independent
-acceptance and initial triage; Codex checks those against evidence, and a
-fresh Claude reviewer checks the resulting triage and final assessment.
-This keeps different model families involved while reversing the original
-proposal's author/reviewer roles. Reviewers do not author fixes or delegate.
+Codex owns designs, integration and verification; fresh Claude sessions perform
+independent acceptance and initial triage, which Codex checks against evidence.
+A fresh Claude reviewer checks the resulting triage and final assessment.
+After the blind runs, implementation may be delegated to a separate Claude
+author in an isolated checkout under an approved design: that patch receives
+fresh Codex review, and the integrated change still receives fresh independent
+review. This is a recorded post-run role adjustment, not a change to tester,
+acceptance or frozen experiment conditions. Reviewers never author fixes or
+delegate; an implementation author never approves its own change.
 
 Completion requires the run records, acceptance evidence, verified findings
 and their dispositions, reviewed fixes, relevant gate results and final
@@ -247,3 +251,49 @@ are run where available; missing platforms remain explicit.
   and tags only tab ink privately; fresh review is underway before any
   implementation. Disabled Button appearance has a separate proposed
   presentation checkpoint, based on source and actual acceptance captures.
+
+- First library checkpoint committed as 3bbfb813a8c02c417d68386b0c5547b4b8139580
+  (0.3.89), after independent implementation approval and green workspace/serde,
+  examples, documentation, diagnostics and API generation. The committed API
+  listing status is clean. Exact later doc-only differences and supplemental
+  checks are recorded with the final-0.3.89 gate evidence.
+- Disabled Button's approved design is implemented and reviewed on working
+  0.3.90. Initial review approved code/tests and requested status/changelog
+  corrections; optional test/dependency gaps were also tightened. Final
+  workspace checks and a fresh focused recheck are running on that source.
+- Post-run implementation-role adjustment: Claude implements only the approved
+  text coverage/fixture/editor tests in a detached checkout at 3bbfb813, with
+  explicit file scope and no version/dependency/publication authority. Codex
+  remains the integration author; a fresh Codex reviewer must inspect the
+  Claude patch before adoption. The final integrated implementation and overall
+  assessment retain independent review. No original blind source is modified.
+- Fresh frozen-kit probes P7–P11 execute on both commits. Source, output and
+  captures are preserved in triage-r3/followup-probes, with author dispositions.
+  They verify stale-pointer menu keyboard selection and changing historical
+  reveal diagnostics, plus documented row/tab focus composition behavior.
+  A separate menu-keyboard/diagnostics checkpoint awaits design approval.
+  TextArea tab-box evidence now covers baseline as well as head.
+
+- 2026-10-29 continuation: disabled Button checkpoint committed as b9e4c6c
+  (0.3.90). Both complete workspace runs passed, final API generation is clean,
+  final source hashes correlate the executed code, and independent records
+  review approved after the earlier pending-evidence verdict. No overall
+  usability closure follows.
+- Fresh Codex review of the isolated text patch requires explicit public
+  coordinate/extent evidence, mixed-font/icon cases and qualified rustdoc.
+  Revision 4's natural visible-ink canvas policy is independently approved
+  with exact LTR/RTL, hit-test, phase, editor and negative-control requirements;
+  Claude is repairing its scoped patch before independent re-review. A
+  suspected whitespace-wide hanging-caret limitation must be reproduced before
+  it is recorded as a verified separate finding.
+- P12–P14 are archived under triage-r3/extra-input-probes, with exact paired
+  observations and author dispositions. MenuTitle's parked-pointer switch and
+  MultiSelect's blocked keyboard highlight are verified; MultiSelect is
+  recorded in TODO.md as a separate row-family checkpoint. A legitimate wrong
+  Hidden-refusal fallback was not established. Host-hidden reveal's missing
+  operational-error documentation is verified and joins the diagnostics repair.
+- Menu ownership revision 3 explicitly adopts review corrections: per-title
+  window-space position memory, no reset of remembered coordinates, distinct
+  ownership resets, keyboard-armed pointer protection and observable/deferred
+  tab-refocus guards. Fresh design recheck precedes implementation. Existing
+  unrelated TODO and missing native-platform evidence remain open.
