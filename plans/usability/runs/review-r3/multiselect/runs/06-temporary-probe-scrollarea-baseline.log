@@ -1,0 +1,39 @@
+# started 2026-10-29T10:39:10+00:00
+# cwd /home/per/pert-ui-usability/r3-multiselect-worktree  CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-multiselect-implementation-target
+# command: cargo test --locked -p pert-ui --test collections zz_temporary_probe -- --nocapture
+# HEAD 17c6c3d39b3015a1563d7440541af87a1b7ee998
+# git status --porcelain:
+ M crates/pert-ui/tests/collections/main.rs
+?? crates/pert-ui/tests/collections/multi_select_pointer.rs
+# hashes before:
+92d35eef2cf99114d9c31081047d505a558c081e5c94788107789e66fb3111ee  crates/pert-ui-runtime/src/multi_select.rs
+073e75adfb217a8db927a46fe39a1a400e0c74205810e6fe62c7e9fcb69f9979  crates/pert-ui/tests/collections/main.rs
+c83a817ee393e33821e025fbed127b89233d6dc650eb8c9a20191d6b0bc4b699  crates/pert-ui/tests/collections/multi_select.rs
+f7b2f1d03d20690ae73496ac47b6c403160a29f45bc811b9e31eb7aea15f620e  crates/pert-ui/tests/collections/multi_select_pointer.rs
+# mtimes before:
+1793269430.061403781 crates/pert-ui-runtime/src/multi_select.rs
+1793270263.393146004 crates/pert-ui/tests/collections/main.rs
+1793269430.081469843 crates/pert-ui/tests/collections/multi_select.rs
+1793270350.599789379 crates/pert-ui/tests/collections/multi_select_pointer.rs
+# ---- output ----
+   Compiling pert-ui v0.3.91 (/home/per/pert-ui-usability/r3-multiselect-worktree/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.41s
+     Running tests/collections/main.rs (/home/per/pert-ui-usability/r3-multiselect-implementation-target/debug/deps/collections-fa4d06ce513818a2)
+
+running 1 test
+PROBE|count=6 after press focus=Some("page") open=false
+PROBE|count=6 after release focus=Some("page") open=false value=[] reports=[]
+PROBE|count=20 after press focus=Some("list") open=true
+PROBE|count=20 after release focus=Some("list") open=true value=["o02"] reports=[["o02"]]
+test multi_select_pointer::zz_temporary_probe_short_click_in_scrolling_page ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 493 filtered out; finished in 0.05s
+
+# ---- end output ----
+# hashes after:
+92d35eef2cf99114d9c31081047d505a558c081e5c94788107789e66fb3111ee  crates/pert-ui-runtime/src/multi_select.rs
+073e75adfb217a8db927a46fe39a1a400e0c74205810e6fe62c7e9fcb69f9979  crates/pert-ui/tests/collections/main.rs
+c83a817ee393e33821e025fbed127b89233d6dc650eb8c9a20191d6b0bc4b699  crates/pert-ui/tests/collections/multi_select.rs
+f7b2f1d03d20690ae73496ac47b6c403160a29f45bc811b9e31eb7aea15f620e  crates/pert-ui/tests/collections/multi_select_pointer.rs
+# finished 2026-10-29T10:39:13+00:00
+# exit_status 0

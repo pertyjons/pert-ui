@@ -1,0 +1,10 @@
+--- /home/per/pert-ui-usability/r3-multiselect-implementation-evidence/negative-controls/release-no-regain/backup/multi_select.rs	2026-10-29 11:46:06.137241948 +0100
++++ crates/pert-ui-runtime/src/multi_select.rs	2026-10-29 11:46:06.152407169 +0100
+@@ -683,7 +683,6 @@
+             cx.release_pointer();
+             if self.active() && cx.pointer_inside() {
+                 self.shared.highlight.set(Some(self.key.clone()))?;
+-                self.shared.pointer_owns.set(true);
+                 self.shared.click(cx, &self.value)?;
+             }
+             return Ok(InputOutcome::Handled);

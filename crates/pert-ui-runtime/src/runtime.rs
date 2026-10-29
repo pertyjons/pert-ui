@@ -1453,6 +1453,19 @@ pub trait Component: std::any::Any {
     /// to the window's first focusable component. A focus request made in the same
     /// flush takes precedence. A pointer press directly on a non-focusable
     /// component whose subtree already holds focus leaves focus where it is.
+    ///
+    /// Focus already inside an admitted interactive surface (a popover,
+    /// context menu, submenu or modal dialog, as [`Self::child_surface`]
+    /// declares it), the surface's root included, also stays where it is when
+    /// a press finds no focusable component between its target and that root:
+    /// a press on a non-focusable row of a popup whose search field holds
+    /// focus keeps the focus and the popup, and a press inside a dialog
+    /// neither moves focus out of it nor is refused for an ancestor the dialog
+    /// blocks. A focusable component
+    /// inside the surface still takes the focus. Focus outside the surface,
+    /// such as on the opener of a popup with nothing focusable inside, goes to
+    /// the nearest focusable ancestor as before, even when that moves it out
+    /// of the surface and closes it.
     fn focusable(&self) -> bool {
         false
     }

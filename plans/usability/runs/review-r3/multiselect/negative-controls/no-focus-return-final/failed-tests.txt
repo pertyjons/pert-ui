@@ -1,0 +1,6 @@
+test multi_select_pointer::a_click_returns_focus_to_search_after_tab_moved_it_to_the_list ... FAILED
+test multi_select_pointer::a_press_that_focuses_the_long_list_drops_the_search_composition ... FAILED
+test multi_select_pointer::a_failing_on_change_keeps_the_toggle_and_the_return_to_search ... FAILED
+test multi_select_pointer::a_completed_click_returns_focus_to_search_on_short_and_long_lists ... FAILED
+test result: FAILED. 60 passed; 4 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.13s
+error: test failed, to rerun pass `-p pert-ui --test collections`

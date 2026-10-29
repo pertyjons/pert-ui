@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# Usage: negative-control.sh <mutation> [test-filter]
+# Backs up the exact bytes of multi_select.rs, applies the mutation, runs the
+# MultiSelect tests, restores the bytes by rewriting them (never `cp -p`),
+# touches the file and checks that the restored hash equals the backup's and
+# that the restored mtime is newer than the mutated one, so the next build
+# recompiles it. Fails unless the test log shows pert-ui-runtime recompiled.
+set -u
+E=/home/per/pert-ui-usability/r3-multiselect-implementation-evidence
+W=/home/per/pert-ui-usability/r3-multiselect-worktree
+m=$1
+filter=${2:-multi_select}
+name=$m${TAG:+-$TAG}
+dir="$E/negative-controls/$name"
+[ -e "$dir" ] && { echo "refusing to overwrite $dir"; exit 2; }
+mkdir -p "$dir/backup"
+cd "$W" || exit 2
+f=crates/pert-ui-runtime/src/multi_select.rs
+cp "$f" "$dir/backup/multi_select.rs"
+sha256sum "$f" > "$dir/hash-before.txt"
+python3 -I "$E/scripts/mutate.py" "$m" || { echo "mutation failed"; cat "$dir/backup/multi_select.rs" > "$f"; exit 2; }
+diff -u "$dir/backup/multi_select.rs" "$f" > "$dir/mutation.diff"
+[ -s "$dir/mutation.diff" ] || { echo "mutation changed nothing"; exit 2; }
+touch "$f"
+stat -c '%.9Y %n' "$f" > "$dir/mtime-mutated.txt"
+sha256sum "$f" > "$dir/hash-mutated.txt"
+"$E/scripts/run.sh" "negative-$name" cargo test --locked -p pert-ui --test collections "$filter"
+status=$?
+sleep 0.01
+cat "$dir/backup/multi_select.rs" > "$f"
+touch "$f"
+sha256sum "$f" > "$dir/hash-restored.txt"
+stat -c '%.9Y %n' "$f" > "$dir/mtime-restored.txt"
+if ! cmp -s "$dir/hash-before.txt" "$dir/hash-restored.txt"; then
+  echo "RESTORE MISMATCH" | tee "$dir/restore-check.txt"; exit 3
+fi
+if ! python3 -I - "$dir/mtime-mutated.txt" "$dir/mtime-restored.txt" <<'PY'
+import sys
+a = float(open(sys.argv[1]).read().split()[0])
+b = float(open(sys.argv[2]).read().split()[0])
+sys.exit(0 if b > a else 1)
+PY
+then
+  echo "RESTORED MTIME NOT NEWER" | tee "$dir/restore-check.txt"; exit 3
+fi
+log=$(ls -t "$E"/runs/*-negative-$name.log | head -1)
+if ! grep -q "Compiling pert-ui-runtime" "$log"; then
+  echo "NO RECOMPILATION OF pert-ui-runtime IN $log" | tee -a "$dir/restore-check.txt"; exit 4
+fi
+echo "restored: identical hash, newer mtime; mutated build recompiled pert-ui-runtime" | tee "$dir/restore-check.txt"
+grep -E "^test .* FAILED$|^test result|^error(\[|:)" "$log" > "$dir/failed-tests.txt"
+echo "test exit_status=$status log=$log"
+cat "$dir/failed-tests.txt"

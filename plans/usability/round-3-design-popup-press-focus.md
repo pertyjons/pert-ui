@@ -1,6 +1,7 @@
 # Round 3 checkpoint: pointer focus stays inside an admitted surface
 
-Status: proposed 2026-10-29; independent design review precedes implementation.
+Status: revision 2 approved for implementation with the adopted corrections,
+2026-10-29; independent design review precedes implementation.
 This follows a verified case discovered by the MultiSelect repair. It is a
 separate runtime responsibility within the usability goal, not a privileged
 MultiSelect override.
@@ -71,3 +72,29 @@ current focus or reuse the native menu case as MultiSelect click evidence.
 The reviewer inspects the declared source/evidence read-only and authors no
 fixes or delegation. Approve this precise rule or identify counterexamples
 before implementation.
+
+
+## Adopted review-1 implementation requirements
+
+The [design review](runs/review-r3/popup-design-review-r1.md) approves the rule
+with five corrections, all accepted before implementation. Add a pub(super)
+query in surfaces.rs: a current-window record must match root, be admitted,
+have interactive kind and still match live surface_kind(root). Evaluate at each
+walk node after focusable and the unchanged direct-target check. Use the
+focused snapshot and descendant(focused.serial,current), including the root
+itself; unqualified nested roots do not stop the enclosing-root search.
+
+Modal regressions assert actual old differences: Dialog/ApplicationDialog
+presses formerly return ModalBlocked after dispatch; ViewDialog can move focus
+outside. Repaired presses return Ok with focus unchanged. Preserved paths
+concretely record no focus_lost, no panel/popup focus_within_changed(false),
+no FocusLeft dismissal, and no premature OnClose commit. Do not invent a
+uniform old result. Explicit/queued focus and nearest focusable inside still win.
+
+Document the remaining already-outside case: an admitted nonmodal surface with
+no focusable content may keep focus on its opener, and an inside nonfocusable
+press can still use the old walk/dismissal. The claim is focus already inside
+an admitted interactive surface stays there on that otherwise escaping walk,
+not that every inside press can never close a popup. Failed sync, changed kind,
+hidden/unmounted roots and detached presentation chains get the stated tests
+or explicit public-reachability limits, without fabricating invalid states.

@@ -1,0 +1,122 @@
+{"command": ["cargo", "run", "--locked", "-p", "pert-ui-native-checks", "--", "interaction_check"], "started_at_utc": "2026-10-29T11:54:55.417574+00:00"}
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.14s
+     Running `target/debug/pert-ui-native-checks interaction_check`
+   Compiling pert-ui v0.3.93 (/home/per/github/pert-ui/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.12s
+    Blocking waiting for file lock on build directory
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.91s
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   Compiling pert-ui-gallery v0.3.93 (/home/per/github/pert-ui/apps/gallery)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.56s
+
+=== pert-ui-gallery::interaction_check
+Interaction passed: brand mark: a pointer click opens About
+Interaction passed: About: Escape closes it
+Interaction passed: command palette: its shortcut opens it
+Interaction passed: command palette: typing filters to the intended page
+Interaction passed: command palette: Enter goes to the filtered page
+Interaction passed: chip: Delete removes the focused tag and focus moves on
+Interaction passed: menu-bar history: Back returns to the first page
+Interaction passed: menu-bar history: Forward returns to the chips page
+Interaction passed: search field: a typed query filters after its debounce
+Interaction passed: search field: Down and Enter choose without moving focus
+Interaction passed: search field: Escape clears the query
+Interaction passed: password: typed text stays concealed and IME is withheld
+Interaction passed: password: Alt+F8 reveals it
+Interaction passed: password: focus loss conceals it again; an ordinary field asks for IME
+Interaction passed: content search: its shortcut opens the picker
+Interaction passed: content search: Enter jumps to a hidden button and focuses it
+Interaction passed: knob: an upward pointer drag raises its parameter
+Interaction passed: collapsible section: Enter on its header collapses it
+Interaction passed: collapsible section: Space expands it again
+Interaction passed: tool windows: a stripe button expands Search and focuses it
+Interaction passed: tool windows: Escape returns focus to the main content
+Interaction passed: tool windows: the options menu floats Search over the layout
+Interaction passed: tool windows: dragging the floating frame's header moves it
+Interaction passed: tool windows: dragging the floating frame's corner grip resizes it
+Interaction passed: tool windows: Open in window moves Search to its own native window
+Interaction passed: tool windows: closing that window returns Search to its stripe
+Interaction passed: collection filter: a typed query hides non-matching items
+Interaction passed: collection filter: Escape clears it and every item returns
+Interaction passed: tab titles: item pointer bounds switch the category
+Interaction passed: Select: named control and option bounds choose the second value
+Interaction passed: menu: named Help title and item bounds open About
+Interaction passed: menu About: Escape closes the dialog
+Interaction passed: menu keyboard: parked title and duplicate motion keep File selected
+Interaction passed: menu keyboard: parked row keeps the first command through reveal refresh
+Interaction passed: MultiSelect: a completed long-list click keeps search navigation
+Interaction passed: MultiSelect: a filtered short-popup click survives its scrollable page
+Interaction passed: MultiSelect: Escape clears search then closes
+Interaction passed: settle: with focus and pointer gone nothing stays scheduled
+Interaction passed: end
+Native interactions: 39 steps passed on the real gallery window; input entered at the runtime's native entry points.
+
+=== pert-ui-gallery::interaction_check_cpu
+Interaction passed: brand mark: a pointer click opens About
+Interaction passed: About: Escape closes it
+Interaction passed: command palette: its shortcut opens it
+Interaction passed: command palette: typing filters to the intended page
+Interaction passed: command palette: Enter goes to the filtered page
+Interaction passed: chip: Delete removes the focused tag and focus moves on
+Interaction passed: menu-bar history: Back returns to the first page
+Interaction passed: menu-bar history: Forward returns to the chips page
+Interaction passed: search field: a typed query filters after its debounce
+Interaction passed: search field: Down and Enter choose without moving focus
+Interaction passed: search field: Escape clears the query
+Interaction passed: password: typed text stays concealed and IME is withheld
+Interaction passed: password: Alt+F8 reveals it
+Interaction passed: password: focus loss conceals it again; an ordinary field asks for IME
+Interaction passed: content search: its shortcut opens the picker
+Interaction passed: content search: Enter jumps to a hidden button and focuses it
+Interaction passed: knob: an upward pointer drag raises its parameter
+Interaction passed: collapsible section: Enter on its header collapses it
+Interaction passed: collapsible section: Space expands it again
+Interaction passed: tool windows: a stripe button expands Search and focuses it
+Interaction passed: tool windows: Escape returns focus to the main content
+Interaction passed: tool windows: the options menu floats Search over the layout
+Interaction passed: tool windows: dragging the floating frame's header moves it
+Interaction passed: tool windows: dragging the floating frame's corner grip resizes it
+Interaction passed: tool windows: Open in window moves Search to its own native window
+Interaction passed: tool windows: closing that window returns Search to its stripe
+Interaction passed: collection filter: a typed query hides non-matching items
+Interaction passed: collection filter: Escape clears it and every item returns
+Interaction passed: tab titles: item pointer bounds switch the category
+Interaction passed: Select: named control and option bounds choose the second value
+Interaction passed: menu: named Help title and item bounds open About
+Interaction passed: menu About: Escape closes the dialog
+Interaction passed: menu keyboard: parked title and duplicate motion keep File selected
+Interaction passed: menu keyboard: parked row keeps the first command through reveal refresh
+Interaction passed: MultiSelect: a completed long-list click keeps search navigation
+Interaction passed: MultiSelect: a filtered short-popup click survives its scrollable page
+Interaction passed: MultiSelect: Escape clears search then closes
+Interaction passed: settle: with focus and pointer gone nothing stays scheduled
+Interaction passed: end
+Native interactions: 39 steps passed on the real gallery window; input entered at the runtime's native entry points.
+
+Native checks on linux x86_64:
+  OS:      Fedora Linux 44 (Workstation Edition), kernel 7.2.12-200.fc44.x86_64
+  Session: wayland (WAYLAND_DISPLAY=wayland-0), desktop GNOME; record the compositor version by hand
+  GPU:     not reported; no check that prints its adapter ran
+  rustc:   rustc 1.99.1 (58cf8f9c3 2026-10-13)
+  Crates:  winit 0.30.13; wgpu 30.0.1
+  passed      pert-ui-gallery::interaction_check (32.7 s)
+  passed      pert-ui-gallery::interaction_check_cpu (34.1 s)
+  SKIPPED     pert-ui::platform::capture_smoke::a_tool_thread_captures_the_window_and_a_widget_from_the_real_renderer: not selected by the name filters
+  SKIPPED     pert-ui::platform::capture_smoke::software_presentation_captures_the_window_and_a_widget: not selected by the name filters
+  SKIPPED     pert-ui::platform::clipboard::tests::native_clipboard_round_trips_text: not selected by the name filters
+  SKIPPED     pert-ui::platform::drag_smoke::injected_pointer_drives_a_drag_session_through_the_native_adapter: not selected by the name filters
+  SKIPPED     pert-ui::platform::multi_window_smoke::a_native_close_request_saves_the_focused_draft_before_the_policy: not selected by the name filters
+  SKIPPED     pert-ui::platform::multi_window_smoke::three_native_surfaces_animate_settle_and_redock: not selected by the name filters
+  SKIPPED     pert-ui::platform::multi_window_smoke::three_software_surfaces_animate_settle_and_redock: not selected by the name filters
+  SKIPPED     pert-ui::platform::pacing_smoke::animation_follows_the_monitor_presentation_rate: not selected by the name filters
+  SKIPPED     pert-ui::platform::smoke::native_window_resize_and_idle: not selected by the name filters
+  SKIPPED     pert-ui::platform::smoke::software_window_resize_and_idle: not selected by the name filters
+  SKIPPED     pert-ui-wgpu::tests::native_cpu_gpu_parity: not selected by the name filters
+  SKIPPED     pert-ui-wgpu::tests::native_damage_area_probe: not selected by the name filters
+  SKIPPED     pert-ui-wgpu::tests::native_gpu_pixel_readback: not selected by the name filters
+  SKIPPED     pert-ui-wgpu::tests::native_realtime_workload_probe: not selected by the name filters
+  SKIPPED     pert-ui-wgpu::tests::native_text_rendering_probe: not selected by the name filters
+  SKIPPED     pert-ui-wgpu::tests::native_zero_size_surface_is_unconfigured: not selected by the name filters
+  SKIPPED     pert-ui-gallery::workspace_restart: not selected by the name filters

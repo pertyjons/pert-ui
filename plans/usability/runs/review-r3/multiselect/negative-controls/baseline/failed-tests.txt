@@ -1,0 +1,22 @@
+test multi_select_pointer::a_denial_while_no_option_matches_still_hands_back_the_highlight ... FAILED
+test multi_select_pointer::a_completed_click_returns_focus_to_search_on_short_and_long_lists ... FAILED
+test multi_select_pointer::a_denied_dropdown_only_remembers_the_pointer_and_hands_back_the_highlight ... FAILED
+test multi_select_pointer::a_pointer_parked_where_the_popup_opens_leaves_the_keyboard_highlight_alone ... FAILED
+test multi_select_pointer::a_release_after_a_search_key_regains_the_highlight_for_the_pointer ... FAILED
+test multi_select_pointer::a_long_list_under_a_parked_pointer_follows_every_navigation_key ... FAILED
+test multi_select_pointer::a_click_returns_focus_to_search_after_tab_moved_it_to_the_list ... FAILED
+test multi_select_pointer::a_failing_on_change_keeps_the_toggle_and_the_return_to_search ... FAILED
+test multi_select_pointer::a_pointer_that_left_the_panel_takes_nothing_when_the_popup_grows_under_it ... FAILED
+test multi_select_pointer::changed_options_labels_and_filters_keep_the_current_owner ... FAILED
+test multi_select_pointer::closing_or_hiding_then_reopening_starts_with_the_keyboard_highlight ... FAILED
+test multi_select_pointer::a_row_scrolled_back_under_its_last_position_treats_a_jump_there_as_stationary ... FAILED
+test multi_select_pointer::genuine_motion_after_keyboard_navigation_takes_the_highlight ... FAILED
+test multi_select_pointer::reentering_over_a_row_scrolled_there_meanwhile_counts_as_motion ... FAILED
+test multi_select_pointer::editing_or_clearing_the_query_hands_the_highlight_back_to_the_keyboard ... FAILED
+test multi_select_pointer::reentering_the_window_at_the_same_position_over_the_same_row_is_stationary ... FAILED
+test multi_select_pointer::the_focused_list_scroll_keys_follow_the_wheel_policy ... FAILED
+test multi_select_pointer::a_wheel_at_the_list_limit_bubbles_without_taking_the_highlight ... FAILED
+test multi_select_pointer::the_wheel_keeps_a_keyboard_highlight_and_moves_a_pointer_highlight ... FAILED
+test multi_select_pointer::a_press_that_focuses_the_long_list_drops_the_search_composition ... FAILED
+test result: FAILED. 43 passed; 20 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.06s
+error: test failed, to rerun pass `-p pert-ui --test collections`

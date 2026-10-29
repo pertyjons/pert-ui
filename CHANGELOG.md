@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.3.93 (2026-10-29)
+
+Round 3 MultiSelect navigation/click continuity and automatic surface press focus.
+Frozen blind results remain on 0.3.88/0.3.75; these are post-run repairs.
+
+- MultiSelect keeps search-key highlighting under a stationary pointer. Actual
+  row motion or admitted pointer interaction takes ownership, including motion
+  over an already-highlighted or disabled option. Refreshed/duplicate positions
+  cannot reclaim it. Search keys, query/permission changes, panel exit and
+  lifecycle transitions reset ownership; redescription retains it. Wheel and
+  list-focused scrolling keep this family's distinct policy.
+- A completed admitted primary row click requests focus back to search before
+  reporting the bound-value write, allowing the application's callback to
+  replace that request. A callback error keeps the accepted write and queued
+  focus without replay. OnClose toggles still edit only the separate draft.
+  Incomplete/disabled/denied clicks make no such focus request; a long list can
+  take focus and end IME composition on press before the release restores search.
+- Automatic pointer-press focus stops at an admitted interactive surface root
+  that already contains focus when no nearer focusable component/ancestor wins.
+  It no longer escapes a short popup into an overflowing outside ScrollArea and
+  dismisses the popup before its option handles input. The live kind must match
+  admission; nested roots are checked along the presentation chain. This also
+  preserves focus held by a modal root itself. Tooltips/notifications, explicit
+  or queued focus, Tab, capture and outside presses retain their policies.
+  Already-outside focus does not gain this preservation guarantee.
+- Updated MultiSelect/on_change, Component::focusable, Runtime::pointer_input,
+  SurfaceKind and Popover rustdoc, controls guide, contracts and manual. Public
+  input tests and restored negative controls cover actual values/callbacks, search/focus
+  continuation, ownership transitions and generic custom surfaces. Gallery
+  interaction steps cover a long-list click followed by search navigation and
+  a filtered short-popup click inside its scrollable page. No public signature,
+  dependency, persistence or platform-adapter change.
+
 ## 0.3.92 (2026-10-29)
 
 Round 3 menu keyboard ownership and literal-tab coverage. Frozen blind results

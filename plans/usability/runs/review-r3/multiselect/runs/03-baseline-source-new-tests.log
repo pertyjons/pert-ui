@@ -1,0 +1,49 @@
+# started 2026-10-29T10:37:58+00:00
+# cwd /home/per/pert-ui-usability/r3-multiselect-worktree  CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-multiselect-implementation-target
+# command: cargo test --locked -p pert-ui --test collections multi_select_pointer
+# HEAD 17c6c3d39b3015a1563d7440541af87a1b7ee998
+# git status --porcelain:
+ M crates/pert-ui/tests/collections/main.rs
+?? crates/pert-ui/tests/collections/multi_select_pointer.rs
+# hashes before:
+92d35eef2cf99114d9c31081047d505a558c081e5c94788107789e66fb3111ee  crates/pert-ui-runtime/src/multi_select.rs
+073e75adfb217a8db927a46fe39a1a400e0c74205810e6fe62c7e9fcb69f9979  crates/pert-ui/tests/collections/main.rs
+c83a817ee393e33821e025fbed127b89233d6dc650eb8c9a20191d6b0bc4b699  crates/pert-ui/tests/collections/multi_select.rs
+2881458bcb97b0a87429284516e2cbfcf65c1d465db83b80dca7ba35586278c4  crates/pert-ui/tests/collections/multi_select_pointer.rs
+# mtimes before:
+1793269430.061403781 crates/pert-ui-runtime/src/multi_select.rs
+1793270263.393146004 crates/pert-ui/tests/collections/main.rs
+1793269430.081469843 crates/pert-ui/tests/collections/multi_select.rs
+1793270278.517245236 crates/pert-ui/tests/collections/multi_select_pointer.rs
+# ---- output ----
+   Compiling pert-ui v0.3.91 (/home/per/pert-ui-usability/r3-multiselect-worktree/crates/pert-ui)
+error[E0624]: method `text_preedit` is private
+    --> crates/pert-ui/tests/collections/multi_select_pointer.rs:1117:14
+     |
+1117 |               .text_preedit(&TextPreedit::new("ka", None).unwrap())
+     |                ^^^^^^^^^^^^ private method
+     |
+    ::: crates/pert-ui-runtime/src/runtime.rs:5291:5
+     |
+5291 | /     pub(crate) fn text_preedit(
+5292 | |         &mut self,
+5293 | |         preedit: &crate::TextPreedit,
+5294 | |     ) -> Result<(), RuntimeError> {
+     | |_________________________________- private method defined here
+     |
+     = help: items from traits can only be used if the trait is in scope
+help: trait `HostIntegration` which provides `text_preedit` is implemented but not in scope; perhaps you want to import it
+     |
+   9 + use pert_ui::testing::HostIntegration;
+     |
+
+For more information about this error, try `rustc --explain E0624`.
+error: could not compile `pert-ui` (test "collections") due to 1 previous error
+# ---- end output ----
+# hashes after:
+92d35eef2cf99114d9c31081047d505a558c081e5c94788107789e66fb3111ee  crates/pert-ui-runtime/src/multi_select.rs
+073e75adfb217a8db927a46fe39a1a400e0c74205810e6fe62c7e9fcb69f9979  crates/pert-ui/tests/collections/main.rs
+c83a817ee393e33821e025fbed127b89233d6dc650eb8c9a20191d6b0bc4b699  crates/pert-ui/tests/collections/multi_select.rs
+2881458bcb97b0a87429284516e2cbfcf65c1d465db83b80dca7ba35586278c4  crates/pert-ui/tests/collections/multi_select_pointer.rs
+# finished 2026-10-29T10:38:01+00:00
+# exit_status 101

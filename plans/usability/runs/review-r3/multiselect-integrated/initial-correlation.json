@@ -1,0 +1,20 @@
+{
+  "recorded_at_utc": "2026-10-29T11:27:55.837702+00:00",
+  "retrospective": true,
+  "note": "Commands and results read from original logs; hashes recorded after completion, not claimed contemporaneous. No source edits to these files occurred between the runs and this record.",
+  "commands": [
+    {
+      "command": "cargo test --locked -p pert-ui-gallery --bin pert-ui-gallery the_interaction_steps_pass_headlessly",
+      "result": "Failed the named filtered short-popup focus assertion before popup runtime repair; long-list step passed."
+    },
+    {
+      "command": "cargo test --locked -p pert-ui --test collections multi_select",
+      "result": "64 passed, 0 failed."
+    }
+  ],
+  "source_sha256": {
+    "apps/gallery/src/interaction_check.rs": "37b631379d4ca969b80f64e87bf34780208f2f0249e3a76961122aeb836b6645",
+    "crates/pert-ui-runtime/src/multi_select.rs": "b6843e9ce95d1a564ec6fff9736b23f992a0061784e1792b987cf9f6c619836c",
+    "crates/pert-ui/tests/collections/multi_select_pointer.rs": "4c2d71dfaeb6058902de9b770f48591d58713a9747bfcd474fed80031c509183"
+  }
+}

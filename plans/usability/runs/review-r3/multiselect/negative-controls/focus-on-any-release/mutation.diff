@@ -1,0 +1,12 @@
+--- /home/per/pert-ui-usability/r3-multiselect-implementation-evidence/negative-controls/focus-on-any-release/backup/multi_select.rs	2026-10-29 11:46:22.669385508 +0100
++++ crates/pert-ui-runtime/src/multi_select.rs	2026-10-29 11:46:22.683385630 +0100
+@@ -681,6 +681,9 @@
+         {
+             self.pressed = false;
+             cx.release_pointer();
++            if let Some(panel) = self.shared.panel.borrow().clone() {
++                cx.request_focus_within(&panel)?;
++            }
+             if self.active() && cx.pointer_inside() {
+                 self.shared.highlight.set(Some(self.key.clone()))?;
+                 self.shared.pointer_owns.set(true);

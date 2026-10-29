@@ -4,6 +4,10 @@ use crate::*;
 use std::time::Duration;
 
 /// Presentation and input policy for an owner's promoted child subtree.
+///
+/// A pointer press inside an admitted interactive surface keeps focus that is
+/// already inside it rather than moving it to a focusable ancestor outside;
+/// see [`Component::focusable`](crate::Component::focusable).
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum SurfaceKind {
     /// Interactive nonmodal surface. Shared routing transfers focus on admission,
@@ -176,7 +180,12 @@ type DismissHandler =
 /// focus loss set the signal false. Focus leaves when it moves out of the
 /// content after having been inside it, also to the popover's own anchor (Tab,
 /// Shift+Tab or [`Runtime::focus`](crate::Runtime::focus)); focus then stays
-/// where it moved. Outside presses and their releases are consumed.
+/// where it moved. A press on non-focusable content keeps focus that is
+/// already inside the content. When the content has nothing focusable, focus
+/// stays where it was, such as on the anchor, and a press on the content can
+/// move it to a focusable ancestor outside, which closes the popover (see
+/// [`Component::focusable`](crate::Component::focusable)). Outside presses and
+/// their releases are consumed.
 /// One independent interactive chain is open per window; nested popovers are allowed.
 /// Admission focuses the first eligible descendant; closing restores a surviving
 /// opener unless focus intentionally moved elsewhere. Hidden content retains state.

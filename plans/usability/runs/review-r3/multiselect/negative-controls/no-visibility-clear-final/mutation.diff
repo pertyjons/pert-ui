@@ -1,0 +1,12 @@
+--- /home/per/pert-ui-usability/r3-multiselect-implementation-evidence/negative-controls/no-visibility-clear-final/backup/multi_select.rs	2026-10-29 11:52:00.770853964 +0100
++++ crates/pert-ui-runtime/src/multi_select.rs	2026-10-29 11:52:00.785854072 +0100
+@@ -914,9 +914,6 @@
+             self.shared.pointer_owns.set(false);
+         }
+     }
+-    fn visibility_changed(&mut self, _: bool) {
+-        self.shared.pointer_owns.set(false);
+-    }
+     fn unmounted(&mut self) {
+         let mut panel = self.shared.panel.borrow_mut();
+         if panel.is_some() && *panel == self.id {

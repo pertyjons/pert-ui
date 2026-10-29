@@ -1,0 +1,40 @@
+from pathlib import Path
+import hashlib,json,difflib
+root=Path('/home/per/github/pert-ui');out=Path(__file__).parent;manifest=json.loads(Path('/home/per/pert-ui-usability/r3-multiselect-popup-final-gates/source-manifest.json').read_text())
+rel='apps/gallery/src/interaction_check.rs';after=(root/rel).read_text();before=after
+start=before.index('    let candidates: Vec<_> =',before.index('fn multi_select_row'));end=before.index('    Err(format!("no visible option named {name}"))',start)
+before=before[:start]+'''    for component in ui.inspect().components.into_iter().filter(|component| {
+        component.visible
+            && component
+                .details
+                .semantics
+                .as_ref()
+                .is_some_and(|semantics| {
+                    semantics.role == SemanticRole::Checkbox
+                        && semantics.name.as_deref() == Some(name)
+                })
+    }) {
+        if let Some(row) = ui.find_descendant(owner, &component.key).map_err(failed)? {
+            return Ok(row);
+        }
+    }
+'''+before[end:]
+start=before.index('            act:',before.index('name: "MultiSelect: Escape clears search then closes"'));end=before.index('        Step {',start)
+before=before[:start]+'''            act: |ui, _| {
+                key(ui, KeyCode::Escape)?;
+                key(ui, KeyCode::Escape)
+            },
+            check: |ui, _| {
+                ensure(
+                    property(ui, "instruments", "open")? == Some(InspectValue::Bool(false)),
+                    || "the instrument chooser stayed open".into(),
+                )
+            },
+        },
+'''+before[end:]
+assert hashlib.sha256(before.encode()).hexdigest()==manifest[rel]
+(out/'gallery-before.rs.txt').write_text(before);(out/'gallery-review-repair.diff').write_text(''.join(difflib.unified_diff(before.splitlines(True),after.splitlines(True),fromfile='full-gate/'+rel,tofile='review-repair/'+rel)))
+rel2='crates/pert-ui/tests/foundation/main.rs';a2=(root/rel2).read_text();b2=a2.replace('mod popup_press_focus;\n','')+'\nmod popup_press_focus;\n';assert hashlib.sha256(b2.encode()).hexdigest()==manifest[rel2]
+(out/'foundation-module-order.diff').write_text(''.join(difflib.unified_diff(b2.splitlines(True),a2.splitlines(True),fromfile='full-gate/'+rel2,tofile='review-repair/'+rel2)))
+(out/'reconstruction.json').write_text(json.dumps({'note':'Retrospective exact reconstruction of pre-review files by reversing known changes; reconstructed hashes equal the contemporaneous full-gate source manifest. This is not an original contemporaneous snapshot.','gallery_reconstructed_sha256':hashlib.sha256(before.encode()).hexdigest(),'foundation_reconstructed_sha256':hashlib.sha256(b2.encode()).hexdigest()},indent=2)+'\n')
+print('Exact pre-review source hashes reconstructed')

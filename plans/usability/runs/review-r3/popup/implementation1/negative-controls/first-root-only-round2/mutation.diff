@@ -1,0 +1,27 @@
+--- /home/per/pert-ui-usability/r3-popup-implementation-evidence/negative-controls/first-root-only-round2/backup/pointer.rs	2026-10-29 12:35:57.176366740 +0100
++++ crates/pert-ui-runtime/src/runtime/pointer.rs	2026-10-29 12:35:57.192610656 +0100
+@@ -500,6 +500,7 @@
+                 let mut focus_error = None;
+                 let queued = self.window.focus_errors.len();
+                 let focused = self.window.focus.clone();
++                let mut passed_root = false;
+                 while let Some(current) = focus {
+                     let entry = &self.entries[&current];
+                     if entry.component.focusable() {
+@@ -526,13 +527,15 @@
+                     // refused by a window or application dialog. A root that
+                     // does not hold focus is passed, so an enclosing
+                     // menu's root can still stop a press on its submenu.
+-                    if focused
++                    if !passed_root
++                        && focused
+                         .as_ref()
+                         .is_some_and(|focused| self.descendant(focused.0.serial, current))
+                         && self.admitted_interactive_surface(current)
+                     {
+                         break;
+                     }
++                    passed_root |= self.surface_kind(current).is_some();
+                     focus = entry.node.presentation_parent_serial();
+                 }
+                 // A focus-loss save can change this target's binding. Refresh

@@ -1,0 +1,4 @@
+$ cargo clippy --locked -p pert-ui-gallery --all-targets -- -D warnings
+    Blocking waiting for file lock on build directory
+    Checking pert-ui-gallery v0.3.93 (/home/per/github/pert-ui/apps/gallery)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.48s

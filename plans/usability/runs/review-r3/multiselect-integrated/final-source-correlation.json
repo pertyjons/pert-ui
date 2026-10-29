@@ -1,0 +1,6 @@
+{
+  "all_captured_source_bytes_still_match_completed_gates": true,
+  "mismatches": [],
+  "native": "Selected native GPU and CPU checks ran within the unchanged source window.",
+  "api": "Generation exited0; git status --porcelain -- api/ empty."
+}

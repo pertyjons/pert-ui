@@ -1,0 +1,10 @@
+--- /home/per/pert-ui-usability/r3-multiselect-implementation-evidence/negative-controls/no-search-key-clear/backup/multi_select.rs	2026-10-29 11:45:38.769004290 +0100
++++ crates/pert-ui-runtime/src/multi_select.rs	2026-10-29 11:45:38.783183221 +0100
+@@ -405,7 +405,6 @@
+     /// hands the highlight to the keyboard before it acts, so a stationary
+     /// pointer cannot take back what the key moved or toggle what it did not.
+     fn key(&self, cx: &mut EventContext, key: SearchKey) -> Result<(), RuntimeError> {
+-        self.pointer_owns.set(false);
+         let Some(chain) = self.chain.borrow().clone() else {
+             return Ok(());
+         };

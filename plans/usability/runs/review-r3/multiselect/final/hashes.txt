@@ -1,0 +1,7 @@
+# recorded 2026-10-29T10:53:13+00:00
+# HEAD 17c6c3d39b3015a1563d7440541af87a1b7ee998
+b6843e9ce95d1a564ec6fff9736b23f992a0061784e1792b987cf9f6c619836c  crates/pert-ui-runtime/src/multi_select.rs
+073e75adfb217a8db927a46fe39a1a400e0c74205810e6fe62c7e9fcb69f9979  crates/pert-ui/tests/collections/main.rs
+4c2d71dfaeb6058902de9b770f48591d58713a9747bfcd474fed80031c509183  crates/pert-ui/tests/collections/multi_select_pointer.rs
+c83a817ee393e33821e025fbed127b89233d6dc650eb8c9a20191d6b0bc4b699  crates/pert-ui/tests/collections/multi_select.rs
+# baseline (HEAD) multi_select.rs: 92d35eef2cf99114d9c31081047d505a558c081e5c94788107789e66fb3111ee  -

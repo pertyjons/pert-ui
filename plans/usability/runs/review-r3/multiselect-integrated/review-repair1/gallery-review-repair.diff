@@ -1,0 +1,86 @@
+--- full-gate/apps/gallery/src/interaction_check.rs
++++ review-repair/apps/gallery/src/interaction_check.rs
+@@ -107,20 +107,29 @@
+ 
+ /// A visible option discovered by public checkbox semantics, scoped to its chooser.
+ fn multi_select_row(ui: &Runtime, owner: &WidgetId, name: &str) -> Result<WidgetId, String> {
+-    for component in ui.inspect().components.into_iter().filter(|component| {
+-        component.visible
+-            && component
+-                .details
+-                .semantics
+-                .as_ref()
+-                .is_some_and(|semantics| {
+-                    semantics.role == SemanticRole::Checkbox
+-                        && semantics.name.as_deref() == Some(name)
+-                })
+-    }) {
+-        if let Some(row) = ui.find_descendant(owner, &component.key).map_err(failed)? {
++    let candidates: Vec<_> = ui
++        .inspect()
++        .components
++        .into_iter()
++        .filter(|component| {
++            component.visible
++                && component
++                    .details
++                    .semantics
++                    .as_ref()
++                    .is_some_and(|semantics| {
++                        semantics.role == SemanticRole::Checkbox
++                            && semantics.name.as_deref() == Some(name)
++                    })
++        })
++        .map(|component| component.id)
++        .collect();
++    let mut pending = ui.children(owner).map_err(failed)?;
++    while let Some(row) = pending.pop() {
++        if candidates.contains(&ui.inspection_id(&row).map_err(failed)?) {
+             return Ok(row);
+         }
++        pending.extend(ui.children(&row).map_err(failed)?);
+     }
+     Err(format!("no visible option named {name}"))
+ }
+@@ -1098,14 +1107,40 @@
+         },
+         Step {
+             name: "MultiSelect: Escape clears search then closes",
+-            act: |ui, _| {
++            act: |ui, scene| {
+                 key(ui, KeyCode::Escape)?;
++                ui.flush(ui.now()).map_err(failed)?;
++                ensure(
++                    property(ui, "instruments", "open")? == Some(InspectValue::Bool(true)),
++                    || "the first Escape closed the chooser instead of clearing search".into(),
++                )?;
++                let page = page(ui, &scene.root, "chips")?;
++                let chooser = find(ui, &page, "instruments")?;
++                let search = Driver::new(ui)
++                    .exposed_part(&chooser, "search")
++                    .map_err(failed)?;
++                let search_id = ui.inspection_id(&search).map_err(failed)?;
++                let query = ui
++                    .inspect()
++                    .components
++                    .into_iter()
++                    .find(|component| component.id == search_id)
++                    .and_then(|component| component.details.semantics)
++                    .and_then(|semantics| semantics.value);
++                ensure(query == Some(SemanticValue::Text(String::new())), || {
++                    format!("the first Escape left search at {query:?}")
++                })?;
+                 key(ui, KeyCode::Escape)
+             },
+             check: |ui, _| {
+                 ensure(
+                     property(ui, "instruments", "open")? == Some(InspectValue::Bool(false)),
+                     || "the instrument chooser stayed open".into(),
++                )?;
++                expect_texts(
++                    ui,
++                    "instruments-value",
++                    "Bound value: [piano, violin, bass, cello, flute]",
+                 )
+             },
+         },

@@ -1,0 +1,16 @@
+# recorded 2026-10-29T10:28:57+00:00
+# worktree /home/per/pert-ui-usability/r3-multiselect-worktree
+# HEAD 17c6c3d39b3015a1563d7440541af87a1b7ee998
+# git status --porcelain (empty = clean):
+# owned/related source hashes before any edit:
+92d35eef2cf99114d9c31081047d505a558c081e5c94788107789e66fb3111ee  crates/pert-ui-runtime/src/multi_select.rs
+37d8f39e5ad0232d16b6affdf8de8713f72e028f79734503f10b45d48814efaa  crates/pert-ui/tests/collections/main.rs
+c83a817ee393e33821e025fbed127b89233d6dc650eb8c9a20191d6b0bc4b699  crates/pert-ui/tests/collections/multi_select.rs
+# crates/pert-ui/tests/collections/multi_select_pointer.rs: absent (ls: cannot access 'crates/pert-ui/tests/collections/multi_select_pointer.rs': No such file or directory)
+# design doc (main checkout, read only):
+431e43358a893ebaf499ee1c847f7ca4a10f22deaab6d1a3385a6726fcabe60d  /home/per/github/pert-ui/plans/usability/round-3-design-multiselect-pointer.md
+1aadf904070374c1b21e41384d47fdb0ad0b7bf1691c70d410abef0fae7eb1df  /home/per/github/pert-ui/plans/usability/runs/review-r3/multiselect-design-review-r1.md
+64198e608be87e7d57a72ce64e40407a759e6fb8e628b7cb62712d6838446b0e  /home/per/github/pert-ui/plans/usability/runs/review-r3/multiselect-design-review-r2.md
+# toolchain:
+rustc 1.99.1 (58cf8f9c3 2026-10-13)
+cargo 1.99.1 (5f94df478 2026-08-27)

@@ -1,0 +1,10 @@
+--- /home/per/pert-ui-usability/r3-multiselect-implementation-evidence/negative-controls/no-query-clear-final/backup/multi_select.rs	2026-10-29 11:51:39.734702593 +0100
++++ crates/pert-ui-runtime/src/multi_select.rs	2026-10-29 11:51:39.751291282 +0100
+@@ -836,7 +836,6 @@
+         let revision = self.shared.query.revision();
+         if self.query_revision != Some(revision) {
+             self.query_revision = Some(revision);
+-            self.shared.pointer_owns.set(false);
+         }
+         let strings = cx.strings()?;
+         let no_matches = strings.text(crate::StringRole::NoMatches);

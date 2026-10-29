@@ -1,0 +1,221 @@
+=== baseline 2026-10-29T10:44:31+00:00
+/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/15-negative-baseline.log exit_status=101
+restored: identical hash, newer mtime; mutated build recompiled pert-ui-runtime
+test exit_status=101 log=/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/15-negative-baseline.log
+test multi_select_pointer::a_denial_while_no_option_matches_still_hands_back_the_highlight ... FAILED
+test multi_select_pointer::a_completed_click_returns_focus_to_search_on_short_and_long_lists ... FAILED
+test multi_select_pointer::a_denied_dropdown_only_remembers_the_pointer_and_hands_back_the_highlight ... FAILED
+test multi_select_pointer::a_pointer_parked_where_the_popup_opens_leaves_the_keyboard_highlight_alone ... FAILED
+test multi_select_pointer::a_release_after_a_search_key_regains_the_highlight_for_the_pointer ... FAILED
+test multi_select_pointer::a_long_list_under_a_parked_pointer_follows_every_navigation_key ... FAILED
+test multi_select_pointer::a_click_returns_focus_to_search_after_tab_moved_it_to_the_list ... FAILED
+test multi_select_pointer::a_failing_on_change_keeps_the_toggle_and_the_return_to_search ... FAILED
+test multi_select_pointer::a_pointer_that_left_the_panel_takes_nothing_when_the_popup_grows_under_it ... FAILED
+test multi_select_pointer::changed_options_labels_and_filters_keep_the_current_owner ... FAILED
+test multi_select_pointer::closing_or_hiding_then_reopening_starts_with_the_keyboard_highlight ... FAILED
+test multi_select_pointer::a_row_scrolled_back_under_its_last_position_treats_a_jump_there_as_stationary ... FAILED
+test multi_select_pointer::genuine_motion_after_keyboard_navigation_takes_the_highlight ... FAILED
+test multi_select_pointer::reentering_over_a_row_scrolled_there_meanwhile_counts_as_motion ... FAILED
+test multi_select_pointer::editing_or_clearing_the_query_hands_the_highlight_back_to_the_keyboard ... FAILED
+test multi_select_pointer::reentering_the_window_at_the_same_position_over_the_same_row_is_stationary ... FAILED
+test multi_select_pointer::the_focused_list_scroll_keys_follow_the_wheel_policy ... FAILED
+test multi_select_pointer::a_wheel_at_the_list_limit_bubbles_without_taking_the_highlight ... FAILED
+test multi_select_pointer::the_wheel_keeps_a_keyboard_highlight_and_moves_a_pointer_highlight ... FAILED
+test multi_select_pointer::a_press_that_focuses_the_long_list_drops_the_search_composition ... FAILED
+test result: FAILED. 43 passed; 20 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.06s
+error: test failed, to rerun pass `-p pert-ui --test collections`
+=== unconditional-refresh-highlight 2026-10-29T10:44:37+00:00
+/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/16-negative-unconditional-refresh-highlight.log exit_status=101
+restored: identical hash, newer mtime; mutated build recompiled pert-ui-runtime
+test exit_status=101 log=/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/16-negative-unconditional-refresh-highlight.log
+test multi_select_pointer::a_denial_while_no_option_matches_still_hands_back_the_highlight ... FAILED
+test multi_select_pointer::a_completed_click_returns_focus_to_search_on_short_and_long_lists ... FAILED
+test multi_select_pointer::a_pointer_that_left_the_panel_takes_nothing_when_the_popup_grows_under_it ... FAILED
+test multi_select_pointer::a_denied_dropdown_only_remembers_the_pointer_and_hands_back_the_highlight ... FAILED
+test multi_select_pointer::a_click_returns_focus_to_search_after_tab_moved_it_to_the_list ... FAILED
+test multi_select_pointer::a_pointer_parked_where_the_popup_opens_leaves_the_keyboard_highlight_alone ... FAILED
+test multi_select_pointer::a_long_list_under_a_parked_pointer_follows_every_navigation_key ... FAILED
+test multi_select_pointer::a_release_after_a_search_key_regains_the_highlight_for_the_pointer ... FAILED
+test multi_select_pointer::changed_options_labels_and_filters_keep_the_current_owner ... FAILED
+test multi_select_pointer::genuine_motion_after_keyboard_navigation_takes_the_highlight ... FAILED
+test multi_select_pointer::closing_or_hiding_then_reopening_starts_with_the_keyboard_highlight ... FAILED
+test multi_select_pointer::reentering_over_a_row_scrolled_there_meanwhile_counts_as_motion ... FAILED
+test multi_select_pointer::editing_or_clearing_the_query_hands_the_highlight_back_to_the_keyboard ... FAILED
+test multi_select_pointer::reentering_the_window_at_the_same_position_over_the_same_row_is_stationary ... FAILED
+test multi_select_pointer::a_row_scrolled_back_under_its_last_position_treats_a_jump_there_as_stationary ... FAILED
+test multi_select_pointer::the_focused_list_scroll_keys_follow_the_wheel_policy ... FAILED
+test multi_select_pointer::the_wheel_keeps_a_keyboard_highlight_and_moves_a_pointer_highlight ... FAILED
+test multi_select_pointer::a_wheel_at_the_list_limit_bubbles_without_taking_the_highlight ... FAILED
+test result: FAILED. 45 passed; 18 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.07s
+error: test failed, to rerun pass `-p pert-ui --test collections`
+=== refresh-can-own 2026-10-29T10:44:44+00:00
+/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/17-negative-refresh-can-own.log exit_status=101
+restored: identical hash, newer mtime; mutated build recompiled pert-ui-runtime
+test exit_status=101 log=/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/17-negative-refresh-can-own.log
+test multi_select_pointer::a_denial_while_no_option_matches_still_hands_back_the_highlight ... FAILED
+test multi_select_pointer::a_denied_dropdown_only_remembers_the_pointer_and_hands_back_the_highlight ... FAILED
+test multi_select_pointer::a_pointer_parked_where_the_popup_opens_leaves_the_keyboard_highlight_alone ... FAILED
+test multi_select_pointer::a_long_list_under_a_parked_pointer_follows_every_navigation_key ... FAILED
+test multi_select_pointer::a_pointer_that_left_the_panel_takes_nothing_when_the_popup_grows_under_it ... FAILED
+test multi_select_pointer::changed_options_labels_and_filters_keep_the_current_owner ... FAILED
+test multi_select_pointer::a_row_scrolled_back_under_its_last_position_treats_a_jump_there_as_stationary ... FAILED
+test multi_select_pointer::motion_inside_the_row_the_keyboard_highlighted_takes_ownership ... FAILED
+test multi_select_pointer::editing_or_clearing_the_query_hands_the_highlight_back_to_the_keyboard ... FAILED
+test multi_select_pointer::the_wheel_keeps_a_keyboard_highlight_and_moves_a_pointer_highlight ... FAILED
+test multi_select_pointer::the_focused_list_scroll_keys_follow_the_wheel_policy ... FAILED
+test multi_select_pointer::a_wheel_at_the_list_limit_bubbles_without_taking_the_highlight ... FAILED
+test result: FAILED. 51 passed; 12 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.08s
+error: test failed, to rerun pass `-p pert-ui --test collections`
+=== no-position-memory 2026-10-29T10:44:48+00:00
+/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/18-negative-no-position-memory.log exit_status=101
+restored: identical hash, newer mtime; mutated build recompiled pert-ui-runtime
+test exit_status=101 log=/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/18-negative-no-position-memory.log
+test multi_select_pointer::a_pointer_parked_where_the_popup_opens_leaves_the_keyboard_highlight_alone ... FAILED
+test multi_select_pointer::a_denied_dropdown_only_remembers_the_pointer_and_hands_back_the_highlight ... FAILED
+test multi_select_pointer::reentering_the_window_at_the_same_position_over_the_same_row_is_stationary ... FAILED
+test multi_select_pointer::a_row_scrolled_back_under_its_last_position_treats_a_jump_there_as_stationary ... FAILED
+test multi_select_pointer::a_long_list_under_a_parked_pointer_follows_every_navigation_key ... FAILED
+test result: FAILED. 58 passed; 5 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.12s
+error: test failed, to rerun pass `-p pert-ui --test collections`
+=== leave-not-recorded 2026-10-29T10:44:52+00:00
+/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/19-negative-leave-not-recorded.log exit_status=101
+restored: identical hash, newer mtime; mutated build recompiled pert-ui-runtime
+test exit_status=101 log=/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/19-negative-leave-not-recorded.log
+test multi_select_pointer::genuine_motion_after_keyboard_navigation_takes_the_highlight ... FAILED
+test result: FAILED. 62 passed; 1 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.09s
+error: test failed, to rerun pass `-p pert-ui --test collections`
+=== record-after-denied-return 2026-10-29T10:44:58+00:00
+/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/20-negative-record-after-denied-return.log exit_status=0
+restored: identical hash, newer mtime; mutated build recompiled pert-ui-runtime
+test exit_status=0 log=/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/20-negative-record-after-denied-return.log
+test result: ok. 63 passed; 0 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.10s
+=== gain-after-highlighted-guard 2026-10-29T10:45:03+00:00
+/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/21-negative-gain-after-highlighted-guard.log exit_status=101
+restored: identical hash, newer mtime; mutated build recompiled pert-ui-runtime
+test exit_status=101 log=/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/21-negative-gain-after-highlighted-guard.log
+test multi_select_pointer::a_denial_while_no_option_matches_still_hands_back_the_highlight ... FAILED
+test multi_select_pointer::motion_inside_the_row_the_keyboard_highlighted_takes_ownership ... FAILED
+test result: FAILED. 61 passed; 2 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.09s
+error: test failed, to rerun pass `-p pert-ui --test collections`
+=== disabled-motion-no-gain 2026-10-29T10:45:08+00:00
+/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/22-negative-disabled-motion-no-gain.log exit_status=101
+restored: identical hash, newer mtime; mutated build recompiled pert-ui-runtime
+test exit_status=101 log=/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/22-negative-disabled-motion-no-gain.log
+test multi_select_pointer::motion_over_a_disabled_option_takes_ownership_but_never_chooses_it ... FAILED
+test result: FAILED. 62 passed; 1 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.11s
+error: test failed, to rerun pass `-p pert-ui --test collections`
+=== disabled-press-no-gain 2026-10-29T10:45:12+00:00
+/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/23-negative-disabled-press-no-gain.log exit_status=101
+restored: identical hash, newer mtime; mutated build recompiled pert-ui-runtime
+test exit_status=101 log=/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/23-negative-disabled-press-no-gain.log
+test multi_select_pointer::a_press_on_a_disabled_option_takes_ownership_without_arming ... FAILED
+test result: FAILED. 62 passed; 1 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.11s
+error: test failed, to rerun pass `-p pert-ui --test collections`
+=== row-leave-clears 2026-10-29T10:45:18+00:00
+/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/24-negative-row-leave-clears.log exit_status=101
+restored: identical hash, newer mtime; mutated build recompiled pert-ui-runtime
+test exit_status=101 log=/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/24-negative-row-leave-clears.log
+test multi_select_pointer::a_press_on_a_disabled_option_takes_ownership_without_arming ... FAILED
+test multi_select_pointer::a_release_after_a_search_key_regains_the_highlight_for_the_pointer ... FAILED
+test multi_select_pointer::motion_over_a_disabled_option_takes_ownership_but_never_chooses_it ... FAILED
+test multi_select_pointer::motion_inside_the_row_the_keyboard_highlighted_takes_ownership ... FAILED
+test multi_select_pointer::changed_options_labels_and_filters_keep_the_current_owner ... FAILED
+test multi_select_pointer::the_focused_list_scroll_keys_follow_the_wheel_policy ... FAILED
+test multi_select_pointer::the_wheel_keeps_a_keyboard_highlight_and_moves_a_pointer_highlight ... FAILED
+test result: FAILED. 56 passed; 7 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.09s
+error: test failed, to rerun pass `-p pert-ui --test collections`
+=== no-panel-exit-clear 2026-10-29T10:45:23+00:00
+/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/25-negative-no-panel-exit-clear.log exit_status=101
+restored: identical hash, newer mtime; mutated build recompiled pert-ui-runtime
+test exit_status=101 log=/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/25-negative-no-panel-exit-clear.log
+test multi_select_pointer::a_pointer_that_left_the_panel_takes_nothing_when_the_popup_grows_under_it ... FAILED
+test result: FAILED. 62 passed; 1 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.11s
+error: test failed, to rerun pass `-p pert-ui --test collections`
+=== no-panel-permission-clear 2026-10-29T10:45:29+00:00
+/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/26-negative-no-panel-permission-clear.log exit_status=101
+restored: identical hash, newer mtime; mutated build recompiled pert-ui-runtime
+test exit_status=101 log=/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/26-negative-no-panel-permission-clear.log
+test multi_select_pointer::a_denial_while_no_option_matches_still_hands_back_the_highlight ... FAILED
+test multi_select_pointer::a_denied_dropdown_only_remembers_the_pointer_and_hands_back_the_highlight ... FAILED
+test result: FAILED. 61 passed; 2 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.12s
+error: test failed, to rerun pass `-p pert-ui --test collections`
+=== no-query-clear 2026-10-29T10:45:33+00:00
+/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/27-negative-no-query-clear.log exit_status=101
+restored: identical hash, newer mtime; mutated build recompiled pert-ui-runtime
+test exit_status=101 log=/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/27-negative-no-query-clear.log
+test multi_select_pointer::editing_or_clearing_the_query_hands_the_highlight_back_to_the_keyboard ... FAILED
+test result: FAILED. 62 passed; 1 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.12s
+error: test failed, to rerun pass `-p pert-ui --test collections`
+=== no-search-key-clear 2026-10-29T10:45:38+00:00
+/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/28-negative-no-search-key-clear.log exit_status=101
+restored: identical hash, newer mtime; mutated build recompiled pert-ui-runtime
+test exit_status=101 log=/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/28-negative-no-search-key-clear.log
+test multi_select_pointer::a_completed_click_returns_focus_to_search_on_short_and_long_lists ... FAILED
+test multi_select_pointer::a_release_after_a_search_key_regains_the_highlight_for_the_pointer ... FAILED
+test multi_select_pointer::a_click_returns_focus_to_search_after_tab_moved_it_to_the_list ... FAILED
+test multi_select_pointer::changed_options_labels_and_filters_keep_the_current_owner ... FAILED
+test multi_select_pointer::a_row_scrolled_back_under_its_last_position_treats_a_jump_there_as_stationary ... FAILED
+test multi_select_pointer::genuine_motion_after_keyboard_navigation_takes_the_highlight ... FAILED
+test multi_select_pointer::reentering_the_window_at_the_same_position_over_the_same_row_is_stationary ... FAILED
+test multi_select_pointer::the_focused_list_scroll_keys_follow_the_wheel_policy ... FAILED
+test multi_select_pointer::a_wheel_at_the_list_limit_bubbles_without_taking_the_highlight ... FAILED
+test multi_select_pointer::reentering_over_a_row_scrolled_there_meanwhile_counts_as_motion ... FAILED
+test multi_select_pointer::the_wheel_keeps_a_keyboard_highlight_and_moves_a_pointer_highlight ... FAILED
+test result: FAILED. 52 passed; 11 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.08s
+error: test failed, to rerun pass `-p pert-ui --test collections`
+=== no-begin-clear 2026-10-29T10:45:44+00:00
+/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/29-negative-no-begin-clear.log exit_status=0
+restored: identical hash, newer mtime; mutated build recompiled pert-ui-runtime
+test exit_status=0 log=/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/29-negative-no-begin-clear.log
+test result: ok. 63 passed; 0 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.12s
+=== no-close-clear 2026-10-29T10:45:49+00:00
+/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/30-negative-no-close-clear.log exit_status=0
+restored: identical hash, newer mtime; mutated build recompiled pert-ui-runtime
+test exit_status=0 log=/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/30-negative-no-close-clear.log
+test result: ok. 63 passed; 0 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.10s
+=== no-visibility-clear 2026-10-29T10:45:53+00:00
+/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/31-negative-no-visibility-clear.log exit_status=0
+restored: identical hash, newer mtime; mutated build recompiled pert-ui-runtime
+test exit_status=0 log=/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/31-negative-no-visibility-clear.log
+test result: ok. 63 passed; 0 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.12s
+=== no-lifecycle-clears 2026-10-29T10:46:00+00:00
+/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/32-negative-no-lifecycle-clears.log exit_status=101
+restored: identical hash, newer mtime; mutated build recompiled pert-ui-runtime
+test exit_status=101 log=/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/32-negative-no-lifecycle-clears.log
+test multi_select_pointer::closing_or_hiding_then_reopening_starts_with_the_keyboard_highlight ... FAILED
+test result: FAILED. 62 passed; 1 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.08s
+error: test failed, to rerun pass `-p pert-ui --test collections`
+=== release-no-regain 2026-10-29T10:46:06+00:00
+/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/33-negative-release-no-regain.log exit_status=101
+restored: identical hash, newer mtime; mutated build recompiled pert-ui-runtime
+test exit_status=101 log=/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/33-negative-release-no-regain.log
+test multi_select_pointer::a_release_after_a_search_key_regains_the_highlight_for_the_pointer ... FAILED
+test result: FAILED. 62 passed; 1 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.12s
+error: test failed, to rerun pass `-p pert-ui --test collections`
+=== no-focus-return 2026-10-29T10:46:12+00:00
+/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/34-negative-no-focus-return.log exit_status=101
+restored: identical hash, newer mtime; mutated build recompiled pert-ui-runtime
+test exit_status=101 log=/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/34-negative-no-focus-return.log
+test multi_select_pointer::a_click_returns_focus_to_search_after_tab_moved_it_to_the_list ... FAILED
+test multi_select_pointer::a_failing_on_change_keeps_the_toggle_and_the_return_to_search ... FAILED
+test multi_select_pointer::a_press_that_focuses_the_long_list_drops_the_search_composition ... FAILED
+test multi_select_pointer::a_completed_click_returns_focus_to_search_on_short_and_long_lists ... FAILED
+test result: FAILED. 59 passed; 4 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.12s
+error: test failed, to rerun pass `-p pert-ui --test collections`
+=== focus-after-report 2026-10-29T10:46:17+00:00
+/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/35-negative-focus-after-report.log exit_status=101
+restored: identical hash, newer mtime; mutated build recompiled pert-ui-runtime
+test exit_status=101 log=/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/35-negative-focus-after-report.log
+test multi_select_pointer::a_failing_on_change_keeps_the_toggle_and_the_return_to_search ... FAILED
+test multi_select_pointer::a_focus_request_from_on_change_wins_over_the_return_to_search ... FAILED
+test result: FAILED. 61 passed; 2 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.11s
+error: test failed, to rerun pass `-p pert-ui --test collections`
+=== focus-on-any-release 2026-10-29T10:46:22+00:00
+/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/36-negative-focus-on-any-release.log exit_status=101
+restored: identical hash, newer mtime; mutated build recompiled pert-ui-runtime
+test exit_status=101 log=/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/36-negative-focus-on-any-release.log
+test multi_select_pointer::a_long_list_press_scrolled_away_by_the_list_keys_cancels_the_click ... FAILED
+test multi_select_pointer::a_release_outside_the_pressed_row_or_after_a_denial_returns_no_focus ... FAILED
+test result: FAILED. 61 passed; 2 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.11s
+error: test failed, to rerun pass `-p pert-ui --test collections`
+=== all done 2026-10-29T10:46:28+00:00

@@ -1,0 +1,26 @@
+$ cargo test --locked -p pert-ui --test foundation popup_press_focus
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on build directory
+   Compiling pert-ui v0.3.93 (/home/per/github/pert-ui/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 13.55s
+     Running tests/foundation/main.rs (target/debug/deps/foundation-6db28654bc086e2f)
+
+running 13 tests
+test popup_press_focus::a_press_on_content_holding_focus_keeps_it_inside_and_outside_surfaces ... ok
+test popup_press_focus::without_a_surface_a_press_still_focuses_the_ancestor ... ok
+test popup_press_focus::a_surface_changed_to_a_notification_no_longer_keeps_focus ... ok
+test popup_press_focus::focus_already_outside_the_surface_takes_the_old_walk ... ok
+test popup_press_focus::a_press_on_nonfocusable_popup_content_keeps_focus_and_the_popup ... ok
+test popup_press_focus::a_press_on_a_submenu_keeps_focus_in_the_enclosing_menu ... ok
+test popup_press_focus::explicit_and_requested_focus_still_leave_and_dismiss_the_popup ... ok
+test popup_press_focus::a_detached_window_keeps_focus_inside_its_surface ... ok
+test popup_press_focus::a_press_inside_a_dialog_keeps_focus_and_returns_its_outcome ... ok
+test popup_press_focus::a_hidden_or_closed_surface_keeps_nothing_for_a_later_press ... ok
+test popup_press_focus::a_dialog_without_focusable_content_keeps_focus_on_its_root ... ok
+test popup_press_focus::a_focusable_component_inside_the_surface_still_takes_the_press ... ok
+test popup_press_focus::a_short_multi_select_in_a_scrolling_page_keeps_its_row_click ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 494 filtered out; finished in 0.03s
+

@@ -1,0 +1,156 @@
+"""Applies one named negative-control mutation to multi_select.rs.
+
+Each mutation is an exact string replacement that must match exactly once,
+except `baseline`, which writes the untouched HEAD source back.
+Usage: python3 -I mutate.py <mutation>
+"""
+import sys
+
+W = "/home/per/pert-ui-usability/r3-multiselect-worktree"
+E = "/home/per/pert-ui-usability/r3-multiselect-implementation-evidence"
+P = W + "/crates/pert-ui-runtime/src/multi_select.rs"
+
+MOVE_GUARD = "                if self.enabled && self.shared.pointer_owns.get() && !self.highlighted {\n"
+MOVED = "        let moved = !event.is_refresh() && self.pointer_at != Some(event.position());\n"
+RECORD = """        if matches!(
+            kind,
+            PointerKind::Move
+                | PointerKind::Press(_)
+                | PointerKind::Release(_)
+                | PointerKind::Leave
+        ) {
+            self.pointer_at = Some(event.position());
+        }
+"""
+DENIED = """        // A denied dropdown only remembers the position.
+        if !self.dropdown_allowed() {
+            return Ok(InputOutcome::Ignored);
+        }
+"""
+GAIN = """                if moved {
+                    self.shared.pointer_owns.set(true);
+                }
+"""
+FOCUS = """        let focused = panel.map_or(Ok(()), |panel| cx.request_focus_within(&panel));
+        self.report_toggle(cx, toggled).and(focused)
+"""
+
+MUTATIONS = {
+    # The design's required control: a refreshed Move highlights the row
+    # under the pointer whatever the ownership.
+    "unconditional-refresh-highlight": [(MOVE_GUARD,
+        "                if self.enabled && !self.highlighted {\n")],
+    # A refresh at a position the row has not seen takes ownership.
+    "refresh-can-own": [(MOVED,
+        "        let moved = self.pointer_at != Some(event.position());\n")],
+    # No per-row memory: every host move, even a repeated position, is motion.
+    "no-position-memory": [(MOVED,
+        "        let moved = !event.is_refresh();\n")],
+    # Leave is not remembered.
+    "leave-not-recorded": [("                | PointerKind::Leave\n", "")],
+    # The position is recorded only after the denied early return.
+    "record-after-denied-return": [(RECORD, ""), (DENIED, DENIED + RECORD)],
+    # Ownership is gained only on a row that is not yet highlighted.
+    "gain-after-highlighted-guard": [(GAIN,
+        "                if moved && !self.highlighted {\n                    self.shared.pointer_owns.set(true);\n                }\n")],
+    # Motion over a disabled option does not gain ownership.
+    "disabled-motion-no-gain": [(GAIN,
+        "                if moved && self.enabled {\n                    self.shared.pointer_owns.set(true);\n                }\n")],
+    # A press on a disabled option does not gain ownership.
+    "disabled-press-no-gain": [("""                // A press on a disabled option is the pointer's too, but arms
+                // nothing.
+                self.shared.pointer_owns.set(true);
+                if !self.enabled {
+                    return Ok(InputOutcome::Ignored);
+                }
+""", """                if !self.enabled {
+                    return Ok(InputOutcome::Ignored);
+                }
+                self.shared.pointer_owns.set(true);
+""")],
+    # A row's Leave ends ownership (the rejected alternative to the panel's
+    # hover_changed).
+    "row-leave-clears": [(DENIED, DENIED + """        if matches!(kind, PointerKind::Leave) {
+            self.shared.pointer_owns.set(false);
+        }
+""")],
+    # The panel no longer ends ownership when the pointer leaves it.
+    "no-panel-exit-clear": [("""        if !hovered {
+            self.shared.pointer_owns.set(false);
+        }
+""", "        let _ = hovered;\n")],
+    # The panel no longer ends ownership on a denied dropdown.
+    "no-panel-permission-clear": [("""        if !enablement.read(cx)? {
+            self.shared.pointer_owns.set(false);
+        }
+""", "        enablement.read(cx)?;\n")],
+    # The panel no longer ends ownership on a changed query.
+    "no-query-clear": [("""            self.query_revision = Some(revision);
+            self.shared.pointer_owns.set(false);
+""", "            self.query_revision = Some(revision);\n")],
+    # Search keys no longer end ownership.
+    "no-search-key-clear": [("""    fn key(&self, cx: &mut EventContext, key: SearchKey) -> Result<(), RuntimeError> {
+        self.pointer_owns.set(false);
+""", """    fn key(&self, cx: &mut EventContext, key: SearchKey) -> Result<(), RuntimeError> {
+""")],
+    # The explicit lifecycle resets: begin, every close, panel visibility.
+    "no-begin-clear": [("""        self.highlight.set(None)?;
+        self.pointer_owns.set(false);
+""", "        self.highlight.set(None)?;\n")],
+    "no-close-clear": [("""        self.pointer_owns.set(false);
+        let observed = self.observed.take();
+""", "        let observed = self.observed.take();\n")],
+    "no-visibility-clear": [("""    fn visibility_changed(&mut self, _: bool) {
+        self.shared.pointer_owns.set(false);
+    }
+""", "")],
+    "no-lifecycle-clears": "no-begin-clear no-close-clear no-visibility-clear",
+    # The release no longer regains ownership.
+    "release-no-regain": [("""                self.shared.highlight.set(Some(self.key.clone()))?;
+                self.shared.pointer_owns.set(true);
+                self.shared.click(cx, &self.value)?;
+""", """                self.shared.highlight.set(Some(self.key.clone()))?;
+                self.shared.click(cx, &self.value)?;
+""")],
+    # No return of focus to the search field.
+    "no-focus-return": [(FOCUS, "        let _ = panel;\n        self.report_toggle(cx, toggled)\n")],
+    # The rejected order: report first, then request focus.
+    "focus-after-report": [(FOCUS,
+        "        self.report_toggle(cx, toggled)?;\n        panel.map_or(Ok(()), |panel| cx.request_focus_within(&panel))\n")],
+    # Focus returns on every release of a pressed row, even outside it.
+    "focus-on-any-release": [("""            self.pressed = false;
+            cx.release_pointer();
+            if self.active() && cx.pointer_inside() {
+""", """            self.pressed = false;
+            cx.release_pointer();
+            if let Some(panel) = self.shared.panel.borrow().clone() {
+                cx.request_focus_within(&panel)?;
+            }
+            if self.active() && cx.pointer_inside() {
+""")],
+}
+
+
+def apply(name, source):
+    spec = MUTATIONS[name]
+    if isinstance(spec, str):
+        for part in spec.split():
+            source = apply(part, source)
+        return source
+    for old, new in spec:
+        count = source.count(old)
+        if count != 1:
+            sys.exit(f"{name}: expected one match, found {count}")
+        source = source.replace(old, new)
+    return source
+
+
+name = sys.argv[1]
+if name == "baseline":
+    data = open(E + "/baseline-sources/crates_pert-ui-runtime_src_multi_select.rs", "rb").read()
+    with open(P, "wb") as f:
+        f.write(data)
+else:
+    source = open(P).read()
+    with open(P, "w") as f:
+        f.write(apply(name, source))

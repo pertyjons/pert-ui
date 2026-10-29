@@ -1,0 +1,30 @@
+--- /home/per/pert-ui-usability/r3-popup-implementation-evidence/negative-controls/before-focusable-round2/backup/pointer.rs	2026-10-29 12:35:44.565529863 +0100
++++ crates/pert-ui-runtime/src/runtime/pointer.rs	2026-10-29 12:35:44.581905883 +0100
+@@ -502,6 +502,13 @@
+                 let focused = self.window.focus.clone();
+                 while let Some(current) = focus {
+                     let entry = &self.entries[&current];
++                    if focused
++                        .as_ref()
++                        .is_some_and(|focused| self.descendant(focused.0.serial, current))
++                        && self.admitted_interactive_surface(current)
++                    {
++                        break;
++                    }
+                     if entry.component.focusable() {
+                         let id = WidgetId(entry.node.clone());
+                         focus_error = self.focus_without_reveal(&id).err();
+@@ -526,13 +533,6 @@
+                     // refused by a window or application dialog. A root that
+                     // does not hold focus is passed, so an enclosing
+                     // menu's root can still stop a press on its submenu.
+-                    if focused
+-                        .as_ref()
+-                        .is_some_and(|focused| self.descendant(focused.0.serial, current))
+-                        && self.admitted_interactive_surface(current)
+-                    {
+-                        break;
+-                    }
+                     focus = entry.node.presentation_parent_serial();
+                 }
+                 // A focus-loss save can change this target's binding. Refresh

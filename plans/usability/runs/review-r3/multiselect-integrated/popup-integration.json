@@ -1,0 +1,32 @@
+{
+  "recorded_at_utc": "2026-10-29T11:43:19.455502+00:00",
+  "status": "Independent isolated popup review approved; source integrated byte-identically. Root gallery regression passes. Full workspace/API/native and integrated independent review remain pending.",
+  "files": {
+    "crates/pert-ui-runtime/src/runtime/pointer.rs": {
+      "before_sha256": "5f7908438180065c6fc456eea6c5b62abef7046a7406d2c941a6129022175d56",
+      "integrated_sha256": "4fb55ecfbf6c7d480a54f021ce4ffd275c82d598fa30eb144ca5baca8ea2836f",
+      "equal_author_bytes": true
+    },
+    "crates/pert-ui-runtime/src/runtime/surfaces.rs": {
+      "before_sha256": "0aa59ff24e9c514e29be067e31503369e35679e972b38b08e3a3fde91c2d270e",
+      "integrated_sha256": "6460cccd84e705e4d555ffebb342626876cfc15f208fedd9f025e6832738d160",
+      "equal_author_bytes": true
+    },
+    "crates/pert-ui-runtime/src/runtime.rs": {
+      "before_sha256": "23d8c98d5b17a5db84c60a88dd371db5901fb6c7680aea9d9a5d522155fe463f",
+      "integrated_sha256": "fb743f77f36513c70944a78b2a77fc22fa9060f0c0c789aa5b94783a9c4abe3e",
+      "equal_author_bytes": true
+    },
+    "crates/pert-ui-runtime/src/popover.rs": {
+      "before_sha256": "a7211f7ef03dfc779bec09cc092671abcbfdf7233dec758b62e292880a714acd",
+      "integrated_sha256": "c3f4b04782b874768f99b681d633e6692ddd3ec6fbe06d4a22d648c5649a00f3",
+      "equal_author_bytes": true
+    },
+    "crates/pert-ui/tests/foundation/popup_press_focus.rs": {
+      "before_sha256": null,
+      "integrated_sha256": "721128e5a6e97dfb2a3053a4858e1a5f80a5c4c9941c76c6f9073575a30f8858",
+      "equal_author_bytes": true
+    }
+  },
+  "module_registration": "Added popup_press_focus to existing foundation binary, preserving other modules."
+}

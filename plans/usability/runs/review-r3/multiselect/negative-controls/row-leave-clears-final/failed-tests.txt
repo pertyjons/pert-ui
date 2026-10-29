@@ -1,0 +1,9 @@
+test multi_select_pointer::a_release_after_a_search_key_regains_the_highlight_for_the_pointer ... FAILED
+test multi_select_pointer::a_press_on_a_disabled_option_takes_ownership_without_arming ... FAILED
+test multi_select_pointer::motion_over_a_disabled_option_takes_ownership_but_never_chooses_it ... FAILED
+test multi_select_pointer::motion_inside_the_row_the_keyboard_highlighted_takes_ownership ... FAILED
+test multi_select_pointer::changed_options_labels_and_filters_keep_the_current_owner ... FAILED
+test multi_select_pointer::the_wheel_keeps_a_keyboard_highlight_and_moves_a_pointer_highlight ... FAILED
+test multi_select_pointer::the_focused_list_scroll_keys_follow_the_wheel_policy ... FAILED
+test result: FAILED. 57 passed; 7 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.12s
+error: test failed, to rerun pass `-p pert-ui --test collections`

@@ -1,0 +1,44 @@
+# facade exit_status=101 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/12-negative-baseline-runtime-facade.log
+test popup_press_focus::explicit_and_requested_focus_still_leave_and_dismiss_the_popup ... FAILED
+test popup_press_focus::a_detached_window_keeps_focus_inside_its_surface ... FAILED
+test popup_press_focus::a_press_on_a_submenu_keeps_focus_in_the_enclosing_menu ... FAILED
+test popup_press_focus::a_dialog_without_focusable_content_keeps_focus_on_its_root ... FAILED
+test popup_press_focus::a_press_inside_a_dialog_keeps_focus_and_returns_its_outcome ... FAILED
+test popup_press_focus::a_press_on_nonfocusable_popup_content_keeps_focus_and_the_popup ... FAILED
+test popup_press_focus::a_surface_changed_to_a_notification_no_longer_keeps_focus ... FAILED
+test popup_press_focus::a_short_multi_select_in_a_scrolling_page_keeps_its_row_click ... FAILED
+thread 'popup_press_focus::explicit_and_requested_focus_still_leave_and_dismiss_the_popup' (4044254) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:602:5:
+assertion `left == right` failed
+  left: Ok(Ignored)
+ right: Ok(Handled)
+thread 'popup_press_focus::a_detached_window_keeps_focus_inside_its_surface' (4044244) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:721:9:
+assertion `left == right` failed: Popover
+  left: Ok(Ignored)
+ right: Ok(Handled)
+thread 'popup_press_focus::a_press_on_a_submenu_keeps_focus_in_the_enclosing_menu' (4044249) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:457:9:
+assertion `left == right` failed: ContextMenu
+  left: Ok(Ignored)
+ right: Ok(Handled)
+thread 'popup_press_focus::a_dialog_without_focusable_content_keeps_focus_on_its_root' (4044245) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:431:9:
+assertion `left == right` failed: Dialog
+  left: Err(ModalBlocked)
+ right: Ok(Handled)
+thread 'popup_press_focus::a_press_inside_a_dialog_keeps_focus_and_returns_its_outcome' (4044248) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:412:9:
+assertion `left == right` failed: Dialog
+  left: Err(ModalBlocked)
+ right: Ok(Handled)
+thread 'popup_press_focus::a_press_on_nonfocusable_popup_content_keeps_focus_and_the_popup' (4044251) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:374:9:
+assertion `left == right` failed: Popover
+  left: Ok(Ignored)
+ right: Ok(Handled)
+thread 'popup_press_focus::a_surface_changed_to_a_notification_no_longer_keeps_focus' (4044253) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:688:5:
+assertion `left == right` failed
+  left: Err(ModalBlocked)
+ right: Ok(Handled)
+thread 'popup_press_focus::a_short_multi_select_in_a_scrolling_page_keeps_its_row_click' (4044252) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:888:9:
+assertion `left == right` failed: EachToggle
+  left: Some("page")
+ right: Some("search")
+test result: FAILED. 5 passed; 8 failed; 0 ignored; 0 measured; 494 filtered out; finished in 0.01s
+error: test failed, to rerun pass `-p pert-ui --test foundation`
+# restored exit_status=0 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/13-restored-baseline-runtime-facade.log

@@ -1,0 +1,28 @@
+--- /home/per/pert-ui-usability/r3-multiselect-implementation-evidence/negative-controls/no-lifecycle-clears-final/backup/multi_select.rs	2026-10-29 11:52:07.211900312 +0100
++++ crates/pert-ui-runtime/src/multi_select.rs	2026-10-29 11:52:07.227405620 +0100
+@@ -283,7 +283,6 @@
+         self.draft.set(current.clone())?;
+         self.query.set(String::new())?;
+         self.highlight.set(None)?;
+-        self.pointer_owns.set(false);
+         self.observed.replace(Some((current, value.revision())));
+         self.open.set(true)?;
+         Ok(())
+@@ -292,7 +291,6 @@
+     /// [`MultiSelectCommit::OnClose`] when `commit` and nothing has written
+     /// the binding since the popup opened.
+     fn finish(&self, cx: &mut EventContext, commit: bool) -> Result<(), RuntimeError> {
+-        self.pointer_owns.set(false);
+         let observed = self.observed.take();
+         let (mode, binding) = {
+             let desc = self.desc.borrow();
+@@ -914,9 +912,6 @@
+             self.shared.pointer_owns.set(false);
+         }
+     }
+-    fn visibility_changed(&mut self, _: bool) {
+-        self.shared.pointer_owns.set(false);
+-    }
+     fn unmounted(&mut self) {
+         let mut panel = self.shared.panel.borrow_mut();
+         if panel.is_some() && *panel == self.id {

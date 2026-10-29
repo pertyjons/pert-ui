@@ -1,0 +1,3 @@
+ M crates/pert-ui-runtime/src/multi_select.rs
+ M crates/pert-ui/tests/collections/main.rs
+?? crates/pert-ui/tests/collections/multi_select_pointer.rs

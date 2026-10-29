@@ -1,0 +1,119 @@
+=== no-containment
+/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/23-negative-no-containment-round2-facade.log exit_status=101
+/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/24-negative-no-containment-round2-unit.log exit_status=0
+/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/25-restored-no-containment-round2-facade.log exit_status=0
+restored: identical hashes, newer mtimes; mutated and restored builds recompiled pert-ui-runtime; restored tests pass
+# facade exit_status=101 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/23-negative-no-containment-round2-facade.log
+test popup_press_focus::focus_already_outside_the_surface_takes_the_old_walk ... FAILED
+thread 'popup_press_focus::focus_already_outside_the_surface_takes_the_old_walk' (4063344) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:623:9:
+assertion `left == right` failed: Popover
+  left: Some("opener")
+ right: Some("page")
+test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 494 filtered out; finished in 0.03s
+error: test failed, to rerun pass `-p pert-ui --test foundation`
+# unit exit_status=0 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/24-negative-no-containment-round2-unit.log
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 195 filtered out; finished in 0.00s
+# restored exit_status=0 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/25-restored-no-containment-round2-facade.log
+=== no-containment script exit 0
+=== strict-containment
+/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/26-negative-strict-containment-round2-facade.log exit_status=101
+/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/27-negative-strict-containment-round2-unit.log exit_status=0
+/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/28-restored-strict-containment-round2-facade.log exit_status=0
+restored: identical hashes, newer mtimes; mutated and restored builds recompiled pert-ui-runtime; restored tests pass
+# facade exit_status=101 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/26-negative-strict-containment-round2-facade.log
+test popup_press_focus::a_dialog_without_focusable_content_keeps_focus_on_its_root ... FAILED
+thread 'popup_press_focus::a_dialog_without_focusable_content_keeps_focus_on_its_root' (4067840) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:477:5:
+assertion `left == right` failed
+  left: [Pressed { kind: Dialog, outcome: Err(ModalBlocked), pressed: Some("popup"), focus: Some("popup"), open: true, log: ["row press"] }, Pressed { kind: ApplicationDialog, outcome: Err(ModalBlocked), pressed: Some("popup"), focus: Some("popup"), open: true, log: ["row press"] }, Pressed { kind: ViewDialog, outcome: Ok(Handled), pressed: Some("page"), focus: Some("page"), open: true, log: ["popup focus_lost", "row press"] }]
+ right: [Pressed { kind: Dialog, outcome: Ok(Handled), pressed: Some("popup"), focus: Some("popup"), open: true, log: ["row press"] }, Pressed { kind: ApplicationDialog, outcome: Ok(Handled), pressed: Some("popup"), focus: Some("popup"), open: true, log: ["row press"] }, Pressed { kind: ViewDialog, outcome: Ok(Handled), pressed: Some("popup"), focus: Some("popup"), open: true, log: ["row press"] }]
+test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 494 filtered out; finished in 0.03s
+error: test failed, to rerun pass `-p pert-ui --test foundation`
+# unit exit_status=0 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/27-negative-strict-containment-round2-unit.log
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 195 filtered out; finished in 0.02s
+# restored exit_status=0 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/28-restored-strict-containment-round2-facade.log
+=== strict-containment script exit 0
+=== before-focusable
+/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/29-negative-before-focusable-round2-facade.log exit_status=101
+/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/30-negative-before-focusable-round2-unit.log exit_status=0
+/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/31-restored-before-focusable-round2-facade.log exit_status=0
+restored: identical hashes, newer mtimes; mutated and restored builds recompiled pert-ui-runtime; restored tests pass
+# facade exit_status=101 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/29-negative-before-focusable-round2-facade.log
+test popup_press_focus::a_focusable_component_inside_the_surface_still_takes_the_press ... FAILED
+thread 'popup_press_focus::a_focusable_component_inside_the_surface_still_takes_the_press' (4072957) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:553:13:
+assertion `left == right` failed: Popover
+  left: Some("field")
+ right: Some("popup")
+test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 494 filtered out; finished in 0.06s
+error: test failed, to rerun pass `-p pert-ui --test foundation`
+# unit exit_status=0 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/30-negative-before-focusable-round2-unit.log
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 195 filtered out; finished in 0.00s
+# restored exit_status=0 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/31-restored-before-focusable-round2-facade.log
+=== before-focusable script exit 0
+=== first-root-only
+/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/32-negative-first-root-only-round2-facade.log exit_status=101
+/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/33-negative-first-root-only-round2-unit.log exit_status=0
+/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/34-restored-first-root-only-round2-facade.log exit_status=0
+restored: identical hashes, newer mtimes; mutated and restored builds recompiled pert-ui-runtime; restored tests pass
+# facade exit_status=101 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/32-negative-first-root-only-round2-facade.log
+test popup_press_focus::a_press_on_a_submenu_keeps_focus_in_the_enclosing_menu ... FAILED
+thread 'popup_press_focus::a_press_on_a_submenu_keeps_focus_in_the_enclosing_menu' (4076504) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:497:9:
+assertion `left == right` failed: ContextMenu
+  left: Ok(Ignored)
+ right: Ok(Handled)
+test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 494 filtered out; finished in 0.03s
+error: test failed, to rerun pass `-p pert-ui --test foundation`
+# unit exit_status=0 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/33-negative-first-root-only-round2-unit.log
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 195 filtered out; finished in 0.00s
+# restored exit_status=0 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/34-restored-first-root-only-round2-facade.log
+=== first-root-only script exit 0
+=== no-interactive
+/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/35-negative-no-interactive-round2-facade.log exit_status=101
+/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/36-negative-no-interactive-round2-unit.log exit_status=101
+/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/37-restored-no-interactive-round2-facade.log exit_status=0
+restored: identical hashes, newer mtimes; mutated and restored builds recompiled pert-ui-runtime; restored tests pass
+# facade exit_status=101 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/35-negative-no-interactive-round2-facade.log
+test popup_press_focus::a_surface_changed_to_a_notification_no_longer_keeps_focus ... FAILED
+thread 'popup_press_focus::a_surface_changed_to_a_notification_no_longer_keeps_focus' (4078915) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:711:5:
+assertion `left == right` failed
+  left: Some("field")
+ right: Some("page")
+test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 494 filtered out; finished in 0.03s
+error: test failed, to rerun pass `-p pert-ui --test foundation`
+# unit exit_status=101 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/36-negative-no-interactive-round2-unit.log
+test runtime::surfaces::tests::only_a_current_interactive_admission_keeps_press_focus ... FAILED
+thread 'runtime::surfaces::tests::only_a_current_interactive_admission_keeps_press_focus' (4079265) panicked at crates/pert-ui-runtime/src/runtime/surfaces.rs:961:9:
+assertion failed: !ui.admitted_interactive_surface(popup)
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 195 filtered out; finished in 0.00s
+error: test failed, to rerun pass `-p pert-ui-runtime --lib`
+# restored exit_status=0 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/37-restored-no-interactive-round2-facade.log
+=== no-interactive script exit 0
+=== no-admitted
+/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/38-negative-no-admitted-round2-facade.log exit_status=0
+/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/39-negative-no-admitted-round2-unit.log exit_status=101
+/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/40-restored-no-admitted-round2-facade.log exit_status=0
+restored: identical hashes, newer mtimes; mutated and restored builds recompiled pert-ui-runtime; restored tests pass
+# facade exit_status=0 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/38-negative-no-admitted-round2-facade.log
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 494 filtered out; finished in 0.03s
+# unit exit_status=101 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/39-negative-no-admitted-round2-unit.log
+test runtime::surfaces::tests::only_a_current_interactive_admission_keeps_press_focus ... FAILED
+thread 'runtime::surfaces::tests::only_a_current_interactive_admission_keeps_press_focus' (4081653) panicked at crates/pert-ui-runtime/src/runtime/surfaces.rs:954:9:
+assertion failed: !ui.admitted_interactive_surface(popup)
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 195 filtered out; finished in 0.00s
+error: test failed, to rerun pass `-p pert-ui-runtime --lib`
+# restored exit_status=0 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/40-restored-no-admitted-round2-facade.log
+=== no-admitted script exit 0
+=== no-live-kind
+/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/41-negative-no-live-kind-round2-facade.log exit_status=0
+/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/42-negative-no-live-kind-round2-unit.log exit_status=101
+/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/43-restored-no-live-kind-round2-facade.log exit_status=0
+restored: identical hashes, newer mtimes; mutated and restored builds recompiled pert-ui-runtime; restored tests pass
+# facade exit_status=0 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/41-negative-no-live-kind-round2-facade.log
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 494 filtered out; finished in 0.06s
+# unit exit_status=101 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/42-negative-no-live-kind-round2-unit.log
+test runtime::surfaces::tests::only_a_current_interactive_admission_keeps_press_focus ... FAILED
+thread 'runtime::surfaces::tests::only_a_current_interactive_admission_keeps_press_focus' (4083989) panicked at crates/pert-ui-runtime/src/runtime/surfaces.rs:949:9:
+assertion failed: !ui.admitted_interactive_surface(popup)
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 195 filtered out; finished in 0.00s
+error: test failed, to rerun pass `-p pert-ui-runtime --lib`
+# restored exit_status=0 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/43-restored-no-live-kind-round2-facade.log
+=== no-live-kind script exit 0

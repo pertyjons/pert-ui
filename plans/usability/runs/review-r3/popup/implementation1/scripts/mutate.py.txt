@@ -1,0 +1,85 @@
+"""Applies one named negative-control mutation to pointer.rs and/or surfaces.rs.
+
+Each replacement must match exactly once. `old-walk` writes the untouched
+baseline pointer.rs back (the walk before this change; the new surfaces.rs
+query then has no caller), and `baseline-runtime` writes both baseline files
+back, which is the complete unmodified runtime source.
+Usage: python3 -I mutate.py <mutation>
+"""
+import sys
+
+W = "/home/per/pert-ui-usability/r3-popup-worktree"
+E = "/home/per/pert-ui-usability/r3-popup-implementation-evidence"
+POINTER = "crates/pert-ui-runtime/src/runtime/pointer.rs"
+SURFACES = "crates/pert-ui-runtime/src/runtime/surfaces.rs"
+
+CHECK = """                    if focused
+                        .as_ref()
+                        .is_some_and(|focused| self.descendant(focused.0.serial, current))
+                        && self.admitted_interactive_surface(current)
+                    {
+                        break;
+                    }
+"""
+ENTRY = "                    let entry = &self.entries[&current];\n"
+SNAPSHOT = "                let focused = self.window.focus.clone();\n"
+
+MUTATIONS = {
+    # The approved control: the walk exactly as it was before this change.
+    "old-walk": {POINTER: "baseline"},
+    # The whole unmodified runtime, to record the actual old results.
+    "baseline-runtime": {POINTER: "baseline", SURFACES: "baseline"},
+    # Any admitted root stops the walk, wherever focus is.
+    "no-containment": {POINTER: [(CHECK, """                    if self.admitted_interactive_surface(current) {
+                        break;
+                    }
+""")]},
+    # Focus on the root itself does not count as inside.
+    "strict-containment": {POINTER: [(
+        "                        .is_some_and(|focused| self.descendant(focused.0.serial, current))\n",
+        "                        .is_some_and(|focused| {\n"
+        "                            focused.0.serial != current\n"
+        "                                && self.descendant(focused.0.serial, current)\n"
+        "                        })\n")]},
+    # The surface check runs before the focusable check, so a focusable root
+    # no longer takes the press.
+    "before-focusable": {POINTER: [(CHECK, ""), (ENTRY, ENTRY + CHECK)]},
+    # Only the first surface root the walk reaches is considered.
+    "first-root-only": {POINTER: [
+        (SNAPSHOT, SNAPSHOT + "                let mut passed_root = false;\n"),
+        (CHECK, CHECK.replace("                    if focused\n",
+                              "                    if !passed_root\n                        && focused\n", 1)
+         + "                    passed_root |= self.surface_kind(current).is_some();\n"),
+    ]},
+    # The query accepts a record that is not interactive (a notification).
+    "no-interactive": {SURFACES: [("                && surface.kind.interactive()\n", "")]},
+    # The query accepts a record awaiting admission.
+    "no-admitted": {SURFACES: [("                && surface.admitted\n", "")]},
+    # The query trusts the admitted kind without the live declaration.
+    "no-live-kind": {SURFACES: [("                && self.surface_kind(root) == Some(surface.kind)\n", "")]},
+}
+
+
+def main():
+    name = sys.argv[1]
+    for path, change in MUTATIONS[name].items():
+        target = f"{W}/{path}"
+        if change == "baseline":
+            with open(f"{E}/baseline-sources/{path}", "rb") as f:
+                data = f.read()
+            with open(target, "wb") as f:
+                f.write(data)
+            continue
+        with open(target) as f:
+            text = f.read()
+        for old, new in change:
+            count = text.count(old)
+            if count != 1:
+                sys.exit(f"{name}: {path}: expected one match, found {count}: {old!r}")
+            text = text.replace(old, new)
+        with open(target, "w") as f:
+            f.write(text)
+
+
+if __name__ == "__main__":
+    main()

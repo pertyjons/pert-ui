@@ -1,0 +1,9 @@
+# facade exit_status=0 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/38-negative-no-admitted-round2-facade.log
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 494 filtered out; finished in 0.03s
+# unit exit_status=101 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/39-negative-no-admitted-round2-unit.log
+test runtime::surfaces::tests::only_a_current_interactive_admission_keeps_press_focus ... FAILED
+thread 'runtime::surfaces::tests::only_a_current_interactive_admission_keeps_press_focus' (4081653) panicked at crates/pert-ui-runtime/src/runtime/surfaces.rs:954:9:
+assertion failed: !ui.admitted_interactive_surface(popup)
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 195 filtered out; finished in 0.00s
+error: test failed, to rerun pass `-p pert-ui-runtime --lib`
+# restored exit_status=0 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/40-restored-no-admitted-round2-facade.log

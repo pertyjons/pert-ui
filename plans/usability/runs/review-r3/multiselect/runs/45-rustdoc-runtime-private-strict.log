@@ -1,0 +1,3999 @@
+# started 2026-10-29T10:49:05+00:00
+# cwd /home/per/pert-ui-usability/r3-multiselect-worktree  CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-multiselect-implementation-target
+# command: env RUSTDOCFLAGS=-D\ warnings cargo doc --locked -p pert-ui-runtime --no-deps --document-private-items
+# HEAD 17c6c3d39b3015a1563d7440541af87a1b7ee998
+# git status --porcelain:
+ M crates/pert-ui-runtime/src/multi_select.rs
+ M crates/pert-ui/tests/collections/main.rs
+?? crates/pert-ui/tests/collections/multi_select_pointer.rs
+# hashes before:
+b6843e9ce95d1a564ec6fff9736b23f992a0061784e1792b987cf9f6c619836c  crates/pert-ui-runtime/src/multi_select.rs
+073e75adfb217a8db927a46fe39a1a400e0c74205810e6fe62c7e9fcb69f9979  crates/pert-ui/tests/collections/main.rs
+c83a817ee393e33821e025fbed127b89233d6dc650eb8c9a20191d6b0bc4b699  crates/pert-ui/tests/collections/multi_select.rs
+91dde878cf2254d86e81870815b51311db8c7a5cbbeb781a7ae31a3aa1e1fb92  crates/pert-ui/tests/collections/multi_select_pointer.rs
+# mtimes before:
+1793270861.937994899 crates/pert-ui-runtime/src/multi_select.rs
+1793270263.393146004 crates/pert-ui/tests/collections/main.rs
+1793269430.081469843 crates/pert-ui/tests/collections/multi_select.rs
+1793270841.123825280 crates/pert-ui/tests/collections/multi_select_pointer.rs
+# ---- output ----
+ Documenting pert-ui-runtime v0.3.91 (/home/per/pert-ui-usability/r3-multiselect-worktree/crates/pert-ui-runtime)
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/windows.rs:221:36
+    |
+221 |     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+    |                      ------------  ^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                      |
+    |                      because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+    = note: `-D rustdoc::redundant-explicit-links` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(rustdoc::redundant_explicit_links)]`
+help: remove explicit link target
+    |
+221 -     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+221 +     /// `ui` is any [`StateOwner`]: the
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/windows.rs:222:21
+    |
+222 |     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+    |          ---------  ^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+222 -     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+222 +     /// [`Runtime`] while the application builds its tree, or
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/windows.rs:223:31
+    |
+223 |     /// the [`UpdateContext`](crate::UpdateContext) or
+    |              ---------------  ^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |              |
+    |              because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+223 -     /// the [`UpdateContext`](crate::UpdateContext) or
+223 +     /// the [`UpdateContext`] or
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/windows.rs:224:26
+    |
+224 |     /// [`EventContext`](crate::EventContext) of a component that builds this
+    |          --------------  ^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+224 -     /// [`EventContext`](crate::EventContext) of a component that builds this
+224 +     /// [`EventContext`] of a component that builds this
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/windows.rs:320:43
+    |
+320 |     /// [`GeometryError::InvertedBounds`](crate::GeometryError::InvertedBounds).
+    |          -------------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+320 -     /// [`GeometryError::InvertedBounds`](crate::GeometryError::InvertedBounds).
+320 +     /// [`GeometryError::InvertedBounds`].
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/windows.rs:461:56
+    |
+461 |     /// button. By default the installed [`UiStrings`](crate::UiStrings) supply
+    |                                           -----------  ^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                                           |
+    |                                           because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+461 -     /// button. By default the installed [`UiStrings`](crate::UiStrings) supply
+461 +     /// button. By default the installed [`UiStrings`] supply
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/windows.rs:462:40
+    |
+462 |     /// [`StringRole::WindowMinimize`](crate::StringRole::WindowMinimize),
+    |          ----------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+462 -     /// [`StringRole::WindowMinimize`](crate::StringRole::WindowMinimize),
+462 +     /// [`StringRole::WindowMinimize`],
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/windows.rs:472:45
+    |
+472 |     /// default the installed [`UiStrings`](crate::UiStrings) supply
+    |                                -----------  ^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                                |
+    |                                because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+472 -     /// default the installed [`UiStrings`](crate::UiStrings) supply
+472 +     /// default the installed [`UiStrings`] supply
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/windows.rs:473:37
+    |
+473 |     /// [`StringRole::WindowClose`](crate::StringRole::WindowClose),
+    |          -------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+473 -     /// [`StringRole::WindowClose`](crate::StringRole::WindowClose),
+473 +     /// [`StringRole::WindowClose`],
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/notifications.rs:295:36
+    |
+295 |     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+    |                      ------------  ^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                      |
+    |                      because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+295 -     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+295 +     /// `ui` is any [`StateOwner`]: the
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/notifications.rs:296:21
+    |
+296 |     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+    |          ---------  ^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+296 -     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+296 +     /// [`Runtime`] while the application builds its tree, or
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/notifications.rs:297:31
+    |
+297 |     /// the [`UpdateContext`](crate::UpdateContext) or
+    |              ---------------  ^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |              |
+    |              because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+297 -     /// the [`UpdateContext`](crate::UpdateContext) or
+297 +     /// the [`UpdateContext`] or
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/notifications.rs:298:26
+    |
+298 |     /// [`EventContext`](crate::EventContext) of a component that builds this
+    |          --------------  ^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+298 -     /// [`EventContext`](crate::EventContext) of a component that builds this
+298 +     /// [`EventContext`] of a component that builds this
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/notifications.rs:317:42
+    |
+317 |     /// with [`TextEditError::TooLarge`](crate::TextEditError::TooLarge) for a fixed
+    |               -------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |               |
+    |               because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+317 -     /// with [`TextEditError::TooLarge`](crate::TextEditError::TooLarge) for a fixed
+317 +     /// with [`TextEditError::TooLarge`] for a fixed
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/notifications.rs:509:24
+    |
+509 |     /// [`StringRole`](crate::StringRole) of the installed string table; only
+    |          ------------  ^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+509 -     /// [`StringRole`](crate::StringRole) of the installed string table; only
+509 +     /// [`StringRole`] of the installed string table; only
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/notifications.rs:511:23
+    |
+511 |     /// [`UiStrings`](crate::UiStrings) supply
+    |          -----------  ^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+511 -     /// [`UiStrings`](crate::UiStrings) supply
+511 +     /// [`UiStrings`] supply
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/notifications.rs:512:38
+    |
+512 |     /// [`StringRole::ToastDismiss`](crate::StringRole::ToastDismiss), `"Dismiss"`
+    |          --------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+512 -     /// [`StringRole::ToastDismiss`](crate::StringRole::ToastDismiss), `"Dismiss"`
+512 +     /// [`StringRole::ToastDismiss`], `"Dismiss"`
+    |
+
+error: redundant explicit link target
+  --> crates/pert-ui-runtime/src/dialog.rs:66:36
+   |
+66 |     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+   |                      ------------  ^^^^^^^^^^^^^^^^^ explicit target is redundant
+   |                      |
+   |                      because label contains path that resolves to same destination
+   |
+   = note: when a link's destination is not specified,
+           the label is used to resolve intra-doc links
+help: remove explicit link target
+   |
+66 -     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+66 +     /// `ui` is any [`StateOwner`]: the
+   |
+
+error: redundant explicit link target
+  --> crates/pert-ui-runtime/src/dialog.rs:67:21
+   |
+67 |     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+   |          ---------  ^^^^^^^^^^^^^^ explicit target is redundant
+   |          |
+   |          because label contains path that resolves to same destination
+   |
+   = note: when a link's destination is not specified,
+           the label is used to resolve intra-doc links
+help: remove explicit link target
+   |
+67 -     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+67 +     /// [`Runtime`] while the application builds its tree, or
+   |
+
+error: redundant explicit link target
+  --> crates/pert-ui-runtime/src/dialog.rs:68:31
+   |
+68 |     /// the [`UpdateContext`](crate::UpdateContext) or
+   |              ---------------  ^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+   |              |
+   |              because label contains path that resolves to same destination
+   |
+   = note: when a link's destination is not specified,
+           the label is used to resolve intra-doc links
+help: remove explicit link target
+   |
+68 -     /// the [`UpdateContext`](crate::UpdateContext) or
+68 +     /// the [`UpdateContext`] or
+   |
+
+error: redundant explicit link target
+  --> crates/pert-ui-runtime/src/dialog.rs:69:26
+   |
+69 |     /// [`EventContext`](crate::EventContext) of a component that builds this
+   |          --------------  ^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+   |          |
+   |          because label contains path that resolves to same destination
+   |
+   = note: when a link's destination is not specified,
+           the label is used to resolve intra-doc links
+help: remove explicit link target
+   |
+69 -     /// [`EventContext`](crate::EventContext) of a component that builds this
+69 +     /// [`EventContext`] of a component that builds this
+   |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/dialog.rs:551:37
+    |
+551 |     /// the installed [`UiStrings`](crate::UiStrings) supply
+    |                        -----------  ^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                        |
+    |                        because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+551 -     /// the installed [`UiStrings`](crate::UiStrings) supply
+551 +     /// the installed [`UiStrings`] supply
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/dialog.rs:552:38
+    |
+552 |     /// [`StringRole::DialogCancel`](crate::StringRole::DialogCancel), `"Cancel"`
+    |          --------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+552 -     /// [`StringRole::DialogCancel`](crate::StringRole::DialogCancel), `"Cancel"`
+552 +     /// [`StringRole::DialogCancel`], `"Cancel"`
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/tabs.rs:240:43
+    |
+240 | /// The strip takes part in [`Workspace`](crate::Workspace) persistence as the
+    |                              -----------  ^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                              |
+    |                              because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+240 - /// The strip takes part in [`Workspace`](crate::Workspace) persistence as the
+240 + /// The strip takes part in [`Workspace`] persistence as the
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/tabs.rs:264:33
+    |
+264 | /// [`Component::reveal_child`](crate::Component::reveal_child) through that
+    |      -------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |      |
+    |      because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+264 - /// [`Component::reveal_child`](crate::Component::reveal_child) through that
+264 + /// [`Component::reveal_child`] through that
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/tabs.rs:269:45
+    |
+269 | /// reports [`ChildReveal::AlreadyVisible`](crate::ChildReveal::AlreadyVisible),
+    |              -----------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |              |
+    |              because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+269 - /// reports [`ChildReveal::AlreadyVisible`](crate::ChildReveal::AlreadyVisible),
+269 + /// reports [`ChildReveal::AlreadyVisible`],
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/tabs.rs:332:28
+    |
+332 |     /// [`DRAG_THRESHOLD`](crate::DRAG_THRESHOLD) is measured.
+    |          ----------------  ^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+332 -     /// [`DRAG_THRESHOLD`](crate::DRAG_THRESHOLD) is measured.
+332 +     /// [`DRAG_THRESHOLD`] is measured.
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/tabs.rs:475:61
+    |
+475 |     /// below it, and until it has moved [`DRAG_THRESHOLD`](crate::DRAG_THRESHOLD)
+    |                                           ----------------  ^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                                           |
+    |                                           because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+475 -     /// below it, and until it has moved [`DRAG_THRESHOLD`](crate::DRAG_THRESHOLD)
+475 +     /// below it, and until it has moved [`DRAG_THRESHOLD`]
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/tabs.rs:527:46
+    |
+527 |     /// once it has moved [`DRAG_THRESHOLD`](crate::DRAG_THRESHOLD) window
+    |                            ----------------  ^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                            |
+    |                            because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+527 -     /// once it has moved [`DRAG_THRESHOLD`](crate::DRAG_THRESHOLD) window
+527 +     /// once it has moved [`DRAG_THRESHOLD`] window
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/tabs.rs:593:26
+    |
+593 |     /// [`ChangeOrigin`](crate::ChangeOrigin), so an application can follow the
+    |          --------------  ^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+593 -     /// [`ChangeOrigin`](crate::ChangeOrigin), so an application can follow the
+593 +     /// [`ChangeOrigin`], so an application can follow the
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/tabs.rs:600:34
+    |
+600 |     /// - [`ChangeOrigin::User`](crate::ChangeOrigin::User): a click, a key or a
+    |            --------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |            |
+    |            because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+600 -     /// - [`ChangeOrigin::User`](crate::ChangeOrigin::User): a click, a key or a
+600 +     /// - [`ChangeOrigin::User`]: a click, a key or a
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/tabs.rs:602:36
+    |
+602 |     /// - [`ChangeOrigin::Reveal`](crate::ChangeOrigin::Reveal): a reveal, or
+    |            ----------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |            |
+    |            because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+602 -     /// - [`ChangeOrigin::Reveal`](crate::ChangeOrigin::Reveal): a reveal, or
+602 +     /// - [`ChangeOrigin::Reveal`]: a reveal, or
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/tabs.rs:605:37
+    |
+605 |     /// - [`ChangeOrigin::Restore`](crate::ChangeOrigin::Restore): workspace
+    |            -----------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |            |
+    |            because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+605 -     /// - [`ChangeOrigin::Restore`](crate::ChangeOrigin::Restore): workspace
+605 +     /// - [`ChangeOrigin::Restore`]: workspace
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/tabs.rs:607:43
+    |
+607 |     /// - [`ChangeOrigin::Redescription`](crate::ChangeOrigin::Redescription):
+    |            -----------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |            |
+    |            because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+607 -     /// - [`ChangeOrigin::Redescription`](crate::ChangeOrigin::Redescription):
+607 +     /// - [`ChangeOrigin::Redescription`]:
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/tabs.rs:610:42
+    |
+610 |     /// - [`ChangeOrigin::Presentation`](crate::ChangeOrigin::Presentation): the
+    |            ----------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |            |
+    |            because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+610 -     /// - [`ChangeOrigin::Presentation`](crate::ChangeOrigin::Presentation): the
+610 +     /// - [`ChangeOrigin::Presentation`]: the
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/tabs.rs:620:46
+    |
+620 |     /// [`Component::deliver_notifications`](crate::Component::deliver_notifications):
+    |          ----------------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+620 -     /// [`Component::deliver_notifications`](crate::Component::deliver_notifications):
+620 +     /// [`Component::deliver_notifications`]:
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/split.rs:189:34
+    |
+189 | /// [`StringRole::SplitterName`](crate::StringRole::SplitterName) from the
+    |      --------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |      |
+    |      because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+189 - /// [`StringRole::SplitterName`](crate::StringRole::SplitterName) from the
+189 + /// [`StringRole::SplitterName`] from the
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/split.rs:190:29
+    |
+190 | /// installed [`UiStrings`](crate::UiStrings), "Resize panes" in English.
+    |                -----------  ^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                |
+    |                because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+190 - /// installed [`UiStrings`](crate::UiStrings), "Resize panes" in English.
+190 + /// installed [`UiStrings`], "Resize panes" in English.
+    |
+
+error: redundant explicit link target
+  --> crates/pert-ui-runtime/src/region_layout.rs:27:39
+   |
+27 | /// The layout is not a [`Workspace`](crate::Workspace) participant itself, but
+   |                          -----------  ^^^^^^^^^^^^^^^^ explicit target is redundant
+   |                          |
+   |                          because label contains path that resolves to same destination
+   |
+   = note: when a link's destination is not specified,
+           the label is used to resolve intra-doc links
+help: remove explicit link target
+   |
+27 - /// The layout is not a [`Workspace`](crate::Workspace) participant itself, but
+27 + /// The layout is not a [`Workspace`] participant itself, but
+   |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/table.rs:249:48
+    |
+249 | /// component (see [`Component::content_rows`](crate::Component::content_rows)).
+    |                     -------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                     |
+    |                     because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+249 - /// component (see [`Component::content_rows`](crate::Component::content_rows)).
+249 + /// component (see [`Component::content_rows`]).
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/table.rs:618:31
+    |
+618 |     /// the [`UpdateContext`](crate::UpdateContext) or
+    |              ---------------  ^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |              |
+    |              because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+618 -     /// the [`UpdateContext`](crate::UpdateContext) or
+618 +     /// the [`UpdateContext`] or
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/table.rs:619:26
+    |
+619 |     /// [`EventContext`](crate::EventContext) of a component that builds this
+    |          --------------  ^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+619 -     /// [`EventContext`](crate::EventContext) of a component that builds this
+619 +     /// [`EventContext`] of a component that builds this
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/table.rs:923:66
+    |
+923 |     /// owners do not arbitrate requests. See [`ListController`](crate::ListController).
+    |                                                ----------------  ^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                                                |
+    |                                                because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+923 -     /// owners do not arbitrate requests. See [`ListController`](crate::ListController).
+923 +     /// owners do not arbitrate requests. See [`ListController`].
+    |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/table.rs:1236:34
+     |
+1236 | /// has moved [`DRAG_THRESHOLD`](crate::DRAG_THRESHOLD) it becomes a
+     |                ----------------  ^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |                |
+     |                because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1236 - /// has moved [`DRAG_THRESHOLD`](crate::DRAG_THRESHOLD) it becomes a
+1236 + /// has moved [`DRAG_THRESHOLD`] it becomes a
+     |
+
+error: redundant explicit link target
+  --> crates/pert-ui-runtime/src/tree.rs:27:48
+   |
+27 | /// component (see [`Component::content_rows`](crate::Component::content_rows)).
+   |                     -------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+   |                     |
+   |                     because label contains path that resolves to same destination
+   |
+   = note: when a link's destination is not specified,
+           the label is used to resolve intra-doc links
+help: remove explicit link target
+   |
+27 - /// component (see [`Component::content_rows`](crate::Component::content_rows)).
+27 + /// component (see [`Component::content_rows`]).
+   |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/tree.rs:283:31
+    |
+283 |     /// the [`UpdateContext`](crate::UpdateContext) or
+    |              ---------------  ^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |              |
+    |              because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+283 -     /// the [`UpdateContext`](crate::UpdateContext) or
+283 +     /// the [`UpdateContext`] or
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/tree.rs:284:26
+    |
+284 |     /// [`EventContext`](crate::EventContext) of a component that builds this
+    |          --------------  ^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+284 -     /// [`EventContext`](crate::EventContext) of a component that builds this
+284 +     /// [`EventContext`] of a component that builds this
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/tree.rs:564:66
+    |
+564 |     /// owners do not arbitrate requests. See [`ListController`](crate::ListController).
+    |                                                ----------------  ^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                                                |
+    |                                                because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+564 -     /// owners do not arbitrate requests. See [`ListController`](crate::ListController).
+564 +     /// owners do not arbitrate requests. See [`ListController`].
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/tree.rs:928:28
+    |
+928 | /// Like a [`VirtualList`](crate::VirtualList), the tree mounts the rows inside
+    |             -------------  ^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |             |
+    |             because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+928 - /// Like a [`VirtualList`](crate::VirtualList), the tree mounts the rows inside
+928 + /// Like a [`VirtualList`], the tree mounts the rows inside
+    |
+
+error: redundant explicit link target
+  --> crates/pert-ui-runtime/src/views.rs:58:63
+   |
+58 |     /// refuses with [`RevealRefusal::ApplicationControlled`](crate::RevealRefusal::ApplicationControlled)
+   |                       --------------------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+   |                       |
+   |                       because label contains path that resolves to same destination
+   |
+   = note: when a link's destination is not specified,
+           the label is used to resolve intra-doc links
+help: remove explicit link target
+   |
+58 -     /// refuses with [`RevealRefusal::ApplicationControlled`](crate::RevealRefusal::ApplicationControlled)
+58 +     /// refuses with [`RevealRefusal::ApplicationControlled`]
+   |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/virtual_axis.rs:147:46
+    |
+147 |     /// Returns [`GeometryError::NonFinite`](GeometryError::NonFinite),
+    |                  --------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                  |
+    |                  because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+147 -     /// Returns [`GeometryError::NonFinite`](GeometryError::NonFinite),
+147 +     /// Returns [`GeometryError::NonFinite`],
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/virtual_axis.rs:148:37
+    |
+148 |     /// [`GeometryError::Negative`](GeometryError::Negative) or
+    |          -------------------------  ^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+148 -     /// [`GeometryError::Negative`](GeometryError::Negative) or
+148 +     /// [`GeometryError::Negative`] or
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/virtual_axis.rs:149:34
+    |
+149 |     /// [`GeometryError::Empty`](GeometryError::Empty) for an extent that
+    |          ----------------------  ^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+149 -     /// [`GeometryError::Empty`](GeometryError::Empty) for an extent that
+149 +     /// [`GeometryError::Empty`] for an extent that
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/virtual_list.rs:335:31
+    |
+335 |     /// the [`UpdateContext`](crate::UpdateContext) or
+    |              ---------------  ^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |              |
+    |              because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+335 -     /// the [`UpdateContext`](crate::UpdateContext) or
+335 +     /// the [`UpdateContext`] or
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/virtual_list.rs:336:26
+    |
+336 |     /// [`EventContext`](crate::EventContext) of a component that builds this
+    |          --------------  ^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+336 -     /// [`EventContext`](crate::EventContext) of a component that builds this
+336 +     /// [`EventContext`] of a component that builds this
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/zoom_view.rs:103:53
+    |
+103 | /// each other's arrangement, as [`ListController`](crate::ListController)'s
+    |                                   ----------------  ^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                                   |
+    |                                   because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+103 - /// each other's arrangement, as [`ListController`](crate::ListController)'s
+103 + /// each other's arrangement, as [`ListController`]'s
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/zoom_view.rs:136:36
+    |
+136 |     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+    |                      ------------  ^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                      |
+    |                      because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+136 -     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+136 +     /// `ui` is any [`StateOwner`]: the
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/zoom_view.rs:137:21
+    |
+137 |     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+    |          ---------  ^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+137 -     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+137 +     /// [`Runtime`] while the application builds its tree, or
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/zoom_view.rs:138:31
+    |
+138 |     /// the [`UpdateContext`](crate::UpdateContext) or
+    |              ---------------  ^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |              |
+    |              because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+138 -     /// the [`UpdateContext`](crate::UpdateContext) or
+138 +     /// the [`UpdateContext`] or
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/zoom_view.rs:139:26
+    |
+139 |     /// [`EventContext`](crate::EventContext) of a component that builds this
+    |          --------------  ^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+139 -     /// [`EventContext`](crate::EventContext) of a component that builds this
+139 +     /// [`EventContext`] of a component that builds this
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/zoom_view.rs:282:19
+    |
+282 | /// [`Container`](crate::Container) for a background. Its scale and offset are
+    |      -----------  ^^^^^^^^^^^^^^^^ explicit target is redundant
+    |      |
+    |      because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+282 - /// [`Container`](crate::Container) for a background. Its scale and offset are
+282 + /// [`Container`] for a background. Its scale and offset are
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/choice_controls.rs:109:62
+    |
+109 | /// fails the control's update with [`RuntimeError::Choice`](crate::RuntimeError::Choice)
+    |                                      ----------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                                      |
+    |                                      because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+109 - /// fails the control's update with [`RuntimeError::Choice`](crate::RuntimeError::Choice)
+109 + /// fails the control's update with [`RuntimeError::Choice`]
+    |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/choice_controls.rs:1526:21
+     |
+1526 | /// unlike [`Tabs`](crate::Tabs), whose selected title does. Preferred width
+     |             ------  ^^^^^^^^^^^ explicit target is redundant
+     |             |
+     |             because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1526 - /// unlike [`Tabs`](crate::Tabs), whose selected title does. Preferred width
+1526 + /// unlike [`Tabs`], whose selected title does. Preferred width
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/numeric_controls.rs:1670:49
+     |
+1670 |     /// height of a row with [`Align::Stretch`](crate::Align::Stretch). A shown
+     |                               ----------------  ^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |                               |
+     |                               because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1670 -     /// height of a row with [`Align::Stretch`](crate::Align::Stretch). A shown
+1670 +     /// height of a row with [`Align::Stretch`]. A shown
+     |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/chip.rs:135:24
+    |
+135 |     /// [`StringRole`](crate::StringRole) of the installed string table; only
+    |          ------------  ^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+135 -     /// [`StringRole`](crate::StringRole) of the installed string table; only
+135 +     /// [`StringRole`] of the installed string table; only
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/chip.rs:137:56
+    |
+137 |     /// update. By default the installed [`UiStrings`](crate::UiStrings) supply
+    |                                           -----------  ^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                                           |
+    |                                           because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+137 -     /// update. By default the installed [`UiStrings`](crate::UiStrings) supply
+137 +     /// update. By default the installed [`UiStrings`] supply
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/chip.rs:138:47
+    |
+138 |     /// it through [`StringRole::RemoveItem`](crate::StringRole::RemoveItem),
+    |                     ------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                     |
+    |                     because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+138 -     /// it through [`StringRole::RemoveItem`](crate::StringRole::RemoveItem),
+138 +     /// it through [`StringRole::RemoveItem`],
+    |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/collapsible.rs:1065:26
+     |
+1065 |     /// [`ChangeOrigin`](crate::ChangeOrigin).
+     |          --------------  ^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |          |
+     |          because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1065 -     /// [`ChangeOrigin`](crate::ChangeOrigin).
+1065 +     /// [`ChangeOrigin`].
+     |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/command_palette.rs:228:36
+    |
+228 |     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+    |                      ------------  ^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                      |
+    |                      because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+228 -     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+228 +     /// `ui` is any [`StateOwner`]: the
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/command_palette.rs:229:21
+    |
+229 |     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+    |          ---------  ^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+229 -     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+229 +     /// [`Runtime`] while the application builds its tree, or
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/command_palette.rs:230:31
+    |
+230 |     /// the [`UpdateContext`](crate::UpdateContext) or
+    |              ---------------  ^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |              |
+    |              because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+230 -     /// the [`UpdateContext`](crate::UpdateContext) or
+230 +     /// the [`UpdateContext`] or
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/command_palette.rs:231:26
+    |
+231 |     /// [`EventContext`](crate::EventContext) of a component that builds this
+    |          --------------  ^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+231 -     /// [`EventContext`](crate::EventContext) of a component that builds this
+231 +     /// [`EventContext`] of a component that builds this
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/command_palette.rs:568:38
+    |
+568 |     /// binding, or a [`StringRole`](crate::StringRole), as
+    |                        ------------  ^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                        |
+    |                        because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+568 -     /// binding, or a [`StringRole`](crate::StringRole), as
+568 +     /// binding, or a [`StringRole`], as
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/command_palette.rs:570:23
+    |
+570 |     /// [`UiStrings`](crate::UiStrings) supply
+    |          -----------  ^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+570 -     /// [`UiStrings`](crate::UiStrings) supply
+570 +     /// [`UiStrings`] supply
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/command_palette.rs:571:44
+    |
+571 |     /// [`StringRole::PalettePlaceholder`](crate::StringRole::PalettePlaceholder),
+    |          --------------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+571 -     /// [`StringRole::PalettePlaceholder`](crate::StringRole::PalettePlaceholder),
+571 +     /// [`StringRole::PalettePlaceholder`],
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/command_palette.rs:579:42
+    |
+579 |     /// [`StringRole::PaletteNoMatches`](crate::StringRole::PaletteNoMatches),
+    |          ------------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+579 -     /// [`StringRole::PaletteNoMatches`](crate::StringRole::PaletteNoMatches),
+579 +     /// [`StringRole::PaletteNoMatches`],
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/command_palette.rs:587:33
+    |
+587 |     /// installed [`UiStrings`](crate::UiStrings) (the `Command…` roles of
+    |                    -----------  ^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                    |
+    |                    because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+587 -     /// installed [`UiStrings`](crate::UiStrings) (the `Command…` roles of
+587 +     /// installed [`UiStrings`] (the `Command…` roles of
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/command_palette.rs:588:24
+    |
+588 |     /// [`StringRole`](crate::StringRole)): it names the command and says that
+    |          ------------  ^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+588 -     /// [`StringRole`](crate::StringRole)): it names the command and says that
+588 +     /// [`StringRole`]): it names the command and says that
+    |
+
+error: redundant explicit link target
+  --> crates/pert-ui-runtime/src/controls.rs:40:15
+   |
+40 | /// [`Field`](crate::Field) block does, so a label that shows a message only
+   |      -------  ^^^^^^^^^^^^ explicit target is redundant
+   |      |
+   |      because label contains path that resolves to same destination
+   |
+   = note: when a link's destination is not specified,
+           the label is used to resolve intra-doc links
+help: remove explicit link target
+   |
+40 - /// [`Field`](crate::Field) block does, so a label that shows a message only
+40 + /// [`Field`] block does, so a label that shows a message only
+   |
+
+error: redundant explicit link target
+  --> crates/pert-ui-runtime/src/controls.rs:42:23
+   |
+42 | /// remains. [`Show`](crate::Show) removes it entirely.
+   |               ------  ^^^^^^^^^^^ explicit target is redundant
+   |               |
+   |               because label contains path that resolves to same destination
+   |
+   = note: when a link's destination is not specified,
+           the label is used to resolve intra-doc links
+help: remove explicit link target
+   |
+42 - /// remains. [`Show`](crate::Show) removes it entirely.
+42 + /// remains. [`Show`] removes it entirely.
+   |
+
+error: redundant explicit link target
+  --> crates/pert-ui-runtime/src/controls.rs:48:23
+   |
+48 | /// [`SemanticValue`](crate::SemanticValue): a value is the content of an
+   |      ---------------  ^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+   |      |
+   |      because label contains path that resolves to same destination
+   |
+   = note: when a link's destination is not specified,
+           the label is used to resolve intra-doc links
+help: remove explicit link target
+   |
+48 - /// [`SemanticValue`](crate::SemanticValue): a value is the content of an
+48 + /// [`SemanticValue`]: a value is the content of an
+   |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/controls.rs:554:49
+    |
+554 |     /// receipt as [`CommandOutcome::Disabled`](crate::CommandOutcome::Disabled).
+    |                     --------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                     |
+    |                     because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+554 -     /// receipt as [`CommandOutcome::Disabled`](crate::CommandOutcome::Disabled).
+554 +     /// receipt as [`CommandOutcome::Disabled`].
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/controls.rs:557:74
+    |
+557 |     /// [`EventContext::command_context`] with [`CommandSource::Button`](crate::CommandSource::Button)
+    |                                                 -----------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                                                 |
+    |                                                 because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+557 -     /// [`EventContext::command_context`] with [`CommandSource::Button`](crate::CommandSource::Button)
+557 +     /// [`EventContext::command_context`] with [`CommandSource::Button`]
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/controls.rs:561:68
+    |
+561 |     /// `on_receipt` receives each invocation's [`CommandReceipt`](crate::CommandReceipt) on the
+    |                                                  ----------------  ^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                                                  |
+    |                                                  because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+561 -     /// `on_receipt` receives each invocation's [`CommandReceipt`](crate::CommandReceipt) on the
+561 +     /// `on_receipt` receives each invocation's [`CommandReceipt`] on the
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/field_status.rs:233:31
+    |
+233 |     /// the [`UpdateContext`](crate::UpdateContext) or
+    |              ---------------  ^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |              |
+    |              because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+233 -     /// the [`UpdateContext`](crate::UpdateContext) or
+233 +     /// the [`UpdateContext`] or
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/field_status.rs:234:26
+    |
+234 |     /// [`EventContext`](crate::EventContext) of a component that builds this
+    |          --------------  ^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+234 -     /// [`EventContext`](crate::EventContext) of a component that builds this
+234 +     /// [`EventContext`] of a component that builds this
+    |
+
+error: redundant explicit link target
+  --> crates/pert-ui-runtime/src/inline_controls.rs:34:53
+   |
+34 | /// unfinished control on its own. In a [`Toolbar`](crate::Toolbar) give it
+   |                                          ---------  ^^^^^^^^^^^^^^ explicit target is redundant
+   |                                          |
+   |                                          because label contains path that resolves to same destination
+   |
+   = note: when a link's destination is not specified,
+           the label is used to resolve intra-doc links
+help: remove explicit link target
+   |
+34 - /// unfinished control on its own. In a [`Toolbar`](crate::Toolbar) give it
+34 + /// unfinished control on its own. In a [`Toolbar`] give it
+   |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/popover.rs:200:49
+    |
+200 |     /// The change handler of a [`ColorPicker`](crate::ColorPicker) this
+    |                                  -------------  ^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                                  |
+    |                                  because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+200 -     /// The change handler of a [`ColorPicker`](crate::ColorPicker) this
+200 +     /// The change handler of a [`ColorPicker`] this
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/menu.rs:261:23
+    |
+261 |     /// [`UiStrings`](crate::UiStrings). The list reads a binding in its update,
+    |          -----------  ^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+261 -     /// [`UiStrings`](crate::UiStrings). The list reads a binding in its update,
+261 +     /// [`UiStrings`]. The list reads a binding in its update,
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/menu.rs:445:55
+    |
+445 |     /// as the density of a retained [`ThemeManager`](crate::ThemeManager), use
+    |                                       --------------  ^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                                       |
+    |                                       because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+445 -     /// as the density of a retained [`ThemeManager`](crate::ThemeManager), use
+445 +     /// as the density of a retained [`ThemeManager`], use
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/menu.rs:746:36
+    |
+746 |     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+    |                      ------------  ^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                      |
+    |                      because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+746 -     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+746 +     /// `ui` is any [`StateOwner`]: the
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/menu.rs:747:21
+    |
+747 |     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+    |          ---------  ^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+747 -     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+747 +     /// [`Runtime`] while the application builds its tree, or
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/menu.rs:748:31
+    |
+748 |     /// the [`UpdateContext`](crate::UpdateContext) or
+    |              ---------------  ^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |              |
+    |              because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+748 -     /// the [`UpdateContext`](crate::UpdateContext) or
+748 +     /// the [`UpdateContext`] or
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/menu.rs:749:26
+    |
+749 |     /// [`EventContext`](crate::EventContext) of a component that builds this
+    |          --------------  ^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+749 -     /// [`EventContext`](crate::EventContext) of a component that builds this
+749 +     /// [`EventContext`] of a component that builds this
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/menu.rs:835:36
+    |
+835 |     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+    |                      ------------  ^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                      |
+    |                      because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+835 -     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+835 +     /// `ui` is any [`StateOwner`]: the
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/menu.rs:836:21
+    |
+836 |     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+    |          ---------  ^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+836 -     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+836 +     /// [`Runtime`] while the application builds its tree, or
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/menu.rs:837:31
+    |
+837 |     /// the [`UpdateContext`](crate::UpdateContext) or
+    |              ---------------  ^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |              |
+    |              because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+837 -     /// the [`UpdateContext`](crate::UpdateContext) or
+837 +     /// the [`UpdateContext`] or
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/menu.rs:838:26
+    |
+838 |     /// [`EventContext`](crate::EventContext) of a component that builds this
+    |          --------------  ^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+838 -     /// [`EventContext`](crate::EventContext) of a component that builds this
+838 +     /// [`EventContext`] of a component that builds this
+    |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/menu.rs:1501:36
+     |
+1501 |     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+     |                      ------------  ^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |                      |
+     |                      because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1501 -     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+1501 +     /// `ui` is any [`StateOwner`]: the
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/menu.rs:1502:21
+     |
+1502 |     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+     |          ---------  ^^^^^^^^^^^^^^ explicit target is redundant
+     |          |
+     |          because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1502 -     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+1502 +     /// [`Runtime`] while the application builds its tree, or
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/menu.rs:1503:31
+     |
+1503 |     /// the [`UpdateContext`](crate::UpdateContext) or
+     |              ---------------  ^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |              |
+     |              because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1503 -     /// the [`UpdateContext`](crate::UpdateContext) or
+1503 +     /// the [`UpdateContext`] or
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/menu.rs:1504:26
+     |
+1504 |     /// [`EventContext`](crate::EventContext) of a component that builds this
+     |          --------------  ^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |          |
+     |          because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1504 -     /// [`EventContext`](crate::EventContext) of a component that builds this
+1504 +     /// [`EventContext`] of a component that builds this
+     |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/menu_bar.rs:689:36
+    |
+689 |     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+    |                      ------------  ^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                      |
+    |                      because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+689 -     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+689 +     /// `ui` is any [`StateOwner`]: the
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/menu_bar.rs:690:21
+    |
+690 |     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+    |          ---------  ^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+690 -     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+690 +     /// [`Runtime`] while the application builds its tree, or
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/menu_bar.rs:691:31
+    |
+691 |     /// the [`UpdateContext`](crate::UpdateContext) or
+    |              ---------------  ^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |              |
+    |              because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+691 -     /// the [`UpdateContext`](crate::UpdateContext) or
+691 +     /// the [`UpdateContext`] or
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/menu_bar.rs:692:26
+    |
+692 |     /// [`EventContext`](crate::EventContext) of a component that builds this
+    |          --------------  ^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+692 -     /// [`EventContext`](crate::EventContext) of a component that builds this
+692 +     /// [`EventContext`] of a component that builds this
+    |
+
+error: redundant explicit link target
+  --> crates/pert-ui-runtime/src/multi_select.rs:46:58
+   |
+46 |     /// string table's [`StringRole::SelectPlaceholder`](crate::StringRole::SelectPlaceholder).
+   |                         -------------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+   |                         |
+   |                         because label contains path that resolves to same destination
+   |
+   = note: when a link's destination is not specified,
+           the label is used to resolve intra-doc links
+help: remove explicit link target
+   |
+46 -     /// string table's [`StringRole::SelectPlaceholder`](crate::StringRole::SelectPlaceholder).
+46 +     /// string table's [`StringRole::SelectPlaceholder`].
+   |
+
+error: redundant explicit link target
+  --> crates/pert-ui-runtime/src/multi_select.rs:49:43
+   |
+49 |     /// [`StringRole::SearchPlaceholder`](crate::StringRole::SearchPlaceholder).
+   |          -------------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+   |          |
+   |          because label contains path that resolves to same destination
+   |
+   = note: when a link's destination is not specified,
+           the label is used to resolve intra-doc links
+help: remove explicit link target
+   |
+49 -     /// [`StringRole::SearchPlaceholder`](crate::StringRole::SearchPlaceholder).
+49 +     /// [`StringRole::SearchPlaceholder`].
+   |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/multi_select.rs:1414:36
+     |
+1414 |     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+     |                      ------------  ^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |                      |
+     |                      because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1414 -     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+1414 +     /// `ui` is any [`StateOwner`]: the
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/multi_select.rs:1415:21
+     |
+1415 |     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+     |          ---------  ^^^^^^^^^^^^^^ explicit target is redundant
+     |          |
+     |          because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1415 -     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+1415 +     /// [`Runtime`] while the application builds its tree, or
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/multi_select.rs:1416:31
+     |
+1416 |     /// the [`UpdateContext`](crate::UpdateContext) or
+     |              ---------------  ^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |              |
+     |              because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1416 -     /// the [`UpdateContext`](crate::UpdateContext) or
+1416 +     /// the [`UpdateContext`] or
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/multi_select.rs:1417:26
+     |
+1417 |     /// [`EventContext`](crate::EventContext) of a component that builds this
+     |          --------------  ^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |          |
+     |          because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1417 -     /// [`EventContext`](crate::EventContext) of a component that builds this
+1417 +     /// [`EventContext`] of a component that builds this
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/multi_select.rs:1553:48
+     |
+1553 |     /// Without it the installed [`UiStrings`](crate::UiStrings) supply
+     |                                   -----------  ^^^^^^^^^^^^^^^^ explicit target is redundant
+     |                                   |
+     |                                   because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1553 -     /// Without it the installed [`UiStrings`](crate::UiStrings) supply
+1553 +     /// Without it the installed [`UiStrings`] supply
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/multi_select.rs:1554:43
+     |
+1554 |     /// [`StringRole::SelectPlaceholder`](crate::StringRole::SelectPlaceholder),
+     |          -------------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |          |
+     |          because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1554 -     /// [`StringRole::SelectPlaceholder`](crate::StringRole::SelectPlaceholder),
+1554 +     /// [`StringRole::SelectPlaceholder`],
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/multi_select.rs:1558:58
+     |
+1558 |     /// binding the trigger follows, or a [`StringRole`](crate::StringRole)
+     |                                            ------------  ^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |                                            |
+     |                                            because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1558 -     /// binding the trigger follows, or a [`StringRole`](crate::StringRole)
+1558 +     /// binding the trigger follows, or a [`StringRole`]
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/multi_select.rs:1567:23
+     |
+1567 |     /// [`UiStrings`](crate::UiStrings) supply
+     |          -----------  ^^^^^^^^^^^^^^^^ explicit target is redundant
+     |          |
+     |          because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1567 -     /// [`UiStrings`](crate::UiStrings) supply
+1567 +     /// [`UiStrings`] supply
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/multi_select.rs:1568:43
+     |
+1568 |     /// [`StringRole::SearchPlaceholder`](crate::StringRole::SearchPlaceholder),
+     |          -------------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |          |
+     |          because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1568 -     /// [`StringRole::SearchPlaceholder`](crate::StringRole::SearchPlaceholder),
+1568 +     /// [`StringRole::SearchPlaceholder`],
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/multi_select.rs:1570:35
+     |
+1570 |     /// [`StringRole::NoMatches`](crate::StringRole::NoMatches).
+     |          -----------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |          |
+     |          because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1570 -     /// [`StringRole::NoMatches`](crate::StringRole::NoMatches).
+1570 +     /// [`StringRole::NoMatches`].
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/multi_select.rs:1589:27
+     |
+1589 |     /// [`FilterMatcher`](crate::FilterMatcher) sees it, this rule receives
+     |          ---------------  ^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |          |
+     |          because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1589 -     /// [`FilterMatcher`](crate::FilterMatcher) sees it, this rule receives
+1589 +     /// [`FilterMatcher`] sees it, this rule receives
+     |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/select.rs:907:68
+    |
+907 |     /// installed string table's [`StringRole::SelectPlaceholder`](crate::StringRole::SelectPlaceholder).
+    |                                   -------------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                                   |
+    |                                   because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+907 -     /// installed string table's [`StringRole::SelectPlaceholder`](crate::StringRole::SelectPlaceholder).
+907 +     /// installed string table's [`StringRole::SelectPlaceholder`].
+    |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/select.rs:1424:36
+     |
+1424 |     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+     |                      ------------  ^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |                      |
+     |                      because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1424 -     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+1424 +     /// `ui` is any [`StateOwner`]: the
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/select.rs:1425:21
+     |
+1425 |     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+     |          ---------  ^^^^^^^^^^^^^^ explicit target is redundant
+     |          |
+     |          because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1425 -     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+1425 +     /// [`Runtime`] while the application builds its tree, or
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/select.rs:1426:31
+     |
+1426 |     /// the [`UpdateContext`](crate::UpdateContext) or
+     |              ---------------  ^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |              |
+     |              because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1426 -     /// the [`UpdateContext`](crate::UpdateContext) or
+1426 +     /// the [`UpdateContext`] or
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/select.rs:1427:26
+     |
+1427 |     /// [`EventContext`](crate::EventContext) of a component that builds this
+     |          --------------  ^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |          |
+     |          because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1427 -     /// [`EventContext`](crate::EventContext) of a component that builds this
+1427 +     /// [`EventContext`] of a component that builds this
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/select.rs:1549:27
+     |
+1549 |     /// [`EditorSession`](crate::EditorSession), such as a table cell's: it
+     |          ---------------  ^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |          |
+     |          because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1549 -     /// [`EditorSession`](crate::EditorSession), such as a table cell's: it
+1549 +     /// [`EditorSession`], such as a table cell's: it
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/select.rs:1556:37
+     |
+1556 |     ///   [`EditorTrigger::Choice`](crate::EditorTrigger::Choice) with
+     |            -----------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |            |
+     |            because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1556 -     ///   [`EditorTrigger::Choice`](crate::EditorTrigger::Choice) with
+1556 +     ///   [`EditorTrigger::Choice`] with
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/select.rs:1647:33
+     |
+1647 |     /// installed [`UiStrings`](crate::UiStrings) supply
+     |                    -----------  ^^^^^^^^^^^^^^^^ explicit target is redundant
+     |                    |
+     |                    because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1647 -     /// installed [`UiStrings`](crate::UiStrings) supply
+1647 +     /// installed [`UiStrings`] supply
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/select.rs:1648:43
+     |
+1648 |     /// [`StringRole::SelectPlaceholder`](crate::StringRole::SelectPlaceholder),
+     |          -------------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |          |
+     |          because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1648 -     /// [`StringRole::SelectPlaceholder`](crate::StringRole::SelectPlaceholder),
+1648 +     /// [`StringRole::SelectPlaceholder`],
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/select.rs:1654:57
+     |
+1654 |     /// binding the anchor follows, or a [`StringRole`](crate::StringRole) that
+     |                                           ------------  ^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |                                           |
+     |                                           because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1654 -     /// binding the anchor follows, or a [`StringRole`](crate::StringRole) that
+1654 +     /// binding the anchor follows, or a [`StringRole`] that
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/select.rs:1691:36
+     |
+1691 |     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+     |                      ------------  ^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |                      |
+     |                      because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1691 -     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+1691 +     /// `ui` is any [`StateOwner`]: the
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/select.rs:1692:21
+     |
+1692 |     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+     |          ---------  ^^^^^^^^^^^^^^ explicit target is redundant
+     |          |
+     |          because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1692 -     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+1692 +     /// [`Runtime`] while the application builds its tree, or
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/select.rs:1693:31
+     |
+1693 |     /// the [`UpdateContext`](crate::UpdateContext) or
+     |              ---------------  ^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |              |
+     |              because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1693 -     /// the [`UpdateContext`](crate::UpdateContext) or
+1693 +     /// the [`UpdateContext`] or
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/select.rs:1694:26
+     |
+1694 |     /// [`EventContext`](crate::EventContext) of a component that builds this
+     |          --------------  ^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |          |
+     |          because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1694 -     /// [`EventContext`](crate::EventContext) of a component that builds this
+1694 +     /// [`EventContext`] of a component that builds this
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/select.rs:1806:36
+     |
+1806 |     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+     |                      ------------  ^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |                      |
+     |                      because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1806 -     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+1806 +     /// `ui` is any [`StateOwner`]: the
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/select.rs:1807:21
+     |
+1807 |     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+     |          ---------  ^^^^^^^^^^^^^^ explicit target is redundant
+     |          |
+     |          because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1807 -     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+1807 +     /// [`Runtime`] while the application builds its tree, or
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/select.rs:1808:31
+     |
+1808 |     /// the [`UpdateContext`](crate::UpdateContext) or
+     |              ---------------  ^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |              |
+     |              because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1808 -     /// the [`UpdateContext`](crate::UpdateContext) or
+1808 +     /// the [`UpdateContext`] or
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/select.rs:1809:26
+     |
+1809 |     /// [`EventContext`](crate::EventContext) of a component that builds this
+     |          --------------  ^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |          |
+     |          because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1809 -     /// [`EventContext`](crate::EventContext) of a component that builds this
+1809 +     /// [`EventContext`] of a component that builds this
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/select.rs:1898:36
+     |
+1898 |     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+     |                      ------------  ^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |                      |
+     |                      because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1898 -     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+1898 +     /// `ui` is any [`StateOwner`]: the
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/select.rs:1899:21
+     |
+1899 |     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+     |          ---------  ^^^^^^^^^^^^^^ explicit target is redundant
+     |          |
+     |          because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1899 -     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+1899 +     /// [`Runtime`] while the application builds its tree, or
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/select.rs:1900:31
+     |
+1900 |     /// the [`UpdateContext`](crate::UpdateContext) or
+     |              ---------------  ^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |              |
+     |              because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1900 -     /// the [`UpdateContext`](crate::UpdateContext) or
+1900 +     /// the [`UpdateContext`] or
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/select.rs:1901:26
+     |
+1901 |     /// [`EventContext`](crate::EventContext) of a component that builds this
+     |          --------------  ^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |          |
+     |          because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1901 -     /// [`EventContext`](crate::EventContext) of a component that builds this
+1901 +     /// [`EventContext`] of a component that builds this
+     |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/toolbar.rs:249:64
+    |
+249 | /// label or by the string table's [`StringRole::ToolbarMore`](crate::StringRole::ToolbarMore).
+    |                                     -------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                                     |
+    |                                     because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+249 - /// label or by the string table's [`StringRole::ToolbarMore`](crate::StringRole::ToolbarMore).
+249 + /// label or by the string table's [`StringRole::ToolbarMore`].
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/toolbar.rs:348:36
+    |
+348 |     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+    |                      ------------  ^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                      |
+    |                      because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+348 -     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+348 +     /// `ui` is any [`StateOwner`]: the
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/toolbar.rs:349:21
+    |
+349 |     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+    |          ---------  ^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+349 -     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+349 +     /// [`Runtime`] while the application builds its tree, or
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/toolbar.rs:350:31
+    |
+350 |     /// the [`UpdateContext`](crate::UpdateContext) or
+    |              ---------------  ^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |              |
+    |              because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+350 -     /// the [`UpdateContext`](crate::UpdateContext) or
+350 +     /// the [`UpdateContext`] or
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/toolbar.rs:351:26
+    |
+351 |     /// [`EventContext`](crate::EventContext) of a component that builds this
+    |          --------------  ^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+351 -     /// [`EventContext`](crate::EventContext) of a component that builds this
+351 +     /// [`EventContext`] of a component that builds this
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/toolbar.rs:455:24
+    |
+455 |     /// [`StringRole`](crate::StringRole) of the installed string table. By
+    |          ------------  ^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+455 -     /// [`StringRole`](crate::StringRole) of the installed string table. By
+455 +     /// [`StringRole`] of the installed string table. By
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/toolbar.rs:456:45
+    |
+456 |     /// default the installed [`UiStrings`](crate::UiStrings) supply
+    |                                -----------  ^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                                |
+    |                                because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+456 -     /// default the installed [`UiStrings`](crate::UiStrings) supply
+456 +     /// default the installed [`UiStrings`] supply
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/toolbar.rs:457:37
+    |
+457 |     /// [`StringRole::ToolbarMore`](crate::StringRole::ToolbarMore), `"More"` in
+    |          -------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+457 -     /// [`StringRole::ToolbarMore`](crate::StringRole::ToolbarMore), `"More"` in
+457 +     /// [`StringRole::ToolbarMore`], `"More"` in
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/quick_pick.rs:456:36
+    |
+456 |     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+    |                      ------------  ^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                      |
+    |                      because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+456 -     /// `ui` is any [`StateOwner`](crate::StateOwner): the
+456 +     /// `ui` is any [`StateOwner`]: the
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/quick_pick.rs:457:21
+    |
+457 |     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+    |          ---------  ^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+457 -     /// [`Runtime`](crate::Runtime) while the application builds its tree, or
+457 +     /// [`Runtime`] while the application builds its tree, or
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/quick_pick.rs:458:31
+    |
+458 |     /// the [`UpdateContext`](crate::UpdateContext) or
+    |              ---------------  ^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |              |
+    |              because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+458 -     /// the [`UpdateContext`](crate::UpdateContext) or
+458 +     /// the [`UpdateContext`] or
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/quick_pick.rs:459:26
+    |
+459 |     /// [`EventContext`](crate::EventContext) of a component that builds this
+    |          --------------  ^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+459 -     /// [`EventContext`](crate::EventContext) of a component that builds this
+459 +     /// [`EventContext`] of a component that builds this
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/quick_pick.rs:943:55
+    |
+943 |     /// binding the hint follows, or a [`StringRole`](crate::StringRole) of the
+    |                                         ------------  ^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                                         |
+    |                                         because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+943 -     /// binding the hint follows, or a [`StringRole`](crate::StringRole) of the
+943 +     /// binding the hint follows, or a [`StringRole`] of the
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/quick_pick.rs:945:23
+    |
+945 |     /// [`UiStrings`](crate::UiStrings) supply
+    |          -----------  ^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+945 -     /// [`UiStrings`](crate::UiStrings) supply
+945 +     /// [`UiStrings`] supply
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/quick_pick.rs:946:43
+    |
+946 |     /// [`StringRole::SearchPlaceholder`](crate::StringRole::SearchPlaceholder),
+    |          -------------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+946 -     /// [`StringRole::SearchPlaceholder`](crate::StringRole::SearchPlaceholder),
+946 +     /// [`StringRole::SearchPlaceholder`],
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/quick_pick.rs:956:35
+    |
+956 |     /// [`StringRole::NoMatches`](crate::StringRole::NoMatches), "No matches"
+    |          -----------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+956 -     /// [`StringRole::NoMatches`](crate::StringRole::NoMatches), "No matches"
+956 +     /// [`StringRole::NoMatches`], "No matches"
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/quick_pick.rs:964:36
+    |
+964 |     /// [`StringRole::PickerName`](crate::StringRole::PickerName), "Quick pick"
+    |          ------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+964 -     /// [`StringRole::PickerName`](crate::StringRole::PickerName), "Quick pick"
+964 +     /// [`StringRole::PickerName`], "Quick pick"
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/quick_pick.rs:972:54
+    |
+972 |     /// table supplies [`StringRole::PickerResults`](crate::StringRole::PickerResults),
+    |                         ---------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                         |
+    |                         because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+972 -     /// table supplies [`StringRole::PickerResults`](crate::StringRole::PickerResults),
+972 +     /// table supplies [`StringRole::PickerResults`],
+    |
+
+error: redundant explicit link target
+  --> crates/pert-ui-runtime/src/text_fields/inline_text.rs:14:59
+   |
+14 | /// Double-click (two primary presses as [`ClickCounter`](crate::ClickCounter)
+   |                                           --------------  ^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+   |                                           |
+   |                                           because label contains path that resolves to same destination
+   |
+   = note: when a link's destination is not specified,
+           the label is used to resolve intra-doc links
+help: remove explicit link target
+   |
+14 - /// Double-click (two primary presses as [`ClickCounter`](crate::ClickCounter)
+14 + /// Double-click (two primary presses as [`ClickCounter`]
+   |
+
+error: redundant explicit link target
+  --> crates/pert-ui-runtime/src/text_fields/inline_text.rs:56:21
+   |
+56 | /// [`VirtualList`](crate::VirtualList) does not select the row whose label was
+   |      -------------  ^^^^^^^^^^^^^^^^^^ explicit target is redundant
+   |      |
+   |      because label contains path that resolves to same destination
+   |
+   = note: when a link's destination is not specified,
+           the label is used to resolve intra-doc links
+help: remove explicit link target
+   |
+56 - /// [`VirtualList`](crate::VirtualList) does not select the row whose label was
+56 + /// [`VirtualList`] does not select the row whose label was
+   |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/text_fields/inline_text.rs:162:62
+    |
+162 |     /// with the new text, as a list's rows or a [`Dynamic`](crate::Dynamic)
+    |                                                   ---------  ^^^^^^^^^^^^^^ explicit target is redundant
+    |                                                   |
+    |                                                   because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+162 -     /// with the new text, as a list's rows or a [`Dynamic`](crate::Dynamic)
+162 +     /// with the new text, as a list's rows or a [`Dynamic`]
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/text_fields/inline_text.rs:265:31
+    |
+265 |     /// edited is a [`Label`](crate::Label). Equivalent to `enabled(false)`; a
+    |                      -------  ^^^^^^^^^^^^ explicit target is redundant
+    |                      |
+    |                      because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+265 -     /// edited is a [`Label`](crate::Label). Equivalent to `enabled(false)`; a
+265 +     /// edited is a [`Label`]. Equivalent to `enabled(false)`; a
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/text_fields/inline_text.rs:301:39
+    |
+301 |     /// [`TextCommand::DiscardDraft`](crate::TextCommand::DiscardDraft) ends it.
+    |          ---------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+301 -     /// [`TextCommand::DiscardDraft`](crate::TextCommand::DiscardDraft) ends it.
+301 +     /// [`TextCommand::DiscardDraft`] ends it.
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/text_fields/inline_text.rs:377:25
+    |
+377 |     /// [`VirtualList`](crate::VirtualList) row: a single press reaches the
+    |          -------------  ^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+377 -     /// [`VirtualList`](crate::VirtualList) row: a single press reaches the
+377 +     /// [`VirtualList`] row: a single press reaches the
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/text_fields/inline_text.rs:394:28
+    |
+394 |     ///   [`ClickCounter`](crate::ClickCounter) counts (within 500 ms and four
+    |            --------------  ^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |            |
+    |            because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+394 -     ///   [`ClickCounter`](crate::ClickCounter) counts (within 500 ms and four
+394 +     ///   [`ClickCounter`] counts (within 500 ms and four
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/text_fields/inline_text.rs:463:39
+    |
+463 |     /// [`TextCommand::DiscardDraft`](crate::TextCommand::DiscardDraft), which
+    |          ---------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+463 -     /// [`TextCommand::DiscardDraft`](crate::TextCommand::DiscardDraft), which
+463 +     /// [`TextCommand::DiscardDraft`], which
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/text_fields/inline_text.rs:510:24
+    |
+510 |     /// [`FormFields`](crate::FormFields) counts unsaved fields, as a close
+    |          ------------  ^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+510 -     /// [`FormFields`](crate::FormFields) counts unsaved fields, as a close
+510 +     /// [`FormFields`] counts unsaved fields, as a close
+    |
+
+error: redundant explicit link target
+  --> crates/pert-ui-runtime/src/text_fields/normalize.rs:14:39
+   |
+14 | /// it as the field's [`FieldStatus`](crate::FieldStatus).
+   |                        -------------  ^^^^^^^^^^^^^^^^^^ explicit target is redundant
+   |                        |
+   |                        because label contains path that resolves to same destination
+   |
+   = note: when a link's destination is not specified,
+           the label is used to resolve intra-doc links
+help: remove explicit link target
+   |
+14 - /// it as the field's [`FieldStatus`](crate::FieldStatus).
+14 + /// it as the field's [`FieldStatus`].
+   |
+
+error: redundant explicit link target
+  --> crates/pert-ui-runtime/src/text_fields/number_inputs.rs:12:19
+   |
+12 | /// [`UiStrings`](crate::UiStrings). An
+   |      -----------  ^^^^^^^^^^^^^^^^ explicit target is redundant
+   |      |
+   |      because label contains path that resolves to same destination
+   |
+   = note: when a link's destination is not specified,
+           the label is used to resolve intra-doc links
+help: remove explicit link target
+   |
+12 - /// [`UiStrings`](crate::UiStrings). An
+12 + /// [`UiStrings`]. An
+   |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/text_fields/number_inputs.rs:166:15
+    |
+166 | /// [`Field`](crate::Field) around the field, or of an inline row, or a
+    |      -------  ^^^^^^^^^^^^ explicit target is redundant
+    |      |
+    |      because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+166 - /// [`Field`](crate::Field) around the field, or of an inline row, or a
+166 + /// [`Field`] around the field, or of an inline row, or a
+    |
+
+error: redundant explicit link target
+  --> crates/pert-ui-runtime/src/text_fields.rs:69:22
+   |
+69 | /// [`ClickCounter`](crate::ClickCounter) counts them; a fourth click starts over.
+   |      --------------  ^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+   |      |
+   |      because label contains path that resolves to same destination
+   |
+   = note: when a link's destination is not specified,
+           the label is used to resolve intra-doc links
+help: remove explicit link target
+   |
+69 - /// [`ClickCounter`](crate::ClickCounter) counts them; a fourth click starts over.
+69 + /// [`ClickCounter`] counts them; a fourth click starts over.
+   |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/text_fields.rs:107:21
+    |
+107 | /// [`ContextMenu`](crate::ContextMenu), [`MenuItem::enabled`] and
+    |      -------------  ^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |      |
+    |      because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+107 - /// [`ContextMenu`](crate::ContextMenu), [`MenuItem::enabled`] and
+107 + /// [`ContextMenu`], [`MenuItem::enabled`] and
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/text_fields.rs:136:54
+    |
+136 | /// - A `TextField` attached to an [`EditorSession`](crate::EditorSession)
+    |                                     ---------------  ^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                                     |
+    |                                     because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+136 - /// - A `TextField` attached to an [`EditorSession`](crate::EditorSession)
+136 + /// - A `TextField` attached to an [`EditorSession`]
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/text_fields.rs:183:35
+    |
+183 | /// [`TextCommand::DiscardDraft`](crate::TextCommand::DiscardDraft) ends it.
+    |      ---------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |      |
+    |      because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+183 - /// [`TextCommand::DiscardDraft`](crate::TextCommand::DiscardDraft) ends it.
+183 + /// [`TextCommand::DiscardDraft`] ends it.
+    |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/text_fields.rs:1526:23
+     |
+1526 |     /// [`UiStrings`](crate::UiStrings).
+     |          -----------  ^^^^^^^^^^^^^^^^ explicit target is redundant
+     |          |
+     |          because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1526 -     /// [`UiStrings`](crate::UiStrings).
+1526 +     /// [`UiStrings`].
+     |
+
+error: redundant explicit link target
+  --> crates/pert-ui-runtime/src/layout.rs:70:32
+   |
+70 | /// [`RuntimeError::Geometry`](crate::RuntimeError::Geometry), and through it into
+   |      ------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+   |      |
+   |      because label contains path that resolves to same destination
+   |
+   = note: when a link's destination is not specified,
+           the label is used to resolve intra-doc links
+help: remove explicit link target
+   |
+70 - /// [`RuntimeError::Geometry`](crate::RuntimeError::Geometry), and through it into
+70 + /// [`RuntimeError::Geometry`], and through it into
+   |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/layout.rs:205:36
+    |
+205 |     /// [`Component::size_limits`](crate::Component::size_limits) directly.
+    |          ------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+205 -     /// [`Component::size_limits`](crate::Component::size_limits) directly.
+205 +     /// [`Component::size_limits`] directly.
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/layout.rs:465:42
+    |
+465 |     /// [`RuntimeError::ForeignRuntime`](crate::RuntimeError::ForeignRuntime).
+    |          ------------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+465 -     /// [`RuntimeError::ForeignRuntime`](crate::RuntimeError::ForeignRuntime).
+465 +     /// [`RuntimeError::ForeignRuntime`].
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/vector_scene.rs:106:29
+    |
+106 | /// [`PathError::TooLarge`](crate::PathError::TooLarge) instead of silently
+    |      ---------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |      |
+    |      because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+106 - /// [`PathError::TooLarge`](crate::PathError::TooLarge) instead of silently
+106 + /// [`PathError::TooLarge`] instead of silently
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/vector_scene.rs:127:33
+    |
+127 |     /// [`PathError::TooLarge`](crate::PathError::TooLarge) rather than
+    |          ---------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+127 -     /// [`PathError::TooLarge`](crate::PathError::TooLarge) rather than
+127 +     /// [`PathError::TooLarge`] rather than
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/vector_scene.rs:133:33
+    |
+133 |     /// [`PathError::TooLarge`](crate::PathError::TooLarge).
+    |          ---------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+133 -     /// [`PathError::TooLarge`](crate::PathError::TooLarge).
+133 +     /// [`PathError::TooLarge`].
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/vector_scene.rs:161:33
+    |
+161 |     /// [`PathError::TooLarge`](crate::PathError::TooLarge) when flattening exceeds its
+    |          ---------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+161 -     /// [`PathError::TooLarge`](crate::PathError::TooLarge) when flattening exceeds its
+161 +     /// [`PathError::TooLarge`] when flattening exceeds its
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/vector_scene.rs:164:36
+    |
+164 |     /// [`RuntimeError::Geometry`](crate::RuntimeError::Geometry) with
+    |          ------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+164 -     /// [`RuntimeError::Geometry`](crate::RuntimeError::Geometry) with
+164 +     /// [`RuntimeError::Geometry`] with
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/vector_scene.rs:165:38
+    |
+165 |     /// [`GeometryError::NonFinite`](crate::GeometryError::NonFinite) for a NaN or infinite
+    |          --------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+165 -     /// [`GeometryError::NonFinite`](crate::GeometryError::NonFinite) for a NaN or infinite
+165 +     /// [`GeometryError::NonFinite`] for a NaN or infinite
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/vector_scene.rs:167:45
+    |
+167 |     /// [`GeometryError::NonPositiveScale`](crate::GeometryError::NonPositiveScale) for a
+    |          ---------------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+167 -     /// [`GeometryError::NonPositiveScale`](crate::GeometryError::NonPositiveScale) for a
+167 +     /// [`GeometryError::NonPositiveScale`] for a
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/color_picker.rs:444:24
+    |
+444 |     /// [`StringRole`](crate::StringRole) of the installed
+    |          ------------  ^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+444 -     /// [`StringRole`](crate::StringRole) of the installed
+444 +     /// [`StringRole`] of the installed
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/color_picker.rs:445:23
+    |
+445 |     /// [`UiStrings`](crate::UiStrings). Only the plain text is used. Fixed
+    |          -----------  ^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+445 -     /// [`UiStrings`](crate::UiStrings). Only the plain text is used. Fixed
+445 +     /// [`UiStrings`]. Only the plain text is used. Fixed
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/color_picker.rs:448:42
+    |
+448 |     /// ([`StringRole::ColorPickerName`](crate::StringRole::ColorPickerName)).
+    |           -----------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |           |
+    |           because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+448 -     /// ([`StringRole::ColorPickerName`](crate::StringRole::ColorPickerName)).
+448 +     /// ([`StringRole::ColorPickerName`]).
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/color_picker.rs:450:44
+    |
+450 |     /// named by [`StringRole::ColorName`](crate::StringRole::ColorName); a
+    |                   -----------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                   |
+    |                   because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+450 -     /// named by [`StringRole::ColorName`](crate::StringRole::ColorName); a
+450 +     /// named by [`StringRole::ColorName`]; a
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/file_browser/controller.rs:503:26
+    |
+503 |     /// [`EventContext`](crate::EventContext) of a component that builds this
+    |          --------------  ^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+503 -     /// [`EventContext`](crate::EventContext) of a component that builds this
+503 +     /// [`EventContext`] of a component that builds this
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/color_swatch.rs:138:26
+    |
+138 |     /// a [`StringRole`](crate::StringRole) of the installed
+    |            ------------  ^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |            |
+    |            because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+138 -     /// a [`StringRole`](crate::StringRole) of the installed
+138 +     /// a [`StringRole`] of the installed
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/color_swatch.rs:139:23
+    |
+139 |     /// [`UiStrings`](crate::UiStrings), which the swatch follows when another
+    |          -----------  ^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+139 -     /// [`UiStrings`](crate::UiStrings), which the swatch follows when another
+139 +     /// [`UiStrings`], which the swatch follows when another
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/parameter_binding/erased.rs:332:63
+    |
+332 |     /// Returns only a runtime phase error (see [`Parameter`](crate::Parameter)),
+    |                                                  -----------  ^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                                                  |
+    |                                                  because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+332 -     /// Returns only a runtime phase error (see [`Parameter`](crate::Parameter)),
+332 +     /// Returns only a runtime phase error (see [`Parameter`]),
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/parameter_binding/remote.rs:454:58
+    |
+454 |     /// Returns a runtime phase error (see [`Parameter`](crate::Parameter));
+    |                                             -----------  ^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                                             |
+    |                                             because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+454 -     /// Returns a runtime phase error (see [`Parameter`](crate::Parameter));
+454 +     /// Returns a runtime phase error (see [`Parameter`]);
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/parameter_binding/remote.rs:483:58
+    |
+483 |     /// Returns a runtime phase error (see [`Parameter`](crate::Parameter)), or
+    |                                             -----------  ^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                                             |
+    |                                             because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+483 -     /// Returns a runtime phase error (see [`Parameter`](crate::Parameter)), or
+483 +     /// Returns a runtime phase error (see [`Parameter`]), or
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/parameter_binding/remote.rs:511:58
+    |
+511 |     /// Returns a runtime phase error (see [`Parameter`](crate::Parameter));
+    |                                             -----------  ^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                                             |
+    |                                             because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+511 -     /// Returns a runtime phase error (see [`Parameter`](crate::Parameter));
+511 +     /// Returns a runtime phase error (see [`Parameter`]);
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/parameter_binding/remote.rs:575:58
+    |
+575 |     /// Returns a runtime phase error (see [`Parameter`](crate::Parameter));
+    |                                             -----------  ^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                                             |
+    |                                             because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+575 -     /// Returns a runtime phase error (see [`Parameter`](crate::Parameter));
+575 +     /// Returns a runtime phase error (see [`Parameter`]);
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/parameter_binding/remote.rs:645:23
+    |
+645 |     /// [`EditError`](crate::EditError), as
+    |          -----------  ^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+645 -     /// [`EditError`](crate::EditError), as
+645 +     /// [`EditError`], as
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/parameter_binding/remote.rs:646:35
+    |
+646 |     /// [`RuntimeError::Binding`](crate::RuntimeError::Binding), of cancelling the open
+    |          -----------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+646 -     /// [`RuntimeError::Binding`](crate::RuntimeError::Binding), of cancelling the open
+646 +     /// [`RuntimeError::Binding`], of cancelling the open
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/parameter_binding/remote.rs:722:46
+    |
+722 |     /// [`BindingError::DuplicateParameter`](crate::BindingError::DuplicateParameter).
+    |          ----------------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+722 -     /// [`BindingError::DuplicateParameter`](crate::BindingError::DuplicateParameter).
+722 +     /// [`BindingError::DuplicateParameter`].
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/parameter_binding.rs:546:27
+    |
+546 |     /// [`TerminalEvent`](crate::TerminalEvent), with its `begin_value`, is
+    |          ---------------  ^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+546 -     /// [`TerminalEvent`](crate::TerminalEvent), with its `begin_value`, is
+546 +     /// [`TerminalEvent`], with its `begin_value`, is
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/runtime/application.rs:166:26
+    |
+166 |     /// [`EventContext`](crate::EventContext), not the runtime: it starts the
+    |          --------------  ^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+166 -     /// [`EventContext`](crate::EventContext), not the runtime: it starts the
+166 +     /// [`EventContext`], not the runtime: it starts the
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/runtime/commands.rs:609:42
+    |
+609 |     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+    |                  ----------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                  |
+    |                  because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+609 -     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+609 +     /// Returns [`RuntimeError::Closed`] after shutdown, and
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/runtime/commands.rs:699:42
+    |
+699 |     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+    |                  ----------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                  |
+    |                  because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+699 -     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+699 +     /// Returns [`RuntimeError::Closed`] after shutdown, and
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/runtime/commands.rs:712:42
+    |
+712 |     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+    |                  ----------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                  |
+    |                  because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+712 -     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+712 +     /// Returns [`RuntimeError::Closed`] after shutdown, and
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/runtime/commands.rs:776:42
+    |
+776 |     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+    |                  ----------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                  |
+    |                  because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+776 -     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+776 +     /// Returns [`RuntimeError::Closed`] after shutdown, and
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/runtime/commands.rs:802:42
+    |
+802 |     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+    |                  ----------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                  |
+    |                  because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+802 -     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+802 +     /// Returns [`RuntimeError::Closed`] after shutdown, and
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/runtime/commands.rs:822:42
+    |
+822 |     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+    |                  ----------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                  |
+    |                  because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+822 -     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+822 +     /// Returns [`RuntimeError::Closed`] after shutdown, and
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/runtime/commands.rs:839:42
+    |
+839 |     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+    |                  ----------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                  |
+    |                  because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+839 -     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+839 +     /// Returns [`RuntimeError::Closed`] after shutdown, and
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/runtime/commands.rs:906:42
+    |
+906 |     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+    |                  ----------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                  |
+    |                  because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+906 -     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+906 +     /// Returns [`RuntimeError::Closed`] after shutdown, and
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/runtime/commands.rs:988:42
+    |
+988 |     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+    |                  ----------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                  |
+    |                  because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+988 -     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+988 +     /// Returns [`RuntimeError::Closed`] after shutdown, and
+    |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/runtime/commands.rs:1086:42
+     |
+1086 |     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+     |                  ----------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |                  |
+     |                  because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1086 -     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+1086 +     /// Returns [`RuntimeError::Closed`] after shutdown, and
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/runtime/commands.rs:1330:42
+     |
+1330 |     ///    [`Component::text_key_event`](crate::Component::text_key_event)
+     |             ---------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |             |
+     |             because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1330 -     ///    [`Component::text_key_event`](crate::Component::text_key_event)
+1330 +     ///    [`Component::text_key_event`]
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/runtime/commands.rs:1342:42
+     |
+1342 |     ///    [`Component::tab_navigation`](crate::Component::tab_navigation); when
+     |             ---------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |             |
+     |             because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1342 -     ///    [`Component::tab_navigation`](crate::Component::tab_navigation); when
+1342 +     ///    [`Component::tab_navigation`]; when
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/runtime/commands.rs:1346:44
+     |
+1346 |     ///     ([`Component::keyboard_event`](crate::Component::keyboard_event)),
+     |               ---------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |               |
+     |               because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1346 -     ///     ([`Component::keyboard_event`](crate::Component::keyboard_event)),
+1346 +     ///     ([`Component::keyboard_event`]),
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/runtime/commands.rs:1368:42
+     |
+1368 |     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+     |                  ----------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |                  |
+     |                  because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1368 -     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+1368 +     /// Returns [`RuntimeError::Closed`] after shutdown, and
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/runtime/commands.rs:1372:50
+     |
+1372 |     /// callbacks ([`Component::text_key_event`](crate::Component::text_key_event),
+     |                     ---------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |                     |
+     |                     because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1372 -     /// callbacks ([`Component::text_key_event`](crate::Component::text_key_event),
+1372 +     /// callbacks ([`Component::text_key_event`],
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/runtime/commands.rs:1373:39
+     |
+1373 |     /// [`Component::tab_navigation`](crate::Component::tab_navigation),
+     |          ---------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |          |
+     |          because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1373 -     /// [`Component::tab_navigation`](crate::Component::tab_navigation),
+1373 +     /// [`Component::tab_navigation`],
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/runtime/commands.rs:1374:39
+     |
+1374 |     /// [`Component::keyboard_event`](crate::Component::keyboard_event)), of dismissing
+     |          ---------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |          |
+     |          because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1374 -     /// [`Component::keyboard_event`](crate::Component::keyboard_event)), of dismissing
+1374 +     /// [`Component::keyboard_event`]), of dismissing
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/runtime/commands.rs:1662:42
+     |
+1662 |     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+     |                  ----------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |                  |
+     |                  because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1662 -     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+1662 +     /// Returns [`RuntimeError::Closed`] after shutdown, and
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/runtime/commands.rs:1666:35
+     |
+1666 |     /// [`Component::drag_event`](crate::Component::drag_event) error and
+     |          -----------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |          |
+     |          because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1666 -     /// [`Component::drag_event`](crate::Component::drag_event) error and
+1666 +     /// [`Component::drag_event`] error and
+     |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/runtime/native_windows.rs:202:52
+    |
+202 |     /// Returns [`RuntimeError::EmptyWindowTitle`](crate::RuntimeError::EmptyWindowTitle)
+    |                  --------------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                  |
+    |                  because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+202 -     /// Returns [`RuntimeError::EmptyWindowTitle`](crate::RuntimeError::EmptyWindowTitle)
+202 +     /// Returns [`RuntimeError::EmptyWindowTitle`]
+    |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/runtime/native_windows.rs:1059:42
+     |
+1059 |     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+     |                  ----------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |                  |
+     |                  because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1059 -     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+1059 +     /// Returns [`RuntimeError::Closed`] after shutdown, and
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/runtime/native_windows.rs:1065:45
+     |
+1065 |     /// [`RuntimeError::WindowRequestFull`](crate::RuntimeError::WindowRequestFull) when
+     |          ---------------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |          |
+     |          because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1065 -     /// [`RuntimeError::WindowRequestFull`](crate::RuntimeError::WindowRequestFull) when
+1065 +     /// [`RuntimeError::WindowRequestFull`] when
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/runtime/native_windows.rs:1087:40
+     |
+1087 |     /// root, [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+     |                ----------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |                |
+     |                because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1087 -     /// root, [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+1087 +     /// root, [`RuntimeError::Closed`] after shutdown, and
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/runtime/native_windows.rs:1090:49
+     |
+1090 |     /// and [`RuntimeError::WindowRequestFull`](crate::RuntimeError::WindowRequestFull) when
+     |              ---------------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |              |
+     |              because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1090 -     /// and [`RuntimeError::WindowRequestFull`](crate::RuntimeError::WindowRequestFull) when
+1090 +     /// and [`RuntimeError::WindowRequestFull`] when
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/runtime/native_windows.rs:1156:40
+     |
+1156 |     /// root, [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+     |                ----------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |                |
+     |                because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1156 -     /// root, [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+1156 +     /// root, [`RuntimeError::Closed`] after shutdown, and
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/runtime/native_windows.rs:1159:49
+     |
+1159 |     /// and [`RuntimeError::WindowRequestFull`](crate::RuntimeError::WindowRequestFull) when
+     |              ---------------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |              |
+     |              because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1159 -     /// and [`RuntimeError::WindowRequestFull`](crate::RuntimeError::WindowRequestFull) when
+1159 +     /// and [`RuntimeError::WindowRequestFull`] when
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/runtime/native_windows.rs:1178:34
+     |
+1178 |     /// [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown,
+     |          ----------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |          |
+     |          because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1178 -     /// [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown,
+1178 +     /// [`RuntimeError::Closed`] after shutdown,
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/runtime/native_windows.rs:1180:45
+     |
+1180 |     /// [`RuntimeError::WindowRequestFull`](crate::RuntimeError::WindowRequestFull)
+     |          ---------------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |          |
+     |          because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1180 -     /// [`RuntimeError::WindowRequestFull`](crate::RuntimeError::WindowRequestFull)
+1180 +     /// [`RuntimeError::WindowRequestFull`]
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/runtime/native_windows.rs:1229:34
+     |
+1229 |     /// [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+     |          ----------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |          |
+     |          because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1229 -     /// [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+1229 +     /// [`RuntimeError::Closed`] after shutdown, and
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/runtime/native_windows.rs:1232:49
+     |
+1232 |     /// and [`RuntimeError::WindowRequestFull`](crate::RuntimeError::WindowRequestFull) when
+     |              ---------------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |              |
+     |              because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1232 -     /// and [`RuntimeError::WindowRequestFull`](crate::RuntimeError::WindowRequestFull) when
+1232 +     /// and [`RuntimeError::WindowRequestFull`] when
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/runtime/native_windows.rs:1259:42
+     |
+1259 |     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+     |                  ----------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |                  |
+     |                  because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1259 -     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+1259 +     /// Returns [`RuntimeError::Closed`] after shutdown, and
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/runtime/native_windows.rs:1262:49
+     |
+1262 |     /// and [`RuntimeError::WindowRequestFull`](crate::RuntimeError::WindowRequestFull) when
+     |              ---------------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |              |
+     |              because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1262 -     /// and [`RuntimeError::WindowRequestFull`](crate::RuntimeError::WindowRequestFull) when
+1262 +     /// and [`RuntimeError::WindowRequestFull`] when
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/runtime/native_windows.rs:1273:42
+     |
+1273 |     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+     |                  ----------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |                  |
+     |                  because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1273 -     /// Returns [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown, and
+1273 +     /// Returns [`RuntimeError::Closed`] after shutdown, and
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/runtime/native_windows.rs:1276:49
+     |
+1276 |     /// and [`RuntimeError::WindowRequestFull`](crate::RuntimeError::WindowRequestFull) when
+     |              ---------------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |              |
+     |              because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1276 -     /// and [`RuntimeError::WindowRequestFull`](crate::RuntimeError::WindowRequestFull) when
+1276 +     /// and [`RuntimeError::WindowRequestFull`] when
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/runtime/native_windows.rs:1294:43
+     |
+1294 |     /// runtime, [`RuntimeError::Closed`](crate::RuntimeError::Closed) after
+     |                   ----------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |                   |
+     |                   because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1294 -     /// runtime, [`RuntimeError::Closed`](crate::RuntimeError::Closed) after
+1294 +     /// runtime, [`RuntimeError::Closed`] after
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/runtime/native_windows.rs:1319:48
+     |
+1319 |     /// this runtime, [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown,
+     |                        ----------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |                        |
+     |                        because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1319 -     /// this runtime, [`RuntimeError::Closed`](crate::RuntimeError::Closed) after shutdown,
+1319 +     /// this runtime, [`RuntimeError::Closed`] after shutdown,
+     |
+
+error: redundant explicit link target
+    --> crates/pert-ui-runtime/src/runtime/native_windows.rs:1322:49
+     |
+1322 |     /// and [`RuntimeError::WindowRequestFull`](crate::RuntimeError::WindowRequestFull) when
+     |              ---------------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+     |              |
+     |              because label contains path that resolves to same destination
+     |
+     = note: when a link's destination is not specified,
+             the label is used to resolve intra-doc links
+help: remove explicit link target
+     |
+1322 -     /// and [`RuntimeError::WindowRequestFull`](crate::RuntimeError::WindowRequestFull) when
+1322 +     /// and [`RuntimeError::WindowRequestFull`] when
+     |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/runtime/pointer.rs:149:31
+    |
+149 |     /// [`Component::reveal`](crate::Component::reveal), and of [`Self::focus`].
+    |          -------------------  ^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+149 -     /// [`Component::reveal`](crate::Component::reveal), and of [`Self::focus`].
+149 +     /// [`Component::reveal`], and of [`Self::focus`].
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/runtime/tree.rs:105:42
+    |
+105 |     /// [`Component::check_description`](crate::Component::check_description)
+    |          ------------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+105 -     /// [`Component::check_description`](crate::Component::check_description)
+105 +     /// [`Component::check_description`]
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/runtime/tree.rs:107:39
+    |
+107 |     /// [`LayoutError::InvalidChild`](crate::LayoutError::InvalidChild); or
+    |          ---------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+107 -     /// [`LayoutError::InvalidChild`](crate::LayoutError::InvalidChild); or
+107 +     /// [`LayoutError::InvalidChild`]; or
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/runtime/workspace.rs:231:59
+    |
+231 |     /// phase, so that, as [`Component::workspace_state`](crate::Component::workspace_state)
+    |                             ----------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                             |
+    |                             because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+231 -     /// phase, so that, as [`Component::workspace_state`](crate::Component::workspace_state)
+231 +     /// phase, so that, as [`Component::workspace_state`]
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/signal.rs:138:32
+    |
+138 |     /// Seals [`CombineInput`](super::CombineInput) and carries the operation
+    |                --------------  ^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                |
+    |                because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+138 -     /// Seals [`CombineInput`](super::CombineInput) and carries the operation
+138 +     /// Seals [`CombineInput`] and carries the operation
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/signal.rs:152:33
+    |
+152 |     /// Seals [`CombineInputs`](super::CombineInputs) and carries the
+    |                ---------------  ^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                |
+    |                because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+152 -     /// Seals [`CombineInputs`](super::CombineInputs) and carries the
+152 +     /// Seals [`CombineInputs`] and carries the
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/runtime/native_windows.rs:805:39
+    |
+805 |     /// [`RuntimeError::Application`](crate::RuntimeError::Application) holding
+    |          ---------------------------  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |          |
+    |          because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+805 -     /// [`RuntimeError::Application`](crate::RuntimeError::Application) holding
+805 +     /// [`RuntimeError::Application`] holding
+    |
+
+error: redundant explicit link target
+   --> crates/pert-ui-runtime/src/runtime/native_windows.rs:810:41
+    |
+810 |     /// exception; see [`RuntimeError`](crate::RuntimeError).
+    |                         --------------  ^^^^^^^^^^^^^^^^^^^ explicit target is redundant
+    |                         |
+    |                         because label contains path that resolves to same destination
+    |
+    = note: when a link's destination is not specified,
+            the label is used to resolve intra-doc links
+help: remove explicit link target
+    |
+810 -     /// exception; see [`RuntimeError`](crate::RuntimeError).
+810 +     /// exception; see [`RuntimeError`].
+    |
+
+error: could not document `pert-ui-runtime`
+# ---- end output ----
+# hashes after:
+b6843e9ce95d1a564ec6fff9736b23f992a0061784e1792b987cf9f6c619836c  crates/pert-ui-runtime/src/multi_select.rs
+073e75adfb217a8db927a46fe39a1a400e0c74205810e6fe62c7e9fcb69f9979  crates/pert-ui/tests/collections/main.rs
+c83a817ee393e33821e025fbed127b89233d6dc650eb8c9a20191d6b0bc4b699  crates/pert-ui/tests/collections/multi_select.rs
+91dde878cf2254d86e81870815b51311db8c7a5cbbeb781a7ae31a3aa1e1fb92  crates/pert-ui/tests/collections/multi_select_pointer.rs
+# finished 2026-10-29T10:49:07+00:00
+# exit_status 101

@@ -37,3 +37,5 @@ mod virtual_collections;
 mod virtual_list;
 
 mod row_focus_recipe;
+
+mod multi_select_pointer;

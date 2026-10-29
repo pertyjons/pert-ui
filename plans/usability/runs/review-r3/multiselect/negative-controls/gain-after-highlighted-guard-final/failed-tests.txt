@@ -1,0 +1,4 @@
+test multi_select_pointer::a_denial_while_no_option_matches_still_hands_back_the_highlight ... FAILED
+test multi_select_pointer::motion_inside_the_row_the_keyboard_highlighted_takes_ownership ... FAILED
+test result: FAILED. 62 passed; 2 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.10s
+error: test failed, to rerun pass `-p pert-ui --test collections`

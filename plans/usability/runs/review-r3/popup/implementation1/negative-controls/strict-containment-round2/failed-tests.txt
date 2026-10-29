@@ -1,0 +1,11 @@
+# facade exit_status=101 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/26-negative-strict-containment-round2-facade.log
+test popup_press_focus::a_dialog_without_focusable_content_keeps_focus_on_its_root ... FAILED
+thread 'popup_press_focus::a_dialog_without_focusable_content_keeps_focus_on_its_root' (4067840) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:477:5:
+assertion `left == right` failed
+  left: [Pressed { kind: Dialog, outcome: Err(ModalBlocked), pressed: Some("popup"), focus: Some("popup"), open: true, log: ["row press"] }, Pressed { kind: ApplicationDialog, outcome: Err(ModalBlocked), pressed: Some("popup"), focus: Some("popup"), open: true, log: ["row press"] }, Pressed { kind: ViewDialog, outcome: Ok(Handled), pressed: Some("page"), focus: Some("page"), open: true, log: ["popup focus_lost", "row press"] }]
+ right: [Pressed { kind: Dialog, outcome: Ok(Handled), pressed: Some("popup"), focus: Some("popup"), open: true, log: ["row press"] }, Pressed { kind: ApplicationDialog, outcome: Ok(Handled), pressed: Some("popup"), focus: Some("popup"), open: true, log: ["row press"] }, Pressed { kind: ViewDialog, outcome: Ok(Handled), pressed: Some("popup"), focus: Some("popup"), open: true, log: ["row press"] }]
+test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 494 filtered out; finished in 0.03s
+error: test failed, to rerun pass `-p pert-ui --test foundation`
+# unit exit_status=0 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/27-negative-strict-containment-round2-unit.log
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 195 filtered out; finished in 0.02s
+# restored exit_status=0 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/28-restored-strict-containment-round2-facade.log

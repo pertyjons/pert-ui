@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Runs every negative control in sequence; each restores before the next.
+E=/home/per/pert-ui-usability/r3-multiselect-implementation-evidence
+for m in baseline unconditional-refresh-highlight refresh-can-own no-position-memory \
+  leave-not-recorded record-after-denied-return gain-after-highlighted-guard \
+  disabled-motion-no-gain disabled-press-no-gain row-leave-clears no-panel-exit-clear \
+  no-panel-permission-clear no-query-clear no-search-key-clear no-begin-clear \
+  no-close-clear no-visibility-clear no-lifecycle-clears release-no-regain \
+  no-focus-return focus-after-report focus-on-any-release; do
+  echo "=== $m $(date -u -Is)"
+  "$E/scripts/negative-control.sh" "$m" || { echo "CONTROL $m ABORTED status=$?"; exit 1; }
+done
+echo "=== all done $(date -u -Is)"

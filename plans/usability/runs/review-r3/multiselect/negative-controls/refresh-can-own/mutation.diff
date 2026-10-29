@@ -1,0 +1,11 @@
+--- /home/per/pert-ui-usability/r3-multiselect-implementation-evidence/negative-controls/refresh-can-own/backup/multi_select.rs	2026-10-29 11:44:44.030528957 +0100
++++ crates/pert-ui-runtime/src/multi_select.rs	2026-10-29 11:44:44.044529078 +0100
+@@ -666,7 +666,7 @@
+         // it when the pointer leaves the panel. The position is remembered
+         // before any early return, even while the row cannot act.
+         let kind = event.kind();
+-        let moved = !event.is_refresh() && self.pointer_at != Some(event.position());
++        let moved = self.pointer_at != Some(event.position());
+         if matches!(
+             kind,
+             PointerKind::Move

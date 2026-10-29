@@ -1,0 +1,7 @@
+/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/40-negative-leave-not-recorded-round2.log exit_status=101
+restored: identical hash, newer mtime; mutated build recompiled pert-ui-runtime
+test exit_status=101 log=/home/per/pert-ui-usability/r3-multiselect-implementation-evidence/runs/40-negative-leave-not-recorded-round2.log
+test multi_select_pointer::motion_made_while_denied_still_counts_after_the_restore ... FAILED
+test multi_select_pointer::genuine_motion_after_keyboard_navigation_takes_the_highlight ... FAILED
+test result: FAILED. 62 passed; 2 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.11s
+error: test failed, to rerun pass `-p pert-ui --test collections`

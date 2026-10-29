@@ -1,0 +1,11 @@
+# captured 2026-10-29T11:39:48+00:00
+# HEAD c19ae7083407c8cd19674256fce483de6a21b06c
+ M crates/pert-ui-runtime/src/multi_select.rs
+ M crates/pert-ui-runtime/src/popover.rs
+ M crates/pert-ui-runtime/src/runtime.rs
+ M crates/pert-ui-runtime/src/runtime/pointer.rs
+ M crates/pert-ui-runtime/src/runtime/surfaces.rs
+ M crates/pert-ui/tests/collections/main.rs
+ M crates/pert-ui/tests/foundation/main.rs
+?? crates/pert-ui/tests/collections/multi_select_pointer.rs
+?? crates/pert-ui/tests/foundation/popup_press_focus.rs

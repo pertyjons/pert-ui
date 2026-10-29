@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+# Usage: negative-control.sh <mutation>
+# Backs up the exact bytes of pointer.rs and surfaces.rs, applies the
+# mutation, runs the facade popup_press_focus tests (and the runtime surfaces
+# unit tests unless the mutation restores the whole baseline), then restores
+# the bytes by rewriting them (never `cp -p`), touches both files and checks
+# that each restored hash equals its backup and each restored mtime is newer
+# than the mutated one. Fails unless the mutated run recompiled
+# pert-ui-runtime, and runs the facade tests again after the restore, which
+# must recompile pert-ui-runtime and pass.
+set -u
+E=/home/per/pert-ui-usability/r3-popup-implementation-evidence
+W=/home/per/pert-ui-usability/r3-popup-worktree
+m=$1
+name=$m${TAG:+-$TAG}
+dir="$E/negative-controls/$name"
+[ -e "$dir" ] && { echo "refusing to overwrite $dir"; exit 2; }
+mkdir -p "$dir/backup"
+cd "$W" || exit 2
+files="crates/pert-ui-runtime/src/runtime/pointer.rs crates/pert-ui-runtime/src/runtime/surfaces.rs"
+for f in $files; do cat "$f" > "$dir/backup/$(basename "$f")"; done
+sha256sum $files > "$dir/hash-before.txt"
+stat -c '%.9Y %n' $files > "$dir/mtime-before.txt"
+restore() {
+  for f in $files; do cat "$dir/backup/$(basename "$f")" > "$f"; done
+}
+if ! python3 -I "$E/scripts/mutate.py" "$m"; then
+  echo "mutation failed"; restore; exit 2
+fi
+: > "$dir/mutation.diff"
+for f in $files; do diff -u "$dir/backup/$(basename "$f")" "$f" >> "$dir/mutation.diff"; done
+[ -s "$dir/mutation.diff" ] || { echo "mutation changed nothing"; restore; exit 2; }
+sleep 0.01
+touch $files
+stat -c '%.9Y %n' $files > "$dir/mtime-mutated.txt"
+sha256sum $files > "$dir/hash-mutated.txt"
+"$E/scripts/run.sh" "negative-$name-facade" cargo test --locked -p pert-ui --test foundation popup_press_focus
+facade_status=$?
+facade_log=$(ls -t "$E"/runs/*-negative-$name-facade.log | head -1)
+unit_log=
+if [ "$m" != baseline-runtime ]; then
+  "$E/scripts/run.sh" "negative-$name-unit" cargo test --locked -p pert-ui-runtime --lib runtime::surfaces
+  unit_status=$?
+  unit_log=$(ls -t "$E"/runs/*-negative-$name-unit.log | head -1)
+fi
+sleep 0.01
+restore
+touch $files
+sha256sum $files > "$dir/hash-restored.txt"
+stat -c '%.9Y %n' $files > "$dir/mtime-restored.txt"
+if ! cmp -s "$dir/hash-before.txt" "$dir/hash-restored.txt"; then
+  echo "RESTORE MISMATCH" | tee "$dir/restore-check.txt"; exit 3
+fi
+if ! python3 -I - "$dir/mtime-mutated.txt" "$dir/mtime-restored.txt" <<'PY'
+import sys
+a = [float(line.split()[0]) for line in open(sys.argv[1])]
+b = [float(line.split()[0]) for line in open(sys.argv[2])]
+sys.exit(0 if all(y > x for x, y in zip(a, b)) and len(a) == len(b) else 1)
+PY
+then
+  echo "RESTORED MTIME NOT NEWER" | tee "$dir/restore-check.txt"; exit 3
+fi
+if ! grep -q "Compiling pert-ui-runtime" "$facade_log"; then
+  echo "NO RECOMPILATION OF pert-ui-runtime IN $facade_log" | tee "$dir/restore-check.txt"; exit 4
+fi
+"$E/scripts/run.sh" "restored-$name-facade" cargo test --locked -p pert-ui --test foundation popup_press_focus
+restored_status=$?
+restored_log=$(ls -t "$E"/runs/*-restored-$name-facade.log | head -1)
+if ! grep -q "Compiling pert-ui-runtime" "$restored_log"; then
+  echo "NO RECOMPILATION OF pert-ui-runtime AFTER RESTORE IN $restored_log" | tee "$dir/restore-check.txt"; exit 4
+fi
+if [ "$restored_status" -ne 0 ]; then
+  echo "RESTORED TESTS FAILED ($restored_log)" | tee "$dir/restore-check.txt"; exit 5
+fi
+echo "restored: identical hashes, newer mtimes; mutated and restored builds recompiled pert-ui-runtime; restored tests pass" | tee "$dir/restore-check.txt"
+{
+  echo "# facade exit_status=$facade_status log=$facade_log"
+  grep -E "^test .* FAILED$|^test result|^error(\[|:)|panicked at|^assertion|^  left:|^ right:" "$facade_log"
+  if [ -n "$unit_log" ]; then
+    echo "# unit exit_status=$unit_status log=$unit_log"
+    grep -E "^test .* FAILED$|^test result|^error(\[|:)|panicked at|^assertion|^  left:|^ right:" "$unit_log"
+  fi
+  echo "# restored exit_status=$restored_status log=$restored_log"
+} > "$dir/failed-tests.txt"
+cat "$dir/failed-tests.txt"

@@ -1,0 +1,11 @@
+[
+  {
+    "path": "workspace-tests.log",
+    "original_sha256": "a5f1802648715b9fc13f187643894b9f66aa093aa26896930cf38f37d0f91e3e",
+    "full_gzip": "workspace-tests.full.log.gz",
+    "gzip_sha256": "5b455e26f3019ca291b14fb57c8b11ded74e150c418e845f27a9226b84c017e5",
+    "excerpt_sha256": "adf8e3a5d89f1cef3461bb69aeabb9a1a1a22b81243bfa50196ce15237d6eb07",
+    "omitted_diagnostic_lines": 501533,
+    "decompression_checked_equal": true
+  }
+]

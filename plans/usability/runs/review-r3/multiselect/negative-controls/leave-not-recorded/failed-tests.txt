@@ -1,0 +1,3 @@
+test multi_select_pointer::genuine_motion_after_keyboard_navigation_takes_the_highlight ... FAILED
+test result: FAILED. 62 passed; 1 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.09s
+error: test failed, to rerun pass `-p pert-ui --test collections`

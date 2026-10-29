@@ -165,6 +165,16 @@ validates during update, and `for_parameter` uses the parameter specification.
 MultiSelect provides fixed and bound list constructors. For dropdowns and
 MultiSelect, keep the existing `StateOwner` argument before the value and list.
 
+MultiSelect keeps keyboard/search highlighting under a stationary pointer.
+Actual row motion or an admitted pointer interaction takes ownership; wheel
+and list-focused scroll keys do not take it from search navigation. Query
+changes, closing and permission revocation reset pointer ownership. A completed
+primary click on an enabled option returns focus to search before `on_change`,
+so an application's focus request from that callback wins. Callback errors
+preserve the accepted write and do not replay it. `OnClose` still edits its
+separate draft. Incomplete/disabled clicks and press-time IME cancellation in
+an overflowing list follow the documented [`MultiSelect`] residuals.
+
 Migrate `RadioGroup::new(value, [])?.choices(options)` to
 `RadioGroup::bound(value, options)`, and
 `Select::new(&ui, value, [])?.choices(options)` to

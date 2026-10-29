@@ -1,0 +1,4 @@
+test multi_select_pointer::a_focus_request_from_on_change_wins_over_the_return_to_search ... FAILED
+test multi_select_pointer::a_failing_on_change_keeps_the_toggle_and_the_return_to_search ... FAILED
+test result: FAILED. 62 passed; 2 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.13s
+error: test failed, to rerun pass `-p pert-ui --test collections`

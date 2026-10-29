@@ -1,0 +1,11 @@
+# facade exit_status=101 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/29-negative-before-focusable-round2-facade.log
+test popup_press_focus::a_focusable_component_inside_the_surface_still_takes_the_press ... FAILED
+thread 'popup_press_focus::a_focusable_component_inside_the_surface_still_takes_the_press' (4072957) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:553:13:
+assertion `left == right` failed: Popover
+  left: Some("field")
+ right: Some("popup")
+test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 494 filtered out; finished in 0.06s
+error: test failed, to rerun pass `-p pert-ui --test foundation`
+# unit exit_status=0 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/30-negative-before-focusable-round2-unit.log
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 195 filtered out; finished in 0.00s
+# restored exit_status=0 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/31-restored-before-focusable-round2-facade.log

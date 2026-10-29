@@ -1,0 +1,18 @@
+{
+  "command": [
+    "api/generate.sh"
+  ],
+  "started_at_utc": "2026-10-29T11:48:58.858141+00:00",
+  "finished_at_utc": "2026-10-29T11:49:58.310799+00:00",
+  "exit_status": 0,
+  "status_command": [
+    "git",
+    "status",
+    "--porcelain",
+    "--",
+    "api/"
+  ],
+  "status_exit": 0,
+  "status_stdout": "",
+  "status_stderr": ""
+}

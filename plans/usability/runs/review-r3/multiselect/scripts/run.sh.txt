@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Usage: run.sh <label> <command...>
+# Runs the command in the MultiSelect worktree with this checkpoint's own
+# target dir, logging the command, HEAD, status, source hashes and mtimes
+# before and after, the full output and the exit status to
+# runs/NN-<label>.log. Never overwrites an existing log.
+set -u
+E=/home/per/pert-ui-usability/r3-multiselect-implementation-evidence
+W=/home/per/pert-ui-usability/r3-multiselect-worktree
+export CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-multiselect-implementation-target
+label=$1; shift
+n=$(ls "$E/runs" | wc -l); n=$(printf '%02d' $((n + 1)))
+log="$E/runs/$n-$label.log"
+[ -e "$log" ] && { echo "refusing to overwrite $log"; exit 2; }
+files="crates/pert-ui-runtime/src/multi_select.rs crates/pert-ui/tests/collections/main.rs crates/pert-ui/tests/collections/multi_select.rs crates/pert-ui/tests/collections/multi_select_pointer.rs"
+cd "$W" || exit 2
+{
+  echo "# started $(date -u -Is)"
+  echo "# cwd $W  CARGO_TARGET_DIR=$CARGO_TARGET_DIR"
+  printf '# command:'; printf ' %q' "$@"; echo
+  echo "# HEAD $(git rev-parse HEAD)"
+  echo "# git status --porcelain:"; git status --porcelain
+  echo "# hashes before:"; for f in $files; do [ -e "$f" ] && sha256sum "$f"; done
+  echo "# mtimes before:"; for f in $files; do [ -e "$f" ] && stat -c '%.9Y %n' "$f"; done
+  echo "# ---- output ----"
+} > "$log"
+"$@" >> "$log" 2>&1
+status=$?
+{
+  echo "# ---- end output ----"
+  echo "# hashes after:"; for f in $files; do [ -e "$f" ] && sha256sum "$f"; done
+  echo "# finished $(date -u -Is)"
+  echo "# exit_status $status"
+} >> "$log"
+echo "$log exit_status=$status"
+exit $status

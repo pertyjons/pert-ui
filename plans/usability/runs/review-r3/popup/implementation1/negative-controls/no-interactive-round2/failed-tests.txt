@@ -1,0 +1,15 @@
+# facade exit_status=101 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/35-negative-no-interactive-round2-facade.log
+test popup_press_focus::a_surface_changed_to_a_notification_no_longer_keeps_focus ... FAILED
+thread 'popup_press_focus::a_surface_changed_to_a_notification_no_longer_keeps_focus' (4078915) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:711:5:
+assertion `left == right` failed
+  left: Some("field")
+ right: Some("page")
+test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 494 filtered out; finished in 0.03s
+error: test failed, to rerun pass `-p pert-ui --test foundation`
+# unit exit_status=101 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/36-negative-no-interactive-round2-unit.log
+test runtime::surfaces::tests::only_a_current_interactive_admission_keeps_press_focus ... FAILED
+thread 'runtime::surfaces::tests::only_a_current_interactive_admission_keeps_press_focus' (4079265) panicked at crates/pert-ui-runtime/src/runtime/surfaces.rs:961:9:
+assertion failed: !ui.admitted_interactive_surface(popup)
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 195 filtered out; finished in 0.00s
+error: test failed, to rerun pass `-p pert-ui-runtime --lib`
+# restored exit_status=0 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/37-restored-no-interactive-round2-facade.log

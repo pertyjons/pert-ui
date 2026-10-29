@@ -1,0 +1,24 @@
+$ cargo run --locked -p pert-ui --features png,svg,cpu --example log_explorer -- --lines 10000
+   Compiling pert-ui v0.3.93 (/home/per/github/pert-ui/crates/pert-ui)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.39s
+     Running `target/debug/examples/log_explorer --lines 10000`
+loaded 9990 lines (10 malformed skipped) in 201.80ms, 3 flushes, worst 151.74ms
+after loading                         450 components mounted
+100 wheel steps, each                 49.78ms
+while scrolled                        555 components mounted
+sort by message                      170.64ms
+filter 'timeout retry' (20 flushes)   185.73ms
+  FilterCounts { shown: 609, total: 9990 }
+errors-only level filter             151.18ms
+copy lines: "00:04:57.073 INFO http user cache closed closed cache completed completed id=68423"
+tree: select and expand a source     257.87ms
+  source auth: 968 of 968 lines
+with an expanded source               596 components mounted
+content search 'timeout'              11.95ms
+  25 steps, 1207 hits
+tail: 50 lines in 1 s, worst flush 18.58ms, follow Some(Mounted(WidgetId { serial: 14294, mounted: true, .. }))
+after following                       680 components mounted
+undrained tail: 80 lines lost; 80 tailed lines lost while the view was busy
+inspection snapshot from a thread      6.17ms
+  596 components
+log explorer: headless session passed

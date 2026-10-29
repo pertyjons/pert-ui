@@ -1,0 +1,14 @@
+--- /home/per/pert-ui-usability/r3-popup-implementation-evidence/negative-controls/strict-containment-round2/backup/pointer.rs	2026-10-29 12:35:24.698517412 +0100
++++ crates/pert-ui-runtime/src/runtime/pointer.rs	2026-10-29 12:35:24.718007711 +0100
+@@ -528,7 +528,10 @@
+                     // menu's root can still stop a press on its submenu.
+                     if focused
+                         .as_ref()
+-                        .is_some_and(|focused| self.descendant(focused.0.serial, current))
++                        .is_some_and(|focused| {
++                            focused.0.serial != current
++                                && self.descendant(focused.0.serial, current)
++                        })
+                         && self.admitted_interactive_surface(current)
+                     {
+                         break;

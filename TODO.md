@@ -240,17 +240,6 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   measured/current values through ComponentDetails, with disabled/theme
   redescription tests; inspection must not paint or schedule work.
 
-- [ ] 2026-10-29 `crates/pert-ui-runtime/src/multi_select.rs`
-  `ChoiceRow::pointer_input` — MultiSelect parked-pointer defect: refreshed Move
-  rewrites the shared highlight after keyboard navigation, so a popup parked
-  under Gamma cannot leave Gamma with Down; a long list remains on O03 after
-  twelve Downs and Enter toggles that option. Both frozen versions reproduce
-  it through public input; see `plans/usability/runs/triage-r3/extra-input-probes/`
-  P13. This violates the documented Up/Down highlight contract. Give this
-  separate row family an explicit pointer/keyboard ownership rule and public
-  parked-pointer, Leave, long-list and toggle/callback regression tests in a
-  separate checkpoint from Menu/Select's shared OptionList repair.
-
 - [ ] 2026-10-29 `crates/pert-ui-runtime/src/runtime/measurements.rs`
   `Measurements::is_empty` — verification: release-profile unit-test builds
   warn that this helper is unused. It is gated by cfg(test), but its sole
@@ -273,12 +262,3 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   Implement the separately reviewed wrapped-caret presentation/shared interval
   policy in `plans/usability/round-3-design-hanging-whitespace.md`, with pixel,
   IME, wheel and prose-stability tests; remove this entry when verified.
-
-- [ ] 2026-10-29 `crates/pert-ui-runtime/src/runtime/pointer.rs`
-  `Runtime::pointer_transition` — automatic press focus walks outside a short
-  interactive popup into an overflowing parent ScrollArea, dismissing the
-  popup before the pressed option handles input. MultiSelect baseline run06
-  reproduces open=false and no value/callback after press/release. Implement
-  and verify the generic admitted-surface focus-boundary policy in
-  `plans/usability/round-3-design-popup-press-focus.md`; remove this entry when
-  the runtime repair lands. No private MultiSelect focusability workaround.

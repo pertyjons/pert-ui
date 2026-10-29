@@ -349,6 +349,13 @@ Parameter construction has no independent option-list builder.
 | `ColorSwatch` | `ColorSwatch::new(color)` or `ColorSwatch::bound(read_signal)`, optionally `.on_activate(callback)` | A color sample, with a checkerboard under translucent colors; activatable like a button, for example to open a color editor. |
 | `ColorPicker` | `ColorPicker::new(color_signal)`, optionally `.alpha(true)`; `.into_popover()` opens it from a swatch | A saturation/value area, hue and optional alpha strips and hex/channel text entry over a linear `Color`. Edits happen in HSV, so the hue survives at zero saturation. The binding is written once per completed edit: at a drag's release, per key step and per saved field; Escape cancels a drag. `on_change` reports each such user write that changed the color, for example to record undo. |
 
+A completed enabled MultiSelect row click returns focus to its search field
+before reporting a bound-value write. Arrow keys, Enter and typing can then
+continue there. A long list may take focus on press and end an active IME
+composition before release; cancelled or denied clicks need not restore search
+focus. Its highlight follows actual pointer motion or presses, while search
+keys reclaim it from a stationary pointer.
+
 `Choice<T>` carries a value and display label. Reordering or renaming a choice
 does not change its identity. Boolean and choice controls also offer
 `for_parameter` constructors for authoritative bindings. Menus close before
@@ -514,6 +521,12 @@ Transient surfaces draw above ordinary content, follow their owner and close
 according to their documented dismissal rules. A dialog is modal; a tooltip
 never intercepts input. Notifications report bounded delivery and receipts.
 The application owns the meaning of actions and the work that produces them.
+
+Pressing nonfocusable content preserves focus already inside its admitted
+interactive surface when the automatic focus walk would otherwise leave it.
+A nearer focusable child or ancestor inside still receives focus. Explicit
+focus requests and Tab keep their usual rules. A surface whose focus is still
+outside, such as a popover without focusable content, has no such guarantee.
 
 ## Data display and custom drawing
 

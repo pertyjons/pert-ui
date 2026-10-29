@@ -1,0 +1,5 @@
+{
+  "note": "Retrospective exact reconstruction of pre-review files by reversing known changes; reconstructed hashes equal the contemporaneous full-gate source manifest. This is not an original contemporaneous snapshot.",
+  "gallery_reconstructed_sha256": "37b631379d4ca969b80f64e87bf34780208f2f0249e3a76961122aeb836b6645",
+  "foundation_reconstructed_sha256": "8f5a5eda9cffcbf89aa7f292ced01ae88a21139679f656ed6763663810dc02c1"
+}

@@ -1,0 +1,10 @@
+--- /home/per/pert-ui-usability/r3-multiselect-implementation-evidence/negative-controls/leave-not-recorded/backup/multi_select.rs	2026-10-29 11:44:52.809605191 +0100
++++ crates/pert-ui-runtime/src/multi_select.rs	2026-10-29 11:44:52.823925845 +0100
+@@ -672,7 +672,6 @@
+             PointerKind::Move
+                 | PointerKind::Press(_)
+                 | PointerKind::Release(_)
+-                | PointerKind::Leave
+         ) {
+             self.pointer_at = Some(event.position());
+         }

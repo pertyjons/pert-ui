@@ -1,0 +1,1 @@
+scoped delta applies to HEAD+baseline and reproduces the worktree files

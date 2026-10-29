@@ -1,0 +1,10 @@
+--- /home/per/pert-ui-usability/r3-multiselect-implementation-evidence/negative-controls/no-begin-clear/backup/multi_select.rs	2026-10-29 11:45:44.280052146 +0100
++++ crates/pert-ui-runtime/src/multi_select.rs	2026-10-29 11:45:44.295034077 +0100
+@@ -283,7 +283,6 @@
+         self.draft.set(current.clone())?;
+         self.query.set(String::new())?;
+         self.highlight.set(None)?;
+-        self.pointer_owns.set(false);
+         self.observed.replace(Some((current, value.revision())));
+         self.open.set(true)?;
+         Ok(())

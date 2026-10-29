@@ -1,0 +1,26 @@
+   Compiling pert-ui-runtime v0.3.92 (/home/per/github/pert-ui/crates/pert-ui-runtime)
+   Compiling pert-ui-wgpu v0.3.92 (/home/per/github/pert-ui/crates/pert-ui-wgpu)
+   Compiling pert-ui-cpu v0.3.92 (/home/per/github/pert-ui/crates/pert-ui-cpu)
+   Compiling pert-ui v0.3.92 (/home/per/github/pert-ui/crates/pert-ui)
+   Compiling pert-ui-gallery v0.3.92 (/home/per/github/pert-ui/apps/gallery)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.85s
+     Running unittests src/main.rs (target/debug/deps/pert_ui_gallery-6a6eb1f8c57322ae)
+
+running 1 test
+test cli::the_interaction_steps_pass_headlessly ... FAILED
+
+failures:
+
+---- cli::the_interaction_steps_pass_headlessly stdout ----
+
+thread 'cli::the_interaction_steps_pass_headlessly' (4005462) panicked at apps/gallery/src/main.rs:521:79:
+MultiSelect: a filtered short-popup click survives its scrollable page: short-popup click lost search focus
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    cli::the_interaction_steps_pass_headlessly
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 133 filtered out; finished in 6.88s
+
+error: test failed, to rerun pass `-p pert-ui-gallery --bin pert-ui-gallery`

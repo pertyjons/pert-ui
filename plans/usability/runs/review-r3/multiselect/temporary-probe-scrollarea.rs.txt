@@ -1,0 +1,17 @@
+// Appended temporarily to multi_select_pointer.rs for run 06 only, then removed
+// by restoring the pre-probe bytes (sha256 6a928a11…, checked) and touching the
+// file. Fixture at that time: the page always had 40 filler lines, so the
+// ScrollArea overflowed and was focusable.
+#[test]
+fn zz_temporary_probe_short_click_in_scrolling_page() {
+    for count in [6, 20] {
+        let mut fx = Fx::rows(count, EachToggle);
+        fx.open();
+        let at = fx.center("O02");
+        fx.hover(at);
+        fx.press(at);
+        println!("PROBE|count={count} after press focus={:?} open={}", fx.focus(), fx.is_open());
+        fx.release(at);
+        println!("PROBE|count={count} after release focus={:?} open={} value={:?} reports={:?}", fx.focus(), fx.is_open(), fx.value(), fx.reports());
+    }
+}

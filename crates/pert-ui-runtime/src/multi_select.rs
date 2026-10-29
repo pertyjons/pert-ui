@@ -132,6 +132,15 @@ struct Shared<T> {
     /// The key the person moved the highlight to; the highlighted row is this
     /// one while it matches, otherwise the first enabled match.
     highlight: Signal<Option<String>>,
+    /// Whether the person's own pointer motion or press over a row placed the
+    /// highlight last, rather than the keyboard or the query. Only then may a
+    /// row that layout moves under a stationary pointer take the highlight;
+    /// see `ChoiceRow::pointer_input`. A cell rather than a signal: input,
+    /// the panel's update and lifecycle hooks reset it, and nothing renders it.
+    pointer_owns: Cell<bool>,
+    /// The mounted panel, from its latest update, so a completed row click can
+    /// return focus to the search field inside it.
+    panel: RefCell<Option<WidgetId>>,
     /// The popup's choices under [`MultiSelectCommit::OnClose`].
     draft: Signal<Vec<T>>,
     /// The bound value and its revision when the popup opened, `None`
@@ -274,6 +283,7 @@ impl<T: Clone + Eq + Hash + 'static> Shared<T> {
         self.draft.set(current.clone())?;
         self.query.set(String::new())?;
         self.highlight.set(None)?;
+        self.pointer_owns.set(false);
         self.observed.replace(Some((current, value.revision())));
         self.open.set(true)?;
         Ok(())
@@ -282,6 +292,7 @@ impl<T: Clone + Eq + Hash + 'static> Shared<T> {
     /// [`MultiSelectCommit::OnClose`] when `commit` and nothing has written
     /// the binding since the popup opened.
     fn finish(&self, cx: &mut EventContext, commit: bool) -> Result<(), RuntimeError> {
+        self.pointer_owns.set(false);
         let observed = self.observed.take();
         let (mode, binding) = {
             let desc = self.desc.borrow();
@@ -314,13 +325,14 @@ impl<T: Clone + Eq + Hash + 'static> Shared<T> {
         }
         Ok(())
     }
-    /// Adds `value` to the chosen values, or removes it, from an event.
-    fn toggle(&self, cx: &mut EventContext, value: &T) -> Result<(), RuntimeError> {
+    /// Adds `value` to the chosen values, or removes it, from an event,
+    /// without reporting the write; see `Toggled`.
+    fn write_toggle(&self, value: &T) -> Result<Toggled<T>, RuntimeError> {
         let (target, commits) = {
             let desc = self.desc.borrow();
             // A popup left open when the dropdown was disabled refuses input.
             if !desc.enablement.get()? {
-                return Ok(());
+                return Ok(Toggled::Refused);
             }
             match desc.commit {
                 MultiSelectCommit::EachToggle => (desc.value.clone(), true),
@@ -335,10 +347,44 @@ impl<T: Clone + Eq + Hash + 'static> Shared<T> {
             None => values.push(value.clone()),
         }
         target.set(values.clone())?;
-        if commits {
-            self.report(cx, &values)?;
+        Ok(if commits {
+            Toggled::Written(values)
+        } else {
+            Toggled::Drafted
+        })
+    }
+    /// Reports a toggle that wrote the bound value.
+    fn report_toggle(
+        &self,
+        cx: &mut EventContext,
+        toggled: Toggled<T>,
+    ) -> Result<(), RuntimeError> {
+        match toggled {
+            Toggled::Written(values) => self.report(cx, &values),
+            Toggled::Refused | Toggled::Drafted => Ok(()),
         }
-        Ok(())
+    }
+    /// Adds `value` to the chosen values, or removes it, from a key.
+    fn toggle(&self, cx: &mut EventContext, value: &T) -> Result<(), RuntimeError> {
+        let toggled = self.write_toggle(value)?;
+        self.report_toggle(cx, toggled)
+    }
+    /// Toggles `value` for a completed primary click on its row, then returns
+    /// focus to the search field, which a press on an overflowing list moved
+    /// to the list, before reporting the write. The application's handler
+    /// therefore runs last: a focus request it makes replaces this one, and
+    /// when it fails, the write and the queued return of focus stay. A refused
+    /// toggle requests no focus.
+    fn click(&self, cx: &mut EventContext, value: &T) -> Result<(), RuntimeError> {
+        let toggled = self.write_toggle(value)?;
+        if matches!(toggled, Toggled::Refused) {
+            return Ok(());
+        }
+        let panel = self.panel.borrow().clone();
+        // The panel is not focusable, and the search field is its first
+        // focusable descendant.
+        let focused = panel.map_or(Ok(()), |panel| cx.request_focus_within(&panel));
+        self.report_toggle(cx, toggled).and(focused)
     }
     /// Removes `value` from the bound value, for a chip's remove request.
     fn remove(&self, cx: &mut EventContext, value: &T) -> Result<(), RuntimeError> {
@@ -355,8 +401,11 @@ impl<T: Clone + Eq + Hash + 'static> Shared<T> {
         binding.set(values.clone())?;
         self.report(cx, &values)
     }
-    /// Handles a key the search field leaves to its owner.
+    /// Handles a key the search field leaves to its owner. Every such key
+    /// hands the highlight to the keyboard before it acts, so a stationary
+    /// pointer cannot take back what the key moved or toggle what it did not.
     fn key(&self, cx: &mut EventContext, key: SearchKey) -> Result<(), RuntimeError> {
+        self.pointer_owns.set(false);
         let Some(chain) = self.chain.borrow().clone() else {
             return Ok(());
         };
@@ -456,6 +505,16 @@ impl<T: Clone + Eq + Hash + 'static> Shared<T> {
     }
 }
 
+/// What a toggle wrote, so that writing and reporting it can be separated.
+enum Toggled<T> {
+    /// The dropdown is denied: nothing was written.
+    Refused,
+    /// The draft was edited; it is reported only when a close writes it.
+    Drafted,
+    /// The bound value was written with these values, to be reported.
+    Written(Vec<T>),
+}
+
 /// The popup list's rows over the current matches.
 struct Items<T> {
     filtered: Filtered<T>,
@@ -491,6 +550,7 @@ impl<T: Clone + Eq + Hash + 'static> ListItems for Items<T> {
                         .as_ref()
                         .map(|chain| chain.highlighted.clone()),
                     pressed: false,
+                    pointer_at: None,
                     text: RefCell::new(None),
                 },
             )
@@ -503,7 +563,8 @@ impl<T: Clone + Eq + Hash + 'static> ListItems for Items<T> {
 }
 
 /// One option in the popup: a check mark when chosen, the highlight when the
-/// keyboard is on it. A click toggles it; it never takes focus.
+/// keyboard or the pointer is on it. A completed primary click toggles it and
+/// returns focus to the search field; the row itself is never focusable.
 struct ChoiceRow<T> {
     key: String,
     value: T,
@@ -517,12 +578,22 @@ struct ChoiceRow<T> {
     highlighted: bool,
     highlight_source: Option<ReadSignal<Option<String>>>,
     pressed: bool,
+    /// The window position of the last move, press, release or leave this row
+    /// received, whether or not it could act on it. A move at the position
+    /// this row last saw is the pointer standing still, as layout's refreshed
+    /// moves and repeated host positions are. Kept through input resets,
+    /// redescription and visibility changes, for this mounted row only.
+    pointer_at: Option<Point>,
     text: RefCell<Option<TextLayout>>,
 }
 impl<T> ChoiceRow<T> {
+    /// Whether the dropdown accepts input, whatever this option says.
+    fn dropdown_allowed(&self) -> bool {
+        self.allowed && self.shared.desc.borrow().enablement.fixed() != Some(false)
+    }
     /// Whether the option is enabled and the dropdown is too.
     fn active(&self) -> bool {
-        self.enabled && self.allowed && self.shared.desc.borrow().enablement.fixed() != Some(false)
+        self.enabled && self.dropdown_allowed()
     }
 }
 impl<T: Clone + Eq + Hash + 'static> Component for ChoiceRow<T> {
@@ -585,26 +656,64 @@ impl<T: Clone + Eq + Hash + 'static> Component for ChoiceRow<T> {
         cx: &mut EventContext,
         event: PointerEvent,
     ) -> Result<InputOutcome, RuntimeError> {
-        if !self.active() {
+        // The highlight belongs to the pointer only after the person moved or
+        // pressed it over a row. A move at a position this row has already
+        // seen (a refresh after layout, a host repeating a position, the
+        // pointer re-entering the window where it left this row) never takes
+        // the highlight from the keyboard; once the pointer owns it, rows moved
+        // under the pointer follow it. Leave does not end ownership, because
+        // layout moving the hit to another row sends one too; the panel ends
+        // it when the pointer leaves the panel. The position is remembered
+        // before any early return, even while the row cannot act.
+        let kind = event.kind();
+        let moved = !event.is_refresh() && self.pointer_at != Some(event.position());
+        if matches!(
+            kind,
+            PointerKind::Move
+                | PointerKind::Press(_)
+                | PointerKind::Release(_)
+                | PointerKind::Leave
+        ) {
+            self.pointer_at = Some(event.position());
+        }
+        if let PointerKind::Release(PointerButton::Primary) = kind
+            && self.pressed
+        {
+            self.pressed = false;
+            cx.release_pointer();
+            if self.active() && cx.pointer_inside() {
+                self.shared.highlight.set(Some(self.key.clone()))?;
+                self.shared.pointer_owns.set(true);
+                self.shared.click(cx, &self.value)?;
+            }
+            return Ok(InputOutcome::Handled);
+        }
+        // A denied dropdown only remembers the position.
+        if !self.dropdown_allowed() {
             return Ok(InputOutcome::Ignored);
         }
-        match event.kind() {
-            PointerKind::Move if cx.pointer_inside() && !self.highlighted => {
-                self.shared.highlight.set(Some(self.key.clone()))?;
-                Ok(InputOutcome::Handled)
+        match kind {
+            PointerKind::Move if cx.pointer_inside() => {
+                // Motion over a disabled option, or over the row the keyboard
+                // already highlighted, still hands the highlight to the pointer.
+                if moved {
+                    self.shared.pointer_owns.set(true);
+                }
+                if self.enabled && self.shared.pointer_owns.get() && !self.highlighted {
+                    self.shared.highlight.set(Some(self.key.clone()))?;
+                    return Ok(InputOutcome::Handled);
+                }
+                Ok(InputOutcome::Ignored)
             }
             PointerKind::Press(PointerButton::Primary) => {
+                // A press on a disabled option is the pointer's too, but arms
+                // nothing.
+                self.shared.pointer_owns.set(true);
+                if !self.enabled {
+                    return Ok(InputOutcome::Ignored);
+                }
                 cx.capture_pointer()?;
                 self.pressed = true;
-                Ok(InputOutcome::Handled)
-            }
-            PointerKind::Release(PointerButton::Primary) if self.pressed => {
-                self.pressed = false;
-                cx.release_pointer();
-                if cx.pointer_inside() {
-                    self.shared.highlight.set(Some(self.key.clone()))?;
-                    self.shared.toggle(cx, &self.value)?;
-                }
                 Ok(InputOutcome::Handled)
             }
             _ => Ok(InputOutcome::Ignored),
@@ -684,6 +793,11 @@ struct Panel<T> {
     /// The text shown when no option matches, from the string table.
     no_matches: String,
     empty: RefCell<Option<TextLayout>>,
+    /// This panel's identity from its latest update, so unmounting clears the
+    /// shared entry only while it is still this panel's.
+    id: Option<WidgetId>,
+    /// The query's revision when this panel last read it.
+    query_revision: Option<u64>,
 }
 impl<T: Clone + Eq + Hash + 'static> Panel<T> {
     fn list_height(&self, cx: &MeasureContext<'_>) -> f32 {
@@ -699,10 +813,31 @@ impl<T: Clone + Eq + Hash + 'static> Component for Panel<T> {
         })
     }
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
-        let (options, search_placeholder) = {
+        let (options, search_placeholder, enablement) = {
             let desc = self.shared.desc.borrow();
-            (desc.options.clone(), desc.search_placeholder.clone())
+            (
+                desc.options.clone(),
+                desc.search_placeholder.clone(),
+                desc.enablement.clone(),
+            )
         };
+        let id = cx.id();
+        self.shared.panel.replace(Some(id.clone()));
+        self.id = Some(id);
+        // The panel, not the rows, observes the permission and the query for
+        // pointer ownership: with no matching row there is no row to see a
+        // denial, and a changed query must end ownership before the rows it
+        // selects are published and laid out under the pointer. Redescribing
+        // options, labels or the filter is not a keyboard action and keeps it.
+        if !enablement.read(cx)? {
+            self.shared.pointer_owns.set(false);
+        }
+        cx.read(&self.shared.query)?;
+        let revision = self.shared.query.revision();
+        if self.query_revision != Some(revision) {
+            self.query_revision = Some(revision);
+            self.shared.pointer_owns.set(false);
+        }
         let strings = cx.strings()?;
         let no_matches = strings.text(crate::StringRole::NoMatches);
         if self.no_matches != no_matches {
@@ -770,6 +905,23 @@ impl<T: Clone + Eq + Hash + 'static> Component for Panel<T> {
             self.pending_rows = None;
         }
         Ok(())
+    }
+    fn hover_changed(&mut self, _: &mut EventContext, hovered: bool) {
+        // Rows that layout moves under a pointer outside the panel must not
+        // take the highlight. A row's Leave cannot tell this apart from layout
+        // moving the hit to another row, which sends one too.
+        if !hovered {
+            self.shared.pointer_owns.set(false);
+        }
+    }
+    fn visibility_changed(&mut self, _: bool) {
+        self.shared.pointer_owns.set(false);
+    }
+    fn unmounted(&mut self) {
+        let mut panel = self.shared.panel.borrow_mut();
+        if panel.is_some() && *panel == self.id {
+            *panel = None;
+        }
     }
     fn focus_within_changed(
         &mut self,
@@ -1158,15 +1310,48 @@ impl<T: Clone + Eq + Hash + 'static> Component for Trigger<T> {
 /// Up and Down move the highlight over the enabled matches (wrapping), Page Up
 /// and Page Down move it by eight, and Enter toggles the highlighted option.
 /// The highlight stays on its option while that option matches, and is
-/// otherwise the first enabled match. A primary click on a row toggles it
-/// without moving focus. Disabled options are shown muted and never toggle.
-/// The popup stays open across toggles. Escape with a non-empty query clears
-/// the query (see [`SearchField`]); with an empty query it closes the popup.
-/// Tab moves from the search field to the list while the list scrolls (where
-/// the arrows scroll it), and out of the popup after that; focus leaving the
-/// popup closes it, even when it lands on the trigger or a chip. Closing
+/// otherwise the first enabled match; it starts on the first enabled match,
+/// even under a pointer resting where the popup opens. Disabled options are
+/// shown muted and never toggle. The popup stays open across toggles. Escape
+/// with a non-empty query clears the query (see [`SearchField`]); with an
+/// empty query it closes the popup. Tab moves from the search field to the
+/// list while the list scrolls, and out of the popup after that; focus leaving
+/// the popup closes it, even when it lands on the trigger or a chip. Closing
 /// returns focus to the trigger unless focus moved elsewhere, and the chosen
 /// values are never lost by moving focus between the trigger and the popup.
+///
+/// **Pointer highlight.** Moving the pointer over an enabled row highlights
+/// it, and from then on the pointer owns the highlight: when the list scrolls
+/// or its rows change under the resting pointer, the row that comes under it
+/// is highlighted. Up, Down, Page Up, Page Down and Enter in the search field,
+/// every edit or clearing of the query, the pointer leaving the popup's panel,
+/// the dropdown being denied, and closing or hiding the popup hand the
+/// highlight back to the keyboard. A pointer that only rests never takes it
+/// back: rows scrolled or laid out under it, the wheel, the list's own scroll
+/// keys and a host repeating an unchanged position leave the keyboard's
+/// highlight where it is, and the wheel never chooses an option. Moving over a
+/// disabled option, or within the row the keyboard highlighted, is motion too
+/// but highlights nothing new. Resting is judged per row by position:
+/// re-entering the window where the pointer left it rests only over the same
+/// row, a row the keyboard scrolled there meanwhile counts it as motion, and a
+/// row that layout moved away from the pointer and later back under that point
+/// treats a jump straight back to it as resting. A display scale or zoom change
+/// that moves the pointer's logical position counts as motion.
+///
+/// **Clicks and focus.** A completed primary click on an enabled option,
+/// pressed and released inside its row, toggles it, highlights it for the
+/// pointer and returns focus to the search field, so navigation and typing
+/// continue there; this includes a list that Tab had focused. A press first
+/// focuses the nearest focusable ancestor of the row, as every press does,
+/// which is the list while it scrolls; that ends an unfinished IME
+/// composition in the search field, and the returned focus does not restore
+/// it. Until the release, keys reach the list, whose arrows, Page Up/Down,
+/// Home and End scroll it like the wheel. A release outside the pressed row,
+/// for example after the list's own Down scrolled the row away, a press on a
+/// disabled option and a press while the dropdown is denied toggle nothing and
+/// leave focus where the press put it. Hovering, the wheel and data changes
+/// never move focus. A focus request from [`MultiSelect::on_change`] wins
+/// over the return to the search field.
 ///
 /// **Committing.** [`MultiSelectCommit::EachToggle`], the default, writes the
 /// binding on every toggle, so Escape only closes. With
@@ -1271,6 +1456,8 @@ impl<T: Clone + Eq + Hash + 'static> MultiSelect<T> {
                 permission_changed: Cell::new(false),
                 query: ui.signal(String::new()),
                 highlight: ui.signal(None),
+                pointer_owns: Cell::new(false),
+                panel: RefCell::new(None),
                 draft: ui.signal(Vec::new()),
                 observed: RefCell::new(None),
                 chain: RefCell::new(None),
@@ -1325,8 +1512,10 @@ impl<T: Clone + Eq + Hash + 'static> MultiSelect<T> {
     ///
     /// Timing class: [in the input](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#in-the-input).
     ///
-    /// It is called after a toggle under [`MultiSelectCommit::EachToggle`],
-    /// after a chip removal under either commit timing, and after an
+    /// It is called after a toggle under [`MultiSelectCommit::EachToggle`]
+    /// (for a row click, after the click asked for focus to return to the
+    /// search field, so a focus request the handler makes wins), after a chip
+    /// removal under either commit timing, and after an
     /// [`MultiSelectCommit::OnClose`] draft is written by one of the closes
     /// [`Self::commit`] lists. Toggles that only edit a draft, closes that
     /// discard it or write nothing (Escape, a hidden or removed chooser, a
@@ -1336,8 +1525,9 @@ impl<T: Clone + Eq + Hash + 'static> MultiSelect<T> {
     /// it either; observe the bound signal for those.
     ///
     /// A failing handler's error propagates through the runtime's input
-    /// handling: the write stays, the popup still closes when the write was
-    /// its close, and nothing is replayed. Redescribing the chooser replaces
+    /// handling: the write stays, a row click still returns focus to the
+    /// search field at the next flush, the popup still closes when the write
+    /// was its close, and nothing is replayed. Redescribing the chooser replaces
     /// the handler, including removing it, without closing an open popup or
     /// discarding its draft.
     ///
@@ -1481,6 +1671,8 @@ impl<T: Clone + Eq + Hash + 'static> Component for MultiSelect<T> {
             count: 0,
             no_matches: String::new(),
             empty: RefCell::new(None),
+            id: None,
+            query_revision: None,
         };
         vec![
             Element::new("anchor", trigger).structural(),

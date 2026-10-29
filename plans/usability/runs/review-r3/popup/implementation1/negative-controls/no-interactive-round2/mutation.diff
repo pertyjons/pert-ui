@@ -1,0 +1,10 @@
+--- /home/per/pert-ui-usability/r3-popup-implementation-evidence/negative-controls/no-interactive-round2/backup/surfaces.rs	2026-10-29 12:36:09.816839112 +0100
++++ crates/pert-ui-runtime/src/runtime/surfaces.rs	2026-10-29 12:36:09.832786643 +0100
+@@ -173,7 +173,6 @@
+         self.window.surfaces.iter().any(|surface| {
+             surface.root == root
+                 && surface.admitted
+-                && surface.kind.interactive()
+                 && self.surface_kind(root) == Some(surface.kind)
+         })
+     }

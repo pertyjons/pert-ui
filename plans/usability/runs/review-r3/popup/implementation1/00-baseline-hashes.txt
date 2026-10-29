@@ -1,0 +1,23 @@
+# captured 2026-10-29T11:18:12+00:00
+# worktree /home/per/pert-ui-usability/r3-popup-worktree
+# HEAD c19ae7083407c8cd19674256fce483de6a21b06c
+# status:
+ M crates/pert-ui-runtime/src/multi_select.rs
+ M crates/pert-ui/tests/collections/main.rs
+?? crates/pert-ui/tests/collections/multi_select_pointer.rs
+# hashes:
+5f7908438180065c6fc456eea6c5b62abef7046a7406d2c941a6129022175d56  crates/pert-ui-runtime/src/runtime/pointer.rs
+0aa59ff24e9c514e29be067e31503369e35679e972b38b08e3a3fde91c2d270e  crates/pert-ui-runtime/src/runtime/surfaces.rs
+23d8c98d5b17a5db84c60a88dd371db5901fb6c7680aea9d9a5d522155fe463f  crates/pert-ui-runtime/src/runtime.rs
+a7211f7ef03dfc779bec09cc092671abcbfdf7233dec758b62e292880a714acd  crates/pert-ui-runtime/src/popover.rs
+7c47101a7858fd1da5f1cd7e5e82dce85d976e545f2ddd55fea06b681728c4dd  crates/pert-ui/tests/foundation/main.rs
+b6843e9ce95d1a564ec6fff9736b23f992a0061784e1792b987cf9f6c619836c  crates/pert-ui-runtime/src/multi_select.rs
+4c2d71dfaeb6058902de9b770f48591d58713a9747bfcd474fed80031c509183  crates/pert-ui/tests/collections/multi_select_pointer.rs
+47e0b16761fde4f041bc9212f6f023df4b65741cb7de5f6b3271688e922370b0  crates/pert-ui/tests/collections/main.rs
+# plan/review (main, read-only):
+c3b4dc19218da5d2f1fe50e0adb39018fca67da0e1d16954de6a35de66a392e5  /home/per/github/pert-ui/plans/usability/round-3-design-popup-press-focus.md
+409df6de03c629fde52ea7de364a0fceeb1b23238ed7f65cd3415a199e260168  /home/per/github/pert-ui/plans/usability/runs/review-r3/popup-design-review-r1.md
+7af6cdfb27592e66becac3f05538c241d292986eced7036320580d1e0c2dd062  /home/per/pert-ui-usability/r3-popup-approved-multiselect-base/baseline.json
+# toolchain:
+rustc 1.99.1 (58cf8f9c3 2026-10-13)
+cargo 1.99.1 (5f94df478 2026-08-27)

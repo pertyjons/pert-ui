@@ -1,0 +1,34 @@
+--- /home/per/pert-ui-usability/r3-multiselect-implementation-evidence/negative-controls/record-after-denied-return-final/backup/multi_select.rs	2026-10-29 11:51:03.679443147 +0100
++++ crates/pert-ui-runtime/src/multi_select.rs	2026-10-29 11:51:03.694273970 +0100
+@@ -667,15 +667,6 @@
+         // before any early return, even while the row cannot act.
+         let kind = event.kind();
+         let moved = !event.is_refresh() && self.pointer_at != Some(event.position());
+-        if matches!(
+-            kind,
+-            PointerKind::Move
+-                | PointerKind::Press(_)
+-                | PointerKind::Release(_)
+-                | PointerKind::Leave
+-        ) {
+-            self.pointer_at = Some(event.position());
+-        }
+         if let PointerKind::Release(PointerButton::Primary) = kind
+             && self.pressed
+         {
+@@ -692,6 +683,15 @@
+         if !self.dropdown_allowed() {
+             return Ok(InputOutcome::Ignored);
+         }
++        if matches!(
++            kind,
++            PointerKind::Move
++                | PointerKind::Press(_)
++                | PointerKind::Release(_)
++                | PointerKind::Leave
++        ) {
++            self.pointer_at = Some(event.position());
++        }
+         match kind {
+             PointerKind::Move if cx.pointer_inside() => {
+                 // Motion over a disabled option, or over the row the keyboard

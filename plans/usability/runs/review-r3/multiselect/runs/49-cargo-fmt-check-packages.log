@@ -1,0 +1,27 @@
+# started 2026-10-29T10:50:25+00:00
+# cwd /home/per/pert-ui-usability/r3-multiselect-worktree  CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-multiselect-implementation-target
+# command: cargo fmt -p pert-ui-runtime -p pert-ui --check
+# HEAD 17c6c3d39b3015a1563d7440541af87a1b7ee998
+# git status --porcelain:
+ M crates/pert-ui-runtime/src/multi_select.rs
+ M crates/pert-ui/tests/collections/main.rs
+?? crates/pert-ui/tests/collections/multi_select_pointer.rs
+# hashes before:
+b6843e9ce95d1a564ec6fff9736b23f992a0061784e1792b987cf9f6c619836c  crates/pert-ui-runtime/src/multi_select.rs
+073e75adfb217a8db927a46fe39a1a400e0c74205810e6fe62c7e9fcb69f9979  crates/pert-ui/tests/collections/main.rs
+c83a817ee393e33821e025fbed127b89233d6dc650eb8c9a20191d6b0bc4b699  crates/pert-ui/tests/collections/multi_select.rs
+4c2d71dfaeb6058902de9b770f48591d58713a9747bfcd474fed80031c509183  crates/pert-ui/tests/collections/multi_select_pointer.rs
+# mtimes before:
+1793270861.937994899 crates/pert-ui-runtime/src/multi_select.rs
+1793270263.393146004 crates/pert-ui/tests/collections/main.rs
+1793269430.081469843 crates/pert-ui/tests/collections/multi_select.rs
+1793271024.687164956 crates/pert-ui/tests/collections/multi_select_pointer.rs
+# ---- output ----
+# ---- end output ----
+# hashes after:
+b6843e9ce95d1a564ec6fff9736b23f992a0061784e1792b987cf9f6c619836c  crates/pert-ui-runtime/src/multi_select.rs
+073e75adfb217a8db927a46fe39a1a400e0c74205810e6fe62c7e9fcb69f9979  crates/pert-ui/tests/collections/main.rs
+c83a817ee393e33821e025fbed127b89233d6dc650eb8c9a20191d6b0bc4b699  crates/pert-ui/tests/collections/multi_select.rs
+4c2d71dfaeb6058902de9b770f48591d58713a9747bfcd474fed80031c509183  crates/pert-ui/tests/collections/multi_select_pointer.rs
+# finished 2026-10-29T10:50:27+00:00
+# exit_status 0

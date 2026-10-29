@@ -1,0 +1,153 @@
+# started 2026-10-29T11:34:36+00:00
+# cwd /home/per/pert-ui-usability/r3-popup-worktree  CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-popup-implementation-target
+# command: cargo test --locked -p pert-ui --test foundation popup_press_focus
+# HEAD c19ae7083407c8cd19674256fce483de6a21b06c
+# git status --porcelain:
+ M crates/pert-ui-runtime/src/multi_select.rs
+ M crates/pert-ui-runtime/src/popover.rs
+ M crates/pert-ui-runtime/src/runtime.rs
+ M crates/pert-ui-runtime/src/runtime/surfaces.rs
+ M crates/pert-ui/tests/collections/main.rs
+ M crates/pert-ui/tests/foundation/main.rs
+?? crates/pert-ui/tests/collections/multi_select_pointer.rs
+?? crates/pert-ui/tests/foundation/popup_press_focus.rs
+# hashes before:
+5f7908438180065c6fc456eea6c5b62abef7046a7406d2c941a6129022175d56  crates/pert-ui-runtime/src/runtime/pointer.rs
+6460cccd84e705e4d555ffebb342626876cfc15f208fedd9f025e6832738d160  crates/pert-ui-runtime/src/runtime/surfaces.rs
+fb743f77f36513c70944a78b2a77fc22fa9060f0c0c789aa5b94783a9c4abe3e  crates/pert-ui-runtime/src/runtime.rs
+c3f4b04782b874768f99b681d633e6692ddd3ec6fbe06d4a22d648c5649a00f3  crates/pert-ui-runtime/src/popover.rs
+773e58e9e8e6f5b90dcbc9494fa4391f00a4acbbe1b0b817351bce2525a69640  crates/pert-ui/tests/foundation/main.rs
+721128e5a6e97dfb2a3053a4858e1a5f80a5c4c9941c76c6f9073575a30f8858  crates/pert-ui/tests/foundation/popup_press_focus.rs
+b6843e9ce95d1a564ec6fff9736b23f992a0061784e1792b987cf9f6c619836c  crates/pert-ui-runtime/src/multi_select.rs
+4c2d71dfaeb6058902de9b770f48591d58713a9747bfcd474fed80031c509183  crates/pert-ui/tests/collections/multi_select_pointer.rs
+47e0b16761fde4f041bc9212f6f023df4b65741cb7de5f6b3271688e922370b0  crates/pert-ui/tests/collections/main.rs
+# mtimes before:
+1793273676.425173216 crates/pert-ui-runtime/src/runtime/pointer.rs
+1793273676.425173216 crates/pert-ui-runtime/src/runtime/surfaces.rs
+1793273457.143609620 crates/pert-ui-runtime/src/runtime.rs
+1793273446.515987387 crates/pert-ui-runtime/src/popover.rs
+1793273201.071287643 crates/pert-ui/tests/foundation/main.rs
+1793273648.900749364 crates/pert-ui/tests/foundation/popup_press_focus.rs
+1793272629.999896711 crates/pert-ui-runtime/src/multi_select.rs
+1793272630.000259956 crates/pert-ui/tests/collections/multi_select_pointer.rs
+1793272630.000529949 crates/pert-ui/tests/collections/main.rs
+# ---- output ----
+   Compiling pert-ui-runtime v0.3.92 (/home/per/pert-ui-usability/r3-popup-worktree/crates/pert-ui-runtime)
+warning: method `admitted_interactive_surface` is never used
+   --> crates/pert-ui-runtime/src/runtime/surfaces.rs:172:19
+    |
+ 21 | impl Runtime {
+    | ------------ method in this implementation
+...
+172 |     pub(super) fn admitted_interactive_surface(&self, root: u64) -> bool {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+   Compiling pert-ui-wgpu v0.3.92 (/home/per/pert-ui-usability/r3-popup-worktree/crates/pert-ui-wgpu)
+   Compiling pert-ui v0.3.92 (/home/per/pert-ui-usability/r3-popup-worktree/crates/pert-ui)
+warning: `pert-ui-runtime` (lib) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.80s
+     Running tests/foundation/main.rs (/home/per/pert-ui-usability/r3-popup-implementation-target/debug/deps/foundation-b8ed39ce01789154)
+
+running 13 tests
+test popup_press_focus::without_a_surface_a_press_still_focuses_the_ancestor ... ok
+test popup_press_focus::a_surface_changed_to_a_notification_no_longer_keeps_focus ... FAILED
+test popup_press_focus::a_press_on_a_submenu_keeps_focus_in_the_enclosing_menu ... FAILED
+test popup_press_focus::explicit_and_requested_focus_still_leave_and_dismiss_the_popup ... FAILED
+test popup_press_focus::a_press_on_content_holding_focus_keeps_it_inside_and_outside_surfaces ... ok
+test popup_press_focus::a_hidden_or_closed_surface_keeps_nothing_for_a_later_press ... ok
+test popup_press_focus::a_press_inside_a_dialog_keeps_focus_and_returns_its_outcome ... FAILED
+test popup_press_focus::a_press_on_nonfocusable_popup_content_keeps_focus_and_the_popup ... FAILED
+test popup_press_focus::a_detached_window_keeps_focus_inside_its_surface ... FAILED
+test popup_press_focus::focus_already_outside_the_surface_takes_the_old_walk ... ok
+test popup_press_focus::a_dialog_without_focusable_content_keeps_focus_on_its_root ... FAILED
+test popup_press_focus::a_focusable_component_inside_the_surface_still_takes_the_press ... ok
+test popup_press_focus::a_short_multi_select_in_a_scrolling_page_keeps_its_row_click ... FAILED
+
+failures:
+
+---- popup_press_focus::a_surface_changed_to_a_notification_no_longer_keeps_focus stdout ----
+
+thread 'popup_press_focus::a_surface_changed_to_a_notification_no_longer_keeps_focus' (4056567) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:728:5:
+assertion `left == right` failed
+  left: Err(ModalBlocked)
+ right: Ok(Handled)
+
+---- popup_press_focus::a_press_on_a_submenu_keeps_focus_in_the_enclosing_menu stdout ----
+
+thread 'popup_press_focus::a_press_on_a_submenu_keeps_focus_in_the_enclosing_menu' (4056563) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:497:9:
+assertion `left == right` failed: ContextMenu
+  left: Ok(Ignored)
+ right: Ok(Handled)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- popup_press_focus::explicit_and_requested_focus_still_leave_and_dismiss_the_popup stdout ----
+
+thread 'popup_press_focus::explicit_and_requested_focus_still_leave_and_dismiss_the_popup' (4056568) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:642:5:
+assertion `left == right` failed
+  left: Ok(Ignored)
+ right: Ok(Handled)
+
+---- popup_press_focus::a_press_inside_a_dialog_keeps_focus_and_returns_its_outcome stdout ----
+
+thread 'popup_press_focus::a_press_inside_a_dialog_keeps_focus_and_returns_its_outcome' (4056562) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:463:5:
+assertion `left == right` failed
+  left: [Pressed { kind: Dialog, outcome: Err(ModalBlocked), pressed: Some("field"), focus: Some("field"), open: true, log: ["row press"] }, Pressed { kind: ApplicationDialog, outcome: Err(ModalBlocked), pressed: Some("field"), focus: Some("field"), open: true, log: ["row press"] }, Pressed { kind: ViewDialog, outcome: Ok(Handled), pressed: Some("page"), focus: Some("page"), open: true, log: ["field focus_lost", "panel within false", "popup within false", "row press"] }]
+ right: [Pressed { kind: Dialog, outcome: Ok(Handled), pressed: Some("field"), focus: Some("field"), open: true, log: ["row press"] }, Pressed { kind: ApplicationDialog, outcome: Ok(Handled), pressed: Some("field"), focus: Some("field"), open: true, log: ["row press"] }, Pressed { kind: ViewDialog, outcome: Ok(Handled), pressed: Some("field"), focus: Some("field"), open: true, log: ["row press"] }]
+
+---- popup_press_focus::a_press_on_nonfocusable_popup_content_keeps_focus_and_the_popup stdout ----
+
+thread 'popup_press_focus::a_press_on_nonfocusable_popup_content_keeps_focus_and_the_popup' (4056565) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:429:5:
+assertion `left == right` failed
+  left: [Pressed { kind: Popover, outcome: Ok(Ignored), pressed: Some("page"), focus: Some("page"), open: false, log: ["field focus_lost", "panel within false", "popup within false", "owner dismiss FocusLeft"] }, Pressed { kind: ContextMenu, outcome: Ok(Ignored), pressed: Some("page"), focus: Some("page"), open: false, log: ["field focus_lost", "panel within false", "popup within false", "owner dismiss FocusLeft"] }, Pressed { kind: Submenu, outcome: Ok(Ignored), pressed: Some("page"), focus: Some("page"), open: false, log: ["field focus_lost", "panel within false", "popup within false", "owner dismiss FocusLeft"] }]
+ right: [Pressed { kind: Popover, outcome: Ok(Handled), pressed: Some("field"), focus: Some("field"), open: true, log: ["row press"] }, Pressed { kind: ContextMenu, outcome: Ok(Handled), pressed: Some("field"), focus: Some("field"), open: true, log: ["row press"] }, Pressed { kind: Submenu, outcome: Ok(Handled), pressed: Some("field"), focus: Some("field"), open: true, log: ["row press"] }]
+
+---- popup_press_focus::a_detached_window_keeps_focus_inside_its_surface stdout ----
+
+thread 'popup_press_focus::a_detached_window_keeps_focus_inside_its_surface' (4056558) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:783:5:
+assertion `left == right` failed
+  left: [Pressed { kind: Popover, outcome: Ok(Ignored), pressed: Some("page"), focus: Some("page"), open: false, log: ["field focus_lost", "panel within false", "popup within false", "owner dismiss FocusLeft"] }, Pressed { kind: Dialog, outcome: Err(ModalBlocked), pressed: Some("field"), focus: Some("field"), open: true, log: ["row press"] }]
+ right: [Pressed { kind: Popover, outcome: Ok(Handled), pressed: Some("field"), focus: Some("field"), open: true, log: ["row press"] }, Pressed { kind: Dialog, outcome: Ok(Handled), pressed: Some("field"), focus: Some("field"), open: true, log: ["row press"] }]
+
+---- popup_press_focus::a_dialog_without_focusable_content_keeps_focus_on_its_root stdout ----
+
+thread 'popup_press_focus::a_dialog_without_focusable_content_keeps_focus_on_its_root' (4056559) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:477:5:
+assertion `left == right` failed
+  left: [Pressed { kind: Dialog, outcome: Err(ModalBlocked), pressed: Some("popup"), focus: Some("popup"), open: true, log: ["row press"] }, Pressed { kind: ApplicationDialog, outcome: Err(ModalBlocked), pressed: Some("popup"), focus: Some("popup"), open: true, log: ["row press"] }, Pressed { kind: ViewDialog, outcome: Ok(Handled), pressed: Some("page"), focus: Some("page"), open: true, log: ["popup focus_lost", "row press"] }]
+ right: [Pressed { kind: Dialog, outcome: Ok(Handled), pressed: Some("popup"), focus: Some("popup"), open: true, log: ["row press"] }, Pressed { kind: ApplicationDialog, outcome: Ok(Handled), pressed: Some("popup"), focus: Some("popup"), open: true, log: ["row press"] }, Pressed { kind: ViewDialog, outcome: Ok(Handled), pressed: Some("popup"), focus: Some("popup"), open: true, log: ["row press"] }]
+
+---- popup_press_focus::a_short_multi_select_in_a_scrolling_page_keeps_its_row_click stdout ----
+
+thread 'popup_press_focus::a_short_multi_select_in_a_scrolling_page_keeps_its_row_click' (4056566) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:978:5:
+assertion `left == right` failed
+  left: [Clicked { commit: EachToggle, pressed: (Some("page"), false, ["o01"]), released: (Some("page"), false, ["o01"]), reports: [["o01"]] }, Clicked { commit: OnClose, pressed: (Some("page"), false, ["o01"]), released: (Some("page"), false, ["o01"]), reports: [["o01"]] }]
+ right: [Clicked { commit: EachToggle, pressed: (Some("search"), true, ["o01"]), released: (Some("search"), true, ["o01", "o03"]), reports: [["o01"], ["o01", "o03"]] }, Clicked { commit: OnClose, pressed: (Some("search"), true, []), released: (Some("search"), true, []), reports: [] }]
+
+
+failures:
+    popup_press_focus::a_detached_window_keeps_focus_inside_its_surface
+    popup_press_focus::a_dialog_without_focusable_content_keeps_focus_on_its_root
+    popup_press_focus::a_press_inside_a_dialog_keeps_focus_and_returns_its_outcome
+    popup_press_focus::a_press_on_a_submenu_keeps_focus_in_the_enclosing_menu
+    popup_press_focus::a_press_on_nonfocusable_popup_content_keeps_focus_and_the_popup
+    popup_press_focus::a_short_multi_select_in_a_scrolling_page_keeps_its_row_click
+    popup_press_focus::a_surface_changed_to_a_notification_no_longer_keeps_focus
+    popup_press_focus::explicit_and_requested_focus_still_leave_and_dismiss_the_popup
+
+test result: FAILED. 5 passed; 8 failed; 0 ignored; 0 measured; 494 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `-p pert-ui --test foundation`
+# ---- end output ----
+# hashes after:
+5f7908438180065c6fc456eea6c5b62abef7046a7406d2c941a6129022175d56  crates/pert-ui-runtime/src/runtime/pointer.rs
+6460cccd84e705e4d555ffebb342626876cfc15f208fedd9f025e6832738d160  crates/pert-ui-runtime/src/runtime/surfaces.rs
+fb743f77f36513c70944a78b2a77fc22fa9060f0c0c789aa5b94783a9c4abe3e  crates/pert-ui-runtime/src/runtime.rs
+c3f4b04782b874768f99b681d633e6692ddd3ec6fbe06d4a22d648c5649a00f3  crates/pert-ui-runtime/src/popover.rs
+773e58e9e8e6f5b90dcbc9494fa4391f00a4acbbe1b0b817351bce2525a69640  crates/pert-ui/tests/foundation/main.rs
+721128e5a6e97dfb2a3053a4858e1a5f80a5c4c9941c76c6f9073575a30f8858  crates/pert-ui/tests/foundation/popup_press_focus.rs
+b6843e9ce95d1a564ec6fff9736b23f992a0061784e1792b987cf9f6c619836c  crates/pert-ui-runtime/src/multi_select.rs
+4c2d71dfaeb6058902de9b770f48591d58713a9747bfcd474fed80031c509183  crates/pert-ui/tests/collections/multi_select_pointer.rs
+47e0b16761fde4f041bc9212f6f023df4b65741cb7de5f6b3271688e922370b0  crates/pert-ui/tests/collections/main.rs
+# finished 2026-10-29T11:34:42+00:00
+# exit_status 101

@@ -1,0 +1,16 @@
+--- /home/per/pert-ui-usability/r3-multiselect-implementation-evidence/negative-controls/disabled-press-no-gain-final/backup/multi_select.rs	2026-10-29 11:51:18.857552365 +0100
++++ crates/pert-ui-runtime/src/multi_select.rs	2026-10-29 11:51:18.872153875 +0100
+@@ -706,12 +706,10 @@
+                 Ok(InputOutcome::Ignored)
+             }
+             PointerKind::Press(PointerButton::Primary) => {
+-                // A press on a disabled option is the pointer's too, but arms
+-                // nothing.
+-                self.shared.pointer_owns.set(true);
+                 if !self.enabled {
+                     return Ok(InputOutcome::Ignored);
+                 }
++                self.shared.pointer_owns.set(true);
+                 cx.capture_pointer()?;
+                 self.pressed = true;
+                 Ok(InputOutcome::Handled)

@@ -1,0 +1,61 @@
+# started 2026-10-29T11:31:44+00:00
+# cwd /home/per/pert-ui-usability/r3-popup-worktree  CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-popup-implementation-target
+# command: cargo test --locked -p pert-ui-runtime --lib runtime::surfaces
+# HEAD c19ae7083407c8cd19674256fce483de6a21b06c
+# git status --porcelain:
+ M crates/pert-ui-runtime/src/multi_select.rs
+ M crates/pert-ui-runtime/src/popover.rs
+ M crates/pert-ui-runtime/src/runtime.rs
+ M crates/pert-ui-runtime/src/runtime/pointer.rs
+ M crates/pert-ui-runtime/src/runtime/surfaces.rs
+ M crates/pert-ui/tests/collections/main.rs
+ M crates/pert-ui/tests/foundation/main.rs
+?? crates/pert-ui/tests/collections/multi_select_pointer.rs
+?? crates/pert-ui/tests/foundation/popup_press_focus.rs
+# hashes before:
+4fb55ecfbf6c7d480a54f021ce4ffd275c82d598fa30eb144ca5baca8ea2836f  crates/pert-ui-runtime/src/runtime/pointer.rs
+6460cccd84e705e4d555ffebb342626876cfc15f208fedd9f025e6832738d160  crates/pert-ui-runtime/src/runtime/surfaces.rs
+fb743f77f36513c70944a78b2a77fc22fa9060f0c0c789aa5b94783a9c4abe3e  crates/pert-ui-runtime/src/runtime.rs
+c3f4b04782b874768f99b681d633e6692ddd3ec6fbe06d4a22d648c5649a00f3  crates/pert-ui-runtime/src/popover.rs
+773e58e9e8e6f5b90dcbc9494fa4391f00a4acbbe1b0b817351bce2525a69640  crates/pert-ui/tests/foundation/main.rs
+68c1dfec91600b61eea8c9ba4a857057fb0322acdfb4de541b19982cc54ba113  crates/pert-ui/tests/foundation/popup_press_focus.rs
+b6843e9ce95d1a564ec6fff9736b23f992a0061784e1792b987cf9f6c619836c  crates/pert-ui-runtime/src/multi_select.rs
+4c2d71dfaeb6058902de9b770f48591d58713a9747bfcd474fed80031c509183  crates/pert-ui/tests/collections/multi_select_pointer.rs
+47e0b16761fde4f041bc9212f6f023df4b65741cb7de5f6b3271688e922370b0  crates/pert-ui/tests/collections/main.rs
+# mtimes before:
+1793273457.155214603 crates/pert-ui-runtime/src/runtime/pointer.rs
+1793273381.924071943 crates/pert-ui-runtime/src/runtime/surfaces.rs
+1793273457.143609620 crates/pert-ui-runtime/src/runtime.rs
+1793273446.515987387 crates/pert-ui-runtime/src/popover.rs
+1793273201.071287643 crates/pert-ui/tests/foundation/main.rs
+1793273473.785728369 crates/pert-ui/tests/foundation/popup_press_focus.rs
+1793272629.999896711 crates/pert-ui-runtime/src/multi_select.rs
+1793272630.000259956 crates/pert-ui/tests/collections/multi_select_pointer.rs
+1793272630.000529949 crates/pert-ui/tests/collections/main.rs
+# ---- output ----
+   Compiling pert-ui-runtime v0.3.92 (/home/per/pert-ui-usability/r3-popup-worktree/crates/pert-ui-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.01s
+     Running unittests src/lib.rs (/home/per/pert-ui-usability/r3-popup-implementation-target/debug/deps/pert_ui_runtime-077f26eed7713279)
+
+running 5 tests
+test runtime::surfaces::tests::only_a_current_interactive_admission_keeps_press_focus ... ok
+test runtime::surfaces::tests::changed_nonmodal_kind_after_early_error_releases_and_retries_admission ... ok
+test runtime::surfaces::tests::changed_modal_kind_after_early_error_blocks_and_retries_admission ... ok
+test runtime::surfaces::tests::application_dialog_downgrade_releases_application_blocker ... ok
+test runtime::surfaces::tests::pending_application_dialog_blocks_other_windows_before_admission ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 195 filtered out; finished in 0.00s
+
+# ---- end output ----
+# hashes after:
+4fb55ecfbf6c7d480a54f021ce4ffd275c82d598fa30eb144ca5baca8ea2836f  crates/pert-ui-runtime/src/runtime/pointer.rs
+6460cccd84e705e4d555ffebb342626876cfc15f208fedd9f025e6832738d160  crates/pert-ui-runtime/src/runtime/surfaces.rs
+fb743f77f36513c70944a78b2a77fc22fa9060f0c0c789aa5b94783a9c4abe3e  crates/pert-ui-runtime/src/runtime.rs
+c3f4b04782b874768f99b681d633e6692ddd3ec6fbe06d4a22d648c5649a00f3  crates/pert-ui-runtime/src/popover.rs
+773e58e9e8e6f5b90dcbc9494fa4391f00a4acbbe1b0b817351bce2525a69640  crates/pert-ui/tests/foundation/main.rs
+68c1dfec91600b61eea8c9ba4a857057fb0322acdfb4de541b19982cc54ba113  crates/pert-ui/tests/foundation/popup_press_focus.rs
+b6843e9ce95d1a564ec6fff9736b23f992a0061784e1792b987cf9f6c619836c  crates/pert-ui-runtime/src/multi_select.rs
+4c2d71dfaeb6058902de9b770f48591d58713a9747bfcd474fed80031c509183  crates/pert-ui/tests/collections/multi_select_pointer.rs
+47e0b16761fde4f041bc9212f6f023df4b65741cb7de5f6b3271688e922370b0  crates/pert-ui/tests/collections/main.rs
+# finished 2026-10-29T11:31:53+00:00
+# exit_status 0

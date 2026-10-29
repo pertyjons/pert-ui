@@ -1,0 +1,86 @@
+# started 2026-10-29T10:47:49+00:00
+# cwd /home/per/pert-ui-usability/r3-multiselect-worktree  CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-multiselect-implementation-target
+# command: cargo clippy --locked -p pert-ui-runtime --all-targets -- -D warnings
+# HEAD 17c6c3d39b3015a1563d7440541af87a1b7ee998
+# git status --porcelain:
+ M crates/pert-ui-runtime/src/multi_select.rs
+ M crates/pert-ui/tests/collections/main.rs
+?? crates/pert-ui/tests/collections/multi_select_pointer.rs
+# hashes before:
+b6843e9ce95d1a564ec6fff9736b23f992a0061784e1792b987cf9f6c619836c  crates/pert-ui-runtime/src/multi_select.rs
+073e75adfb217a8db927a46fe39a1a400e0c74205810e6fe62c7e9fcb69f9979  crates/pert-ui/tests/collections/main.rs
+c83a817ee393e33821e025fbed127b89233d6dc650eb8c9a20191d6b0bc4b699  crates/pert-ui/tests/collections/multi_select.rs
+91dde878cf2254d86e81870815b51311db8c7a5cbbeb781a7ae31a3aa1e1fb92  crates/pert-ui/tests/collections/multi_select_pointer.rs
+# mtimes before:
+1793270861.937994899 crates/pert-ui-runtime/src/multi_select.rs
+1793270263.393146004 crates/pert-ui/tests/collections/main.rs
+1793269430.081469843 crates/pert-ui/tests/collections/multi_select.rs
+1793270841.123825280 crates/pert-ui/tests/collections/multi_select_pointer.rs
+# ---- output ----
+   Compiling unicode-ident v1.0.26
+    Checking stable_deref_trait v1.2.1
+    Checking writeable v0.6.4
+    Checking litemap v0.8.3
+    Checking once_cell v1.21.4
+    Checking utf8_iter v1.0.4
+    Checking smallvec v1.16.2
+    Checking foldhash v0.2.0
+    Checking bitflags v2.13.2
+    Checking linebender_resource_handle v0.1.1
+    Checking parlance v0.1.1
+    Checking parley_emoji v0.12.0
+    Checking yazi v0.2.1
+    Checking zeno v0.3.3
+    Checking unicode-segmentation v1.13.3
+    Checking libc v0.2.190
+    Checking icu_locale_fallback_data v2.3.0
+    Checking icu_properties_data v2.3.0
+    Checking icu_segmenter_data v2.3.0
+    Checking icu_normalizer_data v2.3.0
+   Compiling proc-macro2 v1.0.107
+    Checking hashbrown v0.17.1
+   Compiling quote v1.0.47
+   Compiling syn v3.0.6
+    Checking memmap2 v0.9.11
+   Compiling synstructure v0.14.0
+   Compiling zerovec-derive v0.11.6
+   Compiling displaydoc v0.2.7
+   Compiling bytemuck_derive v1.12.1
+   Compiling thiserror-impl v2.0.21
+   Compiling zerofrom-derive v0.1.8
+   Compiling yoke-derive v0.8.4
+    Checking zerofrom v0.1.8
+    Checking yoke v0.8.3
+    Checking thiserror v2.0.21
+    Checking bytemuck v1.25.2
+    Checking pert-ui-core v0.3.91 (/home/per/pert-ui-usability/r3-multiselect-worktree/crates/pert-ui-core)
+    Checking zerotrie v0.2.5
+    Checking font-types v0.12.6
+    Checking zerovec v0.11.8
+    Checking read-fonts v0.41.0
+    Checking tinystr v0.8.4
+    Checking potential_utf v0.1.6
+    Checking icu_collections v2.3.0
+    Checking icu_locale_core v2.3.0
+    Checking icu_provider v2.3.1
+    Checking icu_locale_fallback v2.3.0
+    Checking icu_properties v2.3.0
+    Checking icu_normalizer v2.3.0
+    Checking icu_segmenter v2.3.0
+    Checking parley_data v0.12.0
+    Checking skrifa v0.44.0
+    Checking fontique v0.12.0
+    Checking harfrust v0.12.0
+    Checking parley_engine v0.12.0
+    Checking swash v0.2.10
+    Checking parley v0.12.0
+    Checking pert-ui-runtime v0.3.91 (/home/per/pert-ui-usability/r3-multiselect-worktree/crates/pert-ui-runtime)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 18.19s
+# ---- end output ----
+# hashes after:
+b6843e9ce95d1a564ec6fff9736b23f992a0061784e1792b987cf9f6c619836c  crates/pert-ui-runtime/src/multi_select.rs
+073e75adfb217a8db927a46fe39a1a400e0c74205810e6fe62c7e9fcb69f9979  crates/pert-ui/tests/collections/main.rs
+c83a817ee393e33821e025fbed127b89233d6dc650eb8c9a20191d6b0bc4b699  crates/pert-ui/tests/collections/multi_select.rs
+91dde878cf2254d86e81870815b51311db8c7a5cbbeb781a7ae31a3aa1e1fb92  crates/pert-ui/tests/collections/multi_select_pointer.rs
+# finished 2026-10-29T10:48:08+00:00
+# exit_status 0

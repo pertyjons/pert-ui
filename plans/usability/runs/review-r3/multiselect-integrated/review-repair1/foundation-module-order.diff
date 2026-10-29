@@ -1,0 +1,16 @@
+--- full-gate/crates/pert-ui/tests/foundation/main.rs
++++ review-repair/crates/pert-ui/tests/foundation/main.rs
+@@ -36,6 +36,7 @@
+ mod permission;
+ mod phase_rules;
+ mod pointer_refresh;
++mod popup_press_focus;
+ mod prelude;
+ mod profiling;
+ mod public_api;
+@@ -59,5 +60,3 @@
+ mod unbounded_collections;
+ mod vector_geometry;
+ mod vocabulary;
+-
+-mod popup_press_focus;

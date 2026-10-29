@@ -1,0 +1,11 @@
+--- /home/per/pert-ui-usability/r3-multiselect-implementation-evidence/negative-controls/gain-after-highlighted-guard/backup/multi_select.rs	2026-10-29 11:45:03.605698942 +0100
++++ crates/pert-ui-runtime/src/multi_select.rs	2026-10-29 11:45:03.620699072 +0100
+@@ -696,7 +696,7 @@
+             PointerKind::Move if cx.pointer_inside() => {
+                 // Motion over a disabled option, or over the row the keyboard
+                 // already highlighted, still hands the highlight to the pointer.
+-                if moved {
++                if moved && !self.highlighted {
+                     self.shared.pointer_owns.set(true);
+                 }
+                 if self.enabled && self.shared.pointer_owns.get() && !self.highlighted {

@@ -164,6 +164,19 @@ impl Runtime {
                 .is_none_or(|s| self.descendant(serial, s.root))
     }
 
+    /// Whether `root` is the root of an interactive surface this window
+    /// admitted at its last synchronization and that its owner still
+    /// declares with the admitted kind. Records awaiting admission after a
+    /// failed synchronization, notifications and a kind the owner has changed
+    /// since do not qualify; parked windows' records are not consulted.
+    pub(super) fn admitted_interactive_surface(&self, root: u64) -> bool {
+        self.window.surfaces.iter().any(|surface| {
+            surface.root == root
+                && surface.admitted
+                && surface.kind.interactive()
+                && self.surface_kind(root) == Some(surface.kind)
+        })
+    }
     pub(super) fn descendant(&self, mut serial: u64, ancestor: u64) -> bool {
         loop {
             if serial == ancestor {
@@ -923,6 +936,30 @@ mod tests {
         ui.sync_surfaces().unwrap();
         ui.select_window(&other).unwrap();
         ui.focus(&view).unwrap();
+    }
+    // Public input cannot observe the first two states: a press flushes the
+    // pending layout, which synchronizes again before its focus walk.
+    #[test]
+    fn only_a_current_interactive_admission_keeps_press_focus() {
+        let (mut ui, root, _, kind, _) = fixture(SurfaceKind::ContextMenu);
+        let popup = ui.children(&root).unwrap()[1].0.serial;
+        assert!(ui.admitted_interactive_surface(popup));
+        assert!(!ui.admitted_interactive_surface(root.0.serial));
+        // The owner declares another kind than the one admitted.
+        kind.set(SurfaceKind::Popover);
+        assert!(!ui.admitted_interactive_surface(popup));
+        // A failed synchronization records that kind as awaiting admission.
+        ui.window.surface_error = Some(crate::ApplicationError::from("deferred failure").into());
+        assert!(ui.sync_surfaces().is_err());
+        assert_eq!(ui.window.surfaces[0].kind, SurfaceKind::Popover);
+        assert!(!ui.admitted_interactive_surface(popup));
+        ui.sync_surfaces().unwrap();
+        assert!(ui.admitted_interactive_surface(popup));
+        // A notification is admitted but not interactive.
+        kind.set(SurfaceKind::Notification);
+        ui.sync_surfaces().unwrap();
+        assert!(ui.window.surfaces[0].admitted);
+        assert!(!ui.admitted_interactive_surface(popup));
     }
     #[test]
     fn application_dialog_downgrade_releases_application_blocker() {

@@ -1,0 +1,13 @@
+--- /home/per/pert-ui-usability/r3-multiselect-implementation-evidence/negative-controls/no-focus-return-final/backup/multi_select.rs	2026-10-29 11:52:19.719990317 +0100
++++ crates/pert-ui-runtime/src/multi_select.rs	2026-10-29 11:52:19.736365702 +0100
+@@ -383,8 +383,8 @@
+         let panel = self.panel.borrow().clone();
+         // The panel is not focusable, and the search field is its first
+         // focusable descendant.
+-        let focused = panel.map_or(Ok(()), |panel| cx.request_focus_within(&panel));
+-        self.report_toggle(cx, toggled).and(focused)
++        let _ = panel;
++        self.report_toggle(cx, toggled)
+     }
+     /// Removes `value` from the bound value, for a chip's remove request.
+     fn remove(&self, cx: &mut EventContext, value: &T) -> Result<(), RuntimeError> {

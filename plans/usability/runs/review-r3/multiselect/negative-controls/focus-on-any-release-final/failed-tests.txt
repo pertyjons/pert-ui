@@ -1,0 +1,4 @@
+test multi_select_pointer::a_long_list_press_scrolled_away_by_the_list_keys_cancels_the_click ... FAILED
+test multi_select_pointer::a_release_outside_the_pressed_row_or_after_a_denial_returns_no_focus ... FAILED
+test result: FAILED. 62 passed; 2 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.13s
+error: test failed, to rerun pass `-p pert-ui --test collections`

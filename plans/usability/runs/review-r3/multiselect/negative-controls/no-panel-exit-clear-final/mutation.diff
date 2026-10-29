@@ -1,0 +1,13 @@
+--- /home/per/pert-ui-usability/r3-multiselect-implementation-evidence/negative-controls/no-panel-exit-clear-final/backup/multi_select.rs	2026-10-29 11:51:29.929632038 +0100
++++ crates/pert-ui-runtime/src/multi_select.rs	2026-10-29 11:51:29.944632145 +0100
+@@ -910,9 +910,7 @@
+         // Rows that layout moves under a pointer outside the panel must not
+         // take the highlight. A row's Leave cannot tell this apart from layout
+         // moving the hit to another row, which sends one too.
+-        if !hovered {
+-            self.shared.pointer_owns.set(false);
+-        }
++        let _ = hovered;
+     }
+     fn visibility_changed(&mut self, _: bool) {
+         self.shared.pointer_owns.set(false);

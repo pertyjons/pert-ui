@@ -1,0 +1,99 @@
+{
+  "source_directory": "/home/per/pert-ui-usability/r3-multiselect-popup-review-repair1",
+  "policy": "Exact bytes except declared readable log excerpts; full gzip preserves those bytes. Script suffixes renamed for archival use.",
+  "files": [
+    {
+      "source": "clippy.log",
+      "source_bytes": 275,
+      "source_sha256": "9f1f3cc3178b40ca4047bbc965e59e7f7c6f45997f6270b27511ad8d2403269b",
+      "archive_path": "clippy.log",
+      "archive_sha256": "9f1f3cc3178b40ca4047bbc965e59e7f7c6f45997f6270b27511ad8d2403269b"
+    },
+    {
+      "source": "format.log",
+      "source_bytes": 26,
+      "source_sha256": "5bd2c4787084677798c6fd838467a305f2dfa8bae7469f20aeed41fb6c07e93b",
+      "archive_path": "format.log",
+      "archive_sha256": "5bd2c4787084677798c6fd838467a305f2dfa8bae7469f20aeed41fb6c07e93b"
+    },
+    {
+      "source": "foundation-module-order.diff",
+      "source_bytes": 369,
+      "source_sha256": "48e2e08fe46e6837b4b4d530243f9c15b9d797870a828df455b58802dafd8369",
+      "archive_path": "foundation-module-order.diff",
+      "archive_sha256": "48e2e08fe46e6837b4b4d530243f9c15b9d797870a828df455b58802dafd8369"
+    },
+    {
+      "source": "foundation.log",
+      "source_bytes": 1797,
+      "source_sha256": "4ab677f873441f28b750735ef31519246ba359c218289b4f21fde79d0935c023",
+      "archive_path": "foundation.log",
+      "archive_sha256": "4ab677f873441f28b750735ef31519246ba359c218289b4f21fde79d0935c023"
+    },
+    {
+      "source": "gallery-before.rs.txt",
+      "source_bytes": 59489,
+      "source_sha256": "37b631379d4ca969b80f64e87bf34780208f2f0249e3a76961122aeb836b6645",
+      "archive_path": "gallery-before.rs.txt",
+      "archive_sha256": "37b631379d4ca969b80f64e87bf34780208f2f0249e3a76961122aeb836b6645"
+    },
+    {
+      "source": "gallery-headless.log",
+      "source_bytes": 407,
+      "source_sha256": "5b203e917608255d75230cbe9c2fca61894b20afdb341a5a2d9309cdd51ae466",
+      "archive_path": "gallery-headless.log",
+      "archive_sha256": "5b203e917608255d75230cbe9c2fca61894b20afdb341a5a2d9309cdd51ae466"
+    },
+    {
+      "source": "gallery-review-repair.diff",
+      "source_bytes": 3603,
+      "source_sha256": "5c7d8442206fb2b47fe054c96df42c1fab0dde53bffad821139b39f8e4468cf6",
+      "archive_path": "gallery-review-repair.diff",
+      "archive_sha256": "5c7d8442206fb2b47fe054c96df42c1fab0dde53bffad821139b39f8e4468cf6"
+    },
+    {
+      "source": "outcomes.json",
+      "source_bytes": 863,
+      "source_sha256": "4bfb86d43e05f9dad94c04329a1d27170e7c2a61cf5a876009f64abda1929a6a",
+      "archive_path": "outcomes.json",
+      "archive_sha256": "4bfb86d43e05f9dad94c04329a1d27170e7c2a61cf5a876009f64abda1929a6a"
+    },
+    {
+      "source": "reconstruct-before.py",
+      "source_bytes": 2814,
+      "source_sha256": "d1575a92a0f0cca28aeb10c2fba410f507393269cdeffb2e82742d2e7d45b09f",
+      "suffix_note": "Archived script text, not an installed/portable entry point; exact bytes unchanged.",
+      "archive_path": "reconstruct-before.py.txt",
+      "archive_sha256": "d1575a92a0f0cca28aeb10c2fba410f507393269cdeffb2e82742d2e7d45b09f"
+    },
+    {
+      "source": "reconstruction.json",
+      "source_bytes": 430,
+      "source_sha256": "ab4b70c340192eae8e2bf5cefc10afcfcd38b9c0704ec3909a740b8c43ced642",
+      "archive_path": "reconstruction.json",
+      "archive_sha256": "ab4b70c340192eae8e2bf5cefc10afcfcd38b9c0704ec3909a740b8c43ced642"
+    },
+    {
+      "source": "run-checks.py",
+      "source_bytes": 897,
+      "source_sha256": "3e1c65bc925ead582ebb7eaf0b6ce3ee1759aca69248d277f5df720b29b0a5ad",
+      "suffix_note": "Archived script text, not an installed/portable entry point; exact bytes unchanged.",
+      "archive_path": "run-checks.py.txt",
+      "archive_sha256": "3e1c65bc925ead582ebb7eaf0b6ce3ee1759aca69248d277f5df720b29b0a5ad"
+    },
+    {
+      "source": "source-after.json",
+      "source_bytes": 324,
+      "source_sha256": "eefa9995a1b75321d6d627c6abe64f467e1a5760a6fed9f62139cdb4aca4faa6",
+      "archive_path": "source-after.json",
+      "archive_sha256": "eefa9995a1b75321d6d627c6abe64f467e1a5760a6fed9f62139cdb4aca4faa6"
+    },
+    {
+      "source": "source-before.json",
+      "source_bytes": 79167,
+      "source_sha256": "a0fb728bd0dbc8283bd653c99a127553bca54b12893600803c5822d872538893",
+      "archive_path": "source-before.json",
+      "archive_sha256": "a0fb728bd0dbc8283bd653c99a127553bca54b12893600803c5822d872538893"
+    }
+  ]
+}

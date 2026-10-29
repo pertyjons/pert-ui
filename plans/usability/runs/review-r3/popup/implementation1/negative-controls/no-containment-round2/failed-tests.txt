@@ -1,0 +1,11 @@
+# facade exit_status=101 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/23-negative-no-containment-round2-facade.log
+test popup_press_focus::focus_already_outside_the_surface_takes_the_old_walk ... FAILED
+thread 'popup_press_focus::focus_already_outside_the_surface_takes_the_old_walk' (4063344) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:623:9:
+assertion `left == right` failed: Popover
+  left: Some("opener")
+ right: Some("page")
+test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 494 filtered out; finished in 0.03s
+error: test failed, to rerun pass `-p pert-ui --test foundation`
+# unit exit_status=0 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/24-negative-no-containment-round2-unit.log
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 195 filtered out; finished in 0.00s
+# restored exit_status=0 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/25-restored-no-containment-round2-facade.log

@@ -1,0 +1,13 @@
+test multi_select_pointer::a_completed_click_returns_focus_to_search_on_short_and_long_lists ... FAILED
+test multi_select_pointer::a_release_after_a_search_key_regains_the_highlight_for_the_pointer ... FAILED
+test multi_select_pointer::a_click_returns_focus_to_search_after_tab_moved_it_to_the_list ... FAILED
+test multi_select_pointer::changed_options_labels_and_filters_keep_the_current_owner ... FAILED
+test multi_select_pointer::a_row_scrolled_back_under_its_last_position_treats_a_jump_there_as_stationary ... FAILED
+test multi_select_pointer::genuine_motion_after_keyboard_navigation_takes_the_highlight ... FAILED
+test multi_select_pointer::reentering_the_window_at_the_same_position_over_the_same_row_is_stationary ... FAILED
+test multi_select_pointer::the_focused_list_scroll_keys_follow_the_wheel_policy ... FAILED
+test multi_select_pointer::a_wheel_at_the_list_limit_bubbles_without_taking_the_highlight ... FAILED
+test multi_select_pointer::reentering_over_a_row_scrolled_there_meanwhile_counts_as_motion ... FAILED
+test multi_select_pointer::the_wheel_keeps_a_keyboard_highlight_and_moves_a_pointer_highlight ... FAILED
+test result: FAILED. 52 passed; 11 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.08s
+error: test failed, to rerun pass `-p pert-ui --test collections`

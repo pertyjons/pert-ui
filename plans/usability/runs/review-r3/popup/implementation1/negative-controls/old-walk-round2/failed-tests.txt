@@ -1,0 +1,46 @@
+# facade exit_status=101 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/20-negative-old-walk-round2-facade.log
+test popup_press_focus::a_surface_changed_to_a_notification_no_longer_keeps_focus ... FAILED
+test popup_press_focus::a_press_on_a_submenu_keeps_focus_in_the_enclosing_menu ... FAILED
+test popup_press_focus::explicit_and_requested_focus_still_leave_and_dismiss_the_popup ... FAILED
+test popup_press_focus::a_press_inside_a_dialog_keeps_focus_and_returns_its_outcome ... FAILED
+test popup_press_focus::a_press_on_nonfocusable_popup_content_keeps_focus_and_the_popup ... FAILED
+test popup_press_focus::a_detached_window_keeps_focus_inside_its_surface ... FAILED
+test popup_press_focus::a_dialog_without_focusable_content_keeps_focus_on_its_root ... FAILED
+test popup_press_focus::a_short_multi_select_in_a_scrolling_page_keeps_its_row_click ... FAILED
+thread 'popup_press_focus::a_surface_changed_to_a_notification_no_longer_keeps_focus' (4056567) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:728:5:
+assertion `left == right` failed
+  left: Err(ModalBlocked)
+ right: Ok(Handled)
+thread 'popup_press_focus::a_press_on_a_submenu_keeps_focus_in_the_enclosing_menu' (4056563) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:497:9:
+assertion `left == right` failed: ContextMenu
+  left: Ok(Ignored)
+ right: Ok(Handled)
+thread 'popup_press_focus::explicit_and_requested_focus_still_leave_and_dismiss_the_popup' (4056568) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:642:5:
+assertion `left == right` failed
+  left: Ok(Ignored)
+ right: Ok(Handled)
+thread 'popup_press_focus::a_press_inside_a_dialog_keeps_focus_and_returns_its_outcome' (4056562) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:463:5:
+assertion `left == right` failed
+  left: [Pressed { kind: Dialog, outcome: Err(ModalBlocked), pressed: Some("field"), focus: Some("field"), open: true, log: ["row press"] }, Pressed { kind: ApplicationDialog, outcome: Err(ModalBlocked), pressed: Some("field"), focus: Some("field"), open: true, log: ["row press"] }, Pressed { kind: ViewDialog, outcome: Ok(Handled), pressed: Some("page"), focus: Some("page"), open: true, log: ["field focus_lost", "panel within false", "popup within false", "row press"] }]
+ right: [Pressed { kind: Dialog, outcome: Ok(Handled), pressed: Some("field"), focus: Some("field"), open: true, log: ["row press"] }, Pressed { kind: ApplicationDialog, outcome: Ok(Handled), pressed: Some("field"), focus: Some("field"), open: true, log: ["row press"] }, Pressed { kind: ViewDialog, outcome: Ok(Handled), pressed: Some("field"), focus: Some("field"), open: true, log: ["row press"] }]
+thread 'popup_press_focus::a_press_on_nonfocusable_popup_content_keeps_focus_and_the_popup' (4056565) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:429:5:
+assertion `left == right` failed
+  left: [Pressed { kind: Popover, outcome: Ok(Ignored), pressed: Some("page"), focus: Some("page"), open: false, log: ["field focus_lost", "panel within false", "popup within false", "owner dismiss FocusLeft"] }, Pressed { kind: ContextMenu, outcome: Ok(Ignored), pressed: Some("page"), focus: Some("page"), open: false, log: ["field focus_lost", "panel within false", "popup within false", "owner dismiss FocusLeft"] }, Pressed { kind: Submenu, outcome: Ok(Ignored), pressed: Some("page"), focus: Some("page"), open: false, log: ["field focus_lost", "panel within false", "popup within false", "owner dismiss FocusLeft"] }]
+ right: [Pressed { kind: Popover, outcome: Ok(Handled), pressed: Some("field"), focus: Some("field"), open: true, log: ["row press"] }, Pressed { kind: ContextMenu, outcome: Ok(Handled), pressed: Some("field"), focus: Some("field"), open: true, log: ["row press"] }, Pressed { kind: Submenu, outcome: Ok(Handled), pressed: Some("field"), focus: Some("field"), open: true, log: ["row press"] }]
+thread 'popup_press_focus::a_detached_window_keeps_focus_inside_its_surface' (4056558) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:783:5:
+assertion `left == right` failed
+  left: [Pressed { kind: Popover, outcome: Ok(Ignored), pressed: Some("page"), focus: Some("page"), open: false, log: ["field focus_lost", "panel within false", "popup within false", "owner dismiss FocusLeft"] }, Pressed { kind: Dialog, outcome: Err(ModalBlocked), pressed: Some("field"), focus: Some("field"), open: true, log: ["row press"] }]
+ right: [Pressed { kind: Popover, outcome: Ok(Handled), pressed: Some("field"), focus: Some("field"), open: true, log: ["row press"] }, Pressed { kind: Dialog, outcome: Ok(Handled), pressed: Some("field"), focus: Some("field"), open: true, log: ["row press"] }]
+thread 'popup_press_focus::a_dialog_without_focusable_content_keeps_focus_on_its_root' (4056559) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:477:5:
+assertion `left == right` failed
+  left: [Pressed { kind: Dialog, outcome: Err(ModalBlocked), pressed: Some("popup"), focus: Some("popup"), open: true, log: ["row press"] }, Pressed { kind: ApplicationDialog, outcome: Err(ModalBlocked), pressed: Some("popup"), focus: Some("popup"), open: true, log: ["row press"] }, Pressed { kind: ViewDialog, outcome: Ok(Handled), pressed: Some("page"), focus: Some("page"), open: true, log: ["popup focus_lost", "row press"] }]
+ right: [Pressed { kind: Dialog, outcome: Ok(Handled), pressed: Some("popup"), focus: Some("popup"), open: true, log: ["row press"] }, Pressed { kind: ApplicationDialog, outcome: Ok(Handled), pressed: Some("popup"), focus: Some("popup"), open: true, log: ["row press"] }, Pressed { kind: ViewDialog, outcome: Ok(Handled), pressed: Some("popup"), focus: Some("popup"), open: true, log: ["row press"] }]
+thread 'popup_press_focus::a_short_multi_select_in_a_scrolling_page_keeps_its_row_click' (4056566) panicked at crates/pert-ui/tests/foundation/popup_press_focus.rs:978:5:
+assertion `left == right` failed
+  left: [Clicked { commit: EachToggle, pressed: (Some("page"), false, ["o01"]), released: (Some("page"), false, ["o01"]), reports: [["o01"]] }, Clicked { commit: OnClose, pressed: (Some("page"), false, ["o01"]), released: (Some("page"), false, ["o01"]), reports: [["o01"]] }]
+ right: [Clicked { commit: EachToggle, pressed: (Some("search"), true, ["o01"]), released: (Some("search"), true, ["o01", "o03"]), reports: [["o01"], ["o01", "o03"]] }, Clicked { commit: OnClose, pressed: (Some("search"), true, []), released: (Some("search"), true, []), reports: [] }]
+test result: FAILED. 5 passed; 8 failed; 0 ignored; 0 measured; 494 filtered out; finished in 0.02s
+error: test failed, to rerun pass `-p pert-ui --test foundation`
+# unit exit_status=0 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/21-negative-old-walk-round2-unit.log
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 195 filtered out; finished in 0.00s
+# restored exit_status=0 log=/home/per/pert-ui-usability/r3-popup-implementation-evidence/runs/22-restored-old-walk-round2-facade.log

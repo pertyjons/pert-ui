@@ -1,0 +1,4 @@
+test multi_select_pointer::a_denial_while_no_option_matches_still_hands_back_the_highlight ... FAILED
+test multi_select_pointer::a_denied_dropdown_only_remembers_the_pointer_and_hands_back_the_highlight ... FAILED
+test result: FAILED. 62 passed; 2 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.12s
+error: test failed, to rerun pass `-p pert-ui --test collections`

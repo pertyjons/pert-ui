@@ -296,6 +296,14 @@ impl Runtime {
     ///
     /// Press focuses the nearest focusable ancestor without scrolling the already
     /// hit target. Explicit focus and keyboard traversal still reveal their target.
+    /// When focus is already inside an admitted popover, context menu, submenu
+    /// or modal dialog, its root included, and no focusable component lies
+    /// between the target and that surface's root, focus stays where it is, as
+    /// [`Component::focusable`] describes: the press does not close a popup or
+    /// leave a view dialog by moving focus out, and a press inside a window or
+    /// application dialog returns the outcome of its dispatch instead of
+    /// [`RuntimeError::ModalBlocked`] for an ancestor the dialog blocks. Focus
+    /// outside the surface takes the ordinary walk.
     /// Ignored events bubble toward
     /// the root; they never fall through to covered siblings. Capture is released
     /// after the last physical button goes up or the owner loses context. Input
@@ -508,6 +516,20 @@ impl Runtime {
                         && focused.as_ref().is_some_and(|focused| {
                             Self::focus_ancestors(&focused.0).contains(&current)
                         })
+                    {
+                        break;
+                    }
+                    // Focus already inside an admitted interactive surface,
+                    // its root included, stays there: the walk would otherwise
+                    // leave the surface for a focusable ancestor outside it,
+                    // which dismisses a popup, leaves a view dialog or is
+                    // refused by a window or application dialog. A root that
+                    // does not hold focus is passed, so an enclosing
+                    // menu's root can still stop a press on its submenu.
+                    if focused
+                        .as_ref()
+                        .is_some_and(|focused| self.descendant(focused.0.serial, current))
+                        && self.admitted_interactive_surface(current)
                     {
                         break;
                     }

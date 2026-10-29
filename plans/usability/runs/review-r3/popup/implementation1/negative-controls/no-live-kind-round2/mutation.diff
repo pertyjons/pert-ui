@@ -1,0 +1,10 @@
+--- /home/per/pert-ui-usability/r3-popup-implementation-evidence/negative-controls/no-live-kind-round2/backup/surfaces.rs	2026-10-29 12:36:36.458452346 +0100
++++ crates/pert-ui-runtime/src/runtime/surfaces.rs	2026-10-29 12:36:36.474100453 +0100
+@@ -174,7 +174,6 @@
+             surface.root == root
+                 && surface.admitted
+                 && surface.kind.interactive()
+-                && self.surface_kind(root) == Some(surface.kind)
+         })
+     }
+     pub(super) fn descendant(&self, mut serial: u64, ancestor: u64) -> bool {

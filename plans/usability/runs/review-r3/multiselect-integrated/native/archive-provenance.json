@@ -1,0 +1,27 @@
+{
+  "source_directory": "/home/per/pert-ui-usability/r3-multiselect-popup-native",
+  "policy": "Exact bytes except declared readable log excerpts; full gzip preserves those bytes. Script suffixes renamed for archival use.",
+  "files": [
+    {
+      "source": "outcome1.json",
+      "source_bytes": 269,
+      "source_sha256": "e9b2e193c7395179f0e303e3ad7d2e6b9a85337dea56e0b4f16676c05a25960d",
+      "archive_path": "outcome1.json",
+      "archive_sha256": "e9b2e193c7395179f0e303e3ad7d2e6b9a85337dea56e0b4f16676c05a25960d"
+    },
+    {
+      "source": "platform.json",
+      "source_bytes": 1762,
+      "source_sha256": "d57c27b919911cc0f39d4139ad9bcf133ea6c6773e1d5c0684dd0bd26cda8e1e",
+      "archive_path": "platform.json",
+      "archive_sha256": "d57c27b919911cc0f39d4139ad9bcf133ea6c6773e1d5c0684dd0bd26cda8e1e"
+    },
+    {
+      "source": "run1.log",
+      "source_bytes": 9455,
+      "source_sha256": "cb76ec95f302d7399ccca11bdd1b1d8755724d79e15f87ab57220337d828452d",
+      "archive_path": "run1.log",
+      "archive_sha256": "cb76ec95f302d7399ccca11bdd1b1d8755724d79e15f87ab57220337d828452d"
+    }
+  ]
+}

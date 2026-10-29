@@ -36,6 +36,7 @@ mod owned_children;
 mod permission;
 mod phase_rules;
 mod pointer_refresh;
+mod popup_press_focus;
 mod prelude;
 mod profiling;
 mod public_api;

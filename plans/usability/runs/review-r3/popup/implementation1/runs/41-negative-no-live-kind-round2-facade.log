@@ -1,0 +1,71 @@
+# started 2026-10-29T11:36:36+00:00
+# cwd /home/per/pert-ui-usability/r3-popup-worktree  CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-popup-implementation-target
+# command: cargo test --locked -p pert-ui --test foundation popup_press_focus
+# HEAD c19ae7083407c8cd19674256fce483de6a21b06c
+# git status --porcelain:
+ M crates/pert-ui-runtime/src/multi_select.rs
+ M crates/pert-ui-runtime/src/popover.rs
+ M crates/pert-ui-runtime/src/runtime.rs
+ M crates/pert-ui-runtime/src/runtime/pointer.rs
+ M crates/pert-ui-runtime/src/runtime/surfaces.rs
+ M crates/pert-ui/tests/collections/main.rs
+ M crates/pert-ui/tests/foundation/main.rs
+?? crates/pert-ui/tests/collections/multi_select_pointer.rs
+?? crates/pert-ui/tests/foundation/popup_press_focus.rs
+# hashes before:
+4fb55ecfbf6c7d480a54f021ce4ffd275c82d598fa30eb144ca5baca8ea2836f  crates/pert-ui-runtime/src/runtime/pointer.rs
+f25e4ecb4ab39de32c5a3450cbabfc95bd62d05b442f794139517112cb87e979  crates/pert-ui-runtime/src/runtime/surfaces.rs
+fb743f77f36513c70944a78b2a77fc22fa9060f0c0c789aa5b94783a9c4abe3e  crates/pert-ui-runtime/src/runtime.rs
+c3f4b04782b874768f99b681d633e6692ddd3ec6fbe06d4a22d648c5649a00f3  crates/pert-ui-runtime/src/popover.rs
+773e58e9e8e6f5b90dcbc9494fa4391f00a4acbbe1b0b817351bce2525a69640  crates/pert-ui/tests/foundation/main.rs
+721128e5a6e97dfb2a3053a4858e1a5f80a5c4c9941c76c6f9073575a30f8858  crates/pert-ui/tests/foundation/popup_press_focus.rs
+b6843e9ce95d1a564ec6fff9736b23f992a0061784e1792b987cf9f6c619836c  crates/pert-ui-runtime/src/multi_select.rs
+4c2d71dfaeb6058902de9b770f48591d58713a9747bfcd474fed80031c509183  crates/pert-ui/tests/collections/multi_select_pointer.rs
+47e0b16761fde4f041bc9212f6f023df4b65741cb7de5f6b3271688e922370b0  crates/pert-ui/tests/collections/main.rs
+# mtimes before:
+1793273796.497029345 crates/pert-ui-runtime/src/runtime/pointer.rs
+1793273796.497029345 crates/pert-ui-runtime/src/runtime/surfaces.rs
+1793273457.143609620 crates/pert-ui-runtime/src/runtime.rs
+1793273446.515987387 crates/pert-ui-runtime/src/popover.rs
+1793273201.071287643 crates/pert-ui/tests/foundation/main.rs
+1793273648.900749364 crates/pert-ui/tests/foundation/popup_press_focus.rs
+1793272629.999896711 crates/pert-ui-runtime/src/multi_select.rs
+1793272630.000259956 crates/pert-ui/tests/collections/multi_select_pointer.rs
+1793272630.000529949 crates/pert-ui/tests/collections/main.rs
+# ---- output ----
+   Compiling pert-ui-runtime v0.3.92 (/home/per/pert-ui-usability/r3-popup-worktree/crates/pert-ui-runtime)
+   Compiling pert-ui-wgpu v0.3.92 (/home/per/pert-ui-usability/r3-popup-worktree/crates/pert-ui-wgpu)
+   Compiling pert-ui v0.3.92 (/home/per/pert-ui-usability/r3-popup-worktree/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.65s
+     Running tests/foundation/main.rs (/home/per/pert-ui-usability/r3-popup-implementation-target/debug/deps/foundation-b8ed39ce01789154)
+
+running 13 tests
+test popup_press_focus::without_a_surface_a_press_still_focuses_the_ancestor ... ok
+test popup_press_focus::a_press_on_content_holding_focus_keeps_it_inside_and_outside_surfaces ... ok
+test popup_press_focus::explicit_and_requested_focus_still_leave_and_dismiss_the_popup ... ok
+test popup_press_focus::focus_already_outside_the_surface_takes_the_old_walk ... ok
+test popup_press_focus::a_press_inside_a_dialog_keeps_focus_and_returns_its_outcome ... ok
+test popup_press_focus::a_surface_changed_to_a_notification_no_longer_keeps_focus ... ok
+test popup_press_focus::a_press_on_nonfocusable_popup_content_keeps_focus_and_the_popup ... ok
+test popup_press_focus::a_detached_window_keeps_focus_inside_its_surface ... ok
+test popup_press_focus::a_hidden_or_closed_surface_keeps_nothing_for_a_later_press ... ok
+test popup_press_focus::a_dialog_without_focusable_content_keeps_focus_on_its_root ... ok
+test popup_press_focus::a_press_on_a_submenu_keeps_focus_in_the_enclosing_menu ... ok
+test popup_press_focus::a_focusable_component_inside_the_surface_still_takes_the_press ... ok
+test popup_press_focus::a_short_multi_select_in_a_scrolling_page_keeps_its_row_click ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 494 filtered out; finished in 0.06s
+
+# ---- end output ----
+# hashes after:
+4fb55ecfbf6c7d480a54f021ce4ffd275c82d598fa30eb144ca5baca8ea2836f  crates/pert-ui-runtime/src/runtime/pointer.rs
+f25e4ecb4ab39de32c5a3450cbabfc95bd62d05b442f794139517112cb87e979  crates/pert-ui-runtime/src/runtime/surfaces.rs
+fb743f77f36513c70944a78b2a77fc22fa9060f0c0c789aa5b94783a9c4abe3e  crates/pert-ui-runtime/src/runtime.rs
+c3f4b04782b874768f99b681d633e6692ddd3ec6fbe06d4a22d648c5649a00f3  crates/pert-ui-runtime/src/popover.rs
+773e58e9e8e6f5b90dcbc9494fa4391f00a4acbbe1b0b817351bce2525a69640  crates/pert-ui/tests/foundation/main.rs
+721128e5a6e97dfb2a3053a4858e1a5f80a5c4c9941c76c6f9073575a30f8858  crates/pert-ui/tests/foundation/popup_press_focus.rs
+b6843e9ce95d1a564ec6fff9736b23f992a0061784e1792b987cf9f6c619836c  crates/pert-ui-runtime/src/multi_select.rs
+4c2d71dfaeb6058902de9b770f48591d58713a9747bfcd474fed80031c509183  crates/pert-ui/tests/collections/multi_select_pointer.rs
+47e0b16761fde4f041bc9212f6f023df4b65741cb7de5f6b3271688e922370b0  crates/pert-ui/tests/collections/main.rs
+# finished 2026-10-29T11:36:41+00:00
+# exit_status 0

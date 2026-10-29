@@ -105,6 +105,35 @@ pub(crate) fn page(ui: &Runtime, root: &WidgetId, key: &str) -> Result<WidgetId,
     Err(format!("no gallery page {key}"))
 }
 
+/// A visible option discovered by public checkbox semantics, scoped to its chooser.
+fn multi_select_row(ui: &Runtime, owner: &WidgetId, name: &str) -> Result<WidgetId, String> {
+    let candidates: Vec<_> = ui
+        .inspect()
+        .components
+        .into_iter()
+        .filter(|component| {
+            component.visible
+                && component
+                    .details
+                    .semantics
+                    .as_ref()
+                    .is_some_and(|semantics| {
+                        semantics.role == SemanticRole::Checkbox
+                            && semantics.name.as_deref() == Some(name)
+                    })
+        })
+        .map(|component| component.id)
+        .collect();
+    let mut pending = ui.children(owner).map_err(failed)?;
+    while let Some(row) = pending.pop() {
+        if candidates.contains(&ui.inspection_id(&row).map_err(failed)?) {
+            return Ok(row);
+        }
+        pending.extend(ui.children(&row).map_err(failed)?);
+    }
+    Err(format!("no visible option named {name}"))
+}
+
 /// Shows a page through the reveal contract, as a link or command would.
 fn show(ui: &mut Runtime, scene: &Scene, key: &str) -> Outcome {
     let target = page(ui, &scene.root, key)?;
@@ -1014,6 +1043,104 @@ pub(crate) fn steps() -> Vec<Step> {
                             texts(ui, "menu-bar-status")
                         )
                     },
+                )
+            },
+        },
+        Step {
+            name: "MultiSelect: a completed long-list click keeps search navigation",
+            act: |ui, scene| {
+                show(ui, scene, "chips")?;
+                let page = page(ui, &scene.root, "chips")?;
+                let chooser = find(ui, &page, "instruments")?;
+                expect_texts(ui, "instruments-value", "Bound value: [piano, violin]")?;
+                ui.event(&chooser, |cx| cx.request_focus_within(&chooser))
+                    .map_err(failed)?
+                    .map_err(failed)?;
+                ui.flush(ui.now()).map_err(failed)?;
+                key(ui, KeyCode::ArrowDown)?;
+                ui.flush(ui.now()).map_err(failed)?;
+                let row = multi_select_row(ui, &chooser, "Bass")?;
+                Driver::new(ui).click(&row).map_err(failed)?;
+                let search = Driver::new(ui)
+                    .exposed_part(&chooser, "search")
+                    .map_err(failed)?;
+                ensure(ui.focused().as_ref() == Some(&search), || {
+                    "long-list click left focus away from search".into()
+                })?;
+                key(ui, KeyCode::ArrowDown)?;
+                key(ui, KeyCode::Enter)?;
+                ui.flush(ui.now()).map_err(failed)?;
+                Ok(())
+            },
+            check: |ui, _| {
+                expect_texts(
+                    ui,
+                    "instruments-value",
+                    "Bound value: [piano, violin, bass, cello]",
+                )
+            },
+        },
+        Step {
+            name: "MultiSelect: a filtered short-popup click survives its scrollable page",
+            act: |ui, scene| {
+                let page = page(ui, &scene.root, "chips")?;
+                let chooser = find(ui, &page, "instruments")?;
+                type_text(ui, "flu")?;
+                ui.flush(ui.now()).map_err(failed)?;
+                let row = multi_select_row(ui, &chooser, "Flute")?;
+                Driver::new(ui).click(&row).map_err(failed)?;
+                let search = Driver::new(ui)
+                    .exposed_part(&chooser, "search")
+                    .map_err(failed)?;
+                ensure(ui.focused().as_ref() == Some(&search), || {
+                    "short-popup click lost search focus".into()
+                })?;
+                Ok(())
+            },
+            check: |ui, _| {
+                expect_texts(
+                    ui,
+                    "instruments-value",
+                    "Bound value: [piano, violin, bass, cello, flute]",
+                )
+            },
+        },
+        Step {
+            name: "MultiSelect: Escape clears search then closes",
+            act: |ui, scene| {
+                key(ui, KeyCode::Escape)?;
+                ui.flush(ui.now()).map_err(failed)?;
+                ensure(
+                    property(ui, "instruments", "open")? == Some(InspectValue::Bool(true)),
+                    || "the first Escape closed the chooser instead of clearing search".into(),
+                )?;
+                let page = page(ui, &scene.root, "chips")?;
+                let chooser = find(ui, &page, "instruments")?;
+                let search = Driver::new(ui)
+                    .exposed_part(&chooser, "search")
+                    .map_err(failed)?;
+                let search_id = ui.inspection_id(&search).map_err(failed)?;
+                let query = ui
+                    .inspect()
+                    .components
+                    .into_iter()
+                    .find(|component| component.id == search_id)
+                    .and_then(|component| component.details.semantics)
+                    .and_then(|semantics| semantics.value);
+                ensure(query == Some(SemanticValue::Text(String::new())), || {
+                    format!("the first Escape left search at {query:?}")
+                })?;
+                key(ui, KeyCode::Escape)
+            },
+            check: |ui, _| {
+                ensure(
+                    property(ui, "instruments", "open")? == Some(InspectValue::Bool(false)),
+                    || "the instrument chooser stayed open".into(),
+                )?;
+                expect_texts(
+                    ui,
+                    "instruments-value",
+                    "Bound value: [piano, violin, bass, cello, flute]",
                 )
             },
         },

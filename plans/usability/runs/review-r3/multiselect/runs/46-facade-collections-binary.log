@@ -1,0 +1,914 @@
+# started 2026-10-29T10:49:28+00:00
+# cwd /home/per/pert-ui-usability/r3-multiselect-worktree  CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-multiselect-implementation-target
+# command: cargo test --locked -p pert-ui --test collections
+# HEAD 17c6c3d39b3015a1563d7440541af87a1b7ee998
+# git status --porcelain:
+ M crates/pert-ui-runtime/src/multi_select.rs
+ M crates/pert-ui/tests/collections/main.rs
+?? crates/pert-ui/tests/collections/multi_select_pointer.rs
+# hashes before:
+b6843e9ce95d1a564ec6fff9736b23f992a0061784e1792b987cf9f6c619836c  crates/pert-ui-runtime/src/multi_select.rs
+073e75adfb217a8db927a46fe39a1a400e0c74205810e6fe62c7e9fcb69f9979  crates/pert-ui/tests/collections/main.rs
+c83a817ee393e33821e025fbed127b89233d6dc650eb8c9a20191d6b0bc4b699  crates/pert-ui/tests/collections/multi_select.rs
+91dde878cf2254d86e81870815b51311db8c7a5cbbeb781a7ae31a3aa1e1fb92  crates/pert-ui/tests/collections/multi_select_pointer.rs
+# mtimes before:
+1793270861.937994899 crates/pert-ui-runtime/src/multi_select.rs
+1793270263.393146004 crates/pert-ui/tests/collections/main.rs
+1793269430.081469843 crates/pert-ui/tests/collections/multi_select.rs
+1793270841.123825280 crates/pert-ui/tests/collections/multi_select_pointer.rs
+# ---- output ----
+   Compiling pert-ui-runtime v0.3.91 (/home/per/pert-ui-usability/r3-multiselect-worktree/crates/pert-ui-runtime)
+   Compiling pert-ui-wgpu v0.3.91 (/home/per/pert-ui-usability/r3-multiselect-worktree/crates/pert-ui-wgpu)
+   Compiling pert-ui v0.3.91 (/home/per/pert-ui-usability/r3-multiselect-worktree/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.52s
+     Running tests/collections/main.rs (/home/per/pert-ui-usability/r3-multiselect-implementation-target/debug/deps/collections-fa4d06ce513818a2)
+
+running 495 tests
+test collection_filter::the_default_name_uses_the_installed_table_before_the_first_update ... ok
+test collection_filter::hiding_the_active_row_finds_its_neighbor_in_linear_time ... ok
+[pert-ui validation ERROR EmptyHitArea] Component "removing" (#2): visible interactive component has zero measured width or height.
+[pert-ui validation ERROR EmptyHitArea] Component "reinstalling" (#3): visible interactive component has zero measured width or height.
+[pert-ui validation ERROR EmptyHitArea] Component "last" (#5): visible interactive component has zero measured width or height.
+test collection_filter::a_refused_tree_write_changes_nothing ... ok
+test collection_redescription::a_redescribed_table_replaces_and_removes_its_sort_callback ... ok
+test collection_redescription::a_list_follows_a_replaced_and_a_removed_placement_rule ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "field" (#15): measured 32 px tall in "cell editor" (#14), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test collection_filter::repeated_offered_permissions_cannot_lift_a_fixed_denial ... ok
+test collection_redescription::a_redescribed_tree_places_drops_against_its_retained_controller ... ok
+test collection_redescription::a_redescription_replaces_and_removes_the_text_input_callback ... ok
+test collection_filter::a_lazy_tree_is_filtered_only_over_what_it_listed ... ok
+test collection_filter::the_direct_filter_slot_reserves_filter_field_but_allows_filter_as_collection_key ... ok
+test collection_filter::a_query_change_never_moves_a_hidden_tree_selection ... ok
+[pert-ui validation ERROR EmptyHitArea] Component "removing" (#2): visible interactive component has zero measured width or height.
+[pert-ui validation ERROR EmptyHitArea] Component "reinstalling" (#3): visible interactive component has zero measured width or height.
+[pert-ui validation ERROR EmptyHitArea] Component "body" (#6): visible interactive component has zero measured width or height.
+test collection_filter::a_replaced_matcher_applies_and_matches_a_fresh_mount ... ok
+test collection_filter::a_replaced_source_is_filtered_by_the_current_query ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "field" (#21): measured 32 px tall in "cell editor" (#20), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test collection_filter::a_selected_row_filtered_out_stays_selected_and_unfocused_navigation_stays ... ok
+test collection_filter::a_list_filter_hides_rows_and_keeps_the_ones_it_shows ... ok
+test collection_filter::down_in_the_field_moves_focus_into_the_collection ... ok
+test collection_redescription::a_callback_removed_and_reinstalled_before_delivery_discards_the_undelivered_change ... ok
+test collection_redescription::a_redescribed_table_builds_later_edits_with_its_new_cell_editor ... ok
+test collection_filter::focus_on_a_disappearing_row_moves_to_the_nearest_then_to_the_field ... ok
+test collection_filter::describing_the_filter_again_keeps_the_tree_layer ... ok
+test command_palette::ranking_is_pure_deterministic_and_replaceable ... ok
+test collection_filter::a_table_filter_matches_any_cell_and_survives_a_new_source ... ok
+test collection_filter::a_tree_filter_shows_matches_with_ancestors_through_a_temporary_layer ... ok
+test commands::a_command_needs_a_nonblank_name ... ok
+test collection_filter::a_new_table_source_moves_the_active_row_and_updates_the_counts ... ok
+test collection_redescription::a_redescription_replaces_the_drag_operations ... ok
+test collection_redescription::a_redescription_replaces_and_removes_the_activation_callback ... ok
+test commands::a_batch_finishes_every_receipt_when_an_action_shuts_the_runtime_down ... ok
+test collection_redescription::a_replacement_reorder_callback_performs_the_drop ... ok
+test commands::escape_through_the_native_path_ends_the_focused_components_context ... ok
+test collection_filter::a_filter_not_offered_hides_its_field_and_shows_every_row ... ok
+test command_palette::a_nonmodal_palette_closes_on_an_outside_press_and_when_focus_leaves ... ok
+test command_palette::a_nonmodal_palette_showing_an_outcome_still_closes_when_focus_leaves ... ok
+test collection_redescription::a_redescription_replaces_removes_and_reinstalls_the_selection_callback ... ok
+test commands::held_release_removes_ownership_before_failing_callback ... ok
+test commands::listing_reports_current_shortcuts_and_enabled_state_like_command_info ... ok
+test command_palette::enter_invokes_the_highlighted_command_after_the_modal_palette_closes ... ok
+test commands::captured_menu_target_is_not_retargeted_after_movement_or_hiding ... ok
+test command_palette::equivalent_inner_description_still_replaces_palette_outcome_formatter ... ok
+test commands::held_input_has_one_terminal_outcome_and_never_leaks_after_focus_loss ... ok
+test commands::command_info_and_invocation_use_same_window_and_sanitized_optional_focus ... ok
+test command_palette::escape_clears_the_query_first_on_the_native_path_and_then_closes ... ok
+test command_palette::a_matching_row_press_and_release_invokes_it_and_the_backdrop_closes ... ok
+test commands::orphan_repeats_never_reestablish_pressed_state_or_trigger_new_command ... ok
+test commands::empty_text_undo_reserves_layout_chord_and_custom_text_phase_runs_once ... ok
+test command_palette::a_second_palette_with_the_same_controller_stays_closed ... ok
+test commands::os_repeats_run_a_command_only_after_it_opts_in ... ok
+test command_palette::a_command_disabled_since_opening_reopens_the_palette_with_the_outcome ... ok
+test commands::queued_command_finishes_when_every_native_root_is_hidden ... ok
+test commands::listing_rejects_a_stale_context_and_rows_invoke_with_revalidation ... ok
+test commands::removed_command_consumes_its_remaining_repeats_and_release ... ok
+test commands::application_modal_blocks_other_roots_and_preserves_its_editor_input ... ok
+test commands::listing_discards_stale_optional_focus_like_command_info ... ok
+test commands::shutdown_cancels_queued_invocations_observably ... ok
+test commands::held_modal_admission_and_initial_callback_failure_cancel_once ... ok
+test command_palette::opening_focuses_the_field_and_lists_the_captured_context ... ok
+test commands::listing_follows_scope_eligibility_and_sorts_by_name ... ok
+test commands::layout_identity_disabled_reservation_rebinding_and_conflicts ... ok
+test commands::queued_button_uses_same_disabled_and_modal_admission_path ... ok
+test content_search::a_jump_into_application_controlled_visibility_is_refused_with_its_reason ... ok
+test commands::listing_runs_predicates_read_only_and_restores_the_selected_window ... ok
+test command_palette::a_destination_command_reveals_outside_the_closed_modal_palette ... ok
+test commands::listing_shows_modal_blocked_commands_as_disabled ... ok
+test command_palette::hiding_or_removing_the_palette_ends_its_session ... ok
+test commands::queued_commands_schedule_work_and_revalidate_modals_between_actions ... ok
+test commands::the_command_queue_refuses_beyond_its_capacity_and_receipts_are_identities ... ok
+test content_search::a_hit_carries_the_components_other_text ... ok
+test command_palette::native_focus_loss_closes_modal_and_nonmodal_palette ... ok
+test content_search::query_rules_reject_empty_text_and_zero_limits ... ok
+test commands::three_unfocused_windows_route_application_once_and_window_locally ... ok
+test commands::minimizing_the_owner_window_keeps_an_application_modal_prompt_blocking ... ok
+test content_search::a_button_in_an_unselected_tab_is_found_and_the_jump_selects_the_tab ... ok
+test commands::view_pointer_selects_target_without_focus_or_registered_view_bindings ... ok
+test command_palette::arrow_keys_move_the_highlight_and_a_new_query_starts_at_the_best_match ... ok
+test content_search::an_opt_out_made_while_a_search_runs_hides_the_queued_subtree ... ok
+test content_search::a_mounted_only_search_stales_when_a_visited_hidden_list_changes_source ... ok
+test content_search::failed_row_build_does_not_mark_retained_children_as_current ... ok
+test content_search::a_field_names_an_ordinary_item_of_a_structural_each_in_content_search ... ok
+test collection_filter::filtering_keeps_the_top_row_where_it_was_by_key ... ok
+test content_search::a_jump_to_a_row_mounted_later_keeps_its_completion_and_focuses_it ... ok
+test content_search::concealed_values_and_excluded_subtrees_are_never_found ... ok
+test content_search::dirty_derived_list_source_read_errors_are_not_obsolete_widget_hits ... ok
+test content_search::rejected_child_reconciliation_does_not_mark_retained_rows_as_current ... ok
+test content_search::previously_shown_hidden_lists_search_the_current_source_without_presenting_it ... ok
+test content_search::replacing_the_source_of_a_list_never_shown_makes_the_search_stale ... ok
+test content_search::a_value_in_a_collapsed_section_is_found_and_the_jump_expands_it ... ok
+test content_search::hidden_content_can_be_left_out_and_a_foreign_search_is_refused ... ok
+test content_search::the_result_limit_stops_a_step_and_the_next_one_continues ... ok
+test display_rows::table_rows_describe_their_bars_and_spinners_from_the_records ... ok
+test content_search::content_behind_a_modal_dialog_is_not_found_while_it_is_open ... ok
+test controlled_rows::a_filter_keeps_the_draft_of_a_row_it_keeps_and_ends_one_it_removes ... ok
+test content_search::the_budget_counts_finding_the_roots_and_indexing_mounted_rows ... ok
+test content_search::a_search_is_stale_after_the_tree_or_a_collection_changes ... ok
+test file_browser::a_foreign_response_with_a_matching_directory_and_generation_is_stale ... ok
+test content_search::a_modal_in_another_window_blocks_its_content_whichever_window_is_selected ... ok
+test file_browser::a_delivery_that_fails_keeps_its_request_pending_for_a_retry ... ok
+test controlled_rows::a_list_row_keeps_its_draft_across_record_changes_and_scrolling ... ok
+test controlled_rows::a_table_cell_checkbox_keeps_its_press_and_shows_the_applied_value ... ok
+test content_search::replacing_a_collection_the_search_has_finished_makes_it_stale ... ok
+test file_browser::a_failed_listing_is_an_error_row_not_an_empty_folder ... ok
+test file_browser::a_response_for_another_controller_or_a_root_given_twice_is_refused ... ok
+test command_palette::stale_contexts_and_failing_actions_are_shown_not_skipped ... ok
+test file_browser::list_directory_reports_every_entry_and_links ... ok
+test file_browser::a_newer_request_supersedes_an_older_one ... ok
+test file_browser::a_failed_folder_listing_is_an_error_row_under_its_node ... ok
+test file_browser::a_redescription_replaces_and_removes_the_folder_filter_offer ... ok
+test file_browser::a_double_click_activates_an_entry_and_a_single_click_only_selects ... ok
+test file_browser::a_retained_entry_row_shows_its_replacement_listing ... ok
+test file_browser::a_result_for_a_folder_the_user_left_is_dropped_as_stale ... ok
+test file_browser::folder_filter_permissions_preserve_a_fixed_denial ... ok
+test file_browser::another_folder_response_updates_the_tree_without_rebuilding_current_entries ... ok
+test file_browser::collapsing_a_loading_folder_makes_its_result_stale ... ok
+[pert-ui validation ERROR UnexpectedOverlap] Components "browser" (#1) and "probe" (#39) overlap; correct their layout, or allow an intentional overlay: report OverlapPolicy::Allow in ComponentDetails::validation, or let the parent stack its children (Component::stacks_children).
+test file_browser::hidden_browser_initializes_from_its_retained_controller_and_current_strings ... ok
+test file_browser::paths_that_are_not_utf8_keep_their_own_identity ... ok
+test file_browser::four_quick_presses_open_twice_and_a_distant_second_press_does_not ... ok
+test file_browser::collapsing_an_ancestor_makes_a_hidden_folders_result_stale ... ok
+test file_browser::backspace_in_the_list_opens_the_parent_folder ... ok
+test file_browser::clicking_a_folder_in_the_tree_opens_it ... ok
+test file_browser::redescribed_browser_parts_keep_the_mounted_controller ... ok
+test file_browser::the_browser_requests_its_folder_and_shows_loading_until_the_listing_arrives ... ok
+test file_browser::unmounting_the_browser_leaves_the_controller_working ... ok
+test file_browser::selection_is_kept_by_path_when_a_listing_changes ... ok
+test file_browser::enter_opens_directories_and_links_to_them_and_hands_files_to_the_application ... ok
+test file_browser::unreadable_entries_are_listed_with_their_error ... ok
+[pert-ui validation ERROR UnexpectedOverlap] Components "browser" (#1) and "probe" (#39) overlap; correct their layout, or allow an intentional overlay: report OverlapPolicy::Allow in ComponentDetails::validation, or let the parent stack its children (Component::stacks_children).
+test display_rows::a_list_row_mounted_by_a_scroll_shows_its_records_status ... ok
+test file_browser::navigating_expands_the_tree_down_to_the_folder_and_the_breadcrumb_follows ... ok
+test content_search::tree_rows_are_searched_when_shown_and_not_inside_collapsed_nodes ... ok
+test file_browser::refused_navigation_neither_queues_nor_dispatches_a_request ... ok
+test content_search::rows_of_a_collection_behind_a_modal_dialog_are_not_found ... ok
+test file_browser::the_filter_narrows_the_entries_and_navigating_clears_it ... ok
+test file_browser::expanding_an_unlisted_folder_shows_a_loading_row_and_requests_it ... ok
+test history_navigator::a_new_history_description_uses_only_the_retained_history_for_parts ... ok
+test file_browser::a_refresh_drops_selected_entries_that_are_gone ... ok
+test history_navigator::callback_only_redescription_keeps_generated_parts_without_updates ... ok
+test history_navigator::a_fixed_denial_is_never_undone_by_a_later_binding ... ok
+test file_browser::whitespace_failed_entry_names_remain_visible_after_localization ... ok
+test history_navigator::history_buttons_follow_a_replacement_history_and_forget_a_held_press ... ok
+test history_navigator::back_and_forward_follow_the_history_and_report_the_entry ... ok
+test history_navigator::the_history_icons_have_glyphs_in_the_bundled_font ... ok
+test history_navigator::side_buttons_pair_each_release_with_a_press_the_control_handled ... ok
+test history_navigator::side_buttons_over_wrapped_content_go_back_and_forward ... ok
+test filter_hidden_active::a_query_with_a_replacement_in_one_delivery_supplies_the_transition ... ok
+test file_browser::whitespace_folder_names_remain_navigable_with_visible_breadcrumb_labels ... ok
+test filter_hidden_active::clear_clears_after_two_replacements_before_one_delivery ... ok
+test file_browser::whitespace_entry_and_folder_labels_are_visible_without_changing_paths ... ok
+test history_navigator::localized_children_survive_ancestor_redescription_with_retained_identity ... ok
+test inline_text_rows::a_double_click_on_an_unselected_row_selects_it_and_edits ... ok
+test history_navigator::describing_the_control_again_replaces_the_callback_and_offers ... ok
+test inline_text_rows::a_drag_onto_another_row_breaks_the_series ... ok
+test inline_text_rows::a_drag_that_returns_to_its_start_breaks_the_series ... ok
+test inline_text_rows::a_modified_press_between_two_plain_ones_resets_the_series ... ok
+test inline_text_rows::a_drag_from_a_selected_rows_label_reorders_and_does_not_edit ... ok
+test filter_hidden_active::clear_leaves_no_item_active_when_the_field_hides_it ... ok
+test history_navigator::the_offered_parts_follow_constants_and_bindings ... ok
+test filter_hidden_active::clear_clears_an_item_the_application_made_active_before_delivery ... ok
+test inline_text_rows::control_presses_toggle_the_selection_and_never_edit ... ok
+test inline_text_rows::a_press_on_another_label_breaks_the_series ... ok
+test inline_text_rows::a_single_press_on_a_label_selects_its_row_and_leaves_focus_on_the_list ... ok
+test inline_text_rows::presses_farther_apart_than_the_interval_do_not_edit ... ok
+test history_navigator::an_entry_dropped_while_the_list_is_open_is_refused ... ok
+test list_reorder::a_list_that_is_not_reorderable_neither_starts_nor_accepts_a_drag ... ok
+test inline_text_rows::tab_passes_over_the_resting_labels ... ok
+test inline_text_rows::without_row_mode_a_press_focuses_the_label_and_the_row_stays_unselected ... ok
+test inline_text_rows::turning_row_mode_on_moves_focus_from_a_resting_label_to_the_list ... ok
+test list_reorder::a_dragged_row_preview_is_keyed_like_the_mounted_row ... ok
+test inline_text_rows::enter_ends_an_edit_with_focus_on_the_list_and_arrows_navigate ... ok
+test history_navigator::the_list_shows_entries_newest_first_and_goes_to_the_chosen_one ... ok
+test inline_text_rows::turning_row_mode_off_and_on_keeps_an_open_draft ... ok
+test filter_hidden_active::keep_leaves_the_item_active_and_hidden ... ok
+test filter_hidden_active::a_redescribed_policy_applies_from_the_next_change ... ok
+test history_navigator::tooltips_name_the_entry_each_button_goes_to ... ok
+test list_reorder::a_reorderable_list_offers_the_move_action_and_a_plain_one_does_not ... ok
+test list_reorder::alt_with_an_arrow_in_a_row_field_moves_the_row_outside_macos ... ok
+test list_reorder::alt_with_an_arrow_moves_the_active_item_without_a_pointer ... ok
+test filter_hidden_active::a_replacement_that_hides_the_active_item_follows_the_policy ... ok
+test list_reorder::an_armed_press_follows_its_key_when_the_source_is_replaced ... ok
+test list_reorder::a_refused_drop_leaves_the_model_alone ... ok
+test list_reorder::an_insertion_line_marks_the_boundary_while_the_drag_is_over_the_list ... ok
+test list_reorder::a_multiple_selection_is_dragged_together_and_a_plain_click_narrows_it ... ok
+test multi_select::duplicate_option_values_are_rejected ... ok
+test list_reorder::dragging_a_row_reorders_through_one_keyed_edit ... ok
+test list_reorder::interactive_list_row_highlights_only_while_hovered ... ok
+test list_reorder::a_drag_resting_near_an_edge_scrolls_an_overflowing_list_and_then_stops ... ok
+test list_reorder::dropping_a_row_beside_itself_changes_nothing ... ok
+test list_reorder::the_copy_modifier_asks_for_a_copy ... ok
+test list_reorder::moving_between_two_lists_is_one_edit_on_the_target_side ... ok
+test list_reorder::the_upper_half_of_a_row_drops_before_it_and_past_the_end_drops_last ... ok
+test content_search::a_table_value_outside_the_mounted_rows_is_found_and_mounted_by_the_jump ... ok
+test multi_select::a_disabled_chooser_reports_no_refused_removal ... ok
+test multi_select::colliding_values_keep_their_widgets_when_options_are_reordered ... ok
+test filter_hidden_active::a_multiple_selection_keeps_its_hidden_keys_under_either_policy ... ok
+test multi_select::a_custom_filter_decides_which_options_are_listed ... ok
+test filter_hidden_active::nearest_moves_an_item_the_field_hides_to_the_nearest_shown_row ... ok
+test multi_select::a_click_on_a_row_toggles_it_without_moving_focus ... ok
+test filter_hidden_active::clear_clears_when_no_row_remains_and_when_the_item_was_already_hidden ... ok
+test multi_select::a_failing_handler_keeps_the_write_closes_the_popup_and_is_not_replayed ... ok
+test multi_select::hiding_or_removing_the_chooser_reports_no_discarded_draft ... ok
+test multi_select::a_replaced_binding_never_receives_an_old_draft ... ok
+test multi_select::hiding_the_chooser_discards_an_open_draft ... ok
+test multi_select::chips_and_rows_keep_their_identity_when_options_are_reordered ... ok
+test multi_select::on_close_focus_on_a_chip_commits_the_draft_and_its_removal_reports_again ... ok
+test multi_select::invalid_replacement_keeps_valid_rows_then_recovers_and_refreshes_after_reopen ... ok
+test multi_select::on_close_edits_a_draft_that_escape_discards ... ok
+test multi_select::on_close_drops_the_draft_after_a_write_that_restored_the_value ... ok
+test multi_select::reactive_permission_cancels_chip_removal_and_hidden_controls_refresh ... ok
+test multi_select::on_close_lets_an_application_write_during_the_popup_win ... ok
+test multi_select::disabled_options_and_a_disabled_chooser_refuse_input ... ok
+test multi_select::removing_the_focused_chip_moves_focus_to_the_next_then_the_trigger ... ok
+test multi_select::pressing_the_trigger_while_open_closes_without_reopening ... ok
+test multi_select::opening_focuses_the_search_field_and_closing_returns_to_the_trigger ... ok
+test multi_select::the_trigger_shows_chosen_values_as_chips_in_binding_order ... ok
+test multi_select::each_toggle_reports_user_toggles_and_chip_removals_but_not_application_writes ... ok
+test multi_select::focus_moved_to_the_trigger_closes_the_popup_and_keeps_focus_there ... ok
+test content_search::a_search_with_no_matches_is_bounded_per_step_and_resumable ... ok
+test multi_select::removing_the_chooser_with_an_open_draft_writes_nothing ... ok
+test multi_select::on_close_writes_the_draft_once_on_an_outside_press_or_tab ... ok
+test multi_select::an_open_popup_refuses_toggles_after_the_dropdown_is_disabled ... ok
+test multi_select::replacing_sources_keeps_draft_row_identity_and_updates_highlight_subscriptions ... ok
+test multi_select::redescription_replaces_or_removes_the_handler_and_keeps_the_open_draft ... ok
+test multi_select::replacing_filter_updates_open_rows_without_restarting_the_session ... ok
+test multi_select::the_headless_path_also_clears_the_query_before_closing ... ok
+test multi_select::replaced_multi_select_permission_refreshes_retained_rows_and_unsubscribes ... ok
+test multi_select::the_first_escape_clears_the_query_and_the_second_closes ... ok
+test filter_hidden_active::nearest_keeps_the_item_without_a_transition_of_its_own ... ok
+test multi_select::on_close_reports_only_a_draft_that_was_written ... ok
+test multi_select_pointer::a_click_on_a_disabled_option_of_a_long_list_leaves_the_list_focused ... ok
+test multi_select::typing_filters_and_arrows_move_the_highlight_while_focus_stays ... ok
+test multi_select_pointer::a_denial_while_no_option_matches_still_hands_back_the_highlight ... ok
+test multi_select_pointer::a_denied_dropdown_only_remembers_the_pointer_and_hands_back_the_highlight ... ok
+test multi_select_pointer::a_failing_on_change_keeps_the_toggle_and_the_return_to_search ... ok
+test multi_select_pointer::a_pointer_parked_where_the_popup_opens_leaves_the_keyboard_highlight_alone ... ok
+test multi_select_pointer::a_click_returns_focus_to_search_after_tab_moved_it_to_the_list ... ok
+test multi_select::reactive_permission_cancels_row_capture_and_checks_drafts_at_close ... ok
+test multi_select_pointer::a_focus_request_from_on_change_wins_over_the_return_to_search ... ok
+test navigation_history::a_refused_write_leaves_the_history_unchanged ... ok
+test navigation_history::a_visit_drops_the_forward_stack_and_equal_visits_record_nothing ... ok
+test navigation_history::an_empty_history_has_nowhere_to_go ... ok
+test multi_select_pointer::a_pointer_that_left_the_panel_takes_nothing_when_the_popup_grows_under_it ... ok
+test navigation_history::entries_keep_their_identity_and_stale_identities_never_retarget ... ok
+test navigation_history::bound_controls_follow_the_history_without_polling ... ok
+test navigation_history::the_capacity_drops_the_oldest_entries ... ok
+test navigation_history::visits_move_back_and_forward_like_a_browser ... ok
+test multi_select_pointer::a_long_list_press_scrolled_away_by_the_list_keys_cancels_the_click ... ok
+test navigation_history::recording_user_selections_skips_the_history_s_own_navigation ... ok
+test multi_select_pointer::a_press_on_a_disabled_option_takes_ownership_without_arming ... ok
+test property_grid::a_grid_that_is_not_resizable_takes_no_focus_and_ignores_the_zone ... ok
+test property_grid::a_press_outside_the_zone_is_left_to_the_editor ... ok
+test property_grid::a_rejected_description_leaves_the_mounted_grid_unchanged ... ok
+test filter_hidden_active::with_focus_in_the_collection_every_policy_keeps_todays_rule ... ok
+test property_grid::a_hidden_row_takes_no_space ... ok
+test property_grid::a_long_label_widens_the_column_up_to_half_and_wraps_beyond ... ok
+test multi_select_pointer::removing_the_chooser_during_a_held_click_releases_without_error_or_focus_change ... ok
+test property_grid::a_restored_width_captures_exactly_as_the_document_held_it ... ok
+test multi_select_pointer::motion_made_while_denied_still_counts_after_the_restore ... ok
+test multi_select_pointer::motion_over_a_disabled_option_takes_ownership_but_never_chooses_it ... ok
+test multi_select_pointer::genuine_motion_after_keyboard_navigation_takes_the_highlight ... ok
+test property_grid::an_initial_width_is_kept_across_descriptions ... ok
+test property_grid::invalid_rows_are_rejected_before_the_grid_mounts ... ok
+test multi_select_pointer::a_row_scrolled_back_under_its_last_position_treats_a_jump_there_as_stationary ... ok
+test multi_select_pointer::reentering_the_window_at_the_same_position_over_the_same_row_is_stationary ... ok
+test multi_select_pointer::a_press_that_focuses_the_long_list_drops_the_search_composition ... ok
+test property_grid::hiding_during_a_drag_cancels_it ... ok
+test property_grid::dragging_the_zone_previews_commits_on_release_and_escape_cancels ... ok
+test property_grid::a_revoked_resize_permission_cancels_a_drag_and_restores_the_width ... ok
+test property_grid::required_marks_the_row_editor ... ok
+test multi_select_pointer::a_release_outside_the_pressed_row_or_after_a_denial_returns_no_focus ... ok
+test multi_select_pointer::editing_or_clearing_the_query_hands_the_highlight_back_to_the_keyboard ... ok
+test property_grid::a_row_with_a_described_status_describes_its_editor ... ok
+test property_grid::grids_bound_to_one_signal_stay_aligned_and_are_not_persisted ... ok
+test property_grid::help_and_status_appear_in_the_editor_column ... ok
+test multi_select_pointer::a_release_after_a_search_key_regains_the_highlight_for_the_pointer ... ok
+test property_grid::keys_resize_while_the_grid_has_focus_and_focus_loss_cancels ... ok
+test property_grid::an_unbound_width_persists_once_resized_and_round_trips ... ok
+test property_grid::restore_rejects_invalid_documents_and_a_resize_in_progress ... ok
+test property_grid::labels_and_editors_sit_in_two_aligned_columns ... ok
+test quick_pick::blank_and_duplicate_keys_are_refused_without_opening ... ok
+test multi_select_pointer::a_wheel_at_the_list_limit_bubbles_without_taking_the_highlight ... ok
+test multi_select_pointer::reentering_over_a_row_scrolled_there_meanwhile_counts_as_motion ... ok
+test property_grid::editors_keep_identity_and_focus_by_key_under_reorder_relabel_and_removal ... ok
+test multi_select_pointer::motion_inside_the_row_the_keyboard_highlighted_takes_ownership ... ok
+test quick_pick::a_choice_does_not_close_a_session_its_callback_opened ... ok
+test quick_pick::a_callback_error_leaves_the_picker_open ... ok
+test quick_pick::a_pending_choice_of_a_removed_picker_does_not_reopen_in_its_successor ... ok
+test quick_pick::done_closes_refused_stays_open_and_disabled_items_are_still_offered ... ok
+test reveal::a_change_that_leaves_the_child_hidden_is_a_refusal ... ok
+test quick_pick::describing_the_picker_again_replaces_its_choose_callback ... ok
+test multi_select_pointer::changed_options_labels_and_filters_keep_the_current_owner ... ok
+test quick_pick::a_pending_choice_from_an_earlier_session_no_longer_reopens_it ... ok
+test reveal::a_list_removed_before_mounting_the_row_cancels_its_receipt ... ok
+test multi_select_pointer::closing_or_hiding_then_reopening_starts_with_the_keyboard_highlight ... ok
+test quick_pick::equivalent_picker_description_does_not_invalidate_layout ... ok
+test quick_pick::latest_picker_description_can_reset_pending_configuration_to_defaults ... ok
+test quick_pick::failed_pending_result_reopens_the_same_configuration_snapshot ... ok
+test quick_pick::highlighted_picker_labels_use_the_foreground_paired_with_the_fill ... ok
+test reveal::a_custom_container_opens_through_the_public_hook ... ok
+test quick_pick::a_pending_choice_closes_then_reopens_with_its_failure_or_stays_closed ... ok
+test reveal::a_request_for_another_runtime_is_refused ... ok
+test quick_pick::picker_mount_adopts_an_already_open_controller_and_keeps_role_localization_live ... ok
+test reveal::a_detached_tab_reports_a_requested_window_activation ... ok
+test reveal::a_queued_reveal_of_a_removed_target_finishes_with_an_error ... ok
+test reveal::a_reveal_queued_during_dispatch_is_due_for_the_application ... ok
+test reveal::a_scroll_reveal_that_hides_the_target_is_not_reported_as_revealed ... ok
+test reveal::a_scroll_reveal_that_removes_its_outer_ancestor_ends_as_unmounted ... ok
+test quick_pick::highlighted_rows_survive_scroll_reconciliation ... ok
+test reveal::a_modal_that_closes_in_the_same_event_no_longer_blocks_a_queued_reveal ... ok
+test reveal::a_target_the_reveal_unmounts_is_reported_and_never_retargeted ... ok
+test quick_pick::reopening_modal_picker_as_nonmodal_updates_dismissal_and_restores_original_opener ... ok
+test reveal::a_modal_blocks_targets_outside_it_and_admits_targets_inside ... ok
+test quick_pick::rows_show_detail_and_kind_and_rank_by_label ... ok
+test reveal::the_default_hook_refuses_and_names_the_container ... ok
+test reveal::a_queued_reveal_reaches_its_receipt_after_the_flush ... ok
+test quick_pick::picker_description_configuration_waits_for_the_next_session ... ok
+test quick_pick::highlighted_rows_accept_query_and_new_session_content ... ok
+test multi_select_pointer::the_wheel_keeps_a_keyboard_highlight_and_moves_a_pointer_highlight ... ok
+test reveal::a_target_in_the_requesting_window_requests_no_activation ... ok
+test reveal::a_target_in_an_unselected_tab_selects_it_without_moving_focus ... ok
+test reveal::explicit_runtime_hiding_refuses_before_anything_opens ... ok
+test reveal::an_application_bound_view_refuses_and_earlier_containers_stay_open ... ok
+test reveal::the_reveal_queue_is_bounded_and_shutdown_cancels_it ... ok
+test reveal_diagnostics::host_hidden_window_is_an_operational_reveal_error_and_can_be_retried ... ok
+test reveal::reveal_and_focus_focuses_a_focusable_target_only ... ok
+test reveal::reveal_child_selects_a_tab_by_key ... ok
+test reveal::a_hidden_list_removed_before_reading_a_request_cancels_its_receipt ... ok
+test quick_pick::reopening_nonmodal_picker_as_modal_runs_conflict_admission ... ok
+test reveal::nested_containers_open_from_the_outermost_inwards ... ok
+test row_focus_recipe::rows_holding_the_list_id_keep_neither_the_list_nor_themselves_alive ... ok
+test selection_notifications::a_hidden_list_reports_a_change_made_meanwhile_when_shown ... ok
+test row_focus_recipe::click_then_arrows_and_enter_continue_from_the_opened_row ... ok
+test selection_notifications::a_callback_may_write_and_its_error_does_not_undo_the_change ... ok
+test selection_notifications::a_multiple_selection_reports_a_set_change_with_the_same_active_item ... ok
+test selection_notifications::a_tree_reports_cross_keys_as_user_and_controller_writes_as_application ... ok
+test selection_notifications::application_writes_report_application_and_coalesce_until_the_next_update ... ok
+test selection_notifications::collections_sharing_a_selection_report_a_user_choice_as_the_users ... ok
+test selection_notifications::the_initial_selection_is_no_change_and_user_input_reports_user ... ok
+test table::columns_are_validated ... ok
+test selection_notifications::a_filter_moving_the_active_row_off_a_hidden_one_reports_application ... ok
+test table::a_missing_cell_is_drawn_empty_rather_than_failing_the_row ... ok
+test quick_pick::native_focus_loss_closes_modal_and_nonmodal_picker ... ok
+test table::a_narrow_sorted_header_clips_its_title_before_the_indicator ... ok
+test row_focus_recipe::rows_holding_a_remounted_list_request_nothing_until_published_again ... ok
+test multi_select_pointer::a_long_list_under_a_parked_pointer_follows_every_navigation_key ... ok
+test selection_notifications::a_table_reports_a_row_click_as_user ... ok
+test reveal_diagnostics::refusal_text_is_historical_through_open_unmount_drop_and_return ... ok
+test table::a_sized_column_whose_key_cannot_be_stored_fails_capture_by_path ... ok
+test table::actionable_header_and_resize_edge_use_distinct_hover_colors ... ok
+test table::a_saved_width_below_the_minimum_is_rejected_and_the_minimum_restores ... ok
+test reveal::a_hidden_list_serves_its_request_when_shown ... ok
+test multi_select_pointer::a_completed_click_returns_focus_to_search_on_short_and_long_lists ... ok
+test table::a_header_press_focuses_the_body_so_escape_reaches_it_without_prior_focus ... ok
+test table::escape_cancels_a_title_press_so_its_release_does_not_sort ... ok
+test quick_pick::a_long_detail_yields_to_the_label ... ok
+test reveal::a_tree_reveal_reports_rows_and_collapsed_nodes ... ok
+test table::escape_ends_a_column_resize_where_it_is ... ok
+test table::restoring_returns_a_dragged_flexible_column_to_its_share ... ok
+test multi_select_pointer::the_focused_list_scroll_keys_follow_the_wheel_policy ... ok
+test table_columns::a_click_on_a_movable_sortable_title_still_sorts ... ok
+test table::a_sortable_header_reports_and_the_application_sorts ... ok
+test reveal::a_target_far_down_a_scroll_area_is_scrolled_into_view ... ok
+test table::dragging_a_column_edge_moves_the_cells_of_mounted_rows ... ok
+test table::only_widths_the_user_sized_are_captured ... ok
+test table_columns::direct_restore_after_shutdown_rejects_without_changing_columns ... ok
+test table::alt_with_up_or_down_sorts_the_active_cells_column_from_the_keyboard ... ok
+test table_columns::direct_restore_during_update_preserves_columns_and_capture ... ok
+test table_columns::a_release_outside_the_table_moves_nothing ... ok
+test table::a_press_names_the_cell_and_cells_are_described_by_their_column ... ok
+test table_columns::columns_are_not_movable_unless_asked ... ok
+test table::workspace_widths_restore_but_refuse_an_owned_resize ... ok
+test table_columns::publication_failure_restores_existing_user_sized_columns ... ok
+test table::rows_use_the_shared_selection_and_the_table_describes_its_columns ... ok
+test reveal::a_list_reveal_reports_the_mounted_row_which_can_then_take_focus ... ok
+test table_columns::a_drag_resting_near_an_edge_scrolls_overflowing_columns ... ok
+test table_columns::a_column_moves_only_among_its_movable_neighbours ... ok
+test table_columns::finite_extreme_flex_weights_keep_layout_valid ... ok
+test table_columns::order_errors_precede_semantic_width_errors_without_partial_restoration ... ok
+test table::rows_are_virtualized_under_a_header_that_does_not_scroll ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table::a_wide_table_scrolls_header_and_rows_by_one_offset ... ok
+test table_columns::a_keyboard_move_during_an_armed_title_press_keeps_the_pressed_column ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#15): measured 32 px tall in "done" (#14), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#26): measured 32 px tall in "done" (#25), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#37): measured 32 px tall in "done" (#36), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_columns::finite_extreme_fixed_widths_keep_layout_valid ... ok
+test table_columns::saved_orders_can_permute_independent_runs_and_leave_unlisted_columns_put ... ok
+test table_columns::alt_with_left_or_right_moves_the_active_cells_column ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_columns::saved_positions_must_be_the_listed_columns_numbered_from_zero ... [pert-ui validation ERROR okExceedsFixedHeight
+] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#42): measured 32 px tall in "cell editor" (#41), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_columns::dragging_a_title_moves_the_column_and_its_cells_follow ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_columns::the_line_marks_the_boundary_and_escape_leaves_the_order ... [pert-ui validation ERROR okExceedsFixedHeight
+] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_columns::restoration_checks_current_capabilities_when_recreating_a_table ... ok
+test table_columns::a_refused_source_replacement_is_not_applied_by_a_later_move ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table::the_active_cell_moves_with_the_arrows_and_scrolls_its_column_into_view ... ok
+test table_columns::a_release_resting_at_the_edge_leaves_nothing_scheduled ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_columns::a_saved_order_naming_a_removed_column_is_rejected_whole ... ok
+test table_editing::a_disabled_number_cell_keeps_its_draft ... ok
+test table_columns::a_saved_order_keeps_columns_added_since_in_their_place ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#47): measured 32 px tall in "done" (#46), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#58): measured 32 px tall in "done" (#57), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#69): measured 32 px tall in "done" (#68), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#80): measured 32 px tall in "done" (#79), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#91): measured 32 px tall in "done" (#90), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table::the_controller_fixes_a_column_width_like_a_drag_except_during_one ... ok
+test table_columns::incompatible_saved_column_orders_preserve_widths_cells_and_capture ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_columns::a_malformed_saved_order_is_rejected_without_changing_anything ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#44): measured 32 px tall in "cell editor" (#43), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#15): measured 32 px tall in "done" (#14), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#26): measured 32 px tall in "done" (#25), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#37): measured 32 px tall in "done" (#36), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#15): measured 32 px tall in "done" (#14), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#26): measured 32 px tall in "done" (#25), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#37): measured 32 px tall in "done" (#36), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#15): measured 32 px tall in "done" (#14), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#26): measured 32 px tall in "done" (#25), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#37): measured 32 px tall in "done" (#36), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#96): measured 32 px tall in "cell editor" (#95), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_columns::a_moved_order_round_trips_through_the_workspace ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#15): measured 32 px tall in "done" (#14), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#26): measured 32 px tall in "done" (#25), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#37): measured 32 px tall in "done" (#36), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#15): measured 32 px tall in "done" (#14), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#26): measured 32 px tall in "done" (#25), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#37): measured 32 px tall in "done" (#36), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#42): measured 32 px tall in "cell editor" (#41), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_editing::a_later_description_does_not_change_the_mounted_tab_policy ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#42): measured 32 px tall in "cell editor" (#41), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#42): measured 32 px tall in "cell editor" (#41), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#42): measured 32 px tall in "cell editor" (#41), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#42): measured 32 px tall in "cell editor" (#41), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#48): measured 32 px tall in "cell editor" (#47), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] test table_editing::a_disabled_editor_stays_open_until_escape_on_the_body ... Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller contentok
+
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR test table_editing::discard_draft_keeps_a_cells_edit_open ... ExceedsFixedHeightok] 
+Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#48): measured 32 px tall in "cell editor" (#47), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#49): measured 32 px tall in "cell editor" (#48), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#107): measured 32 px tall in "done" (#106), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#118): measured 32 px tall in "done" (#117), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#129): measured 32 px tall in "done" (#128), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#140): measured 32 px tall in "done" (#139), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#151): measured 32 px tall in "done" (#150), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#162): measured 32 px tall in "done" (#161), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#173): measured 32 px tall in "done" (#172), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#184): measured 32 px tall in "done" (#183), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_editing::enter_activates_cells_that_are_not_edited_in_place ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#55): measured 32 px tall in "cell editor" (#54), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#53): measured 32 px tall in "done" (#52), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#64): measured 32 px tall in "done" (#63), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#44): measured 32 px tall in "cell editor" (#43), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#48): measured 32 px tall in "cell editor" (#47), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#15): measured 32 px tall in "done" (#14), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#26): measured 32 px tall in "done" (#25), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#37): measured 32 px tall in "done" (#36), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_editing::an_editor_that_cannot_take_focus_leaves_the_body_focused_and_escape_cancels ... ok
+test table_editing::an_editor_callback_error_closes_the_edit ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#12): measured 32 px tall in "done" (#11), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#23): measured 32 px tall in "done" (#22), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#34): measured 32 px tall in "done" (#33), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "button" (#6): measured 32 px tall in "go" (#5), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "button" (#9): measured 32 px tall in "go" (#8), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "button" (#12): measured 32 px tall in "go" (#11), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#15): measured 32 px tall in "done" (#14), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#26): measured 32 px tall in "done" (#25), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#37): measured 32 px tall in "done" (#36), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#69): measured 32 px tall in "cell editor" (#68), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_editing::a_dropdown_editor_completes_on_a_choice ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#15): measured 32 px tall in "done" (#14), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#26): measured 32 px tall in "done" (#25), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#37): measured 32 px tall in "done" (#36), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#51): measured 32 px tall in "cell editor" (#50), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#195): measured 32 px tall in "done" (#194), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#206): measured 32 px tall in "done" (#205), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#217): measured 32 px tall in "done" (#216), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#228): measured 32 px tall in "done" (#227), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#239): measured 32 px tall in "done" (#238), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#250): measured 32 px tall in "done" (#249), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#261): measured 32 px tall in "done" (#260), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#48): measured 32 px tall in "done" (#47), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#59): measured 32 px tall in "done" (#58), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#70): measured 32 px tall in "done" (#69), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_editing::a_double_click_begins_unless_modified_or_taken_by_the_cell ... ok
+test table_items::a_button_laid_out_taller_than_its_row_is_reported_once_per_row ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#42): measured 32 px tall in "cell editor" (#41), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#58): measured 32 px tall in "cell editor" (#57), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_editing::unmounting_drops_the_editor_and_a_later_table_brings_its_own ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#48): measured 32 px tall in "cell editor" (#47), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#42): measured 32 px tall in "cell editor" (#41), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_items::a_cell_is_addressed_by_row_column_and_content_keys ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#42): measured 32 px tall in "cell editor" (#41), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#65): measured 32 px tall in "cell editor" (#62), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_items::a_hidden_table_reports_no_title_bounds_but_keeps_its_own ... ok
+test table_items::a_destination_layout_that_fails_before_the_table_leaves_it_without_geometry ... ok
+test table_items::a_failed_layout_withholds_the_titles_it_arranged_and_the_next_one_restores_them ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#48): measured 32 px tall in "cell editor" (#45), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#268): measured 32 px tall in "cell editor" (#267), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#15): measured 32 px tall in "done" (#14), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#26): measured 32 px tall in "done" (#25), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#37): measured 32 px tall in "done" (#36), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#55): measured 32 px tall in "done" (#54), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#66): measured 32 px tall in "done" (#65), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#77): measured 32 px tall in "done" (#76), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_editing::an_open_edit_is_reached_again_although_its_cell_became_ineligible ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#72): measured 32 px tall in "cell editor" (#71), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_editing::focus_leaving_saves_and_closes_without_moving_focus ... ok
+test table_editing::escape_reaches_the_application_before_the_table_removes_the_editor ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_items::a_moved_table_reports_no_geometry_until_its_new_window_lays_it_out ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#82): measured 32 px tall in "cell editor" (#81), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#79): measured 32 px tall in "cell editor" (#78), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_editing::hiding_the_table_closes_the_edit ... ok
+test table_items::a_press_on_a_cut_title_within_its_edges_grip_resizes_instead_of_sorting ... ok
+test table_items::a_table_reparented_into_another_scale_keeps_its_committed_scale_until_laid_out ... ok
+test table_items::a_zero_size_component_follows_a_continuing_zoom ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#42): measured 32 px tall in "cell editor" (#41), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#82): measured 32 px tall in "cell editor" (#81), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_items::a_width_change_not_yet_laid_out_shows_in_the_titles_after_the_flush ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#15): measured 32 px tall in "done" (#14), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#26): measured 32 px tall in "done" (#25), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#37): measured 32 px tall in "done" (#36), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeighttest table_items::a_title_cut_by_horizontal_scrolling_reports_and_clicks_its_visible_part ... ] okComponent "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_items::a_title_scrolled_out_of_view_has_no_bounds_and_is_not_clicked ... ok
+test table_items::a_table_in_a_promoted_surface_or_a_detached_window_reports_its_own_windows_bounds ... ok
+test table_items::a_restored_column_order_is_resolved_at_once ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#15): measured 32 px tall in "done" (#14), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#26): measured 32 px tall in "done" (#25), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#37): measured 32 px tall in "done" (#36), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "cell editor" (#7): measured 59 px tall in "content" (#6), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "cell editor" (#11): measured 59 px tall in "content" (#10), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR test table_items::an_index_out_of_range_is_refused_before_the_reveal_scrolls ... ExceedsFixedHeightok] 
+Component "cell editor" (#15): measured 59 px tall in "content" (#14), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#15): measured 32 px tall in "done" (#14), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#26): measured 32 px tall in "done" (#25), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#37): measured 32 px tall in "done" (#36), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "cell editor" (#7): measured 32 px tall in "content" (#6), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "cell editor" (#11): measured 32 px tall in "content" (#10), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "cell editor" (#15): measured 32 px tall in "content" (#14), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#42): measured 32 px tall in "cell editor" (#41), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#48): measured 32 px tall in "cell editor" (#47), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR test table_items::titles_have_no_bounds_before_the_first_layout ... ExceedsFixedHeightok] 
+Component "cell editor" (#7): measured 59 px tall in "content" (#6), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "cell editor" (#15): measured 59 px tall in "content" (#14), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#17): measured 59 px tall in "cell editor" (#16), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table::the_controller_reveals_a_row_by_key_below_the_header ... ok
+test table_items::click_item_reads_the_items_again_after_a_reveal_that_scrolls ... ok
+test table_items::content_keyed_like_the_editors_host_is_reported_once_against_the_tables_wrapper ... ok
+test table_items::a_zoom_whose_layout_fails_before_the_table_leaves_its_committed_scale ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#89): measured 32 px tall in "cell editor" (#88), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_items::header_titles_report_their_window_bounds_and_click_item_sorts_by_them ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#49): measured 32 px tall in "cell editor" (#48), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#42): measured 32 px tall in "cell editor" (#41), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_items::titles_follow_a_view_scale ... ok
+test tree::a_tree_controller_can_be_created_while_describing_children ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#42): measured 32 px tall in "cell editor" (#41), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_editing::sorting_keeps_the_editor_and_its_draft ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "field" (#6): measured 32 px tall in "field" (#5), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "checkbox" (#11): measured 32 px tall in "check" (#10), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "label" (#15): measured 40 px tall in "wrap" (#14), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "field" (#18): measured 32 px tall in "field" (#17), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "checkbox" (#23): measured 32 px tall in "check" (#22), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "label" (#27): measured 40 px tall in "wrap" (#26), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "field" (#30): measured 32 px tall in "field" (#29), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "checkbox" (#35): measured 32 px tall in "check" (#34), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "label" (#39): measured 40 px tall in "wrap" (#38), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_editing::edit_ends_keep_the_global_notification_order ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#47): measured 32 px tall in "done" (#46), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#58): measured 32 px tall in "done" (#57), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#69): measured 32 px tall in "done" (#68), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#80): measured 32 px tall in "done" (#79), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#91): measured 32 px tall in "done" (#90), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_editing::enter_and_escape_return_focus_to_the_body_on_the_edited_cell ... ok
+test table_editing::replacement_is_reported_once_after_settling ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#48): measured 32 px tall in "cell editor" (#47), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test tree::dropping_the_state_and_the_tree_releases_the_source ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "cell editor" (#7): measured 59 px tall in "content" (#6), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "cell editor" (#11): measured 59 px tall in "content" (#10), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "cell editor" (#15): measured 59 px tall in "content" (#14), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test tree::collapsing_keeps_a_multiple_selection_and_moves_only_the_active_item ... ok
+test tree::expander_has_local_hover_feedback ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_editing::a_row_leaving_the_rows_closes_its_edit ... ok
+test tree::the_tree_keys_each_built_row_content_with_its_node ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "cell editor" (#7): measured 59 px tall in "content" (#6), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "cell editor" (#11): measured 59 px tall in "content" (#10), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "cell editor" (#15): measured 59 px tall in "content" (#14), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "cell editor" (#7): measured 59 px tall in "content" (#6), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "cell editor" (#15): measured 59 px tall in "content" (#14), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#17): measured 59 px tall in "cell editor" (#16), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test tree::collapsing_an_ancestor_moves_a_hidden_active_item_to_it ... ok
+test table_items::a_wrapper_measured_from_its_cache_reports_its_contents_current_height ... ok
+test tree::pressing_the_expander_toggles_and_pressing_the_row_selects ... ok
+test tree::only_expanded_nodes_are_rows_and_only_they_are_asked_for_children ... ok
+test table_editing::with_one_tab_stop_f2_enters_resting_content_and_escape_returns ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "cell editor" (#7): measured 59 px tall in "content" (#6), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "cell editor" (#15): measured 59 px tall in "content" (#14), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#17): measured 59 px tall in "cell editor" (#16), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test tree::an_active_item_moved_into_a_collapsed_node_stays_active_and_selected ... ok
+[pert-ui validation ERROR UnexpectedOverlap] Components "tree" (#1) and "probe" (#12) overlap; correct their layout, or allow an intentional overlay: report OverlapPolicy::Allow in ComponentDetails::validation, or let the parent stack its children (Component::stacks_children).
+[pert-ui validation ERROR ExceedsFixedHeighttest table_editing::removing_the_callback_discards_pending_ends ... ] okComponent "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+
+[pert-ui validation ERROR test table_items::an_editor_host_measured_from_its_cache_reports_its_editors_current_height ... ok
+ExceedsFixedHeight] Component "editor" (#96): measured 32 px tall in "cell editor" (#95), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test tree::the_cross_arrows_expand_descend_collapse_and_ascend ... ok
+test tree::refused_tree_mutations_preserve_the_visible_snapshot_and_navigation ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#55): measured 32 px tall in "done" (#54), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#66): measured 32 px tall in "done" (#65), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#77): measured 32 px tall in "done" (#76), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#55): measured 32 px tall in "cell editor" (#54), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test tree_reorder::alt_right_does_not_move_a_node_into_a_leaf ... ok
+test tree_reorder::a_leaf_divides_into_halves_and_never_takes_children ... ok
+test tree_reorder::alt_arrows_move_among_the_siblings_a_filter_shows ... ok
+test tree_reorder::a_hierarchy_published_before_the_drop_keeps_the_row_the_user_saw ... ok
+test virtual_collections::a_single_selection_is_the_active_item_whichever_is_written ... ok
+test tree_reorder::a_node_cannot_go_into_its_own_subtree ... ok
+test tree_reorder::below_an_expanded_node_a_drop_goes_before_its_first_child ... ok
+test tree_reorder::alt_with_an_arrow_moves_the_active_node_through_the_outline ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#48): measured 32 px tall in "cell editor" (#47), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test tree_reorder::a_tree_is_not_reorderable_unless_asked ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#82): measured 32 px tall in "cell editor" (#81), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test virtual_collections::estimated_rows_take_their_own_heights_and_stack_without_gaps ... ok
+test tree_reorder::hiding_the_tree_mid_drag_clears_its_indication ... ok
+test tree_reorder::the_middle_of_a_folder_takes_the_node_as_its_last_child ... ok
+test tree_reorder::the_insertion_line_and_the_outlined_node_are_inspectable ... ok
+test table_editing::enter_f2_and_typing_begin_with_their_starts ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#48): measured 32 px tall in "cell editor" (#47), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_editing::unmounting_with_an_open_edit_leaves_no_session ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#15): measured 32 px tall in "done" (#14), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#26): measured 32 px tall in "done" (#25), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#37): measured 32 px tall in "done" (#36), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test virtual_collections::a_horizontal_list_scrolls_along_x_even_from_a_vertical_wheel ... ok
+test table_editing::revoking_editing_keeps_focus_and_refuses_a_changed_draft ... ok
+test tree_reorder::after_a_last_child_the_pointer_across_the_row_picks_the_level ... ok
+test virtual_collections::a_rejected_write_leaves_the_range_anchor_where_it_was ... ok
+test virtual_collections::lanes_make_a_grid_with_equal_shares_and_whole_lines ... ok
+test virtual_collections::the_selection_is_application_state_that_the_list_draws_and_never_prunes ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#51): measured 32 px tall in "cell editor" (#50), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#42): measured 32 px tall in "cell editor" (#41), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test tree_reorder::the_outer_quarters_of_a_folder_drop_beside_it ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#107): measured 32 px tall in "done" (#106), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#118): measured 32 px tall in "done" (#117), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#129): measured 32 px tall in "done" (#128), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#140): measured 32 px tall in "done" (#139), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#151): measured 32 px tall in "done" (#150), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#162): measured 32 px tall in "done" (#161), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#173): measured 32 px tall in "done" (#172), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#184): measured 32 px tall in "done" (#183), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test virtual_collections::rows_measured_above_the_viewport_do_not_move_what_is_on_screen ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#58): measured 32 px tall in "cell editor" (#57), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "label" (#15): measured 40 px tall in "wrap" (#14), which gives its children a fixed 32 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "label" (#27): measured 40 px tall in "wrap" (#26), which gives its children a fixed 32 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "label" (#39): measured 40 px tall in "wrap" (#38), which gives its children a fixed 32 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#65): measured 32 px tall in "cell editor" (#62), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test virtual_list::a_kept_item_stays_mounted_out_of_range_until_released ... ok
+test virtual_list::only_rows_near_the_viewport_are_mounted_at_their_logical_positions ... ok
+test virtual_list::explicit_focus_on_a_mounted_but_clipped_row_scrolls_it_into_view ... ok
+test virtual_collections::a_grid_moves_by_item_across_and_by_line_along ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#72): measured 32 px tall in "cell editor" (#71), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test virtual_collections::multiple_selection_toggles_extends_and_moves_without_selecting ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#48): measured 32 px tall in "cell editor" (#45), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test virtual_list::typed_text_reaches_the_focused_list_but_not_from_its_items ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#79): measured 32 px tall in "cell editor" (#78), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test virtual_collections::navigation_crosses_items_that_are_not_mounted ... ok
+test virtual_list::the_list_keys_each_built_row_with_its_key ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#195): measured 32 px tall in "done" (#194), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#206): measured 32 px tall in "done" (#205), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#217): measured 32 px tall in "done" (#216), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#228): measured 32 px tall in "done" (#227), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#239): measured 32 px tall in "done" (#238), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#250): measured 32 px tall in "done" (#249), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#261): measured 32 px tall in "done" (#260), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test virtual_list::a_controller_reveals_an_unmounted_row_by_key ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#82): measured 32 px tall in "cell editor" (#81), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test tree::the_controller_reveals_a_node_by_key_once_its_ancestors_are_expanded ... ok
+test virtual_collections::neighboring_lanes_share_an_exact_edge_at_awkward_widths ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#15): measured 32 px tall in "done" (#14), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#26): measured 32 px tall in "done" (#25), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#37): measured 32 px tall in "done" (#36), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#89): measured 32 px tall in "cell editor" (#88), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test virtual_list::a_focused_row_stays_mounted_while_scrolled_away_and_traversal_reveals_the_next ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#268): measured 32 px tall in "cell editor" (#267), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_editing::tab_moves_along_rows_skips_what_cannot_be_edited_and_stops_at_the_ends ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#14): measured 32 px tall in "done" (#13), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#25): measured 32 px tall in "done" (#24), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#36): measured 32 px tall in "done" (#35), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test virtual_list::a_list_mounted_later_does_not_replay_a_served_reveal ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "field" (#6): measured 32 px tall in "field" (#5), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "checkbox" (#11): measured 32 px tall in "check" (#10), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "field" (#20): measured 32 px tall in "field" (#19), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "checkbox" (#25): measured 32 px tall in "check" (#24), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "field" (#34): measured 32 px tall in "field" (#33), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "checkbox" (#39): measured 32 px tall in "check" (#38), which gives its children a fixed 28 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#42): measured 32 px tall in "cell editor" (#41), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_editing::a_refused_edit_stays_open_until_focused_again_or_replaced ... ok
+test virtual_list::keyboard_paging_scrolls_the_focused_list ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#41): measured 32 px tall in "cell editor" (#40), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_items::content_that_measured_taller_than_its_row_is_reported_once_per_cell ... ok
+test table_editing::tab_moves_in_the_order_a_save_callback_left ... ok
+test virtual_list::replacing_the_items_rebuilds_rows_and_clamps_the_offset ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#15): measured 32 px tall in "done" (#14), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#26): measured 32 px tall in "done" (#25), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "check" (#37): measured 32 px tall in "done" (#36), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test virtual_list::scrolling_reuses_rows_that_stay_in_range_and_mounts_the_rest ... ok
+test virtual_list::rows_far_past_the_precision_of_f32_keep_distinct_slots ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "editor" (#42): measured 32 px tall in "cell editor" (#41), which gives its children a fixed 24 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test table_editing::the_table_reports_the_edits_it_ends ... ok
+[pert-ui validation ERROR UnboundedCollection] Component "list" (#2): this collection in "root" was given its whole content extent (40000 px), so it mounts all 1000 rows and cannot scroll itself, while only 0% of it is visible; give it a bounded extent (a SplitPane pane, Tab::fixed, RegionLayout::fixed, View::fixed or a grown child of a bounded Column, or of a bounded Row for a horizontal collection) instead of a scrolling ancestor; see VirtualList's bounded extent.
+test virtual_list::describing_the_list_again_keeps_its_mounted_rows_and_their_state ... ok
+
+test result: ok. 495 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.22s
+
+# ---- end output ----
+# hashes after:
+b6843e9ce95d1a564ec6fff9736b23f992a0061784e1792b987cf9f6c619836c  crates/pert-ui-runtime/src/multi_select.rs
+073e75adfb217a8db927a46fe39a1a400e0c74205810e6fe62c7e9fcb69f9979  crates/pert-ui/tests/collections/main.rs
+c83a817ee393e33821e025fbed127b89233d6dc650eb8c9a20191d6b0bc4b699  crates/pert-ui/tests/collections/multi_select.rs
+91dde878cf2254d86e81870815b51311db8c7a5cbbeb781a7ae31a3aa1e1fb92  crates/pert-ui/tests/collections/multi_select_pointer.rs
+# finished 2026-10-29T10:49:35+00:00
+# exit_status 0

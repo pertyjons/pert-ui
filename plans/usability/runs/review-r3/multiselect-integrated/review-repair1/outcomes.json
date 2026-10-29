@@ -1,0 +1,44 @@
+[
+  {
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--check"
+    ],
+    "started_at_utc": "2026-10-29T11:54:55.417965+00:00",
+    "finished_at_utc": "2026-10-29T11:54:58.146183+00:00",
+    "exit_status": 0
+  },
+  {
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "pert-ui-gallery",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "started_at_utc": "2026-10-29T11:54:58.146403+00:00",
+    "finished_at_utc": "2026-10-29T11:54:59.692409+00:00",
+    "exit_status": 0
+  },
+  {
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--test",
+      "foundation",
+      "popup_press_focus"
+    ],
+    "started_at_utc": "2026-10-29T11:54:59.692653+00:00",
+    "finished_at_utc": "2026-10-29T11:55:13.318070+00:00",
+    "exit_status": 0
+  }
+]

@@ -1,0 +1,13 @@
+--- /home/per/pert-ui-usability/r3-multiselect-implementation-evidence/negative-controls/no-panel-permission-clear-final/backup/multi_select.rs	2026-10-29 11:51:35.171893856 +0100
++++ crates/pert-ui-runtime/src/multi_select.rs	2026-10-29 11:51:35.186669866 +0100
+@@ -829,9 +829,7 @@
+         // denial, and a changed query must end ownership before the rows it
+         // selects are published and laid out under the pointer. Redescribing
+         // options, labels or the filter is not a keyboard action and keeps it.
+-        if !enablement.read(cx)? {
+-            self.shared.pointer_owns.set(false);
+-        }
++        enablement.read(cx)?;
+         cx.read(&self.shared.query)?;
+         let revision = self.shared.query.revision();
+         if self.query_revision != Some(revision) {

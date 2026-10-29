@@ -1,0 +1,7 @@
+test multi_select_pointer::a_denied_dropdown_only_remembers_the_pointer_and_hands_back_the_highlight ... FAILED
+test multi_select_pointer::a_pointer_parked_where_the_popup_opens_leaves_the_keyboard_highlight_alone ... FAILED
+test multi_select_pointer::reentering_the_window_at_the_same_position_over_the_same_row_is_stationary ... FAILED
+test multi_select_pointer::a_row_scrolled_back_under_its_last_position_treats_a_jump_there_as_stationary ... FAILED
+test multi_select_pointer::a_long_list_under_a_parked_pointer_follows_every_navigation_key ... FAILED
+test result: FAILED. 59 passed; 5 failed; 0 ignored; 0 measured; 431 filtered out; finished in 0.11s
+error: test failed, to rerun pass `-p pert-ui --test collections`

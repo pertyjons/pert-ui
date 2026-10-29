@@ -524,6 +524,10 @@ OnClose draft written by a committing close. Draft toggles, discarding closes
 conflicting drafts and refusals while denied never call it. A failing handler
 keeps the write and the close, and is not replayed. Only the owner's
 redescription replaces the handler; an open popup and its draft are kept.
+A completed, admitted row click requests focus back to the popup search before
+reporting the write, so a callback can replace that request. A callback error
+keeps both the accepted write and the queued focus request; neither is replayed.
+An incomplete or denied click makes no such request.
 `MenuItem::on_change` on a toggle or radio row reports the row's new checked
 state after its own write, once the menu has requested closure, with the
 activating list's or title's context; choosing the selected radio row again
@@ -986,6 +990,18 @@ surface after having been inside it, including to the surface's own anchor.
 Escape first dismisses shown tooltip help in the window and is consumed by
 that; only an Escape with no help shown reaches other surfaces, the focused
 component and command bindings.
+
+Automatic pointer-press focus first uses the nearest focusable component or
+ancestor. If that walk instead reaches an admitted interactive surface root
+that already contains focus, it stops there and preserves focus, including
+when the root itself holds focus. This applies to popovers, menus and dialogs;
+tooltips and notifications are excluded. The surface must still declare its
+admitted kind. An inner surface that does not contain focus does not stop the
+walk from reaching an enclosing surface that does. Explicit or queued focus
+requests, Tab and outside presses keep their ordinary behavior. In particular,
+a nonmodal surface with no focusable content can retain focus on its opener;
+with focus already outside, an inside press can still follow the ordinary
+ancestor walk and dismiss it.
 
 Modal-blocked key bindings yield to admitted dialog input and do not own the
 physical press. A disabled binding still reserves its chord, and commands

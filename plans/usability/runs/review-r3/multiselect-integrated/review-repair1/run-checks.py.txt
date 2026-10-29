@@ -1,0 +1,9 @@
+from pathlib import Path
+import subprocess,json,datetime
+root=Path('/home/per/github/pert-ui');out=Path(__file__).parent;records=[]
+for label,cmd in [('format',['cargo','fmt','--all','--check']),('clippy',['cargo','clippy','--locked','-p','pert-ui-gallery','--all-targets','--','-D','warnings']),('foundation',['cargo','test','--locked','-p','pert-ui','--test','foundation','popup_press_focus'])]:
+ start=datetime.datetime.now(datetime.timezone.utc).isoformat()
+ with (out/(label+'.log')).open('x') as log:
+  log.write('$ '+' '.join(cmd)+'\n');log.flush();r=subprocess.run(cmd,cwd=root,stdout=log,stderr=subprocess.STDOUT)
+ records.append({'command':cmd,'started_at_utc':start,'finished_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'exit_status':r.returncode});(out/'outcomes.json').write_text(json.dumps(records,indent=2)+'\n')
+ if r.returncode:raise SystemExit(r.returncode)

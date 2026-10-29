@@ -310,7 +310,7 @@ fn the_headless_path_also_clears_the_query_before_closing() {
 }
 
 #[test]
-fn a_click_on_a_row_toggles_it_without_moving_focus() {
+fn a_completed_click_on_a_short_list_keeps_search_focus() {
     let mut s = plain(&["fig"]);
     open_from_trigger(&mut s);
     let date = row(&s.ui, &s.root, "Date");

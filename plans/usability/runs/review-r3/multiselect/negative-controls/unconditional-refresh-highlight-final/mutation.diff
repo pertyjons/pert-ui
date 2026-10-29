@@ -1,0 +1,11 @@
+--- /home/per/pert-ui-usability/r3-multiselect-implementation-evidence/negative-controls/unconditional-refresh-highlight-final/backup/multi_select.rs	2026-10-29 11:50:42.174288401 +0100
++++ crates/pert-ui-runtime/src/multi_select.rs	2026-10-29 11:50:42.189084172 +0100
+@@ -699,7 +699,7 @@
+                 if moved {
+                     self.shared.pointer_owns.set(true);
+                 }
+-                if self.enabled && self.shared.pointer_owns.get() && !self.highlighted {
++                if self.enabled && !self.highlighted {
+                     self.shared.highlight.set(Some(self.key.clone()))?;
+                     return Ok(InputOutcome::Handled);
+                 }
