@@ -1,0 +1,44 @@
+date: 2026-10-29T10:46:29.009470
+file: crates/pert-ui/tests/collections/row_focus_recipe.rs
+sha256 before and after restore: 2775a1b43212df75aedace9d55471bb59d2227272d0a5c1ae855623dd19105b6
+mutation, replaced text:
+            selection.set_active(Some(name.clone()))?;
+with:
+            let _ = &selection;
+command: cargo test --locked -p pert-ui --test collections row_focus_recipe
+--- output ---
+
+running 3 tests
+test row_focus_recipe::rows_holding_the_list_id_keep_neither_the_list_nor_themselves_alive ... ok
+test row_focus_recipe::click_then_arrows_and_enter_continue_from_the_opened_row ... FAILED
+test row_focus_recipe::rows_holding_a_remounted_list_request_nothing_until_published_again ... FAILED
+
+failures:
+
+---- row_focus_recipe::click_then_arrows_and_enter_continue_from_the_opened_row stdout ----
+
+thread 'row_focus_recipe::click_then_arrows_and_enter_continue_from_the_opened_row' (3756561) panicked at crates/pert-ui/tests/collections/row_focus_recipe.rs:143:5:
+assertion `left == right` failed
+  left: None
+ right: Some("alpha")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- row_focus_recipe::rows_holding_a_remounted_list_request_nothing_until_published_again stdout ----
+
+thread 'row_focus_recipe::rows_holding_a_remounted_list_request_nothing_until_published_again' (3756562) panicked at crates/pert-ui/tests/collections/row_focus_recipe.rs:190:5:
+assertion `left == right` failed
+  left: None
+ right: Some("alpha")
+
+
+failures:
+    row_focus_recipe::click_then_arrows_and_enter_continue_from_the_opened_row
+    row_focus_recipe::rows_holding_a_remounted_list_request_nothing_until_published_again
+
+test result: FAILED. 1 passed; 2 failed; 0 ignored; 0 measured; 461 filtered out; finished in 0.01s
+
+   Compiling pert-ui v0.3.90 (/home/per/pert-ui-usability/r3-recipes-worktree/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.64s
+     Running tests/collections/main.rs (target/debug/deps/collections-7ca56351710fa5c8)
+error: test failed, to rerun pass `-p pert-ui --test collections`
+--- exit_status=101 ---

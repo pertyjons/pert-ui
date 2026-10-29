@@ -1108,6 +1108,10 @@ impl VirtualList {
     /// this callback for Enter on the list. A Button row can run even when the
     /// row is already selected; selection-change notifications are not an
     /// activation callback.
+    /// A Button row keeps focus unless its callback transfers it. To continue
+    /// list arrows and Enter from the clicked row, set the active selection and
+    /// request focus for the list; see the facade's
+    /// [focus-continuity recipe](https://github.com/pertyjons/pert-ui/blob/main/crates/pert-ui/src/guide/layout.md#button-rows-that-keep-list-navigation).
     ///
     /// With this callback the list consumes the press of Enter, with any
     /// modifiers, while it has an active item, in ordinary bubbling (stage 10

@@ -35,3 +35,5 @@ mod window_close;
 mod window_geometry_callbacks;
 mod windows;
 mod workspace;
+
+mod tab_focus_recipe;

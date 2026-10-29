@@ -1,0 +1,45 @@
+date: 2026-10-29T10:50:04.371189
+file: crates/pert-ui/tests/collections/row_focus_recipe.rs
+sha256 before and after restore: f0ed5300795ce845e0b3c37147fb4e1b9b79e6a7c8ddaef1341adba395975142
+mutation, replaced text:
+            cx.request_focus_for(&list)
+with:
+            let _ = (&list, cx);
+            Ok(())
+command: cargo test --locked -p pert-ui --test collections row_focus_recipe
+--- output ---
+
+running 3 tests
+test row_focus_recipe::rows_holding_the_list_id_keep_neither_the_list_nor_themselves_alive ... ok
+test row_focus_recipe::click_then_arrows_and_enter_continue_from_the_opened_row ... FAILED
+test row_focus_recipe::rows_holding_a_remounted_list_request_nothing_until_published_again ... FAILED
+
+failures:
+
+---- row_focus_recipe::click_then_arrows_and_enter_continue_from_the_opened_row stdout ----
+
+thread 'row_focus_recipe::click_then_arrows_and_enter_continue_from_the_opened_row' (3786507) panicked at crates/pert-ui/tests/collections/row_focus_recipe.rs:145:5:
+assertion `left == right` failed
+  left: Some(WidgetId { serial: 6, mounted: true, .. })
+ right: Some(WidgetId { serial: 5, mounted: true, .. })
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- row_focus_recipe::rows_holding_a_remounted_list_request_nothing_until_published_again stdout ----
+
+thread 'row_focus_recipe::rows_holding_a_remounted_list_request_nothing_until_published_again' (3786508) panicked at crates/pert-ui/tests/collections/row_focus_recipe.rs:204:5:
+assertion `left == right` failed
+  left: Some(WidgetId { serial: 12, mounted: true, .. })
+ right: Some(WidgetId { serial: 9, mounted: true, .. })
+
+
+failures:
+    row_focus_recipe::click_then_arrows_and_enter_continue_from_the_opened_row
+    row_focus_recipe::rows_holding_a_remounted_list_request_nothing_until_published_again
+
+test result: FAILED. 1 passed; 2 failed; 0 ignored; 0 measured; 461 filtered out; finished in 0.01s
+
+   Compiling pert-ui v0.3.90 (/home/per/pert-ui-usability/r3-recipes-worktree/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.73s
+     Running tests/collections/main.rs (target/debug/deps/collections-7ca56351710fa5c8)
+error: test failed, to rerun pass `-p pert-ui --test collections`
+--- exit_status=101 ---

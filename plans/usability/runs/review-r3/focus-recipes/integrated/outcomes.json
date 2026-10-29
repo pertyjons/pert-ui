@@ -1,0 +1,153 @@
+[
+  {
+    "label": "row-focus",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--test",
+      "collections",
+      "row_focus_recipe"
+    ],
+    "environment": {},
+    "started_at_utc": "2026-10-29T10:01:49.483460+00:00",
+    "finished_at_utc": "2026-10-29T10:01:56.116599+00:00",
+    "exit_status": 0
+  },
+  {
+    "label": "tab-focus",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--test",
+      "surfaces",
+      "tab_focus_recipe"
+    ],
+    "environment": {},
+    "started_at_utc": "2026-10-29T10:01:56.116818+00:00",
+    "finished_at_utc": "2026-10-29T10:02:03.856916+00:00",
+    "exit_status": 0
+  },
+  {
+    "label": "layout-doctests",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--doc",
+      "guide::layout"
+    ],
+    "environment": {},
+    "started_at_utc": "2026-10-29T10:02:03.857181+00:00",
+    "finished_at_utc": "2026-10-29T10:02:07.790525+00:00",
+    "exit_status": 0
+  },
+  {
+    "label": "on-activate-doctest",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "pert-ui-runtime",
+      "--doc",
+      "virtual_list::VirtualList::on_activate"
+    ],
+    "environment": {},
+    "started_at_utc": "2026-10-29T10:02:07.790807+00:00",
+    "finished_at_utc": "2026-10-29T10:02:19.470863+00:00",
+    "exit_status": 0
+  },
+  {
+    "label": "clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "environment": {},
+    "started_at_utc": "2026-10-29T10:02:19.471166+00:00",
+    "finished_at_utc": "2026-10-29T10:02:25.231210+00:00",
+    "exit_status": 0
+  },
+  {
+    "label": "rustdoc",
+    "command": [
+      "cargo",
+      "doc",
+      "--locked",
+      "-p",
+      "pert-ui-runtime",
+      "-p",
+      "pert-ui",
+      "--no-deps"
+    ],
+    "environment": {
+      "RUSTDOCFLAGS": "-D warnings"
+    },
+    "started_at_utc": "2026-10-29T10:02:25.231458+00:00",
+    "finished_at_utc": "2026-10-29T10:02:55.011894+00:00",
+    "exit_status": 0
+  },
+  {
+    "label": "commands-doctests",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "pert-ui-runtime",
+      "--doc",
+      "commands"
+    ],
+    "environment": {},
+    "started_at_utc": "2026-10-29T10:16:52.438376+00:00",
+    "finished_at_utc": "2026-10-29T10:17:03.675819+00:00",
+    "exit_status": 0
+  },
+  {
+    "label": "final-rustdoc",
+    "command": [
+      "cargo",
+      "doc",
+      "--locked",
+      "-p",
+      "pert-ui-runtime",
+      "-p",
+      "pert-ui",
+      "--no-deps"
+    ],
+    "environment": {
+      "RUSTDOCFLAGS": "-D warnings"
+    },
+    "started_at_utc": "2026-10-29T10:17:03.676116+00:00",
+    "finished_at_utc": "2026-10-29T10:17:35.503978+00:00",
+    "exit_status": 0
+  },
+  {
+    "label": "format",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--check"
+    ],
+    "environment": {},
+    "started_at_utc": "2026-10-29T10:17:35.504283+00:00",
+    "finished_at_utc": "2026-10-29T10:17:38.273630+00:00",
+    "exit_status": 0
+  }
+]

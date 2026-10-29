@@ -1,0 +1,8 @@
+                && cx.focused()
+                && let Some(key) = change.selected.clone()
+            {
+                let (tabs, selected) = (cx.id(), selected.clone());
+                cx.defer(move |ui| {
+                    ui.flush(ui.now())?; // selections made since reach `selected`
+                    let current = selected.get()?;
+                    if ui.focused().as_ref() != Some(&tabs) || current.as_deref() != Some(&key) {

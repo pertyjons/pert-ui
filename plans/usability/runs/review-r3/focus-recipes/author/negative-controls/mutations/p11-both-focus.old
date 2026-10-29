@@ -1,0 +1,8 @@
+            && cx.focused()
+            && let Some(key) = change.selected.clone()
+        {
+            log.borrow_mut().push(format!("queued:{key}"));
+            let (tabs, selected, log) = (cx.id(), selected.clone(), log.clone());
+            cx.defer(move |ui| {
+                ui.flush(ui.now())?;
+                if ui.focused().as_ref() != Some(&tabs) {

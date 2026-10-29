@@ -252,6 +252,111 @@ title from those bindings, and apply the save/discard policy before removing
 the record. The library retains editors while their keys survive and owns no
 application document or save policy.
 
+# Focus after closing the selected tab
+
+Removing the selected tab selects its neighbour, and [`Tabs::on_select`]
+reports that with [`ChangeOrigin::Redescription`]. Focus that was in the
+removed editor falls back to the strip, so typing reaches no editor until the
+user moves focus. An application that wants typing to continue in the new
+tab's editor refocuses it itself, without taking focus from another region:
+
+- `on_select` writes each reported selection to an application signal, its
+  record of the selected key, and acts only on a `Redescription` change while
+  the strip itself has focus ([`EventContext::focused`]). That includes a
+  strip the user had focused before the removal: the rule does not tell it
+  apart from focus that fell back from the removed editor.
+- It queues the refocus with [`EventContext::defer`], holding the strip's ID
+  and the newly selected key.
+- The queued work runs at the start of the next flush, before that flush
+  reports a selection that input made meanwhile, such as an arrow key on the
+  strip. It flushes first, so such a change reaches the record. Then it does
+  nothing unless the strip still has focus ([`Runtime::focused`]) and the
+  queued key is still the selected one: focus the user moved elsewhere, and a
+  tab chosen since, stay as they are.
+- It looks the editor up below the strip with [`Runtime::find_descendant`],
+  under a key unique in the application, since that lookup refuses an
+  ambiguous key, and leaves focus on the strip when the tab has no editor.
+
+```rust
+use pert_ui::prelude::*;
+use pert_ui::testing::*;
+
+#[derive(Clone)]
+struct Note { key: String, text: Signal<String> }
+impl PartialEq for Note {
+    fn eq(&self, other: &Self) -> bool {
+        self.key == other.key && self.text.read_only().same_source(&other.text.read_only())
+    }
+}
+fn editor_key(note: &str) -> String { format!("note-editor-{note}") }
+
+let mut ui = Runtime::new();
+ui.set_viewport(Viewport::new(600.0, 300.0, 1.0)?)?;
+let note = |key: &str| Note { key: key.into(), text: ui.signal(format!("Text of {key}")) };
+let notes = ui.signal(vec![note("first"), note("second"), note("third")]);
+// The strip starts on its first tab, which `on_select` does not report.
+let selected = ui.signal(Some("first".to_owned()));
+let record = selected.clone();
+let root = ui.mount_tree(Column::new([
+    TextField::new(ui.signal(String::new())).key("search"),
+    Dynamic::new(&notes, move |_, notes| {
+        let selected = record.clone();
+        Tabs::new(notes.iter().map(|note| Tab::new(
+            note.key.clone(), note.key.clone(),
+            TextArea::new(&note.text).key(editor_key(&note.key)),
+        )))
+        .on_select(move |cx, change| {
+            selected.set(change.selected.clone())?;
+            if change.origin == ChangeOrigin::Redescription
+                && cx.focused()
+                && let Some(key) = change.selected.clone()
+            {
+                let (tabs, selected) = (cx.id(), selected.clone());
+                cx.defer(move |ui| {
+                    ui.flush(ui.now())?; // selections made since reach `selected`
+                    let current = selected.get()?;
+                    if ui.focused().as_ref() != Some(&tabs) || current.as_deref() != Some(&key) {
+                        return Ok(());
+                    }
+                    match ui.find_descendant(&tabs, &editor_key(&key))? {
+                        Some(editor) => ui.focus(&editor),
+                        None => Ok(()),
+                    }
+                })?;
+            }
+            Ok(())
+        })
+        .key("tabs")
+    }).key("notes").with_grow(1),
+]).key("app"))?;
+
+let mut driver = Driver::new(&mut ui);
+driver.settle()?;
+let tabs = driver.find(&root, &["notes", "tabs"])?;
+let editor = |ui: &Runtime, note| ui.find_descendant(&tabs, &editor_key(note));
+let first = editor(driver.runtime(), "first")?.ok_or("an editor")?;
+driver.runtime_mut().focus(&first)?;
+// Close the focused editor's tab. The flush that removes it reports the new
+// selection, and the next one runs the queued refocus.
+notes.update(|notes| notes.retain(|note| note.key != "first"))?;
+driver.settle()?;
+driver.settle()?;
+let second = editor(driver.runtime(), "second")?.ok_or("an editor")?;
+assert_eq!(driver.runtime().focused(), Some(second));
+driver.type_text("Edited. ")?;
+assert_eq!(notes.get()?[0].text.get()?, "Edited. Text of second");
+
+// Focus in another region stays there.
+let search = driver.find(&root, &["search"])?;
+driver.runtime_mut().focus(&search)?;
+notes.update(|notes| notes.retain(|note| note.key != "second"))?;
+driver.settle()?;
+driver.settle()?;
+assert_eq!(selected.get()?.as_deref(), Some("third"));
+assert_eq!(driver.runtime().focused(), Some(search));
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
 # Native windows
 
 `Tabs::detachable(true)` lets a title be dragged out of its strip and released to
@@ -832,6 +937,93 @@ it. The [inventory
 example](https://github.com/pertyjons/pert-ui/blob/main/crates/pert-ui/examples/inventory/main.rs)
 applies the controlled checkbox to a table's checkbox column, and a
 [`Table`] edits text cells in place through its own editor instead.
+
+# Button rows that keep list navigation
+
+A row built as a [`Button`] opens on a matching primary press/release, and Enter on the list
+runs [`VirtualList::on_activate`]. The press belongs to the Button, so the
+list neither makes that row active nor takes focus: the Button keeps focus,
+the arrows bubble to the list and move its active row, and Enter presses the
+focused Button again, opening the clicked row rather than the active one. For
+the arrows and Enter to continue from the opened row, the row's callback
+makes it active with [`ListSelection::set_active`] and requests focus for the
+list with [`EventContext::request_focus_for`]. With
+[`VirtualList::item_tab_stops`] off, as below, the rows are no Tab stops, and
+the keyboard reaches them through the list's arrows and Enter.
+
+That callback needs the list's [`WidgetId`]. Mount the list over an empty
+source, find it, then publish the rows holding its ID. A `WidgetId` does not
+keep the list mounted, so the rows form no ownership cycle, and focus
+requested for a list that was unmounted meanwhile is ignored without an
+error; a list mounted again under the same key is a new identity, for which
+the rows are published again. An application whose rows should hand focus to
+the editor they open requests focus for that editor instead and leaves the
+list; that is a different policy, chosen explicitly.
+
+```rust
+use pert_ui::prelude::*;
+use pert_ui::testing::*;
+
+/// The rows before the list's ID is known.
+struct NoRows;
+impl ListItems for NoRows {
+    fn len(&self) -> usize { 0 }
+    fn key(&self, _index: usize) -> Option<String> { None }
+    fn build(&self, _index: usize) -> Option<Element> { None }
+}
+
+/// Opens a file from its row Button, then hands the keyboard to the list.
+struct Files {
+    names: Vec<String>,
+    list: WidgetId,
+    selection: ListSelection,
+    opened: Signal<Vec<String>>,
+}
+impl ListItems for Files {
+    fn len(&self) -> usize { self.names.len() }
+    fn key(&self, index: usize) -> Option<String> { self.names.get(index).cloned() }
+    fn build(&self, index: usize) -> Option<Element> {
+        let name = self.names.get(index)?.clone();
+        let (list, selection, opened) =
+            (self.list.clone(), self.selection.clone(), self.opened.clone());
+        let open = Button::new(format!("Open {name}"), move |cx| {
+            opened.update(|opened| opened.push(name.clone()))?;
+            // The arrows and Enter continue from this row, on the list.
+            selection.set_active(Some(name.clone()))?;
+            cx.request_focus_for(&list)
+        });
+        Some(open.key("row")) // the list keys the row with its name
+    }
+}
+
+let mut ui = Runtime::new();
+ui.set_viewport(Viewport::new(400.0, 300.0, 1.0)?)?;
+let selection = ListSelection::new(&ui, SelectionMode::Single);
+let opened = ui.signal(Vec::<String>::new());
+let rows = ui.signal(ListSource::new(NoRows));
+let activated = opened.clone();
+let list = VirtualList::new(rows.read_only(), 32.0)?
+    .selection(selection.clone())
+    .item_tab_stops(false)
+    .on_activate(move |_, name| activated.update(|opened| opened.push(name.to_owned())));
+let root = ui.mount_tree(Column::new([
+    Label::new("Recent files").key("title"),
+    list.key("files").with_grow(1),
+]).key("app"))?;
+let list = ui.find(&root, &["files"])?.ok_or("the list")?;
+let names = ["alpha", "beta", "gamma"].map(String::from).to_vec();
+rows.set(ListSource::new(Files { names, list: list.clone(), selection, opened: opened.clone() }))?;
+
+let mut driver = Driver::new(&mut ui);
+driver.settle()?;
+let alpha = driver.find(&list, &["alpha"])?;
+driver.click(&alpha)?; // opens alpha and focuses the list
+driver.key(KeyCode::ArrowDown)?;
+driver.key(KeyCode::Enter)?; // on_activate opens beta
+assert_eq!(opened.get()?, ["alpha", "beta"]);
+assert_eq!(driver.runtime().focused(), Some(list));
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
 
 # A progress column
 

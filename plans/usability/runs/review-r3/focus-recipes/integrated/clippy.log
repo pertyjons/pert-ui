@@ -1,0 +1,5 @@
+{"command": ["cargo", "clippy", "--locked", "-p", "pert-ui", "--all-targets", "--", "-D", "warnings"], "environment": {}, "started_at_utc": "2026-10-29T10:02:19.471166+00:00"}
+    Checking pert-ui-runtime v0.3.91 (/home/per/github/pert-ui/crates/pert-ui-runtime)
+    Checking pert-ui-wgpu v0.3.91 (/home/per/github/pert-ui/crates/pert-ui-wgpu)
+    Checking pert-ui v0.3.91 (/home/per/github/pert-ui/crates/pert-ui)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 5.69s

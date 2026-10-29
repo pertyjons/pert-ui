@@ -1,0 +1,15 @@
+{"command": ["cargo", "test", "--locked", "-p", "pert-ui", "--test", "surfaces", "tab_focus_recipe"], "environment": {}, "started_at_utc": "2026-10-29T10:01:56.116818+00:00"}
+   Compiling pert-ui v0.3.91 (/home/per/github/pert-ui/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.68s
+     Running tests/surfaces/main.rs (target/debug/deps/surfaces-4f2da8c0bcaec0d3)
+
+running 6 tests
+test tab_focus_recipe::closing_the_focused_selected_editor_moves_typing_to_the_next_editor ... ok
+test tab_focus_recipe::an_already_focused_strip_also_moves_to_the_next_editor ... ok
+test tab_focus_recipe::focus_in_another_region_is_never_taken ... ok
+test tab_focus_recipe::a_selected_tab_without_the_editor_leaves_focus_on_the_strip ... ok
+test tab_focus_recipe::a_selection_changed_before_the_queued_work_is_kept ... ok
+test tab_focus_recipe::focus_moved_elsewhere_before_the_queued_work_is_kept ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 464 filtered out; finished in 0.01s
+

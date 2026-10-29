@@ -1,0 +1,27 @@
+date: 2026-10-29T10:45:24+01:00
+cwd: /home/per/pert-ui-usability/r3-recipes-worktree
+head: 8b2476a830f433772ef02dde6c5fb17a763fba04
+rustc: rustc 1.99.1 (58cf8f9c3 2026-10-13)
+command: cargo test --locked -p pert-ui --test surfaces tab_focus_recipe
+owned-path sha256:
+  4350ad924086b7d6682e188e4502a2cb9c9e1d165afcc217edbf50cc59950733  crates/pert-ui/src/guide/layout.md
+  2775a1b43212df75aedace9d55471bb59d2227272d0a5c1ae855623dd19105b6  crates/pert-ui/tests/collections/row_focus_recipe.rs
+  4819d7c4ca70491249416b81e2142b44b0b183379e34ddc9ebe54914308839c6  crates/pert-ui/tests/collections/main.rs
+  710a4b29a3a2368355d53708543e4803f98fc28a0c3ecd3fecd26271ba51c403  crates/pert-ui/tests/surfaces/tab_focus_recipe.rs
+  71df4c610eec212c948d07d9258d639aee6d84d640baad76801f2f63db0434aa  crates/pert-ui/tests/surfaces/main.rs
+--- output ---
+   Compiling pert-ui v0.3.90 (/home/per/pert-ui-usability/r3-recipes-worktree/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.43s
+     Running tests/surfaces/main.rs (target/debug/deps/surfaces-0130818f288f7c6d)
+
+running 6 tests
+test tab_focus_recipe::an_already_focused_strip_also_moves_to_the_next_editor ... ok
+test tab_focus_recipe::focus_in_another_region_is_never_taken ... ok
+test tab_focus_recipe::closing_the_focused_selected_editor_moves_typing_to_the_next_editor ... ok
+test tab_focus_recipe::a_selected_tab_without_the_editor_leaves_focus_on_the_strip ... ok
+test tab_focus_recipe::a_selection_changed_before_the_queued_work_is_kept ... ok
+test tab_focus_recipe::focus_moved_elsewhere_before_the_queued_work_is_kept ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 464 filtered out; finished in 0.01s
+
+--- exit_status=0 ---

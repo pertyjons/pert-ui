@@ -1,0 +1,22 @@
+{"command": ["cargo", "test", "--locked", "-p", "pert-ui-runtime", "--doc", "commands"], "environment": {}, "started_at_utc": "2026-10-29T10:16:52.438376+00:00"}
+   Compiling pert-ui-runtime v0.3.91 (/home/per/github/pert-ui/crates/pert-ui-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.58s
+   Doc-tests pert_ui_runtime
+
+running 7 tests
+test crates/pert-ui-runtime/src/runtime/commands.rs - runtime::commands::KeyChord::named (line 78) ... ok
+test crates/pert-ui-runtime/src/runtime/commands.rs - runtime::commands::KeyChord::navigate_back (line 103) ... ok
+test crates/pert-ui-runtime/src/runtime/commands.rs - runtime::commands::Runtime::commands_for (line 965) ... ok
+test crates/pert-ui-runtime/src/runtime/commands.rs - runtime::commands::KeyChord (line 191) ... ok
+test crates/pert-ui-runtime/src/runtime/commands.rs - runtime::commands::Runtime::register_command (line 590) ... ok
+test crates/pert-ui-runtime/src/runtime/commands.rs - runtime::commands::KeyChord::new (line 41) ... ok
+test crates/pert-ui-runtime/src/lib.rs - commands (line 762) ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 385 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 23 filtered out; finished in 0.00s
+
+all doctests ran in 6.63s; merged doctests compilation took 6.62s

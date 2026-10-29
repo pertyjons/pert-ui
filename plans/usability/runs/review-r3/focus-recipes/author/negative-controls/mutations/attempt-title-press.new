@@ -1,0 +1,4 @@
+    let items = driver.semantics(&fixture.tabs)?.items;
+    let title = items.iter().find(|item| item.name.as_deref() == Some("C"));
+    let bounds = title.and_then(|title| title.bounds).ok_or("the title of C")?;
+    host_click(driver.runtime_mut(), bounds)?;

@@ -1,0 +1,15 @@
+{"command": ["cargo", "test", "--locked", "-p", "pert-ui-runtime", "--doc", "virtual_list::VirtualList::on_activate"], "environment": {}, "started_at_utc": "2026-10-29T10:02:07.790807+00:00"}
+   Compiling pert-ui-runtime v0.3.91 (/home/per/github/pert-ui/crates/pert-ui-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.19s
+   Doc-tests pert_ui_runtime
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 392 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 23 filtered out; finished in 0.00s
+
+all doctests ran in 6.59s; merged doctests compilation took 6.57s

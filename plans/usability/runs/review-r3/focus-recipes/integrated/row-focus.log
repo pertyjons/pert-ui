@@ -1,0 +1,14 @@
+{"command": ["cargo", "test", "--locked", "-p", "pert-ui", "--test", "collections", "row_focus_recipe"], "environment": {}, "started_at_utc": "2026-10-29T10:01:49.483460+00:00"}
+   Compiling pert-ui-runtime v0.3.91 (/home/per/github/pert-ui/crates/pert-ui-runtime)
+   Compiling pert-ui-wgpu v0.3.91 (/home/per/github/pert-ui/crates/pert-ui-wgpu)
+   Compiling pert-ui v0.3.91 (/home/per/github/pert-ui/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.57s
+     Running tests/collections/main.rs (target/debug/deps/collections-fa4d06ce513818a2)
+
+running 3 tests
+test row_focus_recipe::rows_holding_the_list_id_keep_neither_the_list_nor_themselves_alive ... ok
+test row_focus_recipe::click_then_arrows_and_enter_continue_from_the_opened_row ... ok
+test row_focus_recipe::rows_holding_a_remounted_list_request_nothing_until_published_again ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 463 filtered out; finished in 0.01s
+

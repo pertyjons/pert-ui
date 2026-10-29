@@ -582,6 +582,10 @@ impl Runtime {
     /// after the focused control and its ancestors: a list that consumes Enter
     /// or Alt with an arrow keeps that key. A capture command has its separate
     /// documented stage after text editing, before ordinary controls.
+    /// The action receives `&mut Runtime` and may call operations that flush,
+    /// including [`Self::reveal_and_focus`]. Recursively invoking that same
+    /// command returns [`RuntimeError::BorrowConflict`]. Component callbacks
+    /// queue runtime work through [`EventContext::defer`].
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
@@ -1054,6 +1058,9 @@ impl Runtime {
     /// menu never retargets another editor. Results default to the invoking window;
     /// the action may explicitly target another validated window. Callback errors
     /// propagate without replaying an action or rolling back completed host work.
+    /// The action may call runtime operations that flush, such as
+    /// [`Self::reveal_and_focus`]; recursively invoking the same command returns
+    /// [`RuntimeError::BorrowConflict`].
     ///
     /// Two side effects precede and follow the action:
     ///

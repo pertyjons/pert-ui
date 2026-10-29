@@ -1,0 +1,60 @@
+date: 2026-10-29T10:50:09.449661
+file: crates/pert-ui/src/guide/layout.md
+sha256 before and after restore: 4ddb02964657a0d674f17fe6903e801ae82b89f154f2918deb2efc95ef67e3ba
+mutation, replaced text:
+            cx.request_focus_for(&list)
+        });
+with:
+            let _ = (&list, cx);
+            Ok(())
+        });
+command: cargo test --locked -p pert-ui --doc guide::layout
+--- output ---
+
+running 14 tests
+test crates/pert-ui/src/guide.rs - guide::layout (line 228) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 193) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 517) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 278) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 1142) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 576) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 309) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 604) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 675) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 1066) ... FAILED
+test crates/pert-ui/src/guide.rs - guide::layout (line 140) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 541) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 383) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 824) ... ok
+
+failures:
+
+---- crates/pert-ui/src/guide.rs - guide::layout (line 1066) stdout ----
+Test executable failed (exit status: 101).
+
+stderr:
+
+thread 'main' (3787605) panicked at /tmp/rustdoctestTy7QKh/doctest_bundle_2024.rs:1919:1:
+assertion `left == right` failed
+  left: ["alpha", "alpha"]
+ right: ["alpha", "beta"]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+
+failures:
+    crates/pert-ui/src/guide.rs - guide::layout (line 1066)
+
+test result: FAILED. 13 passed; 1 failed; 0 ignored; 0 measured; 104 filtered out; finished in 0.01s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+all doctests ran in 2.87s; merged doctests compilation took 2.85s
+   Compiling pert-ui v0.3.90 (/home/per/pert-ui-usability/r3-recipes-worktree/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.28s
+   Doc-tests pert_ui
+error: doctest failed, to rerun pass `-p pert-ui --doc`
+--- exit_status=101 ---

@@ -1,0 +1,46 @@
+date: 2026-10-29T10:48:46.304036
+file: crates/pert-ui/tests/surfaces/tab_focus_recipe.rs
+sha256 before and after restore: 710a4b29a3a2368355d53708543e4803f98fc28a0c3ecd3fecd26271ba51c403
+mutation, replaced text:
+    let ui = driver.runtime_mut();
+    ui.key_input(KeyCode::ArrowRight, KeyAction::Press)?;
+    ui.key_input(KeyCode::ArrowRight, KeyAction::Release)?;
+
+with:
+    let items = driver.semantics(&fixture.tabs)?.items;
+    let title = items.iter().find(|item| item.name.as_deref() == Some("C"));
+    let bounds = title.and_then(|title| title.bounds).ok_or("the title of C")?;
+    host_click(driver.runtime_mut(), bounds)?;
+
+command: cargo test --locked -p pert-ui --test surfaces tab_focus_recipe
+--- output ---
+
+running 6 tests
+test tab_focus_recipe::focus_in_another_region_is_never_taken ... ok
+test tab_focus_recipe::an_already_focused_strip_also_moves_to_the_next_editor ... ok
+test tab_focus_recipe::a_selected_tab_without_the_editor_leaves_focus_on_the_strip ... ok
+test tab_focus_recipe::a_selection_changed_before_the_queued_work_is_kept ... FAILED
+test tab_focus_recipe::focus_moved_elsewhere_before_the_queued_work_is_kept ... ok
+test tab_focus_recipe::closing_the_focused_selected_editor_moves_typing_to_the_next_editor ... ok
+
+failures:
+
+---- tab_focus_recipe::a_selection_changed_before_the_queued_work_is_kept stdout ----
+
+thread 'tab_focus_recipe::a_selection_changed_before_the_queued_work_is_kept' (3774326) panicked at crates/pert-ui/tests/surfaces/tab_focus_recipe.rs:298:5:
+assertion `left == right` failed
+  left: ["queued:b", "focus:b"]
+ right: ["queued:b", "stale:b"]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    tab_focus_recipe::a_selection_changed_before_the_queued_work_is_kept
+
+test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 464 filtered out; finished in 0.01s
+
+   Compiling pert-ui v0.3.90 (/home/per/pert-ui-usability/r3-recipes-worktree/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.76s
+     Running tests/surfaces/main.rs (target/debug/deps/surfaces-0130818f288f7c6d)
+error: test failed, to rerun pass `-p pert-ui --test surfaces`
+--- exit_status=101 ---

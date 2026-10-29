@@ -35,3 +35,5 @@ mod tree;
 mod tree_reorder;
 mod virtual_collections;
 mod virtual_list;
+
+mod row_focus_recipe;

@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Usage: run.sh <log-name> <command...>
+# Runs the command in the recipes worktree and records the command, HEAD,
+# owned-path hashes, the full output and the exit status.
+set -u
+W=/home/per/pert-ui-usability/r3-recipes-worktree
+E=/home/per/pert-ui-usability/r3-recipes-implementation-evidence
+name=$1; shift
+log=$E/runs/$name.log
+cd "$W" || exit 99
+{
+  echo "date: $(date -Is)"
+  echo "cwd: $W"
+  echo "head: $(git rev-parse HEAD)"
+  echo "rustc: $(rustc --version)"
+  echo "command: $*"
+  echo "owned-path sha256:"
+  sha256sum crates/pert-ui/src/guide/layout.md \
+    crates/pert-ui/tests/collections/row_focus_recipe.rs \
+    crates/pert-ui/tests/collections/main.rs \
+    crates/pert-ui/tests/surfaces/tab_focus_recipe.rs \
+    crates/pert-ui/tests/surfaces/main.rs | sed 's/^/  /'
+  echo "--- output ---"
+} > "$log"
+"$@" >> "$log" 2>&1
+status=$?
+echo "--- exit_status=$status ---" >> "$log"
+echo "$name exit_status=$status"
+exit $status

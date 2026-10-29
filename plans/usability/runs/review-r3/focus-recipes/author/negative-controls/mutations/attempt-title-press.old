@@ -1,0 +1,3 @@
+    let ui = driver.runtime_mut();
+    ui.key_input(KeyCode::ArrowRight, KeyAction::Press)?;
+    ui.key_input(KeyCode::ArrowRight, KeyAction::Release)?;

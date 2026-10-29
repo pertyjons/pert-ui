@@ -1,0 +1,1 @@
+                if ui.focused().as_ref() != Some(&tabs) {

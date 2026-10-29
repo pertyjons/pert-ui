@@ -1,0 +1,40 @@
+date: 2026-10-29T10:49:31+01:00
+cwd: /home/per/pert-ui-usability/r3-recipes-worktree
+head: 8b2476a830f433772ef02dde6c5fb17a763fba04
+rustc: rustc 1.99.1 (58cf8f9c3 2026-10-13)
+command: cargo test --locked -p pert-ui --doc guide::layout
+owned-path sha256:
+  4ddb02964657a0d674f17fe6903e801ae82b89f154f2918deb2efc95ef67e3ba  crates/pert-ui/src/guide/layout.md
+  f0ed5300795ce845e0b3c37147fb4e1b9b79e6a7c8ddaef1341adba395975142  crates/pert-ui/tests/collections/row_focus_recipe.rs
+  4819d7c4ca70491249416b81e2142b44b0b183379e34ddc9ebe54914308839c6  crates/pert-ui/tests/collections/main.rs
+  710a4b29a3a2368355d53708543e4803f98fc28a0c3ecd3fecd26271ba51c403  crates/pert-ui/tests/surfaces/tab_focus_recipe.rs
+  71df4c610eec212c948d07d9258d639aee6d84d640baad76801f2f63db0434aa  crates/pert-ui/tests/surfaces/main.rs
+--- output ---
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.07s
+   Doc-tests pert_ui
+
+running 14 tests
+test crates/pert-ui/src/guide.rs - guide::layout (line 228) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 193) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 517) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 278) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 604) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 1141) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 140) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 1066) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 541) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 675) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 576) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 309) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 383) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 824) ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 104 filtered out; finished in 0.02s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+all doctests ran in 3.15s; merged doctests compilation took 3.12s
+--- exit_status=0 ---

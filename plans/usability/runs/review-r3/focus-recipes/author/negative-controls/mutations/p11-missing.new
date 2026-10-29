@@ -1,0 +1,3 @@
+                let editor = ui
+                    .find_descendant(&tabs, &editor_key(&key))?
+                    .ok_or(RuntimeError::Unmounted)?;

@@ -2,7 +2,8 @@
 
 ## 0.3.91 (2026-10-29)
 
-Round 3 historical reveal diagnostics and hidden-window documentation.
+Round 3 historical reveal diagnostics, hidden-window documentation and public
+focus-continuity recipes.
 
 - RevealRefusal Debug now prints immutable runtime-local WidgetId serials
   without live mounted state. A retained refusal's text stays identical after
@@ -23,6 +24,18 @@ Round 3 historical reveal diagnostics and hidden-window documentation.
   terminal receipts and nested errors. A negative control restoring derived
   live Debug fails. Host-hidden public reveal/click/item/jump/receipt tests
   confirm the existing operational error and successful visibility retry.
+- The layout guide now demonstrates Button rows that set active selection and
+  transfer focus to the list, so arrows and Enter continue from the clicked row;
+  VirtualList::on_activate links the recipe and keeps its Enter-only behavior.
+  A separate retained-tab recipe observes Redescription, defers and settles
+  current selection before refocusing a replacement editor only while the strip
+  still has focus. Missing editors and stale selection leave focus alone.
+  Both recipes use existing public APIs; no runtime focus or selection policy
+  changes. Public input tests and negative controls cover ownership, remount,
+  other-region focus and deferred selection/focus changes.
+- Runtime::register_command and Runtime::invoke_command now explicitly document
+  that actions may call operations that flush, including reveal/focus, and that
+  recursively invoking the same command returns BorrowConflict.
 
 ## 0.3.90 (2026-10-28)
 

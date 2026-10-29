@@ -1,0 +1,28 @@
+{"command": ["cargo", "test", "--locked", "-p", "pert-ui", "--doc", "guide::layout"], "environment": {}, "started_at_utc": "2026-10-29T10:02:03.857181+00:00"}
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.10s
+   Doc-tests pert_ui
+
+running 14 tests
+test crates/pert-ui/src/guide.rs - guide::layout (line 228) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 193) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 517) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 278) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 604) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 675) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 1066) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 309) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 576) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 1141) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 140) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 541) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 383) ... ok
+test crates/pert-ui/src/guide.rs - guide::layout (line 824) ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 104 filtered out; finished in 0.02s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+all doctests ran in 3.60s; merged doctests compilation took 3.57s

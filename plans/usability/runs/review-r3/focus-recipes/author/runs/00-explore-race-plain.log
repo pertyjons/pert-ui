@@ -1,0 +1,19 @@
+$ cargo test --locked -p pert-ui --test surfaces tab_focus_recipe -- --nocapture
+# source sha256: 1839ae0bf31ccf05b92754fc831d927aac79ae56486e133f3f0e4044b13ed091  crates/pert-ui/tests/surfaces/tab_focus_recipe.rs
+   Compiling pert-ui v0.3.90 (/home/per/pert-ui-usability/r3-recipes-worktree/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.60s
+     Running tests/surfaces/main.rs (target/debug/deps/surfaces-0130818f288f7c6d)
+
+running 1 test
+on_select Some("a") -> Some("b") Redescription focused=true
+after removal flush: focus=Some("tabs") selected=Some("b")
+task: focused_is_tabs=true observed=Some("b") key=b can_focus=Some(Ok(true))
+focus -> Ok(())
+on_select Some("b") -> Some("c") User focused=true
+after ArrowRight press: focus=Some("tabs") selected=Some("c")
+end: focus=Some("tabs") selected=Some("c") sem=[false, true]
+test tab_focus_recipe::explore_race ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 464 filtered out; finished in 0.01s
+
+exit_status=0

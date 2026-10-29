@@ -1,0 +1,5 @@
+            let bounds = driver
+                .runtime()
+                .bounds(&fixture.sidebar)?
+                .ok_or("laid out")?;
+            host_click(driver.runtime_mut(), bounds.values())?;

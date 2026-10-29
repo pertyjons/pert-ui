@@ -1,0 +1,1 @@
+                if selected.get()?.as_deref() != Some(key.as_str()) {

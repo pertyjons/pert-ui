@@ -1,0 +1,624 @@
+{
+  "source_directory": "/home/per/pert-ui-usability/r3-recipes-implementation-evidence",
+  "policy": "Exact bytes except declared readable log excerpts; full gzip preserves those bytes. Script suffixes renamed for archival use.",
+  "files": [
+    {
+      "source": "README.md",
+      "source_bytes": 12034,
+      "source_sha256": "53d9e39064a9a486a782b0ff5bb97f230e7ae9c67ae7a651cb96f76ab4e75a09",
+      "archive_path": "README.md",
+      "archive_sha256": "53d9e39064a9a486a782b0ff5bb97f230e7ae9c67ae7a651cb96f76ab4e75a09"
+    },
+    {
+      "source": "iteration1/negative-controls/attempt-driver-click.log",
+      "source_bytes": 2425,
+      "source_sha256": "172567226c9ef42d6324935fa05653f22f3a563bcc2f805fa8b935f55df5e0ba",
+      "archive_path": "iteration1/negative-controls/attempt-driver-click.log",
+      "archive_sha256": "172567226c9ef42d6324935fa05653f22f3a563bcc2f805fa8b935f55df5e0ba"
+    },
+    {
+      "source": "iteration1/negative-controls/attempt-driver-key.log",
+      "source_bytes": 1952,
+      "source_sha256": "374e9a4054a17c68e3d2506921fa10b896c0f6c5ded976cd7e2f39a653cf5cfa",
+      "archive_path": "iteration1/negative-controls/attempt-driver-key.log",
+      "archive_sha256": "374e9a4054a17c68e3d2506921fa10b896c0f6c5ded976cd7e2f39a653cf5cfa"
+    },
+    {
+      "source": "iteration1/negative-controls/attempt-title-press.log",
+      "source_bytes": 2202,
+      "source_sha256": "2e5705f991985fbc9d7f14f5a5ae17a3e305539667e132017c8a2ac51a6b1aa9",
+      "archive_path": "iteration1/negative-controls/attempt-title-press.log",
+      "archive_sha256": "2e5705f991985fbc9d7f14f5a5ae17a3e305539667e132017c8a2ac51a6b1aa9"
+    },
+    {
+      "source": "iteration1/negative-controls/nc-guide-p11-focus.log",
+      "source_bytes": 3127,
+      "source_sha256": "85dc005fb3e4445f1f4b85d2459e1f6f17802e2cfede3fded1c32a25f4d2ecc7",
+      "archive_path": "iteration1/negative-controls/nc-guide-p11-focus.log",
+      "archive_sha256": "85dc005fb3e4445f1f4b85d2459e1f6f17802e2cfede3fded1c32a25f4d2ecc7"
+    },
+    {
+      "source": "iteration1/negative-controls/nc-guide-p7-focus.log",
+      "source_bytes": 2371,
+      "source_sha256": "c75df31230be52ecee4f8a4f1bcd0570e7c5576256eb031662324c9906b56d75",
+      "archive_path": "iteration1/negative-controls/nc-guide-p7-focus.log",
+      "archive_sha256": "c75df31230be52ecee4f8a4f1bcd0570e7c5576256eb031662324c9906b56d75"
+    },
+    {
+      "source": "iteration1/negative-controls/nc-p11-both-focus.log",
+      "source_bytes": 2956,
+      "source_sha256": "86715b084616a151ee51b4bd19155f36f1c43c3f5ca15e353642e2d8db0327b6",
+      "archive_path": "iteration1/negative-controls/nc-p11-both-focus.log",
+      "archive_sha256": "86715b084616a151ee51b4bd19155f36f1c43c3f5ca15e353642e2d8db0327b6"
+    },
+    {
+      "source": "iteration1/negative-controls/nc-p11-deferred-focus.log",
+      "source_bytes": 1940,
+      "source_sha256": "744e17850eaf5f1e2a68bbb70a702f5b6c83f912395510e81a271fe90e48511f",
+      "archive_path": "iteration1/negative-controls/nc-p11-deferred-focus.log",
+      "archive_sha256": "744e17850eaf5f1e2a68bbb70a702f5b6c83f912395510e81a271fe90e48511f"
+    },
+    {
+      "source": "iteration1/negative-controls/nc-p11-flush-and-key.log",
+      "source_bytes": 2812,
+      "source_sha256": "d42f736334932e64a09ad22ff4face2ca62ab9beabd2989affe25e990aeea76f",
+      "archive_path": "iteration1/negative-controls/nc-p11-flush-and-key.log",
+      "archive_sha256": "d42f736334932e64a09ad22ff4face2ca62ab9beabd2989affe25e990aeea76f"
+    },
+    {
+      "source": "iteration1/negative-controls/nc-p11-flush.log",
+      "source_bytes": 1826,
+      "source_sha256": "b1f14191ff09debcb97be004662e674edf4a325375683439e3575892c6d417ec",
+      "archive_path": "iteration1/negative-controls/nc-p11-flush.log",
+      "archive_sha256": "b1f14191ff09debcb97be004662e674edf4a325375683439e3575892c6d417ec"
+    },
+    {
+      "source": "iteration1/negative-controls/nc-p11-key.log",
+      "source_bytes": 2078,
+      "source_sha256": "1044d7970ff5ba859415daea9cc2efa67ccd54c1798fb5eae9b192ea79d2d5eb",
+      "archive_path": "iteration1/negative-controls/nc-p11-key.log",
+      "archive_sha256": "1044d7970ff5ba859415daea9cc2efa67ccd54c1798fb5eae9b192ea79d2d5eb"
+    },
+    {
+      "source": "iteration1/negative-controls/nc-p11-missing.log",
+      "source_bytes": 1863,
+      "source_sha256": "df17401f4c80d71d4f9924511932ee3a82b14f70cf0fb2f6bb318a4f59362a94",
+      "archive_path": "iteration1/negative-controls/nc-p11-missing.log",
+      "archive_sha256": "df17401f4c80d71d4f9924511932ee3a82b14f70cf0fb2f6bb318a4f59362a94"
+    },
+    {
+      "source": "iteration1/negative-controls/nc-p11-origin.log",
+      "source_bytes": 1918,
+      "source_sha256": "d19586c2ce072b651ae4d316475e85fd5e961b0a1cb34ca1636534a2b430893c",
+      "archive_path": "iteration1/negative-controls/nc-p11-origin.log",
+      "archive_sha256": "d19586c2ce072b651ae4d316475e85fd5e961b0a1cb34ca1636534a2b430893c"
+    },
+    {
+      "source": "iteration1/negative-controls/nc-p11-recipient.log",
+      "source_bytes": 1918,
+      "source_sha256": "7e4185331d4e175c2e2c6757df100eebd7db8abf96339e19ded1ff1134f6f8fa",
+      "archive_path": "iteration1/negative-controls/nc-p11-recipient.log",
+      "archive_sha256": "7e4185331d4e175c2e2c6757df100eebd7db8abf96339e19ded1ff1134f6f8fa"
+    },
+    {
+      "source": "iteration1/negative-controls/nc-p7-active.log",
+      "source_bytes": 2102,
+      "source_sha256": "42449f13c94fc890434bf4b7075dd4238cddeba220235d349624168c04777158",
+      "archive_path": "iteration1/negative-controls/nc-p7-active.log",
+      "archive_sha256": "42449f13c94fc890434bf4b7075dd4238cddeba220235d349624168c04777158"
+    },
+    {
+      "source": "iteration1/negative-controls/nc-p7-focus.log",
+      "source_bytes": 2262,
+      "source_sha256": "a134f6fcff6955110c4267c7076532ac3b4729716535729482916202a134dc20",
+      "archive_path": "iteration1/negative-controls/nc-p7-focus.log",
+      "archive_sha256": "a134f6fcff6955110c4267c7076532ac3b4729716535729482916202a134dc20"
+    },
+    {
+      "source": "iteration1/runs/01-fmt-check.log",
+      "source_bytes": 821,
+      "source_sha256": "18ebd8d624347ffd8ed7ecd8e67313952b38796b65ab202630aaf869bac9b7c8",
+      "archive_path": "iteration1/runs/01-fmt-check.log",
+      "archive_sha256": "18ebd8d624347ffd8ed7ecd8e67313952b38796b65ab202630aaf869bac9b7c8"
+    },
+    {
+      "source": "iteration1/runs/02-test-row-focus-recipe.log",
+      "source_bytes": 1517,
+      "source_sha256": "5f2dba2106432a09ef7f149542d7a19d033b8b6543e4c0907149cb6a008b9ca9",
+      "archive_path": "iteration1/runs/02-test-row-focus-recipe.log",
+      "archive_sha256": "5f2dba2106432a09ef7f149542d7a19d033b8b6543e4c0907149cb6a008b9ca9"
+    },
+    {
+      "source": "iteration1/runs/03-test-tab-focus-recipe.log",
+      "source_bytes": 1731,
+      "source_sha256": "1e0e9729592aa08968afc9cae5169073f455d071498b50c7aaae0c7e73695352",
+      "archive_path": "iteration1/runs/03-test-tab-focus-recipe.log",
+      "archive_sha256": "1e0e9729592aa08968afc9cae5169073f455d071498b50c7aaae0c7e73695352"
+    },
+    {
+      "source": "iteration1/runs/04-doctest-guide-layout.log",
+      "source_bytes": 2178,
+      "source_sha256": "4de67b0c5084fdab7f47b587dbc7a8f3ba8cc231fc6a34db75e37ca3c597e245",
+      "archive_path": "iteration1/runs/04-doctest-guide-layout.log",
+      "archive_sha256": "4de67b0c5084fdab7f47b587dbc7a8f3ba8cc231fc6a34db75e37ca3c597e245"
+    },
+    {
+      "source": "iteration1/runs/05-clippy-pert-ui-all-targets.log",
+      "source_bytes": 6597,
+      "source_sha256": "ca7c34166b1248409208faefd75c3fefc50ea8fa11f7c4a8323b2822dc4cd269",
+      "archive_path": "iteration1/runs/05-clippy-pert-ui-all-targets.log",
+      "archive_sha256": "ca7c34166b1248409208faefd75c3fefc50ea8fa11f7c4a8323b2822dc4cd269"
+    },
+    {
+      "source": "iteration1/runs/06-rustdoc-pert-ui.log",
+      "source_bytes": 1441,
+      "source_sha256": "86a81bde1b66564f11e68f6d906d40266d5365102f247521bbcff692fdd5b98f",
+      "archive_path": "iteration1/runs/06-rustdoc-pert-ui.log",
+      "archive_sha256": "86a81bde1b66564f11e68f6d906d40266d5365102f247521bbcff692fdd5b98f"
+    },
+    {
+      "source": "iteration1/runs/07-no-default-features-recipes.log",
+      "source_bytes": 5095,
+      "source_sha256": "bdfeeacfa26f5f9ba719a9ff90ac0a4976062b82f79e7ce29cefcefcca824e36",
+      "archive_path": "iteration1/runs/07-no-default-features-recipes.log",
+      "archive_sha256": "bdfeeacfa26f5f9ba719a9ff90ac0a4976062b82f79e7ce29cefcefcca824e36"
+    },
+    {
+      "source": "negative-controls/attempt-driver-click.log",
+      "source_bytes": 2425,
+      "source_sha256": "628ff98cf0e9cfb005effb0ad4c527e298426261791d249d65033721e5719e12",
+      "archive_path": "negative-controls/attempt-driver-click.log",
+      "archive_sha256": "628ff98cf0e9cfb005effb0ad4c527e298426261791d249d65033721e5719e12"
+    },
+    {
+      "source": "negative-controls/attempt-driver-key.log",
+      "source_bytes": 1952,
+      "source_sha256": "a8944bb1384cf7bcfb94ab4e6a7ff36a542b0b3c898171deb96141a44a730536",
+      "archive_path": "negative-controls/attempt-driver-key.log",
+      "archive_sha256": "a8944bb1384cf7bcfb94ab4e6a7ff36a542b0b3c898171deb96141a44a730536"
+    },
+    {
+      "source": "negative-controls/attempt-title-press.log",
+      "source_bytes": 2202,
+      "source_sha256": "6a83bf377c634adcf9af0911d40d5a2bc63223cdb4deebbdbf529a9247a7fd1c",
+      "archive_path": "negative-controls/attempt-title-press.log",
+      "archive_sha256": "6a83bf377c634adcf9af0911d40d5a2bc63223cdb4deebbdbf529a9247a7fd1c"
+    },
+    {
+      "source": "negative-controls/mutations/attempt-driver-click.new",
+      "source_bytes": 45,
+      "source_sha256": "48ceb800a10100979e023c5426dcacfceb87d70bfdeea3367ce79024b9030d58",
+      "archive_path": "negative-controls/mutations/attempt-driver-click.new",
+      "archive_sha256": "48ceb800a10100979e023c5426dcacfceb87d70bfdeea3367ce79024b9030d58"
+    },
+    {
+      "source": "negative-controls/mutations/attempt-driver-click.old",
+      "source_bytes": 203,
+      "source_sha256": "9ff7d161535176b52721f2300d587e3bcda1f2f6037c0a79cd285a66c7ba2b0d",
+      "archive_path": "negative-controls/mutations/attempt-driver-click.old",
+      "archive_sha256": "9ff7d161535176b52721f2300d587e3bcda1f2f6037c0a79cd285a66c7ba2b0d"
+    },
+    {
+      "source": "negative-controls/mutations/attempt-driver-key.new",
+      "source_bytes": 38,
+      "source_sha256": "1fbcff9be0fbaeb32edfc022f162cee4097db848d0d443aaac20e871f7209177",
+      "archive_path": "negative-controls/mutations/attempt-driver-key.new",
+      "archive_sha256": "1fbcff9be0fbaeb32edfc022f162cee4097db848d0d443aaac20e871f7209177"
+    },
+    {
+      "source": "negative-controls/mutations/attempt-driver-key.old",
+      "source_bytes": 153,
+      "source_sha256": "3345846f15752db718b23c116c2962072c752ba359bf09778c533ade311cc5cb",
+      "archive_path": "negative-controls/mutations/attempt-driver-key.old",
+      "archive_sha256": "3345846f15752db718b23c116c2962072c752ba359bf09778c533ade311cc5cb"
+    },
+    {
+      "source": "negative-controls/mutations/attempt-title-press.new",
+      "source_bytes": 260,
+      "source_sha256": "55112075154aa46df19506bdd39cb2b0f12b2f4a3d985188079b59f06847c239",
+      "archive_path": "negative-controls/mutations/attempt-title-press.new",
+      "archive_sha256": "55112075154aa46df19506bdd39cb2b0f12b2f4a3d985188079b59f06847c239"
+    },
+    {
+      "source": "negative-controls/mutations/attempt-title-press.old",
+      "source_bytes": 153,
+      "source_sha256": "3345846f15752db718b23c116c2962072c752ba359bf09778c533ade311cc5cb",
+      "archive_path": "negative-controls/mutations/attempt-title-press.old",
+      "archive_sha256": "3345846f15752db718b23c116c2962072c752ba359bf09778c533ade311cc5cb"
+    },
+    {
+      "source": "negative-controls/mutations/guide-p11-focus.new",
+      "source_bytes": 370,
+      "source_sha256": "116e23e2203a4404d231724666c5cd34a8acdb5a89c476523d6f891805730a21",
+      "archive_path": "negative-controls/mutations/guide-p11-focus.new",
+      "archive_sha256": "116e23e2203a4404d231724666c5cd34a8acdb5a89c476523d6f891805730a21"
+    },
+    {
+      "source": "negative-controls/mutations/guide-p11-focus.old",
+      "source_bytes": 442,
+      "source_sha256": "6da92356efa1398562e487b37df87662e44494552a3bb52614d3ecaf612f3b8b",
+      "archive_path": "negative-controls/mutations/guide-p11-focus.old",
+      "archive_sha256": "6da92356efa1398562e487b37df87662e44494552a3bb52614d3ecaf612f3b8b"
+    },
+    {
+      "source": "negative-controls/mutations/guide-p7-focus.new",
+      "source_bytes": 63,
+      "source_sha256": "b336a1305eaa150d120d24510da2473f611c0fe34953fc2d1eadaaf87513e1ce",
+      "archive_path": "negative-controls/mutations/guide-p7-focus.new",
+      "archive_sha256": "b336a1305eaa150d120d24510da2473f611c0fe34953fc2d1eadaaf87513e1ce"
+    },
+    {
+      "source": "negative-controls/mutations/guide-p7-focus.old",
+      "source_bytes": 51,
+      "source_sha256": "cdd17586c11cc1436883fec73c0aea9e66031653d9574bf3cb53a506daef9552",
+      "archive_path": "negative-controls/mutations/guide-p7-focus.old",
+      "archive_sha256": "cdd17586c11cc1436883fec73c0aea9e66031653d9574bf3cb53a506daef9552"
+    },
+    {
+      "source": "negative-controls/mutations/p11-both-focus.new",
+      "source_bytes": 304,
+      "source_sha256": "67f861d4ded725054f1aaf9669f9b827f8b85a97a6896a0fbb9566d5fcb4a838",
+      "archive_path": "negative-controls/mutations/p11-both-focus.new",
+      "archive_sha256": "67f861d4ded725054f1aaf9669f9b827f8b85a97a6896a0fbb9566d5fcb4a838"
+    },
+    {
+      "source": "negative-controls/mutations/p11-both-focus.old",
+      "source_bytes": 363,
+      "source_sha256": "2fa9b3da2d0df80dd798c72bb2a0d972426e417eb17f98904861abca8e88bc36",
+      "archive_path": "negative-controls/mutations/p11-both-focus.old",
+      "archive_sha256": "2fa9b3da2d0df80dd798c72bb2a0d972426e417eb17f98904861abca8e88bc36"
+    },
+    {
+      "source": "negative-controls/mutations/p11-deferred-focus.new",
+      "source_bytes": 26,
+      "source_sha256": "66ed4f0923ffb38735c6571039f8ae0abb7989e39e1dc94e9a0383bcd52ce2cb",
+      "archive_path": "negative-controls/mutations/p11-deferred-focus.new",
+      "archive_sha256": "66ed4f0923ffb38735c6571039f8ae0abb7989e39e1dc94e9a0383bcd52ce2cb"
+    },
+    {
+      "source": "negative-controls/mutations/p11-deferred-focus.old",
+      "source_bytes": 57,
+      "source_sha256": "50b6eb119a5b54073633c3bec139aaf07d1d094f92a77881462ad2d8f5ff2e5f",
+      "archive_path": "negative-controls/mutations/p11-deferred-focus.old",
+      "archive_sha256": "50b6eb119a5b54073633c3bec139aaf07d1d094f92a77881462ad2d8f5ff2e5f"
+    },
+    {
+      "source": "negative-controls/mutations/p11-flush-and-key.new",
+      "source_bytes": 215,
+      "source_sha256": "5bedf75184a02bb9d7b3b4de89afb488e66bc3a524c4283ae9b95f2fafbf142d",
+      "archive_path": "negative-controls/mutations/p11-flush-and-key.new",
+      "archive_sha256": "5bedf75184a02bb9d7b3b4de89afb488e66bc3a524c4283ae9b95f2fafbf142d"
+    },
+    {
+      "source": "negative-controls/mutations/p11-flush-and-key.old",
+      "source_bytes": 295,
+      "source_sha256": "4c966897e7621734eab52c917fb7f4b99f4cd56f84e8073f0bf890fdf4c6f9d3",
+      "archive_path": "negative-controls/mutations/p11-flush-and-key.old",
+      "archive_sha256": "4c966897e7621734eab52c917fb7f4b99f4cd56f84e8073f0bf890fdf4c6f9d3"
+    },
+    {
+      "source": "negative-controls/mutations/p11-flush.new",
+      "source_bytes": 0,
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archive_path": "negative-controls/mutations/p11-flush.new",
+      "archive_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "negative-controls/mutations/p11-flush.old",
+      "source_bytes": 37,
+      "source_sha256": "cb1d292bfbdc430667a86ca775c2fb58af8b3bc5a0fb80ecb8aeb89be0ca882d",
+      "archive_path": "negative-controls/mutations/p11-flush.old",
+      "archive_sha256": "cb1d292bfbdc430667a86ca775c2fb58af8b3bc5a0fb80ecb8aeb89be0ca882d"
+    },
+    {
+      "source": "negative-controls/mutations/p11-key.new",
+      "source_bytes": 26,
+      "source_sha256": "66ed4f0923ffb38735c6571039f8ae0abb7989e39e1dc94e9a0383bcd52ce2cb",
+      "archive_path": "negative-controls/mutations/p11-key.new",
+      "archive_sha256": "66ed4f0923ffb38735c6571039f8ae0abb7989e39e1dc94e9a0383bcd52ce2cb"
+    },
+    {
+      "source": "negative-controls/mutations/p11-key.old",
+      "source_bytes": 69,
+      "source_sha256": "36acae89118c0cde39ecdd97fdef5ca70a4d7232458b5c8f2448ad7a36782170",
+      "archive_path": "negative-controls/mutations/p11-key.old",
+      "archive_sha256": "36acae89118c0cde39ecdd97fdef5ca70a4d7232458b5c8f2448ad7a36782170"
+    },
+    {
+      "source": "negative-controls/mutations/p11-missing.new",
+      "source_bytes": 150,
+      "source_sha256": "56133b23549b44bc5b66530631cb32f63bdc525673dd4c59c340366a35b92651",
+      "archive_path": "negative-controls/mutations/p11-missing.new",
+      "archive_sha256": "56133b23549b44bc5b66530631cb32f63bdc525673dd4c59c340366a35b92651"
+    },
+    {
+      "source": "negative-controls/mutations/p11-missing.old",
+      "source_bytes": 213,
+      "source_sha256": "4968b876d4eafd5bb1ebe245f5d82815219822a785cab28aff8a2f5fc8b32957",
+      "archive_path": "negative-controls/mutations/p11-missing.old",
+      "archive_sha256": "4968b876d4eafd5bb1ebe245f5d82815219822a785cab28aff8a2f5fc8b32957"
+    },
+    {
+      "source": "negative-controls/mutations/p11-origin.new",
+      "source_bytes": 23,
+      "source_sha256": "130e187159cb0ed1feee9206e9f59d3bfced7f52fc6d57250d58a62cab02b1b3",
+      "archive_path": "negative-controls/mutations/p11-origin.new",
+      "archive_sha256": "130e187159cb0ed1feee9206e9f59d3bfced7f52fc6d57250d58a62cab02b1b3"
+    },
+    {
+      "source": "negative-controls/mutations/p11-origin.old",
+      "source_bytes": 83,
+      "source_sha256": "0520e66a33bc9892c02337a0a88fe972f0d1acce582beabd47992ac142a22b3a",
+      "archive_path": "negative-controls/mutations/p11-origin.old",
+      "archive_sha256": "0520e66a33bc9892c02337a0a88fe972f0d1acce582beabd47992ac142a22b3a"
+    },
+    {
+      "source": "negative-controls/mutations/p11-recipient.new",
+      "source_bytes": 74,
+      "source_sha256": "0294d188ed7d24323f3a397723c2addf9caab33841223b23bf91309d6be4254d",
+      "archive_path": "negative-controls/mutations/p11-recipient.new",
+      "archive_sha256": "0294d188ed7d24323f3a397723c2addf9caab33841223b23bf91309d6be4254d"
+    },
+    {
+      "source": "negative-controls/mutations/p11-recipient.old",
+      "source_bytes": 102,
+      "source_sha256": "aa9e957fcd2644b8693704301c56f59ea9cfcd8ed117fe7cf14012104506205a",
+      "archive_path": "negative-controls/mutations/p11-recipient.old",
+      "archive_sha256": "aa9e957fcd2644b8693704301c56f59ea9cfcd8ed117fe7cf14012104506205a"
+    },
+    {
+      "source": "negative-controls/mutations/p7-active.new",
+      "source_bytes": 31,
+      "source_sha256": "73ab05387762bfc685bba998e8a87873dae5d5ff801e6f3b940edcf1784a8351",
+      "archive_path": "negative-controls/mutations/p7-active.new",
+      "archive_sha256": "73ab05387762bfc685bba998e8a87873dae5d5ff801e6f3b940edcf1784a8351"
+    },
+    {
+      "source": "negative-controls/mutations/p7-active.old",
+      "source_bytes": 54,
+      "source_sha256": "7bfddd61c5c5f872a7317e405196ccb525bd967bfd484f42113eb48a5227dc64",
+      "archive_path": "negative-controls/mutations/p7-active.old",
+      "archive_sha256": "7bfddd61c5c5f872a7317e405196ccb525bd967bfd484f42113eb48a5227dc64"
+    },
+    {
+      "source": "negative-controls/mutations/p7-focus.new",
+      "source_bytes": 51,
+      "source_sha256": "3b3edc7d1792b34369058efb8885ff22f0173f3144d77bba28b72a2cfa55c837",
+      "archive_path": "negative-controls/mutations/p7-focus.new",
+      "archive_sha256": "3b3edc7d1792b34369058efb8885ff22f0173f3144d77bba28b72a2cfa55c837"
+    },
+    {
+      "source": "negative-controls/mutations/p7-focus.old",
+      "source_bytes": 39,
+      "source_sha256": "6999eea2cef5c87a83763cc48160576662d3333461701672353b8ce293cd1390",
+      "archive_path": "negative-controls/mutations/p7-focus.old",
+      "archive_sha256": "6999eea2cef5c87a83763cc48160576662d3333461701672353b8ce293cd1390"
+    },
+    {
+      "source": "negative-controls/nc-guide-p11-focus.log",
+      "source_bytes": 3127,
+      "source_sha256": "6ef17396ceeebbc45aed5f9ae5ad78b16be85ffc357ff3671e52ada49e5f8718",
+      "archive_path": "negative-controls/nc-guide-p11-focus.log",
+      "archive_sha256": "6ef17396ceeebbc45aed5f9ae5ad78b16be85ffc357ff3671e52ada49e5f8718"
+    },
+    {
+      "source": "negative-controls/nc-guide-p7-focus.log",
+      "source_bytes": 2371,
+      "source_sha256": "ce5927d83362321a4881cb85a051a239cf7fb7261471b7e63468792440de7dd3",
+      "archive_path": "negative-controls/nc-guide-p7-focus.log",
+      "archive_sha256": "ce5927d83362321a4881cb85a051a239cf7fb7261471b7e63468792440de7dd3"
+    },
+    {
+      "source": "negative-controls/nc-p11-both-focus.log",
+      "source_bytes": 2956,
+      "source_sha256": "b900a8dc1c2bd6d9144ea9749427b04a44875b402479c4d3eb8ca5dfb87414af",
+      "archive_path": "negative-controls/nc-p11-both-focus.log",
+      "archive_sha256": "b900a8dc1c2bd6d9144ea9749427b04a44875b402479c4d3eb8ca5dfb87414af"
+    },
+    {
+      "source": "negative-controls/nc-p11-deferred-focus.log",
+      "source_bytes": 1940,
+      "source_sha256": "06ddd87a4b888026a7de6806f3a43190229be7e4863604299bb93bae73658730",
+      "archive_path": "negative-controls/nc-p11-deferred-focus.log",
+      "archive_sha256": "06ddd87a4b888026a7de6806f3a43190229be7e4863604299bb93bae73658730"
+    },
+    {
+      "source": "negative-controls/nc-p11-flush-and-key.log",
+      "source_bytes": 2812,
+      "source_sha256": "d9fbee9c7a35997443e673e87a5b3e46c4e6af47129b74c8f49c95d36c556f9f",
+      "archive_path": "negative-controls/nc-p11-flush-and-key.log",
+      "archive_sha256": "d9fbee9c7a35997443e673e87a5b3e46c4e6af47129b74c8f49c95d36c556f9f"
+    },
+    {
+      "source": "negative-controls/nc-p11-flush.log",
+      "source_bytes": 1826,
+      "source_sha256": "4da49f8e14dab6ac59ce5a256a917a52b4469787d62d27be58c18d3785aa191a",
+      "archive_path": "negative-controls/nc-p11-flush.log",
+      "archive_sha256": "4da49f8e14dab6ac59ce5a256a917a52b4469787d62d27be58c18d3785aa191a"
+    },
+    {
+      "source": "negative-controls/nc-p11-key.log",
+      "source_bytes": 2078,
+      "source_sha256": "a69c839e58618688390dda4a5543e7a4a384fe21b06e59e85f407014979564e1",
+      "archive_path": "negative-controls/nc-p11-key.log",
+      "archive_sha256": "a69c839e58618688390dda4a5543e7a4a384fe21b06e59e85f407014979564e1"
+    },
+    {
+      "source": "negative-controls/nc-p11-missing.log",
+      "source_bytes": 1863,
+      "source_sha256": "bf6be60c97ee7b7e905aa00d16a871e3416005deb6cf52983ffddc7a8a56f4aa",
+      "archive_path": "negative-controls/nc-p11-missing.log",
+      "archive_sha256": "bf6be60c97ee7b7e905aa00d16a871e3416005deb6cf52983ffddc7a8a56f4aa"
+    },
+    {
+      "source": "negative-controls/nc-p11-origin.log",
+      "source_bytes": 1918,
+      "source_sha256": "4aa06cf9859b055a0164b4298d02c282db547cdec65900e41c49a5d97476e4e7",
+      "archive_path": "negative-controls/nc-p11-origin.log",
+      "archive_sha256": "4aa06cf9859b055a0164b4298d02c282db547cdec65900e41c49a5d97476e4e7"
+    },
+    {
+      "source": "negative-controls/nc-p11-recipient.log",
+      "source_bytes": 1918,
+      "source_sha256": "0af7f0c55a8c3e6e031a84282017a6b456675b8072cd0d6ab8dc27f5e42cbef6",
+      "archive_path": "negative-controls/nc-p11-recipient.log",
+      "archive_sha256": "0af7f0c55a8c3e6e031a84282017a6b456675b8072cd0d6ab8dc27f5e42cbef6"
+    },
+    {
+      "source": "negative-controls/nc-p7-active.log",
+      "source_bytes": 2102,
+      "source_sha256": "e11b2b021db48f71b924fe66274ff1162eef3ee48c0939200b8121ae78c0daaf",
+      "archive_path": "negative-controls/nc-p7-active.log",
+      "archive_sha256": "e11b2b021db48f71b924fe66274ff1162eef3ee48c0939200b8121ae78c0daaf"
+    },
+    {
+      "source": "negative-controls/nc-p7-focus.log",
+      "source_bytes": 2262,
+      "source_sha256": "859e603b314337a122407910e300b8344ff3914a61ed89d015cb7c7e0d116035",
+      "archive_path": "negative-controls/nc-p7-focus.log",
+      "archive_sha256": "859e603b314337a122407910e300b8344ff3914a61ed89d015cb7c7e0d116035"
+    },
+    {
+      "source": "recipes.patch",
+      "source_bytes": 31820,
+      "source_sha256": "55450c029f8a975797231a86c718bb3410bd45ab976f8ff4eae9d85b5aeef2a7",
+      "archive_path": "recipes.patch",
+      "archive_sha256": "55450c029f8a975797231a86c718bb3410bd45ab976f8ff4eae9d85b5aeef2a7"
+    },
+    {
+      "source": "runs/00-explore-race-nested.log",
+      "source_bytes": 941,
+      "source_sha256": "a71b218346f67f4090639a5bfd2b4dc31be23451be912082ebad46f5a3aeecd8",
+      "archive_path": "runs/00-explore-race-nested.log",
+      "archive_sha256": "a71b218346f67f4090639a5bfd2b4dc31be23451be912082ebad46f5a3aeecd8"
+    },
+    {
+      "source": "runs/00-explore-race-plain.log",
+      "source_bytes": 1020,
+      "source_sha256": "df201f5e9febed111e68c80ce7578ee84f9d98bd7aa08f2066f656a1e51e6cc2",
+      "archive_path": "runs/00-explore-race-plain.log",
+      "archive_sha256": "df201f5e9febed111e68c80ce7578ee84f9d98bd7aa08f2066f656a1e51e6cc2"
+    },
+    {
+      "source": "runs/01-fmt-check.log",
+      "source_bytes": 821,
+      "source_sha256": "928b414f3a05d4ab3ae5479b46adbba33cd9811abaae80be7214d9343aaba9ff",
+      "archive_path": "runs/01-fmt-check.log",
+      "archive_sha256": "928b414f3a05d4ab3ae5479b46adbba33cd9811abaae80be7214d9343aaba9ff"
+    },
+    {
+      "source": "runs/02-test-row-focus-recipe.log",
+      "source_bytes": 1517,
+      "source_sha256": "2725ef2218f0cb8e3d8a8fb1fa3f409f7ce7dcd4c0d9f2d1e1e0f3e5065b801e",
+      "archive_path": "runs/02-test-row-focus-recipe.log",
+      "archive_sha256": "2725ef2218f0cb8e3d8a8fb1fa3f409f7ce7dcd4c0d9f2d1e1e0f3e5065b801e"
+    },
+    {
+      "source": "runs/03-test-tab-focus-recipe.log",
+      "source_bytes": 1731,
+      "source_sha256": "32f99a7f83e5f9905ca309d8143e2dba4bbfb440ea1d34f7bc49f1c56a50e199",
+      "archive_path": "runs/03-test-tab-focus-recipe.log",
+      "archive_sha256": "32f99a7f83e5f9905ca309d8143e2dba4bbfb440ea1d34f7bc49f1c56a50e199"
+    },
+    {
+      "source": "runs/04-doctest-guide-layout.log",
+      "source_bytes": 2178,
+      "source_sha256": "4fb5cb1569639f4fca0a59c2b938ae312059b956c0ab94b96b339156e4304a8d",
+      "archive_path": "runs/04-doctest-guide-layout.log",
+      "archive_sha256": "4fb5cb1569639f4fca0a59c2b938ae312059b956c0ab94b96b339156e4304a8d"
+    },
+    {
+      "source": "runs/05-clippy-pert-ui-all-targets.log",
+      "source_bytes": 1025,
+      "source_sha256": "03ae51ec9c49829595642af766780e0c6ccb797fcd32052533d7dc840639e50d",
+      "archive_path": "runs/05-clippy-pert-ui-all-targets.log",
+      "archive_sha256": "03ae51ec9c49829595642af766780e0c6ccb797fcd32052533d7dc840639e50d"
+    },
+    {
+      "source": "runs/06-rustdoc-pert-ui.log",
+      "source_bytes": 1123,
+      "source_sha256": "a3bc4cb2136623a33ad3755410b95ecb9ccd4f59eb8bd9bea1e5b3bacf10071f",
+      "archive_path": "runs/06-rustdoc-pert-ui.log",
+      "archive_sha256": "a3bc4cb2136623a33ad3755410b95ecb9ccd4f59eb8bd9bea1e5b3bacf10071f"
+    },
+    {
+      "source": "runs/07-no-default-features-recipes.log",
+      "source_bytes": 3911,
+      "source_sha256": "dd3a13b1673605a07c5e8357bde142b5b3ba0589caac349829de57d4fe9e413e",
+      "archive_path": "runs/07-no-default-features-recipes.log",
+      "archive_sha256": "dd3a13b1673605a07c5e8357bde142b5b3ba0589caac349829de57d4fe9e413e"
+    },
+    {
+      "source": "runs/08-full-collections-and-surfaces-binaries.log",
+      "source_bytes": 184281,
+      "source_sha256": "59cd2501f2d8aad4a2c2aaa845f452fb0c128f0fa8089529b58bcf85c08cb188",
+      "archive_path": "runs/08-full-collections-and-surfaces-binaries.log",
+      "archive_sha256": "59cd2501f2d8aad4a2c2aaa845f452fb0c128f0fa8089529b58bcf85c08cb188"
+    },
+    {
+      "source": "scratch/explore_race.rs",
+      "source_bytes": 3705,
+      "source_sha256": "1839ae0bf31ccf05b92754fc831d927aac79ae56486e133f3f0e4044b13ed091",
+      "archive_path": "scratch/explore_race.rs",
+      "archive_sha256": "1839ae0bf31ccf05b92754fc831d927aac79ae56486e133f3f0e4044b13ed091"
+    },
+    {
+      "source": "scripts/negative_control.py",
+      "source_bytes": 1663,
+      "source_sha256": "89c03e9613a8f55de7d52c63968aa684e7f31d8ec0248a81c2eea786022bccfd",
+      "suffix_note": "Archived script text, not an installed/portable entry point; exact bytes unchanged.",
+      "archive_path": "scripts/negative_control.py.txt",
+      "archive_sha256": "89c03e9613a8f55de7d52c63968aa684e7f31d8ec0248a81c2eea786022bccfd"
+    },
+    {
+      "source": "scripts/run.sh",
+      "source_bytes": 962,
+      "source_sha256": "f89e0eb1acef0dee2cd52626d58181f8c142ce88ef9d19a6282442620bc287f8",
+      "suffix_note": "Archived script text, not an installed/portable entry point; exact bytes unchanged.",
+      "archive_path": "scripts/run.sh.txt",
+      "archive_sha256": "f89e0eb1acef0dee2cd52626d58181f8c142ce88ef9d19a6282442620bc287f8"
+    },
+    {
+      "source": "source/crates/pert-ui/src/guide/layout.md",
+      "source_bytes": 55764,
+      "source_sha256": "4ddb02964657a0d674f17fe6903e801ae82b89f154f2918deb2efc95ef67e3ba",
+      "archive_path": "source/crates/pert-ui/src/guide/layout.md",
+      "archive_sha256": "4ddb02964657a0d674f17fe6903e801ae82b89f154f2918deb2efc95ef67e3ba"
+    },
+    {
+      "source": "source/crates/pert-ui/tests/collections/main.rs",
+      "source_bytes": 908,
+      "source_sha256": "4819d7c4ca70491249416b81e2142b44b0b183379e34ddc9ebe54914308839c6",
+      "archive_path": "source/crates/pert-ui/tests/collections/main.rs",
+      "archive_sha256": "4819d7c4ca70491249416b81e2142b44b0b183379e34ddc9ebe54914308839c6"
+    },
+    {
+      "source": "source/crates/pert-ui/tests/collections/row_focus_recipe.rs",
+      "source_bytes": 8274,
+      "source_sha256": "f0ed5300795ce845e0b3c37147fb4e1b9b79e6a7c8ddaef1341adba395975142",
+      "archive_path": "source/crates/pert-ui/tests/collections/row_focus_recipe.rs",
+      "archive_sha256": "f0ed5300795ce845e0b3c37147fb4e1b9b79e6a7c8ddaef1341adba395975142"
+    },
+    {
+      "source": "source/crates/pert-ui/tests/surfaces/main.rs",
+      "source_bytes": 905,
+      "source_sha256": "71df4c610eec212c948d07d9258d639aee6d84d640baad76801f2f63db0434aa",
+      "archive_path": "source/crates/pert-ui/tests/surfaces/main.rs",
+      "archive_sha256": "71df4c610eec212c948d07d9258d639aee6d84d640baad76801f2f63db0434aa"
+    },
+    {
+      "source": "source/crates/pert-ui/tests/surfaces/tab_focus_recipe.rs",
+      "source_bytes": 12048,
+      "source_sha256": "710a4b29a3a2368355d53708543e4803f98fc28a0c3ecd3fecd26271ba51c403",
+      "archive_path": "source/crates/pert-ui/tests/surfaces/tab_focus_recipe.rs",
+      "archive_sha256": "710a4b29a3a2368355d53708543e4803f98fc28a0c3ecd3fecd26271ba51c403"
+    },
+    {
+      "source": "source-sha256.txt",
+      "source_bytes": 662,
+      "source_sha256": "6d02ed7a4488afdd29100dd1e5e3948d7c26f0e5889c2862b1403a03381f93eb",
+      "archive_path": "source-sha256.txt",
+      "archive_sha256": "6d02ed7a4488afdd29100dd1e5e3948d7c26f0e5889c2862b1403a03381f93eb"
+    }
+  ]
+}

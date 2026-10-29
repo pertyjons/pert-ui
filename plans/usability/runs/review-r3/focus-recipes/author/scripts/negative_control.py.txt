@@ -1,0 +1,35 @@
+"""Applies one textual mutation to an owned file, runs a command, records the
+result and restores the file byte-for-byte (checked by sha256).
+
+Usage: python3 -I negative_control.py <name> <file> <old-file> <new-file> -- <command...>
+<old-file>/<new-file> hold the exact text to replace (must occur once)."""
+import hashlib, pathlib, subprocess, sys, datetime
+
+W = pathlib.Path("/home/per/pert-ui-usability/r3-recipes-worktree")
+E = pathlib.Path("/home/per/pert-ui-usability/r3-recipes-implementation-evidence")
+name, rel, old_path, new_path, sep, *command = sys.argv[1:]
+assert sep == "--"
+target = W / rel
+original = target.read_bytes()
+digest = hashlib.sha256(original).hexdigest()
+old = pathlib.Path(old_path).read_text()
+new = pathlib.Path(new_path).read_text()
+text = original.decode()
+assert text.count(old) == 1, f"{name}: mutation text occurs {text.count(old)} times"
+mutated = text.replace(old, new)
+log = E / "negative-controls" / f"{name}.log"
+try:
+    target.write_text(mutated)
+    result = subprocess.run(command, cwd=W, capture_output=True, text=True)
+finally:
+    target.write_bytes(original)
+restored = hashlib.sha256(target.read_bytes()).hexdigest()
+assert restored == digest, "restore failed"
+with log.open("w") as out:
+    out.write(f"date: {datetime.datetime.now().isoformat()}\n")
+    out.write(f"file: {rel}\nsha256 before and after restore: {digest}\n")
+    out.write(f"mutation, replaced text:\n{old}\nwith:\n{new}\n")
+    out.write(f"command: {' '.join(command)}\n--- output ---\n")
+    out.write(result.stdout + result.stderr)
+    out.write(f"--- exit_status={result.returncode} ---\n")
+print(f"{name} exit_status={result.returncode}")

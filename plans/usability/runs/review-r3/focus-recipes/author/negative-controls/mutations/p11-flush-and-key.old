@@ -1,0 +1,6 @@
+                ui.flush(ui.now())?;
+                if ui.focused().as_ref() != Some(&tabs) {
+                    log.borrow_mut().push(format!("focus-elsewhere:{key}"));
+                    return Ok(());
+                }
+                if selected.get()?.as_deref() != Some(key.as_str()) {

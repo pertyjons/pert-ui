@@ -1,0 +1,3 @@
+        if change.origin == ChangeOrigin::Redescription
+            && cx.focused()
+            && let
