@@ -1,6 +1,8 @@
 # Round 3 execution and closure
 
-Status: blind runs and independent acceptance complete; triage and repairs in progress, 2026-10-28. The maintainer authorized completion through
+Status: blind runs, independent acceptance and corrected experiment records complete;
+repairs and required available gates complete; final integrated assessment review
+pending, 2026-10-29. The maintainer authorized completion through
 round 3 as a persistent goal, including kit preparation, blind testing,
 verification and repair of new and recurring findings, Claude review and a
 documented final assessment. This executes the
@@ -324,3 +326,36 @@ are run where available; missing platforms remain explicit.
   was rejected for prose jiggle; revision3 pins displayed wrapped carets while
   retaining canonical TextSelection/hit geometry. No new scrolling behavior is
   claimed before implementation and review.
+
+- 2026-10-29 continuation: approved MultiSelect source/tests integrated. The
+  root targeted test run passes; a new gallery scenario reproduces the separate
+  short-popup focus escape after its long-list continuation step succeeds.
+  The generic popup-focus revision2 and whitespace revision3 designs have
+  independent review with all corrections adopted before their isolated Claude
+  implementations. Both require fresh Codex review and integrated verification.
+  The [assessment draft](round-3-assessment.md) explicitly retains those gates
+  and final independent Claude review; it does not close the goal prematurely.
+
+- MultiSelect and generic surface press focus committed6b8b3bf (0.3.93) after
+  full workspace/API and selected GPU/CPU native success. Independent integrated
+  review1 required intermediate Escape-clear assertions; root strengthened them,
+  reran focused/native checks and received review2 approval. Native overflow is
+  not asserted at its window size; outside-ScrollArea evidence is headless.
+- Whitespace production logic passed independent review. Root adopted measured
+  fractional rounding, transparent phase-raster and mask-edge sampling limits in
+  revision4, repaired prose/test labels and received final isolated review3
+  approval. Source baseline hashes matched before root integration. Working0.3.94
+  now runs the full workspace/API and affected native checks; overall closure
+  remains pending those results and independent final assessment review.
+
+- Working 0.3.94 full retry gate passes all eleven commands after the initial
+  API-generation/test overlap failure. API generation is clean; selected native
+  text probe and GPU/CPU gallery interactions pass with platform/source limits.
+  Raw failures, exact archives and post-gate Markdown-only differences remain
+  explicit. Final integrated Claude review and committed checks precede closure.
+
+- Text checkpoint committed ddfdb20 (0.3.94); API status is clean after commit.
+  Final Claude review attempt1 exits at the five-hour service limit, before a
+  completed review. Its result/prompt/status are preserved. Reported availability
+  reset is 15:00 Europe/Stockholm (14:00 UTC), 2026-10-29. No final approval or
+  goal completion is claimed; the complete source and records await that gate.

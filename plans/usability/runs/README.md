@@ -265,8 +265,9 @@ For a later round's kit; none affected a result:
 
 ## Round 3
 
-Blind testing and independent acceptance are complete. Repairs and final
-assessment remain in progress on 2026-10-29 under the maintainer's goal. The
+Blind testing, independent acceptance, repairs and required available gates are
+complete. Final integrated assessment review remains pending on 2026-10-29
+under the maintainer's goal. The
 [execution plan](../round-3-plan.md) records the frozen paired notes comparison
 (26e6b5a, 0.3.75, versus 32dd9c4, 0.3.88), head-only tasks 1–5, balanced queue
 order, grading rules and closure criteria. Subsequent library repairs are
@@ -294,7 +295,8 @@ unchanged definitions. Task 4 lines count changes against its supplied fixture;
 other tasks count complete source. These are descriptive AI-run observations,
 not a human usability score. [Recurrence matrices](triage-r3/recurrence-matrices.md)
 separate timed exercise, unreached cases, source-inferred recurrences and later
-acceptance-only exercise. Their independent final recheck remains pending.
+acceptance-only exercise. Their [independent records recheck](triage-r3/independent-records-review-r2.md)
+approves the corrected matrices and metrics.
 The [new-finding ledger](triage-r3/new-findings.md) links verification and repair
 status without promoting later regression tests to repaired-head blind results.
 
@@ -315,8 +317,12 @@ gesture/idleness tests, complete workspace/API checks and final independent
 approval. Historical diagnostics and focus recipes are committed at d479516/17c6c3d
 (0.3.91). Menu ownership and tab coverage are committed at dae748d (0.3.92),
 with complete workspace/API, selected Linux native checks and independent
-integration approval. MultiSelect, hanging-whitespace geometry and the newly
-verified popup press-focus escape remain tracked in the execution plan. Overall usability closure and publication are not claimed.
+integration approval. MultiSelect and generic popup press focus are committed
+at 6b8b3bf (0.3.93), with final integrated approval after stronger Escape evidence.
+Whitespace geometry/caret presentation is committed at ddfdb20 (0.3.94) with final
+isolated approval and full workspace/API/selected native success. The
+[assessment](../round-3-assessment.md) retains the pending final integrated
+review and current closure decision. No publication is claimed.
 
 Archived stdout and blind source preserve original whitespace; artifact-only
 git diff --check findings are disclosed rather than normalized or hidden by
@@ -325,3 +331,8 @@ capture provenance; unchanged PNG copies are marked as such. Large repeated
 overlap diagnostic output is abbreviated only in readable excerpts, with full
 raw gzip, hashes and checked decompression retained. Source/adoption hashes
 distinguish preserved bytes from regenerated summaries.
+
+The first final integrated assessment reviewer hit Claude's service limit
+before completing its review; the [attempt record](review-r3/final-review-attempt1/README.md)
+is not approval. Code and available gates are complete, with final closure
+pending the fresh review after its reported 15:00 Stockholm reset.

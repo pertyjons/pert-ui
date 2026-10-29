@@ -1,0 +1,30 @@
+{
+  "at_utc": "2026-10-29T12:10:22.043592+00:00",
+  "frozen_acceptance_sha256": "2a082c33f8a1bed2d243706920a7e9ec17320a13cbab4c4d5539bb389b901127",
+  "files": {
+    "plans/usability/reserved/6-notes-editor.md": {
+      "sha256": "0cef77cd29625c8a42c35de3789430c1f8cceccf3a5200be9bb7ceb17e99b8cd",
+      "equals_seal_a81449f": true
+    },
+    "plans/usability/reserved/6-author-prompt.md": {
+      "sha256": "6e22e462bf8ab573c50967a97d93262d5e807f91dcce9beb3730e127281331ef",
+      "equals_seal_a81449f": true
+    },
+    "plans/usability/runs/triage-r3/recurrence-matrices.md": {
+      "sha256": "fdb5e3a5ce958a8345f1c2c76ef1b65ac46348c4acfd823074226998fc6765e5",
+      "equals_independently_approved_checkpoint_c19ae70": true
+    },
+    "plans/usability/runs/triage-r3/recurrence-matrices.json": {
+      "sha256": "e59e3881538dafe267895e08787c60e93d6a73dbf33365210268e7a56c9db5f3",
+      "equals_independently_approved_checkpoint_c19ae70": true
+    },
+    "plans/usability/runs/triage-r3/metrics.md": {
+      "sha256": "c4d5eea33ffe601289273bebd23c33229f09700c087e13be7dc70332607aa92a",
+      "equals_independently_approved_checkpoint_c19ae70": true
+    },
+    "plans/usability/runs/triage-r3/metrics.json": {
+      "sha256": "9414e8c22ff9386d2bd886edf9e5fb6fabd046313147d086ed687f25d33642d7",
+      "equals_independently_approved_checkpoint_c19ae70": true
+    }
+  }
+}
