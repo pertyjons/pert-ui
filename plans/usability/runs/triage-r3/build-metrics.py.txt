@@ -1,0 +1,74 @@
+from pathlib import Path
+import re,json,hashlib,statistics
+root=Path('/home/per/github/pert-ui/plans/usability/runs')
+rows=[]
+for p in sorted(root.glob('r3-*/summary.md')):
+ s=p.read_text()
+ if '- Acceptance: met' not in s:continue
+ def get(pattern):
+  m=re.search(pattern,s);assert m,(p,pattern);return m.groups()
+ task=int(get(r'- Task: (\d+)-')[0]);session=float(get(r'- Brief to end of session: ([\d.]+) min')[0]);first=float(get(r'- Time to first build: ([\d.]+) min')[0]);builds,failed,killed=map(int,get(r'- Builds: (\d+); failed (\d+); killed or unfinished (\d+)'))
+ app,test,total=map(int,get(r'- Code lines(?: added or changed)?: application (\d+), test (\d+), total (\d+)'));types,apptypes,testtypes=map(int,get(r'- Distinct pert-ui types \(candidates\): (\d+) \(application (\d+), test (\d+)\)'))
+ rows.append(dict(run=p.parent.name,task=task,tester='Claude' if 'claude' in p.parent.name else 'Codex',version='baseline' if 'baseline' in p.parent.name else 'head',session_min=session,first_build_min=first,builds=builds,failed_builds=failed,killed_or_unfinished=killed,line_definition='added or changed against supplied fixture' if task==4 else 'all counted application/test source',app_lines=app,test_lines=test,total_lines=total,candidate_types=types,summary_sha256=hashlib.sha256(p.read_bytes()).hexdigest()))
+assert len(rows)==18
+out=root/'triage-r3';(out/'metrics.json').write_text(json.dumps({'status':'author draft; independent final recheck pending','source':'existing summarize.py summaries, definitions unchanged','runs':rows},indent=2)+'\n')
+s='''# Round 3 descriptive metrics
+
+Status: author draft; independent final recheck pending. Extracted from the
+retained run summaries, with hashes in [metrics.json](metrics.json). The
+summarize.py definitions are unchanged. All listed submissions met the frozen
+acceptance after independent checking and author adoption; these times are
+those of the timed tester session, not verifier work or post-run repairs.
+
+Task 4's App/test lines count additions/changes against the supplied fixture;
+other tasks count all application/test source under the script's rules. Task
+4's candidate type inventory still includes the supplied application as the
+existing summary defines it. These are not interchangeable code-size totals.
+
+Build failures count attempts, not distinct library defects. Code lines and
+candidate type counts use the frozen script's lexical definitions; type
+candidates are not a resolved public API count. First build is a timing marker,
+not app completion. The summaries retain candidate first-success commands;
+this report does not promote a smoke test to full task coverage. No measurement
+here is a human usability score or an estimate for application authors generally.
+
+## Head-only tasks 1–5
+
+| Run | Session min | First build min | Builds (failed) | App/test lines | Candidate types |
+| --- | --- | --- | --- | --- | --- |
+'''
+def line(r):return f"| [{r['run']}](../{r['run']}/summary.md) | {r['session_min']:.1f} | {r['first_build_min']:.1f} | {r['builds']} ({r['failed_builds']}) | {r['app_lines']}/{r['test_lines']} | {r['candidate_types']} |\n"
+for r in sorted([r for r in rows if r['task']!=6],key=lambda r:(r['task'],r['tester'])):s+=line(r)
+s+='''
+## Paired notes task
+
+| Run | Session min | First build min | Builds (failed) | App/test lines | Candidate types |
+| --- | --- | --- | --- | --- | --- |
+'''
+for tester in ['Claude','Codex']:
+ for version in ['head','baseline']:
+  for r in rows:
+   if r['task']==6 and r['tester']==tester and r['version']==version:s+=line(r)
+s+='''
+Within each tester, the two-session medians below describe only the frozen
+head/baseline pair. Order was balanced between testers, with each paired
+subsequence alternating commits; it does not remove model-specific strategies,
+learning, noise or the tiny sample. Do not compare different testers as if they
+were interchangeable human participants.
+
+| Tester | Head median session min | Baseline median session min |
+| --- | --- | --- |
+'''
+for tester in ['Claude','Codex']:
+ med=[statistics.median(r['session_min'] for r in rows if r['task']==6 and r['tester']==tester and r['version']==v) for v in ['head','baseline']]
+ s+=f'| {tester} | {med[0]:.2f} | {med[1]:.2f} |\n'
+s+='''
+These runs compare 0.3.88 with 0.3.75. No timing or code-size improvement is
+attributed to the subsequent 0.3.89+ repairs, which were not blind-tested here.
+Earlier-round CLI/version changes are additional confounders; no causal
+cross-round speed claim follows. Zero-model/tool authentication starts are
+infrastructure failures and are separately preserved, not inserted as failed
+usability sessions or silently dropped from the execution history.
+'''
+(out/'metrics.md').write_text(s)
+print('Extracted',len(rows),'accepted run summaries; all killed/unfinished:',sum(r['killed_or_unfinished'] for r in rows))

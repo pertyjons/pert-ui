@@ -1,0 +1,20 @@
+{"command": ["cargo", "test", "--locked", "--manifest-path", "/home/per/pert-ui-usability/r3-multiselect-focus-probe/Cargo.toml", "--", "--nocapture"], "started_at_utc": "2026-10-29T10:11:14.191023+00:00", "source_sha256": "efd041719427ebaa33cab3dd519c816a630d81eecb820b8f1c49b3a2fe9ba1c2"}
+   Compiling r3-multiselect-focus-probe v0.0.0 (/home/per/pert-ui-usability/r3-multiselect-focus-probe)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.80s
+     Running unittests src/lib.rs (target/debug/deps/r3_multiselect_focus_probe-121172a94b882f28)
+
+running 1 test
+FOCUS|count=6 opened focus=search#8 highlight=["O00"]
+FOCUS|count=6 clicked focus=search#8 highlight=["O02"] value=["o02"] writes=[["o02"]]
+FOCUS|count=6 Down focus=search#8 highlight=["O02"]
+Error: TimeReversed
+test tests::click_then_keys_on_short_and_overflowing_lists ... FAILED
+
+failures:
+
+failures:
+    tests::click_then_keys_on_short_and_overflowing_lists
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `--lib`

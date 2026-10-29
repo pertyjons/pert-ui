@@ -1,0 +1,37 @@
+{"command": ["cargo", "test", "--locked", "--manifest-path", "/home/per/pert-ui-usability/r3-multiselect-focus-probe/Cargo.toml", "--", "--nocapture"], "started_at_utc": "2026-10-29T10:13:38.478324+00:00", "source_sha256": "c563dd36030156df19ec760e1922cc6617efa652c8c60f3ba6dfac7e440c6691"}
+    Blocking waiting for file lock on package cache
+   Compiling r3-multiselect-focus-probe v0.0.0 (/home/per/pert-ui-usability/r3-multiselect-focus-probe)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.92s
+     Running unittests src/lib.rs (target/debug/deps/r3_multiselect_focus_probe-121172a94b882f28)
+
+running 1 test
+FOCUS|count=6 opened focus=search#8 highlight=["O00"]
+FOCUS|count=6 clicked focus=search#8 highlight=["O02"] value=["o02"] writes=[["o02"]]
+FOCUS|control pointer_left=false count=6
+FOCUS|count=6 Down focus=search#8 highlight=["O02"]
+FOCUS|count=6 Enter+type focus=search#8 highlight=[] value=[] writes=[["o02"], []] text_result=Ok(()) search_before=Some(Text("")) search_after=Some(Text("z"))
+FOCUS|count=20 opened focus=search#8 highlight=["O00"]
+FOCUS|count=20 clicked focus=list#12 highlight=["O02"] value=["o02"] writes=[["o02"]]
+FOCUS|control pointer_left=false count=20
+FOCUS|count=20 Down focus=list#12 highlight=["O03"]
+FOCUS|count=20 Enter+type focus=list#12 highlight=["O03"] value=["o02"] writes=[["o02"]] text_result=Ok(()) search_before=Some(Text("")) search_after=Some(Text(""))
+FOCUS|count=6 opened focus=search#8 highlight=["O00"]
+FOCUS|count=6 clicked focus=search#8 highlight=["O02"] value=["o02"] writes=[["o02"]]
+FOCUS|control pointer_left=true count=6
+FOCUS|count=6 Down focus=search#8 highlight=["O03"]
+FOCUS|count=6 Enter+type focus=search#8 highlight=[] value=["o02", "o03"] writes=[["o02"], ["o02", "o03"]] text_result=Ok(()) search_before=Some(Text("")) search_after=Some(Text("z"))
+FOCUS|count=20 opened focus=search#8 highlight=["O00"]
+FOCUS|count=20 clicked focus=list#12 highlight=["O02"] value=["o02"] writes=[["o02"]]
+FOCUS|control pointer_left=true count=20
+FOCUS|count=20 Down focus=list#12 highlight=["O02"]
+FOCUS|count=20 Enter+type focus=list#12 highlight=["O02"] value=["o02"] writes=[["o02"]] text_result=Ok(()) search_before=Some(Text("")) search_after=Some(Text(""))
+test tests::click_then_keys_on_short_and_overflowing_lists ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+   Doc-tests r3_multiselect_focus_probe
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

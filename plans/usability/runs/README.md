@@ -265,65 +265,63 @@ For a later round's kit; none affected a result:
 
 ## Round 3
 
-In progress, 2026-10-28, under the maintainer's goal to complete usability
-through this round. The [execution plan](../round-3-plan.md) freezes the
-paired task 6 comparison (26e6b5a, 0.3.75, versus 32dd9c4, 0.3.88),
-head-only tasks 1 to 5, balanced queue order, grading rules and closure
-criteria. Kits remain unchanged during runs; subsequent repairs are reported
-separately from the blind evidence.
+Blind testing and independent acceptance are complete. Repairs and final
+assessment remain in progress on 2026-10-29 under the maintainer's goal. The
+[execution plan](../round-3-plan.md) records the frozen paired notes comparison
+(26e6b5a, 0.3.75, versus 32dd9c4, 0.3.88), head-only tasks 1–5, balanced queue
+order, grading rules and closure criteria. Subsequent library repairs are
+reported separately; neither kit nor original submission is rewritten.
 
-Preparation received independent Claude review and recheck in
-[review-r3/](review-r3/), which also holds the matched harness hashes,
-frozen acceptance hash, exact kit metadata and passing isolation probes.
-Both kits provide the same link-preserving pandoc reading instruction.
-CLI versions are Claude Code 2.1.312 and Codex CLI 0.165.0; requested models
-are claude-opus-5-5 at high effort and gpt-6.1-sol at medium effort.
-The Claude probe confirms the model identity; no unobserved effective Codex
-model is claimed. Rust is 1.99.1 and pandoc is 3.7.0.2 in both sandboxes.
+Preparation received independent Claude review/recheck. [review-r3](review-r3/)
+holds matched harness hashes, frozen acceptance hash, exact metadata and passing
+isolation probes. Both kits use the same link-preserving pandoc instruction.
+CLI versions are Claude Code 2.1.312 and Codex CLI 0.165.0; requested models are
+claude-opus-5-5 at high effort and gpt-6.1-sol at medium effort. The Claude probe
+confirms model identity; no unobserved effective Codex identity is claimed.
+Both sandboxes use Rust 1.99.1 and pandoc 3.7.0.2. Source reading was permitted
+if logged; baseline Claude's toast-source check is disclosed in its record.
 
-Raw working directories and logs live under `~/pert-ui-usability/r3-*`.
-All planned successful submissions and their friction logs/summaries are
-preserved here using round 2's conventions, including the declared Claude
-replacement names. Independent acceptance is adopted only after author review.
-[The first review](review-r3/author-acceptance-1.md) adopts the completed Claude
-task-6 head/baseline verifiers and task 2 at head. Their added checks, command
-outputs and losslessly archived captures are kept under each run's acceptance/
-directory. No overall result or final assessment is claimed yet.
+All 18 successful submissions meet the unchanged frozen checks after independent
+acceptance and author reviews 1–5. [The adoption index](review-r3/adopted-acceptance.json)
+records report/review hashes. Test-only entry points/diffs, actual command
+output and CPU captures accompany each report. Author reviews correct report
+citations and explain name-sorting/failure-frequency task interpretations;
+passing tester-authored tests alone was never the acceptance decision.
 
-The original Codex queue is complete. Claude's authentication interruption
-and the exact fresh replacement mapping are recorded in
-[review-r3/auth-recovery.md](review-r3/auth-recovery.md); failed authenticated
-starts are infrastructure records, not usability results. Successful retries
-keep the `-retry1` suffix. The kits and task/acceptance criteria are unchanged.
-Initial triage is under [triage-r3/](triage-r3/initial-head-task6.md); independent
-acceptance and final results are still pending.
+[Run metrics](triage-r3/metrics.md) retain session/first-build time, builds,
+application/test lines and candidate API inventories under summarize.py's
+unchanged definitions. Task 4 lines count changes against its supplied fixture;
+other tasks count complete source. These are descriptive AI-run observations,
+not a human usability score. [Recurrence matrices](triage-r3/recurrence-matrices.md)
+separate timed exercise, unreached cases, source-inferred recurrences and later
+acceptance-only exercise. Their independent final recheck remains pending.
+The [new-finding ledger](triage-r3/new-findings.md) links verification and repair
+status without promoting later regression tests to repaired-head blind results.
 
-The independent verifier queues later stopped at the service's five-hour usage
-limit. Completed reports were preserved; interrupted graders retain their own
-contexts, copies and evidence. A tool-free isolated probe confirmed service
-availability after the declared 19:10 Europe/Stockholm reset. The continuation
-uses resume-acceptance.py only for those interrupted graders and creates fresh
-contexts for untouched submissions, skipping every completed verifier. Blind
-submissions are never replayed for this grading interruption. Both the first
-and resumed verifier status/output records remain private raw evidence; only
-reviewed acceptance artifacts are copied here.
+Claude authentication failures and fresh replacement names are preserved in
+[auth recovery](review-r3/auth-recovery.md). Zero-model/tool starts are
+infrastructure events, not usability failures; successful fresh replacements
+keep -retry1. Verifier queues later stopped at a five-hour service limit. A
+post-reset isolated probe confirmed availability; interrupted graders resumed
+their own contexts/copies and untouched submissions got fresh graders. No blind
+submission or completed verifier was replayed. Initial/continuation controller
+outcomes preserve failures and successes. Raw working directories/transcripts
+remain under ~/pert-ui-usability/r3-*; reviewed artifacts are archived here.
 
-All planned round-3 independent acceptance checks have now completed and passed
-author review: every successful blind submission meets the frozen task checks.
-[The adoption index](review-r3/adopted-acceptance.json) records report/review
-hashes. Author reviews 1–5 explain decisions, test-only entry points, corrected
-report citations and the task-5 name-sort/failure-frequency interpretations.
-Original submissions remain unchanged. Added tests, reviewed hooks and diffs,
-command output and lossless CPU captures are preserved beside each report.
-The two interrupted graders resumed their own contexts; no blind result or
-completed verifier was replayed. The initial and continuation outcome JSONs
-preserve failures as well as successes. These acceptance results do not close
-full triage, library repairs or the overall usability assessment.
+The first library repair is committed as 3bbfb813 (0.3.89), with public parts,
+item geometry and documentation, independent review and workspace/serde/API
+checks. Disabled Button is committed as b9e4c6c (0.3.90), with CPU palette/pixel,
+gesture/idleness tests, complete workspace/API checks and final independent
+approval. Historical diagnostics and focus recipes are committed at d479516/17c6c3d
+(0.3.91). Menu ownership and tab coverage are committed at dae748d (0.3.92),
+with complete workspace/API, selected Linux native checks and independent
+integration approval. MultiSelect, hanging-whitespace geometry and the newly
+verified popup press-focus escape remain tracked in the execution plan. Overall usability closure and publication are not claimed.
 
-Archived stdout and blind source are evidence. Some retain trailing spaces or
-a final extra blank line from the original bytes; git diff --check reports
-those artifact-only whitespace findings. They are not silently normalized, and
-no whitespace rule is relaxed for production code/documentation. PNG IDAT
-recompression is separately declared and decoded-byte checked in each capture
-provenance record. The source snapshots and acceptance index hashes distinguish
-the retained artifact bytes from regenerated summaries.
+Archived stdout and blind source preserve original whitespace; artifact-only
+git diff --check findings are disclosed rather than normalized or hidden by
+relaxed rules. PNG transformations are declared and decoded-byte checked in
+capture provenance; unchanged PNG copies are marked as such. Large repeated
+overlap diagnostic output is abbreviated only in readable excerpts, with full
+raw gzip, hashes and checked decompression retained. Source/adoption hashes
+distinguish preserved bytes from regenerated summaries.

@@ -13,7 +13,7 @@ Adopt into the Menu/Select checkpoint with explicit position-change gating.
 P13 confirms a separate MultiSelect defect, including callback consequences.
 The four-row popup stays on Gamma despite Down; the long popup stays on O03
 after twelve Downs and Enter toggles O03. Never/Leave/outside controls behave
-as documented. Source inspection confirms Row::pointer_input writes highlight
+as documented. Source inspection confirms ChoiceRow::pointer_input writes highlight
 on every inside Move. Recorded in TODO.md for its separate row-family scope;
 no claim that fixing shared OptionList repairs MultiSelect.
 
@@ -30,3 +30,9 @@ to .sh.txt for archival use; bytes are unchanged. Original external directories,
 frozen kits and submissions remain unchanged. The first scroll fixture did not
 overflow; its unsuccessful evidence remains with the corrected later runs.
 No native, GPU, OS input, human testing or repaired-head result follows.
+
+Source-item precision: P13 calls the component Row; current source names it
+ChoiceRow (Row is the option-data description). TODO and the repair checkpoint
+name the actual implementation. This does not change the reproduced behavior.
+The MultiSelect repair belongs to the round's verified new-library findings,
+with its own design checkpoint rather than being folded into OptionList.

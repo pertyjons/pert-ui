@@ -1,0 +1,7 @@
+[package]
+name = "r3-multiselect-focus-probe"
+version = "0.0.0"
+edition = "2024"
+publish = false
+[dependencies]
+pert-ui = { path = "/home/per/github/pert-ui/crates/pert-ui" }

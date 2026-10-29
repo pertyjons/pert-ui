@@ -1,6 +1,7 @@
 # Round 3 recurrence matrices
 
-Status: author draft; final independent recheck pending. Runtime/recipe repairs
+Status: independently approved at the 2026-10-29 records checkpoint; overall
+round assessment and runtime integration remain separate. Runtime/recipe repairs
 and their final assessment remain open. R = recurred; P = exercised successfully
 in the timed tester session; — = not reached/proven in that session. R* is a
 source-inferred recurrence, explicitly not a logged difficulty or timed event.
@@ -63,7 +64,7 @@ source, test or diagnostic for its R/P cells. Corrections below take precedence.
 | F17 | — | — | — | — | — | — | — | — | — | — |
 | F18 | — | — | — | — | P | P | — | — | — | — |
 | F19 | — | — | P | P | — | — | — | — | — | — |
-| F20 | P | — | — | — | P | — | — | — | P | — |
+| F20 | — | — | — | — | — | — | — | — | — | — |
 | F21 | P | P | — | — | — | — | — | — | — | — |
 | F22 | — | — | — | — | — | — | — | — | — | — |
 | F23 | — | — | — | — | — | — | — | — | — | — |
@@ -153,7 +154,7 @@ source, test or diagnostic for its R/P cells. Corrections below take precedence.
 | R2-1 | P | P | P | P | R | R* | — | — |
 | R2-2 | — | — | — | — | — | — | — | — |
 | R2-3 | — | — | — | — | — | — | — | — |
-| R2-4 | P | P | P | P | R* | P | R | R |
+| R2-4 | P | P | P | P | R* | — | R | R |
 | R2-5 | — | — | — | — | — | — | — | — |
 | R2-6 | P | P | P | P | R | — | — | — |
 | R2-7 | — | — | — | — | — | — | — | — |
@@ -162,7 +163,7 @@ source, test or diagnostic for its R/P cells. Corrections below take precedence.
 | R2-10 | — | — | P | P | — | — | — | — |
 | R2-11 | P | P | — | — | — | — | — | — |
 | R2-12 | P | P | P | P | P | P | P | P |
-| R2-13 | P | P | P | — | P | P | P | — |
+| R2-13 | P | P | — | — | — | — | — | P |
 | R2-14 | — | — | — | — | — | — | — | — |
 | R2-15 | — | — | — | — | — | — | — | — |
 | R2-16 | — | — | — | — | — | — | — | — |
@@ -182,6 +183,17 @@ source, test or diagnostic for its R/P cells. Corrections below take precedence.
 ## Author scope corrections and later acceptance exercise
 
 - H/C2 F30 is —: a boxed error conversion helper compiled but never executed.
+- Review 1 corrects N/R2-13: HX1/BC1/BC2/BX1 collapse absent and empty names
+  in helpers and are —; BX2 directly asserts raw None and is P, as are HC1/HC2.
+- N/BC2 R2-4 is —: tail-expression map(|_| ()) is needed for callback return
+  conversion, so it never exercises the must-use friction.
+- F20 uses one rule across both groups: actually adopt an item-page example
+  with facade imports and exercise it; reading or citing pages alone is not P.
+  H/C1/C3/C5 are conservatively —; C1 cited Select placeholder discovery and
+  C5 cited keep_alive imports, without establishing actual example adoption.
+- H/C5 R2-26 P rests on timed Job::status/four_states and its CPU capture, not
+  acceptance-only evidence. H/C3 R2-15 P rests on timed picker Escape, actual
+  focus-loss cancel_input and focus-ring tests; X3 P does not establish cancel_input.
 - N/F14 is — throughout: the notes sidebar is selectable but does not exercise
   the editable/filterable-record recipe.
 - N/F22 is — throughout: working Ctrl+S/N/W does not exercise the finding about
@@ -204,3 +216,7 @@ No R2 head recurrence was verified; many R2 cases were not reached. Baseline-onl
 R2 findings remain distinct from new findings such as menu/tab geometry and
 the newly reproduced keyboard-hover defect. This is descriptive AI evidence,
 not a score, causal effect estimate or proof of human usability.
+
+[Independent records recheck](independent-records-review-r2.md) approves this
+record after the stated author corrections; it does not approve runtime fixes
+or overall round closure.

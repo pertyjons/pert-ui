@@ -1,5 +1,5 @@
 {
-  "status": "author draft; final independent recheck pending",
+  "status": "independently approved at 2026-10-29 records checkpoint; overall closure separate",
   "definitions": "plans/archive/developer-usability.md",
   "columns": {
     "C1": "r3-1-head-claude",
@@ -276,15 +276,15 @@
         "X5": "—"
       },
       "F20": {
-        "C1": "P",
+        "C1": "—",
         "X1": "—",
         "C2": "—",
         "X2": "—",
-        "C3": "P",
+        "C3": "—",
         "X3": "—",
         "C4": "—",
         "X4": "—",
-        "C5": "P",
+        "C5": "—",
         "X5": "—"
       },
       "F21": {
@@ -1189,7 +1189,7 @@
         "HX1": "P",
         "HX2": "P",
         "BC1": "R*",
-        "BC2": "P",
+        "BC2": "—",
         "BX1": "R",
         "BX2": "R"
       },
@@ -1276,12 +1276,12 @@
       "R2-13": {
         "HC1": "P",
         "HC2": "P",
-        "HX1": "P",
+        "HX1": "—",
         "HX2": "—",
-        "BC1": "P",
-        "BC2": "P",
-        "BX1": "P",
-        "BX2": "—"
+        "BC1": "—",
+        "BC2": "—",
+        "BX1": "—",
+        "BX2": "P"
       },
       "R2-14": {
         "HC1": "—",
@@ -1438,5 +1438,6 @@
   "source_sha256": {
     "initial-head-tasks1-5.md": "f2a60bec321c599ed3b12710074790e912a709cf7995b167729b4ce7e4915962",
     "initial-notes-paired.md": "fbad1c0900d8769a10ce61328e40dadeccd6e658ed5c8c1fb04ef8134bdc5f75"
-  }
+  },
+  "independent_review": "independent-records-review-r2.md"
 }

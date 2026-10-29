@@ -273,3 +273,12 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   Implement the separately reviewed wrapped-caret presentation/shared interval
   policy in `plans/usability/round-3-design-hanging-whitespace.md`, with pixel,
   IME, wheel and prose-stability tests; remove this entry when verified.
+
+- [ ] 2026-10-29 `crates/pert-ui-runtime/src/runtime/pointer.rs`
+  `Runtime::pointer_transition` — automatic press focus walks outside a short
+  interactive popup into an overflowing parent ScrollArea, dismissing the
+  popup before the pressed option handles input. MultiSelect baseline run06
+  reproduces open=false and no value/callback after press/release. Implement
+  and verify the generic admitted-surface focus-boundary policy in
+  `plans/usability/round-3-design-popup-press-focus.md`; remove this entry when
+  the runtime repair lands. No private MultiSelect focusability workaround.

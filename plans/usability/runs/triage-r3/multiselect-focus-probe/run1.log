@@ -1,0 +1,141 @@
+{"command": ["cargo", "test", "--manifest-path", "/home/per/pert-ui-usability/r3-multiselect-focus-probe/Cargo.toml", "--", "--nocapture"], "started_at_utc": "2026-10-29T10:09:51.048001+00:00", "source_sha256": "1aa7c8971e7a49522ac33c1396a3beefe966de894a238b8b3e40462add1ef3e6", "main_commit": "d479516d1730ccd95b2baf295acd7deee08d0900", "target_dir": "/home/per/github/pert-ui/target"}
+    Updating crates.io index
+     Locking 313 packages to highest Rust 1.99.1 compatible versions
+ Downloading crates ...
+  Downloaded memmap2 v0.9.12
+  Downloaded icu_locale_core v2.4.0
+  Downloaded icu_locale_fallback_data v2.4.0
+  Downloaded icu_locale_fallback v2.4.0
+  Downloaded zerovec-derive v0.11.7
+  Downloaded wl-clipboard-rs v0.9.5
+  Downloaded ordered-float v5.5.1
+  Downloaded tinystr v0.8.5
+  Downloaded yoke v0.8.4
+  Downloaded smallvec v1.16.4
+  Downloaded icu_provider v2.4.0
+  Downloaded icu_normalizer_data v2.4.0
+  Downloaded icu_collections v2.4.0
+  Downloaded cc v1.10.0
+  Downloaded zerovec v0.11.9
+  Downloaded icu_properties v2.4.0
+  Downloaded icu_properties_data v2.4.0
+  Downloaded unicode-width v0.2.3
+  Downloaded rustix v1.1.6
+  Downloaded icu_normalizer v2.4.0
+  Downloaded icu_segmenter_data v2.4.0
+  Downloaded icu_segmenter v2.4.0
+   Compiling unicode-ident v1.0.27
+   Compiling smallvec v1.16.4
+   Compiling libc v0.2.191
+   Compiling rustix v1.1.6
+   Compiling equivalent v1.0.3
+   Compiling find-msvc-tools v0.1.15
+   Compiling zerocopy v0.8.63
+   Compiling icu_locale_fallback_data v2.4.0
+   Compiling icu_properties_data v2.4.0
+   Compiling unicode-width v0.2.3
+   Compiling icu_normalizer_data v2.4.0
+   Compiling icu_segmenter_data v2.4.0
+   Compiling indexmap v2.14.2
+   Compiling hashbrown v0.16.1
+   Compiling ordered-float v5.5.1
+   Compiling litrs v1.0.1
+   Compiling proc-macro2 v1.0.107
+   Compiling cc v1.10.0
+   Compiling codespan-reporting v0.13.1
+   Compiling quote v1.0.47
+   Compiling document-features v0.2.12
+   Compiling syn v3.0.9
+   Compiling syn v2.0.119
+   Compiling wayland-scanner v0.31.11
+   Compiling petgraph v0.8.3
+   Compiling memmap2 v0.9.12
+   Compiling parking_lot_core v0.9.12
+   Compiling getrandom v0.3.4
+   Compiling os_pipe v1.2.3
+   Compiling wayland-backend v0.3.17
+   Compiling parking_lot v0.12.5
+   Compiling tree_magic_mini v3.2.2
+   Compiling synstructure v0.14.0
+   Compiling zerocopy-derive v0.8.63
+   Compiling thiserror-impl v1.0.69
+   Compiling bytemuck_derive v1.12.1
+   Compiling zerovec-derive v0.11.7
+   Compiling thiserror-impl v2.0.21
+   Compiling displaydoc v0.2.7
+   Compiling zerofrom-derive v0.1.8
+   Compiling yoke-derive v0.8.4
+   Compiling polling v3.11.0
+   Compiling gethostname v1.1.0
+   Compiling x11rb v0.13.2
+   Compiling zerofrom v0.1.8
+   Compiling thiserror v2.0.21
+   Compiling yoke v0.8.4
+   Compiling thiserror v1.0.69
+   Compiling naga-types v30.0.1
+   Compiling gpu-allocator v0.28.0
+   Compiling pert-ui-core v0.3.91 (/home/per/github/pert-ui/crates/pert-ui-core)
+   Compiling calloop v0.13.0
+   Compiling zerotrie v0.2.5
+   Compiling zerovec v0.11.9
+   Compiling wayland-client v0.31.15
+   Compiling wayland-csd-frame v0.3.0
+   Compiling bytemuck v1.25.2
+   Compiling font-types v0.12.7
+   Compiling wgpu-types v30.0.1
+   Compiling tiny-skia-path v0.11.4
+   Compiling read-fonts v0.41.0
+   Compiling tinystr v0.8.5
+   Compiling potential_utf v0.1.6
+   Compiling icu_collections v2.4.0
+   Compiling tiny-skia v0.11.4
+   Compiling icu_locale_core v2.4.0
+   Compiling wayland-protocols v0.32.13
+   Compiling calloop-wayland-source v0.3.0
+   Compiling wayland-cursor v0.31.14
+   Compiling icu_provider v2.4.0
+   Compiling icu_properties v2.4.0
+   Compiling icu_locale_fallback v2.4.0
+   Compiling icu_normalizer v2.4.0
+   Compiling icu_segmenter v2.4.0
+   Compiling parley_data v0.12.0
+   Compiling half v2.7.1
+   Compiling ahash v0.8.12
+   Compiling naga v30.0.1
+   Compiling wayland-protocols-wlr v0.3.12
+   Compiling wayland-protocols-plasma v0.3.12
+   Compiling skrifa v0.44.0
+   Compiling fontique v0.12.0
+   Compiling harfrust v0.12.0
+   Compiling smithay-client-toolkit v0.19.2
+   Compiling wl-clipboard-rs v0.9.5
+   Compiling arboard v3.7.0
+   Compiling sctk-adwaita v0.10.1
+   Compiling winit v0.30.13
+   Compiling swash v0.2.10
+   Compiling parley_engine v0.12.0
+   Compiling parley v0.12.0
+   Compiling pert-ui-runtime v0.3.91 (/home/per/github/pert-ui/crates/pert-ui-runtime)
+   Compiling wgpu-naga-bridge v30.0.1
+   Compiling wgpu-hal v30.0.1
+   Compiling wgpu-core-deps-windows-linux-android v30.0.1
+   Compiling wgpu-core v30.0.1
+   Compiling wgpu v30.0.1
+   Compiling pert-ui-wgpu v0.3.91 (/home/per/github/pert-ui/crates/pert-ui-wgpu)
+   Compiling pert-ui v0.3.91 (/home/per/github/pert-ui/crates/pert-ui)
+   Compiling r3-multiselect-focus-probe v0.0.0 (/home/per/pert-ui-usability/r3-multiselect-focus-probe)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 29.18s
+     Running unittests src/lib.rs (target/debug/deps/r3_multiselect_focus_probe-121172a94b882f28)
+
+running 1 test
+Error: "row"
+test tests::click_then_keys_on_short_and_overflowing_lists ... FAILED
+
+failures:
+
+failures:
+    tests::click_then_keys_on_short_and_overflowing_lists
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `--lib`
