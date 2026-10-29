@@ -1,0 +1,26 @@
+   Compiling pert-ui-runtime v0.3.89 (/home/per/github/pert-ui/crates/pert-ui-runtime)
+   Compiling pert-ui-wgpu v0.3.89 (/home/per/github/pert-ui/crates/pert-ui-wgpu)
+   Compiling pert-ui-cpu v0.3.89 (/home/per/github/pert-ui/crates/pert-ui-cpu)
+   Compiling pert-ui v0.3.89 (/home/per/github/pert-ui/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.87s
+     Running tests/presentation/main.rs (target/debug/deps/presentation-f8e9013aed92bfbd)
+
+running 5 tests
+test disabled_button::revocation_repaints_a_held_button_and_reenable_does_not_replay_it ... FAILED
+test disabled_button::disabled_role_and_border_overrides_repaint_without_layout ... ok
+test disabled_button::disabled_frameless_and_contextual_command_buttons_keep_their_contracts ... ok
+test disabled_button::disabled_menu_triggers_inherit_framed_or_icon_presentation ... ok
+test disabled_button::cpu_pixels_and_adjacent_fields_show_the_shared_inactive_frame ... ok
+
+failures:
+
+---- disabled_button::revocation_repaints_a_held_button_and_reenable_does_not_replay_it stdout ----
+Error: PendingUpdates
+
+
+failures:
+    disabled_button::revocation_repaints_a_held_button_and_reenable_does_not_replay_it
+
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 229 filtered out; finished in 0.07s
+
+error: test failed, to rerun pass `-p pert-ui --test presentation`

@@ -1,0 +1,58 @@
+$ cargo test --locked -p pert-ui-diagnostics -- --ignored
+   Compiling pert-ui v0.3.90 (/home/per/github/pert-ui/crates/pert-ui)
+   Compiling pert-ui-diagnostics v0.3.90 (/home/per/github/pert-ui/tests/diagnostics)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.52s
+     Running unittests src/lib.rs (target/debug/deps/pert_ui_diagnostics-70f30e0880411f95)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/diagnostics.rs (target/debug/deps/diagnostics-19e338564abc5f2d)
+
+running 1 test
+    Checking pert-ui-runtime v0.3.90 (/home/per/github/pert-ui/crates/pert-ui-runtime)
+    Checking pert-ui-wgpu v0.3.90 (/home/per/github/pert-ui/crates/pert-ui-wgpu)
+    Checking pert-ui v0.3.90 (/home/per/github/pert-ui/crates/pert-ui)
+    Checking pert-ui-diagnostics v0.3.90 (/home/per/github/pert-ui/tests/diagnostics)
+    Checking pert-ui-diagnostics-tests v0.0.0 (/home/per/github/pert-ui/target/tests/trybuild/pert-ui-diagnostics)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 6.98s
+
+
+test ui/b01_tableitems_not_impl.rs ... ok
+test ui/c01_component_not_impl.rs ... ok
+test ui/c06_component_element_as_component.rs ... ok
+test ui/d01_combine_single_input.rs ... ok
+test ui/d02_combine_not_a_binding.rs ... ok
+test ui/e01_each_item_not_component.rs ... ok
+test ui/h01_hostintegration_impl.rs ... ok
+test ui/i03_intoelement_not_component.rs ... ok
+test ui/k01_clipboard_not_impl.rs ... ok
+test ui/l01_listitems_vec.rs ... ok
+test ui/l05_listitems_rc.rs ... ok
+test ui/m03_apperror_from_io.rs ... ok
+test ui/m04_apperror_question_mark.rs ... ok
+test ui/p01_parametervalue_impl.rs ... ok
+test ui/r01_contentrows_not_impl.rs ... ok
+test ui/s01_stateowner_impl.rs ... ok
+test ui/s02_stateowner_not_owner.rs ... ok
+test ui/t01_treeitems_not_impl.rs ... ok
+test ui/v01_liveitem_impl.rs ... ok
+
+
+test compiler_messages_match_their_snapshots ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 13.55s
+
+     Running tests/testing_closure.rs (target/debug/deps/testing_closure-93f2eb3384a1c23e)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+   Doc-tests pert_ui_diagnostics
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

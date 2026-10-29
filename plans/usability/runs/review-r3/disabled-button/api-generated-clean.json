@@ -1,0 +1,17 @@
+{
+  "command": [
+    "api/generate.sh"
+  ],
+  "exit_status": 0,
+  "log": "r3-api-final-0.3.90.log",
+  "status_command": [
+    "git",
+    "status",
+    "--porcelain",
+    "--",
+    "api/"
+  ],
+  "stdout": "",
+  "status_exit": 0,
+  "note": "Generation matches the existing committed API listings; final implementation commit follows."
+}

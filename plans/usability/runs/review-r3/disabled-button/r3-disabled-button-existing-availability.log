@@ -1,0 +1,17 @@
+   Compiling pert-ui v0.3.90 (/home/per/github/pert-ui/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.22s
+     Running tests/controls/main.rs (target/debug/deps/controls-dbc53018005ffc85)
+
+running 9 tests
+test component_availability::fixed_disabled_descriptions_are_inert_before_the_first_flush ... ok
+test component_availability::availability_rejects_a_foreign_runtime_binding ... ok
+test component_availability::application_permission_cannot_override_parameter_read_only ... ok
+test component_availability::redescribed_fixed_denials_skip_controls_without_an_explicit_flush ... ok
+test component_availability::pointer_revocation_cancels_a_proven_hit_for_every_control ... ok
+test component_availability::fixed_redescription_cancels_a_held_press_even_if_reenabled_before_flush ... ok
+test component_availability::revocation_cancels_armed_activation_and_a_new_press_recovers ... ok
+test component_availability::replacement_unsubscribes_old_permissions_and_hidden_controls_refresh_on_reveal ... ok
+test component_availability::fixed_denial_survives_bound_permission_and_redescription_can_replace_it ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 362 filtered out; finished in 0.02s
+

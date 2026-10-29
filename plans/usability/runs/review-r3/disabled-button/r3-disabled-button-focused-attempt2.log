@@ -1,0 +1,26 @@
+   Compiling pert-ui v0.3.89 (/home/per/github/pert-ui/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.32s
+     Running tests/presentation/main.rs (target/debug/deps/presentation-f8e9013aed92bfbd)
+
+running 5 tests
+test disabled_button::disabled_role_and_border_overrides_repaint_without_layout ... ok
+test disabled_button::revocation_repaints_a_held_button_and_reenable_does_not_replay_it ... FAILED
+test disabled_button::disabled_frameless_and_contextual_command_buttons_keep_their_contracts ... ok
+test disabled_button::disabled_menu_triggers_inherit_framed_or_icon_presentation ... ok
+test disabled_button::cpu_pixels_and_adjacent_fields_show_the_shared_inactive_frame ... ok
+
+failures:
+
+---- disabled_button::revocation_repaints_a_held_button_and_reenable_does_not_replay_it stdout ----
+
+thread 'disabled_button::revocation_repaints_a_held_button_and_reenable_does_not_replay_it' (3088556) panicked at crates/pert-ui/tests/presentation/disabled_button.rs:66:5:
+assertion failed: uses(&enabled_again, palette.color(ColorRole::Button))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    disabled_button::revocation_repaints_a_held_button_and_reenable_does_not_replay_it
+
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 229 filtered out; finished in 0.12s
+
+error: test failed, to rerun pass `-p pert-ui --test presentation`

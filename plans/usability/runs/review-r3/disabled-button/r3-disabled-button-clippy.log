@@ -1,0 +1,6 @@
+    Checking pert-ui-core v0.3.90 (/home/per/github/pert-ui/crates/pert-ui-core)
+    Checking pert-ui-runtime v0.3.90 (/home/per/github/pert-ui/crates/pert-ui-runtime)
+    Checking pert-ui-cpu v0.3.90 (/home/per/github/pert-ui/crates/pert-ui-cpu)
+    Checking pert-ui-wgpu v0.3.90 (/home/per/github/pert-ui/crates/pert-ui-wgpu)
+    Checking pert-ui v0.3.90 (/home/per/github/pert-ui/crates/pert-ui)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 11.16s

@@ -1,0 +1,31 @@
+   Compiling pert-ui v0.3.90 (/home/per/github/pert-ui/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.32s
+     Running tests/presentation/main.rs (target/debug/deps/presentation-c2430151611f3e20)
+
+running 19 tests
+test theme::built_in_palettes_keep_readable_foregrounds_and_visible_outlines ... ok
+test theme::followers_name_their_sources_and_match_them_in_built_in_palettes ... [pert-ui validation ERROR okUnexpectedOverlap
+] test theme::followers_track_source_overrides_until_overridden_themselves ... Components "pressed" (#1) and "focus" (#2) overlap; correct their layout, or allow an intentional overlay: report OverlapPolicy::Allow in ComponentDetails::validation, or let the parent stack its children (Component::stacks_children).ok
+
+[pert-ui validation ERROR test theme::background_is_owned_scene_data_and_changes_without_components ... UnexpectedOverlapok] 
+Components "pressed" (#1) and "secondary" (#3) overlap; correct their layout, or allow an intentional overlay: report OverlapPolicy::Allow in ComponentDetails::validation, or let the parent stack its children (Component::stacks_children).
+[pert-ui validation ERROR UnexpectedOverlap] Components "focus" (#2) and "secondary" (#3) overlap; correct their layout, or allow an intentional overlay: report OverlapPolicy::Allow in ComponentDetails::validation, or let the parent stack its children (Component::stacks_children).
+test theme::runtime_isolation_shutdown_and_validation ... ok
+test theme::failed_paint_keeps_damage_and_retries_with_the_latest_palette ... ok
+[pert-ui validation ERROR UnexpectedOverlap] Components "first" (#1) and "second" (#2) overlap; correct their layout, or allow an intentional overlay: report OverlapPolicy::Allow in ComponentDetails::validation, or let the parent stack its children (Component::stacks_children).
+test theme::overrides_survive_mode_switches_and_inactive_edits_do_no_work ... ok
+test theme::only_read_roles_invalidate_and_dependencies_are_recollected ... ok
+test theme::a_source_override_repaints_only_the_readers_of_changed_followers ... ok
+test theme::theme_mutations_respect_lifecycle_phases ... ok
+test theme::hidden_and_removed_painters_do_not_schedule_theme_work ... ok
+test theme::scrollbars_follow_role_overrides_without_remeasuring_content ... ok
+test theme::seeded_palettes_in_both_modes_survive_switches_and_reset_repaints ... ok
+test theme::a_seed_sets_the_accent_hue_and_a_secondary_seed_its_own ... ok
+test theme::ordinary_text_follows_an_on_surface_override ... ok
+test theme::overrides_and_followers_work_on_a_seeded_palette ... ok
+test theme::standard_widgets_recolor_without_new_layout_or_text_masks ... ok
+test text_overflow::truncation_follows_width_scale_zoom_and_text_but_not_the_theme ... ok
+test theme::every_seeded_palette_keeps_the_built_in_readability ... ok
+
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 213 filtered out; finished in 0.74s
+

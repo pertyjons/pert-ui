@@ -432,7 +432,13 @@ type ActivateFn = Box<dyn FnMut(&mut EventContext) -> Result<(), RuntimeError>>;
 /// A standard action button with pointer capture, visible focus and keyboard activation.
 ///
 /// Default is enabled, at least 64×32 logical pixels at Standard density, with body text and themed
-/// padding and an opaque blue-gray action surface distinct from panels/tabs.
+/// padding and a themed action surface distinct from panels/tabs while enabled.
+/// A disabled framed button uses the neutral inactive-control frame: `Surface`
+/// fill, `Muted` content and an inward `Outline` at `BorderWidth`, with the same
+/// size and corner radius. These roles are shared with fields and panels;
+/// overriding `Button` changes enabled buttons only. A zero border width omits
+/// the outline; a width reaching half the smaller extent fills the shape, as
+/// for an editable field's frame. Custom themes own their contrast choices.
 /// Matching primary-button release inside activates once; release outside,
 /// Escape or context loss cancels. Unmodified Enter/Space activate on matched release, ignoring
 /// OS repeats. Whichever of the pointer and a key arms first owns the gesture and
@@ -635,6 +641,8 @@ impl Button {
     /// Text/icon padding, minimum size, input and focus behavior remain unchanged.
     /// Hover and press use the normal transient fills; keyboard focus remains
     /// outlined. Useful for icon actions in title bars and toolbars. Default false.
+    /// A disabled frameless button keeps only its `Muted` content, without the
+    /// neutral fill or outline of a disabled framed button.
     pub fn frameless(mut self) -> Self {
         self.frameless = true;
         self
@@ -807,20 +815,34 @@ impl Component for Button {
     }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
         let size = painter.size();
-        let background = if self.input.pressed() {
-            painter.color(ColorRole::ButtonPressed)
-        } else if self.input.hovered && self.enabled {
-            painter.color(ColorRole::ButtonHover)
-        } else {
-            painter.color(ColorRole::Button)
-        };
         let rect = Rect::from_size(size);
-        let shape = Shape::Rounded(Length::new(painter.metric(MetricRole::CornerRadius))?);
-        if !self.frameless || (self.input.hovered && self.enabled) || self.input.pressed() {
-            painter.fill_shape(rect, shape, background)?;
-        }
-        if self.input.focused {
-            painter.focus_ring(rect, shape)?;
+        let framed =
+            !self.frameless || (self.enabled && (self.input.hovered || self.input.pressed()));
+        if framed || self.input.focused {
+            let shape = Shape::Rounded(Length::new(painter.metric(MetricRole::CornerRadius))?);
+            if framed {
+                let background = painter.color(if !self.enabled {
+                    ColorRole::Surface
+                } else if self.input.pressed() {
+                    ColorRole::ButtonPressed
+                } else if self.input.hovered {
+                    ColorRole::ButtonHover
+                } else {
+                    ColorRole::Button
+                });
+                painter.fill_shape(rect, shape, background)?;
+            }
+            if !self.enabled && !self.frameless {
+                painter.stroke_shape(
+                    rect,
+                    shape,
+                    Length::new(painter.metric(MetricRole::BorderWidth))?,
+                    painter.color(ColorRole::Outline),
+                )?;
+            }
+            if self.input.focused {
+                painter.focus_ring(rect, shape)?;
+            }
         }
         if let Some(text) = self.prepared.borrow().as_ref() {
             text.paint(

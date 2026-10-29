@@ -22,6 +22,16 @@ pressed controls without changing the focus ring. The focus ring is drawn
 inward as one `FocusRing` band at `FocusWidth`. A custom component draws the
 same ring with `Painter::stroke_shape` and the focused element's bounds and shape.
 
+Disabled framed `Button`s share the neutral inactive field frame: `Surface`,
+`Muted` and an inward `Outline` at `BorderWidth`; enabled buttons retain
+`Button`/`ButtonHover`/`ButtonPressed`. These shared roles do not provide an
+independent disabled-button-only override. Empty or all-fixed-disabled framed
+Menu triggers inherit this treatment. Frameless disabled buttons, including
+icon-menu triggers, retain text/icon-only presentation. A zero BorderWidth
+omits the outline; a width reaching half the smaller extent fills the shape,
+following the ordinary inward-stroke contract. Custom themes own the resulting
+contrast. The button's size and permission behavior are unchanged.
+
 ```rust
 use pert_ui::{Button, Color, ColorRole, Component, Constraints, DrawError, Element,
               MeasureContext, Painter, Palette, Rect, Row, Runtime, RuntimeError, Size,

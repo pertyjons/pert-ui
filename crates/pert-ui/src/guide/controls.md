@@ -7,6 +7,10 @@ locally, and Escape, focus loss, hiding or unmounting cancels it.
 
 Default labels wrap to allocated width. Buttons supply themed padding, a default Standard 64×32 logical
 minimum, visible focus, pointer capture and matched-release Space/Enter activation.
+A disabled framed Button uses the neutral inactive frame: Surface fill, Muted
+content and an inward Outline at BorderWidth. A disabled frameless button keeps
+only Muted content. The frame deliberately shares its roles with fields and
+panels; changing Button affects enabled buttons, not disabled ones.
 Ignored input bubbles through logical ancestors; Tab traverses visible focus targets.
 Escape or context loss cancels activation. Window focus loss also releases
 pointer capture owned by nonfocusable custom components. Escape's ordinary

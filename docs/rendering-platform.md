@@ -21,6 +21,14 @@ zoom.
 Filled rectangles, vector strokes, text and images retain their own sampling
 rules.
 
+Disabled framed Buttons use Surface fill, Muted content and an inward Outline
+at BorderWidth, sharing the inactive field frame. Framed Menu triggers with no
+available items inherit it. Frameless disabled buttons omit fill and outline.
+The roles are shared with panels, fields and supporting text; Button overrides
+affect enabled action surfaces. Zero BorderWidth omits the stroke, while a
+stroke reaching half the smaller extent fills the silhouette. These paint
+choices do not change layout, permissions or input admission.
+
 Color inputs are straight linear RGBA; drawing blends premultiplied color in
 linear light and stores RGB through the sRGB attachment encoding. Native surfaces
 prefer opaque compositor alpha: the background retains its RGB with alpha one.

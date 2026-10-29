@@ -1,0 +1,10 @@
+{
+  "Dark.png": {
+    "sha256": "8c035cfc46cc082b2b82b166de2be0d654d8abcd4bb084b5c958620a5c449977",
+    "operation": "Exact byte-for-byte CPU-rendered PNG copy after review tightening."
+  },
+  "Light.png": {
+    "sha256": "46843faa60332a5f0a71a246d94374f3c0ef11a071dd734a636d071d1fc13a18",
+    "operation": "Exact byte-for-byte CPU-rendered PNG copy after review tightening."
+  }
+}

@@ -102,7 +102,9 @@ pub enum MetricRole {
     TabGap,
     /// Divider allocation and hit width, retained while locked.
     ResizeWidth,
-    /// Panel and separator stroke width.
+    /// Panel, separator, editable-field and disabled framed-button stroke width.
+    /// Zero omits a stroke; inward strokes reaching half the smaller extent
+    /// fill their shape. This metric does not change a button's layout.
     BorderWidth,
     /// Keyboard focus stroke width.
     FocusWidth,
@@ -374,7 +376,7 @@ impl From<MetricRole> for Spacing {
 /// likewise separates static panels from `Button`. Every `On*` role is paired
 /// with its fill: the built-in palettes keep each pair at a WCAG contrast ratio
 /// of at least 4.5:1. Color semantics belong in fills and icons; labels on
-/// neutral buttons should keep `OnButton`.
+/// enabled neutral buttons should keep `OnButton`.
 ///
 /// Some roles follow another role by default, as their documentation states and
 /// [`ColorRole::follows`] reports: until a follower is overridden itself, it
@@ -443,11 +445,14 @@ pub enum ColorRole {
     /// and do not draw this role. Built-in palettes match their `OnPrimary`,
     /// but overriding `OnPrimary` does not change it.
     FocusRingContrast,
-    /// Resting action control fill.
+    /// Resting enabled action-control fill. Disabled framed [`crate::Button`]s
+    /// use `Surface` with an `Outline` border instead; disabled dropdowns have
+    /// their own presentation and still use this fill.
     Button,
     /// Hovered action control fill.
     ButtonHover,
-    /// Text on resting or hovered buttons. Follows `OnSurface` by default.
+    /// Text on resting or hovered enabled buttons. Follows `OnSurface` by default.
+    /// Disabled [`crate::Button`] content uses `Muted`.
     OnButton,
     /// Fill of an action control while it is pressed: buttons, inline toggles,
     /// stepper buttons, a chip's remove button and an activatable swatch's

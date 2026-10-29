@@ -671,7 +671,9 @@ type Opener = Rc<dyn Fn(&EventContext) -> Result<(), RuntimeError>>;
 /// Menus retain keyed actions, skip disabled entries, scroll long lists and
 /// close on activation, Escape, outside press or owner context loss. Every level,
 /// including each submenu, is a rounded Surface panel with a PanelBorder outline. Empty/all-disabled
-/// menus have a disabled trigger. Nested lists use `MenuItem::submenu`, with Right
+/// menus have a disabled trigger. A framed trigger takes [`Button`]'s neutral
+/// inactive frame; an icon trigger remains frameless with muted content.
+/// Nested lists use `MenuItem::submenu`, with Right
 /// to open and Left/Escape to return. Rows may carry separators, shortcuts and
 /// check or radio marks; see [`MenuItem`]. No native menus or implicit I/O are
 /// used. For an application's File, Edit and Help menus, see `MenuBar`.

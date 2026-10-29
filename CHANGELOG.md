@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.3.90 (2026-10-28)
+
+Round 3 disabled-action presentation, from the independently reviewed Button
+design checkpoint. Frozen blind results remain on 0.3.88/0.3.75.
+
+- Disabled framed Button now draws a neutral Surface fill, Muted content and
+  inward Outline at BorderWidth, instead of keeping the enabled Button fill.
+  This makes the state differ in its surface and boundary as well as its text.
+  Size, padding, corner radius, permissions and gesture cancellation are
+  unchanged. Disabled frameless buttons keep content only.
+- The roles deliberately share the inactive editable-field frame; there is no
+  independent disabled-button palette. Button overrides affect enabled
+  buttons, while Surface/Muted/Outline/BorderWidth also affect their other
+  users. Zero border width omits the outline; a width reaching half the smaller
+  extent follows the existing filled-stroke behavior. Custom themes own contrast.
+- Empty/all-fixed-disabled Menu's framed trigger inherits the new frame.
+  Icon-menu, history and panel controls that are frameless keep their existing
+  disabled treatment. Frameless buttons subscribe only to frame roles they
+  actually draw; changes to an undrawn frame schedule no presentation work.
+  AlertDialog buttons share the paint code but have no
+  disabled state, so no dialog visual change is claimed.
+- Updated Button and Button::frameless, ColorRole::Button/OnButton and
+  MetricRole::BorderWidth documentation plus controls/appearance/rendering
+  guidance. No public signature or persisted format change.
+- Focused tests cover held-input revocation/re-enable, paint-only role/metric
+  changes, zero border width, frameless and contextual-command behavior, Menu
+  trigger composition, and actual CPU pixels beside editable fields in both
+  built-in palettes. Existing availability and palette contrast tests supply
+  their unchanged contracts.
+
 ## 0.3.89 (2026-10-28)
 
 Round 3 usability repairs: discoverable composite controls and real pointer
