@@ -215,7 +215,7 @@ type RefusalReport =
 /// a protected editor deliberately omits its value. Static label text instead
 /// uses a semantic name and leaves the value absent.
 ///
-////// [`Driver::exposed_part`](crate::testing::Driver::exposed_part) finds this
+/// [`Driver::exposed_part`](crate::testing::Driver::exposed_part) finds this
 /// editor's `clipboard` menu scope; query that scope's `items` for its command
 /// rows. The declaration exists while closed. A context-menu request opens it;
 /// finding or revealing the hidden rows does not. The menu's item rectangles
@@ -228,14 +228,36 @@ description_debug!(TextField);
 /// A multiline local text editor with monospace typography by default.
 ///
 /// Uses bundled Noto Sans Mono, a 320-pixel preferred width and six visible lines.
-/// Soft wraps to its allocation and scrolls internally to reveal the caret;
-/// wheel scrolls the text. Enter inserts LF, Tab traverses focus. Pasted CRLF,
+/// Soft wraps to its allocation and scrolls internally to reveal the caret,
+/// except next to whitespace hanging past a wrapped line's end, as described
+/// below; wheel scrolls the text. Enter inserts LF, Tab traverses focus. Pasted CRLF,
 /// CR, NEL, vertical tab, form feed and the Unicode line and paragraph
 /// separators become LF, pasted tabs are kept and other pasted control
 /// characters are dropped. Bound text accepts LF and tabs, but no other control
 /// characters or line separators; text read from a file with CRLF line endings,
 /// for example, must be converted before it is written to the binding.
 /// Call `style` to override typography.
+///
+/// A tab stays U+0009 in the binding, clipboard, inspection and undo history,
+/// and the caret moves over it as one grapheme. It is shown as blank space as
+/// wide as the font's shaped advance for it, one character cell with the
+/// bundled monospace font, not as an aligned tab stop, so tabs do not line up
+/// columns of unequal text. A tab that a registered font ligates with
+/// printable text keeps that glyph, as [`TextLayout`](crate::TextLayout)
+/// describes.
+///
+/// Scrolling stays within the measured text extent,
+/// [`TextLayout::size`](crate::TextLayout::size), plus the caret's width, and
+/// that extent leaves out whitespace hanging past the end of a wrapped line.
+/// A caret at such whitespace may therefore stay clipped at the viewport edge
+/// instead of being revealed, for spaces and tabs alike: in left-to-right text
+/// after End on that line or after typing the space or tab that hangs, and in
+/// right-to-left text, where hanging whitespace lies at the left edge, at that
+/// line's end. In wrapped right-to-left text the caret at the start of the
+/// text, on the right edge, can likewise stay clipped. A hanging right-to-left
+/// space can still be revealed where a tab is not, because its empty glyph
+/// raster extends the measured size, as [`TextLayout`](crate::TextLayout)
+/// describes. Only the view is affected; the selection keeps its offsets.
 ///
 /// Text taller than the field shows the same vertical scrollbar as scroll areas,
 /// views and windows: a track strip along the text's right edge with a thumb in
@@ -247,7 +269,8 @@ description_debug!(TextField);
 /// clicking the track centers the thumb there and starts a drag. Release ends
 /// dragging, and Escape or context loss cancels it at the current offset without
 /// restoring the previous one. Scrolling never moves the caret or selection, and
-/// the next caret movement, edit or resize reveals the caret again. Scrolling
+/// the next caret movement, edit or resize reveals the caret again, within the
+/// hanging-whitespace limit above. Scrolling
 /// repaints without remeasuring, and the pointer keeps the ordinary arrow over the
 /// bar. A read-only field keeps its bar; a disabled one shows none, because it
 /// does not scroll at all. Single-line fields scroll horizontally without a
@@ -281,7 +304,7 @@ description_debug!(TextField);
 /// a protected editor deliberately omits its value. Static label text instead
 /// uses a semantic name and leaves the value absent.
 ///
-////// [`Driver::exposed_part`](crate::testing::Driver::exposed_part) finds this
+/// [`Driver::exposed_part`](crate::testing::Driver::exposed_part) finds this
 /// editor's `clipboard` menu scope; query that scope's `items` for its command
 /// rows. The declaration exists while closed. A context-menu request opens it;
 /// finding or revealing the hidden rows does not. The menu's item rectangles

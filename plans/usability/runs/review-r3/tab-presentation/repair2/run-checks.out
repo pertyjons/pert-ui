@@ -1,0 +1,19 @@
+01-fmt: exit 0 (3 s): cargo fmt --all --check
+02-clippy-runtime: exit 0 (3 s): cargo clippy --locked -p pert-ui-runtime --all-targets -- -D warnings
+03-clippy-facade-default: exit 0 (4 s): cargo clippy --locked -p pert-ui --all-targets -- -D warnings
+04-clippy-facade-cpu: exit 0 (2 s): cargo clippy --locked -p pert-ui --all-targets --features cpu -- -D warnings
+05-test-runtime-package: exit 0 (17 s): cargo test --locked -p pert-ui-runtime
+06-test-runtime-tabs-nocapture: exit 0 (5 s): cargo test --locked -p pert-ui-runtime --lib text::tabs -- --nocapture --test-threads=1
+07-test-runtime-tabs-release-nocapture: exit 0 (18 s): cargo test --locked --release -p pert-ui-runtime --lib text::tabs -- --nocapture --test-threads=1
+08-test-runtime-text-and-selection: exit 0 (2 s): cargo test --locked -p pert-ui-runtime --lib text
+09-test-facade-editing-default: exit 0 (4 s): cargo test --locked -p pert-ui --test editing
+10-test-facade-editing-cpu-tabs-nocapture: exit 0 (4 s): cargo test --locked -p pert-ui --features cpu --test editing tab_whitespace -- --nocapture --test-threads=1
+11-test-facade-reused-paste-evidence: exit 0 (0 s): cargo test --locked -p pert-ui --test editing -- --exact text_fields::pasted_control_characters_become_line_breaks_or_are_dropped text_fields::text_binding_multiline_defaults_enter_and_undo
+12-test-facade-package-cpu: exit 0 (13 s): cargo test --locked -p pert-ui --features cpu
+13-rustdoc-runtime: exit 0 (2 s): cargo doc --locked -p pert-ui-runtime --no-deps
+14-rustdoc-facade: exit 0 (4 s): cargo doc --locked -p pert-ui --no-deps
+15-git-diff-check: exit 0 (0 s): git diff --check
+16-git-status: exit 0 (0 s): git status --short --untracked-files=all
+17-owned-file-hashes: exit 0 (0 s): sha256sum crates/pert-ui-runtime/src/text.rs crates/pert-ui-runtime/src/text/tabs.rs crates/pert-ui-runtime/src/text_fields.rs crates/pert-ui-runtime/src/text_selection.rs crates/pert-ui-runtime/tests/assets/tab-atoms/* crates/pert-ui/tests/editing/tab_whitespace.rs crates/pert-ui/tests/editing/main.rs
+18-text-selection-rustdoc-only: exit 0 (0 s): git diff -U0 crates/pert-ui-runtime/src/text_selection.rs | grep -E '^[+-]' | grep -vE '^(\+\+\+|---) ' | grep -vE '^[+-] *///' ; test $? -eq 1
+exit 0

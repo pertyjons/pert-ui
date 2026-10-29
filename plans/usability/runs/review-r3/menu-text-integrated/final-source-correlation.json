@@ -1,0 +1,11 @@
+{
+  "checked_at_utc": "2026-10-29T10:59:26.165811+00:00",
+  "changes_after_complete_unchanged_source_gate": [
+    "TODO.md",
+    "crates/pert-ui/src/guide/controls.md"
+  ],
+  "all_runtime_implementation_test_asset_manifest_and_api_bytes_match": true,
+  "todo_exact_change": "Two verified whitespace follow-up entries added as independent reviewer requested.",
+  "guide_exact_change": "Early fallback sentence now names the already-documented tab exception; no code/example change.",
+  "supplemental_checks": "final-guide-doctest.log and final-guide-rustdoc.log; commands retrospectively described in README."
+}

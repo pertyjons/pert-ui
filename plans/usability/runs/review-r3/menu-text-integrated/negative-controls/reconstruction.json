@@ -1,0 +1,5 @@
+{
+  "note": "Exact mutation diffs reconstructed after execution from archived runner replacements and current source matching recorded original/restored hashes. Gallery hash below is retrospective, not a contemporaneous control-time record.",
+  "gallery_sha256": "b607b9320a4ab8d6ed42e91506f93487aecaff50a07f845c7230881ad31adb9b",
+  "positive_gate_manifest": "../../gates/final-0.3.92/source-manifest.json"
+}

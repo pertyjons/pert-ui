@@ -1,0 +1,10 @@
+--- /home/per/pert-ui-usability/r3-menu-implementation2-evidence/negative-controls/clear_on_modified_navigation-round2/backup/select.rs	2026-10-29 11:10:05.645610612 +0100
++++ crates/pert-ui-runtime/src/select.rs	2026-10-29 11:10:05.663610704 +0100
+@@ -665,6 +665,7 @@
+                     | KeyCode::PageDown
+             )
+         {
++            self.pointer_owns = false;
+             return Ok(InputOutcome::Ignored);
+         }
+         // A key that moves the highlight or acts on it takes the highlight

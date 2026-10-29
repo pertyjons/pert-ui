@@ -1,0 +1,317 @@
+--- /home/per/pert-ui-usability/r3-text-implementation3-evidence/pre-edit/tabs.rs.orig	2026-10-29 10:48:59.740821327 +0100
++++ crates/pert-ui-runtime/src/text/tabs.rs	2026-10-29 11:13:59.694548521 +0100
+@@ -294,8 +294,9 @@
+     /// bounds calculation places it (an empty raster, as a space has, counts
+     /// at its pen position). Icons are aligned vertically after shaping, so
+     /// their glyphs give only horizontal bounds; the second value is whether
+-    /// every drawn glyph also gave vertical bounds.
+-    fn expected_canvas(reference: &TextLayout, text: &str) -> ([i64; 4], bool) {
++    /// every drawn glyph also gave vertical bounds. With `tab_ink`, the
++    /// glyphs of tab-only atoms count too: the reference's own canvas.
++    fn expected_canvas(reference: &TextLayout, text: &str, tab_ink: bool) -> ([i64; 4], bool) {
+         let shaped = &reference.shaped;
+         let icons: Vec<usize> = reference
+             .signature
+@@ -318,9 +319,10 @@
+             for run in line.runs() {
+                 let mut atom: Vec<parley::Cluster<'_, TextBrush>> = Vec::new();
+                 let mut close = |atom: &mut Vec<parley::Cluster<'_, TextBrush>>| {
+-                    if atom
+-                        .iter()
+-                        .all(|cluster| text.get(cluster.text_range()) == Some("\t"))
++                    if !tab_ink
++                        && atom
++                            .iter()
++                            .all(|cluster| text.get(cluster.text_range()) == Some("\t"))
+                     {
+                         for cluster in atom.iter() {
+                             let mut x = cluster.visual_offset().unwrap();
+@@ -391,7 +393,7 @@
+     /// reference's vertical extent, and returns whether the old tab ink alone
+     /// had defined a canvas edge.
+     fn assert_policy_canvas(actual: &TextLayout, expected: &TextLayout, text: &str) -> bool {
+-        let (policy, vertical) = expected_canvas(expected, text);
++        let (policy, vertical) = expected_canvas(expected, text, false);
+         let (a, e) = (canvas(actual), canvas(expected));
+         assert_eq!(
+             [a[0], a[2]],
+@@ -616,11 +618,17 @@
+         assert_final_purity(actual, text);
+     }
+ 
+-    /// A selection's caret offset and affinity. `TextSelection` keeps its
+-    /// Parley cursor private, and its debug form names both.
++    /// A selection's caret offset and affinity.
+     fn focus(selection: TextSelection) -> (usize, parley::Affinity) {
++        cursor(selection, "focus")
++    }
++    /// The offset and affinity of a selection's `anchor` or `focus` end.
++    /// `TextSelection` keeps its Parley cursors private, and its debug form
++    /// names both.
++    fn cursor(selection: TextSelection, end: &str) -> (usize, parley::Affinity) {
+         let debug = format!("{selection:?}");
+-        let rest = &debug[debug.find("focus: Cursor { index: ").unwrap() + 23..];
++        let field = format!("{end}: Cursor {{ index: ");
++        let rest = &debug[debug.find(&field).unwrap() + field.len()..];
+         let index = rest[..rest.find(',').unwrap()].parse().unwrap();
+         let affinity = if rest.starts_with(&format!("{index}, affinity: Upstream")) {
+             parley::Affinity::Upstream
+@@ -630,31 +638,40 @@
+         };
+         (index, affinity)
+     }
+-    /// The caret a pointer at Parley `x` on `line` gets, from that line's own
+-    /// cluster offsets and directions: the cluster under `x`, else the nearer
+-    /// end cluster, and Parley's documented side rule. A left-side hit before
+-    /// a left-to-right cluster, or a right-side hit after a right-to-left
+-    /// one, is downstream at the cluster's start; the other sides are
+-    /// upstream at its end.
+-    fn expected_hit(layout: &TextLayout, line: usize, x: f32) -> (usize, parley::Affinity) {
++    /// The cluster a pointer at Parley `x` on `line` lands on, from that
++    /// line's own visual cluster offsets: the cluster under `x`, else the
++    /// nearer end cluster; and whether `x` is on its left half.
++    fn cluster_at(
++        layout: &TextLayout,
++        line: usize,
++        x: f32,
++    ) -> (parley::Cluster<'_, TextBrush>, bool) {
+         let line = layout.shaped.get(line).unwrap();
+         let clusters: Vec<_> = line
+             .runs()
+             .flat_map(|run| run.visual_clusters().collect::<Vec<_>>())
+             .map(|cluster| (cluster.visual_offset().unwrap(), cluster))
+             .collect();
+-        let (first, last) = (&clusters[0], &clusters[clusters.len() - 1]);
+-        let (cluster, left) = if x < first.0 {
+-            (&first.1, true)
++        let (first, last) = (clusters[0], clusters[clusters.len() - 1]);
++        if x < first.0 {
++            (first.1, true)
+         } else if x >= last.0 + last.1.advance() {
+-            (&last.1, false)
++            (last.1, false)
+         } else {
+             let (start, cluster) = clusters
+-                .iter()
++                .into_iter()
+                 .find(|(start, cluster)| x >= *start && x < start + cluster.advance())
+                 .unwrap();
+             (cluster, x <= start + cluster.advance() * 0.5)
+-        };
++        }
++    }
++    /// The caret a pointer at Parley `x` on `line` gets: the cluster from
++    /// `cluster_at` and Parley's documented side rule. A left-side hit
++    /// before a left-to-right cluster, or a right-side hit after a
++    /// right-to-left one, is downstream at the cluster's start; the other
++    /// sides are upstream at its end.
++    fn expected_hit(layout: &TextLayout, line: usize, x: f32) -> (usize, parley::Affinity) {
++        let (cluster, left) = cluster_at(layout, line, x);
+         let range = cluster.text_range();
+         let explicit = cluster.is_line_break() == Some(parley::BreakReason::Explicit);
+         if cluster.is_rtl() != left || (!cluster.is_rtl() && explicit) {
+@@ -663,6 +680,66 @@
+             (range.end, parley::Affinity::Upstream)
+         }
+     }
++    /// A word selection's anchor and focus offsets and affinities.
++    type Word = ((usize, parley::Affinity), (usize, parley::Affinity));
++    /// Word starts in `text` by the word-boundary rules its test texts
++    /// need (UAX #29): letters join, runs of spaces join, and any other
++    /// character, a tab or a line break, is a word of its own.
++    fn word_starts(text: &str) -> Vec<usize> {
++        let class = |c: char| u8::from(c.is_alphanumeric()) + 2 * u8::from(c == ' ');
++        let mut starts = Vec::new();
++        let mut previous = None;
++        for (index, c) in text.char_indices() {
++            let current = class(c);
++            if previous != Some(current) || current == 0 {
++                starts.push(index);
++            }
++            previous = Some(current);
++        }
++        starts
++    }
++    /// The word a pointer at Parley `x` on `line` selects, as its anchor
++    /// and focus: the word of `text` around the start of the cluster from
++    /// `cluster_at`. In text of one direction both ends are upstream,
++    /// entered from inside the word, except a downstream start at offset 0;
++    /// Parley gives a focus before a word of the other direction downstream
++    /// affinity, so mixed-direction text is refused here.
++    fn expected_word(layout: &TextLayout, text: &str, line: usize, x: f32) -> Word {
++        let directions: std::collections::BTreeSet<bool> = layout
++            .shaped
++            .lines()
++            .flat_map(|line| line.runs().map(|run| run.is_rtl()).collect::<Vec<_>>())
++            .collect();
++        assert_eq!(directions.len(), 1, "{text:?}");
++        let at = cluster_at(layout, line, x).0.text_range().start;
++        let starts = word_starts(text);
++        let start = starts.iter().rev().find(|s| **s <= at).copied().unwrap();
++        let end = starts
++            .iter()
++            .find(|s| **s > at)
++            .copied()
++            .unwrap_or(text.len());
++        let affinity = |index: usize| {
++            if index == 0 {
++                parley::Affinity::Downstream
++            } else {
++                parley::Affinity::Upstream
++            }
++        };
++        ((start, affinity(start)), (end, parley::Affinity::Upstream))
++    }
++    /// Asserts a word selection's byte range and both ends.
++    fn assert_word(word: TextSelection, expected: Word, context: &str) {
++        assert_eq!(
++            (
++                word.byte_range(),
++                cursor(word, "anchor"),
++                cursor(word, "focus")
++            ),
++            (expected.0.0..expected.1.0, expected.0, expected.1),
++            "{context}"
++        );
++    }
+     /// Whether a tab cluster lies in a line's hanging whitespace, from
+     /// Parley's line metrics: past the end edge, on the right in a
+     /// left-to-right paragraph and on the left in a right-to-left one.
+@@ -888,6 +965,8 @@
+                 }
+             };
+             let (mut ltr_shrink, mut rtl_shift) = (false, false);
++            let mut categories = std::collections::BTreeSet::new();
++            let (mut differing, mut literal) = (0, false);
+             for case in &cases {
+                 let (name, text, _, width, rtl, hangs, overhang) = *case;
+                 let actual = prepare(&mut fixed, &font, case);
+@@ -1045,16 +1124,24 @@
+                     );
+                 }
+ 
+-                // Hit testing at fixed public points, in four categories.
+-                // The expectation comes from the repaired layout's clusters
+-                // and the independently expected origin; the reference must
+-                // agree at the same point moved by the origin change.
+-                let (policy, _) = expected_canvas(&expected, text);
+-                let origin = [
+-                    -policy[0] as f32 / actual.scale,
+-                    -policy[1] as f32 / actual.scale,
+-                ];
++                // Hit testing and word selection at fixed public points, in
++                // four categories. Each layout's expectation comes from its
++                // own clusters and its independently expected origin: the
++                // repaired one from the policy canvas, the reference's from
++                // the same calculation with its tab ink. At the identical
++                // point the two may differ by the origin change; the
++                // reference must agree with the repaired expectation at the
++                // point moved by that change.
+                 let s = actual.scale;
++                let (policy, _) = expected_canvas(&expected, text, false);
++                let origin = [-policy[0] as f32 / s, -policy[1] as f32 / s];
++                let (with_tab_ink, _) = expected_canvas(&expected, text, true);
++                assert_eq!(
++                    canvas(&expected),
++                    with_tab_ink,
++                    "{context}: reference canvas"
++                );
++                let reference_origin = [-with_tab_ink[0] as f32 / s, -with_tab_ink[1] as f32 / s];
+                 let public = |x: f32, y: f32| {
+                     crate::Point::new(x / s + origin[0], y / s + origin[1]).unwrap()
+                 };
+@@ -1141,33 +1228,77 @@
+                     let x = cluster.visual_offset().unwrap() + cluster.advance() * 0.3;
+                     points.push((name.into(), index, public(x, y)));
+                 }
++                let collapse = crate::SelectionExtension::Collapse;
+                 for (name, line, p) in &points {
+-                    let expected_caret = expected_hit(&actual, *line, (p.x() - origin[0]) * s);
+-                    let collapse = crate::SelectionExtension::Collapse;
++                    let x = (p.x() - origin[0]) * s;
++                    let (caret, word) = (
++                        expected_hit(&actual, *line, x),
++                        expected_word(&actual, text, *line, x),
++                    );
++                    let x = (p.x() - reference_origin[0]) * s;
++                    let (same_caret, same_word) = (
++                        expected_hit(&expected, *line, x),
++                        expected_word(&expected, text, *line, x),
++                    );
++                    // The reference at the identical point.
++                    let at = format!("{context}: {name}, reference at the same point {p:?}");
++                    let hit = TextSelection::default().at_point(&expected, *p, collapse);
++                    assert_eq!(focus(hit), same_caret, "{at}");
++                    assert_word(TextSelection::word_at_point(&expected, *p), same_word, &at);
++                    // The repaired layout.
++                    let at = format!("{context}: {name} at {p:?}");
+                     let hit = TextSelection::default().at_point(&actual, *p, collapse);
+-                    assert_eq!(focus(hit), expected_caret, "{context}: {name} at {p:?}");
++                    assert_eq!(focus(hit), caret, "{at}");
++                    assert_word(TextSelection::word_at_point(&actual, *p), word, &at);
++                    // The reference at the point moved by the origin change.
+                     let moved = crate::Point::new(p.x() - new[0] + old[0], p.y() - new[1] + old[1])
+                         .unwrap();
+-                    let before = TextSelection::default().at_point(&expected, moved, collapse);
+-                    assert_eq!(
+-                        focus(before),
+-                        expected_caret,
+-                        "{context}: {name}, reference at {moved:?}"
+-                    );
+-                    let word = TextSelection::word_at_point(&actual, *p).byte_range();
+-                    assert_eq!(
+-                        word,
+-                        TextSelection::word_at_point(&expected, moved).byte_range(),
+-                        "{context}: {name}"
+-                    );
+-                    let unmoved = focus(TextSelection::default().at_point(&expected, *p, collapse));
++                    let at = format!("{context}: {name}, reference at {moved:?}");
++                    let hit = TextSelection::default().at_point(&expected, moved, collapse);
++                    assert_eq!(focus(hit), caret, "{at}");
++                    assert_word(TextSelection::word_at_point(&expected, moved), word, &at);
++
++                    categories.insert(name[..1].to_owned());
++                    if (same_caret, same_word) != (caret, word) {
++                        differing += 1;
++                    }
++                    // The literal values of the review's discriminating point,
++                    // at both scales.
++                    if case.0 == "RTL wrapped, hanging tab on a middle line"
++                        && name.as_str() == "a: glyph 6..8 on line 0"
++                    {
++                        use parley::Affinity::{Downstream, Upstream};
++                        assert!((p.x() - 6.5).abs() < 1e-3 && p.y() == 10.0, "{p:?}");
++                        assert_eq!(caret, (8, Upstream));
++                        assert_eq!(same_caret, (8, Downstream));
++                        assert_eq!(word, ((0, Downstream), (8, Upstream)));
++                        assert_eq!(same_word, ((8, Upstream), (9, Upstream)));
++                        literal = true;
++                    }
+                     println!(
+-                        "  hit {name} at {:?}: {expected_caret:?}, word {word:?}; reference at the same point {unmoved:?}",
++                        "  hit {name} at {:?}: {caret:?}, word {word:?}; \
++                         reference at the same point {same_caret:?}, word {same_word:?}; \
++                         reference at {:?} agrees",
+                         [p.x(), p.y()],
++                        [moved.x(), moved.y()],
+                     );
+                 }
+             }
+             assert!(ltr_shrink && rtl_shift, "scale {scale} keeps both deltas");
++            assert_eq!(
++                categories,
++                ["a", "b", "c", "d"].map(String::from).into(),
++                "scale {scale} covers every point category"
++            );
++            assert!(
++                differing > 0,
++                "scale {scale}: the origin change moves some hits"
++            );
++            assert!(literal, "scale {scale}: the literal point was tested");
++            println!(
++                "scale {scale}: categories {categories:?}; {differing} points hit differently \
++                 in the reference at the same point"
++            );
+         }
+     }
+ 

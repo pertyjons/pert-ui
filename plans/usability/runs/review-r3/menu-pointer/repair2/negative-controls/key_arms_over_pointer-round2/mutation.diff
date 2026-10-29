@@ -1,0 +1,11 @@
+--- /home/per/pert-ui-usability/r3-menu-implementation2-evidence/negative-controls/key_arms_over_pointer-round2/backup/activation.rs	2026-10-29 11:09:39.815478631 +0100
++++ crates/pert-ui-runtime/src/activation.rs	2026-10-29 11:09:39.829478702 +0100
+@@ -84,7 +84,7 @@
+             return false;
+         }
+         match event.transition {
+-            KeyTransition::Pressed if self.key.is_none() && !self.pointer => {
++            KeyTransition::Pressed if self.key.is_none() => {
+                 self.key = Some(event.code)
+             }
+             KeyTransition::Released if self.key == Some(event.code) => {

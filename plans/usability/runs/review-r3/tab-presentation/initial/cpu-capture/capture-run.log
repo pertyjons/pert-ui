@@ -1,0 +1,19 @@
+$ cd /home/per/pert-ui-usability/r3-text-implementation-evidence/cpu-capture
+$ CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-text-implementation-target cargo run --offline -q -- /home/per/pert-ui-usability/r3-text-implementation-evidence/cpu-capture/captures
+textarea-tab == textarea-space (pixel-identical): true
+textarea-tab == textarea-private-use: false
+label-body-tab == label-body-private-use: false
+label-body-private-use == label-body-vertical-tab: true
+textarea-tab.png 480x180
+textarea-space.png 480x180
+textarea-private-use.png 480x180
+label-body-tab.png 480x180
+label-body-private-use.png 480x180
+label-body-vertical-tab.png 480x180
+exit status: 0
+5b1e7347efbe6f47ea6081f158d5e46590240a85e9646b4a3b6458a323fc456d  /home/per/pert-ui-usability/r3-text-implementation-evidence/cpu-capture/captures/label-body-private-use.png
+7ba6a138ce731848408e845ae7614cb0de676493e847a13383789fc0b8b1f841  /home/per/pert-ui-usability/r3-text-implementation-evidence/cpu-capture/captures/label-body-tab.png
+5b1e7347efbe6f47ea6081f158d5e46590240a85e9646b4a3b6458a323fc456d  /home/per/pert-ui-usability/r3-text-implementation-evidence/cpu-capture/captures/label-body-vertical-tab.png
+c305c295512c4ff45617f0ba8a210c9b1b5c819384dfcdfdb9587749a918c05b  /home/per/pert-ui-usability/r3-text-implementation-evidence/cpu-capture/captures/textarea-private-use.png
+01c4ef9c8bf7df3f335e57daa530cddec5399d3e93bde316ab2ca351f8d06532  /home/per/pert-ui-usability/r3-text-implementation-evidence/cpu-capture/captures/textarea-space.png
+01c4ef9c8bf7df3f335e57daa530cddec5399d3e93bde316ab2ca351f8d06532  /home/per/pert-ui-usability/r3-text-implementation-evidence/cpu-capture/captures/textarea-tab.png

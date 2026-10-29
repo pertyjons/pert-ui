@@ -1,0 +1,38 @@
+$ cd /home/per/pert-ui-usability/r3-text-worktree
+$ CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-text-implementation-target cargo test --locked --release -p pert-ui-runtime --lib text::tabs -- --nocapture
+exit status: 0
+elapsed: 0.3 s
+
+--- stdout ---
+
+running 9 tests
+test text::tabs::tests::consecutive_tabs_merge_and_retained_tabs_split_them ... ok
+test text::tabs::tests::tab_only_text_has_no_coverage_but_its_advance_and_caret_stops ... ok
+test text::tabs::tests::other_unsupported_characters_keep_their_fallback_ink ... ok
+test text::tabs::tests::a_registered_font_ligating_a_tab_keeps_that_glyph_and_hides_pure_tab_atoms ... ok
+test text::tabs::tests::a_tab_and_a_missing_character_never_share_phase_coverage ... ok
+test text::tabs::tests::cached_measured_and_ellipsized_tabs_stay_hidden ... ok
+test text::tabs::tests::rich_spans_gaps_and_icons_keep_reference_color_size_and_alignment ... ok
+worst admitted plain: 16384 bytes, 16385 styles (bound 33796), 2 reference styles; prepare 26.9398ms, pre-fix reference 23.996819ms (one observation, not a bound)
+worst admitted spans: 16384 bytes, 16385 styles (bound 33796), 1025 reference styles; prepare 37.644766ms, pre-fix reference 23.234728ms (one observation, not a bound)
+test text::tabs::tests::the_worst_admitted_alternating_tabs_stay_within_the_style_bound ... ok
+test text::tabs::tests::tabs_keep_the_reference_geometry_and_unicode_analysis_without_their_ink ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 167 filtered out; finished in 0.22s
+
+
+--- stderr ---
+warning: method `is_empty` is never used
+  --> crates/pert-ui-runtime/src/runtime/measurements.rs:55:19
+   |
+21 | impl Measurements {
+   | ----------------- method in this implementation
+...
+55 |     pub(crate) fn is_empty(&self) -> bool {
+   |                   ^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `pert-ui-runtime` (lib test) generated 1 warning
+    Finished `release` profile [optimized] target(s) in 0.04s
+     Running unittests src/lib.rs (/home/per/pert-ui-usability/r3-text-implementation-target/release/deps/pert_ui_runtime-7750fa3f24f72389)

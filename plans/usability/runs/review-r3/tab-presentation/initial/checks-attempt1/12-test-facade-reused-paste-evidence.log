@@ -1,0 +1,13 @@
+$ cd /home/per/pert-ui-usability/r3-text-worktree
+$ CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-text-implementation-target cargo test --locked -p pert-ui --test editing text_fields::pasted_control_characters_become_line_breaks_or_are_dropped text_fields::text_binding_multiline_defaults_enter_and_undo -- --exact
+exit status: 1
+elapsed: 0.0 s
+
+--- stdout ---
+
+--- stderr ---
+error: unexpected argument 'text_fields::text_binding_multiline_defaults_enter_and_undo' found
+
+Usage: cargo test [OPTIONS] [TESTNAME] [-- [ARGS]...]
+
+For more information, try '--help'.

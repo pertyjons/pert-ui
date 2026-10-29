@@ -1,0 +1,10 @@
+--- /home/per/pert-ui-usability/r3-menu-implementation2-evidence/negative-controls/clear_on_sideways_release/backup/select.rs	2026-10-29 11:07:36.823850194 +0100
++++ crates/pert-ui-runtime/src/select.rs	2026-10-29 11:07:36.843421962 +0100
+@@ -671,6 +671,7 @@
+         // from the pointer first, even when its action then fails: the row a
+         // stationary pointer rests on must not replace the keyboard's choice.
+         if control == KeyCode::ArrowRight && self.on_right.is_some() {
++            self.pointer_owns = false;
+             if e.transition == KeyTransition::Pressed {
+                 self.pointer_owns = false;
+                 if let (Some(action), Some(active)) = (&mut self.on_right, &self.active) {

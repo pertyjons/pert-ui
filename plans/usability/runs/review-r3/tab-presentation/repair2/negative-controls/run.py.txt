@@ -1,0 +1,110 @@
+"""Temporarily mutate the tab implementation, run the runtime tab tests, restore.
+
+N1-N6 repeat the first implementation's controls (their earlier records stay
+untouched in ../../r3-text-implementation-evidence/negative-controls) on the
+final source. N7-N9 are the revision-4 review's additions: an icon nearest-run
+search that skips hidden tabs, a tab override that also sets the tab's font
+family or size, and ghost geometry (hidden tabs still growing the canvas).
+Each control must make at least one named test fail. Sources are restored
+from in-memory originals and their hashes checked after every control.
+"""
+import hashlib, pathlib, subprocess, os
+root = pathlib.Path('/home/per/pert-ui-usability/r3-text-worktree')
+out = pathlib.Path(__file__).parent
+text = root / 'crates/pert-ui-runtime/src/text.rs'
+tabs = root / 'crates/pert-ui-runtime/src/text/tabs.rs'
+originals = {p: p.read_bytes() for p in (text, tabs)}
+digest = {p: hashlib.sha256(b).hexdigest() for p, b in originals.items()}
+skip_hidden = '''                // A literal tab has no coverage: skip it before building a scaler.
+                let TextBrush::Color(brush) = glyph_run.style().brush else {
+                    continue;
+                };
+                let alignment = alignments.get(&brush).copied();'''
+controls = {
+    'N1-no-hiding': [(text, '''        let hidden = tabs::hidden_ranges(&resolved.text, &[]);
+        #[cfg(test)]''', '''        let hidden: Vec<std::ops::Range<usize>> = Vec::new();
+        #[cfg(test)]''')],
+    'N2-no-mixed-fallback': [(text, '''        let mixed = tabs::mixed_tabs(&layout, &resolved.text);''', '''        let mixed: Vec<usize> = { let _ = tabs::mixed_tabs; Vec::new() };''')],
+    'N3-icon-ignores-hidden-tab-metrics': [(text, '''        TextBrush::HiddenTab => false,
+    };''', '''        TextBrush::HiddenTab => true,
+    };''')],
+    'N4-skip-glyph-zero-instead-of-hidden-runs': [
+        (text, skip_hidden, '''                let brush = match glyph_run.style().brush { TextBrush::Color(b) => b, TextBrush::HiddenTab => 0 };
+                let alignment = alignments.get(&brush).copied();'''),
+        (text, '''                    let id = u16::try_from(glyph.id).map_err(|_| TextError::Font)?;''', '''                    let id = u16::try_from(glyph.id).map_err(|_| TextError::Font)?;
+                    if id == 0 { continue; }''')],
+    'N5-hidden-runs-as-color-0-in-signature': [(text, '''                        let TextBrush::Color(brush) = glyph_run.style().brush else {
+                            return None;
+                        };''', '''                        let brush = match glyph_run.style().brush { TextBrush::Color(b) => b, TextBrush::HiddenTab => 0 };''')],
+    'N6-retained-tab-does-not-split-merge': [(tabs, '''        if retained.next_if_eq(&index).is_some() {
+            continue;
+        }''', '''        let _ = retained.next_if_eq(&index);''')],
+    # Same mutation as N3, recorded against the revision-4 mixed-font test.
+    'N7-icon-nearest-run-search-excludes-hidden-tabs': [(text, '''        TextBrush::HiddenTab => false,
+    };''', '''        TextBrush::HiddenTab => true,
+    };''')],
+    'N8a-tab-override-also-sets-first-span-font-family': [(text, '''        for range in hidden {
+            builder.push(
+                parley::StyleProperty::Brush(TextBrush::HiddenTab),
+                range.clone(),
+            );''', '''        for range in hidden {
+            if let Some(family) = families.first() {
+                builder.push(parley::FontFamily::from(family.as_str()), range.clone());
+            }
+            builder.push(
+                parley::StyleProperty::Brush(TextBrush::HiddenTab),
+                range.clone(),
+            );''')],
+    'N8b-tab-override-also-sets-default-font-size': [(text, '''        for range in hidden {
+            builder.push(
+                parley::StyleProperty::Brush(TextBrush::HiddenTab),
+                range.clone(),
+            );''', '''        for range in hidden {
+            builder.push(
+                parley::StyleProperty::FontSize(resolved.default_size),
+                range.clone(),
+            );
+            builder.push(
+                parley::StyleProperty::Brush(TextBrush::HiddenTab),
+                range.clone(),
+            );''')],
+    'N9-ghost-geometry-hidden-tabs-keep-raster-bounds': [
+        (text, skip_hidden, '''                let hidden = glyph_run.style().brush == TextBrush::HiddenTab;
+                let brush = match glyph_run.style().brush { TextBrush::Color(b) => b, TextBrush::HiddenTab => 0 };
+                let alignment = alignments.get(&brush).copied();'''),
+        (text, '''                    glyphs.push(glyph);
+                }''', '''                    if hidden { continue; }
+                    glyphs.push(glyph);
+                }''')],
+}
+env = dict(os.environ, CARGO_TARGET_DIR='/home/per/pert-ui-usability/r3-text-implementation-target')
+command = ['cargo', 'test', '--locked', '-p', 'pert-ui-runtime', '--lib', 'text::tabs']
+summary = []
+try:
+    for name, edits in controls.items():
+        sources = {p: originals[p].decode() for p in originals}
+        for path, old, new in edits:
+            assert sources[path].count(old) == 1, (name, old)
+            sources[path] = sources[path].replace(old, new)
+        for path in originals:
+            path.write_text(sources[path])
+        result = subprocess.run(command, cwd=root, env=env, capture_output=True, text=True)
+        diff = subprocess.run(['git', 'diff', '--', str(text)], cwd=root, capture_output=True, text=True).stdout
+        (out / f'{name}.log').write_text(
+            f'$ cd {root}\n$ CARGO_TARGET_DIR={env["CARGO_TARGET_DIR"]} {" ".join(command)}  # with mutation {name}\n'
+            f'exit status: {result.returncode}\n\n--- mutation edits ---\n'
+            + ''.join(f'in {p.name}:\n- {o!r}\n+ {n!r}\n' for p, o, n in edits)
+            + f'\n--- stdout ---\n{result.stdout}\n--- stderr ---\n{result.stderr}')
+        failed = [l.split()[1] for l in result.stdout.splitlines() if l.startswith('test ') and l.endswith('FAILED')]
+        summary.append(f'{name}: exit {result.returncode}; failed tests: {failed or "NONE (control not detected)"}')
+        print(summary[-1], flush=True)
+        for p, b in originals.items():
+            p.write_bytes(b)
+finally:
+    for p, b in originals.items():
+        p.write_bytes(b)
+    for p in originals:
+        assert hashlib.sha256(p.read_bytes()).hexdigest() == digest[p], p
+summary.append('restored and verified: ' + ', '.join(f'{p.name} {digest[p]}' for p in originals))
+(out / 'summary.txt').write_text('\n'.join(summary) + '\n')
+print(summary[-1])

@@ -1,0 +1,952 @@
+//! Literal tabs are non-printing: each keeps its shaped advance and all Unicode
+//! analysis of the original text, but its coverage is skipped.
+//!
+//! Shaping always sees the unchanged text. Only the private brush of each exact
+//! U+0009 byte range is replaced with [`TextBrush::HiddenTab`], after the
+//! ordinary span properties, so fonts, sizes, line heights, bidi, grapheme and
+//! word boundaries and line breaking are those of the text itself.
+//!
+//! A registered font may ligate a tab with printable text. Such a shaped atom
+//! cannot be split faithfully, and Parley styles a glyph run by its atom's
+//! first character, so hiding the tab would erase the neighbor. [`mixed_tabs`]
+//! finds those tabs in one walk of the shaped atoms; the layout is then built
+//! once more without their overrides and keeps the atom's original ink.
+
+use std::ops::Range;
+
+/// The brush of every Parley style: an index into a prepared text's colors, or
+/// a literal tab whose glyphs are skipped before rasterization.
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub(crate) enum TextBrush {
+    /// The resolved color at this index, which may also mark an inline icon.
+    Color(usize),
+    /// A literal tab outside any mixed shaped atom: shaped and measured, with
+    /// no coverage.
+    HiddenTab,
+}
+impl Default for TextBrush {
+    /// The inherited foreground, which every resolved text has at index 0.
+    fn default() -> Self {
+        Self::Color(0)
+    }
+}
+
+/// A conservative bound on the Parley style table of one admitted text.
+///
+/// Style runs begin and end only at resolved-span boundaries, at most one per
+/// rich segment and the text's ends, and at the two ends of each tab override,
+/// with at most one override per admitted byte. The root style and the
+/// remaining constant are slack. Parley panics beyond `u16::MAX` styles, and
+/// the admission limits keep this bound below that.
+const MAX_STYLES: usize =
+    2 * crate::TextEditError::MAX_TEXT_BYTES + super::RichText::MAX_SEGMENTS + 4;
+const _: () = assert!(MAX_STYLES <= u16::MAX as usize);
+
+/// The ascending byte ranges of `text`'s tabs to hide, consecutive tabs merged
+/// into one range, except the tab bytes in `retained` (ascending), which split
+/// a merged range. Text without tabs allocates nothing.
+pub(super) fn hidden_ranges(text: &str, retained: &[usize]) -> Vec<Range<usize>> {
+    let mut ranges: Vec<Range<usize>> = Vec::new();
+    let mut retained = retained.iter().copied().peekable();
+    for (index, _) in text.match_indices('\t') {
+        while retained.next_if(|kept| *kept < index).is_some() {}
+        if retained.next_if_eq(&index).is_some() {
+            continue;
+        }
+        match ranges.last_mut() {
+            Some(last) if last.end == index => last.end = index + 1,
+            _ => ranges.push(index..index + 1),
+        }
+    }
+    ranges
+}
+
+/// The ascending tab byte offsets that share a shaped atom with anything but
+/// tabs, found in one logical walk of every line's runs and clusters.
+///
+/// Atoms never cross a run or line, even in an emergency break, and a cluster
+/// that is not a ligature continuation starts one. A tab is a grapheme of its
+/// own, so a tab cluster's text is exactly one tab.
+pub(super) fn mixed_tabs(layout: &parley::Layout<TextBrush>, text: &str) -> Vec<usize> {
+    let mut mixed = Vec::new();
+    let mut tabs = Vec::new();
+    let mut other = false;
+    let mut close = |tabs: &mut Vec<usize>, other: &mut bool| {
+        if *other {
+            mixed.append(tabs);
+        }
+        tabs.clear();
+        *other = false;
+    };
+    for line in layout.lines() {
+        for run in line.runs() {
+            for cluster in run.clusters() {
+                if !cluster.is_ligature_continuation() {
+                    close(&mut tabs, &mut other);
+                }
+                let range = cluster.text_range();
+                if text.get(range.clone()) == Some("\t") {
+                    tabs.push(range.start);
+                } else {
+                    other = true;
+                }
+            }
+            close(&mut tabs, &mut other);
+        }
+    }
+    // Runs are visited in visual order, which bidi text reverses.
+    mixed.sort_unstable();
+    mixed
+}
+
+#[cfg(test)]
+mod tests {
+    use super::super::{
+        FontData, FontId, Icon, MaskPart, RichText, TextColor, TextLayout, TextOverflow,
+        TextRequest, TextService, TextSpan, TextStyle,
+    };
+    use super::*;
+    use crate::{Color, Length, TextMovement, TextSelection};
+    use std::{
+        cell::Cell,
+        collections::{BTreeMap, HashMap},
+        sync::Arc,
+    };
+
+    type Coverage = HashMap<(i64, i64), u8>;
+
+    /// The synthetic font: U+0009 has a visible glyph and `rlig` ligates
+    /// tab+X, X+tab and tab+tab. See `tests/assets/tab-atoms/README.md`.
+    const FIXTURE: &[u8] = include_bytes!("../../tests/assets/tab-atoms/TabAtomFixture.ttf");
+    /// Glyph IDs in the fixture's glyph order.
+    const FIXTURE_TAB: u32 = 2;
+    const FIXTURE_X: u32 = 3;
+    const FIXTURE_A: u32 = 4;
+    const FIXTURE_B: u32 = 5;
+    const FIXTURE_TAB_X: u32 = 6;
+    const FIXTURE_X_TAB: u32 = 7;
+    const FIXTURE_TAB_TAB: u32 = 8;
+    const FIXTURE_SPACE: u32 = 1;
+
+    /// A service hiding tabs, and the pre-fix reference that shapes through
+    /// the same boundary without the overrides.
+    fn services() -> (TextService, TextService) {
+        let mut reference = TextService::new().unwrap();
+        reference.hide_tabs = false;
+        (TextService::new().unwrap(), reference)
+    }
+    fn rich(
+        service: &mut TextService,
+        content: &RichText,
+        width: Option<f32>,
+        scale: f64,
+    ) -> TextLayout {
+        service
+            .prepare_rich(
+                content,
+                TextRequest::new(TextStyle::Body, 14.0, &Cell::new(0))
+                    .width(width)
+                    .scale(scale)
+                    .inline(16.0, 6.0),
+            )
+            .unwrap()
+    }
+    fn fixture(service: &mut TextService) -> FontId {
+        service
+            .registry
+            .register(&mut service.fonts, FontData::from_static(FIXTURE))
+            .unwrap()
+    }
+
+    /// Every positioned glyph in visual order, hidden or not.
+    fn glyphs(layout: &TextLayout) -> Vec<(u32, f32, f32)> {
+        layout
+            .shaped
+            .lines()
+            .flat_map(|line| line.items())
+            .filter_map(|item| match item {
+                parley::PositionedLayoutItem::GlyphRun(run) => Some(
+                    run.positioned_glyphs()
+                        .map(|g| (g.id, g.x, g.y))
+                        .collect::<Vec<_>>(),
+                ),
+                parley::PositionedLayoutItem::InlineBox(_) => None,
+            })
+            .flatten()
+            .collect()
+    }
+    /// The glyph IDs a layout's coverage was rasterized from.
+    fn drawn(layout: &TextLayout) -> Vec<u32> {
+        layout
+            .signature
+            .runs
+            .iter()
+            .flat_map(|run| run.glyphs.iter().map(|glyph| glyph.0))
+            .collect()
+    }
+    /// The glyph IDs of every cluster that is not a literal tab, from a
+    /// reference layout: what hiding must still draw.
+    fn printable(layout: &TextLayout, text: &str) -> Vec<u32> {
+        let mut ids = Vec::new();
+        for line in layout.shaped.lines() {
+            for run in line.runs() {
+                for cluster in run.visual_clusters() {
+                    if text.get(cluster.text_range()) != Some("\t") {
+                        ids.extend(cluster.glyphs().map(|g| g.id));
+                    }
+                }
+            }
+        }
+        ids.sort_unstable();
+        ids
+    }
+
+    /// The test-only re-walk of a final layout: every atom of tabs alone is
+    /// hidden, and no atom holding anything else carries a hidden brush.
+    fn assert_final_purity(layout: &TextLayout, text: &str) {
+        for line in layout.shaped.lines() {
+            for run in line.runs() {
+                let mut atoms: Vec<Vec<(bool, TextBrush)>> = Vec::new();
+                for cluster in run.clusters() {
+                    if !cluster.is_ligature_continuation() || atoms.is_empty() {
+                        atoms.push(Vec::new());
+                    }
+                    let tab = text.get(cluster.text_range()) == Some("\t");
+                    atoms.last_mut().unwrap().push((tab, cluster.style().brush));
+                }
+                for atom in atoms {
+                    let pure = atom.iter().all(|(tab, _)| *tab);
+                    for (_, brush) in &atom {
+                        assert_eq!(
+                            *brush == TextBrush::HiddenTab,
+                            pure,
+                            "{text:?}: atom {atom:?}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    /// Nonzero coverage per brush at physical pixels of the layout's own
+    /// coordinates, independent of how far ink grew the canvas.
+    fn coverage(layout: &TextLayout, parts: &[MaskPart]) -> BTreeMap<usize, Coverage> {
+        let [x, y] = layout
+            .origin
+            .map(|origin| (origin * layout.scale).round() as i64);
+        let mut canvases: BTreeMap<usize, Coverage> = BTreeMap::new();
+        for part in parts {
+            let canvas = canvases.entry(part.brush).or_default();
+            let left = (part.offset[0] * layout.scale).round() as i64 - x;
+            let top = (part.offset[1] * layout.scale).round() as i64 - y;
+            let w = part.image.width() as usize;
+            for (index, value) in part.image.pixels().iter().enumerate() {
+                if *value != 0 {
+                    let pixel = canvas
+                        .entry((left + (index % w) as i64, top + (index / w) as i64))
+                        .or_default();
+                    *pixel = (*pixel).max(*value);
+                }
+            }
+        }
+        canvases
+    }
+    /// Physical layout rectangles `[left, top, right, bottom]` of every hidden
+    /// glyph's advance on its line box. The re-walk proves that only atoms of
+    /// tabs alone are hidden.
+    fn tab_regions(layout: &TextLayout) -> Vec<[i64; 4]> {
+        let mut top = 0.0;
+        let mut regions = Vec::new();
+        for line in layout.shaped.lines() {
+            let bottom = top + line.metrics().line_height;
+            for item in line.items() {
+                let parley::PositionedLayoutItem::GlyphRun(run) = item else {
+                    continue;
+                };
+                if run.style().brush == TextBrush::HiddenTab {
+                    regions.extend(run.positioned_glyphs().map(|glyph| {
+                        [
+                            glyph.x.ceil() as i64,
+                            top.ceil() as i64,
+                            (glyph.x + glyph.advance).floor() as i64,
+                            bottom.floor() as i64,
+                        ]
+                    }));
+                }
+            }
+            top = bottom;
+        }
+        regions
+    }
+    /// Whether a hidden tab's advance passes either end of the layout width, as
+    /// trailing whitespace of a wrapped line does in either paragraph
+    /// direction; its pre-fix ink could widen the size.
+    fn hangs(layout: &TextLayout) -> bool {
+        layout.shaped.lines().any(|line| {
+            line.items().any(|item| match item {
+                parley::PositionedLayoutItem::GlyphRun(run) => {
+                    run.style().brush == TextBrush::HiddenTab
+                        && (run.offset() < -0.01
+                            || run.offset() + run.advance() > layout.shaped.width() + 0.01)
+                }
+                parley::PositionedLayoutItem::InlineBox(_) => false,
+            })
+        })
+    }
+    /// The text a rich content is shaped as, icons included.
+    fn shaped_text(service: &TextService, content: &RichText) -> String {
+        service
+            .resolve(
+                content,
+                TextRequest::new(TextStyle::Body, 14.0, &Cell::new(0)).inline(16.0, 6.0),
+            )
+            .unwrap()
+            .text
+    }
+    /// A raster signature without the service-specific font handles.
+    fn positioned(layout: &TextLayout) -> impl PartialEq + std::fmt::Debug {
+        let signature = &layout.signature;
+        (
+            signature.canvas,
+            signature
+                .runs
+                .iter()
+                .map(|run| (run.size, run.glyphs.clone(), run.brush, run.alignment))
+                .collect::<Vec<_>>(),
+        )
+    }
+    fn inside(regions: &[[i64; 4]], x: i64, y: i64, inset: i64) -> bool {
+        regions
+            .iter()
+            .any(|[l, t, r, b]| x >= l + inset && x < r - inset && y >= t + inset && y < b - inset)
+    }
+    /// The largest coverage difference per brush, outside the tab regions.
+    fn difference_outside(
+        regions: &[[i64; 4]],
+        actual: &BTreeMap<usize, Coverage>,
+        expected: &BTreeMap<usize, Coverage>,
+    ) -> u8 {
+        let empty = Coverage::new();
+        let mut worst = 0;
+        for brush in actual.keys().chain(expected.keys()) {
+            let a = actual.get(brush).unwrap_or(&empty);
+            let e = expected.get(brush).unwrap_or(&empty);
+            for (x, y) in a.keys().chain(e.keys()) {
+                if !inside(regions, *x, *y, -1) {
+                    let a = a.get(&(*x, *y)).copied().unwrap_or(0);
+                    let e = e.get(&(*x, *y)).copied().unwrap_or(0);
+                    worst = worst.max(a.abs_diff(e));
+                }
+            }
+        }
+        worst
+    }
+    fn ink_inside(regions: &[[i64; 4]], canvases: &BTreeMap<usize, Coverage>) -> bool {
+        canvases
+            .values()
+            .any(|canvas| canvas.keys().any(|(x, y)| inside(regions, *x, *y, 1)))
+    }
+
+    /// Asserts everything the pre-fix reference shows except tab ink:
+    /// size, lines, every glyph, caret stops, movement, selection and word
+    /// geometry, with the tabs' own glyphs the only ones not drawn.
+    fn assert_matches_reference(actual: &TextLayout, expected: &TextLayout, text: &str) {
+        // Size includes ink overhang: only a hanging tab's box could widen it.
+        // Size and the painted origin include ink overhang: only a hanging
+        // tab's box could have widened them, so compare geometry in layout
+        // coordinates.
+        if hangs(actual) {
+            assert!(actual.size().width() <= expected.size().width(), "{text:?}");
+            assert_eq!(actual.size().height(), expected.size().height(), "{text:?}");
+        } else {
+            assert_eq!(actual.size(), expected.size(), "{text:?}");
+            assert_eq!(actual.origin, expected.origin, "{text:?}");
+        }
+        // To a thousandth of a logical pixel: removing the origin rounds.
+        let unpainted = |layout: &TextLayout, rect: crate::Rect| {
+            [
+                rect.x() - layout.origin[0],
+                rect.y() - layout.origin[1],
+                rect.width(),
+                rect.height(),
+            ]
+            .map(|value| (value * 1000.0).round() as i64)
+        };
+        let caret = |layout: &TextLayout, selection: TextSelection| {
+            unpainted(layout, selection.caret(layout).unwrap())
+        };
+        let rectangles = |layout: &TextLayout, selection: TextSelection| {
+            selection
+                .rectangles(layout)
+                .unwrap()
+                .into_iter()
+                .map(|rect| unpainted(layout, rect))
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(actual.shaped.width(), expected.shaped.width());
+        assert_eq!(actual.shaped.height(), expected.shaped.height());
+        let lines = |layout: &TextLayout| {
+            layout
+                .shaped
+                .lines()
+                .map(|line| {
+                    let m = line.metrics();
+                    let runs: Vec<_> = line
+                        .runs()
+                        .map(|run| (run.text_range(), run.is_rtl(), run.font_size()))
+                        .collect();
+                    (
+                        line.text_range(),
+                        m.baseline,
+                        m.line_height,
+                        m.advance,
+                        runs,
+                    )
+                })
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(lines(actual), lines(expected), "{text:?}");
+        let (a, e) = (glyphs(actual), glyphs(expected));
+        assert_eq!(a.len(), e.len(), "{text:?}");
+        for (a, e) in a.iter().zip(&e) {
+            assert_eq!(a.0, e.0, "{text:?}");
+            assert!(
+                (a.1 - e.1).abs() < 0.01 && (a.2 - e.2).abs() < 0.01,
+                "{text:?}: {a:?} vs {e:?}"
+            );
+        }
+        let mut shown = drawn(actual);
+        shown.sort_unstable();
+        assert_eq!(shown, printable(expected, text), "{text:?}");
+        let movements = [
+            TextMovement::Left,
+            TextMovement::Right,
+            TextMovement::WordLeft,
+            TextMovement::WordRight,
+            TextMovement::Up,
+            TextMovement::Down,
+            TextMovement::LineStart,
+            TextMovement::LineEnd,
+            TextMovement::Start,
+            TextMovement::End,
+        ];
+        for index in 0..=text.len() {
+            let (a, e) = (
+                TextSelection::snapped(actual, index, index),
+                TextSelection::snapped(expected, index, index),
+            );
+            assert_eq!(a, e, "{text:?} at {index}");
+            assert_eq!(caret(actual, a), caret(expected, e), "{text:?} at {index}");
+            assert_eq!(
+                TextSelection::new(actual, index, index).is_ok(),
+                TextSelection::new(expected, index, index).is_ok()
+            );
+            for movement in movements {
+                let extension = crate::SelectionExtension::Extend;
+                let (a, e) = (
+                    a.moved(actual, movement, extension),
+                    e.moved(expected, movement, extension),
+                );
+                assert_eq!(a, e, "{text:?} {movement:?} from {index}");
+                assert_eq!(rectangles(actual, a), rectangles(expected, e));
+            }
+        }
+        assert_eq!(
+            rectangles(actual, TextSelection::snapped(actual, 0, text.len())),
+            rectangles(expected, TextSelection::snapped(expected, 0, text.len()))
+        );
+        let (width, height) = (
+            actual.shaped.width() / actual.scale,
+            actual.shaped.height() / actual.scale,
+        );
+        for step in 0..12 {
+            let at = |layout: &TextLayout| {
+                crate::Point::new(
+                    width * step as f32 / 11.0 + layout.origin[0],
+                    height * (step % 3) as f32 / 2.0 + layout.origin[1],
+                )
+                .unwrap()
+            };
+            assert_eq!(
+                TextSelection::word_at_point(actual, at(actual)),
+                TextSelection::word_at_point(expected, at(expected)),
+                "{text:?} word at step {step}"
+            );
+            assert_eq!(
+                TextSelection::default().at_point(
+                    actual,
+                    at(actual),
+                    crate::SelectionExtension::Collapse
+                ),
+                TextSelection::default().at_point(
+                    expected,
+                    at(expected),
+                    crate::SelectionExtension::Collapse
+                ),
+            );
+        }
+        assert_final_purity(actual, text);
+    }
+
+    /// Byte ranges from `(start, end)` pairs.
+    fn ranges(pairs: &[(usize, usize)]) -> Vec<Range<usize>> {
+        pairs.iter().map(|(start, end)| *start..*end).collect()
+    }
+
+    #[test]
+    fn consecutive_tabs_merge_and_retained_tabs_split_them() {
+        assert_eq!(hidden_ranges("plain", &[]), []);
+        assert_eq!(hidden_ranges("plain", &[]).capacity(), 0);
+        // (text, retained tab bytes, hidden ranges)
+        type Case<'a> = (&'a str, &'a [usize], &'a [(usize, usize)]);
+        let cases: [Case<'_>; 6] = [
+            ("\ta\t\tb\t", &[], &[(0, 1), (2, 4), (5, 6)]),
+            ("\t\t\tX", &[2], &[(0, 2)]),
+            ("\t\t\t", &[1], &[(0, 1), (2, 3)]),
+            ("\t\t\t", &[0, 1, 2], &[]),
+            // Multi-byte neighbors: offsets are bytes.
+            ("é\t\u{5d0}\t", &[2], &[(5, 6)]),
+            ("\t\t\t\t", &[], &[(0, 4)]),
+        ];
+        for (text, retained, expected) in cases {
+            assert_eq!(hidden_ranges(text, retained), ranges(expected), "{text:?}");
+        }
+    }
+
+    #[test]
+    fn tabs_keep_the_reference_geometry_and_unicode_analysis_without_their_ink() {
+        let texts = [
+            "\tLeading",
+            "A\tB",
+            "a\t\t\tb",
+            "Name\tValue\tUnit and several more words\tend",
+            "x\t\u{301}y",
+            "\t\u{301}",
+            "\t",
+            "\t\t",
+            "one\t\ttwo three\t\tfour",
+            "e\u{301}\t\u{5d0}\u{5d1}\t123 abc",
+            "\u{5d0}\u{5d1}\u{5d2}\tabc\t123",
+            "abc \u{5d3}\u{5d4}\t\u{5d5} def\tghi",
+            "first\tline\nsecond\t\tline",
+        ];
+        for style in [TextStyle::Body, TextStyle::Monospace] {
+            for scale in [1.0, 1.25, 2.0] {
+                let (mut fixed, mut reference) = services();
+                for text in texts {
+                    for width in [None, Some(220.0), Some(60.0), Some(12.0)] {
+                        let shapings = fixed.shapings.get();
+                        let builds = fixed.parley_builds.get();
+                        let actual = fixed.prepare(text, width, scale, style).unwrap();
+                        let expected = reference.prepare(text, width, scale, style).unwrap();
+                        // Bundled fonts never ligate a tab: one build per shaping.
+                        assert_eq!(fixed.shapings.get() - shapings, 1);
+                        assert_eq!(fixed.parley_builds.get() - builds, 1);
+                        assert_eq!(mixed_tabs(&expected.shaped, text), []);
+                        assert_matches_reference(&actual, &expected, text);
+                        let regions = tab_regions(&actual);
+                        let a = coverage(&actual, &actual.parts);
+                        let e = coverage(&expected, &expected.parts);
+                        assert!(
+                            difference_outside(&regions, &a, &e) <= 1,
+                            "{text:?} {style:?} {scale} {width:?}"
+                        );
+                        // A combining mark after a tab is a grapheme of its
+                        // own; its ink may fall in the tab's advance.
+                        if !text.contains('\u{301}') {
+                            assert!(!ink_inside(&regions, &a), "{text:?} {style:?} {scale}");
+                            // The reference draws the missing-glyph box there.
+                            let wide = regions.iter().any(|[l, _, r, _]| r - l > 4);
+                            assert_eq!(ink_inside(&regions, &e), wide, "{text:?}");
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn tab_only_text_has_no_coverage_but_its_advance_and_caret_stops() {
+        let (mut fixed, mut reference) = services();
+        for text in ["\t", "\t\t\t"] {
+            let actual = fixed.prepare(text, None, 1.0, TextStyle::Body).unwrap();
+            let expected = reference.prepare(text, None, 1.0, TextStyle::Body).unwrap();
+            assert!(actual.parts.is_empty());
+            assert_eq!(actual.ink, None);
+            assert!(expected.ink.is_some());
+            assert!(actual.size().width() > 0.0);
+            assert_eq!(actual.size().width(), actual.shaped.width().ceil());
+            assert_eq!(actual.size(), expected.size());
+            let carets: Vec<f32> = (0..=text.len())
+                .map(|index| {
+                    TextSelection::new(&actual, index, index)
+                        .unwrap()
+                        .caret(&actual)
+                        .unwrap()
+                        .x()
+                })
+                .collect();
+            assert!(
+                carets.windows(2).all(|pair| pair[0] < pair[1]),
+                "{carets:?}"
+            );
+            // Phase-line rendering has nothing to draw either.
+            assert!(fixed.phase_parts(&actual, [1, 2]).unwrap().is_empty());
+        }
+    }
+
+    #[test]
+    fn rich_spans_gaps_and_icons_keep_reference_color_size_and_alignment() {
+        let red = Color::from_srgb8(220, 20, 20, 255);
+        let blue = Color::from_srgb8(20, 20, 220, 255);
+        let big = Length::new(22.0).unwrap();
+        let small = Length::new(10.0).unwrap();
+        let hebrew = "\u{5d0}\u{5d1}\u{5d2}";
+        let contents = [
+            RichText::new()
+                .text("Name\t")
+                .span(TextSpan::new("\tValue").color(red).size(big))
+                .gap()
+                .text("\tafter\t")
+                .icon(Icon::Save)
+                .text("\tend"),
+            // The hidden tab is the only text an icon can align with.
+            RichText::new().text("\t").icon(Icon::Save),
+            RichText::new().icon(Icon::Add).text("\tX\tY"),
+            RichText::new()
+                .text("abc\t")
+                .icon(Icon::Save)
+                .text(format!("\t{hebrew}")),
+            RichText::new()
+                .text(format!("{hebrew}\t"))
+                .icon(Icon::Close)
+                .text("\tabc"),
+            RichText::new()
+                .span(TextSpan::new("a\t").size(big).color(blue))
+                .span(TextSpan::new("\tb").size(small).color(red))
+                .gap()
+                .span(TextSpan::new("\t").color(red))
+                .text("c"),
+        ];
+        for scale in [1.0, 1.25, 2.0] {
+            let (mut fixed, mut reference) = services();
+            for (index, content) in contents.iter().enumerate() {
+                let text = shaped_text(&fixed, content);
+                for width in [None, Some(70.0)] {
+                    let actual = rich(&mut fixed, content, width, scale);
+                    let expected = rich(&mut reference, content, width, scale);
+                    assert_matches_reference(&actual, &expected, &text);
+                    let alignments = |layout: &TextLayout| {
+                        layout
+                            .signature
+                            .runs
+                            .iter()
+                            .filter_map(|run| run.alignment.map(|a| (run.brush, a)))
+                            .collect::<Vec<_>>()
+                    };
+                    // All but the last content have an icon.
+                    assert_eq!(
+                        alignments(&expected).is_empty(),
+                        index == contents.len() - 1
+                    );
+                    assert_eq!(alignments(&actual), alignments(&expected), "{text:?}");
+                    let regions = tab_regions(&actual);
+                    let a = coverage(&actual, &actual.parts);
+                    let e = coverage(&expected, &expected.parts);
+                    assert!(
+                        difference_outside(&regions, &a, &e) <= 1,
+                        "{text:?} {scale}"
+                    );
+                    assert!(!ink_inside(&regions, &a), "{text:?} {scale}");
+                    assert_eq!(*actual.colors, *expected.colors);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn a_registered_font_ligating_a_tab_keeps_that_glyph_and_hides_pure_tab_atoms() {
+        let (mut fixed, mut reference) = services();
+        let font = fixture(&mut fixed);
+        let reference_font = fixture(&mut reference);
+        // (text, its real shaped glyphs, tabs in mixed atoms, glyphs drawn)
+        type Case<'a> = (&'a str, &'a [u32], &'a [usize], &'a [u32]);
+        let cases: [Case<'_>; 7] = [
+            ("\t", &[FIXTURE_TAB], &[], &[]),
+            ("\tX", &[FIXTURE_TAB_X], &[0], &[FIXTURE_TAB_X]),
+            ("X\t", &[FIXTURE_X_TAB], &[1], &[FIXTURE_X_TAB]),
+            ("\t\t", &[FIXTURE_TAB_TAB], &[], &[]),
+            (
+                "\t\t\tX",
+                &[FIXTURE_TAB_TAB, FIXTURE_TAB_X],
+                &[2],
+                &[FIXTURE_TAB_X],
+            ),
+            (
+                "A\tB",
+                &[FIXTURE_A, FIXTURE_TAB, FIXTURE_B],
+                &[],
+                &[FIXTURE_A, FIXTURE_B],
+            ),
+            (
+                "A\tB X\t\t\tX \t\tA\t",
+                &[
+                    FIXTURE_A,
+                    FIXTURE_TAB,
+                    FIXTURE_B,
+                    FIXTURE_SPACE,
+                    FIXTURE_X_TAB,
+                    FIXTURE_TAB_TAB,
+                    FIXTURE_X,
+                    FIXTURE_SPACE,
+                    FIXTURE_TAB_TAB,
+                    FIXTURE_A,
+                    FIXTURE_TAB,
+                ],
+                &[5],
+                &[
+                    FIXTURE_A,
+                    FIXTURE_B,
+                    FIXTURE_SPACE,
+                    FIXTURE_X_TAB,
+                    FIXTURE_X,
+                    FIXTURE_SPACE,
+                    FIXTURE_A,
+                ],
+            ),
+        ];
+        for (text, shaped, mixed, shown) in cases {
+            let content = RichText::new().span(TextSpan::new(text).font(font.clone()));
+            let reference_content =
+                RichText::new().span(TextSpan::new(text).font(reference_font.clone()));
+            let expected = rich(&mut reference, &reference_content, None, 1.0);
+            // Real GSUB shaping of the fixture, not an assumed ligature.
+            let ids: Vec<u32> = glyphs(&expected).iter().map(|g| g.0).collect();
+            assert_eq!(ids, shaped, "{text:?}");
+            assert_eq!(mixed_tabs(&expected.shaped, text), mixed, "{text:?}");
+            let (shapings, builds) = (fixed.shapings.get(), fixed.parley_builds.get());
+            let actual = rich(&mut fixed, &content, None, 1.0);
+            assert_eq!(fixed.shapings.get() - shapings, 1);
+            let fallback = usize::from(!mixed.is_empty());
+            assert_eq!(fixed.parley_builds.get() - builds, 1 + fallback, "{text:?}");
+            assert_eq!(drawn(&actual), shown, "{text:?}");
+            assert_eq!(actual.ink.is_none(), shown.is_empty(), "{text:?}");
+            assert_final_purity(&actual, text);
+            assert_eq!(actual.size(), expected.size());
+            for index in 0..=text.len() {
+                assert_eq!(
+                    TextSelection::snapped(&actual, index, index).caret(&actual),
+                    TextSelection::snapped(&expected, index, index).caret(&expected)
+                );
+            }
+            // A cache hit reaches neither build.
+            let builds = fixed.parley_builds.get();
+            let again = rich(&mut fixed, &content, None, 1.0);
+            assert!(Arc::ptr_eq(&again.parts, &actual.parts));
+            assert_eq!(fixed.parley_builds.get(), builds);
+        }
+
+        // A mixed atom across a color boundary keeps the color of its first
+        // character, exactly as before, and every other pixel.
+        let red = Color::from_srgb8(220, 20, 20, 255);
+        let blue = Color::from_srgb8(20, 20, 220, 255);
+        let colored = |font: &FontId| {
+            RichText::new()
+                .span(TextSpan::new("A\t").font(font.clone()).color(red))
+                .span(TextSpan::new("X B").font(font.clone()).color(blue))
+        };
+        let expected = rich(&mut reference, &colored(&reference_font), None, 1.0);
+        let actual = rich(&mut fixed, &colored(&font), None, 1.0);
+        assert_eq!(
+            drawn(&expected),
+            [FIXTURE_A, FIXTURE_TAB_X, FIXTURE_SPACE, FIXTURE_B]
+        );
+        assert_eq!(drawn(&actual), drawn(&expected));
+        let parts = |layout: &TextLayout| {
+            layout
+                .parts
+                .iter()
+                .map(|part| (part.brush, part.offset, part.image.clone()))
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(parts(&actual), parts(&expected));
+        let red_index = actual
+            .colors
+            .iter()
+            .position(|c| *c == TextColor::Literal(red))
+            .unwrap();
+        let mixed_run = actual
+            .signature
+            .runs
+            .iter()
+            .find(|run| run.glyphs.iter().any(|glyph| glyph.0 == FIXTURE_TAB_X));
+        assert_eq!(mixed_run.unwrap().brush, red_index);
+    }
+
+    #[test]
+    fn a_tab_and_a_missing_character_never_share_phase_coverage() {
+        let text_style = TextStyle::Body;
+        let (_, mut reference) = services();
+        let tab = reference.prepare("A\tB", None, 1.0, text_style).unwrap();
+        let private = reference
+            .prepare("A\u{E000}B", None, 1.0, text_style)
+            .unwrap();
+        // Before the fix both shape to the same glyph tuples and canvas.
+        assert_eq!(tab.signature, private.signature);
+        for tab_first in [true, false] {
+            let (mut service, _) = services();
+            let tab = service.prepare("A\tB", None, 1.0, text_style).unwrap();
+            let private = service
+                .prepare("A\u{E000}B", None, 1.0, text_style)
+                .unwrap();
+            assert_ne!(tab.signature, private.signature);
+            for _ in 0..2 {
+                for phase in [[0, 0], [1, 2], [3, 1]] {
+                    let order = if tab_first {
+                        [&tab, &private]
+                    } else {
+                        [&private, &tab]
+                    };
+                    let parts: Vec<_> = order
+                        .iter()
+                        .map(|layout| service.phase_parts(layout, phase).unwrap())
+                        .collect();
+                    let (tab_parts, private_parts) = if tab_first {
+                        (&parts[0], &parts[1])
+                    } else {
+                        (&parts[1], &parts[0])
+                    };
+                    let regions = tab_regions(&tab);
+                    assert!(!ink_inside(&regions, &coverage(&tab, tab_parts)));
+                    assert!(ink_inside(&regions, &coverage(&private, private_parts)));
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn other_unsupported_characters_keep_their_fallback_ink() {
+        let (mut fixed, mut reference) = services();
+        for text in ["a\u{0B}b", "a\u{E000}b", "a\u{0378}b", "\u{0B}"] {
+            for style in [TextStyle::Body, TextStyle::Monospace] {
+                let actual = fixed.prepare(text, None, 1.0, style).unwrap();
+                let expected = reference.prepare(text, None, 1.0, style).unwrap();
+                assert!(actual.ink.is_some(), "{text:?}");
+                assert_eq!(positioned(&actual), positioned(&expected), "{text:?}");
+                assert_eq!(
+                    coverage(&actual, &actual.parts),
+                    coverage(&expected, &expected.parts)
+                );
+                assert_eq!(drawn(&actual).len(), glyphs(&actual).len());
+            }
+        }
+    }
+
+    #[test]
+    fn cached_measured_and_ellipsized_tabs_stay_hidden() {
+        let (mut fixed, mut reference) = services();
+        let reads = Cell::new(0);
+        let request = TextRequest::new(TextStyle::Body, 14.0, &reads);
+        // The plain cache answers before resolution: no marker in its key.
+        let first = fixed.prepare_plain("A\tB", request).unwrap();
+        let (resolutions, shapings, builds) = (
+            fixed.resolutions.get(),
+            fixed.shapings.get(),
+            fixed.parley_builds.get(),
+        );
+        let again = fixed.prepare_plain("A\tB", request).unwrap();
+        assert!(Arc::ptr_eq(&first.parts, &again.parts));
+        assert_eq!(fixed.resolutions.get(), resolutions);
+        assert_eq!(fixed.shapings.get(), shapings);
+        assert_eq!(fixed.parley_builds.get(), builds);
+        assert_eq!(
+            fixed.cache.back().unwrap().key.resolved.spans[0].brush,
+            0,
+            "resolved spans keep ordinary color indices"
+        );
+
+        // fit_whole measures once and reuses that tagged shaping.
+        let fit = |service: &mut TextService, text: &str, width: f32| {
+            service
+                .fit_plain(text, request, width, TextOverflow::Ellipsis)
+                .unwrap()
+        };
+        let text = "Name\tValue";
+        let (shapings, builds) = (fixed.shapings.get(), fixed.parley_builds.get());
+        let whole = fit(&mut fixed, text, 400.0);
+        assert!(!whole.is_truncated());
+        assert_eq!(fixed.shapings.get() - shapings, 1);
+        assert_eq!(fixed.parley_builds.get() - builds, 1);
+        let expected = fit(&mut reference, text, 400.0);
+        assert_matches_reference(whole.layout(), expected.layout(), text);
+        let regions = tab_regions(whole.layout());
+        assert!(!ink_inside(
+            &regions,
+            &coverage(whole.layout(), &whole.layout().parts)
+        ));
+
+        // An ellipsis candidate keeping a tab, measured by the same boundary.
+        let long = "Name\tValue that is far too long for its column";
+        for overflow in [TextOverflow::Ellipsis, TextOverflow::MiddleEllipsis] {
+            let actual = fixed.fit_plain(long, request, 110.0, overflow).unwrap();
+            let expected = reference.fit_plain(long, request, 110.0, overflow).unwrap();
+            let shown = actual.shown().unwrap();
+            assert!(shown.contains('\t'), "{shown:?}");
+            assert_eq!(actual.shown(), expected.shown());
+            assert_matches_reference(actual.layout(), expected.layout(), shown);
+            let layout = actual.layout();
+            let regions = tab_regions(layout);
+            assert!(!ink_inside(&regions, &coverage(layout, &layout.parts)));
+            assert!(!ink_inside(
+                &regions,
+                &coverage(layout, &fixed.phase_parts(layout, [2, 1]).unwrap())
+            ));
+            assert!(ink_inside(
+                &regions,
+                &coverage(expected.layout(), &expected.layout().parts)
+            ));
+        }
+    }
+
+    #[test]
+    fn the_worst_admitted_alternating_tabs_stay_within_the_style_bound() {
+        use std::time::Instant;
+        let limit = crate::TextEditError::MAX_TEXT_BYTES;
+        let plain = "a\t".repeat(limit / 2);
+        assert_eq!(plain.len(), limit);
+        let segment = "a\t".repeat(limit / RichText::MAX_SEGMENTS / 2);
+        let red = Color::from_srgb8(220, 20, 20, 255);
+        let blue = Color::from_srgb8(20, 20, 220, 255);
+        let spans = (0..RichText::MAX_SEGMENTS).fold(RichText::new(), |content, index| {
+            content.span(TextSpan::new(segment.clone()).color(if index % 2 == 0 {
+                red
+            } else {
+                blue
+            }))
+        });
+        assert_eq!(spans.plain_text().len(), limit);
+        for (name, content) in [("plain", RichText::from(plain.as_str())), ("spans", spans)] {
+            let (mut fixed, mut reference) = services();
+            let start = Instant::now();
+            let expected = rich(&mut reference, &content, Some(2000.0), 1.0);
+            let reference_time = start.elapsed();
+            let start = Instant::now();
+            let actual = rich(&mut fixed, &content, Some(2000.0), 1.0);
+            let time = start.elapsed();
+            let styles = actual.shaped.styles().len();
+            assert!(styles <= MAX_STYLES, "{styles}");
+            assert_eq!(fixed.parley_builds.get(), 1);
+            assert!(actual.size().width() <= expected.size().width());
+            assert_eq!(actual.shaped.width(), expected.shaped.width());
+            assert_eq!(actual.shaped.height(), expected.shaped.height());
+            assert_eq!(drawn(&actual).len(), limit / 2);
+            println!(
+                "worst admitted {name}: {} bytes, {styles} styles (bound {MAX_STYLES}), \
+                 {} reference styles; prepare {time:?}, pre-fix reference {reference_time:?} \
+                 (one observation, not a bound)",
+                content.plain_text().len(),
+                expected.shaped.styles().len(),
+            );
+        }
+    }
+}

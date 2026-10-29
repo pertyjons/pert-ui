@@ -1,5 +1,43 @@
 # Changelog
 
+## 0.3.92 (2026-10-29)
+
+Round 3 menu keyboard ownership and literal-tab coverage. Frozen blind results
+remain on 0.3.88/0.3.75; these changes have separate regression/review evidence.
+
+- Menu, ContextMenu, Select and InlineSelect keep their initial/selected row
+  when opened under a stationary pointer. Private OptionList pointer ownership
+  distinguishes actual motion, admitted presses and effective scrolling from
+  layout hover refresh. Handled navigation takes ownership; a successfully
+  armed Enter/Space keeps its row through release/cancellation. Pointer-first
+  activation, callback ordering, permission authority and pressed-row identity
+  keep their existing contracts.
+- MenuBar switches an open title only for actual pointer motion. Per-title
+  coordinates preserve genuine title-to-title/content round trips and ignore
+  duplicate host positions. Re-entry at the same coordinate is stationary;
+  a native scale change may make the next physical report a different logical
+  coordinate. Generic pointer refresh and runtime/platform dispatch are unchanged.
+- Literal tab-only atoms now emit no text coverage while keeping original
+  canonical bytes, font-dependent shaped advance and Unicode analysis. No
+  aligned tab stops or text replacement is introduced. Registered mixed
+  tab/printable atoms retain their inseparable ink; other missing glyphs retain
+  their ink. Original text/cache keys remain; the unusual mixed-atom path shapes
+  at most twice, and hidden runs contribute neither masks nor raster signatures.
+- Removing hanging-tab ink can shrink TextLayout::size and translate RTL public
+  caret/selection x positions; hit/word testing uses the same origin. Logical
+  analysis coordinates and vertical origin/baseline are unchanged. TextLayout,
+  size(), TextStyle::Monospace, TextArea and TextSelection geometry rustdoc
+  document hanging whitespace, the mixed-font exception and existing empty-
+  raster pen-point bounds. TextArea's pre-existing hanging-caret reveal limit
+  is qualified; scrolling is not changed by this patch.
+- Updated controls/appearance/surfaces guides, runtime/assets documentation,
+  contracts and rendering notes together. Synthetic font fixture source/license
+  and real shaping tests cover mixed/pure tab ligatures, rich font boundaries,
+  icon metrics, raw public coordinates, cache phases, canonical editor bytes and
+  unsupported-character ink. Public menu input tests and restored negative
+  controls cover keyboard/pointer transitions. No public signature, dependency
+  or persisted schema changes.
+
 ## 0.3.91 (2026-10-29)
 
 Round 3 historical reveal diagnostics, hidden-window documentation and public

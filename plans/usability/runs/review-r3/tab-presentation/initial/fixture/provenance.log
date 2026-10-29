@@ -1,0 +1,60 @@
+$ /home/per/pert-ui-usability/font-fixture-tools/bin/python -I /home/per/pert-ui-usability/r3-text-worktree/crates/pert-ui-runtime/tests/assets/tab-atoms/generate.py /tmp/tmp.z9nfq5SlQ7/TabAtomFixture.ttf
+TabAtomFixture.ttf 1700 ef405e8ef511ced850becf815e71f0a4461f693a76b426814425fbded332450b
+exit status: 0
+
+$ python -I -c 'import fontTools, sys; print(fontTools.version, sys.version)'
+fontTools 4.60.1 python 3.14.8 (main, Oct  1 2026, 00:00:00) [GCC 16.2.1 20260819 (Red Hat 16.2.1-2)]
+
+$ sha256sum (committed, regenerated, prepared original)
+ef405e8ef511ced850becf815e71f0a4461f693a76b426814425fbded332450b  /home/per/pert-ui-usability/r3-text-worktree/crates/pert-ui-runtime/tests/assets/tab-atoms/TabAtomFixture.ttf
+ef405e8ef511ced850becf815e71f0a4461f693a76b426814425fbded332450b  /tmp/tmp.z9nfq5SlQ7/TabAtomFixture.ttf
+ef405e8ef511ced850becf815e71f0a4461f693a76b426814425fbded332450b  /home/per/pert-ui-usability/TabAtomFixture.ttf
+
+$ cmp committed regenerated
+byte-identical
+
+$ sha256sum generator (committed, prepared original)
+a8712d16ebebe6b34b5228961fe24d342232d8b339949f22e28078b0f2c9394a  /home/per/pert-ui-usability/r3-text-worktree/crates/pert-ui-runtime/tests/assets/tab-atoms/generate.py
+364bac911cafe4c7e6ec866214cdfd20012b64346fea3a37324967ba071bdf18  /home/per/pert-ui-usability/generate-tab-font-fixture.py
+
+$ diff prepared-original committed generator
+1c1,10
+< """Generate the synthetic tab-atom test font; fontTools 4.60.1, no input font."""
+---
+> """Generate the synthetic tab-atom test font from scratch, with no input font.
+> 
+> Optional maintenance tool, never run by a build or test. Generated with
+> fontTools 4.60.1; see README.md for the committed font's hash.
+> 
+> Usage: python3 generate.py [DESTINATION]
+> The default destination is TabAtomFixture.ttf beside this script.
+> """
+> # SPDX-License-Identifier: MIT OR Apache-2.0
+> import sys
+8c17
+< destination = Path('/home/per/pert-ui-usability/TabAtomFixture.ttf')
+---
+> destination = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).with_name('TabAtomFixture.ttf')
+
+$ grep for developer paths in fixture dir
+none
+
+$ grep build-time generation in manifests/build scripts
+none
+
+$ ttx -l (table list)
+Listing table info for "/home/per/pert-ui-usability/r3-text-worktree/crates/pert-ui-runtime/tests/assets/tab-atoms/TabAtomFixture.ttf":
+    tag     checksum    length    offset
+    ----  ----------  --------  --------
+    GSUB  0x22CD2BA2       108      1592
+    OS/2  0x47A5470A        96       312
+    cmap  0x00C20091        76       440
+    glyf  0xDB04C5C6       206       536
+    head  0x3027B2C4        54       188
+    hhea  0x0714047C        36       244
+    hmtx  0x12C00000        32       408
+    loca  0x00CD010D        20       516
+    maxp  0x000B0006        32       280
+    name  0xED75DEB2       768       744
+    post  0xB208099D        77      1512
+

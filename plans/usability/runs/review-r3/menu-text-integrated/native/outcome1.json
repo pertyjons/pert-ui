@@ -1,0 +1,14 @@
+{
+  "command": [
+    "cargo",
+    "run",
+    "--locked",
+    "-p",
+    "pert-ui-native-checks",
+    "--",
+    "interaction_check"
+  ],
+  "started_at_utc": "2026-10-29T10:34:46.264656+00:00",
+  "finished_at_utc": "2026-10-29T10:36:34.971503+00:00",
+  "exit_status": 0
+}

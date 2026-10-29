@@ -1,0 +1,187 @@
+[
+  {
+    "name": "format",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--check"
+    ],
+    "environment": {},
+    "started": "2026-10-29T10:34:13.086187+00:00",
+    "ended": "2026-10-29T10:34:16.072353+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--workspace",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "environment": {},
+    "started": "2026-10-29T10:34:16.072549+00:00",
+    "ended": "2026-10-29T10:34:29.230335+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "workspace-tests",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--workspace"
+    ],
+    "environment": {},
+    "started": "2026-10-29T10:34:29.230524+00:00",
+    "ended": "2026-10-29T10:38:10.859775+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "live_mixer",
+    "command": [
+      "cargo",
+      "run",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--features",
+      "png,svg,cpu",
+      "--example",
+      "live_mixer"
+    ],
+    "environment": {},
+    "started": "2026-10-29T10:38:10.859989+00:00",
+    "ended": "2026-10-29T10:38:12.769370+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "dynamic_documents",
+    "command": [
+      "cargo",
+      "run",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--features",
+      "png,svg,cpu",
+      "--example",
+      "dynamic_documents"
+    ],
+    "environment": {},
+    "started": "2026-10-29T10:38:12.769544+00:00",
+    "ended": "2026-10-29T10:38:13.992411+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "diagram_editor",
+    "command": [
+      "cargo",
+      "run",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--features",
+      "png,svg,cpu",
+      "--example",
+      "diagram_editor"
+    ],
+    "environment": {},
+    "started": "2026-10-29T10:38:13.992595+00:00",
+    "ended": "2026-10-29T10:38:17.750303+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "log_explorer",
+    "command": [
+      "cargo",
+      "run",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--features",
+      "png,svg,cpu",
+      "--example",
+      "log_explorer",
+      "--",
+      "--lines",
+      "10000"
+    ],
+    "environment": {},
+    "started": "2026-10-29T10:38:17.750556+00:00",
+    "ended": "2026-10-29T10:38:29.766894+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "inventory",
+    "command": [
+      "cargo",
+      "run",
+      "--locked",
+      "-p",
+      "pert-ui",
+      "--features",
+      "png,svg,cpu",
+      "--example",
+      "inventory",
+      "--",
+      "--items",
+      "2000"
+    ],
+    "environment": {},
+    "started": "2026-10-29T10:38:29.767110+00:00",
+    "ended": "2026-10-29T10:38:33.661595+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "doctests",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--workspace",
+      "--doc"
+    ],
+    "environment": {},
+    "started": "2026-10-29T10:38:33.661835+00:00",
+    "ended": "2026-10-29T10:38:46.640832+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "rustdoc",
+    "command": [
+      "cargo",
+      "doc",
+      "--locked",
+      "--workspace",
+      "--no-deps"
+    ],
+    "environment": {
+      "RUSTDOCFLAGS": "-D warnings"
+    },
+    "started": "2026-10-29T10:38:46.641056+00:00",
+    "ended": "2026-10-29T10:41:07.782736+00:00",
+    "exit_status": 0
+  },
+  {
+    "name": "diagnostics",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "pert-ui-diagnostics",
+      "--",
+      "--ignored"
+    ],
+    "environment": {},
+    "started": "2026-10-29T10:41:07.782971+00:00",
+    "ended": "2026-10-29T10:41:23.071463+00:00",
+    "exit_status": 0
+  }
+]

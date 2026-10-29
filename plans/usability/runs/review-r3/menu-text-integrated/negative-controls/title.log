@@ -1,0 +1,33 @@
+{"command": ["cargo", "test", "--locked", "-p", "pert-ui-gallery", "--bin", "pert-ui-gallery", "the_interaction_steps_pass_headlessly", "--", "--nocapture"], "started_at_utc": "2026-10-29T10:30:39.686357+00:00", "mutation_file": "crates/pert-ui-runtime/src/menu_bar.rs", "expected_failure": "a stationary View pointer switched"}
+   Compiling pert-ui-runtime v0.3.92 (/home/per/github/pert-ui/crates/pert-ui-runtime)
+warning: unused variable: `moved`
+   --> crates/pert-ui-runtime/src/menu_bar.rs:400:13
+    |
+400 |         let moved = !e.is_refresh() && previous != Some(e.position());
+    |             ^^^^^ help: if this is intentional, prefix it with an underscore: `_moved`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+   Compiling pert-ui-cpu v0.3.92 (/home/per/github/pert-ui/crates/pert-ui-cpu)
+   Compiling pert-ui-wgpu v0.3.92 (/home/per/github/pert-ui/crates/pert-ui-wgpu)
+   Compiling pert-ui v0.3.92 (/home/per/github/pert-ui/crates/pert-ui)
+warning: `pert-ui-runtime` (lib) generated 1 warning (run `cargo fix --lib -p pert-ui-runtime` to apply 1 suggestion)
+   Compiling pert-ui-gallery v0.3.92 (/home/per/github/pert-ui/apps/gallery)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.19s
+     Running unittests src/main.rs (target/debug/deps/pert_ui_gallery-6a6eb1f8c57322ae)
+
+running 1 test
+
+thread 'cli::the_interaction_steps_pass_headlessly' (3862303) panicked at apps/gallery/src/main.rs:521:79:
+menu keyboard: parked title and duplicate motion keep File selected: a stationary View pointer switched the keyboard-opened File menu
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test cli::the_interaction_steps_pass_headlessly ... FAILED
+
+failures:
+
+failures:
+    cli::the_interaction_steps_pass_headlessly
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 133 filtered out; finished in 7.64s
+
+error: test failed, to rerun pass `-p pert-ui-gallery --bin pert-ui-gallery`

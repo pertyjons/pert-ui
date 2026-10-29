@@ -297,3 +297,30 @@ are run where available; missing platforms remain explicit.
   ownership resets, keyboard-armed pointer protection and observable/deferred
   tab-refocus guards. Fresh design recheck precedes implementation. Existing
   unrelated TODO and missing native-platform evidence remain open.
+
+- 2026-10-29: historical diagnostics committed d479516 (0.3.91), after all eleven
+  workspace commands/API and independent conditional review. Missing
+  resume_content_jump docs were repaired with targeted doctests/strict docs;
+  the raw verdict and author condition discharge remain distinct. The extra
+  source guard's TODO item-name correction is explicitly recorded, with every
+  compiled source byte unchanged.
+- Focus-continuity recipes committed 17c6c3d, fresh Codex approved, integrated
+  public tests/doctests/Clippy/strict docs passed. The consumer-facing command
+  action may-flush sentence and VirtualList recipe link resolve the remaining
+  documentation sub-points without changing runtime policy.
+- Menu and tab patches received fresh Codex approval after required test/doc
+  repairs, then were integrated as working0.3.92. All eleven workspace commands,
+  API generation and selected Linux GPU/CPU native interaction checks passed;
+  restored old gates reject the actual new native scenario assertions. Fresh
+  integrated review approves code; API/record conditions are discharged in its
+  evidence README. No repaired-head blind run is claimed.
+- Recurrence matrices/metrics/new-finding ledger received independent records
+  approval after stricter empty-label, actual-example and must-use exercise
+  corrections. Acceptance-only exercise remains separate from timed P cells.
+- P13 and a new current-source long-list click-focus probe feed MultiSelect's
+  approved separate repair. Empty-raster canvas and hanging-caret findings are
+  actively assigned a separate whitespace checkpoint within this goal, with
+  temporary TODO entries until fixed. The first proposed sideways-reveal policy
+  was rejected for prose jiggle; revision3 pins displayed wrapped carets while
+  retaining canonical TextSelection/hit geometry. No new scrolling behavior is
+  claimed before implementation and review.

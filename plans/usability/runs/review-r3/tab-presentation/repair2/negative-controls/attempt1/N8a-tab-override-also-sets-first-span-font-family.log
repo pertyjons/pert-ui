@@ -1,0 +1,54 @@
+$ cd /home/per/pert-ui-usability/r3-text-worktree
+$ CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-text-implementation-target cargo test --locked -p pert-ui-runtime --lib text::tabs  # with mutation N8a-tab-override-also-sets-first-span-font-family
+exit status: 101
+
+--- mutation edits ---
+in text.rs:
+- '        for range in hidden {\n            builder.push(\n                parley::StyleProperty::Brush(TextBrush::HiddenTab),\n                range.clone(),\n            );'
++ '        for range in hidden {\n            if let Some(family) = families.first() {\n                builder.push(parley::FontFamily::from(family.as_str()), range.clone());\n            }\n            builder.push(\n                parley::StyleProperty::Brush(TextBrush::HiddenTab),\n                range.clone(),\n            );'
+
+--- stdout ---
+
+running 11 tests
+test text::tabs::tests::consecutive_tabs_merge_and_retained_tabs_split_them ... ok
+test text::tabs::tests::tab_only_text_has_no_coverage_but_its_advance_and_caret_stops ... ok
+test text::tabs::tests::other_unsupported_characters_keep_their_fallback_ink ... ok
+test text::tabs::tests::mixed_fonts_keep_each_tab_s_font_size_and_advance_and_icons_use_hidden_tab_metrics ... FAILED
+test text::tabs::tests::a_registered_font_ligating_a_tab_keeps_that_glyph_and_hides_pure_tab_atoms ... ok
+test text::tabs::tests::a_tab_and_a_missing_character_never_share_phase_coverage ... ok
+test text::tabs::tests::cached_measured_and_ellipsized_tabs_stay_hidden ... ok
+test text::tabs::tests::rich_spans_gaps_and_icons_keep_reference_color_size_and_alignment ... FAILED
+test text::tabs::tests::hanging_tabs_shrink_the_extent_and_translate_right_to_left_public_coordinates ... ok
+test text::tabs::tests::the_worst_admitted_alternating_tabs_stay_within_the_style_bound ... ok
+test text::tabs::tests::tabs_keep_the_reference_geometry_and_unicode_analysis_without_their_ink ... ok
+
+failures:
+
+---- text::tabs::tests::mixed_fonts_keep_each_tab_s_font_size_and_advance_and_icons_use_hidden_tab_metrics stdout ----
+
+thread 'text::tabs::tests::mixed_fonts_keep_each_tab_s_font_size_and_advance_and_icons_use_hidden_tab_metrics' (3761761) panicked at crates/pert-ui-runtime/src/text/tabs.rs:412:9:
+assertion `left == right` failed: "ab\t\tcd e\t\u{e161}h i\t\tAB z\t\t A X\tB end\tnext"
+  left: Some(28.0)
+ right: Some(26.0)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- text::tabs::tests::rich_spans_gaps_and_icons_keep_reference_color_size_and_alignment stdout ----
+
+thread 'text::tabs::tests::rich_spans_gaps_and_icons_keep_reference_color_size_and_alignment' (3761763) panicked at crates/pert-ui-runtime/src/text/tabs.rs:396:9:
+assertion `left == right` failed: "\u{e145}\tX\tY": horizontal canvas
+  left: [0, 61]
+ right: [0, 49]
+
+
+failures:
+    text::tabs::tests::mixed_fonts_keep_each_tab_s_font_size_and_advance_and_icons_use_hidden_tab_metrics
+    text::tabs::tests::rich_spans_gaps_and_icons_keep_reference_color_size_and_alignment
+
+test result: FAILED. 9 passed; 2 failed; 0 ignored; 0 measured; 188 filtered out; finished in 1.72s
+
+
+--- stderr ---
+   Compiling pert-ui-runtime v0.3.89 (/home/per/pert-ui-usability/r3-text-worktree/crates/pert-ui-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.34s
+     Running unittests src/lib.rs (/home/per/pert-ui-usability/r3-text-implementation-target/debug/deps/pert_ui_runtime-87e7d33e6cb9fb9f)
+error: test failed, to rerun pass `-p pert-ui-runtime --lib`

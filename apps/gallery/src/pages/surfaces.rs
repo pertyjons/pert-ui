@@ -152,7 +152,7 @@ pub(crate) fn menu_bar(ui: &mut Runtime) -> Result<Element, AppError> {
     Ok(page([
         label(
             "menu-bar-help",
-            "Titles open on press; while one is open, pointing at another switches. F10 moves focus to the titles, Left/Right move between them and Down opens. Inside a menu, Left/Right at the edge move to the neighboring menu. Escape closes one level; choosing a command returns focus to the document. Shortcuts are the commands' own chords and also work with the menus closed. The synchronize button at the right of the bar sits in its trailing slot: an ordinary Tab stop that F10 and the title arrows skip.",
+            "Titles open on press; while one is open, moving the pointer to another switches. A stationary pointer leaves keyboard navigation in control. F10 moves focus to the titles, Left/Right move between them and Down opens. Inside a menu, Left/Right at the edge move to the neighboring menu. Escape closes one level; choosing a command returns focus to the document. Shortcuts are the commands' own chords and also work with the menus closed. The synchronize button at the right of the bar sits in its trailing slot: an ordinary Tab stop that F10 and the title arrows skip.",
         ),
         stage(
             "menu-bar-stage",

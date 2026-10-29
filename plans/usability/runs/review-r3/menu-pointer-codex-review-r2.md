@@ -1,0 +1,7 @@
+**Approve the isolated patch. Both P2 findings are repaired; no scoped blockers remain.**
+
+- **Transition coverage:** [the new tests](/home/per/pert-ui-usability/r3-menu-worktree/crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs:1183) establish existing pointer ownership immediately before Enter/Space successfully arms. They exercise intervening motion, clicks, scrolling, layout refresh and repeats, then assert the released command or Select value/callback. Pointer-first nonsteal, separator/disabled motion, navigation repeats, and modified/ignored/release preservation are also meaningfully covered.
+- **Rustdoc:** [Menu](/home/per/pert-ui-usability/r3-menu-worktree/crates/pert-ui-runtime/src/menu.rs:681) and [Select](/home/per/pert-ui-usability/r3-menu-worktree/crates/pert-ui-runtime/src/select.rs:1449) now restrict the freeze to successfully armed Enter/Space activation. They correctly distinguish held navigation and activation keys that cannot arm during a pointer gesture.
+- **Evidence:** The round-2 mutation diffs and assertion failures demonstrate the intended transitions. Restore records show matching source hashes and newer mtimes; subsequent logs show runtime recompilation. Current source hashes match the final evidence, whose checks pass. Changes since the prior review are tests and documentation/comments only.
+
+I made no edits and ran no builds, tests, repository programs or agents. Root-owned integration/workspace/API/native gates remain separate; this approval makes no native or full-usability claim.

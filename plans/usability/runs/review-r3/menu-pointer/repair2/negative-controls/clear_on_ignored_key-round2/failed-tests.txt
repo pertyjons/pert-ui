@@ -1,0 +1,5 @@
+test menu_pointer_ownership::a_key_the_menu_ignores_leaves_the_pointer_its_highlight ... FAILED
+test menu_pointer_ownership::a_modified_enter_that_does_not_arm_leaves_the_pointer_its_highlight ... FAILED
+test menu_pointer_ownership::navigation_with_modifiers_leaves_the_pointer_its_highlight ... FAILED
+test result: FAILED. 41 passed; 3 failed; 0 ignored; 0 measured; 464 filtered out; finished in 0.07s
+error: test failed, to rerun pass `-p pert-ui --test surfaces`

@@ -1,0 +1,11 @@
+--- a/crates/pert-ui-runtime/src/menu_bar.rs
++++ b/crates/pert-ui-runtime/src/menu_bar.rs
+@@ -401,7 +401,7 @@
+         match e.kind() {
+             // While any menu of the bar is open, pointing at another title opens
+             // its menu instead.
+-            PointerKind::Move if moved && inside && self.available && self.action.is_none() => {
++            PointerKind::Move if inside && self.available && self.action.is_none() => {
+                 let core = self.state.core();
+                 if core.open_index()?.is_some() && !self.is_open()? {
+                     core.set_open(Some(self.key.clone()))?;

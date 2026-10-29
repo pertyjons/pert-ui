@@ -1,0 +1,21 @@
+#!/bin/sh
+# Final run of the facade probe on the base extraction and the repaired
+# worktree, with source hashes. Output under final/.
+P=/home/per/pert-ui-usability/r3-text-implementation2-evidence/facade-probe
+mkdir -p "$P/final"
+for build in base repaired; do
+  if [ "$build" = base ]; then target=/home/per/pert-ui-usability/r3-text-implementation2-base-target; else target=/home/per/pert-ui-usability/r3-text-implementation-target; fi
+  {
+    echo "\$ cd $P/$build"
+    echo "\$ CARGO_TARGET_DIR=$target cargo run --offline -q"
+    echo "probe source: $(sha256sum "$P/src/main.rs")"
+    echo "manifest: $(sha256sum "$P/$build/Cargo.toml")"
+    echo "lock: $(sha256sum "$P/$build/Cargo.lock")"
+    (cd "$P/$build" && CARGO_TARGET_DIR=$target cargo run --offline -q 2>&1)
+    echo "exit status: $?"
+  } > "$P/final/$build.out" 2>&1
+done
+echo "base source tree: $(cd /home/per/pert-ui-usability/r3-text-implementation2-base-3bbfb81 && find . -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum)" > "$P/final/sources.txt"
+(cd /home/per/pert-ui-usability/r3-text-worktree && sha256sum crates/pert-ui-runtime/src/text.rs crates/pert-ui-runtime/src/text/tabs.rs crates/pert-ui-runtime/src/text_selection.rs crates/pert-ui-runtime/src/text_fields.rs) >> "$P/final/sources.txt"
+diff "$P/final/base.out" "$P/final/repaired.out" > "$P/final/base-vs-repaired.diff"
+tail -n 1 "$P/final/base.out" "$P/final/repaired.out"

@@ -75,7 +75,9 @@ slot builders do not accumulate icons.
 
 Parley shapes the bundled OFL-licensed Noto Sans font and Swash prepares coverage
 on the UI thread. No system font discovery, color emoji or complete script coverage
-is promised; unsupported characters use the font's missing-glyph mark. Body,
+is promised; unsupported characters use the font's missing-glyph mark, except literal tabs
+whose shaped advance is non-printing (with the registered-font mixed-atom
+exception described below). Body,
 heading and caption presets default to 14/18/12 logical pixels, overridable
 through theme metrics. Font assets and attribution
 ship in the runtime package. Text admission limits and bounded cache behavior are
@@ -371,6 +373,16 @@ fn main() -> Result<(), pert_ui::AppError> {
 # #[cfg(not(feature = "native"))]
 # fn main() {}
 ```
+
+Literal U+0009 in multiline text keeps its original bytes, Unicode boundaries
+and font-dependent shaped advance, with no tab-only ink. There are no aligned
+tab stops. A registered font that forms one inseparable glyph from tab and
+printable text keeps that whole glyph's ink; see [`TextLayout`]. Other unsupported
+characters keep their fallback/missing-glyph presentation. Keyboard Tab still
+moves focus. Removing old hanging-tab ink can reduce the extent and translate
+RTL caret/selection x positions through the new origin. Hanging-whitespace
+geometry may lie outside [`TextLayout::size`]; the current editor reveal limits
+are documented on [`TextArea`].
 
 Bindings accept up to 16 KiB UTF-8, subject to the shared text preparation limits.
 Single-line paste replaces line breaks and tabs with spaces; multiline paste

@@ -1,0 +1,221 @@
+# started 2026-10-29T10:32:29+01:00
+# cwd /home/per/pert-ui-usability/r3-menu-worktree  CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-menu-implementation-target
+# command: cargo test --locked -p pert-ui-runtime --lib
+# HEAD b9e4c6cfc2444c5c5fcea63a390e9e2038699dd4
+# git status --porcelain:
+ M crates/pert-ui-runtime/src/activation.rs
+ M crates/pert-ui-runtime/src/menu_bar.rs
+ M crates/pert-ui-runtime/src/select.rs
+# hashes before:
+86e943e363aa849e0f09d2e89bfaad034e6c9aba4e2d8806a07674b8da233554  crates/pert-ui-runtime/src/select.rs
+fadf77fd7e71d2d7421bad95d41b7f4c8f3d7560e3250b7cade3a537b0fa7431  crates/pert-ui-runtime/src/menu_bar.rs
+4ad4e0e04d221ea9f21e9d3edf20403cb7b58b90da4810f902fb478bce9335b6  crates/pert-ui-runtime/src/menu.rs
+29d28116b00b3e3241998fa8b80368e448fb8638c446baba23ffac82b83afb1e  crates/pert-ui-runtime/src/activation.rs
+b5e24f340755fd447264bd3d5d41e74db74f1beac505a4653af2fa83a02e62b7  crates/pert-ui/tests/surfaces/main.rs
+# ---- output ----
+   Compiling pert-ui-core v0.3.90 (/home/per/pert-ui-usability/r3-menu-worktree/crates/pert-ui-core)
+   Compiling pert-ui-runtime v0.3.90 (/home/per/pert-ui-usability/r3-menu-worktree/crates/pert-ui-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 14.51s
+     Running unittests src/lib.rs (/home/per/pert-ui-usability/r3-menu-implementation-target/debug/deps/pert_ui_runtime-6dfb416399d2a52b)
+
+running 188 tests
+test axis_mapping::tests::keeps_precision_far_from_zero ... ok
+test axis_mapping::tests::panning_moves_content_toward_higher_pixels ... ok
+test axis_mapping::tests::rejects_invalid_mappings ... ok
+test async_source::tests::exhaustion_is_an_error_that_changes_nothing ... ok
+test capture::png::tests::a_stored_stream_inflates_to_the_scanlines ... ok
+test axis_mapping::tests::ticks_stay_finite_increasing_and_visible ... ok
+test axis_mapping::tests::zooming_to_the_same_scale_changes_nothing ... ok
+test axis_mapping::tests::tick_steps_are_one_two_or_five ... ok
+test click::tests::a_series_count_saturates ... ok
+test capture::tests::unsupported_names_the_declaration_and_the_cpu_route ... ok
+test capture::tests::png_pixels_are_straight_alpha ... ok
+test capture::png::tests::crc_matches_the_reference_value ... ok
+test capture::tests::frames_validate_and_crop ... ok
+test color_picker::tests::hsv_round_trips_every_primary_and_keeps_open_components ... ok
+test collapsible::tests::single_mode_keeps_the_first_open_section_in_order ... ok
+test error::tests::every_wrapped_leaf_converts_into_every_higher_level_error ... ok
+test geometry::raster::tests::a_hairline_draws_proportional_coverage ... ok
+test geometry::raster::tests::a_round_dot_covers_the_exact_disc_area ... ok
+test geometry::raster::tests::an_oversized_stroke_is_rejected_like_the_fallback ... ok
+test geometry::raster::tests::a_round_join_does_not_reach_past_butt_caps ... ok
+test geometry::raster::tests::impossible_curve_and_round_counts_return_typed_budget_errors ... ok
+test geometry::raster::tests::only_straight_strokes_are_eligible ... ok
+test geometry::raster::tests::pieces_sharing_a_pixel_cover_their_union ... ok
+test geometry::raster::tests::stroke_phase_profile ... ignored, timing profile; run in release
+test geometry::raster::tests::subdivision_admission_never_coarsens_or_overallocates ... ok
+test geometry::raster::union::tests::a_row_outside_a_sector_circle_is_empty ... ok
+test color_picker::tests::images_have_their_documented_extents ... ok
+test geometry::tests::an_extent_beyond_f32_is_an_invalid_parameter ... ok
+test capture::png::tests::a_large_image_spans_several_stored_blocks ... ok
+test live_source::tests::loss_only_accounting_does_not_refresh_a_retained_value ... ok
+test number_format::tests::locales_refuse_ambiguous_text_and_separators ... ok
+test number_format::tests::locales_format_and_parse_round_trip ... ok
+test parameter_binding::tests::refused_commit_phase_and_sequence_reservation_attempts_are_recorded_once ... ok
+test profiling::tests::nesting_pause_clear_and_unwinding_are_accounted_without_stale_scopes ... ok
+test parameter_binding::tests::begin_refusals_during_delivery_and_after_shutdown_are_recorded_once ... ok
+test resources::tests::arena_deduplicates_equal_content_across_allocations ... ok
+test conformance::tests::the_reference_laid_out_in_a_viewport_reports_no_overlap ... ok
+test resources::tests::a_key_collision_never_merges_different_content ... ok
+test resources::tests::construction_rejects_inconsistent_or_oversized_data ... ok
+test resources::tests::premultiplication_happens_in_linear_light ... ok
+test geometry::raster::tests::remote_fill_edges_cover_the_entire_local_clip ... ok
+test parameter_binding::tests::inspection_registry_reclaims_dead_entries_without_releasing_identities ... ok
+test runtime::clipboard_tests::runtime_clipboard_text_is_refused_inside_every_phase_and_from_the_service ... ok
+test runtime::commands::tests::chords_are_presented_in_each_platform_convention ... ok
+test geometry::raster::tests::fill_work_counts_the_sampled_sub_scanlines ... ok
+test runtime::measurements::tests::the_least_recently_used_measurement_is_replaced ... ok
+test runtime::measurements::tests::a_lookup_returns_the_matching_entry ... ok
+test runtime::overlay::tests::outline_stays_inside_bounds_and_degenerates_without_overdraw ... ok
+test runtime::overlay::tests::badge_counts_unplaced_and_excess_markers ... ok
+test runtime::presentation::tests::accepts_the_documented_range_and_rejects_everything_else ... ok
+test runtime::overlay::tests::badge_numerals_saturate ... ok
+test geometry::raster::union::tests::remote_crop_changes_preserve_overlapping_coverage_bytes ... ok
+test runtime::surfaces::tests::application_dialog_downgrade_releases_application_blocker ... ok
+test runtime::surfaces::tests::changed_nonmodal_kind_after_early_error_releases_and_retries_admission ... ok
+test runtime::theme::seed::tests::achromatic_seeds_give_one_gray_palette ... ok
+test runtime::theme::seed::tests::every_seed_class_matches_its_default_source ... ok
+test runtime::theme::seed::tests::oklch_matches_reference_values_and_round_trips ... ok
+test runtime::theme::seed::tests::seeding_a_mode_with_its_own_accents_reproduces_it ... ok
+test runtime::surfaces::tests::changed_modal_kind_after_early_error_blocks_and_retries_admission ... ok
+test runtime::theme::tests::exactly_the_documented_roles_follow_their_sources ... ok
+test file_browser::controller::tests::exhausted_generations_fail_the_update_after_handing_out_the_made_requests ... ok
+test runtime::surfaces::tests::pending_application_dialog_blocks_other_windows_before_admission ... ok
+test geometry::raster::union::tests::opposing_remote_steep_endpoints_match_near_geometry_on_the_same_grid ... ok
+test runtime::tree::tests::measurement_reads_outlive_an_evicted_entry_until_layout_is_invalidated ... ok
+test runtime::active_source_tests::ordinary_flushes_do_not_scan_dormant_source_registry ... ok
+test file_browser::controller::tests::exhausted_navigation_leaves_the_browser_where_it_was ... ok
+test file_browser::controller::tests::a_refused_read_fails_dispatch_instead_of_requesting_nothing ... ok
+test scrollbar::tests::a_press_on_the_thumb_keeps_its_position_and_a_track_press_centers_it ... ok
+test scrollbar::tests::a_thumb_that_fills_its_track_does_not_travel ... ok
+test scrollbar::tests::dragging_keeps_the_grabbed_point_under_the_pointer_and_clamps ... ok
+test scrollbar::tests::reveal_moves_only_as_far_as_needed ... ok
+test select::row_geometry_tests::a_reveal_waits_until_the_rows_are_measured ... ok
+test select::row_geometry_tests::settling_without_a_request_only_keeps_the_offset_inside_the_rows ... ok
+test select::row_geometry_tests::the_first_arrangement_applies_a_reveal_and_the_next_keeps_it ... ok
+test file_browser::controller::tests::another_folder_response_preserves_current_entry_source_and_row_revision ... ok
+test shapes::tests::focus_ring_has_one_color_at_any_zoom ... ok
+test strings::tests::every_message_fills_every_placeholder_of_its_role ... ok
+test strings::tests::templates_reject_unknown_missing_and_unbalanced_placeholders ... ok
+test runtime::tree::tests::requested_children_and_removals_are_validated_once_the_flush_settles ... ok
+test runtime::tree::tests::idle_flushes_after_a_measurement_change_run_no_validation_pass ... ok
+test text::icons::tests::every_role_has_a_bundled_glyph ... ok
+test geometry::raster::union::tests::remote_end_caps_and_real_corners_match_a_nearby_integer_grid_reference ... ok
+test select::inline_typography_tests::inline_choice_has_a_smaller_caption_on_the_value_baseline ... ok
+test runtime::tree::tests::notifiers_select_every_layout_reader_in_either_visiting_order ... ok
+test runtime::tree::tests::a_move_takes_queued_measurements_out_of_the_source_window ... ok
+test runtime::tree::tests::a_move_requested_during_a_flush_is_validated_once_the_flush_settles ... ok
+test runtime::tree::tests::an_unmount_takes_a_queued_measurement_out_of_its_window ... ok
+test text::rich_tests::a_cache_hit_records_the_font_read_and_another_font_misses ... ok
+test text::rich_tests::a_fitting_ellipsis_text_is_shaped_once_and_then_not_at_all ... ok
+test text::rich_tests::a_truncated_text_measures_the_whole_string_once ... ok
+test text::rich_tests::bundled_fonts_are_embedded_once_and_registered_by_role ... ok
+test text::rich_tests::collection_with_two_readable_faces_is_rejected_before_registration ... ok
+test text::rich_tests::all_catalog_entries_exist_and_custom_font_names_do_not_alias ... ok
+test text::rich_tests::empty_styled_spans_keep_paragraph_defaults_and_validate_fonts ... ok
+test table::tests::a_rejected_restore_keeps_the_resolved_columns_and_the_offset ... ok
+test text::rich_tests::highlights_validate_boundaries_and_merge_ranges ... ok
+test text::rich_tests::ellipsis_handles_line_breaks_tiny_widths_and_invalid_widths ... ok
+test geometry::raster::tests::large_curves_keep_the_physical_chord_tolerance ... ok
+test text::rich_tests::plain_cache_hits_skip_resolution_and_recollect_current_font_roles ... ok
+test text::rich_tests::only_a_plain_unwrapped_entry_under_the_same_key_answers_the_width ... ok
+test text::rich_tests::text_fallback_uses_bundled_text_and_icon_sources_stay_exact ... ok
+test geometry::raster::tests::a_stroke_far_from_the_origin_covers_as_near_it ... ok
+test profiling::tests::retained_samples_aggregates_and_labels_are_bounded ... ok
+test text::rich_tests::a_line_beyond_the_byte_limit_is_cut_on_its_own_cluster_boundaries ... ok
+test geometry::raster::union::tests::remote_vertical_bounds_cover_small_and_large_viewports_to_the_last_row ... ok
+test text::tests::phase_cache_scroll_profile ... ignored, opt-in release-profile measurement of phase-cache reuse
+test text::rich_tests::wrapped_bidi_icons_use_their_own_alignment_and_reuse_coverage ... ok
+test shapes::tests::byte_budget_evicts_large_entries_but_live_masks_remain_valid ... ok
+test geometry::raster::union::tests::remote_strokes_keep_visible_endpoints_and_crop_grid_coverage ... ok
+test text_fields::inline::tests::the_editor_area_reserves_the_suffix_and_the_density_gap ... ok
+test text_fields::spaced_paste::tests::a_caret_outside_a_word_uses_the_nearest_word_in_that_direction ... ok
+test text_fields::spaced_paste::tests::a_selection_is_the_target_and_stays_selected ... ok
+test text_fields::spaced_paste::tests::caret_in_a_word_pastes_beside_that_word ... ok
+test text_fields::spaced_paste::tests::existing_spacing_and_edges_are_not_doubled ... ok
+test text_fields::spaced_paste::tests::multibyte_words_keep_char_boundaries ... ok
+test text_fields::spaced_paste::tests::the_clipboard_is_trimmed_and_empty_clipboards_are_not_edits ... ok
+test text_fields::tests::field_menu_is_always_constructible ... ok
+test text::tests::sizes_above_the_raster_limit_lower_the_scale_instead_of_failing ... ok
+test text_source::tests::only_library_defaults_show_text_before_the_first_read ... ok
+test tool_windows::divider::tests::restore_remains_busy_until_every_edge_resize_ends ... ok
+test text_selection::tests::shaped_carets_snap_to_whole_graphemes ... ok
+test transform::tests::composition_applies_left_to_right ... ok
+test transform::tests::quarter_turn_corners_agree_with_source ... ok
+test transform::tests::zooming_keeps_the_anchor_fixed ... ok
+test transform::tests::rejects_invalid_transforms ... ok
+test validation::development::tests::a_corrected_issue_is_removed_instead_of_retrying_its_old_log ... ok
+test validation::development::tests::a_log_retry_reuses_the_finished_report_without_a_validation_pass ... ok
+test validation::development::tests::an_issue_withheld_while_its_window_is_unmeasured_is_not_logged_again ... ok
+test validation::development::tests::failed_logging_remains_observable_and_retries ... ok
+test validation::development::tests::geometry_is_validated_only_in_a_measured_window ... ok
+test validation::development::tests::malformed_geometry_and_colors_do_not_cascade_into_overlap ... ok
+test validation::development::tests::partial_log_recovery_retries_only_the_unwritten_issue_without_rechecking ... ok
+test validation::development::tests::peers_that_only_touch_are_not_overlapping ... ok
+test tree::forwarding::every_list_override_is_forwarded ... ok
+test validation::development::tests::refresh_writes_issue_lines_to_the_test_log ... ok
+test validation::development::tests::unchanged_invalid_data_reuses_validation_and_errors_log_once_until_fixed ... ok
+test vector_scene::tests::a_reference_missing_from_its_scene_names_the_id ... ok
+test vector_scene::tests::a_non_finite_scale_is_non_finite_and_a_non_positive_one_is_not_positive ... ok
+test vector_scene::tests::persistent_fallback_reuses_tinted_coverage_recovers_and_evicts ... ok
+test vector_scene::tests::resizing_around_wholly_visible_geometry_reuses_coverage ... ok
+test text_fields::inline::tests::caption_value_and_unit_share_a_painted_baseline ... ok
+test virtual_axis::tests::a_window_covers_whole_lines_and_stays_inside_the_items ... ok
+test virtual_axis::tests::an_unmeasured_estimated_axis_answers_like_a_fixed_one ... ok
+test virtual_axis::tests::invalid_extents_and_lanes_are_rejected ... ok
+test shapes::tests::coverage_cache_reuses_masks_bounds_entries_and_rejects_oversized_requests ... ok
+test virtual_axis::tests::measured_lines_move_everything_after_them_and_nothing_before ... ok
+test virtual_axis::tests::measurements_survive_a_count_change_and_are_rejected_when_invalid ... ok
+test virtual_axis::tests::measuring_above_the_viewport_anchors_what_is_on_screen ... ok
+test virtual_axis::tests::pinned_items_surround_the_window_in_order ... ok
+test virtual_axis::tests::positive_measurements_survive_disparate_estimates_and_remeasurement ... ok
+test virtual_axis::tests::replacing_all_large_estimates_recovers_small_prefix_sums ... ok
+test virtual_axis::tests::reveal_moves_as_little_as_possible_and_never_past_the_ends ... ok
+test workspace::tests::a_map_value_holds_scalars_only ... ok
+test workspace::tests::a_map_value_rejects_a_repeated_key_rather_than_dropping_one ... ok
+test workspace::tests::encodes_deterministically_in_path_order ... ok
+test workspace::tests::enforces_documented_limits ... ok
+test workspace::tests::escapes_separators_and_quotes_in_paths_and_text ... ok
+test workspace::tests::every_token_has_one_spelling_and_the_layout_is_tolerated ... ok
+test workspace::tests::expect_only_closes_the_field_set ... ok
+test workspace::tests::keeps_integers_and_numbers_distinct ... ok
+test workspace::tests::rejects_an_unsupported_version_without_reading_entries ... ok
+test workspace::tests::rejects_duplicate_paths_rather_than_dropping_one ... ok
+test workspace::tests::rejects_malformed_documents ... ok
+test workspace::tests::round_trips_every_value_kind ... ok
+test workspace::tests::settings_survive_a_round_trip_and_stay_optional ... ok
+test text::rich_tests::segment_boundaries_preserve_clusters_bidi_and_wrapping ... ok
+test text::rich_tests::cold_and_warm_fits_agree_around_the_advance_width ... ok
+test text::rich_tests::inline_icon_ink_aligns_with_neighboring_text_at_each_scale_and_font ... ok
+test vector_scene::tests::coverage_bounds_crop_matches_the_plain_clip ... ok
+test text::rich_tests::the_cut_keeps_whole_source_clusters_at_each_share_boundary ... ok
+test virtual_axis::tests::a_long_axis_stays_consistent_between_its_two_directions ... ok
+test text::tests::cache_budget_and_entry_limit_include_owned_metadata ... ok
+test runtime::theme::seed::tests::the_solve_meets_its_luminance_in_gamut_at_the_edges ... ok
+test text::rich_tests::ellipsis_fits_the_width_keeps_whole_graphemes_and_is_remembered ... ok
+test quick_pick::tests::the_linear_run_search_agrees_with_a_window_scan ... ok
+test geometry::raster::tests::a_clip_crops_direct_coverage_on_its_own_grid ... ok
+test text::rich_tests::evicting_the_layout_or_the_cut_keeps_the_result ... ok
+test text::tests::phase_cache_reuses_visible_rows_across_vertical_scroll_phases ... ok
+test text::rich_tests::a_text_beyond_the_raster_limit_truncates_unless_the_cut_is_too ... ok
+test text::tests::width_changes_reuse_identical_rasters_but_reflow_matches_fresh_preparation ... ok
+test virtual_axis::tests::line_starts_stay_exact_far_past_the_precision_of_f32 ... ok
+test capture::tests::premultiplying_the_straight_png_pixel_again_is_within_one_step ... ok
+test geometry::raster::tests::direct_coverage_matches_the_outline_fill ... ok
+test runtime::theme::seed::tests::every_generated_role_keeps_its_luminance_for_every_seed_family ... ok
+test text::rich_tests::a_cut_line_is_fitted_with_its_ellipsis_and_never_shaped_whole ... ok
+test geometry::raster::tests::round_strokes_match_their_distance_field ... ok
+test text::rich_tests::a_line_at_the_limit_is_truncated_within_it ... ok
+test geometry::raster::tests::coverage_over_the_work_budget_is_rejected ... ok
+
+test result: ok. 186 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 1.13s
+
+# ---- end output ----
+# hashes after:
+86e943e363aa849e0f09d2e89bfaad034e6c9aba4e2d8806a07674b8da233554  crates/pert-ui-runtime/src/select.rs
+fadf77fd7e71d2d7421bad95d41b7f4c8f3d7560e3250b7cade3a537b0fa7431  crates/pert-ui-runtime/src/menu_bar.rs
+4ad4e0e04d221ea9f21e9d3edf20403cb7b58b90da4810f902fb478bce9335b6  crates/pert-ui-runtime/src/menu.rs
+29d28116b00b3e3241998fa8b80368e448fb8638c446baba23ffac82b83afb1e  crates/pert-ui-runtime/src/activation.rs
+b5e24f340755fd447264bd3d5d41e74db74f1beac505a4653af2fa83a02e62b7  crates/pert-ui/tests/surfaces/main.rs
+# finished 2026-10-29T10:32:45+01:00
+# exit_status 0

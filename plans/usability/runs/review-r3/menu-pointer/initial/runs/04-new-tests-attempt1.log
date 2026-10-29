@@ -1,0 +1,72 @@
+# started 2026-10-29T10:39:21+01:00
+# cwd /home/per/pert-ui-usability/r3-menu-worktree  CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-menu-implementation-target
+# command: cargo test --locked -p pert-ui --test surfaces menu_pointer_ownership
+# HEAD b9e4c6cfc2444c5c5fcea63a390e9e2038699dd4
+# git status --porcelain:
+ M crates/pert-ui-runtime/src/activation.rs
+ M crates/pert-ui-runtime/src/menu_bar.rs
+ M crates/pert-ui-runtime/src/select.rs
+ M crates/pert-ui/tests/surfaces/main.rs
+?? crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs
+# hashes before:
+86e943e363aa849e0f09d2e89bfaad034e6c9aba4e2d8806a07674b8da233554  crates/pert-ui-runtime/src/select.rs
+fadf77fd7e71d2d7421bad95d41b7f4c8f3d7560e3250b7cade3a537b0fa7431  crates/pert-ui-runtime/src/menu_bar.rs
+4ad4e0e04d221ea9f21e9d3edf20403cb7b58b90da4810f902fb478bce9335b6  crates/pert-ui-runtime/src/menu.rs
+29d28116b00b3e3241998fa8b80368e448fb8638c446baba23ffac82b83afb1e  crates/pert-ui-runtime/src/activation.rs
+14eea5b3899b4f52eb97b12bf3962d39d445e1071cbcc1482b24cfdbabc702a4  crates/pert-ui/tests/surfaces/main.rs
+ab79ffc6422abe1f3443564c6c9f3b3a7639c9aa4851c360e0ff4f4aa066fc1e  crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs
+# ---- output ----
+   Compiling pert-ui v0.3.90 (/home/per/pert-ui-usability/r3-menu-worktree/crates/pert-ui)
+error[E0502]: cannot borrow `ui` as immutable because it is also borrowed as mutable
+   --> crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs:724:42
+    |
+722 |     let select = mount_select(
+    |                  ------------ mutable borrow later used by call
+723 |         &mut ui,
+    |         ------- mutable borrow occurs here
+724 |         Element::new("mode", Select::new(&ui, value.clone(), options(5)).unwrap()),
+    |                                          ^^^ immutable borrow occurs here
+
+error[E0502]: cannot borrow `ui` as immutable because it is also borrowed as mutable
+   --> crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs:754:44
+    |
+752 |     let select = mount_select(
+    |                  ------------ mutable borrow later used by call
+753 |         &mut ui,
+    |         ------- mutable borrow occurs here
+754 |         Element::new("mode", Select::bound(&ui, value.clone(), source.read_only())),
+    |                                            ^^^ immutable borrow occurs here
+
+error[E0502]: cannot borrow `ui` as immutable because it is also borrowed as mutable
+   --> crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs:779:25
+    |
+775 |     let select = mount_select(
+    |                  ------------ mutable borrow later used by call
+776 |         &mut ui,
+    |         ------- mutable borrow occurs here
+...
+779 |             Select::new(&ui, value.clone(), options(7))
+    |                         ^^^ immutable borrow occurs here
+
+error[E0502]: cannot borrow `ui` as immutable because it is also borrowed as mutable
+   --> crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs:812:42
+    |
+810 |     let select = mount_select(
+    |                  ------------ mutable borrow later used by call
+811 |         &mut ui,
+    |         ------- mutable borrow occurs here
+812 |         Element::new("mode", Select::new(&ui, value.clone(), options(30)).unwrap()),
+    |                                          ^^^ immutable borrow occurs here
+
+For more information about this error, try `rustc --explain E0502`.
+error: could not compile `pert-ui` (test "surfaces") due to 4 previous errors
+# ---- end output ----
+# hashes after:
+86e943e363aa849e0f09d2e89bfaad034e6c9aba4e2d8806a07674b8da233554  crates/pert-ui-runtime/src/select.rs
+fadf77fd7e71d2d7421bad95d41b7f4c8f3d7560e3250b7cade3a537b0fa7431  crates/pert-ui-runtime/src/menu_bar.rs
+4ad4e0e04d221ea9f21e9d3edf20403cb7b58b90da4810f902fb478bce9335b6  crates/pert-ui-runtime/src/menu.rs
+29d28116b00b3e3241998fa8b80368e448fb8638c446baba23ffac82b83afb1e  crates/pert-ui-runtime/src/activation.rs
+14eea5b3899b4f52eb97b12bf3962d39d445e1071cbcc1482b24cfdbabc702a4  crates/pert-ui/tests/surfaces/main.rs
+ab79ffc6422abe1f3443564c6c9f3b3a7639c9aa4851c360e0ff4f4aa066fc1e  crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs
+# finished 2026-10-29T10:39:22+01:00
+# exit_status 101

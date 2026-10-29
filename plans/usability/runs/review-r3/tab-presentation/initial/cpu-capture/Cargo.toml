@@ -1,0 +1,11 @@
+[package]
+name = "r3-tab-cpu-capture"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+# Evidence-only program outside the checkout; its own workspace.
+[workspace]
+
+[dependencies]
+pert-ui = { path = "../../r3-text-worktree/crates/pert-ui", default-features = false, features = ["cpu"] }

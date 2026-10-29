@@ -1,0 +1,3 @@
+test menu_pointer_ownership::a_press_highlights_its_row_without_a_move_and_a_release_elsewhere_runs_nothing ... FAILED
+test menu_pointer_ownership::a_branch_clicked_without_a_move_is_the_row_right_and_left_return_to ... FAILED
+test result: FAILED. 24 passed; 2 failed; 0 ignored; 0 measured; 464 filtered out; finished in 0.04s

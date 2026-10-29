@@ -1,0 +1,500 @@
+--- /home/per/pert-ui-usability/r3-menu-implementation2-evidence/baseline-sources/menu_pointer_ownership.rs	2026-10-29 10:46:18.687141090 +0100
++++ crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs	2026-10-29 11:09:04.024295752 +0100
+@@ -49,6 +49,13 @@
+     ui.key_input(code, action).unwrap();
+     settle(ui);
+ }
++/// `code` pressed and released while `modifier` is held.
++#[track_caller]
++fn chord(ui: &mut Runtime, modifier: KeyCode, code: KeyCode) {
++    key_edge(ui, modifier, KeyAction::Press);
++    press(ui, code);
++    key_edge(ui, modifier, KeyAction::Release);
++}
+ 
+ #[track_caller]
+ fn part(ui: &Runtime, owner: &WidgetId, name: &str) -> WidgetId {
+@@ -131,21 +138,25 @@
+     log.borrow().clone()
+ }
+ 
+-/// A menu over a note whose text a test changes to cause layout, and so a
+-/// refreshed move, away from the menu.
++/// A menu between a header and a note whose texts a test changes to cause
++/// layout, and so a refreshed move: the note's below the menu moves nothing,
++/// a header line more moves the menu and its open rows down.
+ struct MenuFixture {
+     root: WidgetId,
+     trigger: WidgetId,
+     items: WidgetId,
++    header: Signal<String>,
+     note: Signal<String>,
+ }
+ fn mount_menu(ui: &mut Runtime, rows: Vec<MenuItem>) -> MenuFixture {
++    let header = ui.signal(String::from("Header"));
+     let note = ui.signal(String::from("Note"));
+     let menu = Menu::new(ui, "Actions", rows).unwrap();
+     let root = ui
+         .mount_tree(Element::new(
+             "root",
+             Column::new([
++                Element::new("header", Label::new(&header)),
+                 Element::new("menu", menu),
+                 Element::new("note", Label::new(&note)),
+             ]),
+@@ -157,6 +168,7 @@
+         trigger: part(ui, &menu, "trigger"),
+         items: part(ui, &menu, "items"),
+         root,
++        header,
+         note,
+     }
+ }
+@@ -185,6 +197,26 @@
+         self.note.update(|text| text.push_str(" more")).unwrap();
+         settle(ui);
+     }
++    /// Adds a header line, which moves the open menu down beneath a
++    /// stationary pointer; the runtime then repeats the pointer's position
++    /// as a refreshed move.
++    #[track_caller]
++    fn shift_down(&self, ui: &mut Runtime) {
++        self.header.update(|text| text.push_str("\nmore")).unwrap();
++        settle(ui);
++    }
++    /// Reconciles a new description of the menu with `rows`.
++    #[track_caller]
++    fn redescribe(&self, ui: &mut Runtime, rows: Vec<MenuItem>) {
++        let next = Menu::new(ui, "Actions", rows).unwrap();
++        let children = vec![
++            Element::new("header", Label::new(&self.header)),
++            Element::new("menu", next),
++            Element::new("note", Label::new(&self.note)),
++        ];
++        ui.reconcile_children(&self.root, children).unwrap();
++        settle(ui);
++    }
+ }
+ 
+ #[test]
+@@ -371,11 +403,7 @@
+         logged_rows(&log, &["Alpha", "Beta", "Gamma", "Delta"]),
+     );
+     let redescribe = |ui: &mut Runtime, names: &[&str]| {
+-        let next = Menu::new(ui, "Actions", logged_rows(&log, names)).unwrap();
+-        let note = Element::new("note", Label::new(&menu.note));
+-        ui.reconcile_children(&menu.root, vec![Element::new("menu", next), note])
+-            .unwrap();
+-        settle(ui);
++        menu.redescribe(ui, logged_rows(&log, names));
+     };
+     menu.open(&mut ui);
+     let gamma = row(&mut ui, &menu.items, "Gamma");
+@@ -1080,16 +1108,10 @@
+     // stays the keyboard's when the rows then move under the pointer.
+     press(&mut ui, KeyCode::ArrowRight);
+     assert!(shown(&ui, &menu.items));
+-    let next = Menu::new(
+-        &ui,
+-        "Actions",
++    menu.redescribe(
++        &mut ui,
+         logged_rows(&log, &["New", "Alpha", "Beta", "Gamma"]),
+-    )
+-    .unwrap();
+-    let note = Element::new("note", Label::new(&menu.note));
+-    ui.reconcile_children(&menu.root, vec![Element::new("menu", next), note])
+-        .unwrap();
+-    settle(&mut ui);
++    );
+     assert_eq!(
+         row_under(&mut ui, &menu.items, gamma).as_deref(),
+         Some("Beta")
+@@ -1136,3 +1158,387 @@
+     );
+     assert_eq!(highlight(&mut ui, &select.options).as_deref(), Some("O03"));
+ }
++
++/// Pointer input between the press and the release of an activation key.
++#[derive(Clone, Copy, Debug)]
++enum Between {
++    /// Actual motion onto another row.
++    Motion,
++    /// A primary click on another row, without motion first.
++    Click,
++    /// A wheel that scrolls the rows beneath the pointer, and the refreshed
++    /// move after it.
++    Wheel,
++    /// Layout that moves the open menu beneath the stationary pointer, and
++    /// the refreshed move after it.
++    Layout,
++    /// OS repeats of the held key, then motion onto another row.
++    Repeats,
++}
++
++/// A highlight the pointer owns becomes the keyboard's when Enter or Space
++/// arms, so `between` before the key's release does not move it: the release
++/// runs the row the pointer had highlighted when the key went down.
++#[track_caller]
++fn armed_menu_key_keeps_the_pointers_row(between: Between) {
++    for code in [KeyCode::Enter, KeyCode::Space] {
++        let case = format!("{code:?} then {between:?}");
++        let mut ui = ui();
++        let log = Log::default();
++        let menu = mount_menu(&mut ui, long_rows(&log));
++        menu.open(&mut ui);
++        let r03 = row(&mut ui, &menu.items, "R03");
++        move_to(&mut ui, r03);
++        assert_eq!(highlight(&mut ui, &menu.items).as_deref(), Some("R03"));
++        key_edge(&mut ui, code, KeyAction::Press);
++        let r05 = row(&mut ui, &menu.items, "R05");
++        match between {
++            Between::Motion => move_to(&mut ui, r05),
++            Between::Click => {
++                host(&mut ui, r05, PointerKind::Press(PointerButton::Primary));
++                host(&mut ui, r05, PointerKind::Release(PointerButton::Primary));
++            }
++            Between::Wheel => wheel(&mut ui, r03, 64.0),
++            Between::Layout => menu.shift_down(&mut ui),
++            Between::Repeats => {
++                key_edge(&mut ui, code, KeyAction::Repeat);
++                key_edge(&mut ui, code, KeyAction::Repeat);
++                move_to(&mut ui, r05);
++            }
++        }
++        if matches!(between, Between::Wheel | Between::Layout) {
++            let under = row_under(&mut ui, &menu.items, r03);
++            assert!(
++                under.is_some() && under.as_deref() != Some("R03"),
++                "{case}: other rows are under the pointer, not {under:?}"
++            );
++        }
++        assert_eq!(
++            highlight(&mut ui, &menu.items).as_deref(),
++            Some("R03"),
++            "{case}"
++        );
++        assert!(
++            ran(&log).is_empty(),
++            "{case}: nothing runs before the release"
++        );
++        key_edge(&mut ui, code, KeyAction::Release);
++        assert_eq!(ran(&log), ["R03"], "{case}");
++        assert!(!shown(&ui, &menu.items), "{case}: choosing closes the menu");
++    }
++}
++#[test]
++fn an_armed_enter_or_space_keeps_the_pointers_row_across_motion() {
++    armed_menu_key_keeps_the_pointers_row(Between::Motion);
++}
++#[test]
++fn an_armed_enter_or_space_keeps_the_pointers_row_across_a_click() {
++    armed_menu_key_keeps_the_pointers_row(Between::Click);
++}
++#[test]
++fn an_armed_enter_or_space_keeps_the_pointers_row_across_a_scrolling_wheel() {
++    armed_menu_key_keeps_the_pointers_row(Between::Wheel);
++}
++#[test]
++fn an_armed_enter_or_space_keeps_the_pointers_row_across_layout_beneath_the_pointer() {
++    armed_menu_key_keeps_the_pointers_row(Between::Layout);
++}
++#[test]
++fn an_armed_enter_or_space_keeps_the_pointers_row_across_its_repeats_and_motion() {
++    armed_menu_key_keeps_the_pointers_row(Between::Repeats);
++}
++
++/// [`armed_menu_key_keeps_the_pointers_row`] for a dropdown, reading the
++/// chosen value and the change callback.
++#[track_caller]
++fn armed_select_key_keeps_the_pointers_option(between: Between) {
++    for code in [KeyCode::Enter, KeyCode::Space] {
++        let case = format!("{code:?} then {between:?}");
++        let mut ui = ui();
++        let value = ui.signal(0_u8);
++        let changes = Rc::new(RefCell::new(Vec::new()));
++        let seen = changes.clone();
++        let element = Element::new(
++            "mode",
++            Select::new(&ui, value.clone(), options(30))
++                .unwrap()
++                .on_change(move |_, chosen: &u8| {
++                    seen.borrow_mut().push(*chosen);
++                    Ok(())
++                }),
++        );
++        let select = mount_select(&mut ui, element);
++        select.open(&mut ui);
++        let o03 = row(&mut ui, &select.options, "O03");
++        move_to(&mut ui, o03);
++        assert_eq!(highlight(&mut ui, &select.options).as_deref(), Some("O03"));
++        key_edge(&mut ui, code, KeyAction::Press);
++        let o05 = row(&mut ui, &select.options, "O05");
++        match between {
++            Between::Motion => move_to(&mut ui, o05),
++            Between::Click => {
++                host(&mut ui, o05, PointerKind::Press(PointerButton::Primary));
++                host(&mut ui, o05, PointerKind::Release(PointerButton::Primary));
++            }
++            Between::Wheel => {
++                wheel(&mut ui, o03, 64.0);
++                let under = row_under(&mut ui, &select.options, o03);
++                assert!(under.is_some() && under.as_deref() != Some("O03"), "{case}");
++            }
++            Between::Layout | Between::Repeats => unreachable!("not a dropdown case"),
++        }
++        assert_eq!(
++            highlight(&mut ui, &select.options).as_deref(),
++            Some("O03"),
++            "{case}"
++        );
++        assert_eq!(value.get().unwrap(), 0, "{case}: nothing chosen yet");
++        key_edge(&mut ui, code, KeyAction::Release);
++        assert_eq!(value.get().unwrap(), 3, "{case}");
++        assert_eq!(*changes.borrow(), [3], "{case}");
++    }
++}
++#[test]
++fn an_armed_enter_or_space_keeps_a_selects_pointer_option_across_motion() {
++    armed_select_key_keeps_the_pointers_option(Between::Motion);
++}
++#[test]
++fn an_armed_enter_or_space_keeps_a_selects_pointer_option_across_a_click() {
++    armed_select_key_keeps_the_pointers_option(Between::Click);
++}
++#[test]
++fn an_armed_enter_or_space_keeps_a_selects_pointer_option_across_a_scrolling_wheel() {
++    armed_select_key_keeps_the_pointers_option(Between::Wheel);
++}
++
++/// A primary press arms first: Enter or Space during it neither arms nor
++/// takes the highlight. The pointer keeps highlighting the row under it, even
++/// when layout moves rows beneath it without motion, and only the pointer's
++/// release runs a row, once.
++#[test]
++fn enter_or_space_during_a_pointer_press_takes_neither_the_highlight_nor_the_activation() {
++    for code in [KeyCode::Enter, KeyCode::Space] {
++        let mut ui = ui();
++        let log = Log::default();
++        let names = ["Alpha", "Beta", "Gamma", "Delta"];
++        let menu = mount_menu(&mut ui, logged_rows(&log, &names));
++        menu.open(&mut ui);
++        let beta = row(&mut ui, &menu.items, "Beta");
++        host(&mut ui, beta, PointerKind::Press(PointerButton::Primary));
++        assert_eq!(highlight(&mut ui, &menu.items).as_deref(), Some("Beta"));
++        key_edge(&mut ui, code, KeyAction::Press);
++        key_edge(&mut ui, code, KeyAction::Repeat);
++        menu.shift_down(&mut ui);
++        let under = row_under(&mut ui, &menu.items, beta);
++        assert!(
++            under.is_some() && under.as_deref() != Some("Beta"),
++            "{code:?}: other rows are under the pointer, not {under:?}"
++        );
++        assert_eq!(
++            highlight(&mut ui, &menu.items),
++            under,
++            "{code:?}: the pointer still owns the highlight"
++        );
++        key_edge(&mut ui, code, KeyAction::Release);
++        assert!(
++            ran(&log).is_empty(),
++            "{code:?}: the key's release runs nothing"
++        );
++        let beta = row(&mut ui, &menu.items, "Beta");
++        move_to(&mut ui, beta);
++        assert_eq!(highlight(&mut ui, &menu.items).as_deref(), Some("Beta"));
++        host(&mut ui, beta, PointerKind::Release(PointerButton::Primary));
++        assert_eq!(ran(&log), ["Beta"], "{code:?}");
++        assert!(!shown(&ui, &menu.items));
++    }
++}
++
++/// Rows with a separator band between Beta and Gamma and a disabled Delta.
++fn banded(log: &Log) -> Vec<MenuItem> {
++    vec![
++        logged(log, "Alpha"),
++        logged(log, "Beta"),
++        MenuItem::separator(),
++        logged(log, "Gamma"),
++        logged(log, "Delta").disabled(),
++        logged(log, "Epsilon"),
++    ]
++}
++/// The bounds of the visible row `name`.
++#[track_caller]
++fn row_bounds(ui: &mut Runtime, list: &WidgetId, name: &str) -> [f32; 4] {
++    semantics(ui, list)
++        .items
++        .into_iter()
++        .find(|item| item.name.as_deref() == Some(name))
++        .and_then(|item| item.bounds)
++        .unwrap_or_else(|| panic!("row {name:?} is not visible"))
++}
++
++/// Actual motion onto a separator or a disabled row takes the highlight from
++/// the keyboard without highlighting that row; the highlight then follows the
++/// rows that move beneath the pointer.
++#[test]
++fn motion_onto_a_separator_or_disabled_row_takes_the_highlight_without_choosing_it() {
++    for target in ["separator", "Delta"] {
++        let mut ui = ui();
++        let log = Log::default();
++        let menu = mount_menu(&mut ui, banded(&log));
++        menu.open(&mut ui);
++        let at = if target == "separator" {
++            let [_, top, _, height] = row_bounds(&mut ui, &menu.items, "Beta");
++            let [x, below, ..] = row_bounds(&mut ui, &menu.items, "Gamma");
++            assert!(below > top + height, "a band separates Beta and Gamma");
++            (x + 10.0, (top + height + below) / 2.0)
++        } else {
++            row(&mut ui, &menu.items, "Delta")
++        };
++        // The keyboard owns the highlight before the motion.
++        press(&mut ui, KeyCode::ArrowDown);
++        press(&mut ui, KeyCode::ArrowUp);
++        assert_eq!(highlight(&mut ui, &menu.items).as_deref(), Some("Alpha"));
++        move_to(&mut ui, at);
++        if target == "separator" {
++            assert_eq!(row_under(&mut ui, &menu.items, at), None);
++        }
++        assert_eq!(
++            highlight(&mut ui, &menu.items).as_deref(),
++            Some("Alpha"),
++            "{target}: highlights no row"
++        );
++        let mut rows = banded(&log);
++        rows.insert(0, logged(&log, "New"));
++        menu.redescribe(&mut ui, rows);
++        let under = row_under(&mut ui, &menu.items, at);
++        assert!(
++            under.is_some() && under.as_deref() != Some("Alpha"),
++            "{target}: an enabled row is now under the pointer, not {under:?}"
++        );
++        assert_eq!(highlight(&mut ui, &menu.items), under, "{target}");
++        press(&mut ui, KeyCode::Enter);
++        assert_eq!(ran(&log), [under.unwrap()], "{target}");
++    }
++}
++
++/// Motion may take the highlight back while a navigation key is still held;
++/// each OS repeat of that key takes it for the keyboard again, and its
++/// release leaves it there.
++#[test]
++fn an_os_repeat_of_a_held_navigation_key_takes_the_highlight_back_from_motion() {
++    for (code, pressed, repeated) in [
++        (KeyCode::ArrowDown, "R04", "R07"),
++        (KeyCode::ArrowUp, "R02", "R05"),
++    ] {
++        let mut ui = ui();
++        let log = Log::default();
++        let menu = mount_menu(&mut ui, long_rows(&log));
++        menu.open(&mut ui);
++        let r03 = row(&mut ui, &menu.items, "R03");
++        move_to(&mut ui, r03);
++        key_edge(&mut ui, code, KeyAction::Press);
++        assert_eq!(highlight(&mut ui, &menu.items).as_deref(), Some(pressed));
++        let r06 = row(&mut ui, &menu.items, "R06");
++        move_to(&mut ui, r06);
++        assert_eq!(
++            highlight(&mut ui, &menu.items).as_deref(),
++            Some("R06"),
++            "{code:?}: motion while the key is held"
++        );
++        key_edge(&mut ui, code, KeyAction::Repeat);
++        assert_eq!(highlight(&mut ui, &menu.items).as_deref(), Some(repeated));
++        // A refresh at the stationary pointer, still over R06, leaves the
++        // keyboard's row.
++        menu.relayout(&mut ui);
++        assert_eq!(row_under(&mut ui, &menu.items, r06).as_deref(), Some("R06"));
++        assert_eq!(
++            highlight(&mut ui, &menu.items).as_deref(),
++            Some(repeated),
++            "{code:?}: after the repeat"
++        );
++        key_edge(&mut ui, code, KeyAction::Release);
++        menu.relayout(&mut ui);
++        assert_eq!(highlight(&mut ui, &menu.items).as_deref(), Some(repeated));
++        press(&mut ui, KeyCode::Enter);
++        assert_eq!(ran(&log), [repeated], "{code:?}");
++    }
++}
++
++/// After the pointer has taken the highlight by motion over Gamma, `keys`
++/// leave it with the pointer: rows that move beneath the stationary pointer
++/// carry the highlight to Beta, the row now under it, which Enter runs.
++#[track_caller]
++fn keys_leave_the_pointer_its_highlight(case: &str, keys: impl Fn(&mut Runtime, (f32, f32))) {
++    let mut ui = ui();
++    let log = Log::default();
++    let names = ["Alpha", "Beta", "Gamma", "Delta"];
++    let menu = mount_menu(&mut ui, logged_rows(&log, &names));
++    menu.open(&mut ui);
++    let gamma = row(&mut ui, &menu.items, "Gamma");
++    move_to(&mut ui, gamma);
++    keys(&mut ui, gamma);
++    assert!(shown(&ui, &menu.items), "{case}: the menu stays open");
++    assert_eq!(
++        highlight(&mut ui, &menu.items).as_deref(),
++        Some("Gamma"),
++        "{case}"
++    );
++    assert!(ran(&log).is_empty(), "{case}");
++    let mut rows = logged_rows(&log, &names);
++    rows.insert(0, logged(&log, "New"));
++    menu.redescribe(&mut ui, rows);
++    assert_eq!(
++        row_under(&mut ui, &menu.items, gamma).as_deref(),
++        Some("Beta")
++    );
++    assert_eq!(
++        highlight(&mut ui, &menu.items).as_deref(),
++        Some("Beta"),
++        "{case}"
++    );
++    press(&mut ui, KeyCode::Enter);
++    assert_eq!(ran(&log), ["Beta"], "{case}");
++}
++/// Navigation chords are left to command bindings. Holding the modifier is a
++/// key the menu ignores as well.
++#[test]
++fn navigation_with_modifiers_leaves_the_pointer_its_highlight() {
++    for (modifier, code) in [
++        (KeyCode::ShiftLeft, KeyCode::ArrowDown),
++        (KeyCode::ControlLeft, KeyCode::ArrowUp),
++        (KeyCode::AltLeft, KeyCode::End),
++        (KeyCode::ShiftLeft, KeyCode::PageDown),
++    ] {
++        let case = format!("{modifier:?}+{code:?}");
++        keys_leave_the_pointer_its_highlight(&case, |ui, _| chord(ui, modifier, code));
++    }
++}
++#[test]
++fn a_modified_enter_that_does_not_arm_leaves_the_pointer_its_highlight() {
++    keys_leave_the_pointer_its_highlight("Shift+Enter", |ui, _| {
++        chord(ui, KeyCode::ShiftLeft, KeyCode::Enter)
++    });
++}
++#[test]
++fn a_key_the_menu_ignores_leaves_the_pointer_its_highlight() {
++    keys_leave_the_pointer_its_highlight("A", |ui, _| press(ui, KeyCode::KeyA));
++}
++/// Down's press takes the highlight, motion while Down is held takes it back
++/// and Down's release leaves it with the pointer.
++#[test]
++fn a_navigation_keys_release_after_motion_leaves_the_pointer_its_highlight() {
++    keys_leave_the_pointer_its_highlight("Down", |ui, at| {
++        key_edge(ui, KeyCode::ArrowDown, KeyAction::Press);
++        move_to(ui, (at.0 + 1.0, at.1));
++        key_edge(ui, KeyCode::ArrowDown, KeyAction::Release);
++    });
++}
++/// Right on a row without a submenu takes the highlight and opens nothing;
++/// its release after motion leaves the highlight with the pointer.
++#[test]
++fn a_right_release_after_motion_leaves_the_pointer_its_highlight() {
++    keys_leave_the_pointer_its_highlight("Right", |ui, at| {
++        key_edge(ui, KeyCode::ArrowRight, KeyAction::Press);
++        move_to(ui, (at.0 + 1.0, at.1));
++        key_edge(ui, KeyCode::ArrowRight, KeyAction::Release);
++    });
++}

@@ -1,0 +1,18 @@
+--- /home/per/pert-ui-usability/r3-menu-implementation-evidence/negative-controls/clear_on_rows_changed/backup/select.rs	2026-10-29 10:31:56.220659077 +0100
++++ crates/pert-ui-runtime/src/select.rs	2026-10-29 10:41:54.737851432 +0100
+@@ -294,6 +294,7 @@
+             return Some(Invalidation::Paint);
+         }
+         // Pending activation belongs to the old rows.
++        self.pointer_owns = false;
+         self.retargeted = true;
+         self.pressed = None;
+         self.input.reset();
+@@ -433,6 +434,7 @@
+             if options != self.options {
+                 self.options = options;
+                 reveal = true;
++                self.pointer_owns = false;
+                 self.pressed = None;
+                 self.input.reset();
+                 cx.cancel_input();

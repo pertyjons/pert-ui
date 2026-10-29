@@ -16,7 +16,11 @@ pixels for aligned values, table cells and code. Other presets use Noto Sans.
 
 The bytes are included in the library package; builds do not download fonts or
 depend on installed system fonts. The initial text path uses the font's regular
-weight and width. Missing characters render the font's missing-glyph mark; this
+weight and width. Missing characters render the font's missing-glyph mark, except literal tabs
+which keep their shaped advance without tab-only ink. This is not an aligned
+tab-stop model. A registered font may ligate tab and printable text into one
+inseparable atom; that glyph retains its ink. Canonical bytes and Unicode
+analysis are unchanged. This
 bundled-font baseline does not claim complete script coverage or color emoji.
 
 ## Material Icons Outlined

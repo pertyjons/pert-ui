@@ -1,0 +1,18 @@
+$ cd /home/per/pert-ui-usability/r3-text-worktree
+$ CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-text-implementation-target git status --short --untracked-files=all && git rev-parse HEAD
+exit status: 0
+elapsed: 0.0 s
+
+--- stdout ---
+ M crates/pert-ui-runtime/src/text.rs
+ M crates/pert-ui-runtime/src/text_fields.rs
+ M crates/pert-ui-runtime/src/text_selection.rs
+ M crates/pert-ui/tests/editing/main.rs
+?? crates/pert-ui-runtime/src/text/tabs.rs
+?? crates/pert-ui-runtime/tests/assets/tab-atoms/README.md
+?? crates/pert-ui-runtime/tests/assets/tab-atoms/TabAtomFixture.ttf
+?? crates/pert-ui-runtime/tests/assets/tab-atoms/generate.py
+?? crates/pert-ui/tests/editing/tab_whitespace.rs
+3bbfb813a8c02c417d68386b0c5547b4b8139580
+
+--- stderr ---

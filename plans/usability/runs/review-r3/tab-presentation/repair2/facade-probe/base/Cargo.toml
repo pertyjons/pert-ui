@@ -1,0 +1,16 @@
+[package]
+name = "r3-tab-facade-probe-base"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+# Evidence-only program outside every checkout; its own workspace. The
+# dependency is the isolated `git archive` extraction of base 3bbfb81.
+[workspace]
+
+[[bin]]
+name = "probe"
+path = "../src/main.rs"
+
+[dependencies]
+pert-ui = { path = "../../../r3-text-implementation2-base-3bbfb81/crates/pert-ui", default-features = false }

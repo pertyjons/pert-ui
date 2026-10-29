@@ -1,0 +1,7 @@
+test menu_pointer_ownership::escape_and_release_end_an_armed_key_and_motion_takes_the_highlight_again ... FAILED
+test menu_pointer_ownership::an_armed_enter_or_space_keeps_a_selects_pointer_option_across_motion ... FAILED
+test menu_pointer_ownership::an_armed_enter_or_space_keeps_the_pointers_row_across_motion ... FAILED
+test menu_pointer_ownership::an_armed_enter_or_space_keeps_the_pointers_row_across_its_repeats_and_motion ... FAILED
+test menu_pointer_ownership::pointer_input_cannot_move_a_choice_armed_by_enter_or_space ... FAILED
+test result: FAILED. 39 passed; 5 failed; 0 ignored; 0 measured; 464 filtered out; finished in 0.08s
+error: test failed, to rerun pass `-p pert-ui --test surfaces`

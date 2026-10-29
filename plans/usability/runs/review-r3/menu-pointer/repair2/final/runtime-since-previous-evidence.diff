@@ -1,0 +1,118 @@
+--- /home/per/pert-ui-usability/r3-menu-implementation2-evidence/baseline-sources/select.rs	2026-10-29 10:48:24.507878076 +0100
++++ crates/pert-ui-runtime/src/select.rs	2026-10-29 11:11:28.773035359 +0100
+@@ -117,8 +117,8 @@
+     editable: bool,
+     active: Option<T>,
+     /// Whether the pointer owns the highlight: it moved over this list, armed
+-    /// a press on it or scrolled it since the list was last shown, navigated
+-    /// by key or left. Only then does a move, including the runtime's
++    /// a press on it or scrolled it since the list was last shown, a key took
++    /// the highlight or the pointer left. Only then does a move, including the runtime's
+     /// refreshed one under a stationary pointer, set the active row.
+     pointer_owns: bool,
+     /// The window position of the last move, refreshed or not, press or leave
+@@ -576,8 +576,9 @@
+         {
+             return Ok(InputOutcome::Ignored);
+         }
+-        // While Enter or Space is held its release chooses the active row, so
+-        // the pointer only hovers until the key ends the gesture.
++        // While an Enter or Space press has armed activation its release
++        // chooses the active row, so the pointer only hovers until the key
++        // ends or cancels the gesture.
+         let key_armed = self.input.key_armed();
+         let activate = self.input.pointer(cx, e)?;
+         match e.kind() {
+@@ -1447,16 +1448,22 @@
+ ///
+ /// The highlight follows the [`Menu`](crate::Menu) rules for which input owns
+ /// it. The list opens on the selected option even beneath a stationary
+-/// pointer; actual pointer motion over it, a primary press on a row or a
+-/// wheel that scrolls it hands the highlight to the pointer, and navigation
+-/// keys and an Enter or Space press take it back. While Enter or Space is
+-/// held the pointer cannot move it, so the release chooses the keyboard's
+-/// option. A repeated report of the pointer's position, including re-entry
+-/// into the window exactly where it left, is no motion; after the window's
+-/// scale factor changes, the first native report of an unmoved pointer can
+-/// count as motion. New options from a redescription return the highlight to
+-/// the selection, while options a bound source changes keep a pointer-owned
+-/// highlight on the row under the pointer.
++/// pointer. Actual pointer motion over it, including over a disabled option,
++/// a primary press on a row or a wheel that scrolls it hands the highlight to
++/// the pointer. Each handled press or OS repeat of Up, Down, Home, End or a
++/// Page key takes it back. Key releases, modified navigation and ignored keys do
++/// not, so motion while a navigation key is still held takes it again until
++/// that key's next repeat. An Enter or Space press that arms activation also
++/// takes it; until that key's release or a cancellation such as Escape,
++/// pointer input only hovers and only the keyboard moves the highlight, so
++/// the release chooses the keyboard's option. While a primary pointer press is
++/// armed, Enter and Space neither arm nor take the highlight. A repeated
++/// report of the pointer's window position, compared exactly in logical
++/// coordinates and including re-entry into the window exactly where it left,
++/// is no motion; after the window's scale factor changes, the first native
++/// report of an unmoved pointer can count as motion. New options from a
++/// redescription return the highlight to the selection, while options a bound
++/// source changes keep a pointer-owned highlight on the row under the pointer.
+ ///
+ /// The list is an anchored surface and follows the popover placement rule: it
+ /// needs room above or below the control. Mounted directly as a root the control
+--- /home/per/pert-ui-usability/r3-menu-implementation2-evidence/baseline-sources/menu.rs	2026-10-29 10:42:42.949007060 +0100
++++ crates/pert-ui-runtime/src/menu.rs	2026-10-29 11:11:28.772612031 +0100
+@@ -679,21 +679,35 @@
+ /// used. For an application's File, Edit and Help menus, see `MenuBar`.
+ ///
+ /// The highlighted row is the one Enter runs, and the keyboard and the pointer
+-/// take turns owning it at every level. Arrow, Home, End and Page keys, Right,
+-/// Left and an Enter or Space press take it from the pointer; until that key
+-/// is released the pointer only hovers, so the release runs the row the
+-/// keyboard chose. The pointer takes it by actual motion over the rows, a
+-/// primary press on a row or a wheel that scrolls them, and then the
+-/// highlight follows the row under the pointer as rows change or scroll. A
+-/// list shown beneath a stationary pointer, as a menu opened by key over
++/// take turns owning it at every level. The keyboard takes it with each
++/// handled press of Up, Down, Home, End or a Page key, including each OS
++/// repeat of one, and with a Right or Left press, before it acts. Key releases,
++/// navigation keys with modifiers and keys the menu ignores leave it with
++/// whichever input owns it, so actual pointer motion takes it back even while
++/// a navigation key is still held, until that key's next repeat. The pointer
++/// takes it by actual motion over the rows, a primary press on a row or a
++/// wheel that scrolls them; motion over a separator or a disabled row takes
++/// it without highlighting that row. From then on the highlight follows the
++/// row under the pointer as rows change or scroll.
++///
++/// An Enter or Space press that arms activation takes the highlight for the
++/// keyboard as well. Until that key's release or a cancellation, such as
++/// Escape dismissing the menu, pointer motion, presses and wheels only hover:
++/// only the keyboard moves the highlight, and the release runs the row
++/// highlighted then. While a primary pointer press is armed, Enter and Space
++/// neither arm nor take the highlight; the pointer keeps it, and only its own
++/// release on the pressed row runs that row.
++///
++/// A list shown beneath a stationary pointer, as a menu opened by key over
+ /// where the pointer rests, keeps its first row until the pointer moves or
+ /// acts, and rows that keyboard navigation scrolls beneath it do not take the
+-/// highlight either. Motion means the host reporting a position other than
+-/// the last one the list saw: a repeated report of the same position,
+-/// including the pointer re-entering the window exactly where it left, is
+-/// stationary until the next distinct motion. After the window's scale factor
+-/// changes, the first native report of an unmoved pointer can carry new
+-/// logical coordinates and then counts as motion.
++/// highlight either. Motion means the host reporting a window position other
++/// than the last one the list saw, compared exactly in logical coordinates: a
++/// repeated report of the same position, including the pointer re-entering
++/// the window exactly where it left, is stationary until the next distinct
++/// motion. After the window's scale factor changes, the first native report
++/// of an unmoved pointer can carry new logical coordinates and then counts as
++/// motion.
+ ///
+ /// Reconciling a new description under the same key, for example one whose
+ /// "Recent files" submenu gained rows, takes its rows, their actions and the
+@@ -1297,7 +1311,7 @@
+ /// actions. Focus, dismissal, disabled actions, errors and which input owns
+ /// the highlighted row follow [`Menu`], and so does reconciling a new
+ /// description; a menu opened at the pointer keeps its first row until the
+-/// pointer moves. All callbacks
++/// pointer moves or acts on it. All callbacks
+ /// run on the owning UI thread. No native OS menu is created.
+ ///
+ /// ```

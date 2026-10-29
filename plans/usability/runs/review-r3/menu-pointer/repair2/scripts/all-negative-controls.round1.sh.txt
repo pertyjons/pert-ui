@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Runs every targeted mutation in sequence; stops at the first restore problem.
+set -u
+E=/home/per/pert-ui-usability/r3-menu-implementation2-evidence
+for m in arming_keeps_ownership move_ignores_armed_key press_ignores_armed_key \
+         wheel_ignores_armed_key key_arms_over_pointer clear_on_every_activation_press \
+         separator_or_disabled_motion_ignored repeat_keeps_ownership \
+         clear_on_navigation_release clear_on_modified_navigation clear_on_ignored_key \
+         clear_on_sideways_release; do
+  echo "=== $m"
+  "$E/scripts/negative-control.sh" "$m"
+  s=$?
+  [ $s -ge 2 ] && [ $s -ne 101 ] && { echo "control script failed: $s"; exit $s; }
+done
+echo "=== done"

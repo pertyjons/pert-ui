@@ -1,0 +1,10 @@
+$ cd /home/per/pert-ui-usability/r3-text-worktree
+$ CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-text-implementation-target cd /home/per/pert-ui-usability && sha256sum -c --quiet /home/per/pert-ui-usability/r3-text-implementation3-evidence/pre-edit/previous-evidence-files.sha256 && echo "all $(wc -l < /home/per/pert-ui-usability/r3-text-implementation3-evidence/pre-edit/previous-evidence-files.sha256) files of r3-text-implementation-evidence and r3-text-implementation2-evidence unchanged" && cd r3-text-implementation-evidence && sha256sum -c --quiet ../r3-text-implementation2-evidence/pre-repair/previous-evidence-files.sha256 && echo "first set also matches its original 69-file record"
+exit status: 0
+elapsed: 0.4 s
+
+--- stdout ---
+all 142 files of r3-text-implementation-evidence and r3-text-implementation2-evidence unchanged
+first set also matches its original 69-file record
+
+--- stderr ---

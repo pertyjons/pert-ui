@@ -1,0 +1,24 @@
+{"command": ["cargo", "test", "--locked", "-p", "pert-ui-gallery", "--bin", "pert-ui-gallery", "the_interaction_steps_pass_headlessly", "--", "--nocapture"], "started_at_utc": "2026-10-29T10:30:51.566805+00:00", "mutation_file": "crates/pert-ui-runtime/src/select.rs", "expected_failure": "the parked row replaced the keyboard's first command"}
+   Compiling pert-ui-runtime v0.3.92 (/home/per/github/pert-ui/crates/pert-ui-runtime)
+   Compiling pert-ui-wgpu v0.3.92 (/home/per/github/pert-ui/crates/pert-ui-wgpu)
+   Compiling pert-ui-cpu v0.3.92 (/home/per/github/pert-ui/crates/pert-ui-cpu)
+   Compiling pert-ui v0.3.92 (/home/per/github/pert-ui/crates/pert-ui)
+   Compiling pert-ui-gallery v0.3.92 (/home/per/github/pert-ui/apps/gallery)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.72s
+     Running unittests src/main.rs (target/debug/deps/pert_ui_gallery-6a6eb1f8c57322ae)
+
+running 1 test
+
+thread 'cli::the_interaction_steps_pass_headlessly' (3863366) panicked at apps/gallery/src/main.rs:521:79:
+menu keyboard: parked row keeps the first command through reveal refresh: the parked row replaced the keyboard's first command
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test cli::the_interaction_steps_pass_headlessly ... FAILED
+
+failures:
+
+failures:
+    cli::the_interaction_steps_pass_headlessly
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 133 filtered out; finished in 7.73s
+
+error: test failed, to rerun pass `-p pert-ui-gallery --bin pert-ui-gallery`

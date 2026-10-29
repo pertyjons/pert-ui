@@ -1,0 +1,17 @@
+$ cd /home/per/pert-ui-usability/r3-text-worktree
+$ CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-text-implementation-target cargo test --locked -p pert-ui-runtime --lib text::tabs::tests::hanging_tabs_shrink_the_extent_and_translate_right_to_left_public_coordinates
+exit status: 0
+elapsed: 3.6 s
+
+--- stdout ---
+
+running 1 test
+test text::tabs::tests::hanging_tabs_shrink_the_extent_and_translate_right_to_left_public_coordinates ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 198 filtered out; finished in 0.30s
+
+
+--- stderr ---
+   Compiling pert-ui-runtime v0.3.89 (/home/per/pert-ui-usability/r3-text-worktree/crates/pert-ui-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.21s
+     Running unittests src/lib.rs (/home/per/pert-ui-usability/r3-text-implementation-target/debug/deps/pert_ui_runtime-87e7d33e6cb9fb9f)

@@ -1,0 +1,41 @@
+$ date -Is
+2026-10-29T11:16:20+01:00
+$ git rev-parse HEAD
+3bbfb813a8c02c417d68386b0c5547b4b8139580
+$ git status --short --untracked-files=all
+ M crates/pert-ui-runtime/src/text.rs
+ M crates/pert-ui-runtime/src/text_fields.rs
+ M crates/pert-ui-runtime/src/text_selection.rs
+ M crates/pert-ui/tests/editing/main.rs
+?? crates/pert-ui-runtime/src/text/tabs.rs
+?? crates/pert-ui-runtime/tests/assets/tab-atoms/README.md
+?? crates/pert-ui-runtime/tests/assets/tab-atoms/TabAtomFixture.ttf
+?? crates/pert-ui-runtime/tests/assets/tab-atoms/generate.py
+?? crates/pert-ui/tests/editing/tab_whitespace.rs
+$ git diff --stat
+ crates/pert-ui-runtime/src/text.rs           | 143 +++++++++++++++++++++++----
+ crates/pert-ui-runtime/src/text_fields.rs    |  33 ++++++-
+ crates/pert-ui-runtime/src/text_selection.rs |  15 ++-
+ crates/pert-ui/tests/editing/main.rs         |   1 +
+ 4 files changed, 164 insertions(+), 28 deletions(-)
+$ sha256sum (owned files)
+2417e1489452fc61e5f0206a463d579cde1eb7c1f97ee7b92af7e2c7dab9d0a8  crates/pert-ui-runtime/src/text.rs
+bafd578442105267ff6f48a1ef5c0ee5c844225d15457ea28ad18542e841e016  crates/pert-ui-runtime/src/text/tabs.rs
+e07a31f6637029e91781247441df4fed469e8822520dc3869a5729350e8b7b66  crates/pert-ui-runtime/src/text_fields.rs
+a0cbc2e3375e12b0702df6e8e868e0f5fc0bf8ac76fd57be0aa10a34f3af5d28  crates/pert-ui-runtime/src/text_selection.rs
+4560cc006135ca857ead07ca3aa8829b54b160f9b578fe6915342f67ed507607  crates/pert-ui-runtime/tests/assets/tab-atoms/README.md
+ef405e8ef511ced850becf815e71f0a4461f693a76b426814425fbded332450b  crates/pert-ui-runtime/tests/assets/tab-atoms/TabAtomFixture.ttf
+a8712d16ebebe6b34b5228961fe24d342232d8b339949f22e28078b0f2c9394a  crates/pert-ui-runtime/tests/assets/tab-atoms/generate.py
+7886f565c81928cfe6a1204356e3efad535d89da8a6d09bd03d075fca7da3e3d  crates/pert-ui/tests/editing/tab_whitespace.rs
+8e471172d9bda0cc31363c0ae64aa5ddb288a4e38ef66093365240974f405d3f  crates/pert-ui/tests/editing/main.rs
+$ sha256sum -c (implementation-2 final hashes; changed files expected to differ)
+crates/pert-ui-runtime/src/text.rs: FAILED
+crates/pert-ui-runtime/src/text/tabs.rs: FAILED
+crates/pert-ui-runtime/src/text_fields.rs: FAILED
+crates/pert-ui-runtime/src/text_selection.rs: FAILED
+crates/pert-ui-runtime/tests/assets/tab-atoms/README.md: OK
+crates/pert-ui-runtime/tests/assets/tab-atoms/TabAtomFixture.ttf: OK
+crates/pert-ui-runtime/tests/assets/tab-atoms/generate.py: OK
+crates/pert-ui/tests/editing/tab_whitespace.rs: OK
+crates/pert-ui/tests/editing/main.rs: OK
+sha256sum: WARNING: 4 computed checksums did NOT match

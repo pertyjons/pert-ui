@@ -1,0 +1,1013 @@
+281,290c281,339
+<     /// Whether a hidden tab's advance passes either end of the layout width, as
+<     /// trailing whitespace of a wrapped line does in either paragraph
+<     /// direction; its pre-fix ink could widen the size.
+<     fn hangs(layout: &TextLayout) -> bool {
+<         layout.shaped.lines().any(|line| {
+<             line.items().any(|item| match item {
+<                 parley::PositionedLayoutItem::GlyphRun(run) => {
+<                     run.style().brush == TextBrush::HiddenTab
+<                         && (run.offset() < -0.01
+<                             || run.offset() + run.advance() > layout.shaped.width() + 0.01)
+---
+>     /// The physical canvas `[left, top, right, bottom]` of a prepared layout,
+>     /// from its public size and origin.
+>     fn canvas(layout: &TextLayout) -> [i64; 4] {
+>         let scale = layout.scale;
+>         let [left, top] = layout.origin.map(|o| (-o * scale).round() as i64);
+>         let [width, height] = [layout.size().width(), layout.size().height()]
+>             .map(|extent| (extent * scale).round() as i64);
+>         [left, top, left + width, top + height]
+>     }
+>     /// The canvas the visible-ink policy defines for the pre-fix `reference`,
+>     /// computed here independently of the implementation's bounds: Parley's
+>     /// logical box, `width()` by `height()`, joined with the unphased raster
+>     /// placement of every glyph outside an atom of tabs alone, as the existing
+>     /// bounds calculation places it (an empty raster, as a space has, counts
+>     /// at its pen position). Icons are aligned vertically after shaping, so
+>     /// their glyphs give only horizontal bounds; the second value is whether
+>     /// every drawn glyph also gave vertical bounds.
+>     fn expected_canvas(reference: &TextLayout, text: &str) -> ([i64; 4], bool) {
+>         let shaped = &reference.shaped;
+>         let icons: Vec<usize> = reference
+>             .signature
+>             .runs
+>             .iter()
+>             .filter(|run| run.alignment.is_some())
+>             .map(|run| run.brush)
+>             .collect();
+>         let mut bounds = [
+>             0,
+>             0,
+>             shaped.width().ceil() as i64,
+>             shaped.height().ceil() as i64,
+>         ];
+>         let mut vertical = true;
+>         let mut context = swash::scale::ScaleContext::new();
+>         for line in shaped.lines() {
+>             // Pen positions of the glyphs of atoms of tabs alone on this line.
+>             let mut tabs = Vec::new();
+>             for run in line.runs() {
+>                 let mut atom: Vec<parley::Cluster<'_, TextBrush>> = Vec::new();
+>                 let mut close = |atom: &mut Vec<parley::Cluster<'_, TextBrush>>| {
+>                     if atom
+>                         .iter()
+>                         .all(|cluster| text.get(cluster.text_range()) == Some("\t"))
+>                     {
+>                         for cluster in atom.iter() {
+>                             let mut x = cluster.visual_offset().unwrap();
+>                             for glyph in cluster.glyphs() {
+>                                 tabs.push(x + glyph.x);
+>                                 x += glyph.advance;
+>                             }
+>                         }
+>                     }
+>                     atom.clear();
+>                 };
+>                 for cluster in run.clusters() {
+>                     if !cluster.is_ligature_continuation() {
+>                         close(&mut atom);
+>                     }
+>                     atom.push(cluster);
+292,294c341,427
+<                 parley::PositionedLayoutItem::InlineBox(_) => false,
+<             })
+<         })
+---
+>                 close(&mut atom);
+>             }
+>             for item in line.items() {
+>                 let parley::PositionedLayoutItem::GlyphRun(glyph_run) = item else {
+>                     continue;
+>                 };
+>                 let TextBrush::Color(brush) = glyph_run.style().brush else {
+>                     panic!("the reference hides nothing");
+>                 };
+>                 let icon = icons.contains(&brush);
+>                 let run = glyph_run.run();
+>                 let font = run.font();
+>                 let font_ref =
+>                     swash::FontRef::from_index(font.data.as_ref(), font.index as usize).unwrap();
+>                 let mut scaler = context
+>                     .builder(font_ref)
+>                     .size(run.font_size())
+>                     .hint(true)
+>                     .normalized_coords(run.normalized_coords().iter().map(|c| c.to_bits()))
+>                     .build();
+>                 for glyph in glyph_run.positioned_glyphs() {
+>                     if tabs.iter().any(|x| (x - glyph.x).abs() < 0.01) {
+>                         continue;
+>                     }
+>                     let Some(image) = swash::scale::Render::new(&[swash::scale::Source::Outline])
+>                         .format(swash::zeno::Format::Alpha)
+>                         .offset(swash::zeno::Vector::new(
+>                             glyph.x - glyph.x.floor(),
+>                             glyph.y - glyph.y.floor(),
+>                         ))
+>                         .render(&mut scaler, u16::try_from(glyph.id).unwrap())
+>                     else {
+>                         continue;
+>                     };
+>                     let left = glyph.x.floor() as i64 + i64::from(image.placement.left);
+>                     bounds[0] = bounds[0].min(left);
+>                     bounds[2] = bounds[2].max(left + i64::from(image.placement.width));
+>                     if icon {
+>                         vertical = false;
+>                     } else {
+>                         let top = glyph.y.floor() as i64 - i64::from(image.placement.top);
+>                         bounds[1] = bounds[1].min(top);
+>                         bounds[3] = bounds[3].max(top + i64::from(image.placement.height));
+>                     }
+>                 }
+>             }
+>         }
+>         (bounds, vertical)
+>     }
+>     /// Asserts the repaired canvas is exactly the policy's, keeping the
+>     /// reference's vertical extent, and returns whether the old tab ink alone
+>     /// had defined a canvas edge.
+>     fn assert_policy_canvas(actual: &TextLayout, expected: &TextLayout, text: &str) -> bool {
+>         let (policy, vertical) = expected_canvas(expected, text);
+>         let (a, e) = (canvas(actual), canvas(expected));
+>         assert_eq!(
+>             [a[0], a[2]],
+>             [policy[0], policy[2]],
+>             "{text:?}: horizontal canvas"
+>         );
+>         if vertical {
+>             assert_eq!(
+>                 [a[1], a[3]],
+>                 [policy[1], policy[3]],
+>                 "{text:?}: vertical canvas"
+>             );
+>         }
+>         // Hidden tabs never change the vertical extent, origin or baseline.
+>         assert_eq!([a[1], a[3]], [e[1], e[3]], "{text:?}");
+>         assert_eq!(actual.origin[1], expected.origin[1], "{text:?}");
+>         assert_eq!(actual.size().height(), expected.size().height(), "{text:?}");
+>         assert_eq!(
+>             actual.first_baseline(),
+>             expected.first_baseline(),
+>             "{text:?}"
+>         );
+>         let scale = actual.scale;
+>         let size =
+>             crate::Size::new((a[2] - a[0]) as f32 / scale, (a[3] - a[1]) as f32 / scale).unwrap();
+>         assert_eq!(actual.size(), size, "{text:?}");
+>         assert_eq!(actual.origin[0], -a[0] as f32 / scale, "{text:?}");
+>         let overhang = a != e;
+>         if !overhang {
+>             assert_eq!(actual.size(), expected.size(), "{text:?}");
+>             assert_eq!(actual.origin, expected.origin, "{text:?}");
+>         }
+>         overhang
+350,352c483,486
+<     /// Asserts everything the pre-fix reference shows except tab ink:
+<     /// size, lines, every glyph, caret stops, movement, selection and word
+<     /// geometry, with the tabs' own glyphs the only ones not drawn.
+---
+>     /// Asserts everything the pre-fix reference shows except tab ink: the
+>     /// policy's size and origin, lines, every glyph, caret stops, movement,
+>     /// selection and word geometry relative to each layout's origin, with the
+>     /// tabs' own glyphs the only ones not drawn.
+354,364c488,492
+<         // Size includes ink overhang: only a hanging tab's box could widen it.
+<         // Size and the painted origin include ink overhang: only a hanging
+<         // tab's box could have widened them, so compare geometry in layout
+<         // coordinates.
+<         if hangs(actual) {
+<             assert!(actual.size().width() <= expected.size().width(), "{text:?}");
+<             assert_eq!(actual.size().height(), expected.size().height(), "{text:?}");
+<         } else {
+<             assert_eq!(actual.size(), expected.size(), "{text:?}");
+<             assert_eq!(actual.origin, expected.origin, "{text:?}");
+<         }
+---
+>         // Size and origin follow the visible-ink policy exactly. The rest of
+>         // this comparison is in Parley coordinates: each layout's own origin
+>         // is removed. Public coordinates at a fixed paint origin are
+>         // `hanging_tabs_shrink_the_extent_and_translate_right_to_left_public_coordinates`.
+>         assert_policy_canvas(actual, expected, text);
+490a619,706
+>     /// A selection's caret offset and affinity. `TextSelection` keeps its
+>     /// Parley cursor private, and its debug form names both.
+>     fn focus(selection: TextSelection) -> (usize, parley::Affinity) {
+>         let debug = format!("{selection:?}");
+>         let rest = &debug[debug.find("focus: Cursor { index: ").unwrap() + 23..];
+>         let index = rest[..rest.find(',').unwrap()].parse().unwrap();
+>         let affinity = if rest.starts_with(&format!("{index}, affinity: Upstream")) {
+>             parley::Affinity::Upstream
+>         } else {
+>             assert!(rest.starts_with(&format!("{index}, affinity: Downstream")));
+>             parley::Affinity::Downstream
+>         };
+>         (index, affinity)
+>     }
+>     /// The caret a pointer at Parley `x` on `line` gets, from that line's own
+>     /// cluster offsets and directions: the cluster under `x`, else the nearer
+>     /// end cluster, and Parley's documented side rule. A left-side hit before
+>     /// a left-to-right cluster, or a right-side hit after a right-to-left
+>     /// one, is downstream at the cluster's start; the other sides are
+>     /// upstream at its end.
+>     fn expected_hit(layout: &TextLayout, line: usize, x: f32) -> (usize, parley::Affinity) {
+>         let line = layout.shaped.get(line).unwrap();
+>         let clusters: Vec<_> = line
+>             .runs()
+>             .flat_map(|run| run.visual_clusters().collect::<Vec<_>>())
+>             .map(|cluster| (cluster.visual_offset().unwrap(), cluster))
+>             .collect();
+>         let (first, last) = (&clusters[0], &clusters[clusters.len() - 1]);
+>         let (cluster, left) = if x < first.0 {
+>             (&first.1, true)
+>         } else if x >= last.0 + last.1.advance() {
+>             (&last.1, false)
+>         } else {
+>             let (start, cluster) = clusters
+>                 .iter()
+>                 .find(|(start, cluster)| x >= *start && x < start + cluster.advance())
+>                 .unwrap();
+>             (cluster, x <= start + cluster.advance() * 0.5)
+>         };
+>         let range = cluster.text_range();
+>         let explicit = cluster.is_line_break() == Some(parley::BreakReason::Explicit);
+>         if cluster.is_rtl() != left || (!cluster.is_rtl() && explicit) {
+>             (range.start, parley::Affinity::Downstream)
+>         } else {
+>             (range.end, parley::Affinity::Upstream)
+>         }
+>     }
+>     /// Whether a tab cluster lies in a line's hanging whitespace, from
+>     /// Parley's line metrics: past the end edge, on the right in a
+>     /// left-to-right paragraph and on the left in a right-to-left one.
+>     fn tab_hangs(layout: &TextLayout, text: &str, rtl: bool) -> bool {
+>         layout.shaped.lines().any(|line| {
+>             let m = line.metrics();
+>             let (from, to) = if rtl {
+>                 (m.offset, m.offset + m.hanging_advance)
+>             } else {
+>                 (
+>                     m.offset + m.advance - m.hanging_advance,
+>                     m.offset + m.advance,
+>                 )
+>             };
+>             m.hanging_advance > 0.0
+>                 && line.runs().any(|run| {
+>                     run.visual_clusters().any(|cluster| {
+>                         let x = cluster.visual_offset().unwrap();
+>                         text.get(cluster.text_range()) == Some("\t")
+>                             && x < to - 0.01
+>                             && x + cluster.advance() > from + 0.01
+>                     })
+>                 })
+>         })
+>     }
+>     /// `rect` moved from one paint origin to another.
+>     fn translated(rect: crate::Rect, from: [f32; 2], to: [f32; 2]) -> [f32; 4] {
+>         let [x, y, w, h] = rect.values();
+>         [x - from[0] + to[0], y - from[1] + to[1], w, h]
+>     }
+>     fn assert_near(actual: crate::Rect, expected: [f32; 4], context: &str) {
+>         let actual = actual.values();
+>         assert!(
+>             actual
+>                 .iter()
+>                 .zip(&expected)
+>                 .all(|(a, e)| (a - e).abs() < 1e-3),
+>             "{context}: {actual:?} vs {expected:?}"
+>         );
+>     }
+> 
+567a784,1173
+>     /// One prepared case of the public-coordinate test: plain text in a
+>     /// bundled style, or a span in the registered fixture font.
+>     #[derive(Clone, Copy)]
+>     enum Hanging {
+>         Plain(TextStyle),
+>         Fixture,
+>     }
+> 
+>     #[test]
+>     fn hanging_tabs_shrink_the_extent_and_translate_right_to_left_public_coordinates() {
+>         let arabic = "\u{627}\u{628}\u{62c}\u{62f}\t\u{647}\u{648}\u{632}\u{62d}\t\u{637}\u{64a}";
+>         // (name, text, how, width, right-to-left, a tab hangs, the old tab
+>         // ink alone defined a canvas edge)
+>         type Case<'a> = (&'a str, &'a str, Hanging, Option<f32>, bool, bool, bool);
+>         let mono = Hanging::Plain(TextStyle::Monospace);
+>         let body = Hanging::Plain(TextStyle::Body);
+>         let cases: [Case<'_>; 8] = [
+>             (
+>                 "LTR wrapped, hanging tab on a middle line",
+>                 "aaaa\tbbbb\tcccc",
+>                 mono,
+>                 Some(38.0),
+>                 false,
+>                 true,
+>                 true,
+>             ),
+>             (
+>                 "LTR wrapped prose",
+>                 "alpha beta\tgamma delta\tepsilon",
+>                 body,
+>                 Some(70.0),
+>                 false,
+>                 true,
+>                 true,
+>             ),
+>             (
+>                 "RTL wrapped, hanging tab on a middle line",
+>                 arabic,
+>                 mono,
+>                 Some(38.0),
+>                 true,
+>                 true,
+>                 true,
+>             ),
+>             (
+>                 "RTL tab partly hanging past the text end",
+>                 "\u{5d0}\u{5d1}\u{5d2}\u{5d3}\t",
+>                 mono,
+>                 Some(38.0),
+>                 true,
+>                 true,
+>                 true,
+>             ),
+>             (
+>                 "tab before an explicit newline, not overflowing",
+>                 "ab\t\ncd",
+>                 body,
+>                 Some(220.0),
+>                 false,
+>                 false,
+>                 false,
+>             ),
+>             (
+>                 "unbounded LTR ending in a tab",
+>                 "abc\t",
+>                 body,
+>                 None,
+>                 false,
+>                 false,
+>                 false,
+>             ),
+>             (
+>                 "unbounded RTL ending in a tab",
+>                 "\u{5d0}\u{5d1}\u{5d2}\t",
+>                 body,
+>                 None,
+>                 true,
+>                 false,
+>                 false,
+>             ),
+>             // Parley does not hang a tab that continues a ligature with text.
+>             (
+>                 "fixture mixed atom ending a wrapped line",
+>                 "A X\tB",
+>                 Hanging::Fixture,
+>                 Some(34.0),
+>                 false,
+>                 false,
+>                 false,
+>             ),
+>         ];
+>         for scale in [1.0, 1.25] {
+>             let (mut fixed, mut reference) = services();
+>             let (font, reference_font) = (fixture(&mut fixed), fixture(&mut reference));
+>             let prepare = |service: &mut TextService, font: &FontId, case: &Case<'_>| {
+>                 let (_, text, how, width, ..) = *case;
+>                 match how {
+>                     Hanging::Plain(style) => service.prepare(text, width, scale, style).unwrap(),
+>                     Hanging::Fixture => rich(
+>                         service,
+>                         &RichText::new().span(TextSpan::new(text).font(font.clone())),
+>                         width,
+>                         scale,
+>                     ),
+>                 }
+>             };
+>             let (mut ltr_shrink, mut rtl_shift) = (false, false);
+>             for case in &cases {
+>                 let (name, text, _, width, rtl, hangs, overhang) = *case;
+>                 let actual = prepare(&mut fixed, &font, case);
+>                 let expected = prepare(&mut reference, &reference_font, case);
+>                 let context = format!("{name} at scale {scale}");
+>                 assert_eq!(tab_hangs(&expected, text, rtl), hangs, "{context}");
+>                 assert_eq!(
+>                     assert_policy_canvas(&actual, &expected, text),
+>                     overhang,
+>                     "{context}"
+>                 );
+>                 if matches!(case.2, Hanging::Fixture) {
+>                     assert_eq!(
+>                         drawn(&actual),
+>                         drawn(&expected),
+>                         "{context}: the atom keeps its ink"
+>                     );
+>                     assert!(drawn(&actual).contains(&FIXTURE_X_TAB), "{context}");
+>                 }
+>                 // Phase-line coverage is placed against the repaired origin:
+>                 // in Parley coordinates it is the reference's, minus tab ink.
+>                 let regions = tab_regions(&actual);
+>                 for phase in [[0, 0], [1, 0], [2, 3], [3, 1]] {
+>                     let a = coverage(&actual, &fixed.phase_parts(&actual, phase).unwrap());
+>                     let e = coverage(&expected, &reference.phase_parts(&expected, phase).unwrap());
+>                     assert!(
+>                         difference_outside(&regions, &a, &e) <= 1,
+>                         "{context}: phase {phase:?}"
+>                     );
+>                     assert!(!ink_inside(&regions, &a), "{context}: phase {phase:?}");
+>                 }
+>                 let (old, new) = (expected.origin, actual.origin);
+>                 let shift = old[0] - new[0];
+>                 let shrink = expected.size().width() - actual.size().width();
+>                 if overhang && rtl {
+>                     assert!(shift > 0.0, "{context}: {old:?} -> {new:?}");
+>                     rtl_shift = true;
+>                 } else {
+>                     assert_eq!(shift, 0.0, "{context}");
+>                 }
+>                 if overhang && !rtl {
+>                     assert!(shrink > 0.0, "{context}");
+>                     ltr_shrink = true;
+>                 }
+>                 println!(
+>                     "{context}: width {width:?}; size {:?} -> {:?}; origin {old:?} -> {new:?}; \
+>                      width delta {shrink}, x translation {}",
+>                     [expected.size().width(), expected.size().height()],
+>                     [actual.size().width(), actual.size().height()],
+>                     -shift,
+>                 );
+>                 for (index, line) in actual.shaped.lines().enumerate() {
+>                     let m = line.metrics();
+>                     let bounds = |origin: [f32; 2]| {
+>                         [
+>                             m.offset / scale as f32 + origin[0],
+>                             m.block_min_coord / scale as f32 + origin[1],
+>                             m.advance / scale as f32,
+>                             (m.block_max_coord - m.block_min_coord) / scale as f32,
+>                         ]
+>                     };
+>                     println!(
+>                         "  line {index} {:?}: hanging advance {}, public line box {:?} -> {:?}",
+>                         line.text_range(),
+>                         m.hanging_advance / scale as f32,
+>                         bounds(old),
+>                         bounds(new),
+>                     );
+>                 }
+> 
+>                 // Every caret and selection rectangle is the reference's,
+>                 // moved from the old paint origin to the new one: none is
+>                 // normalized away.
+>                 let stops: Vec<usize> = (0..=text.len())
+>                     .filter(|index| TextSelection::new(&actual, *index, *index).is_ok())
+>                     .collect();
+>                 for &from in &stops {
+>                     let (a, e) = (
+>                         TextSelection::snapped(&actual, from, from),
+>                         TextSelection::snapped(&expected, from, from),
+>                     );
+>                     assert_eq!(a, e, "{context}");
+>                     assert_near(
+>                         a.caret(&actual).unwrap(),
+>                         translated(e.caret(&expected).unwrap(), old, new),
+>                         &format!("{context}: caret at {from}"),
+>                     );
+>                     for &to in &stops {
+>                         let (a, e) = (
+>                             TextSelection::snapped(&actual, from, to),
+>                             TextSelection::snapped(&expected, from, to),
+>                         );
+>                         let (a, e) = (
+>                             a.rectangles(&actual).unwrap(),
+>                             e.rectangles(&expected).unwrap(),
+>                         );
+>                         assert_eq!(a.len(), e.len(), "{context}");
+>                         for (a, e) in a.into_iter().zip(e) {
+>                             assert_near(
+>                                 a,
+>                                 translated(e, old, new),
+>                                 &format!("{context}: {from}..{to}"),
+>                             );
+>                         }
+>                     }
+>                     for movement in [
+>                         TextMovement::LineEnd,
+>                         TextMovement::LineStart,
+>                         TextMovement::Down,
+>                     ] {
+>                         let collapse = crate::SelectionExtension::Collapse;
+>                         let (a, e) = (
+>                             TextSelection::snapped(&actual, from, from)
+>                                 .moved(&actual, movement, collapse),
+>                             TextSelection::snapped(&expected, from, from)
+>                                 .moved(&expected, movement, collapse),
+>                         );
+>                         assert_eq!(focus(a), focus(e), "{context}");
+>                         assert_near(
+>                             a.caret(&actual).unwrap(),
+>                             translated(e.caret(&expected).unwrap(), old, new),
+>                             &format!("{context}: {movement:?} from {from}"),
+>                         );
+>                     }
+>                 }
+>                 // The literal values at each hanging line end.
+>                 for (index, line) in actual.shaped.lines().enumerate() {
+>                     if line.metrics().hanging_advance <= 0.0 {
+>                         continue;
+>                     }
+>                     let range = line.text_range();
+>                     let end = |layout: &TextLayout| {
+>                         TextSelection::snapped(layout, range.start, range.start).moved(
+>                             layout,
+>                             TextMovement::LineEnd,
+>                             crate::SelectionExtension::Extend,
+>                         )
+>                     };
+>                     let (a, e) = (end(&actual), end(&expected));
+>                     println!(
+>                         "  line {index} LineEnd {:?}: caret {:?} -> {:?}; selection {:?} -> {:?}",
+>                         focus(a),
+>                         e.caret(&expected).unwrap().values(),
+>                         a.caret(&actual).unwrap().values(),
+>                         e.rectangles(&expected)
+>                             .unwrap()
+>                             .iter()
+>                             .map(|r| r.values())
+>                             .collect::<Vec<_>>(),
+>                         a.rectangles(&actual)
+>                             .unwrap()
+>                             .iter()
+>                             .map(|r| r.values())
+>                             .collect::<Vec<_>>(),
+>                     );
+>                 }
+> 
+>                 // Hit testing at fixed public points, in four categories.
+>                 // The expectation comes from the repaired layout's clusters
+>                 // and the independently expected origin; the reference must
+>                 // agree at the same point moved by the origin change.
+>                 let (policy, _) = expected_canvas(&expected, text);
+>                 let origin = [
+>                     -policy[0] as f32 / actual.scale,
+>                     -policy[1] as f32 / actual.scale,
+>                 ];
+>                 let s = actual.scale;
+>                 let public = |x: f32, y: f32| {
+>                     crate::Point::new(x / s + origin[0], y / s + origin[1]).unwrap()
+>                 };
+>                 let mut points: Vec<(String, usize, crate::Point)> = Vec::new();
+>                 for (index, line) in actual.shaped.lines().enumerate() {
+>                     let m = *line.metrics();
+>                     let y = (m.block_min_coord + m.block_max_coord) / 2.0;
+>                     let clusters: Vec<_> = line
+>                         .runs()
+>                         .flat_map(|run| run.visual_clusters().collect::<Vec<_>>())
+>                         .collect();
+>                     // (a) Over a visible glyph, whose public x moved when the
+>                     // origin did.
+>                     if let Some(cluster) = clusters
+>                         .iter()
+>                         .find(|c| text.get(c.text_range()) != Some("\t") && c.advance() > 0.0)
+>                     {
+>                         let x = cluster.visual_offset().unwrap() + cluster.advance() * 0.25;
+>                         points.push((
+>                             format!("a: glyph {:?} on line {index}", cluster.text_range()),
+>                             index,
+>                             public(x, y),
+>                         ));
+>                     }
+>                     // (b) Between the old and the new origin.
+>                     if shift > 0.0 {
+>                         let p =
+>                             crate::Point::new(origin[0] + shift / 2.0, y / s + origin[1]).unwrap();
+>                         assert!(p.x() >= new[0] && p.x() < old[0]);
+>                         points.push((format!("b: origin band on line {index}"), index, p));
+>                     }
+>                     // (c) Over the hanging region: negative public x in
+>                     // right-to-left text, beyond the size in left-to-right.
+>                     for cluster in &clusters {
+>                         let start = cluster.visual_offset().unwrap();
+>                         let hanging = if rtl {
+>                             start < 0.0
+>                         } else {
+>                             start + cluster.advance() > actual.shaped.width() + 0.01
+>                         };
+>                         if text.get(cluster.text_range()) == Some("\t") && hanging {
+>                             let x = start + cluster.advance() * if rtl { 0.25 } else { 0.75 };
+>                             let p = public(x, y);
+>                             if rtl {
+>                                 assert!(p.x() < 0.0, "{context}: {p:?}");
+>                             } else {
+>                                 assert!(p.x() > actual.size().width(), "{context}: {p:?}");
+>                             }
+>                             points.push((
+>                                 format!(
+>                                     "c: hanging tab {:?} on line {index}",
+>                                     cluster.text_range()
+>                                 ),
+>                                 index,
+>                                 p,
+>                             ));
+>                         }
+>                     }
+>                     // (d) Outside points snap to the nearest caret.
+>                     points.push((
+>                         format!("d: far left of line {index}"),
+>                         index,
+>                         public(-40.0 * s, y),
+>                     ));
+>                     points.push((
+>                         format!("d: far right of line {index}"),
+>                         index,
+>                         public(actual.size().width() * s + 40.0 * s, y),
+>                     ));
+>                 }
+>                 // Above and below the text, 30% into a middle cluster of
+>                 // the first and the last line, away from cluster boundaries.
+>                 let lines = actual.shaped.len();
+>                 for (name, index, y) in [
+>                     ("d: above", 0, -20.0 * s),
+>                     ("d: below", lines - 1, actual.shaped.height() + 20.0 * s),
+>                 ] {
+>                     let line = actual.shaped.get(index).unwrap();
+>                     let clusters: Vec<_> = line
+>                         .runs()
+>                         .flat_map(|run| run.visual_clusters().collect::<Vec<_>>())
+>                         .collect();
+>                     let cluster = &clusters[clusters.len() / 2];
+>                     let x = cluster.visual_offset().unwrap() + cluster.advance() * 0.3;
+>                     points.push((name.into(), index, public(x, y)));
+>                 }
+>                 for (name, line, p) in &points {
+>                     let expected_caret = expected_hit(&actual, *line, (p.x() - origin[0]) * s);
+>                     let collapse = crate::SelectionExtension::Collapse;
+>                     let hit = TextSelection::default().at_point(&actual, *p, collapse);
+>                     assert_eq!(focus(hit), expected_caret, "{context}: {name} at {p:?}");
+>                     let moved = crate::Point::new(p.x() - new[0] + old[0], p.y() - new[1] + old[1])
+>                         .unwrap();
+>                     let before = TextSelection::default().at_point(&expected, moved, collapse);
+>                     assert_eq!(
+>                         focus(before),
+>                         expected_caret,
+>                         "{context}: {name}, reference at {moved:?}"
+>                     );
+>                     let word = TextSelection::word_at_point(&actual, *p).byte_range();
+>                     assert_eq!(
+>                         word,
+>                         TextSelection::word_at_point(&expected, moved).byte_range(),
+>                         "{context}: {name}"
+>                     );
+>                     let unmoved = focus(TextSelection::default().at_point(&expected, *p, collapse));
+>                     println!(
+>                         "  hit {name} at {:?}: {expected_caret:?}, word {word:?}; reference at the same point {unmoved:?}",
+>                         [p.x(), p.y()],
+>                     );
+>                 }
+>             }
+>             assert!(ltr_shrink && rtl_shift, "scale {scale} keeps both deltas");
+>         }
+>     }
+> 
+785a1392,1695
+>     /// Which font a tab of the mixed-font test is shaped in.
+>     #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+>     enum TabFont {
+>         Body,
+>         Monospace,
+>         Fixture,
+>     }
+> 
+>     /// Body, Monospace and the registered fixture in one rich layout, with
+>     /// tabs at every kind of font boundary, an icon whose nearest text is a
+>     /// hidden tab, wrapping and phase rendering.
+>     fn mixed_fonts(font: &FontId) -> RichText {
+>         let mono = crate::FontRole::Monospace;
+>         RichText::new()
+>             .text("ab\t")
+>             .span(TextSpan::new("\tcd").font_role(mono))
+>             .text(" e")
+>             .span(
+>                 TextSpan::new("\t")
+>                     .font(font.clone())
+>                     .size(Length::new(26.0).unwrap()),
+>             )
+>             .icon(Icon::Save)
+>             .span(TextSpan::new("h").size(Length::new(10.0).unwrap()))
+>             .text(" i\t")
+>             .span(TextSpan::new("\tAB").font(font.clone()))
+>             .text(" z")
+>             .span(TextSpan::new("\t\t").font(font.clone()))
+>             .text(" ")
+>             .span(TextSpan::new("A X\tB").font(font.clone()))
+>             .text(" end")
+>             .span(TextSpan::new("\t").font_role(mono))
+>             .text("next")
+>     }
+> 
+>     #[test]
+>     fn mixed_fonts_keep_each_tab_s_font_size_and_advance_and_icons_use_hidden_tab_metrics() {
+>         // (tab byte, where it is, its font, its logical size)
+>         type Tab = (usize, &'static str, TabFont, f32);
+>         let tabs: [Tab; 9] = [
+>             (2, "last byte of a Body span", TabFont::Body, 14.0),
+>             (
+>                 3,
+>                 "first byte of a Monospace span, after a Body tab",
+>                 TabFont::Monospace,
+>                 14.0,
+>             ),
+>             (
+>                 8,
+>                 "a fixture span's only content, the icon's nearest text",
+>                 TabFont::Fixture,
+>                 26.0,
+>             ),
+>             (
+>                 15,
+>                 "last byte of a Body span, before a fixture tab",
+>                 TabFont::Body,
+>                 14.0,
+>             ),
+>             (16, "first byte of a fixture span", TabFont::Fixture, 14.0),
+>             (
+>                 21,
+>                 "fixture tab-tab ligature beside Body",
+>                 TabFont::Fixture,
+>                 14.0,
+>             ),
+>             (
+>                 22,
+>                 "fixture tab-tab ligature continuation",
+>                 TabFont::Fixture,
+>                 14.0,
+>             ),
+>             (27, "fixture X+tab mixed atom", TabFont::Fixture, 14.0),
+>             (
+>                 33,
+>                 "a Monospace span's only content after Body",
+>                 TabFont::Monospace,
+>                 14.0,
+>             ),
+>         ];
+>         let mixed = 27;
+>         for scale in [1.0, 1.25] {
+>             let (mut fixed, mut reference) = services();
+>             let (font, reference_font) = (fixture(&mut fixed), fixture(&mut reference));
+>             let text = shaped_text(&fixed, &mixed_fonts(&font));
+>             let bytes: Vec<usize> = text.match_indices('\t').map(|(index, _)| index).collect();
+>             assert_eq!(bytes, tabs.map(|tab| tab.0));
+>             // The font data each service shapes Body, Monospace and the
+>             // fixture with; a registered font has an identity per service.
+>             let fonts = |service: &mut TextService, font: &FontId| {
+>                 let first = |layout: &TextLayout| {
+>                     let run = layout.shaped.lines().next().unwrap().runs().next().unwrap();
+>                     (run.font().data.id(), run.font().index)
+>                 };
+>                 let body = first(&service.prepare("x", None, scale, TextStyle::Body).unwrap());
+>                 let mono = first(
+>                     &service
+>                         .prepare("x", None, scale, TextStyle::Monospace)
+>                         .unwrap(),
+>                 );
+>                 let registered = first(&rich(
+>                     service,
+>                     &RichText::new().span(TextSpan::new("A").font(font.clone())),
+>                     None,
+>                     scale,
+>                 ));
+>                 move |kind: TabFont| match kind {
+>                     TabFont::Body => body,
+>                     TabFont::Monospace => mono,
+>                     TabFont::Fixture => registered,
+>                 }
+>             };
+>             let (fixed_fonts, reference_fonts) = (
+>                 fonts(&mut fixed, &font),
+>                 fonts(&mut reference, &reference_font),
+>             );
+>             let (mut wrapped_atom, mut boundary_hang, mut icon_on_tab) = (false, false, false);
+>             for width in [None, Some(64.0), Some(120.0)] {
+>                 let actual = rich(&mut fixed, &mixed_fonts(&font), width, scale);
+>                 let expected = rich(&mut reference, &mixed_fonts(&reference_font), width, scale);
+>                 let context = format!("scale {scale} width {width:?}");
+>                 // Each tab's own font, size, coordinates and advance first, so
+>                 // an override touching them fails here.
+>                 for (byte, place, kind, size) in tabs {
+>                     let facts = |layout: &TextLayout| {
+>                         let cluster =
+>                             parley::Cluster::from_byte_index(&layout.shaped, byte).unwrap();
+>                         let run = cluster.run();
+>                         (
+>                             (run.font().data.id(), run.font().index),
+>                             run.font_size(),
+>                             run.normalized_coords()
+>                                 .iter()
+>                                 .map(|c| c.to_bits())
+>                                 .collect::<Vec<_>>(),
+>                             cluster.advance(),
+>                             cluster.path().line_index(),
+>                             cluster.visual_offset().unwrap(),
+>                             cluster.style().brush,
+>                         )
+>                     };
+>                     let (a, e) = (facts(&actual), facts(&expected));
+>                     assert_eq!(a.0, fixed_fonts(kind), "{context}: {place}");
+>                     assert_eq!(e.0, reference_fonts(kind), "{context}: {place}");
+>                     assert_eq!(a.1, size * scale as f32, "{context}: {place}");
+>                     assert_eq!(
+>                         (a.1, &a.2, a.3, a.4),
+>                         (e.1, &e.2, e.3, e.4),
+>                         "{context}: {place}"
+>                     );
+>                     assert!((a.5 - e.5).abs() < 0.01, "{context}: {place}");
+>                     assert_eq!(
+>                         a.6 == TextBrush::HiddenTab,
+>                         byte != mixed,
+>                         "{context}: {place}"
+>                     );
+>                     println!(
+>                         "{context}: tab {byte} ({place}): {kind:?} font {:?}, size {}, coordinates {:?}, \
+>                          advance {}, line {}, x {}, brush {:?}",
+>                         a.0, a.1, a.2, a.3, a.4, a.5, a.6
+>                     );
+>                 }
+>                 assert_matches_reference(&actual, &expected, &text);
+>                 assert!(drawn(&actual).contains(&FIXTURE_X_TAB), "{context}");
+>                 assert!(!drawn(&actual).contains(&FIXTURE_TAB_TAB), "{context}");
+>                 // Wrapping places the mixed atom at a line end and hangs tabs
+>                 // at font boundaries.
+>                 for line in actual.shaped.lines() {
+>                     if line.text_range().end == mixed + 1
+>                         && line.break_reason() == parley::BreakReason::Regular
+>                     {
+>                         wrapped_atom = true;
+>                     }
+>                 }
+>                 for byte in [8, 16, 33] {
+>                     let cluster = parley::Cluster::from_byte_index(&actual.shaped, byte).unwrap();
+>                     let x = cluster.visual_offset().unwrap();
+>                     if width.is_some() && x + cluster.advance() > actual.shaped.width() + 0.01 {
+>                         boundary_hang = true;
+>                     }
+>                 }
+> 
+>                 // The icon aligns with its nearest text run. Where that is the
+>                 // hidden size-26 tab rather than the size-10 text after the
+>                 // icon, the two centers differ by at least a physical pixel,
+>                 // so skipping hidden runs would move the icon.
+>                 let icon = actual
+>                     .signature
+>                     .runs
+>                     .iter()
+>                     .find(|run| run.alignment.is_some())
+>                     .unwrap();
+>                 let reference_icon = expected
+>                     .signature
+>                     .runs
+>                     .iter()
+>                     .find(|run| run.alignment.is_some())
+>                     .unwrap();
+>                 assert_eq!(icon.alignment, reference_icon.alignment, "{context}");
+>                 for line in actual.shaped.lines() {
+>                     let runs: Vec<_> = line
+>                         .items()
+>                         .filter_map(|item| match item {
+>                             parley::PositionedLayoutItem::GlyphRun(run) => Some(run),
+>                             parley::PositionedLayoutItem::InlineBox(_) => None,
+>                         })
+>                         .collect();
+>                     let Some(at) = runs
+>                         .iter()
+>                         .position(|run| run.style().brush == TextBrush::Color(icon.brush))
+>                     else {
+>                         continue;
+>                     };
+>                     let center = |run: &parley::GlyphRun<'_, TextBrush>| {
+>                         let metrics = run.run().font_metrics();
+>                         let cap = metrics
+>                             .cap_height
+>                             .filter(|h| h.is_finite() && *h > 0.0)
+>                             .unwrap_or(run.run().font_size() * 0.7);
+>                         run.baseline() - cap * 0.5
+>                     };
+>                     let target = f32::from_bits(icon.alignment.unwrap()[0]);
+>                     let text_runs = |hidden: bool| {
+>                         runs.iter()
+>                             .enumerate()
+>                             .filter(|(index, run)| {
+>                                 *index != at
+>                                     && (hidden || run.style().brush != TextBrush::HiddenTab)
+>                             })
+>                             .min_by_key(|(index, _)| index.abs_diff(at))
+>                             .map(|(_, run)| run)
+>                     };
+>                     let nearest = text_runs(true).unwrap();
+>                     if nearest.style().brush == TextBrush::HiddenTab {
+>                         icon_on_tab = true;
+>                         assert_eq!(target, center(nearest), "{context}");
+>                         let visible = center(text_runs(false).unwrap());
+>                         assert!(
+>                             (target - visible).abs() >= 1.0,
+>                             "{context}: {target} vs {visible}"
+>                         );
+>                         println!(
+>                             "{context}: icon aligns to the hidden tab's center {target}; \
+>                              the nearest visible run's is {visible}"
+>                         );
+>                     }
+>                 }
+>                 // The icon's own coverage is the reference's, pixel for pixel.
+>                 let a = coverage(&actual, &actual.parts);
+>                 let e = coverage(&expected, &expected.parts);
+>                 assert_eq!(
+>                     a.get(&icon.brush),
+>                     e.get(&reference_icon.brush),
+>                     "{context}"
+>                 );
+>             }
+>             assert!(
+>                 wrapped_atom && boundary_hang && icon_on_tab,
+>                 "scale {scale}"
+>             );
+> 
+>             // Phase-line rendering of the wrapped layout, in both orders
+>             // against a twin whose tabs are a missing character instead.
+>             let twin = RichText::from(text.replace('\t', "\u{E000}"));
+>             let expected = rich(
+>                 &mut reference,
+>                 &mixed_fonts(&reference_font),
+>                 Some(64.0),
+>                 scale,
+>             );
+>             let phases = [[1, 0], [2, 3], [3, 1], [0, 2]];
+>             let mut orders = Vec::new();
+>             for tab_first in [true, false] {
+>                 let (mut service, _) = services();
+>                 let font = fixture(&mut service);
+>                 let actual = rich(&mut service, &mixed_fonts(&font), Some(64.0), scale);
+>                 let twin = rich(&mut service, &twin, Some(64.0), scale);
+>                 let regions = tab_regions(&actual);
+>                 let mut seen = Vec::new();
+>                 for phase in phases {
+>                     let mut render = |layout: &TextLayout| {
+>                         coverage(layout, &service.phase_parts(layout, phase).unwrap())
+>                     };
+>                     let (a, _) = if tab_first {
+>                         let a = render(&actual);
+>                         (a, render(&twin))
+>                     } else {
+>                         let t = render(&twin);
+>                         (render(&actual), t)
+>                     };
+>                     let e = coverage(&expected, &reference.phase_parts(&expected, phase).unwrap());
+>                     assert!(difference_outside(&regions, &a, &e) <= 1, "phase {phase:?}");
+>                     assert!(!ink_inside(&regions, &a), "phase {phase:?}");
+>                     seen.push(a);
+>                 }
+>                 orders.push(seen);
+>             }
+>             assert_eq!(
+>                 orders[0], orders[1],
+>                 "phase coverage does not depend on cache order"
+>             );
+>         }
+>     }
+> 
+886a1797,1833
+> 
+>         // Fitting compares prepared sizes. A candidate never ends at a tab
+>         // before the ellipsis, which drops whitespace there; the comparison
+>         // that meets a trailing tab is the whole text ending in one, at
+>         // exactly its width, which does not hang. Both choose alike.
+>         let long = "Name\tValue that is far too long for its column";
+>         let width = reference
+>             .prepare("Name\t\u{2026}", None, 1.0, TextStyle::Body)
+>             .unwrap()
+>             .size()
+>             .width();
+>         let whole = reference
+>             .prepare("Name\t", None, 1.0, TextStyle::Body)
+>             .unwrap();
+>         for (text, width, shown) in [
+>             (long, width, Some("Name\u{2026}")),
+>             ("Name\t", whole.size().width(), None),
+>         ] {
+>             let actual = fixed
+>                 .fit_plain(text, request, width, TextOverflow::Ellipsis)
+>                 .unwrap();
+>             let expected = reference
+>                 .fit_plain(text, request, width, TextOverflow::Ellipsis)
+>                 .unwrap();
+>             assert_eq!(expected.shown(), shown, "{text:?}");
+>             assert_eq!(actual.shown(), expected.shown(), "{text:?}");
+>             let fitted = shown.unwrap_or(text);
+>             assert_matches_reference(actual.layout(), expected.layout(), fitted);
+>             assert_eq!(actual.layout().size(), expected.layout().size());
+>             println!(
+>                 "fit {text:?} at width {width}: shown {:?} with size {:?}; reference {:?} with {:?}",
+>                 actual.shown(),
+>                 actual.layout().size(),
+>                 expected.shown(),
+>                 expected.layout().size()
+>             );
+>         }

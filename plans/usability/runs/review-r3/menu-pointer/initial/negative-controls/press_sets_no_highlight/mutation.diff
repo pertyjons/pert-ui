@@ -1,0 +1,10 @@
+--- /home/per/pert-ui-usability/r3-menu-implementation-evidence/negative-controls/press_sets_no_highlight/backup/select.rs	2026-10-29 10:31:56.220659077 +0100
++++ crates/pert-ui-runtime/src/select.rs	2026-10-29 10:42:00.165415042 +0100
+@@ -605,6 +605,7 @@
+                 if !key_armed {
+                     self.pointer_owns = true;
+                     if let Some(value) = &self.pressed
++                        && false
+                         && self.active.as_ref() != Some(value)
+                     {
+                         self.active = Some(value.clone());

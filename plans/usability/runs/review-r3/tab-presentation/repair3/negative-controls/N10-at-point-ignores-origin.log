@@ -1,0 +1,103 @@
+$ cd /home/per/pert-ui-usability/r3-text-worktree
+# mutation in crates/pert-ui-runtime/src/text_selection.rs:
+-        let x = (point.x() - layout.origin[0]) * layout.scale;
++        let x = point.x() * layout.scale;
+$ CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-text-implementation-target cargo test --locked -p pert-ui-runtime --lib text::tabs -- --test-threads=1
+exit status: 101
+elapsed: 6.6 s
+
+--- stdout ---
+
+running 11 tests
+test text::tabs::tests::a_registered_font_ligating_a_tab_keeps_that_glyph_and_hides_pure_tab_atoms ... ok
+test text::tabs::tests::a_tab_and_a_missing_character_never_share_phase_coverage ... ok
+test text::tabs::tests::cached_measured_and_ellipsized_tabs_stay_hidden ... ok
+test text::tabs::tests::consecutive_tabs_merge_and_retained_tabs_split_them ... ok
+test text::tabs::tests::hanging_tabs_shrink_the_extent_and_translate_right_to_left_public_coordinates ... FAILED
+test text::tabs::tests::mixed_fonts_keep_each_tab_s_font_size_and_advance_and_icons_use_hidden_tab_metrics ... ok
+test text::tabs::tests::other_unsupported_characters_keep_their_fallback_ink ... ok
+test text::tabs::tests::rich_spans_gaps_and_icons_keep_reference_color_size_and_alignment ... ok
+test text::tabs::tests::tab_only_text_has_no_coverage_but_its_advance_and_caret_stops ... ok
+test text::tabs::tests::tabs_keep_the_reference_geometry_and_unicode_analysis_without_their_ink ... FAILED
+test text::tabs::tests::the_worst_admitted_alternating_tabs_stay_within_the_style_bound ... ok
+
+failures:
+
+---- text::tabs::tests::hanging_tabs_shrink_the_extent_and_translate_right_to_left_public_coordinates stdout ----
+LTR wrapped, hanging tab on a middle line at scale 1: width Some(38.0); size [41.0, 59.0] -> [34.0, 59.0]; origin [0.0, 0.0] -> [0.0, 0.0]; width delta 7, x translation -0
+  line 0 0..5: hanging advance 8.400001, public line box [0.0, 0.0, 42.000004, 20.0] -> [0.0, 0.0, 42.000004, 20.0]
+  line 1 5..10: hanging advance 8.400001, public line box [0.0, 20.0, 42.000004, 20.0] -> [0.0, 20.0, 42.000004, 20.0]
+  line 2 10..14: hanging advance 0, public line box [0.0, 39.0, 33.600002, 20.0] -> [0.0, 39.0, 33.600002, 20.0]
+  line 0 LineEnd (5, Upstream): caret [42.000004, 0.0, 1.0, 20.0] -> [42.000004, 0.0, 1.0, 20.0]; selection [[0.0, 0.0, 42.000004, 20.0]] -> [[0.0, 0.0, 42.000004, 20.0]]
+  line 1 LineEnd (10, Upstream): caret [42.000004, 20.0, 1.0, 20.0] -> [42.000004, 20.0, 1.0, 20.0]; selection [[0.0, 20.0, 42.000004, 20.0]] -> [[0.0, 20.0, 42.000004, 20.0]]
+  hit a: glyph 0..1 on line 0 at [2.1000001, 10.0]: (0, Downstream), word ((0, Downstream), (4, Upstream)); reference at the same point (0, Downstream), word ((0, Downstream), (4, Upstream)); reference at [2.1000001, 10.0] agrees
+  hit c: hanging tab 4..5 on line 0 at [39.9, 10.0]: (5, Upstream), word ((4, Upstream), (5, Upstream)); reference at the same point (5, Upstream), word ((4, Upstream), (5, Upstream)); reference at [39.9, 10.0] agrees
+  hit d: far left of line 0 at [-40.0, 10.0]: (0, Downstream), word ((0, Downstream), (4, Upstream)); reference at the same point (0, Downstream), word ((0, Downstream), (4, Upstream)); reference at [-40.0, 10.0] agrees
+  hit d: far right of line 0 at [74.0, 10.0]: (5, Upstream), word ((4, Upstream), (5, Upstream)); reference at the same point (5, Upstream), word ((4, Upstream), (5, Upstream)); reference at [74.0, 10.0] agrees
+  hit a: glyph 5..6 on line 1 at [2.1000001, 30.0]: (5, Downstream), word ((5, Upstream), (9, Upstream)); reference at the same point (5, Downstream), word ((5, Upstream), (9, Upstream)); reference at [2.1000001, 30.0] agrees
+  hit c: hanging tab 9..10 on line 1 at [39.9, 30.0]: (10, Upstream), word ((9, Upstream), (10, Upstream)); reference at the same point (10, Upstream), word ((9, Upstream), (10, Upstream)); reference at [39.9, 30.0] agrees
+  hit d: far left of line 1 at [-40.0, 30.0]: (5, Downstream), word ((5, Upstream), (9, Upstream)); reference at the same point (5, Downstream), word ((5, Upstream), (9, Upstream)); reference at [-40.0, 30.0] agrees
+  hit d: far right of line 1 at [74.0, 30.0]: (10, Upstream), word ((9, Upstream), (10, Upstream)); reference at the same point (10, Upstream), word ((9, Upstream), (10, Upstream)); reference at [74.0, 30.0] agrees
+  hit a: glyph 10..11 on line 2 at [2.1000001, 49.0]: (10, Downstream), word ((10, Upstream), (14, Upstream)); reference at the same point (10, Downstream), word ((10, Upstream), (14, Upstream)); reference at [2.1000001, 49.0] agrees
+  hit d: far left of line 2 at [-40.0, 49.0]: (10, Downstream), word ((10, Upstream), (14, Upstream)); reference at the same point (10, Downstream), word ((10, Upstream), (14, Upstream)); reference at [-40.0, 49.0] agrees
+  hit d: far right of line 2 at [74.0, 49.0]: (14, Upstream), word ((10, Upstream), (14, Upstream)); reference at the same point (14, Upstream), word ((10, Upstream), (14, Upstream)); reference at [74.0, 49.0] agrees
+  hit d: above at [19.320002, -20.0]: (2, Downstream), word ((0, Downstream), (4, Upstream)); reference at the same point (2, Downstream), word ((0, Downstream), (4, Upstream)); reference at [19.320002, -20.0] agrees
+  hit d: below at [19.320002, 78.8]: (12, Downstream), word ((10, Upstream), (14, Upstream)); reference at the same point (12, Downstream), word ((10, Upstream), (14, Upstream)); reference at [19.320002, 78.8] agrees
+LTR wrapped prose at scale 1: width Some(70.0); size [77.0, 79.0] -> [70.0, 79.0]; origin [0.0, 0.0] -> [0.0, 0.0]; width delta 7, x translation -0
+  line 0 0..11: hanging advance 8.400001, public line box [0.0, 0.0, 78.036, 20.0] -> [0.0, 0.0, 78.036, 20.0]
+  line 1 11..17: hanging advance 3.64, public line box [0.0, 20.0, 54.138, 20.0] -> [0.0, 20.0, 54.138, 20.0]
+  line 2 17..23: hanging advance 8.400001, public line box [0.0, 39.0, 41.426003, 20.0] -> [0.0, 39.0, 41.426003, 20.0]
+  line 3 23..30: hanging advance 0, public line box [0.0, 59.0, 47.558002, 20.0] -> [0.0, 59.0, 47.558002, 20.0]
+  line 0 LineEnd (11, Upstream): caret [78.036, 0.0, 1.0, 20.0] -> [78.036, 0.0, 1.0, 20.0]; selection [[0.0, 0.0, 78.036, 20.0]] -> [[0.0, 0.0, 78.036, 20.0]]
+  line 1 LineEnd (17, Upstream): caret [54.138, 20.0, 1.0, 20.0] -> [54.138, 20.0, 1.0, 20.0]; selection [[0.0, 20.0, 54.138, 20.0]] -> [[0.0, 20.0, 54.138, 20.0]]
+  line 2 LineEnd (23, Upstream): caret [41.426003, 39.0, 1.0, 20.0] -> [41.426003, 39.0, 1.0, 20.0]; selection [[0.0, 39.0, 41.426003, 20.0]] -> [[0.0, 39.0, 41.426003, 20.0]]
+  hit a: glyph 0..1 on line 0 at [1.9635, 10.0]: (0, Downstream), word ((0, Downstream), (5, Upstream)); reference at the same point (0, Downstream), word ((0, Downstream), (5, Upstream)); reference at [1.9635, 10.0] agrees
+  hit c: hanging tab 10..11 on line 0 at [75.936005, 10.0]: (11, Upstream), word ((10, Upstream), (11, Upstream)); reference at the same point (11, Upstream), word ((10, Upstream), (11, Upstream)); reference at [75.936005, 10.0] agrees
+  hit d: far left of line 0 at [-40.0, 10.0]: (0, Downstream), word ((0, Downstream), (5, Upstream)); reference at the same point (0, Downstream), word ((0, Downstream), (5, Upstream)); reference at [-40.0, 10.0] agrees
+  hit d: far right of line 0 at [110.0, 10.0]: (11, Upstream), word ((10, Upstream), (11, Upstream)); reference at the same point (11, Upstream), word ((10, Upstream), (11, Upstream)); reference at [110.0, 10.0] agrees
+  hit a: glyph 11..12 on line 1 at [2.1525002, 30.0]: (11, Downstream), word ((11, Upstream), (16, Upstream)); reference at the same point (11, Downstream), word ((11, Upstream), (16, Upstream)); reference at [2.1525002, 30.0] agrees
+  hit d: far left of line 1 at [-40.0, 30.0]: (11, Downstream), word ((11, Upstream), (16, Upstream)); reference at the same point (11, Downstream), word ((11, Upstream), (16, Upstream)); reference at [-40.0, 30.0] agrees
+  hit d: far right of line 1 at [110.0, 30.0]: (17, Upstream), word ((16, Upstream), (17, Upstream)); reference at the same point (17, Upstream), word ((16, Upstream), (17, Upstream)); reference at [110.0, 30.0] agrees
+  hit a: glyph 17..18 on line 2 at [2.1525002, 49.0]: (17, Downstream), word ((17, Upstream), (22, Upstream)); reference at the same point (17, Downstream), word ((17, Upstream), (22, Upstream)); reference at [2.1525002, 49.0] agrees
+  hit d: far left of line 2 at [-40.0, 49.0]: (17, Downstream), word ((17, Upstream), (22, Upstream)); reference at the same point (17, Downstream), word ((17, Upstream), (22, Upstream)); reference at [-40.0, 49.0] agrees
+  hit d: far right of line 2 at [110.0, 49.0]: (23, Upstream), word ((22, Upstream), (23, Upstream)); reference at the same point (23, Upstream), word ((22, Upstream), (23, Upstream)); reference at [110.0, 49.0] agrees
+  hit a: glyph 23..24 on line 3 at [1.9740001, 69.0]: (23, Downstream), word ((23, Upstream), (30, Upstream)); reference at the same point (23, Downstream), word ((23, Upstream), (30, Upstream)); reference at [1.9740001, 69.0] agrees
+  hit d: far left of line 3 at [-40.0, 69.0]: (23, Downstream), word ((23, Upstream), (30, Upstream)); reference at the same point (23, Downstream), word ((23, Upstream), (30, Upstream)); reference at [-40.0, 69.0] agrees
+  hit d: far right of line 3 at [110.0, 69.0]: (30, Upstream), word ((23, Upstream), (30, Upstream)); reference at the same point (30, Upstream), word ((23, Upstream), (30, Upstream)); reference at [110.0, 69.0] agrees
+  hit d: above at [37.674, -20.0]: (5, Downstream), word ((5, Upstream), (6, Upstream)); reference at the same point (5, Downstream), word ((5, Upstream), (6, Upstream)); reference at [37.674, -20.0] agrees
+  hit d: below at [24.295603, 98.4]: (26, Downstream), word ((23, Upstream), (30, Upstream)); reference at the same point (26, Downstream), word ((23, Upstream), (30, Upstream)); reference at [24.295603, 98.4] agrees
+RTL wrapped, hanging tab on a middle line at scale 1: width Some(38.0); size [40.0, 59.0] -> [37.0, 59.0]; origin [3.0, 0.0] -> [0.0, 0.0]; width delta 3, x translation -3
+  line 0 0..9: hanging advance 8.400001, public line box [-1.0000038, 0.0, 42.000004, 20.0] -> [-4.000004, 0.0, 42.000004, 20.0]
+  line 1 9..18: hanging advance 8.400001, public line box [-1.0000038, 20.0, 42.000004, 20.0] -> [-4.000004, 20.0, 42.000004, 20.0]
+  line 2 18..22: hanging advance 0, public line box [24.199999, 39.0, 16.800001, 20.0] -> [21.199999, 39.0, 16.800001, 20.0]
+  line 0 LineEnd (9, Upstream): caret [-1.0000038, 0.0, 1.0, 20.0] -> [-4.000004, 0.0, 1.0, 20.0]; selection [[-1.0000038, 0.0, 42.000004, 20.0]] -> [[-4.000004, 0.0, 42.000004, 20.0]]
+  line 1 LineEnd (18, Upstream): caret [-1.0000038, 20.0, 1.0, 20.0] -> [-4.000004, 20.0, 1.0, 20.0]; selection [[-1.0000038, 20.0, 42.000004, 20.0]] -> [[-4.000004, 20.0, 42.000004, 20.0]]
+
+thread 'text::tabs::tests::hanging_tabs_shrink_the_extent_and_translate_right_to_left_public_coordinates' (3846590) panicked at crates/pert-ui-runtime/src/text/tabs.rs:1246:21:
+assertion `left == right` failed: RTL wrapped, hanging tab on a middle line at scale 1: a: glyph 6..8 on line 0, reference at the same point Point { x: 6.499997, y: 10.0 }
+  left: (8, Upstream)
+ right: (8, Downstream)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- text::tabs::tests::tabs_keep_the_reference_geometry_and_unicode_analysis_without_their_ink stdout ----
+
+thread 'text::tabs::tests::tabs_keep_the_reference_geometry_and_unicode_analysis_without_their_ink' (3846595) panicked at crates/pert-ui-runtime/src/text/tabs.rs:605:13:
+assertion `left == right` failed
+  left: TextSelection(Selection { anchor: Cursor { index: 10, affinity: Downstream }, focus: Cursor { index: 10, affinity: Downstream }, anchor_base: Cluster, h_pos: None })
+ right: TextSelection(Selection { anchor: Cursor { index: 7, affinity: Downstream }, focus: Cursor { index: 7, affinity: Downstream }, anchor_base: Cluster, h_pos: None })
+
+
+failures:
+    text::tabs::tests::hanging_tabs_shrink_the_extent_and_translate_right_to_left_public_coordinates
+    text::tabs::tests::tabs_keep_the_reference_geometry_and_unicode_analysis_without_their_ink
+
+test result: FAILED. 9 passed; 2 failed; 0 ignored; 0 measured; 188 filtered out; finished in 3.49s
+
+
+--- stderr ---
+   Compiling pert-ui-runtime v0.3.89 (/home/per/pert-ui-usability/r3-text-worktree/crates/pert-ui-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.11s
+     Running unittests src/lib.rs (/home/per/pert-ui-usability/r3-text-implementation-target/debug/deps/pert_ui_runtime-87e7d33e6cb9fb9f)
+error: test failed, to rerun pass `-p pert-ui-runtime --lib`
+
+# restored sha256 a0cbc2e3375e12b0702df6e8e868e0f5fc0bf8ac76fd57be0aa10a34f3af5d28 (identical)

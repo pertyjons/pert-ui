@@ -1,0 +1,21 @@
+$ cd /home/per/pert-ui-usability/r3-text-worktree
+$ CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-text-implementation-target cargo test --locked -p pert-ui --features cpu --test editing tab_whitespace -- --nocapture
+exit status: 0
+elapsed: 1.8 s
+
+--- stdout ---
+
+running 4 tests
+test tab_whitespace::keyboard_tab_moves_focus_between_text_areas_without_inserting_a_tab ... ok
+test tab_whitespace::a_text_area_edits_copies_and_inspects_literal_tabs_as_canonical_bytes ... ok
+test tab_whitespace::a_rendered_tab_is_blank_while_its_neighbors_stay_in_place ... ok
+TextArea with 5700 bytes (300 rows, 900 tabs): mount and first frame 232.472422ms, one edit frame 228.698098ms (one observation, not a bound)
+test tab_whitespace::a_full_text_area_of_tab_separated_columns_paints_and_edits ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 315 filtered out; finished in 0.46s
+
+
+--- stderr ---
+   Compiling pert-ui v0.3.89 (/home/per/pert-ui-usability/r3-text-worktree/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.24s
+     Running tests/editing/main.rs (/home/per/pert-ui-usability/r3-text-implementation-target/debug/deps/editing-168b3dc5870850f9)

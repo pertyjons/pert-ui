@@ -1,0 +1,10 @@
+--- /home/per/pert-ui-usability/r3-menu-implementation2-evidence/negative-controls/clear_on_navigation_release/backup/select.rs	2026-10-29 11:07:21.836773616 +0100
++++ crates/pert-ui-runtime/src/select.rs	2026-10-29 11:07:21.855955694 +0100
+@@ -718,6 +718,7 @@
+         ) {
+             return Ok(InputOutcome::Ignored);
+         }
++        self.pointer_owns = false;
+         if matches!(
+             e.transition,
+             KeyTransition::Pressed | KeyTransition::Repeated

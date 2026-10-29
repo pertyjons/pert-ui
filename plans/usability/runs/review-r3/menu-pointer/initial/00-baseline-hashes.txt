@@ -1,0 +1,8 @@
+# baseline 2026-10-29T10:29:14+01:00
+b9e4c6cfc2444c5c5fcea63a390e9e2038699dd4
+929d075d7394f441db61bc89c3cdf9a7a22e1f0ebad018435c08b9b371285234  crates/pert-ui-runtime/src/select.rs
+1f6e6d7f3029c5e0a74f23bae66f31ac2668ad75c9c83038f1accb3380639b1b  crates/pert-ui-runtime/src/menu_bar.rs
+4ad4e0e04d221ea9f21e9d3edf20403cb7b58b90da4810f902fb478bce9335b6  crates/pert-ui-runtime/src/menu.rs
+824b7e5c1a80e1f6c5f7f46d85368ddfd26583b4f9a2f1fa04e28c5352ed4e6e  crates/pert-ui-runtime/src/activation.rs
+b5e24f340755fd447264bd3d5d41e74db74f1beac505a4653af2fa83a02e62b7  crates/pert-ui/tests/surfaces/main.rs
+target: reflink copy of r3-text-implementation-target at 2026-10-29T10:29:25+01:00

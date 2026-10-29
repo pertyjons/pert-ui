@@ -24,6 +24,13 @@ impl ActivationState {
     pub(crate) fn pressed(&self) -> bool {
         self.pointer || self.key.is_some()
     }
+    /// Whether an Enter or Space press, rather than the pointer, armed the
+    /// gesture. Its release acts on whatever the control has chosen by then,
+    /// so a list that highlights rows under the pointer reads this to keep
+    /// pointer input from moving that choice until the key ends the gesture.
+    pub(crate) fn key_armed(&self) -> bool {
+        self.key.is_some()
+    }
     /// Tracks hover and the primary button; returns whether this event activates.
     pub(crate) fn pointer(
         &mut self,

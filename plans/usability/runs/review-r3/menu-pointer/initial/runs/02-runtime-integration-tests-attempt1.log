@@ -1,0 +1,545 @@
+# ARCHIVED EXCERPT: original 02-runtime-integration-tests-attempt1.full.log.gz
+# SHA256 1617639131580bef93dffed68c87087a7e26bd9d659681c42fd0f0aa89a806aa; only repeated known overlap diagnostics abbreviated
+
+# started 2026-10-29T10:32:54+01:00
+# cwd /home/per/pert-ui-usability/r3-menu-worktree  CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-menu-implementation-target
+# command: cargo test --locked -p pert-ui-runtime --tests
+# HEAD b9e4c6cfc2444c5c5fcea63a390e9e2038699dd4
+# git status --porcelain:
+ M crates/pert-ui-runtime/src/activation.rs
+ M crates/pert-ui-runtime/src/menu_bar.rs
+ M crates/pert-ui-runtime/src/select.rs
+# hashes before:
+86e943e363aa849e0f09d2e89bfaad034e6c9aba4e2d8806a07674b8da233554  crates/pert-ui-runtime/src/select.rs
+fadf77fd7e71d2d7421bad95d41b7f4c8f3d7560e3250b7cade3a537b0fa7431  crates/pert-ui-runtime/src/menu_bar.rs
+4ad4e0e04d221ea9f21e9d3edf20403cb7b58b90da4810f902fb478bce9335b6  crates/pert-ui-runtime/src/menu.rs
+29d28116b00b3e3241998fa8b80368e448fb8638c446baba23ffac82b83afb1e  crates/pert-ui-runtime/src/activation.rs
+b5e24f340755fd447264bd3d5d41e74db74f1beac505a4653af2fa83a02e62b7  crates/pert-ui/tests/surfaces/main.rs
+# ---- output ----
+   Compiling pert-ui-runtime v0.3.90 (/home/per/pert-ui-usability/r3-menu-worktree/crates/pert-ui-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 19.63s
+     Running unittests src/lib.rs (/home/per/pert-ui-usability/r3-menu-implementation-target/debug/deps/pert_ui_runtime-6dfb416399d2a52b)
+
+running 188 tests
+test axis_mapping::tests::panning_moves_content_toward_higher_pixels ... ok
+test axis_mapping::tests::keeps_precision_far_from_zero ... ok
+test axis_mapping::tests::rejects_invalid_mappings ... ok
+test axis_mapping::tests::zooming_to_the_same_scale_changes_nothing ... ok
+test async_source::tests::exhaustion_is_an_error_that_changes_nothing ... ok
+test axis_mapping::tests::ticks_stay_finite_increasing_and_visible ... ok
+test capture::png::tests::crc_matches_the_reference_value ... ok
+test capture::png::tests::a_stored_stream_inflates_to_the_scanlines ... ok
+test capture::tests::frames_validate_and_crop ... ok
+test click::tests::a_series_count_saturates ... ok
+test axis_mapping::tests::tick_steps_are_one_two_or_five ... ok
+test color_picker::tests::hsv_round_trips_every_primary_and_keeps_open_components ... ok
+test capture::tests::png_pixels_are_straight_alpha ... ok
+test error::tests::every_wrapped_leaf_converts_into_every_higher_level_error ... ok
+test capture::tests::unsupported_names_the_declaration_and_the_cpu_route ... ok
+test collapsible::tests::single_mode_keeps_the_first_open_section_in_order ... ok
+test geometry::raster::tests::a_hairline_draws_proportional_coverage ... ok
+test geometry::raster::tests::a_round_dot_covers_the_exact_disc_area ... ok
+test geometry::raster::tests::a_round_join_does_not_reach_past_butt_caps ... ok
+test geometry::raster::tests::an_oversized_stroke_is_rejected_like_the_fallback ... ok
+test geometry::raster::tests::impossible_curve_and_round_counts_return_typed_budget_errors ... ok
+test geometry::raster::tests::only_straight_strokes_are_eligible ... ok
+test geometry::raster::tests::pieces_sharing_a_pixel_cover_their_union ... ok
+test geometry::raster::tests::stroke_phase_profile ... ignored, timing profile; run in release
+test geometry::raster::tests::subdivision_admission_never_coarsens_or_overallocates ... ok
+test geometry::raster::union::tests::a_row_outside_a_sector_circle_is_empty ... ok
+test color_picker::tests::images_have_their_documented_extents ... ok
+test capture::png::tests::a_large_image_spans_several_stored_blocks ... ok
+test live_source::tests::loss_only_accounting_does_not_refresh_a_retained_value ... ok
+test number_format::tests::locales_refuse_ambiguous_text_and_separators ... ok
+test number_format::tests::locales_format_and_parse_round_trip ... ok
+test parameter_binding::tests::begin_refusals_during_delivery_and_after_shutdown_are_recorded_once ... ok
+test geometry::tests::an_extent_beyond_f32_is_an_invalid_parameter ... ok
+test parameter_binding::tests::refused_commit_phase_and_sequence_reservation_attempts_are_recorded_once ... ok
+test geometry::raster::tests::remote_fill_edges_cover_the_entire_local_clip ... ok
+test conformance::tests::the_reference_laid_out_in_a_viewport_reports_no_overlap ... ok
+test resources::tests::a_key_collision_never_merges_different_content ... ok
+test profiling::tests::nesting_pause_clear_and_unwinding_are_accounted_without_stale_scopes ... ok
+test resources::tests::construction_rejects_inconsistent_or_oversized_data ... ok
+test resources::tests::premultiplication_happens_in_linear_light ... ok
+test resources::tests::arena_deduplicates_equal_content_across_allocations ... ok
+test runtime::clipboard_tests::runtime_clipboard_text_is_refused_inside_every_phase_and_from_the_service ... ok
+test runtime::commands::tests::chords_are_presented_in_each_platform_convention ... ok
+test runtime::measurements::tests::a_lookup_returns_the_matching_entry ... ok
+test runtime::measurements::tests::the_least_recently_used_measurement_is_replaced ... ok
+test runtime::overlay::tests::badge_counts_unplaced_and_excess_markers ... ok
+test runtime::overlay::tests::badge_numerals_saturate ... ok
+test runtime::overlay::tests::outline_stays_inside_bounds_and_degenerates_without_overdraw ... ok
+test runtime::presentation::tests::accepts_the_documented_range_and_rejects_everything_else ... ok
+test geometry::raster::tests::fill_work_counts_the_sampled_sub_scanlines ... ok
+test runtime::surfaces::tests::application_dialog_downgrade_releases_application_blocker ... ok
+test parameter_binding::tests::inspection_registry_reclaims_dead_entries_without_releasing_identities ... ok
+test runtime::theme::seed::tests::achromatic_seeds_give_one_gray_palette ... ok
+test runtime::theme::seed::tests::every_seed_class_matches_its_default_source ... ok
+test runtime::theme::seed::tests::oklch_matches_reference_values_and_round_trips ... ok
+test geometry::raster::union::tests::remote_crop_changes_preserve_overlapping_coverage_bytes ... ok
+test runtime::theme::seed::tests::seeding_a_mode_with_its_own_accents_reproduces_it ... ok
+test runtime::surfaces::tests::pending_application_dialog_blocks_other_windows_before_admission ... ok
+test runtime::theme::tests::exactly_the_documented_roles_follow_their_sources ... ok
+test runtime::active_source_tests::ordinary_flushes_do_not_scan_dormant_source_registry ... ok
+test runtime::surfaces::tests::changed_nonmodal_kind_after_early_error_releases_and_retries_admission ... ok
+test geometry::raster::union::tests::opposing_remote_steep_endpoints_match_near_geometry_on_the_same_grid ... ok
+test runtime::tree::tests::measurement_reads_outlive_an_evicted_entry_until_layout_is_invalidated ... ok
+test file_browser::controller::tests::exhausted_navigation_leaves_the_browser_where_it_was ... ok
+test runtime::tree::tests::a_move_takes_queued_measurements_out_of_the_source_window ... ok
+test file_browser::controller::tests::a_refused_read_fails_dispatch_instead_of_requesting_nothing ... ok
+test runtime::surfaces::tests::changed_modal_kind_after_early_error_blocks_and_retries_admission ... ok
+test runtime::tree::tests::an_unmount_takes_a_queued_measurement_out_of_its_window ... ok
+test scrollbar::tests::a_press_on_the_thumb_keeps_its_position_and_a_track_press_centers_it ... ok
+test file_browser::controller::tests::another_folder_response_preserves_current_entry_source_and_row_revision ... ok
+test scrollbar::tests::a_thumb_that_fills_its_track_does_not_travel ... ok
+test scrollbar::tests::reveal_moves_only_as_far_as_needed ... ok
+test runtime::tree::tests::idle_flushes_after_a_measurement_change_run_no_validation_pass ... ok
+test scrollbar::tests::dragging_keeps_the_grabbed_point_under_the_pointer_and_clamps ... ok
+test select::row_geometry_tests::the_first_arrangement_applies_a_reveal_and_the_next_keeps_it ... ok
+test geometry::raster::union::tests::remote_end_caps_and_real_corners_match_a_nearby_integer_grid_reference ... ok
+test select::row_geometry_tests::a_reveal_waits_until_the_rows_are_measured ... ok
+test strings::tests::every_message_fills_every_placeholder_of_its_role ... ok
+test file_browser::controller::tests::exhausted_generations_fail_the_update_after_handing_out_the_made_requests ... ok
+test shapes::tests::focus_ring_has_one_color_at_any_zoom ... ok
+test runtime::tree::tests::a_move_requested_during_a_flush_is_validated_once_the_flush_settles ... ok
+test runtime::tree::tests::requested_children_and_removals_are_validated_once_the_flush_settles ... ok
+test strings::tests::templates_reject_unknown_missing_and_unbalanced_placeholders ... ok
+test text::icons::tests::every_role_has_a_bundled_glyph ... ok
+test runtime::tree::tests::notifiers_select_every_layout_reader_in_either_visiting_order ... ok
+test select::inline_typography_tests::inline_choice_has_a_smaller_caption_on_the_value_baseline ... ok
+test select::row_geometry_tests::settling_without_a_request_only_keeps_the_offset_inside_the_rows ... ok
+test text::rich_tests::a_fitting_ellipsis_text_is_shaped_once_and_then_not_at_all ... ok
+test text::rich_tests::a_cache_hit_records_the_font_read_and_another_font_misses ... ok
+test text::rich_tests::bundled_fonts_are_embedded_once_and_registered_by_role ... ok
+test text::rich_tests::a_truncated_text_measures_the_whole_string_once ... ok
+test geometry::raster::tests::large_curves_keep_the_physical_chord_tolerance ... ok
+test text::rich_tests::collection_with_two_readable_faces_is_rejected_before_registration ... ok
+test text::rich_tests::ellipsis_handles_line_breaks_tiny_widths_and_invalid_widths ... ok
+test table::tests::a_rejected_restore_keeps_the_resolved_columns_and_the_offset ... ok
+test text::rich_tests::all_catalog_entries_exist_and_custom_font_names_do_not_alias ... ok
+test text::rich_tests::highlights_validate_boundaries_and_merge_ranges ... ok
+test text::rich_tests::empty_styled_spans_keep_paragraph_defaults_and_validate_fonts ... ok
+test text::rich_tests::plain_cache_hits_skip_resolution_and_recollect_current_font_roles ... ok
+test geometry::raster::tests::a_stroke_far_from_the_origin_covers_as_near_it ... ok
+test text::rich_tests::text_fallback_uses_bundled_text_and_icon_sources_stay_exact ... ok
+test geometry::raster::union::tests::remote_vertical_bounds_cover_small_and_large_viewports_to_the_last_row ... ok
+test text::rich_tests::a_line_beyond_the_byte_limit_is_cut_on_its_own_cluster_boundaries ... ok
+test text::rich_tests::only_a_plain_unwrapped_entry_under_the_same_key_answers_the_width ... ok
+test geometry::raster::union::tests::remote_strokes_keep_visible_endpoints_and_crop_grid_coverage ... ok
+test text::tests::phase_cache_scroll_profile ... ignored, opt-in release-profile measurement of phase-cache reuse
+test text::rich_tests::wrapped_bidi_icons_use_their_own_alignment_and_reuse_coverage ... ok
+test shapes::tests::byte_budget_evicts_large_entries_but_live_masks_remain_valid ... ok
+test text::tests::sizes_above_the_raster_limit_lower_the_scale_instead_of_failing ... ok
+test profiling::tests::retained_samples_aggregates_and_labels_are_bounded ... ok
+test text_fields::spaced_paste::tests::a_caret_outside_a_word_uses_the_nearest_word_in_that_direction ... ok
+test text_fields::spaced_paste::tests::a_selection_is_the_target_and_stays_selected ... ok
+test text_fields::spaced_paste::tests::caret_in_a_word_pastes_beside_that_word ... ok
+test text_fields::spaced_paste::tests::existing_spacing_and_edges_are_not_doubled ... ok
+test text_fields::spaced_paste::tests::multibyte_words_keep_char_boundaries ... ok
+test text_fields::inline::tests::the_editor_area_reserves_the_suffix_and_the_density_gap ... ok
+test text_fields::spaced_paste::tests::the_clipboard_is_trimmed_and_empty_clipboards_are_not_edits ... ok
+test text_fields::tests::field_menu_is_always_constructible ... ok
+test text_source::tests::only_library_defaults_show_text_before_the_first_read ... ok
+test tool_windows::divider::tests::restore_remains_busy_until_every_edge_resize_ends ... ok
+test transform::tests::composition_applies_left_to_right ... ok
+test transform::tests::quarter_turn_corners_agree_with_source ... ok
+test transform::tests::rejects_invalid_transforms ... ok
+test transform::tests::zooming_keeps_the_anchor_fixed ... ok
+test shapes::tests::coverage_cache_reuses_masks_bounds_entries_and_rejects_oversized_requests ... ok
+test validation::development::tests::a_corrected_issue_is_removed_instead_of_retrying_its_old_log ... ok
+test text_fields::inline::tests::caption_value_and_unit_share_a_painted_baseline ... ok
+test tree::forwarding::every_list_override_is_forwarded ... ok
+test text_selection::tests::shaped_carets_snap_to_whole_graphemes ... ok
+test validation::development::tests::a_log_retry_reuses_the_finished_report_without_a_validation_pass ... ok
+test validation::development::tests::an_issue_withheld_while_its_window_is_unmeasured_is_not_logged_again ... ok
+test validation::development::tests::malformed_geometry_and_colors_do_not_cascade_into_overlap ... ok
+test validation::development::tests::failed_logging_remains_observable_and_retries ... ok
+test validation::development::tests::partial_log_recovery_retries_only_the_unwritten_issue_without_rechecking ... ok
+test validation::development::tests::peers_that_only_touch_are_not_overlapping ... ok
+test validation::development::tests::refresh_writes_issue_lines_to_the_test_log ... ok
+test validation::development::tests::geometry_is_validated_only_in_a_measured_window ... ok
+test validation::development::tests::unchanged_invalid_data_reuses_validation_and_errors_log_once_until_fixed ... ok
+test vector_scene::tests::a_non_finite_scale_is_non_finite_and_a_non_positive_one_is_not_positive ... ok
+test text::rich_tests::cold_and_warm_fits_agree_around_the_advance_width ... ok
+test vector_scene::tests::resizing_around_wholly_visible_geometry_reuses_coverage ... ok
+test vector_scene::tests::persistent_fallback_reuses_tinted_coverage_recovers_and_evicts ... ok
+test vector_scene::tests::a_reference_missing_from_its_scene_names_the_id ... ok
+test virtual_axis::tests::a_window_covers_whole_lines_and_stays_inside_the_items ... ok
+test virtual_axis::tests::an_unmeasured_estimated_axis_answers_like_a_fixed_one ... ok
+test virtual_axis::tests::invalid_extents_and_lanes_are_rejected ... ok
+test virtual_axis::tests::measurements_survive_a_count_change_and_are_rejected_when_invalid ... ok
+test virtual_axis::tests::measured_lines_move_everything_after_them_and_nothing_before ... ok
+test virtual_axis::tests::measuring_above_the_viewport_anchors_what_is_on_screen ... ok
+test virtual_axis::tests::pinned_items_surround_the_window_in_order ... ok
+test virtual_axis::tests::positive_measurements_survive_disparate_estimates_and_remeasurement ... ok
+test virtual_axis::tests::reveal_moves_as_little_as_possible_and_never_past_the_ends ... ok
+test workspace::tests::a_map_value_holds_scalars_only ... ok
+test virtual_axis::tests::replacing_all_large_estimates_recovers_small_prefix_sums ... ok
+test workspace::tests::a_map_value_rejects_a_repeated_key_rather_than_dropping_one ... ok
+test text::rich_tests::segment_boundaries_preserve_clusters_bidi_and_wrapping ... ok
+test workspace::tests::escapes_separators_and_quotes_in_paths_and_text ... ok
+test workspace::tests::encodes_deterministically_in_path_order ... ok
+test workspace::tests::expect_only_closes_the_field_set ... ok
+test workspace::tests::keeps_integers_and_numbers_distinct ... ok
+test workspace::tests::every_token_has_one_spelling_and_the_layout_is_tolerated ... ok
+test workspace::tests::rejects_duplicate_paths_rather_than_dropping_one ... ok
+test workspace::tests::rejects_an_unsupported_version_without_reading_entries ... ok
+test workspace::tests::rejects_malformed_documents ... ok
+test workspace::tests::round_trips_every_value_kind ... ok
+test workspace::tests::settings_survive_a_round_trip_and_stay_optional ... ok
+test workspace::tests::enforces_documented_limits ... ok
+test runtime::theme::seed::tests::the_solve_meets_its_luminance_in_gamut_at_the_edges ... ok
+test text::rich_tests::the_cut_keeps_whole_source_clusters_at_each_share_boundary ... ok
+test text::tests::cache_budget_and_entry_limit_include_owned_metadata ... ok
+test vector_scene::tests::coverage_bounds_crop_matches_the_plain_clip ... ok
+test virtual_axis::tests::a_long_axis_stays_consistent_between_its_two_directions ... ok
+test text::rich_tests::ellipsis_fits_the_width_keeps_whole_graphemes_and_is_remembered ... ok
+test text::rich_tests::inline_icon_ink_aligns_with_neighboring_text_at_each_scale_and_font ... ok
+test quick_pick::tests::the_linear_run_search_agrees_with_a_window_scan ... ok
+test text::rich_tests::a_text_beyond_the_raster_limit_truncates_unless_the_cut_is_too ... ok
+test geometry::raster::tests::a_clip_crops_direct_coverage_on_its_own_grid ... ok
+test text::rich_tests::evicting_the_layout_or_the_cut_keeps_the_result ... ok
+test text::tests::phase_cache_reuses_visible_rows_across_vertical_scroll_phases ... ok
+test text::tests::width_changes_reuse_identical_rasters_but_reflow_matches_fresh_preparation ... ok
+test capture::tests::premultiplying_the_straight_png_pixel_again_is_within_one_step ... ok
+test virtual_axis::tests::line_starts_stay_exact_far_past_the_precision_of_f32 ... ok
+test geometry::raster::tests::direct_coverage_matches_the_outline_fill ... ok
+test text::rich_tests::a_cut_line_is_fitted_with_its_ellipsis_and_never_shaped_whole ... ok
+test runtime::theme::seed::tests::every_generated_role_keeps_its_luminance_for_every_seed_family ... ok
+test text::rich_tests::a_line_at_the_limit_is_truncated_within_it ... ok
+test geometry::raster::tests::round_strokes_match_their_distance_field ... ok
+test geometry::raster::tests::coverage_over_the_work_budget_is_rejected ... ok
+
+test result: ok. 186 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 1.55s
+
+     Running tests/debug_overlay.rs (/home/per/pert-ui-usability/r3-menu-implementation-target/debug/deps/debug_overlay-4fc0e4a9c01a9528)
+
+running 7 tests
+[pert-ui validation ERROR UnexpectedOverlap] Components "a" (#2) and "b" (#3) overlap; correct their layout, or allow an intentional overlay: report OverlapPolicy::Allow in ComponentDetails::validation, or let the parent stack its children (Component::stacks_children).
+[pert-ui validation ERROR UnexpectedOverlap] Components "a" (#2) and "b" (#3) overlap; correct their layout, or allow an intentional overlay: report OverlapPolicy::Allow in ComponentDetails::validation, or let the parent stack its children (Component::stacks_children).
+test off_draws_nothing_and_release_builds_draw_nothing_in_any_mode ... ok
+[pert-ui validation ERROR UnexpectedOverlap] Components "a" (#2) and "b" (#3) overlap; correct their layout, or allow an intentional overlay: report OverlapPolicy::Allow in ComponentDetails::validation, or let the parent stack its children (Component::stacks_children).
+test boxes_outline_border_and_content_boxes_without_markers ... ok
+test issues_outline_each_marker_inside_its_bounds_two_physical_pixels_wide ... ok
+test the_overlay_never_schedules_frames_or_changes_what_inspection_reports ... ok
+[pert-ui validation ERROR InvalidPadding] Component "c0" (#2): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c1" (#3): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c2" (#4): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c3" (#5): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c4" (#6): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c5" (#7): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c6" (#8): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c7" (#9): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c8" (#10): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c9" (#11): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c10" (#12): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c11" (#13): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c12" (#14): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c13" (#15): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c14" (#16): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c15" (#17): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c16" (#18): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c17" (#19): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c18" (#20): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c19" (#21): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c20" (#22): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c21" (#23): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c22" (#24): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c23" (#25): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c24" (#26): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c25" (#27): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c26" (#28): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c27" (#29): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c28" (#30): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c29" (#31): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c30" (#32): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c31" (#33): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c32" (#34): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c33" (#35): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c34" (#36): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c35" (#37): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c36" (#38): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c37" (#39): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c38" (#40): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c39" (#41): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c40" (#42): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c41" (#43): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c42" (#44): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c43" (#45): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c44" (#46): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c45" (#47): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c46" (#48): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c47" (#49): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c48" (#50): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c49" (#51): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c50" (#52): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c51" (#53): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c52" (#54): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c53" (#55): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c54" (#56): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c55" (#57): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c56" (#58): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c57" (#59): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c58" (#60): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c59" (#61): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c60" (#62): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c61" (#63): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c62" (#64): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c63" (#65): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c64" (#66): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c65" (#67): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "c66" (#68): padding must be finite and nonnegative.
+[pert-ui validation ERROR InvalidPadding] Component "unmeasured" (#69): padding must be finite and nonnegative.
+test outlines_stop_at_the_cap_and_the_badge_counts_the_rest ... ok
+[pert-ui validation ERROR EscapesParent] Component "child" (#3): visible bounds leave its parent "parent" without a clip; correct the parent's arrangement, clip its children, or allow an intentional overlay: report OverlapPolicy::Allow in the component's ComponentDetails::validation.
+[pert-ui validation ERROR CollapsedParent] Component "parent" (#2): has zero measured width or height but visible children; its layout must reserve their space.
+test containment_checks_report_escaping_children_and_collapsed_parents ... ok
+test boxes_stop_at_their_cap ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/diagnostics.rs (/home/per/pert-ui-usability/r3-menu-implementation-target/debug/deps/diagnostics-3254c70ca329f77f)
+
+running 7 tests
+test inspection_panic_restores_normal_write_phase ... ok
+test a_generic_event_is_dispatched_and_a_long_failure_message_is_truncated ... ok
+test history_records_success_failure_cancellation_and_specific_keys ... ok
+test snapshot_is_owned_read_only_and_includes_explicit_host_state ... ok
+test history_is_bounded_clearable_and_never_schedules_work ... ok
+test unfinished_cleanup_logs_one_cancel_and_reclaims_receipts ... ok
+test automatic_cleanup_does_not_log_cancellation_for_terminal_edits ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/drawing.rs (/home/per/pert-ui-usability/r3-menu-implementation-target/debug/deps/drawing-35fa1561a06f5467)
+
+running 5 tests
+test drawing_rejects_invalid_numeric_data ... ok
+test raster_dimensions_are_rejected_before_byte_count_overflow ... ok
+[archived excerpt: 501506 further overlap diagnostic lines omitted; complete output: 02-runtime-integration-tests-attempt1.full.log.gz]
+test failed_paint_is_retryable_and_restores_write_phase ... ok
+test scene_keeps_parent_body_child_and_foreground_order ... ok
+test unchanged_components_keep_drawing_across_other_updates_and_exposure ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/errors.rs (/home/per/pert-ui-usability/r3-menu-implementation-target/debug/deps/errors-94b41b380c64dc42)
+
+running 8 tests
+test application_errors_compare_by_identity ... ok
+test leaf_errors_have_one_form_at_every_level ... ok
+test limits_and_ranges_are_named_in_the_message ... ok
+test geometry_constructors_share_one_error_and_name_the_reason ... ok
+test rejected_keys_and_values_are_named_in_the_message ... ok
+test validated_quantities_share_one_shape ... ok
+test a_source_chain_prints_each_message_once ... ok
+test messages_are_lowercase_sentences_without_debug_formatting ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/input_contracts.rs (/home/per/pert-ui-usability/r3-menu-implementation-target/debug/deps/input_contracts-3dc99c64dbea947c)
+
+running 10 tests
+test modifiers_follow_the_pressed_set_until_the_host_reports_a_snapshot ... ok
+test a_key_path_walk_resolves_under_a_root ... ok
+test the_motion_subscription_ends_with_the_last_update_that_read_it ... ok
+test an_orphan_repeat_never_establishes_a_press ... ok
+test presentation_settings_are_observable_through_read_signals ... ok
+test text_command_rejects_a_hidden_target_before_the_editor_sees_it ... ok
+test key_events_do_not_repaint_the_focus_chain_by_themselves ... ok
+test the_default_keyboard_event_lets_observed_keys_bubble ... ok
+test find_descendant_skips_built_in_parts_and_refuses_ambiguity ... ok
+test find_address_names_addressable_segments_and_refuses_ambiguity ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/live_sources.rs (/home/per/pert-ui-usability/r3-menu-implementation-target/debug/deps/live_sources-e7f3f644c7b24096)
+
+running 19 tests
+test installing_delivery_reopens_a_waker_whose_delivery_failed ... ok
+test a_delivery_callback_that_panicked_does_not_swallow_later_wakes ... ok
+test a_source_of_another_runtime_is_rejected ... ok
+test shutdown_closes_the_waker_permanently ... ok
+test inspection_lists_sources_with_their_schedule ... ok
+test a_series_subscriber_sees_the_window_and_the_losses ... ok
+test a_wake_flushed_while_the_window_is_read_is_served_later ... ok
+test dropping_the_endpoint_is_observed_once_and_ends_scheduling_work ... ok
+test a_lossy_resume_can_advance_revision_again_at_the_same_time ... ok
+test a_quiet_resume_keeps_the_window_and_a_lossy_one_clears_it ... ok
+test same_time_hide_deadline_show_settles_and_restarts_at_display_rate ... ok
+test invalid_only_drains_report_changes_without_refreshing_the_retained_value ... ok
+test a_visible_subscriber_starts_drains_and_only_changes_update_it ... ok
+test a_wake_at_the_instant_of_the_last_drain_still_drains ... ok
+test a_notified_source_drains_on_wakes_and_coalesces_them ... ok
+test live_publication_does_not_update_a_clipped_subscriber_of_an_active_source ... ok
+test a_notified_source_observes_a_restart_and_a_drop_that_no_publish_follows ... ok
+test a_shared_source_uses_the_fastest_presented_window ... ok
+test subscribers_in_two_native_roots_see_one_drain_for_one_time ... ok
+
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/mailbox.rs (/home/per/pert-ui-usability/r3-menu-implementation-target/debug/deps/mailbox-bf834a0333b781db)
+
+running 10 tests
+test closing_dropping_or_shutting_down_refuses_sends_and_drops_undelivered_values ... ok
+test an_accepted_send_wakes_the_host_and_a_refused_one_does_not ... ok
+test a_handler_error_fails_the_flush_and_keeps_the_rest_queued ... ok
+test a_full_mailbox_returns_the_value_and_accepts_again_after_delivery ... ok
+test values_sent_while_a_flush_delivers_wait_for_the_next_flush ... ok
+test dropping_a_later_mailbox_from_a_handler_closes_its_captured_front ... ok
+test the_handler_writes_signals_that_the_same_flush_shows ... ok
+test values_from_a_worker_reach_the_handler_in_order_and_mark_the_runtime_due ... ok
+test sends_between_mailboxes_wait_for_the_next_flush_in_either_registration_order ... ok
+test concurrent_workers_lose_nothing_they_were_told_was_accepted ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/parameter_delivery.rs (/home/per/pert-ui-usability/r3-menu-implementation-target/debug/deps/parameter_delivery-f690d3c50bf95c24)
+
+running 20 tests
+test a_retry_without_a_submission_sink_is_refused_without_change ... ok
+test a_retry_whose_sink_fails_again_keeps_the_proposal_and_the_new_error ... ok
+test a_sink_may_drop_its_own_owner ... ok
+test an_erased_terminal_event_exposes_its_baseline_and_outcome ... ok
+test a_retry_while_disconnected_is_unavailable_without_change ... ok
+test an_idle_disconnect_reports_disconnected_and_makes_the_binding_unavailable ... ok
+test a_submitted_commit_ended_by_a_conflict_keeps_its_commit_sequence ... ok
+test every_erased_write_of_another_family_changes_nothing ... ok
+test events_follow_publication_in_order_with_correlation_data ... ok
+test binding_handles_format_their_identity ... ok
+test preview_failure_ends_the_edit_and_attempts_its_terminal_once ... ok
+test host_drop_delivers_then_releases_and_shutdown_notifies_before_closing ... ok
+test an_undeliverable_release_is_stored_as_closed_instead_of_dropped ... ok
+test registration_is_explicit_and_never_replaces_an_observer ... ok
+test removal_keeps_sinks_for_recovery_and_retirement_requires_it ... ok
+test lifecycle_cancellation_is_notified_at_the_next_safe_point ... ok
+test erased_handles_check_the_family_before_any_mutation ... ok
+test sinks_cannot_write_during_delivery ... ok
+test terminal_failure_is_retained_blocks_edits_and_recovers_explicitly ... ok
+test a_delivered_deferred_notification_leaves_nothing_due ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/runtime.rs (/home/per/pert-ui-usability/r3-menu-implementation-target/debug/deps/runtime-80941b7578a12408)
+
+running 18 tests
+[pert-ui validation ERROR DuplicateKey] Component key "same" is already mounted as #1; give the new component a distinct stable key.
+test host_drop_marks_unavailable_and_recreation_requires_new_identity ... ok
+test component_errors_preserve_pending_work_and_restore_write_phase ... ok
+test signal_changes_are_coalesced_and_only_reach_dependents ... ok
+test writes_are_rejected_during_update_and_handles_close_with_runtime ... ok
+test failed_mount_does_not_reserve_its_key_and_focus_reset_repaints ... ok
+test gesture_drop_reclaims_receipts_and_commits_remain_committed ... ok
+test unwinding_an_update_preserves_work_and_restores_phase ... ok
+test keyboard_tracks_simultaneous_keys_repeat_modifiers_and_text_separately ... ok
+test focus_transfer_and_hiding_reset_component_owned_key_actions ... ok
+test shared_reads_keep_the_strongest_dependency_kind ... ok
+test timer_requests_reject_zero_delays_and_report_callback_failures ... ok
+test keys_and_handles_never_retarget_after_remount_or_across_runtimes ... ok
+test hidden_live_views_sleep_and_return_with_current_data ... ok
+test conditional_dependencies_are_recollected_and_unmount_releases_them ... ok
+test shared_parameter_controls_observe_preview_conflict_and_effective_independently ... ok
+test hiding_unmount_focus_loss_escape_and_guard_drop_cancel_gestures ... ok
+test event_phase_timers_commit_held_repeats_and_stop_with_their_input_context ... ok
+test shared_live_deadlines_skip_missed_frames_without_visiting_static_components ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.71s
+
+     Running tests/testing.rs (/home/per/pert-ui-usability/r3-menu-implementation-target/debug/deps/testing-b32de2d0ccf3d93f)
+
+running 56 tests
+test a_components_own_pending_updates_is_its_paint_error ... ok
+test a_click_whose_press_reports_an_error_is_still_released ... ok
+test a_failed_release_is_cleanup_beside_the_press_error_or_alone ... ok
+test a_chord_releases_its_modifiers_after_a_failed_modifier_press ... ok
+test a_key_whose_press_reports_an_error_is_still_released ... ok
+test a_paint_failure_is_a_draw_error_and_a_runtime_failure_keeps_its_form ... ok
+test a_refused_baseline_is_activity_not_an_error ... ok
+test a_refused_baseline_is_never_idle_even_when_the_end_needs_no_paint ... ok
+test a_commands_admission_in_a_step_runs_another_windows_due_work_uncounted ... ok
+test a_steps_flush_error_ends_the_call ... ok
+test a_chord_releases_its_key_and_modifiers_after_a_failed_key_press ... ok
+test a_queued_reveal_in_a_step_runs_another_windows_due_work_uncounted ... ok
+test address_children::a_leaf_is_empty_and_a_foreign_or_unmounted_parent_is_refused ... ok
+test address_children::below_a_part_the_selector_finds_none_of_the_children ... ok
+test address_children::a_part_is_listed_and_so_are_its_descendants ... ok
+test address_children::a_slot_is_listed_under_its_slot_name ... ok
+test a_spinning_spinner_is_busy_and_a_resting_one_idle ... ok
+test an_advance_past_the_clock_limit_is_refused_before_it_flushes ... ok
+test address_children::a_structural_parent_lists_what_find_resolves_from_it ... ok
+test a_timer_the_test_installed_is_busy_until_it_is_cancelled ... ok
+test clear_focus_needs_no_neutral_input_and_leaves_it_neutral ... ok
+test address_children::hidden_and_detached_children_are_listed ... ok
+test an_empty_replacements_backspace_is_released_after_its_press_fails ... ok
+test address_children::a_drag_preview_changes_nothing_that_is_listed ... ok
+test address_children::a_structural_row_is_looked_through ... ok
+test address_children::a_reordered_virtual_list_lists_its_rows_in_index_order ... ok
+test cleanup_goes_on_after_a_failed_release_and_reports_the_first ... ok
+test a_worker_still_computing_is_not_observed_so_a_test_waits_for_its_result_first ... ok
+test clear_focus_returns_a_focus_loss_error ... ok
+test an_overflowing_interval_is_refused_before_anything_runs ... ok
+test address_children::an_each_lists_its_rows_in_list_order_after_a_reorder ... ok
+test a_toast_waiting_to_expire_keeps_a_deadline ... ok
+test key_and_chord_reach_commands_and_the_focused_component ... ok
+test address_children::a_table_lists_its_rows_not_its_body_or_reporter ... ok
+test address_children::two_children_with_one_segment_are_both_listed ... ok
+test another_windows_spinner_does_not_make_the_selected_window_busy ... ok
+test clear_focus_keeps_another_windows_focus_and_cancels_every_held_key ... ok
+test not_found_names_the_longest_prefix_that_resolves ... ok
+test settle_and_advance_flush_once_at_a_later_clock ... ok
+test address_children::a_shared_path_pools_the_selector_but_not_the_walk ... ok
+test settle_ticks_one_frame_and_advance_is_one_deadline_jump ... ok
+test the_clock_moves_by_exactly_the_interval ... ok
+test address_children::an_each_within_a_container_lists_the_container_and_it_the_rows ... ok
+test clear_focus_saves_a_focused_draft_and_leaves_nothing_focused ... ok
+test find_names_a_missing_path_and_semantics_reads_one_component ... ok
+test replace_text_refuses_an_editor_in_another_window_before_focusing_it ... ok
+test the_driver_refuses_held_keys_and_reported_modifiers ... ok
+test work_due_when_the_call_starts_runs_in_the_baseline_and_is_not_counted ... ok
+test click_reveals_presses_and_releases_at_the_middle_and_settles ... ok
+test replace_text_selects_all_then_types_or_deletes ... ok
+test click_refuses_another_window_and_a_refused_reveal ... ok
+test type_text_inserts_at_the_caret_and_settles ... ok
+test click_item_refuses_before_any_input_and_names_what_it_cannot_click ... ok
+test key_and_chord_settle_so_their_effect_is_shown ... ok
+test wait_until_flushes_without_moving_the_clock_until_the_condition_holds ... ok
+test address_children::a_scrolled_virtual_list_lists_its_retained_rows_and_a_revealed_one ... ok
+
+test result: ok. 56 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/validation.rs (/home/per/pert-ui-usability/r3-menu-implementation-target/debug/deps/validation-178c93bd98128a88)
+
+running 9 tests
+[pert-ui validation ERROR InvalidPadding] Component "control" (#1): padding must be finite and nonnegative.
+[pert-ui validation ERROR ShortcutConflict] Shortcut KeyA Modifiers { shift: false, control: false, alt: false, super_key: false } is active for both "action" on "a" (#2) and "action" on "b" (#3); change the binding or its active scope.
+test automatic_inspection_is_debug_only_and_idle_does_not_poll ... [pert-ui validation ERROR okExceedsFixedHeight
+] Component "tallest" (#3): measured 680564693277057719623408366969033850880 px tall in "strip" (#2), which gives its children a fixed 40 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR DuplicateKey] Component key "a" is already mounted as #1; give the new component a distinct stable key.
+[pert-ui validation ERROR EmptyHitArea] Component "scrolled" (#2): visible interactive component has zero measured width or height.
+[pert-ui validation ERROR ShortcutConflict] Shortcut KeyA Modifiers { shift: false, control: false, alt: false, super_key: false } is active for both "action" on "a" (#2) and "action" on "b" (#3); change the binding or its active scope.
+test clipping_is_valid_but_zero_sized_interactive_boxes_are_errors ... ok
+test a_refused_duplicate_root_is_marked_until_the_root_unmounts ... ok
+test the_largest_measured_height_at_a_view_scale_of_two_is_still_reported ... ok
+test overlap_and_shortcut_markers_follow_fixes_visibility_and_scope ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "button" (#4): measured 32 px tall in "strip" (#3), which gives its children a fixed 20 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test the_fixed_height_hint_alone_revalidates ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "button" (#4): measured 32 px tall in "strip" (#3), which gives its children a fixed 20 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "label" (#4): measured 59 px tall in "strip" (#3), which gives its children a fixed 20 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+[pert-ui validation ERROR ExceedsFixedHeight] Component "label" (#4): measured 59 px tall in "strip" (#3), which gives its children a fixed 20 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test a_measurement_that_changes_alone_revalidates ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "label" (#5): measured 59 px tall in "strip" (#4), which gives its children a fixed 20 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test a_custom_fixed_height_parent_reports_a_child_laid_out_taller ... ok
+[pert-ui validation ERROR ExceedsFixedHeight] Component "label" (#5): measured 59 px tall in "strip" (#4), which gives its children a fixed 20 px height, so it is compressed or cut off; give the parent more height, such as a taller Table row, or use smaller content
+test a_measurement_queued_before_a_move_is_recorded_only_in_the_window_that_lays_it_out ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+# ---- end output ----
+# hashes after:
+86e943e363aa849e0f09d2e89bfaad034e6c9aba4e2d8806a07674b8da233554  crates/pert-ui-runtime/src/select.rs
+fadf77fd7e71d2d7421bad95d41b7f4c8f3d7560e3250b7cade3a537b0fa7431  crates/pert-ui-runtime/src/menu_bar.rs
+4ad4e0e04d221ea9f21e9d3edf20403cb7b58b90da4810f902fb478bce9335b6  crates/pert-ui-runtime/src/menu.rs
+29d28116b00b3e3241998fa8b80368e448fb8638c446baba23ffac82b83afb1e  crates/pert-ui-runtime/src/activation.rs
+b5e24f340755fd447264bd3d5d41e74db74f1beac505a4653af2fa83a02e62b7  crates/pert-ui/tests/surfaces/main.rs
+# finished 2026-10-29T10:33:22+01:00
+# exit_status 0

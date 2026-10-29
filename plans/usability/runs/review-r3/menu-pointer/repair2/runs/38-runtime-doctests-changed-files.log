@@ -1,0 +1,67 @@
+# started 2026-10-29T11:10:49+01:00
+# cwd /home/per/pert-ui-usability/r3-menu-worktree  CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-menu-implementation-target
+# command: cargo test --locked -p pert-ui-runtime --doc -- src/menu.rs src/menu_bar.rs src/select.rs src/activation.rs
+# HEAD b9e4c6cfc2444c5c5fcea63a390e9e2038699dd4
+# git status --porcelain:
+ M crates/pert-ui-runtime/src/activation.rs
+ M crates/pert-ui-runtime/src/menu.rs
+ M crates/pert-ui-runtime/src/menu_bar.rs
+ M crates/pert-ui-runtime/src/select.rs
+ M crates/pert-ui/tests/surfaces/main.rs
+?? crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs
+# hashes before:
+00b9a6f0e7dda2a6949a57e42aa623271238d34c8cbcc8c8cf8dc538b19654cb  crates/pert-ui-runtime/src/select.rs
+a9241464095c12e9a2b1ae33d56ddf2c67ad05caa0cb1324e82501d03d43401e  crates/pert-ui-runtime/src/menu_bar.rs
+5a895d784a4ff23834fdf98fc928337eb2e5536811ccddd47c9a07c0a863e64e  crates/pert-ui-runtime/src/menu.rs
+29d28116b00b3e3241998fa8b80368e448fb8638c446baba23ffac82b83afb1e  crates/pert-ui-runtime/src/activation.rs
+14eea5b3899b4f52eb97b12bf3962d39d445e1071cbcc1482b24cfdbabc702a4  crates/pert-ui/tests/surfaces/main.rs
+ad3d618cfd9d73dca98f562bd1e9dff994324346e14b16cacbeb0a9bcdbb522b  crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs
+# mtimes before:
+1793268618.409517149 crates/pert-ui-runtime/src/select.rs
+1793268618.409517149 crates/pert-ui-runtime/src/menu_bar.rs
+1793268383.200071164 crates/pert-ui-runtime/src/menu.rs
+1793268618.409517149 crates/pert-ui-runtime/src/activation.rs
+1793266761.816117993 crates/pert-ui/tests/surfaces/main.rs
+1793268544.024295752 crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs
+# ---- output ----
+   Compiling pert-ui-runtime v0.3.90 (/home/per/pert-ui-usability/r3-menu-worktree/crates/pert-ui-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.86s
+   Doc-tests pert_ui_runtime
+
+running 17 tests
+test crates/pert-ui-runtime/src/select.rs - select::Select<T>::on_change (line 1624) ... ok
+test crates/pert-ui-runtime/src/menu.rs - menu::MenuItem::command (line 394) ... ok
+test crates/pert-ui-runtime/src/menu.rs - menu::MenuItem (line 205) ... ok
+test crates/pert-ui-runtime/src/menu.rs - menu::MenuItem::selected_signal (line 536) ... ok
+test crates/pert-ui-runtime/src/menu.rs - menu::ContextMenuController::open (line 1467) ... ok
+test crates/pert-ui-runtime/src/select.rs - select::Select<T>::placeholder (line 1754) ... ok
+test crates/pert-ui-runtime/src/menu_bar.rs - menu_bar::MenuBar (line 609) ... ok
+test crates/pert-ui-runtime/src/menu.rs - menu::Menu (line 736) ... ok
+test crates/pert-ui-runtime/src/menu.rs - menu::Menu::with_state (line 813) ... ok
+test crates/pert-ui-runtime/src/select.rs - select::InlineSelect (line 1880) ... ok
+test crates/pert-ui-runtime/src/menu_bar.rs - menu_bar::MenuBar::leading (line 814) ... ok
+test crates/pert-ui-runtime/src/menu_bar.rs - menu_bar::MenuBar (line 661) ... ok
+test crates/pert-ui-runtime/src/select.rs - select::Select (line 1485) ... ok
+test crates/pert-ui-runtime/src/select.rs - select::Select<T>::bound (line 1684) ... ok
+test crates/pert-ui-runtime/src/menu.rs - menu::ContextMenu (line 1317) ... ok
+test crates/pert-ui-runtime/src/menu.rs - menu::MenuItem::on_change (line 449) ... ok
+test crates/pert-ui-runtime/src/menu.rs - menu::ContextMenu (line 1357) ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 375 filtered out; finished in 0.01s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 23 filtered out; finished in 0.00s
+
+all doctests ran in 6.58s; merged doctests compilation took 6.57s
+# ---- end output ----
+# hashes after:
+00b9a6f0e7dda2a6949a57e42aa623271238d34c8cbcc8c8cf8dc538b19654cb  crates/pert-ui-runtime/src/select.rs
+a9241464095c12e9a2b1ae33d56ddf2c67ad05caa0cb1324e82501d03d43401e  crates/pert-ui-runtime/src/menu_bar.rs
+5a895d784a4ff23834fdf98fc928337eb2e5536811ccddd47c9a07c0a863e64e  crates/pert-ui-runtime/src/menu.rs
+29d28116b00b3e3241998fa8b80368e448fb8638c446baba23ffac82b83afb1e  crates/pert-ui-runtime/src/activation.rs
+14eea5b3899b4f52eb97b12bf3962d39d445e1071cbcc1482b24cfdbabc702a4  crates/pert-ui/tests/surfaces/main.rs
+ad3d618cfd9d73dca98f562bd1e9dff994324346e14b16cacbeb0a9bcdbb522b  crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs
+# finished 2026-10-29T11:10:59+01:00
+# exit_status 0

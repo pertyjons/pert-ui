@@ -1,0 +1,13 @@
+--- /home/per/pert-ui-usability/r3-menu-implementation2-evidence/negative-controls/wheel_ignores_armed_key/backup/select.rs	2026-10-29 11:06:54.647634690 +0100
++++ crates/pert-ui-runtime/src/select.rs	2026-10-29 11:06:54.666413773 +0100
+@@ -630,9 +630,7 @@
+                 // it moves the highlight under the pointer; one at the limit
+                 // leaves the keyboard's row in place.
+                 if offset.replace(next) != next {
+-                    if !key_armed {
+-                        self.pointer_owns = true;
+-                    }
++                    self.pointer_owns = true;
+                     cx.invalidate(Invalidation::Layout);
+                 }
+             }

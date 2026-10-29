@@ -1,0 +1,27 @@
+--- /home/per/pert-ui-usability/r3-menu-implementation-evidence/negative-controls/record_after_editable/backup/select.rs	2026-10-29 10:31:56.220659077 +0100
++++ crates/pert-ui-runtime/src/select.rs	2026-10-29 10:41:24.669228735 +0100
+@@ -560,18 +560,18 @@
+     ) -> Result<InputOutcome, RuntimeError> {
+         // Positions are compared in window coordinates, which stay put while
+         // the rows scroll or the list moves under a stationary pointer.
+-        let previous = match e.kind() {
+-            PointerKind::Move | PointerKind::Press(_) | PointerKind::Leave => {
+-                self.last_pointer.replace(e.position())
+-            }
+-            _ => self.last_pointer,
+-        };
+         if e.kind() == PointerKind::Leave {
+             self.pointer_owns = false;
+         }
+         if !self.editable {
+             return Ok(InputOutcome::Ignored);
+         }
++        let previous = match e.kind() {
++            PointerKind::Move | PointerKind::Press(_) | PointerKind::Leave => {
++                self.last_pointer.replace(e.position())
++            }
++            _ => self.last_pointer,
++        };
+         if matches!(e.kind(),PointerKind::Press(b)|PointerKind::Release(b) if b!=PointerButton::Primary)
+         {
+             return Ok(InputOutcome::Ignored);

@@ -1,0 +1,5 @@
+base source tree: 0b3d064418240e1fc3a5574538db1d0fdd5c2a3ce9aaca54e0e56b21ae55cb39  -
+dce308f54b5eb7d3ce3b798d949c5ffb5b33154b34d4f2219c6f82778ba88568  crates/pert-ui-runtime/src/text.rs
+2e405639669871c7056a699cade99ab438487fa5581d4577d1e5d2bcc9b6805c  crates/pert-ui-runtime/src/text/tabs.rs
+031dbc40303f01246a899f2c4f8afcca0a8b2b7d1a56c5999f4c1d7612e698b5  crates/pert-ui-runtime/src/text_selection.rs
+a55a6642c4fb15abcfb4a829192ab59ccca21547ad9535e10626312660edb661  crates/pert-ui-runtime/src/text_fields.rs

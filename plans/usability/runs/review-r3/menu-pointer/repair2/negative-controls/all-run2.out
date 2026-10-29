@@ -1,0 +1,101 @@
+=== arming_keeps_ownership
+/home/per/pert-ui-usability/r3-menu-implementation2-evidence/runs/22-negative-arming_keeps_ownership-round2.log exit_status=101
+restored: identical hashes, newer mtimes
+test exit_status=101 log=/home/per/pert-ui-usability/r3-menu-implementation2-evidence/runs/22-negative-arming_keeps_ownership-round2.log
+test menu_pointer_ownership::an_armed_enter_or_space_keeps_a_selects_pointer_option_across_motion ... FAILED
+test menu_pointer_ownership::an_armed_enter_or_space_keeps_the_pointers_row_across_a_scrolling_wheel ... FAILED
+test menu_pointer_ownership::an_armed_enter_or_space_keeps_the_pointers_row_across_its_repeats_and_motion ... FAILED
+test menu_pointer_ownership::an_armed_enter_or_space_keeps_a_selects_pointer_option_across_a_scrolling_wheel ... FAILED
+test menu_pointer_ownership::an_armed_enter_or_space_keeps_the_pointers_row_across_layout_beneath_the_pointer ... FAILED
+test menu_pointer_ownership::an_armed_enter_or_space_keeps_the_pointers_row_across_motion ... FAILED
+test result: FAILED. 38 passed; 6 failed; 0 ignored; 0 measured; 464 filtered out; finished in 0.08s
+error: test failed, to rerun pass `-p pert-ui --test surfaces`
+=== move_ignores_armed_key
+/home/per/pert-ui-usability/r3-menu-implementation2-evidence/runs/23-negative-move_ignores_armed_key-round2.log exit_status=101
+restored: identical hashes, newer mtimes
+test exit_status=101 log=/home/per/pert-ui-usability/r3-menu-implementation2-evidence/runs/23-negative-move_ignores_armed_key-round2.log
+test menu_pointer_ownership::escape_and_release_end_an_armed_key_and_motion_takes_the_highlight_again ... FAILED
+test menu_pointer_ownership::an_armed_enter_or_space_keeps_a_selects_pointer_option_across_motion ... FAILED
+test menu_pointer_ownership::an_armed_enter_or_space_keeps_the_pointers_row_across_motion ... FAILED
+test menu_pointer_ownership::an_armed_enter_or_space_keeps_the_pointers_row_across_its_repeats_and_motion ... FAILED
+test menu_pointer_ownership::pointer_input_cannot_move_a_choice_armed_by_enter_or_space ... FAILED
+test result: FAILED. 39 passed; 5 failed; 0 ignored; 0 measured; 464 filtered out; finished in 0.08s
+error: test failed, to rerun pass `-p pert-ui --test surfaces`
+=== press_ignores_armed_key
+/home/per/pert-ui-usability/r3-menu-implementation2-evidence/runs/24-negative-press_ignores_armed_key-round2.log exit_status=101
+restored: identical hashes, newer mtimes
+test exit_status=101 log=/home/per/pert-ui-usability/r3-menu-implementation2-evidence/runs/24-negative-press_ignores_armed_key-round2.log
+test menu_pointer_ownership::an_armed_enter_or_space_keeps_a_selects_pointer_option_across_a_click ... FAILED
+test menu_pointer_ownership::an_armed_enter_or_space_keeps_the_pointers_row_across_a_click ... FAILED
+test menu_pointer_ownership::pointer_input_cannot_move_a_choice_armed_by_enter_or_space ... FAILED
+test result: FAILED. 41 passed; 3 failed; 0 ignored; 0 measured; 464 filtered out; finished in 0.08s
+error: test failed, to rerun pass `-p pert-ui --test surfaces`
+=== wheel_ignores_armed_key
+/home/per/pert-ui-usability/r3-menu-implementation2-evidence/runs/25-negative-wheel_ignores_armed_key-round2.log exit_status=101
+restored: identical hashes, newer mtimes
+test exit_status=101 log=/home/per/pert-ui-usability/r3-menu-implementation2-evidence/runs/25-negative-wheel_ignores_armed_key-round2.log
+test menu_pointer_ownership::an_armed_enter_or_space_keeps_the_pointers_row_across_a_scrolling_wheel ... FAILED
+test menu_pointer_ownership::an_armed_enter_or_space_keeps_a_selects_pointer_option_across_a_scrolling_wheel ... FAILED
+test menu_pointer_ownership::pointer_input_cannot_move_a_choice_armed_by_enter_or_space ... FAILED
+test result: FAILED. 41 passed; 3 failed; 0 ignored; 0 measured; 464 filtered out; finished in 0.05s
+error: test failed, to rerun pass `-p pert-ui --test surfaces`
+=== key_arms_over_pointer
+/home/per/pert-ui-usability/r3-menu-implementation2-evidence/runs/26-negative-key_arms_over_pointer-round2.log exit_status=101
+restored: identical hashes, newer mtimes
+test exit_status=101 log=/home/per/pert-ui-usability/r3-menu-implementation2-evidence/runs/26-negative-key_arms_over_pointer-round2.log
+test menu_pointer_ownership::enter_or_space_during_a_pointer_press_takes_neither_the_highlight_nor_the_activation ... FAILED
+test result: FAILED. 43 passed; 1 failed; 0 ignored; 0 measured; 464 filtered out; finished in 0.06s
+error: test failed, to rerun pass `-p pert-ui --test surfaces`
+=== clear_on_every_activation_press
+/home/per/pert-ui-usability/r3-menu-implementation2-evidence/runs/27-negative-clear_on_every_activation_press-round2.log exit_status=101
+restored: identical hashes, newer mtimes
+test exit_status=101 log=/home/per/pert-ui-usability/r3-menu-implementation2-evidence/runs/27-negative-clear_on_every_activation_press-round2.log
+test menu_pointer_ownership::a_modified_enter_that_does_not_arm_leaves_the_pointer_its_highlight ... FAILED
+test menu_pointer_ownership::enter_or_space_during_a_pointer_press_takes_neither_the_highlight_nor_the_activation ... FAILED
+test result: FAILED. 42 passed; 2 failed; 0 ignored; 0 measured; 464 filtered out; finished in 0.06s
+error: test failed, to rerun pass `-p pert-ui --test surfaces`
+=== separator_or_disabled_motion_ignored
+/home/per/pert-ui-usability/r3-menu-implementation2-evidence/runs/28-negative-separator_or_disabled_motion_ignored-round2.log exit_status=101
+restored: identical hashes, newer mtimes
+test exit_status=101 log=/home/per/pert-ui-usability/r3-menu-implementation2-evidence/runs/28-negative-separator_or_disabled_motion_ignored-round2.log
+test menu_pointer_ownership::motion_onto_a_separator_or_disabled_row_takes_the_highlight_without_choosing_it ... FAILED
+test result: FAILED. 43 passed; 1 failed; 0 ignored; 0 measured; 464 filtered out; finished in 0.10s
+error: test failed, to rerun pass `-p pert-ui --test surfaces`
+=== repeat_keeps_ownership
+/home/per/pert-ui-usability/r3-menu-implementation2-evidence/runs/29-negative-repeat_keeps_ownership-round2.log exit_status=101
+restored: identical hashes, newer mtimes
+test exit_status=101 log=/home/per/pert-ui-usability/r3-menu-implementation2-evidence/runs/29-negative-repeat_keeps_ownership-round2.log
+test menu_pointer_ownership::an_os_repeat_of_a_held_navigation_key_takes_the_highlight_back_from_motion ... FAILED
+test result: FAILED. 43 passed; 1 failed; 0 ignored; 0 measured; 464 filtered out; finished in 0.08s
+error: test failed, to rerun pass `-p pert-ui --test surfaces`
+=== clear_on_navigation_release
+/home/per/pert-ui-usability/r3-menu-implementation2-evidence/runs/30-negative-clear_on_navigation_release-round2.log exit_status=101
+restored: identical hashes, newer mtimes
+test exit_status=101 log=/home/per/pert-ui-usability/r3-menu-implementation2-evidence/runs/30-negative-clear_on_navigation_release-round2.log
+test menu_pointer_ownership::a_navigation_keys_release_after_motion_leaves_the_pointer_its_highlight ... FAILED
+test result: FAILED. 43 passed; 1 failed; 0 ignored; 0 measured; 464 filtered out; finished in 0.08s
+error: test failed, to rerun pass `-p pert-ui --test surfaces`
+=== clear_on_modified_navigation
+/home/per/pert-ui-usability/r3-menu-implementation2-evidence/runs/31-negative-clear_on_modified_navigation-round2.log exit_status=101
+restored: identical hashes, newer mtimes
+test exit_status=101 log=/home/per/pert-ui-usability/r3-menu-implementation2-evidence/runs/31-negative-clear_on_modified_navigation-round2.log
+test menu_pointer_ownership::navigation_with_modifiers_leaves_the_pointer_its_highlight ... FAILED
+test result: FAILED. 43 passed; 1 failed; 0 ignored; 0 measured; 464 filtered out; finished in 0.07s
+error: test failed, to rerun pass `-p pert-ui --test surfaces`
+=== clear_on_ignored_key
+/home/per/pert-ui-usability/r3-menu-implementation2-evidence/runs/32-negative-clear_on_ignored_key-round2.log exit_status=101
+restored: identical hashes, newer mtimes
+test exit_status=101 log=/home/per/pert-ui-usability/r3-menu-implementation2-evidence/runs/32-negative-clear_on_ignored_key-round2.log
+test menu_pointer_ownership::a_key_the_menu_ignores_leaves_the_pointer_its_highlight ... FAILED
+test menu_pointer_ownership::a_modified_enter_that_does_not_arm_leaves_the_pointer_its_highlight ... FAILED
+test menu_pointer_ownership::navigation_with_modifiers_leaves_the_pointer_its_highlight ... FAILED
+test result: FAILED. 41 passed; 3 failed; 0 ignored; 0 measured; 464 filtered out; finished in 0.07s
+error: test failed, to rerun pass `-p pert-ui --test surfaces`
+=== clear_on_sideways_release
+/home/per/pert-ui-usability/r3-menu-implementation2-evidence/runs/33-negative-clear_on_sideways_release-round2.log exit_status=101
+restored: identical hashes, newer mtimes
+test exit_status=101 log=/home/per/pert-ui-usability/r3-menu-implementation2-evidence/runs/33-negative-clear_on_sideways_release-round2.log
+test menu_pointer_ownership::a_right_release_after_motion_leaves_the_pointer_its_highlight ... FAILED
+test result: FAILED. 43 passed; 1 failed; 0 ignored; 0 measured; 464 filtered out; finished in 0.08s
+error: test failed, to rerun pass `-p pert-ui --test surfaces`
+=== done

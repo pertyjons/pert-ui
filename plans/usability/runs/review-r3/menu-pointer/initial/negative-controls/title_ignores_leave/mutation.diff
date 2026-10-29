@@ -1,0 +1,13 @@
+--- /home/per/pert-ui-usability/r3-menu-implementation-evidence/negative-controls/title_ignores_leave/backup/menu_bar.rs	2026-10-29 10:32:07.716416217 +0100
++++ crates/pert-ui-runtime/src/menu_bar.rs	2026-10-29 10:41:29.934527814 +0100
+@@ -384,9 +384,7 @@
+         e: PointerEvent,
+     ) -> Result<InputOutcome, RuntimeError> {
+         let previous = match e.kind() {
+-            PointerKind::Move | PointerKind::Press(_) | PointerKind::Leave => {
+-                self.last_pointer.replace(e.position())
+-            }
++            PointerKind::Move | PointerKind::Press(_) => self.last_pointer.replace(e.position()),
+             _ => self.last_pointer,
+         };
+         let inside = e.kind() != PointerKind::Leave && cx.pointer_inside();

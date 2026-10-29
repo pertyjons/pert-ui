@@ -1,0 +1,181 @@
+2c2
+< index a6343bc..9b03b43 100644
+---
+> index a6343bc..d105d16 100644
+21c21
+< @@ -140,6 +142,8 @@ pub enum TextStyle {
+---
+> @@ -140,6 +142,10 @@ pub enum TextStyle {
+25,26c25,28
+< +    /// A literal tab is blank and, with the bundled font, one cell wide; there
+< +    /// are no aligned tab stops, so tabs do not line up columns of unequal text.
+---
+> +    /// A literal tab draws no ink and, with the bundled font, is one cell wide;
+> +    /// there are no aligned tab stops, so tabs do not line up columns of unequal
+> +    /// text. A registered font that ligates a tab with printable text keeps
+> +    /// that glyph, as [`TextLayout`] describes.
+30c32
+< @@ -179,13 +183,19 @@ impl TextStyle {
+---
+> @@ -179,13 +185,26 @@ impl TextStyle {
+39a42,48
+> +///
+> +/// [`Self::size`] is the layout box joined with the ink actually drawn, and the
+> +/// painted origin is its top-left corner. The layout box leaves out whitespace
+> +/// hanging past the end of a wrapped line, and a tab there draws nothing, so
+> +/// hanging spaces and tabs may lie outside the size: caret, selection and
+> +/// pointer geometry at them lies beyond its right edge in left-to-right text
+> +/// and at negative x in right-to-left text.
+51c60,72
+< @@ -546,7 +556,7 @@ impl<'a> TextRequest<'a> {
+---
+> @@ -197,7 +216,10 @@ struct MaskPart {
+>      brush: usize,
+>  }
+>  impl TextLayout {
+> -    /// Logical extent including glyph overhangs.
+> +    /// Logical extent of the painted text: the layout box joined with the drawn
+> +    /// glyphs' ink, overhangs included. Whitespace hanging past the end of a
+> +    /// wrapped line is outside the layout box, so a caret or selection there
+> +    /// can fall outside this extent; see [`TextSelection::caret`](crate::TextSelection::caret).
+>      #[must_use]
+>      pub const fn size(&self) -> Size {
+>          self.size
+> @@ -546,7 +568,7 @@ impl<'a> TextRequest<'a> {
+60c81
+< @@ -567,6 +577,13 @@ pub(crate) struct TextService {
+---
+> @@ -567,6 +589,13 @@ pub(crate) struct TextService {
+74c95
+< @@ -627,6 +644,10 @@ impl TextService {
+---
+> @@ -627,6 +656,10 @@ impl TextService {
+85c106
+< @@ -853,7 +874,7 @@ impl TextService {
+---
+> @@ -853,7 +886,7 @@ impl TextService {
+94c115
+< @@ -1020,7 +1041,7 @@ impl TextService {
+---
+> @@ -1020,7 +1053,7 @@ impl TextService {
+103c124
+< @@ -1083,7 +1104,7 @@ impl TextService {
+---
+> @@ -1083,7 +1116,7 @@ impl TextService {
+112c133
+< @@ -1134,8 +1155,14 @@ impl TextService {
+---
+> @@ -1134,8 +1167,14 @@ impl TextService {
+129c150
+< @@ -1143,8 +1170,6 @@ impl TextService {
+---
+> @@ -1143,8 +1182,6 @@ impl TextService {
+138c159
+< @@ -1161,6 +1186,38 @@ impl TextService {
+---
+> @@ -1161,6 +1198,38 @@ impl TextService {
+177c198
+< @@ -1169,7 +1226,7 @@ impl TextService {
+---
+> @@ -1169,7 +1238,7 @@ impl TextService {
+186c207
+< @@ -1193,7 +1250,17 @@ impl TextService {
+---
+> @@ -1193,7 +1262,17 @@ impl TextService {
+205c226
+< @@ -1223,7 +1290,7 @@ impl TextService {
+---
+> @@ -1223,7 +1302,7 @@ impl TextService {
+214c235
+< @@ -1244,7 +1311,11 @@ impl TextService {
+---
+> @@ -1244,7 +1323,11 @@ impl TextService {
+227c248
+< @@ -1388,7 +1459,7 @@ impl TextService {
+---
+> @@ -1388,7 +1471,7 @@ impl TextService {
+236c257
+< @@ -1476,11 +1547,19 @@ impl PlacedGlyph {
+---
+> @@ -1476,11 +1559,19 @@ impl PlacedGlyph {
+257c278
+< @@ -1502,16 +1581,18 @@ fn raster_signature(
+---
+> @@ -1502,16 +1593,18 @@ fn raster_signature(
+279c300
+< @@ -1527,7 +1608,7 @@ fn raster_signature(
+---
+> @@ -1527,7 +1620,7 @@ fn raster_signature(
+288c309
+< @@ -1541,7 +1622,7 @@ fn raster_signature(
+---
+> @@ -1541,7 +1634,7 @@ fn raster_signature(
+298c319
+< index e2f86c8..f535928 100644
+---
+> index e2f86c8..3d6916d 100644
+310c331
+< @@ -237,6 +237,11 @@ description_debug!(TextField);
+---
+> @@ -237,6 +237,14 @@ description_debug!(TextField);
+315,317c336,341
+< +/// and the caret moves over it as one grapheme. It is shown as blank space as wide as the font's
+< +/// shaped advance for it, one character cell with the bundled monospace font,
+< +/// not as an aligned tab stop, so tabs do not line up columns of unequal text.
+---
+> +/// and the caret moves over it as one grapheme. It is shown as blank space as
+> +/// wide as the font's shaped advance for it, one character cell with the
+> +/// bundled monospace font, not as an aligned tab stop, so tabs do not line up
+> +/// columns of unequal text. A tab that a registered font ligates with
+> +/// printable text keeps that glyph, as [`TextLayout`](crate::TextLayout)
+> +/// describes.
+322c346
+< @@ -281,7 +286,7 @@ description_debug!(TextField);
+---
+> @@ -281,7 +289,7 @@ description_debug!(TextField);
+330a355,399
+> diff --git a/crates/pert-ui-runtime/src/text_selection.rs b/crates/pert-ui-runtime/src/text_selection.rs
+> index 3a515a9..078e22b 100644
+> --- a/crates/pert-ui-runtime/src/text_selection.rs
+> +++ b/crates/pert-ui-runtime/src/text_selection.rs
+> @@ -158,7 +158,9 @@ impl TextSelection {
+>      }
+>      /// Places the caret at a logical point relative to the painted text origin.
+>      /// Outside points snap to the nearest available caret;
+> -    /// [`SelectionExtension::Extend`] keeps the anchor.
+> +    /// [`SelectionExtension::Extend`] keeps the anchor. A point outside
+> +    /// [`TextLayout::size`] can still be over whitespace hanging past the end of
+> +    /// a wrapped line, as [`Self::caret`] describes, and places the caret there.
+>      pub fn at_point(
+>          self,
+>          layout: &TextLayout,
+> @@ -175,6 +177,7 @@ impl TextSelection {
+>      }
+>      /// Selects the word at a logical point, using the shaping engine's word
+>      /// boundaries. Whitespace/punctuation follow the engine's Unicode segmentation.
+> +    /// Points map to text as for [`Self::at_point`].
+>      pub fn word_at_point(layout: &TextLayout, point: Point) -> Self {
+>          Self(Selection::word_from_point(
+>              &layout.shaped,
+> @@ -185,6 +188,11 @@ impl TextSelection {
+>      /// Caret rectangle in logical coordinates relative to painted text origin.
+>      /// Width is one logical pixel.
+>      ///
+> +    /// After whitespace hanging past the end of a wrapped line, spaces and tabs
+> +    /// alike, the rectangle can lie outside [`TextLayout::size`]: beyond its
+> +    /// right edge in left-to-right text, and at negative x in right-to-left
+> +    /// text, where the hanging whitespace is on the left.
+> +    ///
+>      /// # Errors
+>      /// Returns [`GeometryError::NonFinite`](crate::GeometryError::NonFinite) or
+>      /// [`GeometryError::Negative`](crate::GeometryError::Negative) when the layout's
+> @@ -194,7 +202,8 @@ impl TextSelection {
+>          convert(layout, r.x0, r.y0, r.x1, r.y1)
+>      }
+>      /// Selection rectangles in logical coordinates relative to painted text origin.
+> -    /// Allocates per selected run.
+> +    /// Allocates per selected run. A selection that includes hanging whitespace
+> +    /// can extend outside [`TextLayout::size`], as [`Self::caret`] describes.
+>      ///
+>      /// # Errors
+>      /// As [`Self::caret`], for any selected run.

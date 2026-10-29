@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Usage: negative-control.sh <mutation>
+# Backs up the exact source bytes, applies the mutation, runs the ownership
+# tests, restores the backup and verifies the restored hashes match.
+set -u
+E=/home/per/pert-ui-usability/r3-menu-implementation-evidence
+W=/home/per/pert-ui-usability/r3-menu-worktree
+m=$1
+dir="$E/negative-controls/$m"
+[ -e "$dir" ] && { echo "refusing to overwrite $dir"; exit 2; }
+mkdir -p "$dir/backup"
+cd "$W" || exit 2
+files="crates/pert-ui-runtime/src/select.rs crates/pert-ui-runtime/src/menu_bar.rs"
+for f in $files; do cp -p "$f" "$dir/backup/$(basename "$f")"; done
+sha256sum $files > "$dir/hashes-before.txt"
+python3 -I "$E/scripts/mutate.py" "$m" || { echo "mutation failed"; exit 2; }
+git diff -- $files > "$dir/mutation-plus-repair.diff"
+for f in $files; do diff -u "$dir/backup/$(basename "$f")" "$f"; done > "$dir/mutation.diff"
+"$E/scripts/run.sh" "negative-$m" cargo test --locked -p pert-ui --test surfaces menu_pointer_ownership
+status=$?
+for f in $files; do cp -p "$dir/backup/$(basename "$f")" "$f"; done
+sha256sum $files > "$dir/hashes-restored.txt"
+if cmp -s <(cut -d' ' -f1 "$dir/hashes-before.txt") <(cut -d' ' -f1 "$dir/hashes-restored.txt"); then
+  echo "restored: identical hashes" | tee "$dir/restore-check.txt"
+else
+  echo "RESTORE MISMATCH" | tee "$dir/restore-check.txt"; exit 3
+fi
+log=$(ls -t "$E"/runs/*-negative-$m.log | head -1)
+grep -E "^test .* FAILED$|^test result" "$log" > "$dir/failed-tests.txt"
+echo "test exit_status=$status log=$log"
+cat "$dir/failed-tests.txt"

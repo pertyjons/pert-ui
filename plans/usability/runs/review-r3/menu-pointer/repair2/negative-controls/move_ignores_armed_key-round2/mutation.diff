@@ -1,0 +1,10 @@
+--- /home/per/pert-ui-usability/r3-menu-implementation2-evidence/negative-controls/move_ignores_armed_key-round2/backup/select.rs	2026-10-29 11:09:23.761396601 +0100
++++ crates/pert-ui-runtime/src/select.rs	2026-10-29 11:09:23.779499690 +0100
+@@ -587,7 +587,6 @@
+                 if !e.is_refresh()
+                     && previous != Some(e.position())
+                     && cx.pointer_inside()
+-                    && !key_armed
+                 {
+                     self.pointer_owns = true;
+                 }

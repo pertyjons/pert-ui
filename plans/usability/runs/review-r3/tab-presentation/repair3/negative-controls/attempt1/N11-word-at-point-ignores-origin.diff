@@ -1,0 +1,11 @@
+--- a/text_selection.rs
++++ b/text_selection.rs
+@@ -181,7 +181,7 @@
+     pub fn word_at_point(layout: &TextLayout, point: Point) -> Self {
+         Self(Selection::word_from_point(
+             &layout.shaped,
+-            (point.x() - layout.origin[0]) * layout.scale,
++            point.x() * layout.scale,
+             (point.y() - layout.origin[1]) * layout.scale,
+         ))
+     }

@@ -1,0 +1,381 @@
+{
+  "source_directory": "/home/per/pert-ui-usability/r3-text-implementation3-evidence",
+  "policy": "Exact bytes except declared readable log excerpts; full gzip preserves those bytes. Script suffixes renamed for archival use.",
+  "files": [
+    {
+      "source": "README.md",
+      "source_bytes": 9507,
+      "source_sha256": "c60a20b9d65cf774b45abedfa1eed022ab492e78289f40e781ff45258e9e0adf",
+      "archive_path": "README.md",
+      "archive_sha256": "c60a20b9d65cf774b45abedfa1eed022ab492e78289f40e781ff45258e9e0adf"
+    },
+    {
+      "source": "checks/01-fmt.log",
+      "source_bytes": 213,
+      "source_sha256": "2236a19cd8e757b51317763223252d175b95bff21016333289e8deaf3351895b",
+      "archive_path": "checks/01-fmt.log",
+      "archive_sha256": "2236a19cd8e757b51317763223252d175b95bff21016333289e8deaf3351895b"
+    },
+    {
+      "source": "checks/02-clippy-runtime.log",
+      "source_bytes": 438,
+      "source_sha256": "975705b001d6e63e497b0828eb680d9656bbbe449513944576fcf25641ddd356",
+      "archive_path": "checks/02-clippy-runtime.log",
+      "archive_sha256": "975705b001d6e63e497b0828eb680d9656bbbe449513944576fcf25641ddd356"
+    },
+    {
+      "source": "checks/03-test-runtime-tabs-nocapture.log",
+      "source_bytes": 55038,
+      "source_sha256": "c792679894e4be77fe0791633e5052914d332ae42e23241a1f039c52765d9c92",
+      "archive_path": "checks/03-test-runtime-tabs-nocapture.log",
+      "archive_sha256": "c792679894e4be77fe0791633e5052914d332ae42e23241a1f039c52765d9c92"
+    },
+    {
+      "source": "checks/04-test-runtime-tabs-release-nocapture.log",
+      "source_bytes": 55552,
+      "source_sha256": "7fb3c8b52f87c02e179bfa3a655bfe391a7db0504ff959d45dd712c0484e159f",
+      "archive_path": "checks/04-test-runtime-tabs-release-nocapture.log",
+      "archive_sha256": "7fb3c8b52f87c02e179bfa3a655bfe391a7db0504ff959d45dd712c0484e159f"
+    },
+    {
+      "source": "checks/05-test-runtime-hanging-exact.log",
+      "source_bytes": 776,
+      "source_sha256": "2f8995afe745b52b54b5f776849539f3008af6b0f2c4c49c1c3bdb55ac8d84d2",
+      "archive_path": "checks/05-test-runtime-hanging-exact.log",
+      "archive_sha256": "2f8995afe745b52b54b5f776849539f3008af6b0f2c4c49c1c3bdb55ac8d84d2"
+    },
+    {
+      "source": "checks/06-test-runtime-text-fields-selection.log",
+      "source_bytes": 5431,
+      "source_sha256": "1d2beda0d5813e55f2d185d8b2c2fbd6268e19ed5bb8d37ea0ffb28966ace3bb",
+      "archive_path": "checks/06-test-runtime-text-fields-selection.log",
+      "archive_sha256": "1d2beda0d5813e55f2d185d8b2c2fbd6268e19ed5bb8d37ea0ffb28966ace3bb"
+    },
+    {
+      "source": "checks/07-test-runtime-doctests.log",
+      "source_bytes": 39766,
+      "source_sha256": "acaa084922b0ac5867669e210a9675af3a25814d347cca2617cca585d7c53d72",
+      "archive_path": "checks/07-test-runtime-doctests.log",
+      "archive_sha256": "acaa084922b0ac5867669e210a9675af3a25814d347cca2617cca585d7c53d72"
+    },
+    {
+      "source": "checks/08-test-facade-editing-default.log",
+      "source_bytes": 28382,
+      "source_sha256": "517b7200bc35736056ccee92f3f7d9bb1a6fa820ea7697bd4549039f463c06a3",
+      "archive_path": "checks/08-test-facade-editing-default.log",
+      "archive_sha256": "517b7200bc35736056ccee92f3f7d9bb1a6fa820ea7697bd4549039f463c06a3"
+    },
+    {
+      "source": "checks/09-test-facade-editing-cpu-tabs.log",
+      "source_bytes": 1544,
+      "source_sha256": "dacd7d6a21953b88a6224aae81871ee2fd39ce5fa868319c088e80db51d045b1",
+      "archive_path": "checks/09-test-facade-editing-cpu-tabs.log",
+      "archive_sha256": "dacd7d6a21953b88a6224aae81871ee2fd39ce5fa868319c088e80db51d045b1"
+    },
+    {
+      "source": "checks/10-rustdoc-runtime.log",
+      "source_bytes": 545,
+      "source_sha256": "f4d392802d6af16c70932dbaf4c4a280bc5afd30a5ad9b7c947609c1887b34dd",
+      "archive_path": "checks/10-rustdoc-runtime.log",
+      "archive_sha256": "f4d392802d6af16c70932dbaf4c4a280bc5afd30a5ad9b7c947609c1887b34dd"
+    },
+    {
+      "source": "checks/11-rustdoc-facade.log",
+      "source_bytes": 721,
+      "source_sha256": "a239aa61722b4d5e82be900e1c583f1242b24a3bf7414e11f8f51ddc73a8eaaf",
+      "archive_path": "checks/11-rustdoc-facade.log",
+      "archive_sha256": "a239aa61722b4d5e82be900e1c583f1242b24a3bf7414e11f8f51ddc73a8eaaf"
+    },
+    {
+      "source": "checks/12-git-diff-check.log",
+      "source_bytes": 206,
+      "source_sha256": "a9ca9c760283c1c23ccad9e65a119cfea56c28887f0a1ee4317541a310340116",
+      "archive_path": "checks/12-git-diff-check.log",
+      "archive_sha256": "a9ca9c760283c1c23ccad9e65a119cfea56c28887f0a1ee4317541a310340116"
+    },
+    {
+      "source": "checks/13-git-status.log",
+      "source_bytes": 745,
+      "source_sha256": "52fd821436ef93ffd29dee06370f755a3a52cabaa655cd75fb5d501d1390c3c0",
+      "archive_path": "checks/13-git-status.log",
+      "archive_sha256": "52fd821436ef93ffd29dee06370f755a3a52cabaa655cd75fb5d501d1390c3c0"
+    },
+    {
+      "source": "checks/14-owned-file-hashes.log",
+      "source_bytes": 1512,
+      "source_sha256": "e6efc55a790bc13b4ed1ecc366fcfc0a441af11b98640ef61864befb2c7aea61",
+      "archive_path": "checks/14-owned-file-hashes.log",
+      "archive_sha256": "e6efc55a790bc13b4ed1ecc366fcfc0a441af11b98640ef61864befb2c7aea61"
+    },
+    {
+      "source": "checks/15-text-selection-rustdoc-only.log",
+      "source_bytes": 333,
+      "source_sha256": "028c327d367b42cb45fcb04e83a3ca08354aa7a3d2d4393131bd2f00201d95d6",
+      "archive_path": "checks/15-text-selection-rustdoc-only.log",
+      "archive_sha256": "028c327d367b42cb45fcb04e83a3ca08354aa7a3d2d4393131bd2f00201d95d6"
+    },
+    {
+      "source": "checks/16-production-bytes.log",
+      "source_bytes": 804,
+      "source_sha256": "b74482899ebc44bb76839a688c11908a6f601cd3410094e0f31b977f72f69412",
+      "archive_path": "checks/16-production-bytes.log",
+      "archive_sha256": "b74482899ebc44bb76839a688c11908a6f601cd3410094e0f31b977f72f69412"
+    },
+    {
+      "source": "checks/17-previous-evidence-unchanged.log",
+      "source_bytes": 907,
+      "source_sha256": "fb7051eae9bc5bec1bad505672f04e29ca319b5fb90099ead4197461cb1f6c2d",
+      "archive_path": "checks/17-previous-evidence-unchanged.log",
+      "archive_sha256": "fb7051eae9bc5bec1bad505672f04e29ca319b5fb90099ead4197461cb1f6c2d"
+    },
+    {
+      "source": "checks/summary.txt",
+      "source_bytes": 2629,
+      "source_sha256": "d75edad01ae7587b86b24a25f9cfbc6b576bd92ea18dd5c7ae7e947899806a95",
+      "archive_path": "checks/summary.txt",
+      "archive_sha256": "d75edad01ae7587b86b24a25f9cfbc6b576bd92ea18dd5c7ae7e947899806a95"
+    },
+    {
+      "source": "final-state/state.log",
+      "source_bytes": 2573,
+      "source_sha256": "b6bc6eb8c04b12039fc712387909532ec7e7d85d70af512ee56eeb9657509f28",
+      "archive_path": "final-state/state.log",
+      "archive_sha256": "b6bc6eb8c04b12039fc712387909532ec7e7d85d70af512ee56eeb9657509f28"
+    },
+    {
+      "source": "final-state/tabs.rs.repair.diff",
+      "source_bytes": 16487,
+      "source_sha256": "a3df7a27e38bb5015a6fbfc77e4cfba93b272ac755b8fa795ce711f910f8be1e",
+      "archive_path": "final-state/tabs.rs.repair.diff",
+      "archive_sha256": "a3df7a27e38bb5015a6fbfc77e4cfba93b272ac755b8fa795ce711f910f8be1e"
+    },
+    {
+      "source": "final-state/tabs.rs.untracked.diff",
+      "source_bytes": 92197,
+      "source_sha256": "2543fff972e8c2ce58c909841fbdd85876a045184279a77cce31513d6ea41de3",
+      "archive_path": "final-state/tabs.rs.untracked.diff",
+      "archive_sha256": "2543fff972e8c2ce58c909841fbdd85876a045184279a77cce31513d6ea41de3"
+    },
+    {
+      "source": "final-state/text.rs.repair.diff",
+      "source_bytes": 2638,
+      "source_sha256": "a1f781e02fa2018f6d1f5721765b72b2f803e9629cc10d11e717f451df09bde6",
+      "archive_path": "final-state/text.rs.repair.diff",
+      "archive_sha256": "a1f781e02fa2018f6d1f5721765b72b2f803e9629cc10d11e717f451df09bde6"
+    },
+    {
+      "source": "final-state/text_fields.rs.repair.diff",
+      "source_bytes": 3034,
+      "source_sha256": "ad429ff8954f0289ff9d9b6d6e3a4cf3a464f722b6bb487ee5daffdac58a1b0d",
+      "archive_path": "final-state/text_fields.rs.repair.diff",
+      "archive_sha256": "ad429ff8954f0289ff9d9b6d6e3a4cf3a464f722b6bb487ee5daffdac58a1b0d"
+    },
+    {
+      "source": "final-state/text_selection.rs.repair.diff",
+      "source_bytes": 866,
+      "source_sha256": "647235eac06cb42c06feccd261bed089bbd76ae7c67e6355459b6938a3782e2a",
+      "archive_path": "final-state/text_selection.rs.repair.diff",
+      "archive_sha256": "647235eac06cb42c06feccd261bed089bbd76ae7c67e6355459b6938a3782e2a"
+    },
+    {
+      "source": "final-state/tracked.diff",
+      "source_bytes": 22528,
+      "source_sha256": "baaa345ed5e7daced9eafa21a0d139009f3ca26b4d01592e48bff149400bb538",
+      "archive_path": "final-state/tracked.diff",
+      "archive_sha256": "baaa345ed5e7daced9eafa21a0d139009f3ca26b4d01592e48bff149400bb538"
+    },
+    {
+      "source": "negative-controls/N10-at-point-ignores-origin.diff",
+      "source_bytes": 436,
+      "source_sha256": "dd9ae721bd5feb295f3d8c79eed82548d7b17da05d400ed3da70299559319eb1",
+      "archive_path": "negative-controls/N10-at-point-ignores-origin.diff",
+      "archive_sha256": "dd9ae721bd5feb295f3d8c79eed82548d7b17da05d400ed3da70299559319eb1"
+    },
+    {
+      "source": "negative-controls/N10-at-point-ignores-origin.log",
+      "source_bytes": 12671,
+      "source_sha256": "f6b1fca097e17b68418a84558a8b3007b90302dc5ec81190d1751b0cf202d44a",
+      "archive_path": "negative-controls/N10-at-point-ignores-origin.log",
+      "archive_sha256": "f6b1fca097e17b68418a84558a8b3007b90302dc5ec81190d1751b0cf202d44a"
+    },
+    {
+      "source": "negative-controls/N11-word-at-point-ignores-origin.diff",
+      "source_bytes": 388,
+      "source_sha256": "424117b76c09514b1b0da2e192f313c78703637f67afe9cea7ba23d6ce05eb19",
+      "archive_path": "negative-controls/N11-word-at-point-ignores-origin.diff",
+      "archive_sha256": "424117b76c09514b1b0da2e192f313c78703637f67afe9cea7ba23d6ce05eb19"
+    },
+    {
+      "source": "negative-controls/N11-word-at-point-ignores-origin.log",
+      "source_bytes": 12904,
+      "source_sha256": "388db79bc786bc0ff1d06956fcced7227d34ea4f709e63f79628a3294fd54cc2",
+      "archive_path": "negative-controls/N11-word-at-point-ignores-origin.log",
+      "archive_sha256": "388db79bc786bc0ff1d06956fcced7227d34ea4f709e63f79628a3294fd54cc2"
+    },
+    {
+      "source": "negative-controls/attempt1/N10-at-point-ignores-origin.diff",
+      "source_bytes": 436,
+      "source_sha256": "dd9ae721bd5feb295f3d8c79eed82548d7b17da05d400ed3da70299559319eb1",
+      "archive_path": "negative-controls/attempt1/N10-at-point-ignores-origin.diff",
+      "archive_sha256": "dd9ae721bd5feb295f3d8c79eed82548d7b17da05d400ed3da70299559319eb1"
+    },
+    {
+      "source": "negative-controls/attempt1/N10-at-point-ignores-origin.log",
+      "source_bytes": 12671,
+      "source_sha256": "04c040ca0bf3f8d4931652de8df3932511bd00824b70ff8ca4ab95c44b6d5130",
+      "archive_path": "negative-controls/attempt1/N10-at-point-ignores-origin.log",
+      "archive_sha256": "04c040ca0bf3f8d4931652de8df3932511bd00824b70ff8ca4ab95c44b6d5130"
+    },
+    {
+      "source": "negative-controls/attempt1/N11-word-at-point-ignores-origin.diff",
+      "source_bytes": 388,
+      "source_sha256": "424117b76c09514b1b0da2e192f313c78703637f67afe9cea7ba23d6ce05eb19",
+      "archive_path": "negative-controls/attempt1/N11-word-at-point-ignores-origin.diff",
+      "archive_sha256": "424117b76c09514b1b0da2e192f313c78703637f67afe9cea7ba23d6ce05eb19"
+    },
+    {
+      "source": "negative-controls/attempt1/N11-word-at-point-ignores-origin.log",
+      "source_bytes": 12904,
+      "source_sha256": "967cfa6ad0d8fdd212089dfdce4a17c4e7ecb89bea948fff30a2848a92ba72a3",
+      "archive_path": "negative-controls/attempt1/N11-word-at-point-ignores-origin.log",
+      "archive_sha256": "967cfa6ad0d8fdd212089dfdce4a17c4e7ecb89bea948fff30a2848a92ba72a3"
+    },
+    {
+      "source": "negative-controls/attempt1/post-restore-rebuild.log",
+      "source_bytes": 872,
+      "source_sha256": "0e1d53eaa560e46ac5ec6cfd005b7c7d669b04372b86cc1b0eebc88e04bc7096",
+      "archive_path": "negative-controls/attempt1/post-restore-rebuild.log",
+      "archive_sha256": "0e1d53eaa560e46ac5ec6cfd005b7c7d669b04372b86cc1b0eebc88e04bc7096"
+    },
+    {
+      "source": "negative-controls/attempt1/run.py",
+      "source_bytes": 3983,
+      "source_sha256": "5e0cdc4f31902b78c4e4f0a3d3da0a279cc1a7005e1986d2904b635fae7834f7",
+      "suffix_note": "Archived script text, not an installed/portable entry point; exact bytes unchanged.",
+      "archive_path": "negative-controls/attempt1/run.py.txt",
+      "archive_sha256": "5e0cdc4f31902b78c4e4f0a3d3da0a279cc1a7005e1986d2904b635fae7834f7"
+    },
+    {
+      "source": "negative-controls/attempt1/summary.txt",
+      "source_bytes": 813,
+      "source_sha256": "312bfeefeff8971d7d5b0f197e5dacb91c899029f9f62b61c12d8b56aabeec67",
+      "archive_path": "negative-controls/attempt1/summary.txt",
+      "archive_sha256": "312bfeefeff8971d7d5b0f197e5dacb91c899029f9f62b61c12d8b56aabeec67"
+    },
+    {
+      "source": "negative-controls/other-sources-at-control-time.sha256",
+      "source_bytes": 450,
+      "source_sha256": "93257ac48f772fc983693c0204d3c44942885cd553354216f48ace2837f02bdf",
+      "archive_path": "negative-controls/other-sources-at-control-time.sha256",
+      "archive_sha256": "93257ac48f772fc983693c0204d3c44942885cd553354216f48ace2837f02bdf"
+    },
+    {
+      "source": "negative-controls/post-restore-rebuild.log",
+      "source_bytes": 872,
+      "source_sha256": "b0beaea4babb560b0534819d6d3a22ac3be9fe6caf7b0ac33d6dd427a2caa166",
+      "archive_path": "negative-controls/post-restore-rebuild.log",
+      "archive_sha256": "b0beaea4babb560b0534819d6d3a22ac3be9fe6caf7b0ac33d6dd427a2caa166"
+    },
+    {
+      "source": "negative-controls/run.py",
+      "source_bytes": 4153,
+      "source_sha256": "915bb14ae64cad022c3fee4c7cb340a7f9577772433d9dd2e55b537c39844476",
+      "suffix_note": "Archived script text, not an installed/portable entry point; exact bytes unchanged.",
+      "archive_path": "negative-controls/run.py.txt",
+      "archive_sha256": "915bb14ae64cad022c3fee4c7cb340a7f9577772433d9dd2e55b537c39844476"
+    },
+    {
+      "source": "negative-controls/summary.txt",
+      "source_bytes": 1495,
+      "source_sha256": "d4f9e5b1fd4c870d97e1cc5b4a7b866f429bcf5dd6a3b06b5ea831d8d338b13a",
+      "archive_path": "negative-controls/summary.txt",
+      "archive_sha256": "d4f9e5b1fd4c870d97e1cc5b4a7b866f429bcf5dd6a3b06b5ea831d8d338b13a"
+    },
+    {
+      "source": "pre-edit/evidence1-vs-impl2-record.log",
+      "source_bytes": 50,
+      "source_sha256": "b51f9492e7712b1b7341969b738e455f689dca1bd55944e1cc8b4df3a4674c91",
+      "archive_path": "pre-edit/evidence1-vs-impl2-record.log",
+      "archive_sha256": "b51f9492e7712b1b7341969b738e455f689dca1bd55944e1cc8b4df3a4674c91"
+    },
+    {
+      "source": "pre-edit/impl2-final-owned.sha256",
+      "source_bytes": 1019,
+      "source_sha256": "af2b14cb8ee98f9b6a9e0d9925680848d8b37fd3fee6747599d1133db9336a79",
+      "archive_path": "pre-edit/impl2-final-owned.sha256",
+      "archive_sha256": "af2b14cb8ee98f9b6a9e0d9925680848d8b37fd3fee6747599d1133db9336a79"
+    },
+    {
+      "source": "pre-edit/previous-evidence-files.sha256",
+      "source_bytes": 19720,
+      "source_sha256": "dbca02152a9cf56f5226b4142e65bfc36aace33dbf3b4777020fd85b2e76d99a",
+      "archive_path": "pre-edit/previous-evidence-files.sha256",
+      "archive_sha256": "dbca02152a9cf56f5226b4142e65bfc36aace33dbf3b4777020fd85b2e76d99a"
+    },
+    {
+      "source": "pre-edit/state.log",
+      "source_bytes": 2150,
+      "source_sha256": "bc621fdacdf0e5fc86316b7588ab27d309ea0f3d7f78cd80d893cfd27b391761",
+      "archive_path": "pre-edit/state.log",
+      "archive_sha256": "bc621fdacdf0e5fc86316b7588ab27d309ea0f3d7f78cd80d893cfd27b391761"
+    },
+    {
+      "source": "pre-edit/tabs.rs.orig",
+      "source_bytes": 83566,
+      "source_sha256": "2e405639669871c7056a699cade99ab438487fa5581d4577d1e5d2bcc9b6805c",
+      "archive_path": "pre-edit/tabs.rs.orig",
+      "archive_sha256": "2e405639669871c7056a699cade99ab438487fa5581d4577d1e5d2bcc9b6805c"
+    },
+    {
+      "source": "pre-edit/text.rs.orig",
+      "source_bytes": 119149,
+      "source_sha256": "dce308f54b5eb7d3ce3b798d949c5ffb5b33154b34d4f2219c6f82778ba88568",
+      "archive_path": "pre-edit/text.rs.orig",
+      "archive_sha256": "dce308f54b5eb7d3ce3b798d949c5ffb5b33154b34d4f2219c6f82778ba88568"
+    },
+    {
+      "source": "pre-edit/text_fields.rs.orig",
+      "source_bytes": 165413,
+      "source_sha256": "a55a6642c4fb15abcfb4a829192ab59ccca21547ad9535e10626312660edb661",
+      "archive_path": "pre-edit/text_fields.rs.orig",
+      "archive_sha256": "a55a6642c4fb15abcfb4a829192ab59ccca21547ad9535e10626312660edb661"
+    },
+    {
+      "source": "pre-edit/text_selection.rs.orig",
+      "source_bytes": 10761,
+      "source_sha256": "031dbc40303f01246a899f2c4f8afcca0a8b2b7d1a56c5999f4c1d7612e698b5",
+      "archive_path": "pre-edit/text_selection.rs.orig",
+      "archive_sha256": "031dbc40303f01246a899f2c4f8afcca0a8b2b7d1a56c5999f4c1d7612e698b5"
+    },
+    {
+      "source": "pre-edit/tracked.diff",
+      "source_bytes": 19262,
+      "source_sha256": "80b66d01c63722f1abdcd2254972235705b4cf7058e7d835924342595a405b5a",
+      "archive_path": "pre-edit/tracked.diff",
+      "archive_sha256": "80b66d01c63722f1abdcd2254972235705b4cf7058e7d835924342595a405b5a"
+    },
+    {
+      "source": "production-bytes.py",
+      "source_bytes": 1881,
+      "source_sha256": "b9921f36bf944f824407de2dfae9d4c35589e0e52f50a3486fdbd3994149e510",
+      "suffix_note": "Archived script text, not an installed/portable entry point; exact bytes unchanged.",
+      "archive_path": "production-bytes.py.txt",
+      "archive_sha256": "b9921f36bf944f824407de2dfae9d4c35589e0e52f50a3486fdbd3994149e510"
+    },
+    {
+      "source": "run-checks.out",
+      "source_bytes": 2629,
+      "source_sha256": "d75edad01ae7587b86b24a25f9cfbc6b576bd92ea18dd5c7ae7e947899806a95",
+      "archive_path": "run-checks.out",
+      "archive_sha256": "d75edad01ae7587b86b24a25f9cfbc6b576bd92ea18dd5c7ae7e947899806a95"
+    },
+    {
+      "source": "run-checks.py",
+      "source_bytes": 4023,
+      "source_sha256": "397bd7386beab1b35defb585d529e981f9ba07998f4bfb211985d0f1571e684b",
+      "suffix_note": "Archived script text, not an installed/portable entry point; exact bytes unchanged.",
+      "archive_path": "run-checks.py.txt",
+      "archive_sha256": "397bd7386beab1b35defb585d529e981f9ba07998f4bfb211985d0f1571e684b"
+    }
+  ]
+}

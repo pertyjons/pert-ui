@@ -241,7 +241,7 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   redescription tests; inspection must not paint or schedule work.
 
 - [ ] 2026-10-29 `crates/pert-ui-runtime/src/multi_select.rs`
-  `Row::pointer_input` — MultiSelect parked-pointer defect: refreshed Move
+  `ChoiceRow::pointer_input` — MultiSelect parked-pointer defect: refreshed Move
   rewrites the shared highlight after keyboard navigation, so a popup parked
   under Gamma cannot leave Gamma with Down; a long list remains on O03 after
   twelve Downs and Enter toggles that option. Both frozen versions reproduce
@@ -250,3 +250,26 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   separate row family an explicit pointer/keyboard ownership rule and public
   parked-pointer, Leave, long-list and toggle/callback regression tests in a
   separate checkpoint from Menu/Select's shared OptionList repair.
+
+- [ ] 2026-10-29 `crates/pert-ui-runtime/src/runtime/measurements.rs`
+  `Measurements::is_empty` — verification: release-profile unit-test builds
+  warn that this helper is unused. It is gated by cfg(test), but its sole
+  caller in runtime/tree.rs is in cfg(all(test, debug_assertions)). The round-3
+  text release logs reproduce the pre-existing warning. Align the helper's
+  cfg with its only caller so release tests remain warning-free; preserve the
+  debug measurement-eviction test. This is outside the usability repairs.
+
+- [ ] 2026-10-29 `crates/pert-ui-runtime/src/text.rs`
+  `TextService::rasterize_glyphs` — a zero-area raster still expands the canvas
+  to its pen point. Actual base/repaired RTL-space probes show changed origin
+  and width despite no ink. Skip zero-area placement/bounds after normal glyph
+  cache lookup/admission, preserving shaping and cache hits; implement and
+  verify the separate `plans/usability/round-3-design-hanging-whitespace.md`
+  checkpoint, then remove this entry.
+- [ ] 2026-10-29 `crates/pert-ui-runtime/src/text_fields.rs`
+  `Editor::position` and wheel handling — hanging-whitespace and RTL-edge
+  carets are clipped after typing or LineEnd. Actual base/repaired public
+  probes reproduce it; position and wheel also disagree by caret width.
+  Implement the separately reviewed wrapped-caret presentation/shared interval
+  policy in `plans/usability/round-3-design-hanging-whitespace.md`, with pixel,
+  IME, wheel and prose-stability tests; remove this entry when verified.

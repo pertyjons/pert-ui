@@ -1,0 +1,16 @@
+--- /home/per/pert-ui-usability/r3-menu-implementation-evidence/negative-controls/any_wheel_gains/backup/select.rs	2026-10-29 10:31:56.220659077 +0100
++++ crates/pert-ui-runtime/src/select.rs	2026-10-29 10:41:50.428911540 +0100
+@@ -628,10 +628,10 @@
+                 // wheel that scrolls takes the highlight, so the refresh after
+                 // it moves the highlight under the pointer; one at the limit
+                 // leaves the keyboard's row in place.
++                if !key_armed {
++                    self.pointer_owns = true;
++                }
+                 if offset.replace(next) != next {
+-                    if !key_armed {
+-                        self.pointer_owns = true;
+-                    }
+                     cx.invalidate(Invalidation::Layout);
+                 }
+             }

@@ -1,0 +1,323 @@
+$ cd /home/per/pert-ui-usability/r3-text-worktree
+$ CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-text-implementation-target cargo test --locked --release -p pert-ui-runtime --lib text::tabs -- --nocapture --test-threads=1
+exit status: 0
+elapsed: 18.9 s
+
+--- stdout ---
+
+running 11 tests
+test text::tabs::tests::a_registered_font_ligating_a_tab_keeps_that_glyph_and_hides_pure_tab_atoms ... ok
+test text::tabs::tests::a_tab_and_a_missing_character_never_share_phase_coverage ... ok
+test text::tabs::tests::cached_measured_and_ellipsized_tabs_stay_hidden ... fit "Name\tValue that is far too long for its column" at width 59: shown Some("Name…") with size Size { width: 51.0, height: 20.0 }; reference Some("Name…") with Size { width: 51.0, height: 20.0 }
+fit "Name\t" at width 48: shown None with size Size { width: 48.0, height: 20.0 }; reference None with Size { width: 48.0, height: 20.0 }
+ok
+test text::tabs::tests::consecutive_tabs_merge_and_retained_tabs_split_them ... ok
+test text::tabs::tests::hanging_tabs_shrink_the_extent_and_translate_right_to_left_public_coordinates ... LTR wrapped, hanging tab on a middle line at scale 1: width Some(38.0); size [41.0, 59.0] -> [34.0, 59.0]; origin [0.0, 0.0] -> [0.0, 0.0]; width delta 7, x translation -0
+  line 0 0..5: hanging advance 8.400001, public line box [0.0, 0.0, 42.000004, 20.0] -> [0.0, 0.0, 42.000004, 20.0]
+  line 1 5..10: hanging advance 8.400001, public line box [0.0, 20.0, 42.000004, 20.0] -> [0.0, 20.0, 42.000004, 20.0]
+  line 2 10..14: hanging advance 0, public line box [0.0, 39.0, 33.600002, 20.0] -> [0.0, 39.0, 33.600002, 20.0]
+  line 0 LineEnd (5, Upstream): caret [42.000004, 0.0, 1.0, 20.0] -> [42.000004, 0.0, 1.0, 20.0]; selection [[0.0, 0.0, 42.000004, 20.0]] -> [[0.0, 0.0, 42.000004, 20.0]]
+  line 1 LineEnd (10, Upstream): caret [42.000004, 20.0, 1.0, 20.0] -> [42.000004, 20.0, 1.0, 20.0]; selection [[0.0, 20.0, 42.000004, 20.0]] -> [[0.0, 20.0, 42.000004, 20.0]]
+  hit a: glyph 0..1 on line 0 at [2.1000001, 10.0]: (0, Downstream), word ((0, Downstream), (4, Upstream)); reference at the same point (0, Downstream), word ((0, Downstream), (4, Upstream)); reference at [2.1000001, 10.0] agrees
+  hit c: hanging tab 4..5 on line 0 at [39.9, 10.0]: (5, Upstream), word ((4, Upstream), (5, Upstream)); reference at the same point (5, Upstream), word ((4, Upstream), (5, Upstream)); reference at [39.9, 10.0] agrees
+  hit d: far left of line 0 at [-40.0, 10.0]: (0, Downstream), word ((0, Downstream), (4, Upstream)); reference at the same point (0, Downstream), word ((0, Downstream), (4, Upstream)); reference at [-40.0, 10.0] agrees
+  hit d: far right of line 0 at [74.0, 10.0]: (5, Upstream), word ((4, Upstream), (5, Upstream)); reference at the same point (5, Upstream), word ((4, Upstream), (5, Upstream)); reference at [74.0, 10.0] agrees
+  hit a: glyph 5..6 on line 1 at [2.1000001, 30.0]: (5, Downstream), word ((5, Upstream), (9, Upstream)); reference at the same point (5, Downstream), word ((5, Upstream), (9, Upstream)); reference at [2.1000001, 30.0] agrees
+  hit c: hanging tab 9..10 on line 1 at [39.9, 30.0]: (10, Upstream), word ((9, Upstream), (10, Upstream)); reference at the same point (10, Upstream), word ((9, Upstream), (10, Upstream)); reference at [39.9, 30.0] agrees
+  hit d: far left of line 1 at [-40.0, 30.0]: (5, Downstream), word ((5, Upstream), (9, Upstream)); reference at the same point (5, Downstream), word ((5, Upstream), (9, Upstream)); reference at [-40.0, 30.0] agrees
+  hit d: far right of line 1 at [74.0, 30.0]: (10, Upstream), word ((9, Upstream), (10, Upstream)); reference at the same point (10, Upstream), word ((9, Upstream), (10, Upstream)); reference at [74.0, 30.0] agrees
+  hit a: glyph 10..11 on line 2 at [2.1000001, 49.0]: (10, Downstream), word ((10, Upstream), (14, Upstream)); reference at the same point (10, Downstream), word ((10, Upstream), (14, Upstream)); reference at [2.1000001, 49.0] agrees
+  hit d: far left of line 2 at [-40.0, 49.0]: (10, Downstream), word ((10, Upstream), (14, Upstream)); reference at the same point (10, Downstream), word ((10, Upstream), (14, Upstream)); reference at [-40.0, 49.0] agrees
+  hit d: far right of line 2 at [74.0, 49.0]: (14, Upstream), word ((10, Upstream), (14, Upstream)); reference at the same point (14, Upstream), word ((10, Upstream), (14, Upstream)); reference at [74.0, 49.0] agrees
+  hit d: above at [19.320002, -20.0]: (2, Downstream), word ((0, Downstream), (4, Upstream)); reference at the same point (2, Downstream), word ((0, Downstream), (4, Upstream)); reference at [19.320002, -20.0] agrees
+  hit d: below at [19.320002, 78.8]: (12, Downstream), word ((10, Upstream), (14, Upstream)); reference at the same point (12, Downstream), word ((10, Upstream), (14, Upstream)); reference at [19.320002, 78.8] agrees
+LTR wrapped prose at scale 1: width Some(70.0); size [77.0, 79.0] -> [70.0, 79.0]; origin [0.0, 0.0] -> [0.0, 0.0]; width delta 7, x translation -0
+  line 0 0..11: hanging advance 8.400001, public line box [0.0, 0.0, 78.036, 20.0] -> [0.0, 0.0, 78.036, 20.0]
+  line 1 11..17: hanging advance 3.64, public line box [0.0, 20.0, 54.138, 20.0] -> [0.0, 20.0, 54.138, 20.0]
+  line 2 17..23: hanging advance 8.400001, public line box [0.0, 39.0, 41.426003, 20.0] -> [0.0, 39.0, 41.426003, 20.0]
+  line 3 23..30: hanging advance 0, public line box [0.0, 59.0, 47.558002, 20.0] -> [0.0, 59.0, 47.558002, 20.0]
+  line 0 LineEnd (11, Upstream): caret [78.036, 0.0, 1.0, 20.0] -> [78.036, 0.0, 1.0, 20.0]; selection [[0.0, 0.0, 78.036, 20.0]] -> [[0.0, 0.0, 78.036, 20.0]]
+  line 1 LineEnd (17, Upstream): caret [54.138, 20.0, 1.0, 20.0] -> [54.138, 20.0, 1.0, 20.0]; selection [[0.0, 20.0, 54.138, 20.0]] -> [[0.0, 20.0, 54.138, 20.0]]
+  line 2 LineEnd (23, Upstream): caret [41.426003, 39.0, 1.0, 20.0] -> [41.426003, 39.0, 1.0, 20.0]; selection [[0.0, 39.0, 41.426003, 20.0]] -> [[0.0, 39.0, 41.426003, 20.0]]
+  hit a: glyph 0..1 on line 0 at [1.9635, 10.0]: (0, Downstream), word ((0, Downstream), (5, Upstream)); reference at the same point (0, Downstream), word ((0, Downstream), (5, Upstream)); reference at [1.9635, 10.0] agrees
+  hit c: hanging tab 10..11 on line 0 at [75.936005, 10.0]: (11, Upstream), word ((10, Upstream), (11, Upstream)); reference at the same point (11, Upstream), word ((10, Upstream), (11, Upstream)); reference at [75.936005, 10.0] agrees
+  hit d: far left of line 0 at [-40.0, 10.0]: (0, Downstream), word ((0, Downstream), (5, Upstream)); reference at the same point (0, Downstream), word ((0, Downstream), (5, Upstream)); reference at [-40.0, 10.0] agrees
+  hit d: far right of line 0 at [110.0, 10.0]: (11, Upstream), word ((10, Upstream), (11, Upstream)); reference at the same point (11, Upstream), word ((10, Upstream), (11, Upstream)); reference at [110.0, 10.0] agrees
+  hit a: glyph 11..12 on line 1 at [2.1525002, 30.0]: (11, Downstream), word ((11, Upstream), (16, Upstream)); reference at the same point (11, Downstream), word ((11, Upstream), (16, Upstream)); reference at [2.1525002, 30.0] agrees
+  hit d: far left of line 1 at [-40.0, 30.0]: (11, Downstream), word ((11, Upstream), (16, Upstream)); reference at the same point (11, Downstream), word ((11, Upstream), (16, Upstream)); reference at [-40.0, 30.0] agrees
+  hit d: far right of line 1 at [110.0, 30.0]: (17, Upstream), word ((16, Upstream), (17, Upstream)); reference at the same point (17, Upstream), word ((16, Upstream), (17, Upstream)); reference at [110.0, 30.0] agrees
+  hit a: glyph 17..18 on line 2 at [2.1525002, 49.0]: (17, Downstream), word ((17, Upstream), (22, Upstream)); reference at the same point (17, Downstream), word ((17, Upstream), (22, Upstream)); reference at [2.1525002, 49.0] agrees
+  hit d: far left of line 2 at [-40.0, 49.0]: (17, Downstream), word ((17, Upstream), (22, Upstream)); reference at the same point (17, Downstream), word ((17, Upstream), (22, Upstream)); reference at [-40.0, 49.0] agrees
+  hit d: far right of line 2 at [110.0, 49.0]: (23, Upstream), word ((22, Upstream), (23, Upstream)); reference at the same point (23, Upstream), word ((22, Upstream), (23, Upstream)); reference at [110.0, 49.0] agrees
+  hit a: glyph 23..24 on line 3 at [1.9740001, 69.0]: (23, Downstream), word ((23, Upstream), (30, Upstream)); reference at the same point (23, Downstream), word ((23, Upstream), (30, Upstream)); reference at [1.9740001, 69.0] agrees
+  hit d: far left of line 3 at [-40.0, 69.0]: (23, Downstream), word ((23, Upstream), (30, Upstream)); reference at the same point (23, Downstream), word ((23, Upstream), (30, Upstream)); reference at [-40.0, 69.0] agrees
+  hit d: far right of line 3 at [110.0, 69.0]: (30, Upstream), word ((23, Upstream), (30, Upstream)); reference at the same point (30, Upstream), word ((23, Upstream), (30, Upstream)); reference at [110.0, 69.0] agrees
+  hit d: above at [37.674, -20.0]: (5, Downstream), word ((5, Upstream), (6, Upstream)); reference at the same point (5, Downstream), word ((5, Upstream), (6, Upstream)); reference at [37.674, -20.0] agrees
+  hit d: below at [24.295603, 98.4]: (26, Downstream), word ((23, Upstream), (30, Upstream)); reference at the same point (26, Downstream), word ((23, Upstream), (30, Upstream)); reference at [24.295603, 98.4] agrees
+RTL wrapped, hanging tab on a middle line at scale 1: width Some(38.0); size [40.0, 59.0] -> [37.0, 59.0]; origin [3.0, 0.0] -> [0.0, 0.0]; width delta 3, x translation -3
+  line 0 0..9: hanging advance 8.400001, public line box [-1.0000038, 0.0, 42.000004, 20.0] -> [-4.000004, 0.0, 42.000004, 20.0]
+  line 1 9..18: hanging advance 8.400001, public line box [-1.0000038, 20.0, 42.000004, 20.0] -> [-4.000004, 20.0, 42.000004, 20.0]
+  line 2 18..22: hanging advance 0, public line box [24.199999, 39.0, 16.800001, 20.0] -> [21.199999, 39.0, 16.800001, 20.0]
+  line 0 LineEnd (9, Upstream): caret [-1.0000038, 0.0, 1.0, 20.0] -> [-4.000004, 0.0, 1.0, 20.0]; selection [[-1.0000038, 0.0, 42.000004, 20.0]] -> [[-4.000004, 0.0, 42.000004, 20.0]]
+  line 1 LineEnd (18, Upstream): caret [-1.0000038, 20.0, 1.0, 20.0] -> [-4.000004, 20.0, 1.0, 20.0]; selection [[-1.0000038, 20.0, 42.000004, 20.0]] -> [[-4.000004, 20.0, 42.000004, 20.0]]
+  hit a: glyph 6..8 on line 0 at [6.499997, 10.0]: (8, Upstream), word ((0, Downstream), (8, Upstream)); reference at the same point (8, Downstream), word ((8, Upstream), (9, Upstream)); reference at [9.499997, 10.0] agrees
+  hit b: origin band on line 0 at [1.5, 10.0]: (8, Downstream), word ((8, Upstream), (9, Upstream)); reference at the same point (9, Upstream), word ((8, Upstream), (9, Upstream)); reference at [4.5, 10.0] agrees
+  hit c: hanging tab 8..9 on line 0 at [-1.9000037, 10.0]: (9, Upstream), word ((8, Upstream), (9, Upstream)); reference at the same point (9, Upstream), word ((8, Upstream), (9, Upstream)); reference at [1.0999963, 10.0] agrees
+  hit d: far left of line 0 at [-40.0, 10.0]: (9, Upstream), word ((8, Upstream), (9, Upstream)); reference at the same point (9, Upstream), word ((8, Upstream), (9, Upstream)); reference at [-37.0, 10.0] agrees
+  hit d: far right of line 0 at [77.0, 10.0]: (0, Downstream), word ((0, Downstream), (8, Upstream)); reference at the same point (0, Downstream), word ((0, Downstream), (8, Upstream)); reference at [80.0, 10.0] agrees
+  hit a: glyph 15..17 on line 1 at [6.499997, 30.0]: (17, Upstream), word ((9, Upstream), (17, Upstream)); reference at the same point (17, Downstream), word ((17, Upstream), (18, Upstream)); reference at [9.499997, 30.0] agrees
+  hit b: origin band on line 1 at [1.5, 30.0]: (17, Downstream), word ((17, Upstream), (18, Upstream)); reference at the same point (18, Upstream), word ((17, Upstream), (18, Upstream)); reference at [4.5, 30.0] agrees
+  hit c: hanging tab 17..18 on line 1 at [-1.9000037, 30.0]: (18, Upstream), word ((17, Upstream), (18, Upstream)); reference at the same point (18, Upstream), word ((17, Upstream), (18, Upstream)); reference at [1.0999963, 30.0] agrees
+  hit d: far left of line 1 at [-40.0, 30.0]: (18, Upstream), word ((17, Upstream), (18, Upstream)); reference at the same point (18, Upstream), word ((17, Upstream), (18, Upstream)); reference at [-37.0, 30.0] agrees
+  hit d: far right of line 1 at [77.0, 30.0]: (9, Downstream), word ((9, Upstream), (17, Upstream)); reference at the same point (9, Downstream), word ((9, Upstream), (17, Upstream)); reference at [80.0, 30.0] agrees
+  hit a: glyph 20..22 on line 2 at [23.3, 49.0]: (22, Upstream), word ((18, Upstream), (22, Upstream)); reference at the same point (22, Upstream), word ((18, Upstream), (22, Upstream)); reference at [26.3, 49.0] agrees
+  hit b: origin band on line 2 at [1.5, 49.0]: (22, Upstream), word ((18, Upstream), (22, Upstream)); reference at the same point (22, Upstream), word ((18, Upstream), (22, Upstream)); reference at [4.5, 49.0] agrees
+  hit d: far left of line 2 at [-40.0, 49.0]: (22, Upstream), word ((18, Upstream), (22, Upstream)); reference at the same point (22, Upstream), word ((18, Upstream), (22, Upstream)); reference at [-37.0, 49.0] agrees
+  hit d: far right of line 2 at [77.0, 49.0]: (18, Downstream), word ((18, Upstream), (22, Upstream)); reference at the same point (18, Downstream), word ((18, Upstream), (22, Upstream)); reference at [80.0, 49.0] agrees
+  hit d: above at [15.319998, -20.0]: (6, Upstream), word ((0, Downstream), (8, Upstream)); reference at the same point (6, Downstream), word ((0, Downstream), (8, Upstream)); reference at [18.319998, -20.0] agrees
+  hit d: below at [32.12, 78.8]: (20, Upstream), word ((18, Upstream), (22, Upstream)); reference at the same point (20, Downstream), word ((18, Upstream), (22, Upstream)); reference at [35.12, 78.8] agrees
+RTL tab partly hanging past the text end at scale 1: width Some(38.0); size [41.0, 20.0] -> [38.0, 20.0]; origin [3.0, 0.0] -> [0.0, 0.0]; width delta 3, x translation -3
+  line 0 0..9: hanging advance 4.000004, public line box [-1.0000038, 0.0, 42.000004, 20.0] -> [-4.000004, 0.0, 42.000004, 20.0]
+  line 0 LineEnd (9, Upstream): caret [-1.0000038, 0.0, 1.0, 20.0] -> [-4.000004, 0.0, 1.0, 20.0]; selection [[-1.0000038, 0.0, 42.000004, 20.0]] -> [[-4.000004, 0.0, 42.000004, 20.0]]
+  hit a: glyph 6..8 on line 0 at [6.499997, 10.0]: (8, Upstream), word ((0, Downstream), (8, Upstream)); reference at the same point (8, Downstream), word ((8, Upstream), (9, Upstream)); reference at [9.499997, 10.0] agrees
+  hit b: origin band on line 0 at [1.5, 10.0]: (8, Downstream), word ((8, Upstream), (9, Upstream)); reference at the same point (9, Upstream), word ((8, Upstream), (9, Upstream)); reference at [4.5, 10.0] agrees
+  hit c: hanging tab 8..9 on line 0 at [-1.9000037, 10.0]: (9, Upstream), word ((8, Upstream), (9, Upstream)); reference at the same point (9, Upstream), word ((8, Upstream), (9, Upstream)); reference at [1.0999963, 10.0] agrees
+  hit d: far left of line 0 at [-40.0, 10.0]: (9, Upstream), word ((8, Upstream), (9, Upstream)); reference at the same point (9, Upstream), word ((8, Upstream), (9, Upstream)); reference at [-37.0, 10.0] agrees
+  hit d: far right of line 0 at [78.0, 10.0]: (0, Downstream), word ((0, Downstream), (8, Upstream)); reference at the same point (0, Downstream), word ((0, Downstream), (8, Upstream)); reference at [81.0, 10.0] agrees
+  hit d: above at [15.319998, -20.0]: (6, Upstream), word ((0, Downstream), (8, Upstream)); reference at the same point (6, Downstream), word ((0, Downstream), (8, Upstream)); reference at [18.319998, -20.0] agrees
+  hit d: below at [15.319998, 39.6]: (6, Upstream), word ((0, Downstream), (8, Upstream)); reference at the same point (6, Downstream), word ((0, Downstream), (8, Upstream)); reference at [18.319998, 39.6] agrees
+tab before an explicit newline, not overflowing at scale 1: width Some(220.0); size [25.0, 40.0] -> [25.0, 40.0]; origin [0.0, 0.0] -> [0.0, 0.0]; width delta 0, x translation -0
+  line 0 0..4: hanging advance 0, public line box [0.0, 0.0, 24.864002, 20.0] -> [0.0, 0.0, 24.864002, 20.0]
+  line 1 4..6: hanging advance 0, public line box [0.0, 20.0, 15.330001, 20.0] -> [0.0, 20.0, 15.330001, 20.0]
+  hit a: glyph 0..1 on line 0 at [1.9635, 10.0]: (0, Downstream), word ((0, Downstream), (2, Upstream)); reference at the same point (0, Downstream), word ((0, Downstream), (2, Upstream)); reference at [1.9635, 10.0] agrees
+  hit d: far left of line 0 at [-40.0, 10.0]: (0, Downstream), word ((0, Downstream), (2, Upstream)); reference at the same point (0, Downstream), word ((0, Downstream), (2, Upstream)); reference at [-40.0, 10.0] agrees
+  hit d: far right of line 0 at [65.0, 10.0]: (3, Downstream), word ((3, Upstream), (4, Upstream)); reference at the same point (3, Downstream), word ((3, Upstream), (4, Upstream)); reference at [65.0, 10.0] agrees
+  hit a: glyph 4..5 on line 1 at [1.6800001, 30.0]: (4, Downstream), word ((4, Upstream), (6, Upstream)); reference at the same point (4, Downstream), word ((4, Upstream), (6, Upstream)); reference at [1.6800001, 30.0] agrees
+  hit d: far left of line 1 at [-40.0, 30.0]: (4, Downstream), word ((4, Upstream), (6, Upstream)); reference at the same point (4, Downstream), word ((4, Upstream), (6, Upstream)); reference at [-40.0, 30.0] agrees
+  hit d: far right of line 1 at [65.0, 30.0]: (6, Upstream), word ((4, Upstream), (6, Upstream)); reference at the same point (6, Upstream), word ((4, Upstream), (6, Upstream)); reference at [65.0, 30.0] agrees
+  hit d: above at [18.984001, -20.0]: (2, Downstream), word ((2, Upstream), (3, Upstream)); reference at the same point (2, Downstream), word ((2, Upstream), (3, Upstream)); reference at [18.984001, -20.0] agrees
+  hit d: below at [9.303, 59.2]: (5, Downstream), word ((4, Upstream), (6, Upstream)); reference at the same point (5, Downstream), word ((4, Upstream), (6, Upstream)); reference at [9.303, 59.2] agrees
+unbounded LTR ending in a tab at scale 1: width None; size [32.0, 20.0] -> [32.0, 20.0]; origin [0.0, 0.0] -> [0.0, 0.0]; width delta 0, x translation -0
+  line 0 0..4: hanging advance 0, public line box [0.0, 0.0, 31.584003, 20.0] -> [0.0, 0.0, 31.584003, 20.0]
+  hit a: glyph 0..1 on line 0 at [1.9635, 10.0]: (0, Downstream), word ((0, Downstream), (3, Upstream)); reference at the same point (0, Downstream), word ((0, Downstream), (3, Upstream)); reference at [1.9635, 10.0] agrees
+  hit d: far left of line 0 at [-40.0, 10.0]: (0, Downstream), word ((0, Downstream), (3, Upstream)); reference at the same point (0, Downstream), word ((0, Downstream), (3, Upstream)); reference at [-40.0, 10.0] agrees
+  hit d: far right of line 0 at [72.0, 10.0]: (4, Upstream), word ((3, Upstream), (4, Upstream)); reference at the same point (4, Upstream), word ((3, Upstream), (4, Upstream)); reference at [72.0, 10.0] agrees
+  hit d: above at [18.480001, -20.0]: (2, Downstream), word ((0, Downstream), (3, Upstream)); reference at the same point (2, Downstream), word ((0, Downstream), (3, Upstream)); reference at [18.480001, -20.0] agrees
+  hit d: below at [18.480001, 39.6]: (2, Downstream), word ((0, Downstream), (3, Upstream)); reference at the same point (2, Downstream), word ((0, Downstream), (3, Upstream)); reference at [18.480001, 39.6] agrees
+unbounded RTL ending in a tab at scale 1: width None; size [34.0, 20.0] -> [34.0, 20.0]; origin [0.0, 0.0] -> [0.0, 0.0]; width delta 0, x translation -0
+  line 0 0..7: hanging advance 0, public line box [0.0, 0.0, 33.600002, 20.0] -> [0.0, 0.0, 33.600002, 20.0]
+  hit a: glyph 4..6 on line 0 at [10.500001, 10.0]: (6, Upstream), word ((0, Downstream), (6, Upstream)); reference at the same point (6, Upstream), word ((0, Downstream), (6, Upstream)); reference at [10.500001, 10.0] agrees
+  hit d: far left of line 0 at [-40.0, 10.0]: (7, Upstream), word ((6, Upstream), (7, Upstream)); reference at the same point (7, Upstream), word ((6, Upstream), (7, Upstream)); reference at [-40.0, 10.0] agrees
+  hit d: far right of line 0 at [74.0, 10.0]: (0, Downstream), word ((0, Downstream), (6, Upstream)); reference at the same point (0, Downstream), word ((0, Downstream), (6, Upstream)); reference at [74.0, 10.0] agrees
+  hit d: above at [19.320002, -20.0]: (4, Upstream), word ((0, Downstream), (6, Upstream)); reference at the same point (4, Upstream), word ((0, Downstream), (6, Upstream)); reference at [19.320002, -20.0] agrees
+  hit d: below at [19.320002, 39.6]: (4, Upstream), word ((0, Downstream), (6, Upstream)); reference at the same point (4, Upstream), word ((0, Downstream), (6, Upstream)); reference at [19.320002, 39.6] agrees
+fixture mixed atom ending a wrapped line at scale 1: width Some(34.0); size [34.0, 40.0] -> [34.0, 40.0]; origin [0.0, 0.0] -> [0.0, 0.0]; width delta 0, x translation -0
+  line 0 0..4: hanging advance 0, public line box [0.0, 0.0, 33.600002, 20.0] -> [0.0, 0.0, 33.600002, 20.0]
+  line 1 4..5: hanging advance 0, public line box [0.0, 20.0, 8.400001, 20.0] -> [0.0, 20.0, 8.400001, 20.0]
+  hit a: glyph 0..1 on line 0 at [2.1000001, 10.0]: (0, Downstream), word ((0, Downstream), (1, Upstream)); reference at the same point (0, Downstream), word ((0, Downstream), (1, Upstream)); reference at [2.1000001, 10.0] agrees
+  hit d: far left of line 0 at [-40.0, 10.0]: (0, Downstream), word ((0, Downstream), (1, Upstream)); reference at the same point (0, Downstream), word ((0, Downstream), (1, Upstream)); reference at [-40.0, 10.0] agrees
+  hit d: far right of line 0 at [74.0, 10.0]: (4, Upstream), word ((3, Upstream), (4, Upstream)); reference at the same point (4, Upstream), word ((3, Upstream), (4, Upstream)); reference at [74.0, 10.0] agrees
+  hit a: glyph 4..5 on line 1 at [2.1000001, 30.0]: (4, Downstream), word ((4, Upstream), (5, Upstream)); reference at the same point (4, Downstream), word ((4, Upstream), (5, Upstream)); reference at [2.1000001, 30.0] agrees
+  hit d: far left of line 1 at [-40.0, 30.0]: (4, Downstream), word ((4, Upstream), (5, Upstream)); reference at the same point (4, Downstream), word ((4, Upstream), (5, Upstream)); reference at [-40.0, 30.0] agrees
+  hit d: far right of line 1 at [74.0, 30.0]: (5, Upstream), word ((4, Upstream), (5, Upstream)); reference at the same point (5, Upstream), word ((4, Upstream), (5, Upstream)); reference at [74.0, 30.0] agrees
+  hit d: above at [19.320002, -20.0]: (2, Downstream), word ((2, Upstream), (3, Upstream)); reference at the same point (2, Downstream), word ((2, Upstream), (3, Upstream)); reference at [19.320002, -20.0] agrees
+  hit d: below at [2.5200002, 59.2]: (4, Downstream), word ((4, Upstream), (5, Upstream)); reference at the same point (4, Downstream), word ((4, Upstream), (5, Upstream)); reference at [2.5200002, 59.2] agrees
+scale 1: categories {"a", "b", "c", "d"}; 10 points hit differently in the reference at the same point
+LTR wrapped, hanging tab on a middle line at scale 1.25: width Some(38.0); size [40.8, 59.2] -> [33.6, 59.2]; origin [0.0, 0.0] -> [0.0, 0.0]; width delta 7.200001, x translation -0
+  line 0 0..5: hanging advance 8.4, public line box [0.0, 0.0, 42.0, 20.0] -> [0.0, 0.0, 42.0, 20.0]
+  line 1 5..10: hanging advance 8.4, public line box [0.0, 20.0, 42.0, 20.0] -> [0.0, 20.0, 42.0, 20.0]
+  line 2 10..14: hanging advance 0, public line box [0.0, 39.2, 33.6, 20.0] -> [0.0, 39.2, 33.6, 20.0]
+  line 0 LineEnd (5, Upstream): caret [42.0, 0.0, 1.0, 20.0] -> [42.0, 0.0, 1.0, 20.0]; selection [[0.0, 0.0, 42.0, 20.0]] -> [[0.0, 0.0, 42.0, 20.0]]
+  line 1 LineEnd (10, Upstream): caret [42.0, 20.0, 1.0, 20.0] -> [42.0, 20.0, 1.0, 20.0]; selection [[0.0, 20.0, 42.0, 20.0]] -> [[0.0, 20.0, 42.0, 20.0]]
+  hit a: glyph 0..1 on line 0 at [2.1, 10.0]: (0, Downstream), word ((0, Downstream), (4, Upstream)); reference at the same point (0, Downstream), word ((0, Downstream), (4, Upstream)); reference at [2.1, 10.0] agrees
+  hit c: hanging tab 4..5 on line 0 at [39.9, 10.0]: (5, Upstream), word ((4, Upstream), (5, Upstream)); reference at the same point (5, Upstream), word ((4, Upstream), (5, Upstream)); reference at [39.9, 10.0] agrees
+  hit d: far left of line 0 at [-40.0, 10.0]: (0, Downstream), word ((0, Downstream), (4, Upstream)); reference at the same point (0, Downstream), word ((0, Downstream), (4, Upstream)); reference at [-40.0, 10.0] agrees
+  hit d: far right of line 0 at [73.6, 10.0]: (5, Upstream), word ((4, Upstream), (5, Upstream)); reference at the same point (5, Upstream), word ((4, Upstream), (5, Upstream)); reference at [73.6, 10.0] agrees
+  hit a: glyph 5..6 on line 1 at [2.1, 30.0]: (5, Downstream), word ((5, Upstream), (9, Upstream)); reference at the same point (5, Downstream), word ((5, Upstream), (9, Upstream)); reference at [2.1, 30.0] agrees
+  hit c: hanging tab 9..10 on line 1 at [39.9, 30.0]: (10, Upstream), word ((9, Upstream), (10, Upstream)); reference at the same point (10, Upstream), word ((9, Upstream), (10, Upstream)); reference at [39.9, 30.0] agrees
+  hit d: far left of line 1 at [-40.0, 30.0]: (5, Downstream), word ((5, Upstream), (9, Upstream)); reference at the same point (5, Downstream), word ((5, Upstream), (9, Upstream)); reference at [-40.0, 30.0] agrees
+  hit d: far right of line 1 at [73.6, 30.0]: (10, Upstream), word ((9, Upstream), (10, Upstream)); reference at the same point (10, Upstream), word ((9, Upstream), (10, Upstream)); reference at [73.6, 30.0] agrees
+  hit a: glyph 10..11 on line 2 at [2.1, 49.2]: (10, Downstream), word ((10, Upstream), (14, Upstream)); reference at the same point (10, Downstream), word ((10, Upstream), (14, Upstream)); reference at [2.1, 49.2] agrees
+  hit d: far left of line 2 at [-40.0, 49.2]: (10, Downstream), word ((10, Upstream), (14, Upstream)); reference at the same point (10, Downstream), word ((10, Upstream), (14, Upstream)); reference at [-40.0, 49.2] agrees
+  hit d: far right of line 2 at [73.6, 49.2]: (14, Upstream), word ((10, Upstream), (14, Upstream)); reference at the same point (14, Upstream), word ((10, Upstream), (14, Upstream)); reference at [73.6, 49.2] agrees
+  hit d: above at [19.32, -20.0]: (2, Downstream), word ((0, Downstream), (4, Upstream)); reference at the same point (2, Downstream), word ((0, Downstream), (4, Upstream)); reference at [19.32, -20.0] agrees
+  hit d: below at [19.32, 78.8]: (12, Downstream), word ((10, Upstream), (14, Upstream)); reference at the same point (12, Downstream), word ((10, Upstream), (14, Upstream)); reference at [19.32, 78.8] agrees
+LTR wrapped prose at scale 1.25: width Some(70.0); size [76.8, 78.4] -> [70.4, 78.4]; origin [0.0, 0.0] -> [0.0, 0.0]; width delta 6.4000015, x translation -0
+  line 0 0..11: hanging advance 8.4, public line box [0.0, 0.0, 78.035995, 20.0] -> [0.0, 0.0, 78.035995, 20.0]
+  line 1 11..17: hanging advance 3.64, public line box [0.0, 20.0, 54.138, 20.0] -> [0.0, 20.0, 54.138, 20.0]
+  line 2 17..23: hanging advance 8.4, public line box [0.0, 39.2, 41.426003, 20.0] -> [0.0, 39.2, 41.426003, 20.0]
+  line 3 23..30: hanging advance 0, public line box [0.0, 59.2, 47.558, 20.0] -> [0.0, 59.2, 47.558, 20.0]
+  line 0 LineEnd (11, Upstream): caret [78.035995, 0.0, 1.0, 20.0] -> [78.035995, 0.0, 1.0, 20.0]; selection [[0.0, 0.0, 78.035995, 20.0]] -> [[0.0, 0.0, 78.035995, 20.0]]
+  line 1 LineEnd (17, Upstream): caret [54.138, 20.0, 1.0, 20.0] -> [54.138, 20.0, 1.0, 20.0]; selection [[0.0, 20.0, 54.138, 20.0]] -> [[0.0, 20.0, 54.138, 20.0]]
+  line 2 LineEnd (23, Upstream): caret [41.426003, 39.2, 1.0, 20.0] -> [41.426003, 39.2, 1.0, 20.0]; selection [[0.0, 39.2, 41.426003, 20.0]] -> [[0.0, 39.2, 41.426003, 20.0]]
+  hit a: glyph 0..1 on line 0 at [1.9635, 10.0]: (0, Downstream), word ((0, Downstream), (5, Upstream)); reference at the same point (0, Downstream), word ((0, Downstream), (5, Upstream)); reference at [1.9635, 10.0] agrees
+  hit c: hanging tab 10..11 on line 0 at [75.936, 10.0]: (11, Upstream), word ((10, Upstream), (11, Upstream)); reference at the same point (11, Upstream), word ((10, Upstream), (11, Upstream)); reference at [75.936, 10.0] agrees
+  hit d: far left of line 0 at [-40.0, 10.0]: (0, Downstream), word ((0, Downstream), (5, Upstream)); reference at the same point (0, Downstream), word ((0, Downstream), (5, Upstream)); reference at [-40.0, 10.0] agrees
+  hit d: far right of line 0 at [110.4, 10.0]: (11, Upstream), word ((10, Upstream), (11, Upstream)); reference at the same point (11, Upstream), word ((10, Upstream), (11, Upstream)); reference at [110.4, 10.0] agrees
+  hit a: glyph 11..12 on line 1 at [2.1525, 30.0]: (11, Downstream), word ((11, Upstream), (16, Upstream)); reference at the same point (11, Downstream), word ((11, Upstream), (16, Upstream)); reference at [2.1525, 30.0] agrees
+  hit d: far left of line 1 at [-40.0, 30.0]: (11, Downstream), word ((11, Upstream), (16, Upstream)); reference at the same point (11, Downstream), word ((11, Upstream), (16, Upstream)); reference at [-40.0, 30.0] agrees
+  hit d: far right of line 1 at [110.4, 30.0]: (17, Upstream), word ((16, Upstream), (17, Upstream)); reference at the same point (17, Upstream), word ((16, Upstream), (17, Upstream)); reference at [110.4, 30.0] agrees
+  hit a: glyph 17..18 on line 2 at [2.1525, 49.2]: (17, Downstream), word ((17, Upstream), (22, Upstream)); reference at the same point (17, Downstream), word ((17, Upstream), (22, Upstream)); reference at [2.1525, 49.2] agrees
+  hit d: far left of line 2 at [-40.0, 49.2]: (17, Downstream), word ((17, Upstream), (22, Upstream)); reference at the same point (17, Downstream), word ((17, Upstream), (22, Upstream)); reference at [-40.0, 49.2] agrees
+  hit d: far right of line 2 at [110.4, 49.2]: (23, Upstream), word ((22, Upstream), (23, Upstream)); reference at the same point (23, Upstream), word ((22, Upstream), (23, Upstream)); reference at [110.4, 49.2] agrees
+  hit a: glyph 23..24 on line 3 at [1.974, 69.2]: (23, Downstream), word ((23, Upstream), (30, Upstream)); reference at the same point (23, Downstream), word ((23, Upstream), (30, Upstream)); reference at [1.974, 69.2] agrees
+  hit d: far left of line 3 at [-40.0, 69.2]: (23, Downstream), word ((23, Upstream), (30, Upstream)); reference at the same point (23, Downstream), word ((23, Upstream), (30, Upstream)); reference at [-40.0, 69.2] agrees
+  hit d: far right of line 3 at [110.4, 69.2]: (30, Upstream), word ((23, Upstream), (30, Upstream)); reference at the same point (30, Upstream), word ((23, Upstream), (30, Upstream)); reference at [110.4, 69.2] agrees
+  hit d: above at [37.674004, -20.0]: (5, Downstream), word ((5, Upstream), (6, Upstream)); reference at the same point (5, Downstream), word ((5, Upstream), (6, Upstream)); reference at [37.674004, -20.0] agrees
+  hit d: below at [24.295599, 98.4]: (26, Downstream), word ((23, Upstream), (30, Upstream)); reference at the same point (26, Downstream), word ((23, Upstream), (30, Upstream)); reference at [24.295599, 98.4] agrees
+RTL wrapped, hanging tab on a middle line at scale 1.25: width Some(38.0); size [40.0, 59.2] -> [36.8, 59.2]; origin [3.2, 0.0] -> [0.0, 0.0]; width delta 3.2000008, x translation -3.2
+  line 0 0..9: hanging advance 8.4, public line box [-0.79999995, 0.0, 42.0, 20.0] -> [-4.0, 0.0, 42.0, 20.0]
+  line 1 9..18: hanging advance 8.4, public line box [-0.79999995, 20.0, 42.0, 20.0] -> [-4.0, 20.0, 42.0, 20.0]
+  line 2 18..22: hanging advance 0, public line box [24.400002, 39.2, 16.8, 20.0] -> [21.2, 39.2, 16.8, 20.0]
+  line 0 LineEnd (9, Upstream): caret [-0.79999995, 0.0, 1.0, 20.0] -> [-4.0, 0.0, 1.0, 20.0]; selection [[-0.79999995, 0.0, 42.0, 20.0]] -> [[-4.0, 0.0, 42.0, 20.0]]
+  line 1 LineEnd (18, Upstream): caret [-0.79999995, 20.0, 1.0, 20.0] -> [-4.0, 20.0, 1.0, 20.0]; selection [[-0.79999995, 20.0, 42.0, 20.0]] -> [[-4.0, 20.0, 42.0, 20.0]]
+  hit a: glyph 6..8 on line 0 at [6.5, 10.0]: (8, Upstream), word ((0, Downstream), (8, Upstream)); reference at the same point (8, Downstream), word ((8, Upstream), (9, Upstream)); reference at [9.7, 10.0] agrees
+  hit b: origin band on line 0 at [1.6, 10.0]: (8, Downstream), word ((8, Upstream), (9, Upstream)); reference at the same point (9, Upstream), word ((8, Upstream), (9, Upstream)); reference at [4.8, 10.0] agrees
+  hit c: hanging tab 8..9 on line 0 at [-1.9, 10.0]: (9, Upstream), word ((8, Upstream), (9, Upstream)); reference at the same point (9, Upstream), word ((8, Upstream), (9, Upstream)); reference at [1.3000001, 10.0] agrees
+  hit d: far left of line 0 at [-40.0, 10.0]: (9, Upstream), word ((8, Upstream), (9, Upstream)); reference at the same point (9, Upstream), word ((8, Upstream), (9, Upstream)); reference at [-36.8, 10.0] agrees
+  hit d: far right of line 0 at [76.8, 10.0]: (0, Downstream), word ((0, Downstream), (8, Upstream)); reference at the same point (0, Downstream), word ((0, Downstream), (8, Upstream)); reference at [80.0, 10.0] agrees
+  hit a: glyph 15..17 on line 1 at [6.5, 30.0]: (17, Upstream), word ((9, Upstream), (17, Upstream)); reference at the same point (17, Downstream), word ((17, Upstream), (18, Upstream)); reference at [9.7, 30.0] agrees
+  hit b: origin band on line 1 at [1.6, 30.0]: (17, Downstream), word ((17, Upstream), (18, Upstream)); reference at the same point (18, Upstream), word ((17, Upstream), (18, Upstream)); reference at [4.8, 30.0] agrees
+  hit c: hanging tab 17..18 on line 1 at [-1.9, 30.0]: (18, Upstream), word ((17, Upstream), (18, Upstream)); reference at the same point (18, Upstream), word ((17, Upstream), (18, Upstream)); reference at [1.3000001, 30.0] agrees
+  hit d: far left of line 1 at [-40.0, 30.0]: (18, Upstream), word ((17, Upstream), (18, Upstream)); reference at the same point (18, Upstream), word ((17, Upstream), (18, Upstream)); reference at [-36.8, 30.0] agrees
+  hit d: far right of line 1 at [76.8, 30.0]: (9, Downstream), word ((9, Upstream), (17, Upstream)); reference at the same point (9, Downstream), word ((9, Upstream), (17, Upstream)); reference at [80.0, 30.0] agrees
+  hit a: glyph 20..22 on line 2 at [23.3, 49.2]: (22, Upstream), word ((18, Upstream), (22, Upstream)); reference at the same point (22, Upstream), word ((18, Upstream), (22, Upstream)); reference at [26.5, 49.2] agrees
+  hit b: origin band on line 2 at [1.6, 49.2]: (22, Upstream), word ((18, Upstream), (22, Upstream)); reference at the same point (22, Upstream), word ((18, Upstream), (22, Upstream)); reference at [4.8, 49.2] agrees
+  hit d: far left of line 2 at [-40.0, 49.2]: (22, Upstream), word ((18, Upstream), (22, Upstream)); reference at the same point (22, Upstream), word ((18, Upstream), (22, Upstream)); reference at [-36.8, 49.2] agrees
+  hit d: far right of line 2 at [76.8, 49.2]: (18, Downstream), word ((18, Upstream), (22, Upstream)); reference at the same point (18, Downstream), word ((18, Upstream), (22, Upstream)); reference at [80.0, 49.2] agrees
+  hit d: above at [15.32, -20.0]: (6, Upstream), word ((0, Downstream), (8, Upstream)); reference at the same point (6, Downstream), word ((0, Downstream), (8, Upstream)); reference at [18.52, -20.0] agrees
+  hit d: below at [32.120003, 78.8]: (20, Upstream), word ((18, Upstream), (22, Upstream)); reference at the same point (20, Downstream), word ((18, Upstream), (22, Upstream)); reference at [35.320004, 78.8] agrees
+RTL tab partly hanging past the text end at scale 1.25: width Some(38.0); size [41.6, 20.0] -> [38.4, 20.0]; origin [3.2, 0.0] -> [0.0, 0.0]; width delta 3.199997, x translation -3.2
+  line 0 0..9: hanging advance 4, public line box [-0.79999995, 0.0, 42.0, 20.0] -> [-4.0, 0.0, 42.0, 20.0]
+  line 0 LineEnd (9, Upstream): caret [-0.79999995, 0.0, 1.0, 20.0] -> [-4.0, 0.0, 1.0, 20.0]; selection [[-0.79999995, 0.0, 42.0, 20.0]] -> [[-4.0, 0.0, 42.0, 20.0]]
+  hit a: glyph 6..8 on line 0 at [6.5, 10.0]: (8, Upstream), word ((0, Downstream), (8, Upstream)); reference at the same point (8, Downstream), word ((8, Upstream), (9, Upstream)); reference at [9.7, 10.0] agrees
+  hit b: origin band on line 0 at [1.6, 10.0]: (8, Downstream), word ((8, Upstream), (9, Upstream)); reference at the same point (9, Upstream), word ((8, Upstream), (9, Upstream)); reference at [4.8, 10.0] agrees
+  hit c: hanging tab 8..9 on line 0 at [-1.9, 10.0]: (9, Upstream), word ((8, Upstream), (9, Upstream)); reference at the same point (9, Upstream), word ((8, Upstream), (9, Upstream)); reference at [1.3000001, 10.0] agrees
+  hit d: far left of line 0 at [-40.0, 10.0]: (9, Upstream), word ((8, Upstream), (9, Upstream)); reference at the same point (9, Upstream), word ((8, Upstream), (9, Upstream)); reference at [-36.8, 10.0] agrees
+  hit d: far right of line 0 at [78.4, 10.0]: (0, Downstream), word ((0, Downstream), (8, Upstream)); reference at the same point (0, Downstream), word ((0, Downstream), (8, Upstream)); reference at [81.6, 10.0] agrees
+  hit d: above at [15.32, -20.0]: (6, Upstream), word ((0, Downstream), (8, Upstream)); reference at the same point (6, Downstream), word ((0, Downstream), (8, Upstream)); reference at [18.52, -20.0] agrees
+  hit d: below at [15.32, 39.6]: (6, Upstream), word ((0, Downstream), (8, Upstream)); reference at the same point (6, Downstream), word ((0, Downstream), (8, Upstream)); reference at [18.52, 39.6] agrees
+tab before an explicit newline, not overflowing at scale 1.25: width Some(220.0); size [25.6, 39.2] -> [25.6, 39.2]; origin [0.0, 0.0] -> [0.0, 0.0]; width delta 0, x translation -0
+  line 0 0..4: hanging advance 0, public line box [0.0, 0.0, 24.864, 20.0] -> [0.0, 0.0, 24.864, 20.0]
+  line 1 4..6: hanging advance 0, public line box [0.0, 20.0, 15.329999, 20.0] -> [0.0, 20.0, 15.329999, 20.0]
+  hit a: glyph 0..1 on line 0 at [1.9635, 10.0]: (0, Downstream), word ((0, Downstream), (2, Upstream)); reference at the same point (0, Downstream), word ((0, Downstream), (2, Upstream)); reference at [1.9635, 10.0] agrees
+  hit d: far left of line 0 at [-40.0, 10.0]: (0, Downstream), word ((0, Downstream), (2, Upstream)); reference at the same point (0, Downstream), word ((0, Downstream), (2, Upstream)); reference at [-40.0, 10.0] agrees
+  hit d: far right of line 0 at [65.6, 10.0]: (3, Downstream), word ((3, Upstream), (4, Upstream)); reference at the same point (3, Downstream), word ((3, Upstream), (4, Upstream)); reference at [65.6, 10.0] agrees
+  hit a: glyph 4..5 on line 1 at [1.68, 30.0]: (4, Downstream), word ((4, Upstream), (6, Upstream)); reference at the same point (4, Downstream), word ((4, Upstream), (6, Upstream)); reference at [1.68, 30.0] agrees
+  hit d: far left of line 1 at [-40.0, 30.0]: (4, Downstream), word ((4, Upstream), (6, Upstream)); reference at the same point (4, Downstream), word ((4, Upstream), (6, Upstream)); reference at [-40.0, 30.0] agrees
+  hit d: far right of line 1 at [65.6, 30.0]: (6, Upstream), word ((4, Upstream), (6, Upstream)); reference at the same point (6, Upstream), word ((4, Upstream), (6, Upstream)); reference at [65.6, 30.0] agrees
+  hit d: above at [18.984, -20.0]: (2, Downstream), word ((2, Upstream), (3, Upstream)); reference at the same point (2, Downstream), word ((2, Upstream), (3, Upstream)); reference at [18.984, -20.0] agrees
+  hit d: below at [9.3029995, 59.2]: (5, Downstream), word ((4, Upstream), (6, Upstream)); reference at the same point (5, Downstream), word ((4, Upstream), (6, Upstream)); reference at [9.3029995, 59.2] agrees
+unbounded LTR ending in a tab at scale 1.25: width None; size [32.0, 20.0] -> [32.0, 20.0]; origin [0.0, 0.0] -> [0.0, 0.0]; width delta 0, x translation -0
+  line 0 0..4: hanging advance 0, public line box [0.0, 0.0, 31.584, 20.0] -> [0.0, 0.0, 31.584, 20.0]
+  hit a: glyph 0..1 on line 0 at [1.9635, 10.0]: (0, Downstream), word ((0, Downstream), (3, Upstream)); reference at the same point (0, Downstream), word ((0, Downstream), (3, Upstream)); reference at [1.9635, 10.0] agrees
+  hit d: far left of line 0 at [-40.0, 10.0]: (0, Downstream), word ((0, Downstream), (3, Upstream)); reference at the same point (0, Downstream), word ((0, Downstream), (3, Upstream)); reference at [-40.0, 10.0] agrees
+  hit d: far right of line 0 at [72.0, 10.0]: (4, Upstream), word ((3, Upstream), (4, Upstream)); reference at the same point (4, Upstream), word ((3, Upstream), (4, Upstream)); reference at [72.0, 10.0] agrees
+  hit d: above at [18.48, -20.0]: (2, Downstream), word ((0, Downstream), (3, Upstream)); reference at the same point (2, Downstream), word ((0, Downstream), (3, Upstream)); reference at [18.48, -20.0] agrees
+  hit d: below at [18.48, 39.6]: (2, Downstream), word ((0, Downstream), (3, Upstream)); reference at the same point (2, Downstream), word ((0, Downstream), (3, Upstream)); reference at [18.48, 39.6] agrees
+unbounded RTL ending in a tab at scale 1.25: width None; size [33.6, 20.0] -> [33.6, 20.0]; origin [0.0, 0.0] -> [0.0, 0.0]; width delta 0, x translation -0
+  line 0 0..7: hanging advance 0, public line box [0.0, 0.0, 33.6, 20.0] -> [0.0, 0.0, 33.6, 20.0]
+  hit a: glyph 4..6 on line 0 at [10.5, 10.0]: (6, Upstream), word ((0, Downstream), (6, Upstream)); reference at the same point (6, Upstream), word ((0, Downstream), (6, Upstream)); reference at [10.5, 10.0] agrees
+  hit d: far left of line 0 at [-40.0, 10.0]: (7, Upstream), word ((6, Upstream), (7, Upstream)); reference at the same point (7, Upstream), word ((6, Upstream), (7, Upstream)); reference at [-40.0, 10.0] agrees
+  hit d: far right of line 0 at [73.6, 10.0]: (0, Downstream), word ((0, Downstream), (6, Upstream)); reference at the same point (0, Downstream), word ((0, Downstream), (6, Upstream)); reference at [73.6, 10.0] agrees
+  hit d: above at [19.32, -20.0]: (4, Upstream), word ((0, Downstream), (6, Upstream)); reference at the same point (4, Upstream), word ((0, Downstream), (6, Upstream)); reference at [19.32, -20.0] agrees
+  hit d: below at [19.32, 39.6]: (4, Upstream), word ((0, Downstream), (6, Upstream)); reference at the same point (4, Upstream), word ((0, Downstream), (6, Upstream)); reference at [19.32, 39.6] agrees
+fixture mixed atom ending a wrapped line at scale 1.25: width Some(34.0); size [33.6, 39.2] -> [33.6, 39.2]; origin [0.0, 0.0] -> [0.0, 0.0]; width delta 0, x translation -0
+  line 0 0..4: hanging advance 0, public line box [0.0, 0.0, 33.6, 20.0] -> [0.0, 0.0, 33.6, 20.0]
+  line 1 4..5: hanging advance 0, public line box [0.0, 20.0, 8.4, 20.0] -> [0.0, 20.0, 8.4, 20.0]
+  hit a: glyph 0..1 on line 0 at [2.1, 10.0]: (0, Downstream), word ((0, Downstream), (1, Upstream)); reference at the same point (0, Downstream), word ((0, Downstream), (1, Upstream)); reference at [2.1, 10.0] agrees
+  hit d: far left of line 0 at [-40.0, 10.0]: (0, Downstream), word ((0, Downstream), (1, Upstream)); reference at the same point (0, Downstream), word ((0, Downstream), (1, Upstream)); reference at [-40.0, 10.0] agrees
+  hit d: far right of line 0 at [73.6, 10.0]: (4, Upstream), word ((3, Upstream), (4, Upstream)); reference at the same point (4, Upstream), word ((3, Upstream), (4, Upstream)); reference at [73.6, 10.0] agrees
+  hit a: glyph 4..5 on line 1 at [2.1, 30.0]: (4, Downstream), word ((4, Upstream), (5, Upstream)); reference at the same point (4, Downstream), word ((4, Upstream), (5, Upstream)); reference at [2.1, 30.0] agrees
+  hit d: far left of line 1 at [-40.0, 30.0]: (4, Downstream), word ((4, Upstream), (5, Upstream)); reference at the same point (4, Downstream), word ((4, Upstream), (5, Upstream)); reference at [-40.0, 30.0] agrees
+  hit d: far right of line 1 at [73.6, 30.0]: (5, Upstream), word ((4, Upstream), (5, Upstream)); reference at the same point (5, Upstream), word ((4, Upstream), (5, Upstream)); reference at [73.6, 30.0] agrees
+  hit d: above at [19.32, -20.0]: (2, Downstream), word ((2, Upstream), (3, Upstream)); reference at the same point (2, Downstream), word ((2, Upstream), (3, Upstream)); reference at [19.32, -20.0] agrees
+  hit d: below at [2.52, 59.2]: (4, Downstream), word ((4, Upstream), (5, Upstream)); reference at the same point (4, Downstream), word ((4, Upstream), (5, Upstream)); reference at [2.52, 59.2] agrees
+scale 1.25: categories {"a", "b", "c", "d"}; 10 points hit differently in the reference at the same point
+ok
+test text::tabs::tests::mixed_fonts_keep_each_tab_s_font_size_and_advance_and_icons_use_hidden_tab_metrics ... scale 1 width None: tab 2 (last byte of a Body span): Body font (51, 0), size 14, coordinates [], advance 8.400001, line 0, x 16.464, brush HiddenTab
+scale 1 width None: tab 3 (first byte of a Monospace span, after a Body tab): Monospace font (52, 0), size 14, coordinates [], advance 8.400001, line 0, x 24.864002, brush HiddenTab
+scale 1 width None: tab 8 (a fixture span's only content, the icon's nearest text): Fixture font (54, 0), size 26, coordinates [], advance 15.6, line 0, x 61.600002, brush HiddenTab
+scale 1 width None: tab 15 (last byte of a Body span, before a fixture tab): Body font (51, 0), size 14, coordinates [], advance 8.400001, line 0, x 106.632, brush HiddenTab
+scale 1 width None: tab 16 (first byte of a fixture span): Fixture font (54, 0), size 14, coordinates [], advance 8.400001, line 0, x 115.032005, brush HiddenTab
+scale 1 width None: tab 21 (fixture tab-tab ligature beside Body): Fixture font (54, 0), size 14, coordinates [], advance 8.400001, line 0, x 150.45201, brush HiddenTab
+scale 1 width None: tab 22 (fixture tab-tab ligature continuation): Fixture font (54, 0), size 14, coordinates [], advance 8.400001, line 0, x 158.852, brush HiddenTab
+scale 1 width None: tab 27 (fixture X+tab mixed atom): Fixture font (54, 0), size 14, coordinates [], advance 8.400001, line 0, x 196.092, brush Color(0)
+scale 1 width None: tab 33 (a Monospace span's only content after Body): Monospace font (52, 0), size 14, coordinates [], advance 8.400001, line 0, x 241.69002, brush HiddenTab
+scale 1 width None: icon aligns to the hidden tab's center 16.9; the nearest visible run's is 22.43
+scale 1 width Some(64.0): tab 2 (last byte of a Body span): Body font (51, 0), size 14, coordinates [], advance 8.400001, line 0, x 16.464, brush HiddenTab
+scale 1 width Some(64.0): tab 3 (first byte of a Monospace span, after a Body tab): Monospace font (52, 0), size 14, coordinates [], advance 8.400001, line 0, x 24.864002, brush HiddenTab
+scale 1 width Some(64.0): tab 8 (a fixture span's only content, the icon's nearest text): Fixture font (54, 0), size 26, coordinates [], advance 15.6, line 0, x 61.600002, brush HiddenTab
+scale 1 width Some(64.0): tab 15 (last byte of a Body span, before a fixture tab): Body font (51, 0), size 14, coordinates [], advance 8.400001, line 1, x 29.432, brush HiddenTab
+scale 1 width Some(64.0): tab 16 (first byte of a fixture span): Fixture font (54, 0), size 14, coordinates [], advance 8.400001, line 1, x 37.832, brush HiddenTab
+scale 1 width Some(64.0): tab 21 (fixture tab-tab ligature beside Body): Fixture font (54, 0), size 14, coordinates [], advance 8.400001, line 2, x 6.5800004, brush HiddenTab
+scale 1 width Some(64.0): tab 22 (fixture tab-tab ligature continuation): Fixture font (54, 0), size 14, coordinates [], advance 8.400001, line 2, x 14.980001, brush HiddenTab
+scale 1 width Some(64.0): tab 27 (fixture X+tab mixed atom): Fixture font (54, 0), size 14, coordinates [], advance 8.400001, line 2, x 52.220005, brush Color(0)
+scale 1 width Some(64.0): tab 33 (a Monospace span's only content after Body): Monospace font (52, 0), size 14, coordinates [], advance 8.400001, line 3, x 37.198, brush HiddenTab
+scale 1 width Some(120.0): tab 2 (last byte of a Body span): Body font (51, 0), size 14, coordinates [], advance 8.400001, line 0, x 16.464, brush HiddenTab
+scale 1 width Some(120.0): tab 3 (first byte of a Monospace span, after a Body tab): Monospace font (52, 0), size 14, coordinates [], advance 8.400001, line 0, x 24.864002, brush HiddenTab
+scale 1 width Some(120.0): tab 8 (a fixture span's only content, the icon's nearest text): Fixture font (54, 0), size 26, coordinates [], advance 15.6, line 0, x 61.600002, brush HiddenTab
+scale 1 width Some(120.0): tab 15 (last byte of a Body span, before a fixture tab): Body font (51, 0), size 14, coordinates [], advance 8.400001, line 0, x 106.632, brush HiddenTab
+scale 1 width Some(120.0): tab 16 (first byte of a fixture span): Fixture font (54, 0), size 14, coordinates [], advance 8.400001, line 0, x 115.032005, brush HiddenTab
+scale 1 width Some(120.0): tab 21 (fixture tab-tab ligature beside Body): Fixture font (54, 0), size 14, coordinates [], advance 8.400001, line 1, x 27.02, brush HiddenTab
+scale 1 width Some(120.0): tab 22 (fixture tab-tab ligature continuation): Fixture font (54, 0), size 14, coordinates [], advance 8.400001, line 1, x 35.420002, brush HiddenTab
+scale 1 width Some(120.0): tab 27 (fixture X+tab mixed atom): Fixture font (54, 0), size 14, coordinates [], advance 8.400001, line 1, x 72.66, brush Color(0)
+scale 1 width Some(120.0): tab 33 (a Monospace span's only content after Body): Monospace font (52, 0), size 14, coordinates [], advance 8.400001, line 1, x 118.25801, brush HiddenTab
+scale 1 width Some(120.0): icon aligns to the hidden tab's center 16.9; the nearest visible run's is 22.43
+scale 1.25 width None: tab 2 (last byte of a Body span): Body font (73, 0), size 17.5, coordinates [], advance 10.5, line 0, x 20.58, brush HiddenTab
+scale 1.25 width None: tab 3 (first byte of a Monospace span, after a Body tab): Monospace font (74, 0), size 17.5, coordinates [], advance 10.5, line 0, x 31.08, brush HiddenTab
+scale 1.25 width None: tab 8 (a fixture span's only content, the icon's nearest text): Fixture font (76, 0), size 32.5, coordinates [], advance 19.5, line 0, x 77, brush HiddenTab
+scale 1.25 width None: tab 15 (last byte of a Body span, before a fixture tab): Body font (73, 0), size 17.5, coordinates [], advance 10.5, line 0, x 133.29, brush HiddenTab
+scale 1.25 width None: tab 16 (first byte of a fixture span): Fixture font (76, 0), size 17.5, coordinates [], advance 10.5, line 0, x 143.79, brush HiddenTab
+scale 1.25 width None: tab 21 (fixture tab-tab ligature beside Body): Fixture font (76, 0), size 17.5, coordinates [], advance 10.5, line 0, x 188.06499, brush HiddenTab
+scale 1.25 width None: tab 22 (fixture tab-tab ligature continuation): Fixture font (76, 0), size 17.5, coordinates [], advance 10.5, line 0, x 198.56499, brush HiddenTab
+scale 1.25 width None: tab 27 (fixture X+tab mixed atom): Fixture font (76, 0), size 17.5, coordinates [], advance 10.5, line 0, x 245.11499, brush Color(0)
+scale 1.25 width None: tab 33 (a Monospace span's only content after Body): Monospace font (74, 0), size 17.5, coordinates [], advance 10.5, line 0, x 302.1125, brush HiddenTab
+scale 1.25 width None: icon aligns to the hidden tab's center 20.625; the nearest visible run's is 27.5375
+scale 1.25 width Some(64.0): tab 2 (last byte of a Body span): Body font (73, 0), size 17.5, coordinates [], advance 10.5, line 0, x 20.58, brush HiddenTab
+scale 1.25 width Some(64.0): tab 3 (first byte of a Monospace span, after a Body tab): Monospace font (74, 0), size 17.5, coordinates [], advance 10.5, line 0, x 31.08, brush HiddenTab
+scale 1.25 width Some(64.0): tab 8 (a fixture span's only content, the icon's nearest text): Fixture font (76, 0), size 32.5, coordinates [], advance 19.5, line 0, x 77, brush HiddenTab
+scale 1.25 width Some(64.0): tab 15 (last byte of a Body span, before a fixture tab): Body font (73, 0), size 17.5, coordinates [], advance 10.5, line 1, x 36.79, brush HiddenTab
+scale 1.25 width Some(64.0): tab 16 (first byte of a fixture span): Fixture font (76, 0), size 17.5, coordinates [], advance 10.5, line 1, x 47.29, brush HiddenTab
+scale 1.25 width Some(64.0): tab 21 (fixture tab-tab ligature beside Body): Fixture font (76, 0), size 17.5, coordinates [], advance 10.5, line 2, x 8.225, brush HiddenTab
+scale 1.25 width Some(64.0): tab 22 (fixture tab-tab ligature continuation): Fixture font (76, 0), size 17.5, coordinates [], advance 10.5, line 2, x 18.725, brush HiddenTab
+scale 1.25 width Some(64.0): tab 27 (fixture X+tab mixed atom): Fixture font (76, 0), size 17.5, coordinates [], advance 10.5, line 2, x 65.275, brush Color(0)
+scale 1.25 width Some(64.0): tab 33 (a Monospace span's only content after Body): Monospace font (74, 0), size 17.5, coordinates [], advance 10.5, line 3, x 46.4975, brush HiddenTab
+scale 1.25 width Some(120.0): tab 2 (last byte of a Body span): Body font (73, 0), size 17.5, coordinates [], advance 10.5, line 0, x 20.58, brush HiddenTab
+scale 1.25 width Some(120.0): tab 3 (first byte of a Monospace span, after a Body tab): Monospace font (74, 0), size 17.5, coordinates [], advance 10.5, line 0, x 31.08, brush HiddenTab
+scale 1.25 width Some(120.0): tab 8 (a fixture span's only content, the icon's nearest text): Fixture font (76, 0), size 32.5, coordinates [], advance 19.5, line 0, x 77, brush HiddenTab
+scale 1.25 width Some(120.0): tab 15 (last byte of a Body span, before a fixture tab): Body font (73, 0), size 17.5, coordinates [], advance 10.5, line 0, x 133.29, brush HiddenTab
+scale 1.25 width Some(120.0): tab 16 (first byte of a fixture span): Fixture font (76, 0), size 17.5, coordinates [], advance 10.5, line 0, x 143.79, brush HiddenTab
+scale 1.25 width Some(120.0): tab 21 (fixture tab-tab ligature beside Body): Fixture font (76, 0), size 17.5, coordinates [], advance 10.5, line 1, x 33.775, brush HiddenTab
+scale 1.25 width Some(120.0): tab 22 (fixture tab-tab ligature continuation): Fixture font (76, 0), size 17.5, coordinates [], advance 10.5, line 1, x 44.275, brush HiddenTab
+scale 1.25 width Some(120.0): tab 27 (fixture X+tab mixed atom): Fixture font (76, 0), size 17.5, coordinates [], advance 10.5, line 1, x 90.825, brush Color(0)
+scale 1.25 width Some(120.0): tab 33 (a Monospace span's only content after Body): Monospace font (74, 0), size 17.5, coordinates [], advance 10.5, line 1, x 147.8225, brush HiddenTab
+scale 1.25 width Some(120.0): icon aligns to the hidden tab's center 20.625; the nearest visible run's is 27.5375
+ok
+test text::tabs::tests::other_unsupported_characters_keep_their_fallback_ink ... ok
+test text::tabs::tests::rich_spans_gaps_and_icons_keep_reference_color_size_and_alignment ... ok
+test text::tabs::tests::tab_only_text_has_no_coverage_but_its_advance_and_caret_stops ... ok
+test text::tabs::tests::tabs_keep_the_reference_geometry_and_unicode_analysis_without_their_ink ... ok
+test text::tabs::tests::the_worst_admitted_alternating_tabs_stay_within_the_style_bound ... worst admitted plain: 16384 bytes, 16385 styles (bound 33796), 2 reference styles; prepare 40.747904ms, pre-fix reference 37.073168ms (one observation, not a bound)
+worst admitted spans: 16384 bytes, 16385 styles (bound 33796), 1025 reference styles; prepare 65.392824ms, pre-fix reference 36.3557ms (one observation, not a bound)
+ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 167 filtered out; finished in 0.47s
+
+
+--- stderr ---
+   Compiling pert-ui-runtime v0.3.89 (/home/per/pert-ui-usability/r3-text-worktree/crates/pert-ui-runtime)
+warning: method `is_empty` is never used
+  --> crates/pert-ui-runtime/src/runtime/measurements.rs:55:19
+   |
+21 | impl Measurements {
+   | ----------------- method in this implementation
+...
+55 |     pub(crate) fn is_empty(&self) -> bool {
+   |                   ^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `pert-ui-runtime` (lib test) generated 1 warning
+    Finished `release` profile [optimized] target(s) in 18.42s
+     Running unittests src/lib.rs (/home/per/pert-ui-usability/r3-text-implementation-target/release/deps/pert_ui_runtime-7750fa3f24f72389)

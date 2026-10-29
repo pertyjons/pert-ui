@@ -350,7 +350,10 @@ fonts.reset_default(FontRole::Body)?;
 
 Heading inherits Body until separately overridden. Explicit segment fonts take
 precedence over roles. Ordinary text then falls back to the original bundled text
-fonts; remaining missing characters use the missing-glyph mark. Registration alone
+fonts; remaining missing characters use the missing-glyph mark. Literal tabs
+are non-printing with their shaped advance and original Unicode analysis, not
+aligned tab stops. A registered font's mixed tab/printable ligature keeps its
+inseparable ink; [`TextLayout`] documents that exception and extent behavior. Registration alone
 does not schedule work. Changed defaults remeasure only affected layout readers;
 fixed-geometry [`Painter`] readers repaint. Hidden readers defer work. Handles are
 weak, mutations obey the runtime's phase restrictions, and shutdown returns `Closed`.

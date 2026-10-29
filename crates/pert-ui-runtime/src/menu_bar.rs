@@ -203,6 +203,13 @@ struct MenuTitle {
     /// context the next update cancels.
     retargeted: bool,
     focused: bool,
+    /// The window position of the last move, refreshed or not, press or leave
+    /// this title received, whatever its state. Each title keeps its own: the
+    /// runtime delivers the leave of the title the pointer departs, carrying
+    /// the new position, before the move into the next one. Never cleared, so
+    /// a host move repeating it after a menu opened beneath a stationary
+    /// pointer, or after focus or visibility changed, is no motion.
+    last_pointer: Option<crate::Point>,
     text: RefCell<Option<TextLayout>>,
 }
 impl MenuTitle {
@@ -252,6 +259,7 @@ impl Component for MenuTitle {
             held: _,
             retargeted: _,
             focused: _,
+            last_pointer: _,
             text: _,
         } = next;
         if (!enabled || self.action.is_some() != action.is_some())
@@ -375,15 +383,25 @@ impl Component for MenuTitle {
         cx: &mut EventContext,
         e: PointerEvent,
     ) -> Result<InputOutcome, RuntimeError> {
+        let previous = match e.kind() {
+            PointerKind::Move | PointerKind::Press(_) | PointerKind::Leave => {
+                self.last_pointer.replace(e.position())
+            }
+            _ => self.last_pointer,
+        };
         let inside = e.kind() != PointerKind::Leave && cx.pointer_inside();
         if inside != self.hovered {
             self.hovered = inside;
             cx.invalidate(Invalidation::Paint);
         }
+        // Only the host reporting motion to a new position points at a title:
+        // neither the runtime's refreshed move under a pointer resting where a
+        // keyboard-opened menu appeared nor a repeated report of it.
+        let moved = !e.is_refresh() && previous != Some(e.position());
         match e.kind() {
             // While any menu of the bar is open, pointing at another title opens
             // its menu instead.
-            PointerKind::Move if inside && self.available && self.action.is_none() => {
+            PointerKind::Move if moved && inside && self.available && self.action.is_none() => {
                 let core = self.state.core();
                 if core.open_index()?.is_some() && !self.is_open()? {
                     core.set_open(Some(self.key.clone()))?;
@@ -530,9 +548,17 @@ impl Component for MenuTitle {
 /// nested submenus, separators, shortcuts, check and radio marks and
 /// [`MenuItem::command`] rows. Keys follow the [`Menu`] rules at every level.
 ///
-/// Pointer: pressing a title opens its menu; while a menu is open, pointing at
-/// another title switches to its menu, and pressing outside the menu, including
-/// its own title, closes it.
+/// Pointer: pressing a title opens its menu; while a menu is open, actual
+/// pointer motion onto another title switches to its menu, and pressing
+/// outside the menu, including its own title, closes it. A menu opened by key
+/// while the pointer rests over another title stays open: neither the
+/// pointer's unchanged position nor the host reporting it again switches
+/// menus, including the pointer re-entering the window exactly where it left,
+/// until the pointer moves to a different position. Each title compares with
+/// the last position it saw itself, so moving from one title to another and
+/// back switches each time. After the window's scale factor changes, the first
+/// native report of an unmoved pointer can carry new logical coordinates and
+/// then counts as motion. Rows follow the [`Menu`] highlight rules.
 ///
 /// Keyboard: F10 moves focus to the first enabled title. The titles are not Tab
 /// stops otherwise, so the bar does not lengthen ordinary Tab traversal. On a
@@ -749,6 +775,7 @@ impl MenuBar {
                         held: None,
                         retargeted: false,
                         focused: false,
+                        last_pointer: None,
                         text: RefCell::new(None),
                     },
                 )

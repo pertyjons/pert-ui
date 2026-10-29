@@ -1,0 +1,227 @@
+//! Literal tabs in a TextArea, through the public facade: canonical bytes,
+//! caret movement, editing, clipboard and inspection keep U+0009, Tab traverses
+//! focus, and the rendered tab is blank between its neighbors.
+//!
+//! Multiline paste keeping tabs and single-line paste mapping them to spaces
+//! are `text_fields::pasted_control_characters_become_line_breaks_or_are_dropped`;
+//! a typed tab in a single-line field becoming a space is
+//! `text_fields::text_binding_multiline_defaults_enter_and_undo`.
+use crate::support;
+use pert_ui::testing::HostIntegration;
+use pert_ui::*;
+use std::{cell::RefCell, rc::Rc};
+use support::frame;
+
+#[derive(Clone, Default)]
+struct MemoryClipboard(Rc<RefCell<String>>);
+impl Clipboard for MemoryClipboard {
+    fn read_text(&mut self) -> Result<String, ClipboardError> {
+        Ok(self.0.borrow().clone())
+    }
+    fn write_text(&mut self, text: &str) -> Result<(), ClipboardError> {
+        *self.0.borrow_mut() = text.to_owned();
+        Ok(())
+    }
+}
+
+fn area(text: &str) -> (Runtime, WidgetId, Signal<String>) {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(320.0, 160.0, 1.0).unwrap())
+        .unwrap();
+    let value = ui.signal(text.to_owned());
+    let id = ui
+        .mount_tree(Element::new("field", TextArea::new(value.clone())))
+        .unwrap();
+    ui.focus(&id).unwrap();
+    frame(&mut ui);
+    (ui, id, value)
+}
+fn key(ui: &mut Runtime, code: KeyCode) {
+    support::key(ui, code);
+    frame(ui);
+}
+fn with(ui: &mut Runtime, modifier: KeyCode, code: KeyCode) {
+    ui.key_input(modifier, KeyAction::Press).unwrap();
+    key(ui, code);
+    ui.key_input(modifier, KeyAction::Release).unwrap();
+}
+fn property(ui: &Runtime, key: &str) -> InspectValue {
+    ui.inspect()
+        .components
+        .iter()
+        .find(|c| c.key == "field")
+        .unwrap()
+        .details
+        .properties[key]
+        .clone()
+}
+fn selection(ui: &Runtime) -> InspectValue {
+    property(ui, "selection")
+}
+fn text(value: &str) -> InspectValue {
+    InspectValue::Text(value.into())
+}
+
+#[test]
+fn a_text_area_edits_copies_and_inspects_literal_tabs_as_canonical_bytes() {
+    let initial = "Name\tValue\n\tindented";
+    let (mut ui, id, value) = area(initial);
+    let clipboard = MemoryClipboard::default();
+    ui.set_clipboard(clipboard.clone()).unwrap();
+    assert_eq!(property(&ui, "text"), text(initial));
+    // One caret stop on each side of a tab, as for any other grapheme.
+    with(&mut ui, KeyCode::primary(), KeyCode::KeyA);
+    key(&mut ui, KeyCode::ArrowLeft);
+    assert_eq!(selection(&ui), text("0..0"));
+    for _ in 0..4 {
+        key(&mut ui, KeyCode::ArrowRight);
+    }
+    assert_eq!(selection(&ui), text("4..4"));
+    key(&mut ui, KeyCode::ArrowRight);
+    assert_eq!(selection(&ui), text("5..5"));
+    with(&mut ui, KeyCode::ShiftLeft, KeyCode::ArrowLeft);
+    assert_eq!(selection(&ui), text("5..4"));
+    with(&mut ui, KeyCode::primary(), KeyCode::KeyC);
+    assert_eq!(*clipboard.0.borrow(), "\t");
+    // Deleting the selected tab, undoing it, and Backspace after it.
+    key(&mut ui, KeyCode::Backspace);
+    assert_eq!(value.get().unwrap(), "NameValue\n\tindented");
+    with(&mut ui, KeyCode::primary(), KeyCode::KeyZ);
+    assert_eq!(value.get().unwrap(), initial);
+    with(&mut ui, KeyCode::primary(), KeyCode::KeyA);
+    key(&mut ui, KeyCode::ArrowLeft);
+    key(&mut ui, KeyCode::ArrowDown);
+    key(&mut ui, KeyCode::Home);
+    key(&mut ui, KeyCode::ArrowRight);
+    assert_eq!(selection(&ui), text("12..12"));
+    key(&mut ui, KeyCode::Backspace);
+    assert_eq!(value.get().unwrap(), "Name\tValue\nindented");
+    // Pasting tabs into the text area keeps them; copying all returns them.
+    *clipboard.0.borrow_mut() = "\t\tX\t".into();
+    assert_eq!(
+        ui.text_command(&id, TextCommand::Paste).unwrap(),
+        TextCommandOutcome::Handled
+    );
+    frame(&mut ui);
+    let pasted = "Name\tValue\n\t\tX\tindented";
+    assert_eq!(value.get().unwrap(), pasted);
+    assert_eq!(property(&ui, "text"), text(pasted));
+    assert_eq!(
+        ui.text_command(&id, TextCommand::SelectAll).unwrap(),
+        TextCommandOutcome::Handled
+    );
+    assert_eq!(
+        ui.text_command(&id, TextCommand::Copy).unwrap(),
+        TextCommandOutcome::Handled
+    );
+    assert_eq!(*clipboard.0.borrow(), pasted);
+    // The saved bytes are the canonical text, U+0009 included.
+    let saved = value.get().unwrap().into_bytes();
+    assert_eq!(saved.iter().filter(|byte| **byte == b'\t').count(), 4);
+    assert_eq!(saved, pasted.as_bytes());
+    let semantic = ui
+        .inspect()
+        .components
+        .into_iter()
+        .find(|c| c.key == "field")
+        .unwrap()
+        .details
+        .semantics
+        .unwrap()
+        .value;
+    assert_eq!(semantic, Some(SemanticValue::Text(pasted.into())));
+}
+
+#[test]
+fn keyboard_tab_moves_focus_between_text_areas_without_inserting_a_tab() {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(320.0, 320.0, 1.0).unwrap())
+        .unwrap();
+    let first = ui.signal("a\tb".to_owned());
+    let second = ui.signal(String::new());
+    let root = ui
+        .mount_tree(Element::new(
+            "column",
+            Column::new([
+                Element::new("first", TextArea::new(first.clone())),
+                Element::new("second", TextArea::new(second.clone())),
+            ]),
+        ))
+        .unwrap();
+    frame(&mut ui);
+    let first_id = support::widget(&ui, &root, "first");
+    let second_id = support::widget(&ui, &root, "second");
+    ui.focus(&first_id).unwrap();
+    frame(&mut ui);
+    key(&mut ui, KeyCode::Tab);
+    assert_eq!(ui.focused(), Some(second_id));
+    with(&mut ui, KeyCode::ShiftLeft, KeyCode::Tab);
+    assert_eq!(ui.focused(), Some(first_id));
+    assert_eq!(first.get().unwrap(), "a\tb");
+    assert_eq!(second.get().unwrap(), "");
+}
+
+/// Renders an unfocused monospace TextArea holding `value` on the CPU.
+#[cfg(feature = "cpu")]
+fn rendered(value: &str) -> FrameImage {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(160.0, 60.0, 2.0).unwrap())
+        .unwrap();
+    let signal = ui.signal(value.to_owned());
+    ui.mount_tree(Element::new("field", TextArea::new(signal)))
+        .unwrap();
+    ui.flush(std::time::Duration::ZERO).unwrap();
+    let scene = ui.paint().unwrap();
+    pert_ui::cpu::CpuRenderer::new().render(&scene).unwrap()
+}
+
+/// In the bundled monospace font a tab, a missing private-use character and a
+/// space advance equally, so the three renderings differ only in the middle
+/// cell's ink.
+#[cfg(feature = "cpu")]
+#[test]
+fn a_rendered_tab_is_blank_while_its_neighbors_stay_in_place() {
+    let tab = rendered("A\tB");
+    let space = rendered("A B");
+    let missing = rendered("A\u{E000}B");
+    assert_eq!((tab.width(), tab.height()), (space.width(), space.height()));
+    // The tab draws nothing: the same pixels as a space, so A and B are
+    // drawn where they were.
+    assert_eq!(tab.pixels(), space.pixels());
+    // Another unsupported character keeps its missing-glyph mark there.
+    let differing = tab
+        .pixels()
+        .chunks(4)
+        .zip(missing.pixels().chunks(4))
+        .filter(|(a, b)| a != b)
+        .count();
+    assert!(differing > 20, "{differing} pixels differ");
+    // The text is drawn at all: it differs from an empty field.
+    assert_ne!(tab.pixels(), rendered("").pixels());
+}
+
+#[test]
+fn a_full_text_area_of_tab_separated_columns_paints_and_edits() {
+    use std::time::Instant;
+    // One prepared layout is bounded by `TextLimit::MAX_RASTER_SIDE` before
+    // the byte limit: about 400 monospace lines, whatever they hold.
+    let row = "name\tvalue\tunit\t42\n";
+    let rows = 300;
+    let content = row.repeat(rows);
+    assert!(content.len() <= TextEditError::MAX_TEXT_BYTES);
+    assert_eq!(TextArea::check(&content), Ok(()));
+    let start = Instant::now();
+    let (mut ui, _, value) = area(&content);
+    let first = start.elapsed();
+    let start = Instant::now();
+    ui.text_input("\t").unwrap();
+    frame(&mut ui);
+    let edit = start.elapsed();
+    assert_eq!(value.get().unwrap(), format!("\t{content}"));
+    println!(
+        "TextArea with {} bytes ({rows} rows, {} tabs): mount and first frame {first:?}, \
+         one edit frame {edit:?} (one observation, not a bound)",
+        content.len(),
+        content.matches('\t').count(),
+    );
+}

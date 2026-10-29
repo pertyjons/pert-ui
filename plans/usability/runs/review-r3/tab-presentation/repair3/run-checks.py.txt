@@ -1,0 +1,49 @@
+"""Runs this repair's targeted checks one by one on the final source,
+recording each command, its output and exit status under checks/. Uses the
+private target directory; never a workspace-wide run."""
+import os, pathlib, subprocess, sys, time
+
+root = '/home/per/pert-ui-usability/r3-text-worktree'
+evidence = pathlib.Path(__file__).parent
+out = evidence / 'checks'
+out.mkdir(exist_ok=True)
+target = '/home/per/pert-ui-usability/r3-text-implementation-target'
+env = dict(os.environ, CARGO_TARGET_DIR=target)
+owned = ('crates/pert-ui-runtime/src/text.rs crates/pert-ui-runtime/src/text/tabs.rs '
+         'crates/pert-ui-runtime/src/text_fields.rs crates/pert-ui-runtime/src/text_selection.rs '
+         'crates/pert-ui-runtime/tests/assets/tab-atoms/* crates/pert-ui/tests/editing/tab_whitespace.rs '
+         'crates/pert-ui/tests/editing/main.rs')
+hanging = 'text::tabs::tests::hanging_tabs_shrink_the_extent_and_translate_right_to_left_public_coordinates'
+checks = [
+    ('01-fmt', 'cargo fmt --all --check', {}),
+    ('02-clippy-runtime', 'cargo clippy --locked -p pert-ui-runtime --all-targets -- -D warnings', {}),
+    ('03-test-runtime-tabs-nocapture', 'cargo test --locked -p pert-ui-runtime --lib text::tabs -- --nocapture --test-threads=1', {}),
+    ('04-test-runtime-tabs-release-nocapture', 'cargo test --locked --release -p pert-ui-runtime --lib text::tabs -- --nocapture --test-threads=1', {}),
+    ('05-test-runtime-hanging-exact', f'cargo test --locked -p pert-ui-runtime --lib -- --exact {hanging}', {}),
+    ('06-test-runtime-text-fields-selection', 'cargo test --locked -p pert-ui-runtime --lib text', {}),
+    ('07-test-runtime-doctests', 'cargo test --locked -p pert-ui-runtime --doc', {}),
+    ('08-test-facade-editing-default', 'cargo test --locked -p pert-ui --test editing', {}),
+    ('09-test-facade-editing-cpu-tabs', 'cargo test --locked -p pert-ui --features cpu --test editing tab_whitespace -- --test-threads=1', {}),
+    ('10-rustdoc-runtime', 'cargo doc --locked -p pert-ui-runtime --no-deps', {'RUSTDOCFLAGS': '-D warnings'}),
+    ('11-rustdoc-facade', 'cargo doc --locked -p pert-ui --no-deps', {'RUSTDOCFLAGS': '-D warnings'}),
+    ('12-git-diff-check', 'git diff --check', {}),
+    ('13-git-status', 'git status --short --untracked-files=all && git rev-parse HEAD', {}),
+    ('14-owned-file-hashes', f'sha256sum {owned}', {}),
+    ('15-text-selection-rustdoc-only', "git diff -U0 crates/pert-ui-runtime/src/text_selection.rs | grep -E '^[+-]' | grep -vE '^(\\+\\+\\+|---) ' | grep -vE '^[+-] *///' ; test $? -eq 1", {}),
+    ('16-production-bytes', f'python3 -I {evidence}/production-bytes.py', {}),
+    ('17-previous-evidence-unchanged', f'cd /home/per/pert-ui-usability && sha256sum -c --quiet {evidence}/pre-edit/previous-evidence-files.sha256 && echo "all $(wc -l < {evidence}/pre-edit/previous-evidence-files.sha256) files of r3-text-implementation-evidence and r3-text-implementation2-evidence unchanged" && cd r3-text-implementation-evidence && sha256sum -c --quiet ../r3-text-implementation2-evidence/pre-repair/previous-evidence-files.sha256 && echo "first set also matches its original 69-file record"', {}),
+]
+only = set(sys.argv[1:])
+summary = []
+for name, command, extra in checks:
+    if only and name not in only:
+        continue
+    start = time.monotonic()
+    result = subprocess.run(command, shell=True, cwd=root, env=dict(env, **extra), capture_output=True, text=True)
+    elapsed = time.monotonic() - start
+    header = f'$ cd {root}\n$ ' + ' '.join(f'{k}={v!r}' for k, v in extra.items()) + (' ' if extra else '') + f'CARGO_TARGET_DIR={target} {command}\n'
+    (out / f'{name}.log').write_text(f'{header}exit status: {result.returncode}\nelapsed: {elapsed:.1f} s\n\n--- stdout ---\n{result.stdout}\n--- stderr ---\n{result.stderr}')
+    line = f'{name}: exit {result.returncode} ({elapsed:.0f} s): {command}'
+    summary.append(line)
+    print(line, flush=True)
+(out / ('summary.txt' if not only else 'summary-partial.txt')).write_text('\n'.join(summary) + '\n')

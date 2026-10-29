@@ -907,6 +907,117 @@ pub(crate) fn steps() -> Vec<Step> {
             check: |ui, _| ensure(!visible(ui, "about"), || "About stayed open".into()),
         },
         Step {
+            name: "menu keyboard: parked title and duplicate motion keep File selected",
+            act: |ui, scene| {
+                show(ui, scene, "menus")?;
+                let page = page(ui, &scene.root, "menus")?;
+                let bar = find(ui, &page, "menu-bar")?;
+                let document = find(ui, &page, "document-focus")?;
+                ui.focus(&document).map_err(failed)?;
+                ui.flush(ui.now()).map_err(failed)?;
+                let (file, view) = {
+                    let driver = Driver::new(ui);
+                    (
+                        driver.exposed_part(&bar, "title/file").map_err(failed)?,
+                        driver.exposed_part(&bar, "title/view").map_err(failed)?,
+                    )
+                };
+                let at = center(ui, &view)?;
+                let before = texts(ui, "menu-bar-status");
+                pointer(ui, at, PointerKind::Move)?;
+                key(ui, KeyCode::F10)?;
+                key(ui, KeyCode::ArrowDown)?;
+                ui.flush(ui.now()).map_err(failed)?;
+                // Native adapters may report an unchanged position again.
+                pointer(ui, at, PointerKind::Move)?;
+                let driver = Driver::new(ui);
+                ensure(
+                    driver.semantics(&file).map_err(failed)?.expanded == Some(true)
+                        && driver.semantics(&view).map_err(failed)?.expanded == Some(false),
+                    || "a stationary View pointer switched the keyboard-opened File menu".into(),
+                )?;
+                key(ui, KeyCode::Enter)?;
+                ui.flush(ui.now()).map_err(failed)?;
+                ensure(texts(ui, "menu-bar-status") != before, || {
+                    "the keyboard command changed no status".into()
+                })
+            },
+            check: |ui, _| {
+                ensure(
+                    texts(ui, "menu-bar-status")
+                        .iter()
+                        .any(|text| text.starts_with("Created sketch ")),
+                    || {
+                        format!(
+                            "wrong command after parked title: {:?}",
+                            texts(ui, "menu-bar-status")
+                        )
+                    },
+                )
+            },
+        },
+        Step {
+            name: "menu keyboard: parked row keeps the first command through reveal refresh",
+            act: |ui, scene| {
+                let page = page(ui, &scene.root, "menus")?;
+                let bar = find(ui, &page, "menu-bar")?;
+                let document = find(ui, &page, "document-focus")?;
+                ui.focus(&document).map_err(failed)?;
+                // Calibrate from the real open row geometry, then close it.
+                key(ui, KeyCode::F10)?;
+                key(ui, KeyCode::ArrowDown)?;
+                ui.flush(ui.now()).map_err(failed)?;
+                let (items, at) = {
+                    let driver = Driver::new(ui);
+                    let file = driver.exposed_part(&bar, "title/file").map_err(failed)?;
+                    let items = driver.exposed_part(&file, "items").map_err(failed)?;
+                    let semantics = driver.semantics(&items).map_err(failed)?;
+                    let [x, y, width, height] = semantics
+                        .items
+                        .get(1)
+                        .and_then(|item| item.bounds)
+                        .ok_or("the second menu row has no visible window bounds")?;
+                    let at = Point::new(x + width / 2.0, y + height / 2.0).map_err(failed)?;
+                    (items, at)
+                };
+                key(ui, KeyCode::Escape)?;
+                ui.focus(&document).map_err(failed)?;
+                ui.flush(ui.now()).map_err(failed)?;
+                let before = texts(ui, "menu-bar-status");
+                pointer(ui, at, PointerKind::Move)?;
+                key(ui, KeyCode::F10)?;
+                key(ui, KeyCode::ArrowDown)?;
+                ui.flush(ui.now()).map_err(failed)?;
+                ensure(
+                    Driver::new(ui)
+                        .semantics(&items)
+                        .map_err(failed)?
+                        .items
+                        .first()
+                        .is_some_and(|item| item.selected),
+                    || "the parked row replaced the keyboard's first command".into(),
+                )?;
+                key(ui, KeyCode::Enter)?;
+                ui.flush(ui.now()).map_err(failed)?;
+                ensure(texts(ui, "menu-bar-status") != before, || {
+                    "the parked-row command changed no status".into()
+                })
+            },
+            check: |ui, _| {
+                ensure(
+                    texts(ui, "menu-bar-status")
+                        .iter()
+                        .any(|text| text.starts_with("Created sketch ")),
+                    || {
+                        format!(
+                            "wrong command after parked row: {:?}",
+                            texts(ui, "menu-bar-status")
+                        )
+                    },
+                )
+            },
+        },
+        Step {
             name: "settle: with focus and pointer gone nothing stays scheduled",
             act: |ui, _| {
                 ui.clear_focus();

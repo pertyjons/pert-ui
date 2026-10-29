@@ -1,0 +1,96 @@
+$ cd /home/per/pert-ui-usability/r3-text-worktree
+$ CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-text-implementation-target cargo test --locked --release -p pert-ui-runtime --lib text::tabs -- --nocapture
+exit status: 0
+elapsed: 28.5 s
+
+--- stdout ---
+
+running 9 tests
+test text::tabs::tests::consecutive_tabs_merge_and_retained_tabs_split_them ... ok
+test text::tabs::tests::tab_only_text_has_no_coverage_but_its_advance_and_caret_stops ... ok
+test text::tabs::tests::other_unsupported_characters_keep_their_fallback_ink ... ok
+test text::tabs::tests::a_registered_font_ligating_a_tab_keeps_that_glyph_and_hides_pure_tab_atoms ... ok
+test text::tabs::tests::a_tab_and_a_missing_character_never_share_phase_coverage ... ok
+test text::tabs::tests::cached_measured_and_ellipsized_tabs_stay_hidden ... ok
+test text::tabs::tests::rich_spans_gaps_and_icons_keep_reference_color_size_and_alignment ... ok
+worst admitted plain: 16384 bytes, 16385 styles (bound 33796), 2 reference styles; prepare 26.851996ms, pre-fix reference 24.264765ms (one observation, not a bound)
+worst admitted spans: 16384 bytes, 16385 styles (bound 33796), 1025 reference styles; prepare 38.35912ms, pre-fix reference 24.011857ms (one observation, not a bound)
+test text::tabs::tests::the_worst_admitted_alternating_tabs_stay_within_the_style_bound ... ok
+test text::tabs::tests::tabs_keep_the_reference_geometry_and_unicode_analysis_without_their_ink ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 167 filtered out; finished in 0.20s
+
+
+--- stderr ---
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.26
+   Compiling quote v1.0.47
+   Compiling stable_deref_trait v1.2.1
+   Compiling writeable v0.6.4
+   Compiling litemap v0.8.3
+   Compiling once_cell v1.21.4
+   Compiling utf8_iter v1.0.4
+   Compiling libc v0.2.190
+   Compiling icu_properties_data v2.3.0
+   Compiling smallvec v1.16.2
+   Compiling icu_locale_fallback_data v2.3.0
+   Compiling icu_segmenter_data v2.3.0
+   Compiling icu_normalizer_data v2.3.0
+   Compiling foldhash v0.2.0
+   Compiling bitflags v2.13.2
+   Compiling parlance v0.1.1
+   Compiling linebender_resource_handle v0.1.1
+   Compiling thiserror v2.0.21
+   Compiling parley_emoji v0.12.0
+   Compiling zeno v0.3.3
+   Compiling yazi v0.2.1
+   Compiling unicode-segmentation v1.13.3
+   Compiling hashbrown v0.17.1
+   Compiling syn v3.0.6
+   Compiling memmap2 v0.9.11
+   Compiling synstructure v0.14.0
+   Compiling zerovec-derive v0.11.6
+   Compiling displaydoc v0.2.7
+   Compiling bytemuck_derive v1.12.1
+   Compiling thiserror-impl v2.0.21
+   Compiling zerofrom-derive v0.1.8
+   Compiling yoke-derive v0.8.4
+   Compiling zerofrom v0.1.8
+   Compiling yoke v0.8.3
+   Compiling pert-ui-core v0.3.89 (/home/per/pert-ui-usability/r3-text-worktree/crates/pert-ui-core)
+   Compiling zerotrie v0.2.5
+   Compiling zerovec v0.11.8
+   Compiling bytemuck v1.25.2
+   Compiling font-types v0.12.6
+   Compiling read-fonts v0.41.0
+   Compiling tinystr v0.8.4
+   Compiling potential_utf v0.1.6
+   Compiling icu_collections v2.3.0
+   Compiling icu_locale_core v2.3.0
+   Compiling icu_provider v2.3.1
+   Compiling icu_properties v2.3.0
+   Compiling icu_locale_fallback v2.3.0
+   Compiling icu_normalizer v2.3.0
+   Compiling icu_segmenter v2.3.0
+   Compiling parley_data v0.12.0
+   Compiling skrifa v0.44.0
+   Compiling fontique v0.12.0
+   Compiling harfrust v0.12.0
+   Compiling swash v0.2.10
+   Compiling parley_engine v0.12.0
+   Compiling parley v0.12.0
+   Compiling pert-ui-runtime v0.3.89 (/home/per/pert-ui-usability/r3-text-worktree/crates/pert-ui-runtime)
+warning: method `is_empty` is never used
+  --> crates/pert-ui-runtime/src/runtime/measurements.rs:55:19
+   |
+21 | impl Measurements {
+   | ----------------- method in this implementation
+...
+55 |     pub(crate) fn is_empty(&self) -> bool {
+   |                   ^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `pert-ui-runtime` (lib test) generated 1 warning
+    Finished `release` profile [optimized] target(s) in 28.26s
+     Running unittests src/lib.rs (/home/per/pert-ui-usability/r3-text-implementation-target/release/deps/pert_ui_runtime-7750fa3f24f72389)

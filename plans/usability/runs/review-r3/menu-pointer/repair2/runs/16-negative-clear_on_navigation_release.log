@@ -1,0 +1,95 @@
+# started 2026-10-29T11:07:21+01:00
+# cwd /home/per/pert-ui-usability/r3-menu-worktree  CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-menu-implementation-target
+# command: cargo test --locked -p pert-ui --test surfaces menu_pointer_ownership
+# HEAD b9e4c6cfc2444c5c5fcea63a390e9e2038699dd4
+# git status --porcelain:
+ M crates/pert-ui-runtime/src/activation.rs
+ M crates/pert-ui-runtime/src/menu.rs
+ M crates/pert-ui-runtime/src/menu_bar.rs
+ M crates/pert-ui-runtime/src/select.rs
+ M crates/pert-ui/tests/surfaces/main.rs
+?? crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs
+# hashes before:
+45815140675065ab492c4ac273d8c61c6ccbb4cf02415fcfaf742d0af259c3f7  crates/pert-ui-runtime/src/select.rs
+a9241464095c12e9a2b1ae33d56ddf2c67ad05caa0cb1324e82501d03d43401e  crates/pert-ui-runtime/src/menu_bar.rs
+5a895d784a4ff23834fdf98fc928337eb2e5536811ccddd47c9a07c0a863e64e  crates/pert-ui-runtime/src/menu.rs
+29d28116b00b3e3241998fa8b80368e448fb8638c446baba23ffac82b83afb1e  crates/pert-ui-runtime/src/activation.rs
+14eea5b3899b4f52eb97b12bf3962d39d445e1071cbcc1482b24cfdbabc702a4  crates/pert-ui/tests/surfaces/main.rs
+f4c8f45dab4bb2a86f63430ec4f1604c111651074331ce9e7376b372cbde8ab8  crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs
+# mtimes before:
+1793268441.855955694 crates/pert-ui-runtime/src/select.rs
+1793268441.801478304 crates/pert-ui-runtime/src/menu_bar.rs
+1793268383.200071164 crates/pert-ui-runtime/src/menu.rs
+1793268441.801478304 crates/pert-ui-runtime/src/activation.rs
+1793266761.816117993 crates/pert-ui/tests/surfaces/main.rs
+1793268293.610582542 crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs
+# ---- output ----
+   Compiling pert-ui-runtime v0.3.90 (/home/per/pert-ui-usability/r3-menu-worktree/crates/pert-ui-runtime)
+   Compiling pert-ui-wgpu v0.3.90 (/home/per/pert-ui-usability/r3-menu-worktree/crates/pert-ui-wgpu)
+   Compiling pert-ui v0.3.90 (/home/per/pert-ui-usability/r3-menu-worktree/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.49s
+     Running tests/surfaces/main.rs (/home/per/pert-ui-usability/r3-menu-implementation-target/debug/deps/surfaces-0130818f288f7c6d)
+
+running 34 tests
+test menu_pointer_ownership::a_repeated_or_reentering_title_position_after_keyboard_opening_switches_nothing ... ok
+test menu_pointer_ownership::a_context_menu_opened_by_key_ignores_a_parked_pointer ... ok
+test menu_pointer_ownership::a_press_highlights_its_row_without_a_move_and_a_release_elsewhere_runs_nothing ... ok
+test menu_pointer_ownership::actual_motion_to_another_title_switches_menus_and_a_repeat_does_not ... ok
+test menu_pointer_ownership::a_menu_the_pointer_drives_follows_changed_rows_and_a_keyboard_one_keeps_its_row ... ok
+test menu_pointer_ownership::a_content_click_beneath_a_menu_does_not_choose_its_row ... ok
+test menu_pointer_ownership::a_redescribed_select_returns_its_highlight_to_the_selection ... ok
+test menu_pointer_ownership::a_select_disabled_and_enabled_again_by_redescription_keeps_its_row ... ok
+test menu_pointer_ownership::a_pointer_parked_where_a_menu_opens_does_not_take_its_keyboard_choice ... ok
+test menu_pointer_ownership::actual_motion_takes_the_highlight_and_the_keyboard_takes_it_back ... ok
+test menu_pointer_ownership::a_bound_select_the_pointer_drives_follows_changed_options ... ok
+test menu_pointer_ownership::escape_and_release_end_an_armed_key_and_motion_takes_the_highlight_again ... ok
+test menu_pointer_ownership::keyboard_left_and_right_between_menus_survive_a_repeated_title_position ... ok
+test menu_pointer_ownership::a_revoked_and_restored_select_compares_motion_with_positions_seen_while_revoked ... ok
+test menu_pointer_ownership::a_branch_clicked_without_a_move_is_the_row_right_and_left_return_to ... ok
+test menu_pointer_ownership::reopening_a_menu_under_a_stationary_pointer_starts_from_its_first_row ... ok
+test menu_pointer_ownership::reentering_the_window_at_the_same_position_is_stationary_until_it_moves ... ok
+test menu_pointer_ownership::enter_or_space_during_a_pointer_press_takes_neither_the_highlight_nor_the_activation ... ok
+test menu_pointer_ownership::right_on_a_row_without_a_submenu_takes_the_highlight_from_the_pointer ... ok
+test menu_pointer_ownership::motion_onto_a_separator_or_disabled_row_takes_the_highlight_without_choosing_it ... ok
+test menu_pointer_ownership::a_context_menu_opened_at_the_pointer_scrolls_by_key_beneath_it ... ok
+test menu_pointer_ownership::returning_from_content_to_a_title_position_seen_before_switches_menus ... ok
+test menu_pointer_ownership::a_native_like_coordinate_sequence_keeps_the_keyboard_choice_until_real_motion ... ok
+test menu_pointer_ownership::only_a_wheel_that_scrolls_hands_the_highlight_to_the_pointer ... ok
+test menu_pointer_ownership::right_and_left_keep_the_keyboard_branch_under_a_parked_parent_pointer ... ok
+test menu_pointer_ownership::select_and_inline_select_lists_ignore_a_parked_pointer ... ok
+test menu_pointer_ownership::an_os_repeat_of_a_held_navigation_key_takes_the_highlight_back_from_motion ... ok
+test menu_pointer_ownership::the_p12_pointer_positions_leave_a_keyboard_opened_file_menu_open ... ok
+test menu_pointer_ownership::keyboard_navigation_of_a_long_menu_never_stalls_under_a_parked_pointer ... ok
+test menu_pointer_ownership::pointer_input_cannot_move_a_choice_armed_by_enter_or_space ... ok
+test menu_pointer_ownership::releases_other_keys_and_modified_navigation_leave_the_pointer_its_highlight ... FAILED
+test menu_pointer_ownership::long_select_and_inline_select_lists_scroll_by_key_under_a_parked_pointer ... ok
+test menu_pointer_ownership::an_armed_enter_or_space_takes_the_pointers_highlight_in_a_select ... ok
+test menu_pointer_ownership::an_armed_enter_or_space_takes_the_pointers_highlight_until_it_releases ... ok
+
+failures:
+
+---- menu_pointer_ownership::releases_other_keys_and_modified_navigation_leave_the_pointer_its_highlight stdout ----
+
+thread 'menu_pointer_ownership::releases_other_keys_and_modified_navigation_leave_the_pointer_its_highlight' (3818828) panicked at crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs:1493:9:
+assertion `left == right` failed: Down released after motion
+  left: Some("Gamma")
+ right: Some("Beta")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    menu_pointer_ownership::releases_other_keys_and_modified_navigation_leave_the_pointer_its_highlight
+
+test result: FAILED. 33 passed; 1 failed; 0 ignored; 0 measured; 464 filtered out; finished in 0.12s
+
+error: test failed, to rerun pass `-p pert-ui --test surfaces`
+# ---- end output ----
+# hashes after:
+45815140675065ab492c4ac273d8c61c6ccbb4cf02415fcfaf742d0af259c3f7  crates/pert-ui-runtime/src/select.rs
+a9241464095c12e9a2b1ae33d56ddf2c67ad05caa0cb1324e82501d03d43401e  crates/pert-ui-runtime/src/menu_bar.rs
+5a895d784a4ff23834fdf98fc928337eb2e5536811ccddd47c9a07c0a863e64e  crates/pert-ui-runtime/src/menu.rs
+29d28116b00b3e3241998fa8b80368e448fb8638c446baba23ffac82b83afb1e  crates/pert-ui-runtime/src/activation.rs
+14eea5b3899b4f52eb97b12bf3962d39d445e1071cbcc1482b24cfdbabc702a4  crates/pert-ui/tests/surfaces/main.rs
+f4c8f45dab4bb2a86f63430ec4f1604c111651074331ce9e7376b372cbde8ab8  crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs
+# finished 2026-10-29T11:07:27+01:00
+# exit_status 101

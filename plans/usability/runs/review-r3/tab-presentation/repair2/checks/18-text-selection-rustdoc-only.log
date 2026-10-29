@@ -1,0 +1,8 @@
+$ cd /home/per/pert-ui-usability/r3-text-worktree
+$ CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-text-implementation-target git diff -U0 crates/pert-ui-runtime/src/text_selection.rs | grep -E '^[+-]' | grep -vE '^(\+\+\+|---) ' | grep -vE '^[+-] *///' ; test $? -eq 1
+exit status: 0
+elapsed: 0.0 s
+
+--- stdout ---
+
+--- stderr ---

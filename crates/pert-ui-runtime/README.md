@@ -465,6 +465,15 @@ below, give that overflow scrolling access.
 
 ## Text and actions
 
+Literal U+0009 preserves canonical bytes, Unicode analysis, wrapping and
+font-dependent shaped advance, while tab-only atoms emit no coverage. This is
+not aligned tab stops. A registered font's inseparable tab/printable atom keeps
+its ink. Other unsupported characters retain their fallback/missing-glyph ink.
+Removing a hanging tab's old box can shrink TextLayout's size and translate
+public RTL caret/selection positions through its changed origin; hit testing
+uses that same origin. Existing empty non-tab rasters can still contribute pen
+positions to bounds. TextArea documents its current hanging-caret reveal limit.
+
 Default labels wrap to allocated width. Buttons supply themed padding, a default Standard 64×32 logical
 minimum, visible focus, pointer capture and matched-release Space/Enter activation.
 Ignored input bubbles through logical ancestors; Tab traverses visible focus targets.
@@ -494,7 +503,8 @@ assert!(!scene.masks().is_empty());
 
 Parley shapes the bundled OFL-licensed Noto Sans font and Swash prepares coverage
 on the UI thread. No system font discovery, color emoji or complete script coverage
-is promised; unsupported characters use the font's missing-glyph mark. Body,
+is promised; unsupported characters use the font's missing-glyph mark, except non-printing
+literal tabs with their existing shaped advance. Body,
 heading and caption presets default to 14/18/12 logical pixels, overridable
 through theme metrics. Font assets and attribution
 ship in the runtime package. Text admission limits and bounded cache behavior are
@@ -1389,7 +1399,9 @@ fonts.reset_default(FontRole::Body)?;
 
 Heading inherits Body until separately overridden. Explicit segment fonts take
 precedence over roles. Ordinary text then falls back to the original bundled text
-fonts; remaining missing characters use the missing-glyph mark. Registration alone
+fonts; remaining missing characters use the missing-glyph mark, except
+non-printing literal tabs. A registered mixed tab/printable ligature keeps its
+inseparable ink. Registration alone
 does not schedule work. Changed defaults remeasure only affected layout readers;
 fixed-geometry `Painter` readers repaint. Hidden readers defer work. Handles are
 weak, mutations obey the runtime's phase restrictions, and shutdown returns `Closed`.

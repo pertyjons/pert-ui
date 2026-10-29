@@ -1,0 +1,50 @@
+# started 2026-10-29T10:40:02+01:00
+# cwd /home/per/pert-ui-usability/r3-menu-worktree  CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-menu-implementation-target
+# command: cargo test --locked -p pert-ui --test surfaces menu_pointer_ownership::escape
+# HEAD b9e4c6cfc2444c5c5fcea63a390e9e2038699dd4
+# git status --porcelain:
+ M crates/pert-ui-runtime/src/activation.rs
+ M crates/pert-ui-runtime/src/menu_bar.rs
+ M crates/pert-ui-runtime/src/select.rs
+ M crates/pert-ui/tests/surfaces/main.rs
+?? crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs
+# hashes before:
+86e943e363aa849e0f09d2e89bfaad034e6c9aba4e2d8806a07674b8da233554  crates/pert-ui-runtime/src/select.rs
+fadf77fd7e71d2d7421bad95d41b7f4c8f3d7560e3250b7cade3a537b0fa7431  crates/pert-ui-runtime/src/menu_bar.rs
+4ad4e0e04d221ea9f21e9d3edf20403cb7b58b90da4810f902fb478bce9335b6  crates/pert-ui-runtime/src/menu.rs
+29d28116b00b3e3241998fa8b80368e448fb8638c446baba23ffac82b83afb1e  crates/pert-ui-runtime/src/activation.rs
+14eea5b3899b4f52eb97b12bf3962d39d445e1071cbcc1482b24cfdbabc702a4  crates/pert-ui/tests/surfaces/main.rs
+02f00dc4f772cba0bd9be935463c47ae26fdb0019c995f8f605aeee403bec0ad  crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs
+# ---- output ----
+   Compiling pert-ui v0.3.90 (/home/per/pert-ui-usability/r3-menu-worktree/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.45s
+     Running tests/surfaces/main.rs (/home/per/pert-ui-usability/r3-menu-implementation-target/debug/deps/surfaces-0130818f288f7c6d)
+
+running 1 test
+test menu_pointer_ownership::escape_and_release_end_an_armed_key_and_motion_takes_the_highlight_again ... FAILED
+
+failures:
+
+---- menu_pointer_ownership::escape_and_release_end_an_armed_key_and_motion_takes_the_highlight_again stdout ----
+
+thread 'menu_pointer_ownership::escape_and_release_end_an_armed_key_and_motion_takes_the_highlight_again' (3720566) panicked at crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs:480:5:
+Escape only cancelled the armed Enter
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    menu_pointer_ownership::escape_and_release_end_an_armed_key_and_motion_takes_the_highlight_again
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 489 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p pert-ui --test surfaces`
+# ---- end output ----
+# hashes after:
+86e943e363aa849e0f09d2e89bfaad034e6c9aba4e2d8806a07674b8da233554  crates/pert-ui-runtime/src/select.rs
+fadf77fd7e71d2d7421bad95d41b7f4c8f3d7560e3250b7cade3a537b0fa7431  crates/pert-ui-runtime/src/menu_bar.rs
+4ad4e0e04d221ea9f21e9d3edf20403cb7b58b90da4810f902fb478bce9335b6  crates/pert-ui-runtime/src/menu.rs
+29d28116b00b3e3241998fa8b80368e448fb8638c446baba23ffac82b83afb1e  crates/pert-ui-runtime/src/activation.rs
+14eea5b3899b4f52eb97b12bf3962d39d445e1071cbcc1482b24cfdbabc702a4  crates/pert-ui/tests/surfaces/main.rs
+02f00dc4f772cba0bd9be935463c47ae26fdb0019c995f8f605aeee403bec0ad  crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs
+# finished 2026-10-29T10:40:03+01:00
+# exit_status 101

@@ -1,0 +1,127 @@
+"""Applies one named negative-control mutation to the menu worktree sources.
+
+Each mutation replaces exact text that must occur once, so a mutation that no
+longer matches fails loudly instead of silently testing nothing. Each removes
+or widens exactly one ownership transition the repair tests claim to cover.
+"""
+import sys
+
+W = "/home/per/pert-ui-usability/r3-menu-worktree/crates/pert-ui-runtime/src/"
+
+def edit(path, old, new):
+    p = W + path
+    s = open(p).read()
+    if s.count(old) != 1:
+        sys.exit(f"{path}: expected one match for {old!r}, found {s.count(old)}")
+    open(p, "w").write(s.replace(old, new))
+
+def arming_keeps_ownership():
+    # An Enter/Space press that arms no longer takes the highlight.
+    edit("select.rs", """            if !was_armed && self.input.key_armed() {
+                self.pointer_owns = false;
+            }
+""", """            let _ = was_armed;
+""")
+
+def move_ignores_armed_key():
+    # Actual motion gains ownership even while a key is armed.
+    edit("select.rs", """                    && cx.pointer_inside()
+                    && !key_armed
+                {""", """                    && cx.pointer_inside()
+                {""")
+
+def press_ignores_armed_key():
+    # A primary press takes and moves the highlight even while a key is armed.
+    edit("select.rs", """                if !key_armed {
+                    self.pointer_owns = true;
+                    if let Some(value) = &self.pressed""", """                if true {
+                    self.pointer_owns = true;
+                    if let Some(value) = &self.pressed""")
+
+def wheel_ignores_armed_key():
+    # A scrolling wheel gains ownership even while a key is armed.
+    edit("select.rs", """                    if !key_armed {
+                        self.pointer_owns = true;
+                    }
+                    cx.invalidate(Invalidation::Layout);""", """                    self.pointer_owns = true;
+                    cx.invalidate(Invalidation::Layout);""")
+
+def key_arms_over_pointer():
+    # Shared activation: Enter/Space arms even while a pointer press is armed.
+    edit("activation.rs", """KeyTransition::Pressed if self.key.is_none() && !self.pointer => {""",
+         """KeyTransition::Pressed if self.key.is_none() => {""")
+
+def clear_on_every_activation_press():
+    # Every Enter/Space press takes the highlight, armed or not.
+    edit("select.rs", """            if !was_armed && self.input.key_armed() {""",
+         """            if !was_armed && e.transition == KeyTransition::Pressed {""")
+
+def separator_or_disabled_motion_ignored():
+    # Only motion over an enabled row gains ownership.
+    edit("select.rs", """                    && cx.pointer_inside()
+                    && !key_armed
+                {""", """                    && cx.pointer_inside()
+                    && !key_armed
+                    && self.hit(cx, e).is_some()
+                {""")
+
+def repeat_keeps_ownership():
+    # Only a navigation key's press, not its OS repeat, takes the highlight.
+    edit("select.rs", """        ) {
+            self.pointer_owns = false;
+            let enabled: Vec<_> = self""", """        ) {
+            self.pointer_owns &= e.transition != KeyTransition::Pressed;
+            let enabled: Vec<_> = self""")
+
+def clear_on_navigation_release():
+    # A navigation key's release takes the highlight too.
+    edit("select.rs", """        if matches!(
+            e.transition,
+            KeyTransition::Pressed | KeyTransition::Repeated
+        ) {
+            self.pointer_owns = false;
+            let enabled""", """        self.pointer_owns = false;
+        if matches!(
+            e.transition,
+            KeyTransition::Pressed | KeyTransition::Repeated
+        ) {
+            self.pointer_owns = false;
+            let enabled""")
+
+def clear_on_modified_navigation():
+    # Modified navigation, left to command bindings, takes the highlight.
+    edit("select.rs", """        {
+            return Ok(InputOutcome::Ignored);
+        }
+        // A key that moves the highlight""", """        {
+            self.pointer_owns = false;
+            return Ok(InputOutcome::Ignored);
+        }
+        // A key that moves the highlight""")
+
+def clear_on_ignored_key():
+    # A key the list ignores takes the highlight.
+    edit("select.rs", """                | KeyCode::PageDown
+        ) {
+            return Ok(InputOutcome::Ignored);
+        }
+        if matches!(""", """                | KeyCode::PageDown
+        ) {
+            self.pointer_owns = false;
+            return Ok(InputOutcome::Ignored);
+        }
+        if matches!(""")
+
+def clear_on_sideways_release():
+    # Right's release, not only its press, takes the highlight.
+    edit("select.rs", """        if control == KeyCode::ArrowRight && self.on_right.is_some() {
+            if e.transition == KeyTransition::Pressed {""", """        if control == KeyCode::ArrowRight && self.on_right.is_some() {
+            self.pointer_owns = false;
+            if e.transition == KeyTransition::Pressed {""")
+
+if __name__ == "__main__":
+    name = sys.argv[1]
+    f = globals().get(name)
+    if not callable(f) or name.startswith("_") or name in ("edit",):
+        sys.exit(f"unknown mutation {name}")
+    f()

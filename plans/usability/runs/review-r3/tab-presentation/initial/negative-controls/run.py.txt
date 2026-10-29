@@ -1,0 +1,59 @@
+"""Temporarily mutate the tab implementation, run the tab tests, restore.
+
+Each control must make at least one named test fail. Files are restored from
+backups and their hashes checked after every control.
+"""
+import hashlib, pathlib, subprocess, sys, os
+root = pathlib.Path('/home/per/pert-ui-usability/r3-text-worktree')
+out = pathlib.Path(__file__).parent
+text = root / 'crates/pert-ui-runtime/src/text.rs'
+tabs = root / 'crates/pert-ui-runtime/src/text/tabs.rs'
+originals = {p: p.read_bytes() for p in (text, tabs)}
+digest = {p: hashlib.sha256(b).hexdigest() for p, b in originals.items()}
+controls = {
+    'N1-no-hiding': (text, '''        let hidden = tabs::hidden_ranges(&resolved.text, &[]);
+        #[cfg(test)]''', '''        let hidden: Vec<std::ops::Range<usize>> = Vec::new();
+        #[cfg(test)]'''),
+    'N2-no-mixed-fallback': (text, '''        let mixed = tabs::mixed_tabs(&layout, &resolved.text);''', '''        let mixed: Vec<usize> = { let _ = tabs::mixed_tabs; Vec::new() };'''),
+    'N3-icon-ignores-hidden-tab-metrics': (text, '''        TextBrush::HiddenTab => false,
+    };''', '''        TextBrush::HiddenTab => true,
+    };'''),
+    'N4-skip-glyph-zero-instead-of-hidden-runs': (text, '''                let TextBrush::Color(brush) = glyph_run.style().brush else {
+                    continue;
+                };
+                let alignment = alignments.get(&brush).copied();''', '''                let brush = match glyph_run.style().brush { TextBrush::Color(b) => b, TextBrush::HiddenTab => 0 };
+                let alignment = alignments.get(&brush).copied();'''),
+    'N5-hidden-runs-as-color-0-in-signature': (text, '''                        let TextBrush::Color(brush) = glyph_run.style().brush else {
+                            return None;
+                        };''', '''                        let brush = match glyph_run.style().brush { TextBrush::Color(b) => b, TextBrush::HiddenTab => 0 };'''),
+    'N6-retained-tab-does-not-split-merge': (tabs, '''        if retained.next_if_eq(&index).is_some() {
+            continue;
+        }''', '''        let _ = retained.next_if_eq(&index);'''),
+}
+env = dict(os.environ, CARGO_TARGET_DIR='/home/per/pert-ui-usability/r3-text-implementation-target')
+summary = []
+try:
+    for name, (path, old, new) in controls.items():
+        source = originals[path].decode()
+        assert source.count(old) == 1, name
+        mutated = source.replace(old, new)
+        if name == 'N4-skip-glyph-zero-instead-of-hidden-runs':
+            glyph = '''                    let id = u16::try_from(glyph.id).map_err(|_| TextError::Font)?;'''
+            assert mutated.count(glyph) == 1
+            mutated = mutated.replace(glyph, glyph + '\n                    if id == 0 { continue; }')
+        path.write_text(mutated)
+        result = subprocess.run(['cargo', 'test', '--locked', '-p', 'pert-ui-runtime', '--lib', 'text::tabs'],
+                                cwd=root, env=env, capture_output=True, text=True)
+        log = out / f'{name}.log'
+        log.write_text(f'$ cargo test --locked -p pert-ui-runtime --lib text::tabs  # with mutation {name}\nexit status: {result.returncode}\n\n--- stdout ---\n{result.stdout}\n--- stderr ---\n{result.stderr}')
+        failed = [l.split()[1] for l in result.stdout.splitlines() if l.startswith('test ') and l.endswith('FAILED')]
+        summary.append(f'{name}: exit {result.returncode}; failed tests: {failed or "NONE (control not detected)"}')
+        path.write_bytes(originals[path])
+finally:
+    for p, b in originals.items():
+        p.write_bytes(b)
+    for p in originals:
+        assert hashlib.sha256(p.read_bytes()).hexdigest() == digest[p], p
+summary.append('restored: ' + ', '.join(f'{p.name} {digest[p]}' for p in originals))
+(out / 'summary.txt').write_text('\n'.join(summary) + '\n')
+print('\n'.join(summary))

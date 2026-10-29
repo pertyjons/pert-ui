@@ -1,0 +1,4 @@
+original crates/pert-ui-runtime/src/text_selection.rs sha256 a0cbc2e3375e12b0702df6e8e868e0f5fc0bf8ac76fd57be0aa10a34f3af5d28
+N10-at-point-ignores-origin: exit 101; failing tests ['text::tabs::tests::hanging_tabs_shrink_the_extent_and_translate_right_to_left_public_coordinates', 'text::tabs::tests::tabs_keep_the_reference_geometry_and_unicode_analysis_without_their_ink']; restored identical
+N11-word-at-point-ignores-origin: exit 101; failing tests ['text::tabs::tests::hanging_tabs_shrink_the_extent_and_translate_right_to_left_public_coordinates', 'text::tabs::tests::tabs_keep_the_reference_geometry_and_unicode_analysis_without_their_ink']; restored identical
+post-restore focused run: exit 0; recompiled pert-ui-runtime: True; final sha256 a0cbc2e3375e12b0702df6e8e868e0f5fc0bf8ac76fd57be0aa10a34f3af5d28

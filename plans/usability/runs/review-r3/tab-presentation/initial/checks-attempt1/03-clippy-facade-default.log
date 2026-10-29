@@ -1,0 +1,38 @@
+$ cd /home/per/pert-ui-usability/r3-text-worktree
+$ CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-text-implementation-target cargo clippy --locked -p pert-ui --all-targets -- -D warnings
+exit status: 101
+elapsed: 11.7 s
+
+--- stdout ---
+
+--- stderr ---
+   Compiling rustix v1.1.5
+    Checking wayland-backend v0.3.17
+    Checking polling v3.11.0
+    Checking gethostname v1.1.0
+    Checking x11rb v0.13.2
+    Checking calloop v0.13.0
+    Checking wayland-client v0.31.15
+    Checking wayland-csd-frame v0.3.0
+    Checking wayland-protocols v0.32.13
+    Checking wayland-cursor v0.31.14
+    Checking calloop-wayland-source v0.3.0
+    Checking wayland-protocols-wlr v0.3.12
+    Checking wayland-protocols-plasma v0.3.12
+    Checking smithay-client-toolkit v0.19.2
+    Checking wl-clipboard-rs v0.9.4
+    Checking arboard v3.7.0
+    Checking sctk-adwaita v0.10.1
+    Checking winit v0.30.13
+    Checking pert-ui v0.3.89 (/home/per/pert-ui-usability/r3-text-worktree/crates/pert-ui)
+error: unused import: `time::Duration`
+  --> crates/pert-ui/tests/editing/tab_whitespace.rs:12:34
+   |
+12 | use std::{cell::RefCell, rc::Rc, time::Duration};
+   |                                  ^^^^^^^^^^^^^^
+   |
+   = note: `-D unused-imports` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(unused_imports)]`
+
+error: could not compile `pert-ui` (test "editing") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

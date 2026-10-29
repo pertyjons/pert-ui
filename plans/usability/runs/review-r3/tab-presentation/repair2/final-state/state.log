@@ -1,0 +1,35 @@
+$ date -Is
+2026-10-29T10:51:12+01:00
+$ git rev-parse HEAD
+3bbfb813a8c02c417d68386b0c5547b4b8139580
+$ git status --short --untracked-files=all
+ M crates/pert-ui-runtime/src/text.rs
+ M crates/pert-ui-runtime/src/text_fields.rs
+ M crates/pert-ui-runtime/src/text_selection.rs
+ M crates/pert-ui/tests/editing/main.rs
+?? crates/pert-ui-runtime/src/text/tabs.rs
+?? crates/pert-ui-runtime/tests/assets/tab-atoms/README.md
+?? crates/pert-ui-runtime/tests/assets/tab-atoms/TabAtomFixture.ttf
+?? crates/pert-ui-runtime/tests/assets/tab-atoms/generate.py
+?? crates/pert-ui/tests/editing/tab_whitespace.rs
+$ git diff --stat
+ crates/pert-ui-runtime/src/text.rs           | 135 ++++++++++++++++++++++-----
+ crates/pert-ui-runtime/src/text_fields.rs    |  12 ++-
+ crates/pert-ui-runtime/src/text_selection.rs |  13 ++-
+ crates/pert-ui/tests/editing/main.rs         |   1 +
+ 4 files changed, 136 insertions(+), 25 deletions(-)
+$ sha256sum (owned files)
+dce308f54b5eb7d3ce3b798d949c5ffb5b33154b34d4f2219c6f82778ba88568  crates/pert-ui-runtime/src/text.rs
+2e405639669871c7056a699cade99ab438487fa5581d4577d1e5d2bcc9b6805c  crates/pert-ui-runtime/src/text/tabs.rs
+a55a6642c4fb15abcfb4a829192ab59ccca21547ad9535e10626312660edb661  crates/pert-ui-runtime/src/text_fields.rs
+031dbc40303f01246a899f2c4f8afcca0a8b2b7d1a56c5999f4c1d7612e698b5  crates/pert-ui-runtime/src/text_selection.rs
+4560cc006135ca857ead07ca3aa8829b54b160f9b578fe6915342f67ed507607  crates/pert-ui-runtime/tests/assets/tab-atoms/README.md
+ef405e8ef511ced850becf815e71f0a4461f693a76b426814425fbded332450b  crates/pert-ui-runtime/tests/assets/tab-atoms/TabAtomFixture.ttf
+a8712d16ebebe6b34b5228961fe24d342232d8b339949f22e28078b0f2c9394a  crates/pert-ui-runtime/tests/assets/tab-atoms/generate.py
+7886f565c81928cfe6a1204356e3efad535d89da8a6d09bd03d075fca7da3e3d  crates/pert-ui/tests/editing/tab_whitespace.rs
+8e471172d9bda0cc31363c0ae64aa5ddb288a4e38ef66093365240974f405d3f  crates/pert-ui/tests/editing/main.rs
+$ previous evidence: file hashes vs pre-repair record
+identical (69 files)
+$ original implementation1 run records
+f29d4f6afb4d9e48d3d7831eed3b20c9c8e3bd87a52bebd58c0dee6f357ffc79  /home/per/pert-ui-usability/r3-text-implementation1/prompt.md
+da5baada8a3ac0725fa595cd0dc1bd0d7185b512eccf77802defdb4c052f5d5f  /home/per/pert-ui-usability/r3-text-implementation1/result.md

@@ -1,0 +1,10 @@
+--- /home/per/pert-ui-usability/r3-menu-implementation2-evidence/negative-controls/separator_or_disabled_motion_ignored/backup/select.rs	2026-10-29 11:07:10.756717001 +0100
++++ crates/pert-ui-runtime/src/select.rs	2026-10-29 11:07:10.775398765 +0100
+@@ -588,6 +588,7 @@
+                     && previous != Some(e.position())
+                     && cx.pointer_inside()
+                     && !key_armed
++                    && self.hit(cx, e).is_some()
+                 {
+                     self.pointer_owns = true;
+                 }

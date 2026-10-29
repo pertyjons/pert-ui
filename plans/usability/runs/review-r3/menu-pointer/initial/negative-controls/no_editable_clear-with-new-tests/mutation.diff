@@ -1,0 +1,18 @@
+--- /home/per/pert-ui-usability/r3-menu-implementation-evidence/negative-controls/no_editable_clear-with-new-tests/backup/select.rs	2026-10-29 10:47:57.906677652 +0100
++++ crates/pert-ui-runtime/src/select.rs	2026-10-29 10:47:57.939534688 +0100
+@@ -323,7 +323,6 @@
+                 self.enabled = enabled;
+                 if !enabled {
+                     self.editable = false;
+-                    self.pointer_owns = false;
+                     self.pressed = None;
+                     self.input.reset();
+                 }
+@@ -441,7 +440,6 @@
+         }
+         self.enabled = enabled;
+         if self.editable && !editable {
+-            self.pointer_owns = false;
+             self.pressed = None;
+             self.input.reset();
+             cx.cancel_input();

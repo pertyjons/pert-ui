@@ -1235,6 +1235,22 @@ until its action returns and records its own result.
 
 ## Text and draft editing
 
+Literal U+0009 remains canonical text: shaping and Unicode analysis receive its
+original bytes, preserving advance, wrap/bidi fields, grapheme/word boundaries
+and valid offsets. Tab-only atoms produce no ink; a registered font's atom that
+combines tab with printable text keeps its inseparable coverage. There are no
+aligned tab stops, and keyboard Tab navigation is unchanged. Other unsupported
+characters keep fallback/missing-glyph ink.
+
+TextLayout's canvas keeps the logical box and retained non-tab raster bounds,
+including existing empty-raster pen points. Removing a hanging tab's former box
+may shrink width and translate public RTL caret/selection x positions through
+the changed origin. Hit/word testing uses that same coordinate mapping; logical
+analysis positions and vertical origin/baseline remain unchanged. Hanging-
+whitespace geometry can fall outside size(). The current TextArea scroll clamp
+cannot reveal every such caret; this separately verified limitation is recorded
+for follow-up, not hidden by normalized-coordinate comparisons.
+
 `TextField` and `TextArea` edit UI-local text with selection, clipboard and IME
 composition. `DraftEditor` embeds a text session within an existing component;
 numeric and inline controls can show formatted values while keeping the same

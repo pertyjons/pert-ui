@@ -1,0 +1,22 @@
+--- /home/per/pert-ui-usability/r3-menu-implementation-evidence/negative-controls/bar_wide_position/backup/menu_bar.rs	2026-10-29 10:32:07.716416217 +0100
++++ crates/pert-ui-runtime/src/menu_bar.rs	2026-10-29 10:41:35.273419792 +0100
+@@ -183,6 +183,7 @@
+     }
+ }
+ 
++thread_local! { static BAR_WIDE: Cell<Option<crate::Point>> = const { Cell::new(None) }; }
+ /// One title of a bar: the anchor and owner of its menu, or a direct action.
+ struct MenuTitle {
+     /// The item key, which the element key `title/{key}` carries.
+@@ -385,9 +386,9 @@
+     ) -> Result<InputOutcome, RuntimeError> {
+         let previous = match e.kind() {
+             PointerKind::Move | PointerKind::Press(_) | PointerKind::Leave => {
+-                self.last_pointer.replace(e.position())
++                BAR_WIDE.with(|cell| cell.replace(Some(e.position())))
+             }
+-            _ => self.last_pointer,
++            _ => BAR_WIDE.with(Cell::get),
+         };
+         let inside = e.kind() != PointerKind::Leave && cx.pointer_inside();
+         if inside != self.hovered {

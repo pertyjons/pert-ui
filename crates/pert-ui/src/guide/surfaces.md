@@ -112,11 +112,20 @@ when the menu opened. [`Button::command`] and its icon-only form
 enabled binding, capturing the context when it is activated, and
 [`Tooltip::command`] shows the command's name and live shortcut as the
 button's help. [`KeyChord::named`] binds a single key such as Space. [`MenuBar`] arranges top-level submenus as a desktop menu
-bar: titles open on press and switch while one is open, F10 focuses the titles,
+bar: titles open on press; actual pointer motion switches an open menu, while
+a stationary pointer leaves keyboard navigation in control. F10 focuses the titles,
 arrows move between titles and menus, and leaving returns focus to the content.
 Give the content to [`MenuBar::content`] so F10 reaches the bar from it. There are
 no mnemonics and no native OS menus; see the
 [menus design note](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md).
+
+A newly opened menu or Select list keeps its initial/selected row under a
+stationary pointer. Handled navigation takes the highlight until actual pointer
+motion, an admitted press or a wheel that scrolls takes it back. A successfully
+armed Enter/Space activation keeps its row through release/cancellation.
+Duplicate same-position host motion does not count; after native scale/zoom
+changes the first physical report may have different logical coordinates and
+count as motion. Menu/Select rustdoc records the full ownership rules.
 
 ```rust
 use pert_ui::prelude::*;

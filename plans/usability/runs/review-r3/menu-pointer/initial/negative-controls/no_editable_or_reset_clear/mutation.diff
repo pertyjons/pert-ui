@@ -1,0 +1,26 @@
+--- /home/per/pert-ui-usability/r3-menu-implementation-evidence/negative-controls/no_editable_or_reset_clear/backup/select.rs	2026-10-29 10:48:19.179880664 +0100
++++ crates/pert-ui-runtime/src/select.rs	2026-10-29 10:48:19.219574299 +0100
+@@ -323,7 +323,6 @@
+                 self.enabled = enabled;
+                 if !enabled {
+                     self.editable = false;
+-                    self.pointer_owns = false;
+                     self.pressed = None;
+                     self.input.reset();
+                 }
+@@ -441,7 +440,6 @@
+         }
+         self.enabled = enabled;
+         if self.editable && !editable {
+-            self.pointer_owns = false;
+             self.pressed = None;
+             self.input.reset();
+             cx.cancel_input();
+@@ -758,7 +756,6 @@
+     fn input_reset(&mut self) {
+         self.input.reset();
+         self.pressed = None;
+-        self.pointer_owns = false;
+     }
+     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
+         let size = p.size();

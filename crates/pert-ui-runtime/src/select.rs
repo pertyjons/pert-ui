@@ -116,6 +116,16 @@ pub(crate) struct OptionList<T> {
     availability: Permission,
     editable: bool,
     active: Option<T>,
+    /// Whether the pointer owns the highlight: it moved over this list, armed
+    /// a press on it or scrolled it since the list was last shown, a key took
+    /// the highlight or the pointer left. Only then does a move, including the runtime's
+    /// refreshed one under a stationary pointer, set the active row.
+    pointer_owns: bool,
+    /// The window position of the last move, refreshed or not, press or leave
+    /// this list received, whether or not it was editable. A host move at
+    /// the same position is no motion. Never cleared: a list shown again, or
+    /// made editable again, compares with it.
+    last_pointer: Option<crate::Point>,
     pressed: Option<T>,
     retargeted: bool,
     input: ActivationState,
@@ -152,6 +162,8 @@ impl<T: Clone + Eq + 'static> OptionList<T> {
             availability: Permission::allowed(),
             editable: true,
             active: None,
+            pointer_owns: false,
+            last_pointer: None,
             pressed: None,
             retargeted: false,
             input: ActivationState::default(),
@@ -226,7 +238,9 @@ impl<T: Clone + Eq + 'static> OptionList<T> {
     /// shortcuts, enablement, separators and callbacks. The callbacks reach the
     /// mounted level through its shared state, which the level's own
     /// reconciliation points at. The highlight is kept while its row survives,
-    /// and so are the scroll offset and the measured row height.
+    /// and so are the scroll offset, the measured row height and whether the
+    /// pointer owns the highlight: a list the pointer drives follows its
+    /// changed rows.
     fn reconcile_menu(&mut self, next: Self) -> Option<Invalidation> {
         let Self {
             options,
@@ -309,6 +323,7 @@ impl<T: Clone + Eq + 'static> Component for OptionList<T> {
                 self.enabled = enabled;
                 if !enabled {
                     self.editable = false;
+                    self.pointer_owns = false;
                     self.pressed = None;
                     self.input.reset();
                 }
@@ -340,10 +355,12 @@ impl<T: Clone + Eq + 'static> Component for OptionList<T> {
         if !changed {
             return availability_changed.then_some(Invalidation::Paint);
         }
-        // Pending activation belongs to the old description.
+        // Pending activation belongs to the old description, and the update
+        // this schedules chooses the highlight again from the selection.
         self.pressed = None;
         self.input.reset();
         self.active = None;
+        self.pointer_owns = false;
         Some(Invalidation::Layout)
     }
     fn focusable(&self) -> bool {
@@ -424,6 +441,7 @@ impl<T: Clone + Eq + 'static> Component for OptionList<T> {
         }
         self.enabled = enabled;
         if self.editable && !editable {
+            self.pointer_owns = false;
             self.pressed = None;
             self.input.reset();
             cx.cancel_input();
@@ -460,6 +478,9 @@ impl<T: Clone + Eq + 'static> Component for OptionList<T> {
         Ok(())
     }
     fn visibility_changed(&mut self, visible: bool) {
+        // A list shown under a stationary pointer keeps its first or selected
+        // row until the pointer moves or acts on it.
+        self.pointer_owns = false;
         if visible {
             self.active = None;
             self.geometry.offset.set(0.0);
@@ -537,6 +558,17 @@ impl<T: Clone + Eq + 'static> Component for OptionList<T> {
         cx: &mut EventContext,
         e: PointerEvent,
     ) -> Result<InputOutcome, RuntimeError> {
+        // Positions are compared in window coordinates, which stay put while
+        // the rows scroll or the list moves under a stationary pointer.
+        let previous = match e.kind() {
+            PointerKind::Move | PointerKind::Press(_) | PointerKind::Leave => {
+                self.last_pointer.replace(e.position())
+            }
+            _ => self.last_pointer,
+        };
+        if e.kind() == PointerKind::Leave {
+            self.pointer_owns = false;
+        }
         if !self.editable {
             return Ok(InputOutcome::Ignored);
         }
@@ -544,15 +576,43 @@ impl<T: Clone + Eq + 'static> Component for OptionList<T> {
         {
             return Ok(InputOutcome::Ignored);
         }
+        // While an Enter or Space press has armed activation its release
+        // chooses the active row, so the pointer only hovers until the key
+        // ends or cancels the gesture.
+        let key_armed = self.input.key_armed();
         let activate = self.input.pointer(cx, e)?;
         match e.kind() {
             PointerKind::Move => {
-                if let Some(value) = self.hit(cx, e) {
+                // A separator or disabled row under real motion counts too.
+                if !e.is_refresh()
+                    && previous != Some(e.position())
+                    && cx.pointer_inside()
+                    && !key_armed
+                {
+                    self.pointer_owns = true;
+                }
+                if self.pointer_owns
+                    && let Some(value) = self.hit(cx, e)
+                    && self.active.as_ref() != Some(&value)
+                {
                     self.active = Some(value);
                     cx.invalidate(Invalidation::Paint);
                 }
             }
-            PointerKind::Press(PointerButton::Primary) => self.pressed = self.hit(cx, e),
+            PointerKind::Press(PointerButton::Primary) => {
+                self.pressed = self.hit(cx, e);
+                // A press that arms the gesture highlights its row without a
+                // move first, as `Driver::click_item` presses.
+                if !key_armed {
+                    self.pointer_owns = true;
+                    if let Some(value) = &self.pressed
+                        && self.active.as_ref() != Some(value)
+                    {
+                        self.active = Some(value.clone());
+                        cx.invalidate(Invalidation::Paint);
+                    }
+                }
+            }
             PointerKind::Release(PointerButton::Primary) => {
                 if let Some(value) = self
                     .pressed
@@ -565,8 +625,14 @@ impl<T: Clone + Eq + 'static> Component for OptionList<T> {
             PointerKind::Scroll(delta) => {
                 let offset = &self.geometry.offset;
                 let next = (offset.get() + delta.y()).clamp(0.0, self.max_offset());
-                // The branch places an open submenu from the offset.
+                // The branch places an open submenu from the offset. Only a
+                // wheel that scrolls takes the highlight, so the refresh after
+                // it moves the highlight under the pointer; one at the limit
+                // leaves the keyboard's row in place.
                 if offset.replace(next) != next {
+                    if !key_armed {
+                        self.pointer_owns = true;
+                    }
                     cx.invalidate(Invalidation::Layout);
                 }
             }
@@ -601,19 +667,24 @@ impl<T: Clone + Eq + 'static> Component for OptionList<T> {
         {
             return Ok(InputOutcome::Ignored);
         }
+        // A key that moves the highlight or acts on it takes the highlight
+        // from the pointer first, even when its action then fails: the row a
+        // stationary pointer rests on must not replace the keyboard's choice.
         if control == KeyCode::ArrowRight && self.on_right.is_some() {
-            if e.transition == KeyTransition::Pressed
-                && let (Some(action), Some(active)) = (&mut self.on_right, &self.active)
-            {
-                action(active, cx)?;
+            if e.transition == KeyTransition::Pressed {
+                self.pointer_owns = false;
+                if let (Some(action), Some(active)) = (&mut self.on_right, &self.active) {
+                    action(active, cx)?;
+                }
             }
             return Ok(InputOutcome::Handled);
         }
         if control == KeyCode::ArrowLeft && self.on_left.is_some() {
-            if e.transition == KeyTransition::Pressed
-                && let Some(action) = &mut self.on_left
-            {
-                action(cx)?;
+            if e.transition == KeyTransition::Pressed {
+                self.pointer_owns = false;
+                if let Some(action) = &mut self.on_left {
+                    action(cx)?;
+                }
             }
             return Ok(InputOutcome::Handled);
         }
@@ -626,9 +697,12 @@ impl<T: Clone + Eq + 'static> Component for OptionList<T> {
             if control == KeyCode::Escape {
                 self.pressed = None;
             }
-            if self.input.keyboard(cx, e, control)
-                && let Some(value) = self.active.clone()
-            {
+            let was_armed = self.input.key_armed();
+            let activate = self.input.keyboard(cx, e, control);
+            if !was_armed && self.input.key_armed() {
+                self.pointer_owns = false;
+            }
+            if activate && let Some(value) = self.active.clone() {
                 (self.on_choose)(&value, cx)?;
             }
             return Ok(result);
@@ -648,6 +722,7 @@ impl<T: Clone + Eq + 'static> Component for OptionList<T> {
             e.transition,
             KeyTransition::Pressed | KeyTransition::Repeated
         ) {
+            self.pointer_owns = false;
             let enabled: Vec<_> = self
                 .options
                 .iter()
@@ -684,6 +759,7 @@ impl<T: Clone + Eq + 'static> Component for OptionList<T> {
     fn input_reset(&mut self) {
         self.input.reset();
         self.pressed = None;
+        self.pointer_owns = false;
     }
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
         let size = p.size();
@@ -1369,6 +1445,25 @@ impl<T: Clone + Eq + 'static> Component for SelectAnchor<T> {
 /// applies its options and binding; a list opened before the binding changed
 /// only closes when chosen from. Escape is consumed only while it cancels an
 /// armed activation.
+///
+/// The highlight follows the [`Menu`](crate::Menu) rules for which input owns
+/// it. The list opens on the selected option even beneath a stationary
+/// pointer. Actual pointer motion over it, including over a disabled option,
+/// a primary press on a row or a wheel that scrolls it hands the highlight to
+/// the pointer. Each handled press or OS repeat of Up, Down, Home, End or a
+/// Page key takes it back. Key releases, modified navigation and ignored keys do
+/// not, so motion while a navigation key is still held takes it again until
+/// that key's next repeat. An Enter or Space press that arms activation also
+/// takes it; until that key's release or a cancellation such as Escape,
+/// pointer input only hovers and only the keyboard moves the highlight, so
+/// the release chooses the keyboard's option. While a primary pointer press is
+/// armed, Enter and Space neither arm nor take the highlight. A repeated
+/// report of the pointer's window position, compared exactly in logical
+/// coordinates and including re-entry into the window exactly where it left,
+/// is no motion; after the window's scale factor changes, the first native
+/// report of an unmoved pointer can count as motion. New options from a
+/// redescription return the highlight to the selection, while options a bound
+/// source changes keep a pointer-owned highlight on the row under the pointer.
 ///
 /// The list is an anchored surface and follows the popover placement rule: it
 /// needs room above or below the control. Mounted directly as a root the control

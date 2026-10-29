@@ -1,0 +1,2 @@
+test menu_pointer_ownership::a_revoked_and_restored_select_compares_motion_with_positions_seen_while_revoked ... FAILED
+test result: FAILED. 25 passed; 1 failed; 0 ignored; 0 measured; 464 filtered out; finished in 0.05s

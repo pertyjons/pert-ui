@@ -1,0 +1,5 @@
+test menu_pointer_ownership::pointer_input_cannot_move_a_choice_armed_by_enter_or_space ... FAILED
+test menu_pointer_ownership::an_armed_enter_or_space_takes_the_pointers_highlight_until_it_releases ... FAILED
+test menu_pointer_ownership::an_armed_enter_or_space_takes_the_pointers_highlight_in_a_select ... FAILED
+test result: FAILED. 31 passed; 3 failed; 0 ignored; 0 measured; 464 filtered out; finished in 0.07s
+error: test failed, to rerun pass `-p pert-ui --test surfaces`

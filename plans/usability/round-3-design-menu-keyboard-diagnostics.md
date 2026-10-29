@@ -201,3 +201,22 @@ window re-entry is stationary for OptionList too and gets its own test; scale
 residual wording belongs in MenuBar/Menu/Select rustdoc and CHANGELOG. Deferred
 tab refocus rechecks that the queued key is still selected, ignores a missing
 editor, and uses an application-unique editor key to avoid ambiguous lookup.
+
+
+## Completed scoped implementations
+
+Historical diagnostic formatting is committed at d479516 (0.3.91), with its
+independent condition repaired and targeted/full gate evidence recorded.
+The public focus recipes are committed at 17c6c3d after fresh Codex approval
+and integrated checks. Their deferred tab-refocus explicitly settles pending
+selection notifications before rechecking focus/current key; this supported
+nested flush prevents stale raw-key selection from focusing the previous editor.
+
+Menu input is isolated-approved by [Codex recheck 2](runs/review-r3/menu-pointer-codex-review-r2.md),
+then integrated on working0.3.92 with complete workspace/API evidence and both
+selected Linux GPU/CPU native interaction checks passing. The two new native
+steps have meaningful restored-old-gate negative controls. Full source/record
+limits and the independent integration approval are in
+[integration evidence](runs/review-r3/menu-text-integrated/README.md).
+MultiSelect's separate row family and the whitespace follow-ups still remain;
+these completed checkpoints are not overall round closure.

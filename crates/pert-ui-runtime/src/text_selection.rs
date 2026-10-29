@@ -158,7 +158,9 @@ impl TextSelection {
     }
     /// Places the caret at a logical point relative to the painted text origin.
     /// Outside points snap to the nearest available caret;
-    /// [`SelectionExtension::Extend`] keeps the anchor.
+    /// [`SelectionExtension::Extend`] keeps the anchor. A point outside
+    /// [`TextLayout::size`] can still be over whitespace hanging past the end of
+    /// a wrapped line, as [`Self::caret`] describes, and places the caret there.
     pub fn at_point(
         self,
         layout: &TextLayout,
@@ -175,6 +177,7 @@ impl TextSelection {
     }
     /// Selects the word at a logical point, using the shaping engine's word
     /// boundaries. Whitespace/punctuation follow the engine's Unicode segmentation.
+    /// Points map to text as for [`Self::at_point`].
     pub fn word_at_point(layout: &TextLayout, point: Point) -> Self {
         Self(Selection::word_from_point(
             &layout.shaped,
@@ -185,6 +188,13 @@ impl TextSelection {
     /// Caret rectangle in logical coordinates relative to painted text origin.
     /// Width is one logical pixel.
     ///
+    /// After whitespace hanging past the end of a wrapped line, spaces and tabs
+    /// alike, the rectangle can lie outside [`TextLayout::size`]: beyond its
+    /// right edge in left-to-right text, and at negative x in right-to-left
+    /// text, where the hanging whitespace is on the left. In right-to-left text
+    /// a hanging space can extend the size where a tab does not, so their
+    /// coordinates can differ, as [`TextLayout`] describes.
+    ///
     /// # Errors
     /// Returns [`GeometryError::NonFinite`](crate::GeometryError::NonFinite) or
     /// [`GeometryError::Negative`](crate::GeometryError::Negative) when the layout's
@@ -194,7 +204,8 @@ impl TextSelection {
         convert(layout, r.x0, r.y0, r.x1, r.y1)
     }
     /// Selection rectangles in logical coordinates relative to painted text origin.
-    /// Allocates per selected run.
+    /// Allocates per selected run. A selection that includes hanging whitespace
+    /// can extend outside [`TextLayout::size`], as [`Self::caret`] describes.
     ///
     /// # Errors
     /// As [`Self::caret`], for any selected run.

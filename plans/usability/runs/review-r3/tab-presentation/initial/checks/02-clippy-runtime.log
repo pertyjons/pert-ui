@@ -1,0 +1,9 @@
+$ cd /home/per/pert-ui-usability/r3-text-worktree
+$ CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-text-implementation-target cargo clippy --locked -p pert-ui-runtime --all-targets -- -D warnings
+exit status: 0
+elapsed: 0.2 s
+
+--- stdout ---
+
+--- stderr ---
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.12s

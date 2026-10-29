@@ -1,0 +1,48 @@
+[
+  {
+    "name": "title",
+    "file": "crates/pert-ui-runtime/src/menu_bar.rs",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "pert-ui-gallery",
+      "--bin",
+      "pert-ui-gallery",
+      "the_interaction_steps_pass_headlessly",
+      "--",
+      "--nocapture"
+    ],
+    "started_at_utc": "2026-10-29T10:30:39.686357+00:00",
+    "finished_at_utc": "2026-10-29T10:30:51.566186+00:00",
+    "exit_status": 101,
+    "original_sha256": "a9241464095c12e9a2b1ae33d56ddf2c67ad05caa0cb1324e82501d03d43401e",
+    "restored_sha256": "a9241464095c12e9a2b1ae33d56ddf2c67ad05caa0cb1324e82501d03d43401e",
+    "restored_identical": true,
+    "restored_mtime_ns": 1793269851565846379
+  },
+  {
+    "name": "row",
+    "file": "crates/pert-ui-runtime/src/select.rs",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "-p",
+      "pert-ui-gallery",
+      "--bin",
+      "pert-ui-gallery",
+      "the_interaction_steps_pass_headlessly",
+      "--",
+      "--nocapture"
+    ],
+    "started_at_utc": "2026-10-29T10:30:51.566805+00:00",
+    "finished_at_utc": "2026-10-29T10:31:05.062952+00:00",
+    "exit_status": 101,
+    "original_sha256": "7ee35013900afe6aaf1ffd6643ddbac21f35966c5b6f8c38db31fcf35f2a5348",
+    "restored_sha256": "7ee35013900afe6aaf1ffd6643ddbac21f35966c5b6f8c38db31fcf35f2a5348",
+    "restored_identical": true,
+    "restored_mtime_ns": 1793269865062492953
+  }
+]

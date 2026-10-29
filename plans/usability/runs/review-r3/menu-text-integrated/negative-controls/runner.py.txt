@@ -1,0 +1,22 @@
+from pathlib import Path
+import subprocess,datetime,hashlib,json,os,time
+r=Path('/home/per/github/pert-ui');out=Path('/home/per/pert-ui-usability/r3-menu-native-negative-controls');out.mkdir();records=[]
+cmd=['cargo','test','--locked','-p','pert-ui-gallery','--bin','pert-ui-gallery','the_interaction_steps_pass_headlessly','--','--nocapture']
+cases=[('title','crates/pert-ui-runtime/src/menu_bar.rs','PointerKind::Move if moved && inside && self.available && self.action.is_none()', 'PointerKind::Move if inside && self.available && self.action.is_none()', 'a stationary View pointer switched'),('row','crates/pert-ui-runtime/src/select.rs','if self.pointer_owns\n                    && let Some(value) = self.hit(cx, e)', 'if let Some(value) = self.hit(cx, e)', "the parked row replaced the keyboard's first command")]
+for name,rel,old,new,expected in cases:
+ p=r/rel;original=p.read_bytes();s=original.decode();assert s.count(old)==1
+ start=datetime.datetime.now(datetime.timezone.utc).isoformat();status=None
+ try:
+  p.write_text(s.replace(old,new));os.utime(p,None)
+  with (out/(name+'.log')).open('x') as f:
+   f.write(json.dumps({'command':cmd,'started_at_utc':start,'mutation_file':rel,'expected_failure':expected})+'\n');f.flush();res=subprocess.run(cmd,cwd=r,stdout=f,stderr=subprocess.STDOUT);status=res.returncode
+ finally:
+  p.write_bytes(original);os.utime(p,None)
+  records.append({'name':name,'file':rel,'command':cmd,'started_at_utc':start,'finished_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'exit_status':status,'original_sha256':hashlib.sha256(original).hexdigest(),'restored_sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'restored_identical':p.read_bytes()==original,'restored_mtime_ns':p.stat().st_mtime_ns});(out/'outcomes.json').write_text(json.dumps(records,indent=2)+'\n')
+ assert status==101,(name,status)
+ log=(out/(name+'.log')).read_text();assert 'the_interaction_steps_pass_headlessly ... FAILED' in log and expected in log,(name,log[-400:])
+ print(name,'expected assertion rejected',flush=True)
+with (out/'restored.log').open('x') as f:
+ f.write(json.dumps({'command':cmd,'started_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat()})+'\n');f.flush();res=subprocess.run(cmd,cwd=r,stdout=f,stderr=subprocess.STDOUT)
+assert res.returncode==0,res.returncode
+print('Restored headless gallery interaction steps pass.',flush=True)

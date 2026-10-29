@@ -162,6 +162,16 @@ can combine spans and icons; the same text service supports labels and editable
 fields. Consumers may register font and icon replacements through the public
 manager APIs. Asset attribution and licenses ship with the relevant packages.
 
+Literal tabs preserve the original string, font-dependent advance and Unicode
+analysis but emit no tab-only coverage in either text mode. A custom font's
+mixed tab/printable atom retains its inseparable glyph. No tab stops or input
+normalization are introduced; other missing glyphs keep their ink. Removing
+hanging-tab ink can shrink the canvas and translate RTL public coordinates;
+vertical origin/baseline are unchanged. Existing empty non-tab raster pen points
+still participate in bounds. Public selection/hit coordinates use the resulting
+origin, with hanging whitespace allowed outside the extent. Editor reveal limits
+are separate from this coverage repair and documented by TextArea.
+
 `UiSettings::set_text_rendering` chooses between the retained line mask
 (`LineMask`, the default) and quarter-pixel phase glyphs composited into a run
 mask (`PhaseLine`). The latter is experimental. It uses Swash grayscale

@@ -1,0 +1,11 @@
+--- /home/per/pert-ui-usability/r3-menu-implementation2-evidence/negative-controls/press_ignores_armed_key-round2/backup/select.rs	2026-10-29 11:09:29.194424361 +0100
++++ crates/pert-ui-runtime/src/select.rs	2026-10-29 11:09:29.212424453 +0100
+@@ -603,7 +603,7 @@
+                 self.pressed = self.hit(cx, e);
+                 // A press that arms the gesture highlights its row without a
+                 // move first, as `Driver::click_item` presses.
+-                if !key_armed {
++                if true {
+                     self.pointer_owns = true;
+                     if let Some(value) = &self.pressed
+                         && self.active.as_ref() != Some(value)

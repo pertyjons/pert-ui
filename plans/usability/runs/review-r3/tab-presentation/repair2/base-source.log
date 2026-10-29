@@ -1,0 +1,24 @@
+$ cd /home/per/pert-ui-usability/r3-text-worktree
+$ git rev-parse 3bbfb81
+3bbfb813a8c02c417d68386b0c5547b4b8139580
+$ git archive --format=tar 3bbfb81 | tar -x -C /home/per/pert-ui-usability/r3-text-implementation2-base-3bbfb81
+exit status: 0
+$ (in /home/per/pert-ui-usability/r3-text-implementation2-base-3bbfb81) find . -type f | sort | xargs sha256sum | sha256sum
+0b3d064418240e1fc3a5574538db1d0fdd5c2a3ce9aaca54e0e56b21ae55cb39  -
+$ git archive --format=tar 3bbfb81 | sha256sum
+7c7b7bcade4d3371195459642de8aa33c6f9d8b74abcb5e204ad0ecd5ff65c70  -
+$ grep version (facade/runtime manifests)
+/home/per/pert-ui-usability/r3-text-implementation2-base-3bbfb81/crates/pert-ui/Cargo.toml:version.workspace = true
+/home/per/pert-ui-usability/r3-text-implementation2-base-3bbfb81/crates/pert-ui-runtime/Cargo.toml:version.workspace = true
+/home/per/pert-ui-usability/r3-text-implementation2-base-3bbfb81/Cargo.toml:version = "0.3.89"
+6:version = "0.3.89"
+13:pert-ui-core = { version = "0.3.89", path = "crates/pert-ui-core" }
+14:pert-ui = { version = "0.3.89", path = "crates/pert-ui" }
+$ test -e /home/per/pert-ui-usability/r3-text-implementation2-base-3bbfb81/crates/pert-ui-runtime/src/text/tabs.rs
+absent (base has no tab patch)
+$ sha256sum base text.rs, text_selection.rs, text_fields.rs
+202bd99baea31ee2eea8eb612aa51ae2204451f13d2a94f99deff9b932caefde  /home/per/pert-ui-usability/r3-text-implementation2-base-3bbfb81/crates/pert-ui-runtime/src/text.rs
+e7bab670c3e70ad76cd39fbcd8aa908ac888edf75d3a5137d72f0f270e5756ff  /home/per/pert-ui-usability/r3-text-implementation2-base-3bbfb81/crates/pert-ui-runtime/src/text_selection.rs
+91a21ddd66d826a97f64a7ba232d33c285cda62065e39e64667ec0f0fe838aec  /home/per/pert-ui-usability/r3-text-implementation2-base-3bbfb81/crates/pert-ui-runtime/src/text_fields.rs
+$ git show 3bbfb81:crates/pert-ui-runtime/src/text.rs | sha256sum
+202bd99baea31ee2eea8eb612aa51ae2204451f13d2a94f99deff9b932caefde  -

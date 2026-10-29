@@ -1,0 +1,70 @@
+$ cargo test --locked -p pert-ui-runtime --lib text::tabs  # with mutation N4-skip-glyph-zero-instead-of-hidden-runs
+exit status: 101
+
+--- stdout ---
+
+running 9 tests
+test text::tabs::tests::consecutive_tabs_merge_and_retained_tabs_split_them ... ok
+test text::tabs::tests::tab_only_text_has_no_coverage_but_its_advance_and_caret_stops ... FAILED
+test text::tabs::tests::a_registered_font_ligating_a_tab_keeps_that_glyph_and_hides_pure_tab_atoms ... FAILED
+test text::tabs::tests::a_tab_and_a_missing_character_never_share_phase_coverage ... FAILED
+test text::tabs::tests::other_unsupported_characters_keep_their_fallback_ink ... FAILED
+test text::tabs::tests::tabs_keep_the_reference_geometry_and_unicode_analysis_without_their_ink ... FAILED
+test text::tabs::tests::cached_measured_and_ellipsized_tabs_stay_hidden ... FAILED
+test text::tabs::tests::rich_spans_gaps_and_icons_keep_reference_color_size_and_alignment ... ok
+test text::tabs::tests::the_worst_admitted_alternating_tabs_stay_within_the_style_bound ... ok
+
+failures:
+
+---- text::tabs::tests::tab_only_text_has_no_coverage_but_its_advance_and_caret_stops stdout ----
+
+thread 'text::tabs::tests::tab_only_text_has_no_coverage_but_its_advance_and_caret_stops' (3114251) panicked at crates/pert-ui-runtime/src/text/tabs.rs:556:13:
+assertion failed: expected.ink.is_some()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- text::tabs::tests::a_registered_font_ligating_a_tab_keeps_that_glyph_and_hides_pure_tab_atoms stdout ----
+
+thread 'text::tabs::tests::a_registered_font_ligating_a_tab_keeps_that_glyph_and_hides_pure_tab_atoms' (3114245) panicked at crates/pert-ui-runtime/src/text/tabs.rs:693:13:
+assertion `left == right` failed: "\t"
+  left: false
+ right: true
+
+---- text::tabs::tests::a_tab_and_a_missing_character_never_share_phase_coverage stdout ----
+
+thread 'text::tabs::tests::a_tab_and_a_missing_character_never_share_phase_coverage' (3114246) panicked at crates/pert-ui-runtime/src/text/tabs.rs:774:21:
+assertion failed: ink_inside(&regions, &coverage(&private, private_parts))
+
+---- text::tabs::tests::other_unsupported_characters_keep_their_fallback_ink stdout ----
+
+thread 'text::tabs::tests::other_unsupported_characters_keep_their_fallback_ink' (3114249) panicked at crates/pert-ui-runtime/src/text/tabs.rs:787:17:
+"\u{b}"
+
+---- text::tabs::tests::tabs_keep_the_reference_geometry_and_unicode_analysis_without_their_ink stdout ----
+
+thread 'text::tabs::tests::tabs_keep_the_reference_geometry_and_unicode_analysis_without_their_ink' (3114252) panicked at crates/pert-ui-runtime/src/text/tabs.rs:540:29:
+assertion `left == right` failed: "\tLeading"
+  left: false
+ right: true
+
+---- text::tabs::tests::cached_measured_and_ellipsized_tabs_stay_hidden stdout ----
+
+thread 'text::tabs::tests::cached_measured_and_ellipsized_tabs_stay_hidden' (3114247) panicked at crates/pert-ui-runtime/src/text/tabs.rs:858:13:
+assertion failed: ink_inside(&regions, &coverage(expected.layout(), &expected.layout().parts))
+
+
+failures:
+    text::tabs::tests::a_registered_font_ligating_a_tab_keeps_that_glyph_and_hides_pure_tab_atoms
+    text::tabs::tests::a_tab_and_a_missing_character_never_share_phase_coverage
+    text::tabs::tests::cached_measured_and_ellipsized_tabs_stay_hidden
+    text::tabs::tests::other_unsupported_characters_keep_their_fallback_ink
+    text::tabs::tests::tab_only_text_has_no_coverage_but_its_advance_and_caret_stops
+    text::tabs::tests::tabs_keep_the_reference_geometry_and_unicode_analysis_without_their_ink
+
+test result: FAILED. 3 passed; 6 failed; 0 ignored; 0 measured; 188 filtered out; finished in 2.15s
+
+
+--- stderr ---
+   Compiling pert-ui-runtime v0.3.89 (/home/per/pert-ui-usability/r3-text-worktree/crates/pert-ui-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.90s
+     Running unittests src/lib.rs (/home/per/pert-ui-usability/r3-text-implementation-target/debug/deps/pert_ui_runtime-87e7d33e6cb9fb9f)
+error: test failed, to rerun pass `-p pert-ui-runtime --lib`

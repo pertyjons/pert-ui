@@ -1,0 +1,10 @@
+--- /home/per/pert-ui-usability/r3-menu-implementation-evidence/negative-controls/no_reset_clear/backup/select.rs	2026-10-29 10:48:02.273863048 +0100
++++ crates/pert-ui-runtime/src/select.rs	2026-10-29 10:48:14.162344474 +0100
+@@ -758,7 +758,6 @@
+     fn input_reset(&mut self) {
+         self.input.reset();
+         self.pressed = None;
+-        self.pointer_owns = false;
+     }
+     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
+         let size = p.size();

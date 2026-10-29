@@ -1,0 +1,13 @@
+--- /home/per/pert-ui-usability/r3-text-implementation3-evidence/pre-edit/text_selection.rs.orig	2026-10-29 10:43:33.048245345 +0100
++++ crates/pert-ui-runtime/src/text_selection.rs	2026-10-29 11:14:26.897358129 +0100
+@@ -191,7 +191,9 @@
+     /// After whitespace hanging past the end of a wrapped line, spaces and tabs
+     /// alike, the rectangle can lie outside [`TextLayout::size`]: beyond its
+     /// right edge in left-to-right text, and at negative x in right-to-left
+-    /// text, where the hanging whitespace is on the left.
++    /// text, where the hanging whitespace is on the left. In right-to-left text
++    /// a hanging space can extend the size where a tab does not, so their
++    /// coordinates can differ, as [`TextLayout`] describes.
+     ///
+     /// # Errors
+     /// Returns [`GeometryError::NonFinite`](crate::GeometryError::NonFinite) or

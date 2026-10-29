@@ -1,0 +1,26 @@
+$ cd /home/per/pert-ui-usability/r3-text-worktree
+$ CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-text-implementation-target cargo test --locked -p pert-ui --features cpu --test editing tab_whitespace -- --nocapture --test-threads=1
+exit status: 0
+elapsed: 4.0 s
+
+--- stdout ---
+
+running 8 tests
+test tab_whitespace::a_full_text_area_of_tab_separated_columns_paints_and_edits ... TextArea with 5700 bytes (300 rows, 900 tabs): mount and first frame 234.159657ms, one edit frame 233.849793ms (one observation, not a bound)
+ok
+test tab_whitespace::a_narrow_right_to_left_text_area_keeps_its_hanging_tab_in_the_extent_of_a_space ... ok
+test tab_whitespace::a_narrow_text_area_treats_a_hanging_tab_as_a_hanging_space ... ok
+test tab_whitespace::a_rendered_tab_is_blank_while_its_neighbors_stay_in_place ... ok
+test tab_whitespace::a_text_area_edits_copies_and_inspects_literal_tabs_as_canonical_bytes ... ok
+test tab_whitespace::keyboard_tab_moves_focus_between_text_areas_without_inserting_a_tab ... ok
+test tab_whitespace::right_to_left_selectable_text_selects_at_fixed_points_after_the_origin_moved ... ok
+test tab_whitespace::typing_a_tab_at_a_full_line_end_matches_typing_a_space ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 315 filtered out; finished in 0.54s
+
+
+--- stderr ---
+   Compiling pert-ui-cpu v0.3.89 (/home/per/pert-ui-usability/r3-text-worktree/crates/pert-ui-cpu)
+   Compiling pert-ui v0.3.89 (/home/per/pert-ui-usability/r3-text-worktree/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.37s
+     Running tests/editing/main.rs (/home/per/pert-ui-usability/r3-text-implementation-target/debug/deps/editing-168b3dc5870850f9)

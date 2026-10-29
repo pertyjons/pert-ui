@@ -1,0 +1,4 @@
+    Checking pert-ui-wgpu v0.3.92 (/home/per/github/pert-ui/crates/pert-ui-wgpu)
+ Documenting pert-ui v0.3.92 (/home/per/github/pert-ui/crates/pert-ui)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 18.74s
+   Generated /home/per/github/pert-ui/target/doc/pert_ui/index.html

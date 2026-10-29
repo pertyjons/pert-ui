@@ -1,0 +1,7 @@
+DEBUG pointer Move refresh=false prev=None owns=false
+DEBUG key ArrowRight Pressed on_right=true owns=true
+DEBUG key ArrowRight Released on_right=true owns=false
+DEBUG pointer Move refresh=true prev=Some(Point { x: 50.5, y: 124.0 }) owns=false
+DEBUG key Enter Pressed on_right=true owns=false
+DEBUG key Enter Released on_right=true owns=false
+test menu_pointer_ownership::right_on_a_row_without_a_submenu_takes_the_highlight_from_the_pointer ... ok

@@ -1,0 +1,63 @@
+$ cd /home/per/pert-ui-usability/r3-text-worktree
+$ CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-text-implementation-target cargo test --locked -p pert-ui-runtime --lib text::tabs  # with mutation N3-icon-ignores-hidden-tab-metrics
+exit status: 101
+
+--- mutation edits ---
+in text.rs:
+- '        TextBrush::HiddenTab => false,\n    };'
++ '        TextBrush::HiddenTab => true,\n    };'
+
+--- stdout ---
+
+running 11 tests
+test text::tabs::tests::consecutive_tabs_merge_and_retained_tabs_split_them ... ok
+test text::tabs::tests::tab_only_text_has_no_coverage_but_its_advance_and_caret_stops ... ok
+test text::tabs::tests::other_unsupported_characters_keep_their_fallback_ink ... ok
+test text::tabs::tests::a_registered_font_ligating_a_tab_keeps_that_glyph_and_hides_pure_tab_atoms ... ok
+test text::tabs::tests::a_tab_and_a_missing_character_never_share_phase_coverage ... ok
+test text::tabs::tests::mixed_fonts_keep_each_tab_s_font_size_and_advance_and_icons_use_hidden_tab_metrics ... FAILED
+test text::tabs::tests::rich_spans_gaps_and_icons_keep_reference_color_size_and_alignment ... FAILED
+test text::tabs::tests::cached_measured_and_ellipsized_tabs_stay_hidden ... ok
+test text::tabs::tests::hanging_tabs_shrink_the_extent_and_translate_right_to_left_public_coordinates ... ok
+test text::tabs::tests::tabs_keep_the_reference_geometry_and_unicode_analysis_without_their_ink ... ok
+test text::tabs::tests::the_worst_admitted_alternating_tabs_stay_within_the_style_bound ... ok
+
+failures:
+
+---- text::tabs::tests::mixed_fonts_keep_each_tab_s_font_size_and_advance_and_icons_use_hidden_tab_metrics stdout ----
+scale 1 width None: tab 2 (last byte of a Body span): Body font (38, 0), size 14, coordinates [], advance 8.400001, line 0, x 16.464, brush HiddenTab
+scale 1 width None: tab 3 (first byte of a Monospace span, after a Body tab): Monospace font (40, 0), size 14, coordinates [], advance 8.400001, line 0, x 24.864002, brush HiddenTab
+scale 1 width None: tab 8 (a fixture span's only content, the icon's nearest text): Fixture font (51, 0), size 26, coordinates [], advance 15.6, line 0, x 61.600002, brush HiddenTab
+scale 1 width None: tab 15 (last byte of a Body span, before a fixture tab): Body font (38, 0), size 14, coordinates [], advance 8.400001, line 0, x 106.632, brush HiddenTab
+scale 1 width None: tab 16 (first byte of a fixture span): Fixture font (51, 0), size 14, coordinates [], advance 8.400001, line 0, x 115.032005, brush HiddenTab
+scale 1 width None: tab 21 (fixture tab-tab ligature beside Body): Fixture font (51, 0), size 14, coordinates [], advance 8.400001, line 0, x 150.45201, brush HiddenTab
+scale 1 width None: tab 22 (fixture tab-tab ligature continuation): Fixture font (51, 0), size 14, coordinates [], advance 8.400001, line 0, x 158.852, brush HiddenTab
+scale 1 width None: tab 27 (fixture X+tab mixed atom): Fixture font (51, 0), size 14, coordinates [], advance 8.400001, line 0, x 196.092, brush Color(0)
+scale 1 width None: tab 33 (a Monospace span's only content after Body): Monospace font (40, 0), size 14, coordinates [], advance 8.400001, line 0, x 241.69002, brush HiddenTab
+
+thread 'text::tabs::tests::mixed_fonts_keep_each_tab_s_font_size_and_advance_and_icons_use_hidden_tab_metrics' (3757531) panicked at crates/pert-ui-runtime/src/text/tabs.rs:1588:17:
+assertion `left == right` failed: scale 1 width None
+  left: Some([1102278820, 0, 1108449689])
+ right: Some([1099379507, 0, 1108449689])
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- text::tabs::tests::rich_spans_gaps_and_icons_keep_reference_color_size_and_alignment stdout ----
+
+thread 'text::tabs::tests::rich_spans_gaps_and_icons_keep_reference_color_size_and_alignment' (3757533) panicked at crates/pert-ui-runtime/src/text/tabs.rs:1258:21:
+assertion `left == right` failed: "\t\u{e161}"
+  left: [(1, [1092406477, 0, 1100795085])]
+ right: [(1, [1092618289, 0, 1100795085])]
+
+
+failures:
+    text::tabs::tests::mixed_fonts_keep_each_tab_s_font_size_and_advance_and_icons_use_hidden_tab_metrics
+    text::tabs::tests::rich_spans_gaps_and_icons_keep_reference_color_size_and_alignment
+
+test result: FAILED. 9 passed; 2 failed; 0 ignored; 0 measured; 188 filtered out; finished in 2.12s
+
+
+--- stderr ---
+   Compiling pert-ui-runtime v0.3.89 (/home/per/pert-ui-usability/r3-text-worktree/crates/pert-ui-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.22s
+     Running unittests src/lib.rs (/home/per/pert-ui-usability/r3-text-implementation-target/debug/deps/pert_ui_runtime-87e7d33e6cb9fb9f)
+error: test failed, to rerun pass `-p pert-ui-runtime --lib`

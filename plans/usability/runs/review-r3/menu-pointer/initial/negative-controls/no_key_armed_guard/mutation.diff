@@ -1,0 +1,11 @@
+--- /home/per/pert-ui-usability/r3-menu-implementation-evidence/negative-controls/no_key_armed_guard/backup/select.rs	2026-10-29 10:31:56.220659077 +0100
++++ crates/pert-ui-runtime/src/select.rs	2026-10-29 10:41:42.432647155 +0100
+@@ -578,7 +578,7 @@
+         }
+         // While Enter or Space is held its release chooses the active row, so
+         // the pointer only hovers until the key ends the gesture.
+-        let key_armed = self.input.key_armed();
++        let key_armed = false;
+         let activate = self.input.pointer(cx, e)?;
+         match e.kind() {
+             PointerKind::Move => {

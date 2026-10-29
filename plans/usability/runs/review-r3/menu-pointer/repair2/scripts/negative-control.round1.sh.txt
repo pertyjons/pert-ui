@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# Usage: negative-control.sh <mutation> [test-filter]
+# Backs up the exact source bytes, applies the mutation, runs the ownership
+# tests, restores the bytes, gives every restored file a new mtime and checks
+# that the restored hashes equal the backed-up ones and that each restored
+# mtime is newer than the mutated file's, so the next build recompiles them.
+set -u
+E=/home/per/pert-ui-usability/r3-menu-implementation2-evidence
+W=/home/per/pert-ui-usability/r3-menu-worktree
+m=$1
+filter=${2:-menu_pointer_ownership}
+dir="$E/negative-controls/$m"
+[ -e "$dir" ] && { echo "refusing to overwrite $dir"; exit 2; }
+mkdir -p "$dir/backup"
+cd "$W" || exit 2
+files="crates/pert-ui-runtime/src/select.rs crates/pert-ui-runtime/src/menu_bar.rs crates/pert-ui-runtime/src/activation.rs"
+for f in $files; do cp "$f" "$dir/backup/$(basename "$f")"; done
+sha256sum $files > "$dir/hashes-before.txt"
+python3 -I "$E/scripts/mutate.py" "$m" || { echo "mutation failed"; exit 2; }
+for f in $files; do diff -u "$dir/backup/$(basename "$f")" "$f"; done > "$dir/mutation.diff"
+[ -s "$dir/mutation.diff" ] || { echo "mutation changed nothing"; exit 2; }
+stat -c '%.9Y %n' $files > "$dir/mtimes-mutated.txt"
+"$E/scripts/run.sh" "negative-$m" cargo test --locked -p pert-ui --test surfaces "$filter"
+status=$?
+sleep 0.01
+# Rewrite the bytes in place (no -p) and touch: the restored files must be
+# newer than the mutated build so cargo cannot reuse it.
+for f in $files; do cat "$dir/backup/$(basename "$f")" > "$f"; done
+touch $files
+sha256sum $files > "$dir/hashes-restored.txt"
+stat -c '%.9Y %n' $files > "$dir/mtimes-restored.txt"
+if ! cmp -s "$dir/hashes-before.txt" "$dir/hashes-restored.txt"; then
+  echo "RESTORE MISMATCH" | tee "$dir/restore-check.txt"; exit 3
+fi
+if ! python3 -I - "$dir/mtimes-mutated.txt" "$dir/mtimes-restored.txt" <<'PY'
+import sys
+a = [float(l.split()[0]) for l in open(sys.argv[1])]
+b = [float(l.split()[0]) for l in open(sys.argv[2])]
+sys.exit(0 if all(y > x for x, y in zip(a, b)) else 1)
+PY
+then
+  echo "RESTORED MTIME NOT NEWER" | tee "$dir/restore-check.txt"; exit 3
+fi
+echo "restored: identical hashes, newer mtimes" | tee "$dir/restore-check.txt"
+log=$(ls -t "$E"/runs/*-negative-$m.log | head -1)
+grep -E "^test .* FAILED$|^test result|^error(\[|:)" "$log" > "$dir/failed-tests.txt"
+echo "test exit_status=$status log=$log"
+cat "$dir/failed-tests.txt"

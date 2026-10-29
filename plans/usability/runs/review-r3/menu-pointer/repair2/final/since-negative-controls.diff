@@ -1,0 +1,13 @@
+--- /home/per/pert-ui-usability/r3-menu-implementation2-evidence/negative-controls/clear_on_sideways_release-round2/backup/select.rs	2026-10-29 11:10:14.307654872 +0100
++++ crates/pert-ui-runtime/src/select.rs	2026-10-29 11:11:28.773035359 +0100
+@@ -1450,8 +1450,8 @@
+ /// it. The list opens on the selected option even beneath a stationary
+ /// pointer. Actual pointer motion over it, including over a disabled option,
+ /// a primary press on a row or a wheel that scrolls it hands the highlight to
+-/// the pointer. Each handled press or OS repeat of an arrow, Home, End or Page
+-/// key takes it back. Key releases, modified navigation and ignored keys do
++/// the pointer. Each handled press or OS repeat of Up, Down, Home, End or a
++/// Page key takes it back. Key releases, modified navigation and ignored keys do
+ /// not, so motion while a navigation key is still held takes it again until
+ /// that key's next repeat. An Enter or Space press that arms activation also
+ /// takes it; until that key's release or a cancellation such as Escape,

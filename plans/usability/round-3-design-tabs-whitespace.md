@@ -241,3 +241,38 @@ name intentional LTR extent shrink and RTL x translation as behavioral changes.
 No ghost geometry is introduced. The suspected hanging-whitespace editor issue
 must be reproduced before a verified TODO finding is recorded. This approval
 permits scoped repairs; fresh independent evidence recheck still precedes adoption.
+
+
+## Evidence-based clarification after implementation review 2
+
+The [second independent code review](runs/review-r3/tab-implementation-codex-review-r2.md)
+confirms the shaping/canvas/font repair and accepts the actually possible
+mixed-atom and ellipsis cases. A mixed atom's continued tab never hangs in
+Parley; ellipsis trims trailing whitespace before adding the mark. Test these
+real boundaries rather than fabricating impossible cases.
+
+The actual base/repaired public run disproves the source-only assumption that
+RTL hanging-space twins have identical geometry. Existing empty 0-by-0 space
+rasters still contribute their pen position to canvas bounds, unlike a hidden
+tab skipped before rasterization. This patch preserves that existing non-tab
+bounds behavior; it does not establish a general exact drawn-ink union. Qualify
+TextLayout's extent documentation and record the empty-raster limitation
+separately. LTR twins match; RTL tests assert their actual separate values.
+
+Base and repaired runs also verify that TextArea cannot reveal some hanging-
+whitespace and RTL-edge carets. Qualify the owned reveal promises and record
+the whitespace-wide pre-existing defect, without adding a scrolling repair.
+The remaining required P2 repair is exact same-point reference hit assertions,
+independent word ranges with endpoint affinities, and translated-reference
+checks at all required points/scales. Printed observations alone do not protect
+that contract. The review's needs-changes verdict stays intact until repaired.
+
+
+## Integrated checkpoint
+
+The isolated patch is approved by [Codex recheck 3](runs/review-r3/tab-implementation-codex-review-r3.md).
+The integrated working0.3.92 source is independently approved, with complete
+workspace/API checks passed; see [integration evidence](runs/review-r3/menu-text-integrated/README.md).
+The documented empty-raster/caret follow-ups remain assigned their separate
+checkpoint and TODO entries until repaired. This approval does not close the
+whole usability round or establish native tab-ink/GPU/human evidence.

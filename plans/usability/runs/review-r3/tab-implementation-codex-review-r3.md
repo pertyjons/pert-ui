@@ -1,0 +1,11 @@
+**Approve the isolated patch. Both remaining P2s are resolved; no blockers remain in this focused scope.**
+
+- [Coordinate assertions](</home/per/pert-ui-usability/r3-text-worktree/crates/pert-ui-runtime/src/text/tabs.rs:1232>) now independently check repaired and identical-point reference hits, word ranges, and both endpoint offsets/affinities, then check the translated reference. Coverage includes all four required point categories at scales 1 and 1.25. The literal Arabic point distinguishes repaired `(8, Upstream)` / word `0..8` from same-point reference `(8, Downstream)` / word `8..9`.
+- Recorded N10/N11 mutations fail the intended new assertions. The restoration procedure writes the exact original bytes and touches the file; hashes match current source, and the final restored run explicitly recompiles and passes. See the [negative-control record](</home/per/pert-ui-usability/r3-text-implementation3-evidence/negative-controls/summary.txt>).
+- [TextArea](</home/per/pert-ui-usability/r3-text-worktree/crates/pert-ui-runtime/src/text_fields.rs:231>) qualifies both caret-reveal promises and describes the verified clipping cases. [TextLayout and `size()`](</home/per/pert-ui-usability/r3-text-worktree/crates/pert-ui-runtime/src/text.rs:195>) explain empty-raster pen-position bounds and the resulting RTL space/tab difference. The mixed-ligature exception remains explicit.
+
+The word oracle deliberately covers these single-direction test texts, not arbitrary mixed-direction segmentation. The P2 repair changes tests and rustdoc only; current repaired-file hashes match the final evidence.
+
+I read AGENTS.md, main revision 4 with its evidence-based clarification, review2, and implementation3’s result/source/evidence. This was read-only: no edits, builds/tests, application execution, delegation or agents.
+
+The established caret-reveal and empty-raster defects remain separate root follow-ups. The existing release-only warning and pending root documentation, workspace/API and native integration do not block this isolated approval. This establishes neither full integration nor native/GPU or overall usability closure.

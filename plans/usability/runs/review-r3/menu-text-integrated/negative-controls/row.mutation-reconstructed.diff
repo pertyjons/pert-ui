@@ -1,0 +1,12 @@
+--- a/crates/pert-ui-runtime/src/select.rs
++++ b/crates/pert-ui-runtime/src/select.rs
+@@ -591,8 +591,7 @@
+                 {
+                     self.pointer_owns = true;
+                 }
+-                if self.pointer_owns
+-                    && let Some(value) = self.hit(cx, e)
++                if let Some(value) = self.hit(cx, e)
+                     && self.active.as_ref() != Some(&value)
+                 {
+                     self.active = Some(value);

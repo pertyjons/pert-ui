@@ -1,0 +1,10 @@
+--- /home/per/pert-ui-usability/r3-menu-implementation2-evidence/negative-controls/clear_on_ignored_key-round2/backup/select.rs	2026-10-29 11:10:09.849632093 +0100
++++ crates/pert-ui-runtime/src/select.rs	2026-10-29 11:10:09.869471757 +0100
+@@ -716,6 +716,7 @@
+                 | KeyCode::PageUp
+                 | KeyCode::PageDown
+         ) {
++            self.pointer_owns = false;
+             return Ok(InputOutcome::Ignored);
+         }
+         if matches!(

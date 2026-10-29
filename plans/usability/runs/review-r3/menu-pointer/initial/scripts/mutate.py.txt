@@ -1,0 +1,163 @@
+"""Applies one named negative-control mutation to the menu worktree sources.
+
+Each mutation replaces exact text that must occur once, so a mutation that no
+longer matches fails loudly instead of silently testing nothing.
+"""
+import sys
+
+W = "/home/per/pert-ui-usability/r3-menu-worktree/crates/pert-ui-runtime/src/"
+
+def edit(path, old, new):
+    p = W + path
+    s = open(p).read()
+    if s.count(old) != 1:
+        sys.exit(f"{path}: expected one match for {old!r}, found {s.count(old)}")
+    open(p, "w").write(s.replace(old, new))
+
+LIST_GAIN = """                if !e.is_refresh()
+                    && previous != Some(e.position())
+                    && cx.pointer_inside()
+                    && !key_armed
+                {
+                    self.pointer_owns = true;
+                }
+                if self.pointer_owns
+                    && let Some(value) = self.hit(cx, e)"""
+
+def old_gating():
+    # The pre-repair behavior: every move that hits an enabled row, refreshed
+    # or repeated, takes the highlight, and every move into another title of
+    # an open bar switches menus.
+    edit("select.rs", LIST_GAIN, """                let _ = (previous, key_armed);
+                if let Some(value) = self.hit(cx, e)""")
+    edit("menu_bar.rs", "let moved = !e.is_refresh() && previous != Some(e.position());",
+         "let moved = { let _ = previous; true };")
+
+def record_after_editable():
+    # Positions recorded only while the list is editable.
+    edit("select.rs", """        let previous = match e.kind() {
+            PointerKind::Move | PointerKind::Press(_) | PointerKind::Leave => {
+                self.last_pointer.replace(e.position())
+            }
+            _ => self.last_pointer,
+        };
+        if e.kind() == PointerKind::Leave {
+            self.pointer_owns = false;
+        }
+        if !self.editable {
+            return Ok(InputOutcome::Ignored);
+        }""", """        if e.kind() == PointerKind::Leave {
+            self.pointer_owns = false;
+        }
+        if !self.editable {
+            return Ok(InputOutcome::Ignored);
+        }
+        let previous = match e.kind() {
+            PointerKind::Move | PointerKind::Press(_) | PointerKind::Leave => {
+                self.last_pointer.replace(e.position())
+            }
+            _ => self.last_pointer,
+        };""")
+
+def title_ignores_leave():
+    # A title remembers only moves and presses, not the leave carrying the
+    # position it was left for.
+    edit("menu_bar.rs", """            PointerKind::Move | PointerKind::Press(_) | PointerKind::Leave => {
+                self.last_pointer.replace(e.position())
+            }""", """            PointerKind::Move | PointerKind::Press(_) => self.last_pointer.replace(e.position()),""")
+
+def bar_wide_position():
+    # One remembered position shared by every title of the bar, recording
+    # leaves too: the leave of the departed title carries the new position.
+    edit("menu_bar.rs", """        let previous = match e.kind() {
+            PointerKind::Move | PointerKind::Press(_) | PointerKind::Leave => {
+                self.last_pointer.replace(e.position())
+            }
+            _ => self.last_pointer,
+        };""", """        let previous = match e.kind() {
+            PointerKind::Move | PointerKind::Press(_) | PointerKind::Leave => {
+                BAR_WIDE.with(|cell| cell.replace(Some(e.position())))
+            }
+            _ => BAR_WIDE.with(Cell::get),
+        };""")
+    edit("menu_bar.rs", "/// One title of a bar: the anchor and owner of its menu, or a direct action.",
+         "thread_local! { static BAR_WIDE: Cell<Option<crate::Point>> = const { Cell::new(None) }; }\n/// One title of a bar: the anchor and owner of its menu, or a direct action.")
+
+def no_key_armed_guard():
+    # Pointer input may take the highlight while Enter or Space is armed.
+    edit("select.rs", "        let key_armed = self.input.key_armed();\n        let activate",
+         "        let key_armed = false;\n        let activate")
+
+def any_wheel_gains():
+    # A wheel takes the highlight even when it scrolls nothing.
+    edit("select.rs", """                if offset.replace(next) != next {
+                    if !key_armed {
+                        self.pointer_owns = true;
+                    }""", """                if !key_armed {
+                    self.pointer_owns = true;
+                }
+                if offset.replace(next) != next {""")
+
+def clear_on_rows_changed():
+    # Ownership cleared wherever pending activation is: on changed menu rows
+    # and changed bound options too.
+    edit("select.rs", """        // Pending activation belongs to the old rows.
+        self.retargeted = true;""", """        // Pending activation belongs to the old rows.
+        self.pointer_owns = false;
+        self.retargeted = true;""")
+    edit("select.rs", """                reveal = true;
+                self.pressed = None;""", """                reveal = true;
+                self.pointer_owns = false;
+                self.pressed = None;""")
+
+def press_sets_no_highlight():
+    # A press arms the gesture but leaves the highlight to a later move.
+    edit("select.rs", """                    if let Some(value) = &self.pressed
+                        && self.active.as_ref() != Some(value)
+                    {""", """                    if let Some(value) = &self.pressed
+                        && false
+                        && self.active.as_ref() != Some(value)
+                    {""")
+
+MUTATIONS = {f.__name__: f for f in [old_gating, record_after_editable, title_ignores_leave,
+                                     bar_wide_position, no_key_armed_guard, any_wheel_gains,
+                                     clear_on_rows_changed, press_sets_no_highlight]}
+
+def no_editable_clear():
+    # Ownership kept when the list stops being editable, by fixed denial in
+    # reconciliation or by a bound revocation in update.
+    edit("select.rs", """                    self.editable = false;
+                    self.pointer_owns = false;""", """                    self.editable = false;""")
+    edit("select.rs", """        if self.editable && !editable {
+            self.pointer_owns = false;""", """        if self.editable && !editable {""")
+
+def no_sideways_clear():
+    # Right and Left act without taking the highlight from the pointer.
+    edit("select.rs", """            if e.transition == KeyTransition::Pressed {
+                self.pointer_owns = false;
+                if let (Some(action), Some(active))""", """            if e.transition == KeyTransition::Pressed {
+                if let (Some(action), Some(active))""")
+    edit("select.rs", """            if e.transition == KeyTransition::Pressed {
+                self.pointer_owns = false;
+                if let Some(action) = &mut self.on_left {""", """            if e.transition == KeyTransition::Pressed {
+                if let Some(action) = &mut self.on_left {""")
+
+MUTATIONS.update({f.__name__: f for f in [no_editable_clear, no_sideways_clear]})
+
+def no_reset_clear():
+    # input_reset (focus loss, cancellation) keeps the pointer's ownership.
+    edit("select.rs", """        self.pressed = None;
+        self.pointer_owns = false;
+    }
+    fn paint""", """        self.pressed = None;
+    }
+    fn paint""")
+
+def no_editable_or_reset_clear():
+    no_editable_clear()
+    no_reset_clear()
+
+MUTATIONS.update({f.__name__: f for f in [no_reset_clear, no_editable_or_reset_clear]})
+
+if __name__ == "__main__":
+    MUTATIONS[sys.argv[1]]()

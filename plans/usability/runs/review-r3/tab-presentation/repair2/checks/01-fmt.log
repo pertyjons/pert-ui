@@ -1,0 +1,8 @@
+$ cd /home/per/pert-ui-usability/r3-text-worktree
+$ CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-text-implementation-target cargo fmt --all --check
+exit status: 0
+elapsed: 2.8 s
+
+--- stdout ---
+
+--- stderr ---

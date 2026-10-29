@@ -1,0 +1,11 @@
+--- a/text_selection.rs
++++ b/text_selection.rs
+@@ -167,7 +167,7 @@
+         point: Point,
+         extension: SelectionExtension,
+     ) -> Self {
+-        let x = (point.x() - layout.origin[0]) * layout.scale;
++        let x = point.x() * layout.scale;
+         let y = (point.y() - layout.origin[1]) * layout.scale;
+         Self(if extension == SelectionExtension::Extend {
+             self.0.extend_to_point(&layout.shaped, x, y)

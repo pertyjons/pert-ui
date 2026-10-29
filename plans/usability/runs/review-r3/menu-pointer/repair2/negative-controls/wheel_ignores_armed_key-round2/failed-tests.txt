@@ -1,0 +1,5 @@
+test menu_pointer_ownership::an_armed_enter_or_space_keeps_the_pointers_row_across_a_scrolling_wheel ... FAILED
+test menu_pointer_ownership::an_armed_enter_or_space_keeps_a_selects_pointer_option_across_a_scrolling_wheel ... FAILED
+test menu_pointer_ownership::pointer_input_cannot_move_a_choice_armed_by_enter_or_space ... FAILED
+test result: FAILED. 41 passed; 3 failed; 0 ignored; 0 measured; 464 filtered out; finished in 0.05s
+error: test failed, to rerun pass `-p pert-ui --test surfaces`

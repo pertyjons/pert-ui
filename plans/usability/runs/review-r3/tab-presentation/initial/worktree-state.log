@@ -1,0 +1,25 @@
+$ git -C /home/per/pert-ui-usability/r3-text-worktree rev-parse HEAD
+3bbfb813a8c02c417d68386b0c5547b4b8139580
+$ git status --short --untracked-files=all
+ M crates/pert-ui-runtime/src/text.rs
+ M crates/pert-ui-runtime/src/text_fields.rs
+ M crates/pert-ui/tests/editing/main.rs
+?? crates/pert-ui-runtime/src/text/tabs.rs
+?? crates/pert-ui-runtime/tests/assets/tab-atoms/README.md
+?? crates/pert-ui-runtime/tests/assets/tab-atoms/TabAtomFixture.ttf
+?? crates/pert-ui-runtime/tests/assets/tab-atoms/generate.py
+?? crates/pert-ui/tests/editing/tab_whitespace.rs
+$ git diff --stat
+ crates/pert-ui-runtime/src/text.rs        | 121 +++++++++++++++++++++++++-----
+ crates/pert-ui-runtime/src/text_fields.rs |   9 ++-
+ crates/pert-ui/tests/editing/main.rs      |   1 +
+ 3 files changed, 109 insertions(+), 22 deletions(-)
+$ sha256sum of changed and new files
+47518112cfee20e041334836909a19db12d24379ce485e7639b6150cda7b7a12  crates/pert-ui-runtime/src/text.rs
+25f91a57f92f906588f8dafbda6c81d942251df28f2b4df4ad8f43e17d1d4ee1  crates/pert-ui-runtime/src/text_fields.rs
+8e471172d9bda0cc31363c0ae64aa5ddb288a4e38ef66093365240974f405d3f  crates/pert-ui/tests/editing/main.rs
+18896f80ec74fe63c536401f4fffce58d6c1c7ad8c8c9a0a8115b2120b0f80de  crates/pert-ui-runtime/src/text/tabs.rs
+4560cc006135ca857ead07ca3aa8829b54b160f9b578fe6915342f67ed507607  crates/pert-ui-runtime/tests/assets/tab-atoms/README.md
+ef405e8ef511ced850becf815e71f0a4461f693a76b426814425fbded332450b  crates/pert-ui-runtime/tests/assets/tab-atoms/TabAtomFixture.ttf
+a8712d16ebebe6b34b5228961fe24d342232d8b339949f22e28078b0f2c9394a  crates/pert-ui-runtime/tests/assets/tab-atoms/generate.py
+ce33fde18e4aa28a4ad32efd90d15d39ef75386988af395d87b9c2ebb198f38e  crates/pert-ui/tests/editing/tab_whitespace.rs

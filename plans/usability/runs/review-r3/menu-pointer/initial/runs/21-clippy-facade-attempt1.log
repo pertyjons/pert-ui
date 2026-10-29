@@ -1,0 +1,33 @@
+# started 2026-10-29T10:43:27+01:00
+# cwd /home/per/pert-ui-usability/r3-menu-worktree  CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-menu-implementation-target
+# command: cargo clippy --locked -p pert-ui --all-targets -- -D warnings
+# HEAD b9e4c6cfc2444c5c5fcea63a390e9e2038699dd4
+# git status --porcelain:
+ M crates/pert-ui-runtime/src/activation.rs
+ M crates/pert-ui-runtime/src/menu.rs
+ M crates/pert-ui-runtime/src/menu_bar.rs
+ M crates/pert-ui-runtime/src/select.rs
+ M crates/pert-ui/tests/surfaces/main.rs
+?? crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs
+# hashes before:
+0cd9428006e46bae6e94ea02f638a742b0dd8f30bd1826982ecb6c2a5848ea44  crates/pert-ui-runtime/src/select.rs
+a9241464095c12e9a2b1ae33d56ddf2c67ad05caa0cb1324e82501d03d43401e  crates/pert-ui-runtime/src/menu_bar.rs
+a6fba22a46bf7bd65db8f0771a0d4159fe7a70d0bf70b87faaa6532c20f8270b  crates/pert-ui-runtime/src/menu.rs
+29d28116b00b3e3241998fa8b80368e448fb8638c446baba23ffac82b83afb1e  crates/pert-ui-runtime/src/activation.rs
+14eea5b3899b4f52eb97b12bf3962d39d445e1071cbcc1482b24cfdbabc702a4  crates/pert-ui/tests/surfaces/main.rs
+e51ef71f38dc91a604845522f135a5ce18165e0885b49bd8950ee05744b7fc05  crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs
+# ---- output ----
+    Checking pert-ui-runtime v0.3.90 (/home/per/pert-ui-usability/r3-menu-worktree/crates/pert-ui-runtime)
+    Checking pert-ui-wgpu v0.3.90 (/home/per/pert-ui-usability/r3-menu-worktree/crates/pert-ui-wgpu)
+    Checking pert-ui v0.3.90 (/home/per/pert-ui-usability/r3-menu-worktree/crates/pert-ui)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 11.04s
+# ---- end output ----
+# hashes after:
+0cd9428006e46bae6e94ea02f638a742b0dd8f30bd1826982ecb6c2a5848ea44  crates/pert-ui-runtime/src/select.rs
+a9241464095c12e9a2b1ae33d56ddf2c67ad05caa0cb1324e82501d03d43401e  crates/pert-ui-runtime/src/menu_bar.rs
+a6fba22a46bf7bd65db8f0771a0d4159fe7a70d0bf70b87faaa6532c20f8270b  crates/pert-ui-runtime/src/menu.rs
+29d28116b00b3e3241998fa8b80368e448fb8638c446baba23ffac82b83afb1e  crates/pert-ui-runtime/src/activation.rs
+14eea5b3899b4f52eb97b12bf3962d39d445e1071cbcc1482b24cfdbabc702a4  crates/pert-ui/tests/surfaces/main.rs
+e51ef71f38dc91a604845522f135a5ce18165e0885b49bd8950ee05744b7fc05  crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs
+# finished 2026-10-29T10:43:38+01:00
+# exit_status 0

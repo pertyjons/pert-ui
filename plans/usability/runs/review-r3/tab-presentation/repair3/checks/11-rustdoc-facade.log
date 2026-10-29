@@ -1,0 +1,13 @@
+$ cd /home/per/pert-ui-usability/r3-text-worktree
+$ RUSTDOCFLAGS='-D warnings' CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-text-implementation-target cargo doc --locked -p pert-ui --no-deps
+exit status: 0
+elapsed: 4.3 s
+
+--- stdout ---
+
+--- stderr ---
+    Checking pert-ui-runtime v0.3.89 (/home/per/pert-ui-usability/r3-text-worktree/crates/pert-ui-runtime)
+    Checking pert-ui-wgpu v0.3.89 (/home/per/pert-ui-usability/r3-text-worktree/crates/pert-ui-wgpu)
+ Documenting pert-ui v0.3.89 (/home/per/pert-ui-usability/r3-text-worktree/crates/pert-ui)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4.21s
+   Generated /home/per/pert-ui-usability/r3-text-implementation-target/doc/pert_ui/index.html

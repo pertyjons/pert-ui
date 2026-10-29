@@ -1,0 +1,239 @@
+# started 2026-10-29T10:41:05+01:00
+# cwd /home/per/pert-ui-usability/r3-menu-worktree  CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-menu-implementation-target
+# command: cargo test --locked -p pert-ui --test surfaces menu_pointer_ownership
+# HEAD b9e4c6cfc2444c5c5fcea63a390e9e2038699dd4
+# git status --porcelain:
+ M crates/pert-ui-runtime/src/activation.rs
+ M crates/pert-ui-runtime/src/menu_bar.rs
+ M crates/pert-ui-runtime/src/select.rs
+ M crates/pert-ui/tests/surfaces/main.rs
+?? crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs
+# hashes before:
+e539ab0c2e6200fcd890d47bceaf09d05ce97f38b46f4ad6a22b675316a52711  crates/pert-ui-runtime/src/select.rs
+93eedf7834beb29713a873ad4924fb3e88fa48a29a968af8d91c07333807601e  crates/pert-ui-runtime/src/menu_bar.rs
+4ad4e0e04d221ea9f21e9d3edf20403cb7b58b90da4810f902fb478bce9335b6  crates/pert-ui-runtime/src/menu.rs
+29d28116b00b3e3241998fa8b80368e448fb8638c446baba23ffac82b83afb1e  crates/pert-ui-runtime/src/activation.rs
+14eea5b3899b4f52eb97b12bf3962d39d445e1071cbcc1482b24cfdbabc702a4  crates/pert-ui/tests/surfaces/main.rs
+242bccc81950317c96fe98780897011326b0b24549291bf7b5706d038c835561  crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs
+# ---- output ----
+   Compiling pert-ui-runtime v0.3.90 (/home/per/pert-ui-usability/r3-menu-worktree/crates/pert-ui-runtime)
+   Compiling pert-ui-wgpu v0.3.90 (/home/per/pert-ui-usability/r3-menu-worktree/crates/pert-ui-wgpu)
+   Compiling pert-ui v0.3.90 (/home/per/pert-ui-usability/r3-menu-worktree/crates/pert-ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.32s
+     Running tests/surfaces/main.rs (/home/per/pert-ui-usability/r3-menu-implementation-target/debug/deps/surfaces-0130818f288f7c6d)
+
+running 26 tests
+test menu_pointer_ownership::a_press_highlights_its_row_without_a_move_and_a_release_elsewhere_runs_nothing ... ok
+test menu_pointer_ownership::a_repeated_or_reentering_title_position_after_keyboard_opening_switches_nothing ... FAILED
+test menu_pointer_ownership::keyboard_left_and_right_between_menus_survive_a_repeated_title_position ... FAILED
+test menu_pointer_ownership::reopening_a_menu_under_a_stationary_pointer_starts_from_its_first_row ... FAILED
+test menu_pointer_ownership::a_content_click_beneath_a_menu_does_not_choose_its_row ... FAILED
+test menu_pointer_ownership::a_redescribed_select_returns_its_highlight_to_the_selection ... FAILED
+test menu_pointer_ownership::actual_motion_to_another_title_switches_menus_and_a_repeat_does_not ... ok
+test menu_pointer_ownership::escape_and_release_end_an_armed_key_and_motion_takes_the_highlight_again ... FAILED
+test menu_pointer_ownership::a_bound_select_the_pointer_drives_follows_changed_options ... ok
+test menu_pointer_ownership::reentering_the_window_at_the_same_position_is_stationary_until_it_moves ... FAILED
+test menu_pointer_ownership::actual_motion_takes_the_highlight_and_the_keyboard_takes_it_back ... FAILED
+test menu_pointer_ownership::a_menu_the_pointer_drives_follows_changed_rows_and_a_keyboard_one_keeps_its_row ... FAILED
+test menu_pointer_ownership::returning_from_content_to_a_title_position_seen_before_switches_menus ... ok
+test menu_pointer_ownership::a_context_menu_opened_by_key_ignores_a_parked_pointer ... FAILED
+test menu_pointer_ownership::right_and_left_keep_the_keyboard_branch_under_a_parked_parent_pointer ... FAILED
+test menu_pointer_ownership::a_revoked_and_restored_select_compares_motion_with_positions_seen_while_revoked ... FAILED
+test menu_pointer_ownership::a_pointer_parked_where_a_menu_opens_does_not_take_its_keyboard_choice ... FAILED
+test menu_pointer_ownership::select_and_inline_select_lists_ignore_a_parked_pointer ... FAILED
+test menu_pointer_ownership::a_branch_clicked_without_a_move_is_the_row_right_and_left_return_to ... ok
+test menu_pointer_ownership::long_select_and_inline_select_lists_scroll_by_key_under_a_parked_pointer ... FAILED
+test menu_pointer_ownership::a_context_menu_opened_at_the_pointer_scrolls_by_key_beneath_it ... FAILED
+test menu_pointer_ownership::keyboard_navigation_of_a_long_menu_never_stalls_under_a_parked_pointer ... FAILED
+test menu_pointer_ownership::the_p12_pointer_positions_leave_a_keyboard_opened_file_menu_open ... FAILED
+test menu_pointer_ownership::only_a_wheel_that_scrolls_hands_the_highlight_to_the_pointer ... FAILED
+test menu_pointer_ownership::a_native_like_coordinate_sequence_keeps_the_keyboard_choice_until_real_motion ... FAILED
+test menu_pointer_ownership::pointer_input_cannot_move_a_choice_armed_by_enter_or_space ... FAILED
+
+failures:
+
+---- menu_pointer_ownership::a_repeated_or_reentering_title_position_after_keyboard_opening_switches_nothing stdout ----
+
+thread 'menu_pointer_ownership::a_repeated_or_reentering_title_position_after_keyboard_opening_switches_nothing' (3724739) panicked at crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs:932:5:
+assertion `left == right` failed
+  left: (false, true)
+ right: (true, false)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- menu_pointer_ownership::keyboard_left_and_right_between_menus_survive_a_repeated_title_position stdout ----
+
+thread 'menu_pointer_ownership::keyboard_left_and_right_between_menus_survive_a_repeated_title_position' (3724744) panicked at crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs:1001:5:
+assertion `left == right` failed
+  left: (true, false)
+ right: (false, true)
+
+---- menu_pointer_ownership::reopening_a_menu_under_a_stationary_pointer_starts_from_its_first_row stdout ----
+
+thread 'menu_pointer_ownership::reopening_a_menu_under_a_stationary_pointer_starts_from_its_first_row' (3724750) panicked at crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs:402:5:
+assertion `left == right` failed
+  left: Some("Gamma")
+ right: Some("Alpha")
+
+---- menu_pointer_ownership::a_content_click_beneath_a_menu_does_not_choose_its_row stdout ----
+
+thread 'menu_pointer_ownership::a_content_click_beneath_a_menu_does_not_choose_its_row' (3724731) panicked at crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs:224:5:
+assertion `left == right` failed
+  left: Some("Beta")
+ right: Some("Alpha")
+
+---- menu_pointer_ownership::a_redescribed_select_returns_its_highlight_to_the_selection stdout ----
+
+thread 'menu_pointer_ownership::a_redescribed_select_returns_its_highlight_to_the_selection' (3724738) panicked at crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs:743:5:
+assertion `left == right` failed
+  left: Some("O03")
+ right: Some("O01")
+
+---- menu_pointer_ownership::escape_and_release_end_an_armed_key_and_motion_takes_the_highlight_again stdout ----
+
+thread 'menu_pointer_ownership::escape_and_release_end_an_armed_key_and_motion_takes_the_highlight_again' (3724743) panicked at crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs:485:5:
+assertion `left == right` failed
+  left: Some("Delta")
+ right: Some("Alpha")
+
+---- menu_pointer_ownership::reentering_the_window_at_the_same_position_is_stationary_until_it_moves stdout ----
+
+thread 'menu_pointer_ownership::reentering_the_window_at_the_same_position_is_stationary_until_it_moves' (3724749) panicked at crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs:316:5:
+assertion `left == right` failed
+  left: Some("Beta")
+ right: Some("Gamma")
+
+---- menu_pointer_ownership::actual_motion_takes_the_highlight_and_the_keyboard_takes_it_back stdout ----
+
+thread 'menu_pointer_ownership::actual_motion_takes_the_highlight_and_the_keyboard_takes_it_back' (3724741) panicked at crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs:283:5:
+assertion `left == right` failed
+  left: Some("Gamma")
+ right: Some("Alpha")
+
+---- menu_pointer_ownership::a_menu_the_pointer_drives_follows_changed_rows_and_a_keyboard_one_keeps_its_row stdout ----
+
+thread 'menu_pointer_ownership::a_menu_the_pointer_drives_follows_changed_rows_and_a_keyboard_one_keeps_its_row' (3724734) panicked at crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs:386:5:
+assertion `left == right` failed
+  left: Some("Alpha")
+ right: Some("Gamma")
+
+---- menu_pointer_ownership::a_context_menu_opened_by_key_ignores_a_parked_pointer stdout ----
+
+thread 'menu_pointer_ownership::a_context_menu_opened_by_key_ignores_a_parked_pointer' (3724733) panicked at crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs:585:5:
+assertion `left == right` failed
+  left: Some("Paste")
+ right: Some("Cut")
+
+---- menu_pointer_ownership::right_and_left_keep_the_keyboard_branch_under_a_parked_parent_pointer stdout ----
+
+thread 'menu_pointer_ownership::right_and_left_keep_the_keyboard_branch_under_a_parked_parent_pointer' (3724752) panicked at crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs:521:5:
+assertion `left == right` failed
+  left: Some("Alpha")
+ right: Some("First")
+
+---- menu_pointer_ownership::a_revoked_and_restored_select_compares_motion_with_positions_seen_while_revoked stdout ----
+
+thread 'menu_pointer_ownership::a_revoked_and_restored_select_compares_motion_with_positions_seen_while_revoked' (3724740) panicked at crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs:798:5:
+assertion `left == right` failed
+  left: Some("O05")
+ right: Some("O03")
+
+---- menu_pointer_ownership::a_pointer_parked_where_a_menu_opens_does_not_take_its_keyboard_choice stdout ----
+
+thread 'menu_pointer_ownership::a_pointer_parked_where_a_menu_opens_does_not_take_its_keyboard_choice' (3724736) panicked at crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs:202:5:
+assertion `left == right` failed
+  left: Some("Gamma")
+ right: Some("Alpha")
+
+---- menu_pointer_ownership::select_and_inline_select_lists_ignore_a_parked_pointer stdout ----
+
+thread 'menu_pointer_ownership::select_and_inline_select_lists_ignore_a_parked_pointer' (3724753) panicked at crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs:692:9:
+assertion `left == right` failed
+  left: Some("O04")
+ right: Some("O01")
+
+---- menu_pointer_ownership::long_select_and_inline_select_lists_scroll_by_key_under_a_parked_pointer stdout ----
+
+thread 'menu_pointer_ownership::long_select_and_inline_select_lists_scroll_by_key_under_a_parked_pointer' (3724746) panicked at crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs:719:9:
+assertion `left == right` failed
+  left: Some("O07")
+ right: Some("O12")
+
+---- menu_pointer_ownership::a_context_menu_opened_at_the_pointer_scrolls_by_key_beneath_it stdout ----
+
+thread 'menu_pointer_ownership::a_context_menu_opened_at_the_pointer_scrolls_by_key_beneath_it' (3724732) panicked at crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs:616:5:
+assertion `left == right` failed
+  left: Some("R04")
+ right: Some("R14")
+
+---- menu_pointer_ownership::keyboard_navigation_of_a_long_menu_never_stalls_under_a_parked_pointer stdout ----
+
+thread 'menu_pointer_ownership::keyboard_navigation_of_a_long_menu_never_stalls_under_a_parked_pointer' (3724745) panicked at crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs:240:9:
+assertion `left == right` failed: after 1 Down
+  left: Some("R04")
+ right: Some("R01")
+
+---- menu_pointer_ownership::the_p12_pointer_positions_leave_a_keyboard_opened_file_menu_open stdout ----
+
+thread 'menu_pointer_ownership::the_p12_pointer_positions_leave_a_keyboard_opened_file_menu_open' (3724754) panicked at crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs:917:9:
+assertion `left == right` failed: parked over View
+  left: (false, true)
+ right: (true, false)
+
+---- menu_pointer_ownership::only_a_wheel_that_scrolls_hands_the_highlight_to_the_pointer stdout ----
+
+thread 'menu_pointer_ownership::only_a_wheel_that_scrolls_hands_the_highlight_to_the_pointer' (3724747) panicked at crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs:346:5:
+assertion `left == right` failed
+  left: Some("R03")
+ right: Some("R00")
+
+---- menu_pointer_ownership::a_native_like_coordinate_sequence_keeps_the_keyboard_choice_until_real_motion stdout ----
+
+thread 'menu_pointer_ownership::a_native_like_coordinate_sequence_keeps_the_keyboard_choice_until_real_motion' (3724735) panicked at crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs:826:5:
+assertion `left == right` failed
+  left: Some("O03")
+ right: Some("O11")
+
+---- menu_pointer_ownership::pointer_input_cannot_move_a_choice_armed_by_enter_or_space stdout ----
+
+thread 'menu_pointer_ownership::pointer_input_cannot_move_a_choice_armed_by_enter_or_space' (3724748) panicked at crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs:442:9:
+assertion `left == right` failed: Enter move
+  left: Some("R04")
+ right: Some("R01")
+
+
+failures:
+    menu_pointer_ownership::a_content_click_beneath_a_menu_does_not_choose_its_row
+    menu_pointer_ownership::a_context_menu_opened_at_the_pointer_scrolls_by_key_beneath_it
+    menu_pointer_ownership::a_context_menu_opened_by_key_ignores_a_parked_pointer
+    menu_pointer_ownership::a_menu_the_pointer_drives_follows_changed_rows_and_a_keyboard_one_keeps_its_row
+    menu_pointer_ownership::a_native_like_coordinate_sequence_keeps_the_keyboard_choice_until_real_motion
+    menu_pointer_ownership::a_pointer_parked_where_a_menu_opens_does_not_take_its_keyboard_choice
+    menu_pointer_ownership::a_redescribed_select_returns_its_highlight_to_the_selection
+    menu_pointer_ownership::a_repeated_or_reentering_title_position_after_keyboard_opening_switches_nothing
+    menu_pointer_ownership::a_revoked_and_restored_select_compares_motion_with_positions_seen_while_revoked
+    menu_pointer_ownership::actual_motion_takes_the_highlight_and_the_keyboard_takes_it_back
+    menu_pointer_ownership::escape_and_release_end_an_armed_key_and_motion_takes_the_highlight_again
+    menu_pointer_ownership::keyboard_left_and_right_between_menus_survive_a_repeated_title_position
+    menu_pointer_ownership::keyboard_navigation_of_a_long_menu_never_stalls_under_a_parked_pointer
+    menu_pointer_ownership::long_select_and_inline_select_lists_scroll_by_key_under_a_parked_pointer
+    menu_pointer_ownership::only_a_wheel_that_scrolls_hands_the_highlight_to_the_pointer
+    menu_pointer_ownership::pointer_input_cannot_move_a_choice_armed_by_enter_or_space
+    menu_pointer_ownership::reentering_the_window_at_the_same_position_is_stationary_until_it_moves
+    menu_pointer_ownership::reopening_a_menu_under_a_stationary_pointer_starts_from_its_first_row
+    menu_pointer_ownership::right_and_left_keep_the_keyboard_branch_under_a_parked_parent_pointer
+    menu_pointer_ownership::select_and_inline_select_lists_ignore_a_parked_pointer
+    menu_pointer_ownership::the_p12_pointer_positions_leave_a_keyboard_opened_file_menu_open
+
+test result: FAILED. 5 passed; 21 failed; 0 ignored; 0 measured; 464 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `-p pert-ui --test surfaces`
+# ---- end output ----
+# hashes after:
+e539ab0c2e6200fcd890d47bceaf09d05ce97f38b46f4ad6a22b675316a52711  crates/pert-ui-runtime/src/select.rs
+93eedf7834beb29713a873ad4924fb3e88fa48a29a968af8d91c07333807601e  crates/pert-ui-runtime/src/menu_bar.rs
+4ad4e0e04d221ea9f21e9d3edf20403cb7b58b90da4810f902fb478bce9335b6  crates/pert-ui-runtime/src/menu.rs
+29d28116b00b3e3241998fa8b80368e448fb8638c446baba23ffac82b83afb1e  crates/pert-ui-runtime/src/activation.rs
+14eea5b3899b4f52eb97b12bf3962d39d445e1071cbcc1482b24cfdbabc702a4  crates/pert-ui/tests/surfaces/main.rs
+242bccc81950317c96fe98780897011326b0b24549291bf7b5706d038c835561  crates/pert-ui/tests/surfaces/menu_pointer_ownership.rs
+# finished 2026-10-29T10:41:11+01:00
+# exit_status 101

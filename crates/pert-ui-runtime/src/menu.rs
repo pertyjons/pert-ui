@@ -678,11 +678,43 @@ type Opener = Rc<dyn Fn(&EventContext) -> Result<(), RuntimeError>>;
 /// check or radio marks; see [`MenuItem`]. No native menus or implicit I/O are
 /// used. For an application's File, Edit and Help menus, see `MenuBar`.
 ///
+/// The highlighted row is the one Enter runs, and the keyboard and the pointer
+/// take turns owning it at every level. The keyboard takes it with each
+/// handled press of Up, Down, Home, End or a Page key, including each OS
+/// repeat of one, and with a Right or Left press, before it acts. Key releases,
+/// navigation keys with modifiers and keys the menu ignores leave it with
+/// whichever input owns it, so actual pointer motion takes it back even while
+/// a navigation key is still held, until that key's next repeat. The pointer
+/// takes it by actual motion over the rows, a primary press on a row or a
+/// wheel that scrolls them; motion over a separator or a disabled row takes
+/// it without highlighting that row. From then on the highlight follows the
+/// row under the pointer as rows change or scroll.
+///
+/// An Enter or Space press that arms activation takes the highlight for the
+/// keyboard as well. Until that key's release or a cancellation, such as
+/// Escape dismissing the menu, pointer motion, presses and wheels only hover:
+/// only the keyboard moves the highlight, and the release runs the row
+/// highlighted then. While a primary pointer press is armed, Enter and Space
+/// neither arm nor take the highlight; the pointer keeps it, and only its own
+/// release on the pressed row runs that row.
+///
+/// A list shown beneath a stationary pointer, as a menu opened by key over
+/// where the pointer rests, keeps its first row until the pointer moves or
+/// acts, and rows that keyboard navigation scrolls beneath it do not take the
+/// highlight either. Motion means the host reporting a window position other
+/// than the last one the list saw, compared exactly in logical coordinates: a
+/// repeated report of the same position, including the pointer re-entering
+/// the window exactly where it left, is stationary until the next distinct
+/// motion. After the window's scale factor changes, the first native report
+/// of an unmoved pointer can carry new logical coordinates and then counts as
+/// motion.
+///
 /// Reconciling a new description under the same key, for example one whose
 /// "Recent files" submenu gained rows, takes its rows, their actions and the
 /// trigger. Rows are matched by item key at every level: a surviving row keeps
 /// its highlight and an open submenu stays open, a new row appears and a
-/// removed row disappears, closing its submenu if that was open. Whether the
+/// removed row disappears, closing its submenu if that was open; a highlight
+/// the pointer owns moves to the row now under it. Whether the
 /// menu is open and the command context captured when it opened are kept, except
 /// when an explicitly supplied open binding is replaced. That replacement follows
 /// its current value and starts without the previous engagement's command context.
@@ -1276,8 +1308,10 @@ impl Component for MenuBranch {
 /// from focused content inside it; content without a focusable component offers
 /// the menu to the pointer only. Application code opens it through
 /// [`Self::controller`], for a toolbar button or a command that offers the same
-/// actions. Focus, dismissal, disabled actions and errors
-/// follow [`Menu`], and so does reconciling a new description. All callbacks
+/// actions. Focus, dismissal, disabled actions, errors and which input owns
+/// the highlighted row follow [`Menu`], and so does reconciling a new
+/// description; a menu opened at the pointer keeps its first row until the
+/// pointer moves or acts on it. All callbacks
 /// run on the owning UI thread. No native OS menu is created.
 ///
 /// ```

@@ -1,0 +1,2 @@
+test menu_pointer_ownership::right_on_a_row_without_a_submenu_takes_the_highlight_from_the_pointer ... FAILED
+test result: FAILED. 27 passed; 1 failed; 0 ignored; 0 measured; 464 filtered out; finished in 0.06s

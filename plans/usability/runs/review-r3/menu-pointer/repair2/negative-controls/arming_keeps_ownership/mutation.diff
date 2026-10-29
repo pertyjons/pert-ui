@@ -1,0 +1,13 @@
+--- /home/per/pert-ui-usability/r3-menu-implementation2-evidence/negative-controls/arming_keeps_ownership/backup/select.rs	2026-10-29 11:06:38.761553519 +0100
++++ crates/pert-ui-runtime/src/select.rs	2026-10-29 11:06:38.780125460 +0100
+@@ -699,9 +699,7 @@
+             }
+             let was_armed = self.input.key_armed();
+             let activate = self.input.keyboard(cx, e, control);
+-            if !was_armed && self.input.key_armed() {
+-                self.pointer_owns = false;
+-            }
++            let _ = was_armed;
+             if activate && let Some(value) = self.active.clone() {
+                 (self.on_choose)(&value, cx)?;
+             }

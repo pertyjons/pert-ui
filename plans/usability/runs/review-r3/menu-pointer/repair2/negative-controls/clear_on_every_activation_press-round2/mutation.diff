@@ -1,0 +1,11 @@
+--- /home/per/pert-ui-usability/r3-menu-implementation2-evidence/negative-controls/clear_on_every_activation_press-round2/backup/select.rs	2026-10-29 11:09:45.558507975 +0100
++++ crates/pert-ui-runtime/src/select.rs	2026-10-29 11:09:45.577582502 +0100
+@@ -699,7 +699,7 @@
+             }
+             let was_armed = self.input.key_armed();
+             let activate = self.input.keyboard(cx, e, control);
+-            if !was_armed && self.input.key_armed() {
++            if !was_armed && e.transition == KeyTransition::Pressed {
+                 self.pointer_owns = false;
+             }
+             if activate && let Some(value) = self.active.clone() {

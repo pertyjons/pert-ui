@@ -1,0 +1,82 @@
+"""Negative controls for the fixed-point hit and word assertions.
+
+Each control removes the paint-origin translation from one public pointer
+API in text_selection.rs, runs the runtime tab tests, and restores the exact
+original bytes. Restoration writes the bytes (no `cp -p`, which would keep a
+stale mtime), touches the file and checks its hash; a final run must
+recompile pert-ui-runtime and pass, so no mutated build is reused.
+"""
+import difflib, hashlib, os, pathlib, re, subprocess, sys, time
+
+root = pathlib.Path('/home/per/pert-ui-usability/r3-text-worktree')
+out = pathlib.Path(__file__).parent
+target = '/home/per/pert-ui-usability/r3-text-implementation-target'
+env = dict(os.environ, CARGO_TARGET_DIR=target)
+path = root / 'crates/pert-ui-runtime/src/text_selection.rs'
+test = 'cargo test --locked -p pert-ui-runtime --lib text::tabs -- --test-threads=1'
+focused = ('cargo test --locked -p pert-ui-runtime --lib '
+           'text::tabs::tests::hanging_tabs_shrink_the_extent_and_translate_right_to_left_public_coordinates')
+controls = [
+    ('N10-at-point-ignores-origin',
+     '        let x = (point.x() - layout.origin[0]) * layout.scale;\n',
+     '        let x = point.x() * layout.scale;\n'),
+    ('N11-word-at-point-ignores-origin',
+     '            (point.x() - layout.origin[0]) * layout.scale,\n',
+     '            point.x() * layout.scale,\n'),
+]
+
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def run(command):
+    start = time.monotonic()
+    r = subprocess.run(command, shell=True, cwd=root, env=env, capture_output=True, text=True)
+    return r, time.monotonic() - start
+
+
+original = path.read_bytes()
+summary = [f'original {path.relative_to(root)} sha256 {sha(original)}']
+for name, old, new in controls:
+    text = original.decode()
+    assert text.count(old) == 1, name
+    mutated = text.replace(old, new)
+    path.write_text(mutated)
+    diff = ''.join(difflib.unified_diff(text.splitlines(True), mutated.splitlines(True),
+                                        'a/text_selection.rs', 'b/text_selection.rs'))
+    (out / f'{name}.diff').write_text(diff)
+    r, elapsed = run(test)
+    path.write_bytes(original)
+    os.utime(path)  # touch: newer than the mutated build's fingerprint
+    restored = sha(path.read_bytes())
+    log = r.stdout + '\n--- stderr ---\n' + r.stderr
+    lines = log.splitlines()
+    panics = [(m.group(1), m.group(2), '\n'.join(lines[i + 1:i + 4]))
+              for i, line in enumerate(lines)
+              if (m := re.match(r"^thread '([^']+)' \(\d+\) panicked at (.+)$", line))]
+    failed = re.findall(r'^    (text::tabs::tests::\S+)$', log, re.M)
+    hanging = [p for p in panics if p[0].endswith('hanging_tabs_shrink_the_extent_and_translate_right_to_left_public_coordinates')]
+    (out / f'{name}.log').write_text(
+        f'$ cd {root}\n# mutation in {path.relative_to(root)}:\n-{old}+{new}'
+        f'$ CARGO_TARGET_DIR={target} {test}\nexit status: {r.returncode}\nelapsed: {elapsed:.1f} s\n\n'
+        f'--- stdout ---\n{log}\n# restored sha256 {restored} '
+        f'({"identical" if restored == sha(original) else "DIFFERENT"})\n')
+    line = (f'{name}: exit {r.returncode}; failing tests {failed}; restored '
+            f'{"identical" if restored == sha(original) else "DIFFERENT"}')
+    summary.append(line)
+    for thread, location, message in hanging:
+        summary.append(f'  first failure in the hanging test at {location}:\n    ' + message.strip().replace(chr(10), chr(10) + '    '))
+    print(line, flush=True)
+    assert restored == sha(original)
+
+r, elapsed = run(focused)
+rebuilt = 'Compiling pert-ui-runtime' in r.stderr
+(out / 'post-restore-rebuild.log').write_text(
+    f'$ cd {root}\n$ CARGO_TARGET_DIR={target} {focused}\nexit status: {r.returncode}\n'
+    f'elapsed: {elapsed:.1f} s\n\n--- stdout ---\n{r.stdout}\n--- stderr ---\n{r.stderr}')
+summary.append(f'post-restore focused run: exit {r.returncode}; recompiled pert-ui-runtime: {rebuilt}; '
+               f'final sha256 {sha(path.read_bytes())}')
+(out / 'summary.txt').write_text('\n'.join(summary) + '\n')
+print('\n'.join(summary))
+sys.exit(0 if r.returncode == 0 and rebuilt else 1)

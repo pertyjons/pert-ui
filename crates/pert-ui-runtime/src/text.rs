@@ -5,6 +5,7 @@ mod fonts;
 mod icons;
 mod registry;
 mod rich;
+mod tabs;
 use crate::{Color, DrawError, MaskImage, Painter, Rect, RuntimeError, Size};
 pub use fit::{FittedText, HighlightError, TextOverflow};
 pub use fonts::{FontData, FontError, FontId, FontRole, IconGlyph};
@@ -16,6 +17,7 @@ use std::{
     rc::Rc,
     sync::Arc,
 };
+use tabs::TextBrush;
 
 /// [`TextLimit::MAX_RASTER_SIDE`] in the signed arithmetic of canvas bounds.
 const MAX_SIDE: i64 = TextLimit::MAX_RASTER_SIDE as i64;
@@ -140,6 +142,10 @@ pub enum TextStyle {
     /// no system discovery occurs. With the bundled font,
     /// supported ordinary letters, digits and spaces have equal advances; combining
     /// marks and complex scripts are shaped normally, not forced into character cells.
+    /// A literal tab draws no ink and, with the bundled font, is one cell wide;
+    /// there are no aligned tab stops, so tabs do not line up columns of unequal
+    /// text. A registered font that ligates a tab with printable text keeps
+    /// that glyph, as [`TextLayout`] describes.
     Monospace,
     /// Secondary monospaced text: bundled Noto Sans Mono at CaptionSize
     /// (12 logical pixels by default). Digits, signs, decimal points and spaces
@@ -179,13 +185,31 @@ impl TextStyle {
 /// font defaults or style changes; component measurement tracks these dependencies.
 /// Rich span colors are resolved at paint time. Text fallback uses bundled fonts;
 /// missing characters use the missing-glyph mark. Icons have an exact font mapping.
+///
+/// A literal tab (U+0009) is non-printing. It is shaped and measured with the
+/// text, keeping its caret stops, word and bidi boundaries and line breaking,
+/// but draws no ink. Its width is the font's shaped advance for it, not an
+/// aligned tab stop. A registered font that joins a tab and printable text into
+/// one ligature keeps that glyph's ink rather than erasing the printable text.
+///
+/// [`Self::size`] is the layout box joined with the raster bounds of the drawn
+/// glyphs, and the painted origin is its top-left corner. That is not an exact
+/// union of visible ink: a glyph whose raster is empty, such as a space in the
+/// bundled fonts, still extends the bounds to its pen position, while a hidden
+/// tab adds nothing. The layout box leaves out whitespace hanging past the end
+/// of a wrapped line, so caret, selection and pointer geometry at hanging
+/// spaces and tabs may lie outside the size: beyond its right edge in
+/// left-to-right text and at negative x in right-to-left text. There a
+/// hanging space's pen position can still extend the size leftward and move
+/// the origin, where a tab of the same advance does not, so the two can give
+/// different size, origin and public caret coordinates.
 #[derive(Clone, Debug)]
 pub struct TextLayout {
     size: Size,
     parts: Arc<[MaskPart]>,
     colors: Arc<[TextColor]>,
     ink: Option<[f32; 4]>,
-    pub(crate) shaped: Arc<parley::Layout<usize>>,
+    pub(crate) shaped: Arc<parley::Layout<TextBrush>>,
     pub(crate) scale: f32,
     pub(crate) origin: [f32; 2],
     signature: Arc<RasterSignature>,
@@ -197,7 +221,13 @@ struct MaskPart {
     brush: usize,
 }
 impl TextLayout {
-    /// Logical extent including glyph overhangs.
+    /// Logical extent of the painted text: the layout box joined with the drawn
+    /// glyphs' raster bounds, overhangs included. An empty raster, such as a
+    /// bundled-font space, counts at its pen position, and a hidden tab not at
+    /// all, as the [type documentation](Self) describes. Whitespace hanging
+    /// past the end of a wrapped line is outside the layout box, so a caret or
+    /// selection there can fall outside this extent; see
+    /// [`TextSelection::caret`](crate::TextSelection::caret).
     #[must_use]
     pub const fn size(&self) -> Size {
         self.size
@@ -546,7 +576,7 @@ impl<'a> TextRequest<'a> {
 pub(crate) struct TextService {
     pub(crate) fonts: parley::FontContext,
     pub(crate) registry: registry::Registry,
-    layout: parley::LayoutContext<usize>,
+    layout: parley::LayoutContext<TextBrush>,
     scale: swash::scale::ScaleContext,
     cache: VecDeque<CachedText>,
     bytes: usize,
@@ -567,6 +597,13 @@ pub(crate) struct TextService {
     /// How many times text was shaped, cached or not.
     #[cfg(test)]
     shapings: Cell<usize>,
+    /// How many Parley layouts were built: one per shaping, two when a font
+    /// ligates a tab with printable text.
+    #[cfg(test)]
+    parley_builds: Cell<usize>,
+    /// Off for the pre-fix reference: tabs keep their ordinary brush.
+    #[cfg(test)]
+    hide_tabs: bool,
     /// The longest text shaped, in bytes.
     #[cfg(test)]
     longest_shaped: Cell<usize>,
@@ -626,6 +663,10 @@ impl TextService {
             fit_searches: Cell::new(0),
             #[cfg(test)]
             shapings: Cell::new(0),
+            #[cfg(test)]
+            parley_builds: Cell::new(0),
+            #[cfg(test)]
+            hide_tabs: true,
             #[cfg(test)]
             longest_shaped: Cell::new(0),
         })
@@ -853,7 +894,7 @@ impl TextService {
         &mut self,
         text: &str,
         request: TextRequest<'_>,
-    ) -> Result<(f32, Key, parley::Layout<usize>), RuntimeError> {
+    ) -> Result<(f32, Key, parley::Layout<TextBrush>), RuntimeError> {
         let scale = effective_scale(request.scale, [request.font_size]);
         let plain = TextRequest::new(request.style, request.font_size, request.reads);
         let resolved = self.resolve(&RichText::from(text), plain)?;
@@ -1020,7 +1061,7 @@ impl TextService {
         &mut self,
         resolved: Resolved,
         request: TextRequest<'_>,
-        shaped: Option<parley::Layout<usize>>,
+        shaped: Option<parley::Layout<TextBrush>>,
     ) -> Result<TextLayout, RuntimeError> {
         let TextRequest { width, gap, .. } = request;
         let scale = effective_scale(
@@ -1083,7 +1124,7 @@ impl TextService {
     fn shape(
         &mut self,
         key: &Key,
-        shaped: Option<parley::Layout<usize>>,
+        shaped: Option<parley::Layout<TextBrush>>,
     ) -> Result<(RasterSignature, TextLayout), TextError> {
         let resolved = &key.resolved;
         let scale = key.scale as f32;
@@ -1134,8 +1175,14 @@ impl TextService {
             },
         ))
     }
-    /// Shapes, wraps and aligns the resolved spans in physical pixels.
-    fn build_layout(&mut self, key: &Key) -> Result<parley::Layout<usize>, TextError> {
+    /// Shapes, wraps and aligns the resolved spans in physical pixels, with
+    /// each literal tab's brush tagged hidden.
+    ///
+    /// Text without tabs is built once with no further scan. With tabs, one
+    /// walk of the shaped atoms finds tabs a font ligated with other text; only
+    /// then is the same text built once more with those tabs' original brush,
+    /// which cannot change shaping, so the second layout is final.
+    fn build_layout(&mut self, key: &Key) -> Result<parley::Layout<TextBrush>, TextError> {
         #[cfg(test)]
         {
             self.shapings.set(self.shapings.get() + 1);
@@ -1143,8 +1190,6 @@ impl TextService {
             self.longest_shaped.set(length);
         }
         let resolved = &key.resolved;
-        let text = &resolved.text;
-        let scale = key.scale as f32;
         let families: Vec<String> = resolved
             .spans
             .iter()
@@ -1161,6 +1206,38 @@ impl TextService {
                 }
             })
             .collect();
+        let hidden = tabs::hidden_ranges(&resolved.text, &[]);
+        #[cfg(test)]
+        let hidden = if self.hide_tabs { hidden } else { Vec::new() };
+        let layout = self.build_parley(key, &families, &hidden)?;
+        if hidden.is_empty() {
+            return Ok(layout);
+        }
+        let mixed = tabs::mixed_tabs(&layout, &resolved.text);
+        if mixed.is_empty() {
+            return Ok(layout);
+        }
+        let hidden = tabs::hidden_ranges(&resolved.text, &mixed);
+        self.build_parley(key, &families, &hidden)
+    }
+    /// One Parley build of `key` with its span `families`, whose `hidden`
+    /// ascending byte ranges carry [`TextBrush::HiddenTab`].
+    ///
+    /// Each pushed property is inserted into Parley's span list, shifting the
+    /// later spans, so overrides in rich text cost time proportional to the
+    /// spans after them, and each override adds style entries, font metric
+    /// queries and glyph sub-runs.
+    fn build_parley(
+        &mut self,
+        key: &Key,
+        families: &[String],
+        hidden: &[std::ops::Range<usize>],
+    ) -> Result<parley::Layout<TextBrush>, TextError> {
+        #[cfg(test)]
+        self.parley_builds.set(self.parley_builds.get() + 1);
+        let resolved = &key.resolved;
+        let text = &resolved.text;
+        let scale = key.scale as f32;
         let mut builder = self
             .layout
             .ranged_builder(&mut self.fonts, text, scale, true);
@@ -1169,7 +1246,7 @@ impl TextService {
         ));
         builder.push_default(parley::StyleProperty::FontSize(resolved.default_size));
         builder.push_default(parley::LineHeight::Absolute(resolved.default_size * 1.4));
-        for (span, family) in resolved.spans.iter().zip(&families) {
+        for (span, family) in resolved.spans.iter().zip(families) {
             builder.push(
                 parley::FontFamily::from(family.as_str()),
                 span.range.clone(),
@@ -1193,7 +1270,17 @@ impl TextService {
             if span.icon {
                 builder.push(parley::VerticalAlign::TOP, span.range.clone());
             }
-            builder.push(parley::StyleProperty::Brush(span.brush), span.range.clone());
+            builder.push(
+                parley::StyleProperty::Brush(TextBrush::Color(span.brush)),
+                span.range.clone(),
+            );
+        }
+        // After the spans, so a tab keeps its span's font, size and line height.
+        for range in hidden {
+            builder.push(
+                parley::StyleProperty::Brush(TextBrush::HiddenTab),
+                range.clone(),
+            );
         }
         for (id, (index, width)) in resolved.gaps.iter().enumerate() {
             builder.push_inline_box(parley::InlineBox {
@@ -1223,7 +1310,7 @@ impl TextService {
     /// contain them, as `[left, top, right, bottom]` physical pixels.
     fn rasterize_glyphs(
         &mut self,
-        layout: &parley::Layout<usize>,
+        layout: &parley::Layout<TextBrush>,
         signature: &RasterSignature,
         phase: [u8; 2],
         cache: bool,
@@ -1244,7 +1331,11 @@ impl TextService {
                 let parley::PositionedLayoutItem::GlyphRun(glyph_run) = item else {
                     continue;
                 };
-                let alignment = alignments.get(&glyph_run.style().brush).copied();
+                // A literal tab has no coverage: skip it before building a scaler.
+                let TextBrush::Color(brush) = glyph_run.style().brush else {
+                    continue;
+                };
+                let alignment = alignments.get(&brush).copied();
                 let run = glyph_run.run();
                 let font = run.font();
                 let coordinates: Vec<i16> = if cache {
@@ -1388,7 +1479,7 @@ impl TextService {
                         x,
                         y,
                         image: cached.image,
-                        brush: glyph_run.style().brush,
+                        brush,
                     };
                     left = left.min(glyph.x);
                     top = top.min(glyph.y);
@@ -1476,11 +1567,19 @@ impl PlacedGlyph {
 
 /// What decides a layout's coverage: its canvas and every positioned glyph, with
 /// the alignment target of each icon run. Equal signatures rasterize equally.
+///
+/// Hidden tab runs have no coverage and are left out entirely, so a tab never
+/// shares a signature with a missing character that shapes to the same glyph.
+/// They still count as text when an icon looks for its nearest text run.
 fn raster_signature(
     resolved: &Resolved,
-    layout: &parley::Layout<usize>,
+    layout: &parley::Layout<TextBrush>,
     canvas: [i64; 2],
 ) -> RasterSignature {
+    let is_icon = |brush: TextBrush| match brush {
+        TextBrush::Color(index) => resolved.icon_brushes[index],
+        TextBrush::HiddenTab => false,
+    };
     let mut line_top = 0.0;
     RasterSignature {
         canvas,
@@ -1502,16 +1601,18 @@ fn raster_signature(
                     .collect();
                 runs.iter()
                     .enumerate()
-                    .map(|(index, glyph_run)| {
+                    .filter_map(|(index, glyph_run)| {
                         let run = glyph_run.run();
-                        let brush = glyph_run.style().brush;
+                        let TextBrush::Color(brush) = glyph_run.style().brush else {
+                            return None;
+                        };
                         let alignment = resolved.icon_brushes[brush].then(|| {
                             // Use the nearest text run on this visual line, including
                             // its actual fallback font and size. Keep icons inside the
                             // nominal line box, without extra icon-font leading.
                             runs.iter()
                                 .enumerate()
-                                .filter(|(_, other)| !resolved.icon_brushes[other.style().brush])
+                                .filter(|(_, other)| !is_icon(other.style().brush))
                                 .min_by_key(|(other, _)| index.abs_diff(*other))
                                 .map(|(_, other)| {
                                     let metrics = other.run().font_metrics();
@@ -1527,7 +1628,7 @@ fn raster_signature(
                                         .map(f32::to_bits)
                                 })
                         });
-                        RasterRun {
+                        Some(RasterRun {
                             font: (run.font().data.id(), run.font().index),
                             brush,
                             alignment,
@@ -1541,7 +1642,7 @@ fn raster_signature(
                                 .positioned_glyphs()
                                 .map(|glyph| (glyph.id, glyph.x.to_bits(), glyph.y.to_bits()))
                                 .collect(),
-                        }
+                        })
                     })
                     .collect::<Vec<_>>()
             })

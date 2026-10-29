@@ -1,0 +1,42 @@
+--- /home/per/pert-ui-usability/r3-text-implementation3-evidence/pre-edit/text.rs.orig	2026-10-29 10:48:59.740224947 +0100
++++ crates/pert-ui-runtime/src/text.rs	2026-10-29 11:11:22.433586790 +0100
+@@ -192,12 +192,17 @@
+ /// aligned tab stop. A registered font that joins a tab and printable text into
+ /// one ligature keeps that glyph's ink rather than erasing the printable text.
+ ///
+-/// [`Self::size`] is the layout box joined with the ink actually drawn, and the
+-/// painted origin is its top-left corner. The layout box leaves out whitespace
+-/// hanging past the end of a wrapped line, and a tab there draws nothing, so
+-/// hanging spaces and tabs may lie outside the size: caret, selection and
+-/// pointer geometry at them lies beyond its right edge in left-to-right text
+-/// and at negative x in right-to-left text.
++/// [`Self::size`] is the layout box joined with the raster bounds of the drawn
++/// glyphs, and the painted origin is its top-left corner. That is not an exact
++/// union of visible ink: a glyph whose raster is empty, such as a space in the
++/// bundled fonts, still extends the bounds to its pen position, while a hidden
++/// tab adds nothing. The layout box leaves out whitespace hanging past the end
++/// of a wrapped line, so caret, selection and pointer geometry at hanging
++/// spaces and tabs may lie outside the size: beyond its right edge in
++/// left-to-right text and at negative x in right-to-left text. There a
++/// hanging space's pen position can still extend the size leftward and move
++/// the origin, where a tab of the same advance does not, so the two can give
++/// different size, origin and public caret coordinates.
+ #[derive(Clone, Debug)]
+ pub struct TextLayout {
+     size: Size,
+@@ -217,9 +222,12 @@
+ }
+ impl TextLayout {
+     /// Logical extent of the painted text: the layout box joined with the drawn
+-    /// glyphs' ink, overhangs included. Whitespace hanging past the end of a
+-    /// wrapped line is outside the layout box, so a caret or selection there
+-    /// can fall outside this extent; see [`TextSelection::caret`](crate::TextSelection::caret).
++    /// glyphs' raster bounds, overhangs included. An empty raster, such as a
++    /// bundled-font space, counts at its pen position, and a hidden tab not at
++    /// all, as the [type documentation](Self) describes. Whitespace hanging
++    /// past the end of a wrapped line is outside the layout box, so a caret or
++    /// selection there can fall outside this extent; see
++    /// [`TextSelection::caret`](crate::TextSelection::caret).
+     #[must_use]
+     pub const fn size(&self) -> Size {
+         self.size

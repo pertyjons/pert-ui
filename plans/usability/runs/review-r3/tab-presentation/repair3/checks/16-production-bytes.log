@@ -1,0 +1,14 @@
+$ cd /home/per/pert-ui-usability/r3-text-worktree
+$ CARGO_TARGET_DIR=/home/per/pert-ui-usability/r3-text-implementation-target python3 -I /home/per/pert-ui-usability/r3-text-implementation3-evidence/production-bytes.py
+exit status: 0
+elapsed: 0.0 s
+
+--- stdout ---
+crates/pert-ui-runtime/src/text.rs: non-doc lines equal to pre-edit copy: True
+crates/pert-ui-runtime/src/text_fields.rs: non-doc lines equal to pre-edit copy: True
+crates/pert-ui-runtime/src/text_fields.rs: non-doc lines equal to HEAD: True
+crates/pert-ui-runtime/src/text_selection.rs: non-doc lines equal to pre-edit copy: True
+crates/pert-ui-runtime/src/text_selection.rs: non-doc lines equal to HEAD: True
+crates/pert-ui-runtime/src/text/tabs.rs: bytes before the test module equal to pre-edit copy: True (4229 bytes)
+
+--- stderr ---

@@ -1,0 +1,44 @@
+"""Checks that this repair changed no production code.
+
+- text.rs, text_fields.rs, text_selection.rs: every line that is not a `///`
+  doc comment equals the pre-edit copy (the implementation-2 final source);
+  text_fields.rs and text_selection.rs also equal HEAD on those lines.
+- tabs.rs: every byte before the test module equals the pre-edit copy.
+Exits nonzero on any difference.
+"""
+import pathlib, subprocess, sys
+
+root = pathlib.Path('/home/per/pert-ui-usability/r3-text-worktree')
+pre = pathlib.Path(__file__).parent / 'pre-edit'
+ok = True
+
+
+def code(text):
+    return [line for line in text.splitlines() if not line.lstrip().startswith('///')]
+
+
+for name, path, against_head in [
+    ('text.rs', 'crates/pert-ui-runtime/src/text.rs', False),
+    ('text_fields.rs', 'crates/pert-ui-runtime/src/text_fields.rs', True),
+    ('text_selection.rs', 'crates/pert-ui-runtime/src/text_selection.rs', True),
+]:
+    current = (root / path).read_text()
+    same = code(current) == code((pre / f'{name}.orig').read_text())
+    print(f'{path}: non-doc lines equal to pre-edit copy: {same}')
+    ok &= same
+    if against_head:
+        head = subprocess.run(['git', 'show', f'HEAD:{path}'], cwd=root, capture_output=True,
+                              text=True, check=True).stdout
+        same = code(current) == code(head)
+        print(f'{path}: non-doc lines equal to HEAD: {same}')
+        ok &= same
+
+marker = '#[cfg(test)]\nmod tests {'
+current = (root / 'crates/pert-ui-runtime/src/text/tabs.rs').read_text()
+original = (pre / 'tabs.rs.orig').read_text()
+assert current.count(marker) == 1 and original.count(marker) == 1
+same = current.split(marker)[0] == original.split(marker)[0]
+print(f'crates/pert-ui-runtime/src/text/tabs.rs: bytes before the test module equal to pre-edit copy: {same}'
+      f' ({len(current.split(marker)[0])} bytes)')
+ok &= same
+sys.exit(0 if ok else 1)

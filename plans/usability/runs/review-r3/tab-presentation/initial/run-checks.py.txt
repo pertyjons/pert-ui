@@ -1,0 +1,40 @@
+"""Runs the implementation checks one by one, recording each command, its
+output and exit status under checks/. Uses the private target directory."""
+import os, pathlib, subprocess, time, sys
+root = '/home/per/pert-ui-usability/r3-text-worktree'
+out = pathlib.Path(__file__).parent / 'checks'
+out.mkdir(exist_ok=True)
+env = dict(os.environ, CARGO_TARGET_DIR='/home/per/pert-ui-usability/r3-text-implementation-target')
+checks = [
+    ('01-fmt', 'cargo fmt --all --check', {}),
+    ('02-clippy-runtime', 'cargo clippy --locked -p pert-ui-runtime --all-targets -- -D warnings', {}),
+    ('03-clippy-facade-default', 'cargo clippy --locked -p pert-ui --all-targets -- -D warnings', {}),
+    ('04-clippy-facade-cpu', 'cargo clippy --locked -p pert-ui --all-targets --features cpu -- -D warnings', {}),
+    ('05-test-runtime-package', 'cargo test --locked -p pert-ui-runtime', {}),
+    ('06-test-runtime-tabs-nocapture', 'cargo test --locked -p pert-ui-runtime --lib text::tabs -- --nocapture', {}),
+    ('07-test-runtime-tabs-release-nocapture', 'cargo test --locked --release -p pert-ui-runtime --lib text::tabs -- --nocapture', {}),
+    ('08-test-runtime-selection-and-text', 'cargo test --locked -p pert-ui-runtime --lib text', {}),
+    ('09-test-facade-editing-default', 'cargo test --locked -p pert-ui --test editing', {}),
+    ('10-test-facade-editing-cpu-tabs-nocapture', 'cargo test --locked -p pert-ui --features cpu --test editing tab_whitespace -- --nocapture', {}),
+    ('11-test-facade-editing-cpu-release-tabs-nocapture', 'cargo test --locked --release -p pert-ui --features cpu --test editing tab_whitespace -- --nocapture', {}),
+    ('12-test-facade-reused-paste-evidence', 'cargo test --locked -p pert-ui --test editing -- --exact text_fields::pasted_control_characters_become_line_breaks_or_are_dropped text_fields::text_binding_multiline_defaults_enter_and_undo', {}),
+    ('13-test-facade-package-cpu', 'cargo test --locked -p pert-ui --features cpu', {}),
+    ('14-rustdoc-runtime', 'cargo doc --locked -p pert-ui-runtime --no-deps', {'RUSTDOCFLAGS': '-D warnings'}),
+    ('15-rustdoc-facade', 'cargo doc --locked -p pert-ui --no-deps', {'RUSTDOCFLAGS': '-D warnings'}),
+    ('16-git-diff-check', 'git diff --check', {}),
+    ('17-git-status', 'git status --short --untracked-files=all', {}),
+]
+only = set(sys.argv[1:])
+summary = []
+for name, command, extra in checks:
+    if only and name not in only:
+        continue
+    start = time.monotonic()
+    result = subprocess.run(command, shell=True, cwd=root, env=dict(env, **extra), capture_output=True, text=True)
+    elapsed = time.monotonic() - start
+    header = f'$ cd {root}\n$ ' + ' '.join(f'{k}={v!r}' for k, v in extra.items()) + (' ' if extra else '') + f'CARGO_TARGET_DIR={env["CARGO_TARGET_DIR"]} {command}\n'
+    (out / f'{name}.log').write_text(f'{header}exit status: {result.returncode}\nelapsed: {elapsed:.1f} s\n\n--- stdout ---\n{result.stdout}\n--- stderr ---\n{result.stderr}')
+    line = f'{name}: exit {result.returncode} ({elapsed:.0f} s): {command}'
+    summary.append(line)
+    print(line, flush=True)
+(out / ('summary.txt' if not only else 'summary-partial.txt')).write_text('\n'.join(summary) + '\n')

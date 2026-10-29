@@ -1,0 +1,31 @@
+--- /home/per/pert-ui-usability/r3-menu-implementation-evidence/negative-controls/old_gating/backup/select.rs	2026-10-29 10:31:56.220659077 +0100
++++ crates/pert-ui-runtime/src/select.rs	2026-10-29 10:41:05.892967684 +0100
+@@ -583,15 +583,8 @@
+         match e.kind() {
+             PointerKind::Move => {
+                 // A separator or disabled row under real motion counts too.
+-                if !e.is_refresh()
+-                    && previous != Some(e.position())
+-                    && cx.pointer_inside()
+-                    && !key_armed
+-                {
+-                    self.pointer_owns = true;
+-                }
+-                if self.pointer_owns
+-                    && let Some(value) = self.hit(cx, e)
++                let _ = (previous, key_armed);
++                if let Some(value) = self.hit(cx, e)
+                     && self.active.as_ref() != Some(&value)
+                 {
+                     self.active = Some(value);
+--- /home/per/pert-ui-usability/r3-menu-implementation-evidence/negative-controls/old_gating/backup/menu_bar.rs	2026-10-29 10:32:07.716416217 +0100
++++ crates/pert-ui-runtime/src/menu_bar.rs	2026-10-29 10:41:05.893449557 +0100
+@@ -397,7 +397,7 @@
+         // Only the host reporting motion to a new position points at a title:
+         // neither the runtime's refreshed move under a pointer resting where a
+         // keyboard-opened menu appeared nor a repeated report of it.
+-        let moved = !e.is_refresh() && previous != Some(e.position());
++        let moved = { let _ = previous; true };
+         match e.kind() {
+             // While any menu of the bar is open, pointing at another title opens
+             // its menu instead.
