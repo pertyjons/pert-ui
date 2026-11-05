@@ -5,19 +5,21 @@
 //! read in any order:
 //!
 //! - [State](state): which way to choose, signals and controls, worker
-//!   results, live data, a settings form and recovery.
+//!   results, application state, live data, a settings form, recovery and
+//!   shutdown.
 //! - [Authoritative values](authoritative_values): parameters, local edit
 //!   gestures, host notifications, effective overlays and external authority.
 //! - [Layout and views](layout): which way to choose for children from data,
 //!   region layouts, splits, tabs, floating and native windows, workspaces,
-//!   large collections, an editable list of records, zoomable content and
-//!   drag and drop.
+//!   large collections, an editable list of records, table cell editing,
+//!   folder browsing, revealing, content search and navigation history,
+//!   zoomable content and drag and drop.
 //! - [Controls](controls): buttons, boolean and choice controls, sliders, text
-//!   and numeric editors, progress, inline controls and toolbars.
-//! - [Surfaces](surfaces): selects, popovers, tooltips, menus, dialogs and
-//!   notifications.
-//! - [Appearance](appearance): themes, density, zoom, shapes, fonts, icons,
-//!   images and SVG.
+//!   and numeric editors, progress, colors, inline controls and toolbars.
+//! - [Surfaces](surfaces): selects, popovers, tooltips, menus and commands,
+//!   dialogs and notifications.
+//! - [Appearance](appearance): themes, density, zoom, shapes, library
+//!   strings and number formats, fonts, icons, images and SVG.
 //! - [Diagnostics](diagnostics): keyboard input, inspection, screenshots,
 //!   serialization and profiling.
 //! - [Testing an application](testing): reading what a headless runtime

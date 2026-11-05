@@ -1,7 +1,7 @@
 # State, composition and interaction contracts
 
-This document collects cross-cutting rules. Use the [manual](manual.md) for
-construction examples and generated Rust documentation for each item's full
+This document collects cross-cutting rules. Use the guide in the `pert-ui`
+rustdoc (see the [manual](manual.md)) for construction examples and generated Rust documentation for each item's full
 signature, defaults and errors. [Architecture](architecture.md) describes the
 package boundaries; [verification](verification.md) records tested behavior.
 
@@ -1024,7 +1024,7 @@ command bindings and held-input registrations before components.
 that claims what an application's user sees from a key must use
 `command_key_input`. A menu
 closes before invoking its selected action. Tooltips never take focus. For
-component-specific keyboard behavior, use the [manual](manual.md) and rustdoc.
+component-specific keyboard behavior, use the guide and each component's rustdoc.
 
 ### Reveal and focus
 

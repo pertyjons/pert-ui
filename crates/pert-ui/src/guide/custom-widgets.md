@@ -525,6 +525,10 @@ reports [`ValidationCode::UnexpectedOverlap`]: a stacking parent
 them by [`Component::child_stacking_priority`], and a component can report
 [`OverlapPolicy::Allow`] in its [`ComponentDetails::validation`] instead.
 
+A component that overrides [`Component::reconcile`] can be checked with
+[`check_redescription`], which compares a re-described component with a
+fresh mount.
+
 To focus a child from an input callback, keep the child mounted and learn its
 identity from [`UpdateContext::children`]; [`EventContext::request_focus_for`]
 then moves focus once layout has settled. A child described in the same event

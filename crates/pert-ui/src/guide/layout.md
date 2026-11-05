@@ -561,6 +561,13 @@ when it cannot build its state: the capture then fails as a whole with
 silently leaving it out. [Getting started](crate::guide::getting_started)
 has a complete capture and restore.
 
+Collapsible sections and accordions remember their expansion in the
+workspace by default, a property grid its resized label column and a tool
+window layout which tool windows are open and their sizes; `persist(false)`
+opts out. Table restoration follows the current column capabilities, and an
+incompatible saved column order rejects that table's entry without applying
+its widths or order.
+
 # Children from values
 
 [`Dynamic`], [`Show`] and [`Each`] describe children from a binding, so a view
@@ -1025,6 +1032,38 @@ assert_eq!(driver.runtime().focused(), Some(list));
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
 
+# Editing cells in a table
+
+A [`Table`] has an active cell: the selection's active row and
+[`TableController::active_column`]. [`Table::on_activate`] runs on Enter with
+the row and column keys. To edit cells in place, mark columns
+[`TableColumn::editable`], answer [`TableItems::editable`] for cells that
+cannot be edited now, and give the table a [`Table::cell_editor`] that builds
+the editor for one cell from a [`CellEdit`]: a [`TextField`],
+[`IntegerInput`], [`DecimalInput`] or [`Select`] built with
+[`CellEdit::session`], its signals created through [`CellEdit::owner`].
+Enter, F2, a double-click or typing begins an edit. The table hosts the
+editor in the cell and keeps the row mounted while the edit is open; Enter
+and Escape return to the table, and Tab and Shift+Tab move to the next or
+previous editable cell. The editor writes the value: publish the plain
+cell's new content from its save callback, and [`Table::on_edit_end`]
+reports the end of each edit. A save that sorts or filters the source can
+move the edited row out of view, and the table does not follow it; call
+[`TableController::reveal`] with its key if it should stay visible.
+[`ListSelection`] keeps selected keys that a filtered source no longer
+shows, so enable row commands from the rows the action can reach.
+
+A table's row height is fixed and a cell gives its content at most that
+height, so choose it for the tallest content: at least the theme's
+`ControlHeight` with controls or an editable column, since every single-line
+control and editor measures that, or one line of body text for text with
+[`TextOverflow::Ellipsis`]. An application that switches density uses the
+largest preset's `ControlHeight`, because a mounted table keeps its height.
+In debug builds validation reports content taller than its row as
+[`ValidationCode::ExceedsFixedHeight`]. A cell's content is addressed as
+`<table>/<row key>/<column key>/<content key>`, and a test clicks a column
+title with [`Driver::click_item`](crate::testing::Driver::click_item).
+
 # A progress column
 
 A [`ProgressBar`] prefers three themed control widths, 192 logical pixels at
@@ -1086,6 +1125,64 @@ assert!(percent_end <= cell_end, "the percentage stays in the cell");
 assert!(ui.validation_report().issues.is_empty(), "nothing escapes its cell");
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
+
+# Folder browsing and data the host supplies
+
+[`FileBrowser`] shows a path bar, a filter, a folder tree and the current
+folder's entries over a [`FileBrowserController`], and performs no
+filesystem I/O itself. The controller's request callback receives a
+[`DirectoryRequest`] whenever a folder must be listed. List it on your own
+worker thread, for example with [`list_directory`], and hand the response
+back to [`FileBrowserController::deliver`] through a [`Mailbox`]. A response
+superseded by a newer request, or for a folder the user has left, is dropped
+as stale, and a failed listing shows as an error row.
+[`FileBrowserController::selected_paths`] reports the selection, and
+`on_open` receives the files the user activates.
+
+A custom component that loads data through its host the same way uses the
+bookkeeping the file browser is built on: a [`RequestTracker`] issues a
+[`RequestTicket`] per key and tells whether a result that comes back is still
+current, superseded by a newer ticket, settled (cancelled or already applied)
+or foreign. The component completes a ticket after applying its result and
+leaves it pending when applying fails, so a retry can apply it.
+
+# Revealing, searching and navigating
+
+To send the user to a target that may be hidden, in an unselected tab, a
+collapsed section, a custom container that opts in or a scrolled-away row,
+call [`Runtime::reveal`] or [`Runtime::reveal_and_focus`], or queue it from a
+component with [`EventContext::request_reveal`] or
+[`EventContext::request_reveal_and_focus`] and observe the receipt: the
+outcome says whether the target was revealed, focused or refused, and where.
+[`Runtime::reveal_child`] selects a tab by key, and [`Tabs::on_select`]
+reports each selection with its [`ChangeOrigin`]. For a virtualized row,
+call its controller's `reveal` with the row's key and reveal the
+[`WidgetId`] its receipt reports once the row is mounted. An internal link
+is a [`Link`] whose action requests a reveal, and a [`Breadcrumb`] reports
+the key of the segment the user activates.
+
+[`Runtime::content_search`] searches the application's own content for a
+[`ContentQuery`]: the semantic names and values components report, hidden
+pages and collapsed sections included, and the rows of a collection whose
+source answers `text`. Each step of the returned cursor does at most the
+query's work budget and returns at most its result limit, and a search whose
+content changed since its last step reports that it is stale.
+[`Element::with_searchable`] excludes a subtree, and a concealed field's
+value is never matched. [`Runtime::jump_to_content`] reveals and focuses a
+hit, mounting its row first; a row the collection mounts only later comes
+back as [`ContentJump::Pending`], which [`Runtime::resume_content_jump`]
+finishes. To offer content in a [`QuickPick`] beside commands, list
+[`ContentQuery::everything`].
+
+[`NavigationHistory`] records the places an application visits, with back
+and forward movement like a browser: record a visit when the user navigates,
+and restore the entry that going back or forward returns yourself, for
+example with [`Runtime::reveal_child`]. Record only [`ChangeOrigin::User`]
+changes, so the history's own restorations are not recorded.
+[`HistoryNavigator`] presents the history as a browser does, with back and
+forward buttons and a searchable list of the visited places; wrap the
+content in [`HistoryButtons`] for the mouse's side buttons, and register
+[`KeyChord::navigate_back`] and [`KeyChord::navigate_forward`] as commands.
 
 # Zoomable content
 

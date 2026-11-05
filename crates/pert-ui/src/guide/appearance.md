@@ -296,6 +296,23 @@ ui.paint()?;
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
 
+# Library strings and number formats
+
+The words the library itself shows, such as the editors' clipboard menu,
+placeholders, accessibility names and refusal messages, come from a
+replaceable [`UiStrings`] table keyed by [`StringRole`]. Install a
+translated table with [`UiSettings::set_strings`]; the components that show
+those words follow it without being described again, and text the
+application gives a component itself is never replaced. [`NumberLocale`]
+with [`NumberFormat::localized_decimal`] or
+[`NumberFormat::localized_integer`] writes and parses numbers with an
+application-chosen decimal separator and digit grouping.
+
+[`Color`] holds linear channels. [`Color::from_srgb8`], [`Color::from_srgb`]
+and [`Color::from_hex`] convert the gamma-encoded sRGB values and `#rrggbb`
+text that design tools and users write, and [`Color::to_srgb8`],
+[`Color::to_srgb`] and [`Color::to_hex`] convert back.
+
 # Monospaced values
 
 [`TextStyle::Monospace`] uses bundled Noto Sans Mono at a default 14 logical pixels, with the

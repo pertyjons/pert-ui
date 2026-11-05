@@ -135,7 +135,7 @@ notices, keep the root and package copies synchronized.
 
 ## Documentation
 
-- [Manual](docs/manual.md) — quick start and component construction.
+- [Manual](docs/manual.md) — quick start, the rustdoc guide's chapters and the example applications.
 - [Architecture](docs/architecture.md) — scope, boundaries and direction.
 - [Contracts](docs/contracts.md) — state, editing, input and persistence.
 - [Rendering and platform](docs/rendering-platform.md) — display and native behavior.

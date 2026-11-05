@@ -280,9 +280,11 @@ api/generate.sh
 git status --porcelain -- api/                  # must print nothing once committed
 ```
 
-The diff of `api/` is part of the review, and the CHANGELOG entry names every
-added, removed or changed item it shows; churn from a dependency or toolchain
-update is described as such.
+The diff of `api/` is part of the review. The CHANGELOG stays concise, one
+section per milestone: it names added and removed public items and every
+breaking change with its one-line replacement, and summarizes other changes
+by what a user notices; churn from a dependency or toolchain update is
+described as such. It records no plan, review or evidence narrative.
 
 A change to the live-data protocols in `pert-ui-core`'s `live` module also
 runs their `loom` models: `RUSTFLAGS="--cfg loom" cargo test --locked -p

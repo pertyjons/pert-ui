@@ -616,6 +616,18 @@ Their output uses the same text limits as other single-line editors. Longer outp
 clips to the reserved slot; editing scrolls within it. Neither resting focus nor
 hidden controls schedule a caret timer.
 
+# Colors
+
+[`ColorSwatch`] shows a color sample, with a checkerboard under translucent
+colors, and can be activated like a button, for example to open a color
+editor. [`ColorPicker`] edits a linear [`Color`] in HSV, so the hue survives
+at zero saturation, through a saturation/value area, hue and optional alpha
+strips and hex and channel text entry; [`ColorPicker::into_popover`] opens
+it from a swatch. It writes its binding once per completed edit: at a drag's
+release, per key step and per saved field, and Escape cancels a drag.
+[`ColorPicker::on_change`] reports each such user write that changed the
+color, for example to record undo.
+
 # Inline controls and toolbars
 
 The `Inline*` family are one-line controls for toolbars, channel strips, status

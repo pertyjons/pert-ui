@@ -244,6 +244,15 @@ latest item with its [`Freshness`] as [`Telemetry`], and older items as a window
 [`LevelMeter`] and [`Trace`] are the built-in readers; custom components use the
 same `SeriesSource` API.
 
+Values the application creates once and must keep, such as a [`Mailbox`]
+made in the initializer, are returned from the [`App::new`] initializer as
+the application state, which [`App::on_close`], [`App::on_error`] and
+[`App::on_window_error`] receive and `App` keeps until the application
+ends; a local value would drop, and a dropped mailbox closes. A custom
+host, or code that has only the runtime, keeps them with
+[`Runtime::keep_alive`]. [`Runtime::start_interval`] repeats application
+work such as an autosave.
+
 # A settings form
 
 A settings form edits a copy of what the application has applied: Apply is
@@ -441,6 +450,20 @@ preserves pending work for repair and explicit retry; development validation nam
 pending components. This does not bound the duration of a user callback or tree depth.
 Custom hosts can call [`HostIntegration::cancel_input`](crate::host::HostIntegration::cancel_input) after a failed operation to clear
 held actions and capture while preserving focus and numeric drafts without saving.
+
+When a flush fails in a component, [`Runtime::last_failure`] names the
+component and what failed: a callback, or the children it described
+through [`Dynamic`], [`Show`] or [`Each`], with the keys of the rejected
+description. The native application's default error report includes it.
+
+A custom host calls [`Runtime::shutdown`]
+before releasing its platform resources and drains
+[`HostIntegration::take_shutdown_errors`](crate::host::HostIntegration::take_shutdown_errors)
+before dropping the runtime; shutdown delivers drag cancellation while its
+participants are still mounted. [`App::run`] does both and returns
+[`AppError::Shutdown`] with every cleanup cause and any failure before it,
+or the original result when cleanup succeeded. Terminal cleanup bypasses
+[`App::on_error`], since the runtime is closed.
 
 With the default desktop feature, component input/update/drawing errors are reported
 to stderr and retried after 100/200/400 ms. A fourth consecutive failure returns

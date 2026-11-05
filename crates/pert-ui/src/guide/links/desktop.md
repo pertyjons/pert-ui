@@ -15,3 +15,5 @@
 [`HeadlessApp::state`]: crate::testing::HeadlessApp::state
 [`HeadlessApp::runtime_and_state_mut`]: crate::testing::HeadlessApp::runtime_and_state_mut
 [app-state]: crate::App#application-state
+[`App::on_window_error`]: crate::App::on_window_error
+[`AppError::Shutdown`]: crate::AppError::Shutdown

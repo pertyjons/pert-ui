@@ -119,6 +119,18 @@ Give the content to [`MenuBar::content`] so F10 reaches the bar from it. There a
 no mnemonics and no native OS menus; see the
 [menus design note](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md).
 
+[`Runtime::commands_for`] lists the commands a captured context can reach,
+with their names, shortcuts and enabled state, for a shortcut list or the
+[`CommandPalette`]. A command action may use `?` on the workspace and
+capture errors of the runtime methods it calls; they arrive as
+[`RuntimeError::Application`], downcastable to the original error, except a
+`Runtime` variant, which becomes the runtime error it holds. A command that
+copies the application's own data, such as selected table rows, writes it
+with [`Runtime::set_clipboard_text`], which needs no component and moves no
+focus. "Search the UI and jump there" is a palette over commands the
+application registers per destination, each revealing its target with
+[`Runtime::reveal_and_focus`].
+
 A newly opened menu or Select list keeps its initial/selected row under a
 stationary pointer. Handled navigation takes the highlight until actual pointer
 motion, an admitted press or a wheel that scrolls takes it back. A successfully
@@ -226,6 +238,13 @@ assert_eq!(ui.theme().density()?, Density::Compact);
 assert_eq!(forwarded.get()?, None, "nothing chose the loop row yet");
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
+
+Pressing nonfocusable content preserves focus already inside its admitted
+interactive surface when the automatic focus walk would otherwise leave it.
+A nearer focusable child or ancestor inside still receives focus. Explicit
+focus requests and Tab keep their usual rules. A surface whose focus is
+still outside, such as a popover without focusable content, has no such
+guarantee.
 
 # Dialogs
 

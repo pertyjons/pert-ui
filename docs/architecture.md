@@ -4,7 +4,7 @@ This document records the project's scope, package boundaries and design decisio
 [Contracts](contracts.md) defines state and interaction rules,
 [rendering and platform](rendering-platform.md) defines display behavior,
 [verification](verification.md) records evidence, and the [manual](manual.md)
-shows how to build applications. The public Rust API and its examples are
+points to the guide that shows how to build applications. The public Rust API and its examples are
 authoritative for exact constructors and errors.
 
 ## Product scope
