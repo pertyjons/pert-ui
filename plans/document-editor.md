@@ -5,15 +5,20 @@ not scheduled; TEXT-01 stays open. The raster admission and memory
 guarantees are unresolved open items (see "Open design items (from the
 fourth review)"), so the plan makes no guarantee there yet.
 
+Completed plans, design checkpoints, review reports and run records under
+`plans/` were removed on 2026-11-05. A `plans/` path cited in backticks that
+no longer exists is in Git history up to commit f5fde76 (`git show
+f5fde76:<path>`).
+
 Revision 4, 2026-11-04. Written for slice 7 of the
-[TODO repair plan](todo-repairs.md) under its decision D6: TEXT-01 gets this
+TODO repair plan (`plans/todo-repairs.md`) under its decision D6: TEXT-01 gets this
 design plan now and nothing is implemented. It continues the deferred
 large-buffer branch of
-[app-author plan slice 6](app-author-improvements.md#6-text-refusal-and-large-documents).
-Codex reviewed revision 1 ([design-s7](todo-repairs-review/design-s7.md))
-and rechecked revisions 2 ([design-s7-r2](todo-repairs-review/design-s7-r2.md)),
-3 ([design-s7-r3](todo-repairs-review/design-s7-r3.md)) and 4
-([design-s7-r4](todo-repairs-review/design-s7-r4.md)), judging each "needs
+[app-author plan slice 6](app-author-improvements.md#6-large-documents-deferred).
+Codex reviewed revision 1 (`plans/todo-repairs-review/design-s7.md`)
+and rechecked revisions 2 (`plans/todo-repairs-review/design-s7-r2.md`),
+3 (`plans/todo-repairs-review/design-s7-r3.md`) and 4
+(`plans/todo-repairs-review/design-s7-r4.md`), judging each "needs
 rework". This revision addresses every point of the third recheck. The
 maintainer then stopped the iteration: the fourth recheck's findings are
 open design items settled by prototypes in slices 1 and 2. The "Review
@@ -1308,7 +1313,7 @@ Proposals, with the values decided at the checkpoint:
 
 ## Open design items (from the fourth review)
 
-Codex's fourth recheck ([design-s7-r4](todo-repairs-review/design-s7-r4.md))
+Codex's fourth recheck (`plans/todo-repairs-review/design-s7-r4.md`)
 found that the raster admission and memory guarantees still depend on
 unresolved specifications. The maintainer decided on 2026-11-04 to accept
 the plan as direction and to settle these items by prototype in the first
@@ -1707,12 +1712,12 @@ belongs to that entry, not to this plan.
 
 - **2026-11-04, revision 1:** Codex (`codex exec -s read-only`): "needs
   rework", with three blockers, seven should-fix items and two nits
-  ([design-s7](todo-repairs-review/design-s7.md)).
+  (`plans/todo-repairs-review/design-s7.md`).
 - **2026-11-04, revision 2:** addressed all twelve findings, which were
   verified against 9aaacca and Parley 0.12, and reran the bench with raw
   output preserved.
 - **2026-11-04, Codex recheck of revision 2:** still "needs rework"
-  ([design-s7-r2](todo-repairs-review/design-s7-r2.md)).
+  (`plans/todo-repairs-review/design-s7-r2.md`).
   - Resolved: revision-1 findings 1, 3, 4, 9, 10, 11 and 12.
   - Partly resolved: 2, 5, 6, 7 and 8.
   - New: two blockers and ten further findings.
@@ -1787,7 +1792,7 @@ belongs to that entry, not to this plan.
 
   The maintainer checkpoint is still outstanding.
 - **2026-11-04, Codex recheck of revision 3:** still "needs rework"
-  ([design-s7-r3](todo-repairs-review/design-s7-r3.md)).
+  (`plans/todo-repairs-review/design-s7-r3.md`).
   - Resolved: revision-2 points 1, 3, 4 and 9-12.
   - Partly resolved: 2 and 5-8.
   - Remaining: one blocker and six findings.
@@ -1849,7 +1854,7 @@ belongs to that entry, not to this plan.
     bounding boxes that variable fonts need not honor.
 
 - **2026-11-04, Codex recheck of revision 4:** "needs rework"
-  ([design-s7-r4](todo-repairs-review/design-s7-r4.md)).
+  (`plans/todo-repairs-review/design-s7-r4.md`).
   - Resolved: revision-3 points 2 (raster descriptor) and 5 (IME mapping).
   - Partly resolved: points 1, 3, 4, 6 and 7.
   - Remaining: one blocker and five findings. The recheck judged the plan

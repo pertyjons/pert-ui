@@ -1,10 +1,15 @@
 # Changelog
 
+Completed plans, design checkpoints, review reports and run records under
+`plans/` were removed on 2026-11-05. A `plans/` path cited in backticks that
+no longer exists is in Git history up to commit f5fde76 (`git show
+f5fde76:<path>`).
+
 ## 0.3.101 (2026-11-04)
 
-Slice 4b of the [TODO repair plan](plans/todo-repairs.md): `MultiSelect` and
+Slice 4b of the TODO repair plan (`plans/todo-repairs.md`): `MultiSelect` and
 `QuickPick` popup items get rectangles (R14), as option C of
-[the design note](plans/todo-repairs-r14-popups.md) decided.
+the design note (`plans/todo-repairs-r14-popups.md`) decided.
 
 - Added `VirtualList::report_items(role)`: the list reports its rows as its
   `Semantics::items`, with `role` in place of `List`, one item per row of
@@ -171,7 +176,7 @@ Slice 4b of the [TODO repair plan](plans/todo-repairs.md): `MultiSelect` and
 
 ## 0.3.100 (2026-11-04)
 
-Slice 6 of the [TODO repair plan](plans/todo-repairs.md): paint consistency,
+Slice 6 of the TODO repair plan (`plans/todo-repairs.md`): paint consistency,
 inspection colors and dependencies.
 
 - Disabled `Select` and `MultiSelect` anchors use the neutral inactive-control
@@ -216,7 +221,7 @@ inspection colors and dependencies.
 
 ## 0.3.99 (2026-11-04)
 
-Slice 5 of the [TODO repair plan](plans/todo-repairs.md): API repairs, and
+Slice 5 of the TODO repair plan (`plans/todo-repairs.md`): API repairs, and
 fixes from the review of slice 4.
 
 - Content search (slice 4 review fixes):
@@ -280,7 +285,7 @@ fixes from the review of slice 4.
 
 ## 0.3.98 (2026-11-04)
 
-Slice 4 of the [TODO repair plan](plans/todo-repairs.md): testing and
+Slice 4 of the TODO repair plan (`plans/todo-repairs.md`): testing and
 inspection reach. MultiSelect and QuickPick item rectangles wait for the
 slice's design checkpoint (4a).
 
@@ -326,7 +331,7 @@ slice's design checkpoint (4a).
 
 ## 0.3.97 (2026-11-04)
 
-Slice 3 of the [TODO repair plan](plans/todo-repairs.md): development
+Slice 3 of the TODO repair plan (`plans/todo-repairs.md`): development
 validation.
 
 - Added `ArrangeContext::place_fixed_slot(index, slot, clip, axis)`. It
@@ -390,7 +395,7 @@ validation.
 
 ## 0.3.96 (2026-11-04)
 
-Slice 2 of the [TODO repair plan](plans/todo-repairs.md): documentation checks
+Slice 2 of the TODO repair plan (`plans/todo-repairs.md`): documentation checks
 and in-place editing.
 
 - Added `DraftAlign::Center`: a draft narrower than its editing area is
@@ -425,7 +430,7 @@ and in-place editing.
 
 ## 0.3.95 (2026-11-04)
 
-Slice 1 of the [TODO repair plan](plans/todo-repairs.md): hygiene and records.
+Slice 1 of the TODO repair plan (`plans/todo-repairs.md`): hygiene and records.
 No public signature, schema, dependency or platform-adapter change.
 
 - `HeldCancellation::FocusLost`'s rustdoc names `HostIntegration::clear_focus`,

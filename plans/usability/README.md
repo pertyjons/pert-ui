@@ -1,6 +1,7 @@
 # Blind-test kit
 
-The harness for [the developer-usability plan](../archive/developer-usability.md).
+The harness for the developer-usability plan (`plans/archive/developer-usability.md`,
+removed on 2026-11-05 and in Git history at f5fde76).
 It is unpackaged and lives only in the repository. Testers never see this
 directory; they get a prepared kit, the brief and one task.
 

@@ -1,4 +1,0 @@
-                let Some(editor) = ui.find_descendant(&tabs, &editor_key(&key))? else {
-                    log.borrow_mut().push(format!("no-editor:{key}"));
-                    return Ok(());
-                };

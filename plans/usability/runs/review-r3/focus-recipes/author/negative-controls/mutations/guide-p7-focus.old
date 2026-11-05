@@ -1,2 +1,0 @@
-            cx.request_focus_for(&list)
-        });

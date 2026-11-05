@@ -1,1 +1,0 @@
-You've hit your 5-hour limit · resets 3pm (Europe/Stockholm)

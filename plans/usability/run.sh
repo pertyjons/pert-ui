@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Blind developer test harness for plans/archive/developer-usability.md.
+# Blind developer test harness of the developer-usability plan
+# (plans/archive/developer-usability.md, in Git history at f5fde76).
 #
 #   run.sh prepare <kit-dir>
 #       Package the checkout's library crates, vendor them with their

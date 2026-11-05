@@ -1,9 +1,8 @@
 # Rendering capabilities and performance
 
 Status: **draft, open exploratory plan**, created 2026-10-26 at the
-maintainer's request. Not scheduled: it follows the developer-usability
-work (the [layering pass](usability/layering-plan.md) and round 2) unless
-the maintainer decides otherwise. Nothing here is a commitment until the
+maintainer's request. Not scheduled; the developer-usability work it was
+to follow is complete. Nothing here is a commitment until the
 investigation (phase 0) has reported and the maintainer has chosen what to
 build.
 

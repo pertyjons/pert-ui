@@ -1,3 +1,0 @@
-# Distinct diagnostics
-
-None.

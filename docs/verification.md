@@ -5,9 +5,14 @@ outstanding checks. The commands below follow [AGENTS.md](../AGENTS.md) and
 `.github/workflows/ci.yml`; that workflow is the authoritative current gate.
 The [manual](manual.md) contains runnable application examples.
 
+Completed plans, design checkpoints, review reports and run records under
+`plans/` were removed on 2026-11-05. A `plans/` path cited in backticks that
+no longer exists is in Git history up to commit f5fde76 (`git show
+f5fde76:<path>`).
+
 ## Mixer-probe plan
 
-The slices of [the mixer-probe plan](../plans/archive/mixer-probe-improvements.md)
+The slices of the mixer-probe plan (`plans/archive/mixer-probe-improvements.md`)
 (0.3.9 to 0.3.17) each passed the workspace gate on Fedora 44 Linux with Rust
 1.99.0; slice 5 also passed the three serde configurations. Each slice had an
 independent Codex implementation review whose findings were fixed. On Fedora
@@ -35,7 +40,7 @@ evidence, not a crates.io dry run; no other platform was exercised.
 
 ## Diagram-probe plan
 
-The slices of [the diagram-probe plan](../plans/archive/diagram-probe-improvements.md)
+The slices of the diagram-probe plan (`plans/archive/diagram-probe-improvements.md`)
 (0.3.18 to 0.3.23) each passed the workspace gate on Fedora 44 Linux with Rust
 1.99.0, and the pointer-refresh tests also passed in the release profile.
 Slices 1, 2 and 3 had a Codex design checkpoint before implementation, and
@@ -52,7 +57,7 @@ slice 1 documents.
 
 ## Log-explorer plan
 
-The slices of [the log-explorer plan](../plans/archive/log-explorer-improvements.md)
+The slices of the log-explorer plan (`plans/archive/log-explorer-improvements.md`)
 (0.3.24 to 0.3.31) each passed the workspace gate on Fedora 44 Linux with
 Rust 1.99.0; the shrink, collection-diagnostic, selectable-text and text
 tests also passed in the release profile, the serde configuration ran the
@@ -91,7 +96,7 @@ squash-merged and deleted, so only the 4.78 ms recorded then remains.
 
 ## Table-editing plan
 
-The slices of [the table-editing plan](../plans/archive/table-editing-improvements.md)
+The slices of the table-editing plan (`plans/archive/table-editing-improvements.md`)
 (0.3.32 to 0.3.44) each had an independent Codex implementation review
 whose findings were fixed (0.3.33, 0.3.36, 0.3.38, 0.3.40, 0.3.42 and
 0.3.44), and
@@ -109,7 +114,7 @@ column and Tab traversal scopes have no native evidence (TODO.md NATIVE-05).
 
 ## Plan-audit repairs
 
-The slices of [the plan-audit repairs](../plans/plan-audit-repairs.md)
+The slices of the plan-audit repairs (`plans/plan-audit-repairs.md`)
 (0.3.45 onward) each passed the workspace gate on Fedora 44 Linux (kernel
 7.2.11) with Rust 1.99.0. From slice 3 that gate includes the examples'
 headless sessions. Slice 2 also passed its tests in the release profile, and
@@ -127,7 +132,7 @@ themselves. No hand check of them is claimed.
 
 ## Developer usability
 
-[The developer-usability plan](../plans/archive/developer-usability.md)
+The developer-usability plan (`plans/archive/developer-usability.md`)
 ran blind tests: AI testers build small applications from the packaged
 documentation in a sandbox with no network beyond the model hosts and no
 access to the repository. The kit holds the packaged crates, whose source a
@@ -148,7 +153,7 @@ describe how each tester worked, not a usability score. Who did what:
 
 Round 1 ran on 2026-10-21 against 0.3.52 (commit 359122e, Rust 1.99.1).
 Each run's records are in
-[`plans/usability/runs/`](../plans/usability/runs/README.md):
+`plans/usability/runs/`:
 
 | Task | Claude: session, acceptance | Codex: session, acceptance |
 |---|---|---|
@@ -169,7 +174,7 @@ Each run's records are in
 with the acceptance notes and what verification turned up, resolve into 36
 findings (one of them, the getting-started dependency, a kit issue today),
 ranked in
-[the plan's findings table](../plans/archive/developer-usability.md#round-1-findings).
+the plan's findings table (`plans/archive/developer-usability.md`).
 The most frequent are:
 - the getting-started dependency instructions, an artifact of the
   unpublished library;
@@ -190,9 +195,9 @@ held back from round 1, ran twice per tester on round 1's commit 359122e
 and twice on aca8df3. Acceptance and triage were again by fresh Claude
 agents; Codex reviewed the triage, a fresh Claude agent checked Codex's
 changes to its own runs, and Codex's recheck found it ready. The records
-are in [`plans/usability/runs/`](../plans/usability/runs/README.md#round-2),
-the results in [the plan's round 2
-results](../plans/archive/developer-usability.md#round-2-results):
+are in `plans/usability/runs/`,
+the results in the plan's round 2
+results (`plans/archive/developer-usability.md`):
 
 | Task | Claude: session, acceptance (round 1 → 2) | Codex: session, acceptance (round 1 → 2) |
 |---|---|---|
@@ -231,11 +236,11 @@ results](../plans/archive/developer-usability.md#round-2-results):
 - The maintainer decided that every reopened and new finding is fixed in a
   round 2 fix plan, breaking API changes allowed.
 
-Round 3 is in progress under the [execution and closure plan](../plans/usability/round-3-plan.md).
+Round 3 ran under the execution and closure plan (`plans/usability/round-3-plan.md`).
 The planned blind submissions are terminal against frozen head 0.3.88 and
 baseline 0.3.75 kits. All independent acceptances are author-adopted as met
-against unchanged frozen criteria. Full recurrence triage and the remaining
-repairs are not complete; no overall result or closure is claimed.
+against unchanged frozen criteria. Round 3 closed on 2026-10-29 with the
+repairs through 0.3.94; the paragraph below records the 0.3.89 checkpoint.
 
 The working 0.3.89 repairs add scoped exposed parts and pointer rectangles for
 Tabs titles and the shared menu/Select list. Focused public-API tests cover
@@ -259,7 +264,7 @@ with source hashes checked unchanged during that run. The later empty-value
 rustdoc precision passed runtime doctests and strict workspace rustdoc. Fresh
 Claude implementation re-review approved this checkpoint; records and the
 API-generation result are in runs/review-r3. Literal-tab and disabled-Button
-presentation are separate approved designs awaiting implementation.
+presentation followed as separate designs (0.3.90 to 0.3.92).
 
 ## Thin outlines at fractional zoom
 
@@ -665,9 +670,9 @@ or driver; it does not cover the other native checks or another platform.
 | Tables in tests (0.3.83): Data & media › Collections, where clicking a sortable title should sort and a second click flip it; with the window narrowed until the columns overflow and the table scrolled horizontally, clicking the visible part of a partly cut title should sort unless the press is on its edge's grip; and the rows, now the largest preset's ControlHeight (40 px), at Compact, Standard and Comfortable switched on the mounted gallery, editing a Note cell at each, whose editor should not be compressed | **Hand check passed** by the maintainer on Linux x86_64, 2026-10-28, at 37a8c9e (Fedora 44, GNOME on Wayland, Intel UHD Graphics 770 with Mesa 26.2.5 on Vulkan): title clicks sorted and flipped, a partly cut title sorted and its grip resized, and the Note editor fit its row at all three densities. Pointer sorting through item bounds and the row height at every density are also covered headlessly by the runtime's, the facade's and the gallery's tests. Windows and macOS have no evidence. |
 | Application state from the initializer (0.3.86), whose native runner keeps the state behind an erased owner: `window_resize_and_idle` (GPU and software) counts `on_error`'s four paint failures in the state its initializer returned; `three_native_surfaces_animate_settle_and_redock` and its software twin record the stale queued close's `Runtime(Unmounted)` in `on_window_error`'s state; `a_native_close_request_saves_the_focused_draft_before_the_policy` records the saved draft in `on_close`'s state; the probes that overlap on purpose (the mixed scene in `native_gpu_pixel_readback`, the damage-area probe and the native smoke's `persistent-paint-error`) report `OverlapPolicy::Allow` and fail on an `UnexpectedOverlap` in the validation report; and the hand check of closing a window with unsaved state (`cargo run --locked -p pert-ui --example diagram_editor -- --window`: move a node, close from the title bar, decline the discard dialog, close again and accept) | **Native suite passed 19/19 on Linux x86_64, 2026-10-28, at c5d3ce4:** Fedora 44, kernel 7.2.12, GNOME on Wayland, Intel UHD Graphics 770 with Mesa 26.2.5 on Vulkan, rustc 1.99.1, winit 0.30.13, wgpu 30.0.1 (`cargo run --locked -p pert-ui-native-checks`); its log contains no `UnexpectedOverlap` line (500,503 in the 2026-10-27 run). **Hand check passed** by the maintainer on Linux x86_64, 2026-10-28, at 37a8c9e (Fedora 44, GNOME on Wayland, Intel UHD Graphics 770 with Mesa 26.2.5 on Vulkan): closing with a moved node asked, declining kept the window and the node, accepting closed it. The state's dispatch, persistence and drop order are covered headlessly by the facade's `surfaces` tests and the runner's unit tests. Windows and macOS have no evidence. |
 | Form drafts (0.3.87), whose diagram editor counts the drafts its inspector keeps: the hand check of closing with a refused draft (`cargo run --locked -p pert-ui --example diagram_editor -- --window`: select a node, type `5` into Height and press Enter, close the window from its title bar and see the discard dialog; Cancel keeps the window and the draft; Escape in the field, then close: the window closes without asking), which also adds to NATIVE-05's Linux evidence for the diagram editor's window; and a form's Revert discarding a refused draft (`FormFields::discard_drafts`) in a native window | **Hand check passed** by the maintainer on Linux x86_64, 2026-10-28, at 37a8c9e (Fedora 44, GNOME on Wayland, Intel UHD Graphics 770 with Mesa 26.2.5 on Vulkan): a refused Height draft made closing ask with the inspector message, Cancel kept the window and the draft, and after Escape the window closed without asking. A form's Revert: **hand check passed** by the maintainer on Linux x86_64, 2026-10-28, at 83da271 (same platform), in the gallery's sign-in form (Text › Input states, since 0.3.88): `ab` in User name with Enter showed the length error with the draft kept and "unsaved fields: 1"; Revert removed the draft and the error, and the summary read "Errors: 0, pending checks: 0, unsaved fields: 0". Headless coverage: the `editing` tests, the gallery test `the_sign_in_examples_revert_discards_a_refused_draft_and_clears_its_marks` and the diagram editor's `close_admission` session step. Windows and macOS have no evidence. |
-| Round 3 menu ownership (0.3.92): parked MenuBar title with duplicate host motion, and parked menu row with keyboard selection/activation | Selected GPU and CPU/softbuffer gallery interaction checks passed 2026-10-29 on Fedora 44, kernel 7.2.12, GNOME/Wayland, Rust 1.99.1, winit 0.30.13 and wgpu 30.0.1. The adapter was not reported. Input was injected through runtime entry points; other native checks were explicitly skipped by the filter. No OS-adapter, human, Windows/macOS or tab-ink GPU-pixel claim. [Exact commands, outcomes and correlation](../plans/usability/runs/review-r3/menu-text-integrated/README.md). |
-| Round 3 MultiSelect and surface press focus (0.3.93): completed long-list click with search-key continuation, filtered short-popup click, and separate Escape clear/close assertions | Selected GPU and CPU/softbuffer gallery interaction checks passed 2026-10-29 on Fedora 44, kernel 7.2.12, GNOME Shell 50.6/Wayland, Rust 1.99.1, winit 0.30.13 and wgpu 30.0.1. The corrected Escape assertions passed in the repeated checks. Native window size does not assert that the page overflows; the actual outside-ScrollArea escape is established by the headless before/after and focused public tests. Adapter not reported; other native checks skipped. Runtime-injected input only, with no OS-adapter, human or Windows/macOS claim. [Exact evidence and source correlation](../plans/usability/runs/review-r3/multiselect-integrated/README.md). |
-| Round 3 empty-raster bounds and wrapped-caret presentation (0.3.94) | Selected native text-mode probe and GPU/CPU gallery interaction checks passed 2026-10-29 on Fedora 44, kernel 7.2.12, GNOME Shell 50.6/Wayland, Rust 1.99.1, winit 0.30.13/wgpu 30.0.1. The text probe reports Intel UHD Graphics 770 (ADL-S GT1) on Vulkan and saves CPU/GPU images in LineMask and PhaseLine modes; the general sample differs by at most one per channel. This is no tab-specific GPU or hanging-caret assertion: focused public CPU tests establish caret/IME/clipping. Other native checks skipped; gallery input is runtime-injected, with no OS-adapter, human or Windows/macOS claim. [Exact evidence, initial orchestration failure and source-correlation limits](../plans/usability/runs/review-r3/whitespace/integrated/README.md). |
+| Round 3 menu ownership (0.3.92): parked MenuBar title with duplicate host motion, and parked menu row with keyboard selection/activation | Selected GPU and CPU/softbuffer gallery interaction checks passed 2026-10-29 on Fedora 44, kernel 7.2.12, GNOME/Wayland, Rust 1.99.1, winit 0.30.13 and wgpu 30.0.1. The adapter was not reported. Input was injected through runtime entry points; other native checks were explicitly skipped by the filter. No OS-adapter, human, Windows/macOS or tab-ink GPU-pixel claim. Exact commands, outcomes and correlation (`plans/usability/runs/review-r3/menu-text-integrated/`). |
+| Round 3 MultiSelect and surface press focus (0.3.93): completed long-list click with search-key continuation, filtered short-popup click, and separate Escape clear/close assertions | Selected GPU and CPU/softbuffer gallery interaction checks passed 2026-10-29 on Fedora 44, kernel 7.2.12, GNOME Shell 50.6/Wayland, Rust 1.99.1, winit 0.30.13 and wgpu 30.0.1. The corrected Escape assertions passed in the repeated checks. Native window size does not assert that the page overflows; the actual outside-ScrollArea escape is established by the headless before/after and focused public tests. Adapter not reported; other native checks skipped. Runtime-injected input only, with no OS-adapter, human or Windows/macOS claim. Exact evidence and source correlation (`plans/usability/runs/review-r3/multiselect-integrated/`). |
+| Round 3 empty-raster bounds and wrapped-caret presentation (0.3.94) | Selected native text-mode probe and GPU/CPU gallery interaction checks passed 2026-10-29 on Fedora 44, kernel 7.2.12, GNOME Shell 50.6/Wayland, Rust 1.99.1, winit 0.30.13/wgpu 30.0.1. The text probe reports Intel UHD Graphics 770 (ADL-S GT1) on Vulkan and saves CPU/GPU images in LineMask and PhaseLine modes; the general sample differs by at most one per channel. This is no tab-specific GPU or hanging-caret assertion: focused public CPU tests establish caret/IME/clipping. Other native checks skipped; gallery input is runtime-injected, with no OS-adapter, human or Windows/macOS claim. Exact evidence, initial orchestration failure and source-correlation limits (`plans/usability/runs/review-r3/whitespace/integrated/`). |
 | Native suite after the TODO repairs (0.3.101, at 9655e56), and the text-mode probe's adapter line (R06) | Linux: **all 19 checks passed** 2026-11-05 on Fedora 44, kernel 7.2.15-200.fc44.x86_64, GNOME Shell and Mutter 50.6 on Wayland, Intel UHD Graphics 770 (ADL-S GT1) with Mesa 26.2.6 on Vulkan, rustc 1.99.1, winit 0.30.13, wgpu 30.0.1 (`cargo run --locked -p pert-ui-native-checks`), the clipboard check included, with both 39-step gallery interaction checks and the workspace restart. Run alone (`-- native_text_rendering_probe`), the text-mode probe passed and the summary's `GPU:` line named the adapter. Input entered at the runtime's native entry points. Windows and macOS have no evidence for this change. |
 | Minimize during a gallery probe (NATIVE-04 Linux part, 0.3.101 at 9655e56) | **Failed** on the platform of the row above, 2026-11-05: the maintainer minimized the window with Super+H, and it disappeared, but no probe reported the hide. `pert-ui-gallery --interaction-check` (GPU, started directly because the runner's name filter selects the CPU twin as well) failed after 11.5 s on an unrelated step (`password: Alt+F8 reveals it: revealed = Some(Bool(false))`); `-- interaction_check_cpu` printed no step and timed out after 120 s; `-- workspace_restart`, minimized twice, passed both processes without an interruption line. winit 0.30.13 delivers no `WindowEvent::Occluded` on Wayland (its 0.29 changelog: "On Wayland, disable `Occluded` event handling"), and the surface did not report `Frame::Occluded`, so the window was never hidden for the runtime. The gallery has no software-rendered workspace check (`--cpu` applies only to the gallery and `--interaction-check`), so the plan's fourth run does not exist. TODO.md NATIVE-04 records the consequence. |
 | TODO repair hand checks (0.3.101 at 9655e56): R10/R11 rename label, R19 window-mode tool window at mount, R20 disabled dropdowns | **Hand check passed** by the maintainer on the platform of the rows above, 2026-11-05, GPU presentation. R10/R11: renaming a node in `diagram_editor --window` showed one centered label. R19 and R20 used a temporary program outside the repository (a `ToolWindowLayout` whose `Inspector` is described with `ToolWindowMode::Window` and `expanded(true)`, and an enabled and a `disabled()` row of `Button`, `Select` and `MultiSelect` with a light/dark toggle), because no shipped application has either. R19: Inspector opened in its own native window at start. R20: the disabled Select and MultiSelect anchors matched the disabled Button apart from their dropdown icon, clicking them opened nothing, and both palettes looked right. |

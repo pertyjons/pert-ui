@@ -9,6 +9,11 @@ is already decided. It is not a design: decisions that hold stay in
 or the plan that made them. Verified deviations from AGENTS.md or the
 design notes belong in [TODO.md](../TODO.md), not here.
 
+Completed plans, design checkpoints, review reports and run records under
+`plans/` were removed on 2026-11-05. A `plans/` path cited in backticks that
+no longer exists is in Git history up to commit f5fde76 (`git show
+f5fde76:<path>`).
+
 Remove an item when a plan takes it up, and link that plan from the item
 until then if one is being written.
 
@@ -16,7 +21,7 @@ until then if one is being written.
 
 - **General signal observer outside components.** From the
   [app-author plan](app-author-improvements.md). Declined by the
-  [mixer-probe plan](archive/mixer-probe-improvements.md) slice 3 checkpoint and in
+  mixer-probe plan (`plans/archive/mixer-probe-improvements.md`) slice 3 checkpoint and in
   [user-write callbacks](../docs/contracts.md#user-write-callbacks):
   user writes report through the controls' callbacks, application writes
   are known to the code that makes them. It would need ownership,
@@ -25,7 +30,7 @@ until then if one is being written.
   inspection and delivery. Reopen only for a need those callbacks cannot
   serve.
 - **Writable model projection.** From the
-  [diagram-probe plan](archive/diagram-probe-improvements.md): a field of an
+  diagram-probe plan (`plans/archive/diagram-probe-improvements.md`): a field of an
   application model as a control binding. It must define validation, write
   revisions, transaction failure and external-write conflicts, and route
   writes through the application rather than treating a document mutation as
@@ -58,7 +63,7 @@ until then if one is being written.
 - **Find in an editor buffer** and **a longer editor undo history.** From
   the app-author plan. Large-buffer editing itself is TODO.md TEXT-01.
 - **Sessions for more editors.** From the
-  [table-editing plan](archive/table-editing-improvements.md) slice 5: `InlineText`,
+  table-editing plan (`plans/archive/table-editing-improvements.md`) slice 5: `InlineText`,
   the inline number rows, `TextArea` and `SearchField` ignore editor
   sessions today. The inline rows already own a resting and editing policy
   that a later slice can map onto the protocol. Parameter-backed numbers
@@ -83,7 +88,7 @@ until then if one is being written.
   controlled form per row.
 
 - **A form discard from a command action.** From round 2 part P12
-  ([design](usability/round-2-design-P12.md), decision P12-D3):
+  (design `plans/usability/round-2-design-P12.md`, decision P12-D3):
   `FormFields::discard_drafts` takes the `EventContext` a button's or a
   `MenuItem::new` action receives, but a command action, such as a Revert
   bound to a shortcut or the command palette, receives `&mut Runtime` and
@@ -93,20 +98,20 @@ until then if one is being written.
   settings-form recipe use buttons; take it up when an application needs a
   Revert command.
 - **Refusal for other captioned controls.** From
-  [plan-audit-repairs](plan-audit-repairs.md) slice 2: `Label` and the
+  plan-audit-repairs (`plans/plan-audit-repairs.md`) slice 2: `Label` and the
   components built on it refuse display text they cannot prepare, but
   buttons, chips, links, menu rows and tab and window titles prepare their
   captions themselves and still fail on such text. Extend the refusal to
   them if a consumer binds data to those captions.
 - **A sendable font key for styled text.** From the
-  [API audit fix plan](usability/api-audit/fix-plan.md) part 5b (decision
+  API audit fix plan (`plans/usability/api-audit/fix-plan.md`) part 5b (decision
   G4-7): `RichText` and `TextSpan` are UI-thread values because a span can
   name a runtime-local `FontId`, so a worker cannot build styled text for
   `Runtime::spawn` to return. A sendable key would change `FontId` and
   `FontManager` identity. No run has shown the need; the restriction is
   documented on both types.
 - **Script coverage beyond the bundled fonts.** From the
-  [TODO repair plan](todo-repairs.md) slice 8 hand checks (2026-11-05):
+  TODO repair plan (`plans/todo-repairs.md`) slice 8 hand checks (2026-11-05):
   Chinese text pasted into an inventory cell editor rendered as the bundled
   Noto Sans missing-glyph marks. That is the documented baseline
   (`crates/pert-ui-runtime/assets/README.md`: no system font discovery, no
@@ -131,7 +136,7 @@ until then if one is being written.
   today, so the rule has no trigger. It gets one, and a test, when columns
   become removable.
 - **Large collections.** From the
-  [log-explorer plan](archive/log-explorer-improvements.md):
+  log-explorer plan (`plans/archive/log-explorer-improvements.md`):
   - An indexed or paged child source for trees with extreme fan-out, with
     incremental flattening.
   - Horizontal virtualization of table cells.
