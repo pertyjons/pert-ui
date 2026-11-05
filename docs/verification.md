@@ -401,8 +401,9 @@ this test.
 
 Changes to the core live-data protocol additionally run the release-profile
 Loom models named in AGENTS.md. Dependency, feature, platform and release
-changes also need the feature configurations, release tests, MSRV, headless
-gallery, package and isolated-consumer checks listed there. A passing headless
+changes also need the release tests, feature configurations, headless gallery
+and packaging steps of the workflow's `headless` job, and the MSRV and
+isolated-consumer checks AGENTS.md names. A passing headless
 gate is evidence for contracts that do not require a native session; it is not
 evidence for GPU output, focus routing or platform integration.
 CI runs `cargo clean` between the base, image/SVG, serde/CPU and packaging

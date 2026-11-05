@@ -11,20 +11,11 @@ This is a public Rust GUI library built from scratch, with general widgets and
 opinionated defaults. Application requirements guide its capabilities, not
 domain-specific widget types. Future unit presets may compose general
 parameter/mapping/formatting APIs; do not bake application semantics into the
-base controls or data model.
-The Cargo workspace implements normalized values, general numeric parameter
-specifications, a local edit protocol, UI-local signals/bindings, retained component
-lifecycle/scheduling, multi-key input and inspection contracts. Both headless and
-native galleries use the public facade. The native gallery has retained layout,
-text/IME, standard controls, numeric inputs, scrolling, splits, tabs, overlapping
-in-view windows, modal/nonmodal surfaces and bounded notifications in one
-winit/wgpu window, plus experimental retained native multi-window support.
-Live-data bridges from a producer thread to widgets exist, and the workspace
-arrangement is capturable and restorable through a separately versioned document.
-The library ships no MCP server: applications build their own tooling transport on
-the public inspection contract. No library has
-been published. Do not describe proposed APIs, platforms or performance targets
-as verified; [CHANGELOG.md](CHANGELOG.md) and the design notes record what exists.
+base controls or data model. Both the headless and the native gallery use the
+public facade. The library ships no MCP server: applications build their own
+tooling transport on the public inspection contract. No library has been
+published. Do not describe proposed APIs, platforms or performance targets as
+verified; [CHANGELOG.md](CHANGELOG.md) and the design notes record what exists.
 
 Read the relevant design before changing it:
 
@@ -39,11 +30,10 @@ Earlier consumer inventories are historical research. Their architecture and
 sibling-repository paths are not library requirements. AccessKit, legacy OS
 support, X11, browser rendering and plugin hosting are outside the initial
 scope. The CPU renderer (`pert-ui-cpu`, the facade's `cpu` feature) is in
-scope: it renders scenes and serves captures without a GPU, and with
-`App::software_rendering` native windows present its frames through
-softbuffer instead of creating a GPU device; the `desktop-cpu` feature builds
-`App` that way without wgpu. Software presentation is opt-in, by that call or
-that feature, with no automatic fallback.
+scope: it renders scenes and serves captures without a GPU. Native windows
+present its frames through softbuffer only when opted in, with
+`App::software_rendering` or the `desktop-cpu` feature, which builds `App`
+without wgpu; there is no automatic fallback.
 
 ## Separation of concerns
 
@@ -111,61 +101,55 @@ API sketches in design notes from supported examples. Never advertise a design
 sketch as an available function. When behavior changes, update rustdoc, examples,
 tests and affected design notes together.
 
-Do not state volatile details that carry no meaning for the reader. Exact counts
-of tabs, pages, widgets, crates or test cases, and enumerations of every item in
-a growing list, go stale on the next ordinary change and produce documentation
-corrections instead of information. Describe what exists and what it
-demonstrates; name individual items only where the specific item matters, and
-point to the code or the gallery guide when a reader needs the current set.
-Numbers that are part of a contract, such as documented capacities, limits,
-supported versions and the MSRV, stay and must be exact.
-
-Explicit control adornments are separate from bound caption content. Use
-replaceable icon slots for control properties; reserve accumulating spans for
-explicit RichText composition. The component API review applies this to Label,
-Button, Link and Chip first; other families remain separately tracked.
-
-Choice controls select option ownership at construction: `new` takes a fixed
-list, `bound` follows a dynamic list and `for_parameter` follows its specification.
-Do not add a second source through a builder. Validate dynamic lists during
-update and preserve the last valid presentation when validation fails.
-Availability uses restrictive Permission composition and stays separate from
-parameter edit authority. Composite controls must document when descendants
-observe redescription. Never publish signals from reconciliation, except for the
-lifecycle cleanup [contracts.md](docs/contracts.md) names, or discard a refused
-write; use the public event-phase notification contract when required.
+Do not state volatile details that carry no meaning for the reader: exact
+counts of tabs, pages, widgets, crates or test cases, and enumerations of a
+growing list, go stale on the next ordinary change. Describe what exists and
+what it demonstrates, name an item only where the specific item matters, and
+point to the code or the gallery guide for the current set. Numbers that are
+part of a contract, such as documented capacities, limits, supported versions
+and the MSRV, stay and must be exact.
 
 ## Component API conventions
 
-Ordinary property builders replace; capability restrictions compose with
-`Permission::and` and a same-key description replaces earlier restrictions.
-Keep the explicit family exceptions in [contracts.md](docs/contracts.md), including
-retained collection controllers, editor drafts and geometry observation. Do not
-change authority, callback timing or cancellation merely for spelling symmetry.
-Required state owners lead constructor arguments. Fixed, reactive and parameter
-choice sources are exclusive constructor paths. Explicit control adornment slots
-remain independent of captions; rich-content composition is a separate operation.
-An addition that offers a new way to do something already possible names, in
-its change rationale, the way it makes advanced or retires, or says why none
-can be.
+[contracts.md](docs/contracts.md) holds the full rules and the family
+exceptions (choice sources, control adornments, component redescription,
+permissions, user-write callbacks and controlled controls); read the section
+before changing a component family. The conventions every change keeps:
 
-User-write callbacks report successful local writes, proposal submission or a
-controlled control's proposal, never remote acceptance. Failures do not undo
-accepted state or replay notifications.
-Component-owned selection/expansion changes report their origin after layout
-settles through the public notification contract. Validate fixed descriptions
-before adoption where their validity is locally knowable, except a value a
-description carries from application data, such as a controlled control's
-value, which is refused at adoption with the last valid presentation kept;
-validate reactive data when observed and preserve the last valid presentation
-on failure.
-
-While the library is unpublished, breaking changes to public APIs and code
-structure are welcome wherever they improve the API, its usability or the code:
-the purpose of the component and usability reviews is to change what works
-poorly, not to preserve it. Each such change records its replacement usage and
-migrates repository consumers, as the compatibility policy below says; it does
-not waive separately versioned persistence or authorize publication.
+- Required state owners lead constructor arguments. Choice controls select
+  option ownership at construction: `new` takes a fixed list, `bound` follows
+  a dynamic list and `for_parameter` follows its specification. Do not add a
+  second source through a builder.
+- Ordinary property builders replace earlier values. Capability restrictions
+  use `Permission` and compose with `Permission::and`; a same-key description
+  replaces the description's permission rather than accumulating old
+  restrictions. Availability stays separate from parameter edit authority, and
+  parameter editability independent of application enablement. Keep the
+  explicit family exceptions, including retained collection controllers,
+  editor drafts and geometry observation, and document any new one and its
+  cancellation on revocation. Do not change authority, callback timing or
+  cancellation merely for spelling symmetry.
+- Explicit control adornments use replaceable icon slots, independent of bound
+  caption content; accumulating spans are reserved for explicit RichText
+  composition.
+- Validate fixed descriptions before adoption where their validity is locally
+  knowable. A value a description carries from application data, such as a
+  controlled control's value, is refused at adoption with the last valid
+  presentation kept. Reactive data, including dynamic choice lists, is
+  validated when observed during update, preserving the last valid
+  presentation on failure.
+- Never publish signals from reconciliation, except for the lifecycle cleanup
+  contracts.md names, or discard a refused write; use the public event-phase
+  notification contract when required. Composite controls document when
+  descendants observe redescription. Component-owned selection/expansion
+  changes report their origin after layout settles through the public
+  notification contract.
+- User-write callbacks report successful local writes, proposal submission or
+  a controlled control's proposal, never remote acceptance. Failures do not
+  undo accepted state or replay notifications.
+- An addition that offers a new way to do something already possible names,
+  in its change rationale, the way it makes advanced or retires, or says why
+  none can be.
 
 ## Rust and data invariants
 
@@ -197,11 +181,6 @@ not waive separately versioned persistence or authorize publication.
 - Use `#[must_use]` for results/handles/builders whose discard is a mistake.
   Avoid global mutable state, implicit background executors and public shared
   mutexes as a default ownership model.
-- Ordinary property builders replace earlier values. Capability restrictions
-  use `Permission` and combine with `and`; same-key redescription replaces the
-  description's permission rather than accumulating old restrictions. Document
-  any family exception and cancellation on revocation. Keep parameter
-  editability independent of application enablement.
 - Deny unsafe code in ordinary modules. Discuss any new unsafe boundary with the
   user before introducing it; document safety invariants and test the exception.
   Dependency internals are not covered by our crate's unsafe lint.
@@ -216,19 +195,19 @@ Keep physical pressed-key state separate from committed text and IME composition
 Support simultaneous keys without a single-key shortcut model. Classify OS repeats
 and reset component-owned held actions on focus loss, hiding and unmount.
 
-Keep inspection/diagnostic contracts independent of rendering and of any tooling
-transport; MCP and other protocols belong in the application, not the library.
-Capture owned snapshots on the UI thread; remote tooling must not hold live UI
-handles. Hosts explicitly expose additional app state. Unknown sizes/styles stay
+Keep inspection and diagnostic contracts independent of rendering and of any
+tooling transport; MCP and other protocols belong in the application. Capture
+owned snapshots on the UI thread; remote tooling must not hold live UI handles,
+and hosts expose additional app state explicitly. Unknown sizes/styles stay
 absent until measured. Event history is bounded and disabled by default, with
-success/failure/cancellation distinguished; inspection must not schedule polling.
-Do not claim a working cross-thread inspection path from headless DTOs alone.
-Future inspection must also capture application windows, views and widgets using
-their actual rendered frame and stable target identity. Whole-display capture is
-a distinct OS service. Preserve scale, crop/clipping and frame/state correlation;
-keep GPU readback/encoding outside time-critical callbacks and image bytes outside
-event history. Implement capture APIs with real backends, not placeholder image methods.
-See [inspection and capture contracts](docs/contracts.md).
+success/failure/cancellation distinguished; inspection must not schedule
+polling. Do not claim a working cross-thread inspection path from headless DTOs
+alone. Capture uses the actual rendered frame and stable target identity,
+preserves scale, crop/clipping and frame/state correlation, and is implemented
+with real backends, not placeholder image methods. GPU readback/encoding stays
+outside time-critical callbacks and image bytes outside event history;
+whole-display capture is a distinct OS service. See [inspection and
+diagnostics](docs/contracts.md#inspection-and-diagnostics).
 
 Retain layout/text/drawing data for unchanged widgets. Binding changes invalidate
 only their dependencies. No unconditional redraw loop, hidden-view polling or
@@ -278,19 +257,17 @@ cargo test --locked -p pert-ui-diagnostics -- --ignored
 ```
 
 The `cargo run` lines are the packaged examples' headless sessions, with the
-features the workspace build unifies so its examples are reused. A new
-headless example joins them here and in the workflow.
-
-The last line compares the compiler messages pert-ui shapes with
-`#[diagnostic::on_unimplemented]` and `#[diagnostic::do_not_recommend]`
-against the `trybuild` snapshots in `tests/diagnostics/ui/`. rustc's wording
-changes between releases, so the test is ignored in ordinary runs, which
-compile it and skip it, and CI's separate `diagnostics` job runs it on Linux
-with the toolchain `rust-toolchain.toml` pins. A changed message or a
-toolchain update regenerates the snapshots by running the same command with
-`TRYBUILD=overwrite`, and the `.stderr` diff is reviewed like the `api/`
-listing. A `compile_fail` doctest does not check the error on stable Rust,
-so it proves a type-level restriction, not a message.
+features the workspace build unifies so its examples are reused; a new
+headless example joins them here and in the workflow. The last line compares
+the compiler messages pert-ui shapes with diagnostic attributes against the
+`trybuild` snapshots in `tests/diagnostics/ui/`. It is ignored in ordinary
+runs, and CI's `diagnostics` job runs it with the toolchain
+`rust-toolchain.toml` pins. A changed message or a toolchain update
+regenerates the snapshots with `TRYBUILD=overwrite` and the same command, and
+the `.stderr` diff is reviewed like the `api/` listing.
+[verification.md](docs/verification.md#workspace-gate) explains what a
+snapshot promises and why a `compile_fail` doctest proves a restriction but
+not a message.
 
 The public API listings under `api/` must match the code. A change that adds,
 removes or changes a public item, a dependency or the toolchain runs the API
@@ -308,55 +285,32 @@ added, removed or changed item it shows; churn from a dependency or toolchain
 update is described as such.
 
 A change to the live-data protocols in `pert-ui-core`'s `live` module also
-runs their `loom` models, which CI runs on Linux after the release-profile
-tests: `RUSTFLAGS="--cfg loom" cargo test --locked -p pert-ui-core --test loom
---release`. The models are the memory-ordering evidence; a stress test alone
-is not.
+runs their `loom` models: `RUSTFLAGS="--cfg loom" cargo test --locked -p
+pert-ui-core --test loom --release`. The models are the memory-ordering
+evidence; a stress test alone is not.
 
-The dependency/feature/platform/release row additionally requires what CI runs
-after that: release-profile tests (`cargo test --locked --release --workspace`),
-the `pert-ui` no-default-features configuration (Clippy, tests and rustdoc with
-`-p pert-ui --no-default-features`), the image decoder configurations (Clippy,
-tests and rustdoc with `-p pert-ui --features image-formats`, Clippy and tests
-with `-p pert-ui --no-default-features --features png`, and Clippy and tests with
-`-p pert-ui --features images`, the decoder-free API), the SVG configurations
-(Clippy, tests and rustdoc with `-p pert-ui --features svg`, and Clippy and tests
-with `-p pert-ui --no-default-features --features svg`), the serde
-configurations (Clippy, tests and rustdoc with `-p pert-ui --features serde`,
-Clippy and tests with `-p pert-ui --no-default-features --features serde`, and
-Clippy and tests with `-p pert-ui-core --features serde`, whose own
-serialization tests the facade runs do not execute), the CPU renderer
-configuration (Clippy, tests and rustdoc with `-p pert-ui --features cpu`), the
-CPU-only desktop configuration (Clippy, tests and rustdoc with
-`-p pert-ui --no-default-features --features desktop-cpu`), the
-headless gallery
-(`cargo run --locked -p pert-ui-gallery -- --headless`) and library packaging
-(`cargo package --locked --workspace --exclude pert-ui-gallery
---exclude pert-ui-native-checks --exclude pert-ui-diagnostics`).
+The dependency/feature/platform/release row additionally runs every step the
+`headless` job in `.github/workflows/ci.yml` runs beyond the workspace gate,
+as the workflow writes them: release-profile tests, the supported feature
+configurations of `pert-ui` and `pert-ui-core` (Clippy, tests and, where the
+workflow runs it, rustdoc for each), the headless gallery and library
+packaging. Define supported feature configurations, default and relevant
+non-default builds, in the workflow when features are added; do not impose an
+incoherent `--all-features` combination.
 
 CI tests the declared MSRV, which `rust-toolchain.toml` pins for local work, on
-Linux and stable Rust on Linux, macOS and Windows. Define supported feature
-configurations when features are added; include default and relevant non-default
-builds. Do not impose an incoherent `--all-features` combination. Run
-release-profile boundary tests when debug/release behavior can differ. GUI/GPU
-execution needs native evidence on the platform matrix; headless CI alone does
-not establish it. `cargo run --locked -p pert-ui-native-checks` runs the opt-in
-native checks one process each on an unlocked desktop session with a hardware
-GPU; record the platform it ran on with its result.
+Linux and stable Rust on Linux, macOS and Windows. Run release-profile boundary
+tests when debug/release behavior can differ. GUI/GPU execution needs native
+evidence on the platform matrix; headless CI alone does not establish it.
+`cargo run --locked -p pert-ui-native-checks` runs the opt-in native checks one
+process each on an unlocked desktop session with a hardware GPU; record the
+platform it ran on with its result.
 
-CI runs `cargo clean` between the base, image/SVG, serde/CPU and packaging
-groups to reclaim build artifacts on hosted runners, and builds the dev and test
-profiles without debuginfo or incremental caches (`CARGO_PROFILE_DEV_DEBUG=0`,
-`CARGO_INCREMENTAL=0`) so the test binaries fit the runner disk and the
-Windows PDB limit. These settings do not replace any check or belong to the
-local verification commands above.
-
-Every top-level file or `main.rs` directory in a package's `tests/` is a separate
-test binary that links the package's whole dependency graph once per feature
-configuration. The facade's integration tests are therefore grouped by area
-into a few binaries (`crates/pert-ui/tests/<area>/main.rs`, sharing
-`tests/support`); add a new facade test file as a module of the area it covers,
-and introduce a new area binary only for a distinct area.
+Every top-level file or `main.rs` directory in a package's `tests/` is a
+separate test binary that links the package's whole dependency graph once per
+feature configuration. Add a facade test as a module of the area binary it
+covers (`crates/pert-ui/tests/<area>/main.rs`, sharing `tests/support`), and
+introduce a new area binary only for a distinct area.
 
 For high-risk changes, obtain an independent human or fresh-context review before
 merge/release. Prefer a different model family when an AI reviewer is used. Reviewers
@@ -370,32 +324,30 @@ rerunning unrelated expensive checks.
 
 Every agent working in this repository is also its reviewer. When you see code,
 documentation, tests or configuration that breaks these instructions or the
-linked design documents, or you see a concrete improvement, say so in your reply.
+linked design documents, or a concrete improvement, say so in your reply.
 Silence is not acceptable, and neither is quietly widening the task to fix it.
 
-- Findings inside the current task's scope are fixed as part of the task and
-  mentioned in the reply.
-- Findings outside the scope are reported to the user and recorded in
-  [TODO.md](TODO.md) in the repository root; create the file if it is missing.
-  Do not fix them without instruction: an unrelated change makes the task harder
-  to review, and prioritization belongs to the user.
-- Record verified findings, not hunches. A lint, `rg` or `ast-grep` hit is a
-  lead; read the code and the governing rule before recording it. Point to the
-  file, item or document, name the rule or design decision involved, describe
-  the observed deviation or the proposed improvement and its benefit, and
-  suggest a fix.
-- Before adding an entry, search TODO.md for an existing one and update it
-  instead of duplicating. When a change resolves an entry, remove it in the same
-  change; the changelog and Git history record what was done.
-- Read the TODO.md entries touching the files you are about to change and
-  mention the relevant ones to the user. Resolving one is in scope only when the
-  user includes it or it is necessary for the task.
+- Fix findings inside the current task's scope as part of the task and mention
+  them in the reply.
+- Report findings outside the scope to the user and record them in
+  [TODO.md](TODO.md), creating it if it is missing. Do not fix them without
+  instruction: an unrelated change makes the task harder to review, and
+  prioritization belongs to the user.
+- Record verified findings, not hunches: a lint, `rg` or `ast-grep` hit is a
+  lead until you have read the code and the governing rule. Name the file,
+  item or document, the rule or design decision involved, the deviation or
+  improvement and its benefit, and a suggested fix.
+- Search TODO.md before adding an entry and update an existing one instead of
+  duplicating. A change that resolves an entry removes it; the changelog and
+  Git history record what was done.
+- Mention the TODO.md entries touching the files you change. Resolving one is
+  in scope only when the user includes it or the task needs it.
 
-TODO.md is a flat list under a `# TODO` heading, one item per finding in the
+TODO.md is a flat list under a `# TODO` heading, one finding per item in the
 form below, newest last. It is not a changelog, a feature backlog, a place for
 design proposals (those belong in `docs/`) or a substitute for fixing in-scope
-work. Do not leave `TODO`/`FIXME` comments in shipped code as the only record of
-a known deviation; either resolve them or add the TODO.md entry.
+work. Do not leave a `TODO`/`FIXME` comment in shipped code as the only record
+of a known deviation.
 
 ```markdown
 - [ ] 2026-09-15 `crates/pert-ui-runtime/src/example.rs` `Example::new` — Rust
@@ -405,73 +357,68 @@ a known deviation; either resolve them or add the TODO.md entry.
 
 ## Publishing and compatibility
 
-Build for public consumption from the first working slice. Library package names,
-license, owner/repository metadata and asset attribution must be settled before
-release. Do not copy a consumer's author, license or release version implicitly.
-The sample app is `publish = false`; every runtime dependency of a published
-library must itself be registry-resolvable. Keep version requirements alongside
-local paths for workspace library dependencies intended for publication.
+Build for public consumption from the first working slice. Settle library
+package names, license, owner/repository metadata and asset attribution before
+release, and never copy a consumer's author, license or release version. The
+sample app is `publish = false`; every runtime dependency of a published
+library must be registry-resolvable, with a version requirement beside each
+local path.
 
 For each library package, inspect `cargo package --list`, verify packaging, and
-run `cargo publish --dry-run` when its dependency versions are registry-resolvable.
-Do not use `--no-verify` to claim success. Before the first interdependent release,
-exercise the packaged artifacts with a temporary registry or an isolated consumer
-using only extracted packages, then publish dependencies in order when authorized.
-Distinguish this local proof from an actual crates.io dry run.
+run `cargo publish --dry-run` when its dependency versions are registry-resolvable;
+never use `--no-verify` to claim success. Before the first interdependent
+release, build an isolated consumer, or use a temporary registry, from the
+extracted packages only, and distinguish that local proof from a crates.io dry
+run. It compiles the documented examples and a custom widget without workspace
+patches, sibling paths or private imports. Verify that fonts, shaders, license
+files and README content are included where needed, and that docs.rs can build
+without a display or GPU. Keep build scripts deterministic, without build-time
+downloads or untracked generated files. Publish dependencies in order only when
+authorized.
 
-The external consumer must compile documented examples and a custom widget without
-workspace patches, sibling paths or private imports. Verify that fonts, shaders,
-license files and README content are included where needed, and that docs.rs can
-build without opening a display or requiring a GPU. Keep build scripts deterministic
-and avoid build-time downloads or reliance on untracked generated files.
+While the library is unpublished, breaking changes to public APIs and code
+structure are welcome wherever they improve the API, its usability or the code:
+the purpose of the component and usability reviews is to change what works
+poorly, not to preserve it. Make them without compatibility aliases or a
+version bump solely for unpublished compatibility; record the replacement
+usage and migrate repository consumers, examples and documentation in the same
+change. This does not waive separately versioned persistence or authorize
+publication. An intentional breaking change must be explicit in the task or
+release scope; do not silently widen an ordinary fix. Published versions follow
+the [compatibility policy](docs/contracts.md#public-compatibility-policy). Keep
+a changelog and review exported API changes, including defaults and errors.
+Prefer hiding backend churn behind the facade.
 
-Use the compatibility policy in [contracts.md](docs/contracts.md): documented minor-version breaks
-before 1.0, compatible patch releases and separately versioned persisted formats.
-While the library remains unpublished, any change may make breaking API or
-code-structure changes that improve the library, without compatibility aliases
-or a version bump solely for unpublished compatibility. Record replacement usage
-and update repository consumers, examples and documentation in the same change;
-persisted schema rules still apply. The version compatibility rules govern published versions.
-Keep a changelog and review exported API changes, including defaults and errors.
-Prefer hiding backend churn behind the facade. An intentional breaking change
-must be explicit in the task/release scope; do not silently widen an ordinary fix.
 Public release requires completed review, package verification, relevant native
 checks and an explicit publication instruction. Preparing packages is not uploading
 them, and a request to prepare this repository is not a request to publish it.
 
 ## Working practice
 
-`ast-grep` (verified locally with version 0.45.3, installed through npm) is the
-tool for structural Rust searches and scoped rewrites. It may be missing in other
-environments: run `ast-grep --version` before relying on it, and if it is absent
-say so and fall back to `rg` rather than presenting a text search as a
-structural result. Use `rg` for file discovery and literal text; use `ast-grep`
-when matching code structure across whitespace or nested expressions. Prefer the
-full command name to the potentially ambiguous `sg` alias.
+`ast-grep` is the tool for structural Rust searches and scoped rewrites
+(verified locally with version 0.45.3, installed through npm). Run
+`ast-grep --version` before relying on it; if it is absent, say so and fall back
+to `rg` rather than presenting a text search as a structural result. Use `rg`
+for file discovery and literal text. Use the full command name, not the `sg`
+alias, and single-quote patterns so the shell preserves metavariables:
 
 ```sh
-ast-grep run --lang rust --pattern 'NormalizedValue::try_from($VALUE)' crates apps
-ast-grep run --lang rust --pattern '$RECEIVER.checked_add($$$ARGS)' --json=compact crates
 ast-grep run --lang rust --pattern '$VALUE.unwrap()' --files-with-matches crates apps
 ```
 
-Single-quote patterns so the shell preserves metavariables. `$VALUE` matches one
-syntax node; `$$$ARGS` matches zero or more. Scope searches to relevant paths and
-use JSON for programmatic inspection. For ambiguous patterns inspect
-`--debug-query=ast`; consult `ast-grep run --help` for installed options.
-Preview a rewrite with `--rewrite` before applying it with `--update-all`, inspect
-the result, and run the checks appropriate to the code change. AST matching is
-syntactic: it does not establish Rust type resolution, macro-expanded behavior or
-safety. No project configuration is needed for these searches; introduce reusable
-`scan` rules with rule tests only when a repeated check warrants them.
-See the official [pattern guide](https://ast-grep.github.io/guide/pattern-syntax.html)
-and [quick start](https://ast-grep.github.io/guide/quick-start.html).
+`$VALUE` matches one syntax node and `$$$ARGS` zero or more; `--json=compact`
+gives programmatic output and `--debug-query=ast` explains an ambiguous
+pattern. Preview a rewrite with `--rewrite` before applying it with
+`--update-all`, inspect the result and run the checks the code change needs.
+AST matching is syntactic: it does not establish Rust type resolution,
+macro-expanded behavior or safety. Introduce reusable `scan` rules with rule
+tests only when a repeated check warrants them.
 
-Use `rg` for discovery and text searches. Inspect existing work before edits and
-preserve unrelated changes. When Git metadata is available, inspect status and
-staged/unstaged diffs before committing, run `git diff --check`, and stage only
-intended paths. If Git metadata is absent, report that limitation and review files
-directly; do not claim a clean Git diff or invent a commit.
+Inspect existing work before edits and preserve unrelated changes. When Git
+metadata is available, inspect status and staged/unstaged diffs before
+committing, run `git diff --check`, and stage only intended paths. If Git
+metadata is absent, report that limitation and review files directly; do not
+claim a clean Git diff or invent a commit.
 
 Keep changes small enough to review and tie tests to behavior or contracts.
 No consumer-specific release scripts, evidence gates, tooling endpoints or
