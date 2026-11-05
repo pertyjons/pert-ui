@@ -14,8 +14,8 @@ score: they depend on how often the tester chose to build. The imported-items
 list is a candidate inventory for the author to verify.
 
 The sources are <run-dir>/work, or <run-dir>/submission for a kept record.
-The code-size section's definitions were frozen for round 2 on 2026-10-27,
-before any round 2 run, and apply unchanged to round 1's kept records:
+The code-size section's definitions are kept unchanged between rounds so
+that their counts compare:
 
 - Code lines: lines of the tester's `*.rs` files (outside `target/`) that
   hold something other than whitespace once comments, doc comments included,
@@ -23,9 +23,6 @@ before any round 2 run, and apply unchanged to round 1's kept records:
 - Test code: every file with a `tests` or `benches` directory in its path,
   and each item under `#[cfg(test)]` elsewhere. The rest, a headless mode
   included, is application code.
-- Task 4: lines are counted only where they differ from the fixture at the
-  kit's commit (inserted or replaced lines of a line diff of each file's
-  code lines), and imports only when the fixture lacks them.
 - Distinct pert-ui types: identifiers in code, outside string literals, that
   name a public struct, enum, trait, type alias or union (by its path, not
   an associated type) of `pert-ui`,
@@ -343,10 +340,7 @@ def code_lines(text):
 
 
 commit = cond.get("commit", "")
-task4 = cond.get("task", "").startswith("4-")
 project = source_root
-if task4 and (source_root / "bookmarks").is_dir():
-    project = source_root / "bookmarks"
 
 counts = {"application": 0, "test": 0}
 type_names = set()
@@ -358,7 +352,6 @@ for package in ("pert-ui", "pert-ui-runtime", "pert-ui-core", "pert-ui-cpu"):
             if not m[1].rstrip(":").split("::")[-1][:1].isupper():
                 type_names.add(m[2])
 types_used = {"application": set(), "test": set()}
-fixture_imports = set()
 
 for src in sources:
     text = src.read_text(errors="replace")
@@ -368,21 +361,6 @@ for src in sources:
     in_cfg_test = cfg_test_lines(bare)
     lines = code_lines(text)
     counted = {k for k, _ in lines}
-    if task4:
-        fixture = git_show(commit, f"plans/usability/task4-app/{rel.as_posix()}")
-        if fixture is not None:
-            fixture_text = strip_comments_and_strings(fixture)
-            for m in re.finditer(r"\buse\s+pert_ui::([^;]+);", fixture_text):
-                fixture_imports.update(p.removesuffix("::self") for p in expand(m[1], ""))
-            for m in re.finditer(r"(?<!use )\bpert_ui::((?:\w+::)*\w+)", fixture_text):
-                fixture_imports.add(m[1])
-            import difflib
-            old = [t for _, t in code_lines(fixture)]
-            new = [t for _, t in lines]
-            counted = set()
-            for tag, _, _, j1, j2 in difflib.SequenceMatcher(None, old, new, autojunk=False).get_opcodes():
-                if tag in ("insert", "replace"):
-                    counted.update(lines[j][0] for j in range(j1, j2))
     for k in counted:
         counts["test" if whole_test or k in in_cfg_test else "application"] += 1
     for k, line in enumerate(bare.split("\n")):
@@ -391,8 +369,8 @@ for src in sources:
 
 routes = collections.Counter()
 modules = collections.Counter()
-globs = sorted(p for p in imports - fixture_imports if p.endswith("*"))
-for path in imports - fixture_imports:
+globs = sorted(p for p in imports if p.endswith("*"))
+for path in imports:
     first = path.split("::")[0]
     if first == "prelude":
         routes["prelude"] += 1
@@ -403,15 +381,14 @@ for path in imports - fixture_imports:
         routes["root"] += 1
 all_types = types_used["application"] | types_used["test"]
 code_size_lines = [
-    "## Code size and API surface (definitions in summarize.py, frozen for round 2)",
+    "## Code size and API surface (definitions in summarize.py)",
     "",
-    f"- Sources: `{source_root.name}`"
-    + (", task 4 counted against the fixture at the kit's commit" if task4 else ""),
-    f"- Code lines{' added or changed' if task4 else ''}: application {counts['application']}, "
+    f"- Sources: `{source_root.name}`",
+    f"- Code lines: application {counts['application']}, "
     f"test {counts['test']}, total {counts['application'] + counts['test']}",
     f"- Distinct pert-ui types (candidates): {len(all_types)} "
     f"(application {len(types_used['application'])}, test {len(types_used['test'])})",
-    f"- Import routes{' (paths the fixture lacks)' if task4 else ''}: "
+    f"- Import routes: "
     f"prelude {routes['prelude']}, root {routes['root']}, module {routes['module']}"
     + (" (" + ", ".join(f"`{k}` {v}" for k, v in sorted(modules.items())) + ")" if modules else "")
     + "; glob imports: " + (", ".join(f"`pert_ui::{g}`" for g in globs) or "none"),

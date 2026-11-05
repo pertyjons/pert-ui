@@ -1,9 +1,13 @@
 # Blind-test kit
 
-The harness for the developer-usability plan (`plans/archive/developer-usability.md`,
-removed on 2026-11-05 and in Git history at f5fde76).
-It is unpackaged and lives only in the repository. Testers never see this
-directory; they get a prepared kit, the brief and one task.
+A harness for blind usability tests: AI testers build small applications
+from the packaged documentation in a sandbox with no network beyond the
+model hosts and no access to the repository. Three rounds ran from
+2026-10-21 to 2026-10-29 (see [verification](../../docs/verification.md#usability-studies));
+their tasks, acceptance items and run records are in Git history (this
+directory at commit 8254019). It is unpackaged and lives only in the
+repository. Testers never see this directory; they get a prepared kit, the
+brief and one task.
 
 | File | Purpose |
 |---|---|
@@ -14,37 +18,39 @@ directory; they get a prepared kit, the brief and one task.
 | `claude-settings.json` | Claude Code's own sandbox settings for the Claude tester |
 | `check-probe.py` | The tester probe's shell network and write checks, read from the log of the script the session runs, and its tool checks |
 | `tester-brief.md`, `friction-log.md` | Given to every tester |
-| `tasks/` | Tasks 1 to 4, given one per run through the prompt |
-| `reserved/` | Task 5, unused until round 2, and task 6, the sealed holdout for round 3 with the prompt its author was given |
-| `task4-app/` | The application task 4 tests, copied into `/work/bookmarks` of task 4's runs only |
-| `acceptance.md` | The author's acceptance checks, never shown to testers |
-| `author-notes.md` | Author observations made before any run, checked in slice 3's triage |
+| `acceptance.md` | The author's acceptance procedure and each task's acceptance items, never shown to testers |
+
+## Before a new round
+
+The earlier tasks are known and the library was repaired against them, so
+a new round writes new tasks into a `tasks/` directory beside this file and
+their acceptance items into `acceptance.md` before any run. Prepare a kit
+from the commit under test, and run `probe` for each tester and confirm
+every check passes before the first launch: the tester CLIs change between
+versions, and the first probes found leaks (connector attempts, a
+server-side web tool) that are now turned off and checked. The maintainer
+starts tester sessions; starting one from an agent session was refused by
+its permission classifier. Do not edit `run.sh` while a run is in progress.
 
 ## Use
 
 ```sh
 plans/usability/run.sh prepare ~/pert-ui-usability/kit-<commit>
 plans/usability/run.sh probe   ~/pert-ui-usability/kit-<commit> ~/pert-ui-usability/probe-<tester>-<n> <claude|codex>
-plans/usability/run.sh launch  ~/pert-ui-usability/kit-<commit> ~/pert-ui-usability/r<round>-<task>-<tester> <claude|codex> 2-task-list.md 90
+plans/usability/run.sh launch  ~/pert-ui-usability/kit-<commit> ~/pert-ui-usability/r<round>-<task>-<tester> <claude|codex> <task>.md 90
 python3 -I plans/usability/summarize.py ~/pert-ui-usability/r<round>-<task>-<tester>
 ```
 
-Tasks 5 and 6 are passed by path (`plans/usability/reserved/5-job-monitor.md`,
-`plans/usability/reserved/6-notes-editor.md`).
-`summarize.py` rewrites a run's `summary.md`, so a kept record under
-`runs/` is summarized again only as a copy. It reads the API listings and
-task 4's fixture at the kit's commit from this checkout's history.
+A task is passed by path or by its name under `tasks/`. `summarize.py`
+rewrites a run's `summary.md` and reads the API listings at the kit's
+commit from this checkout's history.
 
 Kit and run directories must be on disk outside the checkout; `run.sh`
 refuses the checkout and tmpfs. A kit is about 1.6 GB (vendored sources and
 rendered documentation). Delete a run's `work/target` after its records are
 copied.
 
-## Checkpoint decisions (slice 0)
-
-Recorded 2026-10-21 and revised after the checkpoint's Codex review; the
-review and the maintainer's approval are recorded in the plan's review
-record when they exist.
+## Design
 
 **Consumer directory.** `prepare` packages the library crates with `cargo
 package --no-verify` (the archives only; packaging verification remains the
@@ -115,9 +121,8 @@ command that uses them is a protocol violation recorded with the run.
 **Clean context.** The tester's home is new for every run and holds only the
 Cargo source configuration, the CLI's credential copy and, for Codex, a
 config with the maintainer's model, reasoning effort, `web_search =
-"disabled"` and the features above turned off. The plan proposed canary instructions in the maintainer's
-user-level files; that would change files the maintainer's own sessions
-load. Instead the probe shows that those files and Codex's memory database
+"disabled"` and the features above turned off. Rather than placing canary instructions in the maintainer's
+user-level files, which the maintainer's own sessions load, the probe shows that those files and Codex's memory database
 do not exist inside the sandbox and that the environment holds only the
 allowed variables, and the tester session is asked to list what it loaded.
 
@@ -132,7 +137,7 @@ testers would remove this; the maintainer has not provided any. The tester
 can read its copy.
 
 **Measurement and conditions.** `conditions.env` records the kit commit,
-version, toolchain (`stable`, rustc 1.99.0 at preparation), tester, CLI
+version, toolchain, tester, CLI
 version, model and effort (Claude: `opus`, `high` unless overridden; Codex:
 the maintainer's config), task, budget, the brief's delivery time, the end
 time, exit status and outcome (`timeout` for status 124 or 137). The
@@ -142,111 +147,10 @@ Completion is the author's acceptance (`acceptance.env`), not the end of
 the session. No third-party build cache: every run compiles its
 dependencies, so the first build's time includes that. The budget is 90
 minutes unless a task says otherwise. Tasks are passed in the prompt and
-are not in the kit, so a tester never sees other tasks or the reserved
-one, and task 4's application is copied only into task 4's runs. An
+are not in the kit, so a tester never sees other tasks. An
 interrupted launcher records which signal interrupted it, a CLI killed by a
 signal records that signal, and any other nonzero exit is `outcome=error`
 with the CLI's stderr in `log/stderr.log`. `summarize.py` reports the
 effective model when the transcript names it (Claude's does); for Codex
 only the configured model and effort are known, and whether Codex used
 them is not independently checked.
-
-## Checkpoint evidence
-
-2026-10-21, Fedora 44, kit from ac69e3b (0.3.51) with the uncommitted
-harness, bubblewrap sandbox:
-
-- `prepare` built the kit in about 6 minutes. The vendored registry holds the
-  library packages and their dependencies, and the rendered documentation
-  includes the library crates and the guide.
-- `probe … none` passed: reading a canary file in the checkout, listing the
-  checkout and `/home/per`, reading `~/.claude/CLAUDE.md` and Codex's memory
-  database, `curl` to GitHub directly, through the proxy and over plain
-  HTTP, `curl` to docs.rs and DNS for github.com were all refused; the
-  environment held only the allowed variables; `rustc` resolved to the
-  rustup toolchain; and a request to `api.anthropic.com` through the proxy
-  got an HTTP response.
-- `exec` in a fresh project depending on `pert-ui = "0.3.51"` with `cpu`
-  resolved offline from the kit, compiled and ran. A failing build, a
-  `cargo test --no-run` and a successful `cargo run` were logged and
-  summarized as expected (the `--no-run` not counted as an executed
-  session), and `cargo metadata` output stayed clean on stdout.
-- Codex's sandbox (`codex sandbox -P :workspace`, without credentials)
-  works inside ours: a tool command got `Operation not permitted` for a
-  socket, and `/kit` was read-only.
-- Task 4's application builds offline in the kit with Clippy clean, and a
-  throwaway headless test drove all its listed behaviors and a CPU capture
-  through the public API.
-- After `socat` was installed: bubblewrap nests inside ours, and `claude
-  --settings /opt/claude-settings.json sandbox status` inside ours (without
-  credentials) reports the sandbox supported and enabled in strict mode;
-  without the settings it reports it off. With the proxy socket hidden by
-  the nested namespace, a direct connection to it fails, the bridge still
-  reaches the model host, and Codex's sandbox (one level deeper) still
-  denies a tool command its socket. Before that change a plain process
-  could open the socket and get `200 Connection established`; Codex's
-  sandbox already refused it.
-
-- The maintainer's first Claude tester probe (2026-10-21) passed every
-  check: the canary and checkout absent for the Read tool and the shell,
-  GitHub and a search engine refused by Claude's sandbox (`host is not on
-  the allow list`), the model host refused to a shell command, the write to
-  the tester's home refused (`Read-only file system`), no instruction or
-  memory file loaded, the build logged, and the image's color named. It
-  also showed the account's claude.ai connectors being tried through the
-  proxy (refused) and the cloud and scheduling tools present, which are now
-  turned off and checked; and the probe printed no final verdict line,
-  which it now does.
-- The maintainer's first Codex tester probe (2026-10-21) found a leak:
-  with `web_search = "disabled"`, Codex still had its apps server's web
-  tool and used it to open the project's GitHub page and search the web.
-  The shell refused the network (`failed to open socket`) and the write
-  (`Read-only file system`), no instruction file was loaded, the build was
-  logged and the image's color named. The curl and touch ran through
-  Codex's script tool and were missing from the `--json` output, so the
-  transcript-based check reported them as never run; and a concurrent
-  Claude probe removed the shared canary file, so the canary check matched
-  an empty string. The apps and the other features are now off and
-  checked, the shell checks rest on the proxy log and the tester's home
-  with the probe script's log as evidence that it ran, every probe has
-  its own canary, and the sandboxed command now waits until the bridge
-  listens (a command started at once could find no listener).
-- `run.sh` was edited while the maintainer's Claude pilot was running.
-  Bash reads a script as it goes, so after that run finished it read on
-  into the edited file at its old offset. The run's records are written
-  before that point; the dispatch is now one function whose call and
-  `exit` are parsed before anything runs, so later edits cannot do this.
-
-- The Claude pilot on task 2 (2026-10-21, harness 39d483f) ran end to end:
-  the session ended after 8.4 minutes, its submission builds and its nine
-  headless tests pass in a fresh acceptance directory, and the author
-  recorded every acceptance item as met (`acceptance.md` and
-  `acceptance.env` in the run directory). The tester read no library
-  source and kept a detailed friction log, for slice 3. `summarize.py`
-  worked; it counted `test failed` as an error and split one warning
-  between its lint and its message, which are fixed. The task took far
-  less than its 90-minute budget; whether the tasks or the budget change is
-  a kit decision for after the Codex pilot.
-
-- Both tester probes passed again on the hardened probe (2026-10-21,
-  harness 3f2577c): the shell checks from the probe script and the host,
-  no apps or disallowed tool, no MCP server, and the Codex session reported
-  no web tools.
-- The Codex pilot on task 2 (2026-10-21, harness 3f2577c, apps and the
-  other features off) ended after 5.1 minutes; its submission builds
-  without warnings, its single headless session test passes, and the author
-  recorded every acceptance item as met. It built its own row component
-  around `DraftEditor` instead of the library's list, selection and filter
-  components; that and its friction log go to slice 3. Its friction log's
-  times were invented, because the template did not say where to take
-  them; the template now asks for `date +%H:%M`, which needs a newly
-  prepared kit.
-
-Both pilots finished task 2 in a small part of its 90-minute budget. The
-maintainer kept the tasks and the budget (2026-10-21): the budget is a
-ceiling, the time to accepted completion is still measured, and the
-friction logs were informative. Round 1 prepares a new kit from the final
-harness.
-Starting a tester session from the author's Claude Code session was refused
-by its auto-mode permission classifier, also after the maintainer asked for
-it, so the maintainer starts those runs.

@@ -32,52 +32,7 @@ For every run:
 
 ## Task-specific checks
 
-**1. Settings editor.** Out-of-range and malformed input refused through the
-field itself, with the last valid value still applied; Apply and Revert
-enabled state read from inspection, not from the tester's own flags; the save
-runs off the UI thread (worker thread or the library's background facility)
-and a write to an unwritable path is reported; close refusal goes through the
-library's close request, not a custom button only; loading at startup.
-
-**2. Task list.** The list is driven by the tester's `Vec` (removing an item
-from the vector removes the row); in-place rename commits on Enter and is
-discarded on Escape; the filter does not change the vector; Ctrl+N, Delete,
-Alt+Up and Alt+Down act as specified through simulated key input; the status
-line follows checking and removing.
-
-**3. Custom control.** The control is a reusable type implementing the
-library's component contract; a drag beyond the area clamps; cancellation
-restores the pre-press value; Shift changes the arrow step; focus indication
-and colors come from the theme (the two captures differ in colors); the value
-appears in an inspection snapshot; the numeric fields stay in sync both ways.
-
-**4. Testing an existing app.** One test per README behavior, each driving
-input or reading inspection; all pass against the unchanged app; a CPU
-capture PNG is written; the recorded deliberate break made a test fail; any
-change to the app is listed and does not change behavior.
-
-**5. Background job monitor (reserved).** Progress reaches the UI through the
-library's cross-thread facility, not shared UI objects; cancellation stops
-the worker; a failure shows in the row and as a notification (any failure
-message visible outside the row qualifies, including a plain label, as the
-maintainer decided on 2026-10-27; no particular component is required); sorting by
-every column; no repaint while idle, as far as the library's profiling or
-inspection shows it.
-
-**6. Notes editor (reserved).** The list is read from the folder at startup
-(the author's own folder, with a non-`.txt` file and names out of creation
-order, gives the listed names and order through inspection), and reopening
-an open note leaves the tab count unchanged and makes its tab active; the
-text is edited in the library's text editor through simulated typing,
-including line breaks, and the modified marker and the status line's line
-and word counts are read from inspection, not from the tester's own fields;
-Ctrl+S, Ctrl+N and Ctrl+W go through the library's key or command path and
-the menu items through simulated clicks in the menu bar, with the saved
-file's contents compared on disk; a save into a removed folder appears as a
-notification in inspection while the marker stays; the New note dialog is a
-library dialog whose refusal text is visible in inspection while no file is
-created, and a valid name both creates the file and opens its tab; for a
-modified tab Cancel keeps tab and text, Discard leaves the file unchanged on
-disk and Save writes it before the tab disappears, and an unmodified tab
-closes with no dialog in the snapshot; the PNG comes from the CPU renderer
-and shows two tabs, one with the marker.
+Each task's acceptance items are written here before its first run and
+never shown to testers. The items of the tasks used in rounds 1 to 3 are in
+Git history (this file at commit 8254019); those tasks are known now, so a
+new round writes new tasks.

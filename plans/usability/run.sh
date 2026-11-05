@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# Blind developer test harness of the developer-usability plan
-# (plans/archive/developer-usability.md, in Git history at f5fde76).
+# Blind developer test harness; see README.md beside this script.
 #
 #   run.sh prepare <kit-dir>
 #       Package the checkout's library crates, vendor them with their
@@ -76,9 +75,7 @@ prepare() {
     rm -f "$kit/kit.env"
     local ver; ver="$(version)"
     local prep="$kit/prep"
-    # task4-app is removed from kits made by earlier versions of this script:
-    # the kit is mounted for every task, and that application is task 4's.
-    rm -rf "$prep" "$kit/vendor" "$kit/doc" "$kit/readme" "$kit/bin" "$kit/task4-app"
+    rm -rf "$prep" "$kit/vendor" "$kit/doc" "$kit/readme" "$kit/bin"
     mkdir -p "$prep/src" "$kit/vendor" "$kit/readme" "$kit/bin"
 
     echo "== packaging $ver"
@@ -401,20 +398,6 @@ launch() {
     [ -f "$task" ] || task="$HERE/tasks/$task"
     [ -f "$task" ] || die "no task $4"
     init_run "$2" "$tester"
-    # Task 4's application is given only to task 4's runs, in /work.
-    case "$(basename "$task")" in
-        4-*)
-            cp -r "$HERE/task4-app" "$RUN/work/bookmarks"
-            rm -rf "$RUN/work/bookmarks/target" "$RUN/work/bookmarks/Cargo.lock"
-            # The application requires the kit's version, as an application
-            # written against that release would.
-            local ver; ver="$(sed -n 's/^version=//p' "$KIT/kit.env")"
-            sed -i "s/^pert-ui = { version = \"[^\"]*\"/pert-ui = { version = \"$ver\"/" \
-                "$RUN/work/bookmarks/Cargo.toml"
-            grep -q "^pert-ui = { version = \"$ver\"" "$RUN/work/bookmarks/Cargo.toml" \
-                || die "could not set task 4's pert-ui requirement to $ver"
-            ;;
-    esac
     record_conditions "$tester" "$task" "$minutes"
     local prompt
     prompt="$(cat "$KIT/tester-brief.md"; echo; echo '---'; echo; cat "$task")"
